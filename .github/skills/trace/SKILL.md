@@ -1,10 +1,11 @@
 ---
 name: trace
 description: >
-  Validates the full chain of traceability across all pipeline artefacts for a feature.
+  Validates the full traceability chain across all pipeline artefacts for a feature.
   Surfaces broken links, orphaned artefacts, scope deviations, and metric gaps.
-  Use on-demand ("trace this feature", "chain check", "traceability report") or 
-  automatically in CI on PR open. Does not fix issues — reports them for human action.
+  Use on-demand ("trace this feature", "chain check", "traceability report") or
+  automatically on PR open as a CI trigger. Read-only — reports findings for humans
+  to action, does not fix anything.
 triggers:
   - "trace this feature"
   - "chain check"
@@ -16,68 +17,61 @@ triggers:
 
 # Trace Skill
 
-## Entry condition check
+## Entry condition
 
-No hard prerequisites — this skill can run at any pipeline stage to report 
-what is and isn't linked. Running it on an incomplete pipeline will surface gaps,
-which is valid and useful.
+None. Can run at any pipeline stage — running on an incomplete pipeline surfaces
+gaps, which is valid and useful.
 
 ---
 
-## Purpose
+## Step 1 — Confirm scope
 
-The trace skill answers: "Can we follow a continuous chain from every line of shipped 
-code back to a user problem and a measurable outcome?" 
+State what was found:
 
-If the answer is yes for every story, the pipeline is healthy.
-If any link is broken, it surfaces as a finding.
+> **Feature artefacts found:**
+> - discovery.md: ✅ / ❌ missing
+> - benefit-metric.md: ✅ / ❌ missing
+> - epics: [n]
+> - stories: [n]
+> - test plans: [n of n stories]
+> - DoR artefacts: [n of n stories]
+> - DoD artefacts: [n of n merged stories]
+> - Open spikes: [n]
+>
+> Trace the full feature, or a specific story?
+> Reply: full feature — or name the story
 
 ---
 
 ## Chain structure
 
-A healthy chain looks like this for each story:
+A healthy chain for each story:
 
 ```
-Shipped code (PR) 
-  → test results (CI) 
-  → ACs (story artefact)
+Shipped code (PR)
+  → test results (CI)
+  → ACs (story)
   → story (definition artefact)
   → epic (definition artefact)
   → benefit metrics (benefit-metric artefact)
-  → discovery (discovery artefact)
+  → discovery artefact
   → original problem statement
 ```
 
-Every link must be present and navigable. A link is broken if:
-- A reference is missing (artefact doesn't exist or link is dead)
-- A reference is present but the content doesn't match 
-  (e.g. story references a metric that isn't in the benefit-metric artefact)
-- An artefact exists but was never linked to anything upstream or downstream
+A link is broken if:
+- A reference is missing or points to a non-existent artefact
+- A reference exists but the content doesn't match (e.g. metric referenced in story
+  doesn't exist in benefit-metric artefact)
+- An artefact exists but is not linked to anything upstream or downstream
 
 ---
 
-## Process
+## Chain walk — per story
 
-### 1. Artefact inventory
-
-List all artefacts present in `.github/artefacts/[feature]/`:
-- discovery.md
-- benefit-metric.md
-- epics/*.md
-- stories/*.md
-- test-plans/*.md
-- dor/*.md
-- dod/*.md
-
-Flag any expected artefact that is missing given the current pipeline stage.
-
-### 2. Chain walk — per story
-
-For each story artefact, walk the chain in both directions:
+For each story, walk upstream and downstream:
 
 **Upstream (story → discovery):**
-- Story references an epic? ✓/✗
+- Story references parent epic? ✓/✗
 - Story references benefit-metric? ✓/✗
 - Story's metric reference exists in benefit-metric artefact? ✓/✗
 - Benefit-metric references discovery? ✓/✗
@@ -86,26 +80,29 @@ For each story artefact, walk the chain in both directions:
 **Downstream (story → shipped code):**
 - Story has a test plan? ✓/✗
 - Story has a DoR artefact showing PROCEED? ✓/✗
-- Story has a DoD artefact? ✓/✗ (only if PR is merged)
+- Story has a DoD artefact? ✓/✗ (if PR is merged)
 - DoD shows COMPLETE or COMPLETE WITH DEVIATIONS? ✓/✗
 
-### 3. Metric orphan check
+---
 
+## Additional checks
+
+**Metric orphan check:**
 For each metric in the benefit-metric artefact:
 - At least one story references it? ✓/✗
-- At least one story's DoD records metric signal status? ✓/✗
+- At least one DoD records metric signal status? ✓/✗
 
-Flag orphaned metrics (defined but no stories move them).
+**Scope deviation summary:**
+Collect all scope deviations from DoD artefacts. These are where shipped code
+drifted from the plan.
 
-### 4. Scope deviation summary
+**AC coverage gaps:**
+List any ACs not covered by the test plan. List test plan gaps acknowledged
+but not mitigated.
 
-Collect all scope deviation records from DoD artefacts.
-Report as a table — these are the places where shipped code drifted from the plan.
-
-### 5. Coverage gaps
-
-List any ACs from any story that are not covered by the test plan.
-List any test plan gaps that were acknowledged but not mitigated.
+**Open spikes:**
+List any spikes with no outcome artefact — these represent known unknowns
+still unresolved.
 
 ---
 
@@ -113,49 +110,74 @@ List any test plan gaps that were acknowledged but not mitigated.
 
 ```markdown
 # Trace Report: [Feature Name]
-**Date:** [date]
-**Pipeline stage:** [current stage]
-**Overall health:** ✅ HEALTHY / ⚠️ WARNINGS / ❌ BROKEN LINKS
+**Date:** [date] | **Stage:** [current stage]
+**Overall:** ✅ HEALTHY / ⚠️ WARNINGS / ❌ BROKEN LINKS
 
-## Chain Status by Story
+## Chain by Story
 
-| Story | Upstream chain | Downstream chain | Issues |
-|-------|---------------|-----------------|--------|
-| [title] | ✅ Complete | ✅ Complete | None |
-| [title] | ✅ Complete | ⚠️ DoD missing | DoD not yet run |
-| [title] | ❌ Metric ref broken | — | Metric "X" not in benefit-metric artefact |
+| Story | Upstream | Downstream | Issues |
+|-------|----------|------------|--------|
+| [title] | ✅ | ✅ | None |
+| [title] | ✅ | ⚠️ DoD missing | DoD not yet run |
+| [title] | ❌ Metric ref broken | — | Metric "X" not in benefit-metric |
 
 ## Metric Coverage
 
 | Metric | Stories covering it | DoD signal recorded |
-|--------|--------------------|--------------------|
-| [name] | [n stories] | ✅ / ⚠️ Not yet |
+|--------|--------------------|---------------------|
+| [name] | [n] | ✅ / ⚠️ Not yet |
 
-## Scope Deviations (from DoD artefacts)
-[None / table of deviations with story and PR reference]
+## Scope Deviations
+[None / table: story, PR, deviation description]
 
 ## AC Coverage Gaps
 [None / list]
+
+## Open Spikes
+[None / spike title + days open]
 
 ## Findings requiring action
 [None / list with severity]
 ```
 
+Save to `.github/artefacts/[feature]/trace/[date]-trace.md`
+
 ---
 
 ## CI usage
 
-When triggered automatically on PR open, post a condensed version as a PR comment:
+When triggered on PR open, post a condensed comment:
 
-> **🔗 Trace check**  
-> Chain: ✅ Healthy / ⚠️ [n] warnings / ❌ [n] broken links  
-> [If issues:] See full trace report at `.github/artefacts/[feature]/trace/[date]-trace.md`
+> **Trace check**
+> Chain: ✅ Healthy / ⚠️ [n] warnings / ❌ [n] broken links
+> [If issues:] Full report: `.github/artefacts/[feature]/trace/[date]-trace.md`
+
+---
+
+## Completion output
+
+**If healthy:**
+
+> ✅ **Trace: HEALTHY**
+> [n] stories — full chain intact, no orphaned metrics, no unresolved deviations.
+>
+> Ready to proceed — or want the full report saved?
+> Reply: save report — or done
+
+**If issues found:**
+
+> ⚠️ / ❌ **Trace: [n] issue(s) found**
+>
+> Most critical: [finding description]
+>
+> Want me to walk through each finding with the specific fix?
+> Reply: yes — or I'll fix them myself
 
 ---
 
 ## What this skill does NOT do
 
-- Does not fix broken links — reports them for human or skill action
-- Does not make scope decisions — it records deviations, humans decide what to do
-- Does not update any other artefact — it is read-only
-- Does not replace code review — it validates the artefact chain, not the code quality
+- Does not fix broken links — reports for human or skill action
+- Does not make scope decisions — records deviations, humans decide
+- Does not update any artefact — read-only
+- Does not replace code review

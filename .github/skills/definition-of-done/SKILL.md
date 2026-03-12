@@ -1,11 +1,11 @@
 ---
 name: definition-of-done
 description: >
-  Post-merge validation. Checks that the merged PR actually satisfies the ACs and test plan 
-  for the story. Produces a DoD artefact recording AC coverage, any deviations, and 
-  metric signal status. Use when a PR has been merged and someone says "mark as done",
+  Post-merge validation. Checks that the merged PR satisfies the ACs and test plan
+  for the story. Produces a DoD artefact recording AC coverage, any deviations, and
+  metric signal status. Use when a PR is merged and someone says "mark as done",
   "definition of done", "validate the story", or "check what shipped".
-  Requires the merged PR, story artefact, and test plan artefact.
+  Requires merged PR, story artefact, test plan, and DoR artefact.
 triggers:
   - "mark as done"
   - "definition of done"
@@ -19,104 +19,171 @@ triggers:
 
 ## Entry condition check
 
-**Before proceeding**, verify:
+Before asking anything, verify:
 
 1. PR has been merged (not just opened or approved)
 2. Story artefact exists
 3. Test plan artefact exists
-4. DoR artefact exists (confirms the story went through the full pipeline)
+4. DoR artefact exists (confirms story went through the full pipeline)
 
-If any condition is not met, output:
+If not met:
 
-> ❌ **Entry condition not met**  
-> [Specific issue: e.g. "PR is not yet merged — run this skill after merge, not before."]
+> ❌ **Entry condition not met**
+> [Specific issue — e.g. "PR is not yet merged. Run this after merge, not before."]
+>
+> Run /workflow to see the current pipeline state.
 
 ---
 
-## Process
+## Step 1 — Confirm the story and PR
 
-### 1. AC coverage check
+State what was found:
 
-For each AC in the story, verify that the merged code satisfies it.
-Where possible, reference specific test results or observable behaviour.
+> **Story:** [story title]
+> **PR:** [ref] — merged [date]
+> **ACs to check:** [n]
+> **Tests from plan:** [n]
+>
+> Running definition-of-done check. Ready?
+> Reply: yes — or specify a different story/PR
+
+---
+
+## Step 2 — AC coverage check
+
+For each AC in the story, verify the merged code satisfies it.
+Reference specific test results or observable behaviour where possible.
+
+Present as a table:
 
 | AC | Satisfied? | Evidence | Deviation |
 |----|-----------|----------|-----------|
-| AC1 | ✅ / ⚠️ / ❌ | [Test name / observable behaviour] | [If any] |
+| AC1 | ✅ / ⚠️ / ❌ | [test name / behaviour] | [if any] |
 
-A deviation is anything where the implemented behaviour differs from the AC —
-even if the difference seems minor. Deviations are not necessarily failures,
-but they must be recorded.
+**A deviation is any difference between implemented behaviour and the AC** —
+even if minor. Deviations are not failures, but they must be recorded.
 
-### 2. Out-of-scope check
+If any AC is ❌:
 
-Verify the merged PR did not implement anything in the story's out-of-scope section
-or the epic's out-of-scope section. If it did, flag it:
+> ❌ **AC[n] not satisfied: [description]**
+>
+> What do you want to do?
+> 1. Create a follow-up story to address it
+> 2. Accept the gap and record it in /decisions as RISK-ACCEPT
+> 3. Reopen the PR — this should have been caught before merge
+>
+> Reply: 1, 2, or 3
 
-> ⚠️ **SCOPE DEVIATION:** The merged PR includes [behaviour] which was explicitly 
-> out of scope. This is recorded for the /trace skill and may need a follow-up story 
-> to address properly.
+---
 
-### 3. Test plan check
+## Step 3 — Out-of-scope check
+
+Verify the merged PR did not implement anything in the story's or epic's
+out-of-scope section.
+
+If a violation is found:
+
+> ⚠️ **Scope deviation: [behaviour] was explicitly out of scope.**
+>
+> This is recorded for /trace and may need a follow-up story.
+> Acknowledge and continue?
+> Reply: yes — I'll note it / no — this needs to be reverted
+
+---
+
+## Step 4 — Test plan coverage
 
 Confirm the tests from the test plan were implemented and are passing in CI.
-If any tests were not implemented, record the gap.
 
-### 4. NFR check
+If any tests were not implemented:
+
+> ⚠️ **Test gap: [test name] was not implemented.**
+> Risk: [which AC is now less covered]
+>
+> Accept this gap?
+> 1. Yes — log in /decisions as RISK-ACCEPT
+> 2. No — create a follow-up to implement it
+>
+> Reply: 1 or 2
+
+---
+
+## Step 5 — NFR check
 
 For each NFR from the story, confirm it was addressed.
-Reference specific evidence (performance test results, accessibility scan output, 
-audit log entry, security review outcome).
 
-### 5. Metric signal status
+If any NFR has no evidence:
 
-For each metric in the benefit-metric artefact that this story was expected to move:
-- Is a baseline measurement available?
-- Is there any early signal from the implementation?
-- When will the first real measurement be possible?
+> ⚠️ **NFR not evidenced: [NFR description]**
+> What evidence exists that this was addressed?
+>
+> Reply: describe evidence — or "not addressed, I'll log it"
 
-This section does not claim success — it records what measurement is now possible
-and when the metric owner should check.
+---
+
+## Step 6 — Metric signal
+
+For each metric the story was expected to move:
+
+> **[Metric name]**
+> Is a baseline measurement available? [Yes / No]
+> When will the first real signal be measurable? [timeline]
+
+This section does not claim success — it records what measurement is now possible.
 
 ---
 
 ## Output
 
-Save to `.github/artefacts/[feature]/dod/[story-slug]-dod.md`.
+Save to `.github/artefacts/[feature]/dod/[story-slug]-dod.md`:
 
 ```markdown
 # Definition of Done: [Story Title]
 
-**PR:** [Link]
-**Merged:** [Date]
-**Story:** [Link]
-**Test plan:** [Link]
+**PR:** [link] | **Merged:** [date]
+**Story:** [link] | **Test plan:** [link]
 
 ## AC Coverage
-[Table from process step 1]
+[Table from step 2]
 
 ## Scope Deviations
 [None / list of deviations]
 
 ## Test Plan Coverage
-[Tests implemented: n/n | Tests not implemented: list]
+Tests implemented: [n/n] | Not implemented: [list]
 
 ## NFR Status
-[Per NFR: addressed / not addressed + evidence]
+[Per NFR: addressed + evidence / not addressed]
 
 ## Metric Signal
 [Per metric: baseline available / measurement timeline]
 
 ## Outcome
 [COMPLETE — all ACs satisfied, no scope deviations]
-[COMPLETE WITH DEVIATIONS — ACs satisfied, deviations recorded for trace]  
-[INCOMPLETE — [n] ACs not satisfied — follow-up action required]
+[COMPLETE WITH DEVIATIONS — ACs satisfied, deviations recorded for /trace]
+[INCOMPLETE — [n] ACs not satisfied — follow-up required]
 ```
+
+---
+
+## Completion output
+
+> **Definition of done: [COMPLETE / COMPLETE WITH DEVIATIONS / INCOMPLETE] ✅**
+>
+> ACs satisfied: [n/n]
+> Deviations: [None / n recorded]
+> Test gaps: [None / n gaps]
+>
+> [If COMPLETE WITH DEVIATIONS or INCOMPLETE:]
+> Follow-up actions: [list]
+>
+> Ready to run /release when all stories in this feature are DoD-complete?
+> Reply: yes — or there are more stories to process first
 
 ---
 
 ## What this skill does NOT do
 
 - Does not approve or merge PRs — that is a human action
-- Does not measure metrics — it records when measurement becomes possible
-- Does not create follow-up stories — it flags what needs follow-up for humans to action
+- Does not measure metrics — records when measurement becomes possible
+- Does not create follow-up stories — flags what needs follow-up for humans to action

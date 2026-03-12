@@ -2,11 +2,11 @@
 name: decisions
 description: >
   Records human judgment calls, architectural decisions, scope choices, assumptions,
-  and risk acceptances to the feature decision log. Use when a significant decision
-  is made during any pipeline stage, when someone says "log this decision", "record
-  why we chose", "add an ADR", "note this assumption", or "acknowledge this risk".
-  Also invoked automatically by other skills at their decision points.
-  Produces or appends to .github/artefacts/[feature]/decisions.md
+  and risk acceptances. Maintains two clearly separate tracks: a lightweight running
+  log for in-flight decisions made during a session, and formal ADRs for structural
+  decisions that need to survive long-term. Other skills invoke this at their decision
+  points. Use when a significant decision is made, someone says "log this decision",
+  "record why we chose", "add an ADR", "note this assumption", or "acknowledge this risk".
 triggers:
   - "log this decision"
   - "record why we chose"
@@ -20,100 +20,227 @@ triggers:
 
 # Decisions Skill
 
-## Entry condition check
+## Entry condition
 
-No hard prerequisites. This skill can run at any pipeline stage.
+None. Runs at any pipeline stage. If `decisions.md` does not exist for this feature,
+create it from `.github/templates/decision-log.md` before appending.
 
-If `.github/artefacts/[feature]/decisions.md` does not exist, create it from 
-`.github/templates/decision-log.md` before appending. Do not create a blank file.
+---
+
+## Two tracks — ask first, always
+
+When invoked, the first question is always which track:
+
+> **Which type of record does this need?**
+>
+> 1. **Log entry** — quick, in-flight decision. Reversible or low-stakes.
+>    Rationale fits in 1–2 sentences. Takes ~2 minutes.
+>
+> 2. **ADR (Architecture Decision Record)** — structural decision. Hard to reverse.
+>    Affects multiple stories, epics, or the wider codebase. Future engineers need
+>    full context. Takes 5–10 minutes.
+>
+> Not sure? Default to 1. An ADR can be written retrospectively if it turns out
+> to matter more than expected.
+>
+> Reply: 1 or 2
+
+---
+
+## Track 1: Log entry
+
+### Step 1 — The decision
+
+> **What was decided?**
+> (One clear sentence — not "we discussed the approach" but "we chose X over Y")
+>
+> Reply: state the decision
+
+### Step 2 — Category
+
+> **What category?**
+>
+> 1. SCOPE — what is or isn't in MVP
+> 2. ARCH — structural or infrastructure choice
+> 3. DESIGN — implementation pattern or approach
+> 4. SLICE — story slicing or decomposition choice
+> 5. ASSUMPTION — something assumed true that affects the work
+> 6. RISK-ACCEPT — known risk acknowledged and accepted
+>
+> Reply: 1, 2, 3, 4, 5, or 6
+
+### Step 3 — Alternatives
+
+> **What other options were considered?**
+> (Even if briefly — "no alternatives considered" is itself a useful signal)
+>
+> Reply: describe alternatives, or type "none considered"
+
+### Step 4 — Rationale
+
+> **Why this option?**
+> (Forces, constraints, information that led here — not a restatement of the decision)
+>
+> Reply: explain the rationale
+
+### Step 5 — Revisit trigger
+
+> **What would cause you to revisit this decision?**
+> (e.g. "If latency requirements tighten below 100ms", "If the vendor changes the API",
+> "If we need to support more than 3 concurrent users")
+>
+> Reply: describe the trigger, or type "no obvious trigger"
+
+### Log entry output
+
+Append to `## Log entries` section of `decisions.md`:
+
+```markdown
+---
+**[DATE] | [CATEGORY] | [pipeline stage]**
+**Decision:** [one sentence]
+**Alternatives considered:** [what else was on the table]
+**Rationale:** [why this option]
+**Made by:** [name + role, or basis for the decision]
+**Revisit trigger:** [what would change this]
+---
+```
+
+> **Logged ✅**
+> [Decision summary — one line]
+>
+> Continue working, or log another decision?
+> Reply: continue — or log another
+
+---
+
+## Track 2: ADR
+
+ADRs are heavyweight. Every section requires human input — the skill structures
+and writes, but the substance must come from the human. The skill never generates
+ADR content from inference.
+
+### Step 1 — Title and number
+
+Confirm the next ADR number from the existing log, then:
+
+> **ADR-[N]: What is the short title for this decision?**
+> (e.g. "Use IndexedDB over localStorage for offline data persistence")
+>
+> Reply: state the title
+
+### Step 2 — Context
+
+> **What is the situation that required this decision?**
+> What were you trying to do, what constraint or question arose, and why couldn't
+> you just proceed without deciding?
+>
+> Reply: describe the context
+
+### Step 3 — Options considered
+
+> **What were the options?**
+> List each option with its key pros and cons.
+> Minimum 2 options — if only one was ever considered, note that explicitly
+> as it affects how the ADR should be read.
+>
+> Reply: list options with pros/cons
+
+### Step 4 — Decision and primary reason
+
+> **What was decided, and what was the primary reason?**
+> (If multiple reasons, rank them — what tipped the balance?)
+>
+> Reply: state the decision and primary reason
+
+### Step 5 — Consequences
+
+> **What are the consequences of this decision?**
+>
+> Specifically:
+> - What becomes easier?
+> - What becomes harder or more constrained?
+> - What is now off the table?
+>
+> Reply: describe the consequences
+
+### Step 6 — Revisit trigger
+
+> **What would cause this decision to be reconsidered?**
+> (Think: technology changes, scale changes, regulatory changes, team changes)
+>
+> Reply: describe the trigger
+
+### ADR output
+
+Append to `## Architecture Decision Records` section of `decisions.md`:
+
+```markdown
+---
+## ADR-[N]: [Title]
+
+**Date:** [date]
+**Status:** Accepted
+**Decided by:** [name + role]
+
+### Context
+[Human-provided context from step 2]
+
+### Options considered
+
+**Option 1: [name]**
+Pros: [list]
+Cons: [list]
+
+**Option 2: [name]**
+Pros: [list]
+Cons: [list]
+
+[Additional options if provided]
+
+### Decision
+[What was decided and primary reason]
+
+### Consequences
+**Easier:** [what becomes easier]
+**Harder:** [what becomes harder or constrained]
+**Off the table:** [what is now excluded]
+
+### Revisit trigger
+[What would cause reconsideration]
+---
+```
+
+> **ADR-[N] recorded ✅**
+> [Title]
+>
+> This ADR should be referenced in any story or artefact it constrains.
+> Want to note any artefacts that should reference ADR-[N]?
+> Reply: yes — list them / no
 
 ---
 
 ## When other skills invoke this skill
 
-The following pipeline skills have explicit decision points that should produce 
-a decisions log entry. When running these skills, invoke /decisions at the 
-marked point:
+The following pipeline points should produce a log entry. When running these
+skills, the decision point is marked — invoke /decisions at that point:
 
 | Skill | Decision point | Category |
 |-------|---------------|----------|
-| `/discovery` | MVP scope finalised | `SCOPE` |
-| `/discovery` | Any item explicitly moved to out-of-scope | `SCOPE` |
-| `/benefit-metric` | Meta-benefit flag set | `ASSUMPTION` |
-| `/definition` | Slicing strategy chosen | `SLICE` |
-| `/definition` | Any scope note resolved (add/defer/replace) | `SCOPE` |
-| `/review` | MEDIUM finding acknowledged and proceeded | `RISK-ACCEPT` |
-| `/review` | LOW finding accepted and not resolved | `RISK-ACCEPT` |
-| `/definition-of-ready` | Warning acknowledged | `RISK-ACCEPT` |
-| `/definition-of-ready` | Oversight level overridden from epic default | `RISK-ACCEPT` |
-| `/test-plan` | Test gap acknowledged | `RISK-ACCEPT` |
-| `/test-plan` | Untestable AC accepted | `RISK-ACCEPT` |
-| PR review | Any implementation decision not in story/test plan | `ARCH` or `DESIGN` |
-| `/definition-of-done` | AC deviation accepted | `RISK-ACCEPT` or `SCOPE` |
-
----
-
-## Determining the right entry type
-
-Ask the human: is this decision complex enough to warrant a full ADR, 
-or is a log entry sufficient?
-
-**Use a log entry** (quick, inline) when:
-- The decision is reversible or low-stakes
-- The rationale fits in 1–2 sentences
-- It's a pattern choice, not a structural choice
-- It's a risk acceptance with a clear mitigant
-
-**Use an ADR** when:
-- The decision is hard to reverse
-- It affects multiple stories, epics, or the wider codebase
-- A future engineer would need full context to understand why
-- Significant options were considered and rejected
-- There are meaningful consequences that restrict future choices
-
-If uncertain, default to a log entry. An ADR can be written retrospectively 
-if the decision turns out to be more significant than expected.
-
----
-
-## Log entry format
-
-Append to the `## Log entries` section of `decisions.md`:
-
-```markdown
----
-**[DATE] | [CATEGORY] | [STAGE where decision was made]**
-**Decision:** [One clear sentence — what was decided]
-**Alternatives considered:** [What else was on the table — even if briefly]
-**Rationale:** [Why this option — forces, constraints, information]
-**Made by:** [Name + role or basis for the decision]
-**Revisit trigger:** [What would cause this to be reconsidered]
----
-```
-
-If the human doesn't provide alternatives or revisit trigger, prompt for them:
-- "What other options were considered, even briefly?"
-- "What would change to make you revisit this decision?"
-
-These two fields are the most valuable for future readers and the most commonly skipped.
-
----
-
-## ADR format
-
-When an ADR is warranted, append to the `## Architecture Decision Records` section.
-Number sequentially from the last ADR in the file.
-
-Prompt the human for each section if not already provided:
-1. Context — "What was the situation that required this decision?"
-2. Options — "What were the options? List pros and cons for each."
-3. Decision — "What was decided and the primary reason?"
-4. Consequences — "What becomes easier? What becomes harder? What's now off the table?"
-5. Revisit trigger — "What would make you reconsider this?"
-
-Do not generate the ADR content without human input on these questions.
-The ADR records the human's reasoning — the skill structures and writes it, 
-but the substance must come from the human.
+| /discovery | MVP scope finalised | SCOPE |
+| /discovery | Item moved to out-of-scope | SCOPE |
+| /benefit-metric | Meta-benefit flag set | ASSUMPTION |
+| /definition | Slicing strategy chosen | SLICE |
+| /definition | Scope note resolved (add/defer/replace) | SCOPE |
+| /definition | Scope accumulator flags drift — decision made | SCOPE |
+| /review | MEDIUM finding acknowledged and proceeded | RISK-ACCEPT |
+| /review | LOW finding accepted and not resolved | RISK-ACCEPT |
+| /definition-of-ready | Warning acknowledged | RISK-ACCEPT |
+| /definition-of-ready | Oversight level overridden | RISK-ACCEPT |
+| /test-plan | Test gap acknowledged | RISK-ACCEPT |
+| /test-plan | Untestable AC accepted | RISK-ACCEPT |
+| /spike | Outcome logged (PROCEED / REDESIGN / DEFER) | ARCH or DESIGN or RISK-ACCEPT |
+| /definition-of-done | AC deviation accepted | RISK-ACCEPT or SCOPE |
 
 ---
 
@@ -121,39 +248,48 @@ but the substance must come from the human.
 
 When asked "why did we decide X" or "what's the history of Y":
 
-1. Check `decisions.md` log entries for relevant entries by category or keyword
+1. Check log entries for relevant category or keyword
 2. Check ADRs for structural decisions
-3. If not found, note the gap: "No decision log entry found for this. 
-   If this decision was made, consider adding a retrospective entry now."
+3. If not found:
+
+> **No decision log entry found for this.**
+> If this decision was made but not logged, would you like to add a
+> retrospective entry now?
+>
+> Reply: yes — or no
 
 ---
 
 ## Retrospective entries
 
-It is valid (and encouraged) to add retrospective entries — decisions that were 
-made but not logged at the time. Use this format addition:
+Valid and encouraged. Retrospective entries are better than gaps.
+
+Add to the log entry format:
 
 ```markdown
-**[DATE of logging] | [CATEGORY] | [STAGE] | ⚠️ RETROSPECTIVE**
+**[DATE of logging] | [CATEGORY] | [STAGE] | RETROSPECTIVE**
 **Decision made approximately:** [when, if known]
 ```
 
-Retrospective entries are better than gaps. They support honest retrospectives.
+> Retrospective entry ready to log. Proceed the same as a standard log entry.
+> What was decided?
 
 ---
 
 ## Quality checks before appending
 
-- Decision is specific — not "we discussed the approach" but "we chose X over Y"
-- Alternatives field is not blank — at minimum "No alternatives formally considered"  
-  (which is itself a useful signal)
-- Rationale explains the reasoning, not just restates the decision
+- Decision is specific — not "we discussed the approach"
+- Alternatives field is not blank — at minimum "None formally considered"
+- Rationale explains reasoning, not just restates the decision
 - Made by names a person or role — not "the team" if a specific person decided
-- Category is correct — check the table above if uncertain
+- ADR has human-provided content in every section — not inferred by the agent
+
+---
 
 ## What this skill does NOT do
 
-- Does not make decisions — it records them
-- Does not evaluate whether decisions were good — it records them faithfully
-- Does not replace story or epic artefacts — those record outputs, this records reasoning
-- Does not create Jira tickets or Confluence pages — local artefact only
+- Does not make decisions — records them
+- Does not evaluate whether decisions were good
+- Does not replace story or epic artefacts
+- Does not create Jira tickets or Confluence pages
+- Does not generate ADR content from inference — substance must come from the human

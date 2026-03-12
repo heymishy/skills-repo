@@ -1,12 +1,12 @@
 ---
 name: definition
 description: >
-  Breaks an approved discovery + benefit-metric pair into epics and stories conforming to
-  templates/epic.md and templates/story.md. Use when someone says "break this down", 
-  "create stories", "define the work", "write the epics", or references moving past 
-  benefit-metric. Requires approved discovery AND active benefit-metric artefact.
-  Offers slicing strategy choice before decomposing — does not default to functional slicing.
-  Does not produce test plans, specs, or API contracts.
+  Breaks an approved discovery + benefit-metric pair into epics and stories
+  conforming to templates/epic.md and templates/story.md. Offers slicing strategy
+  choice before decomposing. Runs a scope accumulator at the end — compares total
+  story scope against the original discovery MVP to surface scope drift across the
+  full set, not just individual stories. Does not produce test plans or API contracts.
+  Requires approved discovery AND active benefit-metric artefact.
 triggers:
   - "break this down"
   - "create stories"
@@ -20,137 +20,222 @@ triggers:
 
 ## Entry condition check
 
-**Before proceeding**, verify:
+Before asking anything, verify:
 
-1. Discovery artefact exists at `.github/artefacts/[feature]/discovery.md` with status "Approved"
+1. Discovery artefact exists at `.github/artefacts/[feature]/discovery.md` — status "Approved"
 2. Benefit-metric artefact exists at `.github/artefacts/[feature]/benefit-metric.md`
 3. Benefit-metric artefact contains at least one metric with a defined target
 
-If either condition is not met, output:
+If not met:
 
-> ❌ **Entry condition not met**  
-> The definition skill requires both an approved discovery artefact AND an active 
-> benefit-metric artefact.  
-> [Specific issue: e.g. "Benefit-metric artefact not found. Run /benefit-metric first."]  
-> Run `/workflow` to see the current pipeline state.
-
----
-
-## Template references
-
-All output must conform to:
-- Epics → `.github/templates/epic.md`
-- Stories → `.github/templates/story.md`
-
-Do not invent alternative structures. Every field in the templates must be populated.
-If a field cannot be populated, write the reason explicitly — do not leave it blank.
+> ❌ **Entry condition not met**
+> [Specific issue — e.g. "Benefit-metric artefact not found. Run /benefit-metric first."]
+>
+> Run /workflow to see the current pipeline state.
 
 ---
 
-## Step 1: Slicing strategy selection
+## Step 1 — Confirm the feature scope
 
-Before decomposing, present the four slicing options and ask the human to choose.
-Do not default to functional/component slicing.
+State what was found first:
 
-### Option 1: Vertical slice
-Each story delivers a thin, complete slice through all layers (UI → logic → data).
-Every story is independently demo-able. Best for: validating end-to-end behaviour early,
-high uncertainty about what users actually want.
-
-### Option 2: Walking skeleton
-First story establishes the thinnest possible end-to-end path. Subsequent stories 
-flesh it out. Best for: new architectures or integrations where the path needs proving 
-before details are added.
-
-### Option 3: User journey
-Stories follow the user's chronological path through the feature.
-Best for: workflow-heavy features where the sequence of interactions matters.
-
-### Option 4: Risk-first
-Highest-risk or highest-uncertainty stories first. Best for: features with significant 
-technical unknowns where you want to de-risk before committing to the full scope.
-
-Present as:
-> "Before I decompose this, which slicing strategy should I use?
-> [Brief one-line description of each option as it applies to this specific feature]
-> The choice shapes how stories are sized and sequenced."
-
-Record the chosen strategy in every epic artefact.
+> **Discovery loaded:** [feature name]
+> **MVP scope items found:** [n]
+> **Benefit metrics found:** [n metrics with targets]
+> **Personas identified:** [list]
+>
+> Ready to decompose this into epics and stories?
+> Reply: yes — or name a specific scope item to focus on first
 
 ---
 
-## Step 2: Epic structure
+## Step 2 — Choose a slicing strategy
 
-Group stories into epics. Each epic should represent a cohesive body of work that 
-could be reviewed and understood independently.
+Ask this before any decomposition. Do not default.
 
-For small features (under ~8 stories), a single epic may be appropriate.
-For larger features, aim for epics of 3–8 stories each.
+> **Which slicing strategy should I use for this feature?**
+>
+> 1. **Vertical slice** — each story is a thin complete slice through all layers.
+>    Every story independently demo-able.
+>    Best for: high uncertainty, validating end-to-end behaviour early.
+>
+> 2. **Walking skeleton** — first story establishes the thinnest possible end-to-end
+>    path, subsequent stories flesh it out.
+>    Best for: new architectures or integrations needing proof before detail.
+>
+> 3. **User journey** — stories follow the user's chronological path through the feature.
+>    Best for: workflow-heavy features where sequence of interactions matters.
+>
+> 4. **Risk-first** — highest-risk or highest-uncertainty stories first.
+>    Best for: significant technical unknowns, de-risk before committing to full scope.
+>
+> Reply: 1, 2, 3, or 4
+
+Record the chosen strategy in every epic artefact — not implied, written explicitly.
+
+---
+
+## Step 3 — Epic structure
+
+Group stories into epics. Each epic is a cohesive body of work reviewable
+independently.
+
+- Under ~8 stories: a single epic is fine
+- Larger features: aim for 3–8 stories per epic
+
+Present the proposed epic grouping before writing:
+
+> **Proposed epic structure:**
+> - Epic 1: [title] — [n stories] — [rationale for grouping]
+> - Epic 2: [title] — [n stories] — [rationale for grouping]
+>
+> Does this grouping make sense, or do you want to reorganise?
+> Reply: looks good — or describe how to reorganise
 
 Save each epic to `.github/artefacts/[feature]/epics/[epic-slug].md`
 conforming to `.github/templates/epic.md`.
 
 ---
 
-## Step 3: Story decomposition
+## Step 4 — Story decomposition
 
 For each epic, write stories conforming to `.github/templates/story.md`.
 
-Key discipline:
-- Every story must name a persona from the benefit-metric artefact (not "a user")
-- Every story's "So that..." must connect to a metric from the benefit-metric artefact
-- Every story must have an explicit out-of-scope section (not "N/A")
+**Discipline:**
+- Every story names a persona from the benefit-metric artefact — not "a user"
+- Every story's "So that..." connects to a named metric — not a feature preference
+- Every story has a genuine out-of-scope section — not "N/A"
 - Minimum 3 ACs per story in Given/When/Then format
 - ACs describe observable behaviour, not implementation approach
+
+**Scope guard — per story:**
+If a story is necessary but was not in the discovery MVP scope, surface it
+immediately rather than silently writing it:
+
+> ⚠️ **SCOPE NOTE: [Story title] was not in the discovery MVP scope.**
+>
+> It appears necessary because: [reason]
+>
+> How do you want to handle it?
+> 1. Add to MVP scope — I'll update the discovery artefact
+> 2. Defer to post-MVP
+> 3. Replace an existing MVP scope item — which one?
+>
+> Reply: 1, 2, or 3
 
 Save each story to `.github/artefacts/[feature]/stories/[story-slug].md`
 
 ---
 
-## Step 4: Benefit coverage matrix
+## Step 5 — Benefit coverage matrix
 
-After all stories are written, populate the metric coverage matrix in the 
+After all stories are written, populate the metric coverage matrix in the
 benefit-metric artefact.
 
-For each metric, list which stories move it. Flag any metric with no covering story:
+For each metric — list which stories move it.
 
-> ⚠️ **METRIC GAP:** [Metric name] has no stories that move it.  
-> Options: (a) write a story, (b) descope this metric, (c) note it as post-MVP.  
-> Human decision required before proceeding to /review.
+**Metric gap — surface immediately:**
 
-Flag any story with no metric linkage:
+> ⚠️ **METRIC GAP: [Metric name] has no stories that move it.**
+>
+> Options:
+> 1. Write a story for it
+> 2. Descope this metric
+> 3. Mark as post-MVP
+>
+> Reply: 1, 2, or 3
 
-> ⚠️ **STORY GAP:** [Story title] has no metric linkage.  
+**Story gap — surface immediately:**
+
+> ⚠️ **STORY GAP: [Story title] has no metric linkage.**
+>
 > Either connect it to a metric or consider whether it belongs in MVP scope.
+>
+> Which metric does this story move, or should it be removed?
+> Reply: [metric name] — or remove
 
 ---
 
-## Scope guard
+## Step 6 — Scope accumulator
 
-If a story is clearly needed but was not in the discovery MVP scope:
+This step runs after all stories are written. It compares the total story scope
+against the original discovery MVP scope to detect drift that individual story
+guards may miss.
 
-> ⚠️ **SCOPE NOTE:** [Story title] was not in the discovery MVP scope.  
-> It appears necessary because [reason].  
-> Options: (a) add to MVP scope — update discovery artefact, (b) defer to post-MVP,  
-> (c) replace an existing MVP scope item. Human decision required.
+Individual stories can each be fine while the set together represents significant
+scope expansion. This step catches that.
+
+**Calculate:**
+- MVP scope item count from discovery artefact: [n]
+- Total stories written: [n]
+- Stories with scope notes (additions beyond MVP): [n]
+- Stories explicitly deferred to post-MVP: [n]
+- Stories with no metric linkage: [n]
+
+**Scope ratio check:**
+For each discovery MVP scope item, confirm at least one story covers it.
+For each story, confirm it traces to at least one MVP scope item (or has an
+approved scope note).
+
+**Present the summary:**
+
+> **Scope accumulator — [feature name]**
+>
+> Discovery MVP scope items: [n]
+> Stories written: [n]
+> Coverage: [n of n MVP items covered]
+> Scope additions (approved via scope note): [n]
+> Scope ratio: [stories / MVP items] — [commentary]
+>
+> [If ratio > 1.5 and additions not approved:]
+> ⚠️ **SCOPE DRIFT DETECTED**
+> The total story scope is [x]x the original discovery MVP.
+> Scope additions: [list with their scope notes]
+>
+> Is this intentional growth, or has scope crept?
+> 1. Intentional — update the discovery artefact to reflect the expanded scope
+> 2. Scope crept — I'll identify which stories to defer or remove
+> 3. Correct — some stories cover multiple MVP items, ratio is misleading
+>
+> Reply: 1, 2, or 3
+
+[If all stories trace cleanly to MVP scope:]
+> ✅ **Scope check passed** — [n] stories covering [n] MVP items.
+> No unexplained scope additions detected.
 
 ---
 
-## Quality checks before outputting
+## Quality checks before completing
 
-- Every epic records its slicing strategy — not implied, written explicitly
-- Every story's "So that..." connects to a named metric, not just a feature preference
+- Every epic records its slicing strategy — written explicitly, not implied
+- Every story's "So that..." connects to a named metric
 - Every story has a genuine out-of-scope section (not "N/A")
 - Minimum 3 ACs per story in Given/When/Then format
-- Benefit coverage matrix is complete — no metric is orphaned, no story is unlinked
-- MVP scope from discovery is fully covered or explicitly deferred with reason
-- Complexity and scope stability rated on every epic and story
+- Benefit coverage matrix complete — no orphaned metric, no unlinked story
+- Scope accumulator run — ratio reviewed and any drift acknowledged
+- All scope notes recorded in /decisions
+
+---
+
+## Completion output
+
+> **Definition complete ✅**
+>
+> Epics: [n] at `.github/artefacts/[feature]/epics/`
+> Stories: [n] at `.github/artefacts/[feature]/stories/`
+> Slicing strategy: [chosen strategy]
+> Scope check: ✅ Clean / ⚠️ [n] additions approved / ⚠️ Review needed
+>
+> Ready to run /review on the stories?
+> Reply: yes — or review a specific story first
+
+---
 
 ## What this skill does NOT do
 
 - Does not produce API contracts or technical implementation detail
 - Does not write test cases — that is /test-plan
-- Does not run the definition-of-ready check
+- Does not run /definition-of-ready
 - Does not assign stories to people, sprints, or milestones
-- Does not modify the discovery or benefit-metric artefacts (only references them 
-  and updates the coverage matrix)
+- Does not modify discovery or benefit-metric artefacts except the coverage matrix
+  and approved scope notes

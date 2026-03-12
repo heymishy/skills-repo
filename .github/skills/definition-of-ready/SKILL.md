@@ -1,111 +1,142 @@
 ---
 name: definition-of-ready
 description: >
-  Pre-coding gate. Validates that a story has everything the coding agent needs before work begins.
-  Runs hard-block checks (story format, AC coverage, test plan completeness, review pass) and
-  soft-warning checks (NFRs, scope stability, oversight level). Produces a DoR artefact with
-  a PASS or FAIL verdict. Use when someone says "is this ready", "definition of ready",
-  "check if ready to code", "DoR", or moves past /test-plan. Requires story + passed review
-  + test plan + verification script.
+  Final gate check before a story is handed to the coding agent. Runs hard blocks
+  (H1-H8) and warnings (W1-W5), determines oversight level, and produces a coding
+  agent instructions block when all hard blocks pass. Blocks are unambiguous — all
+  must pass, no exceptions. Warnings require explicit acknowledgement. Use when
+  test plan and review are complete and someone says "is this story ready",
+  "definition of ready", "ready to code", or moves past /test-plan.
 triggers:
-  - "is this ready"
+  - "is this story ready"
   - "definition of ready"
-  - "check if ready to code"
+  - "ready to code"
   - "DoR"
-  - "ready to assign"
   - "can we start coding"
+  - "assign to coding agent"
 ---
 
 # Definition of Ready Skill
 
 ## Entry condition check
 
-Verify before proceeding:
+Before asking anything, verify:
 
 1. Story artefact exists at `.github/artefacts/[feature]/stories/[story-slug].md`
-2. Review report exists for this story showing PASS (no unresolved HIGH findings)
+2. Review report exists showing PASS (no unresolved HIGH findings)
 3. Test plan exists at `.github/artefacts/[feature]/test-plans/[story-slug]-test-plan.md`
 4. AC verification script exists at `.github/artefacts/[feature]/verification-scripts/[story-slug]-verification.md`
 
-If any condition is not met:
+If not met:
 
-> [FAIL] **Entry condition not met**
-> Definition of ready requires: story + passed review + test plan + verification script.
+> ❌ **Entry condition not met**
 > Missing: [specific item]
-> Run `/workflow` to see current pipeline state.
+>
+> Run /workflow to see the current pipeline state.
 
 ---
 
-## Checklist -- hard blocks
+## Step 1 — Confirm the story
 
-Hard blocks must all pass before proceeding. No exceptions.
+State what was found:
 
-Run each check against the story and test plan artefacts. Record [PASS] or [FAIL] with a specific note.
+> **Story loaded:** [story title]
+> **Review:** PASS — Run [N], [date]
+> **Test plan:** [n] tests covering [n] ACs
+> **Verification script:** [n] scenarios
+>
+> Running definition-of-ready check on this story.
+> Reply: go — or name a different story
+
+---
+
+## Hard blocks — H1 to H8
+
+All must pass. No exceptions. Run each check and record PASS or FAIL.
 
 | # | Check | Source |
 |---|-------|--------|
 | H1 | User story is in As / Want / So format with a named persona | Story |
 | H2 | At least 3 ACs in Given / When / Then format | Story |
 | H3 | Every AC has at least one test in the test plan | Test plan |
-| H4 | Out-of-scope section is populated -- not blank or N/A | Story |
+| H4 | Out-of-scope section is populated — not blank or N/A | Story |
 | H5 | Benefit linkage field references a named metric | Story |
 | H6 | Complexity is rated | Story |
-| H7 | No unresolved HIGH findings from the review report | Review report |
-| H8 | Test plan has no uncovered ACs (or gaps are explicitly acknowledged) | Test plan |
+| H7 | No unresolved HIGH findings from the review report | Review |
+| H8 | Test plan has no uncovered ACs (or gaps explicitly acknowledged) | Test plan |
 
-If any hard block is [FAIL]:
+**If any hard block fails — stop immediately:**
 
-> [FAIL] **BLOCK -- do not assign to coding agent**
-> [n] hard block(s) failed:
-> - H[n] [Check name]: [Specific issue] -- [What needs to happen to resolve it]
+> ❌ **BLOCKED — [n] hard block(s) failed**
 >
-> Resolve these items and re-run `/definition-of-ready`.
+> [For each failed block:]
+> H[n] [Check name]: [specific issue]
+> Fix: [exactly what needs to happen]
+>
+> Resolve these and re-run /definition-of-ready.
+> Reply: done — and I'll re-run the check
 
 ---
 
-## Checklist -- warnings
+## Warnings — W1 to W5
 
-Warnings do not block but require explicit acknowledgement before proceeding.
+Warnings do not block. Each requires explicit acknowledgement to proceed.
 
 | # | Check | Source |
 |---|-------|--------|
-| W1 | NFRs section is populated or explicitly states "None -- confirmed" | Story |
-| W2 | Scope stability is declared | Story |
-| W3 | Any MEDIUM findings from the review report are acknowledged in /decisions | Review + Decisions log |
-| W4 | Verification script has been reviewed by a domain expert | Verification script |
-| W5 | No [UNCERTAIN] items in the test plan gap table left unaddressed | Test plan |
+| W1 | NFRs populated or explicitly "None — confirmed" | Story |
+| W2 | Scope stability declared | Story |
+| W3 | MEDIUM review findings acknowledged in /decisions | Review + Decisions |
+| W4 | Verification script reviewed by a domain expert | Verification script |
+| W5 | No UNCERTAIN items in test plan gap table left unaddressed | Test plan |
 
-If any warnings are [WARNING]:
+If any warnings apply, surface them one at a time:
 
-> [WARNING] **[n] warning(s) -- acknowledge to proceed**
-> - W[n] [Check name]: [Risk if proceeding without resolving]
+> ⚠️ **Warning W[n]: [Check name]**
+> Risk if proceeding: [what could go wrong]
 >
-> Acknowledge these risks to continue, or resolve them first.
+> How do you want to handle this?
+> 1. Resolve it now before proceeding
+> 2. Acknowledge the risk and proceed (I'll log it in /decisions)
+>
+> Reply: 1 or 2
 
 ---
 
 ## Oversight level
 
-Check the parent epic for the human oversight level. This determines sign-off requirements.
+Check the parent epic for the oversight level:
 
-**Low** -- no sign-off required. Proceed directly to coding agent assignment.
+**Low** — no sign-off required. Proceed directly to coding agent assignment.
 
-**Medium** -- engineering lead awareness required. Share the DoR artefact before assigning. No formal sign-off needed.
+**Medium** — engineering lead awareness required.
+Share the DoR artefact before assigning. No formal sign-off needed.
+Surface as:
+> ⚠️ **Medium oversight** — share the DoR artefact with the engineering lead
+> before assigning to the coding agent.
+> Confirmed you'll do this?
+> Reply: yes
 
-**High** -- human sign-off required. Record reviewer name and date in the sign-off field of the DoR artefact before assigning.
+**High** — human sign-off required before assigning.
+Surface as:
+> 🔴 **High oversight** — named sign-off required.
+> Who is signing off on this story?
+> Reply: [name and role]
+>
+> Record their sign-off in the DoR artefact (name + date) before assigning.
 
 ---
 
 ## Coding agent instructions block
 
-When all hard blocks pass, produce this block in the DoR artefact. Be specific -- vague instructions produce scope drift.
+Produced when all hard blocks pass. Written into the DoR artefact.
 
 ```
 ## Coding Agent Instructions
 
 Proceed: Yes
-Story: [story title] -- [link to story artefact]
-Test plan: [link to test plan artefact]
+Story: [story title] — [path to story artefact]
+Test plan: [path to test plan artefact]
 
 Goal:
 Make every test in the test plan pass. Do not add scope, behaviour, or
@@ -113,47 +144,45 @@ structure beyond what the tests and ACs specify.
 
 Constraints:
 - [Language, framework, and conventions from copilot-instructions.md]
-- [Any files, layers, or components explicitly out of scope for this story]
-- Open a draft PR when tests pass -- do not mark ready for review
+- [Files, layers, or components explicitly out of scope for this story]
+- Open a draft PR when tests pass — do not mark ready for review
 - If you encounter an ambiguity not covered by the ACs or tests:
   add a PR comment describing the ambiguity and do not mark ready for review
 
 Oversight level: [Low / Medium / High]
 ```
 
----
-
-## DoR artefact
-
-Save to `.github/artefacts/[feature]/dor/[story-slug]-dor.md`.
-Conforms to `.github/templates/definition-of-ready-checklist.md`.
-
-All checklist fields must be populated -- no blank rows.
+Save DoR artefact to `.github/artefacts/[feature]/dor/[story-slug]-dor.md`
+conforming to `.github/templates/definition-of-ready-checklist.md`.
 
 ---
 
-## Completion statement
+## Completion output
 
-> "[PASS] Definition of ready complete for [story title].
+> ✅ **Definition of ready: PROCEED — [story title]**
 >
-> Outcome: PROCEED
 > Hard blocks: [n]/[n] passed
 > Warnings: [n] acknowledged / [n] resolved
-> Oversight level: [Low / Medium / High]
+> Oversight: [Low / Medium / High]
 >
-> [If Low:] Assign the story to the coding agent using the instructions block in the DoR artefact.
-> [If Medium:] Share the DoR artefact with the engineering lead, then assign to the coding agent.
-> [If High:] Obtain sign-off, record in the DoR artefact, then assign to the coding agent.
+> [If Low:]
+> Assign the story to the coding agent using the instructions block in the DoR artefact.
 >
-> After the PR is merged, run `/definition-of-done`."
+> [If Medium:]
+> Share the DoR artefact with the engineering lead, then assign to the coding agent.
+>
+> [If High:]
+> Obtain sign-off from [name], record it in the DoR artefact, then assign.
+>
+> After the PR is merged: run /definition-of-done.
+> Reply: understood — or I have a question about the instructions block
 
 ---
 
 ## What this skill does NOT do
 
-- Does not fix story or test plan artefacts -- identifies what needs fixing and stops
-- Does not assign the story to the coding agent -- that is a human action
+- Does not fix story or test plan artefacts — identifies issues and stops
+- Does not assign to the coding agent — that is a human action
 - Does not run the coding agent
-- Does not approve the PR -- that is a human review action
-- Does not override a BLOCK outcome -- all hard blocks must pass
-
+- Does not approve the PR
+- Does not override a BLOCK — all hard blocks must pass

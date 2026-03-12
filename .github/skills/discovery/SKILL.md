@@ -1,11 +1,12 @@
 ---
 name: discovery
 description: >
-  Structures a raw idea, problem statement, or opportunity into a formal discovery artefact.
-  Use when someone says "I have an idea", "we should build", "there's a problem with",
-  "can we explore", or pastes a rough Jira description or brief. 
-  Produces a discovery artefact that, once approved, unlocks the benefit-metric skill.
+  Structures a raw idea, problem statement, or opportunity into a formal discovery
+  artefact. Use when someone says "I have an idea", "we should build",
+  "there's a problem with", "can we explore", or pastes a rough Jira description.
+  Produces a discovery artefact that, once approved, unlocks /benefit-metric.
   Does not produce metrics, stories, or technical design — those are downstream skills.
+  Asks clarifying questions one at a time — never presents a form to fill in.
 triggers:
   - "I have an idea"
   - "we should build"
@@ -18,92 +19,124 @@ triggers:
 
 # Discovery Skill
 
-## Entry condition check
+## Entry condition
 
-**This skill has no prerequisites** — it is the first step in the pipeline.
+No prerequisites. First step in the pipeline.
 
-However, before proceeding, confirm:
-- You have some form of raw input (idea, problem statement, Jira ticket, conversation notes)
-- If no input is provided, ask: "What's the problem or opportunity you want to explore? 
-  A sentence or two is enough to start."
+If no input has been provided, ask this first:
+
+> **What's the problem or opportunity you want to explore?**
+> A sentence or two is enough to start.
+>
+> Reply: describe it
 
 ---
 
 ## Purpose
 
-Transform a rough idea into a structured artefact that answers: 
+Transform a rough idea into a structured artefact that answers:
 *What problem are we solving, for whom, why now, and what does success look like at the edges?*
 
-This is a scoping and clarity exercise, not a solution definition exercise. 
+This is a scoping and clarity exercise — not a solution definition.
 The discovery artefact does not specify how to build anything.
 
 ---
 
-## Process
+## Conversational process
 
-Work through these sections in conversation. Ask clarifying questions one at a time — 
-do not present the entire structure as a form to fill in. When you have enough to write 
-a section confidently, write it and move on.
+Work through sections one at a time. Ask one question, wait for the answer, write
+the section, then move to the next. Never present the full structure as a form.
 
-### 1. Problem statement
+When you have enough to write a section confidently, write it and confirm:
+> "I've written the [section] section as: [summary]. Does that capture it?
+> Reply: yes — or correct me"
 
-What is the actual problem? Not the solution. Ask "what's happening now that shouldn't be, 
-or what isn't happening that should be?" Probe for specifics — who experiences this, 
-when, how often, what is the cost of the problem going unresolved.
+### Section 1 — Problem statement
 
-### 2. Who it affects
+Ask:
+> **What's actually happening now that shouldn't be — or not happening that should?**
+> (Not the solution — the problem. Who experiences it, when, how often, what does
+> it cost them when it's unresolved?)
+>
+> Reply: describe the problem
 
-Named personas, not generic "users". What do these people care about? 
-What are they trying to accomplish when they hit this problem?
+### Section 2 — Who it affects
 
-### 3. Why now
+Ask:
+> **Who specifically experiences this problem?**
+> I need named personas, not generic "users". What are they trying to accomplish
+> when they hit this?
+>
+> Reply: describe the people
 
-What has changed that makes this worth addressing now? 
-(Regulatory change, volume threshold, competitive pressure, team capability, 
-strategic initiative, accumulated pain reaching a tipping point.)
+### Section 3 — Why now
 
-### 4. MVP scope
+Ask:
+> **What's changed that makes this worth addressing now?**
+> (Regulatory change, volume threshold, competitive pressure, strategic initiative,
+> accumulated pain reaching a tipping point, something else?)
+>
+> Reply: describe the trigger
 
-The smallest thing that could validate the hypothesis. 
-What must be true for this to be useful to the first person who uses it?
-Be specific and bounded.
+### Section 4 — MVP scope
 
-### 5. Out of scope (MANDATORY)
+Ask:
+> **What's the smallest thing that could validate this is worth building?**
+> What must be true for the first person who uses it to find it useful?
+>
+> Reply: describe the MVP
 
-What adjacent problems or features are explicitly NOT part of this initiative?
-Minimum 2 items. This prevents scope creep downstream and gives /review 
-something concrete to validate stories against.
+### Section 5 — Out of scope (mandatory)
 
-If the human says "everything is in scope", push back:
-> "Explicitly naming what's out of scope is as important as defining what's in.
-> What's something that might seem related but you want to defer?"
+Ask:
+> **What's explicitly NOT part of this initiative?**
+> Minimum 2 items — naming what's out of scope is as important as what's in.
+> It's what /review will validate stories against.
+>
+> Reply: list at least 2 items
 
-### 6. Assumptions and risks
+If the answer is vague or "nothing is out of scope":
+> What's something related that might seem obvious to include, but you want to defer?
+> Even one example helps — it signals where the boundary is.
+>
+> Reply: give an example
 
-What are we assuming is true that we haven't validated? 
-What could make this not worth building?
+### Section 6 — Assumptions and risks
 
-### 7. Success indicators (directional)
+Ask:
+> **What are we assuming is true that we haven't validated yet?**
+> And what could make this not worth building?
+>
+> Reply: list assumptions and risks
 
-Not full metrics — those come in the benefit-metric skill. 
-But what would you see / hear / measure that would tell you this worked?
-These become the starting point for benefit-metric.
+### Section 7 — Directional success indicators
 
-### 8. Constraints
+Ask:
+> **What would you see, hear, or measure that would tell you this worked?**
+> These don't need to be precise metrics yet — that's /benefit-metric's job.
+> Directional signals are fine here.
+>
+> Reply: describe what success looks like
 
-Time, budget, regulatory, technical, team capability, dependencies on other initiatives.
+### Section 8 — Constraints
+
+Ask:
+> **Any constraints I should know about?**
+> (Time, budget, regulatory, technical dependencies, team capability)
+>
+> Reply: list constraints — or type "none identified"
 
 ---
 
-## Output format
+## Output artefact
 
-Produce a markdown artefact saved to `.github/artefacts/[feature-slug]/discovery.md`.
+Save to `.github/artefacts/[feature-slug]/discovery.md`:
 
 ```markdown
 # Discovery: [Feature Name]
 
-**Status:** Draft — awaiting approval  
-**Created:** [date]  
+**Status:** Draft — awaiting approval
+**Created:** [date]
 **Author:** [session participant]
 
 ## Problem Statement
@@ -121,31 +154,36 @@ Produce a markdown artefact saved to `.github/artefacts/[feature-slug]/discovery
 ## Out of Scope
 - [Item 1 — and why excluded]
 - [Item 2 — and why excluded]
-[minimum 2, no maximum]
 
 ## Assumptions and Risks
 [What we're assuming, what could invalidate this]
 
 ## Directional Success Indicators
-[Early signals that will feed into benefit-metric]
+[Early signals — will feed into /benefit-metric]
 
 ## Constraints
 [Time, regulatory, technical, team, dependencies]
 
 ---
-**Next step:** Human review and approval → then /benefit-metric
+Next step: human review and approval → /benefit-metric
 ```
 
 ---
 
 ## Approval gate
 
-After producing the artefact, explicitly state:
+After producing the artefact:
 
-> "This is a draft discovery artefact. Before moving to /benefit-metric, 
-> a human should review and approve it — particularly the MVP scope and out-of-scope sections.
-> When approved, update the status field to 'Approved' and note who approved it and when.
-> The /benefit-metric skill will check for this approval before proceeding."
+> **Discovery draft complete ✅**
+>
+> Before moving to /benefit-metric, a human should review and approve this —
+> particularly the MVP scope and out-of-scope sections.
+>
+> When approved: update the Status field to "Approved" and note who approved
+> it and when. The /benefit-metric skill checks for this before proceeding.
+>
+> Ready to review it now, or come back to it?
+> Reply: review now — or done for this session
 
 ---
 
@@ -153,14 +191,16 @@ After producing the artefact, explicitly state:
 
 - Problem statement describes a problem, not a solution
 - MVP scope is bounded — not "everything" or "phase 1 of a platform"
-- Out of scope has at least 2 explicit items, each with a reason
+- Out of scope has at least 2 explicit items with reasons
 - Success indicators are observable, not "users like it"
-- Assumptions are genuine uncertainties, not facts dressed as assumptions
-- No implementation detail has crept in — this is not a spec
+- Assumptions are genuine uncertainties — not facts dressed as assumptions
+- No implementation detail has crept in
+
+---
 
 ## What this skill does NOT do
 
 - Does not define metrics — that is /benefit-metric
-- Does not write stories or acceptance criteria — that is /definition
-- Does not make build/buy/defer decisions — those are human decisions informed by discovery
-- Does not update Jira tickets — it produces a local artefact for human to sync if needed
+- Does not write stories or ACs — that is /definition
+- Does not make build/buy/defer decisions
+- Does not update Jira tickets

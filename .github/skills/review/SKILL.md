@@ -1,12 +1,12 @@
 ---
 name: review
 description: >
-  Reviews story artefacts for quality, completeness, traceability, and scope discipline.
-  Produces a structured finding report with HIGH/MEDIUM/LOW severity ratings.
-  On re-runs, produces a diff against the previous report showing what changed.
-  HIGH findings block progression to /test-plan. Use when stories exist and someone
-  says "review the stories", "check the definition", "quality check", "re-review", 
-  or moves past definition. Run per story or per epic batch.
+  Reviews story artefacts for quality, completeness, traceability, and scope
+  discipline. Produces structured findings with HIGH/MEDIUM/LOW severity.
+  On re-runs, produces a diff showing exactly what changed. HIGH findings block
+  progression to /test-plan. Use when stories exist and someone says "review the
+  stories", "check the definition", "quality check", "re-review", or moves past
+  definition. Run per story or per epic batch.
 triggers:
   - "review the stories"
   - "check the definition"
@@ -21,66 +21,61 @@ triggers:
 
 ## Entry condition check
 
-**Before proceeding**, verify:
+Before asking anything, verify:
 
 1. At least one story artefact exists in `.github/artefacts/[feature]/stories/`
 2. Parent epic artefact exists
 3. Benefit-metric artefact exists (for metric linkage validation)
 4. Discovery artefact exists (for scope validation)
 
-If any condition is not met, output:
+If not met:
 
 > ❌ **Entry condition not met**
 > [Specific issue]
-> Run `/workflow` to see the current pipeline state.
+>
+> Run /workflow to see the current pipeline state.
 
 ---
 
-## Re-run detection
+## Step 1 — Confirm scope and re-run status
 
-**Before running**, check whether a previous review report exists for this story 
-at `.github/artefacts/[feature]/review/[story-slug]-review-[run-n].md`.
+State what was found first:
 
-If a previous report exists:
-- Note the run number — this is run N+1
-- Load the previous findings
-- After completing the full review, produce a **diff output** in addition to 
-  the full report (see Diff Output Format below)
-- Save as `[story-slug]-review-[run-n+1].md`
-
-If no previous report exists:
-- This is run 1
-- Produce the standard full report
-- Save as `[story-slug]-review-1.md`
+> **Stories found for review:**
+> - [story title] — [previous review: Run N, PASS/FAIL / no previous review]
+> - [story title] — [previous review: Run N, PASS/FAIL / no previous review]
+>
+> [If any have previous reviews:]
+> This is a re-run for [n] stories. I'll produce a diff against the previous
+> report showing what changed.
+>
+> Review all stories, or a specific one?
+> Reply: all — or name the story
 
 ---
 
-## Review categories
+## Step 2 — Confirm review categories
 
-Confirm which categories apply before running. Default: all four.
-For short-track stories, C and D may be sufficient.
-
-**A — Traceability:** Can every story be traced back through epic → benefit-metric → discovery?
-**B — Scope discipline:** Do stories stay within declared MVP and epic out-of-scope?
-**C — AC quality:** Are ACs testable, specific, in Given/When/Then format?
-**D — Completeness:** Are all required template fields populated with real content?
-
-Ask:
-> "I'll run all four review categories by default. Confirm, or specify which to include."
-
----
-
-## Severity model
-
-**HIGH** — Blocks progression to /test-plan. Must be resolved.
-**MEDIUM** — Should be resolved. Can proceed if risk explicitly acknowledged in /decisions.
-**LOW** — Improvement opportunity. Proceed, note for retrospective.
+> **Which review categories should I run?**
+>
+> A — Traceability: can every story be traced back to a metric and discovery?
+> B — Scope discipline: do stories stay within declared MVP and out-of-scope?
+> C — AC quality: are ACs testable, specific, Given/When/Then?
+> D — Completeness: are all template fields populated with real content?
+>
+> 1. All four (default — recommended)
+> 2. C and D only (short-track stories)
+> 3. Custom — I'll specify
+>
+> Reply: 1, 2, or 3
 
 ---
 
-## Category A: Traceability
+## Step 3 — Run the review
 
-For each story, check:
+### Category A: Traceability
+
+For each story:
 - Story references parent epic ✓/✗
 - Story references discovery artefact ✓/✗
 - Story references benefit-metric artefact ✓/✗
@@ -92,25 +87,21 @@ HIGH: any broken reference or missing metric linkage
 MEDIUM: benefit linkage vague but metric referenced
 LOW: coverage matrix not yet updated
 
----
+### Category B: Scope discipline
 
-## Category B: Scope discipline
-
-For each story, check:
+For each story:
 - Story doesn't implement anything in epic out-of-scope ✓/✗
 - Story doesn't implement anything in discovery out-of-scope ✓/✗
 - Story's own out-of-scope section names at least one excluded behaviour ✓/✗
-- Scope additions have a scope note ✓/✗
+- Scope additions have an approved scope note ✓/✗
 
 HIGH: story implements something explicitly out of scope
 MEDIUM: out-of-scope section is "N/A" or missing
 LOW: scope note present but not linked back to discovery
 
----
+### Category C: AC quality
 
-## Category C: AC quality
-
-For each AC in each story, check:
+For each AC:
 - Given/When/Then format ✓/✗
 - Describes observable behaviour, not implementation ✓/✗
 - Independently testable ✓/✗
@@ -119,19 +110,17 @@ For each AC in each story, check:
 - Minimum 3 ACs per story ✓/✗
 
 HIGH: fewer than 3 ACs, or not in Given/When/Then
-MEDIUM: ACs use "should" or describe implementation approach
+MEDIUM: ACs use "should" or describe implementation
 LOW: edge cases in sub-bullets
 
----
+### Category D: Completeness
 
-## Category D: Completeness
-
-Check every field against `.github/templates/story.md`:
+For each field against `.github/templates/story.md`:
 - User story in As/Want/So format ✓/✗
-- Named persona (not "a user") ✓/✗
+- Named persona — not "a user" ✓/✗
 - Benefit linkage populated ✓/✗
-- Out of scope populated (not blank, not "N/A") ✓/✗
-- NFRs populated or explicitly "None — confirmed" ✓/✗
+- Out of scope populated — not blank, not "N/A" ✓/✗
+- NFRs populated or "None — confirmed" ✓/✗
 - Complexity rated ✓/✗
 - Scope stability declared ✓/✗
 
@@ -146,49 +135,48 @@ LOW: complexity or scope stability not rated
 ```markdown
 ## Review Report: [Story title] — Run [N]
 **Date:** [date]
-**Categories run:** A / B / C / D
+**Categories:** [A / B / C / D as run]
 **Outcome:** PASS / FAIL
 
-### HIGH findings (must resolve before /test-plan)
-- [Finding ID: H1] [Category] — [Story title] — [Description]
-  Suggested fix: [Specific action]
+### HIGH findings — must resolve before /test-plan
+- [ID: N-H1] [Category] — [Story] — [Description]
+  Fix: [specific action]
 
-### MEDIUM findings (resolve or acknowledge in /decisions)
-- [Finding ID: M1] [Category] — [Story title] — [Description]
-  Risk if proceeding: [What could go wrong]
+### MEDIUM findings — resolve or acknowledge in /decisions
+- [ID: N-M1] [Category] — [Story] — [Description]
+  Risk if proceeding: [what could go wrong]
   To acknowledge: run /decisions, category RISK-ACCEPT
 
-### LOW findings (note for retrospective)
-- [Finding ID: L1] [Category] — [Story title] — [Description]
+### LOW findings — note for retrospective
+- [ID: N-L1] [Category] — [Story] — [Description]
 
 ### Summary
 [n] HIGH, [n] MEDIUM, [n] LOW across [n] stories.
-[PASS: Ready for /test-plan] or [FAIL: Resolve HIGH findings and re-run /review]
 ```
 
 Save to `.github/artefacts/[feature]/review/[story-slug]-review-[N].md`
 
+Finding IDs: `[Run]-[Severity]-[Sequence]` e.g. `1-H1`, `1-M1`, `2-L1`
+
+When a finding is resolved, reference it by its original run ID in the diff.
+This creates a searchable history: "finding 1-H1 was opened in run 1, resolved in run 2."
+
 ---
 
-## Diff output format (re-runs only)
+## Diff output (re-runs only)
 
-When this is run N > 1, prepend the diff block before the full report:
+Prepend before the full report when this is run N > 1:
 
 ```markdown
 ## Review Diff: [Story title] — Run [N] vs Run [N-1]
-**Date:** [date]
 
 ### Resolved since last run
-<!-- Findings that existed in run N-1 and do not appear in run N -->
 ✅ [Finding ID from previous run] — [Original description] — RESOLVED
-✅ [Finding ID] — [Original description] — RESOLVED
 
 ### New findings this run
-<!-- Findings in run N that were not in run N-1 -->
 🆕 [Finding ID] — [Category] — [Description]
 
 ### Carried forward unchanged
-<!-- Findings present in both runs, not resolved -->
 ⏳ [Finding ID] — [Category] — [Description] — [how many runs open]
 
 ### Progress summary
@@ -199,33 +187,29 @@ Change:    HIGH [+n/-n], MEDIUM [+n/-n], LOW [+n/-n]
 [IMPROVED / SAME / REGRESSED]
 ```
 
-### Finding IDs
-
-Assign each finding a stable ID: `[Run]-[Severity]-[Sequence]`
-Examples: `1-H1`, `1-M1`, `2-L1`
-
-When a finding is resolved, reference it by its original run ID in the diff.
-This creates a searchable history: "finding 1-H1 was opened in run 1, 
-resolved in run 2."
-
 ---
 
-## After review
+## Completion output
 
-**If PASS (run 1):**
-> "Review passed. Next step: run `/test-plan` for each story."
+**If PASS:**
 
-**If PASS (re-run):**
-> "Review passed on run [N]. All HIGH findings resolved.
-> [If MEDIUM findings remain:] [N] MEDIUM findings carried forward — 
-> acknowledge in /decisions before /definition-of-ready.
-> Next step: run `/test-plan`."
+> **Review PASSED ✅ — Run [N]**
+>
+> [n] HIGH: none | [n] MEDIUM: [n] (acknowledge in /decisions if proceeding)
+>
+> Ready to run /test-plan for [story title]?
+> Reply: yes — or review another story first
 
 **If FAIL:**
-> "Review failed — [N] HIGH findings remain.
-> Diff shows [N] resolved, [N] new, [N] carried forward since run [N-1].
-> Return to the story artefacts, address each HIGH finding, 
-> then re-run `/review`. Do not proceed to /test-plan."
+
+> **Review FAILED ❌ — Run [N]**
+>
+> [n] HIGH finding(s) must be resolved before /test-plan.
+>
+> Oldest open finding: [ID] — [description]
+>
+> Want me to walk through each HIGH finding with specific fix guidance?
+> Reply: yes — or I'll fix them and re-run /review
 
 ---
 
