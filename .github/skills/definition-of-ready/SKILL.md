@@ -64,6 +64,7 @@ All must pass. No exceptions. Run each check and record PASS or FAIL.
 | H6 | Complexity is rated | Story |
 | H7 | No unresolved HIGH findings from the review report | Review |
 | H8 | Test plan has no uncovered ACs (or gaps explicitly acknowledged) | Test plan |
+| H9 | Architecture Constraints field populated; no Category E HIGH findings | Story + Architecture guardrails |
 
 **If any hard block fails — stop immediately:**
 
@@ -145,6 +146,10 @@ structure beyond what the tests and ACs specify.
 Constraints:
 - [Language, framework, and conventions from copilot-instructions.md]
 - [Files, layers, or components explicitly out of scope for this story]
+- Architecture standards: read `.github/architecture-guardrails.md` before
+  implementing. Do not introduce patterns listed as anti-patterns or violate
+  named mandatory constraints or Active ADRs. If the file does not exist,
+  note this in a PR comment.
 - Open a draft PR when tests pass — do not mark ready for review
 - If you encounter an ambiguity not covered by the ACs or tests:
   add a PR comment describing the ambiguity and do not mark ready for review

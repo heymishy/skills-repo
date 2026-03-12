@@ -104,6 +104,21 @@ but not mitigated.
 List any spikes with no outcome artefact — these represent known unknowns
 still unresolved.
 
+**Architecture compliance check:**
+If `.github/architecture-guardrails.md` exists:
+- Each story's Architecture Constraints field references applicable ADRs or
+  states "None identified — checked"? ✓/✗
+- No DoD artefact records a scope deviation that crosses a named guardrail
+  or mandatory constraint? ✓/✗
+- All repo-level ADRs referenced in story Architecture Constraints fields are
+  still listed as Active (not Superseded or Deprecated)? ✓/✗
+
+Flag any violation as a finding. Superseded ADR references should trigger a
+story update before the next story in the same feature proceeds.
+
+If `.github/architecture-guardrails.md` does not exist:
+> ⚠️ No `architecture-guardrails.md` found — architecture compliance check skipped.
+
 ---
 
 ## Output format

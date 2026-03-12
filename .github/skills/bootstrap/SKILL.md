@@ -38,9 +38,7 @@ Check whether `.github/skills/` already exists:
 .github/
   copilot-instructions.md         ← pipeline orchestration + session conventions
   pull_request_template.md        ← PR review checklist with AC and chain fields
-  
-  skills/
-    workflow/SKILL.md             ← pipeline navigator + short-track routing
+  architecture-guardrails.md      ← pattern library, style guide, guardrails, repo-level ADRs
     discovery/SKILL.md            ← raw idea → structured artefact
     benefit-metric/SKILL.md       ← metrics definition + meta-benefit detection
     definition/SKILL.md           ← epics + stories with slicing strategy
@@ -71,12 +69,13 @@ Check whether `.github/skills/` already exists:
     release-notes-plain.md        ← plain language release notes format
     change-request.md             ← change request body format
     deployment-checklist.md       ← deployment steps and verification checklist
+    architecture-guardrails.md    ← architecture guardrails, pattern library, ADR register template
 
   artefacts/
     .gitkeep                      ← placeholder so directory is committed
 ```
 
-**Total: 12 skill files + 17 templates + 2 root files + artefacts directory**
+**Total: 12 skill files + 18 templates + 3 root files + artefacts directory**
 
 ---
 
@@ -155,6 +154,23 @@ After receiving the response, insert it into `copilot-instructions.md` at the
 After receiving the response, insert it into `copilot-instructions.md` at the 
 `[FILL IN BEFORE COMMITTING]` placeholder in the coding standards section.
 
+**Placeholder 3 — Architecture guardrails:**
+
+After filling coding standards, prompt:
+
+> "One more optional step: fill in the architecture guardrails.
+>
+> The file was created at `.github/architecture-guardrails.md`.
+> At minimum, fill in the Pattern Library URL, Style Guide URL, and Reference
+> Implementation path so that /review Category E and /definition Step 1.5
+> can reference them.
+>
+> You can fill this in now or later — it won't block /discovery or /definition,
+> but /review Category E will skip without it.
+>
+> Want to fill it in now?
+> Reply: yes — or skip for now"
+
 ### Step 4: Completion summary
 
 Output:
@@ -178,6 +194,8 @@ Start your first feature:
 Immediate (before first /discovery run):
   ✅ copilot-instructions.md — product context filled in
   ✅ copilot-instructions.md — coding standards filled in
+  [ ] .github/architecture-guardrails.md — fill in pattern library URL,
+      style guide URL, and reference implementation path
   [ ] Review templates/ — annotated comments explain each field;
       customise for your team's conventions before first use
   [ ] Commit .github/ to your repo

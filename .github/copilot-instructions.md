@@ -75,6 +75,7 @@ Skills reference these templates — do not embed format definitions in skill fi
 | Release notes (plain language) | `.github/templates/release-notes-plain.md` |
 | Change request | `.github/templates/change-request.md` |
 | Deployment checklist | `.github/templates/deployment-checklist.md` |
+| Architecture guardrails | `.github/templates/architecture-guardrails.md` |
 
 When a skill produces a structured artefact, it uses the relevant template.
 When reviewing artefacts, check them against the template — missing fields are findings.
@@ -155,6 +156,34 @@ Before closing a session:
 -->
 
 [FILL IN BEFORE COMMITTING]
+
+---
+
+## Architecture standards
+
+<!--
+  Architecture governance for this repository.
+  The /definition skill (Step 1.5), /review skill (Category E),
+  /definition-of-ready skill (H9), and /trace skill read this section.
+  The coding agent reads it via the DoR instructions block.
+
+  Live file: .github/architecture-guardrails.md
+  Template:  .github/templates/architecture-guardrails.md
+
+  Run bootstrap to create the live file from the template.
+  Keep it updated — it is the source of truth for all guardrail checks.
+-->
+
+**Architecture guardrails:** `.github/architecture-guardrails.md`
+**Pattern library:** [FILL IN — URL or path to your pattern / component library]
+**Style guide:** [FILL IN — URL or path to your style guide]
+**Reference implementation:** [FILL IN — path in repo, e.g. `src/reference/`]
+**Repo-level ADR register:** `.github/architecture-guardrails.md` (Active ADRs section)
+
+> Per-feature decisions are recorded by /decisions and live in
+> `.github/artefacts/[feature]/decisions.md`.
+> Structural decisions that constrain future features should also be added to
+> `.github/architecture-guardrails.md` as a repo-level ADR.
 
 ---
 

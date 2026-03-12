@@ -49,6 +49,38 @@ State what was found first:
 
 ---
 
+## Step 1.5 — Architecture constraints scan
+
+Before choosing a slicing strategy, check for constraints that should shape
+how stories are written.
+
+Read `.github/architecture-guardrails.md` if it exists.
+
+If found, surface relevant constraints before decomposing:
+
+> **Architecture constraints relevant to this feature:**
+> - [e.g. ADR-002: all data access must go via the API layer — no direct DB calls from UI]
+> - [e.g. Mandatory constraint: all user inputs must be validated server-side]
+> - [e.g. Pattern library: use `<DataTable>` component for all tabular data display]
+>
+> These constraints must appear in the Architecture Constraints field of any
+> story whose implementation path is affected. They will be checked by
+> /review Category E and /definition-of-ready H9.
+>
+> Any of these a blocker before decomposing?
+> Reply: no — proceed / yes — [describe the issue]
+
+If not found:
+
+> ⚠️ No `architecture-guardrails.md` found — proceeding without guardrail check.
+> Consider running `/bootstrap` or creating `.github/architecture-guardrails.md`
+> from the template at `.github/templates/architecture-guardrails.md` to enable
+> this check in future.
+
+Record whether guardrails were available or absent in the epic artefact.
+
+---
+
 ## Step 2 — Choose a slicing strategy
 
 Ask this before any decomposition. Do not default.

@@ -25,6 +25,15 @@ triggers:
 None. Runs at any pipeline stage. If `decisions.md` does not exist for this feature,
 create it from `.github/templates/decision-log.md` before appending.
 
+**Two ADR scopes — understand which applies:**
+- **Feature-level decisions** (most common): made during this feature's pipeline.
+  Live in `.github/artefacts/[feature]/decisions.md`. Managed by this skill.
+- **Repo-level ADRs** (structural, cross-feature): architectural decisions that
+  apply to all features. Live in `.github/architecture-guardrails.md` under the
+  Active ADRs section. When a decision is significant enough to constrain future
+  features — a framework choice, a security pattern, a data handling rule — also
+  add it to `.github/architecture-guardrails.md` as a repo-level ADR.
+
 ---
 
 ## Two tracks — ask first, always

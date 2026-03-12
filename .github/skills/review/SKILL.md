@@ -62,8 +62,9 @@ State what was found first:
 > B — Scope discipline: do stories stay within declared MVP and out-of-scope?
 > C — AC quality: are ACs testable, specific, Given/When/Then?
 > D — Completeness: are all template fields populated with real content?
+> E — Architecture compliance: do stories comply with guardrails, ADRs, and the pattern library?
 >
-> 1. All four (default — recommended)
+> 1. All five (default — recommended)
 > 2. C and D only (short-track stories)
 > 3. Custom — I'll specify
 >
@@ -127,6 +128,25 @@ For each field against `.github/templates/story.md`:
 HIGH: user story missing or persona is generic
 MEDIUM: NFRs blank or benefit linkage missing
 LOW: complexity or scope stability not rated
+
+### Category E: Architecture compliance
+
+Requires `.github/architecture-guardrails.md`. If the file is not found:
+
+> ⚠️ No `architecture-guardrails.md` found — Category E skipped.
+> Create `.github/architecture-guardrails.md` to enable this check.
+> Run `/bootstrap` or copy from `.github/templates/architecture-guardrails.md`.
+
+For each story:
+- Architecture Constraints field is populated (not blank) ✓/✗
+- Story's implementation path doesn't violate a named approved pattern ✓/✗
+- Story's implementation path doesn't use a listed anti-pattern ✓/✗
+- All applicable repo-level ADRs in the Active ADRs section are referenced or respected ✓/✗
+- Story NFRs align with mandatory constraints in guardrails ✓/✗
+
+HIGH: story ACs require implementation that explicitly violates a named guardrail, mandatory constraint, or Active ADR
+MEDIUM: an applicable ADR exists but isn't referenced in Architecture Constraints field; or the field is blank
+LOW: pattern library or style guide component preferred but not specified in Architecture Constraints
 
 ---
 

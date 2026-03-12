@@ -51,6 +51,25 @@ So that **[observable outcome]**.
   If a story is a pure technical dependency, label it as a task and note which story it unblocks.
 -->
 
+## Architecture Constraints
+
+<!--
+  List any architecture guardrails, ADRs, pattern library references, or style guide
+  constraints that apply to this story's implementation.
+  Check .github/architecture-guardrails.md before writing stories.
+  
+  Write "None identified — checked against .github/architecture-guardrails.md" if
+  genuinely none apply. Do not leave blank.
+  
+  Examples:
+  - "ADR-003: must use shared auth service — no local session handling"
+  - "Pattern library: use <DataTable> component, not a custom table"
+  - "Guardrail: no direct DB access from UI layer — all data via API"
+  - "Mandatory constraint: all user inputs validated server-side"
+-->
+
+[ADR / guardrail / pattern references — or "None identified — checked"]
+
 ## Acceptance Criteria
 
 <!--
