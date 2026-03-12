@@ -130,43 +130,8 @@ Ask:
 
 ## Output artefact
 
-Save to `.github/artefacts/[feature-slug]/discovery.md`:
-
-```markdown
-# Discovery: [Feature Name]
-
-**Status:** Draft — awaiting approval
-**Created:** [date]
-**Author:** [session participant]
-
-## Problem Statement
-[Structured problem, not solution]
-
-## Who It Affects
-[Named personas with context]
-
-## Why Now
-[Specific trigger or rationale]
-
-## MVP Scope
-[Bounded, specific list]
-
-## Out of Scope
-- [Item 1 — and why excluded]
-- [Item 2 — and why excluded]
-
-## Assumptions and Risks
-[What we're assuming, what could invalidate this]
-
-## Directional Success Indicators
-[Early signals — will feed into /benefit-metric]
-
-## Constraints
-[Time, regulatory, technical, team, dependencies]
-
----
-Next step: human review and approval → /benefit-metric
-```
+Conforms to `.github/templates/discovery.md`.
+Save to `.github/artefacts/[feature-slug]/discovery.md`.
 
 ---
 

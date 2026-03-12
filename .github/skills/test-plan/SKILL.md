@@ -167,27 +167,8 @@ note it explicitly if found.
 
 ### Test data section (include in every plan)
 
-```markdown
-## Test Data Strategy
-
-Source: [Synthetic / Fixtures / De-identified / Seeded DB / Mocked / Mixed]
-PCI/sensitivity in scope: [Yes — constraints below / No]
-Availability: [Available now / Dependency — see gap note]
-Owner: [Self-contained / Platform team / TBD]
-
-### Data requirements per AC
-
-| AC | Data needed | Source | Sensitive fields | Notes |
-|----|-------------|--------|-----------------|-------|
-| AC1 | [description] | [source] | [None / PAN / etc.] | |
-| AC2 | [description] | [source] | [None / PAN / etc.] | |
-
-### PCI / sensitivity constraints
-[None — or list specific handling requirements]
-
-### Gaps
-[None — or list data that is not yet available with owner and resolution action]
-```
+The Test Data Strategy section is defined in `.github/templates/test-plan.md`.
+Populate it with the answers from Step 3 before writing the individual test entries.
 
 ### AC coverage table
 

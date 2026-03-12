@@ -33,6 +33,37 @@
 
 ---
 
+## Test Data Strategy
+
+<!--
+  Record the test data approach decided during /test-plan.
+  Complete before writing individual test entries.
+  Incomplete test data = incomplete test plan.
+  If PCI or sensitive fields are involved, list constraints explicitly.
+-->
+
+**Source:** [Synthetic / Fixtures / De-identified / Seeded DB / Mocked / Mixed]
+**PCI/sensitivity in scope:** [Yes — constraints below / No]
+**Availability:** [Available now / Dependency — see gap note below]
+**Owner:** [Self-contained / Platform team / TBD]
+
+### Data requirements per AC
+
+| AC | Data needed | Source | Sensitive fields | Notes |
+|----|-------------|--------|-----------------|-------|
+| AC1 | [description] | [source] | [None / PAN / etc.] | |
+| AC2 | [description] | [source] | [None / PAN / etc.] | |
+
+### PCI / sensitivity constraints
+
+[None — or list specific handling requirements]
+
+### Gaps
+
+[None — or list data not yet available with owner and resolution action]
+
+---
+
 ## Unit Tests
 
 <!--

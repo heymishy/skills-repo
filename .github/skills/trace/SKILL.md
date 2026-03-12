@@ -108,39 +108,8 @@ still unresolved.
 
 ## Output format
 
-```markdown
-# Trace Report: [Feature Name]
-**Date:** [date] | **Stage:** [current stage]
-**Overall:** ✅ HEALTHY / ⚠️ WARNINGS / ❌ BROKEN LINKS
-
-## Chain by Story
-
-| Story | Upstream | Downstream | Issues |
-|-------|----------|------------|--------|
-| [title] | ✅ | ✅ | None |
-| [title] | ✅ | ⚠️ DoD missing | DoD not yet run |
-| [title] | ❌ Metric ref broken | — | Metric "X" not in benefit-metric |
-
-## Metric Coverage
-
-| Metric | Stories covering it | DoD signal recorded |
-|--------|--------------------|---------------------|
-| [name] | [n] | ✅ / ⚠️ Not yet |
-
-## Scope Deviations
-[None / table: story, PR, deviation description]
-
-## AC Coverage Gaps
-[None / list]
-
-## Open Spikes
-[None / spike title + days open]
-
-## Findings requiring action
-[None / list with severity]
-```
-
-Save to `.github/artefacts/[feature]/trace/[date]-trace.md`
+Conforms to `.github/templates/trace-report.md`.
+Save to `.github/artefacts/[feature]/trace/[date]-trace.md`.
 
 ---
 

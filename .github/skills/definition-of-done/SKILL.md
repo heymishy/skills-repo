@@ -135,34 +135,8 @@ This section does not claim success — it records what measurement is now possi
 
 ## Output
 
-Save to `.github/artefacts/[feature]/dod/[story-slug]-dod.md`:
-
-```markdown
-# Definition of Done: [Story Title]
-
-**PR:** [link] | **Merged:** [date]
-**Story:** [link] | **Test plan:** [link]
-
-## AC Coverage
-[Table from step 2]
-
-## Scope Deviations
-[None / list of deviations]
-
-## Test Plan Coverage
-Tests implemented: [n/n] | Not implemented: [list]
-
-## NFR Status
-[Per NFR: addressed + evidence / not addressed]
-
-## Metric Signal
-[Per metric: baseline available / measurement timeline]
-
-## Outcome
-[COMPLETE — all ACs satisfied, no scope deviations]
-[COMPLETE WITH DEVIATIONS — ACs satisfied, deviations recorded for /trace]
-[INCOMPLETE — [n] ACs not satisfied — follow-up required]
-```
+Conforms to `.github/templates/definition-of-done.md`.
+Save to `.github/artefacts/[feature]/dod/[story-slug]-dod.md`.
 
 ---
 

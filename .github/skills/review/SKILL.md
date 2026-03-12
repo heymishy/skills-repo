@@ -132,29 +132,8 @@ LOW: complexity or scope stability not rated
 
 ## Full report output format
 
-```markdown
-## Review Report: [Story title] — Run [N]
-**Date:** [date]
-**Categories:** [A / B / C / D as run]
-**Outcome:** PASS / FAIL
-
-### HIGH findings — must resolve before /test-plan
-- [ID: N-H1] [Category] — [Story] — [Description]
-  Fix: [specific action]
-
-### MEDIUM findings — resolve or acknowledge in /decisions
-- [ID: N-M1] [Category] — [Story] — [Description]
-  Risk if proceeding: [what could go wrong]
-  To acknowledge: run /decisions, category RISK-ACCEPT
-
-### LOW findings — note for retrospective
-- [ID: N-L1] [Category] — [Story] — [Description]
-
-### Summary
-[n] HIGH, [n] MEDIUM, [n] LOW across [n] stories.
-```
-
-Save to `.github/artefacts/[feature]/review/[story-slug]-review-[N].md`
+Conforms to `.github/templates/review-report.md`.
+Save to `.github/artefacts/[feature]/review/[story-slug]-review-[N].md`.
 
 Finding IDs: `[Run]-[Severity]-[Sequence]` e.g. `1-H1`, `1-M1`, `2-L1`
 
@@ -165,27 +144,9 @@ This creates a searchable history: "finding 1-H1 was opened in run 1, resolved i
 
 ## Diff output (re-runs only)
 
-Prepend before the full report when this is run N > 1:
-
-```markdown
-## Review Diff: [Story title] — Run [N] vs Run [N-1]
-
-### Resolved since last run
-✅ [Finding ID from previous run] — [Original description] — RESOLVED
-
-### New findings this run
-🆕 [Finding ID] — [Category] — [Description]
-
-### Carried forward unchanged
-⏳ [Finding ID] — [Category] — [Description] — [how many runs open]
-
-### Progress summary
-Run [N-1]: [n] HIGH, [n] MEDIUM, [n] LOW
-Run [N]:   [n] HIGH, [n] MEDIUM, [n] LOW
-Change:    HIGH [+n/-n], MEDIUM [+n/-n], LOW [+n/-n]
-
-[IMPROVED / SAME / REGRESSED]
-```
+For re-runs (N > 1): prepend the Review Diff section defined in
+`.github/templates/review-report.md` before the finding sections,
+comparing this run's findings to the previous run.
 
 ---
 

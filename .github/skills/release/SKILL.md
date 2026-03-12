@@ -21,6 +21,40 @@ triggers:
 
 # Release Skill
 
+## Step 0 — Read tool integrations (optional)
+
+Before producing outputs, check `.github/copilot-instructions.md` for the
+**Tool integrations** section. If configured, release artefacts are extended
+with tool-specific references.
+
+| Tool | When configured, outputs will include... |
+|------|------------------------------------------|
+| ServiceNow | ServiceNow field names in the change request (CHG number, assignment group, change category), ITSM base URL |
+| Jenkins / CloudBees | Pipeline build links in the deployment checklist and test evidence section |
+| Dynatrace | Dashboard and synthetic monitor links in the deployment checklist; Dynatrace problem feed in rollback triggers |
+| Splunk | Saved search links for log scanning in the post-deployment verification steps |
+| PagerDuty | Service URL for on-call contact confirmation in the deployment checklist |
+| Jira | Story ticket links in release notes and the change request |
+| Nexus / Artifactory | Artefact version reference in the deployment checklist |
+
+State what was detected before proceeding:
+
+> **Tool integrations detected:**
+> - ServiceNow: [configured — base URL / not configured]
+> - CI/CD (Jenkins / CloudBees): [configured / not configured]
+> - Dynatrace: [configured / not configured]
+> - Splunk: [configured / not configured]
+> - PagerDuty: [configured / not configured]
+> - Jira: [configured / not configured]
+>
+> Are these correct, or should I use different tools for this release?
+> Reply: correct — or specify overrides
+
+If no tool config is present, use generic `[monitoring tool]`, `[log tool]`,
+and `[change management tool]` placeholders throughout.
+
+---
+
 ## Step 1 — Identify what is in scope for this release
 
 State what was found before asking:
@@ -104,44 +138,19 @@ If 3:
 
 ## Output 1: Release notes — technical
 
-Save to `.github/artefacts/[feature]/release/[version]-release-notes-technical.md`
+Conforms to `.github/templates/release-notes-technical.md`.
+Save to `.github/artefacts/[feature]/release/[version]-release-notes-technical.md`.
 
-```markdown
-# Release Notes — Technical: [version / release name]
-
-**Release date:** [date]
-**Release type:** [Standard / Emergency / Feature flag / Canary]
-**Stories included:** [n]
-
-## Changes
-
-### [Story title]
-- **PR:** [ref] | **Merged:** [date]
-- **What changed:** [technical description — component, behaviour, data]
-- **ACs delivered:** [n of n]
-- **Scope deviations:** [None / list with DoD reference]
-- **Test coverage:** [n unit, n integration, n NFR tests passing]
-
-[Repeat per story]
-
-## Dependencies and prerequisites
-[Infrastructure, config, feature flags, or migrations required before deployment]
-
-## Known issues / limitations
-[Anything from DoD artefacts flagged as incomplete or deferred]
-
-## Rollback
-**Procedure:** [steps]
-**Tested:** [Yes — [environment] on [date] / No — theoretical]
-**Complications:** [None / description]
-**Rollback trigger conditions:** [observable conditions — see deployment checklist]
-```
+If Dynatrace is configured: add a rollback trigger condition referencing the Dynatrace problem feed.
+If Jira is configured: link each story title to the Jira ticket.
+If Jenkins / CloudBees is configured: populate the pipeline build field in the header.
 
 ---
 
 ## Output 2: Release notes — plain language
 
-Save to `.github/artefacts/[feature]/release/[version]-release-notes-plain.md`
+Conforms to `.github/templates/release-notes-plain.md`.
+Save to `.github/artefacts/[feature]/release/[version]-release-notes-plain.md`.
 
 Plain language rules:
 - No technical terms without explanation
@@ -150,129 +159,33 @@ Plain language rules:
 - "You can now..." / "We fixed..." / "We improved..." framing
 - If a change is invisible to users, say so and explain why it matters
 
-```markdown
-# What's in this release — [version / release name]
-
-**Available from:** [date]
-
-## What's new
-[One paragraph per story as user-visible change]
-
-### [User-friendly title]
-[2–3 sentences: what users can now do, or what problem is fixed.
-Written as if explaining to a customer. No jargon.]
-
-## What we fixed
-[Bug fixes in plain language — what was broken, what's better now]
-
-## What's not in this release
-[Anything expected but deferred — set expectations clearly]
-```
-
 ---
 
 ## Output 3: Change request body
 
-Save to `.github/artefacts/[feature]/release/[version]-change-request.md`
+Conforms to `.github/templates/change-request.md`.
+Save to `.github/artefacts/[feature]/release/[version]-change-request.md`.
 
-Produce a complete change request body ready to paste into the change management
-tool. Do not leave fields blank — if information is missing, state what is needed
-and who must provide it.
+Produce a complete change request ready to paste into the change management tool.
+Do not leave fields blank — if information is missing, state what is needed and
+who must provide it.
 
-```markdown
-# Change Request: [version / release name]
-
-**Request date:** [date]
-**Requested by:** [name — prompt if not known]
-**Change type:** [Standard / Emergency / Pre-approved]
-**Release window:** [proposed date/time — prompt if not known]
-
-## Description of change
-[What is changing, plain language. 2–4 sentences.]
-
-## Business justification
-[Why this change — link to discovery/benefit-metric rationale]
-
-## Scope of impact
-**Systems affected:** [list]
-**User groups affected:** [list]
-**Estimated users impacted:** [number or "all users"]
-**Data changes:** [None / describe schema or data migrations]
-
-## Risk assessment
-**Risk level:** [Low / Medium / High]
-**Risk basis:** [What makes it this level — reference DoD scope deviations if any]
-**Mitigations:** [What reduces the risk]
-
-## Test evidence
-[Reference test plan artefact paths and CI results]
-**Test environments:** [list]
-**Performance tested:** [Yes / No]
-**Security reviewed:** [Yes / No — if applicable]
-
-## Deployment plan
-[Summary — full detail in deployment checklist]
-**Deployment duration (estimated):** [time]
-**Deployment window:** [date/time]
-**Approvals required:** [list roles]
-
-## Rollback plan
-**Procedure:** [summary]
-**Duration (estimated):** [time]
-**Trigger conditions:** [observable conditions that initiate rollback]
-**Complications:** [None / description — flag prominently if any]
-
-## Communications
-**Teams to notify pre-deployment:** [list]
-**Teams to notify post-deployment:** [list]
-**Customer communication required:** [Yes — owner: [name] / No]
-```
+If ServiceNow is configured: use ServiceNow field names, include the assignment group,
+change category, and base URL pattern for the CHG link.
+If Jenkins / CloudBees is configured: link the CI build URL in the test evidence section.
 
 ---
 
 ## Output 4: Deployment checklist
 
-Save to `.github/artefacts/[feature]/release/[version]-deployment-checklist.md`
+Conforms to `.github/templates/deployment-checklist.md`.
+Save to `.github/artefacts/[feature]/release/[version]-deployment-checklist.md`.
 
-```markdown
-# Deployment Checklist: [version / release name]
-
-**Release window:** [date/time]
-**Deployer:** [name — to be filled in at deployment time]
-
-## Pre-deployment
-- [ ] Change request approved by [role]
-- [ ] Release notes shared with [stakeholders]
-- [ ] Monitoring dashboards open: [list]
-- [ ] Rollback procedure confirmed and accessible
-- [ ] On-call contact confirmed: [name/channel]
-- [ ] [Feature flags to set — list with expected state]
-- [ ] [Database migrations to run — order-sensitive, list explicitly]
-- [ ] [Config changes required before code deployment]
-
-## Deployment
-- [ ] [Step 1]
-- [ ] [Step 2 — continue for all steps, automated or manual as specified]
-- [ ] Deployment complete — confirm in [monitoring tool / deployment log]
-
-## Post-deployment verification
-- [ ] [Smoke test 1 — drawn from verification scripts]
-- [ ] [Smoke test 2]
-- [ ] [Smoke test 3]
-- [ ] Error rate within baseline: [baseline reference]
-- [ ] Latency within baseline: [baseline reference]
-- [ ] [Feature flags to update post-deployment]
-
-## Rollback triggers
-Initiate rollback immediately if any of the following occur:
-- [ ] Error rate exceeds [threshold] for [duration]
-- [ ] [Specific transaction or flow] is failing
-- [ ] [Any condition from DoD or spike outcomes]
-
-## Sign-off
-Deployment verified by: _________________ [date/time]
-Stakeholders notified:  _________________ [date/time]
-```
+If Dynatrace is configured: add dashboard URL to monitoring dashboards, Dynatrace
+synthetic monitor to post-deployment verification, and problem feed to rollback triggers.
+If Splunk is configured: add saved search links for post-deployment log scanning.
+If PagerDuty is configured: add PagerDuty service URL to on-call confirmation step.
+If Jenkins / CloudBees is configured: add pipeline build URL to deployment steps.
 
 ---
 

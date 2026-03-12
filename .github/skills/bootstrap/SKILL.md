@@ -63,12 +63,20 @@ Check whether `.github/skills/` already exists:
     decision-log.md               ← decision log + ADR format
     reverse-engineering-report.md ← canonical reverse engineering report format
     vendor-qa-tracker.md          ← vendor capability Q&A tracker
+    discovery.md                  ← canonical discovery artefact format
+    review-report.md              ← review report + diff format
+    definition-of-done.md         ← post-merge AC coverage report format
+    trace-report.md               ← full chain traceability report format
+    release-notes-technical.md    ← technical release notes format
+    release-notes-plain.md        ← plain language release notes format
+    change-request.md             ← change request body format
+    deployment-checklist.md       ← deployment steps and verification checklist
 
   artefacts/
     .gitkeep                      ← placeholder so directory is committed
 ```
 
-**Total: 12 skill files + 9 templates + 2 root files + artefacts directory**
+**Total: 12 skill files + 17 templates + 2 root files + artefacts directory**
 
 ---
 

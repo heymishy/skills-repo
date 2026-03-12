@@ -67,6 +67,14 @@ Skills reference these templates — do not embed format definitions in skill fi
 | Decision log | `.github/templates/decision-log.md` |
 | Reverse engineering report | `.github/templates/reverse-engineering-report.md` |
 | Vendor Q&A tracker | `.github/templates/vendor-qa-tracker.md` |
+| Discovery | `.github/templates/discovery.md` |
+| Review report | `.github/templates/review-report.md` |
+| Definition of done | `.github/templates/definition-of-done.md` |
+| Trace report | `.github/templates/trace-report.md` |
+| Release notes (technical) | `.github/templates/release-notes-technical.md` |
+| Release notes (plain language) | `.github/templates/release-notes-plain.md` |
+| Change request | `.github/templates/change-request.md` |
+| Deployment checklist | `.github/templates/deployment-checklist.md` |
 
 When a skill produces a structured artefact, it uses the relevant template.
 When reviewing artefacts, check them against the template — missing fields are findings.
@@ -175,3 +183,22 @@ Do not introduce points or sizing unless explicitly asked.
 - Do not skip writing tests — implementation without failing tests is a pipeline violation
 - If you encounter ambiguity not covered by the ACs: add a PR comment describing it, 
   do not assume
+
+---
+
+## Tool integrations
+
+<!-- OPTIONAL: Fill in the tools your team uses.
+     The /release skill reads this section to generate tool-specific deployment
+     checklists, change requests, and monitoring references.
+     Leave blank or comment out any tools not in use. -->
+
+| Tool | Purpose | Configuration |
+|------|---------|---------------|
+| ServiceNow | Change management | Base URL: `[FILL IN — e.g. https://yourorg.service-now.com]` · Assignment group: `[FILL IN]` · Change category: `[FILL IN]` |
+| Jenkins / CloudBees | CI/CD pipeline | Base URL: `[FILL IN — e.g. https://jenkins.yourorg.com]` |
+| Dynatrace | Monitoring / APM | Environment URL: `[FILL IN — e.g. https://yourenv.live.dynatrace.com]` |
+| Splunk | Log aggregation | Base URL: `[FILL IN — e.g. https://splunk.yourorg.com]` · App: `[FILL IN — e.g. search]` |
+| PagerDuty | On-call alerting | Service URL: `[FILL IN — e.g. https://yourorg.pagerduty.com/services/PXXXXXX]` |
+| Jira | Issue tracking | Base URL: `[FILL IN — e.g. https://yourorg.atlassian.net]` · Project key: `[FILL IN]` |
+| Nexus / Artifactory | Artefact repository | Base URL: `[FILL IN — e.g. https://nexus.yourorg.com]` |
