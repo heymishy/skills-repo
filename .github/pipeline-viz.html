@@ -534,8 +534,6 @@ function renderBoard(features) {
         ${byStage[s.id].map(f => featureCardHTML(f)).join('') || '<div style="color:var(--border);font-size:11px;padding:4px 0">—</div>'}
       </div>
     </div>`).join('');
-
-  bindCardEvents();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -748,6 +746,7 @@ function populateTeamFilter() {
 }
 
 function initFilters() {
+  bindCardEvents(); // bind once — not on every render()
   ['health','track','team'].forEach(k => {
     document.getElementById(`filter-${k}`).addEventListener('change', e => {
       activeFilters[k] = e.target.value; render();
