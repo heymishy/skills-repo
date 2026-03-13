@@ -23,101 +23,126 @@ flowchart TD
     %% ─── SHORT TRACK ───────────────────────────────────────────
     subgraph SHORT["⚡ Short Track"]
         ST_TP["/test-plan\nWrite failing tests"]
-        ST_DOR["/definition-of-ready\nH1–H9 gate check"]
-        ST_CA["Coding agent\nMake tests pass"]
+        ST_DOR["/definition-of-ready\nGate check"]
+        ST_ICL["Inner coding loop\nsee below"]
     end
-    ST_TP --> ST_DOR --> ST_CA
+    ST_TP --> ST_DOR --> ST_ICL
 
     %% ─── STANDARD PIPELINE ─────────────────────────────────────
     subgraph STANDARD["📋 Standard Pipeline"]
         DISC["/discovery\nStructure the problem"]
         BM["/benefit-metric\nDefine measurable outcomes"]
-        DEF["/definition\nEpics + stories\nStep 1.5: arch constraints scan\nMigration story detection"]
+        DEF["/definition\nEpics + stories\nArch constraints scan\nMigration detection"]
         REV["/review\nCategories A–E\nQuality gate"]
         TP["/test-plan\nTechnical tests +\nAC verification script"]
-        DOR["/definition-of-ready\nH1–H9 hard blocks\nCoding agent instructions"]
-        CA["Coding agent\nMake tests pass\nOpen draft PR"]
+        DOR["/definition-of-ready\nH1–H9 hard blocks\nCoding instructions"]
         DOD["/definition-of-done\nPost-merge AC coverage"]
         TR["/trace\nFull chain\ntraceability report"]
     end
 
-    DISC -->|"Approved"| BM
-    BM -->|"Metrics active"| DEF
-    DEF -->|"Stories written"| REV
-    REV -->|"No HIGH findings"| TP
-    TP -->|"Tests written failing"| DOR
-    DOR -->|"Sign-off complete"| CA
-    CA -->|"PR merged"| DOD
+    DISC -->|Approved| BM
+    BM -->|Metrics active| DEF
+    DEF -->|Stories written| REV
+    REV -->|No HIGH findings| TP
+    TP -->|Tests written failing| DOR
+    DOR -->|Sign-off| ICL_BS
+    BC -->|PR merged| DOD
     DOD --> TR
+
+    %% ─── INNER CODING LOOP ─────────────────────────────────────
+    subgraph ICL["🔄 Inner Coding Loop"]
+        ICL_BS["/branch-setup\nIsolated worktree\nClean baseline"]
+        ICL_IP["/implementation-plan\nBite-sized task plan"]
+        ICL_SE["/subagent-execution\nor /tdd per task"]
+        ICL_IR["/implementation-review\nSpec + quality check"]
+        ICL_VC["/verify-completion\nAll ACs · 0 failures"]
+        BC["/branch-complete\nDraft PR"]
+    end
+
+    ICL_BS --> ICL_IP --> ICL_SE --> ICL_IR
+    ICL_IR -->|Issues found| ICL_SE
+    ICL_IR -->|Clean| ICL_VC --> BC
+
+    ST_ICL -.->|expands to| ICL_BS
+
+    %% ─── INNER LOOP SUPPORT ─────────────────────────────────────
+    subgraph INNER_SUP["🛠️ Inner Loop Support"]
+        TDD["/tdd\nRED-GREEN-REFACTOR\nenforcement"]
+        SDBG["/systematic-debugging\n4-phase root cause\nprocess"]
+    end
+
+    ICL_SE -.->|per task| TDD
+    ICL_SE -.->|blocked / failing| SDBG
+    SDBG -.->|unblocked| ICL_SE
 
     %% ─── PROGRAMME TRACK ───────────────────────────────────────
     subgraph PROGRAMME["🏗️ Programme Track"]
-        PROG["/programme\nWorkstream registration\nDependency mapping\nPhase gates\nConsumer registry"]
-        MR["/metric-review\nRe-baseline metrics\nat phase gates"]
-        WS1["Workstream A\n[standard pipeline]"]
-        WS2["Workstream B\n[standard pipeline]"]
-        WSN["Workstream N…\n[standard pipeline]"]
+        PROG["/programme\nWorkstream registration\nDependency mapping\nPhase gates · Consumer registry"]
+        WS1["Workstream A\nstandard pipeline"]
+        WS2["Workstream B\nstandard pipeline"]
+        WSN["Workstream N…"]
         PG{Phase gate}
+        MR["/metric-review\nRe-baseline at\nphase gates"]
     end
 
     PROG --> WS1 & WS2 & WSN
     WS1 & WS2 & WSN --> PG
-    PG -->|"All clear"| MR
-    MR -->|"Next phase"| PG
-    PG -->|"Programme complete"| REL
+    PG -->|All clear| MR
+    MR -->|Next phase| PG
+    PG -->|Complete| REL
 
     %% ─── SUPPORTING SKILLS ─────────────────────────────────────
     subgraph SUPPORT["🔧 Supporting Skills"]
         SPIKE["/spike\nTimeboxed investigation\nPROCEED / REDESIGN / DEFER"]
-        DEC["/decisions\nLog entry or ADR\nFeature-level + repo-level"]
+        DEC["/decisions\nRunning log + ADRs\nFeature + repo level"]
         RE["/reverse-engineer\nExtract business rules\nfrom legacy code"]
     end
 
-    REV -->|"Genuine unknown"| SPIKE
-    DEF -->|"Genuine unknown"| SPIKE
-    SPIKE -->|"PROCEED"| REV
-    SPIKE -->|"REDESIGN"| DEF
+    REV -->|Genuine unknown| SPIKE
+    DEF -->|Genuine unknown| SPIKE
+    SPIKE -->|PROCEED| REV
+    SPIKE -->|REDESIGN| DEF
 
-    DEC -.->|"Called at any\ndecision point"| STANDARD
-    RE -.->|"Feeds context\ninto discovery"| DISC
+    DEC -.->|Any decision point| STANDARD
+    RE -.->|Feeds context| DISC
 
     %% ─── RELEASE ───────────────────────────────────────────────
     subgraph REL_BOX["🚀 Release"]
-        REL["/release\nRelease notes\nChange request\nDeployment checklist\nCompliance bundle\n(regulated/programme)"]
+        REL["/release\nRelease notes · Change request\nDeployment checklist\nCompliance bundle"]
     end
 
-    DOD -->|"DoD complete"| REL
-    CA -->|"PR merged\n[short track]"| DOD
+    DOD -->|DoD complete| REL
 
     %% ─── ARCHITECTURE GOVERNANCE ────────────────────────────────
-    AG[("🏛️ architecture-\nguardrails.md\nPatterns · ADRs\nConstraints")]
-    AG -.->|"Read by"| DEF
-    AG -.->|"Enforced by"| REV
-    AG -.->|"Hard block H9"| DOR
-    AG -.->|"Checked by"| TR
+    AG[("🏛️ architecture-\nguardrails.md\nPatterns · ADRs · Constraints")]
+    AG -.-> DEF
+    AG -.-> REV
+    AG -.-> DOR
+    AG -.-> TR
 
     %% ─── REFERENCE MATERIALS ────────────────────────────────────
-    REF[("📁 reference/\nScoping docs\nBusiness cases\nOKRs")]
-    REF -.->|"Read by"| DISC
-    REF -.->|"Read by"| BM
-    REF -.->|"Read by"| DEF
+    REF[("📁 reference/\nScoping docs · Business cases · OKRs")]
+    REF -.-> DISC
+    REF -.-> BM
+    REF -.-> DEF
 
     %% ─── STYLING ───────────────────────────────────────────────
-    classDef skill fill:#2d6a9f,stroke:#1a4971,color:#fff,rx:6
-    classDef gate fill:#b45309,stroke:#92400e,color:#fff,rx:6
-    classDef agent fill:#166534,stroke:#14532d,color:#fff,rx:6
-    classDef store fill:#4b5563,stroke:#374151,color:#fff
-    classDef support fill:#6d28d9,stroke:#4c1d95,color:#fff,rx:6
-    classDef prog fill:#0f766e,stroke:#0d544c,color:#fff,rx:6
+    classDef skill fill:#2d6a9f,stroke:#1a4971,color:#fff
+    classDef gate fill:#b45309,stroke:#92400e,color:#fff
+    classDef inner fill:#166534,stroke:#14532d,color:#fff
+    classDef support fill:#6d28d9,stroke:#4c1d95,color:#fff
+    classDef prog fill:#0f766e,stroke:#0d544c,color:#fff
+    classDef store fill:#374151,stroke:#1f2937,color:#fff
 
-    class DISC,BM,DEF,REV,TP,DOR,DOD,TR,WF skill
-    class ST_TP,ST_DOR skill
-    class DOR,ST_DOR gate
-    class CA,ST_CA agent
-    class AG,REF store
+    class DISC,BM,DEF,REV,TP,DOD,TR,WF skill
+    class ST_TP,ST_DOR,ST_ICL skill
+    class DOR gate
+    class ICL_BS,ICL_IP,ICL_SE,ICL_IR,ICL_VC,BC inner
+    class TDD,SDBG inner
     class SPIKE,DEC,RE support
     class PROG,MR,WS1,WS2,WSN prog
     class REL skill
+    class AG,REF store
 ```
 
 ---
@@ -135,14 +160,20 @@ All artefacts are saved to `.github/artefacts/[feature-slug]/` so nothing lives 
 ### Short track
 For bugs, small fixes, and bounded refactors. Three steps.
 ```
-/test-plan → /definition-of-ready → coding agent
+/test-plan → /definition-of-ready → inner coding loop
 ```
 
 ### Standard pipeline
 For new features and user-facing scope.
 ```
-/discovery → /benefit-metric → /definition → /review → /test-plan → /definition-of-ready → coding agent → /definition-of-done → /trace
+/discovery → /benefit-metric → /definition → /review → /test-plan → /definition-of-ready → inner coding loop → /definition-of-done → /trace
 ```
+
+**Inner coding loop** (expands Step 7):
+```
+/branch-setup → /implementation-plan → /subagent-execution (or /tdd per task) → /verify-completion → /branch-complete
+```
+Support skills throughout: `/tdd`, `/systematic-debugging`, `/implementation-review`
 
 ### Programme track
 For large initiatives, multi-team migrations, library rewrites, and multi-phase programmes. Runs the standard pipeline per workstream with a coordination layer above.
@@ -165,6 +196,14 @@ When in doubt about which track, run `/workflow` — it will route you.
 | `/review` | Quality gate — finds gaps before test-writing | After stories exist |
 | `/test-plan` | Writes failing tests + AC verification script | After review passes |
 | `/definition-of-ready` | Pre-coding gate — produces coding agent instructions | After test plan exists |
+| `/branch-setup` | Creates isolated worktree, verifies clean baseline | After DoR sign-off |
+| `/implementation-plan` | Writes bite-sized task plan from DoR + test plan | After branch ready |
+| `/tdd` | RED-GREEN-REFACTOR enforcement per task | During any implementation task |
+| `/subagent-execution` | Dispatches fresh subagent per task with two-stage review | When plan exists and subagents available |
+| `/implementation-review` | Spec + quality review between task batches | Between tasks or before PR |
+| `/verify-completion` | Evidence gate — run tests + walk ACs before claiming done | Before opening a PR |
+| `/systematic-debugging` | 4-phase root cause debugging process | When any task or test gets stuck |
+| `/branch-complete` | Opens a draft PR or merges locally; cleans up worktree | After verify-completion passes |
 | `/definition-of-done` | Post-merge AC coverage validation | After PR is merged |
 | `/trace` | Full chain traceability report | On demand or CI on PR open |
 | `/decisions` | Records ADRs and in-flight decisions | At any pipeline decision point |
