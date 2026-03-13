@@ -799,7 +799,7 @@ function trackLabel(t)   { return t==='short' ? 'Short' : t==='standard' ? 'Std'
 
 function reviewBadge(s) {
   if (s.reviewStatus === 'passed')       return `<span style="color:var(--green)">✓ Passed</span>`;
-  if (s.reviewStatus === 'has-findings') return `<span style="color:${s.highFindings>0?'var(--red)':'var(--amber)}">${s.highFindings||0} HIGH finding${s.highFindings!==1?'s':''}</span>`;
+  if (s.reviewStatus === 'has-findings') return `<span style="color:${s.highFindings>0?'var(--red)':'var(--amber)'}">${s.highFindings||0} HIGH finding${s.highFindings!==1?'s':''}</span>`;
   return `<span style="color:var(--muted)">Not started</span>`;
 }
 function dorBadge(s) {
