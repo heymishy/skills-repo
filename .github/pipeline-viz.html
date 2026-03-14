@@ -374,6 +374,25 @@
   .loop-dot.at-risk   { background:var(--amber); }
   .loop-dot.off-track { background:var(--red); }
   .loop-badge { font-size:10px; color:var(--muted); margin-top:4px; display:inline-flex; align-items:center; gap:4px; }
+  /* metric edit */
+  .metric-edit-btn { background:none; border:1px solid var(--border); color:var(--muted); border-radius:4px; padding:2px 7px; font-size:10px; cursor:pointer; float:right; margin-left:8px; }
+  .metric-edit-btn:hover { color:var(--text); border-color:var(--text); }
+  .metric-edit-form { background:var(--surface2); border-radius:6px; padding:10px 12px; display:flex; flex-direction:column; gap:8px; }
+  .metric-edit-form label { font-size:10px; color:var(--muted); display:block; margin-bottom:2px; }
+  .metric-edit-form select, .metric-edit-form textarea, .metric-edit-form input[type=date] {
+    width:100%; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:4px;
+    padding:5px 8px; font-size:11px; font-family:inherit; box-sizing:border-box;
+  }
+  .metric-edit-form textarea { resize:vertical; min-height:52px; line-height:1.5; }
+  .metric-edit-form select:focus, .metric-edit-form textarea:focus, .metric-edit-form input:focus { outline:none; border-color:var(--blue); }
+  .metric-edit-actions { display:flex; gap:6px; }
+  .metric-save-btn { background:var(--blue); color:#fff; border:none; border-radius:4px; padding:4px 14px; font-size:11px; cursor:pointer; }
+  .metric-save-btn:hover { opacity:.85; }
+  .metric-cancel-btn { background:none; border:1px solid var(--border); color:var(--muted); border-radius:4px; padding:4px 10px; font-size:11px; cursor:pointer; }
+  .metric-cancel-btn:hover { color:var(--text); }
+  #download-btn { background:none; border:1px solid var(--border); color:var(--muted); border-radius:4px; padding:3px 8px; font-size:11px; cursor:pointer; }
+  #download-btn:hover { color:var(--text); border-color:var(--text); }
+  #download-btn.dirty { color:var(--green); border-color:rgba(34,197,94,.5); }
 </style>
 </head>
 <body>
@@ -433,6 +452,7 @@
     <input type="file" id="file-input" accept=".json">
   </label>
   <button id="reload-btn" title="Reload state file">↺ Reload</button>
+  <button id="download-btn" title="Download current state as pipeline-state.json">⬇ Download</button>
 </header>
 
 <!-- ───────────── SUMMARY ───────────── -->
@@ -461,7 +481,7 @@
   <div id="md-body"><div class="md-content" id="md-content"></div></div>
 </div>
 
-<div id="kbd-hint">e = expand all &nbsp;·&nbsp; c = collapse all &nbsp;·&nbsp; o = outcomes &nbsp;·&nbsp; Esc = close drawer</div>
+<div id="kbd-hint">e = expand all &nbsp;·&nbsp; c = collapse all &nbsp;·&nbsp; o = outcomes &nbsp;·&nbsp; Esc = close &nbsp;·&nbsp; in Outcomes: ✏️ to edit a metric</div>
 
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
@@ -501,6 +521,8 @@ let openTaskLists    = new Set();   // story keys with task list expanded inline
 let openDoneSections = new Set();   // stage ids with 'completed' section expanded
 let drawerStory  = null;
 let viewMode = 'stage'; // 'stage' | 'outcomes'
+let editingMetric = null; // { featureSlug, metricId }
+let isDirty = false;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DATA LOADING
@@ -676,6 +698,10 @@ function signalMeta(signal) {
 }
 
 function metricRowHTML(m, f) {
+  // If this metric is currently being edited, render the edit form instead
+  if (editingMetric && editingMetric.featureSlug === f.slug && editingMetric.metricId === m.id) {
+    return editMetricFormHTML(m, f.slug);
+  }
   const sm = signalMeta(m.signal);
   const allStories = (f.epics || []).flatMap(e => e.stories || []);
   const storyTags = (m.contributingStories || []).map(slug => {
@@ -684,8 +710,11 @@ function metricRowHTML(m, f) {
     return `<span class="metric-story-tag ${done ? 'done' : ''}">${done ? '✓' : '⏳'} ${esc(slug)}</span>`;
   }).join('');
   return `
-  <div class="metric-row">
-    <div class="metric-name">${esc(m.name)}</div>
+  <div class="metric-row" data-feature="${esc(f.slug)}" data-metric="${esc(m.id)}">
+    <div class="metric-name">
+      ${esc(m.name)}
+      <button class="metric-edit-btn" data-action="edit-metric" data-feature="${esc(f.slug)}" data-metric="${esc(m.id)}">✏️ Edit</button>
+    </div>
     <div class="metric-meta">
       ${m.target   ? `<span>Target: ${esc(m.target)}</span>`   : ''}
       ${m.baseline ? `<span>Baseline: ${esc(m.baseline)}</span>` : ''}
@@ -694,6 +723,31 @@ function metricRowHTML(m, f) {
     <div class="metric-signal ${sm.cls}">${sm.icon} ${sm.label}</div>
     ${m.evidence ? `<div class="metric-evidence">${esc(m.evidence)}</div>` : ''}
     ${storyTags ? `<div class="metric-stories">${storyTags}</div>` : ''}
+  </div>`;
+}
+
+function editMetricFormHTML(m, featureSlug) {
+  const signals = ['not-yet-measured', 'on-track', 'at-risk', 'off-track'];
+  const opts = signals.map(s => `<option value="${s}" ${m.signal === s ? 'selected' : ''}>${signalMeta(s).icon} ${signalMeta(s).label}</option>`).join('');
+  return `
+  <div class="metric-edit-form" data-feature="${esc(featureSlug)}" data-metric="${esc(m.id)}">
+    <div><strong style="font-size:12px">${esc(m.name)}</strong></div>
+    <div>
+      <label>Signal</label>
+      <select id="edit-signal-${esc(m.id)}">${opts}</select>
+    </div>
+    <div>
+      <label>Evidence (what did you observe?)</label>
+      <textarea id="edit-evidence-${esc(m.id)}" placeholder="e.g. 3/4 distributed participants voted — 75%">${esc(m.evidence || '')}</textarea>
+    </div>
+    <div>
+      <label>Date measured</label>
+      <input type="date" id="edit-date-${esc(m.id)}" value="${esc(m.lastMeasured || '')}">
+    </div>
+    <div class="metric-edit-actions">
+      <button class="metric-save-btn" data-action="save-metric" data-feature="${esc(featureSlug)}" data-metric="${esc(m.id)}">Save</button>
+      <button class="metric-cancel-btn" data-action="cancel-edit">Cancel</button>
+    </div>
   </div>`;
 }
 
@@ -1142,6 +1196,7 @@ function initFilters() {
     render();
   });
   document.getElementById('reload-btn').addEventListener('click', loadState);
+  document.getElementById('download-btn').addEventListener('click', downloadState);
   document.getElementById('file-input').addEventListener('change', e => {
     if (e.target.files[0]) readFile(e.target.files[0]);
   });
@@ -1149,6 +1204,38 @@ function initFilters() {
   document.getElementById('drawer-overlay').addEventListener('click', closeDrawer);
   document.getElementById('md-close').addEventListener('click', closeMdViewer);
   document.getElementById('md-overlay').addEventListener('click', closeMdViewer);
+  // Outcomes board — metric edit/save/cancel
+  document.getElementById('outcomes-board').addEventListener('click', e => {
+    const editBtn = e.target.closest('[data-action="edit-metric"]');
+    if (editBtn) {
+      editingMetric = { featureSlug: editBtn.dataset.feature, metricId: editBtn.dataset.metric };
+      renderOutcomes(filteredFeatures()); return;
+    }
+    const saveBtn = e.target.closest('[data-action="save-metric"]');
+    if (saveBtn) {
+      const fSlug = saveBtn.dataset.feature;
+      const mId   = saveBtn.dataset.metric;
+      const signal   = document.getElementById(`edit-signal-${mId}`).value;
+      const evidence = document.getElementById(`edit-evidence-${mId}`).value.trim() || null;
+      const dateMeasured = document.getElementById(`edit-date-${mId}`).value || null;
+      const feat = allData.features.find(f => f.slug === fSlug);
+      if (feat && feat.metrics) {
+        const metric = feat.metrics.find(m => m.id === mId);
+        if (metric) {
+          metric.signal = signal;
+          metric.evidence = evidence;
+          metric.lastMeasured = dateMeasured;
+          isDirty = true;
+          document.getElementById('download-btn').classList.add('dirty');
+          document.getElementById('download-btn').title = 'Unsaved changes — click to download updated pipeline-state.json';
+        }
+      }
+      editingMetric = null;
+      render(); return;
+    }
+    const cancelBtn = e.target.closest('[data-action="cancel-edit"]');
+    if (cancelBtn) { editingMetric = null; renderOutcomes(filteredFeatures()); }
+  });
   // Intercept .md links anywhere on the page (drawer AND done-card artefact lists)
   document.addEventListener('click', e => {
     const link = e.target.closest('a.drawer-link');
@@ -1157,6 +1244,24 @@ function initFilters() {
       openMdViewer(link.getAttribute('href'));
     }
   });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DOWNLOAD STATE
+// ─────────────────────────────────────────────────────────────────────────────
+function downloadState() {
+  if (!allData) return;
+  const updated = { ...allData, updated: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(updated, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'pipeline-state.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  isDirty = false;
+  document.getElementById('download-btn').classList.remove('dirty');
+  document.getElementById('download-btn').title = 'Download current state as pipeline-state.json';
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
