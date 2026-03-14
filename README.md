@@ -98,7 +98,7 @@ flowchart TD
         RE["/reverse-engineer\nExtract business rules\nfrom legacy code"]
         CM["/coverage-map\nVisual AC coverage map\ngap type · risk level"]
         RS["/record-signal\nRecord benefit metric\nsignal on demand"]
-        IDEATE["/ideate\nOpportunity mapping · Assumption inventory\nMarket scan · Strategy framing (Torres + Cagan)"]
+        IDEATE["/ideate\nOpportunity · Assumption · Market scan\nStrategy framing · JTBD (Torres + Cagan + Moesta)"]
     end
 
     REV -->|Genuine unknown| SPIKE
@@ -320,7 +320,7 @@ When in doubt about which track, run `/workflow` — it will route you.
 | `/trace` | Full chain traceability report; flags CSS-layout gaps without RISK-ACCEPT | On demand or CI on PR open |
 | `/record-signal` | Records a benefit metric signal without a full DoD run | When measurement data is available: "we got data", "record a signal" |
 | `/decisions` | Records ADRs and in-flight decisions | At any pipeline decision point |
-| `/ideate` | Structured product discovery — opportunity mapping, assumption inventory, market scan, product strategy framing (Torres + Cagan) | Run at any point: blank-slate exploration, enrich an active discovery, or stress-test assumptions before definition |
+| `/ideate` | Structured product discovery — five lenses: opportunity mapping, assumption inventory, market scan, product strategy framing (Torres + Cagan), and jobs-to-be-done (Christensen / Moesta). Suggests lenses based on current pipeline stage and artefacts | Run at any point: blank-slate exploration, enrich an active discovery, or stress-test assumptions before definition |
 | `/spike` | Timeboxed investigation for genuine unknowns | When a step is blocked by something unknown |
 | `/reverse-engineer` | Extracts business rules from legacy code | When modernising or replacing a legacy system |
 | `/programme` | Programme-level navigator for multi-team work | Large initiatives, migrations, library rewrites |

@@ -3,7 +3,7 @@
 **Feature:** [feature-slug]
 **Date:** [YYYY-MM-DD]
 **Artefact path:** `.github/artefacts/[feature-slug]/research/ideation.md`
-**Lenses run:** [A / B / C / D — list those completed]
+**Lenses run:** [A / B / C / D / E — list those completed]
 **Pipeline state signal:** [proceed / redesign / defer / in-progress]
 
 ---
@@ -164,6 +164,46 @@ Outcome: [desired outcome]
 
 ---
 
+## Lens E — Jobs-to-be-Done
+
+*Framework: Clayton Christensen, Bob Moesta — JTBD / Switch interview*
+
+### Job statement
+
+> When **[specific situation / context / trigger]**,
+> I want to **[motivation — the progress to be made]**,
+> so I can **[expected outcome — functional, social, or emotional]**.
+
+| Dimension | Description |
+|-----------|-------------|
+| Functional job | [what task is being accomplished] |
+| Social job | [how the customer wants to be seen while doing this] |
+| Emotional job | [how the customer wants to feel while doing this] |
+
+### Current hire and real competition
+
+| Current hire | Strengths | Friction / switch drivers |
+|-------------|-----------|--------------------------|
+| [current solution] | [what works] | [what creates pressure to switch] |
+
+**Real competition:** [the actual alternative being hired today — often not the obvious competitor]
+
+### Four Forces analysis
+
+| Force | Direction | Key findings |
+|-------|-----------|-------------|
+| Push | Away from current | [dissatisfaction signals] |
+| Pull | Toward new | [what the new solution must do to attract] |
+| Anxiety | Resisting new | [adoption barriers to design around] |
+| Habit / inertia | Resisting new | [comfort with current that must be overcome] |
+
+### Switch threshold
+
+> The new solution must outperform the current hire on **[specific dimension]**
+> by enough to overcome **[primary anxiety or habit barrier]**.
+
+---
+
 ## How this feeds the pipeline
 
 | Output | Feeds | Notes |
@@ -172,6 +212,7 @@ Outcome: [desired outcome]
 | Assumption inventory | `/discovery` + `/decisions` | [which assumptions are RISK-ACCEPT] |
 | Market scan | `/discovery` + `/benefit-metric` | [key competitive context or sizing signal] |
 | Strategy framing | `/discovery` | [confirms / challenges proposed MVP scope] |
+| Jobs-to-be-Done | `/discovery` + Lens A | [job statement, real competition, switch threshold] |
 
 ---
 

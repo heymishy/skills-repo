@@ -4,11 +4,13 @@ description: >
   Structured product discovery and ideation. Reads existing pipeline artefacts
   (discovery.md, benefit-metric.md, stories, reference materials) and applies
   structured frameworks to explore the opportunity space before, during, or
-  alongside the pipeline. Offers four lenses: opportunity mapping (Torres),
-  assumption inventory (Torres), market and competitive scan, and product
-  strategy framing (Cagan). Produces structured artefacts that feed
-  /discovery, /benefit-metric, or /definition. Safe to run at any stage —
-  does not replace /discovery, enriches and precedes it.
+  alongside the pipeline. Offers five lenses: opportunity mapping (Torres),
+  assumption inventory (Torres), market and competitive scan, product
+  strategy framing (Cagan), and jobs-to-be-done (Christensen / Moesta).
+  Suggests which lens(es) to run based on current pipeline stage and artefacts
+  found. Produces structured artefacts that feed /discovery, /benefit-metric,
+  or /definition. Safe to run at any stage — does not replace /discovery,
+  enriches and precedes it.
 triggers:
   - "ideate"
   - "ideation"
@@ -28,6 +30,12 @@ triggers:
   - "product strategy framing"
   - "torres"
   - "cagan"
+  - "jobs-to-be-done"
+  - "jtbd"
+  - "job story"
+  - "switch interview"
+  - "what job are customers hiring"
+  - "why do customers switch"
 ---
 
 # Ideate Skill
@@ -70,29 +78,46 @@ State what you found:
 
 ---
 
-## Step 2 — Choose lenses
+## Step 2 — Suggested lens(es) based on context
 
-> **Which structured lens(es) do you want to apply?**
+Apply this decision table to the artefacts loaded in Step 1, then present a
+recommendation **before** showing the full lens menu.
+
+**Decision table:**
+
+| Signal (from Step 1) | Suggest | Rationale |
+|---------------------|---------|----------|
+| No artefacts at all | D → A | Confirm the strategic bet first (D), then map opportunities (A) |
+| Reference materials only, no discovery | E → A | Understand the job the customer is hiring for (E), then map opportunities (A) |
+| Discovery (any status), no benefit-metric | B → D | Surface baked-in assumptions before committing to metrics (B), then frame the strategy (D) |
+| Discovery approved + benefit-metric, no stories | A → B | Verify opportunity scope is right (A), then surface assumptions before writing stories (B) |
+| Stories exist, still in pipeline | B → C | Validate assumptions are still held (B), then competitive context check (C) |
+| `ideationSignal: "redesign"` in pipeline-state | E → D | Reframe the job to find the real problem (E), then reassess strategy (D) |
+| RISK-ACCEPT decisions present at any stage | B | Those accepted assumptions need to be explicit and tracked in the assumption map |
+| Prior `ideation.md` exists, some lenses not run | [remaining lenses] | Continue from where the last session left off |
+
+After applying the table, present:
+
+> **Recommended for your current stage:**
 >
-> A. **Opportunity mapping** — map the opportunity space: unmet needs, pain
->    points, and desires. Structures them into an opportunity solution tree.
->    *Framework: Teresa Torres — Continuous Discovery Habits*
+> Based on: [e.g. "discovery.md found (status: approved), no benefit-metric written,
+> 2 RISK-ACCEPT decisions in decisions.md"]
 >
-> B. **Assumption inventory** — surface every assumption baked into the
->    current scope or idea. Categorise by risk. Identify which to test first.
->    *Framework: Teresa Torres — assumption mapping*
+> → **Start with Lens B** (Assumption inventory) — [one sentence why, referencing
+>    what was actually found in the artefacts]
 >
-> C. **Market and competitive scan** — structured research questions to run
->    against external sources. Covers: who else is solving this, for whom,
->    and on what dimension are we different?
+> → **Then Lens D** (Strategy framing) — [one sentence why]
 >
-> D. **Product strategy framing** — opportunity assessment and product
->    strategy questions to test whether this is the right bet.
->    *Framework: Marty Cagan — SVPG product discovery*
+> Ready to start with this? Reply: **yes**
 >
-> You can run one lens or all four. I'll run them in order.
+> Or choose your own lenses:
+> - **A** — Opportunity mapping *(Torres — unmet needs, pain points, desires → opportunity tree)*
+> - **B** — Assumption inventory *(Torres — surface and prioritise every baked-in assumption)*
+> - **C** — Market and competitive scan *(structured research questions → competitive positioning)*
+> - **D** — Product strategy framing *(Cagan — 10-question opportunity assessment → PROCEED / REDESIGN / DEFER)*
+> - **E** — Jobs-to-be-Done *(Christensen / Moesta — what progress is the customer hiring for, and why do they switch?)*
 >
-> Reply: A, B, C, D — or any combination (e.g. A C)
+> Reply: A, B, C, D, E — any combination (e.g. `A B E`) — or **all**
 
 ---
 
@@ -423,6 +448,121 @@ Present a summary framing:
 
 ---
 
+## Lens E — Jobs-to-be-Done (JTBD)
+
+*Framework: Clayton Christensen, Bob Moesta — JTBD theory and Switch interview*
+
+The core insight: customers don't buy products. They **hire** them to make
+progress in a specific situation. Understanding what job they're trying to
+accomplish — and what they're currently hiring to do it — reveals the real
+competition and the true value threshold the new solution must clear.
+
+### E1 — Identify the job
+
+A job is stable, context-specific, and driven by a desire for progress.
+It has three dimensions:
+
+| Dimension | Question it answers | Example |
+|-----------|--------------------|---------| 
+| **Functional** | What task is being accomplished? | "Complete a workshop session debrief" |
+| **Social** | How does the customer want to be seen by others while doing this? | "Be seen as a structured, credible facilitator" |
+| **Emotional** | How does the customer want to feel while doing this? | "Feel confident the team reached a shared view" |
+
+Ask:
+
+> **In one sentence: what progress is your customer trying to make?**
+>
+> Frame it as: "I want to be able to [functional progress] so that [social / emotional outcome]."
+>
+> Reply: describe the job — or "not sure, help me find it"
+
+If unsure, ask these one at a time:
+1. "What does the customer feel *before* using your product? What's generating friction?"
+2. "What does the customer feel *after* a successful use? What is now better?"
+3. "In what specific situation does this need arise? Time of day, role, context, trigger?"
+
+### E2 — Identify current hire and real competition
+
+Ask:
+
+> **What is the customer currently "hiring" to do this job?**
+>
+> The real competition is rarely the obvious alternative. It's often a
+> spreadsheet, a series of meetings, a manual workaround, or simply doing nothing.
+>
+> - What existing product, process, or tool are they using right now?
+> - What do they do when that fails, feels too slow, or frustrates them?
+>
+> Reply: describe current hire(s)
+
+Present:
+
+> **Current hire analysis:**
+>
+> | Current hire | What it does well | What creates friction / drives a switch |
+> |-------------|------------------|----------------------------------------|
+> | [current solution] | [strengths] | [pressure points] |
+
+### E3 — Four Forces (Switch interview simulation)
+
+Moesta's Four Forces explain why customers switch to a new solution — or don't:
+
+| Force | Direction | What it captures |
+|-------|-----------|-----------------|
+| **Push** | Away from current | Dissatisfaction driving the search for something better |
+| **Pull** | Toward new | What attracts them to the new solution |
+| **Anxiety** | Resisting new | Fear of adopting or switching |
+| **Habit / inertia** | Resisting new | Comfort with the current way of doing things |
+
+Generate a structured set of interview questions for each force — these are
+questions to take to real customers:
+
+> **Push — surface dissatisfaction with the current hire:**
+> - "When did you first start thinking the current approach wasn't good enough?"
+> - "What was the moment you decided to look for something different?"
+> - "What keeps going wrong with how you do this today?"
+>
+> **Pull — understand what the new solution must do:**
+> - "What first made you think [product / feature] might solve this?"
+> - "What would make you recommend this to a colleague without hesitation?"
+> - "What does 'perfect' look like when this is working as it should?"
+>
+> **Anxiety — surface adoption blockers:**
+> - "What worries you about changing how you do this?"
+> - "What would make you hesitate to try a new tool here?"
+> - "What could go wrong in the first week with something new?"
+>
+> **Habit — surface inertia:**
+> - "What would you miss about the way you do this today?"
+> - "What does your team expect when this kind of task is run?"
+>
+> Run these questions with real customers.
+> Bring back findings and I'll synthesise the forces pattern.
+
+### E4 — Compose the job story
+
+After E1–E3, synthesise into a job story:
+
+> **Job story:**
+>
+> When **[specific situation / context / trigger]**,
+> I want to **[motivation — the progress the customer needs to make]**,
+> so I can **[expected outcome — functional, social, or emotional]**.
+>
+> **Real competition:** [what they are currently hiring — the actual alternative, not the obvious one]
+>
+> **Switch threshold:** The new solution must outperform the current hire on
+> [specific dimension] by enough to overcome [primary anxiety or habit barrier].
+>
+> Does this capture the job? Reply: yes — or correct [what needs changing]
+
+The job story feeds directly into:
+- Lens A — the `job` becomes the `desired outcome` at the root of the opportunity tree
+- Lens D — answers Q2 ("for whom, in what situation") and Q4 ("what alternatives exist")
+- `/discovery` — customer section (primary customer, context, current workaround)
+
+---
+
 ## Output
 
 Conforms to `.github/templates/ideation.md`.
@@ -441,6 +581,7 @@ feature, create `ideation-2.md` and note what changed from the first.
 | Assumption inventory | `/discovery` — assumptions section; 🔴 assumptions become open questions; `/decisions` — RISK-ACCEPTs |
 | Market scan synthesis | `/discovery` — competitive context section; `/benefit-metric` — market sizing signals |
 | Strategy framing summary | `/discovery` — rationale section; confirms or challenges the proposed MVP scope |
+| Jobs-to-be-Done | `/discovery` — customer section (job, situation, real competition); Lens A root desired outcome; Lens D Q2 + Q4 |
 
 If `/discovery` has not yet been run, the ideation artefact is the input
 document for that step. If `/discovery` is already complete, the ideation
