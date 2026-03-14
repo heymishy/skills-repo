@@ -223,5 +223,21 @@ explained as unknown.
 When the benefit-metric artefact is saved and marked active, update `.github/pipeline-state.json` in the **project repository**:
 
 - Set `stage: "benefit-metric"`, `health: "green"`, `updatedAt: [now]`
+- Seed a `metrics` array on the feature with every metric defined in this session. Each entry must conform to:
+  ```json
+  {
+    "id": "m1",
+    "name": "[metric name from artefact]",
+    "target": "[target value]",
+    "baseline": "[baseline value — '0%' if new feature]",
+    "signal": "not-yet-measured",
+    "lastMeasured": null,
+    "evidence": null,
+    "contributingStories": []
+  }
+  ```
+  - `signal` is always `"not-yet-measured"` at this point — measurement happens post-implementation in `/definition-of-done`.
+  - `contributingStories` is populated at `/definition` time when story slugs are known.
+  - If the feature already has a `metrics` array (re-run scenario), merge: add new entries, preserve any existing entries that already have a `signal` set (do not overwrite real measurements).
 
 **Human review note:** If a human approves or modifies the benefit-metric artefact outside a skill session, run `/workflow` to reconcile.

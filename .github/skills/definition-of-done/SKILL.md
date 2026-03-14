@@ -123,13 +123,29 @@ If any NFR has no evidence:
 
 ## Step 6 — Metric signal
 
-For each metric the story was expected to move:
+For each metric in the feature's `metrics` array whose `contributingStories` list includes this story's slug:
+
+1. Ask: **Has a signal been measurable since this story merged?** (yes / not yet)
+2. If yes — ask for the observed result and date measured.
+3. Determine signal status: `on-track` / `at-risk` / `off-track` (see definitions below).
 
 > **[Metric name]**
-> Is a baseline measurement available? [Yes / No]
-> When will the first real signal be measurable? [timeline]
+> Signal: [on-track / at-risk / off-track / not-yet-measured]
+> Evidence: [observed result, or "Measurement not yet possible — [reason]"]
+> Date measured: [date, or null]
 
-This section does not claim success — it records what measurement is now possible.
+**Signal definitions:**
+- `on-track` — current result is within acceptable range of the target
+- `at-risk` — partial progress but below minimum validation signal
+- `off-track` — result is clearly not trending toward the target
+- `not-yet-measured` — measurement is not yet possible (e.g. no real sessions run yet)
+
+This section does not claim success — it records what is now observable.
+
+**State write for metrics:** After capturing signals, update the feature's `metrics` array in pipeline-state.json:
+- Set `metrics[x].signal` to the determined value
+- Set `metrics[x].evidence` to the evidence string (or `null` if not yet measured)
+- Set `metrics[x].lastMeasured` to today's date (ISO 8601) if a measurement was taken, else leave `null`
 
 ---
 
@@ -159,7 +175,7 @@ Save to `.github/artefacts/[feature]/dod/[story-slug]-dod.md`.
 ## What this skill does NOT do
 
 - Does not approve or merge PRs — that is a human action
-- Does not measure metrics — records when measurement becomes possible
+- Does not claim metric success without evidence — records what is now observable
 - Does not create follow-up stories — flags what needs follow-up for humans to action
 
 ---
@@ -174,3 +190,7 @@ Update `.github/pipeline-state.json` in the **project repository** when the DoD 
 - If all ACs are covered: set `releaseReady: true`
 - If deviations or gaps exist: set `releaseReady: false`, `health: "amber"`, note deviation in `blocker`
 - Update the epic `status`: if all stories in the epic are `dodStatus: "complete"`, set epic `status: "complete"`
+- **Metrics (from Step 6):** For each metric that was assessed, update the feature's `metrics` array:
+  - `metrics[x].signal` ← determined signal value (`"on-track"` / `"at-risk"` / `"off-track"` / `"not-yet-measured"`)
+  - `metrics[x].evidence` ← evidence string or `null`
+  - `metrics[x].lastMeasured` ← ISO 8601 date string or `null`

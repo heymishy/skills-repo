@@ -346,6 +346,34 @@
   .md-content a:hover { text-decoration: underline; }
   .md-content strong { font-weight: 700; }
   .md-content em { font-style: italic; }
+
+  /* ── OUTCOMES VIEW ────────────────────────────────────────────── */
+  #outcomes-board { display:none; padding:12px 16px; }
+  #outcomes-board.active { display:block; }
+  .outcome-feature { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:12px; }
+  .outcome-feature-header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px; }
+  .outcome-feature-name { font-size:14px; font-weight:600; color:var(--text); }
+  .outcome-problem { font-size:11px; color:var(--muted); line-height:1.5; margin-bottom:14px; font-style:italic; }
+  .outcome-metrics { display:flex; flex-direction:column; gap:8px; }
+  .metric-row { background:var(--surface2); border-radius:6px; padding:10px 12px; }
+  .metric-name { font-size:12px; font-weight:600; color:var(--text); margin-bottom:4px; }
+  .metric-meta { display:flex; gap:16px; font-size:10px; color:var(--muted); margin-bottom:6px; flex-wrap:wrap; }
+  .metric-signal { display:flex; align-items:center; gap:6px; font-size:11px; margin-bottom:4px; }
+  .metric-evidence { font-size:11px; color:var(--muted); margin-top:4px; font-style:italic; }
+  .metric-stories { display:flex; gap:4px; flex-wrap:wrap; margin-top:6px; }
+  .metric-story-tag { font-size:10px; padding:2px 6px; border-radius:4px; border:1px solid var(--border); color:var(--muted); }
+  .metric-story-tag.done { color:var(--green); border-color:rgba(34,197,94,.3); }
+  .signal-not-measured { color:var(--muted); }
+  .signal-on-track  { color:var(--green); }
+  .signal-at-risk   { color:var(--amber); }
+  .signal-off-track { color:var(--red); }
+  .outcome-loop-score { display:flex; align-items:center; gap:8px; font-size:11px; padding:8px 10px; background:var(--surface2); border-radius:6px; margin-top:12px; color:var(--muted); }
+  .loop-dots { display:flex; gap:3px; }
+  .loop-dot { width:8px; height:8px; border-radius:50%; background:var(--border); }
+  .loop-dot.on-track  { background:var(--green); }
+  .loop-dot.at-risk   { background:var(--amber); }
+  .loop-dot.off-track { background:var(--red); }
+  .loop-badge { font-size:10px; color:var(--muted); margin-top:4px; display:inline-flex; align-items:center; gap:4px; }
 </style>
 </head>
 <body>
@@ -389,6 +417,7 @@
 
   <button class="btn" id="expand-all-btn" title="Expand all (e)">Expand all</button>
   <button class="btn" id="collapse-all-btn" title="Collapse all (c)">Collapse all</button>
+  <button class="btn" id="outcomes-btn" title="Outcomes view (o)">📊 Outcomes</button>
 
   <div class="spacer"></div>
 
@@ -412,6 +441,9 @@
 <!-- ───────────── BOARD ───────────── -->
 <div id="board"></div>
 
+<!-- ───────────── OUTCOMES VIEW ───────────── -->
+<div id="outcomes-board"></div>
+
 <!-- ───────────── STORY DRAWER ───────────── -->
 <div id="drawer-overlay"></div>
 <div id="drawer">
@@ -429,7 +461,7 @@
   <div id="md-body"><div class="md-content" id="md-content"></div></div>
 </div>
 
-<div id="kbd-hint">e = expand all &nbsp;·&nbsp; c = collapse all &nbsp;·&nbsp; Esc = close drawer</div>
+<div id="kbd-hint">e = expand all &nbsp;·&nbsp; c = collapse all &nbsp;·&nbsp; o = outcomes &nbsp;·&nbsp; Esc = close drawer</div>
 
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
@@ -468,6 +500,7 @@ let openStories      = new Set();   // story slugs with expanded detail
 let openTaskLists    = new Set();   // story keys with task list expanded inline
 let openDoneSections = new Set();   // stage ids with 'completed' section expanded
 let drawerStory  = null;
+let viewMode = 'stage'; // 'stage' | 'outcomes'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DATA LOADING
@@ -614,10 +647,117 @@ function renderSummary(features) {
 function render() {
   const features = filteredFeatures();
   renderSummary(features);
-  renderBoard(features);
+  if (viewMode === 'outcomes') {
+    document.getElementById('board').style.display = 'none';
+    const ob = document.getElementById('outcomes-board');
+    ob.classList.add('active');
+    renderOutcomes(features);
+  } else {
+    document.getElementById('board').style.display = '';
+    const ob = document.getElementById('outcomes-board');
+    ob.classList.remove('active');
+    ob.innerHTML = '';
+    renderBoard(features);
+  }
   populateTeamFilter();
   updateTimestamp();
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OUTCOMES VIEW
+// ─────────────────────────────────────────────────────────────────────────────
+function signalMeta(signal) {
+  switch (signal) {
+    case 'on-track':  return { cls: 'signal-on-track',  icon: '🟢', label: 'On track' };
+    case 'at-risk':   return { cls: 'signal-at-risk',   icon: '🟡', label: 'At risk' };
+    case 'off-track': return { cls: 'signal-off-track', icon: '🔴', label: 'Off track' };
+    default:          return { cls: 'signal-not-measured', icon: '⚪', label: 'Not yet measured' };
+  }
+}
+
+function metricRowHTML(m, f) {
+  const sm = signalMeta(m.signal);
+  const allStories = (f.epics || []).flatMap(e => e.stories || []);
+  const storyTags = (m.contributingStories || []).map(slug => {
+    const s = allStories.find(s2 => s2.slug === slug);
+    const done = s && (s.dodStatus === 'complete' || s.prStatus === 'merged');
+    return `<span class="metric-story-tag ${done ? 'done' : ''}">${done ? '✓' : '⏳'} ${esc(slug)}</span>`;
+  }).join('');
+  return `
+  <div class="metric-row">
+    <div class="metric-name">${esc(m.name)}</div>
+    <div class="metric-meta">
+      ${m.target   ? `<span>Target: ${esc(m.target)}</span>`   : ''}
+      ${m.baseline ? `<span>Baseline: ${esc(m.baseline)}</span>` : ''}
+      ${m.lastMeasured ? `<span>Last measured: ${esc(m.lastMeasured)}</span>` : ''}
+    </div>
+    <div class="metric-signal ${sm.cls}">${sm.icon} ${sm.label}</div>
+    ${m.evidence ? `<div class="metric-evidence">${esc(m.evidence)}</div>` : ''}
+    ${storyTags ? `<div class="metric-stories">${storyTags}</div>` : ''}
+  </div>`;
+}
+
+function loopScoreHTML(f) {
+  const metrics = f.metrics || [];
+  if (metrics.length === 0) return '';
+  const onTrack  = metrics.filter(m => m.signal === 'on-track').length;
+  const measured = metrics.filter(m => m.signal && m.signal !== 'not-yet-measured').length;
+  const dots = metrics.map(m => {
+    const cls = m.signal === 'on-track' ? 'on-track' : m.signal === 'at-risk' ? 'at-risk' : m.signal === 'off-track' ? 'off-track' : '';
+    return `<div class="loop-dot${cls ? ' ' + cls : ''}"></div>`;
+  }).join('');
+  const scoreCol = onTrack === metrics.length && onTrack > 0 ? 'var(--green)' : onTrack > 0 ? 'var(--amber)' : 'var(--muted)';
+  return `
+  <div class="outcome-loop-score">
+    <span>Loop score</span>
+    <div class="loop-dots">${dots}</div>
+    <span style="color:${scoreCol}">${onTrack}/${metrics.length} on track</span>
+    ${measured < metrics.length ? `<span>(${measured}/${metrics.length} measured)</span>` : ''}
+  </div>`;
+}
+
+function loopScoreBadgeHTML(f) {
+  const metrics = f.metrics || [];
+  if (metrics.length === 0) return '';
+  const onTrack  = metrics.filter(m => m.signal === 'on-track').length;
+  const measured = metrics.filter(m => m.signal && m.signal !== 'not-yet-measured').length;
+  const icon = onTrack === metrics.length && onTrack > 0 ? '🟢' : measured > 0 ? '🟡' : '⚪';
+  return `<span class="loop-badge">${icon} ${onTrack}/${metrics.length} metrics</span>`;
+}
+
+function outcomesFeatureHTML(f) {
+  const metrics       = f.metrics || [];
+  const discoveryPath = `artefacts/${f.slug}/discovery.md`;
+  const bmPath        = `artefacts/${f.slug}/benefit-metric.md`;
+  return `
+  <div class="outcome-feature">
+    <div class="outcome-feature-header">
+      <div>
+        <div class="outcome-feature-name">${esc(f.name)}</div>
+        ${f.problem ? `<div class="outcome-problem">${esc(f.problem)}</div>` : ''}
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap">
+        <a class="drawer-link" href="${discoveryPath}">📄 Discovery</a>
+        <a class="drawer-link" href="${bmPath}">📊 Benefit metric</a>
+      </div>
+    </div>
+    ${metrics.length > 0
+      ? `<div class="outcome-metrics">${metrics.map(m => metricRowHTML(m, f)).join('')}</div>`
+      : `<div style="font-size:11px;color:var(--muted);padding:8px 0">No metrics seeded. Run <code>/benefit-metric</code> then add a <code>metrics</code> array to this feature in pipeline-state.json.</div>`}
+    ${loopScoreHTML(f)}
+  </div>`;
+}
+
+function renderOutcomes(features) {
+  const ob = document.getElementById('outcomes-board');
+  if (features.length === 0) {
+    ob.innerHTML = '<div class="empty-state"><h2>No features match your filters</h2><p>Try clearing your filters to see all features.</p></div>';
+    return;
+  }
+  ob.innerHTML = features.map(f => outcomesFeatureHTML(f)).join('');
+}
+
+
 
 function renderBoard(features) {
   const board = document.getElementById('board');
@@ -707,6 +847,7 @@ function featureCardHTML(f) {
         <span class="tag">${allStories.length} stor.</span>
         ${allStories.filter(s => s.releaseReady).length > 0
           ? `<span class="tag" style="color:var(--teal)">✓ ${allStories.filter(s=>s.releaseReady).length} rel-ready</span>` : ''}
+        ${loopScoreBadgeHTML(f)}
       </div>
       ${epics.length > 0 ? `<div class="epic-list">${epics.map(e => epicRowHTML(f.slug, e)).join('')}</div>` : '<div style="font-size:11px;color:var(--muted)">No epics yet</div>'}
     </div>
@@ -995,6 +1136,11 @@ function initFilters() {
   document.getElementById('collapse-all-btn').addEventListener('click', () => {
     openFeatures.clear(); openEpics.clear(); openStories.clear(); openTaskLists.clear(); openDoneSections.clear(); render();
   });
+  document.getElementById('outcomes-btn').addEventListener('click', () => {
+    viewMode = viewMode === 'outcomes' ? 'stage' : 'outcomes';
+    document.getElementById('outcomes-btn').classList.toggle('active', viewMode === 'outcomes');
+    render();
+  });
   document.getElementById('reload-btn').addEventListener('click', loadState);
   document.getElementById('file-input').addEventListener('change', e => {
     if (e.target.files[0]) readFile(e.target.files[0]);
@@ -1025,6 +1171,7 @@ document.addEventListener('keydown', e => {
   }
   if (e.key === 'e') { document.getElementById('expand-all-btn').click(); return; }
   if (e.key === 'c') { document.getElementById('collapse-all-btn').click(); return; }
+  if (e.key === 'o') { document.getElementById('outcomes-btn').click(); return; }
   if (e.key === 'f') { document.getElementById('filter-search').focus(); e.preventDefault(); }
 });
 
