@@ -277,7 +277,9 @@ would exceed context limits.
 
 ---
 
-## State update
+## State update — mandatory final step
+
+> **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
 Bootstrap creates the initial `.github/pipeline-state.json` in the **project repository** (not the skills repo) as part of scaffolding.
 

@@ -294,7 +294,9 @@ approved scope note).
 - Does not modify discovery or benefit-metric artefacts except the coverage matrix
 ---
 
-## State update
+## State update — mandatory final step
+
+> **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
 Update `.github/pipeline-state.json` in the **project repository** when all epics and stories for a feature are written and saved:
 

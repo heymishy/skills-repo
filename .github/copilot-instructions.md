@@ -230,6 +230,20 @@ Do not introduce points or sizing unless explicitly asked.
 
 ---
 
+## Pipeline state file — mandatory writes
+
+Every skill has a `## State update — mandatory final step` section. **Completing that write is the final required action of every skill run — without exception.**
+
+- Write to `.github/pipeline-state.json` in the **project repository** (the repo the user is working in), never the skills repo
+- The skill is not considered complete until the write is done
+- Confirm the write in your closing message: include "Pipeline state updated ✅"
+- If the state file does not exist yet, create it first using the seed structure (see `/bootstrap`)
+- If the write is skipped for any reason, state this explicitly so the user can run `/workflow` to reconcile
+
+`/workflow` is the reconciliation safety net and will catch missed writes — but do not rely on it as a substitute.
+
+---
+
 ## What the coding agent should NOT do
 
 - Do not add scope beyond what the failing tests specify

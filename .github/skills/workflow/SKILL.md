@@ -338,8 +338,16 @@ For each feature in `pipeline-state.json`:
    - If `updatedAt` is more than 3 days ago and stage has not advanced → set `health: "amber"`, note "Stalled [n] days"
    - If `updatedAt` is more than 7 days ago → set `health: "red"`, note "Stalled [n] days — needs attention"
 
-3. **Check for missing state entries:**
-   - If a `discovery.md` artefact exists for a feature slug with no entry in `features[]` → add a new entry and infer state from artefacts present
+3. **Scan for features not yet in state (active scan — do not skip):**
+   - List ALL subdirectories of `.github/artefacts/` in the project repository — each is a potential feature slug
+   - Skip `.gitkeep` and any non-directory entries
+   - For each subdirectory slug, check if a matching `slug` entry exists in `features[]`
+   - If NO entry exists:
+     - Check which artefacts are present (`discovery.md`, `benefit-metric.md`, `stories/`, `test-plans/`, `dor/`, `plans/`, `dod/`)
+     - Infer the most advanced stage from the deepest artefact present
+     - Extract the feature name from the `# [Title]` line of `discovery.md` if available, otherwise use the slug
+     - Add a new `features[]` entry: `{ "slug": "[slug]", "name": "[name]", "stage": "[inferred]", "health": "green", "updatedAt": "[now]", "epics": [] }`
+     - Note in reconciliation output: "[slug] — new feature detected, added at stage [stage]"
 
 4. **Do not overwrite human-set fields without evidence:**
    - Do not change `health: "red"` to `"green"` unless the artefact evidence supports it
@@ -352,7 +360,9 @@ For each feature in `pipeline-state.json`:
 
 ---
 
-## State update
+## State update — mandatory final step
+
+> **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
 `/workflow` does not advance pipeline stages itself — it reads artefacts and reconciles `.github/pipeline-state.json` in the **project repository**. See the State file reconciliation section above for the full reconciliation logic.
 

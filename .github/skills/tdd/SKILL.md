@@ -162,7 +162,9 @@ Keep all tests green throughout refactor.
 
 ---
 
-## State update
+## State update — mandatory final step
+
+> **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
 Update `.github/pipeline-state.json` in the **project repository** as you progress through each TDD cycle.
 

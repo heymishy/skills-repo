@@ -203,7 +203,9 @@ comparing this run's findings to the previous run.
 
 ---
 
-## State update
+## State update — mandatory final step
+
+> **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
 After producing a review report, for each story reviewed update the story entry in `.github/pipeline-state.json` in the **project repository**:
 

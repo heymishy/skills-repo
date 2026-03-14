@@ -168,7 +168,9 @@ When triggered on PR open, post a condensed comment:
 
 ---
 
-## State update
+## State update — mandatory final step
+
+> **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
 /trace is read-only and does not update artefacts, but it does update `.github/pipeline-state.json` in the **project repository** to surface findings:
 

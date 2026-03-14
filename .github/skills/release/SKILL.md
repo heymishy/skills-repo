@@ -276,7 +276,9 @@ If Jenkins / CloudBees is configured: add pipeline build URL to deployment steps
 
 ---
 
-## State update
+## State update — mandatory final step
+
+> **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
 Update `.github/pipeline-state.json` in the **project repository** when release notes are finalised:
 
