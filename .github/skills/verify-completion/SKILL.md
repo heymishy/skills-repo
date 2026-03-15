@@ -81,8 +81,10 @@ If any AC is ❌: stop. Do not open a PR. Fix and re-run from Step 1.
 Review commits on this branch:
 
 ```bash
-git log --oneline main..HEAD
+git log --oneline [base-branch]..HEAD
 ```
+
+*(Use `source_control.base_branch` from `context.yml`. Default: `main`.)*
 
 For each commit: does it correspond to an AC or a task in the implementation plan?
 

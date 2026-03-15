@@ -71,7 +71,9 @@ For each story with a test plan, parse:
 
 ## Output 1 — Terminal (ANSI coloured ASCII table)
 
-Add a script entry to the consuming repo's `package.json` if it exists:
+**Node.js projects only** (i.e. `package.json` exists, or `context.yml` has `runtime.language: typescript` or `runtime.language: javascript`):
+
+Add a script entry to the consuming repo's `package.json`:
 ```json
 "coverage-map": "node .github/scripts/coverage-map.js"
 ```
@@ -79,6 +81,9 @@ Add a script entry to the consuming repo's `package.json` if it exists:
 Create `.github/scripts/coverage-map.js` with content to reproduce the terminal output.
 The script reads `.github/artefacts/[feature-slug]/test-plans/*.md` and
 `.github/pipeline-state.json`, and prints:
+
+**For non-Node.js projects**, skip the `package.json` entry and the `.js` script.
+Produce Output 2 (markdown) and Output 3 (HTML) only — those are runtime-agnostic.
 
 **Section A — Per-story, per-AC detail:**
 ```
@@ -264,7 +269,7 @@ in the repo**, generate a standalone HTML file and note in its header:
 - Leaves visible: Description, Gap type, Risk, and summary counts
 - Both views available from the same page without reloading
 
-**Every 🔴 row must include** `title="This check requires a real browser — it cannot be run automatically with Jest"` on the description cell.
+**Every 🔴 row must include** `title="This check requires a real browser — it cannot be reliably tested in a DOM simulation environment"` on the description cell.
 
 ---
 

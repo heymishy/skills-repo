@@ -50,9 +50,14 @@ Stop. Do not present options.
 
 ## Step 2 — Determine base branch
 
+Read `source_control.base_branch` from `.github/context.yml` if the file exists.
+If not present, detect from git:
+
 ```bash
 git merge-base HEAD main 2>/dev/null || git merge-base HEAD master 2>/dev/null
 ```
+
+Use the configured or detected base branch in all subsequent steps.
 
 ---
 
@@ -98,7 +103,10 @@ Then: cleanup worktree (Step 5).
 git push -u origin feature/[story-slug]
 ```
 
-Create the draft PR:
+Open a draft pull request / merge request using the command configured in
+`context.yml` (`source_control.pr_command`).
+
+**If using GitHub (default):**
 
 ```bash
 gh pr create \
@@ -123,7 +131,16 @@ EOF
 )"
 ```
 
-**Draft only. Do not mark ready for review.** That is a human action.
+**If using a different platform**, adapt accordingly:
+- GitLab: `glab mr create --draft --title "[story title]" --description "[body]"`
+- Azure DevOps: `az repos pr create --draft --title "[story title]" --description "[body]"`
+- Bitbucket / other: open the PR/MR in the web UI and leave it in draft / review-pending state
+
+The body content (story path, ACs, test plan path, DoR path, notes) is the same regardless of platform.
+
+> Adjust paths if `artefact_root` in `context.yml` is not `.github`.
+
+**Leave the PR/MR in draft / review-pending state. Do not mark ready for review.** That is a human action.
 
 Report:
 

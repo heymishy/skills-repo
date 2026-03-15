@@ -112,7 +112,7 @@ Repeat until âœ….
 Construct context:
 
 - Git diff for the task
-- Codebase conventions from `copilot-instructions.md` and `.github/architecture-guardrails.md`
+- Codebase conventions from the active agent instruction file (e.g. `copilot-instructions.md` or `AGENTS.md` — see `context.yml: agent.instruction_file`) and `.github/architecture-guardrails.md`
 - Instruction: "Review for code quality: naming, structure, test quality, YAGNI, DRY. Report Critical / Important / Minor issues."
 
 Reviewer responds with:

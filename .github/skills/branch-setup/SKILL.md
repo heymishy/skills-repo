@@ -86,6 +86,7 @@ cd [path]/[story-slug]
 Auto-detect project type and run setup:
 
 ```bash
+# Unix/macOS/Git Bash/WSL — adapt for PowerShell if running natively on Windows
 [ -f package.json ]      && npm install
 [ -f Cargo.toml ]        && cargo build
 [ -f requirements.txt ]  && pip install -r requirements.txt

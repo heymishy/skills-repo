@@ -1,0 +1,69 @@
+# personal.yml — sensible defaults for a GitHub-hosted personal or small-team project.
+# No ITSM, no regulated data, no multi-team governance.
+#
+# Usage: copy to .github/context.yml to activate.
+#   cp .github/contexts/personal.yml .github/context.yml
+#
+# Edit the fields below to match your repo before committing.
+
+meta:
+  name: "Personal project"          # human label shown in /workflow output
+  scope: personal                   # personal | team | programme
+  regulated: false                  # true enables compliance bundle prompts
+
+source_control:
+  platform: github                  # github | gitlab | bitbucket | azure-devops | other
+  base_branch: main                 # main | master | trunk | develop | production
+  merge_request_term: "pull request" # "pull request" | "merge request"
+  pr_command: "gh pr create --draft" # full CLI command to open a draft MR/PR
+  artefact_root: ".github"          # root dir for skills/, templates/, artefacts/
+
+agent:
+  instruction_file: "copilot-instructions.md"
+  # Instruction file loaded automatically by your agent runtime:
+  #   GitHub Copilot  → copilot-instructions.md
+  #   Claude Code     → AGENTS.md
+  #   Cursor          → .cursorrules
+
+runtime:
+  language: typescript              # primary language: typescript | python | java | go | rust | other
+  test_framework: jest              # jest | vitest | pytest | rspec | junit | mocha | other
+  dom_environment: jsdom            # jsdom | happy-dom | none
+  e2e_framework: playwright         # playwright | cypress | selenium | none
+  package_manager: npm              # npm | pnpm | yarn | pip | poetry | cargo | go | maven | other
+  ci: github-actions                # github-actions | gitlab-ci | circleci | jenkins | azure-pipelines | none
+
+roles:
+  tech_lead: "me"                   # what your team calls the senior technical approver
+  qa: "me"
+  analyst: "me"
+  product: "me"
+
+delivery:
+  cycle_term: "iteration"           # sprint | iteration | cycle | week | quarter
+  phase_gate: false                 # true enables phase gate prompts in /programme
+  change_management:
+    process: none                   # none | informal | cab
+    tool: null                      # null | servicenow | jira-sm | other
+
+tools:
+  project_management: github-issues # github-issues | jira | linear | azure-devops | trello | notion | other
+  documentation: null               # null | confluence | notion | github-wiki | sharepoint
+  artifact_registry: null           # null | nexus | artifactory | github-packages
+  monitoring: null                  # null | dynatrace | datadog | newrelic | grafana
+  log_aggregation: null             # null | splunk | elk | cloudwatch | grafana-loki
+  alerting: null                    # null | pagerduty | opsgenie | victorops
+
+compliance:
+  frameworks: []
+  # Add frameworks that apply to this repo, e.g.:
+  #   - pci-dss
+  #   - gdpr
+  #   - hipaa
+  #   - sox
+  #   - aml-cft
+  sensitive_data_categories: []
+  # Add sensitive identifier types handled by this codebase, e.g.:
+  #   - "card numbers (PANs, CVVs)"
+  #   - "account numbers"
+  #   - "health record identifiers"

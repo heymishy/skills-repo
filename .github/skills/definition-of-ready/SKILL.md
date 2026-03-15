@@ -111,10 +111,10 @@ Check the parent epic for the oversight level:
 
 **Low** — no sign-off required. Proceed directly to coding agent assignment.
 
-**Medium** — engineering lead awareness required.
+**Medium** — tech lead / engineering lead awareness required (see `context.yml: roles.tech_lead`).
 Share the DoR artefact before assigning. No formal sign-off needed.
 Surface as:
-> ⚠️ **Medium oversight** — share the DoR artefact with the engineering lead
+> ⚠️ **Medium oversight** — share the DoR artefact with the tech lead
 > before assigning to the coding agent.
 > Confirmed you'll do this?
 > Reply: yes
@@ -161,7 +161,7 @@ conforming to `.github/templates/definition-of-ready-checklist.md`.
 > Support skills available throughout: /tdd, /systematic-debugging, /implementation-review
 >
 > [If Medium:]
-> Share the DoR artefact with the engineering lead, then begin the inner coding loop above.
+> Share the DoR artefact with the tech lead, then begin the inner coding loop above.
 >
 > [If High:]
 > Obtain sign-off from [name], record it in the DoR artefact, then begin the inner coding loop above.

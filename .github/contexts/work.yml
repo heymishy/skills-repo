@@ -1,0 +1,80 @@
+# work.yml — enterprise profile: Atlassian toolchain, ITSM via ServiceNow, regulated.
+# Suitable for: multi-team programmes, CAB-gated changes, PCI or AML environments.
+#
+# Usage: copy to .github/context.yml to activate.
+#   cp .github/contexts/work.yml .github/context.yml
+#
+# Edit every [FILL IN] placeholder before committing.
+
+meta:
+  name: "Enterprise / regulated programme"  # human label shown in /workflow output
+  scope: programme                  # personal | team | programme
+  regulated: true                   # true enables compliance bundle prompts
+
+source_control:
+  platform: github                  # github | gitlab | bitbucket | azure-devops | other
+  base_branch: main                 # main | master | trunk | develop | production
+  merge_request_term: "pull request" # "pull request" | "merge request"
+  pr_command: "gh pr create --draft" # full CLI command — adapt for your platform
+  # GitLab:       glab mr create --draft ...
+  # Bitbucket:    use the web UI or Bitbucket CLI
+  # Azure DevOps: az repos pr create --draft ...
+  artefact_root: ".github"          # root dir for skills/, templates/, artefacts/
+
+agent:
+  instruction_file: "copilot-instructions.md"
+  # Instruction file loaded automatically by your agent runtime:
+  #   GitHub Copilot  → copilot-instructions.md
+  #   Claude Code     → AGENTS.md
+  #   Cursor          → .cursorrules
+
+runtime:
+  language: typescript              # typescript | python | java | go | rust | other
+  test_framework: jest              # jest | vitest | pytest | rspec | junit | mocha | other
+  dom_environment: jsdom            # jsdom | happy-dom | none
+  e2e_framework: playwright         # playwright | cypress | selenium | none
+  package_manager: npm              # npm | pnpm | yarn | pip | poetry | cargo | go | maven | other
+  ci: github-actions                # github-actions | gitlab-ci | circleci | jenkins | azure-pipelines | none
+
+roles:
+  tech_lead: "Tech Lead"            # what your team calls the senior technical approver
+  qa: "QA Engineer"
+  analyst: "Business Analyst"
+  product: "Product Owner"
+
+delivery:
+  cycle_term: "sprint"              # sprint | iteration | cycle | week | quarter
+  phase_gate: true                  # true enables phase gate prompts in /programme
+  change_management:
+    process: cab                    # none | informal | cab
+    tool: servicenow                # null | servicenow | jira-sm | other
+    base_url: "[FILL IN]"           # e.g. https://myorg.service-now.com
+    assignment_group: "[FILL IN]"   # e.g. Platform Engineering
+    change_category: "Normal"       # Normal | Standard | Emergency
+
+tools:
+  project_management: jira          # github-issues | jira | linear | azure-devops | trello | notion | other
+  documentation: confluence         # null | confluence | notion | github-wiki | sharepoint
+  artifact_registry: null           # null | nexus | artifactory | github-packages
+  monitoring: null                  # null | dynatrace | datadog | newrelic | grafana
+  log_aggregation: null             # null | splunk | elk | cloudwatch | grafana-loki
+  alerting: null                    # null | pagerduty | opsgenie | victorops
+  # Populate the tools above so /release generates the correct runbook sections.
+  # Only tools with non-null values generate output in /release.
+
+compliance:
+  frameworks:
+    - pci-dss
+    # Add or remove:
+    # - gdpr
+    # - hipaa
+    # - sox
+    # - aml-cft
+    # - fca
+    # - apra
+  sensitive_data_categories:
+    - "card numbers (PANs, CVVs)"
+    # Add any additional sensitive identifier types handled by this codebase:
+    # - "account numbers"
+    # - "health record identifiers"
+    # - "tax file numbers"

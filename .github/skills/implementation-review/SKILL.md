@@ -28,6 +28,7 @@ triggers:
 ## Step 1 — Prepare diff context
 
 ```bash
+# Use base branch from context.yml (source_control.base_branch), default: main
 BASE_SHA=$(git merge-base HEAD main 2>/dev/null || git merge-base HEAD master 2>/dev/null)
 HEAD_SHA=$(git rev-parse HEAD)
 git diff $BASE_SHA $HEAD_SHA

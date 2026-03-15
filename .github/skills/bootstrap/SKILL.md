@@ -89,12 +89,18 @@ Check whether `.github/skills/` already exists:
   artefacts/
     .gitkeep                      ← placeholder so directory is committed
 
+  contexts/
+    personal.yml                  ← context profile: GitHub-native, personal / small team
+    work.yml                      ← context profile: enterprise Atlassian + regulated stack
+
+  context.yml                     ← active context (copied from contexts/ during bootstrap)
+
   pipeline-state.json             ← live pipeline state (updated by all skills)
   pipeline-state.schema.json      ← JSON schema for pipeline-state.json
   pipeline-viz.html               ← interactive pipeline visualiser (open in browser)
 ```
 
-**Total: 23 skill files + 21 templates + 3 root files + 3 viz files + artefacts directory**
+**Total: 23 skill files + 21 templates + 3 root files + 3 viz files + artefacts directory + 2 context profiles**
 
 ---
 
@@ -134,7 +140,58 @@ Report progress as files are created:
 > "Created: `.github/templates/epic.md`"
 > "Skipped (exists): `.github/skills/discovery/SKILL.md`"
 
-### Step 3: Collect placeholders
+### Step 3: Configure context
+
+After files are created, set up the active context so all skills know the repo's toolchain.
+
+**3a — Agent runtime:**
+
+> "Which agent runtime are you using?
+>
+> 1. GitHub Copilot (instruction file: `copilot-instructions.md`)
+> 2. Claude Code / Codex (instruction file: `AGENTS.md`)
+> 3. Cursor (instruction file: `.cursorrules`)
+> 4. Other — I'll specify the file name
+>
+> Reply: 1, 2, 3, or 4"
+
+Set `agent.instruction_file` in `context.yml` based on answer. If 4, ask for the filename.
+
+**3b — Context profile:**
+
+> "Which context profile fits this repo?
+>
+> 1. Personal / solo — GitHub-native, no ITSM, minimal process
+> 2. Enterprise / regulated — multi-team, Atlassian toolchain, ITSM, compliance
+> 3. I'll configure context manually after setup
+>
+> Reply: 1, 2, or 3"
+
+- If 1: copy `contexts/personal.yml` to `context.yml`
+- If 2: copy `contexts/work.yml` to `context.yml`
+- If 3: copy `contexts/personal.yml` to `context.yml` and add a comment: `# TODO: configure this file before running /definition or /release`
+
+Update `context.yml` with the `agent.instruction_file` selected in 3a.
+
+Write the active-context pointer into the agent instruction file at the top of the file
+(or directly after any existing YAML frontmatter, before the first `##` heading):
+
+```markdown
+## Active context
+
+Active pipeline context: `.github/context.yml`
+```
+
+Confirm:
+> ✅ `context.yml` created from [personal/work] profile.
+> Active context pointer written to `[instruction_file]`.
+>
+> Edit `.github/context.yml` to customise tools, roles, delivery settings,
+> and sensitive data categories before running /release or /reverse-engineer.
+
+---
+
+### Step 4: Collect placeholders
 
 After all files are created, prompt for the two required placeholders:
 
@@ -219,8 +276,8 @@ Immediate (before first /discovery run):
       customise for your team's conventions before first use
   [ ] Commit .github/ to your repo
 
-Before first sprint:
-  [ ] Share the verification script format with your BA/QA lead
+Before the first delivery cycle:
+  [ ] Share the verification script format with your QA / analyst (see context.yml roles)
   [ ] Walk one engineer through the /workflow → /discovery flow
   [ ] Decide your default oversight level for this repo's epics
 
@@ -270,7 +327,7 @@ would exceed context limits.
 ## What this skill does NOT do
 
 - Does not set up GitHub Actions or CI configuration
-- Does not configure Jira or Confluence integrations
+- Does not configure your issue tracker, documentation tool, or CI/CD pipeline — those are declared in `context.yml` for reference only
 - Does not create the first feature artefacts — run /workflow for that
 - Does not install APM or any external tooling
 - Does not modify existing skill files — only creates missing ones
