@@ -305,7 +305,7 @@ When in doubt about which track, run `/workflow` — it will route you.
 | `/benefit-metric` | Defines measurable success metrics | After discovery is approved |
 | `/definition` | Breaks discovery into epics and stories | After benefit-metric is active |
 | `/review` | Quality gate — finds gaps before test-writing | After stories exist |
-| `/test-plan` | Writes failing tests + AC verification script; detects browser-layout-dependent ACs that can't be verified in Jest/jsdom | After review passes |
+| `/test-plan` | Writes failing tests + AC verification script; detects browser-layout-dependent ACs that require E2E or manual verification | After review passes |
 | `/definition-of-ready` | Pre-coding gate — H1–H9 + H-E2E hard blocks; produces coding agent instructions | After test plan exists |
 | `/branch-setup` | Creates isolated worktree, verifies clean baseline | After DoR sign-off |
 | `/implementation-plan` | Writes bite-sized task plan from DoR + test plan | After branch ready |
@@ -429,6 +429,7 @@ Skills that enforce it: `/review` (Category E), `/definition` (Step 1.5), `/defi
 - Keyboard shortcut `o` toggles the Outcomes view
 - Inline metric editing — click ✏️ Edit on any metric row to update signal, evidence, and date
 - ⬇ Download button exports the updated `pipeline-state.json` (turns green when unsaved edits exist)
+- Test progress bar reads `testPlan.passing` from `pipeline-state.json` — `/tdd` and `/subagent-execution` update this field after every task commit so the bar advances in real time during implementation
 - Auto-polls `pipeline-state.json` every 10 seconds **only while a pipeline is actively running** (a feature at `branch-setup`, `implementation-plan`, `subagent-execution`, or `verify-completion`) — the timer stops itself when no active features remain, so there is zero overhead at rest
 
 **Running it:**
@@ -436,15 +437,92 @@ Open with VS Code Live Server or any local HTTP server. Works on GitHub Pages. F
 
 ---
 
+## Toolchain configuration
+
+All toolchain settings live in `.github/context.yml`. Skills read this file at runtime instead of hard-wiring tool names, frameworks, or platform assumptions into prompts.
+
+### Switching profiles
+
+Two ready-to-use profiles ship with the pipeline:
+
+| Profile | When to use |
+|---------|-------------|
+| `contexts/personal.yml` | GitHub-hosted personal or small-team project, no ITSM, no governance |
+| `contexts/work.yml` | Enterprise project — Atlassian stack, regulated environment, CAB change process |
+
+Activate a profile by copying it to `.github/context.yml`:
+
+```bash
+# Personal / open-source
+cp .github/contexts/personal.yml .github/context.yml
+
+# Enterprise / regulated
+cp .github/contexts/work.yml .github/context.yml
+```
+
+Then edit the fields in `context.yml` to match your actual repo before committing.
+
+### What context.yml controls
+
+```yaml
+meta:
+  name: "My project"
+  scope: personal          # personal | team | programme
+  regulated: false         # true → /release offers compliance bundle automatically
+
+source_control:
+  platform: github         # github | gitlab | bitbucket | azure-devops | other
+  base_branch: main
+  pr_command: "gh pr create --draft"
+
+agent:
+  instruction_file: "copilot-instructions.md"
+  # GitHub Copilot → copilot-instructions.md
+  # Claude Code    → AGENTS.md
+  # Cursor         → .cursorrules
+
+runtime:
+  language: typescript
+  test_framework: jest     # jest | vitest | pytest | rspec | junit | mocha | other
+  e2e_framework: playwright
+  ci: github-actions
+
+tools:
+  project_management: github-issues
+  monitoring: null
+  artifact_registry: null
+
+delivery:
+  change_management:
+    process: none          # none | informal | cab
+    tool: null             # null | servicenow | jira-sm | other
+```
+
+Skills that read `context.yml`: `/release` (tool detection for CR body, deployment checklist, and release notes), `/branch-setup` (base branch), `/branch-complete` (PR command), `/definition-of-ready` (tech lead label), `/bootstrap` (profile selection and instruction file wiring).
+
+### Multi-runtime agent support
+
+The pipeline works with any agent runtime that supports instruction files:
+
+| Runtime | Instruction file | Set in context.yml |
+|---------|-----------------|-------------------|
+| GitHub Copilot | `copilot-instructions.md` | `agent.instruction_file: copilot-instructions.md` |
+| Claude Code | `AGENTS.md` | `agent.instruction_file: AGENTS.md` |
+| Cursor | `.cursorrules` | `agent.instruction_file: .cursorrules` |
+
+`/bootstrap` writes the active-context pointer into whichever file is configured.
+
+---
+
 ## Setting up in a new repository
 
-Open Copilot in agent mode and run:
+Open your agent in agent mode and run:
 
 ```
 /bootstrap
 ```
 
-This creates all skill files, templates, `copilot-instructions.md`, and the artefacts directory. It will ask for two things at the end: a product context paragraph and your coding standards. Takes around 5–10 minutes.
+This creates all skill files, templates, the instruction file, and the artefacts directory. It will ask you to choose a context profile, then prompt for two things: a product context paragraph and your coding standards. Takes around 5–10 minutes.
 
 ---
 
@@ -467,7 +545,11 @@ This creates all skill files, templates, `copilot-instructions.md`, and the arte
 
 ```
 .github/
-  copilot-instructions.md          ← master config loaded into every Copilot interaction
+  copilot-instructions.md          ← master config loaded into every agent interaction
+  context.yml                      ← active toolchain profile (copied from contexts/)
+  contexts/
+    personal.yml                   ← profile: GitHub-native, no ITSM, no governance
+    work.yml                       ← profile: enterprise Atlassian + regulated stack
   pull_request_template.md         ← PR checklist with AC and chain traceability fields
   architecture-guardrails.md       ← live guardrails file (create from template)
   pipeline-viz.html                ← pipeline visualiser (open in browser with a local server)
