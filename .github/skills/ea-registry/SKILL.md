@@ -39,10 +39,26 @@ Four operating modes. Determine mode first and state it explicitly.
 
 ## Entry condition check
 
+Treat the EA registry as authoritative in the dedicated registry repository.
+Default canonical repo:
+- `https://github.com/heymishy/ea-registry`
+
+If `context.yml` contains `architecture.ea_registry_repo`, use that value as the
+authoritative target. If it also contains `architecture.ea_registry_local_path`,
+use that local checkout for file operations.
+
 Confirm the registry exists and is readable:
 - `registry/applications/`
 - `registry/interfaces/`
 - `registry/CONVENTIONS.md`
+
+If the current repository does not contain `registry/`, switch to the configured
+EA registry repo/path and run QUERY/CONTRIBUTE/AUDIT there.
+
+When `architecture.ea_registry_authoritative: true`:
+- Never write registry YAML in a product repo
+- Create/update entries only in the EA registry repo
+- Feed delivery repos via FEED mode summaries and links
 
 If missing or empty:
 > "The EA registry is missing or not initialised yet. Share the first application
@@ -125,6 +141,9 @@ If none found, state that this may mean not registered yet.
 ### Non-negotiable rule
 
 Every contribution goes through a pull request.
+
+When using a separate EA registry repository, the PR must be opened in that
+repository (not in the delivery repo where the request originated).
 
 Always:
 1. Work on a branch

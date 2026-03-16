@@ -487,6 +487,11 @@ agent:
   # Claude Code    → AGENTS.md
   # Cursor         → .cursorrules
 
+architecture:
+  ea_registry_repo: "https://github.com/heymishy/ea-registry"
+  ea_registry_local_path: "C:/Users/Hamis/code/ea-registry-repo"
+  ea_registry_authoritative: true
+
 runtime:
   language: typescript
   test_framework: jest     # jest | vitest | pytest | rspec | junit | mocha | other
@@ -504,7 +509,18 @@ delivery:
     tool: null             # null | servicenow | jira-sm | other
 ```
 
-Skills that read `context.yml`: `/release` (tool detection for CR body, deployment checklist, and release notes), `/branch-setup` (base branch), `/branch-complete` (PR command), `/definition-of-ready` (tech lead label), `/bootstrap` (profile selection and instruction file wiring).
+Skills that read `context.yml`: `/release` (tool detection for CR body, deployment checklist, and release notes), `/branch-setup` (base branch), `/branch-complete` (PR command), `/definition-of-ready` (tech lead label), `/bootstrap` (profile selection and instruction file wiring), `/ea-registry` (authoritative registry repo/path targeting).
+
+### EA registry canonical source
+
+The EA registry now lives in its own repository:
+
+- `https://github.com/heymishy/ea-registry`
+
+Keep application/interface/domain registry data in sync by treating that repo as
+authoritative (`architecture.ea_registry_authoritative: true`). Product repos
+should consume dependency context via `/ea-registry` FEED mode instead of
+duplicating registry YAML locally.
 
 ### Multi-runtime agent support
 

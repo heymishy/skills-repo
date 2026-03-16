@@ -28,6 +28,13 @@ agent:
   #   Claude Code     → AGENTS.md
   #   Cursor          → .cursorrules
 
+architecture:
+  ea_registry_repo: "https://github.com/heymishy/ea-registry"
+  ea_registry_local_path: "C:/Users/Hamis/code/ea-registry-repo"
+  ea_registry_authoritative: true
+  # If true, application/interface registry updates are made in ea_registry_repo
+  # and referenced from delivery repos via /ea-registry FEED mode.
+
 runtime:
   language: typescript              # typescript | python | java | go | rust | other
   test_framework: jest              # jest | vitest | pytest | rspec | junit | mocha | other

@@ -233,11 +233,15 @@ Before closing a session:
 -->
 
 **Architecture guardrails:** `.github/architecture-guardrails.md`
-**EA registry repo (optional):** [FILL IN — URL or path to your organisation EA registry repo]
+**EA registry repo (optional):** `https://github.com/heymishy/ea-registry`
 **Pattern library:** [FILL IN — URL or path to your pattern / component library]
 **Style guide:** [FILL IN — URL or path to your style guide]
 **Reference implementation:** [FILL IN — path in repo, e.g. `src/reference/`]
 **Repo-level ADR register:** `.github/architecture-guardrails.md` (Active ADRs section)
+
+When `context.yml` sets `architecture.ea_registry_authoritative: true`, keep
+application/interface/domain entries in the EA registry repo and use `/ea-registry`
+to feed dependency context into delivery repos.
 
 > Per-feature decisions are recorded by /decisions and live in
 > `.github/artefacts/[feature]/decisions.md`.

@@ -48,6 +48,7 @@ Check whether `.github/skills/` already exists:
     definition-of-done/SKILL.md   ← post-merge AC validation
     trace/SKILL.md                ← full chain traceability report
     decisions/SKILL.md            ← ADR + decision log writer
+    ea-registry/SKILL.md          ← org-level app/interface registry query + update
     reverse-engineer/SKILL.md     ← legacy codebase rule extraction + vendor Q&A
     bootstrap/SKILL.md            ← this file
     spike/SKILL.md                ← timeboxed investigation for genuine unknowns
@@ -100,7 +101,7 @@ Check whether `.github/skills/` already exists:
   pipeline-viz.html               ← interactive pipeline visualiser (open in browser)
 ```
 
-**Total: 23 skill files + 21 templates + 3 root files + 3 viz files + artefacts directory + 2 context profiles**
+**Total: 24 skill files + 21 templates + 3 root files + 3 viz files + artefacts directory + 2 context profiles**
 
 ---
 
@@ -172,6 +173,26 @@ Set `agent.instruction_file` in `context.yml` based on answer. If 4, ask for the
 - If 3: copy `contexts/personal.yml` to `context.yml` and add a comment: `# TODO: configure this file before running /definition or /release`
 
 Update `context.yml` with the `agent.instruction_file` selected in 3a.
+
+**3c — Optional EA registry target:**
+
+> "Do you maintain an organisation-level EA registry in a separate repo?
+>
+> 1. Yes — use default: `https://github.com/heymishy/ea-registry`
+> 2. Yes — I'll provide a different URL/path
+> 3. No
+>
+> Reply: 1, 2, or 3"
+
+- If 1: set in `context.yml`:
+  - `architecture.ea_registry_repo: https://github.com/heymishy/ea-registry`
+  - `architecture.ea_registry_authoritative: true`
+- If 2: ask for URL/path and set:
+  - `architecture.ea_registry_repo: [provided value]`
+  - `architecture.ea_registry_authoritative: true`
+- If 3:
+  - `architecture.ea_registry_repo: null`
+  - `architecture.ea_registry_authoritative: false`
 
 Write the active-context pointer into the agent instruction file at the top of the file
 (or directly after any existing YAML frontmatter, before the first `##` heading):
