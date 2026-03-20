@@ -1,11 +1,11 @@
 ---
 name: loop-design
 description: >
-  Defines and operationalises a two-loop delivery model for this pipeline:
-  outer loop (discover, define, release, monitor, measure, learn) and inner loop
-  (build, test, validate). Supports a swappable inner loop by defining an explicit
-  slot contract so teams can keep this repo's default implementation or map an
-  alternative skill pack/toolchain.
+   Defines and operationalises a two-loop delivery model for evolving the whole
+   skill library: outer loop (discover, define, release, monitor, measure, learn)
+   and inner loop (build, test, validate). Supports a swappable inner loop by
+   defining an explicit slot contract so teams can keep this repo's default
+   implementation or map an alternative skill pack/toolchain.
 ---
 
 # Loop Design Skill
@@ -18,10 +18,13 @@ None. Can run at any stage.
 
 ## Purpose
 
-Turn the pipeline into an explicit two-loop operating model with:
+Turn the skills system into an explicit two-loop operating model with:
 1. Outer loop stages and feedback cadence
 2. Inner loop execution contract (tooling-agnostic slots)
 3. Mapping for either default inner loop skills or a custom replacement pack
+
+This is a **meta-level design skill** for the library operating model, not a
+per-feature delivery step.
 
 ---
 

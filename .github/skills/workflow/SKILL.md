@@ -142,7 +142,7 @@ Ask this before presenting any pipeline guidance:
 > Reply: 1, 2, 3, or 4
 
 Notes:
-- `/loop-design` and `/scale-pipeline` are strategic design skills
+- `/loop-design`, `/token-optimization`, and `/scale-pipeline` are meta-level design skills for evolving the skill library
 - `/token-optimization` and `/org-mapping` also act as policy overlays consumed
   by core skills (`/implementation-plan`, `/subagent-execution`, `/review`,
   `/definition-of-ready`, `/verify-completion`, `/release`)

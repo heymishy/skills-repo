@@ -1,9 +1,10 @@
 ---
 name: token-optimization
 description: >
-  Designs a token, model-routing, and context-budget strategy for this pipeline.
-  Helps reduce token spend while preserving quality by stage-aware model selection,
-  prompt shaping, summarisation boundaries, and artefact compression rules.
+  Designs a token, model-routing, and context-budget strategy for the whole
+  skill library. Helps reduce token spend while preserving quality by stage-aware
+  model selection, prompt shaping, summarisation boundaries, and artefact
+  compression rules.
 ---
 
 # Token Optimization Skill
@@ -21,6 +22,10 @@ Create a practical optimization plan for:
 - Latency
 - Model-fit by task type
 - Prompt/context hygiene
+
+This is a **meta-level design skill** for library-wide policy.
+Its outputs are intended to be consumed by core execution/review/release skills
+through `context.yml` overlays.
 
 ---
 

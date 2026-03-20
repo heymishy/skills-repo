@@ -74,8 +74,8 @@ contribution, audit, and dependency context feed to /discovery, /definition,
 and /reverse-engineer
 
 **Pipeline evolution support:**
-`/loop-design` — define outer/inner loop model and swappable inner-loop contract
-`/token-optimization` — tune model routing and token budgets by stage (policy consumed by core skills)
+`/loop-design` — define outer/inner loop model for evolving the whole skill library
+`/token-optimization` — design library-wide model routing/token policy (consumed by core skills)
 `/org-mapping` — map pipeline language/artefacts to organisation governance (policy consumed by core skills)
 `/scale-pipeline` — design multi-team enterprise operating model for evolving the whole skill system
 
