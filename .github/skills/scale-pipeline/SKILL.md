@@ -1,9 +1,10 @@
 ---
 name: scale-pipeline
 description: >
-  Designs an operating model to scale this skills pipeline from 1-2 teams to
-  20-30 teams across mixed human and agentic delivery. Covers repo topology,
-  state strategy, governance federations, and reliability controls.
+  Designs an operating model to scale and evolve the whole skills system (not
+  an individual feature workflow) from 1-2 teams to 20-30 teams across mixed
+  human and agentic delivery. Covers repo topology, state strategy, governance
+  federations, and reliability controls for the full skill pack lifecycle.
 ---
 
 # Scale Pipeline Skill
@@ -16,7 +17,14 @@ None. Best run at programme setup and re-run at phase gates.
 
 ## Purpose
 
-Define a scalable operating model for people, process, and state management.
+Define a scalable operating model for evolving the full skills pipeline:
+- skill pack lifecycle (versioning, rollout, compatibility)
+- shared templates and governance contracts
+- state strategy across many repos/teams
+- operating controls for human + agentic adoption at enterprise scale
+
+This skill is a **meta-level design skill** for the pipeline itself, not a
+per-story or per-feature implementation skill.
 
 ---
 

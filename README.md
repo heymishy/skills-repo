@@ -352,7 +352,7 @@ When in doubt about which track, run `/workflow` — it will route you.
 | `/loop-design` | Defines outer/inner loop operating model and swappable inner-loop contract | When you want to model delivery as two loops or substitute a custom inner loop |
 | `/token-optimization` | Defines model-routing and token budget policy that is consumed by core execution/review/release skills | When cost/latency/token usage needs to be controlled without losing quality |
 | `/org-mapping` | Defines terminology/governance mappings that are consumed by DoR/release/workflow and reporting outputs | When adopting pipeline terminology into enterprise process/governance language |
-| `/scale-pipeline` | Designs operating model for scaling from small pilots to enterprise multi-team use | When planning rollout from 1-2 teams to 20-30 teams |
+| `/scale-pipeline` | Designs how the full skills pipeline evolves at enterprise scale (versioning, governance, state, operating model) | When planning rollout/evolution of the skill system from 1-2 teams to 20-30 teams |
 | `/reverse-engineer` | Extracts business rules from legacy code | When modernising or replacing a legacy system |
 | `/programme` | Programme-level navigator for multi-team work | Large initiatives, migrations, library rewrites |
 | `/metric-review` | Re-baselines benefit metrics at phase gates | Quarterly, at phase gates, or when targets are questioned |

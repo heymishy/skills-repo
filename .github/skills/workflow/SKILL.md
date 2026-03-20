@@ -137,7 +137,7 @@ Ask this before presenting any pipeline guidance:
 > 1. Two-loop model + swappable inner loop — `/loop-design`
 > 2. Token/model usage optimization — `/token-optimization`
 > 3. Org language + governance mapping — `/org-mapping`
-> 4. Multi-team scale operating model — `/scale-pipeline`
+> 4. Multi-team scale operating model for the whole skills system — `/scale-pipeline`
 >
 > Reply: 1, 2, 3, or 4
 
