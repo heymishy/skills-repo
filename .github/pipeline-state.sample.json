@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-03-21T10:30:00Z",
+  "updated": "2026-03-21T12:05:00Z",
   "programmes": [
     {
       "slug": "enterprise-rollout-2026",
@@ -148,6 +148,79 @@
       ]
     },
     {
+      "slug": "billing-ledger-reconciliation",
+      "name": "Billing Ledger Reconciliation",
+      "track": "standard",
+      "team": "Team Zeta",
+      "stage": "branch-setup",
+      "health": "amber",
+      "updatedAt": "2026-03-21T11:55:00Z",
+      "blocker": "Awaiting clean baseline on one flaky integration test",
+      "epics": [
+        {
+          "slug": "ledger-reconcile-core",
+          "name": "Ledger Reconciliation Core",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "daily-ledger-diff-report",
+              "name": "Daily Ledger Diff Report",
+              "stage": "branch-setup",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": { "status": "written", "totalTests": 10, "passing": 0 },
+              "dorStatus": "signed-off",
+              "prStatus": "none",
+              "dodStatus": "not-started",
+              "acVerified": 0,
+              "acTotal": 4,
+              "releaseReady": false,
+              "tasks": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "customer-export-api-v2",
+      "name": "Customer Export API v2",
+      "track": "standard",
+      "team": "Team Eta",
+      "stage": "implementation-plan",
+      "health": "green",
+      "updatedAt": "2026-03-21T11:50:00Z",
+      "epics": [
+        {
+          "slug": "export-api-core",
+          "name": "Export API Core",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "async-export-job-endpoint",
+              "name": "Async Export Job Endpoint",
+              "stage": "implementation-plan",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": { "status": "written", "totalTests": 13, "passing": 0 },
+              "dorStatus": "signed-off",
+              "prStatus": "none",
+              "dodStatus": "not-started",
+              "acVerified": 0,
+              "acTotal": 5,
+              "releaseReady": false,
+              "tasks": [
+                { "id": "task-1", "name": "Write failing contract tests for async export", "tddState": "not-started", "file": "artefacts/customer-export-api-v2/plans/async-export-job-endpoint-plan.md" },
+                { "id": "task-2", "name": "Add export job domain model + persistence", "tddState": "not-started", "file": "artefacts/customer-export-api-v2/plans/async-export-job-endpoint-plan.md" },
+                { "id": "task-3", "name": "Implement status polling endpoint", "tddState": "not-started", "file": "artefacts/customer-export-api-v2/plans/async-export-job-endpoint-plan.md" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "slug": "ws-payments-hardening",
       "name": "Payments Hardening Workstream",
       "track": "programme-workstream",
@@ -181,6 +254,45 @@
                 { "id": "task-1", "name": "Add failing retry collision tests", "tddState": "committed", "file": "artefacts/ws-payments-hardening/plans/payment-retry-idempotency-plan.md" },
                 { "id": "task-2", "name": "Implement idempotency key repository", "tddState": "green", "file": "artefacts/ws-payments-hardening/plans/payment-retry-idempotency-plan.md" },
                 { "id": "task-3", "name": "Refactor duplicate detection service", "tddState": "refactor", "file": "artefacts/ws-payments-hardening/plans/payment-retry-idempotency-plan.md" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "fraud-rules-optimizer",
+      "name": "Fraud Rules Optimizer",
+      "track": "standard",
+      "team": "Team Theta",
+      "stage": "implementation-review",
+      "health": "amber",
+      "updatedAt": "2026-03-21T11:48:00Z",
+      "blocker": "Important code quality findings open before verify-completion",
+      "epics": [
+        {
+          "slug": "rules-engine-tuning",
+          "name": "Rules Engine Tuning",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "velocity-threshold-tuning",
+              "name": "Velocity Threshold Tuning",
+              "stage": "implementation-review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": { "status": "written", "totalTests": 11, "passing": 9 },
+              "dorStatus": "signed-off",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/995",
+              "dodStatus": "not-started",
+              "acVerified": 2,
+              "acTotal": 4,
+              "releaseReady": false,
+              "tasks": [
+                { "id": "task-1", "name": "Add threshold config tests", "tddState": "committed", "file": "artefacts/fraud-rules-optimizer/plans/velocity-threshold-tuning-plan.md" },
+                { "id": "task-2", "name": "Refactor scoring evaluator", "tddState": "green", "file": "artefacts/fraud-rules-optimizer/plans/velocity-threshold-tuning-plan.md" }
               ]
             }
           ]
