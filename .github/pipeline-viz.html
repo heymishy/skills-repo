@@ -448,6 +448,18 @@
   #md-title { flex: 1; font-size: 11px; color: var(--muted); font-family: monospace; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   #md-close { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: 2px 10px; cursor: pointer; font-size: 12px; }
   #md-close:hover { color: var(--text); }
+  .md-tab-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: 2px 10px; cursor: pointer; font-size: 11px; }
+  .md-tab-btn:hover { color: var(--text); }
+  .md-tab-btn.active { color: var(--blue); border-color: rgba(59,130,246,.45); background: rgba(59,130,246,.08); }
+  #md-save-draft { background: none; border: 1px solid rgba(34,197,94,.4); color: var(--green); border-radius: 4px; padding: 2px 10px; cursor: pointer; font-size: 11px; }
+  #md-save-draft:hover { background: rgba(34,197,94,.1); }
+  #md-reset-draft { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: 2px 10px; cursor: pointer; font-size: 11px; }
+  #md-reset-draft:hover { color: var(--text); }
+  #md-status { font-size: 10px; color: var(--muted); margin-right: 6px; }
+  #md-content { display: none; }
+  #md-content.active { display: block; }
+  #md-editor { display: none; width: 100%; min-height: 58vh; resize: vertical; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; font-family: monospace; font-size: 12px; line-height: 1.55; box-sizing: border-box; }
+  #md-editor.active { display: block; }
   #md-body { overflow-y: auto; padding: 24px 32px; flex: 1; line-height: 1.6; }
   .md-content { max-width: 720px; }
   .md-content h1 { font-size: 20px; font-weight: 700; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
@@ -702,9 +714,17 @@
 <div id="md-pane">
   <div id="md-toolbar">
     <span id="md-title"></span>
+    <span id="md-status"></span>
+    <button class="md-tab-btn active" id="md-tab-preview">Preview</button>
+    <button class="md-tab-btn" id="md-tab-raw">Markdown</button>
+    <button id="md-save-draft">Save draft</button>
+    <button id="md-reset-draft">Reset</button>
     <button id="md-close">✕ Close</button>
   </div>
-  <div id="md-body"><div class="md-content" id="md-content"></div></div>
+  <div id="md-body">
+    <div class="md-content active" id="md-content"></div>
+    <textarea id="md-editor" spellcheck="false"></textarea>
+  </div>
 </div>
 
 <div id="kbd-hint">e = expand all &nbsp;·&nbsp; c = collapse all &nbsp;·&nbsp; g = loop grouped &nbsp;·&nbsp; v = governance &nbsp;·&nbsp; o = outcomes &nbsp;·&nbsp; l = library &nbsp;·&nbsp; [ / ] = narrower / wider &nbsp;·&nbsp; 0 = reset widths &nbsp;·&nbsp; Esc = close &nbsp;·&nbsp; in Outcomes: ✏️ to edit a metric</div>
@@ -773,6 +793,10 @@ let openDoneSections = new Set();   // stage ids with 'completed' section expand
 let drawerStory  = null;
 let viewMode = 'stage'; // 'stage' | 'governance' | 'outcomes' | 'library'
 let editingMetric = null; // { featureSlug, metricId }
+let mdCurrentPath  = '';
+let mdOriginalText = '';
+let mdDraftText    = '';
+let mdMode         = 'preview'; // 'preview' | 'raw'
 let isDirty = false;
 let pipelineLayout = 'flat'; // 'flat' | 'loop-grouped'
 let governanceGateFilter = ''; // gate id for fail-focused filtering
@@ -1868,28 +1892,71 @@ function openDrawer(featureSlug, epicSlug, storySlug) {
 // ─────────────────────────────────────────────────────────────────────────────
 // MARKDOWN VIEWER
 // ─────────────────────────────────────────────────────────────────────────────
+function draftStorageKey(path)    { return `pipeline-viz:draft:${path}`; }
+function loadDraft(path)          { try { return localStorage.getItem(draftStorageKey(path)); } catch (_) { return null; } }
+function saveDraft(path, text)    { try { localStorage.setItem(draftStorageKey(path), text); return true; } catch (_) { return false; } }
+function clearDraft(path)         { try { localStorage.removeItem(draftStorageKey(path)); return true; } catch (_) { return false; } }
+
+function renderMdStatus() {
+  const statusEl = document.getElementById('md-status');
+  if (!statusEl) return;
+  if (!mdCurrentPath) { statusEl.textContent = ''; return; }
+  const hasDraft = loadDraft(mdCurrentPath) !== null;
+  const changed  = mdDraftText !== mdOriginalText;
+  if (hasDraft && changed) { statusEl.textContent = 'Draft changed'; statusEl.style.color = 'var(--amber)'; return; }
+  if (hasDraft)            { statusEl.textContent = 'Draft saved';   statusEl.style.color = 'var(--green)'; return; }
+  statusEl.textContent = changed ? 'Unsaved' : 'Read only source';
+  statusEl.style.color = changed ? 'var(--amber)' : 'var(--muted)';
+}
+
+function renderMdBody() {
+  const contentEl  = document.getElementById('md-content');
+  const editorEl   = document.getElementById('md-editor');
+  const previewBtn = document.getElementById('md-tab-preview');
+  const rawBtn     = document.getElementById('md-tab-raw');
+  if (!contentEl || !editorEl || !previewBtn || !rawBtn) return;
+  previewBtn.classList.toggle('active', mdMode === 'preview');
+  rawBtn.classList.toggle('active',     mdMode === 'raw');
+  contentEl.classList.toggle('active',  mdMode === 'preview');
+  editorEl.classList.toggle('active',   mdMode === 'raw');
+  editorEl.value = mdDraftText;
+  const html = typeof marked !== 'undefined'
+    ? marked.parse(mdDraftText || '')
+    : `<pre style="white-space:pre-wrap;font-size:12px;line-height:1.6">${esc(mdDraftText || '')}</pre>`;
+  contentEl.innerHTML = html;
+  renderMdStatus();
+}
+
 async function openMdViewer(path) {
+  mdCurrentPath = path;
+  mdMode = 'preview';
   document.getElementById('md-title').textContent = path;
   document.getElementById('md-content').innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0">Loading…</div>';
+  document.getElementById('md-editor').value = '';
   document.getElementById('md-overlay').classList.add('open');
   document.getElementById('md-pane').classList.add('open');
   try {
     const resp = await fetch(path + '?_=' + Date.now());
     if (!resp.ok) throw new Error(`HTTP ${resp.status} — file not found`);
     const text = await resp.text();
-    const html = typeof marked !== 'undefined'
-      ? marked.parse(text)
-      : `<pre style="white-space:pre-wrap;font-size:12px;line-height:1.6">${esc(text)}</pre>`;
-    document.getElementById('md-content').innerHTML = html;
+    mdOriginalText = text;
+    mdDraftText = loadDraft(path) ?? text;
+    renderMdBody();
   } catch (e) {
-    document.getElementById('md-content').innerHTML =
-      `<div style="color:var(--red);font-size:12px">Could not load: ${esc(e.message)}</div>`;
+    mdOriginalText = `<!-- Could not load source: ${e.message} -->`;
+    mdDraftText = loadDraft(path) ?? mdOriginalText;
+    renderMdBody();
+    document.getElementById('md-content').innerHTML +=
+      `<div style="color:var(--red);font-size:12px;margin-top:8px">Could not load source file: ${esc(e.message)}<br>Draft editing is still available locally.</div>`;
   }
 }
 
 function closeMdViewer() {
   document.getElementById('md-overlay').classList.remove('open');
   document.getElementById('md-pane').classList.remove('open');
+  mdCurrentPath  = '';
+  mdOriginalText = '';
+  mdDraftText    = '';
 }
 
 function closeDrawer() {
@@ -2075,6 +2142,34 @@ function initFilters() {
   document.getElementById('drawer-overlay').addEventListener('click', closeDrawer);
   document.getElementById('md-close').addEventListener('click', closeMdViewer);
   document.getElementById('md-overlay').addEventListener('click', closeMdViewer);
+  document.getElementById('md-tab-preview').addEventListener('click', () => {
+    mdMode = 'preview';
+    renderMdBody();
+  });
+  document.getElementById('md-tab-raw').addEventListener('click', () => {
+    mdMode = 'raw';
+    renderMdBody();
+    document.getElementById('md-editor').focus();
+  });
+  document.getElementById('md-editor').addEventListener('input', e => {
+    mdDraftText = e.target.value;
+    renderMdStatus();
+  });
+  document.getElementById('md-save-draft').addEventListener('click', () => {
+    if (!mdCurrentPath) return;
+    if (!saveDraft(mdCurrentPath, mdDraftText)) {
+      const s = document.getElementById('md-status');
+      s.textContent = 'Save failed'; s.style.color = 'var(--red)';
+      return;
+    }
+    renderMdStatus();
+  });
+  document.getElementById('md-reset-draft').addEventListener('click', () => {
+    if (!mdCurrentPath) return;
+    clearDraft(mdCurrentPath);
+    mdDraftText = mdOriginalText;
+    renderMdBody();
+  });
   // Outcomes board — metric edit/save/cancel
   document.getElementById('outcomes-board').addEventListener('click', e => {
     const editBtn = e.target.closest('[data-action="edit-metric"]');
@@ -2139,7 +2234,7 @@ function downloadState() {
 // KEYBOARD
 // ─────────────────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
   if (e.key === 'Escape') {
     if (document.getElementById('md-overlay').classList.contains('open')) { closeMdViewer(); }
     else { closeDrawer(); }
