@@ -217,6 +217,12 @@
   .next-action-btn:disabled { opacity: .45; cursor: not-allowed; }
   .next-action-age { color: var(--muted); font-size: 10px; }
   .next-action-warning { color: var(--amber); font-size: 10px; margin-top: 4px; }
+  .next-action-save-hint { font-size: 10px; color: var(--muted); margin-top: 3px; font-style: italic; }
+
+  /* ── Stage artefacts row (active card) ───────────────────────── */
+  .card-artefacts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 0 2px; border-top: 1px solid var(--border); margin-top: 6px; }
+  .card-artefacts .label { font-size: 10px; color: var(--muted); margin-right: 2px; flex-shrink: 0; }
+  .card-artefacts a.drawer-link { font-size: 11px; white-space: nowrap; }
 
   /* ── Epic tree ────────────────────────────────────────────────── */
   .epic-list { display: flex; flex-direction: column; gap: 4px; }
@@ -1783,6 +1789,10 @@ function featureCardHTML(f) {
   const teamTag = f.team ? `<span class="tag">${esc(f.team)}</span>` : '';
   const blocker = f.blocker && f.health === 'red'
     ? `<div class="blocker-notice">🚫 ${esc(f.blocker)}</div>` : '';
+  const stageArts = (STAGE_ARTEFACTS[f.stage] || (() => []))(f);
+  const advanceTip = advance.ok
+    ? `Moves stage to "${stageLabel(nextStage)}" in memory — click ⬇ Download to save pipeline-state.json`
+    : esc(advance.reason || '');
 
   return `
   <div class="feature-card health-${f.health}" data-slug="${f.slug}">
@@ -1799,11 +1809,13 @@ function featureCardHTML(f) {
           <div><span class="label">Next</span>${esc(action.nextAction)}</div>
           <div class="next-action-controls">
             <span class="next-action-age">${formatAge(featureAgeMinutes(f))}</span>
-            ${nextStage ? `<button class="next-action-btn" data-action="advance-feature" data-slug="${esc(f.slug)}" ${advance.ok ? '' : 'disabled'} title="${esc(advance.reason || '')}">Move to ${esc(stageLabel(nextStage))}</button>` : ''}
+            ${nextStage ? `<button class="next-action-btn" data-action="advance-feature" data-slug="${esc(f.slug)}" ${advance.ok ? '' : 'disabled'} title="${advanceTip}">Move to ${esc(stageLabel(nextStage))}</button>` : ''}
           </div>
         </div>
         ${nextStage && !advance.ok ? `<div class="next-action-warning">Guardrail: ${esc(advance.reason)}</div>` : ''}
+        ${nextStage && advance.ok ? `<div class="next-action-save-hint">⬇ Download pipeline-state.json afterwards to persist the change</div>` : ''}
       </div>
+      ${stageArts.length > 0 ? `<div class="card-artefacts"><span class="label">Docs</span>${stageArts.map(a => `<a class="drawer-link" href="${esc(a.path)}">${esc(a.label)}</a>`).join('')}</div>` : ''}
       <div class="meta">
         ${loopStageBadge(f.stage)}
         ${metaStageBadge(f.stage)}
