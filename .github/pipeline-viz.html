@@ -209,15 +209,7 @@
   .next-action.done { border-color: rgba(34,197,94,.35); }
   .next-action-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
   .next-action-controls { display: inline-flex; align-items: center; gap: 6px; }
-  .next-action-btn {
-    border: 1px solid var(--border); background: var(--surface2); color: var(--text);
-    border-radius: 4px; padding: 2px 8px; font-size: 10px; cursor: pointer;
-  }
-  .next-action-btn:hover { border-color: var(--text); }
-  .next-action-btn:disabled { opacity: .45; cursor: not-allowed; }
   .next-action-age { color: var(--muted); font-size: 10px; }
-  .next-action-warning { color: var(--amber); font-size: 10px; margin-top: 4px; }
-  .next-action-save-hint { font-size: 10px; color: var(--muted); margin-top: 3px; font-style: italic; }
 
   /* ── Stage artefacts row (active card) ───────────────────────── */
   .card-artefacts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 0 2px; border-top: 1px solid var(--border); margin-top: 6px; }
@@ -1784,15 +1776,10 @@ function featureCardHTML(f) {
   const epics  = f.epics || [];
   const allStories = epics.flatMap(e => e.stories || []);
   const action = featureActionMeta(f);
-  const nextStage = getNextStage(f.stage);
-  const advance = nextStage ? canAdvanceFeature(f, nextStage) : { ok: false, reason: 'No next stage' };
   const teamTag = f.team ? `<span class="tag">${esc(f.team)}</span>` : '';
   const blocker = f.blocker && f.health === 'red'
     ? `<div class="blocker-notice">🚫 ${esc(f.blocker)}</div>` : '';
   const stageArts = (STAGE_ARTEFACTS[f.stage] || (() => []))(f);
-  const advanceTip = advance.ok
-    ? `Moves stage to "${stageLabel(nextStage)}" in memory — click ⬇ Download to save pipeline-state.json`
-    : esc(advance.reason || '');
 
   return `
   <div class="feature-card health-${f.health}" data-slug="${f.slug}">
@@ -1807,13 +1794,8 @@ function featureCardHTML(f) {
       <div class="next-action ${action.state}">
         <div class="next-action-row">
           <div><span class="label">Next</span>${esc(action.nextAction)}</div>
-          <div class="next-action-controls">
-            <span class="next-action-age">${formatAge(featureAgeMinutes(f))}</span>
-            ${nextStage ? `<button class="next-action-btn" data-action="advance-feature" data-slug="${esc(f.slug)}" ${advance.ok ? '' : 'disabled'} title="${advanceTip}">Move to ${esc(stageLabel(nextStage))}</button>` : ''}
-          </div>
+          <span class="next-action-age">${formatAge(featureAgeMinutes(f))}</span>
         </div>
-        ${nextStage && !advance.ok ? `<div class="next-action-warning">Guardrail: ${esc(advance.reason)}</div>` : ''}
-        ${nextStage && advance.ok ? `<div class="next-action-save-hint">⬇ Download pipeline-state.json afterwards to persist the change</div>` : ''}
       </div>
       ${stageArts.length > 0 ? `<div class="card-artefacts"><span class="label">Docs</span>${stageArts.map(a => `<a class="drawer-link" href="${esc(a.path)}">${esc(a.label)}</a>`).join('')}</div>` : ''}
       <div class="meta">
@@ -2500,24 +2482,6 @@ function handleBoardClick(e) {
       focusFeatureBySlug(focusFeature.dataset.slug);
       return;
     }
-    const advanceFeature = e.target.closest('[data-action="advance-feature"]');
-    if (advanceFeature) {
-      const slug = advanceFeature.dataset.slug;
-      const feature = allData && allData.features ? allData.features.find(f => f.slug === slug) : null;
-      if (!feature) return;
-      const nextStage = getNextStage(feature.stage);
-      if (!nextStage) return;
-      const check = canAdvanceFeature(feature, nextStage);
-      if (!check.ok) return;
-      feature.stage = nextStage;
-      feature.updatedAt = new Date().toISOString();
-      isDirty = true;
-      const dl = document.getElementById('download-btn');
-      dl.classList.add('dirty');
-      dl.title = 'Unsaved changes — click to download updated pipeline-state.json';
-      render();
-      return;
-    }
     const narrowCol = e.target.closest('[data-action="narrow-col"]');
     if (narrowCol) {
       resizeStageColumn(narrowCol.dataset.stage, -COL_STEP);
@@ -2921,33 +2885,6 @@ function getNextStage(stage) {
   ];
   const i = order.indexOf(stage);
   return i >= 0 && i < order.length - 1 ? order[i + 1] : null;
-}
-
-function canAdvanceFeature(feature, nextStage) {
-  if (!feature) return { ok: false, reason: 'Feature not found' };
-  if (feature.health === 'red' || feature.stage === 'stalled') return { ok: false, reason: 'Resolve blocker first' };
-
-  const stage = feature.stage;
-  const stories = allStories(feature);
-
-  if (stage === 'review' && hasHighFindings(feature)) {
-    return { ok: false, reason: 'HIGH findings must be cleared before test planning' };
-  }
-  if (stage === 'definition-of-ready') {
-    const allSigned = stories.length > 0 && stories.every(s => s.dorStatus === 'signed-off');
-    if (!allSigned) return { ok: false, reason: 'All stories must be DoR signed-off' };
-  }
-  if (stage === 'implementation-review') {
-    const hasReviewHigh = stories.some(s => (s.highFindings || 0) > 0);
-    if (hasReviewHigh) return { ok: false, reason: 'Implementation/review HIGH findings still present' };
-  }
-  if (stage === 'release-pending' && !isReleaseReady(feature)) {
-    return { ok: false, reason: 'Not all stories are release ready' };
-  }
-  if (nextStage === 'released' && stage !== 'release-pending') {
-    return { ok: false, reason: 'Release can only follow release-pending' };
-  }
-  return { ok: true, reason: '' };
 }
 
 function focusFeatureBySlug(slug) {
