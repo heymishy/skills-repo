@@ -44,6 +44,28 @@ All notable changes to this repository will be documented in this file.
 
 ---
 
+### Added (governance first-principles — `7613069`, `ed25c15`)
+- **`.github/context.yml`** — active pipeline config created from the personal profile. Activates all downstream skill config: tool integrations, compliance prompts, org-label gate mapping, token policy, and EA registry paths. Previously absent, causing all context-reading skills (`/review`, `/definition-of-ready`, `/release`, `/org-mapping`) to silently no-op.
+- **`.github/architecture-guardrails.md`** — live guardrails file created with four repo-level ADRs: ADR-001 (single-file viz, no build step), ADR-002 (gates must use evidence fields, not stage-proxy), ADR-003 (schema-first: fields defined before use), ADR-004 (`context.yml` is the single config source of truth). Previously absent, silently disabling `/review` Category E, DoR hard block H9, and `/trace` architecture compliance walk.
+- **`.github/governance-gates.yml`** — canonical gate definition file. Single source of truth for all 7 governance gates: IDs, labels, skill paths, pass criteria, artefact templates, and evidence field specs. Both `GOVERNANCE_GATES` in the viz and individual skill files are derived from this.
+- **`.github/scripts/check-governance-sync.js`** — pre-commit validator that diffs gate IDs and order between `governance-gates.yml` and `GOVERNANCE_GATES` in `pipeline-viz.html`. Blocks commit if they diverge.
+- **`pipeline-state.schema.json` — missing fields added**: feature-level `complianceProfile` (enum: standard/regulated), `regulated` (boolean), `coverageMapPath`, `coverageRisk`, `traceStatus`; story-level `verifyStatus`, `layoutGapsAtMerge`, `layoutGapsRiskAccepted`, `tasks[]` with `tddState` (not-started/committed/green/refactor/done); top-level `config` block (`config.regulated`, `config.strictPolicyDefault`).
+- **README — pipeline flow image** (`8c790e6`): replaced linear mermaid diagram with `skills-pipeline-flow.jpg` (two-loop layout showing outer loop wrapping inner coding loop).
+- **README — viz screenshot** (`8c790e6`): replaced placeholder `docs/pipeline-viz.png` with live `pipeline-vis-example.png`.
+
+### Changed (governance first-principles)
+- **`governanceStrictPolicy` now persists in `localStorage`**: survives page reload. Toggle state is remembered per browser.
+- **`config.regulated` bridge**: `normalizeData()` now reads `allData.config.regulated` to set strict-policy default on first load (when no user preference is stored). Wiring path: `context.yml: meta.regulated` → skill writes `config.regulated` → viz reads on load.
+- **Four stage-proxy gates replaced with evidence-field checks** (satisfies ADR-002):
+  - `verify-completion` → reads `story.verifyStatus` (not-started/running/passed); stage fallback retained with `// TODO` comment.
+  - `definition-of-done` → reads `story.dodStatus` only; removed `hasReachedStage` proxy.
+  - `trace` → reads `feature.traceStatus` (not-run/passed/has-findings); now shows **fail** when findings exist.
+  - `release` → requires `feature.stage === 'released'` AND `stories.every(s => s.releaseReady)`; warns if stage-only (no evidence).
+- **DoR checklist template synced to SKILL.md**: Hard Blocks table now exactly matches H1–H9 + H-E2E; Warnings table matches W1–W5. Removed three rows that had diverged from the skill (upstream dependency check, discovery approved, benefit-metric active); added H6 (complexity rated), H9 (architecture constraints), H-E2E, W3 (MEDIUM findings acknowledged), W4 (verification script reviewed).
+- **Pre-commit hook extended**: `.git/hooks/pre-commit` now runs `check-governance-sync.js` after `check-viz-syntax.js`.
+
+---
+
 ---
 
 - Added context-driven EA registry source-of-truth fields in profiles:

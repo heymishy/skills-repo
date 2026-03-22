@@ -473,7 +473,7 @@ Skills that enforce it: `/review` (Category E), `/definition` (Step 1.5), `/defi
 
 `.github/pipeline-viz.html` is a single-file SPA that reads `pipeline-state.json` and renders the current state of every feature in the pipeline.
 
-![Pipeline visualiser — stage view and outcomes view](docs/pipeline-viz.png)
+![Pipeline visualiser — stage board with outer loop, inner loop, governance matrix, action queue, and outcomes view](.github/pipeline-vis-example.png)
 
 **Views:**
 - **Stage view** — feature cards arranged by pipeline stage, with health colour, test progress bar, task progress bar, and loop score badge
