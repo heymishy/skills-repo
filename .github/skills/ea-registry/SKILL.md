@@ -230,7 +230,7 @@ When invoked from `/discovery`, `/definition`, or `/reverse-engineer`, return:
 Use this compact handoff format:
 
 ```markdown
-## EA Dependency Context — [scope]
+## EA Dependency Context - [scope]
 
 Applications in scope: [list]
 Direct inbound dependencies: [n]
@@ -248,7 +248,7 @@ Planning impact:
 
 ---
 
-## State update — mandatory final step
+## State update - mandatory final step
 
 > **Mandatory.** Do not close without updating pipeline state and confirming in
 > your closing message: "Pipeline state updated ✅"

@@ -3,7 +3,7 @@ name: bootstrap
 description: >
   Scaffolds the complete SDLC pipeline structure in a new repository. Creates all 
   skill files, templates, artefacts directory, copilot-instructions.md, PR template,
-  and decision log template. Requires agent mode — creates files directly. 
+  and decision log template. Requires agent mode - creates files directly. 
   Use when setting up a new repo to use the agentic SDLC workflow, or when someone 
   says "set up the pipeline", "bootstrap this repo", "initialise the workflow", 
   "add the SDLC skills", or "set up Copilot skills". 

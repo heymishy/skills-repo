@@ -29,34 +29,34 @@ Before asking anything, verify:
 If not met:
 
 > ❌ **Entry condition not met**
-> [Specific issue — e.g. "PR is not yet merged. Run this after merge, not before."]
+> [Specific issue - e.g. "PR is not yet merged. Run this after merge, not before."]
 >
 > Run /workflow to see the current pipeline state.
 
 ---
 
-## Step 1 — Confirm the story and PR
+## Step 1 - Confirm the story and PR
 
 State what was found:
 
 > **Story:** [story title]
-> **PR:** [ref] — merged [date]
+> **PR:** [ref] - merged [date]
 > **ACs to check:** [n]
 > **Tests from plan:** [n]
 >
 > Running definition-of-done check. Ready?
-> Reply: yes — or specify a different story/PR
+> Reply: yes - or specify a different story/PR
 
 ---
 
-## Step 2 — AC coverage check
+## Step 2 - AC coverage check
 
 For each AC in the story, verify the merged code satisfies it.
 Reference specific test results or observable behaviour where possible.
 
 Use the AC coverage table format from `templates/definition-of-done.md`.
 
-**A deviation is any difference between implemented behaviour and the AC** —
+**A deviation is any difference between implemented behaviour and the AC** -
 even if minor. Deviations are not failures, but they must be recorded.
 
 If any AC is ❌:
@@ -66,13 +66,13 @@ If any AC is ❌:
 > What do you want to do?
 > 1. Create a follow-up story to address it
 > 2. Accept the gap and record it in /decisions as RISK-ACCEPT
-> 3. Reopen the PR — this should have been caught before merge
+> 3. Reopen the PR - this should have been caught before merge
 >
 > Reply: 1, 2, or 3
 
 ---
 
-## Step 3 — Out-of-scope check
+## Step 3 - Out-of-scope check
 
 Verify the merged PR did not implement anything in the story's or epic's
 out-of-scope section.
@@ -83,18 +83,18 @@ If a violation is found:
 >
 > This is recorded for /trace and may need a follow-up story.
 > Acknowledge and continue?
-> Reply: yes — I'll note it / no — this needs to be reverted
+> Reply: yes - I'll note it / no - this needs to be reverted
 
 ---
 
-## Step 4 — Test plan coverage
+## Step 4 - Test plan coverage
 
 Confirm the tests from the test plan were implemented and are passing in CI.
 
 **Coverage gap audit:** If the test plan contains any `CSS-layout-dependent` gaps:
 - Were they RISK-ACCEPTed in /decisions before coding started? (check `decisions.md`)
 - Was the manual verification scenario actually executed during pre-code sign-off or post-merge smoke test?
-- Record both answers in the DoD artefact — this is the audit trail for layout bugs that ship post-merge.
+- Record both answers in the DoD artefact - this is the audit trail for layout bugs that ship post-merge.
 - If a RISK-ACCEPT was not recorded and a layout bug shipped → flag as deviation (not a failure, but must be recorded).
 
 If any tests were not implemented:
@@ -103,14 +103,14 @@ If any tests were not implemented:
 > Risk: [which AC is now less covered]
 >
 > Accept this gap?
-> 1. Yes — log in /decisions as RISK-ACCEPT
-> 2. No — create a follow-up to implement it
+> 1. Yes - log in /decisions as RISK-ACCEPT
+> 2. No - create a follow-up to implement it
 >
 > Reply: 1 or 2
 
 ---
 
-## Step 5 — NFR check
+## Step 5 - NFR check
 
 For each NFR from the story, confirm it was addressed.
 
@@ -119,30 +119,30 @@ If any NFR has no evidence:
 > ⚠️ **NFR not evidenced: [NFR description]**
 > What evidence exists that this was addressed?
 >
-> Reply: describe evidence — or "not addressed, I'll log it"
+> Reply: describe evidence - or "not addressed, I'll log it"
 
 ---
 
-## Step 6 — Metric signal
+## Step 6 - Metric signal
 
 For each metric in the feature's `metrics` array whose `contributingStories` list includes this story's slug:
 
 1. Ask: **Has a signal been measurable since this story merged?** (yes / not yet)
-2. If yes — ask for the observed result and date measured.
+2. If yes - ask for the observed result and date measured.
 3. Determine signal status: `on-track` / `at-risk` / `off-track` (see definitions below).
 
 > **[Metric name]**
 > Signal: [on-track / at-risk / off-track / not-yet-measured]
-> Evidence: [observed result, or "Measurement not yet possible — [reason]"]
+> Evidence: [observed result, or "Measurement not yet possible - [reason]"]
 > Date measured: [date, or null]
 
 **Signal definitions:**
-- `on-track` — current result is within acceptable range of the target
-- `at-risk` — partial progress but below minimum validation signal
-- `off-track` — result is clearly not trending toward the target
-- `not-yet-measured` — measurement is not yet possible (e.g. no real sessions run yet)
+- `on-track` - current result is within acceptable range of the target
+- `at-risk` - partial progress but below minimum validation signal
+- `off-track` - result is clearly not trending toward the target
+- `not-yet-measured` - measurement is not yet possible (e.g. no real sessions run yet)
 
-This section does not claim success — it records what is now observable.
+This section does not claim success - it records what is now observable.
 
 **State write for metrics:** After capturing signals, update the feature's `metrics` array in pipeline-state.json:
 - Set `metrics[x].signal` to the determined value
@@ -170,19 +170,19 @@ Save to `.github/artefacts/[feature]/dod/[story-slug]-dod.md`.
 > Follow-up actions: [list]
 >
 > Ready to run /release when all stories in this feature are DoD-complete?
-> Reply: yes — or there are more stories to process first
+> Reply: yes - or there are more stories to process first
 
 ---
 
 ## What this skill does NOT do
 
-- Does not approve or merge PRs — that is a human action
-- Does not claim metric success without evidence — records what is now observable
-- Does not create follow-up stories — flags what needs follow-up for humans to action
+- Does not approve or merge PRs - that is a human action
+- Does not claim metric success without evidence - records what is now observable
+- Does not create follow-up stories - flags what needs follow-up for humans to action
 
 ---
 
-## State update — mandatory final step
+## State update - mandatory final step
 
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 

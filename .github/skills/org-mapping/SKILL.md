@@ -24,7 +24,7 @@ Create a durable mapping between:
 
 ---
 
-## Step 1 — Capture organisation vocabulary
+## Step 1 - Capture organisation vocabulary
 
 Collect current terms used by the organisation for:
 - Discovery/requirements
@@ -35,7 +35,7 @@ Collect current terms used by the organisation for:
 
 ---
 
-## Step 2 — Build skill/process mapping matrix
+## Step 2 - Build skill/process mapping matrix
 
 For each pipeline skill, map:
 - Org process name
@@ -48,7 +48,7 @@ Flag any unmatched process items (no current skill owner).
 
 ---
 
-## Step 3 — Governance hooks
+## Step 3 - Governance hooks
 
 Define where governance checks happen in pipeline terms:
 - Mandatory approvals
@@ -58,7 +58,7 @@ Define where governance checks happen in pipeline terms:
 
 ---
 
-## Step 4 — Context and adoption updates
+## Step 4 - Context and adoption updates
 
 Recommend updates to:
 - `.github/context.yml` (naming aliases, governance fields)
@@ -77,7 +77,7 @@ Save to:
 
 ---
 
-## State update — mandatory final step
+## State update - mandatory final step
 
 Update `.github/pipeline-state.json` notes with mapping completion status and
 any unresolved governance gaps. Closing message must include: `Pipeline state updated ✅`

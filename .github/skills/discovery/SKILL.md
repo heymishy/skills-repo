@@ -5,8 +5,8 @@ description: >
   artefact. Use when someone says "I have an idea", "we should build",
   "there's a problem with", "can we explore", or pastes a rough ticket, brief, or idea.
   Produces a discovery artefact that, once approved, unlocks /benefit-metric.
-  Does not produce metrics, stories, or technical design — those are downstream skills.
-  Asks clarifying questions one at a time — never presents a form to fill in.
+  Does not produce metrics, stories, or technical design - those are downstream skills.
+  Asks clarifying questions one at a time - never presents a form to fill in.
 triggers:
   - "I have an idea"
   - "we should build"
@@ -25,7 +25,7 @@ No prerequisites. First step in the pipeline.
 
 ---
 
-## Step 0 — Check for reference materials
+## Step 0 - Check for reference materials
 
 Before asking any questions, check whether a reference folder exists for this
 feature at `.github/artefacts/[feature-slug]/reference/`.
@@ -33,13 +33,13 @@ feature at `.github/artefacts/[feature-slug]/reference/`.
 If the folder exists and contains files, list them:
 
 > **Reference materials found:**
-> - [filename] — [brief description from reference-index.md if present]
+> - [filename] - [brief description from reference-index.md if present]
 >
 > I'll use these to pre-populate sections where they contain relevant context.
 > You can still correct or override anything I extract.
 >
 > Do you want me to read these documents before we start?
-> Reply: yes — or skip, I'll describe the context directly
+> Reply: yes - or skip, I'll describe the context directly
 
 If the user says yes, read the available documents and summarise what you found
 before proceeding:
@@ -76,7 +76,7 @@ If no input has been provided, ask this first:
 Transform a rough idea into a structured artefact that answers:
 *What problem are we solving, for whom, why now, and what does success look like at the edges?*
 
-This is a scoping and clarity exercise — not a solution definition.
+This is a scoping and clarity exercise - not a solution definition.
 The discovery artefact does not specify how to build anything.
 
 ---
@@ -88,12 +88,12 @@ the section, then move to the next. Never present the full structure as a form.
 
 When you have enough to write a section confidently, write it and confirm:
 > "I've written the [section] section as: [summary]. Does that capture it?
-> Reply: yes — or correct me"
+> Reply: yes - or correct me"
 
-### Section 1 — Problem statement
+### Section 1 - Problem statement
 
 Ask:
-> **What's actually happening now that shouldn't be — or not happening that should?**
+> **What's actually happening now that shouldn't be - or not happening that should?**
 > (Not the solution â€” the problem. Who experiences it, when, how often, what does
 > it cost them when it's unresolved?)
 >
@@ -125,18 +125,18 @@ Ask:
 >
 > Reply: describe the MVP
 
-### Section 5 — Out of scope (mandatory)
+### Section 5 - Out of scope (mandatory)
 
 Ask:
 > **What's explicitly NOT part of this initiative?**
-> Minimum 2 items — naming what's out of scope is as important as what's in.
+> Minimum 2 items - naming what's out of scope is as important as what's in.
 > It's what /review will validate stories against.
 >
 > Reply: list at least 2 items
 
 If the answer is vague or "nothing is out of scope":
 > What's something related that might seem obvious to include, but you want to defer?
-> Even one example helps — it signals where the boundary is.
+> Even one example helps - it signals where the boundary is.
 >
 > Reply: give an example
 
@@ -148,11 +148,11 @@ Ask:
 >
 > Reply: list assumptions and risks
 
-### Section 7 — Directional success indicators
+### Section 7 - Directional success indicators
 
 Ask:
 > **What would you see, hear, or measure that would tell you this worked?**
-> These don't need to be precise metrics yet — that's /benefit-metric's job.
+> These don't need to be precise metrics yet - that's /benefit-metric's job.
 > Directional signals are fine here.
 >
 > Reply: describe what success looks like
@@ -163,7 +163,7 @@ Ask:
 > **Any constraints I should know about?**
 > (Time, budget, regulatory, technical dependencies, team capability)
 >
-> Reply: list constraints — or type "none identified"
+> Reply: list constraints - or type "none identified"
 
 ---
 
@@ -180,7 +180,7 @@ After producing the artefact:
 
 > **Discovery draft complete ✅**
 >
-> Before moving to /benefit-metric, a human should review and approve this —
+> Before moving to /benefit-metric, a human should review and approve this -
 > particularly the MVP scope and out-of-scope sections.
 >
 > When approved: update the Status field to "Approved" and note who approved
@@ -194,24 +194,24 @@ After producing the artefact:
 ## Quality checks before outputting
 
 - Problem statement describes a problem, not a solution
-- MVP scope is bounded — not "everything" or "phase 1 of a platform"
+- MVP scope is bounded - not "everything" or "phase 1 of a platform"
 - Out of scope has at least 2 explicit items with reasons
 - Success indicators are observable, not "users like it"
-- Assumptions are genuine uncertainties — not facts dressed as assumptions
+- Assumptions are genuine uncertainties - not facts dressed as assumptions
 - No implementation detail has crept in
 
 ---
 
 ## What this skill does NOT do
 
-- Does not define metrics — that is /benefit-metric
-- Does not write stories or ACs — that is /definition
+- Does not define metrics - that is /benefit-metric
+- Does not write stories or ACs - that is /definition
 - Does not make build/buy/defer decisions
 - Does not update your issue tracker or backlog tool
 
 ---
 
-## State update — mandatory final step
+## State update - mandatory final step
 
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 

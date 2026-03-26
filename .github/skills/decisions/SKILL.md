@@ -220,7 +220,7 @@ When asked "why did we decide X" or "what's the history of Y":
 > If this decision was made but not logged, would you like to add a
 > retrospective entry now?
 >
-> Reply: yes — or no
+> Reply: yes - or no
 
 ---
 

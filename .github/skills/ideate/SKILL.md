@@ -42,7 +42,7 @@ triggers:
 
 ## Entry condition
 
-None. Safe to run at any point — on a blank slate, alongside an active
+None. Safe to run at any point - on a blank slate, alongside an active
 discovery, or before starting any formal pipeline stage.
 
 ---
@@ -52,11 +52,11 @@ discovery, or before starting any formal pipeline stage.
 Before asking anything, check what artefacts exist for the current feature or
 project. Look for:
 
-- `.github/artefacts/[feature-slug]/reference/` — source documents
+-- `.github/artefacts/[feature-slug]/reference/` - source documents
 - `.github/artefacts/[feature-slug]/discovery.md`
 - `.github/artefacts/[feature-slug]/benefit-metric.md`
-- `.github/artefacts/[feature-slug]/stories/` — any stories already written
-- `.github/pipeline-state.json` — current feature list and stages
+-- `.github/artefacts/[feature-slug]/stories/` - any stories already written
+-- `.github/pipeline-state.json` - current feature list and stages
 
 State what you found:
 
@@ -70,15 +70,15 @@ State what you found:
 > What is the focus for this session?
 >
 > 1. A new feature or initiative not yet in the pipeline
-> 2. An existing feature — exploring whether the scope is right
+> 2. An existing feature - exploring whether the scope is right
 > 3. What to build *next* after the current feature
 > 4. A specific customer problem we want to investigate more deeply
 >
-> Reply: 1, 2, 3, or 4 — or describe in your own words
+> Reply: 1, 2, 3, or 4 - or describe in your own words
 
 ---
 
-## Step 2 — Suggested lens(es) based on context
+## Step 2 - Suggested lens(es) based on context
 
 Apply this decision table to the artefacts loaded in Step 1, then present a
 recommendation **before** showing the full lens menu.
@@ -103,10 +103,10 @@ After applying the table, present:
 > Based on: [e.g. "discovery.md found (status: approved), no benefit-metric written,
 > 2 RISK-ACCEPT decisions in decisions.md"]
 >
-> → **Start with Lens B** (Assumption inventory) — [one sentence why, referencing
+> → **Start with Lens B** (Assumption inventory) - [one sentence why, referencing
 >    what was actually found in the artefacts]
 >
-> → **Then Lens D** (Strategy framing) — [one sentence why]
+> → **Then Lens D** (Strategy framing) - [one sentence why]
 >
 > Ready to start with this? Reply: **yes**
 >
@@ -116,6 +116,11 @@ After applying the table, present:
 > - **C** — Market and competitive scan *(structured research questions → competitive positioning)*
 > - **D** — Product strategy framing *(Cagan — 10-question opportunity assessment → PROCEED / REDESIGN / DEFER)*
 > - **E** — Jobs-to-be-Done *(Christensen / Moesta — what progress is the customer hiring for, and why do they switch?)*
+  - **A** - Opportunity mapping *(Torres - unmet needs, pain points, desires -> opportunity tree)*
+  - **B** - Assumption inventory *(Torres - surface and prioritise every baked-in assumption)*
+  - **C** - Market and competitive scan *(structured research questions -> competitive positioning)*
+  - **D** - Product strategy framing *(Cagan - 10-question opportunity assessment -> PROCEED / REDESIGN / DEFER)*
+  - **E** - Jobs-to-be-Done *(Christensen / Moesta - what progress is the customer hiring for, and why do they switch?)*
 >
 > Reply: A, B, C, D, E — any combination (e.g. `A B E`) — or **all**
 

@@ -3,7 +3,7 @@ name: definition
 description: >
   Breaks an approved discovery + benefit-metric pair into epics and stories
   conforming to templates/epic.md and templates/story.md. Offers slicing strategy
-  choice before decomposing. Runs a scope accumulator at the end — compares total
+  choice before decomposing. Runs a scope accumulator at the end - compares total
   story scope against the original discovery MVP to surface scope drift across the
   full set, not just individual stories. Does not produce test plans or API contracts.
   Requires approved discovery AND active benefit-metric artefact.
@@ -22,7 +22,7 @@ triggers:
 
 Before asking anything, verify:
 
-1. Discovery artefact exists at `.github/artefacts/[feature]/discovery.md` — status "Approved"
+1. Discovery artefact exists at `.github/artefacts/[feature]/discovery.md` - status "Approved"
 2. Benefit-metric artefact exists at `.github/artefacts/[feature]/benefit-metric.md`
 3. Benefit-metric artefact contains at least one metric with a defined target
 
@@ -35,13 +35,13 @@ choosing a slicing strategy.
 If not met (entry condition):
 
 > ❌ **Entry condition not met**
-> [Specific issue — e.g. "Benefit-metric artefact not found. Run /benefit-metric first."]
+> [Specific issue - e.g. "Benefit-metric artefact not found. Run /benefit-metric first."]
 >
 > Run /workflow to see the current pipeline state.
 
 ---
 
-## Step 1 — Confirm the feature scope
+## Step 1 - Confirm the feature scope
 
 State what was found first:
 
@@ -51,11 +51,11 @@ State what was found first:
 > **Personas identified:** [list]
 >
 > Ready to decompose this into epics and stories?
-> Reply: yes — or name a specific scope item to focus on first
+> Reply: yes - or name a specific scope item to focus on first
 
 ---
 
-## Step 1.5 — Architecture constraints scan
+## Step 1.5 - Architecture constraints scan
 
 Before choosing a slicing strategy, check for constraints that should shape
 how stories are written.
@@ -65,7 +65,7 @@ Read `.github/architecture-guardrails.md` if it exists.
 If found, surface relevant constraints before decomposing:
 
 > **Architecture constraints relevant to this feature:**
-> - [e.g. ADR-002: all data access must go via the API layer — no direct DB calls from UI]
+> - [e.g. ADR-002: all data access must go via the API layer - no direct DB calls from UI]
 > - [e.g. Mandatory constraint: all user inputs must be validated server-side]
 > - [e.g. Pattern library: use `<DataTable>` component for all tabular data display]
 >
@@ -74,11 +74,11 @@ If found, surface relevant constraints before decomposing:
 > /review Category E and /definition-of-ready H9.
 >
 > Any of these a blocker before decomposing?
-> Reply: no — proceed / yes — [describe the issue]
+> Reply: no - proceed / yes - [describe the issue]
 
 If not found:
 
-> ⚠️ No `architecture-guardrails.md` found — proceeding without guardrail check.
+> ⚠️ No `architecture-guardrails.md` found - proceeding without guardrail check.
 > Consider running `/bootstrap` or creating `.github/architecture-guardrails.md`
 > from the template at `.github/templates/architecture-guardrails.md` to enable
 > this check in future.
@@ -87,7 +87,7 @@ Record whether guardrails were available or absent in the epic artefact.
 
 ---
 
-## Step 2 — Choose a slicing strategy
+## Step 2 - Choose a slicing strategy
 
 Ask this before any decomposition. Do not default.
 

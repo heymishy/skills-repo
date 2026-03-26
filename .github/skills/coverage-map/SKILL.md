@@ -5,9 +5,9 @@ description: >
   existing pipeline artefacts (test plan .md files + pipeline-state.json).
   Answers two questions at a glance: what is tested, and by what kind of test?
   Where are the gaps, and how risky are they?
-  Does not run tests. Does not read test results — reads test plans.
-  Does not generate test plans — that is /test-plan.
-  Does not fix gaps — reports them for humans to action.
+  Does not run tests. Does not read test results - reads test plans.
+  Does not generate test plans - that is /test-plan.
+  Does not fix gaps - reports them for humans to action.
 triggers:
   - "show coverage"
   - "coverage map"
@@ -30,7 +30,7 @@ If no test plans exist yet, output:
 
 ---
 
-## Step 1 — Confirm scope
+## Step 1 - Confirm scope
 
 State what was found:
 
@@ -43,21 +43,21 @@ State what was found:
 
 ---
 
-## Step 2 — Read artefacts
+## Step 2 - Read artefacts
 
 For each story with a test plan, parse:
 
 1. **AC coverage table** from the test plan `.md` file
-   - Columns: AC, Description, Unit, Integration, E2E, Manual, Gap type, Risk
-  - If the table uses the old format (Unit tests / Integration tests / NFR tests / Manual), adapt it gracefully — treat any `—` value as uncovered for that column
+  - Columns: AC, Description, Unit, Integration, E2E, Manual, Gap type, Risk
+  - If the table uses the old format (Unit tests / Integration tests / NFR tests / Manual), adapt it gracefully - treat any `-` value as uncovered for that column
 2. **Gap table** from the test plan
    - Columns: Gap, AC, Gap type, Reason, Handling
 3. **Story title** from the story artefact
 
 **Risk assignment logic (derive if not explicit in the table):**
-- 🟢 green — AC has at least one automated test (Unit, Integration, or E2E)
-- 🟡 yellow — Manual-only, gap type `render-only` or `external-service` or not specified
-- 🔴 red — Manual-only, gap type `CSS-layout-dependent`; or any AC with no coverage at all
+- 🟢 green - AC has at least one automated test (Unit, Integration, or E2E)
+- 🟡 yellow - Manual-only, gap type `render-only` or `external-service` or not specified
+- 🔴 red - Manual-only, gap type `CSS-layout-dependent`; or any AC with no coverage at all
 
 **Coverage rollup per story:**
 - `ACs`: total count

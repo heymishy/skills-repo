@@ -126,7 +126,7 @@ gh pr create \
 [Path: .github/artefacts/[feature]/dor/[story-slug]-dor.md]
 
 ## Notes
-[Any ambiguities encountered during implementation — if none, write "None"]
+[Any ambiguities encountered during implementation - if none, write "None"]
 EOF
 )"
 ```
