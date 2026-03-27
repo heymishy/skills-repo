@@ -115,11 +115,11 @@ compliance:
 # The installer sets this block when --upstream-strategy remote or fork is used.
 # The agent reads this when asked to check or sync upstream skill updates.
 skills_upstream:
-  remote: null          # git remote name, e.g. skills-upstream — set by installer
-  repo: null            # full URL of the upstream skills repo (org fork URL for enterprise)
+  remote: skills-upstream   # run: git remote add skills-upstream <repo>
+  repo: null                # set to your org fork URL, e.g. https://bitbucket.org/your-org/sdlc-skills.git
   sync_paths:
     - .github/skills/
     - .github/templates/
     - scripts/
-  strategy: none        # none | manual — set to manual when remote is configured
-  # fork_of: null       # uncomment when using a fork: URL of the original heymishy/skills-repo
+  strategy: none            # change to manual once the remote is added
+  fork_of: https://github.com/heymishy/skills-repo.git
