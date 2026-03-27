@@ -246,6 +246,126 @@ Confirm:
 
 ---
 
+### Step 3d — Remote and upstream sync
+
+This step wires the target repo to its own origin and optionally keeps it
+connected to `heymishy/skills-repo` for future skill updates.
+
+> "How do you want to manage the connection to skills-repo going forward?
+>
+> **Option A — Simple install (no upstream link)**
+> You get a one-time copy of all skill files. Re-run the install script
+> with `-Overwrite` whenever you want to pull future updates.
+> Low overhead. No git complexity. Local customisations to SKILL.md files
+> risk being overwritten on the next `-Overwrite` run.
+>
+> **Option B — Git upstream remote**
+> Add `heymishy/skills-repo` as a named `skills-upstream` remote. When
+> updates ship, you fetch and cherry-pick only the paths you want:
+> ```bash
+> git checkout skills-upstream/master -- .github/skills/ .github/templates/ scripts/
+> ```
+> You review the diff before committing. Your `artefacts/`, `context.yml`,
+> and product files are never touched. Best for teams who customise skills locally.
+>
+> **Option C — Enterprise fork**
+> Maintain a private fork of `heymishy/skills-repo` (e.g. `your-org/sdlc-skills`)
+> with your own standards, product context, and copilot-instructions pre-loaded.
+> Point the install script at your fork. Project repos pull from the fork, not
+> the public repo. Your fork periodically syncs from the public upstream at its
+> own cadence.
+>
+> Reply: A, B, or C"
+
+**If A:**
+- No remote changes needed.
+- Add to completion summary: `Re-run install.ps1 / install.sh -Overwrite to pull future skill updates.`
+- No further action.
+
+**If B — Git upstream remote:**
+
+Run these commands in the target repo:
+
+```bash
+# Add skills-repo as a read-only upstream
+git remote add skills-upstream https://github.com/heymishy/skills-repo.git
+git fetch skills-upstream
+```
+
+Then set the repo's own origin (if not already set):
+```bash
+# Check current remotes
+git remote -v
+
+# If origin is still pointing at skills-repo, replace it:
+git remote set-url origin https://github.com/YOUR-ORG/YOUR-REPO.git
+# or if no origin exists:
+git remote add origin https://github.com/YOUR-ORG/YOUR-REPO.git
+```
+
+Add the following block to `.github/context.yml` under the `architecture:` section:
+
+```yaml
+skills_upstream:
+  remote: skills-upstream
+  repo: https://github.com/heymishy/skills-repo.git
+  sync_paths:
+    - .github/skills/
+    - .github/templates/
+    - scripts/
+  strategy: manual   # manual | pr-on-push
+```
+
+Add the following update command to the completion summary for the user to copy:
+
+```bash
+# To pull future skills updates (review diff before committing):
+git fetch skills-upstream
+git checkout skills-upstream/master -- .github/skills/ .github/templates/ scripts/
+git diff --staged   # review what changed
+git commit -m "chore: sync skills from skills-upstream [YYYY-MM-DD]"
+```
+
+Confirm:
+> ✅ `skills-upstream` remote added and fetched.
+> Run `git fetch skills-upstream && git checkout skills-upstream/master -- .github/skills/ .github/templates/ scripts/` to pull future updates.
+
+**If C — Enterprise fork:**
+
+Prompt:
+
+> "Provide your fork URL (e.g. `https://github.com/your-org/sdlc-skills.git`):"
+
+After receiving the URL:
+- If the install was run from the public repo, note: 
+  > "You'll need to re-run the install pointing at your fork URL once it's created:
+  > `install.ps1 -Source https://github.com/your-org/sdlc-skills.git -Target .`"
+- Add the following to `.github/context.yml`:
+
+```yaml
+skills_upstream:
+  remote: skills-upstream
+  repo: [fork-url]
+  sync_paths:
+    - .github/skills/
+    - .github/templates/
+    - scripts/
+  strategy: manual
+  fork_of: https://github.com/heymishy/skills-repo.git
+```
+
+- Run:
+```bash
+git remote add skills-upstream [fork-url]
+git fetch skills-upstream
+```
+
+Confirm:
+> ✅ Fork URL recorded in `context.yml`. `skills-upstream` remote added.
+> Your fork should periodically merge from `heymishy/skills-repo` to stay current.
+
+---
+
 ### Step 4: Collect placeholders
 
 After all files are created, prompt for the two required placeholders:
@@ -312,6 +432,7 @@ Output:
 Repository: [repo name]
 Files created: [N]
 Files skipped (already existed): [N]
+Remote strategy: [A: simple install | B: upstream remote | C: enterprise fork]
 
 ## Pipeline is ready
 
@@ -335,6 +456,8 @@ Before the first delivery cycle:
   [ ] Share the verification script format with your QA / analyst (see context.yml roles)
   [ ] Walk one engineer through the /workflow → /discovery flow
   [ ] Decide your default oversight level for this repo's epics
+
+Skills update strategy: [chosen option summary — see Step 3d output above]
 
 Reference:
   Pipeline overview:  .github/copilot-instructions.md
@@ -386,6 +509,7 @@ would exceed context limits.
 - Does not create the first feature artefacts — run /workflow for that
 - Does not install APM or any external tooling
 - Does not modify existing skill files — only creates missing ones
+- Does not automatically sync future skill updates — use the strategy chosen in Step 3d
 
 ---
 

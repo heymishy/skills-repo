@@ -29,6 +29,16 @@
     # Clone then run:
     git clone https://github.com/heymishy/skills-repo C:\Temp\skills-repo
     & C:\Temp\skills-repo\scripts\install.ps1 -Target C:\code\my-repo
+
+.PARAMETER UpstreamStrategy
+    How to stay in sync with future skills-repo updates:
+      none   - One-time install only. Re-run with -Overwrite to update (default).
+      remote - Add heymishy/skills-repo as a 'skills-upstream' git remote.
+      fork   - Add a private fork as 'skills-upstream'. Requires -UpstreamUrl.
+
+.PARAMETER UpstreamUrl
+    Fork URL when using -UpstreamStrategy fork.
+    Example: https://github.com/your-org/sdlc-skills.git
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(
@@ -36,7 +46,10 @@ param(
     [ValidateSet('personal','work')]
     [string] $Profile  = 'personal',
     [switch] $Overwrite,
-    [switch] $DryRun
+    [switch] $DryRun,
+    [ValidateSet('none','remote','fork')]
+    [string] $UpstreamStrategy = 'none',
+    [string] $UpstreamUrl = ''
 )
 
 Set-StrictMode -Version Latest
@@ -243,5 +256,67 @@ if (-not $DryRun) {
     Write-Host "    2. Review .github\standards\ and add your coding standards"
     Write-Host "    3. Open pipeline-viz.html in VS Code Live Preview"
     Write-Host "    4. Run /workflow in GitHub Copilot to start your first feature"
+    Write-Host ""
+}
+
+# ── Upstream remote setup ─────────────────────────────────────────────────────
+if (-not $DryRun -and $UpstreamStrategy -ne 'none') {
+    Write-Host ""
+    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor DarkGray
+    Write-Info "Setting up skills-upstream remote ($UpstreamStrategy)"
+
+    $remoteUrl = switch ($UpstreamStrategy) {
+        'remote' { "https://github.com/$OWNER/$REPO.git" }
+        'fork'   {
+            if (-not $UpstreamUrl) {
+                $UpstreamUrl = Read-Host "  Fork URL (e.g. https://github.com/your-org/sdlc-skills.git)"
+            }
+            $UpstreamUrl
+        }
+    }
+
+    Push-Location $Target
+    try {
+        # Check if skills-upstream already exists
+        $existingRemotes = git remote 2>$null
+        if ($existingRemotes -contains 'skills-upstream') {
+            Write-Warn "'skills-upstream' remote already exists — updating URL"
+            git remote set-url skills-upstream $remoteUrl
+        } else {
+            git remote add skills-upstream $remoteUrl
+        }
+        git fetch skills-upstream --quiet
+        Write-OK "'skills-upstream' remote added: $remoteUrl"
+    } catch {
+        Write-Warn "Could not add skills-upstream remote. Add it manually:"
+        Write-Warn "  git remote add skills-upstream $remoteUrl"
+    } finally {
+        Pop-Location
+    }
+
+    # Write skills_upstream block to context.yml
+    $ContextYml = Join-Path $Target '.github/context.yml'
+    if (Test-Path $ContextYml) {
+        $upstreamBlock = @"
+
+skills_upstream:
+  remote: skills-upstream
+  repo: $remoteUrl
+  sync_paths:
+    - .github/skills/
+    - .github/templates/
+    - scripts/
+  strategy: manual$(if ($UpstreamStrategy -eq 'fork') { "`n  fork_of: https://github.com/$OWNER/$REPO.git" } else { '' })
+"@
+        Add-Content -Path $ContextYml -Value $upstreamBlock
+        Write-OK "skills_upstream block written to context.yml"
+    }
+
+    Write-Host ""
+    Write-Host "  To pull future skills updates:" -ForegroundColor DarkGray
+    Write-Host "    git fetch skills-upstream" -ForegroundColor DarkGray
+    Write-Host "    git checkout skills-upstream/master -- .github/skills/ .github/templates/ scripts/" -ForegroundColor DarkGray
+    Write-Host "    git diff --staged   # review changes" -ForegroundColor DarkGray
+    Write-Host "    git commit -m `"chore: sync skills from skills-upstream [date]`"" -ForegroundColor DarkGray
     Write-Host ""
 }

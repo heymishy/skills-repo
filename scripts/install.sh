@@ -12,10 +12,15 @@
 #   bash /tmp/skills-repo/scripts/install.sh [--target /path/to/your-repo] [--profile work]
 #
 # Options:
-#   --target <path>   Target repo root (default: current working directory)
-#   --profile <name>  Context profile to activate: personal | work (default: personal)
-#   --overwrite       Overwrite existing files (default: skip existing)
-#   --dry-run         Show what would be copied without writing anything
+#   --target <path>             Target repo root (default: current working directory)
+#   --profile <name>            Context profile to activate: personal | work (default: personal)
+#   --overwrite                 Overwrite existing files (default: skip existing)
+#   --dry-run                   Show what would be copied without writing anything
+#   --upstream-strategy <mode>  none | remote | fork (default: none)
+#                                 none   — one-time install, no remote added
+#                                 remote — add heymishy/skills-repo as skills-upstream remote
+#                                 fork   — add a private fork (requires --upstream-url)
+#   --upstream-url <url>        Fork URL when using --upstream-strategy fork
 # =============================================================================
 
 set -euo pipefail
@@ -30,6 +35,8 @@ TARGET_DIR="$(pwd)"
 PROFILE="personal"
 OVERWRITE=false
 DRY_RUN=false
+UPSTREAM_STRATEGY="none"
+UPSTREAM_URL=""
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SOURCE_ROOT="$(dirname "$SCRIPT_DIR")"  # parent of scripts/ = repo root
 
@@ -47,6 +54,8 @@ while [[ $# -gt 0 ]]; do
     --profile)  PROFILE="$2"; shift 2 ;;
     --overwrite) OVERWRITE=true; shift ;;
     --dry-run)  DRY_RUN=true; shift ;;
+    --upstream-strategy) UPSTREAM_STRATEGY="$2"; shift 2 ;;
+    --upstream-url)      UPSTREAM_URL="$2"; shift 2 ;;
     *) error "Unknown option: $1"; exit 1 ;;
   esac
 done
@@ -259,5 +268,52 @@ PYEOF
   echo "    2. Review .github/standards/ and add your coding standards"
   echo "    3. Open pipeline-viz.html in VS Code Live Preview"
   echo "    4. Run /workflow in GitHub Copilot to start your first feature"
+  echo ""
+fi
+
+# ── Upstream remote setup ─────────────────────────────────────────────────────
+if [[ "$DRY_RUN" == false && "$UPSTREAM_STRATEGY" != "none" ]]; then
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  info "Setting up skills-upstream remote (strategy: $UPSTREAM_STRATEGY)"
+
+  if [[ "$UPSTREAM_STRATEGY" == "remote" ]]; then
+    REMOTE_URL="https://github.com/${SKILLS_REPO_OWNER}/${SKILLS_REPO_NAME}.git"
+  elif [[ "$UPSTREAM_STRATEGY" == "fork" ]]; then
+    if [[ -z "$UPSTREAM_URL" ]]; then
+      read -r -p "  Fork URL (e.g. https://github.com/your-org/sdlc-skills.git): " UPSTREAM_URL
+    fi
+    REMOTE_URL="$UPSTREAM_URL"
+  fi
+
+  pushd "$TARGET_DIR" > /dev/null
+  if git remote get-url skills-upstream &>/dev/null; then
+    warn "'skills-upstream' remote already exists — updating URL"
+    git remote set-url skills-upstream "$REMOTE_URL"
+  else
+    git remote add skills-upstream "$REMOTE_URL"
+  fi
+  git fetch skills-upstream --quiet
+  success "'skills-upstream' remote added: $REMOTE_URL"
+  popd > /dev/null
+
+  # Append skills_upstream block to context.yml
+  CONTEXT_YML="$TARGET_DIR/.github/context.yml"
+  if [[ -f "$CONTEXT_YML" ]]; then
+    FORK_OF_LINE=""
+    if [[ "$UPSTREAM_STRATEGY" == "fork" ]]; then
+      FORK_OF_LINE="\n  fork_of: https://github.com/${SKILLS_REPO_OWNER}/${SKILLS_REPO_NAME}.git"
+    fi
+    printf "\nskills_upstream:\n  remote: skills-upstream\n  repo: %s\n  sync_paths:\n    - .github/skills/\n    - .github/templates/\n    - scripts/\n  strategy: manual%s\n" \
+      "$REMOTE_URL" "$FORK_OF_LINE" >> "$CONTEXT_YML"
+    success "skills_upstream block written to context.yml"
+  fi
+
+  echo ""
+  echo "  To pull future skills updates:"
+  echo "    git fetch skills-upstream"
+  echo "    git checkout skills-upstream/master -- .github/skills/ .github/templates/ scripts/"
+  echo "    git diff --staged   # review changes"
+  echo "    git commit -m \"chore: sync skills from skills-upstream [date]\""
   echo ""
 fi
