@@ -6,6 +6,115 @@ Designed to work for a single developer shipping a small feature and equally for
 
 ---
 
+## Getting started
+
+### 1. Create your repo and clone it
+
+**GitHub (personal / small team):**
+```bash
+# Option A — GitHub CLI
+gh repo create my-project --private --clone
+cd my-project
+
+# Option B — manually on github.com, then:
+git clone https://github.com/your-org/my-project.git
+cd my-project
+```
+
+**Bitbucket (enterprise):**
+```bash
+# Create on Bitbucket, then:
+git clone https://bitbucket.org/your-org/my-project.git
+cd my-project
+```
+
+### 2. Install the pipeline
+
+Clone the skills repo to a temp location and run the installer against your new repo:
+
+**PowerShell (Windows):**
+```powershell
+git clone https://github.com/heymishy/skills-repo.git "$env:TEMP\skills-repo"
+
+# Personal / GitHub — pull updates directly from heymishy/skills-repo:
+& "$env:TEMP\skills-repo\scripts\install.ps1" `
+    -Target "C:\path\to\my-project" `
+    -Profile personal `
+    -UpstreamStrategy remote
+
+# Enterprise / Bitbucket — point at your org's fork of this repo:
+& "$env:TEMP\skills-repo\scripts\install.ps1" `
+    -Target "C:\path\to\my-project" `
+    -Profile work `
+    -UpstreamStrategy fork `
+    -UpstreamUrl "https://bitbucket.org/your-org/sdlc-skills.git"
+
+Remove-Item -Recurse -Force "$env:TEMP\skills-repo"
+```
+
+**Bash (macOS / Linux / WSL):**
+```bash
+git clone https://github.com/heymishy/skills-repo.git /tmp/skills-repo
+
+# Personal / GitHub:
+bash /tmp/skills-repo/scripts/install.sh \
+  --target /path/to/my-project \
+  --profile personal \
+  --upstream-strategy remote
+
+# Enterprise / fork:
+bash /tmp/skills-repo/scripts/install.sh \
+  --target /path/to/my-project \
+  --profile work \
+  --upstream-strategy fork \
+  --upstream-url "https://bitbucket.org/your-org/sdlc-skills.git"
+
+rm -rf /tmp/skills-repo
+```
+
+The installer copies all skills, templates, `context.yml`, `pipeline-state.json`, and `pipeline-viz.html` into `.github/` of your repo. With `--upstream-strategy remote` or `fork` it also wires a `skills-upstream` git remote so you can pull future skill updates.
+
+> **Enterprise fork note:** The org fork (`your-org/sdlc-skills`) is created once by your platform team. All project repos point at it. The platform team controls when upstream changes from `heymishy/skills-repo` are merged in before distributing to teams.
+
+### 3. Fill in the two required placeholders
+
+Open `.github/copilot-instructions.md` and fill in:
+- **Product context** — one paragraph: what you're building, for whom, why
+- **Coding standards** — language, framework, test tool, lint rules, etc.
+
+### 4. Choose your context profile
+
+```bash
+cp .github/contexts/personal.yml .github/context.yml  # GitHub-native, small team
+cp .github/contexts/work.yml .github/context.yml       # enterprise, Atlassian stack
+```
+
+### 5. Commit and push
+
+```bash
+git add .
+git commit -m "chore: bootstrap skills pipeline"
+git push -u origin master
+```
+
+### 6. Open VS Code in agent mode and run `/workflow`
+
+`/workflow` reads `pipeline-state.json` and tells you exactly which skill to run next. For a brand-new repo it will prompt you to start with `/discovery`.
+
+### Pulling future skills updates
+
+```bash
+git fetch skills-upstream
+git diff HEAD skills-upstream/master -- .github/skills/   # review what changed
+git checkout skills-upstream/master -- .github/skills/ .github/templates/ scripts/
+git diff --staged
+git commit -m "chore: sync skills from skills-upstream $(date +%Y-%m-%d)"
+```
+
+> **Do not edit files under `.github/skills/` in your project repo.** All project-specific configuration lives in `copilot-instructions.md`, `context.yml`, and `architecture-guardrails.md`. This keeps upstream syncs safe — nothing to conflict with.
+
+---
+
 ## Typical flow (standard feature)
 
 For most features this is all you need. Invoke each skill by name in Copilot chat.
