@@ -2055,17 +2055,17 @@ const STAGE_ARTEFACTS = {
     ...(f.epics||[]).map(e => ({ label: `📦 Epic: ${e.name}`, path: `../artefacts/${f.slug}/epics/${e.slug}.md` })),
   ],
   'review':              f => (f.epics||[]).flatMap(e => (e.stories||[]).map(s =>
-    ({ label: `🔍 ${s.name}`, path: `../artefacts/${f.slug}/review/${s.slug}-review-1.md` }))),
+    ({ label: `🔍 ${s.name||s.title||s.slug}`, path: `../artefacts/${f.slug}/review/${s.slug}-review-1.md` }))),
   'test-plan':           f => (f.epics||[]).flatMap(e => (e.stories||[]).map(s =>
-    ({ label: `🧪 ${s.name}`, path: `../artefacts/${f.slug}/test-plans/${s.slug}-test-plan.md` }))),
+    ({ label: `🧪 ${s.name||s.title||s.slug}`, path: `../artefacts/${f.slug}/test-plans/${s.slug}-test-plan.md` }))),
   'definition-of-ready': f => (f.epics||[]).flatMap(e => (e.stories||[]).map(s =>
-    ({ label: `✅ ${s.name}`, path: `../artefacts/${f.slug}/dor/${s.slug}-dor.md` }))),
+    ({ label: `✅ ${s.name||s.title||s.slug}`, path: `../artefacts/${f.slug}/dor/${s.slug}-dor.md` }))),
   'implementation-plan': f => (f.epics||[]).flatMap(e => (e.stories||[]).map(s =>
-    ({ label: `🗒 ${s.name}`, path: `../artefacts/${f.slug}/plans/${s.slug}-plan.md` }))),
+    ({ label: `🗒 ${s.name||s.title||s.slug}`, path: `../artefacts/${f.slug}/plans/${s.slug}-plan.md` }))),
   'verify-completion':   f => (f.epics||[]).flatMap(e => (e.stories||[]).map(s =>
-    ({ label: `✔ ${s.name}`, path: `../artefacts/${f.slug}/verification-scripts/${s.slug}-verification.md` }))),
+    ({ label: `✔ ${s.name||s.title||s.slug}`, path: `../artefacts/${f.slug}/verification-scripts/${s.slug}-verification.md` }))),
   'definition-of-done':  f => (f.epics||[]).flatMap(e => (e.stories||[]).map(s =>
-    ({ label: `🏁 ${s.name}`, path: `../artefacts/${f.slug}/dod/${s.slug}-dod.md` }))),
+    ({ label: `🏁 ${s.name||s.title||s.slug}`, path: `../artefacts/${f.slug}/dod/${s.slug}-dod.md` }))),
   'trace':               f => [{ label: '🔗 Trace report', path: `../artefacts/${f.slug}/trace/trace.md` }],
 };
 
@@ -2135,7 +2135,7 @@ function storyRowHTML(featureSlug, epicSlug, story) {
   <div class="story-row" data-story-key="${key}">
     <div class="story-row-top" data-action="open-story" data-story-key="${key}">
       <div class="story-health" style="background:${healthColour(story.health)}"></div>
-      <span class="story-name">${esc(story.name)}</span>
+      <span class="story-name">${esc(story.name||story.title||story.slug)}</span>
       <span class="story-stage-badge">${stageLabel(story.stage)}</span>
     </div>
     ${taskListInlineHTML(story, key)}
