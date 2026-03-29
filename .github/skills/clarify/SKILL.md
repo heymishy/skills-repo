@@ -86,25 +86,25 @@ Surface the assessment:
 
 Assess the discovery for gaps in these categories:
 
-### Category 1 — Scope clarity (most important)
+### SCOPE (most important)
 - Is the MVP boundary concrete and defensible?
 - Are there explicit out-of-scope items? At least 2?
 - Could two engineers independently agree on what "done" looks like?
 
-### Category 2 — User specificity
-- Are target users named personas or generic "users"?
-- Is there a specific context (when do they experience this problem)?
-- What does the problem cost them when unresolved?
+### INTEGRATION
+- What system behaviours, APIs, or data states are assumed to exist?
+- Are there upstream or downstream dependencies not named in the discovery?
+- What happens if an assumed integration is unavailable or behaves differently?
 
-### Category 3 — Problem vs solution
-- Is the problem statement describing a problem (not a solution)?
-- Is there a "we should build X" hiding in the problem statement?
-- Are success indicators observable outcomes or feature descriptions?
-
-### Category 4 — Constraint completeness
+### CONSTRAINTS
+- Are there regulatory, security, or data classification constraints that apply?
+- Are performance or availability constraints stated?
 - Are the constraints from `constraints.md` reflected in the discovery?
-- Are there regulatory, integration, or technical constraints missing?
-- Is "Why now" grounded in a real trigger (not just desire)?
+
+### USER JOURNEY
+- Are target users named personas or generic "users"?
+- How do users reach this feature — what state are they in when they encounter it?
+- What does the problem cost them when unresolved?
 
 ---
 
@@ -116,6 +116,19 @@ Rank the gaps by impact on downstream pipeline steps:
 - Constraint gaps cause rework in /review Category A and /definition-of-ready
 
 Ask up to 5 questions, one at a time, most impactful first.
+
+For each question:
+1. State the question
+2. Explain why it is blocking — which downstream step is at risk if it isn't answered
+3. Offer 2-3 likely answer options to accelerate the response
+
+Example format:
+> **Q: [question]**
+> Blocking because: [which downstream step and why]
+> Options:
+> A. [option 1]
+> B. [option 2]
+> C. [option 3 — or describe your own below]
 
 After each answer, update the relevant section of the discovery artefact before
 asking the next question.
@@ -136,33 +149,34 @@ After all questions are answered:
 
 1. Write all updates to `artefacts/[feature]/discovery.md`
 2. Update the Status field to `Clarified` if it was `Draft`
-3. Record what changed in the discovery's own revision history (if present) or
-   append a `## Revision notes` section:
+3. Append a `## Clarification log` section to the discovery artefact recording each Q&A:
 
 ```markdown
-## Revision notes
+## Clarification log
 [YYYY-MM-DD] Clarified via /clarify:
-- [section]: [what changed]
+- Q: [question]  A: [answer given]
+- Q: [question]  A: [answer given]
 ```
 
 ---
 
 ## Completion output
 
-> ✅ **Clarify complete — [feature]**
+If any question remains unresolved after all rounds:
+
+> ❌ **BLOCKED — [specific unresolved question]**
+>
+> Do not proceed to /benefit-metric until this question is resolved.
+> Reply: answer the question above — or run /clarify again in a new session
+
+If all questions are resolved:
+
+> ✅ **Clarification complete. [N] questions resolved. discovery.md updated. Ready for /benefit-metric.**
 >
 > Sections updated: [list]
-> Status: [Draft / Clarified / Ready for approval]
+> Status: Clarified
 >
-> **Is this discovery ready to approve?**
->
-> - If yes: update the Status field to "Approved" and run /benefit-metric
-> - If more work is needed: run /clarify again, or run /discovery for a full reset
->
-> **Remaining concerns** (if any):
-> [List any gaps not resolved in this session, with suggested next action for each]
->
-> Reply: approve and proceed to /benefit-metric — or needs more work
+> Reply: approve and proceed to /benefit-metric
 
 ---
 

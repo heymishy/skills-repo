@@ -19,6 +19,16 @@ triggers:
 
 # Review Skill
 
+## Evaluator stance
+
+Approach this review as a sceptical senior engineer whose default assumption is that issues exist. Your job is to find them, not to confirm the work is good.
+
+Lead with findings. Structure all output as: **FINDINGS → SCORE → VERDICT**, never the reverse. Do not open with praise or a summary of what was done well.
+
+If you are running this as an agent evaluating your own prior outputs — apply extra scrutiny. The failure mode to avoid is confirming quality rather than testing it.
+
+---
+
 ## Entry condition check
 
 Before asking anything, verify:
@@ -81,6 +91,22 @@ Before Step 2, read `.github/context.yml` and apply policy overlays:
 
 ## Step 3 — Run the review
 
+### Scoring scale (apply to all criteria)
+
+Each of the four primary criteria (Traceability, Scope integrity, AC quality, Completeness) is scored 1–5. A score below 3 on any criterion is an automatic FAIL.
+
+| Score | Meaning |
+|-------|---------|
+| 5 | No issues found |
+| 4 | Minor issues, no rework needed |
+| 3 | Issues present but addressable without story rework |
+| 2 | Issues require story rework — FAIL |
+| 1 | Fundamental problem, blocks definition entirely — FAIL |
+
+**If any criterion scores 1 or 2:** list specific line-level issues — quote the exact line, state the problem. General observations do not qualify. The output must be actionable enough for the author to fix without further clarification.
+
+---
+
 ### Category A: Traceability
 
 For each story:
@@ -95,6 +121,8 @@ HIGH: any broken reference or missing metric linkage
 MEDIUM: benefit linkage vague but metric referenced
 LOW: coverage matrix not yet updated
 
+**Traceability score (1–5):** [score] — [one-line justification. If score < 3: list specific line-level issues.]
+
 ### Category B: Scope discipline
 
 For each story:
@@ -106,6 +134,8 @@ For each story:
 HIGH: story implements something explicitly out of scope
 MEDIUM: out-of-scope section is "N/A" or missing
 LOW: scope note present but not linked back to discovery
+
+**Scope integrity score (1–5):** [score] — [one-line justification. If score < 3: list specific line-level issues.]
 
 ### Category C: AC quality
 
@@ -121,6 +151,8 @@ HIGH: fewer than 3 ACs, or not in Given/When/Then
 MEDIUM: ACs use "should" or describe implementation
 LOW: edge cases in sub-bullets
 
+**AC quality score (1–5):** [score] — [one-line justification. If score < 3: list specific line-level issues.]
+
 ### Category D: Completeness
 
 For each field against `.github/templates/story.md`:
@@ -135,6 +167,21 @@ For each field against `.github/templates/story.md`:
 HIGH: user story missing or persona is generic
 MEDIUM: NFRs blank or benefit linkage missing
 LOW: complexity or scope stability not rated
+
+**Completeness score (1–5):** [score] — [one-line justification. If score < 3: list specific line-level issues.]
+
+---
+
+### Overall score summary
+
+| Criterion | Score | Pass/Fail |
+|-----------|-------|-----------|
+| Traceability | [1–5] | PASS / FAIL |
+| Scope integrity | [1–5] | PASS / FAIL |
+| AC quality | [1–5] | PASS / FAIL |
+| Completeness | [1–5] | PASS / FAIL |
+
+**Verdict:** PASS — all criteria scored 3 or above | FAIL — [n] criteria below threshold
 
 ### Category E: Architecture compliance
 
@@ -161,6 +208,15 @@ LOW: pattern library or style guide component preferred but not specified in Arc
 
 Conforms to `.github/templates/review-report.md`.
 Save to `artefacts/[feature]/review/[story-slug]-review-[N].md`.
+
+**Output order is mandatory: FINDINGS → SCORE → VERDICT**
+Never open with positive observations or a summary of what was done well.
+
+1. **FINDINGS** — all issues, severity-labelled, specific (quote the line)
+2. **SCORE** — per-criterion 1–5 scores with one-line justifications
+3. **VERDICT** — PASS or FAIL with a single sentence explaining the outcome
+
+If any criterion scores below 3, the VERDICT must be FAIL and each sub-threshold criterion must list specific line-level issues — not general observations.
 
 Finding IDs: `[Run]-[Severity]-[Sequence]` e.g. `1-H1`, `1-M1`, `2-L1`
 

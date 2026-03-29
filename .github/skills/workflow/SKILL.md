@@ -80,6 +80,8 @@ When a new request comes in, assess the complexity BEFORE presenting pipeline op
 | Clear problem, standard scope, 1-3 stories | **Standard pipeline:** full step sequence |
 | Multiple unknowns, large scope, or 4+ stories | **Complex track:** /spike for unknowns first, then /programme if multi-team |
 
+**Pipeline health note:** When routing a feature, note any steps that are optional for this work type and make the skip explicit. Don't run a step out of habit — each step should have a clear reason to run for this specific feature.
+
 **Micro-track:**
 > Routing you to micro-track — single story, no discovery needed.
 > Path: describe the change → /test-plan → /definition-of-ready → coding agent
@@ -110,6 +112,16 @@ When a new request comes in, assess the complexity BEFORE presenting pipeline op
 **If 1 — Standard pipeline:** route to /discovery unless a later stage is already active.
 
 **If 2 or 3 — Short track:**
+
+Before confirming short-track, verify it actually qualifies:
+
+> **Confirm this is genuinely short-track. If in doubt, use standard routing.**
+> - Is the change bounded to a single component or 1–2 files?
+> - Are all ACs well understood right now — no unknowns?
+> - Is there no risk of unintended downstream impact?
+>
+> Reply: yes — or wait, route me to standard pipeline
+
 > **Short-track confirmed.**
 > Path: /test-plan → /definition-of-ready → coding agent
 >

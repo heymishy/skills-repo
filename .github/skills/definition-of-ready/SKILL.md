@@ -56,7 +56,57 @@ Read `.github/context.yml` before evaluating oversight:
 
 ---
 
-## Hard blocks - H1 to H8
+## Step 2 — Contract proposal
+
+Before running the checklist, the coding agent must produce a Contract Proposal. This shifts DoR from a self-certification gate to a negotiated contract reviewed before any implementation begins.
+
+Present the following to the story author for review:
+
+> **Contract Proposal — [story title]**
+>
+> **What will be built:**
+> [In implementation terms — not a restatement of ACs. Name the specific components, functions, or UI changes that will be created or modified.]
+>
+> **What will NOT be built:**
+> [Explicit scope boundary. Name at least one behaviour that is out of scope for this story and why.]
+>
+> **How each AC will be verified:**
+> | AC | Test approach | Type |
+> |----|---------------|------|
+> | [AC 1 summary] | [specific test: e.g. unit test on X function, E2E via Y flow] | unit / integration / E2E |
+>
+> **Assumptions:**
+> [Any assumptions about system behaviour, data state, third-party behaviour, or user context not stated in the story.]
+>
+> **Estimated touch points:**
+> Files: [list], Services: [list], APIs: [list]
+
+---
+
+## Step 3 — Contract review
+
+Review the Contract Proposal against the story ACs and test plan.
+
+For each mismatch between proposed implementation and stated AC — flag as a **hard block**:
+
+> ❌ **Contract mismatch — hard block**
+> AC: [AC text]
+> Proposed approach: [what the contract says]
+> Issue: [specific mismatch — e.g. "contract verifies via unit test but AC requires observable UI behaviour"]
+>
+> Revise the Contract Proposal before proceeding.
+
+If no mismatches:
+
+> ✅ **Contract review passed** — proposed implementation aligns with all ACs.
+
+The hard blocks (H1–H13) run after contract review passes, not instead of it.
+
+Output format: **CONTRACT PROPOSAL → CONTRACT REVIEW → CHECKLIST → READY/BLOCKED**
+
+---
+
+## Hard blocks - H1 onwards
 
 All must pass. No exceptions. Run each check and record PASS or FAIL.
 
@@ -176,6 +226,8 @@ Conforms to the `## Coding Agent Instructions` section of `templates/definition-
 
 Save DoR artefact to `artefacts/[feature]/dor/[story-slug]-dor.md`
 conforming to `.github/templates/definition-of-ready-checklist.md`.
+
+Save the approved Contract Proposal to `artefacts/[feature]/dor/[story-slug]-dor-contract.md`.
 
 ---
 

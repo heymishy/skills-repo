@@ -208,6 +208,29 @@ artefacts/[YYYY-MM-DD-feature-slug]/
 
 ---
 
+## Context handoff protocol
+
+Each skill writes its primary output to the feature artefact folder at `artefacts/{YYYY-MM-DD-feature-slug}/`. The canonical files are:
+
+```
+discovery.md                          ← /discovery output
+benefit-metric.md                     ← /benefit-metric output
+epics/[epic-slug].md                  ← /definition output
+stories/[story-slug].md               ← /definition output
+test-plans/[story-slug]-test-plan.md  ← /test-plan output
+verification-scripts/[story-slug]-verification.md  ← /test-plan output
+dor/[story-slug]-dor.md               ← /definition-of-ready output
+dor/[story-slug]-dor-contract.md      ← /definition-of-ready contract proposal
+trace/[date]-trace.md                 ← /trace output
+dod/[story-slug]-dod.md               ← /definition-of-done output
+```
+
+**Coding agent resuming a feature:** your first action is to read the feature artefact folder in full before writing any code. Do not rely on conversation history for ACs, constraints, or scope decisions — read from the artefact files.
+
+**If the feature artefact folder does not exist or is incomplete:** invoke `/workflow` before proceeding.
+
+---
+
 ## Session conventions
 
 ### Starting a session
