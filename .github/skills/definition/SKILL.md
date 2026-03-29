@@ -336,7 +336,18 @@ If no NFRs are identified, state this explicitly in the profile:
 Update `.github/pipeline-state.json` in the **project repository** when all epics and stories for a feature are written and saved:
 
 - Set feature `stage: "definition"`, `health: "green"`, `updatedAt: [now]`
-- Populate `epics[]` array: for each epic, add `{ slug, name, status: "not-started", stories: [] }`
-- For each story under each epic, add `{ slug, name, stage: "definition", health: "green" }`
+- Set feature `slicingStrategy` to the chosen strategy key (one of: `vertical-slice`, `walking-skeleton`, `user-journey`, `risk-first`)
+- Populate `epics[]` array. Each epic object must have this exact shape — stories nested **inside** the epic:
+  ```json
+  {
+    "slug": "epic-slug",
+    "name": "Epic title",
+    "status": "not-started",
+    "stories": [
+      { "slug": "story-slug", "name": "Story title", "stage": "definition", "health": "green" }
+    ]
+  }
+  ```
+- Stories go inside `epic.stories[]` — not at the feature level. The visualiser reads `epic.stories` to render the story map.
 
-**Human review note:** If a human adds or modifies stories outside a skill session, run `/workflow` to reconcile — it will diff artefacts against the state file.  and approved scope notes
+**Human review note:** If a human adds or modifies stories outside a skill session, run `/workflow` to reconcile — it will diff artefacts against the state file.
