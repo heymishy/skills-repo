@@ -6,6 +6,25 @@ All notable changes to this repository will be documented in this file.
 
 ---
 
+## [0.5.1] — 2026-03-31
+
+### Changed
+
+#### /decisions baked into the DoR → inner coding loop boundary
+- `/definition-of-ready` warning handler now says "I'll invoke /decisions to log it" and includes an explicit instruction to call the skill immediately rather than deferring to end of run
+- Completion output now prompts to run `/decisions` if any warnings were acknowledged, with step `0` of the inner coding loop explicitly calling it as a reminder
+- `copilot-instructions.md` pipeline table updated: new row `6.5 /decisions` with entry condition "DoR complete (if warnings ack'd)" and exit condition "RISK-ACCEPTs logged"
+- README mermaid diagram updated: new `DOR_DEC` node between `/definition-of-ready` and `/branch-setup`; standard pipeline text updated to include the step
+
+### Added
+
+#### Pre-commit CHANGELOG + README guard (`check-changelog-readme.js`)
+- New pre-commit check: if skill SKILL.md, template, `copilot-instructions.md`, or `scripts/` files are staged, CHANGELOG.md must also be staged (hard block)
+- If those same files are staged but README.md is not, a non-blocking advisory is printed
+- Wired into `.git/hooks/pre-commit` alongside the existing four checks
+
+---
+
 ## [0.5.0] — 2026-03-30
 
 ### Added

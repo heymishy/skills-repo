@@ -189,7 +189,9 @@ flowchart TD
     DEF -->|Stories written| REV
     REV -->|No HIGH findings| TP
     TP -->|Tests written failing| DOR
-    DOR -->|Sign-off| ICL_BS
+    DOR -->|"Sign-off + warnings?"| DOR_DEC
+    DOR_DEC["/decisions [6.5]\nLog RISK-ACCEPTs\nif warnings acked"]
+    DOR_DEC --> ICL_BS
     BC -->|PR merged| DOD
     DOD --> TR
 
@@ -292,6 +294,7 @@ flowchart TD
     class DISC,CLAR,BM,DEF,REV,TP,DOD,TR,WF skill
     class ST_TP,ST_DOR,ST_ICL skill
     class DOR gate
+    class DOR_DEC support
     class ICL_BS,ICL_IP,ICL_SE,ICL_IR,ICL_VC,BC inner
     class TDD,SDBG inner
     class SPIKE,DEC,RE,EAR,CM,RS,IDEATE support
@@ -323,7 +326,7 @@ For bugs, small fixes, and bounded refactors. Three steps.
 ### Standard pipeline
 For new features and user-facing scope.
 ```
-/discovery → /clarify → /benefit-metric → /definition → /review → /test-plan → /definition-of-ready → inner coding loop → /definition-of-done → /trace → /levelup
+/discovery → /clarify → /benefit-metric → /definition → /review → /test-plan → /definition-of-ready → /decisions (if warnings) → inner coding loop → /definition-of-done → /trace → /levelup
 ```
 
 ### Two-loop operating model
