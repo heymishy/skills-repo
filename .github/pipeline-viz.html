@@ -94,6 +94,8 @@
     font-size: 11px; color: var(--teal);
   }
   .loop-gate-banner code { font-family: monospace; opacity: .85; }
+  .loop-lane-preview { opacity: 0.6; border-style: dashed; }
+  .loop-lane-preview .col { opacity: 0.55; }
   .col {
     flex-shrink: 0; width: var(--col-w);
     background: var(--surface); border-radius: 8px;
@@ -1968,7 +1970,7 @@ function renderBoard(features) {
     board.innerHTML = `
       ${loopLaneHTML('outer', 'Outer loop', outerCards, outerStages, features, stageIdx)}
       ${gateBanner}
-      ${loopLaneHTML('inner', 'Inner loop', innerCards, innerStages, features, stageIdx)}`;
+      ${loopLaneHTML('inner', 'Inner loop', innerCards, innerStages, features, stageIdx, waitingForInner.length > 0)}`;
     return;
   }
 
@@ -1979,7 +1981,7 @@ function renderBoard(features) {
   }).join('');
 }
 
-function loopLaneHTML(kind, title, cardCount, stages, features, stageIdx) {
+function loopLaneHTML(kind, title, cardCount, stages, features, stageIdx, showPreview = false) {
   const purpose = kind === 'outer'
     ? 'Discover · Define · Release · Learn'
     : 'Branch · Build · Verify · Complete';
@@ -1992,21 +1994,26 @@ function loopLaneHTML(kind, title, cardCount, stages, features, stageIdx) {
   const healthDot = hasRed ? '<span class="dot red" style="margin-right:4px"></span>'
                  : hasAmber ? '<span class="dot amber" style="margin-right:4px"></span>'
                  : cardCount > 0 ? '<span class="dot green" style="margin-right:4px"></span>' : '';
-  // Filter out empty stages in loop-grouped view
-  const visibleStages = stages.filter(s => {
+  // Filter out empty stages in loop-grouped view; bypass filter for preview mode
+  const isPreview = showPreview && cardCount === 0;
+  const visibleStages = isPreview ? stages : stages.filter(s => {
     const active = features.filter(f => boardStageId(f.stage) === s.id);
     const done   = features.filter(f => (stageIdx[boardStageId(f.stage)] ?? 999) > (stageIdx[s.id] ?? 999));
     return active.length > 0 || done.length > 0;
   });
   if (visibleStages.length === 0) return '';
+  const previewTag = isPreview ? ' <span style="font-size:9px;color:var(--muted);text-transform:none;font-weight:400;font-style:italic">upcoming</span>' : '';
+  const metaLabel = isPreview
+    ? `${visibleStages.length} stage${visibleStages.length !== 1 ? 's' : ''} · awaiting entry`
+    : `${cardCount} active · ${visibleStages.length} stage${visibleStages.length !== 1 ? 's' : ''}`;
   return `
-    <section class="loop-lane">
+    <section class="loop-lane${isPreview ? ' loop-lane-preview' : ''}">
       <div class="loop-lane-header">
         <div style="display:flex;align-items:center;gap:6px">
-          ${healthDot}<span class="loop-lane-title ${kind}">${title}</span>
+          ${healthDot}<span class="loop-lane-title ${kind}">${title}</span>${previewTag}
           <span class="loop-lane-purpose">${purpose}</span>
         </div>
-        <span class="loop-lane-meta">${cardCount} active · ${visibleStages.length} stage${visibleStages.length !== 1 ? 's' : ''}</span>
+        <span class="loop-lane-meta">${metaLabel}</span>
       </div>
       <div class="loop-lane-row">
         ${visibleStages.map(s => renderStageColumn(s, features, stageIdx)).join('')}

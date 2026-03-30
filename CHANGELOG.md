@@ -6,6 +6,18 @@ All notable changes to this repository will be documented in this file.
 
 ---
 
+## [0.5.3] — 2026-03-31
+
+### Fixed
+
+#### Pipeline viz: inner loop now shown as upcoming before a feature enters it
+
+In loop-grouped view, the inner loop lane was entirely hidden until at least one feature had entered a branch-setup or later stage. Users couldn't see the inner loop layout while features were waiting at DoR.
+
+Fix: when one or more features have all stories signed off at DoR but haven't yet run `/branch-setup`, the inner loop lane renders in preview mode — dashed border, reduced opacity, "upcoming" label in the header, and meta text shows "N stages · awaiting entry" instead of "0 active". All inner loop stage columns are shown as empty placeholders so users can see the full sequence before entering it.
+
+---
+
 ## [0.5.2] — 2026-03-31
 
 ### Changed
