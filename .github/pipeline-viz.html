@@ -308,6 +308,7 @@
   .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
   .progress-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width .3s; }
   .progress-fill.partial { background: var(--amber); }
+  .progress-fill.failed  { background: var(--red); }
   .story-pills { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; }
   .pill {
     font-size: 9px; border-radius: 3px; padding: 1px 6px;
@@ -2265,7 +2266,7 @@ function storyRowHTML(featureSlug, epicSlug, story) {
   const stateCls   = INNER_LOOP_STAGES.has(story.stage || '') || innerState !== 'queued'
     ? `story-row-${innerState}` : '';
 
-  const stageDots = INNER_LOOP_STAGES.has(story.stage || '') ? innerStageDotsHTML(story.stage) : '';
+  const stageDots = INNER_LOOP_STAGES.has(story.stage || '') && innerState !== 'done' ? innerStageDotsHTML(story.stage) : '';
 
   const pills = [
     story.reviewStatus === 'passed'       ? `<span class="pill ok">Review ✓</span>` :
@@ -2335,8 +2336,8 @@ function openDrawer(featureSlug, epicSlug, storySlug) {
       </div>` : ''}
       ${testPct !== null ? `
       <div style="margin-bottom:8px">
-        <div class="progress-label"><span>Tests passing</span><span>${story.testPlan.passing}/${story.testPlan.totalTests} (${testPct}%)</span></div>
-        <div class="progress-bar" style="height:6px"><div class="progress-fill ${testPct<100?'partial':''}" style="width:${testPct}%"></div></div>
+        <div class="progress-label"><span>Tests passing</span><span>${story.testPlan.passing}/${story.testPlan.totalTests} (${testPct}%)${(story.testPlan.failing||0) > 0 ? ` · ${story.testPlan.failing} failing` : ''}</span></div>
+        <div class="progress-bar" style="height:6px"><div class="progress-fill ${(story.testPlan.failing||0) > 0 ? 'failed' : testPct<100 ? 'partial' : ''}" style="width:${testPct}%"></div></div>
       </div>` : '<div style="font-size:11px;color:var(--muted)">No test plan yet</div>'}
     </div>
 
@@ -3496,6 +3497,14 @@ function storyNextSkill(s) {
   if (s.dodStatus === 'complete')                      return null;
   if (s.prStatus === 'merged')                         return '/definition-of-done';
   if (s.prStatus === 'open' || s.prStatus === 'draft') return '/verify-completion';
+  // Inner loop stages — show the current stage skill rather than falling through to DoR
+  const st = s.stage || '';
+  if (st === 'verify-completion')                      return '/verify-completion';
+  if (st === 'implementation-review')                  return '/implementation-review';
+  if (st === 'subagent-execution')                     return 'Continue execution — /tdd per task';
+  if (st === 'implementation-plan')                    return '/implementation-plan';
+  if (st === 'branch-setup')                           return '/branch-setup';
+  if (st === 'branch-complete')                        return '/branch-complete';
   if (s.dorStatus === 'signed-off')                    return '/branch-setup → /implementation-plan';
   if (s.dorStatus === 'blocked')                       return 'Fix DoR blockers → re-run /definition-of-ready';
   if (s.reviewStatus === 'passed' && s.testPlan)       return '/definition-of-ready';
@@ -3569,17 +3578,19 @@ function innerStageDotsHTML(storyStage) {
 
 function taskCommittedPct(story) {
   if (!story.tasks || story.tasks.length === 0) return null;
-  const done = story.tasks.filter(t => t.tddState === 'committed').length;
-  return { done, total: story.tasks.length, pct: Math.round((done / story.tasks.length) * 100) };
+  const done   = story.tasks.filter(t => t.tddState === 'committed').length;
+  const red    = story.tasks.filter(t => t.tddState === 'red').length;
+  return { done, red, total: story.tasks.length, pct: Math.round((done / story.tasks.length) * 100) };
 }
 
 function taskMiniBarHTML(story) {
   const tp = taskCommittedPct(story);
   if (!tp) return '';
-  const col = tp.done === tp.total ? 'var(--teal)' : tp.done > 0 ? 'var(--green)' : 'var(--border)';
+  const col = tp.red > 0 ? 'var(--red)' : tp.done === tp.total ? 'var(--teal)' : tp.done > 0 ? 'var(--green)' : 'var(--border)';
+  const label = tp.red > 0 ? `${tp.done}/${tp.total} (${tp.red} failing)` : `${tp.done}/${tp.total}`;
   return `
   <div class="task-mini-bar">
-    <div class="progress-label"><span style="font-size:9px">Tasks</span><span style="font-size:9px">${tp.done}/${tp.total}</span></div>
+    <div class="progress-label"><span style="font-size:9px">Tasks</span><span style="font-size:9px">${label}</span></div>
     <div class="progress-bar"><div style="height:100%;border-radius:2px;width:${tp.pct}%;background:${col};transition:width .3s"></div></div>
   </div>`;
 }
@@ -3618,8 +3629,8 @@ function drawerTaskListHTML(story) {
   return `
   ${tp ? `
   <div style="margin-bottom:10px">
-    <div class="progress-label"><span>Tasks committed</span><span>${tp.done}/${tp.total} (${tp.pct}%)</span></div>
-    <div class="progress-bar" style="height:6px"><div style="height:100%;border-radius:3px;width:${tp.pct}%;background:${tp.done===tp.total ? 'var(--teal)' : 'var(--green)'};transition:width .3s"></div></div>
+    <div class="progress-label"><span>Tasks committed</span><span>${tp.done}/${tp.total} (${tp.pct}%)${tp.red > 0 ? ` · ${tp.red} failing` : ''}</span></div>
+    <div class="progress-bar" style="height:6px"><div style="height:100%;border-radius:3px;width:${tp.pct}%;background:${tp.red > 0 ? 'var(--red)' : tp.done===tp.total ? 'var(--teal)' : 'var(--green)'};transition:width .3s"></div></div>
   </div>` : ''}
   ${items}`;
 }

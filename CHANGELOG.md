@@ -6,6 +6,20 @@ All notable changes to this repository will be documented in this file.
 
 ---
 
+## [0.5.9] — 2026-03-31
+
+### Fixed
+
+#### Pipeline viz: storyNextSkill inner loop awareness + color-coded task/test status
+
+- **storyNextSkill** now returns the correct next-action for inner loop stages (`branch-setup`, `implementation-plan`, `subagent-execution`, `implementation-review`, `verify-completion`, `branch-complete`) instead of falling through to the DoR check.
+- **Task bars** turn red when any task has `tddState: "red"` (actively failing). Label shows failing count (e.g. "3/4 (1 failing)").
+- **Test progress bars** in the drawer turn red when `testPlan.failing > 0`, amber when partial but no explicit failures, green when all pass.
+- **Stage dots** are hidden on done stories — they only display for active and queued inner-loop stories.
+- Added `.progress-fill.failed` CSS class (`var(--red)`).
+
+---
+
 ## [0.5.8] — 2026-03-31
 
 ### Improved
