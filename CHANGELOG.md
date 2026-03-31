@@ -6,6 +6,20 @@ All notable changes to this repository will be documented in this file.
 
 ---
 
+## [0.5.4] — 2026-03-31
+
+### Fixed
+
+#### Pipeline viz: TDD task links resolve correctly when paths are repo-root relative
+
+Task `file` paths written to `pipeline-state.json` by skills are stored as repo-root-relative (`artefacts/feature/plans/...`). The viz is served from `.github/`, so bare-relative paths resolved to `.github/artefacts/...` — a 404. A new `resolveArtPath()` helper prepends `../` to any path that isn't already absolute, protocol-relative, or `../`-anchored. Applied to task links in both the inline task list and the story drawer.
+
+#### Pipeline viz: story drawer now shows both per-story and combined review links
+
+The review link in the story drawer was hardcoded to `${storySlug}-review-1.md`. Projects that produce a combined `all-stories-review-1.md` instead got a 404. The drawer now renders both links so either format is reachable.
+
+---
+
 ## [0.5.3] — 2026-03-31
 
 ### Fixed

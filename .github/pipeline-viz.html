@@ -2291,7 +2291,7 @@ function openDrawer(featureSlug, epicSlug, storySlug) {
       <h3>Artefacts</h3>
       <div style="display:flex;flex-direction:column;gap:4px">
         <a class="drawer-link" href="${storyPath}">📄 Story artefact</a>
-        ${story.reviewStatus ? `<a class="drawer-link" href="../artefacts/${featureSlugPath}/review/${storySlug}-review-1.md">🔍 Review</a>` : ''}
+        ${story.reviewStatus ? `<a class="drawer-link" href="../artefacts/${featureSlugPath}/review/${storySlug}-review-1.md">🔍 Review</a><a class="drawer-link" href="../artefacts/${featureSlugPath}/review/all-stories-review-1.md">🔍 All-stories review</a>` : ''}
         <a class="drawer-link" href="${testPath}">🧪 Test plan</a>
         <a class="drawer-link" href="${dorPath}">✅ Definition of Ready</a>
         ${['implementation-plan','coding','verify-completion','definition-of-done'].includes(storyStage) ? `<a class="drawer-link" href="../artefacts/${featureSlugPath}/plans/${storySlug}-plan.md">🗒 Implementation plan</a>` : ''}
@@ -3255,6 +3255,13 @@ function esc(str) {
   if (!str) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+// Normalise artefact paths stored as repo-root-relative (artefacts/...)
+// into paths that work from .github/pipeline-viz.html (../artefacts/...)
+function resolveArtPath(p) {
+  if (!p) return p;
+  if (p.startsWith('http') || p.startsWith('/') || p.startsWith('../') || p.startsWith('./')) return p;
+  return '../' + p;
+}
 function healthColour(h) { return h==='red' ? 'var(--red)' : h==='amber' ? 'var(--amber)' : 'var(--green)'; }
 function healthEmoji(h)  { return h==='red' ? '🔴' : h==='amber' ? '🟡' : '🟢'; }
 function trackLabel(t) {
@@ -3497,7 +3504,7 @@ function taskListInlineHTML(story, storyKey) {
     <div class="task-item">
       ${tddBadgeHTML(t.tddState || 'not-started')}
       ${t.file
-        ? `<a class="task-name task-link" href="${t.file}">${esc(t.name)}</a>`
+        ? `<a class="task-name task-link" href="${resolveArtPath(t.file)}">${esc(t.name)}</a>`
         : `<span class="task-name">${esc(t.name)}</span>`}
     </div>`).join('');
   return `
@@ -3516,7 +3523,7 @@ function drawerTaskListHTML(story) {
     <div class="drawer-task-item">
       <span class="drawer-task-num">${i + 1}.</span>
       ${t.file
-        ? `<a class="drawer-task-name task-link" href="${t.file}">${esc(t.name)}</a>`
+        ? `<a class="drawer-task-name task-link" href="${resolveArtPath(t.file)}">${esc(t.name)}</a>`
         : `<span class="drawer-task-name">${esc(t.name)}</span>`}
       ${tddBadgeHTML(t.tddState || 'not-started', 'tdd-badge drawer-tdd-badge')}
     </div>`).join('');
