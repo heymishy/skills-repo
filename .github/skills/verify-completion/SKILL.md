@@ -156,8 +156,9 @@ Update `.github/pipeline-state.json` in the **project repository** after running
 - Set story `stage: "verify-completion"`, `updatedAt: [now]`
 - Set `acVerified: [count of ✅ ACs]`, `acTotal: [total ACs]`
 - Set `testPlan.passing: [count of passing tests]`
-- If all ACs pass and all tests pass: set `health: "green"`, clear `blocker`
-- If any AC fails or any test fails: set `health: "red"`, `blocker: "[first failing AC or test suite]"`
+- If all ACs pass and all tests pass: set `health: "green"`, `verifyStatus: "passed"`, clear `blocker`
+- If any AC fails or any test fails: set `health: "red"`, `verifyStatus: "failed"`, `blocker: "[first failing AC or test suite]"`
+- If verification is started but not yet complete: set `verifyStatus: "running"`
 
 **Parent propagation (apply to every inner loop state write):**
 - Always update the feature-level `updatedAt: [now]` — the visualiser staleness timer reads this field; if only the story `updatedAt` is written the feature card shows "STALE PROC"

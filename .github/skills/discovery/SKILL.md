@@ -278,5 +278,13 @@ When the discovery artefact is saved and approved, update `.github/pipeline-stat
 
 - If the feature does not exist in `features[]`: add a new entry with `stage: "discovery"`, `health: "green"`, `updatedAt: [now]`
 - If it exists: set `stage: "discovery"`, `health: "green"`, `updatedAt: [now]`
+**Compliance context bridge:** Read `.github/context.yml` and copy these fields to the feature entry:
+- `regulated: [value of meta.regulated]` (boolean)
+- `complianceProfile: "regulated"` if `meta.regulated` is true, otherwise `"standard"`
+- `complianceFrameworks: [value of compliance.frameworks]` (array, may be empty)
+- `sensitiveDataCategories: [value of compliance.sensitive_data_categories]` (array, may be empty)
 
+These fields are read by the visualiser governance view. They must be set at discovery time so the governance matrix can apply the correct policy (strict/standard) from the start of the feature lifecycle.
+
+**Config governance bridge:** Also read `mapping.governance.gates` from context.yml. If non-empty, write it to `config.governance.gates` in pipeline-state.json (top-level `config` object). This allows the visualiser to use repo-specific gate definitions instead of hardcoded defaults.
 **Human review note:** If a human approves the discovery outside of a skill session, run `/workflow` â€” it will reconcile the state file with the artefacts.

@@ -262,5 +262,6 @@ Add to a pre-push git hook if you want it enforced locally.
 - For any story where a broken chain link is found: set `health: "amber"` (missing artefact) or `"red"` (broken traceability)
 - Set `stage: "trace"` for stories that have completed the full chain
 - Set `updatedAt: [now]` on the feature record
+- Set feature-level `traceStatus: "passed"` if no findings, or `"has-findings"` if any broken links/missing artefacts are reported
 
-This allows the visualiser to surface traceability gaps as amber/red health.
+This allows the visualiser governance view to surface traceability gaps directly. The `traceStatus` field is read by the governance gate checker — without it the gate shows "Pending" indefinitely.

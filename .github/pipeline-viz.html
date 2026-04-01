@@ -707,6 +707,20 @@
   .gov-meta-ref { margin-top: 10px; font-size: 10px; color: var(--muted); }
   .gov-meta-ref summary { cursor: pointer; font-size: 10px; color: var(--muted); user-select: none; }
   .gov-meta-ref summary:hover { color: var(--text); }
+  .gov-compliance-banner {
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    padding: 8px 12px; margin-bottom: 10px;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  }
+  .compliance-badge {
+    font-size: 10px; border-radius: 999px; padding: 2px 8px;
+    border: 1px solid var(--border); white-space: nowrap;
+  }
+  .compliance-badge.regulated { color: var(--amber); border-color: rgba(245,158,11,.4); background: rgba(245,158,11,.1); font-weight: 600; }
+  .compliance-badge.standard  { color: var(--muted); }
+  .compliance-badge.framework { color: #93c5fd; border-color: rgba(147,197,253,.35); background: rgba(147,197,253,.08); }
+  .compliance-badge.sensitive { color: var(--amber); border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.06); }
+  .compliance-badge.custom-gates { color: var(--green); border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.08); }
   .gov-matrix-wrap {
     background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
     overflow-x: auto;
@@ -983,7 +997,7 @@ const OUTER_LOOP_STAGE_ORDER = ['ideation', 'discovery', 'benefit-metric', 'defi
 const INNER_LOOP_STAGES = new Set(INNER_LOOP_STAGE_ORDER);
 const PIPELINE_STAGE_ORDER = ['ideation', 'discovery', 'benefit-metric', 'definition', 'spike', 'review', 'test-plan', 'definition-of-ready', 'branch-setup', 'implementation-plan', 'subagent-execution', 'implementation-review', 'verify-completion', 'branch-complete', 'definition-of-done', 'trace', 'release-pending', 'released'];
 
-const GOVERNANCE_GATES = [
+const DEFAULT_GOVERNANCE_GATES = [
   { id: 'review',              label: 'Review',    skill: '/review',              skillPath: 'skills/review/SKILL.md',              criteria: 'No HIGH findings before progression',                      artefact: f => `../artefacts/${f.slug}/review/` },
   { id: 'test-plan',           label: 'Test Plan', skill: '/test-plan',           skillPath: 'skills/test-plan/SKILL.md',           criteria: 'Failing tests and verification script prepared',            artefact: f => `../artefacts/${f.slug}/test-plans/` },
   { id: 'definition-of-ready', label: 'DoR',       skill: '/definition-of-ready', skillPath: 'skills/definition-of-ready/SKILL.md', criteria: 'All hard blocks pass and sign-off complete',                artefact: f => `../artefacts/${f.slug}/dor/` },
@@ -992,6 +1006,11 @@ const GOVERNANCE_GATES = [
   { id: 'trace',               label: 'Trace',     skill: '/trace',               skillPath: 'skills/trace/SKILL.md',               criteria: 'Traceability chain intact across artefacts',                artefact: f => `../artefacts/${f.slug}/trace/trace.md` },
   { id: 'release',             label: 'Release',   skill: '/release',             skillPath: 'skills/release/SKILL.md',             criteria: 'Release bundle/checklist produced for deployment',          artefact: f => `../artefacts/${f.slug}/release/release-notes-technical.md` },
 ];
+
+// Active gate set — starts as defaults, overridden by config.governance.gates from pipeline-state.json.
+// This makes the governance view adaptive: consumer repos can define custom gates via context.yml
+// which /discovery or /workflow bridges into pipeline-state.json config.governance.gates.
+let activeGovernanceGates = [...DEFAULT_GOVERNANCE_GATES];
 
 // Pipeline-authority skills referenced in the governance view but not gate-checked directly.
 // Their descriptions and step requirements inform the gate criteria context.
@@ -1109,6 +1128,40 @@ function normalizeData(data) {
     governanceStrictPolicy = cfgRegulated;
   }
 
+  // Dynamic governance gates: if config.governance.gates is defined in pipeline-state.json,
+  // override or extend the default gate set. Each entry can override a default gate (by
+  // matching id) or add a new gate. This is bridged from context.yml mapping.governance.gates
+  // by /discovery and reconciled by /workflow.
+  if (data.config && data.config.governance && Array.isArray(data.config.governance.gates)) {
+    const customGates = data.config.governance.gates;
+    const merged = DEFAULT_GOVERNANCE_GATES.map(dg => {
+      const override = customGates.find(cg => cg.id === dg.id);
+      if (!override) return dg;
+      return Object.assign({}, dg, {
+        label: override.label || dg.label,
+        skill: override.skill || dg.skill,
+        skillPath: override.skillPath || dg.skillPath,
+        criteria: override.criteria || dg.criteria,
+      });
+    });
+    // Append any custom gates with ids not in the default set
+    customGates.forEach(cg => {
+      if (!DEFAULT_GOVERNANCE_GATES.find(dg => dg.id === cg.id)) {
+        merged.push({
+          id: cg.id,
+          label: cg.label || cg.id,
+          skill: cg.skill || '/' + cg.id,
+          skillPath: cg.skillPath || '../.github/skills/' + cg.id + '/SKILL.md',
+          criteria: cg.criteria || 'Custom gate',
+          artefact: function() { return ''; },
+        });
+      }
+    });
+    activeGovernanceGates = merged;
+  } else {
+    activeGovernanceGates = [...DEFAULT_GOVERNANCE_GATES];
+  }
+
   return data;
 }
 
@@ -1169,7 +1222,7 @@ function parseFrontmatterDescription(text) {
 
 async function loadSkillMetadata() {
   const allSkills = [
-    ...GOVERNANCE_GATES.map(g => ({ id: g.id, path: g.skillPath })),
+    ...activeGovernanceGates.map(g => ({ id: g.id, path: g.skillPath })),
     ...META_SKILL_REFS.map(m => ({ id: m.id, path: m.skillPath })),
   ];
   const results = await Promise.allSettled(
@@ -1706,7 +1759,7 @@ function renderGovernance(features) {
 
   const rowsUnfiltered = features.map(f => ({
     feature: f,
-    gates: GOVERNANCE_GATES.map(g => ({ gate: g, status: gateStatus(f, g.id) })),
+    gates: activeGovernanceGates.map(g => ({ gate: g, status: gateStatus(f, g.id) })),
   }));
 
   const rows = governanceGateFilter
@@ -1720,7 +1773,7 @@ function renderGovernance(features) {
   const passCount = allStatuses.filter(s => s === 'pass').length;
   const warnCount = allStatuses.filter(s => s === 'warn').length;
   const failCount = allStatuses.filter(s => s === 'fail').length;
-  const gateFailCounts = GOVERNANCE_GATES.map(g => ({
+  const gateFailCounts = activeGovernanceGates.map(g => ({
     gate: g,
     count: rowsUnfiltered.filter(r => {
       const gr = r.gates.find(x => x.gate.id === g.id);
@@ -1734,8 +1787,8 @@ function renderGovernance(features) {
   // The JS parser chokes on the closing } of the block body and throws
   // "Unexpected token '}'". Always hoist complex logic to a named variable first.
 
-  const skillsLoaded = GOVERNANCE_GATES.filter(g => skillLoaded(g.id)).length;
-  const skillsTotal  = GOVERNANCE_GATES.length;
+  const skillsLoaded = activeGovernanceGates.filter(g => skillLoaded(g.id)).length;
+  const skillsTotal  = activeGovernanceGates.length;
   let skillsBadgeHTML;
   if (skillsLoaded === skillsTotal) {
     skillsBadgeHTML = '<span class="skill-source-badge live">&#128196; ' + skillsLoaded + '/' + skillsTotal + ' skills live</span>';
@@ -1745,7 +1798,7 @@ function renderGovernance(features) {
     skillsBadgeHTML = '<span class="skill-source-badge default" title="Open via VS Code Live Server or GitHub Pages to load live criteria from SKILL.md files">&#128203; default criteria (serve to load live)</span>';
   }
 
-  const gateRefItemsHTML = GOVERNANCE_GATES.map(function(g) {
+  const gateRefItemsHTML = activeGovernanceGates.map(function(g) {
     const live = skillLoaded(g.id);
     const desc = skillCriteria(g.id) || g.criteria;
     const badge = live ? 'live' : 'default';
@@ -1779,7 +1832,7 @@ function renderGovernance(features) {
       + esc(gf.gate.label) + ' fails ' + gf.count + '</button>';
   }).join('');
 
-  const colHeadersHTML = GOVERNANCE_GATES.map(function(g) {
+  const colHeadersHTML = activeGovernanceGates.map(function(g) {
     return '<th>' + esc(g.label) + '<br><span style="font-size:9px;color:var(--muted)">' + esc(g.skill) + '</span></th>';
   }).join('');
 
@@ -1790,7 +1843,42 @@ function renderGovernance(features) {
   const policyBtnClass  = governanceStrictPolicy ? 'gov-btn active' : 'gov-btn';
   const policyBtnLabel  = 'Strict policy mode ' + (governanceStrictPolicy ? 'ON' : 'OFF');
 
+  // Compliance context banner — shows repo-level compliance posture from config
+  let complianceBannerHTML = '';
+  if (allData && allData.config) {
+    const cfg = allData.config;
+    const gov = cfg.governance || {};
+    const parts = [];
+    // Regulated flag
+    if (cfg.regulated === true) {
+      parts.push('<span class="compliance-badge regulated">&#128274; Regulated</span>');
+    } else {
+      parts.push('<span class="compliance-badge standard">&#128203; Standard</span>');
+    }
+    // Compliance frameworks
+    const frameworks = gov.complianceFrameworks || [];
+    frameworks.forEach(function(fw) {
+      parts.push('<span class="compliance-badge framework">' + esc(fw) + '</span>');
+    });
+    // Sensitive data categories
+    const sensitive = gov.sensitiveDataCategories || [];
+    if (sensitive.length > 0) {
+      parts.push('<span class="compliance-badge sensitive">&#9888;&#65039; Sensitive: ' + sensitive.map(esc).join(', ') + '</span>');
+    }
+    // Custom gates indicator
+    if (gov.gates && Array.isArray(gov.gates) && gov.gates.length > 0) {
+      const customCount = gov.gates.filter(function(g) { return !DEFAULT_GOVERNANCE_GATES.find(function(dg) { return dg.id === g.id; }); }).length;
+      if (customCount > 0) {
+        parts.push('<span class="compliance-badge custom-gates">+' + customCount + ' custom gate' + (customCount > 1 ? 's' : '') + '</span>');
+      }
+    }
+    if (parts.length > 0) {
+      complianceBannerHTML = '<div class="gov-compliance-banner">' + parts.join('') + '</div>';
+    }
+  }
+
   board.innerHTML = `
+    ${complianceBannerHTML}
     <div class="gov-summary">
       <span class="gov-pill">Features ${features.length}</span>
       <span class="gov-pill pass">Pass ${passCount}</span>
@@ -1874,7 +1962,7 @@ function applyGovernancePolicy(feature, status) {
 function gateStatus(feature, gateId) {
   const stories = allStories(feature);
   const artefactFor = id => {
-    const g = GOVERNANCE_GATES.find(x => x.id === id);
+    const g = activeGovernanceGates.find(x => x.id === id);
     return g ? g.artefact(feature) : '';
   };
 
@@ -1946,11 +2034,11 @@ function gateStatus(feature, gateId) {
 
 function exportGovernanceCsv(features) {
   const rows = features.map(f => {
-    const gateStatuses = GOVERNANCE_GATES.map(g => gateStatus(f, g.id));
+    const gateStatuses = activeGovernanceGates.map(g => gateStatus(f, g.id));
     return { feature: f, gateStatuses };
   });
 
-  const header = ['feature_slug', 'feature_name', 'track', 'team', 'stage', ...GOVERNANCE_GATES.map(g => `${g.id}_status`)];
+  const header = ['feature_slug', 'feature_name', 'track', 'team', 'stage', ...activeGovernanceGates.map(g => `${g.id}_status`)];
   const lines = [header.join(',')];
 
   rows.forEach(r => {

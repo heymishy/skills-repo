@@ -2,7 +2,7 @@
 /**
  * check-governance-sync.js
  *
- * Validates that GOVERNANCE_GATES in pipeline-viz.html exactly matches
+ * Validates that DEFAULT_GOVERNANCE_GATES in pipeline-viz.html exactly matches
  * the gate IDs (in order) defined in .github/governance-gates.yml.
  *
  * Run:  node .github/scripts/check-governance-sync.js
@@ -41,11 +41,11 @@ function ymlGateIds(content) {
 }
 
 /**
- * Extract gate IDs from the GOVERNANCE_GATES constant in pipeline-viz.html.
+ * Extract gate IDs from the DEFAULT_GOVERNANCE_GATES constant in pipeline-viz.html.
  * Expects the form:  { id: 'some-id', ... }
  */
 function vizGateIds(content) {
-  const match = content.match(/const GOVERNANCE_GATES\s*=\s*\[([\s\S]*?)\];/);
+  const match = content.match(/const DEFAULT_GOVERNANCE_GATES\s*=\s*\[([\s\S]*?)\];/);
   if (!match) return null;
   const block = match[1];
   const ids = [];
@@ -69,7 +69,7 @@ const fromYml = ymlGateIds(ymlContent);
 const fromViz = vizGateIds(vizContent);
 
 if (!fromViz) {
-  process.stderr.write('[governance-sync] Could not find GOVERNANCE_GATES constant in pipeline-viz.html\n');
+  process.stderr.write('[governance-sync] Could not find DEFAULT_GOVERNANCE_GATES constant in pipeline-viz.html\n');
   process.exit(1);
 }
 
@@ -80,14 +80,14 @@ const extra   = fromViz.filter(id => !fromYml.includes(id));
 
 if (missing.length) {
   process.stderr.write(
-    '[governance-sync] Gate(s) in governance-gates.yml but MISSING from viz GOVERNANCE_GATES: ' +
+    '[governance-sync] Gate(s) in governance-gates.yml but MISSING from viz DEFAULT_GOVERNANCE_GATES: ' +
     missing.join(', ') + '\n'
   );
   errors++;
 }
 if (extra.length) {
   process.stderr.write(
-    '[governance-sync] Gate(s) in viz GOVERNANCE_GATES but MISSING from governance-gates.yml: ' +
+    '[governance-sync] Gate(s) in viz DEFAULT_GOVERNANCE_GATES but MISSING from governance-gates.yml: ' +
     extra.join(', ') + '\n'
   );
   errors++;
@@ -107,7 +107,7 @@ if (errors === 0) {
 } else {
   process.stderr.write(
     '[governance-sync] ' + errors + ' error(s) found.\n' +
-    'Update governance-gates.yml AND GOVERNANCE_GATES in pipeline-viz.html in the same commit.\n\n'
+    'Update governance-gates.yml AND DEFAULT_GOVERNANCE_GATES in pipeline-viz.html in the same commit.\n\n'
   );
   process.exit(1);
 }

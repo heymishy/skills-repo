@@ -455,7 +455,15 @@ For each feature in `pipeline-state.json`:
    - Do not change `health: "red"` to `"green"` unless the artefact evidence supports it
    - Do not remove `blocker` text unless the blocking condition is resolved in artefacts
 
-5. **After reconciliation:**
+5. **Reconcile governance evidence fields:**
+   - **`verifyStatus`:** For each story, if `verification-scripts/[story-slug]-verification.md` exists and contains "Result: PASS" (or equivalent), set `verifyStatus: "passed"`. If it contains "Result: FAIL", set `verifyStatus: "failed"`. Do not set if artefact does not exist.
+   - **`traceStatus`:** If `trace/` artefacts exist for the feature, check findings. If no HIGH findings: set `traceStatus: "passed"`. If HIGH findings present: set `traceStatus: "has-findings"`.
+   - **`releaseReady`:** If `dod/[story-slug]-dod.md` exists and all ACs are marked as covered, set `releaseReady: true` on that story.
+   - **`regulated` / `complianceProfile` / `complianceFrameworks`:** Read `.github/context.yml`. Set `regulated: [meta.regulated]`, `complianceProfile: "regulated"` if true (else `"standard"`), `complianceFrameworks: [compliance.frameworks]`, `sensitiveDataCategories: [compliance.sensitive_data_categories]` on any feature that is missing these fields.
+   - **`config.governance`:** If `context.yml: mapping.governance.gates` is non-empty and `config.governance` does not yet exist in pipeline-state.json, write `config.governance: { gates: [mapping.governance.gates], complianceFrameworks: [compliance.frameworks], sensitiveDataCategories: [compliance.sensitive_data_categories], regulated: [meta.regulated] }`.
+   - **Epic `status` recomputation:** For every epic, recompute `status` from story states (same parent propagation rule as inner loop skills).
+
+6. **After reconciliation:**
    - Update `updated` timestamp to now
    - Save the file
    - Note in the status table output: "State reconciled — [n] updates made" or "State up to date"

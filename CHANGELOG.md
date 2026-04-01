@@ -6,6 +6,164 @@ All notable changes to this repository will be documented in this file.
 
 ---
 
+## [0.5.11] — 2026-04-01
+
+### Fixed
+
+#### Governance view: dynamic gates, compliance context, and skill state evidence
+
+Three-layer overhaul making the governance/compliance view adaptive to `context.yml` and `pipeline-state.json` configuration rather than hardcoded.
+
+**L1 — Skill state writes (4 skills updated)**
+
+- `/verify-completion` now writes `story.verifyStatus` (`"passed"` | `"failed"` | `"running"`) to pipeline-state.json. The governance gate reads this field directly instead of inferring from stage proximity.
+- `/trace` now writes `feature.traceStatus` (`"passed"` | `"has-findings"`). The governance gate reads this field.
+- `/discovery` now bridges compliance context from `context.yml` into `pipeline-state.json` at feature creation: `feature.regulated`, `feature.complianceProfile`, `feature.complianceFrameworks`, `feature.sensitiveDataCategories`. Also bridges `mapping.governance.gates` → `config.governance.gates`.
+- `/workflow` reconciliation step 5 added: infers `verifyStatus`, `traceStatus`, `releaseReady`, compliance fields, and `config.governance` from artefact presence and context.yml when skills haven't written them yet. Also recomputes epic `status` from story states.
+
+**L2 — Dynamic governance gates (viz)**
+
+- `GOVERNANCE_GATES` renamed to `DEFAULT_GOVERNANCE_GATES` (immutable baseline of 7 gates).
+- New mutable `activeGovernanceGates` variable used by all rendering, CSV export, skill metadata loading, and gate status functions.
+- `normalizeData()` now reads `config.governance.gates` from pipeline-state.json:
+  - Entries matching a default gate id override its `label`, `skill`, `skillPath`, `criteria`.
+  - Entries with new ids are appended as custom gates.
+  - If no config gates are defined, defaults are preserved.
+
+**L3 — Compliance context banner (viz)**
+
+- New banner appears at the top of the governance board showing repo-level compliance posture:
+  - Regulated flag: 🔒 Regulated (amber) or 📋 Standard (muted)
+  - Compliance framework badges (e.g. "PCI-DSS", "SOX", "HIPAA") from `config.governance.complianceFrameworks`
+  - Sensitive data categories callout from `config.governance.sensitiveDataCategories`
+  - Custom gates count badge when non-default gates are present
+- New CSS classes: `.gov-compliance-banner`, `.compliance-badge` (with `.regulated`, `.standard`, `.framework`, `.sensitive`, `.custom-gates` variants).
+
+---
+
+### Implementation plan — porting to a work fork
+
+This section is a standalone reference for porting these changes into a fork that does not have access to the upstream GitHub repo. Each step can be applied independently.
+
+#### Step 1: Skill state writes
+
+**`/verify-completion/SKILL.md`** — In the "State update — mandatory final step" section, add these fields to the story entry write:
+
+```
+verifyStatus: "passed"   — when ALL ACs have fresh green evidence
+verifyStatus: "failed"   — when ANY AC has a red/no-evidence result
+verifyStatus: "running"  — when verification is in progress (partial evidence)
+```
+
+**`/trace/SKILL.md`** — In the "State update — mandatory final step" section, add this field to the feature entry write:
+
+```
+traceStatus: "passed"       — when chain is complete with no broken links
+traceStatus: "has-findings" — when broken links, orphans, or scope deviations exist
+```
+
+**`/discovery/SKILL.md`** — In the "State update — mandatory final step" section, after writing the feature entry, add two blocks:
+
+1. **Compliance context bridge**: Read `context.yml` fields `meta.regulated`, `compliance.frameworks`, `compliance.sensitive_data_categories`. Write to the feature entry as `regulated` (boolean), `complianceProfile` (`"regulated"` or `"standard"`), `complianceFrameworks` (array), `sensitiveDataCategories` (array).
+
+2. **Config governance bridge**: Read `context.yml` field `mapping.governance.gates`. If present, write to `config.governance.gates` in pipeline-state.json (top-level config object, not per-feature). Each gate entry should have: `id`, `label` (optional), `skill` (optional), `criteria` (optional).
+
+**`/workflow/SKILL.md`** — Add reconciliation step 5 "Reconcile governance evidence fields" after the existing reconciliation steps. This step runs on every `/workflow` invocation and infers missing fields:
+
+- `verifyStatus`: if missing but verification artefact files exist, set to `"passed"` or `"failed"`
+- `traceStatus`: if missing but trace artefact files exist, set to `"passed"` or `"has-findings"`
+- `releaseReady`: if missing but DoD artefact shows complete, set to `true`
+- `regulated`, `complianceProfile`, `complianceFrameworks`, `sensitiveDataCategories`: bridge from `context.yml` if missing from feature entries
+- `config.governance`: bridge `mapping.governance.gates` from `context.yml` if missing from config
+- Epic `status`: recompute from story states (complete/in-progress/not-started)
+
+#### Step 2: Viz — dynamic gate set
+
+In `pipeline-viz.html`:
+
+1. Rename `const GOVERNANCE_GATES = [...]` to `const DEFAULT_GOVERNANCE_GATES = [...]`
+2. Add `let activeGovernanceGates = [...DEFAULT_GOVERNANCE_GATES];` immediately after
+3. Find-and-replace all references to `GOVERNANCE_GATES` with `activeGovernanceGates` (~10 locations across `loadSkillMetadata`, `renderGovernance`, `gateStatus`, `exportGovernanceCsv`)
+4. In `normalizeData()`, before `return data`, add gate override logic:
+   - Read `data.config.governance.gates` array
+   - For each entry matching a default gate id: merge label/skill/skillPath/criteria
+   - For entries with new ids: append to `activeGovernanceGates` with sensible defaults
+   - If no custom gates: reset to `[...DEFAULT_GOVERNANCE_GATES]`
+
+#### Step 3: Viz — compliance context banner
+
+In `pipeline-viz.html`:
+
+1. Add CSS classes (`.gov-compliance-banner`, `.compliance-badge` variants) in the governance styles section
+2. In `renderGovernance()`, before the `board.innerHTML` template, build a `complianceBannerHTML` variable reading from `allData.config`: regulated flag, `governance.complianceFrameworks` as badges, `governance.sensitiveDataCategories` as callout, custom gate count
+3. Inject `${complianceBannerHTML}` as the first child in the `board.innerHTML` template
+
+#### Step 4: Pipeline-state.json structure
+
+Ensure your `pipeline-state.json` supports these fields:
+
+```json
+{
+  "config": {
+    "regulated": true,
+    "governance": {
+      "gates": [
+        { "id": "review", "criteria": "Custom criteria text" },
+        { "id": "cab-approval", "label": "CAB Approval", "skill": "/release", "criteria": "Change Advisory Board sign-off required" }
+      ],
+      "complianceFrameworks": ["PCI-DSS", "SOX"],
+      "sensitiveDataCategories": ["PII", "financial"]
+    }
+  },
+  "features": [
+    {
+      "slug": "example",
+      "regulated": true,
+      "complianceProfile": "regulated",
+      "complianceFrameworks": ["PCI-DSS"],
+      "sensitiveDataCategories": ["PII"],
+      "traceStatus": "passed",
+      "epics": [
+        {
+          "slug": "epic-1",
+          "status": "complete",
+          "stories": [
+            {
+              "slug": "story-1",
+              "verifyStatus": "passed",
+              "releaseReady": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Step 5: context.yml mapping
+
+Ensure your `context.yml` contains the compliance fields that `/discovery` and `/workflow` will bridge:
+
+```yaml
+meta:
+  regulated: true          # or false for non-regulated repos
+
+compliance:
+  frameworks: [PCI-DSS]
+  sensitive_data_categories: [PII, financial]
+
+mapping:
+  governance:
+    gates:
+      - id: cab-approval
+        label: CAB Approval
+        skill: /release
+        criteria: Change Advisory Board sign-off required before production deploy
+```
+
+---
+
 ## [0.5.10] — 2026-04-01
 
 ### Fixed
