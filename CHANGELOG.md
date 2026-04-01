@@ -6,6 +6,28 @@ All notable changes to this repository will be documented in this file.
 
 ---
 
+## [0.5.14] — 2026-04-01
+
+### Improved
+
+#### Programme concept applied consistently across all viz views
+
+Programme membership is now surfaced in every view, not just governance:
+
+- **Feature cards** — purple 📦 badge showing programme name in the meta row
+- **Summary bar** — programme count with member feature count when programmes exist
+- **Story drawer** — programme shown in context section when feature belongs to one
+- **Filter bar** — new Programme filter dropdown (auto-hides when no programmes defined); includes "No programme" option
+- **Action queue** — programme badge next to feature name for programme members
+- **Outcomes view** — features grouped under programme headers with phase indicators; standalone features shown separately below
+- **Board / Loop lanes** — programme member count in loop lane meta; feature cards show programme badge
+- **Story map toolbar** — programme badge shown alongside feature slug
+- **Loop structure** — programme count indicator when programmes exist
+- **CSV export** — new `programme` column in governance CSV
+- **normalizeData** — auto-resolves `feature.programme` backlinks from `programme.workstreams[]` on load
+
+---
+
 ## [0.5.13] — 2026-04-01
 
 ### Improved
