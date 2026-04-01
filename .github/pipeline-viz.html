@@ -1021,8 +1021,8 @@ const DEFAULT_GOVERNANCE_GATES = [
   { id: 'discovery',           label: 'Discovery',      skill: '/discovery',           skillPath: 'skills/discovery/SKILL.md',           criteria: 'Discovery artefact approved before progression',             artefact: f => `../artefacts/${f.slug}/discovery.md` },
   { id: 'benefit-metric',      label: 'Benefit Metric', skill: '/benefit-metric',      skillPath: 'skills/benefit-metric/SKILL.md',      criteria: 'Measurable outcomes defined with targets and baselines',     artefact: f => `../artefacts/${f.slug}/benefit-metric.md` },
   { id: 'definition',          label: 'Definition',     skill: '/definition',          skillPath: 'skills/definition/SKILL.md',          criteria: 'Epics and stories decomposed from discovery',                artefact: f => { const e = firstEpicSlug(f); return e ? `../artefacts/${f.slug}/epics/${e}.md` : `../artefacts/${f.slug}/epics/`; } },
-  { id: 'review',              label: 'Review',         skill: '/review',              skillPath: 'skills/review/SKILL.md',              criteria: 'No HIGH findings before progression',                        artefact: f => { const s = firstStorySlug(f); return s ? `../artefacts/${f.slug}/review/${s}-review-1.md` : `../artefacts/${f.slug}/review/`; } },
-  { id: 'architecture',        label: 'Architecture',   skill: '/review',              skillPath: 'skills/review/SKILL.md',              criteria: 'Architecture guardrails compliance verified (Category E)',   artefact: f => { const s = firstStorySlug(f); return s ? `../artefacts/${f.slug}/review/${s}-review-1.md` : `../artefacts/${f.slug}/review/`; } },
+  { id: 'review',              label: 'Review',         skill: '/review',              skillPath: 'skills/review/SKILL.md',              criteria: 'No HIGH findings before progression',                        artefact: f => `../artefacts/${f.slug}/review/all-stories-review-1.md`, artefactFallbacks: f => { const s = firstStorySlug(f); return s ? [`../artefacts/${f.slug}/review/${s}-review-1.md`] : []; } },
+  { id: 'architecture',        label: 'Architecture',   skill: '/review',              skillPath: 'skills/review/SKILL.md',              criteria: 'Architecture guardrails compliance verified (Category E)',   artefact: f => `../artefacts/${f.slug}/review/all-stories-review-1.md`, artefactFallbacks: f => { const s = firstStorySlug(f); return s ? [`../artefacts/${f.slug}/review/${s}-review-1.md`] : []; } },
   { id: 'test-plan',           label: 'Test Plan',      skill: '/test-plan',           skillPath: 'skills/test-plan/SKILL.md',           criteria: 'Failing tests and verification script prepared',             artefact: f => { const s = firstStorySlug(f); return s ? `../artefacts/${f.slug}/test-plans/${s}-test-plan.md` : `../artefacts/${f.slug}/test-plans/`; } },
   { id: 'definition-of-ready', label: 'DoR',            skill: '/definition-of-ready', skillPath: 'skills/definition-of-ready/SKILL.md', criteria: 'All hard blocks pass and sign-off complete',                 artefact: f => { const s = firstStorySlug(f); return s ? `../artefacts/${f.slug}/dor/${s}-dor.md` : `../artefacts/${f.slug}/dor/`; } },
   { id: 'decisions',           label: 'Decisions',      skill: '/decisions',           skillPath: 'skills/decisions/SKILL.md',           criteria: 'Risk acceptances and scope decisions logged',                artefact: f => `../artefacts/${f.slug}/decisions.md` },
@@ -3135,24 +3135,48 @@ async function openMdViewer(path) {
   if (formTab) formTab.style.display = mdArtefactType === 'story' ? '' : 'none';
   document.getElementById('md-overlay').classList.add('open');
   document.getElementById('md-pane').classList.add('open');
-  try {
-    const resp = await fetch(path + '?_=' + Date.now());
-    if (!resp.ok) throw new Error(`HTTP ${resp.status} — file not found`);
-    const text = await resp.text();
-    mdOriginalText = text;
-    const existingDraft = loadDraft(path);
-    mdDraftText = existingDraft ?? text;
-    if (existingDraft !== null) {
-      const storedHash = loadDraftBaseHash(path);
-      if (storedHash && storedHash !== simpleHash(text)) showConflictBanner();
+
+  // Build fallback paths from gate artefactFallbacks if available.
+  const fallbacks = [];
+  for (const g of activeGovernanceGates) {
+    if (typeof g.artefactFallbacks !== 'function') continue;
+    // Check if path matches this gate's primary artefact for any feature.
+    if (!allData) continue;
+    for (const f of allData.features || []) {
+      if (typeof g.artefact === 'function' && g.artefact(f) === path) {
+        fallbacks.push(...g.artefactFallbacks(f));
+      }
     }
-    renderMdBody();
-  } catch (e) {
-    mdOriginalText = `<!-- Could not load source: ${e.message} -->`;
+  }
+
+  // Try primary path, then fallbacks in order.
+  const candidates = [path, ...fallbacks];
+  let loaded = false;
+  for (const candidate of candidates) {
+    try {
+      const resp = await fetch(candidate + '?_=' + Date.now());
+      if (!resp.ok) continue;
+      const text = await resp.text();
+      mdCurrentPath = candidate;
+      mdOriginalText = text;
+      document.getElementById('md-title').textContent = candidate;
+      const existingDraft = loadDraft(candidate);
+      mdDraftText = existingDraft ?? text;
+      if (existingDraft !== null) {
+        const storedHash = loadDraftBaseHash(candidate);
+        if (storedHash && storedHash !== simpleHash(text)) showConflictBanner();
+      }
+      renderMdBody();
+      loaded = true;
+      break;
+    } catch (_) { /* try next */ }
+  }
+  if (!loaded) {
+    mdOriginalText = `<!-- Could not load source: file not found -->`;
     mdDraftText = loadDraft(path) ?? mdOriginalText;
     renderMdBody();
     document.getElementById('md-content').innerHTML +=
-      `<div style="color:var(--red);font-size:12px;margin-top:8px">Could not load source file: ${esc(e.message)}<br>Draft editing is still available locally.</div>`;
+      `<div style="color:var(--red);font-size:12px;margin-top:8px">Could not load source file: HTTP 404 — file not found<br>Draft editing is still available locally.</div>`;
   }
 }
 

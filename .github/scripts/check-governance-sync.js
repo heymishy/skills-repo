@@ -45,7 +45,7 @@ function ymlGateIds(content) {
  * Expects the form:  { id: 'some-id', ... }
  */
 function vizGateIds(content) {
-  const match = content.match(/const DEFAULT_GOVERNANCE_GATES\s*=\s*\[([\s\S]*?)\];/);
+  const match = content.match(/const DEFAULT_GOVERNANCE_GATES\s*=\s*\[([\s\S]*?)\n\];/);
   if (!match) return null;
   const block = match[1];
   const ids = [];
