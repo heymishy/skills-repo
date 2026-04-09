@@ -127,6 +127,38 @@
 ---
 
 ---
+**2026-04-10 | RISK-ACCEPT | DoR W4 — p1.1 verification script not reviewed by independent domain expert**
+**Decision:** Accept the W4 warning for p1.1. The verification script has not been reviewed by an independent domain expert. Accepted on the same structural grounds as p1.3, p1.4, and p1.5 W4 RISK-ACCEPTs: solo operator context, `roles.qa: "me"`, independent review structurally unavailable.
+**Rationale:** "Mechanisms validated through live dogfood observation during outer loop sessions 2026-04-10." Scenarios 2a/b/c and 6 (AC2 and AC6) require a live distribution cycle and are the most operationally novel checks in p1.1. These will be observed directly as part of the M1 dogfood measurement run, which constitutes the de facto domain review for this story.
+**Made by:** Hamish, 2026-04-10
+**Revisit trigger:** If AC2 or AC6 fails during M1 acceptance test — revisit verification script scenarios 2a/b/c and 6 before marking DoD.
+---
+
+---
+**2026-04-10 | RISK-ACCEPT | DoR W4 — p1.2 verification script not reviewed by independent domain expert**
+**Decision:** Accept the W4 warning for p1.2. The verification script has not been reviewed by an independent domain expert. Same structural rationale as p1.1, p1.3, p1.4, and p1.5 W4 RISK-ACCEPTs: solo operator context, `roles.qa: "me"`, independent review structurally unavailable.
+**Rationale:** "Mechanisms validated through live dogfood observation during outer loop sessions 2026-04-10." Scenarios 4 and 5 are design-review steps for AC4/AC5 extensibility properties — they require a developer reading the interface definition. In solo operator context this is self-review at DoD, which constitutes the available review mechanism.
+**Made by:** Hamish, 2026-04-10
+**Revisit trigger:** If AC4 or AC5 design review fails at DoD (i.e. interface shape forecloses extensibility) — revisit interface design before marking DoD.
+---
+
+---
+**2026-04-10 | RISK-ACCEPT | DoR W4 — p1.6 verification script not reviewed by independent domain expert**
+**Decision:** Accept the W4 warning for p1.6. The verification script has not been reviewed by an independent domain expert. Same structural rationale as all prior W4 RISK-ACCEPTs in this feature: solo operator context, `roles.qa: "me"`, independent review structurally unavailable.
+**Rationale:** "Mechanisms validated through live dogfood observation during outer loop sessions 2026-04-10." The most operationally novel scenarios in p1.6 are AC5 (M4 controlled acceptance test — dependency-blocked on p1.4 DoD) and AC6 (outcome-orientation diagnostic — human review at DoD time). Both will be observed directly during the M4 dogfood measurement run and P1.6 DoD review, which constitute the de facto domain review.
+**Made by:** Hamish, 2026-04-10
+**Revisit trigger:** If AC5 fails during M4 acceptance test, or AC6 diagnostic reveals workaround-oriented scenarios — revisit verification script and suite authoring before marking DoD.
+---
+
+---
+**2026-04-10 | RISK-ACCEPT | DoR W4 — p1.7 verification script not reviewed by independent domain expert**
+**Decision:** Accept the W4 warning for p1.7. The verification script has not been reviewed by an independent domain expert. Same structural rationale as all prior W4 RISK-ACCEPTs in this feature: solo operator context, `roles.qa: "me"`, independent review structurally unavailable.
+**Rationale:** "Mechanisms validated through live dogfood observation during outer loop sessions 2026-04-10." The most operationally sensitive manual checks in p1.7 are AC6 (outcome-orientation diagnostic on standards requirements) and the AC4/AC5 joint acceptance tests (hash recomputation) scheduled after P1.3 DoD. Both will be observed directly during the M3/T3M1 dogfood measurement run, which constitutes the de facto domain review.
+**Made by:** Hamish, 2026-04-10
+**Revisit trigger:** If AC6 diagnostic reveals workaround-oriented requirements in the standards files, or if AC5 hash recomputation fails — revisit standards file authoring before marking DoD.
+---
+
+---
 **2026-04-10 | SCOPE | Phase 1 platform-neutral CI constraint**
 **Decision:** Defer the Bitbucket Pipelines equivalent documentation requirement from Phase 1 to Phase 2. Phase 1 CI gate (P1.3) and distribution trigger (P1.1) are implemented using GitHub Actions for the dogfood context only — no Bitbucket equivalent is authored, required, or tested as a Phase 1 AC. AC6 is removed from P1.3; the Bitbucket equivalent clause is removed from P1.1 and P1.3 Architecture Constraints and from discovery.md.
 **Alternatives considered:** (A) Keep the Bitbucket equivalent requirement as written — authoring Bitbucket YAML in a dogfood context where no Bitbucket environment is available produces untestable documentation; quality and correctness cannot be verified. (B) Write a "best effort" Bitbucket section without testing — indistinguishable from a placeholder and creates false assurance with no real validation path.

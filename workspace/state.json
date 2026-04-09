@@ -92,10 +92,12 @@
   },
   "checkpoint": {
     "writtenAt": "2026-04-10",
-    "contextAtWrite": "definition-of-ready complete for p1.5, p1.3, p1.4 (3/8 stories). All three: 13/13 hard blocks passed, W4 RISK-ACCEPT logged (decisions.md), Hamish sign-off recorded, DoR + contract artefacts written, pipeline-state.json updated. Remaining: p1.1, p1.2, p1.6, p1.7, p1.8 — continue in fresh session.",
-    "resumeInstruction": "Run /definition-of-ready for remaining 5 stories in delivery order: p1.1 → p1.2 → p1.6 → p1.7 → p1.8. Read DoR SKILL.md first. For each story load: story artefact, test plan, verification script, and review report. Key carry-overs: p1.2 AC4/AC5 are code-review-only (decisions.md 1-M3 DESIGN 2026-04-10); p1.8 AC5 re-worded to test artefact content not adoption event (decisions.md 1-M4 SCOPE 2026-04-10); p1.6 AC5 is dependency-blocked on p1.4 DoD. W4 RISK-ACCEPT same rationale applies to all remaining stories — log individually per story. Sign-off same: Hamish — platform maintainer / operator, 2026-04-10.",
+    "contextAtWrite": "definition-of-ready complete for p1.1, p1.2, p1.6, p1.7 (7/8 stories, 4 this session). All 13/13 hard blocks passed, W4 RISK-ACCEPT logged (decisions.md), Hamish sign-off recorded 2026-04-10. DoR + contract artefacts written for all four. pipeline-state.json updated: all four at stage: definition-of-ready, dorStatus: signed-off, oversightLevel: high. NFR guardrail entries added (3 per story, 12 total). Remaining: p1.8 only.",
+    "resumeInstruction": "Run /definition-of-ready for p1.8 (model-risk-documentation) only. Read DoR SKILL.md first. Load: stories/p1.8-model-risk-documentation.md, test-plans/p1.8-model-risk-documentation-test-plan.md, verification-scripts/p1.8-model-risk-documentation-verification.md, review/p1.8-model-risk-documentation-review-1.md. Key carry-over: p1.8 AC5 re-worded to test artefact content not adoption event (decisions.md 1-M4 SCOPE 2026-04-10). Epic 4 oversight = High. W4 RISK-ACCEPT same rationale. Sign-off: Hamish — platform maintainer / operator, 2026-04-10.",
     "pendingActions": [
-      "run /definition-of-ready for p1.1, p1.2, p1.6, p1.7, p1.8 in that order"
+      "run /definition-of-ready for p1.8",
+      "update pipeline-state.json for p1.8 after DoR complete",
+      "git commit all p1.8 artefacts"
     ]
   }
 }
