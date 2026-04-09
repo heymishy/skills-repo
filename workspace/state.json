@@ -46,14 +46,50 @@
     "readiness": null
   },
   "execution": null,
-  "checkpoint": {
-    "writtenAt": "2026-04-09",
-    "contextAtWrite": "~61% — checkpoint triggered before /review to preserve session quality",
-    "patchesApplied": [
-      "prototype-fix-s4-compilation.md: added prototype repo path + exact test command (tests/unit/s4-assurance-agent.test.ts)",
-      "prototype-fix-s2-exit-code.md: added prototype repo path + exact test command (tests/integration/s2-dev-agent-trace.integration.test.ts) + TODO for exit mechanism (grep found no process.exit(2) in source; likely tsc NFR check or implicit Node exit)"
+  "review": {
+    "status": "in-progress",
+    "startedDate": "2026-04-10",
+    "categoriesRun": ["A-Traceability", "B-Scope", "C-AC-quality", "D-Completeness", "E-Architecture"],
+    "totalStories": 8,
+    "reviewedSoFar": 5,
+    "remainingStories": ["p1.6-living-eval-regression-suite", "p1.7-standards-model-phase1", "p1.8-model-risk-documentation"],
+    "findings": {
+      "high": 1,
+      "medium": 4,
+      "low": 5
+    },
+    "storyStatuses": [
+      { "slug": "p1.5-workspace-state-session-continuity", "verdict": "PASS", "highFindings": 0, "reportPath": "artefacts/2026-04-09-skills-platform-phase1/review/p1.5-workspace-state-session-continuity-review-1.md" },
+      { "slug": "p1.3-assurance-agent-ci-gate", "verdict": "FAIL", "highFindings": 1, "finding": "1-H1: Dependencies block references two voided stories as upstream pre-conditions — must be removed before DoR", "reportPath": "artefacts/2026-04-09-skills-platform-phase1/review/p1.3-assurance-agent-ci-gate-review-1.md" },
+      { "slug": "p1.4-watermark-gate", "verdict": "PASS", "highFindings": 0, "reportPath": "artefacts/2026-04-09-skills-platform-phase1/review/p1.4-watermark-gate-review-1.md" },
+      { "slug": "p1.1-distribution-progressive-disclosure", "verdict": "PASS", "highFindings": 0, "reportPath": "artefacts/2026-04-09-skills-platform-phase1/review/p1.1-distribution-progressive-disclosure-review-1.md" },
+      { "slug": "p1.2-surface-adapter-model-foundations", "verdict": "PASS", "highFindings": 0, "reportPath": "artefacts/2026-04-09-skills-platform-phase1/review/p1.2-surface-adapter-model-foundations-review-1.md" },
+      { "slug": "p1.6-living-eval-regression-suite", "verdict": "pending" },
+      { "slug": "p1.7-standards-model-phase1", "verdict": "pending" },
+      { "slug": "p1.8-model-risk-documentation", "verdict": "pending" }
     ],
-    "learningsWritten": "workspace/learnings.md — definition phase gap: learnings not written at phase completion; 4 observations recorded",
-    "resumeInstruction": "Run /review. currentPhase is 'review'. 8 active stories in artefacts/2026-04-09-skills-platform-phase1/stories/. Epic 1 and its 2 stories are VOID (see decisions.md SCOPE entry 2026-04-09). Suggested review order: p1.5-workspace-state-session-continuity → p1.3-assurance-agent-ci-gate → p1.4-watermark-gate → p1.1-distribution-progressive-disclosure → p1.2-surface-adapter-model-foundations → p1.6-living-eval-regression-suite → p1.7-standards-model-phase1 → p1.8-model-risk-documentation. Load .github/skills/review/SKILL.md first."
+    "openHighFindings": [
+      "1-H1 — p1.3 — Dependencies section references voided prototype-fix stories as upstream blockers — fix before re-review"
+    ],
+    "openMediumFindings": [
+      "1-M1 — p1.5 — AC3 is compound; split into AC3a/b/c",
+      "1-M2 — p1.5 — learnings.md deferral not logged in decisions.md",
+      "1-M3 — p1.2 — AC4 and AC5 are code-review-only verifiable; annotate verification method",
+      "1-M4 — p1.8 (pending) — AC5 tests a future adoption event, not a current deliverable"
+    ]
+  },
+  "checkpoint": {
+    "writtenAt": "2026-04-10",
+    "contextAtWrite": "mid-review — 5 of 8 stories reviewed; /checkpoint invoked by operator",
+    "resumeInstruction": "Continue /review. 3 stories remain: p1.6-living-eval-regression-suite, p1.7-standards-model-phase1, p1.8-model-risk-documentation. Load .github/skills/review/SKILL.md first. Create review report files for each, then update pipeline-state.json story entries for all 8 stories, then commit. 1-H1 on p1.3 requires fix before re-review — advise operator to fix p1.3 dependencies section first or proceed with remaining 3 stories and flag p1.3 as needing re-review. Note: 1-M4 expected on p1.8 (AC5 tests future adoption event — not verifiable at DoD).",
+    "pendingActions": [
+      "create review report: p1.6-living-eval-regression-suite-review-1.md",
+      "create review report: p1.7-standards-model-phase1-review-1.md",
+      "create review report: p1.8-model-risk-documentation-review-1.md",
+      "update pipeline-state.json — all 8 story review entries",
+      "fix p1.3 dependencies section (1-H1) then re-review",
+      "log 1-M2 scope deferral in decisions.md (learnings.md rendered view)",
+      "commit all review artefacts"
+    ]
   }
 }
