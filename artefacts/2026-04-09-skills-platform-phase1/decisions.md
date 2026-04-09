@@ -103,6 +103,30 @@
 ---
 
 ---
+**2026-04-10 | RISK-ACCEPT | DoR W4 — p1.5 verification script not reviewed by independent domain expert**
+**Decision:** Accept the W4 warning for p1.5. The verification script has not been reviewed by an independent domain expert. Accepted on grounds that all six scenarios were derived directly from story ACs by the same operator who authored the story and test plan; agent and operator constitute the same single-person team in this dogfood context. Risk is accepted rather than resolved.
+**Rationale:** "Mechanisms validated through live dogfood observation during outer loop sessions 2026-04-10." In a solo operator context `roles.qa: "me"`, independent domain review is structurally unavailable. The verification script covers observable, concrete behaviours (session start output, file content, timing) that are low-regret to re-evaluate if gaps emerge post-merge.
+**Made by:** Hamish, 2026-04-10
+**Revisit trigger:** If AC1 or AC3a fails during MM2/MM3 measurement — revisit verification script for that scenario before marking DoD.
+---
+
+---
+**2026-04-10 | RISK-ACCEPT | DoR W4 — p1.4 verification script not reviewed by independent domain expert**
+**Decision:** Accept the W4 warning for p1.4. Same structural rationale as p1.5 and p1.3 W4 RISK-ACCEPTs (solo operator context, `roles.qa: "me"`). Scenario 5 (controlled acceptance test) is the most operationally sensitive check — it requires a git commit/revert cycle against the live suite. This will be observed directly during the M4 dogfood measurement run.
+**Rationale:** "Mechanisms validated through live dogfood observation during outer loop sessions 2026-04-10." No independent domain expert available in solo operator context.
+**Made by:** Hamish, 2026-04-10
+**Revisit trigger:** If scenario 5 fails during M4 acceptance test — revisit verification script before marking DoD.
+---
+
+---
+**2026-04-10 | RISK-ACCEPT | DoR W4 — p1.3 verification script not reviewed by independent domain expert**
+**Decision:** Accept the W4 warning for p1.3. Same structural rationale as p1.5 W4 RISK-ACCEPT (solo operator context, `roles.qa: "me"`). Additional note: scenarios 1 and 4 depend on live CI/GitHub PR behaviour — the most operationally novel checks in the feature set. These will be observed directly during the MM2/M2 dogfood measurement run, which constitutes the de facto domain review.
+**Rationale:** "Mechanisms validated through live dogfood observation during outer loop sessions 2026-04-10." No independent domain expert available in solo operator context.
+**Made by:** Hamish, 2026-04-10
+**Revisit trigger:** If AC1 or AC4 fails during M2 acceptance test — revisit verification script Scenarios 1 and 4 before marking DoD.
+---
+
+---
 **2026-04-10 | SCOPE | Phase 1 platform-neutral CI constraint**
 **Decision:** Defer the Bitbucket Pipelines equivalent documentation requirement from Phase 1 to Phase 2. Phase 1 CI gate (P1.3) and distribution trigger (P1.1) are implemented using GitHub Actions for the dogfood context only — no Bitbucket equivalent is authored, required, or tested as a Phase 1 AC. AC6 is removed from P1.3; the Bitbucket equivalent clause is removed from P1.1 and P1.3 Architecture Constraints and from discovery.md.
 **Alternatives considered:** (A) Keep the Bitbucket equivalent requirement as written — authoring Bitbucket YAML in a dogfood context where no Bitbucket environment is available produces untestable documentation; quality and correctness cannot be verified. (B) Write a "best effort" Bitbucket section without testing — indistinguishable from a placeholder and creates false assurance with no real validation path.

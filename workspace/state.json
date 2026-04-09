@@ -92,10 +92,10 @@
   },
   "checkpoint": {
     "writtenAt": "2026-04-10",
-    "contextAtWrite": "test-plan complete (all 8 stories, 98 total tests after Bitbucket deferral); scope decision logged — Bitbucket Pipelines equivalent deferred to Phase 2 (decisions.md SCOPE 2026-04-10); ready for /definition-of-ready",
-    "resumeInstruction": "Run /definition-of-ready for all 8 stories in delivery order: p1.5 → p1.3 → p1.4 → p1.2 → p1.1 → p1.6 → p1.7 → p1.8. Read the DoR SKILL.md first. For each story load: story artefact, test plan, verification script, and review report. Key carry-overs: p1.2 AC4/AC5 are code-review-only (1-M3); p1.3 AC6 removed (Bitbucket deferred, b1e3a7e); p1.8 AC5 tests artefact content not adoption event (1-M4); p1.6 AC5 is dependency-blocked on p1.4 DoD.",
+    "contextAtWrite": "definition-of-ready complete for p1.5, p1.3, p1.4 (3/8 stories). All three: 13/13 hard blocks passed, W4 RISK-ACCEPT logged (decisions.md), Hamish sign-off recorded, DoR + contract artefacts written, pipeline-state.json updated. Remaining: p1.1, p1.2, p1.6, p1.7, p1.8 — continue in fresh session.",
+    "resumeInstruction": "Run /definition-of-ready for remaining 5 stories in delivery order: p1.1 → p1.2 → p1.6 → p1.7 → p1.8. Read DoR SKILL.md first. For each story load: story artefact, test plan, verification script, and review report. Key carry-overs: p1.2 AC4/AC5 are code-review-only (decisions.md 1-M3 DESIGN 2026-04-10); p1.8 AC5 re-worded to test artefact content not adoption event (decisions.md 1-M4 SCOPE 2026-04-10); p1.6 AC5 is dependency-blocked on p1.4 DoD. W4 RISK-ACCEPT same rationale applies to all remaining stories — log individually per story. Sign-off same: Hamish — platform maintainer / operator, 2026-04-10.",
     "pendingActions": [
-      "run /definition-of-ready for all 8 stories in delivery order"
+      "run /definition-of-ready for p1.1, p1.2, p1.6, p1.7, p1.8 in that order"
     ]
   }
 }
