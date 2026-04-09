@@ -1,7 +1,7 @@
 {
   "feature": "2026-04-09-skills-platform-phase1",
   "lastUpdated": "2026-04-10",
-  "currentPhase": "test-plan",
+  "currentPhase": "definition-of-ready",
   "cycle": {
     "discovery": {
       "status": "approved",
@@ -81,7 +81,7 @@
     "remaining": [],
     "testTotals": {
       "p1.5": { "tests": 13, "acTotal": 8 },
-      "p1.3": { "tests": 11, "acTotal": 7 },
+      "p1.3": { "tests": 10, "acTotal": 6 },
       "p1.4": { "tests": 15, "acTotal": 6 },
       "p1.2": { "tests": 13, "acTotal": 6 },
       "p1.1": { "tests": 12, "acTotal": 8 },
@@ -92,10 +92,10 @@
   },
   "checkpoint": {
     "writtenAt": "2026-04-10",
-    "contextAtWrite": "test-plan complete — all 8 stories done; 99 total tests across all stories; next phase: /definition-of-ready",
-    "resumeInstruction": "All test plans and verification scripts written. Run /definition-of-ready for all 8 stories in delivery order: p1.5 → p1.3 → p1.4 → p1.2 → p1.1 → p1.6 → p1.7 → p1.8.",
+    "contextAtWrite": "test-plan complete (all 8 stories, 98 total tests after Bitbucket deferral); scope decision logged — Bitbucket Pipelines equivalent deferred to Phase 2 (decisions.md SCOPE 2026-04-10); ready for /definition-of-ready",
+    "resumeInstruction": "Run /definition-of-ready for all 8 stories in delivery order: p1.5 → p1.3 → p1.4 → p1.2 → p1.1 → p1.6 → p1.7 → p1.8. Read the DoR SKILL.md first. For each story load: story artefact, test plan, verification script, and review report. Key carry-overs: p1.2 AC4/AC5 are code-review-only (1-M3); p1.3 AC6 removed (Bitbucket deferred, b1e3a7e); p1.8 AC5 tests artefact content not adoption event (1-M4); p1.6 AC5 is dependency-blocked on p1.4 DoD.",
     "pendingActions": [
-      "run /definition-of-ready for all 8 stories"
+      "run /definition-of-ready for all 8 stories in delivery order"
     ]
   }
 }
