@@ -65,3 +65,39 @@
 **Made by:** Hamish, 2026-04-09
 **Revisit trigger:** If the assurance agent cannot access the standards files at gate time in a given CI environment (e.g. a shallow clone). Revisit at P1.3 story decomposition.
 ---
+
+---
+**2026-04-10 | RISK-ACCEPT | review finding 1-M1 — p1.5**
+**Decision:** Accept AC3 in p1.5 (workspace/state.json session continuity) as compound. The test plan author will split it into AC3a, AC3b, and AC3c in the test spec. The story file is not updated.
+**Alternatives considered:** Split AC3 in the story file now — adds noise to the story without changing the deliverable; the story is already approved and the compound structure is clear enough for a human reader.
+**Rationale:** Splitting at the story layer is cosmetic and risks review churn. The test plan is the correct layer for AC decomposition — that is where executable assertions are defined. The intent of AC3 is unambiguous; splitting it there is the right mechanical action.
+**Made by:** Hamish, 2026-04-10
+**Revisit trigger:** If test plan author cannot cleanly decompose AC3 into three independent assertions, revisit the AC at that stage.
+---
+
+---
+**2026-04-10 | SCOPE | review finding 1-M2 — p1.5**
+**Decision:** Defer the `learnings.md` rendered view from p1.5 (workspace/state.json session continuity) MVP scope. The render layer for `learnings.md` is not implemented as part of p1.5.
+**Alternatives considered:** Include in p1.5 scope — premature; the content model needs to stabilise through actual Phase 1 usage before investing in a render layer. The deferral allows learnings signal to accumulate before the display format is locked.
+**Rationale:** Scope reduction from discovery MVP on grounds of sequencing. `workspace/learnings.md` is a human-readable log at Phase 1; a render layer adds value only once the signal format stabilises from real usage. No metric is impacted — MM3 (/checkpoint fidelity) measures write completeness, not presentation. Confirmed no metric impact.
+**Made by:** Hamish, 2026-04-10
+**Revisit trigger:** Phase 2 — once learnings signal format has stabilised through Phase 1 delivery. Candidate for P2 backlog.
+---
+
+---
+**2026-04-10 | DESIGN | review finding 1-M3 — p1.2**
+**Decision:** AC4 and AC5 in p1.2 (surface adapter model foundations) are verifiable by code review only, not by executable test. Both ACs are annotated with `[Verification: code review]` in the story file. The test plan will include a design review step rather than an executable test assertion for these two ACs.
+**Alternatives considered:** (A) Write executable tests — not feasible without a mock EA registry or future Phase 2 adapters that don't yet exist; any executable test would be a fabrication of the future state, not a validation of the current design. (B) Remove the ACs — they encode important extensibility constraints that must be verified at some point; removing them eliminates the verification requirement entirely.
+**Rationale:** AC4 and AC5 test interface extensibility and future-compatibility properties — they can only be evaluated by reading the design, not by running it. Code review is the correct verification mechanism for this class of AC. Annotating them is more honest than writing a nominal executable test that does not actually validate the property.
+**Made by:** Hamish, 2026-04-10
+**Revisit trigger:** If Phase 2 adds Path A (EA registry) or a second surface adapter — at that point AC4 and AC5 can be verified against a real implementation and the code-review annotation can be retired.
+---
+
+---
+**2026-04-10 | SCOPE | review finding 1-M4 — p1.8**
+**Decision:** AC5 in p1.8 (MODEL-RISK.md) is reworded to test the artefact state rather than the future adoption event. Original: "when the platform is made available to a second squad… then the squad tech lead is directed to MODEL-RISK.md." Revised: "when the onboarding documentation for the platform is reviewed, then MODEL-RISK.md is listed as a required pre-read in that documentation — not an optional reference."
+**Alternatives considered:** (A) Move AC5 to an adoption checklist outside the story — the requirement is real and belongs somewhere; removing it from the story scope entirely risks it being dropped. (B) Keep AC5 as-is and mark it as post-DoD — creates an uncloseable story AC; DoD cannot be signed without a verifiable AC. (C) Reword to test the artefact — the deliverable is the onboarding documentation that references MODEL-RISK.md; that is testable at DoD without waiting for a second squad to exist.
+**Rationale:** The verifiable deliverable is the onboarding documentation content, not the adoption event. Rewording focuses the AC on what is within the story's control and verifiable at the time of DoD. The intent is preserved: any adopter encountering the platform must be directed to MODEL-RISK.md before using it. The story file is updated before /test-plan.
+**Made by:** Hamish, 2026-04-10
+**Revisit trigger:** Not applicable — intent is preserved in the reworded AC.
+---

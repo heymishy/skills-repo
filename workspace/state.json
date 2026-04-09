@@ -70,23 +70,14 @@
       { "slug": "p1.8-model-risk-documentation", "verdict": "PASS", "highFindings": 0, "reportPath": "artefacts/2026-04-09-skills-platform-phase1/review/p1.8-model-risk-documentation-review-1.md" }
     ],
     "openHighFindings": [],
-    "openMediumFindings": [
-      "1-M1 — p1.5 — AC3 is compound; split into AC3a/b/c",
-      "1-M2 — p1.5 — learnings.md deferral not logged in decisions.md",
-      "1-M3 — p1.2 — AC4 and AC5 are code-review-only verifiable; annotate verification method",
-      "1-M4 — p1.8 — AC5 tests future adoption event (second squad onboarding); not verifiable at DoD — annotate or move to adoption checklist, acknowledge in decisions.md"
-    ]
+    "openMediumFindings": []
   },
   "checkpoint": {
     "writtenAt": "2026-04-10",
     "contextAtWrite": "review complete — all 8 stories reviewed; 1-H1 on p1.3 still open; p1.3 dependencies fixed; re-review p1.3 then proceed to /test-plan",
     "resumeInstruction": "Fix p1.3 Dependencies section (remove references to voided prototype-fix-s4-compilation and prototype-fix-s2-exit-code), re-review p1.3. Once p1.3 passes, acknowledge MEDIUM findings in decisions.md (1-M1/M2 for p1.5, 1-M3 for p1.2, 1-M4 for p1.8), then run /test-plan for all 8 stories in delivery order: p1.5 → p1.3 → p1.4 → p1.2 → p1.1 → p1.6 → p1.7 → p1.8.",
     "pendingActions": [
-      "fix p1.3 dependencies section (1-H1) — remove voided story refs",
-      "re-review p1.3 after fix",
-      "acknowledge 1-M1/M2 (p1.5), 1-M3 (p1.2), 1-M4 (p1.8) in decisions.md",
-      "run /test-plan for each story",
-      "commit all changes"
+      "run /test-plan for each story in delivery order: p1.5 → p1.3 → p1.4 → p1.2 → p1.1 → p1.6 → p1.7 → p1.8"
     ]
   }
 }
