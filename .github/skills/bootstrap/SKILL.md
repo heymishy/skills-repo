@@ -386,7 +386,7 @@ After all files are created, prompt for the two required placeholders:
 > This goes into `copilot-instructions.md` and is loaded into every Copilot 
 > interaction in this repo — it frames all semantic decisions the skills make.
 >
-> Example: 'This repo contains a payments gateway service for Westpac NZ.
+> Example: 'This repo contains a payments gateway service for Org x.
 > It handles card authorisation, settlement, and dispute processing.
 > Target consumers are internal systems — no direct end-user interfaces.'
 >

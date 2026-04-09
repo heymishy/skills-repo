@@ -8,7 +8,7 @@
 Workshop facilitators cannot export session results to CSV. They currently copy data manually, which takes 20 minutes per session and introduces errors.
 
 ## Who it affects
-Internal facilitators (named persona: Alex, workshop lead at Westpac NZ)
+Internal facilitators (named persona: Alex, workshop lead)
 
 ## Why now
 15 facilitators onboarded last quarter. The manual step blocks same-day reporting.

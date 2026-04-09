@@ -1,7 +1,7 @@
 # Reference: Skills Platform — Phase 3 and Phase 4 Strategic Horizon
 
 **Document type:** Discovery reference material — strategic horizon  
-**Drop into:** `artefacts/YYYY-MM-DD-skills-platform-distribution/reference/`  
+**Drop into:** `artefacts/2026-04-09-skills-platform-phase1/reference/`  
 **Last updated:** 2026-04-09 (queryable trace registry; challenger model moved to Phase 2)
 
 > **Note for the discovery skill:** Strategic context only. Do not generate stories from this document. Informs discovery artefact strategic context and Phase 1–2 design constraints — must not foreclose Phase 3–4 patterns.
@@ -72,7 +72,7 @@ Design system version changes trigger an advisory list of affected stories. Plat
 
 ### Entry conditions
 
-Phase 4 begins when the autoresearch loop is stable at enterprise scale, the compliance monitoring report is a regular artefact reviewed by the risk function, and the platform is the default delivery governance framework for Westpac NZ engineering.
+Phase 4 begins when the autoresearch loop is stable at enterprise scale, the compliance monitoring report is a regular artefact reviewed by the risk function, and the platform is the default delivery governance framework for enterprise engineering.
 
 ### Operational domain standards
 
@@ -91,7 +91,7 @@ POLICY.md floor changes acquire a governed lifecycle: proposal → review → st
 These require Phase 3 operational evidence before they can be made responsibly.
 
 1. **Improvement agent governance model at scale** — at what point does the improvement agent's track record justify a lighter-touch human review process? What evidence threshold qualifies a proposed diff for reduced review scrutiny? (Current answer: never. This ADR revisits at Phase 4 data.)
-2. **Azure AI Foundry as enterprise runtime** — feasibility assessment. Decision depends on Westpac Azure posture at Phase 4.
+2. **Azure AI Foundry as enterprise runtime** — feasibility assessment. Decision depends on Azure posture at Phase 4.
 3. **Cross-squad improvement agent coordination** — shared improvement queue vs independent agents with cross-team aggregation at platform level. Depends on Phase 3 operational learnings.
 
 *Note: Challenger model was previously an open Phase 4 ADR. It has been moved to Phase 2 as a composition of existing components (improvement agent + dev agent + assurance agent). No new infrastructure required.* <!-- ADDED: 2026-04-09 -->

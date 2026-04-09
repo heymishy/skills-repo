@@ -1,7 +1,7 @@
 # Reference: Skills Platform — Phase 1 and Phase 2 Planning
 
 **Document type:** Discovery reference material — delivery phases  
-**Drop into:** `artefacts/YYYY-MM-DD-skills-platform-distribution/reference/`  
+**Drop into:** `artefacts/2026-04-09-skills-platform-phase1/reference/`  
 **Read alongside:** `ref-skills-platform-operating-model.md`, `ref-skills-platform-standards-model.md`  
 **Last updated:** 2026-04-09 (Managed Agents + context window patterns)
 
@@ -201,7 +201,7 @@ Actual vs estimated velocity comparison per story and skill set. Calibration gap
 
 **Dogfooding (personal GitHub):** GitHub Copilot coding agent async. Correct for overnight inner loop.
 
-**Westpac Bitbucket:** CI-triggered agent step via Bitbucket Pipelines. No async equivalent. Platform adapter must not assume GitHub Actions primitives.
+**Enterprise Bitbucket:** CI-triggered agent step via Bitbucket Pipelines. No async equivalent. Platform adapter must not assume GitHub Actions primitives.
 
 **Token budget:** GitHub Copilot Pro+ (~1,500 requests/month). Phase 1+2 approximately 26 weeks at moderate pace.
 

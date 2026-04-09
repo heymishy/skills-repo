@@ -1,7 +1,7 @@
 # Reference: Skills Platform — Multi-Discipline Standards Model
 
 **Document type:** Discovery reference material — standards model  
-**Drop into:** `artefacts/YYYY-MM-DD-skills-platform-distribution/reference/`  
+**Drop into:** `artefacts/2026-04-09-skills-platform-phase1/reference/`  
 **Read alongside:** `ref-skills-platform-phase1-2.md`  
 **Last updated:** 2026-04-09 (SKILL.md authoring principles; living EVAL.md)
 

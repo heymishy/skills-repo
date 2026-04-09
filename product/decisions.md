@@ -215,9 +215,9 @@ The platform does not use compaction for context window management. Compaction m
 Require Phase 3 operational evidence before they can be made responsibly.
 
 - **ADR-TBD:** Improvement agent governance model at scale — at what point does the improvement agent's track record justify reduced review scrutiny? (Current answer: never. Revisit at Phase 4 data.)
-- **ADR-TBD:** Azure AI Foundry as enterprise runtime — feasibility assessment; depends on Westpac Azure posture at Phase 4
+- **ADR-TBD:** Azure AI Foundry as enterprise runtime — feasibility assessment; depends on Azure posture at Phase 4
 - **ADR-TBD:** Cross-squad improvement agent coordination — shared improvement queue vs independent agents with cross-team aggregation at platform level; depends on Phase 3 operational learnings
 
 *Note: Challenger model previously listed here. Moved to Phase 2 as composition of existing agents — no new infrastructure required.*
 
-- **ADR-TBD: Reusable CI workflow definitions** — platform publishes a reusable CI workflow (GitHub Actions reusable workflow or Bitbucket equivalent) that squad repos call rather than owning their own gate logic. A squad cannot modify the gate without modifying the platform repo — the gate itself is outside squad write access. This is a stronger structural control than hash verification alone. Decision depends on whether Westpac CI infrastructure supports reusable workflow patterns and whether the security team accepts the platform repo as a trusted workflow source. If viable, this upgrades hash verification from an audit control to a genuine structural control. <!-- ADDED: 2026-04-09 -->
+- **ADR-TBD: Reusable CI workflow definitions** — platform publishes a reusable CI workflow (GitHub Actions reusable workflow or Bitbucket equivalent) that squad repos call rather than owning their own gate logic. A squad cannot modify the gate without modifying the platform repo — the gate itself is outside squad write access. This is a stronger structural control than hash verification alone. Decision depends on whether Ent CI infrastructure supports reusable workflow patterns and whether the security team accepts the platform repo as a trusted workflow source. If viable, this upgrades hash verification from an audit control to a genuine structural control. <!-- ADDED: 2026-04-09 -->

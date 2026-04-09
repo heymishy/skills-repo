@@ -166,7 +166,7 @@ Spikes are run to resolve uncertainty before committing to a definition. Current
 A bash/PowerShell install script that pulls the current skills pipeline from `heymishy/skills-repo` and runs bootstrap in a target repo. A single command sets up the full pipeline in any new or existing repository.
 
 #### Why it matters
-Right now bootstrapping a new repo requires manually copying files or running the `/bootstrap` skill from inside that repo. Across 220 engineers and multiple repos, this is a significant friction point. A one-liner install script means the pipeline can be propagated at org scale without tribal knowledge of how to set it up. It also enables the concept of a Westpac-namespaced fork (`westpac-nz/sdlc-skills`) with internal standards, copilot instructions, and product context pre-loaded — so every new repo gets the full Westpac engineering conventions by default, not a blank template.
+Right now bootstrapping a new repo requires manually copying files or running the `/bootstrap` skill from inside that repo. Across 220 engineers and multiple repos, this is a significant friction point. A one-liner install script means the pipeline can be propagated at org scale without tribal knowledge of how to set it up. It also enables the concept of a enterprise-namespaced fork (`org-nz/sdlc-skills`) with internal standards, copilot instructions, and product context pre-loaded — so every new repo gets the full enterprise engineering conventions by default, not a blank template.
 
 #### Implementation considerations
 - Create `scripts/install.sh` (bash) and `scripts/install.ps1` (PowerShell) at repo root
@@ -178,7 +178,7 @@ Right now bootstrapping a new repo requires manually copying files or running th
   5. Confirm and write
 - Add a `config.yml` at repo root defining: default profile, required placeholders, which skills to include (allows lightweight installs that skip e.g. `/reverse-engineer` for greenfield repos)
 - README: add a one-liner `curl -fsSL https://raw.githubusercontent.com/heymishy/skills-repo/master/scripts/install.sh | bash` install command
-- For Westpac internal use: maintain a private fork with `standards/` pre-populated, `product/` context for each domain, and a `copilot-instructions.md` that references Westpac's tech radar and API standards
+- For enterprise internal use: maintain a private fork with `standards/` pre-populated, `product/` context for each domain, and a `copilot-instructions.md` that references enteprise's tech radar and API standards
 
 #### Integration points
 - `/bootstrap` — called by the install script after file copy
@@ -202,7 +202,7 @@ Right now bootstrapping a new repo requires manually copying files or running th
 A set of persistent product-level markdown files that live in `product/` (repo root) and are injected into `/discovery` and `/benefit-metric` at the start of each feature. These files capture the product's strategic goals, known constraints, architectural decisions, tech stack, and roadmap — context that should inform every feature's problem framing and metric selection but is currently re-established from scratch each session.
 
 #### Why it matters
-Every `/discovery` session currently starts cold. Benefit-metric tier detection has to infer strategic alignment without knowing the product's actual goals. For a Westpac payments context, decisions like "we are replacing VisionPLUS", "we are committed to open banking by [date]", "our architecture requires all new services to use [standard]" are permanent context that should shape every feature's framing automatically. Persistent product context also reduces the variability between discovery sessions run by different team members — the product intent is explicit and shared, not inferred.
+Every `/discovery` session currently starts cold. Benefit-metric tier detection has to infer strategic alignment without knowing the product's actual goals. For an enterprise payments context, decisions like "we are replacing system x", "we are committed to open standard by [date]", "our architecture requires all new services to use [standard]" are permanent context that should shape every feature's framing automatically. Persistent product context also reduces the variability between discovery sessions run by different team members — the product intent is explicit and shared, not inferred.
 
 #### Implementation considerations
 - Create `product/` directory (repo root) with starter files:
@@ -214,7 +214,7 @@ Every `/discovery` session currently starts cold. Benefit-metric tier detection 
 - Update `/benefit-metric` to read `mission.md` and `roadmap.md` when evaluating Tier 1 metric candidates — strategic alignment should be assessable against explicit product goals, not inferred
 - Update `/bootstrap` to scaffold `product/` with annotated starters and prompt for initial population
 - Product context files are living documents — update them when strategy changes, not just at bootstrap. Add a note to `/decisions` ADR template: "Does this decision require an update to `product/`?"
-- For a Westpac internal fork: pre-populate these files with engineering strategy, payments platform context, and known regulatory constraints
+- For an enterprise internal fork: pre-populate these files with engineering strategy, payments platform context, and known regulatory constraints
 
 #### Integration points
 - `/discovery` — reads `product/` for scope validation and constraint pre-population
@@ -411,7 +411,7 @@ All public frameworks handle NFRs poorly — they're buried in definition docs o
 | Phase 2 — Standards layer | 1, 2 | Build the standards directory with patterns from current codebase; add levelup loop |
 | Phase 3 — Product context + clarify | 6, 8 | Requires product context to be authored; clarify skill benefits from it |
 | Phase 4 — Routing + CI | 7, 9 | Routing needs the full pipeline stable first; CI needs artefact structure from Phase 1 |
-| Phase 5 — NFR layer | 10 | Most effort; builds on all prior features; highest strategic value for Westpac context |
+| Phase 5 — NFR layer | 10 | Most effort; builds on all prior features; highest strategic value for enterprise context |
 
 ---
 

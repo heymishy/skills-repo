@@ -136,7 +136,7 @@ regulatory-frameworks: [RBNZ, PCI-DSS]
 discipline-tags: [software-engineering, security-engineering, regulatory-compliance]
 
 design:
-  design-system: "westpac-gel"
+  design-system: "xxx"
   accessibility-level: "WCAG-2.1-AA"
 
 security:
@@ -334,8 +334,8 @@ mcp:
     server: mcp-atlassian
     auth: secrets-store
     secretRef: BITBUCKET_PAT          # Name of secret in Bitbucket pipeline secrets
-    bitbucket-url: https://bitbucket.westpac.co.nz
-    jira-url: https://jira.westpac.co.nz
+    bitbucket-url: https://bitbucket.org
+    jira-url: https://jira.org
 ```
 
 The PAT value never appears in any tracked file. The MCP proxy fetches it from the secrets store at call time using the `secretRef` name.

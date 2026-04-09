@@ -49,18 +49,41 @@ Then update `skills_upstream.remote` and `skills_upstream.strategy` in `context.
 
 ## Product context
 
-<!-- FILL IN: One paragraph describing what this repo builds, for whom, and why.
-     This is loaded into every agent interaction and frames all semantic decisions.
-     
-     Example:
-     "This repo contains a lightweight prioritisation canvas tool for Westpac NZ 
-     workshop facilitation. Teams use it to plot ideas on a configurable 2x2 grid 
-     (Impact vs Effort by default), add cards, and export results as JSON or CSV.
-     The tool is session-based with local persistence only — no server, no PII stored.
-     Target users are internal Westpac facilitators running discovery and ideation sessions."
+<!--
+  DOGFOODING NOTE — revert after Phase 4 completes.
+  This block contains real product context filled in for the 2026-04-09-skills-platform-phase1
+  dogfood run. Once all 4 phases are delivered and DoD-signed, replace the prose below with
+  the generic placeholder comment so the repo ships as a clean template for other teams:
+
+  [FILL IN: brief description of what this product does and for whom.
+   One paragraph is sufficient. Skills read this to frame problem scoping
+   and metric relevance during /discovery and /benefit-metric.]
+
+  Track via: artefacts/2026-04-09-skills-platform-phase1/ post-phase-4 cleanup task.
 -->
 
-[FILL IN BEFORE COMMITTING]
+The skills platform is an open-framework, governed software delivery pipeline that enables teams to deliver traceable, high-quality software across all contributing disciplines — from a single developer on a personal project to many teams and communities of practice across a regulated enterprise.
+
+The platform works by encoding delivery standards, quality gates, compliance requirements, design standards, security controls, and discipline-specific practices as versioned, hash-verified instruction sets (SKILL.md files and standards files) that AI agents execute against. Teams run a structured outer loop — discovery through definition-of-ready — that builds complete, validated context drawing on standards from all relevant disciplines. An inner loop then executes that context, with the level of human involvement calibrated to the team's maturity and the risk profile of the work. Real production outcomes and delivery actuals feed back into the pipeline, creating an empirical improvement cycle grounded in actual usage rather than assumptions. Over time, the platform's harness — the SKILL.md files and evaluation suite — improves itself from its own delivery signal, with human approval retained at every change gate.
+
+## SESSION START
+
+At the start of every session, before doing anything else:
+
+1. Check whether `workspace/state.json` exists in the repo root
+2. If it exists:
+   - Read it fully
+   - Report to the operator: last completed phase, any in-progress 
+     story execution, any pending improvement proposals or human 
+     input items
+   - Ask: "Resume from last session state, or start fresh?"
+3. If it does not exist:
+   - This is a new session with no prior state
+   - Proceed normally — state.json will be created at the first 
+     phase boundary
+
+Do not proceed with any task until session start is complete and 
+confirmed with the operator.
 
 ---
 
