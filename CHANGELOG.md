@@ -2,13 +2,15 @@
 
 All notable changes to this repository will be documented in this file.
 
+> **Date format convention (from 2026-04-10):** Inline date references in [Unreleased] entries use `YYYY-MM-DD HH:MM` when the time is known. Version tag release headers remain `YYYY-MM-DD` (keepachangelog standard). Entries before this convention are left as-is.
+
 ## [Unreleased]
 
 ### Changed
 
 - `bootstrap/SKILL.md` — redacted organisation name in example prompt ("Westpac NZ" → "Org x") to avoid embedding real client names in the template
 - `copilot-instructions.md` — added dogfooding comment to `## Product context` block flagging the filled-in prose as temporary and reminding post-Phase 4 cleanup to restore the generic placeholder
-- `review/SKILL.md` — added per-story incremental state write instruction to mandatory state update section; state is now written after each story's report file is created, before the next story is loaded (dogfood gap finding 2026-04-10)
+- `review/SKILL.md` — added per-story incremental state write instruction to mandatory state update section; state is now written after each story's report file is created, before the next story is loaded (dogfood gap finding 2026-04-10 session 5)
 
 ---
 
