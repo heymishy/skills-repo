@@ -270,6 +270,8 @@ comparing this run's findings to the previous run.
 
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
+**Write per story, not per run.** After writing each story's review report file, immediately update that story's entry in `pipeline-state.json` and `workspace/state.json` — before loading or reading the next story. Do not batch state writes to the end of the review run. Each story's state must be durable before the next story begins. This is a sequenced invariant, not an optional best practice: if the session ends mid-review, all reviewed stories must already be recorded in state.
+
 After producing a review report, for each story reviewed update the story entry in `.github/pipeline-state.json` in the **project repository**:
 
 - Set `stage: "review"`, `updatedAt: [now]`
