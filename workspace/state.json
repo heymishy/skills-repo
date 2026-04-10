@@ -1,7 +1,97 @@
 {
   "feature": "2026-04-09-skills-platform-phase1",
-  "lastUpdated": "2026-04-10T01:02:58Z",
-  "currentPhase": "inner-coding-loop",
+  "lastUpdated": "2026-04-11T00:00:00Z",
+  "currentPhase": "definition-of-done",
+  "cycle": {
+    "discovery": {
+      "status": "approved",
+      "artefact": "artefacts/2026-04-09-skills-platform-phase1/discovery.md",
+      "completedAt": "2026-04-09T09:00:00Z",
+      "approvedBy": "Hamish",
+      "approvedDate": "2026-04-09"
+    },
+    "benefitMetric": {
+      "status": "complete",
+      "artefact": "artefacts/2026-04-09-skills-platform-phase1/benefit-metric.md",
+      "completedDate": "2026-04-09",
+      "metricsCount": { "product": 4, "meta": 3, "tier3": 1 }
+    },
+    "definition": {
+      "status": "complete",
+      "completedDate": "2026-04-09",
+      "slicingStrategy": "risk-first",
+      "epicCount": 3,
+      "storyCount": 8,
+      "epicsVoided": ["artefacts/2026-04-09-skills-platform-phase1/epics/epic-1-prototype-stabilisation.md — VOID: target was prototype repo; P1.3 gates skills repo not prototype"],
+      "storiesVoided": ["artefacts/2026-04-09-skills-platform-phase1/stories/prototype-fix-s4-compilation.md", "artefacts/2026-04-09-skills-platform-phase1/stories/prototype-fix-s2-exit-code.md"],
+      "epicsWritten": [
+        "artefacts/2026-04-09-skills-platform-phase1/epics/epic-2-core-loop-infrastructure.md",
+        "artefacts/2026-04-09-skills-platform-phase1/epics/epic-3-distribution-surface-model.md",
+        "artefacts/2026-04-09-skills-platform-phase1/epics/epic-4-standards-eval-compliance.md"
+      ],
+      "storiesWritten": [
+        "artefacts/2026-04-09-skills-platform-phase1/stories/p1.5-workspace-state-session-continuity.md",
+        "artefacts/2026-04-09-skills-platform-phase1/stories/p1.3-assurance-agent-ci-gate.md",
+        "artefacts/2026-04-09-skills-platform-phase1/stories/p1.4-watermark-gate.md",
+        "artefacts/2026-04-09-skills-platform-phase1/stories/p1.1-distribution-progressive-disclosure.md",
+        "artefacts/2026-04-09-skills-platform-phase1/stories/p1.2-surface-adapter-model-foundations.md",
+        "artefacts/2026-04-09-skills-platform-phase1/stories/p1.6-living-eval-regression-suite.md",
+        "artefacts/2026-04-09-skills-platform-phase1/stories/p1.7-standards-model-phase1.md",
+        "artefacts/2026-04-09-skills-platform-phase1/stories/p1.8-model-risk-documentation.md"
+      ],
+      "nfrProfile": "artefacts/2026-04-09-skills-platform-phase1/nfr-profile.md",
+      "scopeCheck": "passed — 8 stories covering 8 MVP items; ratio 1.0; Epic 1 (2 prototype fix stories) voided 2026-04-09 — see decisions.md SCOPE entry",
+      "coverageMatrix": "updated — all 8 metrics covered"
+    },
+    "innerLoop": {
+      "status": "complete",
+      "completedDate": "2026-04-11",
+      "storiesMerged": 8,
+      "storiesTotal": 8,
+      "mergedPRs": {
+        "p1.1": "PR #12 — 2026-04-10",
+        "p1.2": "PR #13 — 2026-04-10",
+        "p1.3": "PR #15 — 2026-04-11",
+        "p1.4": "PR #16 — 2026-04-11",
+        "p1.5": "PR #10 — 2026-04-10",
+        "p1.6": "PR #17 — 2026-04-10",
+        "p1.7": "PR #18 — 2026-04-11",
+        "p1.8": "PR #14 — 2026-04-10"
+      },
+      "openItems": [
+        "p1.8 AC3: T3M1 evidence record — requires a real story run through the P1.3 CI gate; cannot be completed until next delivery cycle"
+      ],
+      "testSummary": {
+        "p1.1": { "passing": 10, "acVerified": 8 },
+        "p1.2": { "passing": 13, "acVerified": 6 },
+        "p1.3": { "passing": 11, "acVerified": 6 },
+        "p1.4": { "passing": 32, "acVerified": 6 },
+        "p1.5": { "passing": 10, "acVerified": 8 },
+        "p1.6": { "passing": 20, "acVerified": 6 },
+        "p1.7": { "passing": 31, "acVerified": 6 },
+        "p1.8": { "passing": 11, "acVerified": 4 }
+      }
+    }
+  },
+  "review": {
+    "status": "complete",
+    "completedDate": "2026-04-10",
+    "findings": { "high": 0, "medium": 4, "low": 6 },
+    "openHighFindings": [],
+    "openMediumFindings": []
+  },
+  "checkpoint": {
+    "writtenAt": "2026-04-11",
+    "contextAtWrite": "Phase 1 inner loop complete. All 8 stories merged across 3 epics. 128 checks passing on master. Feature stage advanced to definition-of-done in pipeline-state.json. All decisions logged in artefacts/2026-04-09-skills-platform-phase1/decisions.md (11 W4 RISK-ACCEPTs, all 8 stories covered). One open item: p1.8 AC3 (T3M1 evidence record) cannot be closed until a real inner loop story runs through the live P1.3 CI gate.",
+    "resumeInstruction": "Phase 1 delivery is complete. Next session options: (A) /definition-of-done — run against each merged story starting with p1.5 or p1.1; required to formally close the loop before /levelup; (B) /levelup — blocked on /definition-of-done artefacts existing first; (C) Begin Phase 2 planning — run /workflow to assess readiness. Recommended first action: run /definition-of-done for p1.5 (simplest story, clearest ACs), then batch through remaining stories. p1.8 DoD is partially blocked — complete 4/5 ACs at DoD time; AC3 will be filled when the first real CI trace exists. Read workspace/state.json at session start before any action.",
+    "pendingActions": [
+      "/definition-of-done for all 8 Phase 1 stories (prerequisite for /levelup)",
+      "/levelup — extract learnings to .github/standards/ and architecture-guardrails.md",
+      "p1.8 AC3 (T3M1 evidence record) — fill when first real inner loop story runs through P1.3 CI gate",
+      "Phase 2 discovery — kick off when Phase 1 DoD is signed"
+    ]
+  }
+}
   "cycle": {
     "discovery": {
       "status": "approved",
