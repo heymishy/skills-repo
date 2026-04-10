@@ -4,10 +4,12 @@ description: >
   Records a phase-by-phase focus-time estimate at feature start and refines it
   as scope becomes clearer. Compares estimates against actuals at /levelup to
   normalise the model over time and suggest flow improvements. Invoked
-  automatically by /discovery (E1 rough estimate) and /definition (E2 refined
-  estimate). Run manually with /estimate to record, update, or review.
+  automatically by /discovery (E1, at exit) and /definition (E2, at exit).
+  Run manually with /estimate to record, update, or review.
   The key bottleneck signal is outer-loop operator focus time — inner-loop
   agent runs are largely autonomous once stories are DoR-ready.
+  Focus hours are derived, not recalled: totalCalendarH x engagementFraction
+  from JSONL session reconstruction. One operator question per feature.
 triggers:
   - "/estimate"
   - "record estimate"
@@ -16,7 +18,7 @@ triggers:
   - "record actuals"
   - "/estimate actuals"
   - "estimate this feature"
-  - "how are we tracking vs estimate"
+  - "how did we go"
 ---
 
 # Estimate Skill
@@ -33,6 +35,10 @@ The outer loop — discovery through DoR — is the primary bottleneck because i
 requires operator focus. The inner loop is predominantly autonomous agent
 execution once stories are DoR-ready. Estimates should reflect this split.
 
+**Operator input is minimised by design.** Focus hours are derived — not recalled —
+from calendar time and a single engagement fraction selection. The operator is
+never asked to remember or calculate hours spent per phase.
+
 ---
 
 ## Entry condition
@@ -45,7 +51,22 @@ Auto-detect mode from `workspace/state.json`:
 - `estimate.e1` present, `estimate.e2` absent, `currentPhase` is `"definition"` or later → **E2 — Refine estimate**
 - `currentPhase` is `"definition-of-done"` or /levelup is running → **E3 — Actuals + calibration**
 
-If `estimate.e1` is `null` (operator skipped at E1) and E3 is triggered: skip the delta table, write actuals only, note "no prior estimate — this run establishes the baseline." See E3 null-path below.
+If `estimate.e1` is `null` (operator skipped at E1) and E3 is triggered: skip the delta table, write actuals only. See E3 null-path below.
+
+---
+
+## Derivation sources — priority order
+
+When reconstructing phase durations in E3, use these sources in priority order.
+Report which tier was used for each phase in the derivation summary.
+
+1. **`state.json` `startedAt` / `completedAt` ISO datetimes** — written when each phase skill begins and exits; accurate to the second. Use when present. *(Available from Phase 2 onwards — see State update section.)*
+
+2. **git log `phase:` prefix commits** — parse `git log --pretty="%ad %s" --date=iso` for commits matching `phase: [name]`. Less precise (commit granularity) but reliable where phase-boundary commit conventions are followed.
+
+3. **JSONL transcript first/last message timestamps** — each JSONL file in the Copilot debug-logs directory is one session. Use the first and last message timestamps for session span. Always available for Copilot-hosted sessions.
+
+If no source is found for a phase: mark the row "— manual input needed" and ask the operator to supply the date.
 
 ---
 
@@ -56,37 +77,36 @@ Triggered automatically at the end of /discovery, or manually.
 Context available at this stage: problem scope, MVP boundary, known constraints.
 No story count yet — estimate is based on scope complexity and operator experience.
 
+If `workspace/estimation-norms.md` has 3+ rows, surface the calibrated baseline
+before asking (see Calibrated suggestions below).
+
 Ask:
 
 > **Quick estimate before we move forward.**
 >
-> Based on the discovery scope, how long do you expect the outer loop to take?
-> The outer loop is: discovery → benefit-metric → definition → review → test-plan → DoR.
-> Inner loop (coding agent runs) is separate — we track that independently.
+> How many calendar days do you expect the outer loop to span?
+> (Outer loop = discovery through DoD/levelup — from first session to final commit.)
 >
-> For each phase, give your best guess for **operator focus time** (not calendar time).
-> "Focus time" = hours you are actively working, not waiting for the agent.
+> Expected calendar span: __ days
 >
-> | Phase | Focus time estimate |
-> |-------|-------------------|
-> | Discovery (incl. clarify) | ? h |
-> | Benefit-metric | ? h |
-> | Definition (epics + stories) | ? h |
-> | Review | ? h |
-> | Test-plan | ? h |
-> | Definition-of-ready | ? h |
-> | DoDs + /levelup | ? h |
-> | **Outer loop total** | **? h** |
+> How focused do you expect your sessions to be?
 >
-> Inner loop (agent dispatch + PR merges, human time only): ? h
-> Expected story count (rough): ?
+> 1. **25%** — mostly waiting (agent-heavy, lots of idle time between runs)
+> 2. **50%** — mixed (typical outer loop — half active, half waiting for agent)
+> 3. **75%** — focused (short intensive sessions, mostly active keyboard work)
+> 4. **90%** — heads down (near-continuous operator work, minimal agent waiting)
 >
-> Any assumptions baked into these numbers?
-> (e.g. "assuming ~8 stories", "assuming no Bitbucket scope")
+> Expected story count (rough): __
 >
-> Reply: fill in numbers — or type "skip" to proceed without an estimate
+> Any key assumptions?
+> (e.g. "~8 stories", "no Bitbucket scope", "1h sessions across 4 weeks")
+>
+> Reply: calendar days, option 1/2/3/4, story count — or `skip`
 
-If skipped: write `"e1": null`. E2 will still run but will note no rough to compare against. E3 will write actuals-only with no delta table.
+Derive: `outerLoopFocusH ≈ calendarDays × 2 × engagementFraction`
+(Assumes ~2h active session time per calendar day as a baseline; revised at E2 with story count.)
+
+If skipped: write `"e1": null`. E3 will write actuals-only with no delta table.
 
 Write to `workspace/state.json` under `estimate.e1`:
 
@@ -94,14 +114,9 @@ Write to `workspace/state.json` under `estimate.e1`:
 "estimate": {
   "e1": {
     "date": "[YYYY-MM-DD]",
-    "discovery": [h],
-    "benefitMetric": [h],
-    "definition": [h],
-    "review": [h],
-    "testPlan": [h],
-    "definitionOfReady": [h],
-    "dods_levelup": [h],
-    "outerLoopTotal": [h],
+    "expectedCalendarDays": [n],
+    "engagementFraction": [0.25|0.50|0.75|0.90],
+    "outerLoopFocusH": "[derived: calendarDays × 2 × fraction]",
     "innerLoopHuman": [h],
     "expectedStoryCount": [n],
     "confidence": "low",
@@ -113,10 +128,10 @@ Write to `workspace/state.json` under `estimate.e1`:
 Confirm:
 
 > **E1 estimate recorded ✅**
-> Outer loop: [n]h focus time | Inner loop (human): [n]h | Stories: ~[n]
+> Calendar span: ~[n] days | Engagement: [fraction × 100]% | Est. focus: ~[n]h | Stories: ~[n]
 > Confidence: low | Assumptions: [summary]
 >
-> I'll ask you to refine this once stories are written in /definition.
+> I'll refine this once stories are written in /definition.
 
 ---
 
@@ -127,28 +142,27 @@ are known, or manually.
 
 Context available: story count, complexity scores, scope stability.
 
-If `estimate.e1` is null: skip the "change from rough" comparison. Still record
-the E2 estimate as the first recorded forecast for this feature.
+If `estimate.e1` is null: record this as the first forecast for this feature; note
+"no E1 to compare."
 
-State what's known:
+Present what's known and ask only for revision if needed:
 
-> **Refining estimate based on definition output:**
-> Stories: [n] | Complexity distribution: [1: n, 2: n, 3: n] | Scope stability: [Stable/Unstable]
-> E1 estimate (from discovery): outer loop [n]h, inner loop [n]h [or "no E1 estimate recorded"]
+> **Refining estimate — story count and complexity now known.**
 >
-> With [n] stories at this complexity mix, does the E1 forecast still hold?
-> Or do you want to revise any phase?
+> Stories: [n] | Complexity: [1: n, 2: n, 3: n] | Scope stability: [Stable/Unstable]
+> E1 forecast: ~[n] calendar days at [fraction × 100]% engagement → ~[n]h focus [or "no E1 recorded"]
 >
-> | Phase | E1 estimate | Revised? |
-> |-------|------------|----------|
-> | Definition | [n]h | — |
-> | Review | [n]h | |
-> | Test-plan | [n]h | |
-> | Definition-of-ready | [n]h | |
-> | DoDs + /levelup | [n]h | |
-> | Inner loop (human) | [n]h | |
+> Does the calendar span estimate still hold, or do you want to revise?
 >
-> Reply: "looks right" — or type revised values for any row
+> 1. **25%** — mostly waiting
+> 2. **50%** — mixed (typical outer loop)
+> 3. **75%** — focused
+> 4. **90%** — heads down
+>
+> Reply: "looks right" — or: [new calendar days] + [1/2/3/4 for fraction]
+
+Derive: `outerLoopFocusH = calendarDays × 2 × engagementFraction`
+Compute: `p75FocusHPerStory = outerLoopFocusH × 1.25 ÷ storyCount` for normalisation.
 
 Write to `workspace/state.json` under `estimate.e2`:
 
@@ -161,11 +175,9 @@ Write to `workspace/state.json` under `estimate.e2`:
     "complexity": { "1": [n], "2": [n], "3": [n] },
     "p75FocusHPerStory": [h]
   },
-  "review": [h],
-  "testPlan": [h],
-  "definitionOfReady": [h],
-  "dods_levelup": [h],
-  "outerLoopTotal": [h],
+  "expectedCalendarDays": [n],
+  "engagementFraction": [0.25|0.50|0.75|0.90],
+  "outerLoopFocusH": "[derived]",
   "innerLoopHuman": [h],
   "confidence": "medium",
   "notes": "[changes from E1 and why, or 'no E1 to compare']"
@@ -175,7 +187,7 @@ Write to `workspace/state.json` under `estimate.e2`:
 Confirm:
 
 > **E2 estimate recorded ✅**
-> Outer loop: [n]h | Inner loop (human): [n]h | [n] stories
+> Calendar: ~[n] days | Engagement: [fraction × 100]% | Focus: ~[n]h | [n] stories
 > Change from E1: [delta or "unchanged" or "no E1 recorded"]
 
 ---
@@ -184,162 +196,197 @@ Confirm:
 
 Triggered automatically during /levelup Category E, or manually.
 
-### Step E3a — Propose actuals from state.json timestamps
+### Step E3a — Derive phase durations
 
-Do not rely on commit message text for phase boundary detection — message
-conventions are inconsistent. Instead, read phase boundaries from
-`workspace/state.json` `cycle.*` timestamp fields, which are written at each
-phase completion:
+Follow the priority order in "Derivation sources" above. For each phase, record which source tier was used.
 
-- `cycle.discovery.completedAt` → discovery end
-- `cycle.benefitMetric.completedDate` → benefit-metric end
-- `cycle.definition.completedDate` → definition end
-- `cycle.review.completedDate` → review end (if present)
-- `cycle.testPlan.completedDate` → test-plan end (if present)
-- `cycle.definitionOfReady.completedDate` → DoR end (if present)
+For `state.json` `completedDate` date-only fields (as used in Phase 1): treat as noon on that date (12:00:00 local) for duration computation and mark source as "state.json date-only (±12h precision)".
 
-From these timestamps, compute elapsed calendar time per phase. Then present
-the table to the operator for focus-time confirmation:
+Compute: `calendarDays = (completedAt of last phase) − (startedAt of first phase)` in whole days.
 
-> **Actuals reconstruction — [feature-slug]**
+Present the phase duration table before asking any question:
+
+> **Phase duration derivation — [feature-slug]**
 >
-> Phase boundaries from `workspace/state.json`:
->
-> | Phase | Start | End | Calendar time |
-> |-------|-------|-----|---------------|
-> | Discovery | [date] | [date] | [n]h |
-> | Benefit-metric | [date] | [date] | [n]h |
-> | Definition | [date] | [date] | [n]h |
-> | Review | [date] | [date] | [n]h |
-> | Test-plan | [date] | [date] | [n]h |
-> | DoR | [date] | [date] | [n]h |
-> | DoDs + /levelup | [date] | [date] | [n]h |
->
-> Calendar time ≠ focus time. Please correct the focus hours column:
->
-> | Phase | Calendar time | Actual focus time |
-> |-------|-------------|------------------|
-> | Discovery | [n]h | ? h |
-> | Benefit-metric | [n]h | ? h |
-> | Definition | [n]h | ? h |
-> | Review | [n]h | ? h |
-> | Test-plan | [n]h | ? h |
-> | DoR | [n]h | ? h |
-> | DoDs + /levelup | [n]h | ? h |
-> | **Outer loop total** | | **? h** |
-> | Inner loop (human) | | ? h |
-> | Agent-autonomous time | | ? h |
-> | Calendar span (total) | [n] days | |
->
-> Reply: fill in focus hours — or "looks right" to accept calendar times as-is
+> | Phase | Start | End | Calendar span | Source tier |
+> |-------|-------|-----|--------------|-------------|
+> | Discovery | [date] | [date] | [n]h | [tier-1/2/3/date-only] |
+> | Benefit-metric | [date] | [date] | [n]h | |
+> | Definition | [date] | [date] | [n]h | |
+> | Review | [date] | [date] | [n]h | |
+> | Test-plan | [date] | [date] | [n]h | |
+> | DoR | [date] | [date] | [n]h | |
+> | DoDs + /levelup | [date] | [date] | [n]h | |
+> | **Total** | [first date] | [last date] | **[n] days** | |
 
-If state.json timestamps are absent for a phase: note "timestamp not found —
-please supply manually" for that row.
+### Step E3b — JSONL session reconstruction
 
-### E3 null-path — no prior estimate (bootstrap or skip)
+Read all JSONL transcript files whose timestamps fall within the feature date range.
+Each file = one session. For each file extract:
 
-If `estimate.e1` is null AND `estimate.e2` is null:
+- Session start: first message timestamp
+- Session end: last message timestamp
+- Session wall-clock time: end − start
+- Operator message count: messages with `role: "user"`
+
+Present the reconstruction immediately after E3a:
+
+> **Session reconstruction from JSONL:**
+> [n] sessions across [n] calendar days
+> Session lengths: [list — e.g. 1.5h, 2h, 0.5h, 2.2h]
+> Total wall-clock session time: [n]h
+> Operator messages: [n] total
+> Sessions by phase (approximate, date-aligned): Discovery: [n], Definition: [n], ...
+
+`totalCalendarH` = sum of all session wall-clock times from JSONL.
+
+If JSONL files are not accessible: note "JSONL not accessible — using calendar span estimate" and set `totalCalendarH = calendarDays × 2` as a conservative default.
+
+### Step E3c — Engagement fraction question (the only operator input)
+
+After presenting E3a and E3b, ask exactly one question:
+
+> **One question to convert session time to focus time.**
+>
+> Of that [n]h total session wall-clock time, what fraction was active keyboard work
+> vs waiting for the agent?
+>
+> 1. **25%** — mostly waiting (agent-heavy, lots of idle time between messages)
+> 2. **50%** — mixed (typical outer loop — half active, half waiting)
+> 3. **75%** — focused (short sessions, mostly active keyboard work)
+> 4. **90%** — heads down (near-continuous operator work, minimal agent waiting)
+>
+> Reply: 1 / 2 / 3 / 4
+
+Derive: `outerLoopFocusH = totalCalendarH × engagementFraction`
+
+Do not ask for per-phase hour breakdowns. Do not ask the operator to recall hours.
+This is the only operator input required for E3.
+
+### Phase 1 bootstrap case
+
+When E3 is triggered for a feature where both `estimate.e1` and `estimate.e2` are null
+**and** a manually compiled session map already exists (e.g. logged in `workspace/learnings.md`):
+
+- Skip fresh E3a/E3b derivation — the session map is already available
+- Present the existing session map (e.g. "9 sessions, 2026-04-09 to 2026-04-11") and ask only the E3c engagement fraction question
+- After the answer: compute `outerLoopFocusH = totalCalendarH × fraction`
+- Write actuals to state.json with no delta table
+- Append the row to `workspace/estimation-norms.md` and `workspace/results.tsv` with `note: "Phase 1 baseline — no prior estimate; seeds normalisation table"`
+- Skip Step E3d delta table and estimate-based flow findings entirely; still generate flow findings from phase duration patterns (e.g. which phases ran long, parallelisation, autonomous inner loop)
+
+### E3 null-path — no session map available
+
+If both `estimate.e1` and `estimate.e2` are null and no prior session map exists:
 
 > **No prior estimate recorded for this feature.**
 > This run will establish the baseline — actuals will be written without a delta comparison.
-> Confirm focus hours above and I'll write the E3 record and the first row of the normalisation table.
+> Confirm the engagement fraction above and I'll write the record and the first normalisation row.
 
-Skip steps E3b delta table and flow findings based on estimate delta; still generate
-flow findings based on phase duration patterns (e.g. parallel execution, autonomous runs).
+Proceed with E3a/E3b/E3c normally. Skip the delta table (Step E3d).
 
-### Step E3b — Compute deltas and flow findings
+### Step E3d — Compute deltas and flow findings
 
-If E2 estimate exists, compute: delta = actual − E2 estimate (positive = over, negative = under).
+**Skip entirely if both `estimate.e1` and `estimate.e2` are null.** See null-path above.
 
-Present comparison table:
+If `estimate.e2` is present: delta = actual − e2 outerLoopFocusH (positive = over).
+If only `estimate.e1` is present: delta = actual − e1 outerLoopFocusH.
 
-> **E2 estimate vs Actuals — [feature-slug]**
+Present comparison:
+
+> **[E2|E1] estimate vs Actuals — [feature-slug]**
 >
-> | Phase | E2 estimate | Actual focus | Delta | Signal |
-> |-------|------------|-------------|-------|--------|
-> | Discovery | [n]h | [n]h | [±n]h | [over/under/on] |
-> | Benefit-metric | [n]h | [n]h | [±n]h | |
-> | Definition | [n]h | [n]h | [±n]h | |
-> | Review | [n]h | [n]h | [±n]h | |
-> | Test-plan | [n]h | [n]h | [±n]h | |
-> | DoR | [n]h | [n]h | [±n]h | |
-> | DoDs + /levelup | [n]h | [n]h | [±n]h | |
-> | **Outer loop total** | **[n]h** | **[n]h** | **[±n]h** | |
+> | Metric | Estimate | Actual | Delta | Signal |
+> |--------|---------|--------|-------|--------|
+> | Calendar days | [n] | [n] | [±n] | [over/under/on] |
+> | Focus hours (outer loop) | [n]h | [n]h | [±n]h | |
+> | Engagement fraction | [frac] | [frac] | — | |
 > | Inner loop (human) | [n]h | [n]h | [±n]h | |
-> | Calendar span | — | [n] days | — | |
+> | Focus h/story | [n]h | [n]h | [±n]h | |
 
 Generate flow findings for:
-- Any phase > 30% over E2 estimate: cause hypothesis + improvement + effort
-- Parallelisation discovered mid-run: "parallelisation opportunity — phases [X/Y] can run concurrently; estimate model should treat as parallel, not sequential"
-- Autonomous agent execution replacing expected human time: "inner loop autonomous — [n]h agent-autonomous vs [n]h estimated human time; revise E1/E2 inner loop default downward"
+- Calendar span > 30% over estimate: cause hypothesis + improvement + effort
+- Engagement fraction lower than estimated: "session intensity signal — sessions were more idle than expected; revise E1 default fraction downward"
+- Parallelisation discovered mid-run: "parallelisation opportunity — phases [X/Y] ran concurrently; estimate model should treat as parallel, not sequential"
+- Inner loop autonomous far exceeded estimate: "inner loop autonomous — agent ran [n]h vs [n]h estimated human time; revise E1/E2 inner loop default downward"
 
 Finding format:
 
-> **Flow finding — [phase name]**
-> Actual: [n]h | E2 estimate: [n]h | Delta: +[n]h
+> **Flow finding — [topic]**
+> Actual: [metric] | Estimate: [metric] | Delta: [±]
 > Cause hypothesis: [text]
-> Improvement: [e.g. "a focused 2h discovery block would save ~1h of definition rework per feature"]
-> Effort to implement: [Low / Medium / High]
+> Improvement: [text]
+> Effort: [Low / Medium / High]
 
-### Step E3c — Append to normalisation table
+### Step E3e — Append to normalisation table and results.tsv
 
-Append one row to `workspace/estimation-norms.md` (create if absent):
-
-The file format is a human-readable summary table followed by a machine-readable YAML block:
+**Append to `workspace/estimation-norms.md`** (create if absent):
 
 ```markdown
 ## Estimation norms — cross-feature actuals
 
-| Date | Feature | Stories | Outer loop estimate | Outer loop actual | Delta | Inner loop (human) | Calendar days |
-|------|---------|---------|--------------------|--------------------|-------|--------------------|---------------|
-| [YYYY-MM-DD] | [slug] | [n] | [n]h | [n]h | [±n]h | [n]h | [n] |
+| Date | Feature | Stories | Engagement | OL estimate | OL actual | Delta | IL (human) | Calendar days |
+|------|---------|---------|-----------|------------|-----------|-------|------------|---------------|
+| [YYYY-MM-DD] | [slug] | [n] | [fraction] | [n]h | [n]h | [±n]h | [n]h | [n] |
 ```
 
 ```yaml estimation-norms
 - date: "[YYYY-MM-DD]"
   feature: "[slug]"
   storyCount: [n]
+  engagementFraction: [0.25|0.50|0.75|0.90]
   outerLoopEstimateH: [n]
   outerLoopActualH: [n]
   outerLoopDeltaH: [n]
   innerLoopHumanH: [n]
   agentAutonomousH: [n]
   calendarDays: [n]
+  outerLoopSessions: [n]
   focusHPerStory: [n]
-  source: "[e1|e2|none — which estimate was used for delta]"
+  source: "[e1|e2|none]"
+  note: "[optional — e.g. 'Phase 1 baseline — no prior estimate; seeds normalisation table']"
 ```
 
-If the file does not exist, create it with the header row, then append the data row.
+**Append to `workspace/results.tsv`** one row:
 
-### Step E3d — Write actuals + delta to state.json
+```
+[YYYY-MM-DD]\t[feature-slug]\test-actuals\t[story-count]\t[engagement-fraction]\t[ol-estimate]h\t[ol-actual]h\t[delta]h\t[il-estimate]h\t[il-actual]h\t[calendar-days]
+```
+
+Columns in order: date, feature, type, story-count, engagement-fraction, outer-loop-estimate, outer-loop-actual, outer-loop-delta, inner-loop-estimate, inner-loop-actual, calendar-days.
+
+### Step E3f — Write actuals + delta to state.json
 
 Write to `workspace/state.json` under `estimate`:
 
 ```json
 "actuals": {
   "date": "[YYYY-MM-DD]",
-  "discovery": [h],
-  "benefitMetric": [h],
-  "definition": [h],
-  "review": [h],
-  "testPlan": [h],
-  "definitionOfReady": [h],
-  "dods_levelup": [h],
-  "outerLoopTotal": [h],
+  "calendarDays": [n],
+  "outerLoopSessions": [n],
+  "engagementFraction": [0.25|0.50|0.75|0.90],
+  "totalCalendarH": [n],
+  "outerLoopFocusH": "[derived: totalCalendarH × fraction]",
   "innerLoopHuman": [h],
   "agentAutonomousH": [h],
-  "calendarDays": [n],
-  "storyCount": [n]
+  "storyCount": [n],
+  "derivationSources": {
+    "discovery": "[tier-1|tier-2|tier-3|date-only|manual]",
+    "definition": "[tier]",
+    "review": "[tier]",
+    "testPlan": "[tier]",
+    "definitionOfReady": "[tier]"
+  }
 },
 "delta": {
   "baseline": "[e2|e1|none]",
-  "outerLoopFocusH": [±n],
-  "calendarDays": [±n],
-  "notes": "[summary of main over/under phases]",
+  "outerLoopFocusH": "[±n]",
+  "calendarDays": "[±n]",
+  "notes": "[summary of main over/under signals]",
   "flowFindings": [
     {
-      "phase": "[phase]",
-      "deltaH": [±n],
+      "topic": "[label]",
+      "deltaH": "[±n]",
       "hypothesis": "[text]",
       "improvement": "[text]",
       "effort": "[Low|Medium|High]"
@@ -352,35 +399,40 @@ Write to `workspace/state.json` under `estimate`:
 
 > ✅ **E3 actuals recorded — [feature-slug]**
 >
-> Outer loop: [E2: n]h → actual [n]h ([±n]h delta) [or "no prior estimate — baseline established"]
-> Inner loop (human): [n]h | Agent-autonomous: [n]h | Calendar: [n] days
+> [n] sessions | [n] calendar days | [fraction × 100]% engagement → [n]h focus
+> Inner loop (human): [n]h | Agent-autonomous: [n]h | [n] stories
 > Focus hours per story: [n]h
+>
+> Comparison: [e2/e1] estimate [n]h → actual [n]h ([±n]h delta) [or "no prior estimate — baseline established"]
 >
 > Flow findings: [n]
 > - [finding 1 one-liner]
 > - [finding 2 one-liner]
 >
 > Normalisation table updated: `workspace/estimation-norms.md`
+> results.tsv row appended: `workspace/results.tsv`
 
 ---
 
 ## Calibrated suggestions (after 3+ features)
 
-When E1 is invoked and `workspace/estimation-norms.md` contains 3 or more rows,
-read the YAML block and compute:
+When E1 is invoked and `workspace/results.tsv` contains 3 or more `est-actuals` rows:
 
-- Mean focus hours per story: sum(outerLoopActualH) ÷ sum(storyCount) across all rows
-- P75 outer loop: mean × 1.25 (planning headroom)
-- Mean inner loop (human): average innerLoopHumanH
+1. Parse the TSV — extract columns: story-count, engagement-fraction, outer-loop-actual, calendar-days
+2. Group rows by engagement fraction band (0.25 / 0.50 / 0.75 / 0.90)
+3. For each band with at least 1 row, compute mean `focusHPerStory = sum(ol-actual) ÷ sum(story-count)`
 
-Surface before asking for the operator's estimate:
+Surface per-band calibrated suggestions before asking for the operator's estimate:
 
 > **Historical baseline from [n] features:**
-> Mean outer loop: [n]h/story × ~[estimated story count] stories = ~[n]h
-> P75 outer loop (planning headroom): ~[n]h
-> Mean inner loop (human): ~[n]h
 >
-> Use these as a starting point — or override with your own numbers.
+> At **50% engagement** ([n] features): [n]h/story × ~[estimated story count] stories = ~[n]h outer loop
+> At **75% engagement** ([n] features): [n]h/story × ~[estimated story count] stories = ~[n]h outer loop
+> P75 planning headroom (+25%): ~[n]h
+>
+> Pick the engagement fraction that matches your expected working style — or use a different calendar span.
+
+If no rows exist yet (first feature): note "No baseline yet — this run will be feature 1 in the normalisation table."
 
 ---
 
@@ -388,7 +440,9 @@ Surface before asking for the operator's estimate:
 
 - Does not track team velocity or story points
 - Does not assign stories to sprints or people
-- Does not measure agent execution time (only human focus time)
+- Does not use WakaTime, activity tracking, or any surveillance tooling
+- All derivation uses git log, JSONL transcripts, and state.json — artefacts that already exist
+- Does not ask the operator to recall hours or calculate per-phase breakdowns
 - Does not replace /benefit-metric MM1 — this skill feeds evidence into MM1
 
 ---
@@ -397,5 +451,24 @@ Surface before asking for the operator's estimate:
 
 After any invocation point:
 - Write the relevant `estimate.e1`, `estimate.e2`, `estimate.actuals`, or `estimate.delta` block to `workspace/state.json`
-- Append to `workspace/estimation-norms.md` in E3 only
+- In E3 only: append to `workspace/estimation-norms.md` and `workspace/results.tsv`
 - Confirm the write in closing message: "Pipeline state updated ✅"
+
+### Phase 2+ cycle block timestamp requirement
+
+From Phase 2 onwards, every cycle block in `workspace/state.json` must include:
+- `startedAt` — ISO datetime with timezone (e.g. `"2026-04-12T09:00:00+10:00"`), written when the phase skill begins
+- `completedAt` — ISO datetime with timezone, written at phase exit
+
+This makes E3 actuals derivation fully automatic via tier-1 sources. Skills that
+currently write `completedDate: YYYY-MM-DD` (as used in Phase 1) must upgrade to
+`completedAt: YYYY-MM-DDThh:mm:ss±TZ`.
+
+**ARCH decision:** See `artefacts/2026-04-09-skills-platform-phase1/decisions.md` —
+`2026-04-11 | ARCH | Phase 2+ cycle block timestamps — startedAt/completedAt ISO datetime`.
+
+---
+
+*Auto-invocation: /discovery invokes /estimate (E1 mode) at its exit step.
+/definition invokes /estimate (E2 mode) at its exit step.
+Hooks are in `.github/skills/discovery/SKILL.md` and `.github/skills/definition/SKILL.md`.*

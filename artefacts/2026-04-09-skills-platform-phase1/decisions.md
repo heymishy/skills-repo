@@ -231,4 +231,14 @@
 **Rationale:** The split approach (Cloud for syntax/shape, Docker DC for auth/topology) lets Phase 2 write testable ACs against environment tiers that are actually available rather than deferring all Bitbucket work to an unconfirmed shared environment. Docker DC can be stood up locally with no IT dependency — it is the correct unblocking path for auth-dependent ACs. This assumption supersedes the blanket Bitbucket-deferred assumption only for the Cloud/syntax-validation tier; the full enterprise Data Center environment remains deferred until confirmed.
 **Made by:** Hamish, 2026-04-11
 **Revisit trigger:** At Phase 2 CI gate adapter story planning — confirm Docker DC is available locally and record the specific Bitbucket DC version and auth topology variants to be tested. If a shared DC environment is confirmed available before that point, log a superseding ASSUMPTION entry and remove the Docker-only constraint.
+
+---
+
+---
+**2026-04-11 | ARCH | Phase 2+ cycle block timestamps — startedAt/completedAt ISO datetime**
+**Decision:** From Phase 2 onwards, every cycle block in `workspace/state.json` must include `startedAt` (ISO datetime with timezone, written when the phase skill begins) and `completedAt` (ISO datetime with timezone, written at phase exit). Replaces the `completedDate: YYYY-MM-DD` date-only field used in Phase 1.
+**Alternatives considered:** (A) Keep date-only — Phase 1 approach; requires ±12h calendar-time interpolation in /estimate E3 and forces fallback to git log or JSONL for precision. (B) Add time-of-day to `completedDate` only — asymmetric; phase start is still unknown, making per-phase duration underdetermined. (C) Full ISO datetime for both start and end — chosen; makes /estimate E3 tier-1 derivation fully automatic with no fallback needed.
+**Rationale:** The /estimate E3 step derives actual phase durations to compute the engagement fraction model. ISO datetimes with timezone make phase boundaries unambiguous — no interpolation, no commit message parsing, no JSONL scanning needed. The overhead is one extra field write per skill at begin and exit. Every skill already has a mandatory state-update final step, making `completedAt` a trivial addition. Adding `startedAt` requires skills to write state at opening as well as closing.
+**Made by:** Hamish, 2026-04-11
+**Revisit trigger:** If a phase skill cannot write `startedAt` at session begin time (e.g. agent resumes mid-session from a checkpoint) — add a `resumedAt` field alongside `startedAt` to distinguish a continuation from a fresh start. Also revisit if clock skew across timezones causes phase span anomalies in multi-operator features.
 ---
