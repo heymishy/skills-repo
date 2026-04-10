@@ -1,11 +1,12 @@
 {
   "passed": [
-    "schema_valid",
     "discovery_exists",
     "discovery_approved",
     "test_plan_coverage",
     "unresolved_blockers"
   ],
   "warnings": [],
-  "failures": []
+  "failures": [
+    "schema_valid: pipeline-state.json failed schema validation"
+  ]
 }
