@@ -57,7 +57,7 @@
             {
               "slug": "p1.3-assurance-agent-ci-gate",
               "name": "Deploy assurance agent as automated CI gate on PR open/update",
-              "stage": "merged",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
@@ -77,7 +77,11 @@
               "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.3-assurance-agent-ci-gate-dor.md",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/15",
               "mergedAt": "2026-04-11",
-              "updatedAt": "2026-04-11"
+              "updatedAt": "2026-04-11",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-04-09-skills-platform-phase1/dod/p1.3-assurance-agent-ci-gate-dod.md"
             },
             {
               "slug": "p1.4-watermark-gate",
@@ -726,6 +730,14 @@
           "evidence": "P1.1 DoD — pull model operational; change present without squad merge step; < 1 session open elapsed",
           "lastMeasured": "2026-04-11",
           "dodArtefact": "artefacts/2026-04-09-skills-platform-phase1/dod/p1.1-distribution-progressive-disclosure-dod.md"
+        },
+        {
+          "metricId": "M2",
+          "name": "CI-triggered assurance gate",
+          "signal": "on-track",
+          "evidence": "P1.3 DoD — gate mechanism validated by 11 automated tests (synthetic); live CI acceptance test pending first Phase 2 inner loop PR",
+          "lastMeasured": "2026-04-11",
+          "dodArtefact": "artefacts/2026-04-09-skills-platform-phase1/dod/p1.3-assurance-agent-ci-gate-dod.md"
         }
       ]
     }
