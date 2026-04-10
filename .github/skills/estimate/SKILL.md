@@ -101,7 +101,9 @@ Ask:
 > Any key assumptions?
 > (e.g. "~8 stories", "no Bitbucket scope", "1h sessions across 4 weeks")
 >
-> Reply: calendar days, option 1/2/3/4, story count — or `skip`
+> **Optional — Copilot Pro users:** roughly how many premium requests do you expect this feature to consume? (Check your usage gauge or estimate — skip if not applicable)
+>
+> Reply: calendar days, option 1/2/3/4, story count[, requests forecast] — or `skip`
 
 Derive: `outerLoopFocusH ≈ calendarDays × 2 × engagementFraction`
 (Assumes ~2h active session time per calendar day as a baseline; revised at E2 with story count.)
@@ -120,7 +122,8 @@ Write to `workspace/state.json` under `estimate.e1`:
     "innerLoopHuman": [h],
     "expectedStoryCount": [n],
     "confidence": "low",
-    "assumptions": "[free text]"
+    "assumptions": "[free text]",
+    "premiumRequestsForecast": null
   }
 }
 ```
@@ -159,7 +162,9 @@ Present what's known and ask only for revision if needed:
 > 3. **75%** — focused
 > 4. **90%** — heads down
 >
-> Reply: "looks right" — or: [new calendar days] + [1/2/3/4 for fraction]
+> **Optional — Copilot Pro users:** set or revise your premium requests forecast now if not already set at E1. (Skip if not applicable)
+>
+> Reply: "looks right" — or: [new calendar days] + [1/2/3/4 for fraction][, requests forecast]
 
 Derive: `outerLoopFocusH = calendarDays × 2 × engagementFraction`
 Compute: `p75FocusHPerStory = outerLoopFocusH × 1.25 ÷ storyCount` for normalisation.
@@ -180,7 +185,8 @@ Write to `workspace/state.json` under `estimate.e2`:
   "outerLoopFocusH": "[derived]",
   "innerLoopHuman": [h],
   "confidence": "medium",
-  "notes": "[changes from E1 and why, or 'no E1 to compare']"
+  "notes": "[changes from E1 and why, or 'no E1 to compare']",
+  "premiumRequestsForecast": null
 }
 ```
 
@@ -261,7 +267,17 @@ After presenting E3a and E3b, ask exactly one question:
 Derive: `outerLoopFocusH = totalCalendarH × engagementFraction`
 
 Do not ask for per-phase hour breakdowns. Do not ask the operator to recall hours.
-This is the only operator input required for E3.
+The engagement fraction is the only required operator input for E3.
+
+After recording the engagement fraction, ask one optional follow-up:
+
+> **Optional — Copilot Pro users only.**
+> Roughly how many premium requests did this feature consume?
+> (Check your GitHub usage gauge before/after, or skip — this cannot be derived automatically.)
+>
+> Reply: a number, or `skip`
+
+Set `premiumRequestsActual` to the provided number, or `null` if skipped.
 
 ### Phase 1 bootstrap case
 
@@ -345,15 +361,17 @@ Finding format:
   focusHPerStory: [n]
   source: "[e1|e2|none]"
   note: "[optional — e.g. 'Phase 1 baseline — no prior estimate; seeds normalisation table']"
+  premiumRequestsForecast: null
+  premiumRequestsActual: null
 ```
 
 **Append to `workspace/results.tsv`** one row:
 
 ```
-[YYYY-MM-DD]\t[feature-slug]\test-actuals\t[story-count]\t[engagement-fraction]\t[ol-estimate]h\t[ol-actual]h\t[delta]h\t[il-estimate]h\t[il-actual]h\t[calendar-days]
+[YYYY-MM-DD]\t[feature-slug]\test-actuals\t[story-count]\t[engagement-fraction]\t[ol-estimate]h\t[ol-actual]h\t[delta]h\t[il-estimate]h\t[il-actual]h\t[calendar-days]\t[requests-forecast]\t[requests-actual]
 ```
 
-Columns in order: date, feature, type, story-count, engagement-fraction, outer-loop-estimate, outer-loop-actual, outer-loop-delta, inner-loop-estimate, inner-loop-actual, calendar-days.
+Columns in order: date, feature, type, story-count, engagement-fraction, outer-loop-estimate, outer-loop-actual, outer-loop-delta, inner-loop-estimate, inner-loop-actual, calendar-days, requests-forecast, requests-actual. Use `-` for skipped/null request fields.
 
 ### Step E3f — Write actuals + delta to state.json
 
@@ -370,6 +388,7 @@ Write to `workspace/state.json` under `estimate`:
   "innerLoopHuman": [h],
   "agentAutonomousH": [h],
   "storyCount": [n],
+  "premiumRequestsActual": null,
   "derivationSources": {
     "discovery": "[tier-1|tier-2|tier-3|date-only|manual]",
     "definition": "[tier]",
@@ -402,6 +421,7 @@ Write to `workspace/state.json` under `estimate`:
 > [n] sessions | [n] calendar days | [fraction × 100]% engagement → [n]h focus
 > Inner loop (human): [n]h | Agent-autonomous: [n]h | [n] stories
 > Focus hours per story: [n]h
+> Premium requests: [n] (Copilot Pro) [omit this line if null]
 >
 > Comparison: [e2/e1] estimate [n]h → actual [n]h ([±n]h delta) [or "no prior estimate — baseline established"]
 >
@@ -433,6 +453,11 @@ Surface per-band calibrated suggestions before asking for the operator's estimat
 > Pick the engagement fraction that matches your expected working style — or use a different calendar span.
 
 If no rows exist yet (first feature): note "No baseline yet — this run will be feature 1 in the normalisation table."
+
+If 3+ features have non-null `requests-actual` values in results.tsv: surface a premium request baseline after the engagement-band table:
+
+> **Premium request baseline** ([n] features with data): ~[mean] requests/feature (range: [min]–[max])
+> Features of this scope typically consume ~[mean] requests — factor this into inner loop dispatch timing relative to your monthly reset date.
 
 ---
 
