@@ -1,5 +1,7 @@
 {
   "version": "1.0",
+  "skillSetHash": "a1604b2e14cfb6627a0dabe3bdfabab658be8ffd",
+  "surfaceType": "github-copilot",
   "description": "Living eval regression suite — initial delivery (p1.6). One outcome-oriented scenario per core skill currently in .github/skills/. Each scenario guards against a real failure pattern and must pass on every subsequent assurance gate run.",
   "scenarios": [
     {
