@@ -167,7 +167,7 @@
             {
               "slug": "p1.6-living-eval-regression-suite",
               "name": "Implement workspace/suite.json living eval regression suite",
-              "stage": "definition-of-ready",
+              "stage": "merged",
               "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
@@ -175,16 +175,21 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 14,
-                "passing": 0
+                "passing": 20
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "oversightLevel": "high",
               "signedOffBy": "Hamish \u00e2\u20ac\u201d platform maintainer / operator",
               "signedOffAt": "2026-04-10",
               "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.6-living-eval-regression-suite-dor.md",
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/6",
+              "dispatchedAt": "2026-04-10T00:00:00Z",
+              "dispatchTarget": "github-agent",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/17",
+              "mergedAt": "2026-04-10",
               "updatedAt": "2026-04-10"
             },
             {

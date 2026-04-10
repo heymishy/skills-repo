@@ -1,0 +1,14 @@
+version: "1.0"
+disciplines:
+  software-engineering:
+    core: standards/software-engineering/core.md
+    policy-floor: standards/software-engineering/POLICY.md
+  security-engineering:
+    core: standards/security-engineering/core.md
+    policy-floor: standards/security-engineering/POLICY.md
+  quality-assurance:
+    core: standards/quality-assurance/core.md
+    policy-floor: standards/quality-assurance/POLICY.md
+    surface-variants:
+      saas-gui: standards/quality-assurance/saas-gui-variant.md
+      manual: standards/quality-assurance/manual-variant.md
