@@ -2,7 +2,7 @@
 
 **Feature:** Skills Platform — Phase 1 Foundation
 **Discovery reference:** artefacts/2026-04-09-skills-platform-phase1/discovery.md
-**Last updated:** 2026-04-11
+**Last updated:** 2026-04-11 (Bitbucket environment ASSUMPTION added)
 
 ---
 
@@ -221,4 +221,13 @@
 **Entry condition for Phase 2 evolution cycle:** Treat this log entry as the canonical list of pipeline debt inherited from Phase 1. Each item requires its own story with a test plan before implementation. Suggested grouping: D1/D2/D3 → one `/definition` improvement story; D4 → one `/review` improvement story; D7/D8/D9 → one template improvement story.
 **Made by:** Hamish, 2026-04-11 (via Phase 1 /levelup pattern extraction)
 **Revisit trigger:** Phase 2 pipeline evolution story planning kick-off.
+---
+
+---
+**2026-04-11 | ASSUMPTION | Phase 2 pre-discovery**
+**Decision:** For Phase 2 CI gate adapter stories, two Bitbucket deployment models are treated as distinct testing targets: (1) Bitbucket Cloud — adequate for YAML syntax validation and pipeline-shape tests; available today via a free tier trial account. (2) Bitbucket Data Center (self-hosted, Docker) — required for full auth topology tests (app passwords, OAuth, SSH key validation) that differ structurally from Cloud. Docker-based DC is the recommended local validation path for story ACs that depend on real credential resolution. Phase 2 planning treats these as two separate environment tiers, not interchangeable.
+**Alternatives considered:** (A) Cloud-only — validates YAML structure and basic run behaviour but cannot test auth topology differences (app passwords vs OAuth 2.0 vs SSH); deferred ACs would remain perpetually unvalidated. (B) DC self-hosted on shared infra — blocks on IT provisioning; not unblockable before Phase 2 kicks off. (C) Treat both as equivalent — records a false assumption; auth flows differ between Cloud and DC and any story that conflates them will produce a broken integration.
+**Rationale:** The split approach (Cloud for syntax/shape, Docker DC for auth/topology) lets Phase 2 write testable ACs against environment tiers that are actually available rather than deferring all Bitbucket work to an unconfirmed shared environment. Docker DC can be stood up locally with no IT dependency — it is the correct unblocking path for auth-dependent ACs. This assumption supersedes the blanket Bitbucket-deferred assumption only for the Cloud/syntax-validation tier; the full enterprise Data Center environment remains deferred until confirmed.
+**Made by:** Hamish, 2026-04-11
+**Revisit trigger:** At Phase 2 CI gate adapter story planning — confirm Docker DC is available locally and record the specific Bitbucket DC version and auth topology variants to be tested. If a shared DC environment is confirmed available before that point, log a superseding ASSUMPTION entry and remove the Docker-only constraint.
 ---
