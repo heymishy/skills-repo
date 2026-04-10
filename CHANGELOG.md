@@ -11,6 +11,8 @@ All notable changes to this repository will be documented in this file.
 - `package.json` — minimal package with `test` script chaining the 5 governance checks (viz-syntax, governance-sync, skill-contracts, pipeline-artefact-paths, changelog-readme); zero external dependencies (2026-04-10)
 - `.github/workflows/copilot-setup-steps.yml` — GitHub Copilot coding agent setup workflow; installs Node.js + Python, runs `npm test` and `validate-trace.sh --ci` as baseline verification before agent starts work (2026-04-10)
 - `.github/instructions/pipeline.instructions.md` — artefact protection instruction for coding agent; `applyTo: "**"` guards `artefacts/`, `.github/skills/`, `.github/templates/` against agent modification (2026-04-10)
+- `tests/check-workspace-state.js` — governance check implementing automatable unit and NFR tests from p1.5 test plan: schema validation for `workspace/state.json` and checkpoint documentation check for `.github/copilot-instructions.md` (p1.5, 2026-04-10)
+- `package.json` — `tests/check-workspace-state.js` added to `npm test` chain (p1.5, 2026-04-10)
 
 ### Changed
 
@@ -21,6 +23,8 @@ All notable changes to this repository will be documented in this file.
 - `copilot-instructions.md` — `/checkpoint` threshold updated from 75% to 55% for file-read-heavy phases (definition, review, test-plan, trace, inner loop); added explicit threshold note to "During a session" section. Source: Phase 1 dogfood signal — compaction consistently fires at ~60% in file-read-heavy phases because Tool Results bucket fills faster than Messages bucket (2026-04-10)
 - `product/constraints.md` — constraint #14 updated with 55% effective threshold and dogfood rationale
 - `product/decisions.md` — `/checkpoint` escape valve threshold updated to phase-aware 55%/75%
+- `copilot-instructions.md` — added dedicated `/checkpoint` convention section documenting when to invoke (before reaching compaction pressure, not at it), what is written to `workspace/state.json`, and 60-second completion expectation; updated inline threshold bullet to use explicit "not at it" language (p1.5, 2026-04-10)
+- `workspace/state.json` — fixed malformed JSON (trailing orphaned tokens removed); `lastUpdated` updated to ISO 8601 datetime format; `cycle.discovery.completedAt` field added per schema (p1.5, 2026-04-10)
 
 ---
 
