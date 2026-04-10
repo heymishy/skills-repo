@@ -19,6 +19,6 @@
   focusHPerStory: 2.2
   source: "none"
   premiumRequestsForecast: null
-  premiumRequestsActual: 240
-  note: "Phase 1 baseline — no prior estimate; seeds normalisation table"
+  premiumRequestsActual: "173+ (confirmed Apr 9–10; Apr 11 pending)"
+  note: "Phase 1 baseline — no prior estimate; seeds normalisation table. Requests: 94 Sonnet (Apr 9) + 65 Sonnet + 14 Coding Agent (Apr 10). Pre-Phase-1 Apr 1 usage (68) excluded."
 ```

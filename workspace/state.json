@@ -105,7 +105,8 @@
       "agentAutonomousH": 14,
       "storyCount": 8,
       "focusHPerStory": 2.2,
-      "premiumRequestsActual": 240,
+      "premiumRequestsActual": "173+ (173 confirmed Apr 9–10 from usage report; Apr 11 pending next report cycle)",
+      "premiumRequestsDerivationNote": "CSV report Apr 9: 94 Sonnet; Apr 10: 65 Sonnet + 14 Coding Agent. Pre-Phase 1 Apr 1 requests (68: 39 Opus + 29 Sonnet) excluded. Original gauge estimate of ~240 was total quota consumed including Apr 1 pre-Phase 1 work.",
       "derivationSources": {
         "all": "JSONL session map compiled in workspace/learnings.md (Phase 1 bootstrap — tier-3 timestamps, union applied for concurrent sessions 4–7)"
       },
