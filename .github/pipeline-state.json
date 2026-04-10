@@ -8,12 +8,12 @@
       "name": "Skills Platform \u00e2\u20ac\u201d Phase 1 Foundation",
       "title": "Skills Platform \u00e2\u20ac\u201d Phase 1 Foundation",
       "track": "library",
-      "stage": "definition-of-ready",
+      "stage": "coding-in-progress",
       "health": "green",
       "discoveryStatus": "approved",
       "benefitMetricStatus": "complete",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-04-10T00:00:00Z",
+      "updatedAt": "2026-04-10T11:10:00Z",
       "epics": [
         {
           "slug": "epic-2-core-loop-infrastructure",
@@ -23,7 +23,7 @@
             {
               "slug": "p1.5-workspace-state-session-continuity",
               "name": "Implement workspace/state.json cross-session continuity and /checkpoint convention",
-              "stage": "definition-of-ready",
+              "stage": "merged",
               "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
@@ -31,16 +31,21 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
-                "passing": 0
+                "passing": 10
               },
               "acTotal": 8,
-              "acVerified": 0,
+              "acVerified": 8,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "oversightLevel": "high",
               "signedOffBy": "Hamish \u00e2\u20ac\u201d platform maintainer / operator",
               "signedOffAt": "2026-04-10",
               "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.5-workspace-state-session-continuity-dor.md",
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/1",
+              "dispatchedAt": "2026-04-10T00:00:00Z",
+              "dispatchTarget": "github-agent",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/10",
+              "mergedAt": "2026-04-10",
               "updatedAt": "2026-04-10"
             },
             {
@@ -99,7 +104,7 @@
             {
               "slug": "p1.1-distribution-progressive-disclosure",
               "name": "Implement versioned skill distribution and progressive skill disclosure",
-              "stage": "definition-of-ready",
+              "stage": "merged",
               "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
@@ -107,10 +112,10 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 12,
-                "passing": 0
+                "passing": 10
               },
               "acTotal": 8,
-              "acVerified": 0,
+              "acVerified": 8,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "oversightLevel": "high",
@@ -120,12 +125,14 @@
               "updatedAt": "2026-04-10",
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/11",
               "dispatchedAt": "2026-04-10T00:00:00Z",
-              "dispatchTarget": "github-agent"
+              "dispatchTarget": "github-agent",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/12",
+              "mergedAt": "2026-04-10"
             },
             {
               "slug": "p1.2-surface-adapter-model-foundations",
               "name": "Implement surface adapter model foundations \u00e2\u20ac\u201d Path B git-native reference",
-              "stage": "definition-of-ready",
+              "stage": "merged",
               "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
@@ -133,16 +140,21 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
-                "passing": 0
+                "passing": 13
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "oversightLevel": "high",
               "signedOffBy": "Hamish \u00e2\u20ac\u201d platform maintainer / operator",
               "signedOffAt": "2026-04-10",
               "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.2-surface-adapter-model-foundations-dor.md",
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/4",
+              "dispatchedAt": "2026-04-10T00:00:00Z",
+              "dispatchTarget": "github-agent",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/13",
+              "mergedAt": "2026-04-10",
               "updatedAt": "2026-04-10"
             }
           ]
@@ -201,7 +213,7 @@
             {
               "slug": "p1.8-model-risk-documentation",
               "name": "Author and review MODEL-RISK.md before non-dogfood adoption",
-              "stage": "definition-of-ready",
+              "stage": "merged",
               "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
@@ -209,16 +221,22 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
-                "passing": 0
+                "passing": 11
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 4,
+              "acNotes": "AC3 gated on p1.3 + p1.7 merge — template authored, completion pending",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "oversightLevel": "high",
               "signedOffBy": "Hamish \u00e2\u20ac\u201d platform maintainer / operator",
               "signedOffAt": "2026-04-10",
               "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.8-model-risk-documentation-dor.md",
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/8",
+              "dispatchedAt": "2026-04-10T00:00:00Z",
+              "dispatchTarget": "github-agent",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/14",
+              "mergedAt": "2026-04-10",
               "updatedAt": "2026-04-10"
             }
           ]
