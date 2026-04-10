@@ -167,4 +167,52 @@ This makes the self-checkpoint structural: it will happen reliably across models
 
 ---
 
+---
+
+## PR merge conflict — sequential check-script additions cause recurring package.json conflicts
+
+### Observed — 2026-04-11
+
+**Circumstance:** PRs #15 (p1.3) and #16 (p1.4) both had conflicting `package.json` files. Each agent branch was created from a master snapshot that predated the merges of p1.6 and p1.7. Those later merges each added a new script to the `package.json` test chain (`check-suite.js` and `check-standards-model.js` respectively). Because the agent branches preceded those merges, both branches were missing the newer scripts.
+
+**Root cause:** Each inner-loop story branch is created once at branch-setup time. Any check script merged to master after that point is absent from the branch. With 8 stories delivered sequentially, each new check script added to master creates a potential conflict for every open branch.
+
+**Finding:** This is a structural property of the inner loop model, not a one-off error. Every story that adds a check script to `package.json` will produce this exact conflict in every unresolved branch created before that script was merged. The resolution pattern is deterministic: resolve to the full delivery-order chain including all scripts that exist on master, plus any new script introduced by the current branch. Verify by running `npm test` locally before pushing.
+
+**Action:** Document this pattern in the inner loop conflict resolution guide. When resolving any `package.json` conflict in a story branch, always check `git log origin/master --oneline -- package.json` to find all scripts added since the branch point. Include them all.
+
+---
+
+## PR merge conflict — agent workflow filename collision
+
+### Observed — 2026-04-11
+
+**Circumstance:** PR #16 (p1.4 watermark gate) had a second conflict: `assurance-gate.yml` under `.github/workflows/`. The p1.4 agent had written the watermark gate workflow to `assurance-gate.yml` — the same filename the p1.3 agent had used for the assurance gate. When PR #15 (p1.3) was merged before PR #16, the two branches produced an add/add conflict on the same file.
+
+**Root cause:** The p1.4 agent named the workflow file `assurance-gate.yml` by proximity — it was the closest prior workflow it had context for. It did not check what workflow files already existed in `.github/workflows/` before writing its own. No validation step in the inner loop requires the agent to verify it is writing to a unique filename.
+
+**Finding:** Workflow filename collisions are silent scope errors: the agent that resolves the conflict must know the intended content of both files to pick the correct one for each name. The `check-watermark-gate.js` script also had a hardcoded reference to `assurance-gate.yml` that had to be corrected to `watermark-gate.yml` after the rename.
+
+**Resolution pattern:** (1) `git checkout origin/master -- .github/workflows/assurance-gate.yml` — restore master's p1.3 version. (2) Create `.github/workflows/watermark-gate.yml` with the watermark content from the branch. (3) Fix any hardcoded path references in the corresponding check script.
+
+**Action:** Add a pre-conflict-resolution step: `Get-ChildItem .github/workflows/` (or `ls .github/workflows/`) to inventory existing workflow files before resolving any workflow add/add. Add to inner loop conflict resolution guide. Consider adding a DoR check or implementation-plan instruction that requires the agent to list existing workflow filenames before writing a new one.
+
+---
+
+## Cross-story schema dependency — producing story did not know consuming story's schema requirements
+
+### Observed — 2026-04-11
+
+**Circumstance:** PR #16 (p1.4 watermark gate) passed all local `npm test` checks but failed CI with: `[watermark-gate] ERROR: suite.json missing or invalid field: skillSetHash`. The `workspace/suite.json` file was authored by the p1.6 agent (living eval regression suite) and contained `version`, `description`, and `scenarios` fields. The p1.4 `watermark-gate.js` runtime required two additional fields that p1.6 never wrote: `skillSetHash` (string, git tree hash of `.github/skills/`) and `surfaceType` (string, e.g. `"github-copilot"`).
+
+**Root cause:** At DoR time, p1.4 specified that it would read `workspace/suite.json` but did not specify the exact schema it required. The p1.6 DoR scoped the suite.json output but had no visibility into p1.4's read-side schema requirements. The two stories were written and reviewed independently; the schema dependency was never made explicit in either DoR or test-plan.
+
+**Finding:** When story A writes an artefact consumed by story B, the consuming story (B) must specify its required schema in the DoR or test-plan — not just the file path. The producing story (A) must then include those fields in its scope. If A ships first without the required fields, B will fail at runtime even when both stories pass their own tests in isolation.
+
+**Fix applied:** Added `skillSetHash: "a1604b2e14cfb6627a0dabe3bdfabab658be8ffd"` (git tree hash of `.github/skills/` at Phase 1 delivery) and `surfaceType: "github-copilot"` to `workspace/suite.json`.
+
+**Action:** Add a cross-story schema dependency check to the DoR skill: when a story references a file produced by another story, require the consuming story to document the exact fields it reads. Propagate those field requirements back to the producing story's DoR contract as explicit output schema constraints. Flag for `/levelup` post-merge.
+
+---
+
 *More signals will be added here as Phase 1 dogfood run progresses.*
