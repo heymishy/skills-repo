@@ -2,7 +2,7 @@
 
 **Feature:** Skills Platform — Phase 1 Foundation
 **Discovery reference:** artefacts/2026-04-09-skills-platform-phase1/discovery.md
-**Last updated:** 2026-04-10
+**Last updated:** 2026-04-11
 
 ---
 
@@ -182,4 +182,22 @@
 **Rationale:** Simpler to implement and consistent with the existing `scripts/sync-from-upstream.sh` pattern already in the repo. No credentials required for CI jobs. The assembly script is a single-step operation that squads run at setup time or when they want a platform update. Satisfies M1 (assembled `copilot-instructions.md` present within one session) without any external scheduling dependency. The dogfood context (`heymishy/skills-repo`, `ci: github-actions`) has no multi-squad coordination requirement that would favour push.
 **Made by:** Hamish, 2026-04-10
 **Revisit trigger:** If Phase 2 introduces a multi-squad operator model where platform updates must propagate to 10+ repos simultaneously — reconsider push model with a dedicated platform CI job and PAT-scoped credentials strategy.
+---
+
+---
+**2026-04-11 | ASSUMPTION | Phase 2 pre-discovery**
+**Decision:** GitHub Actions is the only validated and in-scope CI surface for Phase 2 planning. Bitbucket Pipelines remains deferred (per the 2026-04-10 SCOPE decision on platform-neutral CI). Any Phase 2 story that references CI topology assumes GitHub Actions as the sole target until the enterprise Bitbucket environment is confirmed available.
+**Alternatives considered:** (A) Treat Bitbucket as a Phase 2 target alongside GitHub Actions — no Bitbucket environment confirmed; writing against an unconfirmed target produces untestable stories (documented as anti-pattern 2026-04-10). (B) Treat CI topology as undecided — creates ambiguity in every Phase 2 story that touches CI; worse than an explicit scoped assumption.
+**Rationale:** The Bitbucket deferral SCOPE decision (2026-04-10) already removed Bitbucket from Phase 1 on testability grounds. That rationale extends to Phase 2 until the target environment is confirmed. Recording this as an explicit ASSUMPTION before Phase 2 discovery prevents the CI topology question from being re-litigated story by story. Phase 2 discovery opening question: is the enterprise Bitbucket Pipelines environment now available? If yes, this assumption is superseded; if no, it remains in force.
+**Made by:** Hamish, 2026-04-11
+**Revisit trigger:** At Phase 2 discovery kick-off — ask operator whether a Bitbucket Pipelines environment is available and whether it is in scope for Phase 2. If confirmed in scope, log a superseding ASSUMPTION entry and reinstate the platform-neutral CI constraint deferred from Phase 1.
+---
+
+---
+**2026-04-11 | ARCH | Phase 2 pre-discovery**
+**Decision:** Agent instructions file format is an adapter concern resolved by `context.yml`, not a fixed platform output. The assembly script emits `.github/copilot-instructions.md` for GitHub-hosted environments and `AGENTS.md` for non-GitHub environments (Bitbucket/Jenkins). Content is identical; format is driven by `vcs.type` in `context.yml`.
+**Alternatives considered:** Always emit `copilot-instructions.md` — forecloses non-GitHub inner loop tooling; not viable for enterprise fleet distribution.
+**Rationale:** `AGENTS.md` is the vendor-neutral standard now under Linux Foundation AAIF governance. Any inner loop tooling (Copilot, Claude Code, Cursor, Codex) can consume it. The three-tier skill content is format-agnostic; the assembly script is the correct abstraction point.
+**Made by:** Hamish, 2026-04-11
+**Revisit trigger:** At Phase 2 p1.1-equivalent story (distribution mechanism) — add `agent_instructions.format` adapter to `context.yml` and update assembly script to branch on `vcs.type`.
 ---
