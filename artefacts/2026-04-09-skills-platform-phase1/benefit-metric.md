@@ -27,6 +27,18 @@ This initiative is being dogfooded — the platform team runs the pipeline on it
 | **Measurement method** | Platform maintainer commits a controlled skill change to the platform repo, waits one cycle, inspects the consuming squad's assembled `copilot-instructions.md` for the change without any squad merge action. Records: change reference, distribution mechanism (push/pull), elapsed time commit → availability, change present in assembled context (Y/N), squad merge action required (Y/N). Single acceptance test at P1.1 DoD. |
 | **Feedback loop** | If signal not met at P1.1 DoD: distribution mechanism is not operational. P1.1 cannot be marked done. Options: fix the distribution mechanism, or scope-reduce to a manual-trigger pull model and re-test. Decision logged in decisions.md. |
 
+#### M1 Acceptance Test Record
+
+*Populated at P1.1 DoD. Required fields per AC6 and the p1.1 test plan.*
+
+| Field | Value |
+|-------|-------|
+| `changeReference` | |
+| `distributionMechanism` | pull |
+| `elapsedTime` | |
+| `changePresentInAssembledContext` | |
+| `squadMergeActionRequired` | false |
+
 ---
 
 ### Metric 2: CI-triggered assurance gate — automated governance on PR

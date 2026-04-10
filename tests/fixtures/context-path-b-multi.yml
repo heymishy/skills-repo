@@ -1,0 +1,24 @@
+# context.yml — Path B fixture: multi-surface declaration
+# Verifies: AC3 — multi-surface-selects-correct-adapter-per-type
+# surface.path: explicit-declaration (Path B)
+
+meta:
+  name: "Test: Path B multi surface"
+  scope: team
+  regulated: false
+
+source_control:
+  platform: github
+  base_branch: main
+  merge_request_term: "pull request"
+  pr_command: "gh pr create --draft"
+  artefact_root: ".github"
+
+agent:
+  instruction_file: "copilot-instructions.md"
+
+surface:
+  path: explicit-declaration
+  types:
+    - git-native
+    - manual
