@@ -402,7 +402,13 @@ to feed dependency context into delivery repos.
 ## Estimation model
 
 This pipeline does not use story points or sprint velocity.
-The relevant signals are:
+
+Estimates are recorded in three passes by the `/estimate` skill:
+- **E1** (at /discovery): rough outer-loop focus-time forecast, seeded from scope complexity and operator experience
+- **E2** (at /definition): refined once story count and complexity scores are known
+- **E3** (at /levelup): actuals comparison, delta analysis, flow findings, and a row appended to `workspace/estimation-norms.md`
+
+The key signals used to inform estimates:
 
 - **Complexity (1/2/3):** confidence and clarity, set at definition
   - 1 = Well understood, clear path
@@ -412,6 +418,7 @@ The relevant signals are:
 - **Human oversight (Low/Medium/High):** set at epic level
 
 Do not introduce points or sizing unless explicitly asked.
+After 3+ features, `/estimate` will suggest calibrated defaults from `workspace/estimation-norms.md`.
 
 ---
 

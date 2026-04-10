@@ -518,6 +518,7 @@ When in doubt about which track, run `/workflow` — it will route you.
 | `/trace` | Full chain traceability report; flags CSS-layout gaps without RISK-ACCEPT | On demand or CI on PR open |
 | `/record-signal` | Records a benefit metric signal without a full DoD run | When measurement data is available: "we got data", "record a signal" |
 | `/decisions` | Records ADRs and in-flight decisions | At any pipeline decision point |
+| `/estimate` | Records a forward-looking focus-time estimate at E1 (discovery), refines at E2 (definition), and compares actuals at E3 (levelup); builds a calibrated normalisation model across features | Auto-invoked at /discovery, /definition, and /levelup; or run manually |
 | `/ideate` | Structured product discovery — five lenses: opportunity mapping, assumption inventory, market scan, product strategy framing (Torres + Cagan), and jobs-to-be-done (Christensen / Moesta). Suggests lenses based on current pipeline stage and artefacts | Run at any point: blank-slate exploration, enrich an active discovery, or stress-test assumptions before definition |
 | `/spike` | Scoped investigation for genuine unknowns | When a step is blocked by something unknown |
 | `/ea-registry` | Maintains and queries an organisation-level application/interface registry; supports QUERY, CONTRIBUTE, AUDIT, and FEED modes | When you need app/interface inventory, dependency context, blast radius, or registry updates |
