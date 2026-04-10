@@ -1,7 +1,7 @@
 {
   "feature": "2026-04-09-skills-platform-phase1",
   "lastUpdated": "2026-04-10",
-  "currentPhase": "definition-of-ready",
+  "currentPhase": "inner-coding-loop",
   "cycle": {
     "discovery": {
       "status": "approved",
@@ -92,12 +92,14 @@
   },
   "checkpoint": {
     "writtenAt": "2026-04-10",
-    "contextAtWrite": "definition-of-ready complete for p1.1, p1.2, p1.6, p1.7 (7/8 stories, 4 this session). All 13/13 hard blocks passed, W4 RISK-ACCEPT logged (decisions.md), Hamish sign-off recorded 2026-04-10. DoR + contract artefacts written for all four. pipeline-state.json updated: all four at stage: definition-of-ready, dorStatus: signed-off, oversightLevel: high. NFR guardrail entries added (3 per story, 12 total). Remaining: p1.8 only.",
-    "resumeInstruction": "Run /definition-of-ready for p1.8 (model-risk-documentation) only. Read DoR SKILL.md first. Load: stories/p1.8-model-risk-documentation.md, test-plans/p1.8-model-risk-documentation-test-plan.md, verification-scripts/p1.8-model-risk-documentation-verification.md, review/p1.8-model-risk-documentation-review-1.md. Key carry-over: p1.8 AC5 re-worded to test artefact content not adoption event (decisions.md 1-M4 SCOPE 2026-04-10). Epic 4 oversight = High. W4 RISK-ACCEPT same rationale. Sign-off: Hamish — platform maintainer / operator, 2026-04-10.",
+    "contextAtWrite": "/definition-of-ready complete for all 8/8 stories. p1.8 (model-risk-documentation) DoR complete this session: 13/13 hard blocks passed, W4 RISK-ACCEPT logged, Hamish sign-off 2026-04-10. DoR + contract artefacts written. pipeline-state.json updated: p1.8 stage -> definition-of-ready, dorStatus: signed-off, 2 NFR guardrail entries added. All 8 stories across all 3 epics are now at stage: definition-of-ready, dorStatus: signed-off. Feature phase: definition-of-ready, health: green. Inner coding loop is next — begin with /branch-setup for the first story to implement.",
+    "resumeInstruction": "All DoR gates are complete for all 8 stories. Next step: begin the inner coding loop. Recommended delivery order (risk-first, per state.json testPlan.deliveryOrder): p1.5, p1.3, p1.4, p1.2, p1.1, p1.6, p1.7, p1.8. Start with /branch-setup for p1.5. Read the DoR artefact for the target story before starting any implementation. p1.8 note: AC3 tests (I1, I2) are dependency-gated — they require p1.3 + p1.7 DoD-complete and a real CI trace before they can pass. Do not mark p1.8 DoD-complete until the T3M1 evidence record is filled.",
     "pendingActions": [
-      "run /definition-of-ready for p1.8",
-      "update pipeline-state.json for p1.8 after DoR complete",
-      "git commit all p1.8 artefacts"
+      "begin inner coding loop — /branch-setup for p1.5 (first in delivery order)",
+      "git commit all p1.8 DoR artefacts (this session)"
+    ]
+  }
+}
     ]
   }
 }

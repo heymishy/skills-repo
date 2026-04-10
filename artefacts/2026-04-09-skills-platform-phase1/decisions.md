@@ -166,3 +166,11 @@
 **Made by:** Hamish, 2026-04-10
 **Revisit trigger:** When enterprise Bitbucket Pipelines becomes the delivery target (expected Phase 2 or Phase 3 depending on enterprise onboarding timeline). At that point: reinstate AC6 in P1.3, add a Bitbucket equivalent clause back into P1.1 Architecture Constraints, and author both against a live Bitbucket environment.
 ---
+
+---
+**2026-04-10 | RISK-ACCEPT | DoR W4 — p1.8 verification script not reviewed by independent domain expert**
+**Decision:** Accept the W4 warning for p1.8. The verification script has not been reviewed by an independent domain expert. Same structural rationale as all prior W4 RISK-ACCEPTs in this feature: solo operator context, `roles.qa: "me"`, independent review structurally unavailable.
+**Rationale:** "Mechanisms validated through live dogfood observation during outer loop sessions 2026-04-10." The most operationally sensitive manual checks in p1.8 are Scenario 3 (AC3: T3M1 evidence record completeness — dependency-gated on P1.3 + P1.7 DoD-complete and a real trace existing) and Scenario 4 (AC4: sign-off record sign-off action at DoD). Both will be observed directly during the T3M1/MM1 dogfood measurement run, which constitutes the de facto domain review.
+**Made by:** Hamish, 2026-04-10
+**Revisit trigger:** If Scenario 3 (T3M1 evidence record) fails when evaluated against the first real inner loop trace, or if AC4 sign-off record is structurally incomplete at DoD — revisit verification script and MODEL-RISK.md authoring before marking DoD.
+---
