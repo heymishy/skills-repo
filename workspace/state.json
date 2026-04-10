@@ -90,5 +90,40 @@
       "p1.8 AC3 (T3M1 evidence record) — fill when first real inner loop story runs through P1.3 CI gate",
       "Phase 2 discovery — kick off when Phase 1 DoD is signed"
     ]
+  },
+  "estimate": {
+    "e1": null,
+    "e2": null,
+    "actuals": {
+      "date": "2026-04-11",
+      "calendarDays": 2,
+      "outerLoopSessions": 9,
+      "engagementFraction": 0.50,
+      "totalCalendarH": 35,
+      "outerLoopFocusH": "17.5 (derived: 35 × 0.50)",
+      "innerLoopHuman": 1,
+      "agentAutonomousH": 14,
+      "storyCount": 8,
+      "focusHPerStory": 2.2,
+      "premiumRequestsActual": 240,
+      "derivationSources": {
+        "all": "JSONL session map compiled in workspace/learnings.md (Phase 1 bootstrap — tier-3 timestamps, union applied for concurrent sessions 4–7)"
+      },
+      "note": "Phase 1 baseline — no prior estimate; seeds normalisation table"
+    },
+    "flowFindings": [
+      {
+        "topic": "Parallel outer loop",
+        "hypothesis": "Sessions 4–7 ran concurrently across 4 parallel chat windows; outer loop phases are stateless per story and trivially parallelisable",
+        "improvement": "Model outer loop phases as parallelisable; 4-window ceiling compresses review+test-plan+DoR to ~5h calendar for up to ~8 stories",
+        "effort": "Low"
+      },
+      {
+        "topic": "Inner loop is dispatch-and-merge, not attended",
+        "hypothesis": "With strong DoR quality, agents run through implementation autonomously; human involvement is dispatch + PR merge only",
+        "improvement": "Revise E1 inner loop estimate to ~1h human regardless of story count (6–8 story features); DoR quality is the bottleneck, not story count",
+        "effort": "Low"
+      }
+    ]
   }
 }
