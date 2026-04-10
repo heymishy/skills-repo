@@ -97,9 +97,7 @@ const FIVE_RISKS = [
   },
 ];
 
-const missingRisks = FIVE_RISKS.filter(risk => {
-  return !risk.patterns.some(re => re.test(modelRisk));
-});
+const missingRisks = FIVE_RISKS.filter(risk => !risk.patterns.some(re => re.test(modelRisk)));
 
 if (missingRisks.length === 0) {
   pass('u1-all-five-named-risks-present');
@@ -202,7 +200,8 @@ if (tbdRows.length === 0) {
 }
 
 // Each row must reference at least one named trace field (backtick-wrapped identifier)
-const rowsMissingField = tableDataRows.filter(row => !/`[a-zA-Z][a-zA-Z0-9_]+`/.test(row));
+const TRACE_FIELD_PATTERN = /`[a-zA-Z][a-zA-Z0-9_]+`/;
+const rowsMissingField = tableDataRows.filter(row => !TRACE_FIELD_PATTERN.test(row));
 
 if (rowsMissingField.length === 0) {
   pass('u3-each-row-has-named-trace-field');
@@ -244,7 +243,8 @@ if (signoffStart === -1 || signoffEnd === -1) {
 
   // Verdict must NOT be pre-populated (must be empty or a placeholder)
   // The verdict row should not contain one of the approved verdict values pre-filled
-  const verdictRowMatch = /\|\s*Verdict\s*\|([^|\n]+)\|/i.exec(signoffSection);
+  const VERDICT_ROW_PATTERN = /\|\s*Verdict\s*\|([^|\n]+)\|/i;
+  const verdictRowMatch = VERDICT_ROW_PATTERN.exec(signoffSection);
   if (verdictRowMatch) {
     const verdictValue = verdictRowMatch[1].trim();
     const isFilled = /approved for adoption|approved with conditions|not approved/i.test(verdictValue);
