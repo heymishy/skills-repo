@@ -137,6 +137,17 @@ gates:
       warn: "some (not all) stories: dodStatus === 'complete'"
       not-started: "no stories have dodStatus set"
 
+  - id: ADR-005
+    label: ADR-005
+    section: Active ADRs
+    skill: /decisions
+    skillPath: skills/decisions/SKILL.md
+    criteria: Agent instructions format driven by vcs.type (surface adapter concern)
+    artefactTemplate: "artefacts/{slug}/decisions.md"
+    evidenceFields:
+      pass: "ADR-005 recorded in decisions.md or architecture-guardrails.md Active ADRs section"
+      na: "project has not recorded any ADRs yet"
+
   - id: trace
     label: Trace
     skill: /trace

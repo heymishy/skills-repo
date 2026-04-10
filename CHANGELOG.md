@@ -50,6 +50,38 @@ All notable changes to this repository will be documented in this file.
 
 ---
 
+## [0.6.0] — 2026-04-11
+
+### Added
+
+#### `/estimate` integration in pipeline-viz.html
+
+- `ESTIMATE_INVOCATIONS` constant declares E1 / E2 / E3 trigger points (discovery exit, definition exit, levelup Category E).
+- `renderLoopStructure()` gains CI platform context and phase roadmap context chips; reads `config.ci` and `config.phases` from `pipeline-state.json` when present.
+- `featureActionMeta()` — `humanStageActions` for `discovery` and `definition` now surface the `/estimate` invocation note.
+- `storyNextSkill()` — merged path now reads `/definition-of-done · then /levelup (runs /estimate E3)`.
+- Summary bar: estimation stat chip added (reads `estimate.actuals.outerLoopFocusH` and `estimate.actuals.premiumRequestsActual`; shows `—` when absent).
+
+#### Fleet registry stat in summary bar (7a)
+
+- `loadFleetRegistry()` async function: fetches `fleet-registry.json` alongside `pipeline-state.json`; silently omits on HTTP error or file:// origin.
+- `fleetData` state variable; `loadState()` calls `loadFleetRegistry()` in parallel with `loadSkillMetadata()`.
+- Summary bar renders repo count + platform version chip only when fleet registry loaded successfully. No placeholder UI when absent.
+
+#### ADR-005 in governance gates
+
+- Added `{ id: 'ADR-005', … }` entry to `DEFAULT_GOVERNANCE_GATES` with `section: 'Active ADRs'`; surfaces in governance/guardrails panel alongside architecture-guardrails.md auto-fetch results.
+- ADR-005 records: agent instructions format (`copilot-instructions.md` vs `AGENTS.md`) is a surface adapter concern driven by `vcs.type` in `context.yml`.
+
+### Changed
+
+#### `renderLoopStructure()` — CI platform and phase roadmap context
+
+- Outer loop band header now includes: CI platform label (from `config.ci.primary`), Phase 2 target label (`config.ci.phase2`), agent instructions format tip (`config.ci.agentInstructionsFormat`, labelled ADR-005).
+- Phase roadmap chips rendered from `config.phases` map; complete phases shown with ✓ + date, upcoming phases with →, others muted. All fields optional — strip omitted when `config.phases` absent.
+
+---
+
 ## [0.5.18] — 2026-04-09
 
 ### Changed

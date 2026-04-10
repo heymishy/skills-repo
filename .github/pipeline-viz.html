@@ -1045,6 +1045,12 @@ const STAGES = [
 const META_STAGES = ['loop-design', 'token-optimization', 'org-mapping', 'scale-pipeline'];
 const INNER_LOOP_STAGE_ORDER = ['branch-setup', 'implementation-plan', 'subagent-execution', 'implementation-review', 'verify-completion', 'branch-complete'];
 const OUTER_LOOP_STAGE_ORDER = ['ideation', 'discovery', 'benefit-metric', 'definition', 'spike', 'review', 'test-plan', 'definition-of-ready', 'definition-of-done', 'trace', 'release-pending', 'released'];
+// /estimate fires at outer loop stage boundaries: E1 at discovery exit, E2 at definition exit, E3 at levelup (Category E).
+const ESTIMATE_INVOCATIONS = [
+  { id: 'E1', trigger: 'discovery',           label: 'E1 — rough focus-time forecast',        note: 'Fires at /discovery exit (optional)' },
+  { id: 'E2', trigger: 'definition',          label: 'E2 — refined estimate (story count known)', note: 'Fires at /definition exit' },
+  { id: 'E3', trigger: 'definition-of-done',  label: 'E3 — actuals comparison + calibration',    note: 'Fires during /levelup Category E' },
+];
 const INNER_LOOP_STAGES = new Set(INNER_LOOP_STAGE_ORDER);
 const PIPELINE_STAGE_ORDER = ['ideation', 'discovery', 'benefit-metric', 'definition', 'spike', 'review', 'test-plan', 'definition-of-ready', 'branch-setup', 'implementation-plan', 'subagent-execution', 'implementation-review', 'verify-completion', 'branch-complete', 'definition-of-done', 'trace', 'release-pending', 'released'];
 
@@ -1059,6 +1065,7 @@ const DEFAULT_GOVERNANCE_GATES = [
   { id: 'decisions',           label: 'Decisions',      skill: '/decisions',           skillPath: 'skills/decisions/SKILL.md',           criteria: 'Risk acceptances and scope decisions logged',                artefact: f => `../artefacts/${f.slug}/decisions.md` },
   { id: 'verify-completion',   label: 'Verify',         skill: '/verify-completion',   skillPath: 'skills/verify-completion/SKILL.md',   criteria: 'Fresh evidence run before completion claims',                artefact: f => { const s = firstStorySlug(f); return s ? `../artefacts/${f.slug}/verification-scripts/${s}-verification.md` : `../artefacts/${f.slug}/verification-scripts/`; } },
   { id: 'definition-of-done',  label: 'DoD',            skill: '/definition-of-done',  skillPath: 'skills/definition-of-done/SKILL.md',  criteria: 'Post-merge AC/test coverage validated',                      artefact: f => { const s = firstStorySlug(f); return s ? `../artefacts/${f.slug}/dod/${s}-dod.md` : `../artefacts/${f.slug}/dod/`; } },
+  { id: 'ADR-005',             label: 'ADR-005',        skill: '/decisions',           skillPath: 'skills/decisions/SKILL.md',           criteria: 'Agent instructions format driven by vcs.type (surface adapter concern)',  section: 'Active ADRs', artefact: f => `../artefacts/${f.slug}/decisions.md` },
   { id: 'trace',               label: 'Trace',          skill: '/trace',               skillPath: 'skills/trace/SKILL.md',               criteria: 'Traceability chain intact across artefacts',                 artefact: f => `../artefacts/${f.slug}/trace/trace.md`, artefactFallbacks: f => { const dates = []; const d = new Date(); for (let i = 0; i < 14; i++) { const ds = d.toISOString().slice(0,10); dates.push(`../artefacts/${f.slug}/trace/${ds}-trace.md`); d.setDate(d.getDate() - 1); } return dates; } },
   { id: 'release',             label: 'Release',        skill: '/release',             skillPath: 'skills/release/SKILL.md',             criteria: 'Release bundle/checklist produced for deployment',           artefact: f => `../artefacts/${f.slug}/release/release-notes-technical.md` },
 ];
@@ -1111,6 +1118,7 @@ let skillMetadata = {}; // { gateId | metaId: { description: '...', loaded: true
 let showGuardrailsPanel = false;
 let guardrailsCategoryFilter = ''; // category slug or '' for all
 let guardrailsRegistryCache = null; // parsed guardrail items from architecture-guardrails.md
+let fleetData = null; // loaded from fleet-registry.json if present alongside pipeline-state.json
 let columnUi = {
   globalWidth: 220,
   autoShrinkEmpty: true,
@@ -1143,6 +1151,8 @@ async function loadState() {
   // Attempt to load live skill descriptions in the background; re-render when done
   // so the governance view picks up any updates without blocking initial display.
   loadSkillMetadata().then(() => { try { render(); } catch (_) {} });
+  // Load fleet registry if present; silently omit if absent (file:// or not deployed).
+  loadFleetRegistry().then(loaded => { if (loaded) { try { render(); } catch (_) {} } });
 }
 
 function normalizeData(data) {
@@ -1288,6 +1298,24 @@ function parseFrontmatterDescription(text) {
   return lineMatch ? lineMatch[1].trim() : null;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// FLEET REGISTRY LOADING
+// Looks for fleet-registry.json alongside pipeline-state.json. Silently omitted
+// when absent (file:// origin, not deployed, or single-repo setup).
+// Expected shape: { platformVersion: "x.y.z", repos: [ ... ] }
+// ─────────────────────────────────────────────────────────────────────────────
+async function loadFleetRegistry() {
+  try {
+    const resp = await fetch('fleet-registry.json?_=' + Date.now());
+    if (!resp.ok) return false;
+    const data = await resp.json();
+    fleetData = data;
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
 async function loadSkillMetadata() {
   const allSkills = [
     ...activeGovernanceGates.map(g => ({ id: g.id, path: g.skillPath })),
@@ -1410,6 +1438,8 @@ function renderSummary(features) {
     <div class="summary-stat"><span class="val" style="color:#5eead4">${processing}</span> processing</div>
     <div class="summary-stat"><span class="val">${stories.length}</span> stories total</div>
     ${relReady > 0 ? `<div class="summary-stat"><span class="val" style="color:var(--teal)">${relReady}</span> release-ready</div>` : ''}
+    ${fleetData ? `<div class="summary-stat" title="Fleet registry"><span class="val" style="color:var(--purple)">${Array.isArray(fleetData.repos) ? fleetData.repos.length : (fleetData.repoCount || '?')}</span> repos <span style="font-size:10px;color:var(--muted)">${fleetData.platformVersion ? '· v' + esc(String(fleetData.platformVersion)) : ''}</span></div>` : ''}
+    ${(function() { const est = allData && allData.estimate; if (!est) return ''; const focusH = est.actuals && est.actuals.outerLoopFocusH ? est.actuals.outerLoopFocusH : (est.e2 && est.e2.outerLoopFocusH ? '~' + est.e2.outerLoopFocusH : null); const reqs = est.actuals && est.actuals.premiumRequestsActual ? est.actuals.premiumRequestsActual : null; if (!focusH && !reqs) return ''; return '<div class="summary-stat" title="/estimate actuals"><span style="font-size:10px;color:var(--muted)">Estimate:</span> <span class="val" style="color:#93c5fd">' + esc(String(focusH || '—')) + 'h focus</span>' + (reqs ? ' <span style="font-size:10px;color:var(--muted)">· ' + esc(String(reqs)) + ' req.</span>' : '') + '</div>'; })()} 
   `;
 }
 
@@ -1533,9 +1563,29 @@ function renderLoopStructure(features) {
   const programmes = (allData && allData.programmes) || [];
   const progMeta = programmes.length > 0
     ? ` <span style="font-size:10px;color:var(--purple);margin-left:6px">📦 ${programmes.length} prog.</span>` : '';
+  // CI platform context (read from config.ci in pipeline-state.json)
+  const ci = allData && allData.config && allData.config.ci;
+  const ciLabel = ci ? (ci.primary || ci) : 'github-actions';
+  const ciPhase2 = ci && ci.phase2 ? ` <span style="font-size:9px;color:var(--muted)">→ Phase 2: ${esc(ci.phase2)}</span>` : '';
+  const agentFmt = ci && ci.agentInstructionsFormat ? ` <span style="font-size:9px;color:var(--muted)" title="ADR-005: agent instructions format driven by vcs.type">#${esc(ci.agentInstructionsFormat)}</span>` : '';
+  const ciMeta = ` <span style="font-size:9px;color:var(--muted);margin-left:8px" title="CI platform (config.ci in pipeline-state.json)">CI: ${esc(String(ciLabel))}${ciPhase2}${agentFmt}</span>`;
+  // Phase roadmap context (read from config.phases in pipeline-state.json)
+  const phases = allData && allData.config && allData.config.phases;
+  let roadmapMeta = '';
+  if (phases) {
+    const phaseChips = Object.entries(phases).map(function([k, v]) {
+      const isDone = v.status === 'complete' || v.completedDate;
+      const isNext = v.status === 'upcoming' || v.status === 'next';
+      const col = isDone ? 'var(--green)' : isNext ? '#93c5fd' : 'var(--muted)';
+      const note = v.note ? ' title="' + esc(v.note) + '"' : '';
+      const dateStr = v.completedDate ? ' ' + esc(v.completedDate) : (v.deliveredIn ? ' [' + esc(v.deliveredIn) + ']' : '');
+      return '<span style="font-size:9px;color:' + col + ';margin-right:4px"' + note + '>' + esc(k) + (isDone ? ' ✓' + dateStr : isNext ? ' →' : '') + '</span>';
+    }).join('');
+    roadmapMeta = ' <span style="font-size:9px;color:var(--muted);margin-left:8px">Roadmap: ' + phaseChips + '</span>';
+  }
   document.getElementById('loop-structure').innerHTML = `
     <div class="loop-band outer">
-      <strong>Outer loop (${outerCount})</strong>${progMeta}
+      <strong>Outer loop (${outerCount})</strong>${progMeta}${ciMeta}${roadmapMeta}
       <span class="loop-stage-list">${outerStages}</span>
     </div>
     <div class="loop-band inner">
@@ -4106,15 +4156,15 @@ function featureActionMeta(feature) {
 
   const humanStageActions = {
     'ideation': 'Capture idea and decide whether to run /discovery',
-    'discovery': 'Complete discovery artefact and get approval',
+    'discovery': 'Complete discovery artefact and get approval · /estimate E1 fires at exit',
     'benefit-metric': 'Define measurable outcomes via /benefit-metric',
-    'definition': 'Break into epics/stories via /definition',
+    'definition': 'Break into epics/stories via /definition · /estimate E2 fires at exit',
     'spike': 'Run/close spike with PROCEED, REDESIGN, or DEFER',
     'test-plan': 'Write failing tests via /test-plan',
     'definition-of-ready': 'Complete DoR checks and sign off',
     'implementation-review': 'Review implementation findings and decide fixes',
     'branch-complete': 'Choose branch completion option (draft PR/merge/keep/discard)',
-    'definition-of-done': 'Validate post-merge completion evidence',
+    'definition-of-done': 'Validate post-merge completion evidence · /estimate E3 fires in /levelup',
     'trace': 'Run traceability check and resolve chain gaps',
     'release-pending': 'Prepare and run /release',
     'loop-design': 'Refine outer/inner operating model',
@@ -4167,7 +4217,7 @@ function stageLabel(id) {
 
 function storyNextSkill(s) {
   if (s.dodStatus === 'complete')                      return null;
-  if (s.prStatus === 'merged')                         return '/definition-of-done';
+  if (s.prStatus === 'merged')                         return '/definition-of-done · then /levelup (runs /estimate E3)';
   if (s.prStatus === 'open' || s.prStatus === 'draft') return '/verify-completion';
   // Inner loop stages — show the current stage skill rather than falling through to DoR
   const st = s.stage || '';
