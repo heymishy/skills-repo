@@ -1,0 +1,286 @@
+{
+  "version": "1.0",
+  "description": "Living eval regression suite — initial delivery (p1.6). One outcome-oriented scenario per core skill currently in .github/skills/. Each scenario guards against a real failure pattern and must pass on every subsequent assurance gate run.",
+  "scenarios": [
+    {
+      "taskId": "s-benefit-metric",
+      "description": "benefit-metric skill produces an artefact with at least one named metric and a non-empty baseline value",
+      "skillSurfaceCombination": "benefit-metric/github-copilot",
+      "expectedOutcome": "benefit-metric artefact written to artefacts/",
+      "failurePatternGuarded": "Skill emits a metric list with no baseline values, making M-series targets unverifiable at DoD",
+      "reviewNote": "Outcome-orientation confirmed: tests for artefact existence and named metric presence — not for which questions were asked during elicitation"
+    },
+    {
+      "taskId": "s-bootstrap",
+      "description": "bootstrap skill creates all required pipeline scaffold files in the target repository",
+      "skillSurfaceCombination": "bootstrap/github-copilot",
+      "expectedOutcome": "pipeline scaffold created: skills/, templates/, pipeline-state.json",
+      "failurePatternGuarded": "Skill exits early without creating pipeline-state.json, leaving the repository without a functional governance state file",
+      "reviewNote": "Outcome-orientation confirmed: tests for presence of required scaffold outputs — not for which steps the agent took"
+    },
+    {
+      "taskId": "s-branch-complete",
+      "description": "branch-complete skill opens a draft PR and does not mark it ready for review",
+      "skillSurfaceCombination": "branch-complete/github-copilot",
+      "expectedOutcome": "draft PR opened — not marked ready for review",
+      "failurePatternGuarded": "Skill marks PR ready for review, bypassing the human merge gate",
+      "reviewNote": "Outcome-orientation confirmed: tests for draft-only PR status — not for the specific gh CLI command used"
+    },
+    {
+      "taskId": "s-branch-setup",
+      "description": "branch-setup skill creates an isolated worktree and confirms a clean baseline test run passes",
+      "skillSurfaceCombination": "branch-setup/github-copilot",
+      "expectedOutcome": "worktree created and baseline tests pass",
+      "failurePatternGuarded": "Skill creates the worktree but skips the baseline verification, allowing implementation to begin on a broken baseline",
+      "reviewNote": "Outcome-orientation confirmed: tests for worktree creation and baseline pass result — not for which git commands were run"
+    },
+    {
+      "taskId": "s-clarify",
+      "description": "clarify skill produces an updated discovery artefact with answered questions logged and scope gaps addressed",
+      "skillSurfaceCombination": "clarify/github-copilot",
+      "expectedOutcome": "discovery artefact updated with clarification log",
+      "failurePatternGuarded": "Skill asks questions but does not update the discovery artefact, leaving scope gaps unresolved",
+      "reviewNote": "Outcome-orientation confirmed: tests for artefact update and clarification log presence — not for number of questions asked"
+    },
+    {
+      "taskId": "s-coverage-map",
+      "description": "coverage-map skill produces a map that classifies each test by type and lists gaps with risk ratings",
+      "skillSurfaceCombination": "coverage-map/github-copilot",
+      "expectedOutcome": "coverage map produced with gap classification",
+      "failurePatternGuarded": "Skill lists tests without gap classification, hiding untested ACs before a release gate",
+      "reviewNote": "Outcome-orientation confirmed: tests for gap-classified map output — not for the rendering format used"
+    },
+    {
+      "taskId": "s-decisions",
+      "description": "decisions skill records a decision with rationale and writes it to the feature decisions log",
+      "skillSurfaceCombination": "decisions/github-copilot",
+      "expectedOutcome": "decision recorded in artefacts/",
+      "failurePatternGuarded": "Skill captures the decision verbally but does not write it to decisions.md, leaving no auditable record",
+      "reviewNote": "Outcome-orientation confirmed: tests for persisted decision record — not for the classification track used"
+    },
+    {
+      "taskId": "s-definition",
+      "description": "definition skill produces at least one epic and one story artefact with all required sections populated",
+      "skillSurfaceCombination": "definition/github-copilot",
+      "expectedOutcome": "epic and story artefacts written to artefacts/",
+      "failurePatternGuarded": "Skill emits story outlines without running the scope accumulator, missing scope drift across the full set",
+      "reviewNote": "Outcome-orientation confirmed: tests for artefact existence and required section presence — not for which slicing strategy was chosen"
+    },
+    {
+      "taskId": "s-definition-of-done",
+      "description": "definition-of-done skill produces a DoD artefact that records AC coverage and any deviations",
+      "skillSurfaceCombination": "definition-of-done/github-copilot",
+      "expectedOutcome": "DoD artefact written with AC coverage table",
+      "failurePatternGuarded": "Skill marks story done without an AC coverage table, hiding uncovered ACs",
+      "reviewNote": "Outcome-orientation confirmed: tests for DoD artefact with coverage table — not for which inspection steps were followed"
+    },
+    {
+      "taskId": "s-definition-of-ready",
+      "description": "definition-of-ready skill produces a DoR artefact where all hard blocks pass and a coding agent instructions block is present",
+      "skillSurfaceCombination": "definition-of-ready/github-copilot",
+      "expectedOutcome": "DoR artefact written with all hard blocks passed and coding agent instructions present",
+      "failurePatternGuarded": "Skill produces a DoR with unresolved hard blocks, allowing incomplete stories to reach the coding agent",
+      "reviewNote": "Outcome-orientation confirmed: tests for DoR hard-block pass status and coding agent instructions block — not for checklist order"
+    },
+    {
+      "taskId": "s-discovery",
+      "description": "discovery skill produces a discovery artefact at the expected path with all required sections populated",
+      "skillSurfaceCombination": "discovery/github-copilot",
+      "expectedOutcome": "discovery artefact written to artefacts/",
+      "failurePatternGuarded": "Skill exits without writing the discovery artefact, leaving no structured problem statement for downstream pipeline stages",
+      "reviewNote": "Outcome-orientation confirmed: tests for artefact existence and required section presence — not for how many clarifying questions were asked"
+    },
+    {
+      "taskId": "s-ea-registry",
+      "description": "ea-registry skill creates or updates a registry entry with application name, domain, and interface list",
+      "skillSurfaceCombination": "ea-registry/github-copilot",
+      "expectedOutcome": "registry entry written to registry/",
+      "failurePatternGuarded": "Skill populates the registry entry without listing interfaces, leaving blast-radius analysis incomplete",
+      "reviewNote": "Outcome-orientation confirmed: tests for registry entry existence with interface list — not for which mode (QUERY/CONTRIBUTE/AUDIT) was invoked"
+    },
+    {
+      "taskId": "s-ideate",
+      "description": "ideate skill produces a structured ideation artefact with at least one lens applied and a decision table",
+      "skillSurfaceCombination": "ideate/github-copilot",
+      "expectedOutcome": "ideation artefact produced with decision table",
+      "failurePatternGuarded": "Skill applies a lens but omits the decision table, leaving lens outputs disconnected from discovery decisions",
+      "reviewNote": "Outcome-orientation confirmed: tests for artefact with decision table — not for which lens was chosen"
+    },
+    {
+      "taskId": "s-implementation-plan",
+      "description": "implementation-plan skill produces a plan with file-level task breakdown including exact file paths and expected command output",
+      "skillSurfaceCombination": "implementation-plan/github-copilot",
+      "expectedOutcome": "implementation plan written with file-level task breakdown",
+      "failurePatternGuarded": "Skill emits high-level task descriptions without file paths, leaving the implementing agent unable to locate affected files",
+      "reviewNote": "Outcome-orientation confirmed: tests for file-path presence in plan tasks — not for how many tasks were generated"
+    },
+    {
+      "taskId": "s-implementation-review",
+      "description": "implementation-review skill produces a review with both Stage 1 (spec compliance) and Stage 2 (code quality) findings",
+      "skillSurfaceCombination": "implementation-review/github-copilot",
+      "expectedOutcome": "implementation review produced with Stage 1 and Stage 2 findings",
+      "failurePatternGuarded": "Skill only runs Stage 1 and skips Stage 2, missing structural code-quality issues before PR open",
+      "reviewNote": "Outcome-orientation confirmed: tests for both stage findings in output — not for the severity breakdown"
+    },
+    {
+      "taskId": "s-issue-dispatch",
+      "description": "issue-dispatch skill creates a GitHub issue with the story content and records issueUrl in pipeline-state.json",
+      "skillSurfaceCombination": "issue-dispatch/github-copilot",
+      "expectedOutcome": "GitHub issue created and issueUrl recorded in pipeline-state.json",
+      "failurePatternGuarded": "Skill creates the issue but does not write issueUrl to pipeline-state.json, breaking dispatch tracking",
+      "reviewNote": "Outcome-orientation confirmed: tests for issue creation and state write — not for which issue body target was used"
+    },
+    {
+      "taskId": "s-levelup",
+      "description": "levelup skill extracts at least one reusable pattern from the merged story and writes it to the standards or decisions log",
+      "skillSurfaceCombination": "levelup/github-copilot",
+      "expectedOutcome": "pattern extracted and written to standards or decisions",
+      "failurePatternGuarded": "Skill runs post-merge but writes no standards update, leaving institutional knowledge ephemeral",
+      "reviewNote": "Outcome-orientation confirmed: tests for persisted pattern output — not for which category classification was applied"
+    },
+    {
+      "taskId": "s-loop-design",
+      "description": "loop-design skill produces a documented loop design with an inner-loop slot contract",
+      "skillSurfaceCombination": "loop-design/github-copilot",
+      "expectedOutcome": "loop design artefact written with inner-loop slot contract",
+      "failurePatternGuarded": "Skill documents the outer loop but omits the inner-loop slot contract, preventing teams from swapping inner-loop toolchains",
+      "reviewNote": "Outcome-orientation confirmed: tests for loop design artefact with slot contract — not for which inner-loop variant was chosen"
+    },
+    {
+      "taskId": "s-metric-review",
+      "description": "metric-review skill produces an updated or supplementary benefit-metric artefact with a re-baselined target",
+      "skillSurfaceCombination": "metric-review/github-copilot",
+      "expectedOutcome": "metric review artefact written with re-baselined target",
+      "failurePatternGuarded": "Skill runs the review but writes no updated metric artefact, leaving stale targets in the pipeline state",
+      "reviewNote": "Outcome-orientation confirmed: tests for updated artefact with re-baselined target — not for the checkpoint trigger type"
+    },
+    {
+      "taskId": "s-org-mapping",
+      "description": "org-mapping skill produces a translation matrix mapping pipeline terminology to organisation-specific labels",
+      "skillSurfaceCombination": "org-mapping/github-copilot",
+      "expectedOutcome": "org-mapping artefact written with translation matrix",
+      "failurePatternGuarded": "Skill maps some terms but omits governance hooks, leaving the pipeline incompatible with the organisation's approval process",
+      "reviewNote": "Outcome-orientation confirmed: tests for translation matrix presence — not for how many terminology mappings were created"
+    },
+    {
+      "taskId": "s-programme",
+      "description": "programme skill produces a programme artefact that lists at least one workstream with cross-workstream dependencies",
+      "skillSurfaceCombination": "programme/github-copilot",
+      "expectedOutcome": "programme artefact written with workstream list",
+      "failurePatternGuarded": "Skill creates the programme artefact without capturing cross-workstream dependencies, hiding blocking relationships",
+      "reviewNote": "Outcome-orientation confirmed: tests for programme artefact with workstream list — not for how dependencies were elicited"
+    },
+    {
+      "taskId": "s-record-signal",
+      "description": "record-signal skill writes a metric signal with status and lastMeasured timestamp to pipeline-state.json",
+      "skillSurfaceCombination": "record-signal/github-copilot",
+      "expectedOutcome": "metric signal recorded in pipeline-state.json with lastMeasured",
+      "failurePatternGuarded": "Skill captures the signal verbally but does not write to pipeline-state.json, breaking the benefit-metric measurement loop",
+      "reviewNote": "Outcome-orientation confirmed: tests for pipeline state write with lastMeasured field — not for which measurement source was used"
+    },
+    {
+      "taskId": "s-release",
+      "description": "release skill produces release notes in both technical and plain-language forms, and a deployment checklist",
+      "skillSurfaceCombination": "release/github-copilot",
+      "expectedOutcome": "release notes and deployment checklist produced",
+      "failurePatternGuarded": "Skill emits technical release notes but omits the plain-language summary, leaving stakeholder communications incomplete",
+      "reviewNote": "Outcome-orientation confirmed: tests for both release note forms and deployment checklist — not for how changes were grouped"
+    },
+    {
+      "taskId": "s-reverse-engineer",
+      "description": "reverse-engineer skill produces a report with at least Layer 1 through Layer 4 of the six-layer analysis populated",
+      "skillSurfaceCombination": "reverse-engineer/github-copilot",
+      "expectedOutcome": "reverse-engineering report written with six-layer analysis",
+      "failurePatternGuarded": "Skill stops after surface-level API mapping and omits the hidden-logic and data-contract layers, leaving business rules undocumented",
+      "reviewNote": "Outcome-orientation confirmed: tests for report with required layers populated — not for analysis depth on any one layer"
+    },
+    {
+      "taskId": "s-review",
+      "description": "review skill produces a FINDINGS → SCORE → VERDICT output for the reviewed artefact",
+      "skillSurfaceCombination": "review/github-copilot",
+      "expectedOutcome": "review completed with FINDINGS, SCORE, and VERDICT",
+      "failurePatternGuarded": "Skill produces findings without a score or verdict, leaving stakeholders unable to determine whether the artefact is ready to proceed",
+      "reviewNote": "Outcome-orientation confirmed: tests for FINDINGS, SCORE, and VERDICT presence — not for finding category distribution"
+    },
+    {
+      "taskId": "s-scale-pipeline",
+      "description": "scale-pipeline skill produces an artefact documenting the control-plane design for multi-team adoption",
+      "skillSurfaceCombination": "scale-pipeline/github-copilot",
+      "expectedOutcome": "scale-pipeline artefact written with control plane design",
+      "failurePatternGuarded": "Skill describes scaling patterns without a control-plane design, leaving multi-team governance undefined",
+      "reviewNote": "Outcome-orientation confirmed: tests for artefact with control-plane design section — not for team-count projection"
+    },
+    {
+      "taskId": "s-spike",
+      "description": "spike skill concludes with one of the three valid verdicts: PROCEED, REDESIGN, or DEFER",
+      "skillSurfaceCombination": "spike/github-copilot",
+      "expectedOutcome": "spike concluded with verdict: PROCEED, REDESIGN, or DEFER",
+      "failurePatternGuarded": "Skill runs the spike investigation but emits no verdict, leaving the decision open and blocking downstream work",
+      "reviewNote": "Outcome-orientation confirmed: tests for PROCEED/REDESIGN/DEFER verdict presence — not for which investigation steps were taken"
+    },
+    {
+      "taskId": "s-subagent-execution",
+      "description": "subagent-execution skill produces a result status of DONE, DONE_WITH_CONCERNS, or NEEDS_CONTEXT for each delegated task",
+      "skillSurfaceCombination": "subagent-execution/github-copilot",
+      "expectedOutcome": "subagent task completed with status DONE, DONE_WITH_CONCERNS, or NEEDS_CONTEXT",
+      "failurePatternGuarded": "Skill delegates tasks without capturing per-task status, hiding partial failures in multi-task batches",
+      "reviewNote": "Outcome-orientation confirmed: tests for per-task status output — not for how the subagent was instructed"
+    },
+    {
+      "taskId": "s-systematic-debugging",
+      "description": "systematic-debugging skill produces a root-cause finding before any fix is applied",
+      "skillSurfaceCombination": "systematic-debugging/github-copilot",
+      "expectedOutcome": "root cause identified before fix applied",
+      "failurePatternGuarded": "Skill applies a fix without identifying root cause, leaving the underlying defect unresolved and re-manifesting later",
+      "reviewNote": "Outcome-orientation confirmed: tests for root-cause finding in output — not for which diagnostic phase was reached"
+    },
+    {
+      "taskId": "s-tdd",
+      "description": "tdd skill produces a failing test before any production code is written, then a passing test after minimal code is added",
+      "skillSurfaceCombination": "tdd/github-copilot",
+      "expectedOutcome": "RED test written before production code; GREEN test passes after minimal implementation",
+      "failurePatternGuarded": "Skill writes production code first and then retrofits tests, voiding the TDD discipline and allowing implementation to drift from the spec",
+      "reviewNote": "Outcome-orientation confirmed: tests for RED-before-GREEN observable sequence — not for test framework or assertion style"
+    },
+    {
+      "taskId": "s-test-plan",
+      "description": "test-plan skill produces a test plan where every AC maps to at least one test",
+      "skillSurfaceCombination": "test-plan/github-copilot",
+      "expectedOutcome": "test plan written with every AC covered by at least one test",
+      "failurePatternGuarded": "Skill produces a test plan with uncovered ACs, allowing stories to pass DoR with unmeasured acceptance criteria",
+      "reviewNote": "Outcome-orientation confirmed: tests for full AC coverage in the test plan — not for test-ID naming conventions"
+    },
+    {
+      "taskId": "s-token-optimization",
+      "description": "token-optimization skill produces an artefact with a token budget policy and stage-by-stage model routing",
+      "skillSurfaceCombination": "token-optimization/github-copilot",
+      "expectedOutcome": "token-optimization artefact written with token budget policy",
+      "failurePatternGuarded": "Skill documents model routing without a token budget policy, leaving cost overruns undetected until billing",
+      "reviewNote": "Outcome-orientation confirmed: tests for token budget policy presence — not for which model routing variant was recommended"
+    },
+    {
+      "taskId": "s-trace",
+      "description": "trace skill produces a chain report that identifies all artefact links from discovery to DoD for a named story",
+      "skillSurfaceCombination": "trace/github-copilot",
+      "expectedOutcome": "trace chain report written with full artefact link coverage",
+      "failurePatternGuarded": "Skill runs the chain walk but omits broken-link detection, allowing orphaned artefacts to accumulate silently",
+      "reviewNote": "Outcome-orientation confirmed: tests for chain report with link coverage — not for number of chain levels traversed"
+    },
+    {
+      "taskId": "s-verify-completion",
+      "description": "verify-completion skill confirms AC coverage against the verification script before any completion claim is made",
+      "skillSurfaceCombination": "verify-completion/github-copilot",
+      "expectedOutcome": "verification completed with AC coverage confirmed against verification script",
+      "failurePatternGuarded": "Skill allows a completion claim without fresh verification evidence, letting uncovered ACs reach the PR merge",
+      "reviewNote": "Outcome-orientation confirmed: tests for AC coverage confirmation against verification script — not for manual vs automated verification split"
+    },
+    {
+      "taskId": "s-workflow",
+      "description": "workflow skill routes the session to the correct pipeline stage and produces a pipeline health note",
+      "skillSurfaceCombination": "workflow/github-copilot",
+      "expectedOutcome": "workflow navigation produced with pipeline health note",
+      "failurePatternGuarded": "Skill routes to the short track without confirming the session genuinely qualifies, bypassing required pipeline stages",
+      "reviewNote": "Outcome-orientation confirmed: tests for pipeline health note and routing output — not for which stage the session landed in"
+    }
+  ]
+}
