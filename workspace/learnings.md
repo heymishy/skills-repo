@@ -215,4 +215,48 @@ This makes the self-checkpoint structural: it will happen reliably across models
 
 ---
 
+---
+
+## /levelup candidate — state.json write path must be atomic-replace, not append
+
+### Observed — 2026-04-11 (p1.5 DoD session start)
+
+**Circumstance:** At the start of the 2026-04-11 session, `workspace/state.json` contained a spurious duplicate JSON fragment beginning at position 5555 — immediately after the valid closing brace of the JSON object. The `check-workspace-state.js` test returned `state-json-valid FAIL` with "Unexpected non-whitespace character after JSON at position 5555." The valid JSON was intact (no data loss); the fragment was removed by truncating to the last valid `}`.
+
+**Root cause (likely):** A previous `/checkpoint` or phase-boundary state write used an append operation (or a replace that did not truncate the trailing content) rather than a full atomic overwrite. The result was two concatenated JSON objects — a valid root object followed by a stale or partial duplicate. This would occur if the write path used `fs.appendFileSync` or a non-truncating `replace_string_in_file` that matched less than the full file content.
+
+**Finding:** Any state write mechanism that does not guarantee atomic full-file replacement is structurally unsafe for a single-file JSON state store. Partial writes, appends, and in-place non-truncating replacements will all produce unparseable JSON under the right failure conditions. The schema mechanism itself is sound — the content was correct and complete. Only the write path is at risk.
+
+**Required fix for Phase 2:** The state.json write path (however it is implemented — shell, Node.js, or agent tool call) must always:
+1. Write to a temp file in the same directory
+2. Atomically rename the temp file over the target (`mv state.json.tmp state.json`)
+3. Verify the written file is valid JSON before confirming success
+
+Alternatively, if using `create_file` or similar tools that overwrite the full file, ensure the write includes the complete JSON object, not a delta.
+
+**Action:** Flag as /levelup candidate. Add write-path safety requirement to the platform's state management conventions in `copilot-instructions.md` or a Phase 2 story. Eval scenario candidate: "given a state.json that contains two concatenated JSON objects, the check-workspace-state.js test must detect and report it as invalid." (This scenario now exists in the Phase 1 regression history — add it to `workspace/suite.json` if not already covered.)
+
+---
+
+## Pipeline gap — cross-session output verification via second AI session (manual quality layer)
+
+### Observed — 2026-04-11
+
+**Circumstance:** The operator confirmed that a pattern has emerged during Phase 1 delivery: complex or high-stakes outputs (DoD artefacts, pipeline-state.json updates, skill outputs) are being copied to a second independent chat session running the same model (Claude Sonnet 4.6) for verification before being accepted. This is an informal but high-value quality layer — it catches errors that the generating session misses due to confirmation bias or context drift.
+
+**Finding:** This is a form of independent review that the pipeline does not currently formalise. It is structurally similar to the "second pair of eyes" operator step in the oversight model, but applied at the AI output level rather than the artefact level. Its effectiveness depends entirely on the operator remembering to do it and having context available in the verification session.
+
+**Why it matters:** As AI-generated pipeline outputs become longer and more complex, the probability that any single session misses an error grows. A structured verification step — even a lightweight prompt in a second session — provides a consistent quality floor that doesn't depend on operator vigilance under time pressure.
+
+**Proposed formalisation options (for /levelup consideration):**
+1. **Lightweight:** Add a "verification prompt" to the DoD, test-plan, and review skill output sections — a short prompt the operator can paste to a second session to check for missed ACs, scope deviations, or state write errors.
+2. **Moderate:** Add a "verify-output" sub-step to the DoR or verify-completion skill that explicitly invites operator verification before sign-off.
+3. **Structural (Phase 2+):** Add a named `/verify-output` skill or convention that formalises the second-session check as a sequenced pipeline step with a defined scope (what to check, how to surface findings).
+
+**Relationship to existing skills:** `/implementation-review` provides spec compliance + code quality review between task batches — this gap is analogous but at the pipeline-output level (artefacts, state files) rather than the code level.
+
+**Action:** Flag for /levelup. Consider adding a brief "verification prompt" field to the DoD artefact template — a canned prompt the operator can run in a second session to spot-check the DoD output. This makes the verification pattern explicit and repeatable without requiring a new skill at this stage.
+
+---
+
 *More signals will be added here as Phase 1 dogfood run progresses.*
