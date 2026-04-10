@@ -87,7 +87,7 @@ function getRequirementLines(content) {
  */
 function parseDisciplineIndex(content) {
   const result = {};
-  const lines  = content.split('\n');
+  const lines  = content.replace(/\r/g, '').split('\n');
 
   let inDisciplines   = false;
   let currentDiscipline = null;
