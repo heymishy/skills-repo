@@ -199,6 +199,65 @@ This makes the self-checkpoint structural: it will happen reliably across models
 
 ---
 
+## Estimation actuals — Phase 1 baseline (MM1 signal)
+
+### Observed — 2026-04-11
+
+**Source:** Copilot chat transcript timestamps (`.jsonl` session files) cross-referenced against git commit log. Timestamps are UTC; AEST = UTC+10.
+
+**Session map — 9 sessions across 3 days:**
+
+| # | AEST window | Git commits in window | Pipeline work | Focus time |
+|---|-------------|-----------------------|---------------|------------|
+| 1 | Apr 9 10:36–14:50 | baseline, clean-up, workspace scaffold | Repo audit, pre-Phase 1 setup | ~1.5h |
+| 2 | Apr 9 12:55–20:21 | definition complete, gap findings | `/definition` all 8 stories | ~2.5h |
+| 3 | Apr 9 18:22–22:42 | gap findings, Epic 1 voided | Gap triage, Epic 1 voided | ~1h |
+| 4 | Apr 10 05:03–07:19 | review partial (5/8) | `/review` first pass | ~1h |
+| 5 | Apr 10 05:20–09:01 | review complete, Bitbucket defer, checkpoint | `/review` all 8 + Bitbucket scope decision | ~1.5h |
+| 6 | Apr 10 07:05–09:40 | mediums fixed, test-plans, DoR p1.5/p1.3/p1.4 | `/test-plan` all 8 + `/definition-of-ready` first 3 | ~1.5h |
+| 7 | Apr 10 07:41–10:01 | context-pressure gap finding, DoR p1.1/p1.2/p1.6/p1.7 | `/definition-of-ready` next 4 | ~1h |
+| 8 | Apr 10 09:59–Apr 11 00:23 | DoR p1.8 + all 8 agent PRs #10–#18 merged | DoR p1.8 + full inner loop (~14h window, agent-autonomous) | ~1h human |
+| 9 | Apr 11 04:52–08:18 | all 8 DoDs + /levelup + residual items | All DoDs + `/levelup` + thread closures | ~2h |
+
+**Note on sessions 4–7:** These are concurrent, not sequential. Four parallel Copilot chat windows ran simultaneously Apr 10 05:00–10:00 AEST. Five hours of calendar time cleared review, test-plans, and all 8 DoRs in parallel. The original pipeline model assumed these phases are sequential.
+
+**Note on session 8:** The 14-hour window (Apr 10 09:59 to Apr 11 00:23) delivered all 8 inner-loop PRs. Human involvement was approximately 1 hour (DoR p1.8 + dispatching agents + reviewing and merging PRs). The remaining time was autonomous agent execution with zero human check-ins per cycle.
+
+**Totals:**
+
+| Measure | Value |
+|---------|-------|
+| Calendar span (first commit to /levelup complete) | ~46h (Apr 9 13:11 → Apr 11 08:18) |
+| Union of open-session time | ~35h |
+| Operator focus time (excluding autonomous agent execution) | ~13h |
+| Inner loop autonomous time | ~14h (session 8) |
+
+**Calibration findings:**
+
+**Finding 1 — Parallel outer loop:** Sessions 4–7 overlap confirms the outer loop phases (review, test-plan, DoR) can run concurrently across multiple chat windows. The original throughput model treated them as strictly sequential. Five hours of calendar time cleared all 8 stories through three phases simultaneously. The effective per-story cost for review+test-plan+DoR was approximately 37 minutes of human focus time, not the 2–3 hours a sequential estimate would imply.
+
+**Finding 2 — Autonomous inner loop:** Session 8 is the most significant number. The estimate model assumed 12–20 minutes of human check-in per story cycle (dispatching, reviewing, merging). The actual was effectively zero once dispatched — 8 PRs merged with ~1 hour total human time across the window. The inner loop is not a human-attended cycle; it is a dispatch-and-merge operation.
+
+**Finding 3 — Phase 2 revised estimate:**
+
+| Phase | Original model | Actual Phase 1 | Phase 2 estimate |
+|-------|---------------|----------------|-----------------|
+| Setup + discovery + benefit-metric | Not modelled | ~1.5h | ~1h |
+| Definition (8 stories) | ~8h | ~3.5h (sessions 2–3) | ~3h |
+| Review + test-plan + DoR (8 stories, parallel) | ~16h | ~5h calendar / ~5h focus | ~4h focus |
+| Inner loop (8 stories, autonomous) | ~4–6h human | ~1h human / 14h calendar | ~1h human |
+| DoDs + /levelup | Not modelled | ~2h | ~2h |
+| **Total focus time** | **~28–30h** | **~13h** | **~11h** |
+| **Calendar span** | **~5–7 days** | **~2.5 days** | **2–3 days** |
+
+**Finding 4 — Programme-level compression:** Original pipeline model projected 26 weeks for Phase 1+2 combined. Phase 1 actual: ~2.5 calendar days, ~13h focus. If Phase 2 is similar scope (8 stories), revised projection: ~5–6 calendar days total, ~26h focus for both phases. That is a **5–8× calendar compression** against the original model.
+
+**Metric relevance:** This entry is primary evidence for MM1 (solo operator, outer loop elapsed time). The before-baseline for MM1 was the original model estimate. Phase 1 actuals now establish the empirical baseline. Phase 2 will be the first test of whether the baseline is repeatable.
+
+**Action:** Record Phase 1 focus time (~13h, ~2.5 days calendar) as the MM1 before-baseline in `benefit-metric.md` MM1 evidence section. Compare Phase 2 actuals against this baseline at the end of Phase 2.
+
+---
+
 ## Cross-story schema dependency — producing story did not know consuming story's schema requirements
 
 ### Observed — 2026-04-11

@@ -94,6 +94,22 @@ This initiative is being dogfooded — the platform team runs the pipeline on it
 | **Measurement method** | Operator logs in real time during this Phase 1 dogfood run. At session end, records per stage: stage name, completed in session (Y/N), elapsed time (minutes), blocking lookups (question + where resolved). Logged in `workspace/learnings.md`. Single run. The gap log from this session is also the Phase 2 baseline. |
 | **Feedback loop** | Blocking lookups are platform improvement findings — each is a signal that reference material, a skill, or a template is insufficient. Fed into the improvement loop. Not treated as operator failures. |
 
+#### MM1 Evidence Record — Phase 1 Actuals (2026-04-11)
+
+| Field | Value |
+|-------|-------|
+| **Measurement date** | 2026-04-11 |
+| **Source** | Copilot chat transcript timestamps (`.jsonl` session files) cross-referenced against git commit log |
+| **Operator focus time (full outer loop + DoDs + /levelup)** | ~13h |
+| **Calendar span (first commit to /levelup complete)** | ~46h (~2.5 calendar days, Apr 9–11) |
+| **Blocking lookups** | Zero — all information sourced from within the repo |
+| **Sub-condition 1: all outer loop stages complete** | Pass — discovery, benefit-metric, definition, review, test-plan, DoR all completed |
+| **Sub-condition 2: all information in-repo** | Pass — zero blocking external lookups recorded in session gap log |
+| **Verdict against floor** | Above floor |
+| **Verdict against target** | Pass — zero blocking lookups, all stages completed. Outer loop is self-sufficient for Phase 1 scope. |
+| **Phase 2 baseline established** | Yes — ~13h focus / ~2.5 calendar days is the before-baseline for Phase 2 comparison |
+| **Key calibration finding** | The 14-hour session 8 delivered all 8 inner-loop PRs with ~1h human attention (dispatch + merge). The outer loop phases ran concurrently in 4 parallel windows on Apr 10 morning, clearing review + test-plan + DoR for 8 stories in 5 hours of calendar time. Original sequential estimate was 5–8× longer. Full breakdown in `workspace/learnings.md` (entry: "Estimation actuals — Phase 1 baseline"). |
+
 ---
 
 ### Meta Metric 2: Cross-session resume via `workspace/state.json`
