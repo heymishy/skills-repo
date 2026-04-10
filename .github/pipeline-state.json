@@ -5,22 +5,90 @@
   "features": [
     {
       "slug": "2026-04-09-skills-platform-phase1",
-      "title": "Skills Platform — Phase 1 Foundation",
+      "name": "Skills Platform \u00e2\u20ac\u201d Phase 1 Foundation",
+      "title": "Skills Platform \u00e2\u20ac\u201d Phase 1 Foundation",
+      "track": "library",
       "stage": "definition-of-ready",
       "health": "green",
       "discoveryStatus": "approved",
       "benefitMetricStatus": "complete",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-04-10",
+      "updatedAt": "2026-04-10T00:00:00Z",
       "epics": [
         {
           "slug": "epic-2-core-loop-infrastructure",
           "name": "Core Loop Infrastructure",
           "status": "not-started",
           "stories": [
-            { "slug": "p1.5-workspace-state-session-continuity", "name": "Implement workspace/state.json cross-session continuity and /checkpoint convention", "stage": "definition-of-ready", "dorStatus": "signed-off", "health": "green", "reviewStatus": "passed", "highFindings": 0, "testPlan": { "status": "written", "totalTests": 13, "passing": 0 }, "acTotal": 8, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "oversightLevel": "high", "signedOffBy": "Hamish — platform maintainer / operator", "signedOffAt": "2026-04-10", "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.5-workspace-state-session-continuity-dor.md", "updatedAt": "2026-04-10" },
-            { "slug": "p1.3-assurance-agent-ci-gate", "name": "Deploy assurance agent as automated CI gate on PR open/update", "stage": "definition-of-ready", "dorStatus": "signed-off", "health": "green", "reviewStatus": "passed", "highFindings": 0, "testPlan": { "status": "written", "totalTests": 10, "passing": 0 }, "acTotal": 6, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "oversightLevel": "high", "signedOffBy": "Hamish — platform maintainer / operator", "signedOffAt": "2026-04-10", "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.3-assurance-agent-ci-gate-dor.md", "updatedAt": "2026-04-10" },
-            { "slug": "p1.4-watermark-gate", "name": "Implement watermark gate for eval regression detection", "stage": "definition-of-ready", "dorStatus": "signed-off", "health": "green", "reviewStatus": "passed", "highFindings": 0, "testPlan": { "status": "written", "totalTests": 15, "passing": 0 }, "acTotal": 6, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "oversightLevel": "high", "signedOffBy": "Hamish — platform maintainer / operator", "signedOffAt": "2026-04-10", "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.4-watermark-gate-dor.md", "updatedAt": "2026-04-10" }
+            {
+              "slug": "p1.5-workspace-state-session-continuity",
+              "name": "Implement workspace/state.json cross-session continuity and /checkpoint convention",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 13,
+                "passing": 0
+              },
+              "acTotal": 8,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "oversightLevel": "high",
+              "signedOffBy": "Hamish \u00e2\u20ac\u201d platform maintainer / operator",
+              "signedOffAt": "2026-04-10",
+              "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.5-workspace-state-session-continuity-dor.md",
+              "updatedAt": "2026-04-10"
+            },
+            {
+              "slug": "p1.3-assurance-agent-ci-gate",
+              "name": "Deploy assurance agent as automated CI gate on PR open/update",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 10,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "oversightLevel": "high",
+              "signedOffBy": "Hamish \u00e2\u20ac\u201d platform maintainer / operator",
+              "signedOffAt": "2026-04-10",
+              "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.3-assurance-agent-ci-gate-dor.md",
+              "updatedAt": "2026-04-10"
+            },
+            {
+              "slug": "p1.4-watermark-gate",
+              "name": "Implement watermark gate for eval regression detection",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 15,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "oversightLevel": "high",
+              "signedOffBy": "Hamish \u00e2\u20ac\u201d platform maintainer / operator",
+              "signedOffAt": "2026-04-10",
+              "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.4-watermark-gate-dor.md",
+              "updatedAt": "2026-04-10"
+            }
           ]
         },
         {
@@ -28,8 +96,55 @@
           "name": "Distribution and Surface Model",
           "status": "not-started",
           "stories": [
-            { "slug": "p1.1-distribution-progressive-disclosure", "name": "Implement versioned skill distribution and progressive skill disclosure", "stage": "definition-of-ready", "dorStatus": "signed-off", "health": "green", "reviewStatus": "passed", "highFindings": 0, "testPlan": { "status": "written", "totalTests": 12, "passing": 0 }, "acTotal": 8, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "oversightLevel": "high", "signedOffBy": "Hamish — platform maintainer / operator", "signedOffAt": "2026-04-10", "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.1-distribution-progressive-disclosure-dor.md", "updatedAt": "2026-04-10" },
-            { "slug": "p1.2-surface-adapter-model-foundations", "name": "Implement surface adapter model foundations — Path B git-native reference", "stage": "definition-of-ready", "dorStatus": "signed-off", "health": "green", "reviewStatus": "passed", "highFindings": 0, "testPlan": { "status": "written", "totalTests": 13, "passing": 0 }, "acTotal": 6, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "oversightLevel": "high", "signedOffBy": "Hamish — platform maintainer / operator", "signedOffAt": "2026-04-10", "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.2-surface-adapter-model-foundations-dor.md", "updatedAt": "2026-04-10" }
+            {
+              "slug": "p1.1-distribution-progressive-disclosure",
+              "name": "Implement versioned skill distribution and progressive skill disclosure",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 12,
+                "passing": 0
+              },
+              "acTotal": 8,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "oversightLevel": "high",
+              "signedOffBy": "Hamish \u00e2\u20ac\u201d platform maintainer / operator",
+              "signedOffAt": "2026-04-10",
+              "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.1-distribution-progressive-disclosure-dor.md",
+              "updatedAt": "2026-04-10",
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/11",
+              "dispatchedAt": "2026-04-10T00:00:00Z",
+              "dispatchTarget": "github-agent"
+            },
+            {
+              "slug": "p1.2-surface-adapter-model-foundations",
+              "name": "Implement surface adapter model foundations \u00e2\u20ac\u201d Path B git-native reference",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 13,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "oversightLevel": "high",
+              "signedOffBy": "Hamish \u00e2\u20ac\u201d platform maintainer / operator",
+              "signedOffAt": "2026-04-10",
+              "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.2-surface-adapter-model-foundations-dor.md",
+              "updatedAt": "2026-04-10"
+            }
           ]
         },
         {
@@ -37,60 +152,502 @@
           "name": "Standards, Eval Suite, and Compliance Documentation",
           "status": "not-started",
           "stories": [
-            { "slug": "p1.6-living-eval-regression-suite", "name": "Implement workspace/suite.json living eval regression suite", "stage": "definition-of-ready", "dorStatus": "signed-off", "health": "green", "reviewStatus": "passed", "highFindings": 0, "testPlan": { "status": "written", "totalTests": 14, "passing": 0 }, "acTotal": 6, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "oversightLevel": "high", "signedOffBy": "Hamish — platform maintainer / operator", "signedOffAt": "2026-04-10", "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.6-living-eval-regression-suite-dor.md", "updatedAt": "2026-04-10" },
-            { "slug": "p1.7-standards-model-phase1", "name": "Implement standards model Phase 1 — three anchor disciplines, standards/index.yml, POLICY.md floors", "stage": "definition-of-ready", "dorStatus": "signed-off", "health": "green", "reviewStatus": "passed", "highFindings": 0, "testPlan": { "status": "written", "totalTests": 12, "passing": 0 }, "acTotal": 6, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "oversightLevel": "high", "signedOffBy": "Hamish — platform maintainer / operator", "signedOffAt": "2026-04-10", "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.7-standards-model-phase1-dor.md", "updatedAt": "2026-04-10" },
-            { "slug": "p1.8-model-risk-documentation", "name": "Author and review MODEL-RISK.md before non-dogfood adoption", "stage": "definition-of-ready", "dorStatus": "signed-off", "health": "green", "reviewStatus": "passed", "highFindings": 0, "testPlan": { "status": "written", "totalTests": 9, "passing": 0 }, "acTotal": 5, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "oversightLevel": "high", "signedOffBy": "Hamish — platform maintainer / operator", "signedOffAt": "2026-04-10", "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.8-model-risk-documentation-dor.md", "updatedAt": "2026-04-10" }
+            {
+              "slug": "p1.6-living-eval-regression-suite",
+              "name": "Implement workspace/suite.json living eval regression suite",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 14,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "oversightLevel": "high",
+              "signedOffBy": "Hamish \u00e2\u20ac\u201d platform maintainer / operator",
+              "signedOffAt": "2026-04-10",
+              "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.6-living-eval-regression-suite-dor.md",
+              "updatedAt": "2026-04-10"
+            },
+            {
+              "slug": "p1.7-standards-model-phase1",
+              "name": "Implement standards model Phase 1 \u00e2\u20ac\u201d three anchor disciplines, standards/index.yml, POLICY.md floors",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 12,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "oversightLevel": "high",
+              "signedOffBy": "Hamish \u00e2\u20ac\u201d platform maintainer / operator",
+              "signedOffAt": "2026-04-10",
+              "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.7-standards-model-phase1-dor.md",
+              "updatedAt": "2026-04-10"
+            },
+            {
+              "slug": "p1.8-model-risk-documentation",
+              "name": "Author and review MODEL-RISK.md before non-dogfood adoption",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "oversightLevel": "high",
+              "signedOffBy": "Hamish \u00e2\u20ac\u201d platform maintainer / operator",
+              "signedOffAt": "2026-04-10",
+              "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.8-model-risk-documentation-dor.md",
+              "updatedAt": "2026-04-10"
+            }
           ]
         }
       ],
       "guardrails": [
-        { "id": "MC-SEC-01", "category": "mandatory-constraint", "label": "No user-supplied content in innerHTML without sanitisation", "status": "na", "evidence": "No viz/DOM changes in any Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "MC-SEC-02", "category": "mandatory-constraint", "label": "No credentials, tokens, or personal data in committed files", "status": "met", "evidence": "NFRs across p1.6, p1.7, p1.8 explicitly exclude credentials/PII; p1.3 Architecture Constraints reference product constraint #12 (credential names only in CI config). No violations found across 8 stories.", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "MC-SEC-03", "category": "mandatory-constraint", "label": "Viz reads local JSON only — no external fetch calls", "status": "na", "evidence": "No viz changes in any Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "MC-CORRECT-01", "category": "mandatory-constraint", "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)", "status": "na", "evidence": "No new gate logic introduced in stories reviewed. P1.4 watermark gate and P1.3 CI gate stories do not define viz gate logic — that is existing viz scope, not story deliverable.", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "MC-CORRECT-02", "category": "mandatory-constraint", "label": "Fields written to pipeline-state.json must exist in schema", "status": "na", "evidence": "No new pipeline-state.json schema fields introduced in stories reviewed (p1.6, p1.7, p1.8 all content-only)", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "MC-CORRECT-03", "category": "mandatory-constraint", "label": "Fields read by viz from pipeline-state.json must exist in schema", "status": "na", "evidence": "No new pipeline-state.json fields read by viz introduced in stories reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "MC-SELF-01", "category": "mandatory-constraint", "label": "pipeline-viz.html renders without build step, server, or network", "status": "na", "evidence": "No viz changes in Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "MC-SELF-02", "category": "mandatory-constraint", "label": "No npm devDependencies in pipeline-viz.html runtime", "status": "na", "evidence": "No viz changes in Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "MC-CONSIST-01", "category": "mandatory-constraint", "label": "Stage enum in schema updated when skill adds/removes stage", "status": "na", "evidence": "No new stages added or removed in Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "MC-CONSIST-02", "category": "mandatory-constraint", "label": "Gate add/remove synced with SKILL.md criteria", "status": "na", "evidence": "No new governance gates added or removed in Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "MC-A11Y-01", "category": "mandatory-constraint", "label": "Interactive elements keyboard-accessible", "status": "na", "evidence": "No viz/UI changes in Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "MC-A11Y-02", "category": "mandatory-constraint", "label": "Colour not sole indicator of gate status (icons/labels present)", "status": "na", "evidence": "No viz/UI changes in Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "ADR-001", "category": "adr", "label": "Single-file viz, no build step", "status": "na", "evidence": "No viz changes in Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "ADR-002", "category": "adr", "label": "Gates must use evidence fields, not stage-proxy", "status": "na", "evidence": "No new gate logic in Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "ADR-003", "category": "adr", "label": "Schema-first: fields defined before use", "status": "na", "evidence": "No new pipeline-state.json schema fields introduced in Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "ADR-004", "category": "adr", "label": "context.yml is the single config source of truth", "status": "met", "evidence": "p1.3 Architecture Constraints explicitly requires CI config to use context.yml secret names, not hardcoded values. No skill file hardcoding found across 8 stories.", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "PAT-01", "category": "pattern", "label": "Single-file HTML viz architecture", "status": "na", "evidence": "No viz changes in Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "PAT-02", "category": "pattern", "label": "State access via parsed pipelineState global", "status": "na", "evidence": "No viz changes in Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "PAT-03", "category": "pattern", "label": "Gate pass/fail by evidence fields", "status": "na", "evidence": "No new gate logic introduced; existing gate pattern not violated by story scope", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "PAT-04", "category": "pattern", "label": "Schema evolution: add fields simultaneously", "status": "na", "evidence": "No schema evolution in Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "PAT-05", "category": "pattern", "label": "Config reading via context.yml", "status": "na", "evidence": "No new skill config reading introduced in Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "AP-01", "category": "anti-pattern", "label": "Gate logic checking feature.stage only", "status": "na", "evidence": "No new gate logic introduced", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "AP-02", "category": "anti-pattern", "label": "Hardcoded org/tool names in skill files", "status": "na", "evidence": "No skill file content changes in Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "AP-03", "category": "anti-pattern", "label": "External CDN dependencies in viz at runtime", "status": "na", "evidence": "No viz changes in Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "AP-04", "category": "anti-pattern", "label": "Fields used by viz/skills but not in schema", "status": "na", "evidence": "No new pipeline-state.json fields introduced in Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "AP-05", "category": "anti-pattern", "label": "Committing viz changes without passing check-viz-syntax.js", "status": "na", "evidence": "No viz changes in Phase 1 story deliverables reviewed", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "AP-06", "category": "anti-pattern", "label": "Directly mutating pipeline-state.json outside skills", "status": "na", "evidence": "No story deliverable requires direct pipeline-state.json mutation outside skill execution", "assessedBy": "/review", "assessedAt": "2026-04-10" },
-        { "id": "NFR-checkpoint-performance", "category": "nfr", "label": "/checkpoint write completes within 60 seconds", "status": "met", "evidence": "AC3a in test plan; manual observation required at DoD (MM3 sub-condition 1); DoR passed — enforcement deferred to DoD verify-completion", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-state-no-credentials", "category": "nfr", "label": "state.json must not contain credentials, PAT tokens, or secrets", "status": "met", "evidence": "AC scope is pipeline metadata and artefact paths only; coding agent instructions block explicitly prohibits credentials in state.json; NFR profile security section confirmed", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-state-audit-timestamp", "category": "nfr", "label": "Each phase section in state.json includes lastUpdated timestamp", "status": "met", "evidence": "AC5 unit test `state-written-after-phase-boundary-lastUpdated` enforces ISO 8601 lastUpdated; AC3b enforces non-null required fields", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-watermark-performance", "category": "nfr", "label": "Watermark gate completes within 2 minutes (component of 10-min gate budget)", "status": "met", "evidence": "AC scope is TSV read + comparison + append; no network calls; test plan NFR test nfr-gate-completes-within-10-minutes covers timeout; DoR passed — enforcement deferred to DoD verify-completion", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-results-tsv-no-secrets", "category": "nfr", "label": "results.tsv contains no credentials, secrets, or PII — scores, hashes, timestamps only", "status": "met", "evidence": "Story NFR security section explicit; coding agent instructions block prohibits secrets; data classification confirmed Internal", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-results-tsv-append-only", "category": "nfr", "label": "results.tsv rows are never deleted or modified — append-only audit history", "status": "met", "evidence": "AC2/AC3/AC5 tests verify append behaviour; story NFR audit section explicit; referenced in product constraint #5 (two-layer model)", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-p1.1-assembled-token-budget", "category": "nfr", "label": "Assembled copilot-instructions.md base layer ≤8,000 tokens at session-start (outer loop phase only)", "status": "met", "evidence": "Story NFR section explicit; AC3/AC5 test assembled file structure; enforcement deferred to DoD token count measurement", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-p1.1-no-credentials-in-config", "category": "nfr", "label": "Distribution mechanism config references credential names only — no credential values or PAT tokens in committed files", "status": "met", "evidence": "Story NFR security section explicit; coding agent instructions block enforces constraint #12; data classification confirmed Internal", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-p1.1-composition-audit-trail", "category": "nfr", "label": "Assembly composition order and source versions readable from assembled file header", "status": "met", "evidence": "Story NFR audit section explicit; AC5 tests header contains platform version reference; AC5 unit tests assert layer order documented", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-p1.2-path-b-resolution-performance", "category": "nfr", "label": "Path B surface type resolution completes within 1 second", "status": "met", "evidence": "Story NFR performance section explicit; DoR passed — enforcement deferred to DoD verify-completion", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-p1.2-adapter-no-credentials", "category": "nfr", "label": "git-native adapter must not log, persist, or transmit credential values", "status": "met", "evidence": "Story NFR security section explicit; credential-pattern test in test plan; coding agent instructions block enforces constraint #12", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-p1.2-result-audit-fields", "category": "nfr", "label": "result object from adapter includes surface type and adapter version for trace audit", "status": "met", "evidence": "AC1 unit tests assert result.surface echoed; story NFR audit section explicit; coding agent instructions specify result object fields required", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-p1.6-suite-eval-performance", "category": "nfr", "label": "Full suite evaluation completes within 8 minutes (component of 10-minute gate budget)", "status": "met", "evidence": "Story NFR performance section explicit; NFR test N1 in test plan; DoR passed — enforcement deferred to DoD verify-completion", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-p1.6-suite-no-credentials", "category": "nfr", "label": "suite.json contains no credentials, secrets, or PII — scenario descriptions only", "status": "met", "evidence": "Story NFR security section explicit; NFR test N2 scans for credential patterns; coding agent instructions block explicit", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-p1.6-review-note-audit", "category": "nfr", "label": "Every scenario merge has reviewNote field populated — null reviewNote is an audit gap", "status": "met", "evidence": "Story NFR audit section explicit; NFR test N3 + unit tests U4/U5 enforce non-null reviewNote; coding agent instructions block explicit", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-p1.7-standards-injection-performance", "category": "nfr", "label": "Standards file injection (read 3 files + compute hashes) completes within 30 seconds", "status": "met", "evidence": "Story NFR performance section explicit; NFR test N1 in test plan; DoR passed — enforcement deferred to DoD verify-completion", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-p1.7-security-policy-floors", "category": "nfr", "label": "security-engineering POLICY.md floor includes: no OWASP high/critical without RISK-ACCEPT; secrets never committed", "status": "met", "evidence": "Story NFR security section explicit; NFR test N2 validates both floor items present as binary requirements; coding agent instructions specify minimum floor content", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-p1.7-standards-review-record", "category": "nfr", "label": "Every standards file has lastReviewedBy and lastReviewedDate fields populated", "status": "met", "evidence": "Story NFR audit section explicit; NFR test N3 + integration test I2 enforce review record presence; coding agent instructions block explicit", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-p1.8-model-risk-no-attack-surface", "category": "nfr", "label": "MODEL-RISK.md risk descriptions must not enumerate attack surfaces in operational detail (no port numbers, admin endpoints, infrastructure topology)", "status": "met", "evidence": "Story Security NFR explicit: 'risk descriptions must be at a level appropriate for a governance audience, not an attack surface enumeration'; NFR test N1 scans for credential patterns and adversarially useful content; coding agent instructions block explicit; DoR passed — enforcement confirmed at DoD security review", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" },
-        { "id": "NFR-p1.8-git-audit-trail", "category": "nfr", "label": "Every substantive MODEL-RISK.md update (risk added, evidence record updated, sign-off appended) committed with traceable commit message naming the change type", "status": "met", "evidence": "Story Audit NFR explicit: 'each substantive update must be committed with a traceable commit message — the git history is the audit trail'; NFR test N2 validates commit message traceability; coding agent instructions block sets commit message convention", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-10" }
+        {
+          "id": "MC-SEC-01",
+          "category": "mandatory-constraint",
+          "label": "No user-supplied content in innerHTML without sanitisation",
+          "status": "na",
+          "evidence": "No viz/DOM changes in any Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "No credentials, tokens, or personal data in committed files",
+          "status": "met",
+          "evidence": "NFRs across p1.6, p1.7, p1.8 explicitly exclude credentials/PII; p1.3 Architecture Constraints reference product constraint #12 (credential names only in CI config). No violations found across 8 stories.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "MC-SEC-03",
+          "category": "mandatory-constraint",
+          "label": "Viz reads local JSON only \u00e2\u20ac\u201d no external fetch calls",
+          "status": "na",
+          "evidence": "No viz changes in any Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "MC-CORRECT-01",
+          "category": "mandatory-constraint",
+          "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)",
+          "status": "na",
+          "evidence": "No new gate logic introduced in stories reviewed. P1.4 watermark gate and P1.3 CI gate stories do not define viz gate logic \u00e2\u20ac\u201d that is existing viz scope, not story deliverable.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "MC-CORRECT-02",
+          "category": "mandatory-constraint",
+          "label": "Fields written to pipeline-state.json must exist in schema",
+          "status": "na",
+          "evidence": "No new pipeline-state.json schema fields introduced in stories reviewed (p1.6, p1.7, p1.8 all content-only)",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "MC-CORRECT-03",
+          "category": "mandatory-constraint",
+          "label": "Fields read by viz from pipeline-state.json must exist in schema",
+          "status": "na",
+          "evidence": "No new pipeline-state.json fields read by viz introduced in stories reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "MC-SELF-01",
+          "category": "mandatory-constraint",
+          "label": "pipeline-viz.html renders without build step, server, or network",
+          "status": "na",
+          "evidence": "No viz changes in Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "MC-SELF-02",
+          "category": "mandatory-constraint",
+          "label": "No npm devDependencies in pipeline-viz.html runtime",
+          "status": "na",
+          "evidence": "No viz changes in Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "MC-CONSIST-01",
+          "category": "mandatory-constraint",
+          "label": "Stage enum in schema updated when skill adds/removes stage",
+          "status": "na",
+          "evidence": "No new stages added or removed in Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "MC-CONSIST-02",
+          "category": "mandatory-constraint",
+          "label": "Gate add/remove synced with SKILL.md criteria",
+          "status": "na",
+          "evidence": "No new governance gates added or removed in Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "MC-A11Y-01",
+          "category": "mandatory-constraint",
+          "label": "Interactive elements keyboard-accessible",
+          "status": "na",
+          "evidence": "No viz/UI changes in Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "MC-A11Y-02",
+          "category": "mandatory-constraint",
+          "label": "Colour not sole indicator of gate status (icons/labels present)",
+          "status": "na",
+          "evidence": "No viz/UI changes in Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "ADR-001",
+          "category": "adr",
+          "label": "Single-file viz, no build step",
+          "status": "na",
+          "evidence": "No viz changes in Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "ADR-002",
+          "category": "adr",
+          "label": "Gates must use evidence fields, not stage-proxy",
+          "status": "na",
+          "evidence": "No new gate logic in Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "ADR-003",
+          "category": "adr",
+          "label": "Schema-first: fields defined before use",
+          "status": "na",
+          "evidence": "No new pipeline-state.json schema fields introduced in Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "ADR-004",
+          "category": "adr",
+          "label": "context.yml is the single config source of truth",
+          "status": "met",
+          "evidence": "p1.3 Architecture Constraints explicitly requires CI config to use context.yml secret names, not hardcoded values. No skill file hardcoding found across 8 stories.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "PAT-01",
+          "category": "pattern",
+          "label": "Single-file HTML viz architecture",
+          "status": "na",
+          "evidence": "No viz changes in Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "PAT-02",
+          "category": "pattern",
+          "label": "State access via parsed pipelineState global",
+          "status": "na",
+          "evidence": "No viz changes in Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "PAT-03",
+          "category": "pattern",
+          "label": "Gate pass/fail by evidence fields",
+          "status": "na",
+          "evidence": "No new gate logic introduced; existing gate pattern not violated by story scope",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "PAT-04",
+          "category": "pattern",
+          "label": "Schema evolution: add fields simultaneously",
+          "status": "na",
+          "evidence": "No schema evolution in Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "PAT-05",
+          "category": "pattern",
+          "label": "Config reading via context.yml",
+          "status": "na",
+          "evidence": "No new skill config reading introduced in Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "AP-01",
+          "category": "anti-pattern",
+          "label": "Gate logic checking feature.stage only",
+          "status": "na",
+          "evidence": "No new gate logic introduced",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "AP-02",
+          "category": "anti-pattern",
+          "label": "Hardcoded org/tool names in skill files",
+          "status": "na",
+          "evidence": "No skill file content changes in Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "AP-03",
+          "category": "anti-pattern",
+          "label": "External CDN dependencies in viz at runtime",
+          "status": "na",
+          "evidence": "No viz changes in Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "AP-04",
+          "category": "anti-pattern",
+          "label": "Fields used by viz/skills but not in schema",
+          "status": "na",
+          "evidence": "No new pipeline-state.json fields introduced in Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "AP-05",
+          "category": "anti-pattern",
+          "label": "Committing viz changes without passing check-viz-syntax.js",
+          "status": "na",
+          "evidence": "No viz changes in Phase 1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "AP-06",
+          "category": "anti-pattern",
+          "label": "Directly mutating pipeline-state.json outside skills",
+          "status": "na",
+          "evidence": "No story deliverable requires direct pipeline-state.json mutation outside skill execution",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-checkpoint-performance",
+          "category": "nfr",
+          "label": "/checkpoint write completes within 60 seconds",
+          "status": "met",
+          "evidence": "AC3a in test plan; manual observation required at DoD (MM3 sub-condition 1); DoR passed \u00e2\u20ac\u201d enforcement deferred to DoD verify-completion",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-state-no-credentials",
+          "category": "nfr",
+          "label": "state.json must not contain credentials, PAT tokens, or secrets",
+          "status": "met",
+          "evidence": "AC scope is pipeline metadata and artefact paths only; coding agent instructions block explicitly prohibits credentials in state.json; NFR profile security section confirmed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-state-audit-timestamp",
+          "category": "nfr",
+          "label": "Each phase section in state.json includes lastUpdated timestamp",
+          "status": "met",
+          "evidence": "AC5 unit test `state-written-after-phase-boundary-lastUpdated` enforces ISO 8601 lastUpdated; AC3b enforces non-null required fields",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-watermark-performance",
+          "category": "nfr",
+          "label": "Watermark gate completes within 2 minutes (component of 10-min gate budget)",
+          "status": "met",
+          "evidence": "AC scope is TSV read + comparison + append; no network calls; test plan NFR test nfr-gate-completes-within-10-minutes covers timeout; DoR passed \u00e2\u20ac\u201d enforcement deferred to DoD verify-completion",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-results-tsv-no-secrets",
+          "category": "nfr",
+          "label": "results.tsv contains no credentials, secrets, or PII \u00e2\u20ac\u201d scores, hashes, timestamps only",
+          "status": "met",
+          "evidence": "Story NFR security section explicit; coding agent instructions block prohibits secrets; data classification confirmed Internal",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-results-tsv-append-only",
+          "category": "nfr",
+          "label": "results.tsv rows are never deleted or modified \u00e2\u20ac\u201d append-only audit history",
+          "status": "met",
+          "evidence": "AC2/AC3/AC5 tests verify append behaviour; story NFR audit section explicit; referenced in product constraint #5 (two-layer model)",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-p1.1-assembled-token-budget",
+          "category": "nfr",
+          "label": "Assembled copilot-instructions.md base layer \u00e2\u2030\u00a48,000 tokens at session-start (outer loop phase only)",
+          "status": "met",
+          "evidence": "Story NFR section explicit; AC3/AC5 test assembled file structure; enforcement deferred to DoD token count measurement",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-p1.1-no-credentials-in-config",
+          "category": "nfr",
+          "label": "Distribution mechanism config references credential names only \u00e2\u20ac\u201d no credential values or PAT tokens in committed files",
+          "status": "met",
+          "evidence": "Story NFR security section explicit; coding agent instructions block enforces constraint #12; data classification confirmed Internal",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-p1.1-composition-audit-trail",
+          "category": "nfr",
+          "label": "Assembly composition order and source versions readable from assembled file header",
+          "status": "met",
+          "evidence": "Story NFR audit section explicit; AC5 tests header contains platform version reference; AC5 unit tests assert layer order documented",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-p1.2-path-b-resolution-performance",
+          "category": "nfr",
+          "label": "Path B surface type resolution completes within 1 second",
+          "status": "met",
+          "evidence": "Story NFR performance section explicit; DoR passed \u00e2\u20ac\u201d enforcement deferred to DoD verify-completion",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-p1.2-adapter-no-credentials",
+          "category": "nfr",
+          "label": "git-native adapter must not log, persist, or transmit credential values",
+          "status": "met",
+          "evidence": "Story NFR security section explicit; credential-pattern test in test plan; coding agent instructions block enforces constraint #12",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-p1.2-result-audit-fields",
+          "category": "nfr",
+          "label": "result object from adapter includes surface type and adapter version for trace audit",
+          "status": "met",
+          "evidence": "AC1 unit tests assert result.surface echoed; story NFR audit section explicit; coding agent instructions specify result object fields required",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-p1.6-suite-eval-performance",
+          "category": "nfr",
+          "label": "Full suite evaluation completes within 8 minutes (component of 10-minute gate budget)",
+          "status": "met",
+          "evidence": "Story NFR performance section explicit; NFR test N1 in test plan; DoR passed \u00e2\u20ac\u201d enforcement deferred to DoD verify-completion",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-p1.6-suite-no-credentials",
+          "category": "nfr",
+          "label": "suite.json contains no credentials, secrets, or PII \u00e2\u20ac\u201d scenario descriptions only",
+          "status": "met",
+          "evidence": "Story NFR security section explicit; NFR test N2 scans for credential patterns; coding agent instructions block explicit",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-p1.6-review-note-audit",
+          "category": "nfr",
+          "label": "Every scenario merge has reviewNote field populated \u00e2\u20ac\u201d null reviewNote is an audit gap",
+          "status": "met",
+          "evidence": "Story NFR audit section explicit; NFR test N3 + unit tests U4/U5 enforce non-null reviewNote; coding agent instructions block explicit",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-p1.7-standards-injection-performance",
+          "category": "nfr",
+          "label": "Standards file injection (read 3 files + compute hashes) completes within 30 seconds",
+          "status": "met",
+          "evidence": "Story NFR performance section explicit; NFR test N1 in test plan; DoR passed \u00e2\u20ac\u201d enforcement deferred to DoD verify-completion",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-p1.7-security-policy-floors",
+          "category": "nfr",
+          "label": "security-engineering POLICY.md floor includes: no OWASP high/critical without RISK-ACCEPT; secrets never committed",
+          "status": "met",
+          "evidence": "Story NFR security section explicit; NFR test N2 validates both floor items present as binary requirements; coding agent instructions specify minimum floor content",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-p1.7-standards-review-record",
+          "category": "nfr",
+          "label": "Every standards file has lastReviewedBy and lastReviewedDate fields populated",
+          "status": "met",
+          "evidence": "Story NFR audit section explicit; NFR test N3 + integration test I2 enforce review record presence; coding agent instructions block explicit",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-p1.8-model-risk-no-attack-surface",
+          "category": "nfr",
+          "label": "MODEL-RISK.md risk descriptions must not enumerate attack surfaces in operational detail (no port numbers, admin endpoints, infrastructure topology)",
+          "status": "met",
+          "evidence": "Story Security NFR explicit: 'risk descriptions must be at a level appropriate for a governance audience, not an attack surface enumeration'; NFR test N1 scans for credential patterns and adversarially useful content; coding agent instructions block explicit; DoR passed \u00e2\u20ac\u201d enforcement confirmed at DoD security review",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        },
+        {
+          "id": "NFR-p1.8-git-audit-trail",
+          "category": "nfr",
+          "label": "Every substantive MODEL-RISK.md update (risk added, evidence record updated, sign-off appended) committed with traceable commit message naming the change type",
+          "status": "met",
+          "evidence": "Story Audit NFR explicit: 'each substantive update must be committed with a traceable commit message \u00e2\u20ac\u201d the git history is the audit trail'; NFR test N2 validates commit message traceability; coding agent instructions block sets commit message convention",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-10"
+        }
       ]
     }
   ]

@@ -2,7 +2,7 @@
 
 **Feature:** Skills Platform — Phase 1 Foundation
 **Discovery reference:** artefacts/2026-04-09-skills-platform-phase1/discovery.md
-**Last updated:** 2026-04-09
+**Last updated:** 2026-04-10
 
 ---
 
@@ -173,4 +173,13 @@
 **Rationale:** "Mechanisms validated through live dogfood observation during outer loop sessions 2026-04-10." The most operationally sensitive manual checks in p1.8 are Scenario 3 (AC3: T3M1 evidence record completeness — dependency-gated on P1.3 + P1.7 DoD-complete and a real trace existing) and Scenario 4 (AC4: sign-off record sign-off action at DoD). Both will be observed directly during the T3M1/MM1 dogfood measurement run, which constitutes the de facto domain review.
 **Made by:** Hamish, 2026-04-10
 **Revisit trigger:** If Scenario 3 (T3M1 evidence record) fails when evaluated against the first real inner loop trace, or if AC4 sign-off record is structurally incomplete at DoD — revisit verification script and MODEL-RISK.md authoring before marking DoD.
+---
+
+---
+**2026-04-10 | ARCH | p1.1 distribution mechanism**
+**Decision:** Adopt the pull model for skills distribution. Squad runs the assembly script locally (or during repo setup) to pull the platform layer from the skills-repo and generate `copilot-instructions.md`. No CI scheduler is required. No squad merge action is required.
+**Alternatives considered:** (A) Push model — platform CI publishes new versions to consuming squad repos via automated PRs or direct commits. Rejected: requires CI credentials scoped to external repos, adds a scheduler dependency, and creates merge noise in squad repos whenever the platform updates. (B) Pull model (chosen) — squad explicitly runs the assembly script to fetch the latest platform layer and regenerate the assembled file locally.
+**Rationale:** Simpler to implement and consistent with the existing `scripts/sync-from-upstream.sh` pattern already in the repo. No credentials required for CI jobs. The assembly script is a single-step operation that squads run at setup time or when they want a platform update. Satisfies M1 (assembled `copilot-instructions.md` present within one session) without any external scheduling dependency. The dogfood context (`heymishy/skills-repo`, `ci: github-actions`) has no multi-squad coordination requirement that would favour push.
+**Made by:** Hamish, 2026-04-10
+**Revisit trigger:** If Phase 2 introduces a multi-squad operator model where platform updates must propagate to 10+ repos simultaneously — reconsider push model with a dedicated platform CI job and PAT-scoped credentials strategy.
 ---
