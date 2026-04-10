@@ -195,6 +195,11 @@ Remaining 8 disciplines at core tier. Domain-tier standards for at least three p
 
 Actual vs estimated velocity comparison per story and skill set. Calibration gaps surfaced to outer loop Phase A review. EVAL.md dimension added for estimation accuracy tracked in the watermark.
 
+> **STATUS: Delivered ahead of schedule — story decomposition not required.**
+> The `/estimate` skill was delivered during Phase 1 /levelup (commit `a3c83c4`, amended `547299d`). It implements E1/E2/E3 progressive estimation using calendar time + engagement fraction derivation, JSONL session reconstruction, `workspace/estimation-norms.md` normalisation table, and per-band calibrated suggestions. Phase 1 baseline actuals are recorded in `workspace/state.json` and `workspace/results.tsv`.
+> Two benefit metrics to add to the Phase 2 benefit-metric artefact: **MM4** — estimation calibration accuracy (E2 error below 20% by feature 3, measured automatically from results.tsv); **MM5** — flow findings conversion rate (≥50% of logged findings actioned within 2 features).
+> Do not story-decompose P2.5 — the skill is live. Discovery should note MM4 and MM5 as Phase 2 measurement additions only.
+
 ---
 
 ## Runtime selection
