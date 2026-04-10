@@ -278,7 +278,7 @@ If you are picking up a feature after a break:
 - When a skill produces output, save it to the correct artefacts path immediately
 - If a skill asks a clarifying question, answer it before proceeding — do not skip
 - If you are unsure whether to proceed, run `/workflow` rather than guessing
-- **`/checkpoint` threshold: invoke at 55%** for any file-read-heavy phase (definition, review, test-plan, trace, inner loop implementation). The 75% guideline applies only to conversation-only phases. File reads fill the Tool Results context bucket faster than the Messages bucket — by the time the hover indicator shows 55–60%, the Tool Results bucket may be near threshold. Invoke `/checkpoint` at 55% with enough headroom for the write to complete before compaction fires.
+- **`/checkpoint` threshold: invoke at 55%** for any file-read-heavy phase (definition, review, test-plan, trace, inner loop implementation). The 75% guideline applies only to conversation-only phases. File reads fill the Tool Results context bucket faster than the Messages bucket — by the time the hover indicator shows 55–60%, the Tool Results bucket may be near threshold. Invoke `/checkpoint` before reaching the compaction threshold — not at it. The write must complete before compaction fires; invoke with enough context headroom to allow that.
 
 ### Ending a session
 
@@ -287,6 +287,28 @@ Before closing a session:
 2. Note the current pipeline stage in a brief comment on the relevant artefact
 3. If you have uncommitted artefact files, commit them with a message that names the stage:
    e.g. `chore: add discovery artefact for [feature]` or `chore: add test plan for [story]`
+
+### `/checkpoint` convention
+
+`/checkpoint` is the mid-session and end-of-session state write. Same operation, same file (`workspace/state.json`), serving both purposes: phase boundary continuity and session-end handoff.
+
+**When to invoke:**
+Invoke `/checkpoint` before reaching compaction pressure — not at it. At 55% context usage for file-read-heavy phases (definition, review, test-plan, trace, inner loop implementation), or at 75% for conversation-only phases. The write must complete before compaction fires; invoke with enough headroom that the agent can finish writing without being interrupted by context compaction.
+
+**What is written:**
+- `currentPhase` — the name of the current pipeline phase
+- `lastUpdated` — ISO 8601 timestamp of the write (e.g. `2026-04-10T14:00:00Z`)
+- The cycle block for the active phase, containing at minimum `status` and `artefact` path
+- `checkpoint.writtenAt` — the date of the write
+- `checkpoint.contextAtWrite` — a brief summary of what was in progress
+- `checkpoint.resumeInstruction` — the instruction for the next session to resume from this point
+- `checkpoint.pendingActions` — any actions that were pending at the time of the write
+
+**Completion expectation:**
+The entire `/checkpoint` write — from invocation to closing confirmation message — must complete within 60 seconds. If it does not, the session likely ran out of context headroom before the write finished. Invoke earlier next time.
+
+**After writing:**
+The closing confirmation message must include "Pipeline state updated ✅". A new session reading `workspace/state.json` will resume from the checkpoint without verbal priming.
 
 ---
 
