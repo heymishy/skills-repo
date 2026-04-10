@@ -205,6 +205,14 @@
       "reviewNote": "Outcome-orientation confirmed: tests for FINDINGS, SCORE, and VERDICT presence — not for finding category distribution"
     },
     {
+      "taskId": "s-review-incremental-state",
+      "description": "review skill writes each story's state entry to pipeline-state.json and workspace/state.json immediately after writing that story's review report — before loading the next story",
+      "skillSurfaceCombination": "review/github-copilot",
+      "expectedOutcome": "state for each reviewed story is durable in pipeline-state.json before the next story is loaded",
+      "failurePatternGuarded": "Skill batches all state writes to the end of the run — if the session ends mid-review, already-reviewed stories have no durable state record and progress is silently lost",
+      "reviewNote": "Outcome-orientation confirmed: tests for per-story state durability — not for the order stories are reviewed or the review category set"
+    },
+    {
       "taskId": "s-scale-pipeline",
       "description": "scale-pipeline skill produces an artefact documenting the control-plane design for multi-team adoption",
       "skillSurfaceCombination": "scale-pipeline/github-copilot",
