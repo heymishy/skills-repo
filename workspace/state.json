@@ -82,13 +82,13 @@
   },
   "checkpoint": {
     "writtenAt": "2026-04-11",
-    "contextAtWrite": "Phase 1 inner loop complete. All 8 stories merged across 3 epics. 128 checks passing on master. Feature stage advanced to definition-of-done in pipeline-state.json. All decisions logged in artefacts/2026-04-09-skills-platform-phase1/decisions.md (11 W4 RISK-ACCEPTs, all 8 stories covered). One open item: p1.8 AC3 (T3M1 evidence record) cannot be closed until a real inner loop story runs through the live P1.3 CI gate.",
-    "resumeInstruction": "Phase 1 delivery is complete. Next session options: (A) /definition-of-done — run against each merged story starting with p1.5 or p1.1; required to formally close the loop before /levelup; (B) /levelup — blocked on /definition-of-done artefacts existing first; (C) Begin Phase 2 planning — run /workflow to assess readiness. Recommended first action: run /definition-of-done for p1.5 (simplest story, clearest ACs), then batch through remaining stories. p1.8 DoD is partially blocked — complete 4/5 ACs at DoD time; AC3 will be filled when the first real CI trace exists. Read workspace/state.json at session start before any action.",
+    "contextAtWrite": "Phase 1 fully complete. All 8 DoDs written. /levelup complete. /estimate bootstrap done (actuals: 17.5h OL focus, 1h IL human, 173+ premium requests confirmed Apr 9-10). Three /estimate improvements committed (gaugeAtStart, 3-tier derivation, coding_agent SKU note). P2.5 marked delivered in ref-skills-platform-phase1-2.md. HEAD d206fb6. Two pre-Phase-2 fixes remain: (1) p1.6 DoD obs #3 change 'Candidate' to 'Actioned' /levelup finding; (2) workspace/suite.json eval scenario for review per-story incremental state write. After those: Phase 2 discovery.",
+    "resumeInstruction": "Phase 1 delivery is fully complete. Apply two pre-Phase-2 fixes if not yet committed: (A) amend p1.6 DoD artefacts/2026-04-09-skills-platform-phase1/dod/p1.6-living-eval-regression-suite-dod.md observation #3 — change 'Candidate /levelup finding' to 'Actioned /levelup finding' noting DoD template write-back done and DoR skill enhancement deferred to Phase 2; (B) add eval scenario 's-review-incremental-state' to workspace/suite.json for per-story state durability pattern. Then start Phase 2 discovery: read artefacts/2026-04-09-skills-platform-phase1/reference/ref-skills-platform-phase1-2.md P2.1-P2.4 (P2.5 skip — delivered). Phase 2 benefit-metric must add MM4 (estimation calibration <20% E2 error by feature 3) and MM5 (flow findings conversion ≥50%). Record current Copilot gauge % as gaugeAtStart at Phase 2 E1.",
     "pendingActions": [
-      "/definition-of-done for all 8 Phase 1 stories (prerequisite for /levelup)",
-      "/levelup — extract learnings to .github/standards/ and architecture-guardrails.md",
-      "p1.8 AC3 (T3M1 evidence record) — fill when first real inner loop story runs through P1.3 CI gate",
-      "Phase 2 discovery — kick off when Phase 1 DoD is signed"
+      "p1.6 DoD amendment — change obs #3 'Candidate /levelup finding' to 'Actioned /levelup finding' (DoD template write-back done; DoR skill enhancement deferred to Phase 2)",
+      "workspace/suite.json — add 's-review-incremental-state' eval scenario for per-story state write durability",
+      "Phase 2 discovery — after pre-Phase-2 fixes; read ref-skills-platform-phase1-2.md P2.1-P2.4",
+      "p1.8 AC3 (T3M1 evidence record) — fill when first real inner loop story runs through P1.3 CI gate"
     ]
   },
   "estimate": {
