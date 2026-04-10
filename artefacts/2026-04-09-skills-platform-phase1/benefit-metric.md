@@ -33,10 +33,10 @@ This initiative is being dogfooded — the platform team runs the pipeline on it
 
 | Field | Value |
 |-------|-------|
-| `changeReference` | |
+| `changeReference` | PR #12 — `535221c` feat(p1.1): implement versioned skill distribution and progressive disclosure |
 | `distributionMechanism` | pull |
-| `elapsedTime` | |
-| `changePresentInAssembledContext` | |
+| `elapsedTime` | < 1 session open (pull model; assembled file regenerated at PR merge 2026-04-10) |
+| `changePresentInAssembledContext` | Y — all outer loop skills present in assembled fixture; accessible via `/load` without squad file copy |
 | `squadMergeActionRequired` | false |
 
 ---
