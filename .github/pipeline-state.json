@@ -114,7 +114,7 @@
             {
               "slug": "p1.1-distribution-progressive-disclosure",
               "name": "Implement versioned skill distribution and progressive skill disclosure",
-              "stage": "merged",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
@@ -132,12 +132,16 @@
               "signedOffBy": "Hamish â€” platform maintainer / operator",
               "signedOffAt": "2026-04-10",
               "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.1-distribution-progressive-disclosure-dor.md",
-              "updatedAt": "2026-04-10",
+              "updatedAt": "2026-04-11",
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/11",
               "dispatchedAt": "2026-04-10T00:00:00Z",
               "dispatchTarget": "github-agent",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/12",
-              "mergedAt": "2026-04-10"
+              "mergedAt": "2026-04-10",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-04-09-skills-platform-phase1/dod/p1.1-distribution-progressive-disclosure-dod.md"
             },
             {
               "slug": "p1.2-surface-adapter-model-foundations",
@@ -561,28 +565,31 @@
           "id": "NFR-p1.1-assembled-token-budget",
           "category": "nfr",
           "label": "Assembled copilot-instructions.md base layer â‰¤8,000 tokens at session-start (outer loop phase only)",
-          "status": "met",
+          "status": "pass",
           "evidence": "Story NFR section explicit; AC3/AC5 test assembled file structure; enforcement deferred to DoD token count measurement",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-04-10"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-10",
+          "updatedAt": "2026-04-11"
         },
         {
           "id": "NFR-p1.1-no-credentials-in-config",
           "category": "nfr",
           "label": "Distribution mechanism config references credential names only â€” no credential values or PAT tokens in committed files",
-          "status": "met",
+          "status": "pass",
           "evidence": "Story NFR security section explicit; coding agent instructions block enforces constraint #12; data classification confirmed Internal",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-04-10"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-10",
+          "updatedAt": "2026-04-11"
         },
         {
           "id": "NFR-p1.1-composition-audit-trail",
           "category": "nfr",
           "label": "Assembly composition order and source versions readable from assembled file header",
-          "status": "met",
+          "status": "pass",
           "evidence": "Story NFR audit section explicit; AC5 tests header contains platform version reference; AC5 unit tests assert layer order documented",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-04-10"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-10",
+          "updatedAt": "2026-04-11"
         },
         {
           "id": "NFR-p1.2-path-b-resolution-performance",
@@ -704,6 +711,14 @@
           "signal": "on-track",
           "evidence": "/checkpoint invoked multiple times across Phase 1 dogfood run. All three sub-conditions observed met: (1) sessions completed within 60s; (2) required fields present — automated tests confirm; (3) subsequent sessions resumed correctly without verbal priming. Target: all three sub-conditions pass within 2 invocations — met.",
           "lastMeasured": "2026-04-11"
+        },
+        {
+          "metricId": "M1",
+          "name": "Update channel latency",
+          "signal": "on-track",
+          "evidence": "P1.1 DoD — pull model operational; change present without squad merge step; < 1 session open elapsed",
+          "lastMeasured": "2026-04-11",
+          "dodArtefact": "artefacts/2026-04-09-skills-platform-phase1/dod/p1.1-distribution-progressive-disclosure-dod.md"
         }
       ]
     }
