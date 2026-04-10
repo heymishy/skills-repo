@@ -320,6 +320,19 @@ If no NFRs are identified, state this explicitly in the profile:
 
 ---
 
+## Estimate prompt — E2 (run after completion output)
+
+Now that story count and complexity are known, prompt the operator to refine the estimate.
+
+> **Story count and complexity are now known ([n] stories, complexity mix: [1:n, 2:n, 3:n]).**
+> Run `/estimate` to refine the focus-time forecast before moving to /review.
+> Reply: `/estimate` — or `skip` to continue
+
+If the operator replies `/estimate`, invoke the estimate skill (E2 mode).
+If the operator replies `skip`, continue to /review without updating the estimate.
+
+---
+
 ## What this skill does NOT do
 
 - Does not produce API contracts or technical implementation detail

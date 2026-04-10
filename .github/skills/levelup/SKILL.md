@@ -94,6 +94,19 @@ Methods tried and found to not work:
 - Test strategies that gave false confidence
 - Patterns that caused rework
 
+### Category E — Estimation actuals
+
+Run `/estimate` (E3 mode) to compare actual focus time against the E1/E2 forecasts,
+compute phase-level deltas, generate flow improvement findings, and append a row
+to `workspace/estimation-norms.md`.
+
+This step is mandatory if `estimate.e1` or `estimate.e2` is present in `workspace/state.json`.
+If both are null (feature predates `/estimate` or estimation was skipped throughout),
+still run E3 to write the actuals-only baseline row — it seeds the normalisation model
+for future features.
+
+Run `/estimate` now before presenting findings to the operator.
+
 Present findings for confirmation:
 
 > **Patterns identified:**

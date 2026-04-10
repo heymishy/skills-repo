@@ -270,6 +270,21 @@ If option 2:
 
 ---
 
+## Estimate prompt — E1 (run before closing this skill)
+
+Before closing /discovery, prompt the operator to record a rough estimate.
+This seeds the normalisation model — the prompt takes 2 minutes.
+
+> **Before we move to /benefit-metric:**
+> Run `/estimate` to record a rough focus-time forecast for this feature.
+> This gives us a Phase 1 baseline for calibration at /levelup.
+> Reply: `/estimate` — or `skip` to continue without an estimate
+
+If the operator replies `/estimate`, invoke the estimate skill (E1 mode).
+If the operator replies `skip`, write `"e1": null` to `estimate` in `workspace/state.json`.
+
+---
+
 ## State update - mandatory final step
 
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."

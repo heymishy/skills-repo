@@ -8,6 +8,8 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- `.github/skills/estimate/SKILL.md` — new skill: progressive estimation across E1 (at /discovery), E2 (at /definition), and E3 (at /levelup); E1 records rough focus-time forecast; E2 refines once story count and complexity are known with compact `byStory` schema; E3 derives phase boundaries from `workspace/state.json` cycle timestamps, computes deltas and flow improvement findings, and appends a row to `workspace/estimation-norms.md`; null-guard: if E1 skipped, E3 writes actuals-only baseline row with no delta table (2026-04-11)
+
 - `.github/skills/issue-dispatch/SKILL.md` — new skill: creates GitHub issues for DoR-signed-off stories to trigger the GitHub Copilot coding agent; `--target vscode` (minimal stub) and `--target github-agent` (rich inlined body with implementation tasks, decisions, file touchpoints, non-negotiable rules, and artefacts reference table); records `issueUrl`, `dispatchedAt`, `dispatchTarget` in pipeline-state.json (2026-04-10)
 
 ### Changed
@@ -27,6 +29,10 @@ All notable changes to this repository will be documented in this file.
 - `standards/quality-assurance/core.md` — two new requirements from Phase 1 /levelup: consuming story must document exact schema fields required from a producing story at DoR time (A2); NFR guardrail entries must be created at branch-setup time, not deferred (B1) (2026-04-11)
 - `standards/index.yml` — outcome-orientation authoring note added as YAML comment: standards requirements must state what result is enabled or prevented, not just what structure is required (B2) (2026-04-11)
 - `.github/architecture-guardrails.md` — ADR-005 added: agent instructions format (copilot-instructions.md vs AGENTS.md) is a surface adapter concern driven by `vcs.type` in `context.yml`; AGENTS.md is the vendor-neutral AAIF standard; revisit trigger: Phase 2 p1.1-equivalent distribution story (C1) (2026-04-11)
+- `.github/skills/discovery/SKILL.md` — added E1 estimate prompt before State update: invites operator to run `/estimate` (E1 mode) or skip after approval; skip writes `e1: null` to state.json (2026-04-11)
+- `.github/skills/definition/SKILL.md` — added E2 estimate prompt after Completion output: prompts operator to run `/estimate` (E2 mode) once story count and complexity are known (2026-04-11)
+- `.github/skills/levelup/SKILL.md` — added Category E (Estimation actuals) to Step 2: mandatory if E1 or E2 is present; run E3 even if both null to write actuals-only baseline row (2026-04-11)
+- `.github/copilot-instructions.md` — Estimation model section updated: replaced 6-line signals-only entry with E1/E2/E3 model description referencing `/estimate` skill and `workspace/estimation-norms.md` calibration table; retained complexity/scope/oversight signals as inputs (2026-04-11)
 
  with 4-step orient-structure-verify-PR pattern; placed before existing "What the coding agent should NOT do" section (2026-04-10)
 - `bootstrap/SKILL.md` — redacted organisation name in example prompt ("Westpac NZ" → "Org x") to avoid embedding real client names in the template
