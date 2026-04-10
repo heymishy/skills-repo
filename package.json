@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test": "node .github/scripts/check-viz-syntax.js && node .github/scripts/check-governance-sync.js && node .github/scripts/check-skill-contracts.js && node .github/scripts/check-pipeline-artefact-paths.js && node .github/scripts/check-changelog-readme.js && node tests/check-workspace-state.js && node .github/scripts/check-assembly.js && node .github/scripts/check-surface-adapter.js && node .github/scripts/check-model-risk.js && node .github/scripts/check-suite.js && node .github/scripts/check-standards-model.js && node .github/scripts/check-watermark-gate.js"
+    "test": "node .github/scripts/check-viz-syntax.js && node .github/scripts/check-governance-sync.js && node .github/scripts/check-skill-contracts.js && node .github/scripts/check-pipeline-artefact-paths.js && node .github/scripts/check-changelog-readme.js && node tests/check-workspace-state.js && node .github/scripts/check-assembly.js && node .github/scripts/check-surface-adapter.js && node .github/scripts/check-model-risk.js && node .github/scripts/check-suite.js && node .github/scripts/check-standards-model.js && node tests/check-assurance-gate.js && node .github/scripts/check-watermark-gate.js"
   }
 }

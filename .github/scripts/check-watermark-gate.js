@@ -364,11 +364,11 @@ console.log('  NFR: Performance, security, audit');
 
 {
   // nfr-gate-completes-within-2-minutes
-  // Verify that the assurance-gate.yml step or job timeout is ≤ 120 seconds
-  const workflowPath = path.join(root, '.github', 'workflows', 'assurance-gate.yml');
+  // Verify that the watermark-gate.yml step or job timeout is ≤ 120 seconds
+  const workflowPath = path.join(root, '.github', 'workflows', 'watermark-gate.yml');
   const exists = fs.existsSync(workflowPath);
 
-  assert(exists, 'nfr-gate-completes-within-2-minutes-workflow-exists', 'assurance-gate.yml not found');
+  assert(exists, 'nfr-gate-completes-within-2-minutes-workflow-exists', 'watermark-gate.yml not found');
 
   if (exists) {
     const content = fs.readFileSync(workflowPath, 'utf8');
@@ -387,7 +387,7 @@ console.log('  NFR: Performance, security, audit');
       assert(
         !!jobTimeoutMatch,
         'nfr-gate-completes-within-2-minutes-timeout-configured',
-        'No timeout-minutes configured in assurance-gate.yml'
+        'No timeout-minutes configured in watermark-gate.yml'
       );
     }
   }
