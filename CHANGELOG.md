@@ -50,6 +50,31 @@ All notable changes to this repository will be documented in this file.
 
 ---
 
+## [0.6.2] — 2026-04-11
+
+### Added
+
+#### `.github/scripts/viz-functions.js` — pure-function extraction from `pipeline-viz.html`
+
+- CommonJS module exporting all testable logic as pure functions with zero DOM dependencies: `normalizeData`, `gateStatus` / `evaluateGate`, `storyNextSkill`, `featureActionMeta`, `channelLabel`, `computeFleetSummary`, `buildExportJSON`, `buildExportCSV`, and all transitive helpers (`allStories`, `hasHighFindings`, `isReleaseReady`, `featureAgeMinutes`, `formatAge`, `stageRank`, `hasReachedStage`, `loopType`, `stageLabel`, `firstStorySlug`, `firstEpicSlug`, `csvEscape`).
+- New `computeFleetSummary(fleetState)` function — aggregates `repos[]` into `{ total, drifted, platformVersion, lastSyncedAt }`; graceful no-op on null/missing input.
+- New `buildExportJSON(state, fleet)` and `buildExportCSV(state)` pure data builders — browser-independent equivalents of `exportPipelineJson()` / `exportStoriesCsv()` (return strings, no Blob/DOM).
+- `evaluateGate` is an alias for `gateStatus` aligned to the public API name; accepts `opts.gates` and `opts.strictPolicy` parameters replacing global variable reads.
+- Browser inline functions in `pipeline-viz.html` are **not removed** — `viz-functions.js` is a parallel extraction for test use; the viz remains fully self-contained (ADR-001).
+
+#### `.github/scripts/check-viz-behaviour.js` — behavioural test suite
+
+- 25 scenarios across 7 function groups: `normalizeData` (4), `evaluateGate` (5), `storyNextSkill` (5), `featureActionMeta` (4), `channelLabel` (2), `computeFleetSummary` (3), `buildExportJSON` / `buildExportCSV` (2).
+- Zero external dependencies; follows existing `[check-name]` prefix and `✓ / ✗` pass/fail harness pattern.
+- Covers: slug normalisation, gate state transitions, DoR sign-off logic, stale-processing detection, channel hint routing, fleet drift counting, and export round-trip validity.
+
+### Changed
+
+- `package.json` — `check-viz-behaviour.js` appended to end of `npm test` chain (14th check).
+- `.git/hooks/pre-commit` — `check-viz-behaviour.js` added after `check-governance-sync.js`.
+
+---
+
 ## [0.6.1] — 2026-04-11
 
 ### Added
