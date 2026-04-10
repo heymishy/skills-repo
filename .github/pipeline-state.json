@@ -86,7 +86,7 @@
             {
               "slug": "p1.4-watermark-gate",
               "name": "Implement watermark gate for eval regression detection",
-              "stage": "merged",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
@@ -106,7 +106,11 @@
               "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.4-watermark-gate-dor.md",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/16",
               "mergedAt": "2026-04-11",
-              "updatedAt": "2026-04-11"
+              "updatedAt": "2026-04-11",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-04-09-skills-platform-phase1/dod/p1.4-watermark-gate-dod.md"
             }
           ]
         },
@@ -546,28 +550,31 @@
           "id": "NFR-watermark-performance",
           "category": "nfr",
           "label": "Watermark gate completes within 2 minutes (component of 10-min gate budget)",
-          "status": "met",
+          "status": "pass",
           "evidence": "AC scope is TSV read + comparison + append; no network calls; test plan NFR test nfr-gate-completes-within-10-minutes covers timeout; DoR passed â€” enforcement deferred to DoD verify-completion",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-04-10"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-10",
+          "updatedAt": "2026-04-11"
         },
         {
           "id": "NFR-results-tsv-no-secrets",
           "category": "nfr",
           "label": "results.tsv contains no credentials, secrets, or PII â€” scores, hashes, timestamps only",
-          "status": "met",
+          "status": "pass",
           "evidence": "Story NFR security section explicit; coding agent instructions block prohibits secrets; data classification confirmed Internal",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-04-10"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-10",
+          "updatedAt": "2026-04-11"
         },
         {
           "id": "NFR-results-tsv-append-only",
           "category": "nfr",
           "label": "results.tsv rows are never deleted or modified â€” append-only audit history",
-          "status": "met",
+          "status": "pass",
           "evidence": "AC2/AC3/AC5 tests verify append behaviour; story NFR audit section explicit; referenced in product constraint #5 (two-layer model)",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-04-10"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-10",
+          "updatedAt": "2026-04-11"
         },
         {
           "id": "NFR-p1.1-assembled-token-budget",
@@ -738,6 +745,14 @@
           "evidence": "P1.3 DoD — gate mechanism validated by 11 automated tests (synthetic); live CI acceptance test pending first Phase 2 inner loop PR",
           "lastMeasured": "2026-04-11",
           "dodArtefact": "artefacts/2026-04-09-skills-platform-phase1/dod/p1.3-assurance-agent-ci-gate-dod.md"
+        },
+        {
+          "metricId": "M4",
+          "name": "Watermark gate blocks regression",
+          "signal": "on-track",
+          "evidence": "P1.4 DoD — 32 automated tests passing; block-on-drop and PR-surface mechanisms validated; live acceptance test pending operator run before Phase 2",
+          "lastMeasured": "2026-04-11",
+          "dodArtefact": "artefacts/2026-04-09-skills-platform-phase1/dod/p1.4-watermark-gate-dod.md"
         }
       ]
     }
