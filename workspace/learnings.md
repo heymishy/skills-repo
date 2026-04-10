@@ -259,4 +259,44 @@ Alternatively, if using `create_file` or similar tools that overwrite the full f
 
 ---
 
+## Pipeline gap — decisions.md cross-session continuity check needed before Phase 2 discovery
+
+### Observed — 2026-04-11 (post p1.4 DoD session)
+
+**Circumstance:** During the p1.4 DoD run, context compacted mid-write. Two specific decisions.md entries that were to be logged in that session — "CI topology ASSUMPTION: GitHub Actions as primary CI surface" and "AGENTS.md adapter ARCH: surface-adapter model handles non-git agent surfaces" — may not have been written before compaction fired. The p1.4 DoD artefact was committed, but the decisions.md state was not explicitly confirmed after the compaction event.
+
+**Risk:** If either entry is absent, Phase 2 discovery starts with an incomplete decision log. The CI topology assumption is load-bearing for any Phase 2 story that touches multi-surface CI; the AGENTS.md adapter decision constrains the surface-adapter extension model. Discovering an absent entry mid-Phase-2 discovery causes a back-fill that breaks traceability (the decision appears to have been made after discovery, not before).
+
+**Required pre-Phase-2 action:** Before starting Phase 2 discovery, open `artefacts/2026-04-09-skills-platform-phase1/decisions.md` and verify both entries are present:
+1. CI topology ASSUMPTION entry (should reference GitHub Actions as primary surface, Bitbucket deferred)
+2. AGENTS.md adapter ARCH decision (should reference surface-adapter model, non-git surface handling)
+
+If either is missing: add it with today's date as a carry-forward entry, reference the original decision context (p1.4 DoD session), and note the gap in the commit message.
+
+**Finding:** Compaction mid-write creates a silent decisions.md gap — there is no diff to alert the next session that a write was incomplete. The only reliable detection method is an explicit check at phase-boundary time before the next skill run that depends on decisions.md as input.
+
+**Proposed pipeline fix:** Add a decisions.md completeness check to the Phase 2 discovery entry condition: "before starting /discovery or /definition for a new phase, verify decisions.md contains all entries flagged in the preceding phase's DoD observations and learnings log."
+
+**Action:** Check decisions.md before Phase 2 discovery. Flag for /levelup.
+
+---
+
+## DoD observation gap — p1.6 cross-story schema dependency not captured at DoD time
+
+### Observed — 2026-04-11 (post p1.4 DoD session, cross-referenced against merge learnings log)
+
+**Circumstance:** The cross-story schema dependency failure (p1.4 watermark-gate.js requiring `skillSetHash` and `surfaceType` fields from `workspace/suite.json` authored by p1.6) was captured in `workspace/learnings.md` under "Cross-story schema dependency — producing story did not know consuming story's schema requirements." However, this entry was written as a general pipeline gap during the Phase 1 inner loop learnings log — not as a specific p1.6 DoD observation in the DoD artefact itself.
+
+**The gap:** The p1.6 DoD artefact (`dod/p1.6-living-eval-regression-suite-dod.md`) should contain an explicit observation flagging that p1.6 was the producing story for `workspace/suite.json`, that the schema it produced did not include the fields required by p1.4, and that this caused a live CI failure on p1.4's PR. Without this observation in the p1.6 DoD artefact, the /trace and /levelup skills reading p1.6's DoD chain will not surface the schema contract gap as a p1.6-specific finding — it will remain only in the general learnings log, where it is harder to connect back to the producing story.
+
+**Why the DoD artefact is the right place:** The DoD artefact is the canonical record of what shipped and what was observed at ship time. A schema gap that caused a peer story's CI failure is a material observation about p1.6's delivery — it belongs in p1.6's DoD alongside the other observations, not only in a shared learnings file. When /trace runs post-Phase-2, it should be able to read p1.6's DoD and find the cross-story contract note without having to scan learnings.md.
+
+**Required action:** Add a "Cross-story schema contract gap" observation to the p1.6 DoD artefact before running /levelup. The observation should record: (1) p1.6 authored `workspace/suite.json` without the `skillSetHash` and `surfaceType` fields; (2) p1.4's `watermark-gate.js` required those fields at runtime; (3) the gap caused a CI failure resolved by adding the two fields to `suite.json` in PR #16; (4) the fix is in master as of 2026-04-11.
+
+**Finding:** DoD artefact observations are under-specified as a category. The DoD template says "Observations and /levelup candidates" but does not explicitly instruct the agent to record cross-story runtime failures discovered after the producing story's merge. Add this as a named observation type in the DoD template.
+
+**Action:** Amend p1.6 DoD artefact before /levelup. Flag template gap for /levelup write-back to `templates/definition-of-done.md`.
+
+---
+
 *More signals will be added here as Phase 1 dogfood run progresses.*
