@@ -1,11 +1,12 @@
 {
   "feature": "2026-04-09-skills-platform-phase1",
-  "lastUpdated": "2026-04-10",
+  "lastUpdated": "2026-04-10T01:02:58Z",
   "currentPhase": "inner-coding-loop",
   "cycle": {
     "discovery": {
       "status": "approved",
       "artefact": "artefacts/2026-04-09-skills-platform-phase1/discovery.md",
+      "completedAt": "2026-04-09T09:00:00Z",
       "approvedBy": "Hamish",
       "approvedDate": "2026-04-09"
     },
@@ -100,6 +101,4 @@
     ]
   }
 }
-    ]
-  }
-}
+

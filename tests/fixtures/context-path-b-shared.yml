@@ -1,0 +1,56 @@
+# context.yml — Path B shared format
+# Valid for: P1.1 assembly configuration AND P1.2 surface type resolution
+# One file, two consumers — no format conflict.
+# Verifies: AC6 — context-yml-valid-for-p11-and-p12
+#
+# P1.1 (distribution/assembly) reads: meta, source_control, agent, runtime
+# P1.2 (surface adapter resolution) reads: surface.path, surface.type
+# surface.path: explicit-declaration (Path B)
+
+meta:
+  name: "Example Squad Context"
+  scope: team
+  regulated: false
+
+source_control:
+  platform: github
+  base_branch: main
+  merge_request_term: "pull request"
+  pr_command: "gh pr create --draft"
+  artefact_root: ".github"
+
+agent:
+  instruction_file: "copilot-instructions.md"
+
+architecture:
+  ea_registry_repo: "https://github.com/heymishy/ea-registry"
+  ea_registry_authoritative: true
+
+surface:
+  path: explicit-declaration
+  type: git-native
+
+runtime:
+  language: javascript
+  test_framework: jest
+  package_manager: npm
+  ci: github-actions
+
+delivery:
+  cycle_term: "sprint"
+  phase_gate: false
+  change_management:
+    process: none
+    tool: null
+
+tools:
+  project_management: github-issues
+  documentation: null
+  artifact_registry: null
+  monitoring: null
+  log_aggregation: null
+  alerting: null
+
+compliance:
+  frameworks: []
+  sensitive_data_categories: []
