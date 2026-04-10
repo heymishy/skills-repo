@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-04-11T12:00:00Z",
+  "updated": "2026-04-11",
   "programmes": [],
   "features": [
     {
@@ -13,7 +13,7 @@
       "discoveryStatus": "approved",
       "benefitMetricStatus": "complete",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-04-11T00:00:00Z",
+      "updatedAt": "2026-04-11",
       "epics": [
         {
           "slug": "epic-2-core-loop-infrastructure",
@@ -225,7 +225,7 @@
             {
               "slug": "p1.7-standards-model-phase1",
               "name": "Implement standards model Phase 1 â€” three anchor disciplines, standards/index.yml, POLICY.md floors",
-              "stage": "merged",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
@@ -245,7 +245,10 @@
               "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.7-standards-model-phase1-dor.md",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/18",
               "mergedAt": "2026-04-11",
-              "updatedAt": "2026-04-11"
+              "updatedAt": "2026-04-11",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-04-09-skills-platform-phase1/dod/p1.7-standards-model-phase1-dod.md"
             },
             {
               "slug": "p1.8-model-risk-documentation",
@@ -672,30 +675,30 @@
         },
         {
           "id": "NFR-p1.7-standards-injection-performance",
-          "category": "nfr",
-          "label": "Standards file injection (read 3 files + compute hashes) completes within 30 seconds",
-          "status": "met",
-          "evidence": "Story NFR performance section explicit; NFR test N1 in test plan; DoR passed â€” enforcement deferred to DoD verify-completion",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-04-10"
+          "category": "performance",
+          "label": "Standards file injection (read + hash 3 files) completes within 30 seconds in P1.3 CI gate run",
+          "status": "deferred",
+          "evidence": "Structural design meets budget; live timed acceptance test pending first Phase 2 CI gate run",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-11"
         },
         {
           "id": "NFR-p1.7-security-policy-floors",
-          "category": "nfr",
-          "label": "security-engineering POLICY.md floor includes: no OWASP high/critical without RISK-ACCEPT; secrets never committed",
+          "category": "security",
+          "label": "security-engineering POLICY.md includes OWASP high/critical check + secrets-never-committed floor as binary requirements",
           "status": "met",
-          "evidence": "Story NFR security section explicit; NFR test N2 validates both floor items present as binary requirements; coding agent instructions specify minimum floor content",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-04-10"
+          "evidence": "N2 tests passing: n2-security-policy-has-owasp-check and n2-security-policy-has-secrets-check — both PASS",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-11"
         },
         {
           "id": "NFR-p1.7-standards-review-record",
-          "category": "nfr",
-          "label": "Every standards file has lastReviewedBy and lastReviewedDate fields populated",
+          "category": "audit",
+          "label": "Every standards file has lastReviewedBy and lastReviewedDate populated — no file missing a review record",
           "status": "met",
-          "evidence": "Story NFR audit section explicit; NFR test N3 + integration test I2 enforce review record presence; coding agent instructions block explicit",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-04-10"
+          "evidence": "N3 — 6 assertions, all passing; all three core.md and all three POLICY.md files have both review fields populated",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-11"
         },
         {
           "id": "NFR-p1.8-model-risk-no-attack-surface",
@@ -760,6 +763,14 @@
           "evidence": "P1.4 DoD — 32 automated tests passing; block-on-drop and PR-surface mechanisms validated; live acceptance test pending operator run before Phase 2",
           "lastMeasured": "2026-04-11",
           "dodArtefact": "artefacts/2026-04-09-skills-platform-phase1/dod/p1.4-watermark-gate-dod.md"
+        },
+        {
+          "metricId": "M3",
+          "name": "Standards injection in trace — verifiable governance",
+          "signal": "deferred",
+          "evidence": "P1.7 DoD — standards files, index.yml, and POLICY.md floors all in place; standardsInjected hash evidence pending first Phase 2 inner loop PR through P1.3 CI gate",
+          "lastMeasured": "2026-04-11",
+          "dodArtefact": "artefacts/2026-04-09-skills-platform-phase1/dod/p1.7-standards-model-phase1-dod.md"
         }
       ]
     }
