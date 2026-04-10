@@ -201,3 +201,24 @@
 **Made by:** Hamish, 2026-04-11
 **Revisit trigger:** At Phase 2 p1.1-equivalent story (distribution mechanism) — add `agent_instructions.format` adapter to `context.yml` and update assembly script to branch on `vcs.type`.
 ---
+
+---
+**2026-04-11 | SCOPE | Phase 1 /levelup**
+**Decision:** Defer the following Phase 1 pipeline evolution candidates to a Phase 2 deliberate evolution cycle. They require changes to skill files or artefact templates and must go through the full pipeline process (discovery → definition → DoR → coded PR), not a direct edit during /levelup.
+
+**Batch: Phase 1 pipeline evolution — deferred to Phase 2**
+
+| # | Item | Target | Source |
+|---|------|--------|--------|
+| D1 | `/definition`: add 3-question dependency chain validation before writing any prerequisite story | `.github/skills/definition/SKILL.md` | Phase 1 `workspace/learnings.md` |
+| D2 | `/definition`: add testability-filter check — before writing any AC/constraint requiring an external environment, verify it is testable in the delivery context | `.github/skills/definition/SKILL.md` | Phase 1 `workspace/learnings.md` |
+| D3 | `/definition`: add explicit learnings-write step to skill exit sequence | `.github/skills/definition/SKILL.md` | Phase 1 `workspace/learnings.md` |
+| D4 | `/review`: change state-write instruction from post-run batch to incremental-write-per-story (write state before loading the next story) | `.github/skills/review/SKILL.md` | Phase 1 `workspace/learnings.md` |
+| D7 | DoD template: add "cross-story runtime failure" as a named observation type in the Observations section | `.github/templates/definition-of-done.md` | p1.6 DoD Obs 3 + `workspace/learnings.md` |
+| D8 | DoR skill / template: consuming story must document exact field names and types required from any file written by another story, in the DoR contract | `.github/skills/definition-of-ready/SKILL.md` | p1.6 learnings entry — cross-story schema dependency |
+| D9 | DoD template: add a "verification prompt" field — a canned prompt the operator can run in a second session to spot-check the DoD output | `.github/templates/definition-of-done.md` | Phase 1 `workspace/learnings.md` |
+
+**Entry condition for Phase 2 evolution cycle:** Treat this log entry as the canonical list of pipeline debt inherited from Phase 1. Each item requires its own story with a test plan before implementation. Suggested grouping: D1/D2/D3 → one `/definition` improvement story; D4 → one `/review` improvement story; D7/D8/D9 → one template improvement story.
+**Made by:** Hamish, 2026-04-11 (via Phase 1 /levelup pattern extraction)
+**Revisit trigger:** Phase 2 pipeline evolution story planning kick-off.
+---

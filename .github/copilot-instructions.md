@@ -282,11 +282,14 @@ If you are picking up a feature after a break:
 
 ### Ending a session
 
-Before closing a session:
-1. Confirm any artefacts produced during the session have been saved to `artefacts/`
-2. Note the current pipeline stage in a brief comment on the relevant artefact
-3. If you have uncommitted artefact files, commit them with a message that names the stage:
-   e.g. `chore: add discovery artefact for [feature]` or `chore: add test plan for [story]`
+Before closing a session, execute this sequence in order:
+1. Write any learnings signals from this session to `workspace/learnings.md`
+2. Write the checkpoint block to `workspace/state.json` with `currentPhase`, `lastUpdated`, and `checkpoint.resumeInstruction`
+3. Stage all artefact files produced this session: `git add artefacts/[feature-slug]/...`
+4. Commit with message format: `chore: [phase] checkpoint [feature-slug] — [one-line summary]`
+5. Confirm the commit hash and hook pass/fail results in the closing message
+
+Each step is mandatory. Skipping step 1 leaves no learnings signal. Skipping steps 3–4 leaves no recovery point for the next session. If any step fails, state the failure explicitly — do not silently omit.
 
 ### `/checkpoint` convention
 

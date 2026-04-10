@@ -135,6 +135,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 | ADR-002 | Active | Gates must use evidence fields, not stage-proxy | All `evaluateGate()` implementations |
 | ADR-003 | Active | Schema-first: fields defined before use | `pipeline-state.schema.json` evolution |
 | ADR-004 | Active | `context.yml` is the single config source of truth | Skill files, viz config reading |
+| ADR-005 | Active | Agent instructions format is a surface adapter concern driven by `vcs.type` | Assembly script, skill distribution |
 
 ---
 
@@ -223,6 +224,29 @@ Governance audit found org/tool names hardcoded in skill files and the viz havin
 
 #### Revisit trigger
 If the viz gains a server-side rendering layer, direct `context.yml` reading becomes feasible and should be adopted.
+
+---
+
+### ADR-005: Agent instructions format is a surface adapter concern
+
+**Status:** Active
+**Date:** 2026-04-11
+**Source decision:** `artefacts/2026-04-09-skills-platform-phase1/decisions.md` — 2026-04-11 ARCH entry (Phase 1 /levelup promotion)
+**Decided by:** Hamish
+
+#### Context
+The skills platform assembly script must emit agent instruction files that work across GitHub-hosted environments (GitHub Copilot, Codex) and non-GitHub environments (Bitbucket, Jenkins, Cursor, Claude Code). Two competing formats exist: `.github/copilot-instructions.md` (GitHub-specific) and `AGENTS.md` (vendor-neutral, Linux Foundation AAIF standard). A hardcoded output path breaks distribution to non-GitHub inner loop tooling.
+
+#### Decision
+Agent instructions file format is an adapter concern resolved by `context.yml`, not a fixed platform output. The assembly script emits `.github/copilot-instructions.md` when `vcs.type` is `github`, and `AGENTS.md` otherwise. Content is identical across formats. `AGENTS.md` is the vendor-neutral standard and any compliant inner loop tooling can consume it.
+
+#### Consequences
+**Easier:** Enterprise fleet distribution works without per-platform forks. Inner loop tooling can be swapped without changing skill content.
+**Harder / constrained:** Assembly script must branch on `vcs.type`. The `context.yml` schema must expose an `agent_instructions.format` field (or derive it from `vcs.type`).
+**Off the table:** Hardcoding `.github/copilot-instructions.md` as the sole assembly output path.
+
+#### Revisit trigger
+At Phase 2 p1.1-equivalent story (distribution mechanism) — implement the `agent_instructions.format` adapter in `context.yml` and update the assembly script to branch on `vcs.type`.
 
 ---
 
@@ -344,6 +368,11 @@ If the viz gains a server-side rendering layer, direct `context.yml` reading bec
 - id: ADR-004
   category: adr
   label: "context.yml is the single config source of truth"
+  section: Active ADRs
+
+- id: ADR-005
+  category: adr
+  label: "Agent instructions format driven by vcs.type (surface adapter concern)"
   section: Active ADRs
 
 - id: PAT-01

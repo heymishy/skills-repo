@@ -12,3 +12,9 @@ disciplines:
     surface-variants:
       saas-gui: standards/quality-assurance/saas-gui-variant.md
       manual: standards/quality-assurance/manual-variant.md
+
+# Authoring note: standards requirements must be outcome-oriented.
+# Each MUST/SHOULD/MAY states what result is enabled or prevented, not just what
+# structure or process is required. Prefer "MUST write X so that Y cannot occur"
+# over "MUST have an X". An outcome-oriented requirement is falsifiable;
+# a structure-only requirement is an assertion that any reviewer can attest without evidence.

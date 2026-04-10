@@ -21,7 +21,13 @@ All notable changes to this repository will be documented in this file.
 
 ### Changed
 
-- `copilot-instructions.md` — added "GitHub Copilot coding agent — project orientation" section with 4-step orient-structure-verify-PR pattern; placed before existing "What the coding agent should NOT do" section (2026-04-10)
+- `copilot-instructions.md` — "Ending a session" section replaced with explicit 5-step exit sequence: (1) write learnings to `workspace/learnings.md`, (2) write checkpoint block to `workspace/state.json`, (3) git add artefact files, (4) commit with standard message format, (5) confirm commit hash and hook results. Replaces implicit 3-item prose list. Source: Phase 1 /levelup — session-end commit is load-bearing recovery point for next session; must be a named sequenced instruction, not inferred from prose (2026-04-11)
+- `standards/software-engineering/core.md` — three new requirements from Phase 1 /levelup: atomic-replace pattern for mutable state files (A1); package.json conflict resolution via `git log origin/master` check (A3); list existing files before writing to shared directories e.g. `.github/workflows/` (A4) (2026-04-11)
+- `standards/quality-assurance/core.md` — two new requirements from Phase 1 /levelup: consuming story must document exact schema fields required from a producing story at DoR time (A2); NFR guardrail entries must be created at branch-setup time, not deferred (B1) (2026-04-11)
+- `standards/index.yml` — outcome-orientation authoring note added as YAML comment: standards requirements must state what result is enabled or prevented, not just what structure is required (B2) (2026-04-11)
+- `.github/architecture-guardrails.md` — ADR-005 added: agent instructions format (copilot-instructions.md vs AGENTS.md) is a surface adapter concern driven by `vcs.type` in `context.yml`; AGENTS.md is the vendor-neutral AAIF standard; revisit trigger: Phase 2 p1.1-equivalent distribution story (C1) (2026-04-11)
+
+ with 4-step orient-structure-verify-PR pattern; placed before existing "What the coding agent should NOT do" section (2026-04-10)
 - `bootstrap/SKILL.md` — redacted organisation name in example prompt ("Westpac NZ" → "Org x") to avoid embedding real client names in the template
 - `copilot-instructions.md` — added dogfooding comment to `## Product context` block flagging the filled-in prose as temporary and reminding post-Phase 4 cleanup to restore the generic placeholder
 - `review/SKILL.md` — added per-story incremental state write instruction to mandatory state update section; state is now written after each story's report file is created, before the next story is loaded (dogfood gap finding 2026-04-10 session 5)
