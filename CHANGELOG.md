@@ -8,6 +8,7 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- `.github/skills/issue-dispatch/SKILL.md` — new skill: creates GitHub issues for DoR-signed-off stories to trigger the GitHub Copilot coding agent; `--target vscode` (minimal stub) and `--target github-agent` (rich inlined body with implementation tasks, decisions, file touchpoints, non-negotiable rules, and artefacts reference table); records `issueUrl`, `dispatchedAt`, `dispatchTarget` in pipeline-state.json (2026-04-10)
 - `package.json` — minimal package with `test` script chaining the 5 governance checks (viz-syntax, governance-sync, skill-contracts, pipeline-artefact-paths, changelog-readme); zero external dependencies (2026-04-10)
 - `.github/workflows/copilot-setup-steps.yml` — GitHub Copilot coding agent setup workflow; installs Node.js + Python, runs `npm test` and `validate-trace.sh --ci` as baseline verification before agent starts work (2026-04-10)
 - `.github/instructions/pipeline.instructions.md` — artefact protection instruction for coding agent; `applyTo: "**"` guards `artefacts/`, `.github/skills/`, `.github/templates/` against agent modification (2026-04-10)

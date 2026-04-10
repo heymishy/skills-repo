@@ -377,6 +377,17 @@ const CONTRACTS = [
       'Control plane design',
     ],
   },
+  // ── Dispatch skills ───────────────────────────────────────────────────────
+  {
+    skill: 'issue-dispatch',
+    file:  '.github/skills/issue-dispatch/SKILL.md',
+    required: [
+      '--target vscode',
+      '--target github-agent',
+      'issueUrl',
+      'dispatchTarget',
+    ],
+  },
   // ── Workflow navigator ────────────────────────────────────────────────────
   {
     skill: 'workflow',

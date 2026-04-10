@@ -117,6 +117,9 @@ Step  Skill                  Entry condition                     Exit condition
 `/systematic-debugging` — 4-phase root cause process when a task is stuck
 `/implementation-review` — spec + quality review between task batches
 
+**Inner loop dispatch (step 6.9):**
+`/issue-dispatch` — creates GitHub issues for DoR-signed-off stories to trigger the GitHub Copilot coding agent; supports `--target vscode` (minimal stub, default) and `--target github-agent` (rich inlined body); updates `pipeline-state.json` with dispatch record
+
 **Cross-cutting architecture support:**
 `/ea-registry` — organisation-level application/interface registry query,
 contribution, audit, and dependency context feed to /discovery, /definition,
