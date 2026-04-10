@@ -146,7 +146,7 @@
             {
               "slug": "p1.2-surface-adapter-model-foundations",
               "name": "Implement surface adapter model foundations â€” Path B git-native reference",
-              "stage": "merged",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
@@ -169,7 +169,11 @@
               "dispatchTarget": "github-agent",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/13",
               "mergedAt": "2026-04-10",
-              "updatedAt": "2026-04-10"
+              "updatedAt": "2026-04-11",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-04-09-skills-platform-phase1/dod/p1.2-surface-adapter-model-foundations-dod.md"
             }
           ]
         },
@@ -595,28 +599,31 @@
           "id": "NFR-p1.2-path-b-resolution-performance",
           "category": "nfr",
           "label": "Path B surface type resolution completes within 1 second",
-          "status": "met",
+          "status": "pass",
           "evidence": "Story NFR performance section explicit; DoR passed â€” enforcement deferred to DoD verify-completion",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-04-10"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-10",
+          "updatedAt": "2026-04-11"
         },
         {
           "id": "NFR-p1.2-adapter-no-credentials",
           "category": "nfr",
           "label": "git-native adapter must not log, persist, or transmit credential values",
-          "status": "met",
+          "status": "pass",
           "evidence": "Story NFR security section explicit; credential-pattern test in test plan; coding agent instructions block enforces constraint #12",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-04-10"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-10",
+          "updatedAt": "2026-04-11"
         },
         {
           "id": "NFR-p1.2-result-audit-fields",
           "category": "nfr",
           "label": "result object from adapter includes surface type and adapter version for trace audit",
-          "status": "met",
+          "status": "pass",
           "evidence": "AC1 unit tests assert result.surface echoed; story NFR audit section explicit; coding agent instructions specify result object fields required",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-04-10"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-10",
+          "updatedAt": "2026-04-11"
         },
         {
           "id": "NFR-p1.6-suite-eval-performance",
