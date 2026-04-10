@@ -217,8 +217,9 @@
 | D7 | DoD template: add "cross-story runtime failure" as a named observation type in the Observations section | `.github/templates/definition-of-done.md` | p1.6 DoD Obs 3 + `workspace/learnings.md` |
 | D8 | DoR skill / template: consuming story must document exact field names and types required from any file written by another story, in the DoR contract | `.github/skills/definition-of-ready/SKILL.md` | p1.6 learnings entry — cross-story schema dependency |
 | D9 | DoD template: add a "verification prompt" field — a canned prompt the operator can run in a second session to spot-check the DoD output | `.github/templates/definition-of-done.md` | Phase 1 `workspace/learnings.md` |
+| B1-enforce | DoR / branch-setup: add a check that `NFR-[story-id]-*` guardrail entries exist in `pipeline-state.json` before the branch is considered set up. The `standards/quality-assurance/core.md` MUST now exists; this is the skill-side enforcement companion. | `.github/skills/definition-of-ready/SKILL.md` or DoR contract template | Phase 1: p1.3 delivered with no NFR-p1.3-* entries in pipeline-state.json; B1 standard written 2026-04-11 |
 
-**Entry condition for Phase 2 evolution cycle:** Treat this log entry as the canonical list of pipeline debt inherited from Phase 1. Each item requires its own story with a test plan before implementation. Suggested grouping: D1/D2/D3 → one `/definition` improvement story; D4 → one `/review` improvement story; D7/D8/D9 → one template improvement story.
+**Entry condition for Phase 2 evolution cycle:** Treat this log entry as the canonical list of pipeline debt inherited from Phase 1. Each item requires its own story with a test plan before implementation. Suggested grouping: D1/D2/D3 → one `/definition` improvement story; D4 → one `/review` improvement story; D7/D8/D9 + B1-enforce → one template/DoR improvement story.
 **Made by:** Hamish, 2026-04-11 (via Phase 1 /levelup pattern extraction)
 **Revisit trigger:** Phase 2 pipeline evolution story planning kick-off.
 ---

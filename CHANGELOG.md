@@ -12,6 +12,7 @@ All notable changes to this repository will be documented in this file.
 
 ### Changed
 
+- `.github/templates/definition-of-done.md` — added "DoD Observations" section (cross-story runtime failures, NFR gaps, /levelup candidate tagging guidance) and "Operator Verification Prompt" section (5-question canned prompt for second-session spot-check: AC evidence, deferred ACs, metric signal, unblocked follow-ups, outcome verdict consistency). Source: Phase 1 D9 learnings item, operator-directed pre-Phase-2 promotion (2026-04-11)
 - `.github/skills/issue-dispatch/SKILL.md` — added Step 0 preflight: checks for unpushed commits and blocks issue creation with an explicit warning; agent clones at assignment time so unpushed commits are invisible, causing stale-clone throwaway runs (2026-04-10)
 - `package.json` — minimal package with `test` script chaining the 5 governance checks (viz-syntax, governance-sync, skill-contracts, pipeline-artefact-paths, changelog-readme); zero external dependencies (2026-04-10)
 - `.github/workflows/copilot-setup-steps.yml` — GitHub Copilot coding agent setup workflow; installs Node.js + Python, runs `npm test` and `validate-trace.sh --ci` as baseline verification before agent starts work (2026-04-10)

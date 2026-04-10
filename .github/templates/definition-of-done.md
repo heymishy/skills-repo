@@ -87,3 +87,41 @@ Deviations are not necessarily failures — they must be recorded and will be su
 
 **Follow-up actions:**
 [None / list actions with owner]
+
+---
+
+## DoD Observations
+
+<!--
+  Record any material observations about the delivery not captured elsewhere:
+  - Cross-story runtime failures discovered post-merge (e.g. a file produced by
+    this story caused a consuming story's CI to fail due to missing schema fields)
+  - NFR gaps or guardrail entries absent at delivery time
+  - Sequencing decisions that other DoD runs should be aware of
+  - Any scope deviation resolved after PR open
+  Tag each observation as a /levelup candidate if it should feed back to
+  standards, architecture-guardrails, or skill files at the next /levelup run.
+-->
+
+[None / numbered list of observations]
+
+---
+
+## Operator Verification Prompt
+
+<!--
+  Optional. Paste the block below into a second independent session to spot-check
+  this DoD output. Recommended for high-oversight stories or any DoD generated
+  under context pressure.
+-->
+
+```
+Review this Definition of Done artefact for [story title].
+Check:
+1. Does every AC row have a concrete evidence reference (test name, observable behaviour, or CI run)?
+2. Are any ACs marked satisfied with no evidence, or deferred without a recorded trigger?
+3. Does the metric signal row name a real measurement event, or just say "TBD"?
+4. Are any scope deviations or follow-up actions that should block release not flagged?
+5. Is the outcome verdict (COMPLETE / COMPLETE WITH DEVIATIONS / INCOMPLETE) consistent with the AC and deviation rows?
+Report findings as HIGH / MEDIUM / LOW.
+```
