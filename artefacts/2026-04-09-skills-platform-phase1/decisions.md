@@ -67,6 +67,15 @@
 ---
 
 ---
+**2026-04-10 | ARCH | p1.1 distribution model — pull model chosen**
+**Decision:** Pull model chosen for skills distribution. Squad engineers run `bash scripts/assemble-copilot-instructions.sh` locally to regenerate their `copilot-instructions.md` from a versioned skills-repo reference. No CI scheduler required. No squad merge action required — regeneration is a deliberate operator action, not an automated push.
+**Alternatives considered:** (A) Push model — skills-repo CI pushes assembled context to consuming squad repos on each commit. Rejected: requires write access to all consuming squad repos, introduces a CI scheduler dependency, and creates a hard coupling between skills-repo CI health and squad repo updates. (B) Pull model — squad runs the assembly script locally; update is available at the next session open. Chosen: no cross-repo write access required, no CI scheduler, consistent with the existing `install.sh` pull pattern already in this repo.
+**Rationale:** Both models satisfy M1 (update channel latency). Pull model (≤ one session open) meets the target SLA and requires zero infrastructure beyond a local shell. It also eliminates the push model's security concern (no write tokens in CI for external repos). The dogfood context (GitHub Actions, single operator) makes the pull model the natural choice. No squad merge step is required — the squad engineer runs the script and the assembled file is updated in their working copy.
+**Made by:** Hamish, 2026-04-10
+**Revisit trigger:** If a consuming squad requires fully automated updates with no operator action (e.g. enterprise onboarding at scale). At that point revisit push model as a Phase 2 distribution option.
+---
+
+---
 **2026-04-10 | RISK-ACCEPT | review finding 1-M1 — p1.5**
 **Decision:** Accept AC3 in p1.5 (workspace/state.json session continuity) as compound. The test plan author will split it into AC3a, AC3b, and AC3c in the test spec. The story file is not updated.
 **Alternatives considered:** Split AC3 in the story file now — adds noise to the story without changing the deliverable; the story is already approved and the compound structure is clear enough for a human reader.
