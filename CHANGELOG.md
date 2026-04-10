@@ -50,6 +50,46 @@ All notable changes to this repository will be documented in this file.
 
 ---
 
+## [0.6.1] — 2026-04-11
+
+### Added
+
+#### `pipeline-viz.html` — PURPOSE comment block
+
+- HTML comment block immediately after `<title>` documents audience (platform maintainer, solo operator, squad tech lead), explicit out-of-scope surfaces (fleet dashboard, non-engineer approval, real-time ops), fleet file source note, and ADR-001 self-contained constraint reference.
+
+#### `pipeline-viz.html` — ⬇ Export button
+
+- `exportPipelineJson()` — serialises `allData` + `_fleet` (when loaded) to `pipeline-export-{date}.json` via `Blob` + `URL.createObjectURL`; no server request.
+- `exportStoriesCsv()` — writes story-level rows (slug, name, feature, stage, health, dor/pr/dod status, lastUpdated) to `pipeline-stories-{date}.csv`.
+- ⬇ Export button appended to summary bar; silent (no-ops) when no state is loaded; triggers both downloads on click.
+
+#### `pipeline-viz.html` — channel hint tags on next-action rows
+
+- `channelLabel()` helper maps `ide / approval / agent / blocker` to display strings.
+- `featureActionMeta()` return objects gain a `channel` field: `blocked` → `blocker`; processing stages → `agent`; `benefit-metric` / `definition-of-ready` human stages → `approval`; all other human stages → `ide`; `done` → `null` (no tag shown).
+- `.channel-tag` CSS: four variants (ide/approval/agent/blocker) with colour-coded border + background matching existing palette tokens.
+- Channel tag rendered inline in the next-action row after the action text.
+
+#### `pipeline-viz.html` — decisions.md note in governance panel
+
+- Paragraph added below "Pipeline authority skills" details block: clarifies that per-feature decisions live in `artefacts/[feature]/decisions.md` and structural decisions are promoted to Active ADRs in `architecture-guardrails.md`.
+
+#### `artefacts/2026-04-09-skills-platform-phase1/decisions.md` — three Phase 2 pre-discovery ARCH entries
+
+- Fleet file loading architecture: `fleet-state.json` (CI-generated aggregate) primary; `fleet-registry.json` (static registration list) fallback; both optional.
+- Viz scope definition: single-repo platform maintainer tool; explicit not-a-fleet-dashboard / not-a-non-engineer-approval-surface scope documented in PURPOSE comment.
+- Channel hint tag design decision: `channel` field on `featureActionMeta()` return; approval stages vs ide stages; Phase 2 routing first step rationale.
+
+### Changed
+
+#### `pipeline-viz.html` — `loadFleetRegistry()` fleet-state.json primary
+
+- Replaces single `fleet-registry.json` fetch with a two-candidate fallback loop: `['fleet-state.json', 'fleet-registry.json']`; breaks on first successful response.
+- Comment block updated to document `fleet-state.json` as CI-generated aggregate vs `fleet-registry.json` as static registration list.
+
+---
+
 ## [0.6.0] — 2026-04-11
 
 ### Added

@@ -242,3 +242,45 @@
 **Made by:** Hamish, 2026-04-11
 **Revisit trigger:** If a phase skill cannot write `startedAt` at session begin time (e.g. agent resumes mid-session from a checkpoint) — add a `resumedAt` field alongside `startedAt` to distinguish a continuation from a fresh start. Also revisit if clock skew across timezones causes phase span anomalies in multi-operator features.
 ---
+
+**2026-04-11 | ARCH | pipeline-viz.html pre-Phase-2 fleet architecture**
+
+**Decision:** Fleet file loading uses two candidates in order: `fleet-state.json` (CI-generated aggregate of all squad `pipeline-state.json` files) as primary; `fleet-registry.json` (static squad registration list) as fallback. First successful fetch wins. Both are optional — viz renders without either.
+
+**Alternatives considered:** (A) Single `fleet-registry.json` only (previous approach, [0.6.0]) — loses the CI-generated aggregate story and requires operators to maintain both files independently. (B) Merge both into one file — reduces flexibility; CI can regenerate state without touching the static registration list.
+
+**Rationale:** `fleet-state.json` is the authoritative runtime aggregate written by CI from the collection of live `pipeline-state.json` files. `fleet-registry.json` is a bootstrapped list of squad names and metadata. Keeping them separate lets CI overwrite state without touching the registration manifest. The viz consumer is agnostic to which file was loaded — same UI impact.
+
+**Made by:** Hamish, 2026-04-11
+
+**Revisit trigger:** If Phase 2 introduces a formal fleet API endpoint, replace the file-fetch fallback chain with a single API call and remove the candidates loop.
+
+---
+
+**2026-04-11 | ARCH | pipeline-viz.html viz scope definition**
+
+**Decision:** The viz is scoped as a single-repo platform maintainer tool and is explicitly NOT a fleet dashboard, a non-engineer approval surface, or a real-time ops tool. This scope is documented in a PURPOSE comment block at the top of pipeline-viz.html (after `<title>`).
+
+**Alternatives considered:** (A) No scope comment — scoping stays implicit; downstream contributors risk building dashboard features that conflict with non-dashboard constraints. (B) README-only scope note — disconnected from the file; invisible to contributors editing pipeline-viz.html directly.
+
+**Rationale:** ADR-001 establishes the no-build-step, no-server, self-contained constraint. The PURPOSE comment makes the target audience and out-of-scope surfaces visible to anyone opening the file. Phase 2 P2.x features (Confluence/Slack adapters, approval surfaces) are explicitly referenced as out-of-scope for the viz file, preventing premature scope creep into the single-file format.
+
+**Made by:** Hamish, 2026-04-11
+
+**Revisit trigger:** If the viz itself is refactored into a build-step application (breaking ADR-001), remove or update the PURPOSE comment to reflect the new architecture.
+
+---
+
+**2026-04-11 | ARCH | pipeline-viz.html channel hint tags — Phase 2 persona routing first step**
+
+**Decision:** Next-action rows on feature cards display a channel hint tag (ide / approval / agent / blocker) identifying where the action happens. Channel is a field on the `featureActionMeta()` return object. Rendering is purely presentational — no routing logic, no multi-surface dispatch. Approval stages (`benefit-metric`, `definition-of-ready`) get the `approval` channel; inner-loop agent stages get `agent`; blocked states get `blocker`; all other human stages get `ide`.
+
+**Alternatives considered:** (A) Skip channel hints entirely until Phase 2 routing is designed — defers the value but the UI already needs some hint about "where does this need to happen". (B) Add channel as a free-text badge — too much variance, harder to style or route on later. (C) Build a full persona routing system now — over-engineered; Phase 2 P2.x stories own that.
+
+**Rationale:** The channel tag makes the viz immediately useful for operators managing work across multiple surfaces (IDE, sign-off portal, CI) without requiring a routing system to be in place. The field is already on the meta object, making Phase 2 routing a straightforward consumer addition rather than a structural change.
+
+**Made by:** Hamish, 2026-04-11
+
+**Revisit trigger:** When Phase 2 P2.x surface adapter integration is designed — `channel` should become the dispatch key in the routing table. Add `routing` field alongside `channel` if dispatch targets need richer metadata.
+
+---

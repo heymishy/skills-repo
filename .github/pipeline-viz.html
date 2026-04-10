@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pipeline Visualiser</title>
+<!--
+  PURPOSE: Platform team diagnostic tool and single-repo delivery tracker.
+  Audience: Platform maintainer, solo operator, squad tech lead.
+  NOT designed as: A fleet dashboard, a non-engineer approval surface,
+  or a real-time ops tool. See Phase 2 P2.x for Confluence/Slack integrations
+  and the approval interface for non-engineer participants.
+  Fleet view: reads fleet-state.json (CI-generated) if present — not fetched live.
+  ADR-001: self-contained, no build step, no server required.
+-->
 <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
 <style>
   /* ── Reset + base ───────────────────────────────────────────── */
@@ -224,6 +233,12 @@
   .next-action.blocked { border-color: rgba(239,68,68,.35); }
   .next-action.done { border-color: rgba(34,197,94,.35); }
   .next-action-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  /* Channel hint tags — shown on next-action row to surface where the action happens */
+  .channel-tag { font-size: 9px; border-radius: 3px; padding: 1px 6px; margin-left: 6px; border: 1px solid transparent; letter-spacing: .03em; }
+  .channel-tag.ide      { color: var(--muted); border-color: var(--border); background: var(--bg); }
+  .channel-tag.approval { color: var(--amber); border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.06); }
+  .channel-tag.agent    { color: var(--teal);  border-color: rgba(20,184,166,.35); background: rgba(20,184,166,.06); }
+  .channel-tag.blocker  { color: var(--red);   border-color: rgba(239,68,68,.35);  background: rgba(239,68,68,.06); }
   .next-action-controls { display: inline-flex; align-items: center; gap: 6px; }
   .next-action-age { color: var(--muted); font-size: 10px; }
 
@@ -1300,20 +1315,27 @@ function parseFrontmatterDescription(text) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FLEET REGISTRY LOADING
-// Looks for fleet-registry.json alongside pipeline-state.json. Silently omitted
-// when absent (file:// origin, not deployed, or single-repo setup).
+// fleet-state.json is CI-generated (aggregates all squad pipeline-state.json files).
+// fleet-registry.json is the squad registration list.
+// Both are optional — viz renders without them.
+// Tries fleet-state.json first (authoritative aggregate), falls back to fleet-registry.json.
+// Silently omitted when neither is present (file:// origin, not deployed, single-repo).
 // Expected shape: { platformVersion: "x.y.z", repos: [ ... ] }
 // ─────────────────────────────────────────────────────────────────────────────
 async function loadFleetRegistry() {
-  try {
-    const resp = await fetch('fleet-registry.json?_=' + Date.now());
-    if (!resp.ok) return false;
-    const data = await resp.json();
-    fleetData = data;
-    return true;
-  } catch (_) {
-    return false;
+  const candidates = ['fleet-state.json', 'fleet-registry.json'];
+  for (const filename of candidates) {
+    try {
+      const resp = await fetch(filename + '?_=' + Date.now());
+      if (!resp.ok) continue;
+      const data = await resp.json();
+      fleetData = data;
+      return true;
+    } catch (_) {
+      // file:// or absent — try next candidate
+    }
   }
+  return false;
 }
 
 async function loadSkillMetadata() {
@@ -1439,7 +1461,8 @@ function renderSummary(features) {
     <div class="summary-stat"><span class="val">${stories.length}</span> stories total</div>
     ${relReady > 0 ? `<div class="summary-stat"><span class="val" style="color:var(--teal)">${relReady}</span> release-ready</div>` : ''}
     ${fleetData ? `<div class="summary-stat" title="Fleet registry"><span class="val" style="color:var(--purple)">${Array.isArray(fleetData.repos) ? fleetData.repos.length : (fleetData.repoCount || '?')}</span> repos <span style="font-size:10px;color:var(--muted)">${fleetData.platformVersion ? '· v' + esc(String(fleetData.platformVersion)) : ''}</span></div>` : ''}
-    ${(function() { const est = allData && allData.estimate; if (!est) return ''; const focusH = est.actuals && est.actuals.outerLoopFocusH ? est.actuals.outerLoopFocusH : (est.e2 && est.e2.outerLoopFocusH ? '~' + est.e2.outerLoopFocusH : null); const reqs = est.actuals && est.actuals.premiumRequestsActual ? est.actuals.premiumRequestsActual : null; if (!focusH && !reqs) return ''; return '<div class="summary-stat" title="/estimate actuals"><span style="font-size:10px;color:var(--muted)">Estimate:</span> <span class="val" style="color:#93c5fd">' + esc(String(focusH || '—')) + 'h focus</span>' + (reqs ? ' <span style="font-size:10px;color:var(--muted)">· ' + esc(String(reqs)) + ' req.</span>' : '') + '</div>'; })()} 
+    ${(function() { const est = allData && allData.estimate; if (!est) return ''; const focusH = est.actuals && est.actuals.outerLoopFocusH ? est.actuals.outerLoopFocusH : (est.e2 && est.e2.outerLoopFocusH ? '~' + est.e2.outerLoopFocusH : null); const reqs = est.actuals && est.actuals.premiumRequestsActual ? est.actuals.premiumRequestsActual : null; if (!focusH && !reqs) return ''; return '<div class="summary-stat" title="/estimate actuals"><span style="font-size:10px;color:var(--muted)">Estimate:</span> <span class="val" style="color:#93c5fd">' + esc(String(focusH || '—')) + 'h focus</span>' + (reqs ? ' <span style="font-size:10px;color:var(--muted)">· ' + esc(String(reqs)) + ' req.</span>' : '') + '</div>'; })()}
+    <div class="summary-stat"><button class="btn" style="font-size:10px;padding:2px 7px" data-action="export-pipeline" title="Export JSON (full pipeline state) + CSV (story list)">⬇ Export</button></div>
   `;
 }
 
@@ -2145,6 +2168,7 @@ function renderGovernance(features) {
         <summary>Pipeline authority skills (workflow &amp; org-mapping)</summary>
         <div class="gov-ref-grid" style="margin-top:8px">${metaRefItemsHTML}</div>
       </details>
+      <p class="gov-note" style="margin-top:8px;padding:4px 0">Per-feature decisions live in <code>artefacts/[feature]/decisions.md</code>. Structural decisions constraining future features are promoted to Active ADRs above (see architecture-guardrails.md).</p>
     </div>
     <div class="gov-matrix-wrap">
       <table class="gov-matrix">
@@ -2604,6 +2628,51 @@ function csvEscape(value) {
   return s;
 }
 
+function exportPipelineJson() {
+  if (!allData) return;
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const payload = fleetData ? Object.assign({}, allData, { _fleet: fleetData }) : allData;
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'pipeline-export-' + dateStr + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportStoriesCsv() {
+  if (!allData) return;
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const header = ['story_slug', 'story_name', 'feature_slug', 'feature_name', 'stage', 'health', 'dor_status', 'pr_status', 'dod_status', 'last_updated'];
+  const lines = [header.join(',')];
+  (allData.features || []).forEach(function(f) {
+    (f.epics || []).forEach(function(e) {
+      (e.stories || []).forEach(function(s) {
+        lines.push([
+          s.slug || '',
+          s.name || '',
+          f.slug || '',
+          f.name || '',
+          s.stage || f.stage || '',
+          s.health || f.health || '',
+          s.dorStatus || '',
+          s.prStatus || '',
+          s.dodStatus || '',
+          s.lastUpdated || f.lastUpdated || '',
+        ].map(csvEscape).join(','));
+      });
+    });
+  });
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'pipeline-stories-' + dateStr + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 
 
 function renderBoard(features) {
@@ -2782,7 +2851,7 @@ function featureCardHTML(f) {
       ${innerLoopNoData}
       <div class="next-action ${action.state}">
         <div class="next-action-row">
-          <div><span class="label">Next</span>${esc(action.nextAction)}</div>
+          <div><span class="label">Next</span>${esc(action.nextAction)}${action.channel ? '<span class="channel-tag ' + action.channel + '">' + channelLabel(action.channel) + '</span>' : ''}</div>
           <span class="next-action-age">${formatAge(featureAgeMinutes(f))}</span>
         </div>
       </div>
@@ -3531,6 +3600,13 @@ function handleBoardClick(e) {
       render();
       return;
     }
+    const exportPipeline = e.target.closest('[data-action="export-pipeline"]');
+    if (exportPipeline) {
+      if (!allData) return;
+      exportPipelineJson();
+      exportStoriesCsv();
+      return;
+    }
     const exportGovCsv = e.target.closest('[data-action="export-gov-csv"]');
     if (exportGovCsv) {
       exportGovernanceCsv(filteredFeatures());
@@ -4117,26 +4193,37 @@ function focusFeatureBySlug(slug) {
   }, 0);
 }
 
+// Channel labels for the channel hint tag rendered on the next-action row.
+// Surfaces "where does this action happen" without building a full multi-surface system.
+function channelLabel(ch) {
+  if (ch === 'ide')      return 'IDE / Copilot';
+  if (ch === 'approval') return 'Sign-off needed';
+  if (ch === 'agent')    return 'Agent running';
+  if (ch === 'blocker')  return 'Blocked';
+  return ch;
+}
+
 function featureActionMeta(feature) {
   if (feature.health === 'red' || feature.stage === 'stalled') {
     return {
       state: 'blocked',
       label: 'Blocked',
       nextAction: feature.blocker ? `Unblock: ${feature.blocker}` : 'Resolve blocker and update stage',
+      channel: 'blocker',
     };
   }
 
   const stage = feature.stage;
   if (stage === 'released') {
-    return { state: 'done', label: 'Done', nextAction: 'No action needed' };
+    return { state: 'done', label: 'Done', nextAction: 'No action needed', channel: null };
   }
 
   if (stage === 'review' && hasHighFindings(feature)) {
-    return { state: 'human', label: 'Needs human', nextAction: 'Address HIGH findings and rerun /review' };
+    return { state: 'human', label: 'Needs human', nextAction: 'Address HIGH findings and rerun /review', channel: 'ide' };
   }
 
   if (stage === 'release-pending' && isReleaseReady(feature)) {
-    return { state: 'human', label: 'Needs human', nextAction: 'Run /release and complete deployment checklist' };
+    return { state: 'human', label: 'Needs human', nextAction: 'Run /release and complete deployment checklist', channel: 'ide' };
   }
 
   const processingStageActions = {
@@ -4151,6 +4238,7 @@ function featureActionMeta(feature) {
       state: 'processing',
       label: stale ? 'Stale proc' : 'Processing',
       nextAction: stale ? `No update for ${formatAge(featureAgeMinutes(feature))}. Check run status / blockers.` : processingStageActions[stage],
+      channel: 'agent',
     };
   }
 
@@ -4173,10 +4261,14 @@ function featureActionMeta(feature) {
     'scale-pipeline': 'Advance scaling decisions and operating model',
   };
 
+  // Approval channel: stages where a human sign-off or explicit approval is the gate action.
+  // All other human stages are IDE/Copilot driven.
+  const channel = (stage === 'benefit-metric' || stage === 'definition-of-ready') ? 'approval' : 'ide';
   return {
     state: 'human',
     label: 'Needs human',
     nextAction: humanStageActions[stage] || `Review stage '${stage}' and decide next skill`,
+    channel,
   };
 }
 
