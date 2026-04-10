@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-04-10T00:00:00Z",
+  "updated": "2026-04-11T00:00:00Z",
   "programmes": [],
   "features": [
     {
@@ -8,12 +8,12 @@
       "name": "Skills Platform \u00e2\u20ac\u201d Phase 1 Foundation",
       "title": "Skills Platform \u00e2\u20ac\u201d Phase 1 Foundation",
       "track": "library",
-      "stage": "subagent-execution",
+      "stage": "definition-of-done",
       "health": "green",
       "discoveryStatus": "approved",
       "benefitMetricStatus": "complete",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-04-10T11:10:00Z",
+      "updatedAt": "2026-04-11T00:00:00Z",
       "epics": [
         {
           "slug": "epic-2-core-loop-infrastructure",
@@ -51,48 +51,52 @@
             {
               "slug": "p1.3-assurance-agent-ci-gate",
               "name": "Deploy assurance agent as automated CI gate on PR open/update",
-              "stage": "definition-of-ready",
+              "stage": "merged",
               "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 10,
-                "passing": 0
+                "totalTests": 11,
+                "passing": 11
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "oversightLevel": "high",
               "signedOffBy": "Hamish \u00e2\u20ac\u201d platform maintainer / operator",
               "signedOffAt": "2026-04-10",
               "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.3-assurance-agent-ci-gate-dor.md",
-              "updatedAt": "2026-04-10"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/15",
+              "mergedAt": "2026-04-11",
+              "updatedAt": "2026-04-11"
             },
             {
               "slug": "p1.4-watermark-gate",
               "name": "Implement watermark gate for eval regression detection",
-              "stage": "definition-of-ready",
+              "stage": "merged",
               "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 15,
-                "passing": 0
+                "totalTests": 32,
+                "passing": 32
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "oversightLevel": "high",
               "signedOffBy": "Hamish \u00e2\u20ac\u201d platform maintainer / operator",
               "signedOffAt": "2026-04-10",
               "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.4-watermark-gate-dor.md",
-              "updatedAt": "2026-04-10"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/16",
+              "mergedAt": "2026-04-11",
+              "updatedAt": "2026-04-11"
             }
           ]
         },
@@ -195,25 +199,27 @@
             {
               "slug": "p1.7-standards-model-phase1",
               "name": "Implement standards model Phase 1 \u00e2\u20ac\u201d three anchor disciplines, standards/index.yml, POLICY.md floors",
-              "stage": "definition-of-ready",
+              "stage": "merged",
               "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 12,
-                "passing": 0
+                "totalTests": 31,
+                "passing": 31
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "oversightLevel": "high",
               "signedOffBy": "Hamish \u00e2\u20ac\u201d platform maintainer / operator",
               "signedOffAt": "2026-04-10",
               "dorArtefact": "artefacts/2026-04-09-skills-platform-phase1/dor/p1.7-standards-model-phase1-dor.md",
-              "updatedAt": "2026-04-10"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/18",
+              "mergedAt": "2026-04-11",
+              "updatedAt": "2026-04-11"
             },
             {
               "slug": "p1.8-model-risk-documentation",
@@ -230,7 +236,7 @@
               },
               "acTotal": 5,
               "acVerified": 4,
-              "acNotes": "AC3 gated on p1.3 + p1.7 merge — template authored, completion pending",
+              "acNotes": "AC3 requires real trace evidence from a story run through the P1.3 CI gate — cannot be completed until next delivery cycle",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "oversightLevel": "high",
