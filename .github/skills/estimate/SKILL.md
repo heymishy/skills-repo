@@ -101,9 +101,11 @@ Ask:
 > Any key assumptions?
 > (e.g. "~8 stories", "no Bitbucket scope", "1h sessions across 4 weeks")
 >
-> **Optional — Copilot Pro users:** roughly how many premium requests do you expect this feature to consume? (Check your usage gauge or estimate — skip if not applicable)
+> **Optional — Copilot Pro users:** two things to record now if applicable:
+> (a) Current usage gauge % (e.g. "23%") — recording this at E1 enables automatic subtraction at E3; without it you’ll need the CSV report at E3 (which lags ~1 day and requires date filtering).
+> (b) Request forecast for this feature (rough estimate or skip).
 >
-> Reply: calendar days, option 1/2/3/4, story count[, requests forecast] — or `skip`
+> Reply: calendar days, option 1/2/3/4, story count[, gauge %][, requests forecast] — or `skip`
 
 Derive: `outerLoopFocusH ≈ calendarDays × 2 × engagementFraction`
 (Assumes ~2h active session time per calendar day as a baseline; revised at E2 with story count.)
@@ -123,6 +125,7 @@ Write to `workspace/state.json` under `estimate.e1`:
     "expectedStoryCount": [n],
     "confidence": "low",
     "assumptions": "[free text]",
+    "gaugeAtStart": null,
     "premiumRequestsForecast": null
   }
 }
@@ -133,6 +136,7 @@ Confirm:
 > **E1 estimate recorded ✅**
 > Calendar span: ~[n] days | Engagement: [fraction × 100]% | Est. focus: ~[n]h | Stories: ~[n]
 > Confidence: low | Assumptions: [summary]
+> Copilot Pro gauge at start: [n%] [or "not recorded — CSV fallback at E3"]
 >
 > I'll refine this once stories are written in /definition.
 
@@ -272,12 +276,18 @@ The engagement fraction is the only required operator input for E3.
 After recording the engagement fraction, ask one optional follow-up:
 
 > **Optional — Copilot Pro users only.**
-> Roughly how many premium requests did this feature consume?
-> (Check your GitHub usage gauge before/after, or skip — this cannot be derived automatically.)
+> How many premium requests did this feature consume?
 >
-> Reply: a number, or `skip`
+> Derivation order (use whichever is available):
+> 1. **Gauge subtraction (most accurate):** `(gaugeNow% − gaugeAtStart%) × monthlyQuota` — requires E1 gauge reading was recorded.
+> 2. **CSV report:** Download from GitHub → filter rows to feature date range; sum the `quantity` column across all models. Note: report lags ~1 day, so the final day’s usage may be absent.
+> 3. **Estimate from gauge:** Current gauge % − approximate start % if E1 reading was skipped.
+>
+> Note: the `coding_agent_premium_request` SKU (inner loop agent) appears separately from `copilot_premium_request` (outer loop chat). Sum both for total; record split if you want outer/inner cost visibility.
+>
+> Reply: a number (or “outer:[n] inner:[n]” for split), or `skip`
 
-Set `premiumRequestsActual` to the provided number, or `null` if skipped.
+Set `premiumRequestsActual` to the provided number or split object, or `null` if skipped.
 
 ### Phase 1 bootstrap case
 
@@ -389,6 +399,7 @@ Write to `workspace/state.json` under `estimate`:
   "agentAutonomousH": [h],
   "storyCount": [n],
   "premiumRequestsActual": null,
+  "premiumRequestsSplit": { "outerLoop": null, "innerLoop": null },
   "derivationSources": {
     "discovery": "[tier-1|tier-2|tier-3|date-only|manual]",
     "definition": "[tier]",
