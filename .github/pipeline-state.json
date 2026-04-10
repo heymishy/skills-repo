@@ -193,7 +193,7 @@
             {
               "slug": "p1.6-living-eval-regression-suite",
               "name": "Implement workspace/suite.json living eval regression suite",
-              "stage": "merged",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
@@ -216,7 +216,11 @@
               "dispatchTarget": "github-agent",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/17",
               "mergedAt": "2026-04-10",
-              "updatedAt": "2026-04-10"
+              "updatedAt": "2026-04-11",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-04-09-skills-platform-phase1/dod/p1.6-living-eval-regression-suite-dod.md"
             },
             {
               "slug": "p1.7-standards-model-phase1",
@@ -640,28 +644,31 @@
           "id": "NFR-p1.6-suite-eval-performance",
           "category": "nfr",
           "label": "Full suite evaluation completes within 8 minutes (component of 10-minute gate budget)",
-          "status": "met",
+          "status": "pass",
           "evidence": "Story NFR performance section explicit; NFR test N1 in test plan; DoR passed â€” enforcement deferred to DoD verify-completion",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-04-10"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-10",
+          "updatedAt": "2026-04-11"
         },
         {
           "id": "NFR-p1.6-suite-no-credentials",
           "category": "nfr",
           "label": "suite.json contains no credentials, secrets, or PII â€” scenario descriptions only",
-          "status": "met",
+          "status": "pass",
           "evidence": "Story NFR security section explicit; NFR test N2 scans for credential patterns; coding agent instructions block explicit",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-04-10"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-10",
+          "updatedAt": "2026-04-11"
         },
         {
           "id": "NFR-p1.6-review-note-audit",
           "category": "nfr",
           "label": "Every scenario merge has reviewNote field populated â€” null reviewNote is an audit gap",
-          "status": "met",
+          "status": "pass",
           "evidence": "Story NFR audit section explicit; NFR test N3 + unit tests U4/U5 enforce non-null reviewNote; coding agent instructions block explicit",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-04-10"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-10",
+          "updatedAt": "2026-04-11"
         },
         {
           "id": "NFR-p1.7-standards-injection-performance",
