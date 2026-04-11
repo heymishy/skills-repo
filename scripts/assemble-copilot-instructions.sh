@@ -389,12 +389,12 @@ if [[ "$OUTPUT_EXPLICIT" == false ]]; then
   fi
 fi
 
-info "Assembling copilot-instructions.md"
+info "Assembling ${OUTPUT}"
 info "Platform version: $REF"
 info "Skills repo: $SKILLS_REPO_PATH"
 info "Domain layer: ${DOMAIN_LAYER:-[absent]}"
 info "Squad layer:  ${SQUAD_LAYER:-[absent]}"
-info "Output:       ${OUTPUT}"
+info "Output path:  ${OUTPUT}"
 
 if [[ "$DRY_RUN" == true ]]; then
   assemble
