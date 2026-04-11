@@ -49,6 +49,8 @@ If not met:
 
 ## Step 1 — Confirm scope and re-run status
 
+**Session recovery check:** Before listing stories, scan `artefacts/[feature]/review/` for existing artefacts matching `[story-slug]-review-N.md`. Stories with a matching artefact are already reviewed — exclude them from the scope unless the operator explicitly requests re-review. Detection is by file presence only — not session logs, not timestamps. If all stories already have artefacts, inform the operator and ask whether to re-review any.
+
 State what was found first:
 
 > **Stories found for review:**
@@ -208,6 +210,10 @@ LOW: pattern library or style guide component preferred but not specified in Arc
 
 Conforms to `.github/templates/review-report.md`.
 Save to `artefacts/[feature]/review/[story-slug]-review-[N].md`.
+
+**Write timing — mandatory:** Write each story's artefact to disk immediately after completing that story's review — before loading or reading the next story. Do not hold findings in memory and batch-write at session end. If the session ends mid-review, all reviewed stories must already have persisted artefacts on disk.
+
+**Write completeness — required fields:** Each per-story artefact must contain, at minimum: story slug, review date, findings list (may be empty — an explicit empty findings list is a valid complete write), severity level for each finding (HIGH/MEDIUM/LOW), and recommended action for each finding. A file missing any required field is a partial write, not a complete write.
 
 **Output order is mandatory: FINDINGS → SCORE → VERDICT**
 Never open with positive observations or a summary of what was done well.
