@@ -27,7 +27,10 @@
 #   --squad-layer <path>       Optional: path to squad-layer copilot-instructions.md
 #                              If omitted, the squad layer is marked [absent].
 #   --output <path>            Output file path.
-#                              (default: .github/copilot-instructions.md)
+#                              (default: determined from context.yml vcs settings;
+#                               falls back to .github/copilot-instructions.md)
+#   --context <path>           Path to context.yml for vcs.type / vcs.agent_instructions.format
+#                              resolution. (default: .github/context.yml if present)
 #   --dry-run                  Print the assembled content to stdout; do not write file.
 #
 # Layer composition order (fixed):
@@ -47,6 +50,8 @@ REF=""
 DOMAIN_LAYER=""
 SQUAD_LAYER=""
 OUTPUT=".github/copilot-instructions.md"
+OUTPUT_EXPLICIT=false
+CONTEXT_FILE=""
 DRY_RUN=false
 
 # ── Colour helpers ─────────────────────────────────────────────────────────────
@@ -63,7 +68,8 @@ while [[ $# -gt 0 ]]; do
     --ref)              REF="$2"; shift 2 ;;
     --domain-layer)     DOMAIN_LAYER="$2"; shift 2 ;;
     --squad-layer)      SQUAD_LAYER="$2"; shift 2 ;;
-    --output)           OUTPUT="$2"; shift 2 ;;
+    --output)           OUTPUT="$2"; OUTPUT_EXPLICIT=true; shift 2 ;;
+    --context)          CONTEXT_FILE="$2"; shift 2 ;;
     --dry-run)          DRY_RUN=true; shift ;;
     *) error "Unknown option: $1"; exit 1 ;;
   esac
@@ -317,12 +323,78 @@ SQUAD_HEADER
 }
 
 # ── Run ────────────────────────────────────────────────────────────────────────
-info "Assembling copilot-instructions.md"
+
+# ── YAML helpers: read vcs.* fields from context.yml ─────────────────────────
+# Security (MC-SEC-02): reads only vcs.type and vcs.agent_instructions.format —
+# neither is a credential field. No credential sections of context.yml are
+# logged or persisted during the format-branch decision.
+
+# _vcs_type <file> — print the vcs.type value, or empty string
+_vcs_type() {
+  awk '
+    BEGIN{v=0}
+    /^vcs:/{v=1;next}
+    v && /^[^ ]/{v=0}
+    v && /^  type:/{
+      sub(/^  type: */,""); sub(/ *#.*/,""); sub(/ *$/,""); print; exit
+    }
+  ' "$1"
+}
+
+# _vcs_format <file> — print the vcs.agent_instructions.format value, or empty string
+_vcs_format() {
+  awk '
+    BEGIN{v=0;a=0}
+    /^vcs:/{v=1;next}
+    v && /^[^ ]/{v=0;a=0}
+    v && /^  agent_instructions:/{a=1;next}
+    v && a && /^  [^ ]/{a=0}
+    a && /^    format:/{
+      sub(/^    format: */,""); sub(/ *#.*/,""); sub(/ *$/,""); print; exit
+    }
+  ' "$1"
+}
+
+# ── Determine output path from context.yml (ADR-005 / ADR-004) ───────────────
+# Only runs when --output was NOT explicitly provided by the caller.
+if [[ "$OUTPUT_EXPLICIT" == false ]]; then
+  # Auto-detect context file if not specified
+  if [[ -z "$CONTEXT_FILE" && -f ".github/context.yml" ]]; then
+    CONTEXT_FILE=".github/context.yml"
+  fi
+
+  if [[ -n "$CONTEXT_FILE" && -f "$CONTEXT_FILE" ]]; then
+    VCS_FORMAT="$(_vcs_format "$CONTEXT_FILE")"
+
+    if [[ -n "$VCS_FORMAT" ]]; then
+      # Explicit vcs.agent_instructions.format takes precedence over vcs.type
+      case "$VCS_FORMAT" in
+        copilot-instructions)
+          OUTPUT=".github/copilot-instructions.md" ;;
+        agents-md)
+          OUTPUT="AGENTS.md" ;;
+        *)
+          error "Unsupported vcs.agent_instructions.format value: '$VCS_FORMAT'"
+          error "Permitted values: copilot-instructions, agents-md"
+          exit 1 ;;
+      esac
+    else
+      # Fall back to vcs.type inference
+      VCS_TYPE="$(_vcs_type "$CONTEXT_FILE")"
+      if [[ -n "$VCS_TYPE" && "$VCS_TYPE" != "github" ]]; then
+        OUTPUT="AGENTS.md"
+      fi
+      # github (or absent) → keep default .github/copilot-instructions.md (AC5)
+    fi
+  fi
+fi
+
+info "Assembling ${OUTPUT}"
 info "Platform version: $REF"
 info "Skills repo: $SKILLS_REPO_PATH"
 info "Domain layer: ${DOMAIN_LAYER:-[absent]}"
 info "Squad layer:  ${SQUAD_LAYER:-[absent]}"
-info "Output:       ${OUTPUT}"
+info "Output path:  ${OUTPUT}"
 
 if [[ "$DRY_RUN" == true ]]; then
   assemble
