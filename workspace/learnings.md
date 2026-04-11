@@ -252,6 +252,40 @@ This makes the self-checkpoint structural: it will happen reliably across models
 
 **Finding 4 — Programme-level compression:** Original pipeline model projected 26 weeks for Phase 1+2 combined. Phase 1 actual: ~2.5 calendar days, ~13h focus. If Phase 2 is similar scope (8 stories), revised projection: ~5–6 calendar days total, ~26h focus for both phases. That is a **5–8× calendar compression** against the original model.
 
+---
+
+## Pipeline gap — DoD/DoR skills write non-schema guardrail values, breaking agent PR baseline check
+
+### Observed — 2026-04-12 (Phase 2 Wave 1a inner loop)
+
+**Circumstance:** Two Copilot agent PRs (#28 p2.1, #29 p2.2) failed the `Trace Validation` CI check with `Process completed with exit code 1`. The `validate-trace.sh --ci` `check_schema_valid` step is a hard-fail. Root cause: `pipeline-state.json` contained guardrail `status` and `category` values that are not in the schema enum.
+
+**Invalid values written by DoD and DoR skills:**
+
+| Field | Invalid value | Schema-valid replacement | Source |
+|-------|--------------|--------------------------|--------|
+| `status` | `"pass"` | `"met"` | Phase 1 DoD — 12 NFR guardrails |
+| `status` | `"deferred"` | `"not-assessed"` | Phase 1 DoD — 1 NFR guardrail |
+| `status` | `"no-breach"` | `"met"` | Phase 2 DoR — 9 MC/ADR/PAT/AP guardrails |
+| `status` | `"not-applicable"` | `"na"` | Phase 2 DoR — 3 guardrails |
+| `status` | `"has-finding"` | `"not-met"` | Phase 2 DoR — 3 guardrails |
+| `category` | `"performance"`, `"security"`, `"audit"` | `"nfr"` | Phase 1 DoD — 5 guardrails |
+
+**Why it surfaced here:** The baseline validation failure only appears when the Copilot agent's `copilot-setup-steps` workflow runs `validate-trace.sh --ci` against the PR branch. Local `npm test` does not run the trace script. The broken state was on master before fix — every subsequent agent PR would fail the same check until fixed.
+
+**Fix applied (2026-04-12):**
+1. Fixed `pipeline-state.json` on master: all 22 invalid field values corrected (commit `6f61b08`)
+2. Merged master into PR #28 branch (`54fbc3e`) — Trace Validation re-triggered ✓
+3. Merged master into PR #29 branch (`87df4f5`) — Trace Validation re-triggered ✓
+
+**Required fix — DoD and DoR SKILL.md files:** Both skills must reference the schema enum when writing guardrail entries. The schema-valid values for the `status` field are: `"met"`, `"not-met"`, `"na"`, `"excepted"`, `"not-assessed"`. The valid `category` values are: `"mandatory-constraint"`, `"adr"`, `"nfr"`, `"compliance-framework"`, `"pattern"`, `"anti-pattern"`.
+
+Add to the guardrail-writing section of both skills:
+
+> When writing `status`, use only schema-valid values: `met`, `not-met`, `na`, `excepted`, `not-assessed`. Do not use informal synonyms (`pass`, `fail`, `deferred`, `no-breach`, `not-applicable`, `has-finding`). When writing `category`, use only: `mandatory-constraint`, `adr`, `nfr`, `compliance-framework`, `pattern`, `anti-pattern`. Subcategories (`performance`, `security`, `audit`) must be written as `nfr`.
+
+**Also required:** Add `validate-trace.sh --ci` (or a schema-only subset) to the local pre-commit check or `npm test` suite, so schema errors are caught before push rather than only on agent PR baseline validation.
+
 **Metric relevance:** This entry is primary evidence for MM1 (solo operator, outer loop elapsed time). The before-baseline for MM1 was the original model estimate. Phase 1 actuals now establish the empirical baseline. Phase 2 will be the first test of whether the baseline is repeatable.
 
 **Action:** Record Phase 1 focus time (~13h, ~2.5 days calendar) as the MM1 before-baseline in `benefit-metric.md` MM1 evidence section. Compare Phase 2 actuals against this baseline at the end of Phase 2.
