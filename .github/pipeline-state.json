@@ -1455,7 +1455,10 @@
               "dorAssessedBy": "Copilot",
               "sequencingConstraint": "after-first-inner-loop-batch",
               "dorArtefact": "artefacts/2026-04-11-skills-platform-phase2/dor/p2.11-improvement-agent-trace-proposals-dor.md",
-              "updatedAt": "2026-04-11"
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/39",
+              "dispatchedAt": "2026-04-12T00:00:00Z",
+              "dispatchTarget": "github-agent",
+              "updatedAt": "2026-04-12"
             },
             {
               "slug": "p2.12-improvement-agent-challenger-skill",
@@ -1480,7 +1483,10 @@
               "dorAssessedBy": "Copilot",
               "sequencingConstraint": "after-first-inner-loop-batch-and-p2.11-dod",
               "dorArtefact": "artefacts/2026-04-11-skills-platform-phase2/dor/p2.12-improvement-agent-challenger-skill-dor.md",
-              "updatedAt": "2026-04-11"
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/40",
+              "dispatchedAt": "2026-04-12T00:00:00Z",
+              "dispatchTarget": "github-agent",
+              "updatedAt": "2026-04-12"
             }
           ]
         }
