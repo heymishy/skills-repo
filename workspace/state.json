@@ -1,7 +1,7 @@
 {
   "feature": "2026-04-09-skills-platform-phase1",
-  "lastUpdated": "2026-04-11T10:00:00+10:00",
-  "currentPhase": "definition-of-done",
+  "lastUpdated": "2026-04-11T10:30:00+10:00",
+  "currentPhase": "discovery",
   "cycle": {
     "discovery": {
       "status": "approved",
@@ -81,13 +81,14 @@
     "openMediumFindings": []
   },
   "checkpoint": {
-    "writtenAt": "2026-04-11",
-    "contextAtWrite": "Phase 1 fully complete. All pre-Phase-2 fixes done (p1.6 DoD obs #3 actioned; s-review-incremental-state eval scenario added). /estimate E3 updated: session 10 added (10 sessions total, 36h wall-clock, 18h OL focus, ~185 premium requests, gauge 84.4% at close). [0.6.2] viz-functions.js + check-viz-behaviour.js committed — 43 assertions passing. HEAD 7d6d2fa. Ready for Phase 2 discovery.",
-    "resumeInstruction": "Phase 1 delivery fully complete. All pre-Phase-2 fixes done. /estimate E3 updated (session 10: 18h OL focus, ~185 premium requests). Start Phase 2 discovery: read artefacts/2026-04-09-skills-platform-phase1/reference/ref-skills-platform-phase1-2.md P2.1–P2.4 (P2.5 skip — delivered in Phase 1). Phase 2 benefit-metric must add MM4 (estimation calibration <20% E2 error by feature 3) and MM5 (flow findings conversion ≥50%). Record current Copilot gauge % as gaugeAtStart at Phase 2 E1 — gauge was 84.4% at end of Phase 1 session 10.",
+    "writtenAt": "2026-04-11T10:30:00+10:00",
+    "contextAtWrite": "Phase 1 fully complete. All pre-Phase-2 fixes done. /estimate E3 final: 10 sessions, 36h wall-clock, 18h OL focus, 2.3h/story, ~185 premium requests (gauge 84.4%). [0.6.2] viz-functions.js + check-viz-behaviour.js committed (43 assertions). HEAD 9e37c1e. Entering Phase 2 discovery next session.",
+    "resumeInstruction": "START HERE — Phase 2 discovery. Step 1: read artefacts/2026-04-09-skills-platform-phase1/reference/ref-skills-platform-phase1-2.md for P2.1–P2.4 scope (P2.5 skip — delivered in Phase 1 as viz-functions.js + check-viz-behaviour.js). Step 2: run /discovery for Phase 2 feature slug. Step 3: at /discovery exit, run /estimate E1 — record Copilot gauge % as gaugeAtStart (Phase 1 closed at 84.4%). Step 4: Phase 2 benefit-metric must include MM4 (estimation calibration <20% E2 error by feature 3) and MM5 (flow findings conversion ≥50%). Step 5: update this state.json feature field and cycle block for the Phase 2 feature slug once discovery artefact is saved.",
     "pendingActions": [
-      "Phase 2 discovery — start next session; read ref-skills-platform-phase1-2.md P2.1–P2.4 (P2.5 delivered)",
+      "Phase 2 discovery — run /discovery; read ref-skills-platform-phase1-2.md P2.1–P2.4 first",
+      "Phase 2 E1 estimate — record gaugeAtStart (Phase 1 closed at 84.4%)",
       "p1.8 AC3 (T3M1 evidence record) — fill when first real inner loop story runs through P1.3 CI gate",
-      "Apr 11 premium requests — update premiumRequestsActual once Apr 11 CSV report clears (current estimate ~185 from 84.4% gauge; exact count pending)"
+      "Apr 11 premium requests — update premiumRequestsActual once Apr 11 CSV report clears (~185 current estimate)"
     ]
   },
   "estimate": {
