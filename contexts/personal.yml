@@ -18,6 +18,19 @@ source_control:
   pr_command: "gh pr create --draft" # full CLI command to open a draft MR/PR
   artefact_root: "."                # root dir for skills/, templates/, artefacts/
 
+vcs:
+  type: github                      # github | gitlab | bitbucket | azure-devops | other
+  # agent_instructions.format controls which file the assembly script emits:
+  #   copilot-instructions  → .github/copilot-instructions.md  (GitHub Copilot)
+  #   agents-md             → AGENTS.md at repo root           (vendor-neutral AAIF standard)
+  # If absent, the format is inferred from vcs.type:
+  #   github  → copilot-instructions (default)
+  #   other   → agents-md
+  # Permitted values: copilot-instructions | agents-md
+  # Any other value causes an assembly-time error.
+  # agent_instructions:
+  #   format: copilot-instructions
+
 agent:
   instruction_file: "copilot-instructions.md"
   # Instruction file loaded automatically by your agent runtime:

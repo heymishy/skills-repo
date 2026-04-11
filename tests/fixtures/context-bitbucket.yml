@@ -1,0 +1,7 @@
+# tests/fixtures/context-bitbucket.yml — fixture for p2.4 AGENTS.md adapter tests
+# Represents a Bitbucket-hosted repository (AAIF-compliant inner loop tooling).
+# Expected assembly output: AGENTS.md at repo root
+
+vcs:
+  type: bitbucket
+  # agent_instructions.format absent → inferred from vcs.type (non-github → agents-md)
