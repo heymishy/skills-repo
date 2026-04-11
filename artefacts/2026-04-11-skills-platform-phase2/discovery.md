@@ -1,8 +1,8 @@
 # Discovery: Skills Platform — Phase 2: Scale, Observability, and Self-Improving Harness
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-04-11
-**Approved by:** — (pending)
+**Approved by:** Hamish — 2026-04-11
 **Author:** Copilot / Hamish
 
 ---
@@ -88,7 +88,8 @@ The minimum scope for Phase 2 to deliver its stated outcome (10+ squads consumin
 **P2.6 — Pipeline evolution stories (Phase 1 debt)**
 - D1/D2/D3 batch — `/definition` skill improvements: dependency chain validation, testability-filter check, explicit learnings-write step at skill exit
 - D4 — `/review` skill improvement: incremental-write-per-story rather than post-run batch
-- D7/D8/D9 + B1-enforce batch — template and DoR improvements: cross-story runtime failure observation type (D7, already actioned — verify), DoR contract cross-story schema dependency requirement (D8), DoD verification prompt field (D9), NFR guardrail presence enforcement (B1-enforce)
+- D8/D9 + B1-enforce batch — template and DoR improvements: DoR contract cross-story schema dependency requirement (D8), DoD verification prompt field (D9), NFR guardrail presence enforcement (B1-enforce)
+- Note: D7 (cross-story runtime failure observation type in DoD template) was delivered during the p1.6 DoD amendment session 2026-04-11 — confirmed present in `.github/templates/definition-of-done.md` line 97. Not a Phase 2 story.
 
 ---
 

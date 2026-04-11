@@ -1,19 +1,21 @@
 {
   "feature": "2026-04-11-skills-platform-phase2",
-  "lastUpdated": "2026-04-11T18:35:00+10:00",
-  "currentPhase": "discovery",
+  "lastUpdated": "2026-04-11T18:40:00+10:00",
+  "currentPhase": "definition",
   "cycle": {
     "discovery": {
-      "status": "draft",
+      "status": "approved",
       "artefact": "artefacts/2026-04-11-skills-platform-phase2/discovery.md",
       "startedAt": "2026-04-11T18:35:00+10:00",
-      "completedAt": null,
-      "approvedBy": null,
-      "approvedDate": null
+      "completedAt": "2026-04-11T18:40:00+10:00",
+      "approvedBy": "Hamish",
+      "approvedDate": "2026-04-11"
     },
     "benefitMetric": {
-      "status": "not-started",
-      "artefact": null
+      "status": "complete",
+      "artefact": "artefacts/2026-04-11-skills-platform-phase2/benefit-metric.md",
+      "startedAt": "2026-04-11T18:40:00+10:00",
+      "completedAt": "2026-04-11T19:10:00+10:00"
     },
     "definition": {
       "status": "not-started"
@@ -26,11 +28,11 @@
     "status": "not-started"
   },
   "checkpoint": {
-    "writtenAt": "2026-04-11T18:35:00+10:00",
-    "contextAtWrite": "Phase 2 discovery started. Discovery artefact written to artefacts/2026-04-11-skills-platform-phase2/discovery.md. E1 estimate recorded. Scope: P2.1 (5 adapters + EA registry + AGENTS.md), P2.2 (improvement agent), P2.3 (fleet observability + persona routing), P2.4 (8 discipline standards + 3 domain), P2.5 (CI adapter validation: Bitbucket Cloud + DC Docker), P2.6 (pipeline evolution D1/D2/D3, D4, D7/D8/D9/B1-enforce). ~14 stories estimated. Quota: 86.7% at start, ~40 remaining, resets May 1.",
-    "resumeInstruction": "START HERE — Phase 2 pipeline. Step 1: check artefacts/2026-04-11-skills-platform-phase2/discovery.md status. If still 'Draft — awaiting approval', present to operator for approval. Step 2: once approved, run /benefit-metric — must include MM4 (estimation calibration <20% E2 error by feature 3) and MM5 (flow findings conversion ≥50%) as new meta-metrics. Step 3: at /definition exit, run /estimate E2. Step 4: D1 and D8 from decisions.md SCOPE 2026-04-11 should become early Phase 2 stories. Step 5: first inner loop story through P1.3 CI gate closes p1.8 AC3 automatically.",
+    "writtenAt": "2026-04-11T19:10:00+10:00",
+    "contextAtWrite": "Phase 2 benefit-metric artefact written and awaiting operator approval. 5 Tier 1 metrics (M1-M5) and 5 Tier 2 meta-metrics (MM1-MM5 including new MM4 estimation calibration and MM5 flow findings conversion). pipeline-state.json updated with Phase 2 feature entry seeded. Ready to proceed to /definition on approval.",
+    "resumeInstruction": "START HERE — Phase 2 pipeline. benefit-metric.md is written and pending approval at artefacts/2026-04-11-skills-platform-phase2/benefit-metric.md. Step 1: present benefit-metric to operator for approval. Step 2: on approval, proceed to /definition. Step 3: at /definition exit, run /estimate E2. Step 4: D1 and D8 from decisions.md SCOPE 2026-04-11 should become early Phase 2 stories. Step 5: first inner loop story through P1.3 CI gate closes p1.8 AC3 automatically.",
     "pendingActions": [
-      "Operator approval of discovery.md before /benefit-metric — present artefact for review",
+      "Operator approval of benefit-metric.md",
       "p1.8 AC3 (T3M1 evidence record) — closes automatically when first Phase 2 inner loop story runs through P1.3 CI gate",
       "Apr 11 premium requests — update workspace/estimation-norms.md Phase 1 row once CSV confirms exact count",
       "CI topology assumption — validate whether enterprise Bitbucket Pipelines is in scope for Phase 2 before any P2.5 story reaches DoR"
