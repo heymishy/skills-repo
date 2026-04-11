@@ -33,6 +33,14 @@ const fixtureFile  = path.join(root, 'tests', 'fixtures', 'assembled-copilot-ins
 const benefitFile  = path.join(root, 'artefacts', '2026-04-09-skills-platform-phase1', 'benefit-metric.md');
 const assembleScript = path.join(root, 'scripts', 'assemble-copilot-instructions.sh');
 
+// On Windows, WSL bash may be absent or broken; prefer Git Bash when available.
+const bashBin = (() => {
+  if (process.platform !== 'win32') return 'bash';
+  const gitBash = 'C:\\Program Files\\Git\\bin\\bash.exe';
+  if (fs.existsSync(gitBash)) return gitBash;
+  return 'bash'; // fall back to system bash (WSL)
+})();
+
 // p2.4 fixtures
 const contextGithubFixture    = path.join(root, 'tests', 'fixtures', 'context-github.yml');
 const contextBitbucketFixture = path.join(root, 'tests', 'fixtures', 'context-bitbucket.yml');
@@ -298,7 +306,7 @@ function runAssemblyInTmpDir(contextFile, extraArgs) {
     '--context', contextFile,
   ].concat(extraArgs || []);
 
-  const result = spawnSync('bash', args, {
+  const result = spawnSync(bashBin, args, {
     cwd: tmpDir,
     encoding: 'utf8',
     env: Object.assign({}, process.env, { NO_COLOR: '1' }),
@@ -408,7 +416,7 @@ console.log('  p2.4: AGENTS.md adapter — vcs.agent_instructions.format / vcs.t
     '    format: unsupported-value',
   ].join('\n') + '\n');
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'check-assembly-p24-invalid-'));
-  const result = spawnSync('bash', [
+  const result = spawnSync(bashBin, [
     assembleScript,
     '--skills-repo-path', root,
     '--ref', 'test-p24',
@@ -431,10 +439,10 @@ console.log('  p2.4: AGENTS.md adapter — vcs.agent_instructions.format / vcs.t
 {
   const tmpGithub    = fs.mkdtempSync(path.join(os.tmpdir(), 'check-assembly-p24-gh-'));
   const tmpBitbucket = fs.mkdtempSync(path.join(os.tmpdir(), 'check-assembly-p24-bb-'));
-  const r1 = spawnSync('bash', [
+  const r1 = spawnSync(bashBin, [
     assembleScript, '--skills-repo-path', root, '--ref', 'test-parity', '--context', contextGithubFixture,
   ], { cwd: tmpGithub, encoding: 'utf8' });
-  const r2 = spawnSync('bash', [
+  const r2 = spawnSync(bashBin, [
     assembleScript, '--skills-repo-path', root, '--ref', 'test-parity', '--context', contextBitbucketFixture,
   ], { cwd: tmpBitbucket, encoding: 'utf8' });
   try {
