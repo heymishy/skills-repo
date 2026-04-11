@@ -119,10 +119,10 @@ This table maps all eight audit questions from the platform operating model (§9
 
 | Field | Value |
 |-------|-------|
-| Reviewer name | |
-| Review date | |
-| Verdict | |
-| Conditions (if verdict is "approved with conditions") | |
+| Reviewer name | Hamish |
+| Review date | 2026-04-12 |
+| Verdict | approved with conditions |
+| Conditions (if verdict is "approved with conditions") | T3M1 partial result (3/8 Y) is the expected Phase 1 baseline. Full coverage (Q2 standardsInjected, Q5 watermark, Q6 staleness, Q7 independence, Q8 hash verification) requires Phase 2 gate enhancements (p1.4, p1.7, p2.1). Document cleared for continued dogfood use. Non-dogfood adoption gate: repeat sign-off after all 8 questions fully satisfied. |
 
 **Permitted verdict values:** `approved for adoption` / `approved with conditions` / `not approved`
 
