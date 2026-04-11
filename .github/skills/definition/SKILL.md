@@ -146,6 +146,21 @@ For each epic, write stories conforming to `.github/templates/story.md`.
 - Minimum 3 ACs per story in Given/When/Then format
 - ACs describe observable behaviour, not implementation approach
 
+**Testability filter (D2 — advisory, applied to each AC as written):**
+
+When writing an AC, apply a testability check. Flag any AC that:
+- (a) uses "should" or "would" instead of asserting current-state observable behaviour
+- (b) describes internal system state not visible to a test runner or human reviewer
+- (c) cannot be evaluated independently without first running a prior AC
+
+Surface flagged ACs as:
+
+> "AC[N] may not be independently testable — [reason]. Revise the AC or accept as-is?"
+
+If the operator accepts the AC as-is, story writing continues without removing or altering the AC. Annotate the accepted AC with `[Testability: accepted by operator on <date>]`.
+
+**This filter is advisory only** — do not halt story creation or block story progression for testability warnings.
+
 **Scope guard — per story:**
 If a story is necessary but was not in the discovery MVP scope, surface it
 immediately rather than silently writing it:
@@ -178,6 +193,16 @@ If migration story template confirmed: write the story using
 > Reply: 1, 2, or 3
 
 Save each story to `artefacts/[feature]/stories/[story-slug].md`
+
+**Dependency chain validation (D1 — run after saving each story):**
+
+After writing and saving a story's Dependencies block, check whether each named upstream story slug resolves to an existing artefact path (`artefacts/[feature]/stories/[slug].md`). If any slug does not resolve, surface a prompt before proceeding to the next story:
+
+> "Upstream story [slug] not found at expected path. Options: (1) add the missing story, (2) confirm this is an external dependency, (3) remove the reference."
+
+If the operator selects option 2 (external dependency) and provides a description, record the following annotation in the story's Dependencies block and do not re-surface the warning for that slug in the same session:
+
+> `[External: <description> — confirmed by operator on <date>]`
 
 ---
 
@@ -314,7 +339,11 @@ If no NFRs are identified, state this explicitly in the profile:
 > Slicing strategy: [chosen strategy]
 > Scope check: ✅ Clean / ⚠️ [n] additions approved / ⚠️ Review needed
 > NFR profile: ✅ Saved / ⚠️ No NFRs identified — reviewed
->
+
+**Learnings exit step (D3 — before proceeding to /estimate):**
+
+Before ending this session — are there any learnings from this decomposition to write to `workspace/learnings.md`? Reply with the learning text, or `skip` to proceed to /estimate.
+
 > Ready to run /review on the stories?
 > Reply: yes — or review a specific story first
 
