@@ -1,0 +1,7 @@
+# tests/fixtures/context-github.yml — fixture for p2.4 AGENTS.md adapter tests
+# Represents a GitHub-hosted repository (GitHub Copilot inner loop).
+# Expected assembly output: .github/copilot-instructions.md
+
+vcs:
+  type: github
+  # agent_instructions.format absent → inferred from vcs.type (github → copilot-instructions)

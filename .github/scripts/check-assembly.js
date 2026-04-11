@@ -25,11 +25,17 @@
 
 const fs   = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
+const os = require('os');
 
 const root         = path.join(__dirname, '..', '..');
 const fixtureFile  = path.join(root, 'tests', 'fixtures', 'assembled-copilot-instructions.md');
 const benefitFile  = path.join(root, 'artefacts', '2026-04-09-skills-platform-phase1', 'benefit-metric.md');
 const assembleScript = path.join(root, 'scripts', 'assemble-copilot-instructions.sh');
+
+// p2.4 fixtures
+const contextGithubFixture    = path.join(root, 'tests', 'fixtures', 'context-github.yml');
+const contextBitbucketFixture = path.join(root, 'tests', 'fixtures', 'context-bitbucket.yml');
 
 let passed = 0;
 let failed = 0;
@@ -275,6 +281,247 @@ if (fs.existsSync(assembleScript)) {
   pass('assembly-script-exists (scripts/assemble-copilot-instructions.sh)');
 } else {
   fail('assembly-script-exists', `Assembly script not found: ${assembleScript}`);
+}
+
+// ── p2.4: AGENTS.md adapter — vcs.agent_instructions.format / vcs.type tests ─
+
+/**
+ * Run the assembly script in a fresh temp directory.
+ * Returns the spawnSync result plus paths to expected output files.
+ */
+function runAssemblyInTmpDir(contextFile, extraArgs) {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'check-assembly-p24-'));
+  const args = [
+    assembleScript,
+    '--skills-repo-path', root,
+    '--ref', 'test-p24',
+    '--context', contextFile,
+  ].concat(extraArgs || []);
+
+  const result = spawnSync('bash', args, {
+    cwd: tmpDir,
+    encoding: 'utf8',
+    env: Object.assign({}, process.env, { NO_COLOR: '1' }),
+  });
+
+  return {
+    result,
+    tmpDir,
+    githubOut: path.join(tmpDir, '.github', 'copilot-instructions.md'),
+    agentsMd:  path.join(tmpDir, 'AGENTS.md'),
+  };
+}
+
+/**
+ * Write a temporary context.yml string to a temp file; return its path.
+ */
+function writeTmpContext(content) {
+  const tmpFile = path.join(os.tmpdir(), `ctx-p24-${Date.now()}.yml`);
+  fs.writeFileSync(tmpFile, content, 'utf8');
+  return tmpFile;
+}
+
+console.log('');
+console.log('  p2.4: AGENTS.md adapter — vcs.agent_instructions.format / vcs.type branching');
+
+// ── AC1: GitHub vcs.type → .github/copilot-instructions.md ───────────────────
+{
+  const { result, tmpDir, githubOut, agentsMd } = runAssemblyInTmpDir(contextGithubFixture);
+  try {
+    if (result.status !== 0) {
+      fail('check-assembly-github-default-copilot-instructions',
+        `Script exited ${result.status}: ${result.stderr}`);
+    } else if (!fs.existsSync(githubOut)) {
+      fail('check-assembly-github-default-copilot-instructions',
+        `.github/copilot-instructions.md not created for vcs.type: github`);
+    } else {
+      pass('check-assembly-github-default-copilot-instructions');
+    }
+
+    if (!fs.existsSync(agentsMd)) {
+      pass('check-assembly-github-no-agents-md');
+    } else {
+      fail('check-assembly-github-no-agents-md',
+        `AGENTS.md was unexpectedly created for vcs.type: github`);
+    }
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+}
+
+// ── AC2: Non-GitHub vcs.type (bitbucket) → AGENTS.md at root ─────────────────
+{
+  const { result, tmpDir, githubOut, agentsMd } = runAssemblyInTmpDir(contextBitbucketFixture);
+  try {
+    if (result.status !== 0) {
+      fail('check-assembly-bitbucket-outputs-agents-md',
+        `Script exited ${result.status}: ${result.stderr}`);
+    } else if (!fs.existsSync(agentsMd)) {
+      fail('check-assembly-bitbucket-outputs-agents-md',
+        `AGENTS.md not created for vcs.type: bitbucket`);
+    } else {
+      pass('check-assembly-bitbucket-outputs-agents-md');
+    }
+
+    if (!fs.existsSync(githubOut)) {
+      pass('check-assembly-non-github-no-copilot-instructions');
+    } else {
+      fail('check-assembly-non-github-no-copilot-instructions',
+        `.github/copilot-instructions.md was unexpectedly created for vcs.type: bitbucket`);
+    }
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+}
+
+// ── AC3a: Explicit vcs.agent_instructions.format: agents-md overrides vcs.type: github
+{
+  const ctxFile = writeTmpContext([
+    'vcs:',
+    '  type: github',
+    '  agent_instructions:',
+    '    format: agents-md',
+  ].join('\n') + '\n');
+  const { result, tmpDir, githubOut, agentsMd } = runAssemblyInTmpDir(ctxFile);
+  try {
+    if (result.status !== 0) {
+      fail('check-assembly-explicit-agents-md-override',
+        `Script exited ${result.status}: ${result.stderr}`);
+    } else if (!fs.existsSync(agentsMd)) {
+      fail('check-assembly-explicit-agents-md-override',
+        `AGENTS.md not created when vcs.agent_instructions.format: agents-md (vcs.type: github)`);
+    } else {
+      pass('check-assembly-explicit-agents-md-override');
+    }
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+    try { fs.unlinkSync(ctxFile); } catch (_) {}
+  }
+}
+
+// ── AC3b: Invalid vcs.agent_instructions.format → assembly-time error ─────────
+{
+  const ctxFile = writeTmpContext([
+    'vcs:',
+    '  type: github',
+    '  agent_instructions:',
+    '    format: unsupported-value',
+  ].join('\n') + '\n');
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'check-assembly-p24-invalid-'));
+  const result = spawnSync('bash', [
+    assembleScript,
+    '--skills-repo-path', root,
+    '--ref', 'test-p24',
+    '--context', ctxFile,
+  ], { cwd: tmpDir, encoding: 'utf8' });
+  try {
+    if (result.status !== 0) {
+      pass('check-assembly-invalid-format-value-errors');
+    } else {
+      fail('check-assembly-invalid-format-value-errors',
+        `Script should have errored on unsupported format value but exited 0`);
+    }
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+    try { fs.unlinkSync(ctxFile); } catch (_) {}
+  }
+}
+
+// ── AC4: Content parity — assembled content identical for github and bitbucket ─
+{
+  const tmpGithub    = fs.mkdtempSync(path.join(os.tmpdir(), 'check-assembly-p24-gh-'));
+  const tmpBitbucket = fs.mkdtempSync(path.join(os.tmpdir(), 'check-assembly-p24-bb-'));
+  const r1 = spawnSync('bash', [
+    assembleScript, '--skills-repo-path', root, '--ref', 'test-parity', '--context', contextGithubFixture,
+  ], { cwd: tmpGithub, encoding: 'utf8' });
+  const r2 = spawnSync('bash', [
+    assembleScript, '--skills-repo-path', root, '--ref', 'test-parity', '--context', contextBitbucketFixture,
+  ], { cwd: tmpBitbucket, encoding: 'utf8' });
+  try {
+    const ghFile = path.join(tmpGithub,    '.github', 'copilot-instructions.md');
+    const bbFile = path.join(tmpBitbucket, 'AGENTS.md');
+    if (r1.status !== 0 || r2.status !== 0) {
+      fail('check-assembly-content-parity',
+        `One or both assembly runs failed (github=${r1.status}, bitbucket=${r2.status})`);
+    } else if (!fs.existsSync(ghFile) || !fs.existsSync(bbFile)) {
+      fail('check-assembly-content-parity',
+        `Expected output files not found (github=${fs.existsSync(ghFile)}, bitbucket=${fs.existsSync(bbFile)})`);
+    } else {
+      // Strip the assembled-at timestamp before comparing: timestamps differ between runs
+      // but are not format-specific content (AC4 verifies no format-based transformation).
+      const normalise = c => c.replace(/assembled-at:\s+[^\n]+/, 'assembled-at: [normalised]');
+      const ghContent = normalise(fs.readFileSync(ghFile, 'utf8'));
+      const bbContent = normalise(fs.readFileSync(bbFile, 'utf8'));
+      if (ghContent === bbContent) {
+        pass('check-assembly-content-parity');
+      } else {
+        fail('check-assembly-content-parity',
+          `Assembled content differs between github and bitbucket output paths`);
+      }
+    }
+  } finally {
+    fs.rmSync(tmpGithub,    { recursive: true, force: true });
+    fs.rmSync(tmpBitbucket, { recursive: true, force: true });
+  }
+}
+
+// ── AC5: Unconfigured context → defaults to .github/copilot-instructions.md ───
+{
+  const ctxFile = writeTmpContext('# empty context — no vcs block\nmeta:\n  name: "unconfigured"\n');
+  const { result, tmpDir, githubOut, agentsMd } = runAssemblyInTmpDir(ctxFile);
+  try {
+    if (result.status !== 0) {
+      fail('check-assembly-unconfigured-default',
+        `Script exited ${result.status}: ${result.stderr}`);
+    } else if (!fs.existsSync(githubOut)) {
+      fail('check-assembly-unconfigured-default',
+        `.github/copilot-instructions.md not created for unconfigured context (expected default)`);
+    } else if (fs.existsSync(agentsMd)) {
+      fail('check-assembly-unconfigured-default',
+        `AGENTS.md was unexpectedly created for unconfigured context`);
+    } else {
+      pass('check-assembly-unconfigured-default');
+    }
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+    try { fs.unlinkSync(ctxFile); } catch (_) {}
+  }
+}
+
+// ── AC6: Integration — check-assembly.js covers both output paths ─────────────
+{
+  // GitHub integration test
+  const { result: r1, tmpDir: d1, githubOut: go1, agentsMd: am1 } = runAssemblyInTmpDir(contextGithubFixture);
+  try {
+    if (r1.status === 0 && fs.existsSync(go1) && !fs.existsSync(am1)) {
+      pass('check-assembly-github-integration');
+    } else if (r1.status !== 0) {
+      fail('check-assembly-github-integration', `Script exited ${r1.status}: ${r1.stderr}`);
+    } else if (!fs.existsSync(go1)) {
+      fail('check-assembly-github-integration', `.github/copilot-instructions.md not created`);
+    } else {
+      fail('check-assembly-github-integration', `AGENTS.md was unexpectedly created`);
+    }
+  } finally {
+    fs.rmSync(d1, { recursive: true, force: true });
+  }
+}
+{
+  // Bitbucket integration test
+  const { result: r2, tmpDir: d2, githubOut: go2, agentsMd: am2 } = runAssemblyInTmpDir(contextBitbucketFixture);
+  try {
+    if (r2.status === 0 && fs.existsSync(am2) && !fs.existsSync(go2)) {
+      pass('check-assembly-bitbucket-integration');
+    } else if (r2.status !== 0) {
+      fail('check-assembly-bitbucket-integration', `Script exited ${r2.status}: ${r2.stderr}`);
+    } else if (!fs.existsSync(am2)) {
+      fail('check-assembly-bitbucket-integration', `AGENTS.md not created`);
+    } else {
+      fail('check-assembly-bitbucket-integration', `.github/copilot-instructions.md was unexpectedly created`);
+    }
+  } finally {
+    fs.rmSync(d2, { recursive: true, force: true });
+  }
 }
 
 // ── Summary ───────────────────────────────────────────────────────────────────
