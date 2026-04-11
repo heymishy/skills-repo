@@ -120,11 +120,13 @@ All must pass. No exceptions. Run each check and record PASS or FAIL.
 | H6 | Complexity is rated | Story |
 | H7 | No unresolved HIGH findings from the review report | Review |
 | H8 | Test plan has no uncovered ACs (or gaps explicitly acknowledged) | Test plan |
+| H8-ext | Cross-story schema dependency check: if the story's Dependencies block lists at least one upstream story (not "None"), the DoR contract must include a `schemaDepends: [field1, field2]` declaration. Check each declared field against `pipeline-state.schema.json` — if any declared field is absent, fire as a hard block: "H8-ext FAIL: [field] declared in schemaDepends is not present in pipeline-state.schema.json. Add the field to the schema or correct the schemaDepends declaration before sign-off." If the story's Dependencies block is "None", pass with: "H8-ext: no upstream dependencies declared — schema check not required." | DoR contract + pipeline-state.schema.json |
 | H9 | Architecture Constraints field populated; no Category E HIGH findings | Story + Architecture guardrails |
 | H-E2E | If any AC in the test plan is typed `CSS-layout-dependent` AND no E2E tooling is configured AND no `RISK-ACCEPT` is recorded in /decisions for this gap - block sign-off | Test plan + Decisions |
 | H-NFR | NFR profile exists at `artefacts/[feature]/nfr-profile.md` — or story has explicit `NFRs: None — reviewed [date]` field | NFR profile / Story |
 | H-NFR2 | Any compliance NFR with a named regulatory clause has documented human sign-off | NFR profile |
 | H-NFR3 | Data classification field in NFR profile is not blank | NFR profile |
+| H-NFR-profile | NFR profile presence check (B1-enforce): if the story's NFR section is not "None" or blank, check that `artefacts/[feature]/nfr-profile.md` exists. If absent, fire as a hard block: "H-NFR-profile FAIL: story declares NFRs but no feature NFR profile exists at artefacts/[feature]/nfr-profile.md. Create the NFR profile (run /definition Step 7) before sign-off." If the story's NFR section is "None" or blank, skip this check. | Story + NFR profile |
 
 **If any hard block fails - stop immediately:**
 
