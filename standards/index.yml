@@ -13,6 +13,15 @@ disciplines:
       saas-gui: standards/quality-assurance/saas-gui-variant.md
       manual: standards/quality-assurance/manual-variant.md
 
+# Surface-type policy floors (p2.5a — IaC and SaaS-API)
+# Routing key is the surface type declared in context.yml (surface.type or surface.types[]).
+# Each surface type maps to its own POLICY.md floor, separate from discipline floors.
+surfaces:
+  iac:
+    policy-floor: standards/iac/POLICY.md
+  saas-api:
+    policy-floor: standards/saas-api/POLICY.md
+
 # Authoring note: standards requirements must be outcome-oriented.
 # Each MUST/SHOULD/MAY states what result is enabled or prevented, not just what
 # structure or process is required. Prefer "MUST write X so that Y cannot occur"
