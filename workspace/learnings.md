@@ -465,3 +465,30 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 **Fix — /issue-dispatch SKILL.md Step 5:** When using `gh issue create` in PowerShell, never combine the body-file write and the `gh issue create` call in the same multi-statement command. Separate them into two distinct terminal calls: (1) write the body file; (2) run `gh issue create --body-file`. This eliminates the silent-then-explicit double-execution pattern.
 
 **Action:** Add a note to the `/issue-dispatch` SKILL.md Step 5 command block specifying that body file write and `gh issue create` must be separate terminal calls in PowerShell environments. Log as a Phase 2 /levelup candidate.
+
+---
+
+## Assurance gate trace files not persisted — GitHub Actions `contents: read` prevents git push back to branch
+
+### Observed — 2026-04-12
+
+**Circumstance:** `workspace/traces/` contained only `.gitkeep` despite the assurance gate having run on multiple PRs. The gate workflow writes a JSONL trace file to `workspace/traces/` on the Actions runner during each PR check, and the "Post verdict to PR" step reads that file to include the verdict and trace hash in the PR comment. However, the trace file is ephemeral — it exists on the runner only for the duration of the job and is discarded when the runner terminates. The repo always shows only `.gitkeep`.
+
+**Root cause:** `.github/workflows/assurance-gate.yml` had `permissions: contents: read`. GitHub Actions requires `contents: write` to push any changes back to the repository. With `read` only, any attempt to run `git push` inside the workflow would fail with a 403. There was also no commit step — the workflow had no instruction to stage or commit the trace files at all.
+
+**Impact:** p1.8 AC3 was blocked — it requires a real committed trace to evaluate the 8 MODEL-RISK audit questions against. p2.11 and p2.12 DoR dispatch gates were also blocked — both require `workspace/traces/` to contain at least one real Phase 2 inner loop trace file. Without committed traces, both gates can never clear regardless of how many agent PRs run.
+
+**Fix applied (2026-04-12):**
+1. Changed `permissions.contents` from `read` to `write` in `assurance-gate.yml`
+2. Added "Commit trace file" step after "Run assurance gate" and before "Post verdict to PR":
+   - `if: always()` — runs even if gate verdict is `fail`
+   - `git config user.name/email` as `github-actions[bot]`
+   - `git add workspace/traces/`
+   - `git diff --cached --quiet || git commit -m "chore: assurance gate trace [ci skip]"` — skips commit if nothing staged
+   - `git push origin HEAD:${{ github.head_ref }}` — pushes to the PR branch ref
+
+**Why `[ci skip]` in commit message:** Prevents the push from triggering a new workflow run loop. The assurance gate fires on `pull_request` with type `synchronize` — a commit pushed back to the PR branch would re-trigger it. The `[ci skip]` convention suppresses that re-trigger.
+
+**Pattern:** Any GitHub Actions workflow that must persist artefacts back to the triggering branch needs: (1) `permissions: contents: write`, (2) an explicit commit step, (3) `[ci skip]` in the commit message if the workflow triggers on `synchronize`, and (4) a `--quiet || commit` guard to avoid empty commits.
+
+**Action:** When authoring new workflows that write output artefacts, include this pattern by default. Add to `.github/architecture-guardrails.md` or standards as a workflow authoring requirement. Log as a Phase 2 /levelup candidate.

@@ -6,6 +6,10 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- `.github/workflows/assurance-gate.yml` — `permissions.contents` upgraded from `read` to `write`; "Commit trace file" step added after gate run (runs with `if: always()`) to `git add workspace/traces/`, commit with `[ci skip]` message, and push back to the PR branch ref via `HEAD:${{ github.head_ref }}`. Fixes gap where trace JSONL files were written to runner filesystem during gate execution but discarded on runner exit — they existed long enough for the PR comment step to read but were never persisted to the repo. Required for p1.8 AC3 evaluation and p2.11/p2.12 DoR gate clearance (2026-04-12)
+
 ### Added
 
 - `.github/skills/estimate/SKILL.md` — new skill: progressive estimation across E1 (at /discovery), E2 (at /definition), and E3 (at /levelup); E1 records rough focus-time forecast; E2 refines once story count and complexity are known with compact `byStory` schema; E3 derives phase boundaries from `workspace/state.json` cycle timestamps, computes deltas and flow improvement findings, and appends a row to `workspace/estimation-norms.md`; null-guard: if E1 skipped, E3 writes actuals-only baseline row with no delta table (2026-04-11)
