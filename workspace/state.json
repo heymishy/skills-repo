@@ -1,6 +1,6 @@
 {
   "feature": "2026-04-09-skills-platform-phase1",
-  "lastUpdated": "2026-04-11T00:00:00Z",
+  "lastUpdated": "2026-04-11T10:00:00+10:00",
   "currentPhase": "definition-of-done",
   "cycle": {
     "discovery": {
@@ -82,13 +82,12 @@
   },
   "checkpoint": {
     "writtenAt": "2026-04-11",
-    "contextAtWrite": "Phase 1 fully complete. All 8 DoDs written. /levelup complete. /estimate bootstrap done (actuals: 17.5h OL focus, 1h IL human, 173+ premium requests confirmed Apr 9-10). Three /estimate improvements committed (gaugeAtStart, 3-tier derivation, coding_agent SKU note). P2.5 marked delivered in ref-skills-platform-phase1-2.md. HEAD d206fb6. Two pre-Phase-2 fixes remain: (1) p1.6 DoD obs #3 change 'Candidate' to 'Actioned' /levelup finding; (2) workspace/suite.json eval scenario for review per-story incremental state write. After those: Phase 2 discovery.",
-    "resumeInstruction": "Phase 1 delivery is fully complete. Apply two pre-Phase-2 fixes if not yet committed: (A) amend p1.6 DoD artefacts/2026-04-09-skills-platform-phase1/dod/p1.6-living-eval-regression-suite-dod.md observation #3 — change 'Candidate /levelup finding' to 'Actioned /levelup finding' noting DoD template write-back done and DoR skill enhancement deferred to Phase 2; (B) add eval scenario 's-review-incremental-state' to workspace/suite.json for per-story state durability pattern. Then start Phase 2 discovery: read artefacts/2026-04-09-skills-platform-phase1/reference/ref-skills-platform-phase1-2.md P2.1-P2.4 (P2.5 skip — delivered). Phase 2 benefit-metric must add MM4 (estimation calibration <20% E2 error by feature 3) and MM5 (flow findings conversion ≥50%). Record current Copilot gauge % as gaugeAtStart at Phase 2 E1.",
+    "contextAtWrite": "Phase 1 fully complete. All pre-Phase-2 fixes done (p1.6 DoD obs #3 actioned; s-review-incremental-state eval scenario added). /estimate E3 updated: session 10 added (10 sessions total, 36h wall-clock, 18h OL focus, ~185 premium requests, gauge 84.4% at close). [0.6.2] viz-functions.js + check-viz-behaviour.js committed — 43 assertions passing. HEAD 7d6d2fa. Ready for Phase 2 discovery.",
+    "resumeInstruction": "Phase 1 delivery fully complete. All pre-Phase-2 fixes done. /estimate E3 updated (session 10: 18h OL focus, ~185 premium requests). Start Phase 2 discovery: read artefacts/2026-04-09-skills-platform-phase1/reference/ref-skills-platform-phase1-2.md P2.1–P2.4 (P2.5 skip — delivered in Phase 1). Phase 2 benefit-metric must add MM4 (estimation calibration <20% E2 error by feature 3) and MM5 (flow findings conversion ≥50%). Record current Copilot gauge % as gaugeAtStart at Phase 2 E1 — gauge was 84.4% at end of Phase 1 session 10.",
     "pendingActions": [
-      "p1.6 DoD amendment — change obs #3 'Candidate /levelup finding' to 'Actioned /levelup finding' (DoD template write-back done; DoR skill enhancement deferred to Phase 2)",
-      "workspace/suite.json — add 's-review-incremental-state' eval scenario for per-story state write durability",
-      "Phase 2 discovery — after pre-Phase-2 fixes; read ref-skills-platform-phase1-2.md P2.1-P2.4",
-      "p1.8 AC3 (T3M1 evidence record) — fill when first real inner loop story runs through P1.3 CI gate"
+      "Phase 2 discovery — start next session; read ref-skills-platform-phase1-2.md P2.1–P2.4 (P2.5 delivered)",
+      "p1.8 AC3 (T3M1 evidence record) — fill when first real inner loop story runs through P1.3 CI gate",
+      "Apr 11 premium requests — update premiumRequestsActual once Apr 11 CSV report clears (current estimate ~185 from 84.4% gauge; exact count pending)"
     ]
   },
   "estimate": {
@@ -97,16 +96,16 @@
     "actuals": {
       "date": "2026-04-11",
       "calendarDays": 2,
-      "outerLoopSessions": 9,
+      "outerLoopSessions": 10,
       "engagementFraction": 0.50,
-      "totalCalendarH": 35,
-      "outerLoopFocusH": "17.5 (derived: 35 × 0.50)",
+      "totalCalendarH": 36,
+      "outerLoopFocusH": "18 (derived: 36 × 0.50)",
       "innerLoopHuman": 1,
       "agentAutonomousH": 14,
       "storyCount": 8,
-      "focusHPerStory": 2.2,
-      "premiumRequestsActual": "173+ (173 confirmed Apr 9–10 from usage report; Apr 11 pending next report cycle)",
-      "premiumRequestsDerivationNote": "CSV report Apr 9: 94 Sonnet; Apr 10: 65 Sonnet + 14 Coding Agent. Pre-Phase 1 Apr 1 requests (68: 39 Opus + 29 Sonnet) excluded. Original gauge estimate of ~240 was total quota consumed including Apr 1 pre-Phase 1 work.",
+      "focusHPerStory": 2.3,
+      "premiumRequestsActual": "~185 (173 confirmed Apr 9–10 + ~12 Apr 11 session 10; gauge 84.4% at session 10 close; exact Apr 11 count pending CSV report)",
+      "premiumRequestsDerivationNote": "CSV report Apr 9: 94 Sonnet; Apr 10: 65 Sonnet + 14 Coding Agent. Pre-Phase 1 Apr 1 requests (68: 39 Opus + 29 Sonnet) excluded. Apr 11 session 10: gauge 84.4% at close → inferred ~12 requests (253 total at 84.4% × 300 quota − 241 prior). Apr 11 CSV pending next report cycle.",
       "derivationSources": {
         "all": "JSONL session map compiled in workspace/learnings.md (Phase 1 bootstrap — tier-3 timestamps, union applied for concurrent sessions 4–7)"
       },
