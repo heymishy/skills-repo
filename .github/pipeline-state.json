@@ -1200,7 +1200,10 @@
               "dorDate": "2026-05-01",
               "dorAssessedBy": "Copilot",
               "dorArtefact": "artefacts/2026-04-11-skills-platform-phase2/dor/p2.5b-saas-gui-m365-manual-adapters-dor.md",
-              "updatedAt": "2026-05-01"
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/32",
+              "dispatchedAt": "2026-04-12T00:00:00Z",
+              "dispatchTarget": "github-agent",
+              "updatedAt": "2026-04-12"
             },
             {
               "slug": "p2.6-ea-registry-path-a",
@@ -1221,7 +1224,10 @@
               "dorDate": "2026-04-11",
               "dorAssessedBy": "Copilot",
               "dorArtefact": "artefacts/2026-04-11-skills-platform-phase2/dor/p2.6-ea-registry-path-a-dor.md",
-              "updatedAt": "2026-04-11"
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/33",
+              "dispatchedAt": "2026-04-12T00:00:00Z",
+              "dispatchTarget": "github-agent",
+              "updatedAt": "2026-04-12"
             }
           ]
         }
@@ -1333,7 +1339,10 @@
               "dorDate": "2026-04-11",
               "dorAssessedBy": "Copilot",
               "dorArtefact": "artefacts/2026-04-11-skills-platform-phase2/dor/p2.7-fleet-registry-ci-aggregation-dor.md",
-              "updatedAt": "2026-04-11"
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/34",
+              "dispatchedAt": "2026-04-12T00:00:00Z",
+              "dispatchTarget": "github-agent",
+              "updatedAt": "2026-04-12"
             },
             {
               "slug": "p2.8-persona-routing-non-engineer-approval",
@@ -1355,7 +1364,10 @@
               "dorAssessedBy": "Copilot",
               "w2ScopeStability": "unstable-p2.7-dependency",
               "dorArtefact": "artefacts/2026-04-11-skills-platform-phase2/dor/p2.8-persona-routing-non-engineer-approval-dor.md",
-              "updatedAt": "2026-04-11"
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/35",
+              "dispatchedAt": "2026-04-12T00:00:00Z",
+              "dispatchTarget": "github-agent",
+              "updatedAt": "2026-04-12"
             }
           ]
         },
@@ -1383,7 +1395,10 @@
               "dorDate": "2026-04-11",
               "dorAssessedBy": "Copilot",
               "dorArtefact": "artefacts/2026-04-11-skills-platform-phase2/dor/p2.9-discipline-standards-remaining-dor.md",
-              "updatedAt": "2026-04-11"
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/36",
+              "dispatchedAt": "2026-04-12T00:00:00Z",
+              "dispatchTarget": "github-agent",
+              "updatedAt": "2026-04-12"
             },
             {
               "slug": "p2.10-bitbucket-ci-validation",
@@ -1404,7 +1419,10 @@
               "dorDate": "2026-04-11",
               "dorAssessedBy": "Copilot",
               "dorArtefact": "artefacts/2026-04-11-skills-platform-phase2/dor/p2.10-bitbucket-ci-validation-dor.md",
-              "updatedAt": "2026-04-11"
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/37",
+              "dispatchedAt": "2026-04-12T00:00:00Z",
+              "dispatchTarget": "github-agent",
+              "updatedAt": "2026-04-12"
             }
           ]
         },
