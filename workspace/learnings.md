@@ -492,3 +492,46 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 **Pattern:** Any GitHub Actions workflow that must persist artefacts back to the triggering branch needs: (1) `permissions: contents: write`, (2) an explicit commit step, (3) `[ci skip]` in the commit message if the workflow triggers on `synchronize`, and (4) a `--quiet || commit` guard to avoid empty commits.
 
 **Action:** When authoring new workflows that write output artefacts, include this pattern by default. Add to `.github/architecture-guardrails.md` or standards as a workflow authoring requirement. Log as a Phase 2 /levelup candidate.
+
+---
+
+## Tool-use gap D9 — GitHub Actions `actions/checkout@v4` on `pull_request` events leaves runner in detached HEAD
+
+### Observed — 2026-04-12
+
+**Circumstance:** After D8 fix (contents: write + commit step) was applied, the "Commit trace file" step still failed with "fetch first" push rejection on subsequent gate runs. The workflow showed the commit succeeding locally (`[detached HEAD 8a45dc8]`) but the push failing because the remote had newer commits.
+
+**Root cause:** `actions/checkout@v4` for `pull_request` events does NOT check out the PR branch — it checks out the synthetic merge commit at `refs/pull/N/merge` in detached HEAD state. This means:
+1. Any commit made in the step is on a detached HEAD, not on the branch ref
+2. `git push origin HEAD:branch` pushes the detached HEAD commit on top of whatever the runner fetched at checkout time — which may be behind the branch tip if the agent or another step has pushed since
+3. `git pull --rebase` in detached HEAD does not reliably integrate new branch commits before the push
+
+**Fix:** Add `ref: ${{ github.head_ref }}` and `fetch-depth: 0` to the `actions/checkout@v4` step. This forces checkout to the actual PR branch by name with full history, placing the runner on the branch ref in normal (non-detached) state from the start. All subsequent `git add`, `git commit`, and `git push` operations then work against the real branch.
+
+```yaml
+- name: Checkout
+  uses: actions/checkout@v4
+  with:
+    ref: ${{ github.head_ref }}
+    fetch-depth: 0
+```
+
+**Pattern:** Any workflow that must push commits back to the PR branch must include `ref: ${{ github.head_ref }}` + `fetch-depth: 0` on checkout. Without these, the runner is in detached HEAD at the merge commit — commits succeed locally but pushes will be rejected whenever the branch has advanced since the workflow started.
+
+**Action:** Add to `.github/architecture-guardrails.md` as a workflow authoring guardrail. Log as Phase 2 /levelup candidate.
+
+---
+
+## Tool-use gap D10 — git push rejection not always resolved by pull --rebase in CI; prefer explicit branch checkout
+
+### Observed — 2026-04-12
+
+**Circumstance:** Multiple iterations of adding `git pull --rebase origin ${{ github.head_ref }}` before the push in the "Commit trace file" step continued to fail with "Updates were rejected because the remote contains work that you do not have locally." The simple rebase loop did not resolve the problem on its own.
+
+**Root cause:** The rebase instruction assumes the runner is on the correct branch. When checkout leaves the runner in detached HEAD (D9), `git pull --rebase origin branch` fetches and rebases onto the remote tip — but the local HEAD is still the detached commit, not the branch. The push `origin HEAD:branch` then attempts to push a detached HEAD commit on top of the rebased state, which may still be rejected if there is any mismatch.
+
+**Lesson:** In CI, `git pull --rebase` is not a substitute for being on the correct branch. The correct fix is upstream: ensure the checkout step puts the runner on the actual branch (D9 fix). Once on the branch, a simple `git push` without any pull/rebase is sufficient — the runner already has the branch tip because `fetch-depth: 0` pulled full history.
+
+**Pattern:** When debugging CI push rejections, check `git status` output for "HEAD detached at" before assuming the rebase logic is the problem. Detached HEAD is invisible in workflow logs unless you add `git status` debug output.
+
+**Action:** Include `git status` in debug steps for any workflow that commits back to a branch. This surfaces detached HEAD immediately and prevents iterating on the wrong fix.
