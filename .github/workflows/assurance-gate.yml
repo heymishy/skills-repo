@@ -34,9 +34,13 @@ jobs:
       - name: Commit trace file
         if: always()
         run: |
+          echo "Working directory: $(pwd)"
+          echo "Traces directory contents:"
+          ls -la workspace/traces/ || echo "traces dir not found"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add workspace/traces/
+          git add -f workspace/traces/
+          git status
           git diff --staged --quiet || git commit -m "chore: assurance gate trace [ci skip]"
           git pull --rebase origin ${{ github.head_ref }}
           git push origin HEAD:${{ github.head_ref }}
