@@ -24,11 +24,11 @@
 
 ## AC Coverage
 
-| AC | Satisfied? | Evidence | Deviation |
-|----|-----------|----------|-----------|
-| AC1 | ✅ / ⚠️ / ❌ | [Test name / observable behaviour] | [None / description] |
-| AC2 | ✅ / ⚠️ / ❌ | [Test name / observable behaviour] | [None / description] |
-| AC3 | ✅ / ⚠️ / ❌ | [Test name / observable behaviour] | [None / description] |
+| AC | Satisfied? | Evidence | Verification method | Deviation |
+|----|-----------|----------|---------------------|-----------|
+| AC1 | ✅ / ⚠️ / ❌ | [Test name / observable behaviour] | [automated test slug / code review / manual run] | [None / description] |
+| AC2 | ✅ / ⚠️ / ❌ | [Test name / observable behaviour] | [automated test slug / code review / manual run] | [None / description] |
+| AC3 | ✅ / ⚠️ / ❌ | [Test name / observable behaviour] | [automated test slug / code review / manual run] | [None / description] |
 
 **A deviation is any difference between implemented behaviour and the AC**, even if minor.
 Deviations are not necessarily failures — they must be recorded and will be surfaced by /trace.

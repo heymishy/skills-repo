@@ -307,6 +307,22 @@
       "expectedOutcome": "AC flagged as potentially not independently testable with reason; accepted AC annotated [Testability: accepted by operator on <date>]; story writing continues",
       "failurePatternGuarded": "Skill blocks story creation when a testability warning is raised instead of treating the filter as advisory",
       "reviewNote": "Outcome-orientation confirmed: tests for advisory flag presence and annotation format \u2014 not for whether the operator revises the AC"
+    },
+    {
+      "taskId": "s-h8-ext-blocks-story-missing-nfr-guardrail-entry",
+      "description": "definition-of-ready skill fires H8-ext hard block when a story has upstream dependencies and the declared schemaDepends field is absent from pipeline-state.schema.json",
+      "skillSurfaceCombination": "definition-of-ready/github-copilot",
+      "expectedOutcome": "H8-ext FAIL: declared schemaDepends field not present in pipeline-state.schema.json \u2014 sign-off blocked",
+      "failurePatternGuarded": "DoR skill signs off on a story whose upstream schema dependency is undeclared or missing from the schema, allowing cross-story data contract violations to reach the coding agent undetected",
+      "reviewNote": "Outcome-orientation confirmed: tests for H8-ext FAIL output when a schemaDepends field is absent from pipeline-state.schema.json \u2014 not for which schema field was declared or which upstream story was referenced"
+    },
+    {
+      "taskId": "s-b1-enforce-rejects-story-nfr-section-absent-pipeline-state",
+      "description": "definition-of-ready skill fires H-NFR-profile hard block when a story declares NFRs but no feature nfr-profile.md exists",
+      "skillSurfaceCombination": "definition-of-ready/github-copilot",
+      "expectedOutcome": "H-NFR-profile FAIL: story declares NFRs but no feature NFR profile exists \u2014 sign-off blocked",
+      "failurePatternGuarded": "DoR skill signs off on a story with declared NFRs but no feature NFR profile, allowing stories with unvalidated non-functional requirements to reach the coding agent",
+      "reviewNote": "Outcome-orientation confirmed: tests for H-NFR-profile FAIL output when nfr-profile.md is absent and the story has NFRs declared \u2014 not for which NFR was declared or which feature directory was checked"
     }
   ]
 }
