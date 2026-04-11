@@ -535,3 +535,22 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 **Pattern:** When debugging CI push rejections, check `git status` output for "HEAD detached at" before assuming the rebase logic is the problem. Detached HEAD is invisible in workflow logs unless you add `git status` debug output.
 
 **Action:** Include `git status` in debug steps for any workflow that commits back to a branch. This surfaces detached HEAD immediately and prevents iterating on the wrong fix.
+
+---
+
+## Phase 2 dogfood finding D11 — `__dirname`-based absolute paths break on CI runners with different filesystem roots
+
+### Observed — 2026-04-12
+
+**Circumstance:** p2.5a IaC and SaaS-API adapter tests failed in CI with the "governance checks setup" failure. Running `node .github/scripts/check-surface-adapter.js` locally reproduced 6 failures: `iac-policy-floor-trace-confirms-source-file`, `iac-policy-floor-routing-resolves-to-iac-policy-file`, same two for `saas-api`, and both findings-vocabulary tests. The agent had stored `trace.policySource` using the absolute path from `module.exports._policyPath` (constructed with `path.join(__dirname, '..', '..', '..', 'standards', 'iac', 'POLICY.md')`). On the CI runner, this resolved to a container-internal absolute path that did not match the expected relative string `"standards/iac/POLICY.md"`. With `policySource` failing the contains-check, the file-existence guard returned early (status: error, findings: []), which in turn caused the findings-vocabulary tests to fail as a cascade.
+
+**Root cause:** `__dirname` produces an absolute path rooted at the process's working directory on the machine where the module loads. Local developer path and CI runner path differ. Any string comparison against the relative path `"standards/iac/POLICY.md"` fails on either machine when the stored value is absolute. Additionally, the early-return on missing policy file silently caused downstream vocabulary tests to fail without indicating the real cause.
+
+**Fix applied:** Added `_repoRoot = path.join(__dirname, '..', '..', '..')` and replaced `policySource: policyPath` with `path.relative(_repoRoot, policyPath).replace(/\\/g, '/')` in both `iac.js` and `saas-api.js`. All 31 tests pass.
+
+**Standard to adopt (flag for /levelup → core.md):**
+> MUST use `path.relative(repoRoot, absolutePath).replace(/\\/g, '/')` when storing file paths in `trace` or `state` output fields. Absolute paths constructed with `__dirname` are machine-specific and break on CI runners or any environment with a different filesystem root. Repo-relative forward-slash paths are portable.
+
+**Scope:** Applies to all surface adapters (`src/surface-adapter/adapters/*.js`), the improvement agent (`src/improvement-agent/`), and any future module that writes file-system paths into structured output consumed by tests or audit tooling.
+
+**Action:** Flag for Phase 2 `/levelup` run — add as a new `MUST` to `standards/software-engineering/core.md`. Until then, the fix is documented here as the authoritative pattern reference.
