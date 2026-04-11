@@ -844,6 +844,37 @@
   .guardrails-status.not-assessed { color:var(--muted); border-color:var(--border); background:var(--surface2); }
   .guardrails-evidence { font-size:10px; color:var(--muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .guardrails-section-row td { background:var(--surface2); font-weight:600; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+
+  /* ── Fleet panel ─────────────────────────────────────────────── */
+  #fleet-board { display:none; padding:16px; }
+  #fleet-board.active { display:block; }
+  .fleet-panel { }
+  .fleet-empty { color:var(--muted); font-size:12px; padding:16px 0; }
+  .fleet-grid  { display:flex; flex-wrap:wrap; gap:12px; }
+  .fleet-card  {
+    display:block; text-decoration:none; color:var(--text);
+    background:var(--surface); border:1px solid var(--border); border-radius:8px;
+    padding:12px 14px; min-width:180px; max-width:260px;
+    outline-offset:2px;
+    transition:border-color .15s;
+  }
+  .fleet-card:hover, .fleet-card:focus { border-color:var(--blue); outline:2px solid var(--blue); }
+  .fleet-card-id      { font-size:13px; font-weight:700; margin-bottom:4px; }
+  .fleet-card-stage   { font-size:11px; color:var(--muted); margin-bottom:6px; }
+  .fleet-card-health  { display:flex; align-items:center; gap:5px; font-size:11px; margin-bottom:4px; }
+  .fleet-card-updated { font-size:10px; color:var(--muted); }
+  .fleet-card-error   { font-size:10px; color:var(--amber); margin-top:4px; }
+
+  /* Health indicator: colour dot (MC-A11Y-02: text label required alongside) */
+  .fleet-health-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; display:inline-block; }
+  .fleet-health--green   .fleet-health-dot { background:var(--green); }
+  .fleet-health--amber   .fleet-health-dot { background:var(--amber); }
+  .fleet-health--red     .fleet-health-dot { background:var(--red); }
+  .fleet-health--unknown .fleet-health-dot { background:var(--muted); }
+  .fleet-health--green   .fleet-health-label { color:var(--green); }
+  .fleet-health--amber   .fleet-health-label { color:var(--amber); }
+  .fleet-health--red     .fleet-health-label { color:var(--red); }
+  .fleet-health--unknown .fleet-health-label { color:var(--muted); }
 </style>
 </head>
 <body>
@@ -911,6 +942,7 @@
   <button class="btn" id="outcomes-btn" title="Outcomes view (o)">📊 Outcomes</button>
   <button class="btn" id="story-map-btn" title="Story map view (m)">🗺 Story Map</button>
   <button class="btn" id="library-btn" title="Library evolution view (l)">🧱 Library</button>
+  <button class="btn" id="fleet-btn" title="Fleet registry view (f)">🚢 Fleet</button>
 
   <div class="filter-group">
     <label>Columns</label>
@@ -951,6 +983,7 @@
 <div id="outcomes-board"></div>
 <div id="story-map-board"></div>
 <div id="library-board"></div>
+<div id="fleet-board"></div>
 <div id="governance-board"></div>
 
 <div id="story-stub-overlay"></div>
@@ -1476,6 +1509,7 @@ function render() {
   const governance = document.getElementById('governance-board');
   const outcomes = document.getElementById('outcomes-board');
   const library = document.getElementById('library-board');
+  const fleetBoard = document.getElementById('fleet-board');
   const storyMap = document.getElementById('story-map-board');
   const loopStructure = document.getElementById('loop-structure');
   const actionQueue = document.getElementById('action-queue');
@@ -1490,6 +1524,8 @@ function render() {
     library.innerHTML = '';
     storyMap.classList.remove('active');
     storyMap.innerHTML = '';
+    fleetBoard.classList.remove('active');
+    fleetBoard.innerHTML = '';
     governance.classList.add('active');
     renderGovernance(features);
   } else if (viewMode === 'outcomes') {
@@ -1501,6 +1537,8 @@ function render() {
     library.classList.remove('active');
     storyMap.classList.remove('active');
     storyMap.innerHTML = '';
+    fleetBoard.classList.remove('active');
+    fleetBoard.innerHTML = '';
     outcomes.classList.add('active');
     renderOutcomes(features);
   } else if (viewMode === 'library') {
@@ -1513,6 +1551,8 @@ function render() {
     outcomes.innerHTML = '';
     storyMap.classList.remove('active');
     storyMap.innerHTML = '';
+    fleetBoard.classList.remove('active');
+    fleetBoard.innerHTML = '';
     library.classList.add('active');
     renderLibrary(features);
   } else if (viewMode === 'story-map') {
@@ -1525,8 +1565,24 @@ function render() {
     outcomes.innerHTML = '';
     library.classList.remove('active');
     library.innerHTML = '';
+    fleetBoard.classList.remove('active');
+    fleetBoard.innerHTML = '';
     storyMap.classList.add('active');
     renderStoryMap(features);
+  } else if (viewMode === 'fleet') {
+    board.style.display = 'none';
+    actionQueue.classList.remove('active');
+    loopStructure.classList.remove('active');
+    governance.classList.remove('active');
+    governance.innerHTML = '';
+    outcomes.classList.remove('active');
+    outcomes.innerHTML = '';
+    library.classList.remove('active');
+    library.innerHTML = '';
+    storyMap.classList.remove('active');
+    storyMap.innerHTML = '';
+    fleetBoard.classList.add('active');
+    renderFleet();
   } else {
     board.style.display = '';
     actionQueue.classList.add('active');
@@ -1539,6 +1595,8 @@ function render() {
     library.innerHTML = '';
     storyMap.classList.remove('active');
     storyMap.innerHTML = '';
+    fleetBoard.classList.remove('active');
+    fleetBoard.innerHTML = '';
     renderActionQueue(features);
     renderLoopStructure(features);
     renderBoard(features);
@@ -3765,6 +3823,9 @@ function initFilters() {
   document.getElementById('story-map-btn').addEventListener('click', () => {
     setViewMode(viewMode === 'story-map' ? 'stage' : 'story-map');
   });
+  document.getElementById('fleet-btn').addEventListener('click', () => {
+    setViewMode(viewMode === 'fleet' ? 'stage' : 'fleet');
+  });
   document.addEventListener('change', e => {
     if (e.target.id === 'story-map-strategy') {
       storyMapState.strategy = e.target.value;
@@ -4489,6 +4550,7 @@ function setViewMode(mode) {
   document.getElementById('outcomes-btn').classList.toggle('active', viewMode === 'outcomes');
   document.getElementById('library-btn').classList.toggle('active', viewMode === 'library');
   document.getElementById('story-map-btn').classList.toggle('active', viewMode === 'story-map');
+  document.getElementById('fleet-btn').classList.toggle('active', viewMode === 'fleet');
   render();
 }
 
@@ -4506,6 +4568,75 @@ function resetColumnSizing() {
   const autoBtn = document.getElementById('toggle-empty-shrink-btn');
   if (autoBtn) autoBtn.classList.add('active');
   updateColumnWidthUi();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FLEET PANEL RENDERING
+// Renders fleet-state.json squads[] array as a grid of squad cards.
+// A11Y MC-A11Y-02: health shown as colour dot PLUS text label (not colour alone).
+// A11Y MC-A11Y-01: cards are <a> elements — natively keyboard-focusable.
+// MC-SELF-01/02/MC-SEC-03: no external network calls; all styles inline via CSS vars.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function fleetHealthLabel(health) {
+  switch (health) {
+    case 'green':   return '✓ Healthy';
+    case 'amber':   return '⚠ Warning';
+    case 'red':     return '✕ Blocked';
+    case 'unknown': return '? Unknown';
+    default:        return String(health || 'unknown');
+  }
+}
+
+function renderFleetPanel(squads) {
+  if (!Array.isArray(squads) || squads.length === 0) {
+    return '<div class="fleet-panel"><p class="fleet-empty">No registered squads found.</p></div>';
+  }
+  const cards = squads.map(squad => {
+    const health = squad.health || 'unknown';
+    const label  = fleetHealthLabel(health);
+    const errorHtml = squad.error
+      ? `<div class="fleet-card-error">${esc(squad.error)}</div>`
+      : '';
+    return (
+      `<a class="fleet-card fleet-card--${esc(health)}" ` +
+        `href="${esc(squad.sourceUrl || '#')}" ` +
+        `aria-label="Squad ${esc(squad.squadId)} — ${esc(label)}">` +
+        `<div class="fleet-card-id">${esc(squad.squadId)}</div>` +
+        `<div class="fleet-card-stage">${esc(squad.stage || 'unknown')}</div>` +
+        `<div class="fleet-card-health fleet-health--${esc(health)}">` +
+          `<span class="fleet-health-dot" aria-hidden="true"></span>` +
+          `<span class="fleet-health-label">${esc(label)}</span>` +
+        `</div>` +
+        `<div class="fleet-card-updated">${esc(squad.updatedAt || '')}</div>` +
+        errorHtml +
+      `</a>`
+    );
+  });
+  return (
+    `<div class="fleet-panel">` +
+      `<div class="fleet-grid">${cards.join('')}</div>` +
+    `</div>`
+  );
+}
+
+function renderFleet() {
+  const fleetBoard = document.getElementById('fleet-board');
+  if (!fleetBoard) return;
+
+  const squads = fleetData && Array.isArray(fleetData.squads) ? fleetData.squads : null;
+
+  let header = '<h2 style="font-size:15px;font-weight:700;margin-bottom:12px">🚢 Fleet Registry</h2>';
+  if (fleetData && fleetData.generatedAt) {
+    header += `<p style="font-size:11px;color:var(--muted);margin-bottom:14px">Last aggregated: ${esc(fleetData.generatedAt)}</p>`;
+  }
+
+  if (!squads || squads.length === 0) {
+    fleetBoard.innerHTML = header + '<p style="color:var(--muted);font-size:12px">No squad data available. Load a <code>fleet-state.json</code> file alongside <code>pipeline-state.json</code>.</p>';
+    return;
+  }
+
+  fleetBoard.innerHTML = header + renderFleetPanel(squads);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

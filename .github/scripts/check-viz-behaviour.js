@@ -19,6 +19,8 @@ const {
   featureActionMeta,
   channelLabel,
   computeFleetSummary,
+  renderFleetPanel,
+  fleetHealthLabel,
   buildExportJSON,
   buildExportCSV,
   hasHighFindings,
@@ -365,6 +367,104 @@ function makeSampleState() {
   const lines = (csv || '').split('\n').filter(function(l) { return l.trim().length > 0; });
   assert('buildExportCSV: returns header + at least one data row', lines.length >= 2);
   assert('buildExportCSV: first row contains story_slug header', lines[0].includes('story_slug'));
+}());
+
+// ─────────────────────────────────────────────────────────────────────────────
+// renderFleetPanel — fleet panel integration tests (AC5, AC6)
+// Verifies: DOM content, A11Y MC-A11Y-02 (colour + text label), MC-A11Y-01 (keyboard)
+// ─────────────────────────────────────────────────────────────────────────────
+
+console.log('\n[viz-behaviour] renderFleetPanel — fleet panel');
+
+// 26. Fleet panel renders ≥2 squad cards from fixture with ≥2 squad entries
+(function() {
+  const squads = [
+    { squadId: 'squad-alpha', stage: 'test-plan', health: 'green',
+      updatedAt: '2026-04-11T10:00:00.000Z', sourceUrl: 'https://example.com/alpha/pipeline-state.json' },
+    { squadId: 'squad-beta',  stage: 'review',    health: 'amber',
+      updatedAt: '2026-04-11T10:00:00.000Z', sourceUrl: 'https://example.com/beta/pipeline-state.json' },
+  ];
+  let threw = false;
+  let html;
+  try { html = renderFleetPanel(squads); } catch(e) { threw = true; }
+  assert('renderFleetPanel: does not throw for 2 squads', !threw);
+  const cardCount = (html.match(/fleet-card-id/g) || []).length;
+  assert('renderFleetPanel: renders ≥2 squad card elements', cardCount >= 2);
+  assert('renderFleetPanel: first card contains squadId text "squad-alpha"', html.includes('squad-alpha'));
+  assert('renderFleetPanel: second card contains squadId text "squad-beta"', html.includes('squad-beta'));
+  assert('renderFleetPanel: first card contains stage text "test-plan"', html.includes('test-plan'));
+  assert('renderFleetPanel: second card contains stage text "review"', html.includes('review'));
+  assert('renderFleetPanel: cards contain updatedAt text', html.includes('2026-04-11T10:00:00.000Z'));
+}());
+
+// 27. Fleet panel health indicator includes text label alongside colour (MC-A11Y-02)
+(function() {
+  const squads = [
+    { squadId: 'sq-green',   stage: 'test-plan',    health: 'green',   updatedAt: '2026-04-11T10:00:00.000Z', sourceUrl: 'https://example.com/g' },
+    { squadId: 'sq-amber',   stage: 'review',       health: 'amber',   updatedAt: '2026-04-11T10:00:00.000Z', sourceUrl: 'https://example.com/a' },
+    { squadId: 'sq-red',     stage: 'discovery',    health: 'red',     updatedAt: '2026-04-11T10:00:00.000Z', sourceUrl: 'https://example.com/r' },
+    { squadId: 'sq-unknown', stage: 'unknown',      health: 'unknown', updatedAt: '2026-04-11T10:00:00.000Z', sourceUrl: 'https://example.com/u' },
+  ];
+  let html;
+  try { html = renderFleetPanel(squads); } catch(e) { html = ''; }
+  // Each health state must have a text label (fleet-health-label) — not colour class alone
+  assert('renderFleetPanel: health label present in HTML (fleet-health-label)', html.includes('fleet-health-label'));
+  // Verify specific text labels for all four states (MC-A11Y-02)
+  assert('renderFleetPanel: green health has "Healthy" text label',  html.includes('Healthy'));
+  assert('renderFleetPanel: amber health has "Warning" text label',  html.includes('Warning'));
+  assert('renderFleetPanel: red health has "Blocked" text label',    html.includes('Blocked'));
+  assert('renderFleetPanel: unknown health has "Unknown" text label', html.includes('Unknown'));
+  // Verify colour class is present alongside the label (colour is not removed, just not sole indicator)
+  assert('renderFleetPanel: green colour class present',   html.includes('fleet-health--green'));
+  assert('renderFleetPanel: amber colour class present',   html.includes('fleet-health--amber'));
+  assert('renderFleetPanel: red colour class present',     html.includes('fleet-health--red'));
+  assert('renderFleetPanel: unknown colour class present', html.includes('fleet-health--unknown'));
+}());
+
+// 28. Fleet panel interactive elements are keyboard-accessible (MC-A11Y-01)
+(function() {
+  const squads = [
+    { squadId: 'sq-a', stage: 'test-plan', health: 'green', updatedAt: '2026-04-11T10:00:00.000Z', sourceUrl: 'https://example.com/a' },
+    { squadId: 'sq-b', stage: 'review',    health: 'amber', updatedAt: '2026-04-11T10:00:00.000Z', sourceUrl: 'https://example.com/b' },
+  ];
+  let html;
+  try { html = renderFleetPanel(squads); } catch(e) { html = ''; }
+  // Cards must be <a> elements (natively keyboard-focusable — MC-A11Y-01)
+  const anchorCount = (html.match(/<a\s/g) || []).length;
+  assert('renderFleetPanel: squad cards rendered as <a> elements (keyboard-accessible)', anchorCount >= 2);
+  // Verify href attribute is present on card links
+  assert('renderFleetPanel: cards have href attribute for keyboard navigation', html.includes('href='));
+  // Verify aria-label is present (screen-reader description)
+  assert('renderFleetPanel: cards have aria-label attribute', html.includes('aria-label='));
+}());
+
+// 29. Fleet panel graceful: empty squads array → shows "no squads" message
+(function() {
+  let html;
+  try { html = renderFleetPanel([]); } catch(e) { html = ''; }
+  assert('renderFleetPanel: empty array returns non-empty HTML', html.length > 0);
+  assert('renderFleetPanel: empty array shows fleet-empty message', html.includes('fleet-empty'));
+}());
+
+// 30. Fleet panel: squad with error field shows error text
+(function() {
+  const squads = [
+    { squadId: 'sq-fail', stage: 'unknown', health: 'unknown',
+      updatedAt: '2026-04-11T10:00:00.000Z', sourceUrl: 'https://example.com/fail',
+      error: 'HTTP 404' },
+  ];
+  let html;
+  try { html = renderFleetPanel(squads); } catch(e) { html = ''; }
+  assert('renderFleetPanel: error field rendered in card (fleet-card-error)', html.includes('fleet-card-error'));
+  assert('renderFleetPanel: error message text visible', html.includes('HTTP 404'));
+}());
+
+// 31. fleetHealthLabel returns correct labels for all four states
+(function() {
+  assert('fleetHealthLabel: green → "✓ Healthy"',  fleetHealthLabel('green')   === '✓ Healthy');
+  assert('fleetHealthLabel: amber → "⚠ Warning"',  fleetHealthLabel('amber')   === '⚠ Warning');
+  assert('fleetHealthLabel: red → "✕ Blocked"',    fleetHealthLabel('red')     === '✕ Blocked');
+  assert('fleetHealthLabel: unknown → "? Unknown"', fleetHealthLabel('unknown') === '? Unknown');
 }());
 
 // ─────────────────────────────────────────────────────────────────────────────

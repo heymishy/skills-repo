@@ -1,0 +1,53 @@
+name: Fleet Aggregation
+
+# Triggered on push to fleet squad files, on a schedule, or manually.
+# Reads all fleet/squads/*.json, filters to registry_mode: publishing,
+# fetches each pipelineStateUrl, and writes fleet-state.json.
+#
+# Graceful degradation: unreachable pipelineStateUrl → health: "unknown"
+# The job does NOT abort on individual squad failures (AC6).
+#
+# Performance: designed to complete in ≤60 seconds for ≤20 squads (parallel fetch).
+# Security: MC-SEC-02 — no credentials or tokens written to fleet files.
+
+on:
+  push:
+    paths:
+      - 'fleet/squads/**'
+  schedule:
+    - cron: '0 * * * *'   # hourly aggregation
+  workflow_dispatch:
+
+jobs:
+  aggregate:
+    name: Aggregate fleet state
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate squad files
+        run: node scripts/validate-squad-file.js fleet/squads/
+
+      - name: Aggregate fleet state
+        run: node scripts/fleet-aggregator.js --squads-dir fleet/squads --output fleet-state.json
+
+      - name: Commit fleet-state.json if changed
+        run: |
+          git config user.email "fleet-aggregator@ci"
+          git config user.name "Fleet Aggregator [bot]"
+          git add fleet-state.json
+          if git diff --cached --quiet; then
+            echo "fleet-state.json unchanged — nothing to commit"
+          else
+            git commit -m "chore: update fleet-state.json [skip ci]"
+            git push
+          fi

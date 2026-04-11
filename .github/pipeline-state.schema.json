@@ -168,5 +168,54 @@
         }
       }
     }
+  },
+
+  "$defs": {
+    "fleetSquad": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Fleet Squad Registration File",
+      "description": "Per-squad registration file at fleet/squads/{id}.json. Created by squad operators to join the fleet registry. registry_mode mirrors the squad's context.yml registry_mode field.",
+      "type": "object",
+      "required": ["squadId", "repoUrl", "pipelineStateUrl", "registeredAt"],
+      "properties": {
+        "squadId":          { "type": "string",  "description": "Unique identifier for the squad, used as the key in fleet-state.json" },
+        "repoUrl":          { "type": "string",  "description": "URL of the squad's repository (no credentials)" },
+        "pipelineStateUrl": { "type": "string",  "description": "URL or local path to the squad's pipeline-state.json" },
+        "registeredAt":     { "type": "string",  "format": "date-time", "description": "ISO 8601 datetime when the squad registered" },
+        "registry_mode":    { "type": "string",  "enum": ["publishing", "none"], "description": "Mirrors the squad's context.yml registry_mode. Only squads with publishing are included in fleet-state.json." }
+      },
+      "additionalProperties": false
+    },
+
+    "fleetStateEntry": {
+      "title": "Fleet State Entry",
+      "description": "One aggregated entry per squad in fleet-state.json. Written by the fleet-aggregation CI job.",
+      "type": "object",
+      "required": ["squadId", "stage", "health", "updatedAt", "sourceUrl"],
+      "properties": {
+        "squadId":   { "type": "string", "description": "Unique squad identifier, from the squad's fleet/squads/{id}.json" },
+        "stage":     { "type": "string", "description": "Current pipeline stage from the squad's pipeline-state.json. 'unknown' if unreachable." },
+        "health":    { "type": "string", "enum": ["green", "amber", "red", "unknown"], "description": "Aggregated health signal from the squad's pipeline-state.json. 'unknown' if the pipelineStateUrl was unreachable." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "ISO 8601 datetime of the aggregation run that wrote this entry" },
+        "sourceUrl": { "type": "string", "description": "The pipelineStateUrl from the squad's registration file — verbatim" },
+        "error":     { "type": "string", "description": "Present only when health is unknown — describes the failure (e.g. HTTP 404, network timeout)" }
+      }
+    },
+
+    "fleetState": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Fleet State",
+      "description": "CI-aggregated state of all registered squads. Written by the fleet-aggregation job. Read by pipeline-viz.html fleet panel.",
+      "type": "object",
+      "required": ["generatedAt", "squads"],
+      "properties": {
+        "generatedAt": { "type": "string", "format": "date-time", "description": "ISO 8601 datetime when fleet-state.json was last generated" },
+        "squads": {
+          "type": "array",
+          "description": "One entry per squad with registry_mode: publishing",
+          "items": { "$ref": "#/$defs/fleetStateEntry" }
+        }
+      }
+    }
   }
 }
