@@ -33,10 +33,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin ${{ github.head_ref }}
+          git checkout ${{ github.head_ref }}
           git add workspace/traces/
-          git diff --cached --quiet || git commit -m "chore: assurance gate trace [ci skip]"
-          git pull --rebase origin ${{ github.head_ref }}
-          git push origin HEAD:${{ github.head_ref }}
+          git diff --staged --quiet || git commit -m "chore: assurance gate trace [ci skip]"
+          git push origin ${{ github.head_ref }}
 
       - name: Post verdict to PR
         if: always()
