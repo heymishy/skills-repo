@@ -220,3 +220,28 @@ Solo operator context. Risk: anti-overfitting gate edge cases (borderline thresh
 Solo operator context. Risk: single-commit atomicity (AC3) is the hardest constraint to verify automatically — manual review of commit contents at PR merge is required per verification script Scenario 4. `reviewer` field PII constraint (must be named human, not CI job ID) must be manually verified.
 
 **Accepted by:** Hamish (operator) 2026-04-11
+
+---
+
+## DOMAIN-NAMES-P2.9 — 2026-04-11
+
+### DOMAIN-NAMES-P2.9: Pilot domain names chosen for p2.9 standard files
+
+**Date:** 2026-04-11
+**Decided by:** Copilot (coding agent — per DoR Coding Agent Instructions)
+**Decision type:** IMPLEMENTATION-CHOICE
+
+Three pilot domain names selected for the ≥3 pilot domain POLICY.md files required by AC3 of p2.9.
+
+**Chosen domain names:**
+
+1. **fintech** — financial technology domain; chosen because it requires strict regulatory and data-integrity floors that are distinct from general software-engineering standards.
+2. **healthcare** — healthcare domain; chosen because it carries data-privacy, audit, and patient-safety obligations that represent a well-understood policy differentiation point.
+3. **ecommerce** — e-commerce domain; chosen because it surfaces availability, transaction-integrity, and consumer-protection policy requirements common across commerce platforms.
+
+**Paths committed:**
+- `standards/domains/fintech/POLICY.md`
+- `standards/domains/healthcare/POLICY.md`
+- `standards/domains/ecommerce/POLICY.md`
+
+**Rationale:** These three domains represent distinct regulatory and operational contexts, making them useful as pilot signal for how domain-tier policy floors differentiate from discipline-tier floors.
