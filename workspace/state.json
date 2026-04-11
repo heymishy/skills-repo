@@ -1,6 +1,6 @@
 {
   "feature": "2026-04-11-skills-platform-phase2",
-  "lastUpdated": "2026-04-11T22:00:00+10:00",
+  "lastUpdated": "2026-04-11T22:30:00+10:00",
   "currentPhase": "test-plan",
   "cycle": {
     "discovery": {
@@ -55,16 +55,23 @@
     "highFindings": 0,
     "note": "9 stories amended (p2.3/p2.4/p2.5a/p2.5b/p2.6/p2.7/p2.8/p2.10/p2.11) — all MEDIUM findings resolved by AC amendment. p2.11 HIGH resolved; /review Run 2 PASSED 0H/0M/0L. ASSUMPTION-02 added to decisions.md. All 13 stories green/passed."
   },
+  "testPlan": {
+    "status": "complete",
+    "completedAt": "2026-04-11T22:30:00+10:00",
+    "totalStories": 13,
+    "totalTests": 198,
+    "note": "All 13 Phase 2 test plans and verification scripts written. E5 stories (p2.11/p2.12) include DoR execution gate: cannot run until ≥1 Phase 2 inner loop story merged and trace written to workspace/traces/. ASSUMPTION-P2.11-01 (P1.6 trace field name) is a DoR H1 gate for p2.11. Test counts: p2.1=14, p2.2=9, p2.3=13, p2.4=13, p2.5a=18, p2.5b=20, p2.6=15, p2.7=18, p2.8=17, p2.9=17, p2.10=15, p2.11=21, p2.12=22."
+  },
   "checkpoint": {
-    "writtenAt": "2026-04-11T20:30:00+10:00",
-    "contextAtWrite": "Phase 2 /definition Batch 1 complete. 7 stories written (p2.1–p2.6 incl. p2.5 split into p2.5a+p2.5b), 2 epics (E1 Pipeline Evolution Foundation, E2 Full Surface Adapter Model), decisions.md with SCOPE-01/ARCH-01/ASSUMPTION-01. pipeline-state.json updated: stage→definition, slicingStrategy→risk-first, epics[] E1+E2 seeded, guardrails[] all 24 entries seeded (not-assessed). Batch 2 (E3/E4/E5: stories p2.7–p2.12) is the next session's work.",
-    "resumeInstruction": "START HERE — Phase 2 definition Batch 2. Batch 1 (E1+E2: p2.1–p2.6 incl. p2.5a/p2.5b) is committed. Load architecture-guardrails.md once at session start (hold in context for all stories). Write E3 stories p2.7 (fleet registry + CI aggregation) and p2.8 (persona routing + non-engineer approval — p2.8 DEPENDS ON p2.7, record in p2.8 Architecture Constraints). Then E4 stories p2.9 (8 discipline standards + 3 pilot domain) and p2.10 (Bitbucket Cloud + DC Docker CI validation). Then E5 stories p2.11 (improvement agent: trace interface + failure detection + proposals) and p2.12 (challenger pre-check + proposal review + SKILL.md) — BOTH E5 stories sequenced after first inner loop batch per operator instruction. After all 13 stories: scope accumulator (SKILL.md Step 6), NFR profile (Step 7), benefit coverage matrix update in benefit-metric.md, then /estimate E2.",
+    "writtenAt": "2026-04-11T22:30:00+10:00",
+    "contextAtWrite": "Phase 2 /test-plan COMPLETE. All 13 test plans and verification scripts written. pipeline-state.json updated: feature stage→test-plan; all 13 stories stage→test-plan with testPlan blocks. p2.11/p2.12 marked with executionGate. Next phase: /definition-of-ready for all 13 stories (delivery-order batches).",
+    "resumeInstruction": "START HERE — Phase 2 /definition-of-ready. All 13 test plans are written (see artefacts/2026-04-11-skills-platform-phase2/test-plans/). Run /definition-of-ready in delivery order: E1 batch (p2.1, p2.2, p2.3), then E2 batch (p2.4, p2.5a, p2.5b, p2.6), then E3 batch (p2.7, p2.8), then E4 batch (p2.9, p2.10), then E5 batch (p2.11, p2.12 — E5 carries DoR H1 sequencing gate: must not be signed-off until ≥1 Phase 2 inner loop batch merged and trace in workspace/traces/). Verify ASSUMPTION-P2.11-01 (P1.6 trace field name, failurePattern vs failurePatterns[]) at p2.11 DoR H1 gate before sign-off. Record resolution in decisions.md.",
     "pendingActions": [
-      "Batch 2 stories: p2.7 (fleet registry), p2.8 (persona routing — depends on p2.7), p2.9 (standards), p2.10 (Bitbucket CI), p2.11 (improvement agent), p2.12 (challenger pre-check)",
-      "p2.11 and p2.12 sequencing: write stories now but mark 'sequenced after first inner loop batch' in Architecture Constraints — DO NOT dispatch to inner loop until first Phase 2 story batch is merged",
-      "ASSUMPTION-01 validation: EA registry surfaceType field name unconfirmed — must be validated at p2.6 DoR H1 before coding",
-      "p1.8 AC3 (T3M1 evidence record) — closes automatically when first Phase 2 inner loop story runs through P1.3 CI gate",
-      "CI topology assumption — validate whether enterprise Bitbucket Pipelines is in scope for Phase 2 before any P2.5 story reaches DoR"
+      "/definition-of-ready for all 13 stories in delivery order",
+      "p2.11 DoR H1: resolve ASSUMPTION-P2.11-01 (P1.6 trace archive field name) before DoR sign-off — record in decisions.md",
+      "p2.11 and p2.12 DoR sign-off must be withheld until Phase 2 inner loop gate satisfied (≥1 story merged, trace in workspace/traces/)",
+      "p2.6 DoR H1: confirm ASSUMPTION-02 (EA registry field names surfaceType/teamId/adapterOverride) if not yet recorded in decisions.md",
+      "p1.8 AC3 (T3M1 evidence record) — closes automatically when first Phase 2 inner loop story runs through P1.3 CI gate"
     ]
   },
   "phase1Reference": {
