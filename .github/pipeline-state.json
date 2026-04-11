@@ -791,12 +791,12 @@
       "name": "Skills Platform — Phase 2: Scale, Observability, and Self-Improving Harness",
       "track": "library",
       "stage": "review",
-      "health": "amber",
+      "health": "green",
       "discoveryStatus": "approved",
       "benefitMetricStatus": "active",
       "slicingStrategy": "risk-first",
-      "reviewSummary": { "totalStories": 13, "passed": 5, "hasFindings": 8, "blocked": 1, "highFindings": 1, "blockedStory": "p2.11", "reviewDate": "2026-05-01" },
-      "updatedAt": "2026-05-01",
+      "reviewSummary": { "totalStories": 13, "passed": 13, "hasFindings": 0, "blocked": 0, "highFindings": 0, "reviewCompleted": "2026-04-11", "note": "8 MEDIUM findings resolved by operator-directed AC amendments; p2.11 HIGH resolved and re-reviewed (Run 2 PASSED)" },
+      "updatedAt": "2026-04-11",
       "guardrails": [
         { "id": "MC-SEC-01", "category": "mandatory-constraint", "label": "No user-supplied content in innerHTML without sanitisation", "status": "not-applicable", "note": "No Phase 2 story adds innerHTML-rendered user content" },
         { "id": "MC-SEC-02", "category": "mandatory-constraint", "label": "No credentials, tokens, or personal data in committed files", "status": "no-breach", "assessedAt": "2026-05-01", "note": "Checked across all 13 stories — all stories cite compliance; no credential-carrying fields added" },
@@ -835,7 +835,7 @@
           "stories": [
             { "slug": "p2.1-definition-skill-improvements", "name": "/definition skill improvements — dependency chain validation, testability filter, learnings exit step (D1/D2/D3)", "stage": "review", "health": "green", "reviewStatus": "passed", "highFindings": 0, "updatedAt": "2026-05-01" },
             { "slug": "p2.2-review-incremental-write", "name": "/review skill improvement — incremental per-story write (D4)", "stage": "review", "health": "green", "reviewStatus": "passed", "highFindings": 0, "updatedAt": "2026-05-01" },
-            { "slug": "p2.3-dor-dod-template-improvements", "name": "DoR and DoD template improvements — cross-story schema dependency check, AC verification prompt, NFR guardrail enforcement (D8/D9/B1-enforce)", "stage": "review", "health": "amber", "reviewStatus": "has-findings", "highFindings": 0, "updatedAt": "2026-05-01" }
+            { "slug": "p2.3-dor-dod-template-improvements", "name": "DoR and DoD template improvements — cross-story schema dependency check, AC verification prompt, NFR guardrail enforcement (D8/D9/B1-enforce)", "stage": "review", "health": "green", "reviewStatus": "passed", "highFindings": 0, "updatedAt": "2026-04-11" }
           ]
         },
         {
@@ -843,10 +843,10 @@
           "name": "Full Surface Adapter Model",
           "status": "not-started",
           "stories": [
-            { "slug": "p2.4-agents-md-adapter", "name": "AGENTS.md adapter in assembly script — agent instruction format driven by vcs.type (ADR-005)", "stage": "review", "health": "amber", "reviewStatus": "has-findings", "highFindings": 0, "updatedAt": "2026-05-01" },
-            { "slug": "p2.5a-iac-saas-api-adapters", "name": "IaC and SaaS-API surface adapters with POLICY.md floor variants (p2.5a)", "stage": "review", "health": "amber", "reviewStatus": "has-findings", "highFindings": 0, "updatedAt": "2026-05-01" },
-            { "slug": "p2.5b-saas-gui-m365-manual-adapters", "name": "SaaS-GUI, M365-admin, and manual surface adapters with POLICY.md floor variants (p2.5b)", "stage": "review", "health": "amber", "reviewStatus": "has-findings", "highFindings": 0, "updatedAt": "2026-05-01" },
-            { "slug": "p2.6-ea-registry-path-a", "name": "EA registry Path A surface type resolution in surface adapter resolver", "stage": "review", "health": "amber", "reviewStatus": "has-findings", "highFindings": 0, "updatedAt": "2026-05-01" }
+            { "slug": "p2.4-agents-md-adapter", "name": "AGENTS.md adapter in assembly script — agent instruction format driven by vcs.type (ADR-005)", "stage": "review", "health": "green", "reviewStatus": "passed", "highFindings": 0, "updatedAt": "2026-04-11" },
+            { "slug": "p2.5a-iac-saas-api-adapters", "name": "IaC and SaaS-API surface adapters with POLICY.md floor variants (p2.5a)", "stage": "review", "health": "green", "reviewStatus": "passed", "highFindings": 0, "updatedAt": "2026-04-11" },
+            { "slug": "p2.5b-saas-gui-m365-manual-adapters", "name": "SaaS-GUI, M365-admin, and manual surface adapters with POLICY.md floor variants (p2.5b)", "stage": "review", "health": "green", "reviewStatus": "passed", "highFindings": 0, "updatedAt": "2026-04-11" },
+            { "slug": "p2.6-ea-registry-path-a", "name": "EA registry Path A surface type resolution in surface adapter resolver", "stage": "review", "health": "green", "reviewStatus": "passed", "highFindings": 0, "updatedAt": "2026-04-11" }
           ]
         }
       ],
@@ -938,8 +938,8 @@
           "name": "Fleet Observability and Non-Engineer Approval Interface",
           "status": "not-started",
           "stories": [
-            { "slug": "p2.7-fleet-registry-ci-aggregation", "name": "Fleet registry files and CI-aggregated fleet-state.json", "stage": "review", "health": "amber", "reviewStatus": "has-findings", "highFindings": 0, "updatedAt": "2026-05-01" },
-            { "slug": "p2.8-persona-routing-non-engineer-approval", "name": "Persona routing and non-engineer approval interface (depends on p2.7)", "stage": "review", "health": "amber", "reviewStatus": "has-findings", "highFindings": 0, "updatedAt": "2026-05-01" }
+            { "slug": "p2.7-fleet-registry-ci-aggregation", "name": "Fleet registry files and CI-aggregated fleet-state.json", "stage": "review", "health": "green", "reviewStatus": "passed", "highFindings": 0, "updatedAt": "2026-04-11" },
+            { "slug": "p2.8-persona-routing-non-engineer-approval", "name": "Persona routing and non-engineer approval interface (depends on p2.7)", "stage": "review", "health": "green", "reviewStatus": "passed", "highFindings": 0, "updatedAt": "2026-04-11" }
           ]
         },
         {
@@ -948,7 +948,7 @@
           "status": "not-started",
           "stories": [
             { "slug": "p2.9-discipline-standards-remaining", "name": "Eight remaining discipline standards and three pilot domain standards", "stage": "review", "health": "green", "reviewStatus": "passed", "highFindings": 0, "updatedAt": "2026-05-01" },
-            { "slug": "p2.10-bitbucket-ci-validation", "name": "Bitbucket CI validation — Cloud pipeline-shape tests and DC Docker auth topology", "stage": "review", "health": "amber", "reviewStatus": "has-findings", "highFindings": 0, "updatedAt": "2026-05-01" }
+            { "slug": "p2.10-bitbucket-ci-validation", "name": "Bitbucket CI validation — Cloud pipeline-shape tests and DC Docker auth topology", "stage": "review", "health": "green", "reviewStatus": "passed", "highFindings": 0, "updatedAt": "2026-04-11" }
           ]
         },
         {
@@ -957,7 +957,7 @@
           "status": "not-started",
           "sequencingNote": "p2.11 and p2.12 must not be dispatched to inner loop until at least one Phase 2 inner loop story batch is merged and its trace written",
           "stories": [
-            { "slug": "p2.11-improvement-agent-trace-proposals", "name": "Improvement agent — queryable trace interface, failure and staleness detection, and diff proposals", "stage": "review", "health": "red", "reviewStatus": "has-findings", "highFindings": 1, "updatedAt": "2026-05-01", "sequencingConstraint": "after-first-inner-loop-batch" },
+            { "slug": "p2.11-improvement-agent-trace-proposals", "name": "Improvement agent \u2014 queryable trace interface, failure and staleness detection, and diff proposals", "stage": "review", "health": "green", "reviewStatus": "passed", "highFindings": 0, "updatedAt": "2026-04-11", "sequencingConstraint": "after-first-inner-loop-batch" },
             { "slug": "p2.12-improvement-agent-challenger-skill", "name": "Improvement agent — challenger pre-check, proposal review workflow, and improvement-agent SKILL.md (depends on p2.11)", "stage": "review", "health": "green", "reviewStatus": "passed", "highFindings": 0, "updatedAt": "2026-05-01", "sequencingConstraint": "after-first-inner-loop-batch" }
           ]
         }

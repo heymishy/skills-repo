@@ -36,6 +36,18 @@ D1 (dependency chain validation), D2 (testability filter), and D3 (learnings exi
 
 ---
 
+### ASSUMPTION-02: EA registry Phase 2 contract scoped to 3-field stub
+
+**Date:** 2026-04-11
+**Decided by:** Hamish (operator) — recorded during /review finding resolution
+**Decision type:** ASSUMPTION
+
+For Phase 2, the EA registry resolver (p2.6) is implemented and tested against a provisional stub contract containing exactly three fields: `surfaceType` (string), `teamId` (string), `adapterOverride` (string|null). The real EA registry API contract has not been confirmed. Testing uses a stub fixture; live calls to `https://github.com/heymishy/ea-registry` are not required for Phase 2 AC validation.
+
+**Resolution trigger:** Post-Phase 2, when the EA registry repo owner confirms the production API schema. If the schema differs from the 3-field stub, the resolver must be updated and AC2 test fixtures revised. Track at p2.6 /definition-of-done — add a DoD observation noting the stub contract and scheduling a follow-up confirmation.
+
+---
+
 ## ASSUMPTION — 2026-04-11
 
 ### ASSUMPTION-01: EA registry API contract shape deferred to p2.6 story decomposition

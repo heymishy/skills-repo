@@ -1,7 +1,7 @@
 {
   "feature": "2026-04-11-skills-platform-phase2",
-  "lastUpdated": "2026-05-01T18:00:00+10:00",
-  "currentPhase": "review",
+  "lastUpdated": "2026-04-11T22:00:00+10:00",
+  "currentPhase": "test-plan",
   "cycle": {
     "discovery": {
       "status": "approved",
@@ -47,24 +47,13 @@
   "review": {
     "status": "complete",
     "completedAt": "2026-05-01T18:00:00+10:00",
+    "resolvedAt": "2026-04-11",
     "totalStories": 13,
-    "passed": 5,
-    "hasFindings": 8,
-    "blocked": 1,
-    "highFindings": 1,
-    "blockedStory": "p2.11-improvement-agent-trace-proposals",
-    "blockedReason": "HIGH finding F-1: AC2 pattern label format/matching algorithm undefined — blocks /test-plan for p2.11",
-    "openMediumFindings": [
-      "p2.3 F-1: H8-ext/B1-enforce gates lack eval scenario names",
-      "p2.4 F-1: context.yml key path for agent-instructions format override unspecified",
-      "p2.5a F-1: IaC/SaaS-API POLICY.md floor creation scope unspecified",
-      "p2.5b F-1: SaaS-GUI/M365-admin POLICY.md floor creation scope unspecified (related to p2.5a)",
-      "p2.6 F-1: EA registry HTTP contract under-specified (query encoding, response schema, auth)",
-      "p2.7 F-1: MC-A11Y-01/02 not cited for fleet viz panel",
-      "p2.8 F-1: AC2 sign-off detection mechanism unspecified",
-      "p2.10 F-1: Docker Compose config not scoped as deliverable AC",
-      "p2.11 F-2: P1.6 trace archive format dependency not as formal Architecture Constraints assumption"
-    ]
+    "passed": 13,
+    "hasFindings": 0,
+    "blocked": 0,
+    "highFindings": 0,
+    "note": "9 stories amended (p2.3/p2.4/p2.5a/p2.5b/p2.6/p2.7/p2.8/p2.10/p2.11) — all MEDIUM findings resolved by AC amendment. p2.11 HIGH resolved; /review Run 2 PASSED 0H/0M/0L. ASSUMPTION-02 added to decisions.md. All 13 stories green/passed."
   },
   "checkpoint": {
     "writtenAt": "2026-04-11T20:30:00+10:00",
@@ -130,20 +119,24 @@
     "flowFindings": []
   },
   "checkpoint": {
-    "writtenAt": "2026-05-01T18:00:00+10:00",
-    "contextAtWrite": "Phase 2 /review complete. All 13 stories reviewed. E2 estimate written (13 stories, C1×3/C2×10, p75=2.88h/story). Review results: 5 passed (p2.1, p2.2, p2.9, p2.12 + 1 LOW-only), 8 has-findings (amber), 1 blocked (p2.11 — HIGH finding F-1 pattern label format ambiguity). 13 review artefacts written to artefacts/2026-04-11-skills-platform-phase2/review/. pipeline-state.json guardrails array updated with assessed statuses. workspace/state.json updated with review block.",
-    "resumeInstruction": "Phase 2 /review complete. NEXT: resolve findings before /test-plan. Action plan: (1) p2.11 HIGH finding F-1 MUST be resolved before p2.11 can proceed to /test-plan — specify pattern label format/matching algorithm in AC2; (2) Batch-resolve MEDIUM findings across p2.3/p2.4/p2.5a/p2.5b/p2.6/p2.7/p2.8/p2.10 (see review.openMediumFindings in this state.json); (3) All 12 non-blocked stories can proceed to /test-plan in parallel after MEDIUM findings resolved; (4) p2.11 requires /review-2 after HIGH finding resolved. Do NOT proceed to /test-plan until MEDIUMs are addressed. Then run /test-plan in delivery order: E1 (p2.1→p2.3) → E2 (p2.4→p2.6) → E3 (p2.7→p2.8) → E4 (p2.9→p2.10) → E5 (p2.11→p2.12 after /review-2 passes).",
+    "writtenAt": "2026-04-11T22:00:00+10:00",
+    "contextAtWrite": "Phase 2 /review resolved. All 13 stories now PASSED (0H/0M open). 9 stories amended (p2.3/p2.4/p2.5a/p2.5b/p2.6/p2.7/p2.8/p2.10/p2.11). ASSUMPTION-02 added to decisions.md. p2.11 Run 2 PASSED. pipeline-state.json: all 13 stories green/passed, feature health green, reviewSummary 13/0/0. workspace/state.json and state updated to currentPhase: test-plan. Commit pending. /test-plan not yet started.",
+    "resumeInstruction": "All 13 Phase 2 stories PASSED review. NEXT: run /test-plan in delivery order. Load test-plan/SKILL.md first, then process stories in epic order: E1 (p2.1 → p2.2 → p2.3) → E2 (p2.4 → p2.5a → p2.5b → p2.6) → E3 (p2.7 → p2.8) → E4 (p2.9 → p2.10) → E5 last (p2.11 → p2.12, sequenced constraint). Produce test-plan artefact + AC verification script per story. Save to artefacts/2026-04-11-skills-platform-phase2/test-plans/[story-slug]-test-plan.md and verification-scripts/[story-slug]-verification.md. Note ASSUMPTION-P2.11-01 in p2.11 story must be acknowledged at /test-plan time (P1.6 trace field name provisional).",
     "pendingActions": [
-      "BLOCKING: p2.11 HIGH finding F-1 — specify pattern label format and matching algorithm in AC2 before /review-2",
-      "MEDIUM batch: p2.3 — add eval scenario names for H8-ext and B1-enforce gates to AC2/AC5",
-      "MEDIUM batch: p2.4 — define context.yml key path for agent-instructions format override (e.g. agent_instructions.format) with example fragment",
-      "MEDIUM batch: p2.5a + p2.5b — clarify POLICY.md floor file creation scope (create in story vs pre-existing dependency)",
-      "MEDIUM batch: p2.6 — document assumed HTTP contract stub in Architecture Constraints (query format, response schema, auth)",
-      "MEDIUM batch: p2.7 — add MC-A11Y-01/02 to Architecture Constraints and add accessibility AC for fleet panel",
-      "MEDIUM batch: p2.8 — add SCOPE-APPROVAL-01 assumption to decisions.md declaring sign-off detection mechanism",
-      "MEDIUM batch: p2.10 — add AC7 for Docker Compose artifact as committed deliverable",
-      "After MEDIUM resolutions: run /test-plan for E1 batch (p2.1, p2.2, p2.3)",
-      "p2.11 /review-2 after HIGH resolved; then /test-plan for E5"
+      "git commit: 9 story amendments + ASSUMPTION-02 in decisions.md + review-2 artefact + pipeline-state.json + workspace/state.json",
+      "/test-plan E1: p2.1-pipeline-skill-distribution-model",
+      "/test-plan E1: p2.2-progressive-disclosure-skill-invocation",
+      "/test-plan E1: p2.3-dor-dod-template-improvements",
+      "/test-plan E2: p2.4-agents-md-adapter",
+      "/test-plan E2: p2.5a-iac-saas-api-adapters",
+      "/test-plan E2: p2.5b-saas-gui-m365-manual-adapters",
+      "/test-plan E2: p2.6-ea-registry-path-a",
+      "/test-plan E3: p2.7-fleet-registry-ci-aggregation",
+      "/test-plan E3: p2.8-persona-routing-non-engineer-approval",
+      "/test-plan E4: p2.9-eight-discipline-standards",
+      "/test-plan E4: p2.10-bitbucket-ci-validation",
+      "/test-plan E5: p2.11-improvement-agent-trace-proposals (note ASSUMPTION-P2.11-01)",
+      "/test-plan E5: p2.12-challenger-pre-check-proposal-review"
     ]
   }
 }
