@@ -39,6 +39,8 @@ const RULES = {
  * @param {object} context - Execution context (content of context.yml or equivalent)
  * @returns {{ status: string, surface: string, findings: object[], trace: object, adapterVersion: string }}
  */
+const _repoRoot = path.join(__dirname, '..', '..', '..');
+
 function execute(context) {
   const policyPath = module.exports._policyPath;
   const runId = `iac-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -46,7 +48,7 @@ function execute(context) {
   const trace = {
     adapterName:    'iac',
     adapterVersion: ADAPTER_VERSION,
-    policySource:   policyPath,
+    policySource:   path.relative(_repoRoot, policyPath).replace(/\\/g, '/'),
     runId,
   };
 
