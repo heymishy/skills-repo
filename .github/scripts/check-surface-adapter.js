@@ -51,7 +51,8 @@ const { execute, registerAdapter } = surfaceAdapter;
 const gitNativeAdapter = require(path.join(root, 'src', 'surface-adapter', 'adapters', 'git-native.js'));
 const iacAdapter       = require(path.join(root, 'src', 'surface-adapter', 'adapters', 'iac.js'));
 const saasApiAdapter   = require(path.join(root, 'src', 'surface-adapter', 'adapters', 'saas-api.js'));
-const { resolvePathB } = require(path.join(root, 'src', 'surface-adapter', 'resolver.js'));
+const resolverModule  = require(path.join(root, 'src', 'surface-adapter', 'resolver.js'));
+const { resolvePathB, resolve } = resolverModule;
 
 // Register the git-native adapter in the global registry
 registerAdapter('git-native', gitNativeAdapter);
@@ -790,16 +791,442 @@ console.log('  NFR: p2.5a — performance, security, auditability');
   );
 }
 
-// ── Summary ───────────────────────────────────────────────────────────────────
 
-console.log('');
-console.log(`[surface-adapter-check] Results: ${passed} passed, ${failed} failed`);
+// ── p2.6 Tests — Path A: EA registry resolution ───────────────────────────────
 
-if (failed > 0) {
+/**
+ * p2.6 test suite — async because Path A involves HTTP stubs (Promises).
+ * Uses the shared pass/fail/assert harness from the synchronous tests above.
+ */
+async function runP26Tests() {
   console.log('');
-  console.log('  Failures:');
-  for (const f of failures) {
-    console.log(`    ✗ ${f.name}: ${f.reason}`);
+  console.log('[surface-adapter-check] Running p2.6 Path A tests…');
+
+  const fixA_saas       = path.join(fixtureDir, 'context-path-a-saas.yml');
+  const fixA_cloud      = path.join(fixtureDir, 'context-path-a-cloud.yml');
+  const fixA_override   = path.join(fixtureDir, 'context-path-a-override.yml');
+  const fixA_fallback   = path.join(fixtureDir, 'context-path-a-with-fallback.yml');
+  const fixA_noFallback = path.join(fixtureDir, 'context-path-a-no-fallback.yml');
+  const fixA_bothPaths  = path.join(fixtureDir, 'context-path-a-both-paths.yml');
+  const fixA_httpUrl    = path.join(fixtureDir, 'context-path-a-http-url.yml');
+  const fixA_different  = path.join(fixtureDir, 'context-path-a-different.yml');
+
+  // Fail fast if any fixture is missing
+  const p26Fixtures = [
+    fixA_saas, fixA_cloud, fixA_override, fixA_fallback,
+    fixA_noFallback, fixA_bothPaths, fixA_httpUrl, fixA_different,
+  ];
+  for (const f of p26Fixtures) {
+    if (!fs.existsSync(f)) {
+      console.error(`[p2.6] ERROR: fixture not found: ${f}`);
+      process.exit(1);
+    }
   }
-  process.exit(1);
+
+  // Stub adapters for Path A tests — used where real adapters aren't registered
+  const saasGuiStub = { execute: () => ({ status: 'pass', surface: 'saas-gui', findings: [], trace: 'stub', adapterVersion: '1.0.0' }) };
+
+  // ── AC1: HTTP GET constructed with app_id as query parameter ─────────────────
+
+  console.log('');
+  console.log('  Unit: AC1 — HTTP GET request constructed with app_id query parameter');
+
+  {
+    let capturedUrl = null;
+    resolverModule._httpFetch = (url) => {
+      capturedUrl = url;
+      return Promise.resolve({ statusCode: 200, body: 'technology:\n  hosting: saas\nowner: squad-a\n' });
+    };
+
+    const reg = { 'saas-api': saasApiAdapter };
+    await resolve(fixA_saas, reg);
+
+    assert(
+      capturedUrl !== null && capturedUrl.includes('app_id=app-saas-001'),
+      'resolver-constructs-http-get-with-app-id',
+      `Expected URL to contain app_id=app-saas-001; got: ${capturedUrl}`
+    );
+
+    resolverModule._httpFetch = null;
+  }
+
+  {
+    // AC1 (ADR-004): resolver reads registry_url and app_id from context — no hardcoded values
+    const capturedUrls = [];
+    resolverModule._httpFetch = (url) => {
+      capturedUrls.push(url);
+      return Promise.resolve({ statusCode: 200, body: 'technology:\n  hosting: cloud\nowner: squad-x\n' });
+    };
+
+    const reg = { 'iac': iacAdapter };
+    await resolve(fixA_saas,      reg); // registry_url: stub.ea-registry.test, app_id: app-saas-001
+    await resolve(fixA_different, reg); // registry_url: different.ea-registry.test, app_id: app-different-002
+
+    const firstUrl  = capturedUrls[0] || '';
+    const secondUrl = capturedUrls[1] || '';
+
+    assert(
+      firstUrl !== secondUrl &&
+      firstUrl.includes('stub.ea-registry.test') &&
+      secondUrl.includes('different.ea-registry.test') &&
+      secondUrl.includes('app-different-002'),
+      'resolver-reads-registry-url-from-context',
+      `Expected different URLs per context. Got:\n  first:  ${firstUrl}\n  second: ${secondUrl}`
+    );
+
+    resolverModule._httpFetch = null;
+  }
+
+  // ── AC2: technology.hosting mapping ──────────────────────────────────────────
+
+  console.log('');
+  console.log('  Unit: AC2 — technology.hosting mapping and adapter_override precedence');
+
+  {
+    // saas → saas-api (confirmed EA registry field: RESOLUTION-ASSUMPTION-02)
+    resolverModule._httpFetch = () =>
+      Promise.resolve({ statusCode: 200, body: 'technology:\n  hosting: saas\nowner: squad-a\n' });
+
+    const reg    = { 'saas-api': saasApiAdapter };
+    const result = await resolve(fixA_saas, reg);
+
+    assert(
+      Array.isArray(result) && result.length > 0 && result[0].surfaceType === 'saas-api',
+      'technology-hosting-saas-maps-to-saas-api',
+      `Expected surfaceType="saas-api"; got: ${JSON.stringify(result)}`
+    );
+
+    resolverModule._httpFetch = null;
+  }
+
+  {
+    // cloud → iac
+    resolverModule._httpFetch = () =>
+      Promise.resolve({ statusCode: 200, body: 'technology:\n  hosting: cloud\nowner: squad-b\n' });
+
+    const reg    = { 'iac': iacAdapter };
+    const result = await resolve(fixA_cloud, reg);
+
+    assert(
+      Array.isArray(result) && result.length > 0 && result[0].surfaceType === 'iac',
+      'technology-hosting-cloud-maps-to-iac',
+      `Expected surfaceType="iac"; got: ${JSON.stringify(result)}`
+    );
+
+    resolverModule._httpFetch = null;
+  }
+
+  {
+    // adapter_override in context.yml takes precedence over registry-derived type
+    // Registry returns saas (→ saas-api), but override forces iac
+    resolverModule._httpFetch = () =>
+      Promise.resolve({ statusCode: 200, body: 'technology:\n  hosting: saas\nowner: squad-c\n' });
+
+    const reg    = { 'iac': iacAdapter, 'saas-api': saasApiAdapter };
+    const result = await resolve(fixA_override, reg);
+
+    assert(
+      Array.isArray(result) && result.length > 0 && result[0].surfaceType === 'iac',
+      'context-adapter-override-takes-precedence',
+      `Expected surfaceType="iac" (from adapter_override); got: ${JSON.stringify(result)}`
+    );
+
+    resolverModule._httpFetch = null;
+  }
+
+  // ── AC3: unavailability fallback ──────────────────────────────────────────────
+
+  console.log('');
+  console.log('  Unit: AC3 — registry unavailability fallback');
+
+  {
+    // Timeout → fallback to Path B surface type (fixture has surface: { type: iac })
+    resolverModule._httpFetch = () => Promise.reject(new Error('simulated timeout'));
+
+    let logged = '';
+    const origWrite = process.stdout.write.bind(process.stdout);
+    process.stdout.write = (chunk) => { logged += String(chunk); return true; };
+
+    const reg    = { 'iac': iacAdapter };
+    const result = await resolve(fixA_fallback, reg);
+
+    process.stdout.write = origWrite;
+    resolverModule._httpFetch = null;
+
+    const correctAdapter = Array.isArray(result) && result.length > 0 && result[0].surfaceType === 'iac';
+    const fallbackLogged = logged.includes('EA registry unavailable — falling back to explicit surface declaration');
+
+    assert(
+      correctAdapter && fallbackLogged,
+      'path-a-unavailable-timeout-fallback-to-path-b',
+      `Expected iac adapter selected and fallback log. ` +
+      `adapter=${JSON.stringify(result && result[0] && result[0].surfaceType)} logged=${fallbackLogged}`
+    );
+  }
+
+  {
+    // HTTP 503 + no fallback → explicit error result; must NOT default to git-native
+    resolverModule._httpFetch = () =>
+      Promise.resolve({ statusCode: 503, body: 'Service Unavailable' });
+
+    const reg    = { 'git-native': gitNativeAdapter };
+    const result = await resolve(fixA_noFallback, reg);
+
+    resolverModule._httpFetch = null;
+
+    assert(
+      result != null &&
+      result.status === 'error' &&
+      typeof result.error === 'string' &&
+      result.error.includes('EA registry unavailable and no fallback surface declaration found'),
+      'path-a-unavailable-503-error-result',
+      `Expected error result with unavailability message; got: ${JSON.stringify(result)}`
+    );
+  }
+
+  {
+    // DNS failure (rejected promise) + no fallback → explicit error; no git-native
+    resolverModule._httpFetch = () => Promise.reject(new Error('getaddrinfo ENOTFOUND stub.ea-registry.test'));
+
+    const reg    = { 'git-native': gitNativeAdapter };
+    const result = await resolve(fixA_noFallback, reg);
+
+    resolverModule._httpFetch = null;
+
+    const isError         = result != null && result.status === 'error';
+    const hasMessage      = isError && result.error.includes('EA registry unavailable');
+    const noGitNative     = !result.surfaceType && !(Array.isArray(result) && result.some(r => r.surfaceType === 'git-native'));
+
+    assert(
+      isError && hasMessage && noGitNative,
+      'path-a-unavailable-dns-error-no-git-native',
+      `Expected explicit error with no git-native selection; got: ${JSON.stringify(result)}`
+    );
+  }
+
+  // ── AC4: Path B unchanged ─────────────────────────────────────────────────────
+
+  console.log('');
+  console.log('  Unit: AC4 — Path B unchanged; no HTTP call; no app_id required');
+
+  {
+    // Path B via resolve() must make zero HTTP calls
+    let httpCallMade = false;
+    resolverModule._httpFetch = () => {
+      httpCallMade = true;
+      return Promise.resolve({ statusCode: 200, body: '' });
+    };
+
+    const reg    = { 'git-native': gitNativeAdapter };
+    const result = await resolve(singleSurfacePath, reg);
+
+    resolverModule._httpFetch = null;
+
+    assert(
+      !httpCallMade && Array.isArray(result) && result.some(r => r.surfaceType === 'git-native'),
+      'path-b-no-http-call',
+      `Expected zero HTTP calls and git-native selection; httpCallMade=${httpCallMade} result=${JSON.stringify(result)}`
+    );
+  }
+
+  {
+    // Path B fixture has no app_id field — resolve() must succeed without it
+    let threw   = false;
+    let errMsg  = null;
+    let result  = null;
+
+    try {
+      const reg = { 'git-native': gitNativeAdapter };
+      result = await resolve(singleSurfacePath, reg);
+    } catch (e) {
+      threw  = true;
+      errMsg = e.message;
+    }
+
+    assert(
+      !threw && Array.isArray(result) && result.length > 0,
+      'path-b-no-app-id-required',
+      threw
+        ? `resolve() threw unexpectedly: ${errMsg}`
+        : `Expected successful resolution; got: ${JSON.stringify(result)}`
+    );
+  }
+
+  // ── AC5: Both paths declared — Path B wins, warning logged ────────────────────
+
+  console.log('');
+  console.log('  Unit: AC5 — both paths declared; Path B wins; warning logged');
+
+  {
+    let httpCallMade = false;
+    resolverModule._httpFetch = () => {
+      httpCallMade = true;
+      return Promise.resolve({ statusCode: 200, body: '' });
+    };
+
+    let logged = '';
+    const origWrite = process.stdout.write.bind(process.stdout);
+    process.stdout.write = (chunk) => { logged += String(chunk); return true; };
+
+    const reg    = { 'saas-gui': saasGuiStub };
+    const result = await resolve(fixA_bothPaths, reg);
+
+    process.stdout.write = origWrite;
+    resolverModule._httpFetch = null;
+
+    const pathBSelected   = Array.isArray(result) && result.length > 0 && result[0].surfaceType === 'saas-gui';
+    const noHttpCall      = !httpCallMade;
+    const warningLogged   = logged.includes('Both Path A (registry_source) and Path B (surface:) declared');
+
+    assert(
+      pathBSelected && noHttpCall && warningLogged,
+      'both-paths-declared-path-b-wins',
+      `Expected saas-gui selected, no HTTP call, warning logged. ` +
+      `pathB=${pathBSelected} noHttp=${noHttpCall} warned=${warningLogged}`
+    );
+  }
+
+  {
+    // Warning message must include the "Remove one to resolve." instruction (AC5)
+    let logged = '';
+    const origWrite = process.stdout.write.bind(process.stdout);
+    process.stdout.write = (chunk) => { logged += String(chunk); return true; };
+
+    const reg = { 'saas-gui': saasGuiStub };
+    await resolve(fixA_bothPaths, reg);
+
+    process.stdout.write = origWrite;
+
+    assert(
+      logged.includes('Remove one to resolve.'),
+      'both-paths-warning-message-complete',
+      `Expected warning to include "Remove one to resolve."; logged: ${logged.slice(0, 300)}`
+    );
+  }
+
+  // ── Integration: AC1+AC2 end-to-end Path A → adapter selection ───────────────
+
+  console.log('');
+  console.log('  Integration: AC1+AC2 — Path A end-to-end: registry stub → adapter selection');
+
+  {
+    resolverModule._httpFetch = () =>
+      Promise.resolve({ statusCode: 200, body: 'technology:\n  hosting: saas\nowner: squad-a\n' });
+
+    let logged = '';
+    const origWrite = process.stdout.write.bind(process.stdout);
+    process.stdout.write = (chunk) => { logged += String(chunk); return true; };
+
+    const reg    = { 'saas-api': saasApiAdapter, 'iac': iacAdapter };
+    const result = await resolve(fixA_saas, reg);
+
+    process.stdout.write = origWrite;
+    resolverModule._httpFetch = null;
+
+    const correctType    = Array.isArray(result) && result.length > 0 && result[0].surfaceType === 'saas-api';
+    const adapterPresent = correctType && result[0].adapter !== null;
+    const loggedType     = logged.includes('saas-api');
+
+    assert(
+      correctType && adapterPresent && loggedType,
+      'resolver-path-a-end-to-end',
+      `Expected saas-api adapter selected and logged. ` +
+      `type=${result && result[0] && result[0].surfaceType} adapter=${adapterPresent} logged=${loggedType}`
+    );
+  }
+
+  // ── NFR: Performance — timeout fires at ≤ configured timeout ─────────────────
+
+  console.log('');
+  console.log('  NFR: p2.6 — performance, security');
+
+  {
+    // Use a short timeout (100ms) to avoid a 3-second wait in CI.
+    // Stub delays 300ms — resolver should time out and return error.
+    resolverModule._httpTimeoutMs = 100;
+    resolverModule._httpFetch     = (_url, _timeoutMs) =>
+      new Promise((_res, _rej) => setTimeout(() => _rej(new Error('stub timeout')), 300));
+
+    const start  = Date.now();
+    const reg    = { 'git-native': gitNativeAdapter };
+    const result = await resolve(fixA_noFallback, reg);
+    const elapsed = Date.now() - start;
+
+    resolverModule._httpFetch     = null;
+    resolverModule._httpTimeoutMs = 3000;
+
+    assert(
+      result != null && result.status === 'error' && elapsed < 1000,
+      'nfr-ea-registry-http-timeout',
+      `Expected error result within 1s; status=${result && result.status} elapsed=${elapsed}ms`
+    );
+  }
+
+  {
+    // MC-SEC-02: full registry response body must NOT appear in stdout
+    // Stub body includes a fake secret buried in the response
+    const FAKE_SECRET = 'FAKE_SECRET_12345';
+    resolverModule._httpFetch = () =>
+      Promise.resolve({
+        statusCode: 200,
+        body: `technology:\n  hosting: cloud\nowner: t1\nnotes: "secretApiKey: ${FAKE_SECRET}"\n`,
+      });
+
+    let logged = '';
+    const origWrite = process.stdout.write.bind(process.stdout);
+    process.stdout.write = (chunk) => { logged += String(chunk); return true; };
+
+    const reg = { 'iac': iacAdapter };
+    await resolve(fixA_cloud, reg);
+
+    process.stdout.write = origWrite;
+    resolverModule._httpFetch = null;
+
+    assert(
+      !logged.includes(FAKE_SECRET),
+      'nfr-no-log-registry-response-body',
+      `Fake secret found in stdout — full body must not be logged. Logged: ${logged.slice(0, 300)}`
+    );
+  }
+
+  {
+    // MC-SEC-03: plain HTTP registry_url rejected before any HTTP call
+    let httpCallMade = false;
+    resolverModule._httpFetch = () => {
+      httpCallMade = true;
+      return Promise.resolve({ statusCode: 200, body: '' });
+    };
+
+    const reg    = {};
+    const result = await resolve(fixA_httpUrl, reg);
+
+    resolverModule._httpFetch = null;
+
+    assert(
+      !httpCallMade &&
+      result != null && result.status === 'error' &&
+      result.error && result.error.includes('HTTPS'),
+      'nfr-https-only-plain-http-rejected',
+      `Expected HTTPS rejection error with no HTTP call; httpCallMade=${httpCallMade} result=${JSON.stringify(result)}`
+    );
+  }
 }
+
+// ── Summary (async — waits for p2.6 tests) ────────────────────────────────────
+
+runP26Tests().then(() => {
+  console.log('');
+  console.log(`[surface-adapter-check] Results: ${passed} passed, ${failed} failed`);
+
+  if (failed > 0) {
+    console.log('');
+    console.log('  Failures:');
+    for (const f of failures) {
+      console.log(`    ✗ ${f.name}: ${f.reason}`);
+    }
+    process.exit(1);
+  }
+}).catch(err => {
+  console.error('[surface-adapter-check] Unexpected error in p2.6 tests:', err);
+  process.exit(1);
+});
