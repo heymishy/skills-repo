@@ -18,7 +18,20 @@
       "completedAt": "2026-04-11T19:10:00+10:00"
     },
     "definition": {
-      "status": "not-started"
+      "status": "in-progress",
+      "slicingStrategy": "risk-first",
+      "storyCount": 13,
+      "batch1": {
+        "status": "complete",
+        "storiesWritten": ["p2.1", "p2.2", "p2.3", "p2.4", "p2.5a", "p2.5b", "p2.6"],
+        "epicsWritten": ["epic-1-pipeline-evolution-foundation", "epic-2-full-surface-adapter-model"],
+        "note": "p2.5 split into p2.5a+p2.5b — AC count exceeded 8 threshold; see decisions.md SCOPE-01"
+      },
+      "batch2": {
+        "status": "not-started",
+        "storiesPlanned": ["p2.7", "p2.8", "p2.9", "p2.10", "p2.11", "p2.12"],
+        "epicsPlanned": ["epic-3-fleet-observability-personas", "epic-4-standards-ci-validation", "epic-5-self-improving-harness"]
+      }
     },
     "innerLoop": {
       "status": "not-started"
@@ -28,13 +41,14 @@
     "status": "not-started"
   },
   "checkpoint": {
-    "writtenAt": "2026-04-11T19:10:00+10:00",
-    "contextAtWrite": "Phase 2 benefit-metric artefact written and awaiting operator approval. 5 Tier 1 metrics (M1-M5) and 5 Tier 2 meta-metrics (MM1-MM5 including new MM4 estimation calibration and MM5 flow findings conversion). pipeline-state.json updated with Phase 2 feature entry seeded. Ready to proceed to /definition on approval.",
-    "resumeInstruction": "START HERE — Phase 2 pipeline. benefit-metric.md is written and pending approval at artefacts/2026-04-11-skills-platform-phase2/benefit-metric.md. Step 1: present benefit-metric to operator for approval. Step 2: on approval, proceed to /definition. Step 3: at /definition exit, run /estimate E2. Step 4: D1 and D8 from decisions.md SCOPE 2026-04-11 should become early Phase 2 stories. Step 5: first inner loop story through P1.3 CI gate closes p1.8 AC3 automatically.",
+    "writtenAt": "2026-04-11T20:30:00+10:00",
+    "contextAtWrite": "Phase 2 /definition Batch 1 complete. 7 stories written (p2.1–p2.6 incl. p2.5 split into p2.5a+p2.5b), 2 epics (E1 Pipeline Evolution Foundation, E2 Full Surface Adapter Model), decisions.md with SCOPE-01/ARCH-01/ASSUMPTION-01. pipeline-state.json updated: stage→definition, slicingStrategy→risk-first, epics[] E1+E2 seeded, guardrails[] all 24 entries seeded (not-assessed). Batch 2 (E3/E4/E5: stories p2.7–p2.12) is the next session's work.",
+    "resumeInstruction": "START HERE — Phase 2 definition Batch 2. Batch 1 (E1+E2: p2.1–p2.6 incl. p2.5a/p2.5b) is committed. Load architecture-guardrails.md once at session start (hold in context for all stories). Write E3 stories p2.7 (fleet registry + CI aggregation) and p2.8 (persona routing + non-engineer approval — p2.8 DEPENDS ON p2.7, record in p2.8 Architecture Constraints). Then E4 stories p2.9 (8 discipline standards + 3 pilot domain) and p2.10 (Bitbucket Cloud + DC Docker CI validation). Then E5 stories p2.11 (improvement agent: trace interface + failure detection + proposals) and p2.12 (challenger pre-check + proposal review + SKILL.md) — BOTH E5 stories sequenced after first inner loop batch per operator instruction. After all 13 stories: scope accumulator (SKILL.md Step 6), NFR profile (Step 7), benefit coverage matrix update in benefit-metric.md, then /estimate E2.",
     "pendingActions": [
-      "Operator approval of benefit-metric.md",
+      "Batch 2 stories: p2.7 (fleet registry), p2.8 (persona routing — depends on p2.7), p2.9 (standards), p2.10 (Bitbucket CI), p2.11 (improvement agent), p2.12 (challenger pre-check)",
+      "p2.11 and p2.12 sequencing: write stories now but mark 'sequenced after first inner loop batch' in Architecture Constraints — DO NOT dispatch to inner loop until first Phase 2 story batch is merged",
+      "ASSUMPTION-01 validation: EA registry surfaceType field name unconfirmed — must be validated at p2.6 DoR H1 before coding",
       "p1.8 AC3 (T3M1 evidence record) — closes automatically when first Phase 2 inner loop story runs through P1.3 CI gate",
-      "Apr 11 premium requests — update workspace/estimation-norms.md Phase 1 row once CSV confirms exact count",
       "CI topology assumption — validate whether enterprise Bitbucket Pipelines is in scope for Phase 2 before any P2.5 story reaches DoR"
     ]
   },
