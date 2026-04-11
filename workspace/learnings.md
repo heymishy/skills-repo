@@ -405,3 +405,29 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 ```
 
 **Action:** Update `/definition-of-ready` SKILL.md exit sequence to mandate `git push` confirmation and add `/issue-dispatch` forward pointer. This closes D6 in the D-batch. Log as a Phase 2 /levelup candidate for write-back to `.github/skills/definition-of-ready/SKILL.md`.
+
+---
+
+## Tool-use gap — duplicate GitHub issues created by combined heredoc+gh-issue-create PowerShell calls
+
+### Observed — 2026-04-12
+
+**Circumstance:** During Wave 1a dispatch, `gh issue create` was inadvertently invoked twice for each of p2.2, p2.3, p2.4, and p2.5a. Each story ended up with two open issues: one with an odd number (the canonical: 19, 21, 23, 25, 27) and one with an even number (the duplicate: 20, 22, 24, 26). Issue #20 was already closed by the time the operator noticed; #22, #24, #26 required manual closure.
+
+**Root cause:** For each story after p2.1, the issue body was written to a temp file AND `gh issue create --body-file` was invoked in a single multi-statement PowerShell command (combined heredoc + Out-File + gh issue create). PowerShell parsed and ran the heredoc assignment, wrote the file, and ran `gh issue create` — creating one issue. The agent then issued a second standalone `gh issue create` call (intended as the "actual" execution after confirming the file was written), creating a duplicate.
+
+**Pattern:** The `$body = @'...'@; $body | Out-File ...; gh issue create ...` one-liner ran the creation silently (heredoc output masked the URL), then the explicit second `gh issue create` call confirmed with a visible URL — which the agent recorded as the canonical number. Hence the canonical issues are the even-offset ones the agent "saw" (21, 23, 25, 27), two higher than the silently-created originals (20, 22, 24, 26).
+
+**Correct canonical issue numbers — Wave 1a:**
+
+| Story | Canonical issue | Duplicate (closed) |
+|-------|----------------|-------------------|
+| p2.1 | #19 | none |
+| p2.2 | #21 | #20 (already closed) |
+| p2.3 | #23 | #22 (closed 2026-04-12) |
+| p2.4 | #25 | #24 (closed 2026-04-12) |
+| p2.5a | #27 | #26 (closed 2026-04-12) |
+
+**Fix — /issue-dispatch SKILL.md Step 5:** When using `gh issue create` in PowerShell, never combine the body-file write and the `gh issue create` call in the same multi-statement command. Separate them into two distinct terminal calls: (1) write the body file; (2) run `gh issue create --body-file`. This eliminates the silent-then-explicit double-execution pattern.
+
+**Action:** Add a note to the `/issue-dispatch` SKILL.md Step 5 command block specifying that body file write and `gh issue create` must be separate terminal calls in PowerShell environments. Log as a Phase 2 /levelup candidate.
