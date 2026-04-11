@@ -930,6 +930,36 @@
           "lastMeasured": null,
           "targetDescription": "≥50% of logged flow findings result in pipeline improvement within 2 features; operator confirms at each /levelup"
         }
+      ],
+      "epics_batch2": [
+        {
+          "slug": "epic-3-fleet-observability-personas",
+          "name": "Fleet Observability and Non-Engineer Approval Interface",
+          "status": "not-started",
+          "stories": [
+            { "slug": "p2.7-fleet-registry-ci-aggregation", "name": "Fleet registry files and CI-aggregated fleet-state.json", "stage": "definition", "health": "green" },
+            { "slug": "p2.8-persona-routing-non-engineer-approval", "name": "Persona routing and non-engineer approval interface (depends on p2.7)", "stage": "definition", "health": "green" }
+          ]
+        },
+        {
+          "slug": "epic-4-standards-ci-validation",
+          "name": "Remaining Discipline Standards and Bitbucket CI Validation",
+          "status": "not-started",
+          "stories": [
+            { "slug": "p2.9-discipline-standards-remaining", "name": "Eight remaining discipline standards and three pilot domain standards", "stage": "definition", "health": "green" },
+            { "slug": "p2.10-bitbucket-ci-validation", "name": "Bitbucket CI validation — Cloud pipeline-shape tests and DC Docker auth topology", "stage": "definition", "health": "green" }
+          ]
+        },
+        {
+          "slug": "epic-5-self-improving-harness",
+          "name": "Self-Improving Harness",
+          "status": "not-started",
+          "sequencingNote": "p2.11 and p2.12 must not be dispatched to inner loop until at least one Phase 2 inner loop story batch is merged and its trace written",
+          "stories": [
+            { "slug": "p2.11-improvement-agent-trace-proposals", "name": "Improvement agent — queryable trace interface, failure and staleness detection, and diff proposals", "stage": "definition", "health": "green", "sequencingConstraint": "after-first-inner-loop-batch" },
+            { "slug": "p2.12-improvement-agent-challenger-skill", "name": "Improvement agent — challenger pre-check, proposal review workflow, and improvement-agent SKILL.md (depends on p2.11)", "stage": "definition", "health": "green", "sequencingConstraint": "after-first-inner-loop-batch" }
+          ]
+        }
       ]
     }
   ]

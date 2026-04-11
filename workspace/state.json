@@ -1,7 +1,7 @@
 {
   "feature": "2026-04-11-skills-platform-phase2",
-  "lastUpdated": "2026-04-11T18:40:00+10:00",
-  "currentPhase": "definition",
+  "lastUpdated": "2026-04-11T22:45:00+10:00",
+  "currentPhase": "definition-complete",
   "cycle": {
     "discovery": {
       "status": "approved",
@@ -18,7 +18,8 @@
       "completedAt": "2026-04-11T19:10:00+10:00"
     },
     "definition": {
-      "status": "in-progress",
+      "status": "complete",
+      "completedAt": "2026-04-11T22:45:00+10:00",
       "slicingStrategy": "risk-first",
       "storyCount": 13,
       "batch1": {
@@ -28,9 +29,15 @@
         "note": "p2.5 split into p2.5a+p2.5b — AC count exceeded 8 threshold; see decisions.md SCOPE-01"
       },
       "batch2": {
-        "status": "not-started",
-        "storiesPlanned": ["p2.7", "p2.8", "p2.9", "p2.10", "p2.11", "p2.12"],
-        "epicsPlanned": ["epic-3-fleet-observability-personas", "epic-4-standards-ci-validation", "epic-5-self-improving-harness"]
+        "status": "complete",
+        "storiesWritten": ["p2.7", "p2.8", "p2.9", "p2.10", "p2.11", "p2.12"],
+        "epicsWritten": ["epic-3-fleet-observability-personas", "epic-4-standards-ci-validation", "epic-5-self-improving-harness"],
+        "notes": [
+          "p2.8 depends on p2.7 (fleet registry must be DoD-complete before p2.8 end-to-end integration path can be tested)",
+          "p2.11 and p2.12 sequenced after first Phase 2 inner loop batch — requires real delivery traces; do not dispatch until traces exist",
+          "p2.11 complexity 3 (unstable) — failure pattern heuristics and anti-overfitting gate are high-ambiguity",
+          "p2.12 complexity 3 (unstable) — challenger spec template and proposal review workflow UI are high-ambiguity"
+        ]
       }
     },
     "innerLoop": {
@@ -84,8 +91,25 @@
       "gaugeAtStart": "86.7% of 300 (260 used; ~40 remaining; resets May 1)",
       "premiumRequestsForecast": "~322 (14 × 23/story Phase 1 rate) — exceeds current period remainder; inner loop uses refreshed May quota"
     },
-    "e2": null,
+    "e2": {
+      "status": "skipped",
+      "reason": "gauge at 97%+ cutoff before estimate step — operator instruction: skip E2 if gauge reaches 97%",
+      "scheduledFor": "2026-05-01 reset session start — run E2 at start of May session using Phase 2 actuals to date (13 stories, all outer loop phases logged)"
+    },
     "actuals": null,
     "flowFindings": []
+  },
+  "checkpoint": {
+    "writtenAt": "2026-04-11T22:45:00+10:00",
+    "contextAtWrite": "Phase 2 /definition complete. All 13 stories written (p2.1–p2.12 incl. p2.5 split). All 5 epics written. Scope accumulator passed (2.17× — all splits documented). NFR profile created. Benefit coverage matrix updated with story-level references. E2 estimate skipped (gauge). npm test: 43/43 + all suites passed. /checkpoint triggered per operator instruction — immediately after coverage matrix.",
+    "resumeInstruction": "Phase 2 /definition complete — all 13 stories written and committed. Next: /review pass across all Phase 2 stories (start with E1: p2.1, p2.2, p2.3). Then /test-plan per story. Then /definition-of-ready per story. Inner loop dispatch order: E1 → E2 → E3 (p2.7 before p2.8) → E4 → E5 LAST (p2.11 + p2.12 HELD until first inner loop batch merged and traces written). p2.8 depends on p2.7 DoD-complete. ASSUMPTION-01 (EA registry surfaceType field name) must validate at p2.6 DoR H1. Run E2 estimate at May 1 reset session start.",
+    "pendingActions": [
+      "/review pass — all 5 epics, starting with E1 (p2.1/p2.2/p2.3)",
+      "/test-plan per story (13 stories)",
+      "/definition-of-ready per story — p2.8 depends on p2.7 DoD, p2.11+p2.12 sequenced after first inner loop batch",
+      "ASSUMPTION-01 validation — EA registry surfaceType field at p2.6 DoR H1",
+      "E2 estimate — run at May 1 reset session start",
+      "p1.8 AC3 T3M1 evidence — closes when first Phase 2 inner loop story runs through P1.3 CI gate"
+    ]
   }
 }

@@ -165,18 +165,18 @@ MM4 and MM5 are new additions to the meta-metric set: they use Phase 1 actuals a
 
 *Populated by /definition after stories are written. Every metric must have at least one story. Every story must reference at least one metric.*
 
-| Metric | Stories that move it | Coverage status |
-|--------|---------------------|-----------------|
-| M1 — Second squad outer loop unassisted | P2.1 (adapters enable second squad), P2.3 (fleet + persona routing removes blockers), P2.4 (standards reduce blocking lookups), P2.6 D1/D2/D3 (definition skill improvements) | Pending — coverage confirmed at /definition |
-| M2 — Non-git-native adapter assurance verdict | P2.1 — direct delivery | Pending |
-| M3 — Improvement agent first proposal | P2.2 — direct delivery | Pending |
-| M4 — Fleet observability ≥2 squads | P2.3 — direct delivery | Pending |
-| M5 — Non-engineer approval interface | P2.3 (persona routing) — direct delivery | Pending |
-| MM1 — Solo operator outer loop Phase 2 | All Phase 2 stories (outer loop dogfood signal) + P2.6 pipeline evolution | Pending |
-| MM2 — Cross-session resume ISO datetime | All Phase 2 stories (ISO datetime cycle blocks) | Pending |
-| MM3 — Improvement loop end-to-end | P2.2 — direct delivery | Pending |
-| MM4 — Estimation calibration accuracy | No story — measured automatically via `/estimate` E3 + `results.tsv` | No story required — measurement mechanism already live |
-| MM5 — Flow findings conversion rate | No story — operator confirms at each /levelup | No story required — manual confirmation at /levelup |
+| Metric | Primary stories | Secondary / enabling stories | Coverage status |
+|--------|----------------|------------------------------|-----------------|
+| M1 — Second squad outer loop unassisted | p2.9 (removes discipline-lookup blocker), p2.10 (removes Bitbucket CI blocker) | p2.4 (AGENTS.md adapter enables non-GitHub squads), p2.1/p2.2/p2.3 (definition skill improvements reduce rework loops) | Covered — all 13 stories available |
+| M2 — Non-git-native adapter assurance verdict | p2.5a (IaC + SaaS-API adapters), p2.5b (SaaS-GUI + M365-admin + manual adapters), p2.4 (AGENTS.md), p2.6 (EA registry Path A) | p2.10 (Bitbucket squad M2 evidence path unblocked) | Covered — 5 direct stories across P2.1 scope |
+| M3 — Improvement agent first proposal | p2.11 (trace interface + failure/staleness detection + proposal generation), p2.12 (challenger pre-check + review workflow + improvement-agent SKILL.md) | — | Covered — 2 direct stories; sequenced after first inner loop batch |
+| M4 — Fleet observability ≥2 squads | p2.7 (per-squad registry files + CI aggregation + fleet-state.json + viz fleet panel) | — | Covered — 1 direct story |
+| M5 — Non-engineer approval interface | p2.8 (channel hint routing + non-engineer sign-off action + pipeline-state.json dorChannel/dorApprover) | p2.7 (fleet registry prerequisite for off-VS-Code sign-off targeting) | Covered — 1 direct story; depends on p2.7 DoD |
+| MM1 — Solo operator outer loop Phase 2 | p2.1 (D1/D2/D3 — definition improvements), p2.2 (D4 — review incremental write), p2.3 (D8/D9/B1-enforce — template improvements) | All Phase 2 stories (outer loop dogfood signal); p2.9 (discipline blocking lookup eliminated) | Covered — direct delivery via E1 stories |
+| MM2 — Cross-session resume ISO datetime | p2.2 (D4 — /review incremental write adds startedAt/completedAt to state.json write path) | — | Covered — 1 direct story |
+| MM3 — Improvement loop end-to-end | p2.11 (proposal generation), p2.12 (challenger pre-check + review action recorded) | — | Covered — 2 direct stories; same sequencing constraint as M3 |
+| MM4 — Estimation calibration accuracy | No story — measured automatically via \/estimate\ E3 + esults.tsv\ at Phase 2 /levelup | — | No story required — measurement mechanism already live from Phase 1 |
+| MM5 — Flow findings conversion rate | p2.1 (D1/D2/D3 pipeline evolution), p2.2 (D4), p2.3 (D8/D9/B1-enforce), p2.9 (discipline standards gap finding resolved) | — | Covered — flow findings from Phase 1 /levelup resolved in E1 + E4 |
 
 ---
 
