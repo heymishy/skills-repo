@@ -1,7 +1,7 @@
 {
   "feature": "2026-04-11-skills-platform-phase2",
-  "lastUpdated": "2026-04-11T22:30:00+10:00",
-  "currentPhase": "test-plan",
+  "lastUpdated": "2026-05-01T00:00:00+10:00",
+  "currentPhase": "definition-of-ready",
   "cycle": {
     "discovery": {
       "status": "approved",
@@ -62,16 +62,34 @@
     "totalTests": 198,
     "note": "All 13 Phase 2 test plans and verification scripts written. E5 stories (p2.11/p2.12) include DoR execution gate: cannot run until ≥1 Phase 2 inner loop story merged and trace written to workspace/traces/. ASSUMPTION-P2.11-01 (P1.6 trace field name) is a DoR H1 gate for p2.11. Test counts: p2.1=14, p2.2=9, p2.3=13, p2.4=13, p2.5a=18, p2.5b=20, p2.6=15, p2.7=18, p2.8=17, p2.9=17, p2.10=15, p2.11=21, p2.12=22."
   },
+  "definitionOfReady": {
+    "status": "in-progress",
+    "startedAt": "2026-05-01T00:00:00+10:00",
+    "batch1": {
+      "status": "complete",
+      "completedAt": "2026-05-01T00:00:00+10:00",
+      "signedOff": ["p2.1", "p2.2", "p2.3", "p2.4", "p2.5a", "p2.5b"],
+      "blocked": ["p2.6"],
+      "blockedReason": "p2.6: ASSUMPTION-02 — EA registry API field names unconfirmed. Confirm from https://github.com/heymishy/ea-registry, update decisions.md ASSUMPTION-02, re-run /definition-of-ready."
+    },
+    "batch2": {
+      "status": "not-started",
+      "stories": ["p2.7", "p2.8", "p2.9", "p2.10", "p2.11", "p2.12"]
+    }
+  },
   "checkpoint": {
-    "writtenAt": "2026-04-11T22:30:00+10:00",
-    "contextAtWrite": "Phase 2 /test-plan COMPLETE. All 13 test plans and verification scripts written. pipeline-state.json updated: feature stage→test-plan; all 13 stories stage→test-plan with testPlan blocks. p2.11/p2.12 marked with executionGate. Next phase: /definition-of-ready for all 13 stories (delivery-order batches).",
-    "resumeInstruction": "START HERE — Phase 2 /definition-of-ready. All 13 test plans are written (see artefacts/2026-04-11-skills-platform-phase2/test-plans/). Run /definition-of-ready in delivery order: E1 batch (p2.1, p2.2, p2.3), then E2 batch (p2.4, p2.5a, p2.5b, p2.6), then E3 batch (p2.7, p2.8), then E4 batch (p2.9, p2.10), then E5 batch (p2.11, p2.12 — E5 carries DoR H1 sequencing gate: must not be signed-off until ≥1 Phase 2 inner loop batch merged and trace in workspace/traces/). Verify ASSUMPTION-P2.11-01 (P1.6 trace field name, failurePattern vs failurePatterns[]) at p2.11 DoR H1 gate before sign-off. Record resolution in decisions.md.",
+    "writtenAt": "2026-05-01T00:00:00+10:00",
+    "contextAtWrite": "Phase 2 /definition-of-ready batch 1 COMPLETE. p2.1/p2.2/p2.3/p2.4/p2.5a/p2.5b signed-off (PROCEED, High oversight, W4 RISK-ACCEPT each). p2.6 BLOCKED — ASSUMPTION-02 (EA registry field names) must be confirmed. DoR artefacts written to artefacts/2026-04-11-skills-platform-phase2/dor/. pipeline-state.json: p2.1-p2.5b stage=definition-of-ready / dorStatus=signed-off; p2.6 dorStatus=blocked.",
+    "resumeInstruction": "START HERE — /definition-of-ready batch 2. Stories p2.7–p2.12 are at stage: test-plan. Run /definition-of-ready in delivery order: p2.7, p2.8, p2.9, p2.10 (standard processing, all H-blocks expected to pass). p2.11: TWO gates — (A) ASSUMPTION-P2.11-01 must be resolved in decisions.md (P1.6 trace field name: failurePattern vs failurePatterns[]); (B) H1 sequencing gate: workspace/traces/ must contain ≥1 real Phase 2 inner loop trace. p2.12: BLOCKED until p2.11 DoD complete AND trace gate. p2.6: unblock by confirming EA registry field names → update decisions.md ASSUMPTION-02 → re-run /definition-of-ready p2.6 only.",
     "pendingActions": [
-      "/definition-of-ready for all 13 stories in delivery order",
-      "p2.11 DoR H1: resolve ASSUMPTION-P2.11-01 (P1.6 trace archive field name) before DoR sign-off — record in decisions.md",
-      "p2.11 and p2.12 DoR sign-off must be withheld until Phase 2 inner loop gate satisfied (≥1 story merged, trace in workspace/traces/)",
-      "p2.6 DoR H1: confirm ASSUMPTION-02 (EA registry field names surfaceType/teamId/adapterOverride) if not yet recorded in decisions.md",
-      "p1.8 AC3 (T3M1 evidence record) — closes automatically when first Phase 2 inner loop story runs through P1.3 CI gate"
+      "BLOCKED: p2.6 — confirm EA registry API field names from https://github.com/heymishy/ea-registry, update decisions.md ASSUMPTION-02, re-run /definition-of-ready",
+      "/definition-of-ready batch 2: p2.7 (fleet registry CI aggregation)",
+      "/definition-of-ready batch 2: p2.8 (persona routing, depends on p2.7)",
+      "/definition-of-ready batch 2: p2.9 (discipline standards remaining)",
+      "/definition-of-ready batch 2: p2.10 (Bitbucket CI validation)",
+      "/definition-of-ready p2.11: BLOCKED until (A) ASSUMPTION-P2.11-01 resolved in decisions.md AND (B) workspace/traces/ contains ≥1 real Phase 2 inner loop trace",
+      "/definition-of-ready p2.12: BLOCKED until p2.11 DoD complete AND workspace/traces/ gate satisfied",
+      "p1.8 AC3 (T3M1 evidence record) — closes when first Phase 2 inner loop story runs through P1.3 CI gate"
     ]
   },
   "phase1Reference": {
@@ -124,26 +142,6 @@
     },
     "actuals": null,
     "flowFindings": []
-  },
-  "checkpoint": {
-    "writtenAt": "2026-04-11T22:00:00+10:00",
-    "contextAtWrite": "Phase 2 /review resolved. All 13 stories now PASSED (0H/0M open). 9 stories amended (p2.3/p2.4/p2.5a/p2.5b/p2.6/p2.7/p2.8/p2.10/p2.11). ASSUMPTION-02 added to decisions.md. p2.11 Run 2 PASSED. pipeline-state.json: all 13 stories green/passed, feature health green, reviewSummary 13/0/0. workspace/state.json and state updated to currentPhase: test-plan. Commit pending. /test-plan not yet started.",
-    "resumeInstruction": "All 13 Phase 2 stories PASSED review. NEXT: run /test-plan in delivery order. Load test-plan/SKILL.md first, then process stories in epic order: E1 (p2.1 → p2.2 → p2.3) → E2 (p2.4 → p2.5a → p2.5b → p2.6) → E3 (p2.7 → p2.8) → E4 (p2.9 → p2.10) → E5 last (p2.11 → p2.12, sequenced constraint). Produce test-plan artefact + AC verification script per story. Save to artefacts/2026-04-11-skills-platform-phase2/test-plans/[story-slug]-test-plan.md and verification-scripts/[story-slug]-verification.md. Note ASSUMPTION-P2.11-01 in p2.11 story must be acknowledged at /test-plan time (P1.6 trace field name provisional).",
-    "pendingActions": [
-      "git commit: 9 story amendments + ASSUMPTION-02 in decisions.md + review-2 artefact + pipeline-state.json + workspace/state.json",
-      "/test-plan E1: p2.1-pipeline-skill-distribution-model",
-      "/test-plan E1: p2.2-progressive-disclosure-skill-invocation",
-      "/test-plan E1: p2.3-dor-dod-template-improvements",
-      "/test-plan E2: p2.4-agents-md-adapter",
-      "/test-plan E2: p2.5a-iac-saas-api-adapters",
-      "/test-plan E2: p2.5b-saas-gui-m365-manual-adapters",
-      "/test-plan E2: p2.6-ea-registry-path-a",
-      "/test-plan E3: p2.7-fleet-registry-ci-aggregation",
-      "/test-plan E3: p2.8-persona-routing-non-engineer-approval",
-      "/test-plan E4: p2.9-eight-discipline-standards",
-      "/test-plan E4: p2.10-bitbucket-ci-validation",
-      "/test-plan E5: p2.11-improvement-agent-trace-proposals (note ASSUMPTION-P2.11-01)",
-      "/test-plan E5: p2.12-challenger-pre-check-proposal-review"
-    ]
   }
 }
+
