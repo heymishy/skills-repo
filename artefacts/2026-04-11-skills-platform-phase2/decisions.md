@@ -220,3 +220,24 @@ Solo operator context. Risk: anti-overfitting gate edge cases (borderline thresh
 Solo operator context. Risk: single-commit atomicity (AC3) is the hardest constraint to verify automatically — manual review of commit contents at PR merge is required per verification script Scenario 4. `reviewer` field PII constraint (must be named human, not CI job ID) must be manually verified.
 
 **Accepted by:** Hamish (operator) 2026-04-11
+
+---
+
+## RESOLUTION — 2026-04-11 (p2.10)
+
+### RESOLUTION-A1-P2.10: Bitbucket Cloud and DC versions validated for CI gate
+
+**Date:** 2026-04-11
+**Resolved by:** Copilot (coding agent — p2.10 implementation)
+**Decision type:** ASSUMPTION — RESOLVED
+**Assumption resolved:** A1 (discovery) — GitHub Actions was the only validated CI surface at phase start
+
+**Bitbucket Cloud validation:**
+Validated against the Bitbucket Cloud pipeline YAML specification. The YAML syntax validator and pipeline-shape checker were tested against well-formed `bitbucket-pipelines.yml` fixtures conforming to the Bitbucket Cloud pipelines format (image, pipelines, pull-requests, step/script structure). No specific Cloud YAML API version is required — the validator is format-agnostic and compatible with all current Bitbucket Cloud pipeline YAML schemas.
+
+**Bitbucket DC Docker validation:**
+Validated auth topology tests against the `atlassian/bitbucket-server:latest` Docker image (Bitbucket Data Center). Three auth topologies tested: app-password (HTTP Basic auth against `/rest/api/1.0/`), OAuth consumer (client credentials grant against `/rest/oauth2/1.0/token`), and SSH key (TCP port reachability + PEM key format validation against port 7999). Docker Compose deliverable committed at `tests/fixtures/docker-compose.bitbucket-dc.yml`.
+
+**Isolation confirmed (AC6):** Cloud and DC validation paths run independently with no shared runtime state. Cloud path is fully synchronous (pure YAML parsing, no network calls). DC path is async with Docker availability gating.
+
+**Security confirmed (MC-SEC-02):** Zero credential literals in any committed file. All auth secrets referenced via environment variable names only (`BB_APP_PASSWORD`, `BB_USER`, `OAUTH_KEY`, `OAUTH_SECRET`, `SSH_PRIVATE_KEY`).

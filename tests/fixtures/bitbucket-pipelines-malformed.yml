@@ -1,0 +1,18 @@
+# tests/fixtures/bitbucket-pipelines-malformed.yml
+#
+# Intentionally MALFORMED Bitbucket Cloud pipeline definition.
+# Contains a tab character in indentation — YAML forbids tabs for indentation
+# (YAML spec §6.1).
+#
+# Used by: tests/check-bitbucket-cloud.js (AC1 negative path — syntax error detection)
+# Expected outcome: YAML syntax validator reports failure with errorType yaml-syntax-error.
+
+image: node:18
+
+pipelines:
+  pull-requests:
+    '**':
+	  - step:
+	      name: Build
+	      script:
+	        - npm ci

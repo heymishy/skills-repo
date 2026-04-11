@@ -82,3 +82,22 @@ tools:
 compliance:
   frameworks: []
   sensitive_data_categories: []
+
+# Bitbucket Cloud and DC configuration (ADR-004: all platform-specific config here).
+# Secret values are NEVER stored here — only environment variable names are referenced.
+# Actual credentials are injected via CI secrets at runtime (MC-SEC-02).
+bitbucket:
+  cloud:
+    org: ""                            # Bitbucket Cloud workspace/org slug
+    repo_slug: ""                      # Bitbucket Cloud repo slug
+    app_password_env: "BB_APP_PASSWORD"  # CI secret var name for app password
+    oauth_key_env: "OAUTH_KEY"           # CI secret var name for OAuth consumer key
+    oauth_secret_env: "OAUTH_SECRET"     # CI secret var name for OAuth consumer secret
+  dc:
+    host: "http://localhost:7990"        # Bitbucket DC Docker host (local)
+    ssh_port: 7999                       # Bitbucket DC SSH port
+    user_env: "BB_USER"                  # CI secret var name for Bitbucket username
+    app_password_env: "BB_APP_PASSWORD"  # CI secret var name for app password
+    oauth_key_env: "OAUTH_KEY"           # CI secret var name for OAuth consumer key
+    oauth_secret_env: "OAUTH_SECRET"     # CI secret var name for OAuth consumer secret
+    ssh_private_key_env: "SSH_PRIVATE_KEY"  # CI secret var name for SSH private key

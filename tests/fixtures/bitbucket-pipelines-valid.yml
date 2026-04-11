@@ -1,0 +1,29 @@
+# tests/fixtures/bitbucket-pipelines-valid.yml
+#
+# Well-formed Bitbucket Cloud pipeline definition that contains the governance
+# assurance gate step.
+#
+# Used by: tests/check-bitbucket-cloud.js (AC1 positive path, AC2 positive path)
+
+image: node:18
+
+pipelines:
+  pull-requests:
+    '**':
+      - step:
+          name: Install dependencies
+          script:
+            - npm ci
+      - step:
+          name: Governance Assurance Gate
+          script:
+            - node .github/scripts/run-assurance-gate.js
+          after-script:
+            - echo "Assurance gate trace written to workspace/traces/"
+
+  default:
+    - step:
+        name: Build
+        script:
+          - npm ci
+          - npm run build
