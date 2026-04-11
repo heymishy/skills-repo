@@ -72,6 +72,9 @@ const CONTRACTS = [
       'Step 1.5 - Architecture constraints scan',
       'slicing strategy',
       'Walking skeleton',
+      'Dependency chain validation (D1',
+      'Testability filter (D2',
+      'workspace/learnings.md',
     ],
   },
   {
