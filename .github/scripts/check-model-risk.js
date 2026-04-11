@@ -241,18 +241,30 @@ if (signoffStart === -1 || signoffEnd === -1) {
       `Missing field(s) in sign-off record: ${missingFields.map(f => f.label).join(', ')}`);
   }
 
-  // Verdict must NOT be pre-populated (must be empty or a placeholder)
-  // The verdict row should not contain one of the approved verdict values pre-filled
-  const VERDICT_ROW_PATTERN = /\|\s*Verdict\s*\|([^|\n]+)\|/i;
-  const verdictRowMatch = VERDICT_ROW_PATTERN.exec(signoffSection);
+  // Verdict must NOT be pre-populated without a corresponding completed sign-off.
+  // A filled verdict is acceptable only when reviewer name and review date are also
+  // legitimately filled in (i.e., the human sign-off has actually been completed).
+  const VERDICT_ROW_PATTERN   = /\|\s*Verdict\s*\|([^|\n]+)\|/i;
+  const REVIEWER_ROW_PATTERN  = /\|\s*Reviewer name\s*\|([^|\n]+)\|/i;
+  const REVIEWDATE_ROW_PATTERN = /\|\s*Review date\s*\|([^|\n]+)\|/i;
+  const verdictRowMatch  = VERDICT_ROW_PATTERN.exec(signoffSection);
   if (verdictRowMatch) {
     const verdictValue = verdictRowMatch[1].trim();
     const isFilled = /approved for adoption|approved with conditions|not approved/i.test(verdictValue);
     if (!isFilled) {
       pass('u4-signoff-verdict-not-pre-populated');
     } else {
-      fail('u4-signoff-verdict-not-pre-populated',
-        `Verdict field is pre-populated with "${verdictValue}" — verdict must be left for human sign-off at DoD time`);
+      // Verdict is filled — only acceptable if reviewer name and review date are also real
+      const reviewerMatch  = REVIEWER_ROW_PATTERN.exec(signoffSection);
+      const reviewDateMatch = REVIEWDATE_ROW_PATTERN.exec(signoffSection);
+      const reviewerFilled  = reviewerMatch  && !/\[/.test(reviewerMatch[1].trim()) && reviewerMatch[1].trim().length > 0;
+      const reviewDateFilled = reviewDateMatch && /\d{4}-\d{2}-\d{2}/.test(reviewDateMatch[1].trim());
+      if (reviewerFilled && reviewDateFilled) {
+        pass('u4-signoff-verdict-not-pre-populated');
+      } else {
+        fail('u4-signoff-verdict-not-pre-populated',
+          `Verdict field is pre-populated with "${verdictValue}" — verdict must be left for human sign-off at DoD time`);
+      }
     }
   } else {
     pass('u4-signoff-verdict-not-pre-populated');
