@@ -359,3 +359,49 @@ If either is missing: add it with today's date as a carry-forward entry, referen
 ---
 
 *More signals will be added here as Phase 1 dogfood run progresses.*
+
+---
+
+## Pipeline gap D6 — /issue-dispatch not automatically prompted at /definition-of-ready batch completion
+
+### Observed — 2026-04-12
+
+**Circumstance:** Phase 2 outer loop completed fully across 2 batch sessions (all 13 stories: reviewed, test-planned, DoR-signed-off). Operator then manually invoked `/issue-dispatch --target github-agent` as a separate, explicitly-remembered command to begin inner loop Wave 1a (p2.1–p2.5a).
+
+**The gap:** `/definition-of-ready` has no exit-sequence step that prompts the operator to run `/issue-dispatch` once all stories in a batch reach `PROCEED` status. The operator must remember the skill exists, choose wave segmentation, and specify the dispatch target independently. This is a human memory dependency with no pipeline guardrail — the same category as D3 (learnings-write step missing from skill exits) and D5 (/checkpoint numbered exit sequence gap).
+
+**Step 0 preflight consequence:** On first invocation, 5 commits from the entire outer loop (reviews, test plans, DoR batch 1 + batch 2) had not been pushed to `origin/master`. The SKILL.md Step 0 rule correctly blocked issue creation. This prevented throwaway agent runs against a stale clone — but also revealed that the outer loop has no "push gate". Commits can accumulate locally without the push being mandated as a precondition for any step until Step 0 of `/issue-dispatch` catches it.
+
+**Root cause — two sequential gaps:**
+
+1. `/definition-of-ready` exit sequence ends at "commit pipeline-state.json" with no forward pointer to the inner loop kick-off. There is no instruction to push before closing, and no prompt to run `/issue-dispatch`.
+2. Because the push gate is absent from the outer loop exit, all outer loop artefacts sit locally invisible to the GitHub Copilot coding agent at assignment time. The coding agent clones at assignment time — uncommitted local state does not exist from its perspective.
+
+**D-batch classification:** This is a **D6** pipeline evolution pattern — a skill exit sequence gap where the transition to the next pipeline phase is not surfaced to the operator at the natural handoff point. The full D-batch is:
+
+| ID | Gap | Fix location |
+|----|-----|-------------|
+| D3 | learnings-write step missing from skill exits | Multiple SKILL.md exit sequences |
+| D5 | /checkpoint missing from numbered exit sequence | /definition-of-ready SKILL.md |
+| **D6** | **/issue-dispatch not prompted after all-PROCEED batch** | **/definition-of-ready SKILL.md exit + push gate** |
+
+**Proposed fix — /definition-of-ready SKILL.md exit sequence:**
+
+Add the following steps after the existing "commit pipeline-state.json" step:
+
+> **Step N — Push before closing:** Run `git push origin master` and confirm success. The coding agent assigned to any story in this batch clones the remote at assignment time — any commit that has not been pushed is invisible to the agent.
+>
+> **Step N+1 — Dispatch prompt:** If all stories in this batch have `dorStatus: "signed-off"`, prompt: "All stories in this batch are DoR-ready. Next step: `/issue-dispatch --target github-agent` to create inner loop issues. Specify wave segmentation if dispatching a subset."
+
+**Proposed fix — pipeline-state.json pendingActions:**
+
+After a DoR batch commit, write an explicit `pendingActions` entry to `workspace/state.json`:
+
+```json
+"pendingActions": [
+  "git push origin master — required before any /issue-dispatch run",
+  "Run /issue-dispatch --target github-agent for Wave 1a (p2.1–p2.5a)"
+]
+```
+
+**Action:** Update `/definition-of-ready` SKILL.md exit sequence to mandate `git push` confirmation and add `/issue-dispatch` forward pointer. This closes D6 in the D-batch. Log as a Phase 2 /levelup candidate for write-back to `.github/skills/definition-of-ready/SKILL.md`.
