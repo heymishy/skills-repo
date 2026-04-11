@@ -1,7 +1,7 @@
 {
   "feature": "2026-04-11-skills-platform-phase2",
-  "lastUpdated": "2026-05-01T00:00:00+10:00",
-  "currentPhase": "definition-of-ready",
+  "lastUpdated": "2026-04-11T00:00:00+10:00",
+  "currentPhase": "inner-loop",
   "cycle": {
     "discovery": {
       "status": "approved",
@@ -63,32 +63,33 @@
     "note": "All 13 Phase 2 test plans and verification scripts written. E5 stories (p2.11/p2.12) include DoR execution gate: cannot run until ≥1 Phase 2 inner loop story merged and trace written to workspace/traces/. ASSUMPTION-P2.11-01 (P1.6 trace field name) is a DoR H1 gate for p2.11. Test counts: p2.1=14, p2.2=9, p2.3=13, p2.4=13, p2.5a=18, p2.5b=20, p2.6=15, p2.7=18, p2.8=17, p2.9=17, p2.10=15, p2.11=21, p2.12=22."
   },
   "definitionOfReady": {
-    "status": "in-progress",
+    "status": "complete",
+    "completedAt": "2026-04-11T00:00:00+10:00",
     "startedAt": "2026-05-01T00:00:00+10:00",
     "batch1": {
       "status": "complete",
-      "completedAt": "2026-05-01T00:00:00+10:00",
-      "signedOff": ["p2.1", "p2.2", "p2.3", "p2.4", "p2.5a", "p2.5b"],
-      "blocked": ["p2.6"],
-      "blockedReason": "p2.6: ASSUMPTION-02 — EA registry API field names unconfirmed. Confirm from https://github.com/heymishy/ea-registry, update decisions.md ASSUMPTION-02, re-run /definition-of-ready."
+      "completedAt": "2026-04-11T00:00:00+10:00",
+      "signedOff": ["p2.1", "p2.2", "p2.3", "p2.4", "p2.5a", "p2.5b", "p2.6"],
+      "blocked": []
     },
     "batch2": {
-      "status": "not-started",
-      "stories": ["p2.7", "p2.8", "p2.9", "p2.10", "p2.11", "p2.12"]
+      "status": "complete",
+      "completedAt": "2026-04-11T00:00:00+10:00",
+      "signedOff": ["p2.7", "p2.8", "p2.9", "p2.10", "p2.11", "p2.12"],
+      "proceedBlocked": ["p2.11", "p2.12"],
+      "proceedBlockedReason": "p2.11 and p2.12 PROCEED-BLOCKED: dispatch gated on workspace/traces/ containing ≥1 real Phase 2 inner loop trace. p2.12 additionally gated on p2.11 DoD-complete."
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-05-01T00:00:00+10:00",
-    "contextAtWrite": "Phase 2 /definition-of-ready batch 1 COMPLETE. p2.1/p2.2/p2.3/p2.4/p2.5a/p2.5b signed-off (PROCEED, High oversight, W4 RISK-ACCEPT each). p2.6 BLOCKED — ASSUMPTION-02 (EA registry field names) must be confirmed. DoR artefacts written to artefacts/2026-04-11-skills-platform-phase2/dor/. pipeline-state.json: p2.1-p2.5b stage=definition-of-ready / dorStatus=signed-off; p2.6 dorStatus=blocked.",
-    "resumeInstruction": "START HERE — /definition-of-ready batch 2. Stories p2.7–p2.12 are at stage: test-plan. Run /definition-of-ready in delivery order: p2.7, p2.8, p2.9, p2.10 (standard processing, all H-blocks expected to pass). p2.11: TWO gates — (A) ASSUMPTION-P2.11-01 must be resolved in decisions.md (P1.6 trace field name: failurePattern vs failurePatterns[]); (B) H1 sequencing gate: workspace/traces/ must contain ≥1 real Phase 2 inner loop trace. p2.12: BLOCKED until p2.11 DoD complete AND trace gate. p2.6: unblock by confirming EA registry field names → update decisions.md ASSUMPTION-02 → re-run /definition-of-ready p2.6 only.",
+    "writtenAt": "2026-04-11T00:00:00+10:00",
+    "contextAtWrite": "Phase 2 /definition-of-ready COMPLETE — all 13 stories signed off. Batch 1: p2.1–p2.6 PROCEED (High oversight). Batch 2: p2.7 PROCEED (High), p2.8 PROCEED (High, W2 p2.7 dep), p2.9 PROCEED (Medium), p2.10 PROCEED (High), p2.11 PROCEED-BLOCKED (traces gate), p2.12 PROCEED-BLOCKED (double gate). W4 RISK-ACCEPT p2.7–p2.12. pipeline-state.json: p2.6–p2.12 stage=definition-of-ready / dorStatus=signed-off.",
+    "resumeInstruction": "START HERE — Phase 2 inner loop dispatch. All 13 stories DoR-signed-off. Wave 1 (E1/E2): dispatch p2.1/p2.2/p2.3/p2.4/p2.5a/p2.5b — independent, no deps. Wave 2 (E3/E4): p2.7/p2.9/p2.10 parallel; p2.6 AC1-AC5 no dep; p2.8 ONLY after p2.7 DoD-complete (W2). Wave 3 (E5): p2.11 BLOCKED until workspace/traces/ ≥1 Phase 2 trace; p2.12 BLOCKED until p2.11 DoD-complete AND trace gate. Run /branch-setup → /implementation-plan per story.",
     "pendingActions": [
-      "BLOCKED: p2.6 — confirm EA registry API field names from https://github.com/heymishy/ea-registry, update decisions.md ASSUMPTION-02, re-run /definition-of-ready",
-      "/definition-of-ready batch 2: p2.7 (fleet registry CI aggregation)",
-      "/definition-of-ready batch 2: p2.8 (persona routing, depends on p2.7)",
-      "/definition-of-ready batch 2: p2.9 (discipline standards remaining)",
-      "/definition-of-ready batch 2: p2.10 (Bitbucket CI validation)",
-      "/definition-of-ready p2.11: BLOCKED until (A) ASSUMPTION-P2.11-01 resolved in decisions.md AND (B) workspace/traces/ contains ≥1 real Phase 2 inner loop trace",
-      "/definition-of-ready p2.12: BLOCKED until p2.11 DoD complete AND workspace/traces/ gate satisfied",
+      "Inner loop wave 1: dispatch p2.1/p2.2/p2.3/p2.4/p2.5a/p2.5b using /branch-setup → /implementation-plan → /subagent-execution or /tdd",
+      "Inner loop wave 2: dispatch p2.7 (fleet registry), p2.9 (standards), p2.10 (Bitbucket) in parallel; p2.6 (EA registry, AC1-AC5 no dep)",
+      "Inner loop wave 2 (serial): p2.8 — dispatch only after p2.7 DoD-complete",
+      "Inner loop wave 3: p2.11 — dispatch only after workspace/traces/ contains ≥1 real Phase 2 inner loop trace",
+      "Inner loop wave 3: p2.12 — dispatch only after p2.11 DoD-complete AND workspace/traces/ gate satisfied",
       "p1.8 AC3 (T3M1 evidence record) — closes when first Phase 2 inner loop story runs through P1.3 CI gate"
     ]
   },
