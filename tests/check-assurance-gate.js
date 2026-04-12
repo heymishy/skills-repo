@@ -214,6 +214,50 @@ process.stdout.write('\n  Unit: AC3 \u2014 completed entry follows inProgress\n'
   }
 }
 
+// Edge case: failed runs must carry a kebab-case failurePattern label
+{
+  const testName = 'trace-failed-entry-includes-failurepattern';
+  const dir = mkTmpDir();
+  try {
+    const failingChecksRunner = function () {
+      return [{
+        name: 'mock-check',
+        passed: false,
+        failurePatternGuarded: 'Skill exits early without writing pipeline state',
+      }];
+    };
+
+    const result = gateRunner.runGate({
+      trigger:      'ci',
+      prRef:        'refs/pull/3/merge',
+      commitSha:    SYNTHETIC_SHA,
+      tracesDir:    dir,
+      checksRunner: failingChecksRunner,
+    });
+
+    const entries   = readTraceFile(result.tracePath);
+    const completed = entries.find(function (e) { return e.status === 'completed'; });
+
+    if (!completed) {
+      fail(testName, 'No completed entry written for failed run');
+    } else if (completed.verdict !== 'fail') {
+      fail(testName, 'Expected failed verdict, got \'' + completed.verdict + '\'');
+    } else if (!completed.failurePattern) {
+      fail(testName, 'completed.failurePattern is missing on failed run');
+    } else if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(completed.failurePattern)) {
+      fail(testName, 'completed.failurePattern must be kebab-case, got \'' + completed.failurePattern + '\'');
+    } else if (completed.failurePattern !== 'skill-exits-early-without-writing-pipeline-state') {
+      fail(testName, 'Unexpected failurePattern value \'' + completed.failurePattern + '\'');
+    } else {
+      pass(testName);
+    }
+  } catch (e) {
+    fail(testName, 'Unexpected error: ' + e.message);
+  } finally {
+    rmDir(dir);
+  }
+}
+
 // ── Unit: AC5b — trace-ci-trigger-metadata ────────────────────────────────────
 
 process.stdout.write('\n  Unit: AC5b \u2014 CI trigger metadata\n');
