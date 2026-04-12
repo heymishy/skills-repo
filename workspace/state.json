@@ -1,6 +1,7 @@
 {
   "feature": "2026-04-11-skills-platform-phase2",
-  "lastUpdated": "2026-04-12T17:10:00+10:00",
+  "lastUpdated": "2026-04-13T00:00:00+10:00",
+  "lastLevelup": "2026-04-13",
   "currentPhase": "phase-2-complete",
   "cycle": {
     "discovery": {
@@ -81,13 +82,14 @@
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-04-13T00:15:00+10:00",
-    "contextAtWrite": "Phase 1+2 fully closed. All 23 npm tests pass. Session activities: Phase 1+2 close (cd484d5), /levelup Phase 2 ADR-007/008 + PAT-06/07 + AP-07/08 + Operating Posture (f1c648d), README fixes (c5941bf), state.json phase-2-complete (a460cda), docs/validation-playbook.md 326 lines (8d10dca), abbreviation-clarity standard codified (0791e31), copilot-instructions.md 537→473 lines optimisation (135221b), Phase 3 D-batch seed learning logged (385b100). copilot-instructions.md base layer currently 473 lines — grep-verified ~204 lines moveable to SKILL.md files; target ~270 lines after D-batch.",
-    "resumeInstruction": "Phase 1 and Phase 2 are complete. Before starting Phase 3 /discovery: (1) read workspace/learnings.md Phase 3 D-batch seed entry (last entry — dated 2026-04-12) for the copilot-instructions.md base layer reduction plan; (2) check T3M1 independent validation status in MODEL-RISK.md — required hard entry condition before Phase 3 /discovery runs.",
+    "writtenAt": "2026-04-13T00:00:00+10:00",
+    "contextAtWrite": "feat/repo-tidy (PR #50) merged. Learnings cherry-picked to master. /levelup complete: ADR-009 (eval/write-back separation), ADR-010 (post-merge audit records), AP-09 (gate commits to PR branch), AP-10 ([ci skip] on required checks), PAT-08 (two-workflow CI audit pattern), PAT-09 (allow-empty for synchronize trigger) written to architecture-guardrails.md. trace-commit.yml first post-merge run pending (monitor workspace/traces/).",
+    "resumeInstruction": "feat/repo-tidy merged and /levelup complete. Before starting Phase 3 /discovery: (1) read workspace/learnings.md Phase 3 D-batch seed entry (dated 2026-04-12) for the copilot-instructions.md base layer reduction plan; (2) check T3M1 independent validation status in docs/MODEL-RISK.md — required hard entry condition before Phase 3 /discovery runs; (3) monitor workspace/traces/ for the first trace-commit.yml post-merge run to confirm the two-workflow CI audit pattern works end-to-end.",
     "pendingActions": [
+      "Monitor workspace/traces/ for first trace-commit.yml post-merge run (first live test of ADR-009/ADR-010 two-workflow pattern)",
       "Before Phase 3 /discovery: read workspace/learnings.md Phase 3 D-batch seed entry (2026-04-12 — copilot-instructions.md base layer reduction: 5 sections, ~204 lines, target ~270 lines, 5 ordered action items) — decide whether to execute D-batch as a Phase 3 story or treat as a pre-discovery task",
       "Complete adoption-readiness.md amber/red row actions before Westpac pilot",
-      "Run Phase 3 /discovery when T3M1 independent validation is on record in MODEL-RISK.md"
+      "Run Phase 3 /discovery when T3M1 (Tier 3, Meta-metric 1 — independent non-engineer audit) validation is on record in docs/MODEL-RISK.md"
     ]
   },
   "phase1Reference": {
