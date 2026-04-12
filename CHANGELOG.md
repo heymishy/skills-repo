@@ -57,6 +57,14 @@ All notable changes to this repository will be documented in this file.
 
 ---
 
+## [0.7.0] — 2026-04-12
+
+### Added
+
+- `README.md` — rebuilt from platform actuals: mission and intent (3 paragraphs from confirmed delivery), problems-solved (5), core principles (6), primitives table (5), pipeline overview with Mermaid flowchart LR (outer loop blue, inner loop teal, gate nodes amber), skills reference table (38 skills, 4 groups), assurance and traceability section with T3M1 honest 3/8 disclosure and sample trace block, standards model with 3-tier Mermaid diagram, delivery surfaces table (6 types all ✅), fleet and multi-team operation, phase delivery status table (Phase 1 ✅ Phase 2 ✅ Phase 3 ⏳ Phase 4 ⏳), known gaps callout block (T3M1 3/8, single approval channel, E3 medium-low confidence, Windows validator missing), getting started (4 steps + enterprise details block), ADR table (ADR-001–006), contributing, footer with links to HANDOFF.md, architecture-guardrails.md, and MODEL-RISK.md. No marketing language; every claim traceable to a delivered artefact or named gap.
+
+---
+
 ## [0.6.2] — 2026-04-11
 
 ### Added
