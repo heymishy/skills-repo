@@ -136,6 +136,7 @@
                         }
                       },
                       "dorStatus":   { "type": "string", "enum": ["not-started", "blocked", "signed-off"] },
+                      "resultPattern": { "type": "string", "enum": ["checklist"], "description": "Result pattern used by the surface adapter — 'checklist' for manual surface types (ADR-003)" },
                       "verifyStatus": { "type": "string", "enum": ["not-started", "running", "passed"], "description": "Verify-completion evidence written by /verify-completion skill" },
                       "prStatus":    { "type": "string", "enum": ["none", "draft", "open", "merged"] },
                       "prUrl":       { "type": "string" },

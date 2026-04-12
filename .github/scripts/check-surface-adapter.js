@@ -51,6 +51,9 @@ const { execute, registerAdapter } = surfaceAdapter;
 const gitNativeAdapter = require(path.join(root, 'src', 'surface-adapter', 'adapters', 'git-native.js'));
 const iacAdapter       = require(path.join(root, 'src', 'surface-adapter', 'adapters', 'iac.js'));
 const saasApiAdapter   = require(path.join(root, 'src', 'surface-adapter', 'adapters', 'saas-api.js'));
+const saasGuiAdapter   = require(path.join(root, 'src', 'surface-adapter', 'adapters', 'saas-gui.js'));
+const m365AdminAdapter = require(path.join(root, 'src', 'surface-adapter', 'adapters', 'm365-admin.js'));
+const manualAdapter    = require(path.join(root, 'src', 'surface-adapter', 'adapters', 'manual.js'));
 const resolverModule  = require(path.join(root, 'src', 'surface-adapter', 'resolver.js'));
 const { resolvePathB, resolve } = resolverModule;
 
@@ -791,6 +794,503 @@ console.log('  NFR: p2.5a — performance, security, auditability');
   );
 }
 
+
+// ── p2.5b Tests — SaaS-GUI, M365-admin, manual adapters ─────────────────────
+
+console.log('');
+console.log('[surface-adapter-check] Running p2.5b SaaS-GUI, M365-admin, and manual adapter tests…');
+
+// Register p2.5b adapters in the global registry
+registerAdapter('saas-gui',   saasGuiAdapter);
+registerAdapter('m365-admin', m365AdminAdapter);
+registerAdapter('manual',     manualAdapter);
+
+// Valid context objects for p2.5b adapters
+const validSaaSGUIContext = {
+  gui: {
+    change_review:       true,
+    screenshot_evidence: true,
+    access_control:      true,
+  },
+};
+
+const validM365AdminContext = {
+  m365: {
+    audit_log:      'audit-log-ref-001',
+    change_ticket:  'CHG-12345',
+    admin_approval: true,
+  },
+};
+
+const validManualContext = {
+  manual: {
+    checklist: [
+      { item: 'Change request approved', status: 'complete' },
+      { item: 'Evidence file attached',  status: 'complete' },
+    ],
+  },
+};
+
+const manualContextWithIncomplete = {
+  manual: {
+    checklist: [
+      { item: 'Change request approved', status: 'complete' },
+      { item: 'Rollback plan confirmed',  status: 'incomplete' },
+    ],
+  },
+};
+
+// ── AC1: SaaS-GUI adapter result interface conformance ───────────────────────
+
+console.log('');
+console.log('  Unit: AC1 — SaaS-GUI adapter result interface conformance');
+
+{
+  // AC1: SaaS-GUI adapter result.status is one of "pass", "fail", "error"
+  const result = saasGuiAdapter.execute(validSaaSGUIContext);
+  assert(
+    result != null && ['pass', 'fail', 'error'].includes(result.status),
+    'saas-gui-adapter-result-interface-conformance-pass',
+    `result.status must be one of [pass, fail, error]; got: ${JSON.stringify(result && result.status)}`
+  );
+}
+
+{
+  // AC1: SaaS-GUI adapter result has all required P1.2 interface fields
+  const result = saasGuiAdapter.execute(validSaaSGUIContext);
+  const hasStatus     = result != null && typeof result.status === 'string';
+  const hasFindings   = result != null && Array.isArray(result.findings);
+  const hasTrace      = result != null && result.trace !== null && typeof result.trace === 'object';
+  const hasAdapterVer = result != null && typeof result.adapterVersion === 'string' && result.adapterVersion.length > 0;
+
+  assert(
+    hasStatus && hasFindings && hasTrace && hasAdapterVer,
+    'saas-gui-adapter-result-interface-all-fields',
+    `Result missing required fields. status=${hasStatus} findings=${hasFindings} trace=${hasTrace} adapterVersion=${hasAdapterVer}. Got: ${JSON.stringify(result)}`
+  );
+}
+
+{
+  // AC1: SaaS-GUI adapter result.surface === "saas-gui"
+  const result = execute('saas-gui', validSaaSGUIContext);
+  assert(
+    result != null && result.surface === 'saas-gui',
+    'saas-gui-adapter-surface-field',
+    `result.surface must be "saas-gui"; got: ${JSON.stringify(result && result.surface)}`
+  );
+}
+
+{
+  // AC1 error path: missing POLICY.md returns error result, not exception
+  const origPath = saasGuiAdapter._policyPath;
+  saasGuiAdapter._policyPath = path.join(root, 'standards', 'saas-gui', '__NONEXISTENT__', 'POLICY.md');
+  let result;
+  let threw = false;
+  try {
+    result = saasGuiAdapter.execute(validSaaSGUIContext);
+  } catch (e) {
+    threw = true;
+  }
+  saasGuiAdapter._policyPath = origPath;
+
+  assert(
+    !threw && result != null && result.status === 'error' && typeof result.error === 'string' && result.error.includes('POLICY.md'),
+    'saas-gui-adapter-missing-policy-returns-error-not-exception',
+    threw
+      ? 'execute() threw an exception instead of returning an error result'
+      : `Expected status="error" with error field containing "POLICY.md"; got: ${JSON.stringify(result)}`
+  );
+}
+
+// ── AC2: M365-admin adapter result interface conformance ─────────────────────
+
+console.log('');
+console.log('  Unit: AC2 — M365-admin adapter result interface conformance');
+
+{
+  // AC2: M365-admin adapter result.status is one of "pass", "fail", "error"
+  const result = m365AdminAdapter.execute(validM365AdminContext);
+  assert(
+    result != null && ['pass', 'fail', 'error'].includes(result.status),
+    'm365-admin-adapter-result-interface-conformance-pass',
+    `result.status must be one of [pass, fail, error]; got: ${JSON.stringify(result && result.status)}`
+  );
+}
+
+{
+  // AC2: M365-admin adapter result has all required P1.2 interface fields
+  const result = m365AdminAdapter.execute(validM365AdminContext);
+  const hasStatus     = result != null && typeof result.status === 'string';
+  const hasFindings   = result != null && Array.isArray(result.findings);
+  const hasTrace      = result != null && result.trace !== null && typeof result.trace === 'object';
+  const hasAdapterVer = result != null && typeof result.adapterVersion === 'string' && result.adapterVersion.length > 0;
+
+  assert(
+    hasStatus && hasFindings && hasTrace && hasAdapterVer,
+    'm365-admin-adapter-result-interface-all-fields',
+    `Result missing required fields. status=${hasStatus} findings=${hasFindings} trace=${hasTrace} adapterVersion=${hasAdapterVer}. Got: ${JSON.stringify(result)}`
+  );
+}
+
+{
+  // AC2: M365-admin adapter result.surface === "m365-admin"
+  const result = execute('m365-admin', validM365AdminContext);
+  assert(
+    result != null && result.surface === 'm365-admin',
+    'm365-admin-adapter-surface-field',
+    `result.surface must be "m365-admin"; got: ${JSON.stringify(result && result.surface)}`
+  );
+}
+
+{
+  // AC2 error path: missing POLICY.md returns error result, not exception
+  const origPath = m365AdminAdapter._policyPath;
+  m365AdminAdapter._policyPath = path.join(root, 'standards', 'm365-admin', '__NONEXISTENT__', 'POLICY.md');
+  let result;
+  let threw = false;
+  try {
+    result = m365AdminAdapter.execute(validM365AdminContext);
+  } catch (e) {
+    threw = true;
+  }
+  m365AdminAdapter._policyPath = origPath;
+
+  assert(
+    !threw && result != null && result.status === 'error' && typeof result.error === 'string' && result.error.includes('POLICY.md'),
+    'm365-admin-adapter-missing-policy-returns-error-not-exception',
+    threw
+      ? 'execute() threw an exception instead of returning an error result'
+      : `Expected status="error" with error field containing "POLICY.md"; got: ${JSON.stringify(result)}`
+  );
+}
+
+// ── AC3: Manual adapter result includes resultPattern: "checklist" ────────────
+
+console.log('');
+console.log('  Unit: AC3 — Manual adapter resultPattern: "checklist" and checklist findings');
+
+{
+  // AC3: manual adapter result.resultPattern === "checklist"
+  const result = manualAdapter.execute(validManualContext);
+  assert(
+    result != null && result.resultPattern === 'checklist',
+    'manual-adapter-result-pattern-checklist-present',
+    `result.resultPattern must be "checklist"; got: ${JSON.stringify(result && result.resultPattern)}`
+  );
+}
+
+{
+  // AC3: findings array contains checklist item objects (item + status fields)
+  const result = manualAdapter.execute(manualContextWithIncomplete);
+  const findings = result && result.findings;
+  const firstFinding = findings && findings[0];
+  const hasItem   = firstFinding && typeof firstFinding.item === 'string' && firstFinding.item.length > 0;
+  const hasStatus = firstFinding && (firstFinding.status === 'complete' || firstFinding.status === 'incomplete');
+  const noRuleField = !firstFinding || firstFinding.rule === undefined;
+
+  assert(
+    Array.isArray(findings) && findings.length > 0 && hasItem && hasStatus && noRuleField,
+    'manual-adapter-findings-checklist-items',
+    `Each finding must have item (string) and status ("complete"|"incomplete") — no "rule" field. ` +
+    `Got: ${JSON.stringify(firstFinding)}`
+  );
+}
+
+{
+  // AC3: manual adapter result has all P1.2 interface fields plus resultPattern
+  const result = manualAdapter.execute(validManualContext);
+  const hasStatus       = result != null && typeof result.status === 'string' && ['pass', 'fail', 'error'].includes(result.status);
+  const hasSurface      = result != null && result.surface === 'manual';
+  const hasFindings     = result != null && Array.isArray(result.findings);
+  const hasTrace        = result != null && result.trace !== null && typeof result.trace === 'object';
+  const hasAdapterVer   = result != null && typeof result.adapterVersion === 'string' && result.adapterVersion.length > 0;
+  const hasResultPat    = result != null && result.resultPattern === 'checklist';
+
+  assert(
+    hasStatus && hasSurface && hasFindings && hasTrace && hasAdapterVer && hasResultPat,
+    'manual-adapter-full-interface',
+    `Result missing required fields. ` +
+    `status=${hasStatus} surface=${hasSurface} findings=${hasFindings} trace=${hasTrace} ` +
+    `adapterVersion=${hasAdapterVer} resultPattern=${hasResultPat}. Got: ${JSON.stringify(result)}`
+  );
+}
+
+// ── AC4: SaaS-GUI and M365-admin POLICY.md floor routing ─────────────────────
+
+console.log('');
+console.log('  Unit: AC4 — SaaS-GUI and M365-admin POLICY.md floor routing');
+
+{
+  // AC4: standards/index.yml routes "saas-gui" to standards/saas-gui/POLICY.md
+  const indexPath    = path.join(root, 'standards', 'index.yml');
+  const indexContent = fs.readFileSync(indexPath, 'utf8');
+
+  let inSurfaces     = false;
+  let currentSurface = null;
+  const surfaceRoutes = {};
+  for (const line of indexContent.replace(/\r/g, '').split('\n')) {
+    if (/^surfaces:\s*$/.test(line)) { inSurfaces = true; continue; }
+    if (!inSurfaces) continue;
+    if (/^[a-z]/.test(line) && !/^  /.test(line)) { inSurfaces = false; continue; }
+    const surfaceMatch = /^  ([a-z][a-z0-9-]+):\s*$/.exec(line);
+    if (surfaceMatch) { currentSurface = surfaceMatch[1]; surfaceRoutes[currentSurface] = {}; continue; }
+    if (!currentSurface) continue;
+    const policyMatch = /^    policy-floor:\s+(.+)$/.exec(line);
+    if (policyMatch) { surfaceRoutes[currentSurface]['policy-floor'] = policyMatch[1].trim(); }
+  }
+
+  const saasGuiRoute   = surfaceRoutes['saas-gui'];
+  const saasGuiPolicyFloor  = saasGuiRoute && saasGuiRoute['policy-floor'];
+  const saasGuiPolicyExists = saasGuiPolicyFloor && fs.existsSync(path.join(root, saasGuiPolicyFloor));
+
+  assert(
+    saasGuiPolicyFloor === 'standards/saas-gui/POLICY.md' && saasGuiPolicyExists,
+    'saas-gui-policy-floor-routing',
+    `standards/index.yml surfaces.saas-gui.policy-floor should be "standards/saas-gui/POLICY.md" and file must exist. ` +
+    `got policy-floor="${saasGuiPolicyFloor}" exists=${saasGuiPolicyExists}`
+  );
+}
+
+{
+  // AC4: saas-gui POLICY.md contains at least one GUI-specific governance criterion
+  const policyPath    = path.join(root, 'standards', 'saas-gui', 'POLICY.md');
+  const policyContent = fs.readFileSync(policyPath, 'utf8');
+  const GUI_KEYWORDS  = ['change-review', 'screenshot', 'gui', 'access control', 'GUI'];
+  const hasGuiCriterion = GUI_KEYWORDS.some(k => policyContent.includes(k));
+
+  assert(
+    hasGuiCriterion,
+    'saas-gui-policy-floor-has-gui-criterion',
+    `standards/saas-gui/POLICY.md must contain at least one GUI-specific governance criterion. ` +
+    `Checked for keywords: ${JSON.stringify(GUI_KEYWORDS)}`
+  );
+}
+
+{
+  // AC4: standards/index.yml routes "m365-admin" to standards/m365-admin/POLICY.md
+  const indexPath    = path.join(root, 'standards', 'index.yml');
+  const indexContent = fs.readFileSync(indexPath, 'utf8');
+
+  let inSurfaces     = false;
+  let currentSurface = null;
+  const surfaceRoutes = {};
+  for (const line of indexContent.replace(/\r/g, '').split('\n')) {
+    if (/^surfaces:\s*$/.test(line)) { inSurfaces = true; continue; }
+    if (!inSurfaces) continue;
+    if (/^[a-z]/.test(line) && !/^  /.test(line)) { inSurfaces = false; continue; }
+    const surfaceMatch = /^  ([a-z][a-z0-9-]+):\s*$/.exec(line);
+    if (surfaceMatch) { currentSurface = surfaceMatch[1]; surfaceRoutes[currentSurface] = {}; continue; }
+    if (!currentSurface) continue;
+    const policyMatch = /^    policy-floor:\s+(.+)$/.exec(line);
+    if (policyMatch) { surfaceRoutes[currentSurface]['policy-floor'] = policyMatch[1].trim(); }
+  }
+
+  const m365Route       = surfaceRoutes['m365-admin'];
+  const m365PolicyFloor = m365Route && m365Route['policy-floor'];
+  const m365PolicyExists = m365PolicyFloor && fs.existsSync(path.join(root, m365PolicyFloor));
+
+  assert(
+    m365PolicyFloor === 'standards/m365-admin/POLICY.md' && m365PolicyExists,
+    'm365-admin-policy-floor-routing',
+    `standards/index.yml surfaces.m365-admin.policy-floor should be "standards/m365-admin/POLICY.md" and file must exist. ` +
+    `got policy-floor="${m365PolicyFloor}" exists=${m365PolicyExists}`
+  );
+}
+
+{
+  // AC4: m365-admin POLICY.md contains at least one admin-specific governance criterion
+  const policyPath    = path.join(root, 'standards', 'm365-admin', 'POLICY.md');
+  const policyContent = fs.readFileSync(policyPath, 'utf8');
+  const ADMIN_KEYWORDS = ['audit', 'change ticket', 'admin', 'audit log', 'M365'];
+  const hasAdminCriterion = ADMIN_KEYWORDS.some(k => policyContent.includes(k));
+
+  assert(
+    hasAdminCriterion,
+    'm365-admin-policy-floor-has-admin-criterion',
+    `standards/m365-admin/POLICY.md must contain at least one admin-specific governance criterion. ` +
+    `Checked for keywords: ${JSON.stringify(ADMIN_KEYWORDS)}`
+  );
+}
+
+// ── AC5: Manual POLICY.md floor — checklist-only, no diff/code-review criteria
+
+console.log('');
+console.log('  Unit: AC5 — Manual POLICY.md floor: checklist-only, no diff/code-review criteria');
+
+{
+  // AC5: manual POLICY.md must NOT contain diff-analysis or code-review keywords
+  const policyPath    = path.join(root, 'standards', 'manual', 'POLICY.md');
+  const policyContent = fs.readFileSync(policyPath, 'utf8').toLowerCase();
+  const FORBIDDEN_KEYWORDS = ['diff', 'code review', 'pull request', 'lint', 'static analysis', 'source code'];
+  const foundKeywords = FORBIDDEN_KEYWORDS.filter(k => policyContent.includes(k));
+
+  assert(
+    foundKeywords.length === 0,
+    'manual-policy-floor-checklist-only-no-code-criteria',
+    `standards/manual/POLICY.md must NOT contain diff-analysis or code-review criteria. ` +
+    `Found forbidden keywords: ${JSON.stringify(foundKeywords)}`
+  );
+}
+
+{
+  // AC5: manual POLICY.md must contain at least one checklist-type governance criterion
+  const policyPath    = path.join(root, 'standards', 'manual', 'POLICY.md');
+  const policyContent = fs.readFileSync(policyPath, 'utf8');
+  const CHECKLIST_KEYWORDS = ['Change request', 'checklist', 'approved', 'evidence', 'rollback'];
+  const hasChecklistCriterion = CHECKLIST_KEYWORDS.some(k => policyContent.includes(k));
+
+  assert(
+    hasChecklistCriterion,
+    'manual-policy-floor-no-diff-analysis-criteria',
+    `standards/manual/POLICY.md must contain at least one checklist-type governance criterion. ` +
+    `Checked for keywords: ${JSON.stringify(CHECKLIST_KEYWORDS)}`
+  );
+}
+
+// ── AC6: Unknown surface type returns error result ────────────────────────────
+
+console.log('');
+console.log('  Unit: AC6 — Unknown surface type: error result (no exception, no fallthrough)');
+
+{
+  // AC6: execute() with unknown surface type returns error result with error field naming the type
+  const result = execute('unknown-type', validContext);
+  const isErrorStatus   = result != null && result.status === 'error';
+  const hasSurfaceField = result != null && result.surface === 'unknown-type';
+  const hasErrorField   = result != null && typeof result.error === 'string' && result.error === 'unknown surface type: unknown-type';
+  const hasFindings     = result != null && Array.isArray(result.findings);
+
+  assert(
+    isErrorStatus && hasSurfaceField && hasErrorField && hasFindings,
+    'unknown-surface-returns-error-result',
+    `Expected {status:"error", surface:"unknown-type", error:"unknown surface type: unknown-type", findings:[]}. ` +
+    `Got: ${JSON.stringify(result)}`
+  );
+}
+
+{
+  // AC6: status is "error" and findings is empty array (not null, not has-message)
+  const result = execute('unknown-type', validContext);
+  assert(
+    result != null && result.status === 'error' && Array.isArray(result.findings) && result.findings.length === 0,
+    'unknown-surface-no-silent-fallthrough',
+    `Expected status="error" and findings=[] (empty). ` +
+    `Got status="${result && result.status}" findings=${JSON.stringify(result && result.findings)}`
+  );
+}
+
+{
+  // AC6: execute() must not throw an exception for unknown surface type
+  let threw = false;
+  let result = null;
+  try {
+    result = execute('unknown-type', validContext);
+  } catch (e) {
+    threw = true;
+  }
+  assert(
+    !threw && result != null,
+    'unknown-surface-no-exception',
+    threw
+      ? 'execute() threw an exception for unknown surface type — must return error result instead'
+      : `execute() returned null for unknown surface type`
+  );
+}
+
+// ── p2.5b NFR Tests ───────────────────────────────────────────────────────────
+
+console.log('');
+console.log('  NFR: p2.5b — performance, security, schema');
+
+{
+  // NFR: SaaS-GUI execute() completes within 5 seconds
+  const start   = Date.now();
+  saasGuiAdapter.execute(validSaaSGUIContext);
+  const elapsed = Date.now() - start;
+
+  assert(
+    elapsed < 5000,
+    'nfr-saas-gui-execute-completes-within-5s',
+    `SaaS-GUI execute() took ${elapsed}ms — limit is 5000ms`
+  );
+}
+
+{
+  // NFR: M365-admin execute() completes within 5 seconds
+  const start   = Date.now();
+  m365AdminAdapter.execute(validM365AdminContext);
+  const elapsed = Date.now() - start;
+
+  assert(
+    elapsed < 5000,
+    'nfr-m365-admin-execute-completes-within-5s',
+    `M365-admin execute() took ${elapsed}ms — limit is 5000ms`
+  );
+}
+
+{
+  // NFR: Manual execute() completes within 5 seconds
+  const start   = Date.now();
+  manualAdapter.execute(validManualContext);
+  const elapsed = Date.now() - start;
+
+  assert(
+    elapsed < 5000,
+    'nfr-manual-execute-completes-within-5s',
+    `Manual execute() took ${elapsed}ms — limit is 5000ms`
+  );
+}
+
+{
+  // NFR MC-SEC-02/03: no credential values in p2.5b adapter results
+  const contextWithSecretRef = Object.assign({}, validSaaSGUIContext, {
+    secrets: { gui_token: '${{ secrets.GUI_TOKEN }}' },
+  });
+  const saasGuiResult   = saasGuiAdapter.execute(contextWithSecretRef);
+  const m365AdminResult = m365AdminAdapter.execute(Object.assign({}, validM365AdminContext, {
+    secrets: { admin_key: '${{ secrets.ADMIN_KEY }}' },
+  }));
+  const manualResult = manualAdapter.execute(Object.assign({}, validManualContext, {
+    secrets: { manual_token: '${{ secrets.MANUAL_TOKEN }}' },
+  }));
+
+  const CREDENTIAL_PATTERNS = [
+    /ghp_[A-Za-z0-9]{20,}/,
+    /Bearer [A-Za-z0-9]{20,}/,
+    /\btoken: [^$][^\n]{10,}/,
+    /\bpassword: [^$][^\n]{5,}/,
+  ];
+
+  const saasGuiJson   = JSON.stringify(saasGuiResult);
+  const m365AdminJson = JSON.stringify(m365AdminResult);
+  const manualJson    = JSON.stringify(manualResult);
+  const credFound     = CREDENTIAL_PATTERNS.some(p =>
+    p.test(saasGuiJson) || p.test(m365AdminJson) || p.test(manualJson)
+  );
+
+  assert(
+    !credFound,
+    'nfr-p25b-no-credential-values',
+    `Credential value pattern found in p2.5b adapter results`
+  );
+}
+
+{
+  // NFR ADR-003: resultPattern: "checklist" field present in pipeline-state.schema.json
+  const schemaPath    = path.join(root, '.github', 'pipeline-state.schema.json');
+  const schemaContent = fs.readFileSync(schemaPath, 'utf8');
+  const schemaObj     = JSON.parse(schemaContent);
+  const schemaJson    = JSON.stringify(schemaObj);
+
+  const hasResultPattern = schemaJson.includes('"resultPattern"') && schemaJson.includes('"checklist"');
+
+  assert(
+    hasResultPattern,
+    'nfr-resultpattern-checklist-in-schema',
+    `pipeline-state.schema.json must declare resultPattern field with "checklist" as a valid enum value. ` +
+    `File: .github/pipeline-state.schema.json`
+  );
+}
 
 // ── p2.6 Tests — Path A: EA registry resolution ───────────────────────────────
 
