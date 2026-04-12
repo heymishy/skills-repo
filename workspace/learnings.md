@@ -554,3 +554,16 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 **Scope:** Applies to all surface adapters (`src/surface-adapter/adapters/*.js`), the improvement agent (`src/improvement-agent/`), and any future module that writes file-system paths into structured output consumed by tests or audit tooling.
 
 **Action:** Flag for Phase 2 `/levelup` run — add as a new `MUST` to `standards/software-engineering/core.md`. Until then, the fix is documented here as the authoritative pattern reference.
+
+---
+
+## Phase 2 /levelup D-batch log — 2026-04-12 16:58
+
+**Context:** Category D proposals captured during the Phase 2 /levelup run. Per instruction, these are logged as a batch and not written directly into skill files in this pass.
+
+| Batch item | Proposal | Target for future write |
+|---|---|---|
+| D10 (dispatch transition) | Add `/issue-dispatch` forward pointer and required `git push origin master` gate to `/definition-of-ready` exit sequence when all stories in a batch are signed off | `.github/skills/definition-of-ready/SKILL.md` |
+| D10a (dispatch close-loop) | Add PR body guidance to include `Closes #[issue]` for dispatched story issues so merge auto-closes the canonical tracking issue | `.github/skills/issue-dispatch/SKILL.md` and PR body template guidance |
+
+**Status:** Logged for pipeline-evolution write-back; no direct skill-file modification in this /levelup step.

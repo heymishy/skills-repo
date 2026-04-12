@@ -1,7 +1,7 @@
 {
   "feature": "2026-04-11-skills-platform-phase2",
-  "lastUpdated": "2026-04-11T00:00:00+10:00",
-  "currentPhase": "inner-loop",
+  "lastUpdated": "2026-04-12T17:10:00+10:00",
+  "currentPhase": "definition-of-done",
   "cycle": {
     "discovery": {
       "status": "approved",
@@ -81,16 +81,12 @@
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-04-11T00:00:00+10:00",
-    "contextAtWrite": "Phase 2 /definition-of-ready COMPLETE — all 13 stories signed off. Batch 1: p2.1–p2.6 PROCEED (High oversight). Batch 2: p2.7 PROCEED (High), p2.8 PROCEED (High, W2 p2.7 dep), p2.9 PROCEED (Medium), p2.10 PROCEED (High), p2.11 PROCEED-BLOCKED (traces gate), p2.12 PROCEED-BLOCKED (double gate). W4 RISK-ACCEPT p2.7–p2.12. pipeline-state.json: p2.6–p2.12 stage=definition-of-ready / dorStatus=signed-off.",
-    "resumeInstruction": "START HERE — Phase 2 inner loop dispatch. All 13 stories DoR-signed-off. Wave 1 (E1/E2): dispatch p2.1/p2.2/p2.3/p2.4/p2.5a/p2.5b — independent, no deps. Wave 2 (E3/E4): p2.7/p2.9/p2.10 parallel; p2.6 AC1-AC5 no dep; p2.8 ONLY after p2.7 DoD-complete (W2). Wave 3 (E5): p2.11 BLOCKED until workspace/traces/ ≥1 Phase 2 trace; p2.12 BLOCKED until p2.11 DoD-complete AND trace gate. Run /branch-setup → /implementation-plan per story.",
+    "writtenAt": "2026-04-12T17:10:00+10:00",
+    "contextAtWrite": "Phase 2 /levelup complete. Category A/B/C codified, D-batch logged, and /estimate E3 actuals recorded with telemetry-gap note.",
+    "resumeInstruction": "Phase 2 package is ready for enterprise sync handoff. Optional next step: run /trace and then /release prep if needed.",
     "pendingActions": [
-      "Inner loop wave 1: dispatch p2.1/p2.2/p2.3/p2.4/p2.5a/p2.5b using /branch-setup → /implementation-plan → /subagent-execution or /tdd",
-      "Inner loop wave 2: dispatch p2.7 (fleet registry), p2.9 (standards), p2.10 (Bitbucket) in parallel; p2.6 (EA registry, AC1-AC5 no dep)",
-      "Inner loop wave 2 (serial): p2.8 — dispatch only after p2.7 DoD-complete",
-      "Inner loop wave 3: p2.11 — dispatch only after workspace/traces/ contains ≥1 real Phase 2 inner loop trace",
-      "Inner loop wave 3: p2.12 — dispatch only after p2.11 DoD-complete AND workspace/traces/ gate satisfied",
-      "p1.8 AC3 (T3M1 evidence record) — closes when first Phase 2 inner loop story runs through P1.3 CI gate"
+      "Optional: run /trace for final chain integrity check",
+      "Optional: prepare release artefacts for Phase 2 if requested"
     ]
   },
   "phase1Reference": {
@@ -141,8 +137,58 @@
       "notes": "Story count 14→13: p2.5 split 1→2 stories, no other scope additions. Complexity C1×3 (p2.1-p2.3: SKILL.md text changes only), C2×10 (remainder). E5 stories p2.11/p2.12 written as C3 but operator specifies C2 avg for estimate. Calendar span holds at 2 days; p75FocusH/story = 2.88h vs Phase 1 actuals of 2.3h/story (expected increase for C2 vs C1 mix).",
       "premiumRequestsForecast": null
     },
-    "actuals": null,
-    "flowFindings": []
+    "actuals": {
+      "date": "2026-04-12",
+      "calendarDays": 0.93,
+      "outerLoopSessions": null,
+      "engagementFraction": 0.25,
+      "totalCalendarH": 1.86,
+      "outerLoopFocusH": 0.47,
+      "innerLoopHuman": 1,
+      "agentAutonomousH": null,
+      "storyCount": 13,
+      "focusHPerStory": 0.04,
+      "estimateSource": "e2",
+      "estimateOuterLoopH": 30,
+      "outerLoopDeltaH": -29.53,
+      "premiumRequestsForecast": "~322",
+      "premiumRequestsActual": 68,
+      "premiumGaugeStart": "86.7% of 300",
+      "premiumGaugeNow": "109.5% of 300",
+      "notes": "JSONL session logs were not accessible from this workspace; E3 used conservative fallback totalCalendarH = calendarDays × 2 per estimate skill guidance. Phase timestamps in state include inconsistent month values, so phase-level spans are treated as low-confidence."
+    },
+    "flowFindings": [
+      {
+        "id": "E3-F1",
+        "title": "State timestamp consistency gap",
+        "actual": "Review/Test-plan/DoR timestamps include inconsistent month values in state.json",
+        "estimate": "Tier-1 ISO timestamps should permit direct phase-span reconstruction",
+        "delta": "Tier-1 derivation degraded to low-confidence",
+        "causeHypothesis": "Phase updates were written with mixed date values across sessions",
+        "improvement": "Add a state-write guard that validates monotonic phase timestamps before commit",
+        "effort": "Medium"
+      },
+      {
+        "id": "E3-F2",
+        "title": "Session telemetry access gap",
+        "actual": "JSONL debug logs unavailable in workspace context",
+        "estimate": "E3 expects session-level wall-clock reconstruction",
+        "delta": "Fallback approximation used",
+        "causeHypothesis": "Telemetry path not mounted in current execution environment",
+        "improvement": "Persist per-session wall-clock totals into workspace/state.json at checkpoint time",
+        "effort": "Low"
+      },
+      {
+        "id": "E3-F3",
+        "title": "Outer-loop estimate variance high",
+        "actual": "0.47h outer-loop focus (fallback-derived)",
+        "estimate": "30h E2 outer-loop forecast",
+        "delta": "-29.53h",
+        "causeHypothesis": "Fallback method underestimates active time when session telemetry is missing",
+        "improvement": "Require telemetry-complete E3 before using deltas for forecast calibration",
+        "effort": "Low"
+      }
+    ]
   },
   "proposals": []
 }

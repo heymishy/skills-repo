@@ -17,7 +17,7 @@
   To evolve: update this file, open a PR, tag tech lead for review.
 -->
 
-**Last updated:** 2026-03-22
+**Last updated:** 2026-04-12
 **Maintained by:** Repo owner (solo)
 
 ---
@@ -136,6 +136,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 | ADR-003 | Active | Schema-first: fields defined before use | `pipeline-state.schema.json` evolution |
 | ADR-004 | Active | `context.yml` is the single config source of truth | Skill files, viz config reading |
 | ADR-005 | Active | Agent instructions format is a surface adapter concern driven by `vcs.type` | Assembly script, skill distribution |
+| ADR-006 | Active | Approval-channel adapter pattern for non-engineer DoR sign-off | DoR routing workflows, state write path |
 
 ---
 
@@ -247,6 +248,29 @@ Agent instructions file format is an adapter concern resolved by `context.yml`, 
 
 #### Revisit trigger
 At Phase 2 p1.1-equivalent story (distribution mechanism) — implement the `agent_instructions.format` adapter in `context.yml` and update the assembly script to branch on `vcs.type`.
+
+---
+
+### ADR-006: Approval-channel adapter pattern for DoR sign-off
+
+**Status:** Active
+**Date:** 2026-04-12
+**Source decision:** `artefacts/2026-04-11-skills-platform-phase2/decisions.md` — W3-p2.8 resolution entry
+**Decided by:** Hamish
+
+#### Context
+DoR sign-off must work for non-engineer approvers outside the IDE. Channel-specific implementations (GitHub issue comments, Jira approvals, Confluence workflows, chat commands) should not require rewriting the core DoR state contract.
+
+#### Decision
+Adopt an approval-channel adapter pattern. Channel wiring is selected from `.github/context.yml` and implemented in channel-specific adapters. The core write contract remains channel-agnostic and updates `pipeline-state.json` evidence fields (`dorStatus`, `dorApprover`, `dorChannel`). Phase 2 reference path is `approval_channel: github-issue` with `/approve-dor` event handling.
+
+#### Consequences
+**Easier:** Add or swap approval channels without changing skill logic or state schema shape.
+**Harder / constrained:** Adapter implementations must preserve the same state contract and audit fields across channels.
+**Off the table:** Hardcoding one approval channel into DoR skills or workflow logic.
+
+#### Revisit trigger
+When adding a new approval surface, verify the adapter preserves the same evidence fields and audit semantics before enabling it in `context.yml`.
 
 ---
 
@@ -373,6 +397,11 @@ At Phase 2 p1.1-equivalent story (distribution mechanism) — implement the `age
 - id: ADR-005
   category: adr
   label: "Agent instructions format driven by vcs.type (surface adapter concern)"
+  section: Active ADRs
+
+- id: ADR-006
+  category: adr
+  label: "Approval-channel adapter pattern for DoR sign-off"
   section: Active ADRs
 
 - id: PAT-01

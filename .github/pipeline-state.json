@@ -790,11 +790,19 @@
       "slug": "2026-04-11-skills-platform-phase2",
       "name": "Skills Platform — Phase 2: Scale, Observability, and Self-Improving Harness",
       "track": "library",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "discoveryStatus": "approved",
       "benefitMetricStatus": "active",
       "slicingStrategy": "risk-first",
+      "updatedAt": "2026-04-12",
+      "lastLevelup": "2026-04-12",
+      "standards": {
+        "recentUpdates": [
+          "standards/quality-assurance/core.md",
+          ".github/architecture-guardrails.md"
+        ]
+      },
       "dorBatch1": {
         "complete": [
           "p2.1",
@@ -1052,19 +1060,19 @@
         {
           "slug": "epic-1-pipeline-evolution-foundation",
           "name": "Pipeline Evolution Foundation",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "p2.1-definition-skill-improvements",
               "name": "/definition skill improvements — dependency chain validation, testability filter, learnings exit step (D1/D2/D3)",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 14,
-                "passing": 0
+                "passing": 14
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
@@ -1076,19 +1084,28 @@
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/19",
               "dispatchedAt": "2026-04-12T00:00:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-12"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/28",
+              "mergedAt": "2026-04-11",
+              "updatedAt": "2026-04-12",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": false,
+              "blocker": "Scope deviation recorded in DoD: additional executable/test-harness files changed beyond declared touch points.",
+              "dodArtefact": "artefacts/2026-04-11-skills-platform-phase2/dod/p2.1-definition-skill-improvements-dod.md",
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false
             },
             {
               "slug": "p2.2-review-incremental-write",
               "name": "/review skill improvement — incremental per-story write (D4)",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
-                "passing": 0
+                "passing": 9
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
@@ -1100,19 +1117,27 @@
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/21",
               "dispatchedAt": "2026-04-12T00:00:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-12"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/29",
+              "mergedAt": "2026-04-11",
+              "updatedAt": "2026-04-12",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-04-11-skills-platform-phase2/dod/p2.2-review-incremental-write-dod.md",
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false
             },
             {
               "slug": "p2.3-dor-dod-template-improvements",
               "name": "DoR and DoD template improvements — cross-story schema dependency check, AC verification prompt, NFR guardrail enforcement (D8/D9/B1-enforce)",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
-                "passing": 0
+                "passing": 13
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
@@ -1124,26 +1149,34 @@
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/23",
               "dispatchedAt": "2026-04-12T00:00:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-12"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/30",
+              "mergedAt": "2026-04-11",
+              "updatedAt": "2026-04-12",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-04-11-skills-platform-phase2/dod/p2.3-dor-dod-template-improvements-dod.md",
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false
             }
           ]
         },
         {
           "slug": "epic-2-full-surface-adapter-model",
           "name": "Full Surface Adapter Model",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "p2.4-agents-md-adapter",
               "name": "AGENTS.md adapter in assembly script — agent instruction format driven by vcs.type (ADR-005)",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
-                "passing": 0
+                "passing": 13
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
@@ -1155,19 +1188,27 @@
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/25",
               "dispatchedAt": "2026-04-12T00:00:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-12"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/31",
+              "mergedAt": "2026-04-11",
+              "updatedAt": "2026-04-12",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-04-11-skills-platform-phase2/dod/p2.4-agents-md-adapter-dod.md",
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false
             },
             {
               "slug": "p2.5a-iac-saas-api-adapters",
               "name": "IaC and SaaS-API surface adapters with POLICY.md floor variants (p2.5a)",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 18,
-                "passing": 0
+                "passing": 18
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
@@ -1179,19 +1220,27 @@
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/27",
               "dispatchedAt": "2026-04-12T00:00:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-12"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/38",
+              "mergedAt": "2026-04-11",
+              "updatedAt": "2026-04-12",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-04-11-skills-platform-phase2/dod/p2.5a-iac-saas-api-adapters-dod.md",
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false
             },
             {
               "slug": "p2.5b-saas-gui-m365-manual-adapters",
               "name": "SaaS-GUI, M365-admin, and manual surface adapters with POLICY.md floor variants (p2.5b)",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 20,
-                "passing": 0
+                "passing": 20
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
@@ -1203,19 +1252,29 @@
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/32",
               "dispatchedAt": "2026-04-12T00:00:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-12"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/46",
+              "mergedAt": "2026-04-12",
+              "updatedAt": "2026-04-12",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": false,
+              "health": "amber",
+              "blocker": "Scope deviation recorded in DoD: PR bundled unrelated p2.11 implementation payload.",
+              "dodArtefact": "artefacts/2026-04-11-skills-platform-phase2/dod/p2.5b-saas-gui-m365-manual-adapters-dod.md",
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false
             },
             {
               "slug": "p2.6-ea-registry-path-a",
               "name": "EA registry Path A surface type resolution in surface adapter resolver",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 15,
-                "passing": 0
+                "passing": 15
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
@@ -1227,7 +1286,15 @@
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/33",
               "dispatchedAt": "2026-04-12T00:00:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-12"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/41",
+              "mergedAt": "2026-04-12",
+              "updatedAt": "2026-04-12",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-04-11-skills-platform-phase2/dod/p2.6-ea-registry-path-a-dod.md",
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false
             }
           ]
         }
@@ -1236,33 +1303,33 @@
         {
           "metricId": "M1",
           "name": "Second squad outer loop — unassisted",
-          "signal": "not-started",
-          "evidence": null,
-          "lastMeasured": null,
+          "signal": "on-track",
+          "evidence": "p2.4 merged and DoD-complete: assembly now emits AGENTS.md for non-GitHub contexts with passing check-assembly coverage.",
+          "lastMeasured": "2026-04-12",
           "targetDescription": "Second squad completes full outer loop in one session with zero blocking lookups"
         },
         {
           "metricId": "M2",
           "name": "Non-git-native surface adapter — passing assurance verdict",
-          "signal": "not-started",
-          "evidence": null,
-          "lastMeasured": null,
+          "signal": "on-track",
+          "evidence": "Adapters for iac, saas-api, saas-gui, m365-admin, and manual are merged and DoD-assessed; resolver Path A/Path B routing is operational.",
+          "lastMeasured": "2026-04-12",
           "targetDescription": "At least one non-git-native adapter produces a passing assurance verdict on a real PR"
         },
         {
           "metricId": "M3",
           "name": "Improvement agent — first SKILL.md diff proposal from real failure",
-          "signal": "not-started",
-          "evidence": null,
-          "lastMeasured": null,
+          "signal": "on-track",
+          "evidence": "p2.11 and p2.12 are merged and DoD-complete: trace proposals, challenger pre-check, and proposal review workflow are implemented end-to-end.",
+          "lastMeasured": "2026-04-12",
           "targetDescription": "At least one proposal in workspace/proposals/ with evidence source, rationale, and challenger pre-check result, reviewed and actioned"
         },
         {
           "metricId": "M4",
           "name": "Fleet observability — ≥2 squad states without manual entry",
-          "signal": "not-started",
-          "evidence": null,
-          "lastMeasured": null,
+          "signal": "on-track",
+          "evidence": "p2.7 merged and DoD-complete: fleet registry files, CI aggregation workflow, and viz fleet panel implemented with passing checks.",
+          "lastMeasured": "2026-04-12",
           "targetDescription": "fleet-state.json generated by CI with ≥2 squad entries; pipeline-viz renders both"
         },
         {
@@ -1276,9 +1343,9 @@
         {
           "id": "MM1",
           "name": "Solo operator outer loop — Phase 2 calibration",
-          "signal": "not-started",
-          "evidence": null,
-          "lastMeasured": null,
+          "signal": "on-track",
+          "evidence": "p2.2 and p2.3 DoD confirm flow-finding write-backs landed, reducing expected outer-loop rework and late gate failures.",
+          "lastMeasured": "2026-04-12",
           "targetDescription": "All outer loop stages complete with ≤1 blocking lookup; calendar span ≤3 days; focus H/story ≤2.9h"
         },
         {
@@ -1292,9 +1359,9 @@
         {
           "id": "MM3",
           "name": "Improvement loop — first proposal reviewed within one feature cycle",
-          "signal": "not-started",
-          "evidence": null,
-          "lastMeasured": null,
+          "signal": "on-track",
+          "evidence": "p2.11 proposal generation and p2.12 challenger/review workflow are both delivered in the same feature cycle.",
+          "lastMeasured": "2026-04-12",
           "targetDescription": "At least one proposal with evidence, pre-check, and action taken within Phase 2 delivery cycle"
         },
         {
@@ -1308,9 +1375,9 @@
         {
           "id": "MM5",
           "name": "Flow findings conversion rate",
-          "signal": "not-started",
-          "evidence": null,
-          "lastMeasured": null,
+          "signal": "on-track",
+          "evidence": "D4 (p2.2), D8/D9/B1-enforce (p2.3) delivered and verified DoD-complete, continuing conversion of logged flow findings into shipped changes.",
+          "lastMeasured": "2026-04-12",
           "targetDescription": "≥50% of logged flow findings result in pipeline improvement within 2 features; operator confirms at each /levelup"
         }
       ],
@@ -1318,19 +1385,19 @@
         {
           "slug": "epic-3-fleet-observability-personas",
           "name": "Fleet Observability and Non-Engineer Approval Interface",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "p2.7-fleet-registry-ci-aggregation",
               "name": "Fleet registry files and CI-aggregated fleet-state.json",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 18,
-                "passing": 0
+                "passing": 18
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
@@ -1342,19 +1409,27 @@
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/34",
               "dispatchedAt": "2026-04-12T00:00:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-12"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/42",
+              "mergedAt": "2026-04-12",
+              "updatedAt": "2026-04-12",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-04-11-skills-platform-phase2/dod/p2.7-fleet-registry-ci-aggregation-dod.md",
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false
             },
             {
               "slug": "p2.8-persona-routing-non-engineer-approval",
               "name": "Persona routing and non-engineer approval interface (depends on p2.7)",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 17,
-                "passing": 0
+                "passing": 17
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
@@ -1367,26 +1442,34 @@
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/35",
               "dispatchedAt": "2026-04-12T00:00:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-12"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/45",
+              "mergedAt": "2026-04-12",
+              "updatedAt": "2026-04-12",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-04-11-skills-platform-phase2/dod/p2.8-persona-routing-non-engineer-approval-dod.md",
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false
             }
           ]
         },
         {
           "slug": "epic-4-standards-ci-validation",
           "name": "Remaining Discipline Standards and Bitbucket CI Validation",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "p2.9-discipline-standards-remaining",
               "name": "Eight remaining discipline standards and three pilot domain standards",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 17,
-                "passing": 0
+                "passing": 17
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
@@ -1398,19 +1481,27 @@
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/36",
               "dispatchedAt": "2026-04-12T00:00:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-12"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/43",
+              "mergedAt": "2026-04-12",
+              "updatedAt": "2026-04-12",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-04-11-skills-platform-phase2/dod/p2.9-discipline-standards-remaining-dod.md",
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false
             },
             {
               "slug": "p2.10-bitbucket-ci-validation",
               "name": "Bitbucket CI validation — Cloud pipeline-shape tests and DC Docker auth topology",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 15,
-                "passing": 0
+                "passing": 12
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
@@ -1422,27 +1513,36 @@
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/37",
               "dispatchedAt": "2026-04-12T00:00:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-12"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/44",
+              "mergedAt": "2026-04-12",
+              "updatedAt": "2026-04-12",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-04-11-skills-platform-phase2/dod/p2.10-bitbucket-ci-validation-dod.md",
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false,
+              "dodNote": "AC3/AC4/AC5 Docker-gated tests accepted as skipped with [PREREQ-DOCKER] when Docker daemon unavailable; harness and compose deliverable verified."
             }
           ]
         },
         {
           "slug": "epic-5-self-improving-harness",
           "name": "Self-Improving Harness",
-          "status": "not-started",
+          "status": "complete",
           "sequencingNote": "p2.11 and p2.12 must not be dispatched to inner loop until at least one Phase 2 inner loop story batch is merged and its trace written",
           "stories": [
             {
               "slug": "p2.11-improvement-agent-trace-proposals",
               "name": "Improvement agent — queryable trace interface, failure and staleness detection, and diff proposals",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 21,
-                "passing": 0,
+                "passing": 21,
                 "executionGate": "after-first-phase2-inner-loop-trace"
               },
               "hasLayoutDependentGaps": false,
@@ -1458,19 +1558,28 @@
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/39",
               "dispatchedAt": "2026-04-12T00:00:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-12"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/47",
+              "mergedAt": "2026-04-12",
+              "updatedAt": "2026-04-12",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-04-11-skills-platform-phase2/dod/p2.11-improvement-agent-trace-proposals-dod.md",
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false,
+              "dodNote": "failurePattern dependency explicitly verified in .github/scripts/run-assurance-gate.js via commit 5869050."
             },
             {
               "slug": "p2.12-improvement-agent-challenger-skill",
               "name": "Improvement agent — challenger pre-check, proposal review workflow, and improvement-agent SKILL.md (depends on p2.11)",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 22,
-                "passing": 0,
+                "passing": 22,
                 "executionGate": "after-p2.11-dod-complete-and-phase2-inner-loop-trace"
               },
               "hasLayoutDependentGaps": false,
@@ -1486,7 +1595,16 @@
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/40",
               "dispatchedAt": "2026-04-12T00:00:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-12"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/48",
+              "mergedAt": "2026-04-12",
+              "updatedAt": "2026-04-12",
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-04-11-skills-platform-phase2/dod/p2.12-improvement-agent-challenger-skill-dod.md",
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false,
+              "dodNote": "Gate verification completed before sign-off: Phase 2 trace present and p2.11 DoD artefact confirmed."
             }
           ]
         }

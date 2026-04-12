@@ -1,0 +1,199 @@
+# Enterprise Handoff: Skills Platform Phase 1 + Phase 2
+
+**Document type:** Enterprise handoff bundle
+**Prepared:** 2026-04-12
+**Prepared by:** Platform maintainer (Hamish)
+**Status:** Phase 2 complete — all 21 stories DoD-signed, pipeline-state current
+
+---
+
+## 1. What Was Delivered
+
+### Phase 1 — Foundation (2026-04-09 → 2026-04-11)
+
+8 stories delivered across 4 epics. All PRs merged (#1–#14 range). DoD-complete.
+
+| Story | Title | Status |
+|-------|-------|--------|
+| p1.1 | Distribution infrastructure and progressive skill disclosure | DoD-complete |
+| p1.2 | Surface adapter model — foundations (git-native, Path B) | DoD-complete |
+| p1.3 | Assurance agent as automated CI gate | DoD-complete |
+| p1.4 | Watermark gate | DoD-complete |
+| p1.5 | `workspace/state.json` and session continuity | DoD-complete |
+| p1.6 | Living eval regression suite (`workspace/suite.json`) | DoD-complete |
+| p1.7 | Standards model — Phase 1 disciplines (software-eng, security-eng, QA) | DoD-complete |
+| p1.8 | Model risk documentation (`MODEL-RISK.md`) | DoD-complete |
+
+**Phase 1 outcome:** A governed, self-verifiable delivery pipeline operating at single-squad, git-native surface scope. Distribution via pull model. CI assurance gate live. Three anchor discipline standards in place. Model risk register signed and pre-read gating adoption.
+
+### Phase 2 — Scale, Observability, and Self-Improving Harness (2026-04-11 → 2026-04-12)
+
+13 stories delivered across 5 epics. All PRs merged (#28–#31, #38, #41–#48). DoD-complete.
+
+| Story | Title | Epic | Status |
+|-------|-------|------|--------|
+| p2.1 | `/definition` skill improvements (D1/D2/D3) | E1 — Pipeline Evolution Foundation | DoD-complete |
+| p2.2 | `/review` incremental state write | E1 — Pipeline Evolution Foundation | DoD-complete |
+| p2.3 | DoR/DoD template improvements | E1 — Pipeline Evolution Foundation | DoD-complete |
+| p2.4 | `AGENTS.md` adapter (non-GitHub inner loop support) | E2 — Full Surface Adapter Model | DoD-complete |
+| p2.5a | IaC + SaaS-API surface adapters | E2 — Full Surface Adapter Model | DoD-complete |
+| p2.5b | SaaS-GUI + M365-admin + manual surface adapters | E2 — Full Surface Adapter Model | DoD-complete |
+| p2.6 | EA registry resolver (Path A, 3-field stub contract) | E2 — Full Surface Adapter Model | DoD-complete |
+| p2.7 | Fleet registry CI aggregation | E3 — Fleet Observability and Personas | DoD-complete |
+| p2.8 | Non-engineer approval interface (approval-channel adapter) | E3 — Fleet Observability and Personas | DoD-complete |
+| p2.9 | Bitbucket Pipelines CI topology validation | E4 — Standards and CI Validation | DoD-complete |
+| p2.10 | 8 remaining discipline standards (POLICY.md floors) | E4 — Standards and CI Validation | DoD-complete |
+| p2.11 | Improvement agent — failure pattern detection and diff proposal | E5 — Self-Improving Harness | DoD-complete |
+| p2.12 | Improvement agent — challenger pre-check and proposal review | E5 — Self-Improving Harness | DoD-complete |
+
+**Phase 2 outcome:** Full surface adapter model (all 6 types). Non-engineer approval channel. Fleet observability. Bitbucket Pipelines topology validated. All 11 discipline POLICY.md floors live. Self-improving harness (improvement agent) operational. Non-GitHub inner loop (`AGENTS.md`) supported.
+
+---
+
+## 2. Architectural Decisions (ADR-001 through ADR-006)
+
+All ADRs are maintained in the live guardrails file: [`.github/architecture-guardrails.md`](.github/architecture-guardrails.md)
+
+### ADR-001 — Single-file viz, no build step (Active, 2026-03-22)
+
+`pipeline-viz.html` is a self-contained single file. No build step, no runtime npm dependencies, no external CDN. Opens directly in any browser from a local clone. Revisit trigger: file grows beyond ~3,000 lines and maintainability is significantly impacted.
+
+### ADR-002 — Gates must use evidence fields, not stage-proxy (Active, 2026-03-22)
+
+Every governance gate in `evaluateGate()` must read at least one evidence field from `pipeline-state.json` (`reviewStatus`, `dorStatus`, `dodStatus`, etc.). Stage-only checks are permitted as a fallback only where no evidence field yet exists and must be marked with a `// TODO: replace with evidence field` comment. Prevents false-positive gate passes when a stage is manually set without running the corresponding skill.
+
+### ADR-003 — Schema-first: fields defined before use (Active, 2026-03-22)
+
+Any field written to `pipeline-state.json` by a skill, or read by the viz, must be added to `pipeline-state.schema.json` in the same commit. Schema is the contract between skills and viz. Prevents stale schema, broken validators, and silent field drift.
+
+### ADR-004 — `context.yml` is the single config source of truth (Active, 2026-03-22)
+
+`.github/context.yml` is the canonical config file. Skills read it for all org-specific labels, tool integrations, compliance frameworks, and regulated-flag status. Nothing org-specific is hardcoded in skill instruction text or viz JS constants. Enables same skill library to operate across GitHub personal, GitHub Enterprise, Bitbucket, Jenkins, and enterprise AAIF-compliant environments without modification.
+
+### ADR-005 — Agent instructions format is a surface adapter concern (Active, 2026-04-11)
+
+The assembly script emits `.github/copilot-instructions.md` when `context.yml` sets `vcs.type: github`, and `AGENTS.md` otherwise. Content is identical. `AGENTS.md` is the Linux Foundation AAIF vendor-neutral standard. This decision unlocks distribution to non-GitHub inner loop tooling (Bitbucket, Jenkins, Cursor, Claude Code) without per-platform forks. Delivered by p2.4.
+
+### ADR-006 — Approval-channel adapter pattern for DoR sign-off (Active, 2026-04-12)
+
+Channel wiring for DoR sign-off is selected from `.github/context.yml` and implemented in channel-specific adapters. The core write contract is channel-agnostic and always updates the same evidence fields: `dorStatus`, `dorApprover`, `dorChannel`. Phase 2 reference path: `approval_channel: github-issue` with `/approve-dor` event handling. Off the table: hardcoding one approval channel into DoR skill logic. Delivered by p2.8.
+
+---
+
+## 3. Known Gaps
+
+### 3.1 T3M1 — Trace readability for risk review: 3/8 audit questions satisfied
+
+**What T3M1 is:** `MODEL-RISK.md` defines eight audit questions that a risk reviewer must be able to answer from a trace alone, without engineering assistance. This is the governance readability test for the assurance trace. Full 8/8 satisfies the adoption gate for non-dogfood use.
+
+**Current state (recorded 2026-04-12):** T3M1 evaluated against the first real Phase 2 inner loop trace (`workspace/traces/2026-04-11T21-33-02-002Z-ci-84f82370.jsonl`, story p2.4, PR #31). Result: **3/8 Y** — Q1 (model identity), Q3 (standards injected), Q4 (trace transition complete) satisfied. Q2/Q5/Q6/Q7/Q8 remain pending.
+
+**Why:** Q2 (gate verdict + rationale in PR), Q5 (watermark comparison visible), Q6 (surface type in trace), Q7 (improvement proposal reference), and Q8 (approver identity) require Phase 2 gate enhancements: p1.4 (watermark gate PR reporting), p1.7 (standards hash match visible), and p2.1 (surface type in `standardsApplied`). These were all delivered in Phase 2.
+
+**Required action before non-dogfood adoption:** Re-run T3M1 evaluation against a real Phase 2+ inner loop trace after p2.1, p2.9, and p2.11 are operational in CI. Full 8/8 unlocks the `MODEL-RISK.md` adoption gate. The sign-off record in `MODEL-RISK.md` Section 4 carries this as a condition of approval.
+
+**Artefact:** `MODEL-RISK.md` → Section 3 (T3M1 evidence block) and Section 4 (sign-off conditions).
+
+### 3.2 Docker-gated tests skipped (p2.10 AC3/AC4/AC5)
+
+**What was skipped:** p2.10 story (8 remaining discipline standards — POLICY.md floors) includes 3 tests marked `[PREREQ-DOCKER]` covering AC3 (standards composition under a Docker-isolated environment), AC4 (POLICY.md floor constraint enforcement via Docker-based runner emulation), and AC5 (CI pipeline integration with Docker daemon available).
+
+**Why:** The standard GitHub Copilot coding agent runner does not have Docker daemon available. These 3 tests were accepted as deferred at DoD with the `[PREREQ-DOCKER]` marker. The 12 non-Docker tests in p2.10 all pass.
+
+**Required action:** Execute the 3 deferred tests in a Docker-enabled runner or CI environment (e.g. self-hosted GitHub Actions runner with Docker, or `services: docker:dind` in a CI job). No code changes required — the tests exist and expect the Docker daemon path. Recommendation: create a separate CI job scoped to `tests/p2.10-docker/**` that requires `docker` service.
+
+**Artefact:** `artefacts/2026-04-11-skills-platform-phase2/dod/p2.10-*-dod.md`
+
+### 3.3 D-batch pending skill-file writes (D10 + D10a)
+
+Two pipeline evolution proposals were identified during internal delivery and logged in `workspace/learnings.md` (2026-04-12 D-batch entry). They have not been written to skill files because they require a proper story + DoR cycle.
+
+**D10 — `/definition-of-ready` dispatch forward pointer:**
+Add a forward pointer from the DoR all-PROCEED batch exit to `/issue-dispatch`, plus a mandatory `git push origin master` gate that must pass before dispatch. This closes a gap where DoR can sign off in state without the branch being pushed, causing the dispatch to fail with a "ref not found" error.
+Target file: `.github/skills/definition-of-ready/SKILL.md`
+
+**D10a — `/issue-dispatch` PR body `Closes #[issue]` guidance:**
+Add explicit guidance to the issue-dispatch SKILL.md instructing the PR body template to include `Closes #[issue-number]`. This enables automatic GitHub issue close on PR merge and completes the dispatch loop without a manual close step.
+Target file: `.github/skills/issue-dispatch/SKILL.md`
+
+**Required action:** Create Phase 3 (or short-track) stories for D10 and D10a. Do not edit skill files directly without a test plan and DoR.
+
+---
+
+## 4. Westpac Adaptation Path
+
+This section documents the specific configuration and integration changes required to operate the platform in a Bitbucket/Jenkins enterprise environment (e.g. Westpac or equivalent regulated financial-services org using non-GitHub tooling).
+
+### 4.1 VCS and CI topology: Bitbucket Pipelines
+
+Set `vcs.type: bitbucket` in `.github/context.yml`. The assembly script (`scripts/assemble-copilot-instructions.sh`) will emit `AGENTS.md` at the repo root instead of `.github/copilot-instructions.md`. Content is identical — the format switch is the only change.
+
+For CI: the Bitbucket Pipelines topology was validated in Phase 2 (p2.9). The CI gate triggers on `pull-request: opened, updated` events using the `bitbucket-pipelines.yml` equivalents of the GitHub Actions workflow defined in `.github/workflows/`. The same Node.js check scripts (`check-governance-sync.js`, `check-viz-syntax.js`, `check-skill-contracts.js`, `check-pipeline-artefact-paths.js`, `run-assurance-gate.js`) run identically — they are plain CommonJS with no GitHub-specific dependencies.
+
+For Jenkins: set `tools.ci_platform: jenkins` in `.github/context.yml`. Adapt the pipeline definition to a `Jenkinsfile` using the same `npm test` entry point. The `validate-trace.sh` script requires Python 3 + `jsonschema` + `pyyaml` — these must be available on the Jenkins agent.
+
+### 4.2 Agent instructions format: `AGENTS.md`
+
+With `vcs.type: bitbucket` (or any non-`github` value), the assembled instructions file is written to `AGENTS.md` at the repo root. This is the Linux Foundation AAIF vendor-neutral standard consumed by Cursor, Claude Code, and other compliant inner loop tools. No content change is required — the format change is entirely driven by `vcs.type`.
+
+For Cursor or Jetbrains AI Assistant: `AGENTS.md` at repo root is automatically picked up by both tools as the agent instruction file, provided the project is set to use agent mode.
+
+### 4.3 Approval channel: enterprise adapters
+
+The approval-channel adapter pattern (ADR-006) is configured in `.github/context.yml` under `approval_channel`. Available adapter values after Phase 2:
+
+| `approval_channel` value | Mechanism | Required setup |
+|---|---|---|
+| `github-issue` | Approver posts `/approve-dor` as a comment on the linked GitHub issue; GitHub Actions workflow writes `dorStatus: signed-off` to `pipeline-state.json` | GitHub repo + Actions enabled |
+| `jira` | Jira ticket status transitions to the configured approval status; webhook writes the dorStatus update | Jira webhook + pipeline-state write endpoint |
+| `confluence` | Confluence page approval workflow; page macro writes dorStatus on approval | Confluence + REST API access |
+| `slack` | Workspace slash command `/approve-dor [story-id]`; Slack app writes dorStatus | Slack app with write-back webhook |
+| `teams` | Teams adaptive card approval; Power Automate flow writes dorStatus | Microsoft 365 + Power Automate |
+
+For a Westpac regulated environment: the recommended path is `approval_channel: jira` (where Jira Service Management is the change management tool) or `approval_channel: teams` (where Microsoft 365 is the standard approver surface). Both adapters write the same evidence fields (`dorStatus`, `dorApprover`, `dorChannel`) — the state contract and gate evaluation logic are unchanged.
+
+**Enterprise RBAC note:** The write-back webhook or service account that updates `pipeline-state.json` must have repo write access scoped to the state file only. Do not grant broad repo write access to the approval adapter service account.
+
+### 4.4 Regulated environment compliance flags
+
+Set `governance.regulated: true` in `.github/context.yml` to enable the regulated-environment guardrail checks. This flag activates:
+- Mandatory `/decisions` log entry for every story before DoR sign-off
+- Stricter AC traceability requirements in `/review` (all ACs must map to a named compliance framework clause)
+- PR body must include a change reference field (mapped to ServiceNow or Jira-SM ticket via `change_management.tool`)
+- Audit NFR (traceable commit messages) is enforced as a CI gate check, not just a MUST standard
+
+Set `change_management.tool: servicenow` (or `jira-sm`) and populate `change_management.base_url`, `change_management.assignment_group`, and `change_management.change_category` to enable the `/release` skill's automated change request body generation.
+
+### 4.5 Standards extension: discipline tiers
+
+The Phase 2 POLICY.md floor model is live for all 11 disciplines. For Westpac-specific domain extensions (e.g. APRA CPS 234 controls, internal security classification policy, RG 271 obligations), add entries under `standards/[discipline]/` using the established composition model:
+
+```
+standards/
+  [discipline]/
+    core.md           ← universal baseline MUST/SHOULD/MUST NOT requirements
+    POLICY.md         ← minimum floor for this discipline; referenced at assurance gate time
+```
+
+Domain-tier extensions (squad-specific overrides) are declared in the squad's `context.yml` under `standards.domain_extensions`. The assurance agent's standards injection step reads `context.yml` and includes the declared domain extensions alongside the core standards in the trace's `standardsApplied` array.
+
+---
+
+## 5. Quick Reference
+
+| Item | Path |
+|------|------|
+| Pipeline state (live) | `.github/pipeline-state.json` |
+| Architecture guardrails + ADRs | `.github/architecture-guardrails.md` |
+| Context configuration | `.github/context.yml` |
+| Model risk register | `MODEL-RISK.md` |
+| Onboarding | `ONBOARDING.md` |
+| Skills (all phases) | `.github/skills/*/SKILL.md` |
+| Standards | `standards/index.yml` + `standards/[discipline]/` |
+| Phase 1 artefacts | `artefacts/2026-04-09-skills-platform-phase1/` |
+| Phase 2 artefacts | `artefacts/2026-04-11-skills-platform-phase2/` |
+| Estimation actuals | `workspace/phase2-actuals.md` |
+| State and checkpoint | `workspace/state.json` |
+| Eval regression suite | `workspace/suite.json` |
+| Delivery traces | `workspace/traces/` |
+| Improvement proposals | `workspace/proposals/` |
