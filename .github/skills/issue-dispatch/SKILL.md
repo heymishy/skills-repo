@@ -134,6 +134,8 @@ One item per line: "- CREATE: path/to/file" or "- MODIFY: path/to/file".]
 - Open PRs as drafts only. Never mark ready for review. Never merge.
 - If any blocker is not resolvable from the artefact files: leave a PR comment describing the blocker and stop. Do not improvise a workaround.
 - Do not modify any file under `artefacts/`. These are read-only pipeline inputs.
+- **Governance sync:** Before committing any new check script, gate reference, or standard entry: run `node .github/scripts/check-governance-sync.js` and confirm it passes. If you add anything to `governance-gates.yml`, you must add the matching entry to `DEFAULT_GOVERNANCE_GATES` in `pipeline-viz.html` in the same commit, and vice versa.
+- **Cross-platform:** All scripts in `.github/scripts/` must run correctly on both Windows and Linux. Use `process.platform === 'win32'` guards for platform-specific behaviour. Never hardcode shell paths (e.g. `/bin/bash`, `C:\Program Files\Git\bin\bash.exe`).
 
 ## Artefacts reference
 
