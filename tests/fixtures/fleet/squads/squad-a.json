@@ -1,0 +1,7 @@
+{
+  "squadId": "squad-a",
+  "repoUrl": "https://github.com/example-org/squad-a-repo",
+  "pipelineStateUrl": "__FIXTURE_URL_PLACEHOLDER__",
+  "registeredAt": "2026-04-01T08:00:00.000Z",
+  "registry_mode": "publishing"
+}

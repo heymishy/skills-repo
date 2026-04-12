@@ -1,0 +1,11 @@
+# context.yml — Path A fixture with surface fallback (no path: explicit-declaration)
+# Verifies: AC3 — registry unavailable → fallback to surface type declaration
+# surface: block has type but NO path: explicit-declaration, so AC5 guard does NOT fire
+# Path A is attempted; on failure the surface type provides the fallback
+
+registry_source: ea-registry
+registry_url: "https://stub.ea-registry.test/apps"
+app_id: "app-001"
+
+surface:
+  type: iac

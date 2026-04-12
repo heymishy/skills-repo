@@ -1,0 +1,7 @@
+# context.yml — Path A fixture: no surface fallback
+# Verifies: AC3 — registry unavailable + no fallback → explicit error result
+# No surface: block — registry unavailability returns error, not git-native default
+
+registry_source: ea-registry
+registry_url: "https://stub.ea-registry.test/apps"
+app_id: "app-001"

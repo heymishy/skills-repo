@@ -1,0 +1,6 @@
+{
+  "squadId": "squad-no-mode",
+  "repoUrl": "https://github.com/example-org/squad-no-mode-repo",
+  "pipelineStateUrl": "https://example.com/squad-no-mode/pipeline-state.json",
+  "registeredAt": "2026-04-05T12:00:00.000Z"
+}

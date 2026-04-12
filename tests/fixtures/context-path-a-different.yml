@@ -1,0 +1,6 @@
+# context.yml — Path A fixture: different registry_url and app_id
+# Verifies: AC1 (ADR-004) — resolver reads URL/app_id from context, not hardcoded
+
+registry_source: ea-registry
+registry_url: "https://different.ea-registry.test/apps"
+app_id: "app-different-002"
