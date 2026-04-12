@@ -210,6 +210,24 @@ The platform does not use compaction for context window management. Compaction m
 
 ---
 
+## GATE-P2.12-CLEARED — p2.12 delivery sequencing gates satisfied <!-- ADDED: 2026-04-12 -->
+
+**Status:** Recorded | **Date:** 2026-04-12
+
+Both delivery sequencing gates for p2.12 (improvement agent — challenger skill) are confirmed cleared before coding agent proceeds.
+
+**Gate 1 (traces):** `workspace/traces/` contains ≥1 real Phase 2 inner loop trace file.
+- Qualifying trace: `workspace/traces/2026-04-11T21-33-02-002Z-ci-84f82370.jsonl` (and 10 additional files)
+- Cleared: 2026-04-12
+
+**Gate 2 (p2.11 DoD):** p2.11 (improvement-agent-trace-proposals) is DoD-complete.
+- Evidence: `src/improvement-agent/trace-interface.js` and `src/improvement-agent/failure-detector.js` exist; `tests/check-improvement-agent.js` passes 24 tests.
+- Cleared: 2026-04-12
+
+**Action:** Coding agent proceeds to implement p2.12 (challenger.js, improvement-agent SKILL.md, and test suite).
+
+---
+
 ## Open ADRs — deferred to Phase 4
 
 Require Phase 3 operational evidence before they can be made responsibly.

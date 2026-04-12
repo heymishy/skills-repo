@@ -460,9 +460,15 @@ function renderProposalMarkdown(proposal) {
     'created_at: "' + proposal.created_at + '"',
     'skill_slug: ' + proposal.skillSlug,
     'surface_type: ' + proposal.surfaceType,
-    '---',
-    '',
   ];
+
+  // Annotate with deferred_reference if this proposal re-surfaces a previously-deferred one
+  if (proposal.deferred_reference) {
+    lines.push('deferred_reference: ' + proposal.deferred_reference);
+  }
+
+  lines.push('---');
+  lines.push('');
 
   if (proposal.type === 'failure') {
     lines.push('# Failure Pattern Proposal: ' + proposal.pattern);
@@ -636,8 +642,50 @@ function updateStateJson(stateJsonPath, newProposals) {
 // ── Main agent runner ─────────────────────────────────────────────────────────
 
 /**
+ * Find a previous deferred proposal that a new higher-confidence signal is re-surfacing.
+ * Returns the deferred proposal info (for annotation) when the new confidence is higher
+ * than the deferred proposal's confidence and the deferral has not yet expired.
+ *
+ * @param {object} ch            - challenger module
+ * @param {string} skillSlug
+ * @param {string} pattern
+ * @param {string} newConfidence
+ * @param {string} proposalsDir
+ * @param {Date}   now
+ * @returns {{ deferredProposalId: string } | null}
+ */
+function findPreviousDeferralForAnnotation(ch, skillSlug, pattern, newConfidence, proposalsDir, now) {
+  if (!ch || !ch.readExistingProposals) return null;
+
+  var proposals = ch.readExistingProposals(proposalsDir);
+  var nowTime   = (now instanceof Date ? now : new Date()).getTime();
+
+  var confidenceRank = { high: 3, medium: 2, low: 1 };
+  var newRank = confidenceRank[newConfidence] || 2;
+
+  for (var i = 0; i < proposals.length; i++) {
+    var p = proposals[i];
+    if (p.status !== 'deferred') continue;
+    if (p.skill_slug !== skillSlug || p.pattern !== pattern) continue;
+
+    if (!p.deferred_until) continue;
+    var deferUntilTime = new Date(p.deferred_until).getTime();
+    if (isNaN(deferUntilTime) || deferUntilTime <= nowTime) continue;
+
+    var existingRank = confidenceRank[p.confidence] || 2;
+    if (newRank > existingRank) {
+      return { deferredProposalId: p.id };
+    }
+  }
+
+  return null;
+}
+
+/**
  * Run the improvement agent.
  * Reads traces, detects signals, applies anti-overfitting gate, writes proposals.
+ * Respects deferred proposals: does not re-surface a proposal before deferred_until
+ * unless the new signal has strictly higher confidence (AC5c).
  *
  * @param {object} options
  * @param {string}  [options.tracesDir]      - traces directory (default: workspace/traces/)
@@ -646,7 +694,7 @@ function updateStateJson(stateJsonPath, newProposals) {
  * @param {string}  [options.contextYmlPath] - .github/context.yml path
  * @param {Date}    [options.now]            - override current time (for testing)
  * @param {boolean} [options.verbose]        - emit progress to stdout
- * @returns {{proposals: string[], warnings: string[]}}
+ * @returns {{proposals: string[], warnings: string[], suppressed: string[]}}
  */
 function runAgent(options) {
   var opts = options || {};
@@ -669,9 +717,24 @@ function runAgent(options) {
     process.stdout.write('[improvement-agent] Loaded ' + traces.length + ' trace records\n');
   }
 
-  var writtenProposals = [];
-  var writtenWarnings  = [];
-  var stateProposals   = [];
+  var writtenProposals    = [];
+  var writtenWarnings     = [];
+  var suppressedProposals = [];
+  var stateProposals      = [];
+
+  // Lazy-load challenger module to read existing deferred proposals (AC5c).
+  // Avoids a circular dependency — challenger.js is not required at module load time.
+  var challenger = null;
+  function getChallengerModule() {
+    if (!challenger) {
+      try {
+        challenger = require('./challenger.js');
+      } catch (e) {
+        challenger = null;
+      }
+    }
+    return challenger;
+  }
 
   // ── Failure signal detection ──
   var failureSignals = detectFailureSignals(traces, config);
@@ -683,6 +746,37 @@ function runAgent(options) {
   for (var f = 0; f < failureSignals.length; f++) {
     var signal   = failureSignals[f];
     var proposal = buildFailureProposal(signal, config, now);
+
+    // AC5c — deferral suppression: skip if an active deferral exists for same skill+pattern
+    var ch = getChallengerModule();
+    if (ch && ch.findActiveDeferral) {
+      var skillSlugF = proposal.skillSlug || signal.surfaceType || '';
+      var deferralF = ch.findActiveDeferral(
+        skillSlugF,
+        signal.pattern,
+        proposal.confidence,
+        proposalsDir,
+        now
+      );
+      if (deferralF) {
+        suppressedProposals.push(proposal.fileName);
+        if (opts.verbose) {
+          process.stdout.write(
+            '[improvement-agent] Deferral active for ' + proposal.fileName +
+            ' (deferred until: ' + deferralF.proposal.deferred_until + ') — skipping\n'
+          );
+        }
+        continue;
+      }
+
+      // Higher-severity re-surface: annotate proposal with deferred_reference
+      var prevDeferral = findPreviousDeferralForAnnotation(
+        ch, skillSlugF, signal.pattern, proposal.confidence, proposalsDir, now
+      );
+      if (prevDeferral) {
+        proposal.deferred_reference = prevDeferral.deferredProposalId;
+      }
+    }
 
     var gateResult = checkAntiOverfitting(proposal, signal.windowTraces);
 
@@ -717,6 +811,23 @@ function runAgent(options) {
     var stalenessSignal   = stalenessSignals[s];
     var stalenessProposal = buildStalenessProposal(stalenessSignal, config, now);
 
+    // AC5c — deferral suppression for staleness proposals
+    var chS = getChallengerModule();
+    if (chS && chS.findActiveDeferral) {
+      var stalenessSkillSlug = stalenessProposal.skillSlug || stalenessSignal.surfaceType || '';
+      var stalenessDeferral = chS.findActiveDeferral(
+        stalenessSkillSlug,
+        stalenessProposal.proposedAction || '',
+        stalenessProposal.confidence,
+        proposalsDir,
+        now
+      );
+      if (stalenessDeferral) {
+        suppressedProposals.push(stalenessProposal.fileName);
+        continue;
+      }
+    }
+
     var stalenessGateResult = checkAntiOverfitting(stalenessProposal, []);
     if (!stalenessGateResult.passed) {
       var stalenessWarning = writeOverfittingWarning(proposalsDir, stalenessProposal, stalenessGateResult);
@@ -748,21 +859,23 @@ function runAgent(options) {
   }
 
   return {
-    proposals: writtenProposals,
-    warnings:  writtenWarnings,
+    proposals:  writtenProposals,
+    warnings:   writtenWarnings,
+    suppressed: suppressedProposals,
   };
 }
 
 module.exports = {
-  readContextConfig:       readContextConfig,
-  getSlidingWindow:        getSlidingWindow,
-  detectFailureSignals:    detectFailureSignals,
-  detectStalenessSignals:  detectStalenessSignals,
-  checkAntiOverfitting:    checkAntiOverfitting,
-  buildFailureProposal:    buildFailureProposal,
-  buildStalenessProposal:  buildStalenessProposal,
-  writeProposalFile:       writeProposalFile,
-  writeOverfittingWarning: writeOverfittingWarning,
+  readContextConfig:                  readContextConfig,
+  getSlidingWindow:                   getSlidingWindow,
+  detectFailureSignals:               detectFailureSignals,
+  detectStalenessSignals:             detectStalenessSignals,
+  checkAntiOverfitting:               checkAntiOverfitting,
+  buildFailureProposal:               buildFailureProposal,
+  buildStalenessProposal:             buildStalenessProposal,
+  writeProposalFile:                  writeProposalFile,
+  writeOverfittingWarning:            writeOverfittingWarning,
+  findPreviousDeferralForAnnotation:  findPreviousDeferralForAnnotation,
   updateStateJson:         updateStateJson,
   runAgent:                runAgent,
 };
