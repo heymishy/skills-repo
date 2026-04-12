@@ -81,10 +81,11 @@
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-04-12T23:30:00+10:00",
-    "contextAtWrite": "Phase 1+2 fully closed. All 13 Phase 2 stories merged and DoD-complete. Phase 2 /levelup complete: ADR-007 (EA registry mapping), ADR-008 (DoR contract binding), PAT-06, PAT-07, AP-07, AP-08, Operating Posture section all written to architecture-guardrails.md. Automation displacement finding added to learnings.md. Phase 1+2 close commit (cd484d5): learnings entries, MODEL-RISK.md Section 3 filled with 3/8 T3M1 actuals, workspace/adoption-readiness.md created for Westpac pilot. README fixes committed. workspace/state.json checkpoint updated.",
-    "resumeInstruction": "Phase 1 and Phase 2 are complete. Next action: Phase 3 discovery when entry conditions are met — see artefacts/2026-04-11-skills-platform-phase2/reference/ref-skills-platform-phase3.md for entry conditions. T3M1 independent validation is the outstanding hard entry condition.",
+    "writtenAt": "2026-04-13T00:15:00+10:00",
+    "contextAtWrite": "Phase 1+2 fully closed. All 23 npm tests pass. Session activities: Phase 1+2 close (cd484d5), /levelup Phase 2 ADR-007/008 + PAT-06/07 + AP-07/08 + Operating Posture (f1c648d), README fixes (c5941bf), state.json phase-2-complete (a460cda), docs/validation-playbook.md 326 lines (8d10dca), abbreviation-clarity standard codified (0791e31), copilot-instructions.md 537→473 lines optimisation (135221b), Phase 3 D-batch seed learning logged (385b100). copilot-instructions.md base layer currently 473 lines — grep-verified ~204 lines moveable to SKILL.md files; target ~270 lines after D-batch.",
+    "resumeInstruction": "Phase 1 and Phase 2 are complete. Before starting Phase 3 /discovery: (1) read workspace/learnings.md Phase 3 D-batch seed entry (last entry — dated 2026-04-12) for the copilot-instructions.md base layer reduction plan; (2) check T3M1 independent validation status in MODEL-RISK.md — required hard entry condition before Phase 3 /discovery runs.",
     "pendingActions": [
+      "Before Phase 3 /discovery: read workspace/learnings.md Phase 3 D-batch seed entry (2026-04-12 — copilot-instructions.md base layer reduction: 5 sections, ~204 lines, target ~270 lines, 5 ordered action items) — decide whether to execute D-batch as a Phase 3 story or treat as a pre-discovery task",
       "Complete adoption-readiness.md amber/red row actions before Westpac pilot",
       "Run Phase 3 /discovery when T3M1 independent validation is on record in MODEL-RISK.md"
     ]
