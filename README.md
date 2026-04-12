@@ -8,7 +8,7 @@
 
 > Delivery standards, quality gates, and discipline practices encoded as versioned, hash-verified instruction sets. Executed by AI agents inside GitHub Copilot. Verified automatically on every PR. No hosted service required.
 
-**Quick nav:** [Mission](#mission-and-intent) · [Problems](#problems-this-solves) · [Principles](#core-principles) · [Primitives](#primitives) · [Pipeline](#pipeline-overview) · [Skills](#skills-reference) · [Assurance](#assurance-and-traceability) · [Standards](#standards-model) · [Surfaces](#delivery-surfaces) · [Status](#phase-delivery-status) · [Known gaps](#known-gaps) · [Getting started](#getting-started) · [ADRs](#architecture-decisions)
+**Quick nav:** [Mission](#mission-and-intent) · [Problems](#problems-this-solves) · [Principles](#core-principles) · [Primitives](#primitives) · [Pipeline](#pipeline-overview) · [Skills](#skills-reference) · [Assurance](#assurance-and-traceability) · [Self-improving harness](#self-improving-harness) · [Standards](#standards-model) · [Surfaces](#delivery-surfaces) · [Status](#phase-delivery-status) · [Known gaps](#known-gaps) · [Getting started](#getting-started) · [ADRs](#architecture-decisions)
 
 ---
 
@@ -60,7 +60,7 @@ Phase 1 and Phase 2 are complete and were built using the platform's own pipelin
 
 **Human approval at every gate.** DoR sign-off, assurance gate merge decision, and DoD confirmation all require a human signal. The platform automates verification; it does not automate judgment.
 
-**Self-improving harness.** The improvement agent reads delivery traces, detects failure patterns, proposes SKILL.md diffs, and runs a challenger pre-check before human review. Platform quality is an output of its own governance loop, not a separate maintenance track.
+**Self-improving harness.** Every completed feature loop feeds back into the platform that ran it. `/levelup` extracts reusable patterns from delivery and writes them to `workspace/learnings.md`, discipline standards, and architecture guardrails — making the next loop start with richer context. In parallel, the improvement agent reads delivery traces, detects failure patterns, proposes SKILL.md diffs, and gates every change on human review. Platform quality compounds across loops: more teams running more features produces more learnings, better skills, and fewer repeated failures. The harness trains itself from real production usage, not synthetic benchmarks.
 
 ---
 
@@ -73,6 +73,7 @@ Phase 1 and Phase 2 are complete and were built using the platform's own pipelin
 | **Assurance gate** | Automated CI check on every PR. Verifies instruction set hashes, evaluates DoD criteria against the trace, and gates merge. Structurally independent from the delivery code it evaluates. | Not a linter or test runner. Evaluates governance compliance, not code correctness. |
 | **Pipeline state** | `workspace/state.json` — the structured session record written at each phase boundary. Enables cross-session continuity: a new session reads state.json and resumes without verbal priming. | Not a project management ticket. The ground-truth handoff record between sessions. |
 | **Eval suite** | `workspace/suite.json` — the living regression suite. Each entry guards a named failure pattern observed in real delivery. A scenario added must pass on every subsequent gate run. | Not a CI test suite in the app-testing sense. Guards harness behaviour, not application behaviour. |
+| **Learnings log** | `workspace/learnings.md` — the structured record of delivery findings, failure patterns, and standards improvements written by `/levelup` at feature close. Entries include date, context, evidence, and follow-on action. Accumulates across all features and surfaces to feed skills and standards improvements. | Not a retrospective or a personal note. Entries are evidence-backed findings sourced from the artefact chain, not from recall. |
 
 ---
 
@@ -187,6 +188,68 @@ The T3M1 model audit assesses whether an independent non-engineer reviewer can a
 {"status":"inProgress","trigger":"ci","prRef":"refs/pull/31/merge","commitSha":"f2581b0ee5075becdb9a727272b459f125bd7de5","startedAt":"2026-04-11T21:33:02.002Z"}
 // Entry 2 — gate completed
 {"status":"completed","trigger":"ci","prRef":"refs/pull/31/merge","commitSha":"f2581b0ee5075becdb9a727272b459f125bd7de5","startedAt":"2026-04-11T21:33:02.002Z","completedAt":"2026-04-11T21:33:02.003Z","verdict":"pass","traceHash":"85e4a239b856523f","checks":[{"name":"workspace-state-valid","passed":true},{"name":"pipeline-state-valid","passed":true},{"name":"artefacts-dir-exists","passed":true},{"name":"governance-gates-exists","passed":true}]}
+```
+
+---
+
+## Self-improving harness
+
+The platform improves itself from the delivery signal it produces. Every feature loop closes a feedback cycle that makes the next loop run better. Two distinct mechanisms route the signal back in.
+
+### Human-driven improvement: `/levelup` and `workspace/learnings.md`
+
+At the close of every feature, `/levelup` reads the full artefact chain — stories, test plans, DoD observations, trace entries, and estimation actuals — and extracts reusable patterns. Findings are written to:
+
+- `workspace/learnings.md` — structured entries with date, context, evidence, root cause, and follow-on action. Persists across all features.
+- `standards/[discipline]/core.md` — new MUST/SHOULD rules or refinements to existing ones.
+- `.github/architecture-guardrails.md` — ADRs that should constrain future feature decisions.
+- `workspace/estimation-norms.md` — actuals data rows for calibrating future estimates.
+
+A new session entering the next feature reads `workspace/state.json` and `workspace/learnings.md` as part of its session-start orientation. The platform's institutional memory is concrete and versioned — it is not a verbal handoff.
+
+### Agent-driven improvement: `/improvement-agent`
+
+Running continuously against committed trace files, the improvement agent:
+
+1. Queries `workspace/traces/` for failure patterns matching known detection signals.
+2. Detects surface failures (skill-level), stale signals (metric drift), and overfitting (proposal applied too narrowly across variant contexts).
+3. Generates diff proposals against SKILL.md files with full changelog rationale and confidence score.
+4. Runs an anti-overfitting challenger pre-check — the proposal must generalise beyond the triggering trace set.
+5. Presents accepted proposals for human review: approve, reject, or defer.
+
+No SKILL.md change reaches production without a human approval gate.
+
+### The scaling dynamic
+
+A single team running a single loop produces a handful of learnings entries and a few trace signals. At ten teams running ten features per quarter, the improvement agent sees one hundred delivery cycles worth of failure patterns. The `/levelup` extractions accumulate in `workspace/learnings.md` and standards files that every team receives at their next `/definition-of-ready`. The harness quality improves as a function of real collective usage — not of dedicated maintenance investment.
+
+This is structurally different from a maintained documentation library. The loop between delivery and standards is closed inside the platform itself, not through a separate governance process or a quarterly review cadence.
+
+```mermaid
+flowchart TB
+    subgraph delivery["Feature delivery — every loop"]
+        A["outer loop\n/discovery → /definition-of-ready"]:::outer
+        B["inner loop\n/branch-setup → /branch-complete"]:::inner
+        C["assurance\nCI gate · /definition-of-done · /trace"]:::gate
+        A --> B --> C
+    end
+
+    C --> D["/levelup\n(operator, at feature close)"]:::improve
+    D --> E["workspace/learnings.md\nstandards/ · architecture-guardrails.md\ndecisions.md · estimation-norms.md"]:::store
+    E -.->|"richer context\nnext loop"| A
+
+    C --> F["/improvement-agent\n(agent-driven, continuous)"]:::improve
+    F --> G["diff proposals\n(challenger pre-check)"]:::store
+    G --> H{"human\nreview gate"}:::gate
+    H -->|accept| I["SKILL.md updated\nversion + hash bumped"]:::store
+    I -.->|"better skill\nnext loop"| A
+    H -->|reject/defer| F
+
+    classDef outer fill:#3b82f6,color:#fff,stroke:none
+    classDef inner fill:#14b8a6,color:#fff,stroke:none
+    classDef gate fill:#f59e0b,color:#fff,stroke:none
+    classDef improve fill:#8b5cf6,color:#fff,stroke:none
+    classDef store fill:#6b7280,color:#fff,stroke:none
 ```
 
 ---
