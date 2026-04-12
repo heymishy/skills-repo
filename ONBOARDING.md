@@ -1,3 +1,180 @@
+# Skills Platform Onboarding Guide
+
+**Platform:** Skills-based SDLC governance pipeline  
+**Audience:** Squad tech leads and engineers adopting the platform  
+**Time to first loop closure:** ~2 hours for setup + one practice story
+
+---
+
+## What you're about to use
+
+This platform is a governed delivery pipeline built around GitHub Copilot Agent mode. Instead of
+engineers making ad hoc decisions about how to break down, implement, and verify work, the
+platform structures every story through a consistent sequence of skill-driven steps — from
+discovery through to a merged, traced, and assured PR.
+
+**The two loops you need to understand:**
+
+The **outer loop** is where humans work. You write stories, run discovery, approve work at gates,
+and review PRs. This is where judgement, context, and business knowledge live. The outer loop
+runs in Jira/Confluence and in GitHub PR reviews — it's the work you already do, structured more
+deliberately.
+
+The **inner loop** is where the coding agent works. Once a story is ready (has passed the
+Definition of Ready), you hand it to the Copilot coding agent via a branch and a structured
+instruction set. The agent runs a sequence of skills — plan, implement, review, verify — and
+opens a draft PR. You review and merge. The agent does not make scope decisions or judgment
+calls; it executes within the boundaries you've defined.
+
+**What the platform adds that ungoverned Copilot doesn't have:**
+
+- Every story run produces a cryptographically-linked trace record proving which standards were
+  in context when the agent worked
+- An assurance gate in CI independently verifies the trace before the PR can merge — separate
+  from the agent that produced the work
+- Standards are versioned and injected at the start of every story, not assumed from memory
+- The `/improve` skill feeds learnings back into the platform after each delivery, so the
+  system gets better over time
+
+---
+
+## Required reading before proceeding
+
+> Read **[MODEL-RISK.md](./MODEL-RISK.md)** before running any inner loop stories.
+>
+> It documents the AI governance risks inherent in this platform, the eight audit questions
+> the assurance trace must answer, and the adoption gate criteria. This is not optional
+> reference material — it is a required pre-read for every tech lead and engineer adopting
+> the platform, and sign-off is required before non-dogfood use.
+
+---
+
+## Prerequisites
+
+Before starting, confirm you have:
+
+| Requirement | Notes |
+|---|---|
+| GitHub Copilot Pro+ licence | Agent mode requires Pro+ — standard Pro will not run the inner loop |
+| VS Code with GitHub Copilot extension | Agent mode runs in VS Code, not the browser |
+| Access to this skills repo | Read access minimum; your squad repo needs to reference it |
+| Your squad repo bootstrapped | See [Bootstrap your repo](#step-2-bootstrap-your-repo) below |
+
+---
+
+## Step 1: Understand the skill sequence
+
+Every inner loop story runs the same sequence. Before touching any commands, read through this
+once so you know what each step does and why it exists.
+/workflow          ← Run this at the start of every session. Reads pipeline-state.json
+and tells you exactly which skill to run next. Never skip this.
+/branch-setup      ← Creates an isolated git worktree for the story and verifies a clean
+baseline against the assurance gate. If this fails, nothing else runs.
+/definition-of-ready ← Validates the story has everything the coding agent needs: ACs,
+test plan, scope boundaries, and the standards to be injected.
+This is the human-agent handoff gate.
+/implementation-plan ← The agent produces a task-by-task plan with file paths and TDD
+steps. You review and approve before execution starts.
+/subagent-execution  ← Executes the implementation plan task by task. Each task runs as
+a subagent with its own context boundary.
+/implementation-review ← Reviews the implementation against the story ACs. Produces a
+structured review report. Failures here block completion.
+/verify-completion   ← Verifies all ACs pass, DoD criteria are met, and the trace record
+is complete and valid.
+/branch-complete     ← Finalises the branch, emits the assurance trace, and opens a
+draft PR. The CI assurance gate runs automatically.
+/improve             ← Run after a story merges. Extracts patterns and learnings from
+the delivery and proposes improvements to the skill base.
+
+The `/workflow` command reads `pipeline-state.json` and always tells you which step is next.
+You do not need to track this manually.
+
+---
+
+## Step 2: Bootstrap your repo
+
+Your squad repo needs to be configured to use the platform skills. Run the bootstrap skill
+from the skills repo against your squad repo:
+/bootstrap
+
+This will:
+- Copy the required `.github/` structure into your repo
+- Create a starter `pipeline-state.json`
+- Create `.github/context.yml` — **you must fill this in before running any stories**
+- Wire the assurance gate CI workflow
+
+**Configure `.github/context.yml`** — open it and fill in your squad name, domain, tech stack,
+and the standards tiers that apply to your work. This file is what tells the coding agent which
+standards to inject at the start of each story. An unconfigured `context.yml` means the agent
+runs without your domain standards in context.
+
+---
+
+## Step 3: Write a story ready for the inner loop
+
+A story is ready for the inner loop when it passes the Definition of Ready (DoR). The
+`/definition-of-ready` skill validates this, but you should write the story to this standard
+before handing it over.
+
+A DoR-compliant story has:
+
+- **A single, bounded scope** — one thing done, not a feature epic in disguise
+- **Acceptance criteria written as verifiable conditions** — "system returns HTTP 400 when
+  X is missing" not "system handles errors gracefully"
+- **A test plan** — what will be tested, at what level (unit/integration/e2e), and what
+  coverage is expected
+- **Explicit out-of-scope statements** — what the agent must not touch
+- **Domain tags** — so the platform knows which standards to inject
+
+If you are new to writing stories at this level of precision, run `/discovery` first. The
+discovery skill helps you work through the problem space and produces a structured definition
+that feeds directly into a DoR-compliant story.
+
+---
+
+## Step 4: Run your first story end to end
+
+Open VS Code in your squad repo. Open the Copilot Chat panel. Run:
+/workflow
+
+Copilot will read `pipeline-state.json` and tell you where you are. If you have just
+bootstrapped, it will direct you to `/branch-setup` for your first story.
+
+Follow the sequence. At each step:
+
+1. Read the skill output before accepting it
+2. The agent will tell you if it needs human input before proceeding
+3. If something looks wrong, stop and raise it — don't approve a step you don't understand
+
+Your first story should be something small and low-risk — a new utility function, a config
+change, a documentation update. The goal is loop closure, not a complex delivery.
+
+**Loop closure means:** story entered → inner loop ran → PR opened → assurance gate passed →
+you reviewed and merged → `/improve` run. That full cycle, once. After that you know the
+platform works in your context and you can increase story complexity.
+
+---
+
+## Step 5: Review the PR and merge
+
+When `/branch-complete` runs it opens a draft PR. Before you merge:
+
+- Check the assurance gate in CI has passed (✅ Assurance Gate — Verdict: pass)
+- Review the trace record in the PR — it should show the story ID, standards injected
+  (with hashes), and gate outcome
+- Review the diff as you would any PR — the agent is not infallible
+- Mark the PR ready for review and merge when satisfied
+
+The PR template will prompt you through the reviewer checklist. Fill it in — it is the
+human assurance record that complements the automated gate.
+
+---
+
+## Step 6: Close the loop with `/improve`
+
+After the PR merges, run:
+/improve
+
 This is the step most teams skip and shouldn't. `/improve` reviews the completed delivery,
 looks at what was in `learnings.md`, compares actual vs estimated complexity, and identifies
 whether any patterns from this story should feed back into the skill base.
