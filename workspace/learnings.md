@@ -392,6 +392,45 @@ If either is missing: add it with today's date as a carry-forward entry, referen
 
 ---
 
+## Platform tooling — `scripts/parse-session-timing.js` for E3 actuals derivation
+
+### Observed — 2026-04-12
+
+**Context:** E3 actuals for Phase 1 were derived manually by cross-referencing `.jsonl` transcript filenames and git commit timestamps. This was medium-low confidence (±1h per session) and required about 20 minutes of manual reconstruction work. The manual approach also required guessing the engagement fraction (what % of session time was active keyboard work vs idle), which introduced a second estimation step on top of the first.
+
+**Tool created:** `scripts/parse-session-timing.js` — zero-dependency Node.js parser for Copilot Chat JSONL transcript files. Replaces manual reconstruction and the engagement fraction question with computed actuals.
+
+**What the tool computes per session and in aggregate:**
+- `Focus` — sum of inter-prompt gaps ≤ `--max-gap` threshold (default 15 min). Represents active reading + composing time.
+- `Span` — wall-clock session time (first to last event)
+- `Model` — total model generation time (turn_start → turn_end)
+- `Tools` — total tool execution time (within-turn windows only)
+- `Idle excluded` — gaps > threshold (overnight, agent runs, context switches) — not counted as focus
+
+**Why the idle-gap threshold matters:** Sessions where the agent runs for hours (inner loop, overnight) show enormous span but minimal actual focus time. Without the threshold, a 14-hour session where the operator spent 1 hour working would look like 14h of focus. With `--max-gap 15`, only the active bursts count; the 13h autonomous run is excluded. The threshold can be adjusted with `--max-gap N` — 15 min is the default, which proved accurate against the Phase 1 manual reconstruction.
+
+**Phase 1 validation:** Parser output matched the manually-derived ~13h focus figure within ~1h margin. Session `cc177d7f` (README rebuild + parser development): 4h7m focus out of 23h span, with 14 idle gaps (18h43m) correctly excluded as overnight inner-loop execution. This gives confidence the parser is reliable.
+
+**Impact on E3 flow:** The `/estimate` SKILL.md E3b step now uses the parser as the primary method. E3c (engagement fraction question) is now a confirmatory `ok` step when parser data is available — it shows the computed fraction and asks if the idle threshold looks right. The "one guess question" is replaced by a computed confirmation. Engagement fraction becomes an output of the tool, not an input from the operator.
+
+**Usage:**
+```powershell
+# All sessions (auto-discovered across workspace storage)
+node scripts/parse-session-timing.js --summary
+
+# Single session with per-prompt detail
+node scripts/parse-session-timing.js path/to/session.jsonl --detail
+
+# Adjust idle-gap threshold (default 15 min)
+node scripts/parse-session-timing.js --summary --max-gap 30
+```
+
+**Transcript location:** `%APPDATA%\Code\User\workspaceStorage\[hash]\GitHub.copilot-chat\transcripts\[sessionId].jsonl`
+
+**Action:** `/estimate` SKILL.md updated — E3b now references this tool as primary method. E3c now confirmatory (not estimation). This becomes standard practice for all future E3 actuals derivation.
+
+---
+
 *More signals will be added here as Phase 1 dogfood run progresses.*
 
 ---

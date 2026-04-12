@@ -8,8 +8,9 @@ description: >
   Run manually with /estimate to record, update, or review.
   The key bottleneck signal is outer-loop operator focus time — inner-loop
   agent runs are largely autonomous once stories are DoR-ready.
-  Focus hours are derived, not recalled: totalCalendarH x engagementFraction
-  from JSONL session reconstruction. One operator question per feature.
+  Focus hours are derived, not recalled: `scripts/parse-session-timing.js`
+  extracts actual focus time from Copilot Chat JSONL transcripts, cutting
+  idle gaps automatically. Engagement fraction is confirmed, not guessed.
 triggers:
   - "/estimate"
   - "record estimate"
@@ -231,30 +232,60 @@ Present the phase duration table before asking any question:
 
 ### Step E3b — JSONL session reconstruction
 
-Read all JSONL transcript files whose timestamps fall within the feature date range.
-Each file = one session. For each file extract:
+**Primary method — `scripts/parse-session-timing.js`:**
 
-- Session start: first message timestamp
-- Session end: last message timestamp
-- Session wall-clock time: end − start
-- Operator message count: messages with `role: "user"`
+Run the session timing parser, then filter output to sessions whose start time falls within the feature date range (E3a start → last DoD date):
 
-Present the reconstruction immediately after E3a:
+```powershell
+node scripts/parse-session-timing.js --summary
+# For per-prompt detail on a specific session:
+node scripts/parse-session-timing.js path/to/session.jsonl --detail
+```
 
-> **Session reconstruction from JSONL:**
-> [n] sessions across [n] calendar days
-> Session lengths: [list — e.g. 1.5h, 2h, 0.5h, 2.2h]
-> Total wall-clock session time: [n]h
-> Operator messages: [n] total
-> Sessions by phase (approximate, date-aligned): Discovery: [n], Definition: [n], ...
+The `--summary` output is auto-discovered from all workspace transcript directories under `%APPDATA%\Code\User\workspaceStorage\`. Default idle-gap threshold is 15 min (`--max-gap 15`) — gaps longer than this are excluded from focus time automatically. Adjust with `--max-gap N` if sessions involve long reading pauses.
 
-`totalCalendarH` = sum of all session wall-clock times from JSONL.
+Present the filtered reconstruction immediately after E3a:
 
-If JSONL files are not accessible: note "JSONL not accessible — using calendar span estimate" and set `totalCalendarH = calendarDays × 2` as a conservative default.
+> **Session reconstruction — `parse-session-timing.js` output (feature date range: [start] → [end]):**
+>
+> | Session start | Prompts | Span | Focus | Model | Idle excluded |
+> |--------------|---------|------|-------|-------|---------------|
+> | [date/time] | [n] | [n]h | [n]h | [n]m | [n]h (>[15]m) |
+> | ... | | | | | |
+> | **Total** | [n] | [n]h | **[n]h** | [n]h | [n]h |
+>
+> Max-gap threshold: [N] min
 
-### Step E3c — Engagement fraction question (the only operator input)
+`outerLoopFocusH` = sum of `Focus` column across feature-range sessions (idle already excluded).
+`totalCalendarH` = sum of `Span` column (wall-clock session time).
+`actualEngagementFraction` = `outerLoopFocusH ÷ totalCalendarH` (computed — not estimated).
 
-After presenting E3a and E3b, ask exactly one question:
+**Fallback — parser unavailable or JSONL not accessible:**
+
+Read transcript JSONL files directly; extract first/last timestamps per file. Set `totalCalendarH` = sum of session wall-clock times. If no files are accessible, set `totalCalendarH = calendarDays × 2` and note "JSONL not accessible — calendar span estimate used". Proceed to E3c manual path.
+
+### Step E3c — Engagement fraction (confirmatory when script data is available)
+
+**Primary path — parser output available (normal case):**
+
+Focus time is computed directly from the transcript — no estimation needed.
+`outerLoopFocusH` and `actualEngagementFraction` are already set from E3b.
+
+Present the computed result and ask for confirmation only:
+
+> **Computed focus time: [n]h ([fraction × 100]% engagement)**
+> [n]h active focus ÷ [n]h total session wall-clock time
+> Idle excluded: [n]h (gaps > [N] min — overnight, agent runs, context switches)
+> Max-gap threshold used: [N] min (default: 15 min)
+>
+> Does this look right, or adjust the idle threshold?
+> Reply: `ok` — or: `--max-gap [N]` to recompute (e.g. `--max-gap 30` for longer reading sessions)
+
+If the operator adjusts the threshold, re-run the parser with the new flag and recompute `outerLoopFocusH` and `actualEngagementFraction` before proceeding.
+
+**Fallback path — parser unavailable or JSONL not accessible:**
+
+After presenting E3a and E3b (calendar span estimate), ask exactly one question:
 
 > **One question to convert session time to focus time.**
 >
@@ -271,7 +302,6 @@ After presenting E3a and E3b, ask exactly one question:
 Derive: `outerLoopFocusH = totalCalendarH × engagementFraction`
 
 Do not ask for per-phase hour breakdowns. Do not ask the operator to recall hours.
-The engagement fraction is the only required operator input for E3.
 
 After recording the engagement fraction, ask one optional follow-up:
 
