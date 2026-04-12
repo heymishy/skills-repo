@@ -204,9 +204,11 @@ Domain-tier extensions (squad-specific overrides) are declared in the squad's `c
 | Estimation actuals | `workspace/phase2-actuals.md` |
 | State and checkpoint | `workspace/state.json` |
 | Eval regression suite | `workspace/suite.json` |
-| Delivery traces | `workspace/traces/` |
+| Delivery traces | `workspace/traces/` (files); `origin/traces` branch (permanent store) |
 | Improvement proposals | `workspace/proposals/` |
 | Adoption readiness (RAG) | `workspace/adoption-readiness.md` |
+
+**`traces` branch — ruleset note:** The `traces` branch is a permanent append-only branch that holds all CI assurance trace JSONL files. It is written exclusively by the `trace-commit.yml` GitHub Actions workflow (github-actions bot push) after each inner loop PR merge. No human direct-push is permitted; no PR is required to write to this branch. The branch ruleset should allow pushes only from the `trace-commit.yml` workflow identity. **Fleet fork operators:** recreate the `traces` branch and matching branch ruleset on your fork before running any inner loop story. Without the branch and ruleset in place, the `trace-commit.yml` post-merge step will fail silently and traces will be lost.
 
 ---
 
@@ -215,6 +217,23 @@ Domain-tier extensions (squad-specific overrides) are declared in the squad's `c
 ### 6.1 Entry condition met
 
 T3M1 (Tier 3, Meta-metric 1 — independent non-engineer audit) is on record in `MODEL-RISK.md` with Hamish sign-off 2026-04-12, outcome "approved with conditions", 3/8 Y baseline. Phase 3 /discovery is unblocked. The five T3M1 gap closures (Q2, Q5, Q6, Q7, Q8 — see Section 3.1) become Phase 3 story candidates.
+
+**Raw artefact links for reconstruction** (use these if working from a fork, partial clone, or outside this repo):
+
+| Artefact | Raw URL |
+|----------|---------|
+| MODEL-RISK.md (T3M1 evidence + sign-off) | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/MODEL-RISK.md |
+| Phase 1 discovery | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/discovery.md |
+| Phase 1 benefit-metric | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/benefit-metric.md |
+| Phase 1 decisions | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/decisions.md |
+| Phase 1 p1.8 DoR (model risk story) | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.8-model-risk-documentation-dor.md |
+| Phase 1 p1.8 DoR contract | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.8-model-risk-documentation-dor-contract.md |
+| Phase 2 discovery | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/discovery.md |
+| Phase 2 benefit-metric | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/benefit-metric.md |
+| Phase 2 decisions | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/decisions.md |
+| Phase 2 p2.4 DoR (T3M1 evaluation trace story) | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.4-agents-md-adapter-dor.md |
+| Phase 2 p2.11 DoR (improvement agent) | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.11-improvement-agent-trace-proposals-dor.md |
+| T3M1 evaluation trace (p2.4 / PR #31) | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/traces/workspace/traces/2026-04-11T21-33-02-002Z-ci-84f82370.jsonl |
 
 ### 6.2 /levelup renamed to /improve
 
