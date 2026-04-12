@@ -631,6 +631,88 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 
 ---
 
+## General design principle — governance constraints must be visible at the moment of action
+
+### Observed — 2026-04-12 (Phase 1+2 close synthesis)
+
+**Pattern synthesised from:** non-schema guardrail values gap (pipeline-state.json `status`/`category` enums), testability filter gap (untestable Bitbucket AC propagated through full pipeline), cross-story schema dependency gap (p1.6 did not know p1.4's read-side schema), and the D-batch pipeline exit-sequence gaps (D3/D5/D6).
+
+**Principle:** A governance constraint is only effective if it is visible at the exact moment a decision is made. Constraints buried in reference documents, schema files, or downstream stories are systematically ignored — not through negligence, but because agents (and humans) operate in bounded context windows. They read what is immediately in front of them and write what feels locally consistent.
+
+**Three forms this failure takes:**
+1. **Schema constraints not in the writing skill.** The pipeline-state.json guardrail enum values were defined in the JSON schema but not quoted in the DoD or DoR skill files. Skills wrote informal synonyms (`pass`, `deferred`, `no-breach`) because the valid values were not stated at the point of writing. Fix: embed the enum inline in the SKILL.md writing instruction, not just in an external schema file.
+2. **Testability constraints not evaluated at story-writing time.** The definition skill wrote Bitbucket-requiring ACs without asking "can this be tested in the delivery context?" The filter existed conceptually (discovery flagged Bitbucket as portability requirement) but was not applied at AC-writing time because there was no SKILL.md step requiring it. Fix: make the testability question a mandatory filter at the AC sentence level in `/definition`, not a review-phase catch.
+3. **Consuming schema not visible to producing story.** p1.6 wrote `workspace/suite.json` without knowing that p1.4 would require `skillSetHash` and `surfaceType` at runtime, because p1.4's DoR did not surface its read-side schema to the producing story's scope. Fix: when a story references a file produced by another story, the consuming story's required schema must be written into the producing story's DoR contract — not just verified at integration time.
+
+**General formulation:** Any constraint that a skill must respect must be quoted, inline, at the point in the SKILL.md where the constrained decision is made. Linking to an external file, appendix, or reference document is not sufficient — agents navigate forward in a file and do not re-read sections they have passed. The constraint must appear in the same paragraph as the instruction it constrains.
+
+**Application to pipeline evolution:** When adding a new schema field, enum value, or naming convention to any platform artefact, the first write-back target is the SKILL.md step that authors that field — not just the schema file or governance doc.
+
+**Action:** Use this principle as the evaluation criterion when reviewing D-batch proposals. Before accepting a proposal that adds a new constraint, ask: "Is this constraint visible at the moment of action in the skill that is most likely to violate it?" If not, add it there before (or instead of) adding it to a reference document.
+
+---
+
+## Adversarial audit synthesis — RBNZ-framed challenges and bounded governance claim
+
+### Observed — 2026-04-12 (Phase 1+2 close — governance honest-scope assessment)
+
+**Context:** Before the Westpac pilot conversation, the platform's governance claims were tested against RBNZ-style regulatory audit challenges — the seven hardest questions a risk-function reviewer would ask about an AI-governed delivery pipeline in a regulated context.
+
+**The seven challenges and the platform's current honest answers:**
+
+| # | Challenge | Honest answer | Phase 3 path |
+|---|-----------|---------------|-------------|
+| 1 | Can you prove what instruction set governed each AI action? | `traceHash` is present in Phase 2 traces and verifiable against git history. Provable for all merged Phase 2 PRs. | Complete — no gap. |
+| 2 | Can you prove which standards applied? | `standardsInjected` field is not yet populated in real traces — hash reconciliation not wired into CI trace write. Not provable at Phase 2 close. | p1.7/p2.1 gate enhancement (Phase 3). |
+| 3 | Can you prove AI independence from human prompting at audit time? | Three-agent structure is procedural, not structural (see R1). CI validates separate trace entries exist but not genuine session independence. Not provable from trace alone. | Phase 3 CI gate story — validate entry count + session timestamp gap. |
+| 4 | Can you prove no regression from previous delivery cycles? | Watermark gate (p1.4) is operational; `results.tsv` contains pass/baseline rows. Regression detection is live. Provable. | Complete — no gap. |
+| 5 | Can you prove a non-engineer approved the delivery specification? | Non-engineer approval interface (p2.8) is built and tested. No real non-engineer has used it yet (M5 not-started). Not provable from a real-world event. | Live pilot with a real non-engineer approver. |
+| 6 | Can you prove that improvement to the AI instruction set was human-reviewed before adoption? | `workspace/proposals/` contains diff proposals with challenger pre-check results; PR merge is the human review gate. Provable for any actioned proposal in Phase 2. | Complete once first proposal is actioned. |
+| 7 | Can you prove the governance applied on day N is the same governance that was reviewed and approved? | Hash is in the trace; recomputation against git history is possible but not automated in audit tooling. Manual recomputation only. | Phase 3 — automate hash drift check in assurance gate. |
+
+**The bounded governance claim:** The platform can honestly claim automated, auditable governance for challenges 1, 4, and 6. Challenge 2 is architecturally designed and will close in Phase 3. Challenges 3, 5, and 7 are open gaps requiring Phase 3 delivery and/or live pilot evidence. The platform cannot claim full RBNZ-equivalent control assurance at Phase 2 close. It can claim a materially stronger governance posture than unstructured AI use, with a credible and costed path to full assurance.
+
+**What this means for the pilot conversation:** The honest framing is "structured governance with verified traceability for 3 of 7 regulatory challenges, and a Phase 3 roadmap for the remaining 4." Overclaiming full regulatory compliance at this stage would produce an adversarial review outcome. The bounded claim is both more credible and more defensible.
+
+**Action:** Use this table as the governance claim calibration reference for the Westpac pilot conversation. Update the table when Phase 3 delivers. Do not advance the claim beyond what the evidence record supports.
+
+---
+
+## Operational pattern — High model rate limit: 45-minute window, Auto model as structured-work fallback
+
+### Observed — 2026-04-12 (Phase 2 inner loop delivery)
+
+**Circumstance:** During the Phase 2 delivery cycle, the primary model (Claude Sonnet 4.6 via GitHub Copilot) hit the "High" rate limit — a per-period cap distinct from the monthly token budget. The limit is enforced at the API level; newly started turns receive a rate-limit error and the session cannot proceed with the primary model.
+
+**Pattern observed:**
+- Rate limit duration: approximately 45 minutes from first refusal before the quota refreshes.
+- The error surfaces as a session-level refusal, not a token depletion warning — the limit hits without prior degradation signal.
+- The "Auto" model (Copilot's automatic model routing, which uses available capacity across the model pool) is not subject to the same per-model limit. It degrades gracefully to available capacity and continues supporting structured pipeline work.
+
+**What Auto model is suitable for during a rate-limit window:**
+- Reading and summarising artefacts
+- Writing learnings.md entries and workspace/state.json updates
+- Reviewing pipeline-state.json for consistency
+- Producing structured markdown artefacts (DoD, checkpoint, adoption-readiness)
+- Any task where the output format is highly constrained (the Auto model follows structured templates reliably)
+
+**What Auto model is less suitable for:**
+- Complex multi-file implementation plans requiring deep codebase reasoning
+- Novel architecture decisions where reasoning quality matters more than formatting
+- Any task where the operator has found Auto outputs require heavy correction
+
+**Operational procedure:**
+1. When rate-limit error appears: note the approximate time, switch to Auto model.
+2. Continue structured pipeline work (artefacts, state writes, learnings) in Auto for up to 45 minutes.
+3. After 45 minutes: try a short test turn in the primary model to confirm quota has refreshed.
+4. Resume primary model for higher-reasoning tasks.
+
+**Why this matters for session planning:** The rate-limit window is 45 minutes of potentially wasted calendar time if the operator stops work. Recognising Auto as a reliable fallback for structured work converts the window from a blocker to a usable period. In practice, most outer-loop pipeline work (artefact writing, state management, checkpoint) falls in the Auto-suitable category.
+
+**Action:** Record as an operational pattern. No SKILL.md write-back required — this is runtime operating procedure. Reference in any future operator guide or ONBOARDING.md update.
+
+---
+
 ### T3M1 honest gap — 5 of 8 audit questions unanswered at Phase 2 close
 
 **Date:** 2026-04-12

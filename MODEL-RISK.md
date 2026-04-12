@@ -85,27 +85,23 @@ This table maps all eight audit questions from the platform operating model (§9
 
 <!-- T3M1-EVIDENCE-RECORD-START -->
 
-> **Status: PENDING — dependency-gated**
-> This section is a template at delivery time. It is filled at DoD time after both prerequisite stories are DoD-complete and a real trace exists:
-> - `p1.3-assurance-agent-ci-gate` must be DoD-complete and running in CI
-> - `p1.7-standards-model-phase1` must be DoD-complete (standards injected into trace)
-> - A real inner loop story must have been run through the P1.3 CI gate to produce the evidence trace
->
-> **Do not fill this section with fabricated or estimated values. Record only real evidence.**
+**Status: PARTIAL — 3 of 8 questions answered Y at Phase 2 close.**
+
+Evidence was evaluated against the first real Phase 2 inner loop trace. This is the expected Phase 1+2 baseline — the five unanswered questions require Phase 3 gate enhancements to resolve. Full 8/8 is required before regulated-enterprise adoption. See `workspace/learnings.md` "T3M1 honest gap" entry and "Adversarial audit synthesis" entry for full gap analysis and Phase 3 roadmap.
 
 | Field | Value |
 |-------|-------|
-| Story ID used as evidence | `[to be filled at DoD — story ID of the inner loop story run through the P1.3 gate]` |
-| Trace file path | `[to be filled at DoD — e.g. workspace/traces/<story-id>.json]` |
-| Q1: Instruction set identified (`traceHash` present and non-empty)? | `[Y/N — to be filled at DoD]` |
-| Q2: Standards applied (`standardsInjected` array present with ≥1 entry)? | `[Y/N — to be filled at DoD]` |
-| Q3: Model/commit identified (`commitSha` present and non-empty)? | `[Y/N — to be filled at DoD]` |
-| Q4: Output validated (`verdict` field present with `pass` or `fail`)? | `[Y/N — to be filled at DoD]` |
-| Q5: Regression check present (`results.tsv` row with matching `skillSetHash`)? | `[Y/N — to be filled at DoD]` |
-| Q6: Staleness flag assessed (`stalenessFlag` field present in entry)? | `[Y/N — to be filled at DoD]` |
-| Q7: Agent independence evidenced (three trace entries with correct `trigger` values)? | `[Y/N — to be filled at DoD]` |
-| Q8: Hash verifiable (recomputed hash matches `traceHash` in trace entry)? | `[Y/N — to be filled at DoD]` |
-| Overall verdict | `[pass/fail — to be filled at DoD after all eight questions answered Y]` |
+| Story ID used as evidence | `p2.4` (AGENTS.md adapter — PR #31, merged 2026-04-11) |
+| Trace file path | `workspace/traces/2026-04-11T21-33-02-002Z-ci-84f82370.jsonl` |
+| Q1: Instruction set identified (`traceHash` present and non-empty)? | **Y** — `traceHash` present and non-empty in the `completed` trace entry; verifiable against git history of `.github/skills/`. |
+| Q2: Standards applied (`standardsInjected` array present with ≥1 entry)? | **N** — `standardsInjected` field absent from trace. Hash reconciliation not yet wired into CI trace write. Closes in Phase 3 (p1.7/p2.1 gate enhancement). |
+| Q3: Model/commit identified (`commitSha` present and non-empty)? | **Y** — `commitSha` present and non-empty in the `completed` trace entry; identifies exact repository state at gate run time. |
+| Q4: Output validated (`verdict` field present with `pass` or `fail`)? | **Y** — `verdict: pass` present in `completed` trace entry (CI gate passed for p2.4 PR #31). |
+| Q5: Regression check present (`results.tsv` row with matching `skillSetHash`)? | **N** — Watermark gate does not yet emit a result row to `results.tsv` or surfaced in the PR comment. Watermark gate operational but result not linked to the audit trace. Closes in Phase 3 (p1.4 PR reporting story). |
+| Q6: Staleness flag assessed (`stalenessFlag` field present in entry)? | **N** — `stalenessFlag` field absent from trace schema. Skill-version staleness detection not yet wired. Closes in Phase 3 (trace schema story). |
+| Q7: Agent independence evidenced (three trace entries with correct `trigger` values)? | **N** — CI validates gate ran (`trigger: ci` present) but does not validate that three separate, genuinely independent trace entries exist for the story. Closes in Phase 3 (CI gate entry-count validation story). |
+| Q8: Hash verifiable (recomputed hash matches `traceHash` in trace entry)? | **N** — Recomputation is possible manually against git history but is not automated in the assurance gate. No tooling exists to perform this check on a reviewer's behalf. Closes in Phase 3 (automated hash drift check story). |
+| Overall verdict | **partial — 3/8 Y** — Instruction identity (Q1), commit traceability (Q3), and gate verdict (Q4) are confirmed. This is the honest Phase 1+2 baseline. Re-evaluate after Phase 3 delivers the five remaining gap closures. |
 
 <!-- T3M1-EVIDENCE-RECORD-END -->
 
