@@ -53,6 +53,12 @@ console.log('');
 console.log('  Expected locations:');
 
 // ── D-checks: files must exist at new locations ───────────────────────────────
+//
+// MANIFEST — when adding a new canonical doc to docs/ or docs/diagrams/, add an
+// entry to EXPECTED below.  When removing or renaming a doc that was moved from
+// root, update the MUST_NOT_EXIST_AT_ROOT list too.  These lists are the sole
+// authoritative registry for the docs/ layout convention.  There is no separate
+// manifest file — this array IS the manifest.
 
 const EXPECTED = [
   { id: 'D1', file: 'docs/HANDOFF.md',                        label: 'docs/HANDOFF.md exists' },

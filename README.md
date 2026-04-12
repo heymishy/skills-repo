@@ -270,6 +270,8 @@ flowchart TB
     classDef gate fill:#f59e0b,color:#fff,stroke:none
 ```
 
+> **Repo layout:** `standards/` is at the repo root (not under `docs/`) because SKILL.md files reference discipline paths such as `standards/[discipline]/core.md`. Moving it would require updating every skill path reference across the library. Human-readable reference documents live in `docs/`; machine-consumed instruction content stays at root depth.
+
 **Currently live:** 3 core disciplines (software-engineering, security-engineering, quality-assurance) with full POLICY.md floors delivered in Phase 1. 8 additional domain-tier discipline standards delivered as pilots in Phase 2 (p2.9). `standards/index.yml` is the composition routing table. The composition path is: core → domain extension → squad specification → POLICY.md validation → injected as one composed standards document.
 
 ### How standards injection works
@@ -404,4 +406,4 @@ The `artefacts/`, `.github/skills/`, `.github/templates/`, and `.github/governan
 
 Built with the skills platform's own pipeline — 21 stories, 4 calendar days.
 
-[HANDOFF.md](docs/HANDOFF.md) · [Architecture decisions](.github/architecture-guardrails.md) · [Model risk](docs/MODEL-RISK.md)
+[Onboarding guide](docs/ONBOARDING.md) · [HANDOFF.md](docs/HANDOFF.md) · [Architecture decisions](.github/architecture-guardrails.md) · [Model risk](docs/MODEL-RISK.md)
