@@ -1,7 +1,7 @@
 {
   "feature": "2026-04-11-skills-platform-phase2",
   "lastUpdated": "2026-04-12T17:10:00+10:00",
-  "currentPhase": "definition-of-done",
+  "currentPhase": "phase-2-complete",
   "cycle": {
     "discovery": {
       "status": "approved",
@@ -81,16 +81,12 @@
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-04-12T23:00:00+10:00",
+    "writtenAt": "2026-04-12T23:30:00+10:00",
     "contextAtWrite": "Phase 1+2 fully closed. All 13 Phase 2 stories merged and DoD-complete. Phase 2 /levelup complete: ADR-007 (EA registry mapping), ADR-008 (DoR contract binding), PAT-06, PAT-07, AP-07, AP-08, Operating Posture section all written to architecture-guardrails.md. Automation displacement finding added to learnings.md. Phase 1+2 close commit (cd484d5): learnings entries, MODEL-RISK.md Section 3 filled with 3/8 T3M1 actuals, workspace/adoption-readiness.md created for Westpac pilot. README fixes committed. workspace/state.json checkpoint updated.",
-    "resumeInstruction": "Phase 1 and Phase 2 are both complete and levelup-complete. Outstanding items before Phase 3 begins: (1) p1.8 AC3 T3M1 evidence record — deferred to Phase 3 (requires p1.7 completion); (2) p2.10 Docker-gated tests AC3/AC4/AC5 still need DC environment evidence; (3) Phase 2 E3 actuals are medium-low confidence — rerun parse-session-timing.js when JSONL logs are available. Phase 3 scope: T3M1 8/8 gap closures (Q2/Q5/Q6/Q7/Q8), state timestamp monotonicity guard, E2 automation-level fork, Windows validate-trace.ps1, parse-session-timing.js telemetry path restoration. Run /workflow or /discovery to start Phase 3 scoping.",
+    "resumeInstruction": "Phase 1 and Phase 2 are complete. Next action: Phase 3 discovery when entry conditions are met — see artefacts/2026-04-11-skills-platform-phase2/reference/ref-skills-platform-phase3.md for entry conditions. T3M1 independent validation is the outstanding hard entry condition.",
     "pendingActions": [
-      "Phase 3 scoping: run /discovery for T3M1 gap closure and state timestamp guard stories",
-      "p1.8 AC3: T3M1 evidence record — deferred; closes when Phase 3 delivers p1.7 hash reconciliation",
-      "p2.10 Docker-gated tests (AC3/AC4/AC5): run in real DC environment when available",
-      "Phase 2 E3 actuals: rerun parse-session-timing.js when JSONL debug logs are accessible",
-      "Westpac pilot M1 amber: schedule a real second-operator outer loop run to close M1 green",
-      "Westpac pilot M5 red: configure live approval channel (Jira/Teams/Slack) and run a real non-engineer sign-off"
+      "Complete adoption-readiness.md amber/red row actions before Westpac pilot",
+      "Run Phase 3 /discovery when T3M1 independent validation is on record in MODEL-RISK.md"
     ]
   },
   "phase1Reference": {
