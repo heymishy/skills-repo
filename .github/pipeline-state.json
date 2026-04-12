@@ -796,14 +796,14 @@
       "benefitMetricStatus": "active",
       "slicingStrategy": "risk-first",
       "updatedAt": "2026-04-12",
-      "lastLevelup": "2026-04-12",
+      "lastImprove": "2026-04-12",
       "standards": {
         "recentUpdates": [
           "standards/quality-assurance/core.md",
           ".github/architecture-guardrails.md",
           "workspace/learnings.md"
         ],
-        "levelupNotes": "Phase 2 /levelup: ADR-007 (EA registry mapping), ADR-008 (DoR contract binding), PAT-06 (execution pre-condition gate), PAT-07 (grouped instruction-text changes), AP-07 (multi-story contamination), AP-08 (runtime artefact churn), Operating Posture section (W4 solo operator). Automation displacement finding added to learnings.md."
+        "improveNotes": "Phase 2 /improve (formerly /levelup): ADR-007 (EA registry mapping), ADR-008 (DoR contract binding), PAT-06 (execution pre-condition gate), PAT-07 (grouped instruction-text changes), AP-07 (multi-story contamination), AP-08 (runtime artefact churn), Operating Posture section (W4 solo operator). Automation displacement finding added to learnings.md."
       },
       "dorBatch1": {
         "complete": [
@@ -1372,7 +1372,7 @@
           "signal": "not-started",
           "evidence": null,
           "lastMeasured": null,
-          "targetDescription": "|E2−actual|/actual < 20% by feature 3; measured automatically from results.tsv at each /levelup E3"
+          "targetDescription": "|E2−actual|/actual < 20% by feature 3; measured automatically from results.tsv at each /improve E3"
         },
         {
           "id": "MM5",
@@ -1380,7 +1380,7 @@
           "signal": "on-track",
           "evidence": "D4 (p2.2), D8/D9/B1-enforce (p2.3) delivered and verified DoD-complete, continuing conversion of logged flow findings into shipped changes.",
           "lastMeasured": "2026-04-12",
-          "targetDescription": "≥50% of logged flow findings result in pipeline improvement within 2 features; operator confirms at each /levelup"
+          "targetDescription": "≥50% of logged flow findings result in pipeline improvement within 2 features; operator confirms at each /improve"
         }
       ],
       "epics_batch2": [

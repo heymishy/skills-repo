@@ -277,7 +277,7 @@ This seeds the normalisation model — the prompt takes 2 minutes.
 
 > **Before we move to /benefit-metric:**
 > Run `/estimate` to record a rough focus-time forecast for this feature.
-> This gives us a Phase 1 baseline for calibration at /levelup.
+> This gives us a Phase 1 baseline for calibration at /improve.
 > Reply: `/estimate` — or `skip` to continue without an estimate
 
 If the operator replies `/estimate`, invoke the estimate skill (E1 mode).

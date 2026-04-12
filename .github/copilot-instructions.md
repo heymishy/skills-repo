@@ -122,118 +122,19 @@ option for regulated or phase-gate releases.
 
 ## Templates
 
-All structured artefacts conform to templates in `.github/templates/`.
-Skills reference these templates — do not embed format definitions in skill files.
-
-| Artefact | Template |
-|----------|----------|
-| Epic | `.github/templates/epic.md` |
-| Story | `.github/templates/story.md` |
-| Benefit metric | `.github/templates/benefit-metric.md` |
-| Test plan | `.github/templates/test-plan.md` |
-| Definition of ready | `.github/templates/definition-of-ready-checklist.md` |
-| AC verification script | `.github/templates/ac-verification-script.md` |
-| Decision log | `.github/templates/decision-log.md` |
-| Reverse engineering report | `.github/templates/reverse-engineering-report.md` |
-| Vendor Q&A tracker | `.github/templates/vendor-qa-tracker.md` |
-| Discovery | `.github/templates/discovery.md` |
-| Review report | `.github/templates/review-report.md` |
-| Definition of done | `.github/templates/definition-of-done.md` |
-| Trace report | `.github/templates/trace-report.md` |
-| Release notes (technical) | `.github/templates/release-notes-technical.md` |
-| Release notes (plain language) | `.github/templates/release-notes-plain.md` |
-| Change request | `.github/templates/change-request.md` |
-| Deployment checklist | `.github/templates/deployment-checklist.md` |
-| Architecture guardrails | `.github/templates/architecture-guardrails.md` |
-| Reference index | `.github/templates/reference-index.md` |
-| Migration story | `.github/templates/migration-story.md` |
-| Consumer registry | `.github/templates/consumer-registry.md` |
-| Coverage map | `.github/templates/coverage-map.md` |
-| Ideation | `.github/templates/ideation.md` |
-| Spike outcome | `.github/templates/spike-outcome.md` |
-| Spike output | `.github/templates/spike-output.md` |
-| Metric review | `.github/templates/metric-review.md` |
-| Programme | `.github/templates/programme.md` |
-| Implementation plan | `.github/templates/implementation-plan.md` |
-| Implementation review | `.github/templates/implementation-review.md` |
-| Compliance bundle | `.github/templates/compliance-bundle.md` |
-| Verify completion | `.github/templates/verify-completion.md` |
-| NFR profile | `.github/templates/nfr-profile.md` |
-| Loop design | `.github/templates/loop-design.md` |
-| Token optimization | `.github/templates/token-optimization.md` |
-| Org mapping | `.github/templates/org-mapping.md` |
-| Scale pipeline | `.github/templates/scale-pipeline.md` |
-
-When a skill produces a structured artefact, it uses the relevant template.
-When reviewing artefacts, check them against the template — missing fields are findings.
+All artefact templates are in `.github/templates/` — each skill references its own template in its SKILL.md. When reviewing artefacts, check them against the relevant template; missing fields are findings.
 
 ---
 
 ## Artefact storage
 
-All pipeline artefacts are saved to `artefacts/[feature-slug]/`:
-
-**Naming convention:** Feature folders follow the pattern `YYYY-MM-DD-[feature-slug]`
-where the date is the discovery start date. Example: `artefacts/2025-07-15-payments-fraud-detection/`.
-This keeps features in chronological order. The convention is established during `/discovery`.
-
-```
-artefacts/[YYYY-MM-DD-feature-slug]/
-  reference/
-    reference-index.md            ← index of all uploaded source documents
-    [scoping-doc.pdf / .pptx / .docx ...]
-    [business-case.pdf / ...]
-    [any other source materials]
-  discovery.md
-  benefit-metric.md
-  decisions.md
-  epics/
-    [epic-slug].md
-  stories/
-    [story-slug].md
-  review/
-    [story-slug]-review-1.md
-  test-plans/
-    [story-slug]-test-plan.md
-  verification-scripts/
-    [story-slug]-verification.md
-  dor/
-    [story-slug]-dor.md
-  plans/
-    [story-slug]-plan.md
-  dod/
-    [story-slug]-dod.md
-  trace/
-    [date]-trace.md
-  coverage/
-    coverage-map.md
-    coverage-map.html
-  research/
-    ideation.md                   ← produced by /ideate
-```
+All artefacts are saved to `artefacts/YYYY-MM-DD-[feature-slug]/` (date = discovery start; established by `/discovery`). Sub-directories follow the pattern: `stories/`, `epics/`, `test-plans/`, `verification-scripts/`, `dor/`, `plans/`, `dod/`, `trace/`, `coverage/`, `reference/`, `research/`. The full directory tree and naming convention live in `discovery/SKILL.md`.
 
 ---
 
 ## Context handoff protocol
 
-Each skill writes its primary output to the feature artefact folder at `artefacts/{YYYY-MM-DD-feature-slug}/`. The canonical files are:
-
-```
-discovery.md                          ← /discovery output
-benefit-metric.md                     ← /benefit-metric output
-epics/[epic-slug].md                  ← /definition output
-stories/[story-slug].md               ← /definition output
-test-plans/[story-slug]-test-plan.md  ← /test-plan output
-verification-scripts/[story-slug]-verification.md  ← /test-plan output
-dor/[story-slug]-dor.md               ← /definition-of-ready output
-dor/[story-slug]-dor-contract.md      ← /definition-of-ready contract proposal
-trace/[date]-trace.md                 ← /trace output
-dod/[story-slug]-dod.md               ← /definition-of-done output
-```
-
-**Coding agent resuming a feature:** your first action is to read the feature artefact folder in full before writing any code. Do not rely on conversation history for ACs, constraints, or scope decisions — read from the artefact files.
-
-**If the feature artefact folder does not exist or is incomplete:** invoke `/workflow` before proceeding.
+Each skill writes its primary output to the feature artefact folder. **Coding agent resuming a feature:** read the full artefact folder in full before writing any code. Do not rely on conversation history for ACs, constraints, or scope decisions — read from the artefact files. If the folder does not exist or is incomplete, invoke `/workflow` before proceeding.
 
 ---
 
@@ -365,7 +266,7 @@ This pipeline does not use story points or sprint velocity.
 Estimates are recorded in three passes by the `/estimate` skill:
 - **E1** (at /discovery): rough outer-loop focus-time forecast, seeded from scope complexity and operator experience
 - **E2** (at /definition): refined once story count and complexity scores are known
-- **E3** (at /levelup): actuals comparison, delta analysis, flow findings, and a row appended to `workspace/estimation-norms.md`
+- **E3** (at /improve): actuals comparison, delta analysis, flow findings, and a row appended to `workspace/estimation-norms.md`
 
 The key signals used to inform estimates:
 
@@ -395,66 +296,9 @@ Every skill has a `## State update — mandatory final step` section. **Completi
 
 ---
 
-## GitHub Copilot coding agent — project orientation
+## Platform change policy (Phase 2+)
 
-You are running in a GitHub Actions container with no IDE context, no prior conversation history, and no access to the operator's local environment. This section tells you everything you need to start.
-
-### Step 1 — Orient from artefacts
-
-Your work specification lives in the repository, not in the issue body alone. Before writing any code:
-
-1. Read `workspace/state.json` — current pipeline phase, active story ID, and resumption instruction.
-2. Read `artefacts/[feature-slug]/dor/[story-slug]-dor.md` — your Coding Agent Instructions block, the scope contract, and the AC list.
-3. Read `artefacts/[feature-slug]/test-plans/[story-slug]-test-plan.md` — the tests you must make pass; they are written to fail before you start.
-4. Read `artefacts/[feature-slug]/dor/[story-slug]-dor-contract.md` — exact file touchpoints and out-of-scope constraints.
-
-The issue body tells you which story to pick up. The artefact files are the authoritative source — do not rely on the issue body alone for AC details.
-
-### Step 2 — Understand the structure
-
-```
-.github/
-  skills/              ← SKILL.md files — do not modify
-  scripts/             ← governance check scripts (run via npm test)
-  templates/           ← artefact templates — do not modify
-  pipeline-state.json  ← pipeline state — update only when DoR instructs
-  copilot-instructions.md
-artefacts/             ← pipeline inputs — DO NOT MODIFY (see pipeline.instructions.md)
-workspace/
-  state.json           ← session state and checkpoint
-scripts/
-  validate-trace.sh    ← trace validation (requires Python + jsonschema + pyyaml)
-package.json           ← test script entry point
-```
-
-### Step 3 — Verify the baseline before making any changes
-
-```bash
-npm test                              # governance checks — zero external deps
-bash scripts/validate-trace.sh --ci  # trace chain validation
-```
-
-Both must pass on a clean checkout. If either fails before you have changed anything, add a PR comment describing the failure and stop — this is a pre-existing problem, not yours to fix.
-
-### Step 4 — Open PRs as drafts only
-
-Always open PRs as drafts. Never mark ready for review. Never merge.
-
-### When to stop and leave a PR comment
-
-If you encounter ambiguity that cannot be resolved from the artefact files — a missing AC, a contradictory constraint, an unmet prerequisite dependency — add a PR comment describing the specific blocker and stop. Do not improvise a workaround. The operator will resolve the blocker and re-trigger you.
-
----
-
-## What the coding agent should NOT do
-
-- Do not add scope beyond what the failing tests specify
-- Do not modify files outside the scope stated in the DoR artefact
-- Do not mark a PR as ready for review — open as draft
-- Do not merge — PR merge is a human action
-- Do not skip writing tests — implementation without failing tests is a pipeline violation
-- If you encounter ambiguity not covered by the ACs: add a PR comment describing it, 
-  do not assume
+**SKILL.md files, templates, standards files, and pipeline infrastructure changes must be merged via PR — not committed directly to the default branch.** This applies to all changes to `.github/skills/`, `.github/templates/`, `standards/`, `.github/governance-gates.yml`, and `scripts/`. The governed path is: local edit on a feature branch → PR opened → platform team reviews → merge. The coding agent orientation details for GitHub Actions runs are in `.github/instructions/agent-orientation.instructions.md`.
 
 ---
 

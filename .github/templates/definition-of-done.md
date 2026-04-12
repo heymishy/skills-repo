@@ -99,8 +99,8 @@ Deviations are not necessarily failures — they must be recorded and will be su
   - NFR gaps or guardrail entries absent at delivery time
   - Sequencing decisions that other DoD runs should be aware of
   - Any scope deviation resolved after PR open
-  Tag each observation as a /levelup candidate if it should feed back to
-  standards, architecture-guardrails, or skill files at the next /levelup run.
+  Tag each observation as a /improve candidate if it should feed back to
+  standards, architecture-guardrails, or skill files at the next /improve run.
 -->
 
 [None / numbered list of observations]
