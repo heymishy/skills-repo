@@ -789,3 +789,41 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 **Scope of remediation:** Legacy artefacts from Phase 1 and Phase 2 are not retroactively updated — the cost is prohibitive and the artefacts are finalised. The standard applies from Phase 3 delivery onwards and to any new human-oriented documents (e.g. `docs/validation-playbook.md`) being written now.
 
 **Action:** Add this standard to `.github/copilot-instructions.md` Artefact writing standards section before Phase 3 /discovery runs. Reference this entry as the signal source.
+
+---
+
+### Phase 2/3 boundary finding — copilot-instructions.md base layer contradicts P1.1 progressive skill disclosure design
+
+**Date:** 2026-04-12
+**Context:** Post-optimisation review of copilot-instructions.md (473 lines after commit `135221b` — down from 537 lines). User identified that 473 lines is still too long for an always-on base layer given the P1.1 progressive skill disclosure design: skills load on demand, not all context in the base layer.
+
+**P1.1 design intent:** The ideal base layer carries only always-needed context: product context · session start hook · pipeline table · checkpoint convention · estimation model reference · artefact writing standards · pipeline state mandatory write rule · architecture standards links. Everything else should live in the individual SKILL.md file that needs it.
+
+**Verification — grep analysis of .github/skills/\*\*:**
+
+| Search | Result | Implication |
+|--------|--------|-------------|
+| `artefacts/[YYYY-MM-DD` | 2 matches in `discovery/SKILL.md` lines 214/216 | Artefact naming convention IS in its SKILL.md — the 45-line directory tree in base layer is duplicate content |
+| `templates/story.md\|epic.md\|test-plan.md` | 10 matches across `definition/SKILL.md`, `review/SKILL.md`, `test-plan/SKILL.md`, `bootstrap/SKILL.md` | Every skill that uses a template references its template directly — the 49-line templates table in base layer is redundant |
+| Coding agent orientation keywords | 0 matches in any SKILL.md | The 64-line "GitHub Copilot coding agent — project orientation" + "What the coding agent should NOT do" sections have no SKILL.md home — they are the largest single candidate for relocation |
+
+**Sections identified for Phase 3 D-batch removal or relocation:**
+
+| Section | Lines (actual) | Action | Evidence |
+|---------|---------------|--------|----------|
+| `## Templates` (34-row table) | 49 | Remove from base layer — each skill references its own template in its SKILL.md | 10 grep matches across 4 SKILL.md files |
+| `## Artefact storage` (directory tree) | 45 | Compress to 3-line naming-convention statement — full tree is in discovery/SKILL.md | 2 matches in discovery/SKILL.md lines 214/216 |
+| `## Context handoff protocol` | 28 | Compress or merge into session start — covered by per-skill artefact paths and the session start hook | The canonical file list is per-skill knowledge |
+| `## GitHub Copilot coding agent — project orientation` + `## What the coding agent should NOT do` | 64 | Relocate to a new agent-scoped instructions file (e.g. `.github/instructions/agent-orientation.instructions.md`) — only applies in GitHub Actions execution context, wastes context in every interactive VS Code session | 0 matches in any SKILL.md |
+| `## Product context files` (4-row table) | 18 | Compress to 1-line pointer — skills that read these files (/discovery, /benefit-metric) will know from their own SKILL.md | Coverage by individual skills |
+
+**Total moveable: ~204 lines. Current: 473 lines. Target after Phase 3 D-batch: ~270 lines.**
+
+**Phase 3 D-batch action items:**
+1. Extract "GitHub Copilot coding agent — project orientation" + "What the coding agent should NOT do" (~64 lines) to `.github/instructions/agent-orientation.instructions.md` with appropriate `applyTo` scoping. Verify the GitHub Actions agent still receives this context before removing from base layer.
+2. Remove the 34-row templates table (~49 lines) from the base layer. Replace with a single sentence: "All artefact templates are in `.github/templates/` — each skill references its own template in its SKILL.md."
+3. Compress the artefact storage directory tree (~45 lines) to 3 lines stating the naming convention. The full tree lives in `discovery/SKILL.md`.
+4. Compress or merge the context handoff protocol (~28 lines) into the session start section — the "read artefact folder before writing code" instruction belongs in SESSION START and in the coding agent orientation, not as a standalone section.
+5. Compress the product context files table (~18 lines) to a 1-line pointer to `product/`.
+
+**Pre-condition for Phase 3 D-batch execution:** Verify that each target section is fully covered in the relevant SKILL.md or a new scoped instructions file before removing from the base layer. Do not remove without a verified landing zone. Risk: agent context gaps if migration is incomplete.
