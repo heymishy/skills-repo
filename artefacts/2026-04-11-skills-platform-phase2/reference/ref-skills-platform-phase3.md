@@ -22,7 +22,7 @@ Phase 3 begins when the following are all true:
 
 The first five conditions may be met while the T3M1 validation is still outstanding. The platform may continue internal use and Phase 3 design may begin. However, no adoption-readiness or audit-readiness claim may be stated externally or to any risk function until the independent T3M1 evaluation is complete.
 
-**Current state as of 2026-04-12 (Phase 2 close):** The first five conditions are met. T3M1 is currently at 3/8 — Q2, Q5, Q6, Q7, and Q8 are open. Full 8/8 is required before any regulated-enterprise adoption (Westpac or equivalent). Phase 3 design begins now; audit-readiness claims are withheld until the hard entry condition is satisfied.
+**Current state as of 2026-04-12 (Phase 2 close):** The first five conditions are met. T3M1 is currently at 3/8 — Q2, Q5, Q6, Q7, and Q8 are open. Full 8/8 is required before any regulated-enterprise adoption (Enterprise or equivalent). Phase 3 design begins now; audit-readiness claims are withheld until the hard entry condition is satisfied.
 
 ---
 
@@ -66,11 +66,11 @@ Active ADRs at Phase 2 close: ADR-001 (no hosted runtime), ADR-002 (no framework
 
 Q2 through Q8 are the Phase 3 delivery obligations that close the T3M1 gap. These five stories must be planned, DoR-gated, and DoD-confirmed before Phase 3 closes.
 
-**p2.10 Docker DC tests deferred (3 tests).** AC3 (app-password), AC4 (OAuth), and AC5 (SSH) are deferred pending a Bitbucket DC Docker environment. The Docker Compose deliverable (`tests/fixtures/docker-compose.bitbucket-dc.yml`) is committed and reproducible; the deferral is environmental only. These tests close naturally when the environment is available — no Phase 3 story is required unless Westpac onboarding requires DC validation before that environment exists.
+**p2.10 Docker DC tests deferred (3 tests).** AC3 (app-password), AC4 (OAuth), and AC5 (SSH) are deferred pending a Bitbucket DC Docker environment. The Docker Compose deliverable (`tests/fixtures/docker-compose.bitbucket-dc.yml`) is committed and reproducible; the deferral is environmental only. These tests close naturally when the environment is available — no Phase 3 story is required unless Enterprise onboarding requires DC validation before that environment exists.
 
 **D-batch pipeline evolution items pending (D10, D10a).** D10 (`/issue-dispatch` forward pointer at `/definition-of-ready` exit) and D10a (`Closes #[issue]` auto-close guidance in dispatch skill) are logged in `workspace/learnings.md` as Phase 3 implementation candidates. Neither is a blocking gap; both reduce operator memory load. Include as Phase 3 pipeline evolution stories.
 
-**Windows-native trace validator pending.** `scripts/validate-trace.sh` requires bash and python3 and fails in PowerShell-only environments. Phase 3 should deliver `scripts/validate-trace.ps1` as a Windows-native equivalent with full parity (`--ci` output, non-zero exit on hard fail, identical check set). This closes the CI parity constraint (see §Design constraints, constraint 6) for Windows-based squad environments and Westpac desktop baselines.
+**Windows-native trace validator pending.** `scripts/validate-trace.sh` requires bash and python3 and fails in PowerShell-only environments. Phase 3 should deliver `scripts/validate-trace.ps1` as a Windows-native equivalent with full parity (`--ci` output, non-zero exit on hard fail, identical check set). This closes the CI parity constraint (see §Design constraints, constraint 6) for Windows-based squad environments and Enterprise desktop baselines.
 
 ---
 
@@ -214,16 +214,16 @@ The approval channel adapter pattern established in p2.8 and formalised as ADR-0
 
 **Phase 2 dogfood implementation:** GitHub Issue channel. A linked GitHub Issue is created for each story at dispatch time. The designated approver posts `/approve-dor` as a comment. A GitHub Actions workflow triggers on the issue comment event and writes the sign-off record to `pipeline-state.json`.
 
-**Phase 3 delivery — enterprise channel adapters:** The target channels are those used by non-engineering approvers in regulated enterprise contexts. Phase 3 must deliver at least two enterprise adapters from the following candidates, prioritised by Westpac relevance:
+**Phase 3 delivery — enterprise channel adapters:** The target channels are those used by non-engineering approvers in regulated enterprise contexts. Phase 3 must deliver at least two enterprise adapters from the following candidates, prioritised by Enterprise relevance:
 
 - **Jira:** Approval triggered by a Jira workflow transition (e.g. a "Approved for Development" status change on the linked Jira ticket) or a structured comment containing `/approve-dor`. The adapter listens via Jira webhook and writes the sign-off to `pipeline-state.json` on the correct event.
-- **Microsoft Teams:** An Adaptive Card is sent to the designated approver containing the story summary and an Approve button. The button click fires a webhook that triggers the pipeline-state write. Priority candidate for Westpac given Teams penetration in Australian banking.
+- **Microsoft Teams:** An Adaptive Card is sent to the designated approver containing the story summary and an Approve button. The button click fires a webhook that triggers the pipeline-state write. Priority candidate for Enterprise given Teams penetration in Australian banking.
 - **Confluence:** Approval via a structured Confluence approval macro or approval page status change. Relevant for teams that use Confluence as their primary artefact review surface.
 - **Slack:** Interactive message with an Approve action; click triggers the sign-off webhook.
 
 Each adapter must: authenticate using enterprise service credentials or OAuth, not personal tokens; preserve the channel-agnostic `pipeline-state.json` write contract without introducing channel-specific fields; be unit-testable in isolation against a mock channel API; and not store approval state outside `pipeline-state.json` — the pipeline state file is the authoritative system of record for all sign-off events.
 
-**Westpac migration note:** The GitHub Issue adapter is not available in a Bitbucket/Jenkins environment without additional GitHub-to-Bitbucket integration plumbing. The Westpac adapter set should be identified as a Phase 3 deliverable before the Westpac migration begins, so that the first Westpac agent PR can use the correct channel from day one.
+**Enterprise migration note:** The GitHub Issue adapter is not available in a Bitbucket/Jenkins environment without additional GitHub-to-Bitbucket integration plumbing. The Enterprise adapter set should be identified as a Phase 3 deliverable before the Enterprise migration begins, so that the first Enterprise agent PR can use the correct channel from day one.
 
 ---
 
@@ -237,9 +237,9 @@ The AGENTS.md surface adapter (ADR-005, delivered in p2.4) established that the 
 
 - **Cursor:** VS Code-based AI coding agent with file-edit and terminal execution capabilities. Widely used in teams that prefer a VS Code-native experience outside the GitHub Copilot subscription model.
 - **Claude Code:** Anthropic's terminal-first agent with strong code generation and file manipulation capabilities. Increasingly common in enterprises that use Anthropic's API directly.
-- **Enterprise equivalent:** Any enterprise-licensed AI agent tooling that the adopting organisation deploys as their inner loop standard. At Westpac, this is most likely to be a procured tool under the bank's AI usage policy rather than a consumer product.
+- **Enterprise equivalent:** Any enterprise-licensed AI agent tooling that the adopting organisation deploys as their inner loop standard. At Enterprise, this is most likely to be a procured tool under the bank's AI usage policy rather than a consumer product.
 
-The validation is a DoD-gated Phase 3 story. The surface resolution, instruction delivery format, DoR handoff, and assurance trace generation must all operate end-to-end with the target non-GitHub tooling as a genuine delivery run — at minimum one story delivered from branch-setup to merged PR using the non-GitHub agent. Any adapter gaps discovered during validation must be resolved before Phase 3 closes. This is particularly important for Westpac, where the enterprise tooling choice is highly likely to diverge from the GitHub Copilot dogfood context and where assuming adapter compatibility without validation is an unacceptable adoption risk.
+The validation is a DoD-gated Phase 3 story. The surface resolution, instruction delivery format, DoR handoff, and assurance trace generation must all operate end-to-end with the target non-GitHub tooling as a genuine delivery run — at minimum one story delivered from branch-setup to merged PR using the non-GitHub agent. Any adapter gaps discovered during validation must be resolved before Phase 3 closes. This is particularly important for Enterprise, where the enterprise tooling choice is highly likely to diverge from the GitHub Copilot dogfood context and where assuming adapter compatibility without validation is an unacceptable adoption risk.
 
 ---
 

@@ -126,9 +126,9 @@ Target file: `.github/skills/issue-dispatch/SKILL.md`
 
 ---
 
-## 4. Westpac Adaptation Path
+## 4. Enterprise Adaptation Path
 
-This section documents the specific configuration and integration changes required to operate the platform in a Bitbucket/Jenkins enterprise environment (e.g. Westpac or equivalent regulated financial-services org using non-GitHub tooling).
+This section documents the specific configuration and integration changes required to operate the platform in a Bitbucket/Jenkins enterprise environment (e.g. Bank or equivalent regulated financial-services org using non-GitHub tooling).
 
 ### 4.1 VCS and CI topology: Bitbucket Pipelines
 
@@ -156,7 +156,7 @@ The approval-channel adapter pattern (ADR-006) is configured in `.github/context
 | `slack` | Workspace slash command `/approve-dor [story-id]`; Slack app writes dorStatus | Slack app with write-back webhook |
 | `teams` | Teams adaptive card approval; Power Automate flow writes dorStatus | Microsoft 365 + Power Automate |
 
-For a Westpac regulated environment: the recommended path is `approval_channel: jira` (where Jira Service Management is the change management tool) or `approval_channel: teams` (where Microsoft 365 is the standard approver surface). Both adapters write the same evidence fields (`dorStatus`, `dorApprover`, `dorChannel`) — the state contract and gate evaluation logic are unchanged.
+For a Enterprise regulated environment: the recommended path is `approval_channel: jira` (where Jira Service Management is the change management tool) or `approval_channel: teams` (where Microsoft 365 is the standard approver surface). Both adapters write the same evidence fields (`dorStatus`, `dorApprover`, `dorChannel`) — the state contract and gate evaluation logic are unchanged.
 
 **Enterprise RBAC note:** The write-back webhook or service account that updates `pipeline-state.json` must have repo write access scoped to the state file only. Do not grant broad repo write access to the approval adapter service account.
 
@@ -172,7 +172,7 @@ Set `change_management.tool: servicenow` (or `jira-sm`) and populate `change_man
 
 ### 4.5 Standards extension: discipline tiers
 
-The Phase 2 POLICY.md floor model is live for all 11 disciplines. For Westpac-specific domain extensions (e.g. APRA CPS 234 controls, internal security classification policy, RG 271 obligations), add entries under `standards/[discipline]/` using the established composition model:
+The Phase 2 POLICY.md floor model is live for all 11 disciplines. For enterprise-specific domain extensions (e.g. APRA CPS 234 controls, internal security classification policy, RG 271 obligations), add entries under `standards/[discipline]/` using the established composition model:
 
 ```
 standards/
