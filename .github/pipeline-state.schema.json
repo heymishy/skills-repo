@@ -136,6 +136,9 @@
                         }
                       },
                       "dorStatus":   { "type": "string", "enum": ["not-started", "blocked", "signed-off"] },
+                      "dorApprover": { "type": "string", "description": "GitHub username (or equivalent role identifier) of the person who approved the DoR. NEVER stores full name or email address (MC-PII constraint). Written by approval channel adapter (p2.8)." },
+                      "dorChannel":  { "type": "string", "description": "Approval interface used to record the sign-off (e.g. 'github-issue'). Permanent record — not overwritten by subsequent sign-off attempts (p2.8 auditability)." },
+                      "dorSignedOffAt": { "type": "string", "format": "date-time", "description": "ISO 8601 timestamp of the DoR sign-off event. Written by approval channel adapter (p2.8)." },
                       "verifyStatus": { "type": "string", "enum": ["not-started", "running", "passed"], "description": "Verify-completion evidence written by /verify-completion skill" },
                       "prStatus":    { "type": "string", "enum": ["none", "draft", "open", "merged"] },
                       "prUrl":       { "type": "string" },

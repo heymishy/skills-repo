@@ -83,6 +83,18 @@ compliance:
   frameworks: []
   sensitive_data_categories: []
 
+# channel_hints — optional section for persona routing (p2.8).
+# Configures notification channels for DoR sign-off.
+# All channel targets are read from here — no hardcoded values (ADR-004).
+# To enable github-issue approval channel, uncomment and configure:
+#
+# approval_channel: github-issue
+# channel_hints:
+#   ide: vscode
+#   approval:
+#     type: github-issue
+#     issueUrl: <URL of the linked GitHub Issue for approval comments>
+
 # Bitbucket Cloud and DC configuration (ADR-004: all platform-specific config here).
 # Secret values are NEVER stored here — only environment variable names are referenced.
 # Actual credentials are injected via CI secrets at runtime (MC-SEC-02).
