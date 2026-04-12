@@ -240,7 +240,7 @@ console.log('\n  AC1 — Challenger spec generation');
       allOk = false;
       break;
     }
-    if (v.missingFields.indexOf(field) === -1) {
+    if (!v.missingFields.includes(field)) {
       fail('invalid-proposal-missing-fields-rejects-gracefully',
         'Expected "' + field + '" in missingFields, got: ' + v.missingFields.join(', '));
       allOk = false;
@@ -503,7 +503,7 @@ console.log('\n  AC2 — Pre-check result recording');
       allOk = false;
       break;
     }
-    if (v.missingFields.indexOf(field) === -1) {
+    if (!v.missingFields.includes(field)) {
       fail('result-file-missing-field-flagged',
         'Expected "' + field + '" in missingFields but got: ' + v.missingFields.join(', '));
       allOk = false;

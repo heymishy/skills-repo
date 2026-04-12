@@ -240,7 +240,7 @@ function renderMarkdown(fm, body) {
       for (var j = 0; j < subKeys.length; j++) {
         var sk = subKeys[j];
         var sv = v[sk];
-        lines.push('  ' + sk + ': "' + String(sv).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"');
+        lines.push('  ' + sk + ': "' + escapeYamlString(sv) + '"');
       }
     } else if (Array.isArray(v)) {
       if (v.length === 0) {
@@ -249,7 +249,7 @@ function renderMarkdown(fm, body) {
         lines.push(k + ': [' + v.map(function (x) { return '"' + x + '"'; }).join(', ') + ']');
       }
     } else if (typeof v === 'string') {
-      lines.push(k + ': "' + v.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"');
+      lines.push(k + ': "' + escapeYamlString(v) + '"');
     } else {
       lines.push(k + ': ' + v);
     }
@@ -258,6 +258,23 @@ function renderMarkdown(fm, body) {
   lines.push('');
   return lines.join('\n') + (body ? body : '');
 }
+
+/**
+ * Escape a string value for safe embedding in a YAML double-quoted scalar.
+ * Handles backslash, double-quote, newline, carriage-return, and tab characters.
+ *
+ * @param {string} s
+ * @returns {string}
+ */
+function escapeYamlString(s) {
+  return String(s)
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\t/g, '\\t');
+}
+
 
 // ── AC1 — Challenger spec generation ─────────────────────────────────────────
 
@@ -279,7 +296,7 @@ function applyDiff(skillContent, diff) {
     return skillContent.replace(before, after);
   }
   // If before text not found, append after content with a section separator
-  return skillContent.trimRight() + '\n\n' + after + '\n';
+  return skillContent.trimEnd() + '\n\n' + after + '\n';
 }
 
 /**
@@ -926,13 +943,12 @@ function gitCommitAcceptance(proposalId, targetSkillPath, proposalFilePath) {
       return { ok: true }; // Nothing to commit
     }
 
-    cp.execSync('git add ' + filesToStage.map(function (f) {
-      return '"' + f + '"';
-    }).join(' '), { cwd: ROOT });
+    // Use execFileSync with argument array to avoid shell injection (no shell quoting needed)
+    cp.execFileSync('git', ['add', '--'].concat(filesToStage), { cwd: ROOT });
 
     var commitMsg = 'improvement: apply ' + proposalId + ' — skill update from challenger pre-check';
     // NOTE: --no-verify is PROHIBITED (AC3). All hooks must run.
-    cp.execSync('git commit -m "' + commitMsg.replace(/"/g, '\\"') + '"', { cwd: ROOT });
+    cp.execFileSync('git', ['commit', '-m', commitMsg], { cwd: ROOT });
 
     return { ok: true };
   } catch (e) {
