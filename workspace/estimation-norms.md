@@ -3,7 +3,7 @@
 | Date | Feature | Stories | Engagement | OL estimate | OL actual | Delta | IL (human) | Calendar days |
 |------|---------|---------|-----------|------------|-----------|-------|------------|---------------|
 | 2026-04-11 | 2026-04-09-skills-platform-phase1 | 8 | 50% | — | 18h | — | 1h | 2 |
-| 2026-04-12 | 2026-04-11-skills-platform-phase2 | 13 | 25% | 30h | 0.47h | -29.53h | 1h | 0.93 |
+| 2026-04-12 | 2026-04-11-skills-platform-phase2 | 13 | 25% | 30h | 1h | -29h | 1h | 2 |
 
 ```yaml estimation-norms
 - date: "2026-04-11"
@@ -27,15 +27,15 @@
   storyCount: 13
   engagementFraction: 0.25
   outerLoopEstimateH: 30
-  outerLoopActualH: 0.47
-  outerLoopDeltaH: -29.53
+  outerLoopActualH: 1
+  outerLoopDeltaH: -29
   innerLoopHumanH: 1
   agentAutonomousH: null
-  calendarDays: 0.93
+  calendarDays: 2
   outerLoopSessions: null
-  focusHPerStory: 0.04
+  focusHPerStory: 0.08
   source: "e2"
-  note: "JSONL debug logs unavailable; used conservative fallback totalCalendarH = calendarDays × 2. Treat deltas as low-confidence until telemetry path is restored."
+  note: "JSONL debug logs unavailable; E3 rerun used manual Apr 11 to Apr 12 calendar override (2 days) plus estimate-skill fallback totalCalendarH = calendarDays × 2. Treat deltas as medium-low confidence until telemetry path is restored."
   premiumRequestsForecast: "~322"
   premiumRequestsActual: 68
 ```

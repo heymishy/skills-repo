@@ -12,15 +12,15 @@
 |-------|---------|---------|----------|
 | Feature | 2026-04-09-skills-platform-phase1 | 2026-04-11-skills-platform-phase2 | — |
 | Stories delivered | 8 | 13 | **21** |
-| Calendar days | 2 | 0.93 | **2.93** |
+| Calendar days | 2 | 2 | **4** |
 | Engagement fraction | 0.50 | 0.25 | — |
 | Outer loop estimate | — (no prior baseline) | 30h (E2) | — |
-| Outer loop actual (focus h) | 18h | 0.47h ⚠️ | — |
-| Outer loop delta | — | −29.53h ⚠️ | — |
+| Outer loop actual (focus h) | 18h | 1h ⚠️ | — |
+| Outer loop delta | — | −29h ⚠️ | — |
 | Inner loop (human h) | 1h | 1h | **2h** |
 | Agent autonomous h | 14h | — (not measured) | — |
 | Outer loop sessions | 10 | — (JSONL unavailable) | — |
-| Focus h / story | 2.3h | 0.04h ⚠️ | — |
+| Focus h / story | 2.3h | 0.08h ⚠️ | — |
 | Premium requests (forecast) | — | ~322 | — |
 | Premium requests (actual) | ~185 | 68 | **~253** |
 
@@ -56,10 +56,10 @@
 **Method:** Fallback (see confidence notes)
 
 - Stories: 13
-- Calendar days: 0.93 (state.json phase timestamps; inconsistent month values — treat as approximate)
+- Calendar days: 2 (manual override used: Apr 11 start, Apr 12 end)
 - Engagement fraction: 0.25 (operator confirmed: "25% — mostly waiting")
-- Outer loop focus hours: 0.47h (fallback derivation: `calendarDays × 2 × engagementFraction = 0.93 × 2 × 0.25`)
-- Focus h / story: 0.04h (= 0.47 / 13)
+- Outer loop focus hours: 1h (fallback derivation after manual date override: `calendarDays × 2 × engagementFraction = 2 × 2 × 0.25`)
+- Focus h / story: 0.08h (= 1 / 13)
 - Inner loop human hours: 1h
 - Agent autonomous hours: not measured (JSONL unavailable)
 - Premium requests forecast: ~322 at E2 time (13 stories × 23 req/story Phase 1 norm; forecast assumed inner loop would run on refreshed May quota after monthly reset — this assumption proved incorrect; inner loop ran Apr 11–12 before the May 1 reset, so all 68 actual requests drew from the same Apr period)
@@ -70,7 +70,7 @@
 **Deviations recorded at DoD:**
 - p2.1: scope deviation — additional executable/test-harness files changed beyond declared touch points. `releaseReady: false` until resolved.
 - p2.5b: scope deviation — PR #46 bundled unrelated p2.11 payload. Story isolation violation. `health: amber`, `releaseReady: false`.
-- p2.10: Docker-gated tests — 3/15 tests deferred (`[PREREQ-DOCKER]`); 12/15 passing.
+- p2.10: Docker-gated tests — 3/15 tests deferred (`[PREREQ-DOCKER]`); 12/15 passing. Open item closes naturally once a Bitbucket DC environment is available.
 
 ---
 
@@ -81,15 +81,15 @@ Phase 2 E2 was set at the close of `/definition` (2026-05-01 per state; inconsis
 | Estimate dimension | E2 forecast | E3 actual | Delta | Confidence |
 |---|---|---|---|---|
 | Story count | 13 | 13 | 0 | High |
-| Calendar days | 2 | 0.93 | −1.07 days | Low (state timestamps inconsistent) |
-| Outer loop focus hours | ~30h | 0.47h | −29.53h | Low (fallback method) |
-| Focus h / story | 2.3h (Phase 1 norm) | 0.04h | −2.26h/story | Low |
+| Calendar days | 2 | 2 | 0 | Medium (manual operator-supplied dates) |
+| Outer loop focus hours | ~30h | 1h | −29h | Low (fallback method) |
+| Focus h / story | 2.3h (Phase 1 norm) | 0.08h | −2.22h/story | Low |
 | Inner loop human hours | 1h | 1h | 0 | High |
 | Premium requests | ~322 | 68 | −254 req | Medium (gauge-derived) |
 
 **The −29.53h delta does not mean Phase 2 was 29h faster than Phase 1.** The Phase 2 outer loop was genuinely shorter (fewer clarification rounds, stable Phase 1 artefacts as input, operator familiarity), but the magnitude is primarily explained by two method artefacts:
-1. Phase 2 calendarDays (0.93) was derived from state timestamps with inconsistent month values — likely understated.
-2. JSONL session logs were inaccessible, so focus hours are fallback-derived (`calendarDays × 2`), not measured directly.
+1. The original state-derived calendar span was invalid because review and DoR timestamps were inconsistent; E3 was rerun with a manual Apr 11 to Apr 12 override.
+2. JSONL session logs were inaccessible, so focus hours are still fallback-derived (`calendarDays × 2`), not measured directly.
 
 **Do not use Phase 2 E3 figures for forecast calibration.** Use Phase 1 actuals as the calibration baseline and apply the Phase 2 figures only as lower-bound evidence once telemetry access is restored.
 
@@ -115,7 +115,7 @@ The 300-request base is the monthly quota base. At 109.5% the account is 28.5 re
 
 1. **JSONL debug logs inaccessible.** The VS Code debug log directory (`c:\Users\Hamis\AppData\Roaming\Code\User\workspaceStorage\...\GitHub.copilot-chat\debug-logs\`) was not accessible from the agent's tool context at E3 time. Outer loop focus hours were derived using the estimate skill's conservative fallback formula (`totalCalendarH = calendarDays × 2`), not reconstructed from JSONL.
 
-2. **State timestamps inconsistent.** Several phase timestamps in `workspace/state.json` contain month values inconsistent with the April 2026 delivery context (some timestamps show `2026-05-01`). This affects the `calendarDays` derivation. The 0.93-day figure may understate actual calendar span.
+2. **State timestamps inconsistent.** Several phase timestamps in `workspace/state.json` still contain month values inconsistent with the April 2026 delivery context (some timestamps show `2026-05-01`). The calendar span used here is therefore a manual override supplied by the operator: Apr 11 start, Apr 12 end = 2 days.
 
 **What IS reliable:**
 - Story count (13): confirmed from artefacts
@@ -131,9 +131,9 @@ The 300-request base is the monthly quota base. At 109.5% the account is 28.5 re
 
 | ID | Finding | Impact | Proposed action |
 |----|---------|--------|----------------|
-| E3-F1 | State timestamps in phase-cycle fields have inconsistent month values (May entries during April delivery) | Phase-level duration estimates are unreliable; calendarDays fallback used | Establish a timestamp discipline: each skill's state-write step must use the current wall-clock date, not a placeholder |
+| E3-F1 | State timestamps in phase-cycle fields remain inconsistent (May entries during April delivery) | Tier-1 derivation is still incomplete; manual Apr 11 to Apr 12 override required | Establish a timestamp discipline: each skill's state-write step must use the current wall-clock date, not a placeholder |
 | E3-F2 | JSONL debug logs inaccessible from agent tool context | E3 cannot reconstruct per-session focus hours; fallback required for all future E3 runs in this environment | Document the JSONL log path in the estimate SKILL.md as the preferred reconstruction source; add a pre-E3 check that confirms log availability |
-| E3-F3 | E2 estimate (30h) diverged from actuals (0.47h) by −98%; calibration delta is too large to seed future estimates | Estimation calibration is driven by Phase 1 norm (2.3h/story); E2 inherited this without adjusting for Phase 2's higher operator familiarity and leaner outer loop | Consider a familiarity discount factor in E2: reduce the per-story norm by 30–50% when the same operator has ≥1 prior feature in the same domain at the same complexity level |
+| E3-F3 | E2 estimate (30h) diverged from actuals (1h) by ~−97%; calibration delta is still too large to seed future estimates | Estimation calibration is driven by Phase 1 norm (2.3h/story); E2 inherited this without adjusting for Phase 2's higher operator familiarity and leaner outer loop | Consider a familiarity discount factor in E2: reduce the per-story norm by 30–50% when the same operator has ≥1 prior feature in the same domain at the same complexity level |
 
 ---
 
@@ -142,14 +142,14 @@ The 300-request base is the monthly quota base. At 109.5% the account is 28.5 re
 | Metric | Value | Notes |
 |--------|-------|-------|
 | Total stories delivered | 21 | 8 (P1) + 13 (P2) |
-| Total calendar days | ~2.93 | 2 (P1) + 0.93 (P2) ⚠️ |
+| Total calendar days | 4 | 2 (P1) + 2 (P2) |
 | Total premium requests | ~253 | ~185 (P1) + 68 (P2) |
 | Total inner loop human h | 2h | 1h each phase |
 | Total agent autonomous h | ~14h+ | Phase 1 confirmed; Phase 2 unmeasured |
-| Stories per calendar day | ~7.2 | 21 / 2.93 |
+| Stories per calendar day | ~5.25 | 21 / 4 |
 | Requests per story | ~12 | 253 / 21 |
 | Phase 1 norm: focus h/story | 2.3h | Calibration baseline — HIGH confidence |
-| Phase 2 norm: focus h/story | 0.04h | E3 fallback — LOW confidence |
+| Phase 2 norm: focus h/story | 0.08h | E3 fallback — LOW confidence |
 
 ---
 

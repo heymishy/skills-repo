@@ -83,10 +83,11 @@
   "checkpoint": {
     "writtenAt": "2026-04-12T17:10:00+10:00",
     "contextAtWrite": "Phase 2 /levelup complete. Category A/B/C codified, D-batch logged, and /estimate E3 actuals recorded with telemetry-gap note.",
-    "resumeInstruction": "Phase 2 package is ready for enterprise sync handoff. Optional next step: run /trace and then /release prep if needed.",
+    "resumeInstruction": "Phase 2 package is ready for enterprise sync handoff. E3 actuals revised using manual Apr 11 to Apr 12 span; remaining open items are Docker-gated p2.10 tests and, if needed, a formal artefact-level /trace write-up.",
     "pendingActions": [
-      "Optional: run /trace for final chain integrity check",
-      "Optional: prepare release artefacts for Phase 2 if requested"
+      "Run p2.10 AC3/AC4/AC5 Docker-gated tests in a Docker-enabled Bitbucket DC environment and capture pass evidence",
+      "Optional: prepare release artefacts for Phase 2 if requested",
+      "Optional: save a formal /trace artefact if an artefact-folder report is required for audit pack handoff"
     ]
   },
   "phase1Reference": {
@@ -139,33 +140,33 @@
     },
     "actuals": {
       "date": "2026-04-12",
-      "calendarDays": 0.93,
+      "calendarDays": 2,
       "outerLoopSessions": null,
       "engagementFraction": 0.25,
-      "totalCalendarH": 1.86,
-      "outerLoopFocusH": 0.47,
+      "totalCalendarH": 4,
+      "outerLoopFocusH": 1,
       "innerLoopHuman": 1,
       "agentAutonomousH": null,
       "storyCount": 13,
-      "focusHPerStory": 0.04,
+      "focusHPerStory": 0.08,
       "estimateSource": "e2",
       "estimateOuterLoopH": 30,
-      "outerLoopDeltaH": -29.53,
+      "outerLoopDeltaH": -29,
       "premiumRequestsForecast": "~322",
       "premiumRequestsActual": 68,
       "premiumGaugeStart": "86.7% of 300",
       "premiumGaugeNow": "109.5% of 300",
-      "notes": "JSONL session logs were not accessible from this workspace; E3 used conservative fallback totalCalendarH = calendarDays × 2 per estimate skill guidance. Phase timestamps in state include inconsistent month values, so phase-level spans are treated as low-confidence."
+      "notes": "JSONL session logs were not accessible from this workspace. Tier-1 ISO timestamps are present on some Phase 2 blocks but review and DoR timestamps remain inconsistent, so E3 was rerun using a manual calendar override of Apr 11 start to Apr 12 end = 2 days. Per estimate skill fallback, totalCalendarH = calendarDays × 2 = 4h and outerLoopFocusH = 4h × 0.25 = 1h. Treat as medium-low confidence until telemetry-complete E3 is possible."
     },
     "flowFindings": [
       {
         "id": "E3-F1",
         "title": "State timestamp consistency gap",
-        "actual": "Review/Test-plan/DoR timestamps include inconsistent month values in state.json",
-        "estimate": "Tier-1 ISO timestamps should permit direct phase-span reconstruction",
-        "delta": "Tier-1 derivation degraded to low-confidence",
-        "causeHypothesis": "Phase updates were written with mixed date values across sessions",
-        "improvement": "Add a state-write guard that validates monotonic phase timestamps before commit",
+        "actual": "Discovery/benefit-metric blocks have valid ISO datetimes, but review and DoR timestamps remain inconsistent enough that manual Apr 11 to Apr 12 override was required",
+        "estimate": "Tier-1 ISO timestamps should permit direct phase-span reconstruction with no manual intervention",
+        "delta": "Tier-1 derivation partially usable but not complete",
+        "causeHypothesis": "Phase updates were written with mixed date values across sessions before the timestamp discipline was fully applied",
+        "improvement": "Add a state-write guard that validates monotonic phase timestamps before commit and rejects month drift",
         "effort": "Medium"
       },
       {
@@ -181,10 +182,10 @@
       {
         "id": "E3-F3",
         "title": "Outer-loop estimate variance high",
-        "actual": "0.47h outer-loop focus (fallback-derived)",
+        "actual": "1h outer-loop focus (manual-date fallback-derived)",
         "estimate": "30h E2 outer-loop forecast",
-        "delta": "-29.53h",
-        "causeHypothesis": "Fallback method underestimates active time when session telemetry is missing",
+        "delta": "-29h",
+        "causeHypothesis": "Fallback method still understates active time when session telemetry is missing, even after manual calendar correction",
         "improvement": "Require telemetry-complete E3 before using deltas for forecast calibration",
         "effort": "Low"
       }

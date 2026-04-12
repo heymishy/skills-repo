@@ -288,18 +288,16 @@ Three pilot domain names selected for the ≥3 pilot domain POLICY.md files requ
 
 ---
 
-## PROCESS — 2026-04-12 (inner loop — CI setup)
-
-### PROCESS-01: No PR approval required for Copilot coding agent PRs — dogfood context
+### ARCH-03: GitHub Actions workflow approval policy set to no-approval-required for Copilot agent PRs — dogfood context
 
 **Date:** 2026-04-12
 **Decided by:** Hamish (operator)
-**Decision type:** PROCESS
+**Decision type:** ARCH
 
-**Context:** GitHub's "required reviewers" branch protection would block the Copilot coding agent from merging its own PRs during the inner loop. In the dogfood context (solo operator, single-squad, platform = consumer), requiring a human approval before every agent PR merge adds synchronous delay disproportionate to the risk — particularly for stories already through a full DoR cycle with a passing assurance gate.
+**Context:** GitHub Actions was configured so Copilot coding agent PRs do not require a maintainer approval step before workflows are permitted to run. In the dogfood context (solo operator, single-squad, platform = consumer), requiring a human workflow approval before every agent PR would block the assurance gate from running automatically on the PR event and add synchronous delay disproportionate to the risk.
 
-**Decision:** Branch protection on `master` does not require a human reviewer for Copilot agent PRs in the dogfood context. The operator inspects the diff manually and merges after review. The assurance gate (automated) and DoR sign-off (governance) together substitute for the formal PR approval step in this context.
+**Decision:** GitHub Actions workflow approval policy is set to no-approval-required for Copilot coding agent PRs in the dogfood context. The assurance gate must run automatically on PR open/update without waiting for a maintainer to click an approval prompt. Manual human review of the diff still happens before merge; this decision is about workflow execution policy, not merge approval semantics.
 
-**Accepted risk:** A faulty PR could land on `master` without a second human reviewer. Mitigated by: (a) all stories completing DoR before dispatch; (b) assurance gate running on PR open; (c) operator inspecting the diff before merge.
+**Accepted risk:** Unreviewed workflow execution can consume CI minutes or run against a faulty PR before a human has inspected it. Mitigated by: (a) all stories completing DoR before dispatch; (b) assurance gate running as the first automated control; (c) operator inspecting the diff before merge.
 
-**Revisit trigger:** Westpac Bitbucket migration. Bitbucket Data Center imposes at least one approver on protected branches by default. At migration, configure a merge check that verifies the assurance gate passed — this allows the operator to serve as the sole approver without blocking agent PRs. Do not drop approver checks entirely in a regulated context.
+**Revisit trigger:** Westpac Bitbucket migration. Recreate the equivalent non-blocking workflow execution policy in Bitbucket/Jenkins while preserving regulated merge controls. Do not assume the GitHub default maps directly — document the exact enterprise setting before the first Westpac agent PR is opened.
