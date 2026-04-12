@@ -48,13 +48,14 @@ function execute(surface, context) {
   const adapter = adapterRegistry[surface];
 
   if (!adapter) {
-    const trace = `trace-error-${Date.now()}-no-adapter`;
+    const trace = `trace-error-${Date.now()}-unknown-surface`;
     return {
       status: 'error',
       surface,
-      findings: [`No adapter registered for surface type: ${surface}`],
+      findings: [],
       trace,
       adapterVersion: 'unknown',
+      error: `unknown surface type: ${surface}`,
     };
   }
 
@@ -63,4 +64,20 @@ function execute(surface, context) {
   return Object.assign({}, result, { surface });
 }
 
+// Register built-in adapters
+const gitNativeAdapter = require('./adapters/git-native.js');
+const iacAdapter       = require('./adapters/iac.js');
+const saasApiAdapter   = require('./adapters/saas-api.js');
+const saasGuiAdapter   = require('./adapters/saas-gui.js');
+const m365AdminAdapter = require('./adapters/m365-admin.js');
+const manualAdapter    = require('./adapters/manual.js');
+
+registerAdapter('git-native', gitNativeAdapter);
+registerAdapter('iac',        iacAdapter);
+registerAdapter('saas-api',   saasApiAdapter);
+registerAdapter('saas-gui',   saasGuiAdapter);
+registerAdapter('m365-admin', m365AdminAdapter);
+registerAdapter('manual',     manualAdapter);
+
 module.exports = { execute, registerAdapter, _registry: adapterRegistry };
+

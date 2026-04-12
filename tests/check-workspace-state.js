@@ -229,6 +229,38 @@ if (!hasNegativeInstruction) {
   pass(testName8);
 }
 
+// ── state-proposals-block-schema (ADR-003 schema-first) ──────────────────────
+// If a proposals block is present, validate its structure.
+// Fields required per proposal: file (string), created_at (string), status (string).
+// This defines the proposals schema before any write — satisfying ADR-003.
+
+const testNameProposals = 'state-proposals-block-schema';
+if (state.proposals !== undefined) {
+  if (!Array.isArray(state.proposals)) {
+    fail(testNameProposals, '`proposals` must be an array if present');
+  } else {
+    let proposalsOk = true;
+    for (let i = 0; i < state.proposals.length; i++) {
+      const p = state.proposals[i];
+      if (!p.file || typeof p.file !== 'string') {
+        fail(testNameProposals, `proposals[${i}].file is missing or not a string`);
+        proposalsOk = false;
+      }
+      if (!p.created_at || typeof p.created_at !== 'string') {
+        fail(testNameProposals, `proposals[${i}].created_at is missing or not a string`);
+        proposalsOk = false;
+      }
+      if (!p.status || typeof p.status !== 'string') {
+        fail(testNameProposals, `proposals[${i}].status is missing or not a string`);
+        proposalsOk = false;
+      }
+    }
+    if (proposalsOk) {
+      pass(testNameProposals);
+    }
+  }
+}
+
 // ── Output ────────────────────────────────────────────────────────────────────
 
 function report() {
@@ -242,7 +274,8 @@ function report() {
     );
     process.exit(1);
   }
-  const testCount = 10; // number of named test checks above
+  const testCount = 10; // number of named non-conditional test checks above
+                        // (proposals block validation is conditional — only runs when proposals key is present)
   process.stdout.write(`[workspace-state] ${testCount} check(s) OK \u2713\n`);
   process.exit(0);
 }

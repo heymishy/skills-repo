@@ -1,0 +1,12 @@
+{
+  "traceId": "fixture-b2",
+  "storySlug": "story-b",
+  "skillSlug": "discovery",
+  "surfaceType": "github-actions",
+  "createdAt": "2026-04-01T00:00:00Z",
+  "failurePattern": "ac-not-testable",
+  "checks": [
+    { "name": "must-have-test-plan", "passed": true },
+    { "name": "must-have-dor", "passed": true }
+  ]
+}

@@ -37,7 +37,7 @@ disciplines:
     core: standards/ml-ai/core.md
     policy-floor: standards/ml-ai/POLICY.md
 
-# Surface-type policy floors (p2.5a — IaC and SaaS-API)
+# Surface-type policy floors (p2.5a — IaC and SaaS-API; p2.5b — SaaS-GUI, M365-admin, manual)
 # Routing key is the surface type declared in context.yml (surface.type or surface.types[]).
 # Each surface type maps to its own POLICY.md floor, separate from discipline floors.
 surfaces:
@@ -45,6 +45,12 @@ surfaces:
     policy-floor: standards/iac/POLICY.md
   saas-api:
     policy-floor: standards/saas-api/POLICY.md
+  saas-gui:
+    policy-floor: standards/saas-gui/POLICY.md
+  m365-admin:
+    policy-floor: standards/m365-admin/POLICY.md
+  manual:
+    policy-floor: standards/manual/POLICY.md
 
 # Pilot domain policy floors (p2.9)
 # Domain names recorded in artefacts/2026-04-11-skills-platform-phase2/decisions.md
