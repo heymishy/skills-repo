@@ -1,24 +1,12 @@
 # Copilot Instructions
 
-<!--
-  This file is always loaded into every Copilot interaction in this repository.
-  It is the primary source of workflow configuration.
-  
-  To evolve: open a PR, tag the tech lead for review.
-  Do not make ad-hoc changes — this file governs all agent behaviour in the repo.
--->
+<!-- Governs all agent behaviour. Evolve via PR with tech lead review. -->
 
 ## Active context
 
 Active pipeline context: `.github/context.yml`
 
-<!--
-  context.yml holds toolchain settings (source control platform, test framework,
-  roles, CI, ITSM, compliance frameworks, etc.) and is read by all skills.
-  To switch profiles: cp contexts/personal.yml .github/context.yml
-                   or: cp contexts/work.yml    .github/context.yml
-  Available profiles: contexts/personal.yml | contexts/work.yml
--->
+<!-- context.yml holds toolchain settings. Switch profiles: `cp contexts/personal.yml .github/context.yml` or `cp contexts/work.yml .github/context.yml` -->
 
 ---
 
@@ -49,18 +37,7 @@ Then update `skills_upstream.remote` and `skills_upstream.strategy` in `context.
 
 ## Product context
 
-<!--
-  DOGFOODING NOTE — revert after Phase 4 completes.
-  This block contains real product context filled in for the 2026-04-09-skills-platform-phase1
-  dogfood run. Once all 4 phases are delivered and DoD-signed, replace the prose below with
-  the generic placeholder comment so the repo ships as a clean template for other teams:
-
-  [FILL IN: brief description of what this product does and for whom.
-   One paragraph is sufficient. Skills read this to frame problem scoping
-   and metric relevance during /discovery and /benefit-metric.]
-
-  Track via: artefacts/2026-04-09-skills-platform-phase1/ post-phase-4 cleanup task.
--->
+<!-- DOGFOODING: remove this product context block after Phase 4 and replace with the generic `[FILL IN]` placeholder. Track via: artefacts/2026-04-09-skills-platform-phase1/ post-phase-4. -->
 
 The skills platform is an open-framework, governed software delivery pipeline that enables teams to deliver traceable, high-quality software across all contributing disciplines — from a single developer on a personal project to many teams and communities of practice across a regulated enterprise.
 
@@ -295,9 +272,6 @@ Each step is mandatory. Skipping step 1 leaves no learnings signal. Skipping ste
 
 `/checkpoint` is the mid-session and end-of-session state write. Same operation, same file (`workspace/state.json`), serving both purposes: phase boundary continuity and session-end handoff.
 
-**When to invoke:**
-Invoke `/checkpoint` before reaching compaction pressure — not at it. At 55% context usage for file-read-heavy phases (definition, review, test-plan, trace, inner loop implementation), or at 75% for conversation-only phases. The write must complete before compaction fires; invoke with enough headroom that the agent can finish writing without being interrupted by context compaction.
-
 **What is written:**
 - `currentPhase` — the name of the current pipeline phase
 - `lastUpdated` — ISO 8601 timestamp of the write (e.g. `2026-04-10T14:00:00Z`)
@@ -340,19 +314,6 @@ Rules:
 
 ## Coding standards
 
-<!-- FILL IN: Repository-specific coding standards, architecture patterns, 
-     naming conventions, test framework, linting rules, etc.
-     
-     Example:
-     - Language: TypeScript
-     - Framework: React + Vite
-     - Test framework: Vitest + Testing Library
-     - Linting: ESLint with Airbnb config
-     - Component pattern: functional components, no class components
-     - State management: Zustand for global, useState for local
-     - No direct DOM manipulation — use React refs
--->
-
 [FILL IN BEFORE COMMITTING]
 
 ---
@@ -377,18 +338,7 @@ Update these files when the product context changes (new regulatory requirement,
 
 ## Architecture standards
 
-<!--
-  Architecture governance for this repository.
-  The /definition skill (Step 1.5), /review skill (Category E),
-  /definition-of-ready skill (H9), and /trace skill read this section.
-  The coding agent reads it via the DoR instructions block.
-
-  Live file: .github/architecture-guardrails.md
-  Template:  .github/templates/architecture-guardrails.md
-
-  Run bootstrap to create the live file from the template.
-  Keep it updated — it is the source of truth for all guardrail checks.
--->
+<!-- Read by /definition, /review (Category E), /definition-of-ready (H9), /trace, and the coding agent via DoR. Keep .github/architecture-guardrails.md updated — it is the source of truth. -->
 
 **Architecture guardrails:** `.github/architecture-guardrails.md`
 **EA registry repo (optional):** `https://github.com/heymishy/ea-registry`
@@ -480,7 +430,7 @@ package.json           ← test script entry point
 ### Step 3 — Verify the baseline before making any changes
 
 ```bash
-npm test                              # 5 governance checks — zero external deps
+npm test                              # governance checks — zero external deps
 bash scripts/validate-trace.sh --ci  # trace chain validation
 ```
 
@@ -510,20 +460,7 @@ If you encounter ambiguity that cannot be resolved from the artefact files — a
 
 ## Tool integrations
 
-<!-- SUPERSEDED: Tool configuration has moved to .github/context.yml (tools.* and
-     change_management.* fields). The /release skill reads context.yml directly.
-     This table is kept for reference only — context.yml is the canonical source.
-     
-     To configure tools, edit .github/context.yml:
-       tools.project_management: jira | linear | github-issues | ...
-       tools.monitoring:         dynatrace | datadog | newrelic | ...
-       tools.log_aggregation:    splunk | elk | cloudwatch | ...
-       tools.alerting:           pagerduty | opsgenie | ...
-       tools.ci_platform:        github-actions | jenkins | gitlab-ci | ...
-       tools.artifact_registry:  nexus | artifactory | github-packages | ...
-       change_management.tool:   servicenow | jira-sm | none
-       change_management.base_url, assignment_group, change_category
--->
+<!-- Configuration has moved to `.github/context.yml` (`tools.*` and `change_management.*`). The /release skill reads context.yml directly. This table is a read-only reference — context.yml is canonical. -->
 
 | Tool | Purpose | Configuration |
 |------|---------|---------------|
