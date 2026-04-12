@@ -1,8 +1,8 @@
 {
   "feature": "2026-04-11-skills-platform-phase2",
-  "lastUpdated": "2026-04-13T00:00:00+10:00",
+  "lastUpdated": "2026-04-13T00:45:00+10:00",
   "lastLevelup": "2026-04-13",
-  "currentPhase": "phase-2-complete",
+  "currentPhase": "phase-3-init",
   "cycle": {
     "discovery": {
       "status": "approved",
@@ -82,14 +82,15 @@
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-04-13T00:00:00+10:00",
-    "contextAtWrite": "feat/repo-tidy (PR #50) merged. Learnings cherry-picked to master. /levelup complete: ADR-009 (eval/write-back separation), ADR-010 (post-merge audit records), AP-09 (gate commits to PR branch), AP-10 ([ci skip] on required checks), PAT-08 (two-workflow CI audit pattern), PAT-09 (allow-empty for synchronize trigger) written to architecture-guardrails.md. trace-commit.yml first post-merge run pending (monitor workspace/traces/).",
-    "resumeInstruction": "feat/repo-tidy merged and /levelup complete. Before starting Phase 3 /discovery: (1) read workspace/learnings.md Phase 3 D-batch seed entry (dated 2026-04-12) for the copilot-instructions.md base layer reduction plan; (2) check T3M1 independent validation status in docs/MODEL-RISK.md — required hard entry condition before Phase 3 /discovery runs; (3) monitor workspace/traces/ for the first trace-commit.yml post-merge run to confirm the two-workflow CI audit pattern works end-to-end.",
+    "writtenAt": "2026-04-13T00:45:00+10:00",
+    "contextAtWrite": "Phase 3 init complete. Branch feat/phase3-init-rename-improve pushed (commit 5d1b926). All 23 npm tests pass (70 viz + 23 checks). D-batch executed: copilot-instructions.md 473->~280 lines, agent-orientation.instructions.md extracted. /levelup renamed to /improve across all operational refs. Platform PR policy documented. README 'Current state vs structural controls' and 'Conceptual lineage' sections added. HANDOFF.md Section 6 added. governance scripts (check-skill-contracts.js, check-pipeline-artefact-paths.js) updated for /improve rename.",
+    "resumeInstruction": "Phase 3 init PR (feat/phase3-init-rename-improve) is open and pushed. Next: merge the PR, then run Phase 3 /discovery. T3M1 is on record (Hamish sign-off 2026-04-12, 3/8 Y, approved with conditions) — Phase 3 /discovery is unblocked. Pending amber items: MM2 (~30-min parse-session-timing.js run for E3 actuals), MM4 (closes at Phase 3 /improve). Red item M5 requires live environment config.",
     "pendingActions": [
-      "Monitor workspace/traces/ for first trace-commit.yml post-merge run (first live test of ADR-009/ADR-010 two-workflow pattern)",
-      "Before Phase 3 /discovery: read workspace/learnings.md Phase 3 D-batch seed entry (2026-04-12 — copilot-instructions.md base layer reduction: 5 sections, ~204 lines, target ~270 lines, 5 ordered action items) — decide whether to execute D-batch as a Phase 3 story or treat as a pre-discovery task",
-      "Complete adoption-readiness.md amber/red row actions before Westpac pilot",
-      "Run Phase 3 /discovery when T3M1 (Tier 3, Meta-metric 1 — independent non-engineer audit) validation is on record in docs/MODEL-RISK.md"
+      "Merge PR feat/phase3-init-rename-improve on GitHub: https://github.com/heymishy/skills-repo/pull/new/feat/phase3-init-rename-improve",
+      "Run Phase 3 /discovery — T3M1 entry condition met",
+      "MM2 amber: run scripts/parse-session-timing.js against Phase 2 JSONL transcripts to write E3 actuals row in workspace/estimation-norms.md (~30 minute operator action, no new code)",
+      "M5 red: scope non-engineer approval live environment before Westpac pilot",
+      "Five T3M1 gap closures (Q2 hash reconciliation, Q5 watermark PR comment, Q6 stalenessFlag schema, Q7 agent independence CI check, Q8 hash drift gate) are Phase 3 story candidates"
     ]
   },
   "phase1Reference": {

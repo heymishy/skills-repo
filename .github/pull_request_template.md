@@ -138,7 +138,7 @@
 
 ## Post-merge
 
-- [ ] /levelup run after merge — patterns and standards extracted from this delivery
+- [ ] /improve run after merge — patterns and standards extracted from this delivery
 
 <!--
   Agent-opened PRs: do not mark as ready for review.

@@ -244,7 +244,7 @@ If the viz gains a server-side rendering layer, direct `context.yml` reading bec
 
 **Status:** Active
 **Date:** 2026-04-11
-**Source decision:** `artefacts/2026-04-09-skills-platform-phase1/decisions.md` — 2026-04-11 ARCH entry (Phase 1 /levelup promotion)
+**Source decision:** `artefacts/2026-04-09-skills-platform-phase1/decisions.md` — 2026-04-11 ARCH entry (Phase 1 /improve [formerly /levelup] promotion)
 **Decided by:** Hamish
 
 #### Context

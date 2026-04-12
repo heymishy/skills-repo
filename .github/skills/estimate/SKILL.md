@@ -2,7 +2,7 @@
 name: estimate
 description: >
   Records a phase-by-phase focus-time estimate at feature start and refines it
-  as scope becomes clearer. Compares estimates against actuals at /levelup to
+  as scope becomes clearer. Compares estimates against actuals at /improve to
   normalise the model over time and suggest flow improvements. Invoked
   automatically by /discovery (E1, at exit) and /definition (E2, at exit).
   Run manually with /estimate to record, update, or review.
@@ -27,7 +27,7 @@ triggers:
 ## Purpose
 
 Record a forward-looking time estimate at the start of each feature. Refine it
-when scope is known. Compare actuals at /levelup. Over time, the comparison
+when scope is known. Compare actuals at /improve. Over time, the comparison
 builds a normalised model that makes future estimates more accurate and surfaces
 concrete flow improvements (e.g. "a focused 2h discovery block saves ~1h of
 definition rework on average").
@@ -50,7 +50,7 @@ Auto-detect mode from `workspace/state.json`:
 
 - `estimate` block absent → **E1 — Record rough estimate**
 - `estimate.e1` present, `estimate.e2` absent, `currentPhase` is `"definition"` or later → **E2 — Refine estimate**
-- `currentPhase` is `"definition-of-done"` or /levelup is running → **E3 — Actuals + calibration**
+- `currentPhase` is `"definition-of-done"` or /improve is running → **E3 — Actuals + calibration**
 
 If `estimate.e1` is `null` (operator skipped at E1) and E3 is triggered: skip the delta table, write actuals only. See E3 null-path below.
 
@@ -86,7 +86,7 @@ Ask:
 > **Quick estimate before we move forward.**
 >
 > How many calendar days do you expect the outer loop to span?
-> (Outer loop = discovery through DoD/levelup — from first session to final commit.)
+> (Outer loop = discovery through DoD/improve — from first session to final commit.)
 >
 > Expected calendar span: __ days
 >
@@ -203,9 +203,9 @@ Confirm:
 
 ---
 
-## E3 — Actuals + calibration (at /levelup)
+## E3 — Actuals + calibration (at /improve)
 
-Triggered automatically during /levelup Category E, or manually.
+Triggered automatically during /improve Category E, or manually.
 
 ### Step E3a — Derive phase durations
 
@@ -227,7 +227,7 @@ Present the phase duration table before asking any question:
 > | Review | [date] | [date] | [n]h | |
 > | Test-plan | [date] | [date] | [n]h | |
 > | DoR | [date] | [date] | [n]h | |
-> | DoDs + /levelup | [date] | [date] | [n]h | |
+> | DoDs + /improve | [date] | [date] | [n]h | |
 > | **Total** | [first date] | [last date] | **[n] days** | |
 
 ### Step E3b — JSONL session reconstruction
