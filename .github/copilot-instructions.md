@@ -296,9 +296,24 @@ Every skill has a `## State update — mandatory final step` section. **Completi
 
 ---
 
+## Coding agent start (GitHub Actions)
+
+If you are running in a GitHub Actions container, perform these steps before writing any code:
+
+1. Read `workspace/state.json` — current pipeline phase and active story ID.
+2. Read `artefacts/[feature-slug]/dor/[story-slug]-dor.md` — your Coding Agent Instructions block, scope contract, and AC list.
+3. Read `artefacts/[feature-slug]/dor/[story-slug]-dor-contract.md` — exact file touchpoints and out-of-scope constraints.
+4. Run `npm test` and `bash scripts/validate-trace.sh --ci` — both must pass before you make any changes.
+
+Open all PRs as drafts. Never mark ready for review. Never merge. Never create, modify, or delete files under `artefacts/`, `.github/skills/`, `.github/templates/`, or `standards/`. If you encounter ambiguity not covered by the ACs, add a PR comment describing the specific blocker and stop — do not improvise a workaround.
+
+Full orientation reference (VS Code context): `.github/instructions/agent-orientation.instructions.md`.
+
+---
+
 ## Platform change policy (Phase 2+)
 
-**SKILL.md files, templates, standards files, and pipeline infrastructure changes must be merged via PR — not committed directly to the default branch.** This applies to all changes to `.github/skills/`, `.github/templates/`, `standards/`, `.github/governance-gates.yml`, and `scripts/`. The governed path is: local edit on a feature branch → PR opened → platform team reviews → merge. The coding agent orientation details for GitHub Actions runs are in `.github/instructions/agent-orientation.instructions.md`.
+**SKILL.md files, templates, standards files, and pipeline infrastructure changes must be merged via PR — not committed directly to the default branch.** This applies to all changes to `.github/skills/`, `.github/templates/`, `standards/`, `.github/governance-gates.yml`, and `scripts/`. The governed path is: local edit on a feature branch → PR opened → platform team reviews → merge.
 
 ---
 
