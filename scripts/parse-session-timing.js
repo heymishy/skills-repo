@@ -293,7 +293,6 @@ function collectFiles(target) {
 
 function main() {
   const args = process.argv.slice(2);
-  const target  = args.find(a => !a.startsWith('--'));
   const detail  = args.includes('--detail');   // show per-prompt table
   const summary = args.includes('--summary');  // one-liner per session only
 
@@ -301,6 +300,10 @@ function main() {
   const mgEq  = args.find(a => a.startsWith('--max-gap='));
   const mgIdx = args.indexOf('--max-gap');
   const mgRaw = mgEq ? mgEq.split('=')[1] : (mgIdx >= 0 && args[mgIdx + 1] && !args[mgIdx + 1].startsWith('--') ? args[mgIdx + 1] : null);
+
+  // target path: first non-flag arg that is NOT the value after --max-gap
+  const mgValueArg = (mgIdx >= 0 && mgRaw && !mgEq) ? args[mgIdx + 1] : null;
+  const target = args.find(a => !a.startsWith('--') && a !== mgValueArg);
   const maxGapMin = mgRaw ? parseInt(mgRaw, 10) : 15;
   const maxGapMs  = maxGapMin * 60 * 1000;
 
