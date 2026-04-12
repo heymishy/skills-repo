@@ -274,7 +274,8 @@ function report() {
     );
     process.exit(1);
   }
-  const testCount = 10; // number of named test checks above (proposals block is optional/conditional)
+  const testCount = 10; // number of named non-conditional test checks above
+                        // (proposals block validation is conditional — only runs when proposals key is present)
   process.stdout.write(`[workspace-state] ${testCount} check(s) OK \u2713\n`);
   process.exit(0);
 }

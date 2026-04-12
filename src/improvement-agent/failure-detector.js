@@ -451,8 +451,8 @@ function renderProposalMarkdown(proposal) {
       ? '[' + proposal.evidence.map(function (e) { return '"' + e + '"'; }).join(', ') + ']'
       : '"' + proposal.evidence + '"'),
     'proposed_diff:',
-    '  before: "' + proposal.proposed_diff.before.replace(/"/g, '\\"') + '"',
-    '  after: "' + proposal.proposed_diff.after.replace(/"/g, '\\"') + '"',
+    '  before: "' + proposal.proposed_diff.before.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"',
+    '  after: "' + proposal.proposed_diff.after.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"',
     'confidence: ' + proposal.confidence,
     'confidence_rationale: "' + proposal.confidence_rationale + '"',
     'anti_overfitting_gate: passed',
