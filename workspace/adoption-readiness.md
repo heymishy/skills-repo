@@ -27,7 +27,7 @@
 
 **Green (achieved and evidenced):** M2, M3, M4, MM1, MM3, MM5 — core platform capabilities and delivery pipeline are operational and proven in dogfood.
 
-**Amber (built but unproven at customer scale):** M1, MM2, MM4 — the toolchain exists; the evidence events require a real Westpac operator run (M1) or a 30-minute Phase 2 /levelup action (MM2, MM4). None of the amber items require new code.
+**Amber (built but unproven at customer scale):** M1, MM2, MM4 — the toolchain exists; the evidence events require a real Westpac operator run (M1) or a 30-minute Phase 2 /improve run (MM2, MM4). None of the amber items require new code.
 
 **Red (not yet achieved):** M5 — non-engineer approval requires a live, configured Jira/Confluence/Slack environment and a real approver. This is the one item that requires scoping effort before a Westpac pilot can claim this outcome.
 
