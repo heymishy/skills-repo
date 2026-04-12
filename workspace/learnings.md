@@ -608,3 +608,21 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 | Q8 | Hash recomputation confirms no drift since approval | Hash drift check not yet wired into assurance gate CI step | Phase 3 assurance story |
 
 **Implication for adoption gate:** `MODEL-RISK.md` Section 4 sign-off is conditional on re-evaluation after all 5 gaps are resolved. Full 8/8 is required before any regulated-enterprise adoption (e.g. Westpac). Tracked in `MODEL-RISK.md` Section 3 T3M1 evidence block.
+
+---
+
+### Phase 3 platform improvement candidate — Windows-native trace validator (`validate-trace.ps1`)
+
+**Date:** 2026-04-12
+**Context:** `/trace` validation is currently implemented via `scripts/validate-trace.sh`. In Windows shell contexts, execution depends on Git Bash/WSL path translation and Python launcher behaviour, which caused avoidable execution failures during Phase 2 closeout.
+
+**Proposal:** Add `scripts/validate-trace.ps1` as a first-class PowerShell equivalent of `validate-trace.sh`, with parity for:
+
+- check set (`schema_valid`, `discovery_exists`, `discovery_approved`, `test_plan_coverage`, `unresolved_blockers`)
+- `--ci` style machine-readable output (`trace-validation-report.json`)
+- non-zero exit code on hard-fail checks
+- single-check targeting equivalent to `--check`
+
+**Why this matters:** Windows-native validation removes shell/launcher variability and makes `/trace` reproducible for operators running in PowerShell-only enterprise environments (including likely Westpac desktop baselines).
+
+**Phase 3 closure condition:** `scripts/validate-trace.ps1` exists, CI parity tests pass against the same fixture set as `validate-trace.sh`, and both scripts produce equivalent pass/fail results on the same repo state.
