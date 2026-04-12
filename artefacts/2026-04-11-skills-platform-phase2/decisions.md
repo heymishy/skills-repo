@@ -300,4 +300,4 @@ Three pilot domain names selected for the ≥3 pilot domain POLICY.md files requ
 
 **Accepted risk:** Unreviewed workflow execution can consume CI minutes or run against a faulty PR before a human has inspected it. Mitigated by: (a) all stories completing DoR before dispatch; (b) assurance gate running as the first automated control; (c) operator inspecting the diff before merge.
 
-**Revisit trigger:** Westpac Bitbucket migration. Recreate the equivalent non-blocking workflow execution policy in Bitbucket/Jenkins while preserving regulated merge controls. Do not assume the GitHub default maps directly — document the exact enterprise setting before the first Westpac agent PR is opened.
+**Revisit trigger:** Enterprise Bitbucket migration. Recreate the equivalent non-blocking workflow execution policy in Bitbucket/Jenkins while preserving regulated merge controls. Do not assume the GitHub default maps directly — document the exact enterprise setting before the first Enterprise agent PR is opened.
