@@ -327,6 +327,15 @@ Rules:
 - Code blocks: fenced, content may wrap naturally
 - User story format (`As a … / I want … / So that …`): each clause on its own line is acceptable
 
+**Always expand abbreviations and codes on first use in human-oriented documents.** Pipeline artefacts, skill outputs, DoD/DoR observations, action items in `state.json`, and playbooks regularly use shorthand codes (e.g. `T3M1`, `AC3`, `E2`, `MM1`). A second operator reading cold cannot follow these without explanation.
+
+Rules:
+- **First use in any document:** write the full descriptor in brackets — e.g. `T3M1 (Tier 3, Meta-metric 1 — independent non-engineer audit)`, `E2 (/estimate pass 2 — refined at definition)`, `AC3 (Acceptance Criterion 3: <criterion text>)`, `MM1 (Meta-metric 1 — outer-loop unassisted replication rate)`.
+- **Subsequent uses in the same document:** code alone is acceptable once the descriptor has appeared.
+- **Human action items** (`pendingActions` in `state.json`, DoD observations, DoR Coding Agent Instructions): never use a bare code — the action must be self-describing without opening another file.
+- **Skill-generated artefacts:** the first reference to any metric, AC, or estimation-pass code must include the full name. This applies in SKILL.md instruction files and in the artefacts those skills produce.
+- **Scope:** applies to all new documents and artefacts from Phase 3 onwards. Legacy Phase 1/2 artefacts are not retroactively updated.
+
 ---
 
 ## Coding standards

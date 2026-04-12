@@ -764,3 +764,28 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 **Why this matters:** Windows-native validation removes shell/launcher variability and makes `/trace` reproducible for operators running in PowerShell-only enterprise environments (including likely Enterprise desktop baselines).
 
 **Phase 3 closure condition:** `scripts/validate-trace.ps1` exists, CI parity tests pass against the same fixture set as `validate-trace.sh`, and both scripts produce equivalent pass/fail results on the same repo state.
+
+---
+
+### Phase 2 finding — abbreviations and codes without descriptors block human follow-through
+
+**Date:** 2026-04-12
+**Context:** Phase 2 closeout review. References throughout pipeline artefacts, skill outputs, and human-oriented action items used codes alone — e.g. `T3M1`, `AC3`, `E2`, `E3`, `MM1` — without an inline descriptor. A second operator reading these references cannot follow the chain without separately looking up what each code means.
+
+**Examples observed:**
+- `T3M1` (Tier 3, Meta-metric 1 — the independent non-engineer audit question) appeared in MODEL-RISK.md, learnings entries, and the validation playbook without explanation on first use in each document
+- `E1 / E2 / E3` (/estimate skill estimation passes: E1 = rough at discovery, E2 = refined at definition, E3 = actuals at /levelup) appeared in estimation-norms.md and learnings entries with no inline gloss
+- `AC3` (Acceptance Criterion 3 from the story's AC list) appeared in DoD observations and pipeline-state.json action items without the criterion text quoted
+- `MM1 / MM2 / MM4` (meta-metrics from the benefit-metric artefact: MM1 = outer-loop unassisted replication, MM2 = …) appeared in the validation playbook metric sections without the metric name spelled out alongside
+
+**Root cause:** The pipeline was written by a single operator with full context. Abbreviations that are obvious to the author are opaque to a second operator following a reference cold.
+
+**Standard going forward:**
+1. **First use in any human-oriented document** (artefact, playbook, DoD, learnings entry, action item): write the full descriptor in brackets after the code — e.g. `T3M1 (Tier 3, Meta-metric 1 — independent non-engineer audit)`, `E2 (/estimate pass 2 — refined at definition)`, `AC3 (Acceptance Criterion 3: <criterion text>)`.
+2. **Subsequent uses in the same document:** code alone is acceptable once the descriptor has appeared.
+3. **Human-oriented action items** (pendingActions in state.json, DoD observations, DoR instructions): never use a bare code in an action item — always include enough text that the action is self-describing without cross-referencing another file.
+4. **Skill outputs and artefact headings:** the first reference to any metric code, AC code, or estimation pass code in a skill-generated artefact must include the full name. This applies in SKILL.md instruction files and in the artefacts those skills produce.
+
+**Scope of remediation:** Legacy artefacts from Phase 1 and Phase 2 are not retroactively updated — the cost is prohibitive and the artefacts are finalised. The standard applies from Phase 3 delivery onwards and to any new human-oriented documents (e.g. `docs/validation-playbook.md`) being written now.
+
+**Action:** Add this standard to `.github/copilot-instructions.md` Artefact writing standards section before Phase 3 /discovery runs. Reference this entry as the signal source.
