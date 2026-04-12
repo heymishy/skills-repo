@@ -1,0 +1,66 @@
+# tests/fixtures/docker-compose.bitbucket-dc.yml
+#
+# Docker Compose configuration for a local Bitbucket Data Center instance.
+# AC7 committed deliverable — p2.10-bitbucket-ci-validation.
+#
+# PURPOSE
+# Provides a reproducible local Bitbucket DC Docker environment for running
+# the DC auth topology tests (AC3 — app-password, AC4 — OAuth, AC5 — SSH key)
+# without a network-accessible Bitbucket DC instance.
+#
+# USAGE
+#   docker compose -f tests/fixtures/docker-compose.bitbucket-dc.yml up -d
+#   # (run DC auth topology tests)
+#   docker compose -f tests/fixtures/docker-compose.bitbucket-dc.yml down
+#
+# CREDENTIALS
+# All auth secret values are supplied via environment variables — NO credential
+# literals appear in this file (MC-SEC-02, NFR Security).
+# Set the following in your local environment or a .env file (never committed):
+#
+#   BB_USER            Bitbucket admin username
+#   BB_APP_PASSWORD    App password for the admin user
+#   OAUTH_KEY          OAuth consumer key
+#   OAUTH_SECRET       OAuth consumer secret
+#   SSH_PRIVATE_KEY    SSH private key (PEM format, escaped as a single line)
+#
+# VERSIONS VALIDATED
+# Bitbucket Data Center (Docker): atlassian/bitbucket-server:latest
+# (see artefacts/2026-04-11-skills-platform-phase2/decisions.md RESOLUTION-A1-P2.10)
+
+version: '3.8'
+
+services:
+  bitbucket-dc:
+    image: atlassian/bitbucket-server:latest
+    container_name: bitbucket-dc-local
+    ports:
+      - "7990:7990"   # Bitbucket DC HTTP interface
+      - "7999:7999"   # Bitbucket DC SSH interface
+    environment:
+      # Admin credentials — values MUST be supplied via environment variables.
+      # Never set literal credential values in this file.
+      - SETUP_DISPLAYNAME=Bitbucket DC Local
+      - SETUP_BASEURL=http://localhost:7990
+      - SETUP_LICENSE=${BITBUCKET_LICENSE}
+      - SETUP_SYSADMIN_USERNAME=${BB_USER}
+      - SETUP_SYSADMIN_PASSWORD=${BB_APP_PASSWORD}
+      - SETUP_SYSADMIN_DISPLAYNAME=Admin
+      - SETUP_SYSADMIN_EMAILADDRESS=admin@localhost
+      # OAuth consumer credentials — injected at runtime via CI secrets
+      - OAUTH_KEY=${OAUTH_KEY}
+      - OAUTH_SECRET=${OAUTH_SECRET}
+      # SSH key — injected at runtime via CI secrets
+      - SSH_PRIVATE_KEY=${SSH_PRIVATE_KEY}
+    volumes:
+      - bitbucket-dc-data:/var/atlassian/application-data/bitbucket
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7990/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+
+volumes:
+  bitbucket-dc-data:
+    driver: local

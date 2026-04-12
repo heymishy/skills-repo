@@ -1,0 +1,28 @@
+# tests/fixtures/bitbucket-pipelines-missing-gate.yml
+#
+# Syntactically valid Bitbucket Cloud pipeline definition that is MISSING the
+# governance assurance gate step.
+#
+# Used by: tests/check-bitbucket-cloud.js (AC2 negative path — missing step detection)
+# Expected outcome: pipeline-shape validator reports failure naming the missing step.
+
+image: node:18
+
+pipelines:
+  pull-requests:
+    '**':
+      - step:
+          name: Install dependencies
+          script:
+            - npm ci
+      - step:
+          name: Unit tests
+          script:
+            - npm test
+
+  default:
+    - step:
+        name: Build
+        script:
+          - npm ci
+          - npm run build

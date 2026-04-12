@@ -12,6 +12,30 @@ disciplines:
     surface-variants:
       saas-gui: standards/quality-assurance/saas-gui-variant.md
       manual: standards/quality-assurance/manual-variant.md
+  data:
+    core: standards/data/core.md
+    policy-floor: standards/data/POLICY.md
+  ux:
+    core: standards/ux/core.md
+    policy-floor: standards/ux/POLICY.md
+  security-extended:
+    core: standards/security-extended/core.md
+    policy-floor: standards/security-extended/POLICY.md
+  regulatory:
+    core: standards/regulatory/core.md
+    policy-floor: standards/regulatory/POLICY.md
+  infrastructure:
+    core: standards/infrastructure/core.md
+    policy-floor: standards/infrastructure/POLICY.md
+  devops:
+    core: standards/devops/core.md
+    policy-floor: standards/devops/POLICY.md
+  product:
+    core: standards/product/core.md
+    policy-floor: standards/product/POLICY.md
+  ml-ai:
+    core: standards/ml-ai/core.md
+    policy-floor: standards/ml-ai/POLICY.md
 
 # Surface-type policy floors (p2.5a — IaC and SaaS-API)
 # Routing key is the surface type declared in context.yml (surface.type or surface.types[]).
@@ -21,6 +45,18 @@ surfaces:
     policy-floor: standards/iac/POLICY.md
   saas-api:
     policy-floor: standards/saas-api/POLICY.md
+
+# Pilot domain policy floors (p2.9)
+# Domain names recorded in artefacts/2026-04-11-skills-platform-phase2/decisions.md
+# under DOMAIN-NAMES-P2.9. Each domain entry maps to a POLICY.md floor that extends
+# the applicable discipline floors without replacing them.
+domains:
+  fintech:
+    policy-floor: standards/domains/fintech/POLICY.md
+  healthcare:
+    policy-floor: standards/domains/healthcare/POLICY.md
+  ecommerce:
+    policy-floor: standards/domains/ecommerce/POLICY.md
 
 # Authoring note: standards requirements must be outcome-oriented.
 # Each MUST/SHOULD/MAY states what result is enabled or prevented, not just what
