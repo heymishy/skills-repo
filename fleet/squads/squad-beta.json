@@ -1,0 +1,7 @@
+{
+  "squadId": "squad-beta",
+  "repoUrl": "https://github.com/example-org/squad-beta-repo",
+  "pipelineStateUrl": "https://raw.githubusercontent.com/example-org/squad-beta-repo/master/.github/pipeline-state.json",
+  "registeredAt": "2026-04-11T11:00:00.000Z",
+  "registry_mode": "publishing"
+}

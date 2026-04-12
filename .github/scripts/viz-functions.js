@@ -541,6 +541,75 @@ function buildExportCSV(state) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// renderFleetPanel
+// Fleet panel rendering — pure HTML string from fleet-state.json squads array.
+// Used by pipeline-viz.html fleet panel and tested by check-viz-behaviour.js.
+//
+// A11Y MC-A11Y-02: health shown as colour class PLUS text label (not colour alone).
+// A11Y MC-A11Y-01: squad cards rendered as <a> elements — natively keyboard-focusable.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function fleetHealthLabel(health) {
+  switch (health) {
+    case 'green':   return '✓ Healthy';
+    case 'amber':   return '⚠ Warning';
+    case 'red':     return '✕ Blocked';
+    case 'unknown': return '? Unknown';
+    default:        return String(health || 'unknown');
+  }
+}
+
+function fleetEsc(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * Renders a fleet panel HTML string from a fleet-state.json squads array.
+ * Produces one squad card per entry. Cards are keyboard-accessible (<a> elements).
+ * Health is indicated by a CSS class AND a text label (MC-A11Y-02).
+ *
+ * @param {Array<{ squadId, stage, health, updatedAt, sourceUrl, error? }>} squads
+ * @returns {string} HTML string
+ */
+function renderFleetPanel(squads) {
+  if (!Array.isArray(squads) || squads.length === 0) {
+    return '<div class="fleet-panel"><p class="fleet-empty">No registered squads found.</p></div>';
+  }
+
+  const cards = squads.map(function(squad) {
+    const health = squad.health || 'unknown';
+    const label  = fleetHealthLabel(health);
+    const error  = squad.error ? '<div class="fleet-card-error">' + fleetEsc(squad.error) + '</div>' : '';
+    return (
+      '<a class="fleet-card fleet-card--' + fleetEsc(health) + '" ' +
+        'href="' + fleetEsc(squad.sourceUrl || '#') + '" ' +
+        'aria-label="Squad ' + fleetEsc(squad.squadId) + ' — ' + fleetEsc(label) + '">' +
+        '<div class="fleet-card-id">' + fleetEsc(squad.squadId) + '</div>' +
+        '<div class="fleet-card-stage">' + fleetEsc(squad.stage || 'unknown') + '</div>' +
+        '<div class="fleet-card-health fleet-health--' + fleetEsc(health) + '">' +
+          '<span class="fleet-health-dot" aria-hidden="true"></span>' +
+          '<span class="fleet-health-label">' + fleetEsc(label) + '</span>' +
+        '</div>' +
+        '<div class="fleet-card-updated">' + fleetEsc(squad.updatedAt || '') + '</div>' +
+        error +
+      '</a>'
+    );
+  });
+
+  return (
+    '<div class="fleet-panel">' +
+      '<div class="fleet-grid">' +
+        cards.join('') +
+      '</div>' +
+    '</div>'
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // EXPORTS
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -553,6 +622,9 @@ module.exports = {
   featureActionMeta,
   channelLabel,
   computeFleetSummary,
+  // Fleet panel
+  renderFleetPanel,
+  fleetHealthLabel,
   // Export builders
   buildExportJSON,
   buildExportCSV,

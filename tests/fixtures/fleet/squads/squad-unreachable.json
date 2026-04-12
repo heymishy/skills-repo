@@ -1,0 +1,7 @@
+{
+  "squadId": "squad-unreachable",
+  "repoUrl": "https://github.com/example-org/squad-unreachable-repo",
+  "pipelineStateUrl": "https://example.invalid/pipeline-state.json",
+  "registeredAt": "2026-04-03T10:00:00.000Z",
+  "registry_mode": "publishing"
+}
