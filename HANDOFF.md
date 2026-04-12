@@ -86,11 +86,17 @@ Channel wiring for DoR sign-off is selected from `.github/context.yml` and imple
 
 **What T3M1 is:** `MODEL-RISK.md` defines eight audit questions that a risk reviewer must be able to answer from a trace alone, without engineering assistance. This is the governance readability test for the assurance trace. Full 8/8 satisfies the adoption gate for non-dogfood use.
 
-**Current state (recorded 2026-04-12):** T3M1 evaluated against the first real Phase 2 inner loop trace (`workspace/traces/2026-04-11T21-33-02-002Z-ci-84f82370.jsonl`, story p2.4, PR #31). Result: **3/8 Y** — Q1 (model identity), Q3 (standards injected), Q4 (trace transition complete) satisfied. Q2/Q5/Q6/Q7/Q8 remain pending.
+**Current state (recorded 2026-04-12):** T3M1 evaluated against the first real Phase 2 inner loop trace (`workspace/traces/2026-04-11T21-33-02-002Z-ci-84f82370.jsonl`, story p2.4, PR #31). Result: **3/8 Y** — Q1 (model identity), Q3 (standards injected), Q4 (trace transition complete) satisfied. **5 questions unanswered:**
 
-**Why:** Q2 (gate verdict + rationale in PR), Q5 (watermark comparison visible), Q6 (surface type in trace), Q7 (improvement proposal reference), and Q8 (approver identity) require Phase 2 gate enhancements: p1.4 (watermark gate PR reporting), p1.7 (standards hash match visible), and p2.1 (surface type in `standardsApplied`). These were all delivered in Phase 2.
+| # | Question | Gap | Phase 3 fill target |
+|---|---|---|---|
+| Q2 | `standardsInjected` hashes visible and verifiable | Hash reconciliation not wired into CI trace write | p1.7 / p2.1 gate enhancement |
+| Q5 | Watermark row visible in PR (pass/fail reason) | Watermark gate does not emit to PR comment | p1.4 PR reporting story |
+| Q6 | `stalenessFlag` present in trace | Skill-version staleness field absent from trace schema | Phase 3 schema story |
+| Q7 | Agent independence evidenced (three separate trace entries) | CI does not validate entry count or cross-session independence | Phase 3 CI gate story |
+| Q8 | Hash recomputation confirms no drift since approval | Hash drift check not wired into assurance gate CI step | Phase 3 assurance story |
 
-**Required action before non-dogfood adoption:** Re-run T3M1 evaluation against a real Phase 2+ inner loop trace after p2.1, p2.9, and p2.11 are operational in CI. Full 8/8 unlocks the `MODEL-RISK.md` adoption gate. The sign-off record in `MODEL-RISK.md` Section 4 carries this as a condition of approval.
+**Required action before non-dogfood adoption:** Re-run T3M1 evaluation against a real Phase 3+ trace after all five gaps are resolved. Full 8/8 unlocks the `MODEL-RISK.md` adoption gate. The sign-off record in `MODEL-RISK.md` Section 4 carries this as a condition of approval.
 
 **Artefact:** `MODEL-RISK.md` → Section 3 (T3M1 evidence block) and Section 4 (sign-off conditions).
 

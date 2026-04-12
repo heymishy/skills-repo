@@ -62,7 +62,7 @@
 - Focus h / story: 0.04h (= 0.47 / 13)
 - Inner loop human hours: 1h
 - Agent autonomous hours: not measured (JSONL unavailable)
-- Premium requests forecast: ~322 (13 stories × 23 req/story Phase 1 norm; ~322 exceeds prior period remainder; inner loop used refreshed May quota)
+- Premium requests forecast: ~322 at E2 time (13 stories × 23 req/story Phase 1 norm; forecast assumed inner loop would run on refreshed May quota after monthly reset — this assumption proved incorrect; inner loop ran Apr 11–12 before the May 1 reset, so all 68 actual requests drew from the same Apr period)
 - Premium requests actual: 68 (gauge delta: 109.5% − 86.7% = 22.8% × 300 = 68 requests)
 - Gauge at E3 close: 109.5% of 300 (i.e. 328.5 total used, ~28.5 over base 300)
 - Complexity mix: C1×3 (p2.1–p2.3: SKILL.md text only), C2×10 (remainder); E5 stories (p2.11/p2.12) originally rated C3 but estimated at C2 average
@@ -150,3 +150,20 @@ The 300-request base is the monthly quota base. At 109.5% the account is 28.5 re
 | Requests per story | ~12 | 253 / 21 |
 | Phase 1 norm: focus h/story | 2.3h | Calibration baseline — HIGH confidence |
 | Phase 2 norm: focus h/story | 0.04h | E3 fallback — LOW confidence |
+
+---
+
+## Phase 3 E1 seed
+
+Using Phase 1 actuals as the calibration baseline (Phase 2 E3 excluded from seeding due to low-confidence fallback method):
+
+| Input | Value | Source |
+|-------|-------|--------|
+| Per-story norm (focus h) | 2.3h | Phase 1 actuals |
+| Familiarity discount (same operator, same domain) | −30% | E3 flow finding E3-F3: recommend discount for repeat operator |
+| Adjusted per-story norm | ~1.6h | 2.3h × 0.70 |
+| Phase 3 story count estimate | TBD at /definition | — |
+| Phase 3 E1 outer loop forecast | stories × 1.6h | Seed from adjusted norm |
+| Premium requests seed | ~18 req/story | 253 total / 21 stories (Phase 1+2 combined) |
+
+Update this section when Phase 3 /discovery and first /estimate E1 run are complete.
