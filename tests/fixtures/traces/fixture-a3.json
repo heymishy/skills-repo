@@ -1,0 +1,12 @@
+{
+  "traceId": "fixture-a3",
+  "storySlug": "story-a",
+  "skillSlug": "definition",
+  "surfaceType": "ci",
+  "createdAt": "2026-03-01T12:00:00Z",
+  "failurePattern": "missing-test-coverage",
+  "checks": [
+    { "name": "must-have-test-plan", "passed": false },
+    { "name": "must-have-dor", "passed": true }
+  ]
+}

@@ -101,3 +101,10 @@ bitbucket:
     oauth_key_env: "OAUTH_KEY"           # CI secret var name for OAuth consumer key
     oauth_secret_env: "OAUTH_SECRET"     # CI secret var name for OAuth consumer secret
     ssh_private_key_env: "SSH_PRIVATE_KEY"  # CI secret var name for SSH private key
+
+# Improvement agent configuration (ADR-004: all thresholds and windows here — not hardcoded).
+# Used by src/improvement-agent/failure-detector.js (p2.11).
+improvement_agent:
+  failure_pattern_threshold: 3        # min occurrences of same failurePattern to trigger proposal
+  staleness_window_days: 90           # days of inactivity before a surface triggers staleness proposal
+  sliding_window_size: 10             # number of most-recent traces per surface type in each window
