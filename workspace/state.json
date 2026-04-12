@@ -81,13 +81,15 @@
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-04-12T17:10:00+10:00",
-    "contextAtWrite": "Phase 2 /levelup complete. Category A/B/C codified, D-batch logged, and /estimate E3 actuals recorded with telemetry-gap note.",
-    "resumeInstruction": "Phase 2 package is ready for enterprise sync handoff. E3 actuals revised using manual Apr 11 to Apr 12 span; remaining open items are Docker-gated p2.10 tests and, if needed, a formal artefact-level /trace write-up.",
+    "writtenAt": "2026-04-12T21:30:00+10:00",
+    "contextAtWrite": "Session timing tooling complete and integrated into platform. scripts/parse-session-timing.js created and committed (17d3ae1). Bug fixes: idle-gap negative filter, --max-gap arg parsing with --summary flag (65630df). estimate/SKILL.md E3b/E3c revised to use parser as primary derivation method — E3c now confirmatory, not estimative (4903b70). Phase 1 E3 actuals revised in estimation-norms.md and results.tsv: 18h/50% -> 11.1h/28% at --max-gap 15 canonical threshold (35eaa23). workspace/learnings.md updated with tool entry. Phase 2 E3 actuals remain medium-low confidence (JSONL unavailable at time of write); will be revised at Phase 2 /levelup using parser.",
+    "resumeInstruction": "Session timing parser is complete and integrated. Next work is Phase 2 inner loop — dispatch p2.1-p2.5b stories (already DoR signed-off). p2.6 remains BLOCKED on ASSUMPTION-02. p2.11/p2.12 gated on ≥1 Phase 2 trace in workspace/traces/. Before dispatch: review workspace/state.json pendingActions (Docker-gated p2.10 tests still open). Phase 2 E3 actuals should be rerun with parse-session-timing.js at /levelup.",
     "pendingActions": [
       "Run p2.10 AC3/AC4/AC5 Docker-gated tests in a Docker-enabled Bitbucket DC environment and capture pass evidence",
-      "Optional: prepare release artefacts for Phase 2 if requested",
-      "Optional: save a formal /trace artefact if an artefact-folder report is required for audit pack handoff"
+      "Dispatch p2.1-p2.5b inner loop (all DoR signed-off) — use /issue-dispatch --target github-agent",
+      "Resolve ASSUMPTION-02 before dispatching p2.6",
+      "Rerun Phase 2 E3 actuals with parse-session-timing.js at Phase 2 /levelup (current norms entry is medium-low confidence)",
+      "Optional: prepare release artefacts for Phase 2 if requested"
     ]
   },
   "phase1Reference": {
@@ -98,14 +100,15 @@
       "p1.8 AC3: T3M1 evidence record — deferred; closes when first Phase 2 inner loop story runs through P1.3 CI gate"
     ],
     "estimateActuals": {
-      "outerLoopSessions": 10,
-      "engagementFraction": 0.50,
-      "totalCalendarH": 36,
-      "outerLoopFocusH": 18,
+      "outerLoopSessions": 11,
+      "engagementFraction": 0.28,
+      "totalSessionSpanH": 40,
+      "outerLoopFocusH": 11.1,
       "innerLoopHuman": 1,
       "calendarDays": 2,
       "storyCount": 8,
-      "focusHPerStory": 2.3,
+      "focusHPerStory": 1.4,
+      "derivedBy": "parse-session-timing.js --max-gap 15 (revised 2026-04-12 from manual 18h/50%)",
       "premiumRequestsActual": "~185 (gauge 84.4% at close)"
     }
   },
