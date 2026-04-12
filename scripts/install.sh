@@ -134,7 +134,7 @@ copy_file ".github/architecture-guardrails.md" "$TARGET_DIR/.github/architecture
 copy_file ".github/pipeline-state.json"        "$TARGET_DIR/.github/pipeline-state.json"
 copy_file ".github/pipeline-state.schema.json" "$TARGET_DIR/.github/pipeline-state.schema.json"
 copy_file ".github/pipeline-viz.html"          "$TARGET_DIR/.github/pipeline-viz.html"
-copy_file "skill-pipeline-instructions.md"      "$TARGET_DIR/skill-pipeline-instructions.md"
+copy_file "docs/skill-pipeline-instructions.md"  "$TARGET_DIR/docs/skill-pipeline-instructions.md"
 
 # ── Step 2: Context profiles ───────────────────────────────────────────────────
 info "Step 2/5: Context profiles"
@@ -362,7 +362,7 @@ if [[ "$DRY_RUN" == false && "$UPSTREAM_STRATEGY" != "none" ]]; then
     if [[ "$UPSTREAM_STRATEGY" == "fork" ]]; then
       FORK_OF_LINE="\n  fork_of: https://github.com/${SKILLS_REPO_OWNER}/${SKILLS_REPO_NAME}.git"
     fi
-    printf "\nskills_upstream:\n  remote: skills-upstream\n  repo: %s\n  sync_paths:\n    - .github/skills/\n    - .github/templates/\n    - scripts/\n    - skill-pipeline-instructions.md\n  strategy: manual%s\n" \
+    printf "\nskills_upstream:\n  remote: skills-upstream\n  repo: %s\n  sync_paths:\n    - .github/skills/\n    - .github/templates/\n    - scripts/\n    - docs/skill-pipeline-instructions.md\n  strategy: manual%s\n" \
       "$REMOTE_URL" "$FORK_OF_LINE" >> "$CONTEXT_YML"
     success "skills_upstream block written to context.yml"
   fi
@@ -370,7 +370,7 @@ if [[ "$DRY_RUN" == false && "$UPSTREAM_STRATEGY" != "none" ]]; then
   echo ""
   echo "  To pull future skills updates:"
   echo "    git fetch skills-upstream"
-  echo "    git checkout skills-upstream/master -- .github/skills/ .github/templates/ scripts/ skill-pipeline-instructions.md"
+  echo "    git checkout skills-upstream/master -- .github/skills/ .github/templates/ scripts/ docs/skill-pipeline-instructions.md"
   echo "    git diff --staged   # review changes"
   echo "    git commit -m \"chore: sync skills from skills-upstream [date]\""
   echo ""

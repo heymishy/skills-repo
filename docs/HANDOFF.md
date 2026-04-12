@@ -52,7 +52,7 @@
 
 ## 2. Architectural Decisions (ADR-001 through ADR-006)
 
-All ADRs are maintained in the live guardrails file: [`.github/architecture-guardrails.md`](.github/architecture-guardrails.md)
+All ADRs are maintained in the live guardrails file: [`.github/architecture-guardrails.md`](../.github/architecture-guardrails.md)
 
 ### ADR-001 — Single-file viz, no build step (Active, 2026-03-22)
 

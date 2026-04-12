@@ -10,7 +10,7 @@ Designed to work for a single developer shipping a small feature and equally for
 
 For most features this is all you need. Invoke each skill by name in Copilot chat.
 
-![Skills pipeline flow — outer loop (discovery → release → measure/learn) wrapping the inner coding loop (branch-setup → subagent-execution → verify-completion)](.github/skills-pipeline-flow.jpg)
+![Skills pipeline flow — outer loop (discovery → release → measure/learn) wrapping the inner coding loop (branch-setup → subagent-execution → verify-completion)](diagrams/skills-pipeline-flow.jpg)
 
 **Start every session with `/workflow`** — it reads `pipeline-state.json` and tells you exactly which skill to run next.
 
@@ -636,7 +636,7 @@ Skills that enforce it: `/review` (Category E), `/definition` (Step 1.5), `/defi
 
 `.github/pipeline-viz.html` is a single-file SPA that reads `pipeline-state.json` and renders the current state of every feature in the pipeline.
 
-![Pipeline visualiser — stage board with outer loop, inner loop, governance matrix, action queue, and outcomes view](.github/pipeline-vis-example.png)
+![Pipeline visualiser — stage board with outer loop, inner loop, governance matrix, action queue, and outcomes view](diagrams/pipeline-vis-example.png)
 
 **Views:**
 - **Stage view** — feature cards arranged by pipeline stage, with health colour, test progress bar, task progress bar, and loop score badge

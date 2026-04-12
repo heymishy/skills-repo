@@ -178,7 +178,7 @@ The outer loop produces fully specified, DoR-gated work items before any code is
 
 The assurance loop runs automatically on every PR via the CI gate (`assurance-gate.yml`). It resolves the current instruction set hash from the skills registry, verifies that hash against the trace emitted during delivery, evaluates DoD criteria against the surface-adapted contract, and writes a gate verdict and trace hash to the PR comment. Merge is blocked on a failing verdict.
 
-Each trace entry carries the skill name, hash, phase, verdict, and timestamp. Trace files are committed to `workspace/traces/` on the PR branch during the gate run and persisted to the repository. The watermark gate additionally checks that the eval suite pass rate meets the threshold and that the full score does not regress below the best recorded score for this skill/surface combination.
+Each trace entry carries the skill name, hash, phase, verdict, and timestamp. The gate evaluates the PR, posts the verdict and trace hash as a PR comment, and uploads the trace as a workflow artefact. On merge, a separate `trace-commit.yml` workflow commits the trace to `workspace/traces/` on master — creating a permanent, in-git audit record alongside the merged code. Trace files are never committed to story or feature branches (see architecture guardrail). The watermark gate additionally checks that the eval suite pass rate meets the threshold and that the full score does not regress below the best recorded score for this skill/surface combination.
 
 The T3M1 model audit assesses whether an independent non-engineer reviewer can answer eight governance questions from the trace alone, without engineering assistance. At Phase 2 close, three of eight questions are answered: Q1 (phase evident), Q3 (skill identified), Q4 (verdict present). Five questions — Q2 (standardsInjected hashes visible), Q5 (watermark result in PR), Q6 (stalenessFlag present), Q7 (agent independence evidenced by three structurally separate entries), Q8 (hash recomputation confirms no drift) — are Phase 3 delivery obligations. Independent T3M1 validation by a genuine non-engineering reviewer outside the platform engineering reporting line is a hard Phase 3 entry condition.
 
@@ -269,6 +269,8 @@ flowchart TB
     classDef inner fill:#14b8a6,color:#fff,stroke:none
     classDef gate fill:#f59e0b,color:#fff,stroke:none
 ```
+
+> **Repo layout:** `standards/` is at the repo root (not under `docs/`) because SKILL.md files reference discipline paths such as `standards/[discipline]/core.md`. Moving it would require updating every skill path reference across the library. Human-readable reference documents live in `docs/`; machine-consumed instruction content stays at root depth.
 
 **Currently live:** 3 core disciplines (software-engineering, security-engineering, quality-assurance) with full POLICY.md floors delivered in Phase 1. 8 additional domain-tier discipline standards delivered as pilots in Phase 2 (p2.9). `standards/index.yml` is the composition routing table. The composition path is: core → domain extension → squad specification → POLICY.md validation → injected as one composed standards document.
 
@@ -383,7 +385,7 @@ Phase 2 outer loop focus time (1h) reflects high pipeline fluency at Phase 2 sta
 | ADR-005 | Agent instructions format (copilot-instructions.md vs AGENTS.md) is a surface adapter concern driven by `vcs.type` in context.yml; AGENTS.md is the vendor-neutral default | Active |
 | ADR-006 | Non-engineer approval routing is an adapter pattern (`approval_channel`); first implementation is the GitHub Issue workflow | Active |
 
-Full decision history: [`.github/architecture-guardrails.md`](.github/architecture-guardrails.md) · [HANDOFF.md](HANDOFF.md)
+Full decision history: [`.github/architecture-guardrails.md`](.github/architecture-guardrails.md) · [HANDOFF.md](docs/HANDOFF.md)
 
 ---
 
@@ -404,4 +406,4 @@ The `artefacts/`, `.github/skills/`, `.github/templates/`, and `.github/governan
 
 Built with the skills platform's own pipeline — 21 stories, 4 calendar days.
 
-[HANDOFF.md](HANDOFF.md) · [Architecture decisions](.github/architecture-guardrails.md) · [Model risk](MODEL-RISK.md)
+[Onboarding guide](docs/ONBOARDING.md) · [HANDOFF.md](docs/HANDOFF.md) · [Architecture decisions](.github/architecture-guardrails.md) · [Model risk](docs/MODEL-RISK.md)

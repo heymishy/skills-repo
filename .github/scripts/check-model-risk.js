@@ -25,8 +25,8 @@ const fs   = require('fs');
 const path = require('path');
 
 const root          = path.join(__dirname, '..', '..');
-const modelRiskFile = path.join(root, 'MODEL-RISK.md');
-const onboardingFile = path.join(root, 'ONBOARDING.md');
+const modelRiskFile = path.join(root, 'docs', 'MODEL-RISK.md');
+const onboardingFile = path.join(root, 'docs', 'ONBOARDING.md');
 
 let passed = 0;
 let failed = 0;
@@ -47,14 +47,14 @@ function fail(name, reason) {
 // ── Read files ────────────────────────────────────────────────────────────────
 
 if (!fs.existsSync(modelRiskFile)) {
-  console.error('[model-risk-check] ERROR: MODEL-RISK.md not found at repository root');
-  console.error('  Expected: MODEL-RISK.md');
+  console.error('[model-risk-check] ERROR: MODEL-RISK.md not found at docs/MODEL-RISK.md');
+  console.error('  Expected: docs/MODEL-RISK.md');
   process.exit(1);
 }
 
 if (!fs.existsSync(onboardingFile)) {
-  console.error('[model-risk-check] ERROR: ONBOARDING.md not found at repository root');
-  console.error('  Expected: ONBOARDING.md');
+  console.error('[model-risk-check] ERROR: ONBOARDING.md not found at docs/ONBOARDING.md');
+  console.error('  Expected: docs/ONBOARDING.md');
   process.exit(1);
 }
 

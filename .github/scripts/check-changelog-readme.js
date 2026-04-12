@@ -53,7 +53,7 @@ if (substantiveChanges.length === 0) {
 }
 
 const changelogStaged = staged.includes('CHANGELOG.md');
-const readmeStaged    = staged.includes('skill-pipeline-instructions.md');
+const readmeStaged    = staged.includes('docs/skill-pipeline-instructions.md');
 
 let failed = false;
 
@@ -67,7 +67,7 @@ if (!changelogStaged) {
 
 if (!readmeStaged) {
   // Non-blocking advisory only.
-  console.warn('[changelog-readme] ⚠  skill-pipeline-instructions.md not staged — consider whether the diagram or pipeline text needs updating.');
+  console.warn('[changelog-readme] ⚠  docs/skill-pipeline-instructions.md not staged — consider whether the diagram or pipeline text needs updating.');
 }
 
 process.exit(failed ? 1 : 0);
