@@ -48,7 +48,7 @@ Platform dogfood signal log. One entry per metric measurement event. Populated d
 - NFR profile generation should happen before benefit-metric coverage matrix reconciliation, not after. NFR constraints on stories (e.g. results.tsv append-only, credentials structural) sometimes reveal that a story cannot achieve its metric without an additional constraint AC. Catching this before the coverage pass avoids a re-pass.
 - Standards model story (P1.7) required loading a reference file (`ref-skills-platform-standards-model.md`) that was not listed in the skill's read list. If a story's domain requires external reference material, that material should be surfaced at epic planning time, not discovered mid-story.
 
-**Action:** Add a learnings-write step to `/definition` skill exit sequence. Flag for pipeline improvement in next `/levelup` run post-merge.
+**Action:** Add a learnings-write step to `/definition` skill exit sequence. Flag for pipeline improvement in next `/improve` run post-merge.
 
 ---
 
@@ -71,7 +71,7 @@ If any check fails: flag to operator with a summary of the dependency chain gap 
 
 **Resolution:** Epic 1 and both stories voided 2026-04-09. SCOPE decision recorded in `decisions.md`. Plan now 3 epics, 8 stories, scope ratio 1.0.
 
-**Action:** Add dependency chain validation check to `/definition` SKILL.md prerequisite story section. Flag for `/levelup` post-merge.
+**Action:** Add dependency chain validation check to `/definition` SKILL.md prerequisite story section. Flag for `/improve` post-merge.
 
 ### Observed — 2026-04-09
 
@@ -81,7 +81,7 @@ If any check fails: flag to operator with a summary of the dependency chain gap 
 
 **Finding:** Revise /checkpoint guidance: invoke at 55–60% for file-read-heavy phases (definition, review, trace). The 75% guideline remains appropriate for conversation-only phases. Distinguish the two cases in the checkpoint documentation.
 
-**Action:** Update /checkpoint invocation guidance in `copilot-instructions.md` or the relevant skill. Flag for `/levelup` post-merge.
+**Action:** Update /checkpoint invocation guidance in `copilot-instructions.md` or the relevant skill. Flag for `/improve` post-merge.
 
 ---
 
@@ -100,7 +100,7 @@ If any check fails: flag to operator with a summary of the dependency chain gap 
 4. Commit with message format: `chore: [phase] checkpoint [feature-slug] — [one-line summary]`
 5. Confirm commit hash and hook results in closing message
 
-**Action:** Add numbered exit sequence to /checkpoint skill or copilot-instructions.md. Flag for `/levelup` post-merge.
+**Action:** Add numbered exit sequence to /checkpoint skill or copilot-instructions.md. Flag for `/improve` post-merge.
 
 ---
 
@@ -147,7 +147,7 @@ This makes the self-checkpoint structural: it will happen reliably across models
 
 **Why this matters for eval:** The /review skill's "mandatory final step" is already present but is framed as a post-run batch operation. It should be re-framed as a per-story invariant. An eval scenario guarding this should test: "given a review session that is interrupted after story N of M, then stories 1..N are durably recorded in state."
 
-**Action:** Update `/review` SKILL.md state update section to add the incremental-write-per-story instruction. Flag for `/levelup` post-merge. Candidate eval scenario for `workspace/suite.json` (P1.6) once that story is implemented.
+**Action:** Update `/review` SKILL.md state update section to add the incremental-write-per-story instruction. Flag for `/improve` post-merge. Candidate eval scenario for `workspace/suite.json` (P1.6) once that story is implemented.
 
 ---
 
@@ -163,7 +163,7 @@ This makes the self-checkpoint structural: it will happen reliably across models
 
 **Proposed check for definition SKILL.md:** Before writing any AC or architecture constraint that depends on an external platform, tool, or environment, verify: "Is this platform/environment available in the delivery context?" If not: defer the AC/constraint to the phase where it becomes testable; log a SCOPE decision; add a revisit trigger. Do not embed unverifiable ACs in stories.
 
-**Action:** Add testability-filter check to `/definition` SKILL.md AC-writing section. Flag for `/levelup` post-merge.
+**Action:** Add testability-filter check to `/definition` SKILL.md AC-writing section. Flag for `/improve` post-merge.
 
 ---
 
@@ -304,13 +304,13 @@ Add to the guardrail-writing section of both skills:
 
 **Fix applied:** Added `skillSetHash: "a1604b2e14cfb6627a0dabe3bdfabab658be8ffd"` (git tree hash of `.github/skills/` at Phase 1 delivery) and `surfaceType: "github-copilot"` to `workspace/suite.json`.
 
-**Action:** Add a cross-story schema dependency check to the DoR skill: when a story references a file produced by another story, require the consuming story to document the exact fields it reads. Propagate those field requirements back to the producing story's DoR contract as explicit output schema constraints. Flag for `/levelup` post-merge.
+**Action:** Add a cross-story schema dependency check to the DoR skill: when a story references a file produced by another story, require the consuming story to document the exact fields it reads. Propagate those field requirements back to the producing story's DoR contract as explicit output schema constraints. Flag for `/improve` post-merge.
 
 ---
 
 ---
 
-## /levelup candidate — state.json write path must be atomic-replace, not append
+## /improve candidate — state.json write path must be atomic-replace, not append
 
 ### Observed — 2026-04-11 (p1.5 DoD session start)
 
@@ -327,7 +327,7 @@ Add to the guardrail-writing section of both skills:
 
 Alternatively, if using `create_file` or similar tools that overwrite the full file, ensure the write includes the complete JSON object, not a delta.
 
-**Action:** Flag as /levelup candidate. Add write-path safety requirement to the platform's state management conventions in `copilot-instructions.md` or a Phase 2 story. Eval scenario candidate: "given a state.json that contains two concatenated JSON objects, the check-workspace-state.js test must detect and report it as invalid." (This scenario now exists in the Phase 1 regression history — add it to `workspace/suite.json` if not already covered.)
+**Action:** Flag as /improve candidate. Add write-path safety requirement to the platform's state management conventions in `copilot-instructions.md` or a Phase 2 story. Eval scenario candidate: "given a state.json that contains two concatenated JSON objects, the check-workspace-state.js test must detect and report it as invalid." (This scenario now exists in the Phase 1 regression history — add it to `workspace/suite.json` if not already covered.)
 
 ---
 
@@ -341,14 +341,14 @@ Alternatively, if using `create_file` or similar tools that overwrite the full f
 
 **Why it matters:** As AI-generated pipeline outputs become longer and more complex, the probability that any single session misses an error grows. A structured verification step — even a lightweight prompt in a second session — provides a consistent quality floor that doesn't depend on operator vigilance under time pressure.
 
-**Proposed formalisation options (for /levelup consideration):**
+**Proposed formalisation options (for /improve consideration):**
 1. **Lightweight:** Add a "verification prompt" to the DoD, test-plan, and review skill output sections — a short prompt the operator can paste to a second session to check for missed ACs, scope deviations, or state write errors.
 2. **Moderate:** Add a "verify-output" sub-step to the DoR or verify-completion skill that explicitly invites operator verification before sign-off.
 3. **Structural (Phase 2+):** Add a named `/verify-output` skill or convention that formalises the second-session check as a sequenced pipeline step with a defined scope (what to check, how to surface findings).
 
 **Relationship to existing skills:** `/implementation-review` provides spec compliance + code quality review between task batches — this gap is analogous but at the pipeline-output level (artefacts, state files) rather than the code level.
 
-**Action:** Flag for /levelup. Consider adding a brief "verification prompt" field to the DoD artefact template — a canned prompt the operator can run in a second session to spot-check the DoD output. This makes the verification pattern explicit and repeatable without requiring a new skill at this stage.
+**Action:** Flag for /improve. Consider adding a brief "verification prompt" field to the DoD artefact template — a canned prompt the operator can run in a second session to spot-check the DoD output. This makes the verification pattern explicit and repeatable without requiring a new skill at this stage.
 
 ---
 
@@ -370,7 +370,7 @@ If either is missing: add it with today's date as a carry-forward entry, referen
 
 **Proposed pipeline fix:** Add a decisions.md completeness check to the Phase 2 discovery entry condition: "before starting /discovery or /definition for a new phase, verify decisions.md contains all entries flagged in the preceding phase's DoD observations and learnings log."
 
-**Action:** Check decisions.md before Phase 2 discovery. Flag for /levelup.
+**Action:** Check decisions.md before Phase 2 discovery. Flag for /improve.
 
 ---
 
@@ -380,15 +380,15 @@ If either is missing: add it with today's date as a carry-forward entry, referen
 
 **Circumstance:** The cross-story schema dependency failure (p1.4 watermark-gate.js requiring `skillSetHash` and `surfaceType` fields from `workspace/suite.json` authored by p1.6) was captured in `workspace/learnings.md` under "Cross-story schema dependency — producing story did not know consuming story's schema requirements." However, this entry was written as a general pipeline gap during the Phase 1 inner loop learnings log — not as a specific p1.6 DoD observation in the DoD artefact itself.
 
-**The gap:** The p1.6 DoD artefact (`dod/p1.6-living-eval-regression-suite-dod.md`) should contain an explicit observation flagging that p1.6 was the producing story for `workspace/suite.json`, that the schema it produced did not include the fields required by p1.4, and that this caused a live CI failure on p1.4's PR. Without this observation in the p1.6 DoD artefact, the /trace and /levelup skills reading p1.6's DoD chain will not surface the schema contract gap as a p1.6-specific finding — it will remain only in the general learnings log, where it is harder to connect back to the producing story.
+**The gap:** The p1.6 DoD artefact (`dod/p1.6-living-eval-regression-suite-dod.md`) should contain an explicit observation flagging that p1.6 was the producing story for `workspace/suite.json`, that the schema it produced did not include the fields required by p1.4, and that this caused a live CI failure on p1.4's PR. Without this observation in the p1.6 DoD artefact, the /trace and /improve skills reading p1.6's DoD chain will not surface the schema contract gap as a p1.6-specific finding — it will remain only in the general learnings log, where it is harder to connect back to the producing story.
 
 **Why the DoD artefact is the right place:** The DoD artefact is the canonical record of what shipped and what was observed at ship time. A schema gap that caused a peer story's CI failure is a material observation about p1.6's delivery — it belongs in p1.6's DoD alongside the other observations, not only in a shared learnings file. When /trace runs post-Phase-2, it should be able to read p1.6's DoD and find the cross-story contract note without having to scan learnings.md.
 
-**Required action:** Add a "Cross-story schema contract gap" observation to the p1.6 DoD artefact before running /levelup. The observation should record: (1) p1.6 authored `workspace/suite.json` without the `skillSetHash` and `surfaceType` fields; (2) p1.4's `watermark-gate.js` required those fields at runtime; (3) the gap caused a CI failure resolved by adding the two fields to `suite.json` in PR #16; (4) the fix is in master as of 2026-04-11.
+**Required action:** Add a "Cross-story schema contract gap" observation to the p1.6 DoD artefact before running /improve. The observation should record: (1) p1.6 authored `workspace/suite.json` without the `skillSetHash` and `surfaceType` fields; (2) p1.4's `watermark-gate.js` required those fields at runtime; (3) the gap caused a CI failure resolved by adding the two fields to `suite.json` in PR #16; (4) the fix is in master as of 2026-04-11.
 
-**Finding:** DoD artefact observations are under-specified as a category. The DoD template says "Observations and /levelup candidates" but does not explicitly instruct the agent to record cross-story runtime failures discovered after the producing story's merge. Add this as a named observation type in the DoD template.
+**Finding:** DoD artefact observations are under-specified as a category. The DoD template says "Observations and /improve candidates" but does not explicitly instruct the agent to record cross-story runtime failures discovered after the producing story's merge. Add this as a named observation type in the DoD template.
 
-**Action:** Amend p1.6 DoD artefact before /levelup. Flag template gap for /levelup write-back to `templates/definition-of-done.md`.
+**Action:** Amend p1.6 DoD artefact before /improve. Flag template gap for /improve write-back to `templates/definition-of-done.md`.
 
 ---
 
@@ -477,7 +477,7 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 ]
 ```
 
-**Action:** Update `/definition-of-ready` SKILL.md exit sequence to mandate `git push` confirmation and add `/issue-dispatch` forward pointer. This closes D6 in the D-batch. Log as a Phase 2 /levelup candidate for write-back to `.github/skills/definition-of-ready/SKILL.md`.
+**Action:** Update `/definition-of-ready` SKILL.md exit sequence to mandate `git push` confirmation and add `/issue-dispatch` forward pointer. This closes D6 in the D-batch. Log as a Phase 2 /improve candidate for write-back to `.github/skills/definition-of-ready/SKILL.md`.
 
 ---
 
@@ -503,7 +503,7 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 
 **Fix — /issue-dispatch SKILL.md Step 5:** When using `gh issue create` in PowerShell, never combine the body-file write and the `gh issue create` call in the same multi-statement command. Separate them into two distinct terminal calls: (1) write the body file; (2) run `gh issue create --body-file`. This eliminates the silent-then-explicit double-execution pattern.
 
-**Action:** Add a note to the `/issue-dispatch` SKILL.md Step 5 command block specifying that body file write and `gh issue create` must be separate terminal calls in PowerShell environments. Log as a Phase 2 /levelup candidate.
+**Action:** Add a note to the `/issue-dispatch` SKILL.md Step 5 command block specifying that body file write and `gh issue create` must be separate terminal calls in PowerShell environments. Log as a Phase 2 /improve candidate.
 
 ---
 
@@ -530,7 +530,7 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 
 **Pattern:** Any GitHub Actions workflow that must persist artefacts back to the triggering branch needs: (1) `permissions: contents: write`, (2) an explicit commit step, (3) `[ci skip]` in the commit message if the workflow triggers on `synchronize`, and (4) a `--quiet || commit` guard to avoid empty commits.
 
-**Action:** When authoring new workflows that write output artefacts, include this pattern by default. Add to `.github/architecture-guardrails.md` or standards as a workflow authoring requirement. Log as a Phase 2 /levelup candidate.
+**Action:** When authoring new workflows that write output artefacts, include this pattern by default. Add to `.github/architecture-guardrails.md` or standards as a workflow authoring requirement. Log as a Phase 2 /improve candidate.
 
 ---
 
@@ -557,7 +557,7 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 
 **Pattern:** Any workflow that must push commits back to the PR branch must include `ref: ${{ github.head_ref }}` + `fetch-depth: 0` on checkout. Without these, the runner is in detached HEAD at the merge commit — commits succeed locally but pushes will be rejected whenever the branch has advanced since the workflow started.
 
-**Action:** Add to `.github/architecture-guardrails.md` as a workflow authoring guardrail. Log as Phase 2 /levelup candidate.
+**Action:** Add to `.github/architecture-guardrails.md` as a workflow authoring guardrail. Log as Phase 2 /improve candidate.
 
 ---
 
@@ -587,25 +587,25 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 
 **Fix applied:** Added `_repoRoot = path.join(__dirname, '..', '..', '..')` and replaced `policySource: policyPath` with `path.relative(_repoRoot, policyPath).replace(/\\/g, '/')` in both `iac.js` and `saas-api.js`. All 31 tests pass.
 
-**Standard to adopt (flag for /levelup → core.md):**
+**Standard to adopt (Flag for /improve → core.md):**
 > MUST use `path.relative(repoRoot, absolutePath).replace(/\\/g, '/')` when storing file paths in `trace` or `state` output fields. Absolute paths constructed with `__dirname` are machine-specific and break on CI runners or any environment with a different filesystem root. Repo-relative forward-slash paths are portable.
 
 **Scope:** Applies to all surface adapters (`src/surface-adapter/adapters/*.js`), the improvement agent (`src/improvement-agent/`), and any future module that writes file-system paths into structured output consumed by tests or audit tooling.
 
-**Action:** Flag for Phase 2 `/levelup` run — add as a new `MUST` to `standards/software-engineering/core.md`. Until then, the fix is documented here as the authoritative pattern reference.
+**Action:** Flag for Phase 2 `/improve` run — add as a new `MUST` to `standards/software-engineering/core.md`. Until then, the fix is documented here as the authoritative pattern reference.
 
 ---
 
-## Phase 2 /levelup D-batch log — 2026-04-12 16:58
+## Phase 2 /improve D-batch log — 2026-04-12 16:58
 
-**Context:** Category D proposals captured during the Phase 2 /levelup run. Per instruction, these are logged as a batch and not written directly into skill files in this pass.
+**Context:** Category D proposals captured during the Phase 2 /improve run. Per instruction, these are logged as a batch and not written directly into skill files in this pass.
 
 | Batch item | Proposal | Target for future write |
 |---|---|---|
 | D10 (dispatch transition) | Add `/issue-dispatch` forward pointer and required `git push origin master` gate to `/definition-of-ready` exit sequence when all stories in a batch are signed off | `.github/skills/definition-of-ready/SKILL.md` |
 | D10a (dispatch close-loop) | Add PR body guidance to include `Closes #[issue]` for dispatched story issues so merge auto-closes the canonical tracking issue | `.github/skills/issue-dispatch/SKILL.md` and PR body template guidance |
 
-**Status:** Logged for pipeline-evolution write-back; no direct skill-file modification in this /levelup step.
+**Status:** Logged for pipeline-evolution write-back; no direct skill-file modification in this /improve step.
 
 ---
 
@@ -774,7 +774,7 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 
 **Examples observed:**
 - `T3M1` (Tier 3, Meta-metric 1 — the independent non-engineer audit question) appeared in MODEL-RISK.md, learnings entries, and the validation playbook without explanation on first use in each document
-- `E1 / E2 / E3` (/estimate skill estimation passes: E1 = rough at discovery, E2 = refined at definition, E3 = actuals at /levelup) appeared in estimation-norms.md and learnings entries with no inline gloss
+- `E1 / E2 / E3` (/estimate skill estimation passes: E1 = rough at discovery, E2 = refined at definition, E3 = actuals at /improve) appeared in estimation-norms.md and learnings entries with no inline gloss
 - `AC3` (Acceptance Criterion 3 from the story's AC list) appeared in DoD observations and pipeline-state.json action items without the criterion text quoted
 - `MM1 / MM2 / MM4` (meta-metrics from the benefit-metric artefact: MM1 = outer-loop unassisted replication, MM2 = …) appeared in the validation playbook metric sections without the metric name spelled out alongside
 

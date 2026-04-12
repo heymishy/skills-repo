@@ -41,20 +41,20 @@ The current `/definition-of-ready` skill produces rich coding agent instructions
 
 ---
 
-### Feature 2: `/levelup` retrospective extraction skill
+### Feature 2: `/improve` retrospective extraction skill
 
 **Category:** New skill
 **Effort:** Medium (2–3 days)
-**Analogues:** tikalk `agentic-sdlc-spec-kit` `/levelup.spec`, CDR (contextual design record) pattern
+**Analogues:** tikalk `agentic-sdlc-spec-kit` `/levelup.spec` (renamed here to `/improve`), CDR (contextual design record) pattern
 
 #### What it is
 A post-DoD skill invoked after a feature is merged and traced. It reviews the completed feature artefacts (discovery, definition, test-plan, trace), extracts reusable patterns and decisions, and either updates `copilot-instructions.md`, writes a new standards file, or appends an ADR. It turns the pipeline from a linear process into a learning system.
 
 #### Why it matters
-Currently the pipeline runs idea → done, with no feedback loop. Knowledge gained in one feature — an architectural decision, a tricky AC pattern, a domain constraint discovered during testing — stays in that feature's artefacts and doesn't inform the next one. The `/levelup` skill closes this loop. Over time, running it consistently means the pipeline's standards base and instructions file reflect accumulated engineering knowledge rather than only the initial bootstrap state.
+Currently the pipeline runs idea → done, with no feedback loop. Knowledge gained in one feature — an architectural decision, a tricky AC pattern, a domain constraint discovered during testing — stays in that feature's artefacts and doesn't inform the next one. The `/improve` skill closes this loop. Over time, running it consistently means the pipeline's standards base and instructions file reflect accumulated engineering knowledge rather than only the initial bootstrap state.
 
 #### Implementation considerations
-- Create `.github/skills/levelup/SKILL.md`
+- Create `.github/skills/improve/SKILL.md`
 - Entry condition: requires a completed `/trace` report and merged PR for the feature
 - Process:
   1. Read the full artefact chain for the feature (discovery → trace)
@@ -63,7 +63,7 @@ Currently the pipeline runs idea → done, with no feedback loop. Knowledge gain
   4. Confirm with the user before writing anything
   5. Update `standards/index.yml` if new standards files are created
 - The skill should be lightweight and opinionated — it should produce one or two concrete outputs per run, not a comprehensive review. Better to extract one good pattern than to produce a long report nobody acts on
-- Trigger suggestion: add to PR template as a checkbox — "[ ] `/levelup` run post-merge"
+- Trigger suggestion: add to PR template as a checkbox — "[ ] `/improve` run post-merge"
 
 #### Integration points
 - `/trace` — prerequisite
@@ -408,7 +408,7 @@ All public frameworks handle NFRs poorly — they're buried in definition docs o
 | Phase | Features | Rationale |
 |---|---|---|
 | Phase 1 — Quick wins | 3, 4, 5 | Structural and naming changes; no new skills required; immediately improve usability |
-| Phase 2 — Standards layer | 1, 2 | Build the standards directory with patterns from current codebase; add levelup loop |
+| Phase 2 — Standards layer | 1, 2 | Build the standards directory with patterns from current codebase; add improve loop |
 | Phase 3 — Product context + clarify | 6, 8 | Requires product context to be authored; clarify skill benefits from it |
 | Phase 4 — Routing + CI | 7, 9 | Routing needs the full pipeline stable first; CI needs artefact structure from Phase 1 |
 | Phase 5 — NFR layer | 10 | Most effort; builds on all prior features; highest strategic value for enterprise context |

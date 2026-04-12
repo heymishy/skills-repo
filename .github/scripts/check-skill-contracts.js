@@ -205,8 +205,8 @@ const CONTRACTS = [
     ],
   },
   {
-    skill: 'levelup',
-    file:  '.github/skills/levelup/SKILL.md',
+    skill: 'improve',
+    file:  '.github/skills/improve/SKILL.md',
     required: [
       'artefacts/[feature]/dod/[story-slug]-dod.md',
       'Category A \u2014 Technical patterns worth standardising',
@@ -408,7 +408,14 @@ const CONTRACTS = [
     required: [
       '## Context handoff protocol',
       'Coding agent resuming a feature',
+    ],
+  },
+  {
+    skill: 'agent-orientation',
+    file:  '.github/instructions/agent-orientation.instructions.md',
+    required: [
       'dor-contract.md',
+      'artefacts/',
     ],
   },
 ];

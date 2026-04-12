@@ -1,16 +1,16 @@
 ---
-name: levelup
+name: improve
 description: >
   Post-merge learning extraction. Reads the completed artefact chain for a merged
   story or feature, identifies reusable patterns, decisions, and standards that
   emerged during delivery, classifies them, and writes them back to the permanent
   knowledge base. Produces updates to standards/, decisions log, or
   copilot-instructions.md. Use after /definition-of-done is complete and a PR is
-  merged. Run when someone says "levelup", "extract learnings", "update standards",
+  merged. Run when someone says "improve", "extract learnings", "update standards",
   "what did we learn from this", "pattern extraction", or "post-merge review".
   Requires a merged PR and completed DoD artefact.
 triggers:
-  - "levelup"
+  - "improve"
   - "extract learnings"
   - "update standards"
   - "what did we learn from this"
@@ -20,7 +20,7 @@ triggers:
   - "lessons learned"
 ---
 
-# Levelup Skill
+# Improve Skill
 
 ## Entry condition check
 
@@ -33,7 +33,7 @@ Before proceeding, verify:
 If not met:
 
 > ❌ **Entry condition not met**
-> /levelup requires a merged PR and a completed /definition-of-done artefact.
+> /improve requires a merged PR and a completed /definition-of-done artefact.
 >
 > Missing: [specific item]
 >
@@ -199,7 +199,7 @@ After writing to any standards file:
 
 ## Completion output
 
-> ✅ **Levelup complete — [story-slug]**
+> ✅ **Improve complete — [story-slug]**
 >
 > Patterns extracted: [n]
 > Standards updated: [list of files]
@@ -209,8 +209,10 @@ After writing to any standards file:
 > These learnings are now active — /definition-of-ready will inject them
 > into future stories with matching domain tags.
 >
+> **Governed path for upward standards loop:** If any extracted pattern warrants a SKILL.md update, produce a `proposed-skill-update.md` diff in `workspace/proposals/` with rationale and confidence score. Do not edit SKILL.md files directly — the squad lead raises a PR against the fleet repo; the platform team reviews and merges. All consuming repos receive the improvement on their next upstream sync.
+>
 > **Recommended: commit `.github/standards/` and `.github/architecture-guardrails.md`**
-> with message: `chore: extract learnings from [story-slug]`
+> with message: `chore: /improve learnings from [story-slug]`
 
 ---
 
@@ -220,6 +222,7 @@ After writing to any standards file:
 - Does not create new stories from the learnings — that is a future /discovery or /definition run
 - Does not update the story or DoD retroactively
 - Does not assign action items to people — it writes to files only
+- Does not edit SKILL.md files in the skills fleet directly — produces proposals for PR-based review instead
 
 ---
 
@@ -229,7 +232,7 @@ After writing to any standards file:
 
 Update `.github/pipeline-state.json`:
 
-- Under the relevant feature: set `lastLevelup: "[YYYY-MM-DD]"`
+- Under the relevant feature: set `lastImprove: "[YYYY-MM-DD]"`
 - Under `standards`: add each updated file name to a `recentUpdates` list
 
 Confirm the write in your closing message: "Pipeline state updated ✅."

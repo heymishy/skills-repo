@@ -68,7 +68,7 @@ Check whether `.github/skills/` already exists:
     systematic-debugging/SKILL.md ← 4-phase root cause debugging
     branch-complete/SKILL.md      ← branch completion + draft PR
     clarify/SKILL.md              ← discovery sharpening — scope and question clarification
-    levelup/SKILL.md              ← post-merge learning extraction → standards + decisions
+    improve/SKILL.md              ← post-merge learning extraction → standards + decisions
 
   templates/
     epic.md                       ← canonical epic format (annotated)

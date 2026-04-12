@@ -133,9 +133,9 @@
       "reviewNote": "Outcome-orientation confirmed: tests for issue creation and state write \u2014 not for which issue body target was used"
     },
     {
-      "taskId": "s-levelup",
-      "description": "levelup skill extracts at least one reusable pattern from the merged story and writes it to the standards or decisions log",
-      "skillSurfaceCombination": "levelup/github-copilot",
+      "taskId": "s-improve",
+      "description": "improve skill extracts at least one reusable pattern from the merged story and writes it to the standards or decisions log",
+      "skillSurfaceCombination": "improve/github-copilot",
       "expectedOutcome": "pattern extracted and written to standards or decisions",
       "failurePatternGuarded": "Skill runs post-merge but writes no standards update, leaving institutional knowledge ephemeral",
       "reviewNote": "Outcome-orientation confirmed: tests for persisted pattern output \u2014 not for which category classification was applied"

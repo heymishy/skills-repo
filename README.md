@@ -60,7 +60,7 @@ Phase 1 and Phase 2 are complete and were built using the platform's own pipelin
 
 **Human approval at every gate.** DoR sign-off, assurance gate merge decision, and DoD confirmation all require a human signal. The platform automates verification; it does not automate judgment.
 
-**Self-improving harness.** Every completed feature loop feeds back into the platform that ran it. `/levelup` extracts reusable patterns from delivery and writes them to `workspace/learnings.md`, discipline standards, and architecture guardrails — making the next loop start with richer context. In parallel, the improvement agent reads delivery traces, detects failure patterns, proposes SKILL.md diffs, and gates every change on human review. Platform quality compounds across loops: more teams running more features produces more learnings, better skills, and fewer repeated failures. The harness trains itself from real production usage, not synthetic benchmarks.
+**Self-improving harness.** Every completed feature loop feeds back into the platform that ran it. `/improve` extracts reusable patterns from delivery and writes them to `workspace/learnings.md`, discipline standards, and architecture guardrails — making the next loop start with richer context. In parallel, the improvement agent reads delivery traces, detects failure patterns, proposes SKILL.md diffs, and gates every change on human review. Platform quality compounds across loops: more teams running more features produces more learnings, better skills, and fewer repeated failures. The harness trains itself from real production usage, not synthetic benchmarks.
 
 ---
 
@@ -73,7 +73,7 @@ Phase 1 and Phase 2 are complete and were built using the platform's own pipelin
 | **Assurance gate** | Automated CI check on every PR. Verifies instruction set hashes, evaluates DoD criteria against the trace, and gates merge. Structurally independent from the delivery code it evaluates. | Not a linter or test runner. Evaluates governance compliance, not code correctness. |
 | **Pipeline state** | `workspace/state.json` — the structured session record written at each phase boundary. Enables cross-session continuity: a new session reads state.json and resumes without verbal priming. | Not a project management ticket. The ground-truth handoff record between sessions. |
 | **Eval suite** | `workspace/suite.json` — the living regression suite. Each entry guards a named failure pattern observed in real delivery. A scenario added must pass on every subsequent gate run. | Not a CI test suite in the app-testing sense. Guards harness behaviour, not application behaviour. |
-| **Learnings log** | `workspace/learnings.md` — the structured record of delivery findings, failure patterns, and standards improvements written by `/levelup` at feature close. Entries include date, context, evidence, and follow-on action. Accumulates across all features and surfaces to feed skills and standards improvements. | Not a retrospective or a personal note. Entries are evidence-backed findings sourced from the artefact chain, not from recall. |
+| **Learnings log** | `workspace/learnings.md` — the structured record of delivery findings, failure patterns, and standards improvements written by `/improve` at feature close. Entries include date, context, evidence, and follow-on action. Accumulates across all features and surfaces to feed skills and standards improvements. | Not a retrospective or a personal note. Entries are evidence-backed findings sourced from the artefact chain, not from recall. |
 
 ---
 
@@ -93,7 +93,7 @@ flowchart LR
     J -->|pass| K["/branch-complete"]:::inner
     K --> L{CI assurance gate}:::gate
     L -->|merge| M["/definition-of-done"]:::outer
-    M --> N["/trace · /levelup"]:::outer
+    M --> N["/trace · /improve"]:::outer
 
     classDef outer fill:#3b82f6,color:#fff,stroke:none
     classDef inner fill:#14b8a6,color:#fff,stroke:none
@@ -104,7 +104,7 @@ flowchart LR
 |------|-------|----------|
 | Outer loop 🔵 | `/discovery` → `/definition-of-ready` | Operator + AI agent |
 | Inner loop 🟢 | `/branch-setup` → `/branch-complete` | Coding agent (GitHub Copilot agent mode) |
-| Assurance 🟡 | CI gate → `/definition-of-done` → `/trace` → `/levelup` | Automated gate + operator review |
+| Assurance 🟡 | CI gate → `/definition-of-done` → `/trace` → `/improve` | Automated gate + operator review |
 
 The outer loop produces fully specified, DoR-gated work items before any code is written. The inner loop consumes those items and produces implementation against a scope contract the agent cannot expand. The agent that defines requirements is not the agent that implements them.
 
@@ -130,7 +130,7 @@ The outer loop produces fully specified, DoR-gated work items before any code is
 | `/test-plan` | Writes failing tests and an AC verification script for a reviewed story |
 | `/definition-of-ready` | Final gate check before the story is handed to the coding agent |
 | `/spike` | Time-boxed investigation for unknowns blocking pipeline progress |
-| `/estimate` | Records a phase-by-phase focus-time estimate at feature start (E1 — Rough Forecast), refines it when story count is known (E2 — Refined Estimate), and compares against actuals at /levelup (E3 — Actuals Comparison). Feeds the cross-feature estimation norms table. |
+| `/estimate` | Records a phase-by-phase focus-time estimate at feature start (E1 — Rough Forecast), refines it when story count is known (E2 — Refined Estimate), and compares against actuals at /improve (E3 — Actuals Comparison). Feeds the cross-feature estimation norms table. |
 
 ### 🟢 Inner loop
 
@@ -152,7 +152,7 @@ The outer loop produces fully specified, DoR-gated work items before any code is
 | `/definition-of-done` | Post-merge: validates the merged PR satisfies ACs and test plan |
 | `/trace` | Validates the full traceability chain across all pipeline artefacts for a feature |
 | `/coverage-map` | Visual coverage map across all stories: what is tested, where are the gaps |
-| `/levelup` | Extracts reusable patterns from delivery; writes back to standards and decisions |
+| `/improve` | Extracts reusable patterns from delivery; writes back to standards and decisions |
 | `/release` | Produces release notes, change request body, deployment checklist, rollback definition |
 | `/record-signal` | Records a benefit metric signal outside of a `/definition-of-done` run |
 | `/issue-dispatch` | Creates GitHub issues for DoR-signed-off stories to trigger the coding agent |
@@ -196,9 +196,9 @@ The T3M1 model audit assesses whether an independent non-engineer reviewer can a
 
 The platform improves itself from the delivery signal it produces. Every feature loop closes a feedback cycle that makes the next loop run better. Two distinct mechanisms route the signal back in.
 
-### Human-driven improvement: `/levelup` and `workspace/learnings.md`
+### Human-driven improvement: `/improve` and `workspace/learnings.md`
 
-At the close of every feature, `/levelup` reads the full artefact chain — stories, test plans, DoD observations, trace entries, and estimation actuals — and extracts reusable patterns. Findings are written to:
+At the close of every feature, `/improve` reads the full artefact chain — stories, test plans, DoD observations, trace entries, and estimation actuals — and extracts reusable patterns. Findings are written to:
 
 - `workspace/learnings.md` — structured entries with date, context, evidence, root cause, and follow-on action. Persists across all features.
 - `standards/[discipline]/core.md` — new MUST/SHOULD rules or refinements to existing ones.
@@ -221,7 +221,7 @@ No SKILL.md change reaches production without a human approval gate.
 
 ### The scaling dynamic
 
-A single team running a single loop produces a handful of learnings entries and a few trace signals. At ten teams running ten features per quarter, the improvement agent sees one hundred delivery cycles worth of failure patterns. The `/levelup` extractions accumulate in `workspace/learnings.md` and standards files that every team receives at their next `/definition-of-ready`. The harness quality improves as a function of real collective usage — not of dedicated maintenance investment.
+A single team running a single loop produces a handful of learnings entries and a few trace signals. At ten teams running ten features per quarter, the improvement agent sees one hundred delivery cycles worth of failure patterns. The `/improve` extractions accumulate in `workspace/learnings.md` and standards files that every team receives at their next `/definition-of-ready`. The harness quality improves as a function of real collective usage — not of dedicated maintenance investment.
 
 This is structurally different from a maintained documentation library. The loop between delivery and standards is closed inside the platform itself, not through a separate governance process or a quarterly review cadence.
 
@@ -234,7 +234,7 @@ flowchart TB
         A --> B --> C
     end
 
-    C --> D["/levelup\n(operator, at feature close)"]:::improve
+    C --> D["/improve\n(operator, at feature close)"]:::improve
     D --> E["workspace/learnings.md\nstandards/ · architecture-guardrails.md\ndecisions.md · estimation-norms.md"]:::store
     E -.->|"richer context\nnext loop"| A
 
@@ -251,6 +251,59 @@ flowchart TB
     classDef improve fill:#8b5cf6,color:#fff,stroke:none
     classDef store fill:#6b7280,color:#fff,stroke:none
 ```
+
+---
+
+## Current state vs structural controls
+
+The platform today is operational and dogfooded. Not all of its assurance model is structurally enforced. This section documents what is currently manual-process assurance and what is now structural — and what the practical boundary is between the two.
+
+### What is structural today
+
+- **Artefact read-only constraint.** The `artefacts/` directory is protected by instruction (`pipeline.instructions.md` with `applyTo: "**"`). The coding agent cannot write to it without a deliberate override. This is a soft structural control — it depends on instruction compliance, not on a filesystem ACL or a CI hard block.
+- **Scope immutability at DoR sign-off.** Once a DoR artefact is signed off, its scope contract cannot be changed without a new pipeline run. The assurance gate reads the DoR SHA and rejects any PR whose scope differs from the signed-off artefact.
+- **Assurance gate CI.** Every PR runs `.github/workflows/assurance.yml`. The gate verifies instruction set hashes, evaluates DoD criteria against the trace, and refuses to merge if the verdict is not `pass`. This is a hard structural control — the gate exit code blocks merge.
+- **Entitlements.** Repository branch protection, CODEOWNERS, and pipeline-state.json write permissions remain the only hard access controls on who can merge what. The platform does not replace these — it becomes the validated upstream chain that those controls protect downstream.
+- **POLICY.md floors.** Injected into DoR artefacts at sign-off and verified by the assurance gate on every PR. A delivery that does not meet the floor requirements cannot merge. This is a hard structural control.
+
+### What is process-assurance today (not yet structural)
+
+- **DoR sign-off authority.** Who is allowed to sign off a DoR is currently enforced by process, not by a system access control. The platform records the sign-off event and timestamps it; it does not cryptographically verify that the signer holds the required role or entitlement.
+- **T3M1 audit trail completeness.** At Phase 2 close, 3/8 audit questions are answered structurally. The remaining 5 require a qualified independent reviewer confirming that the pipeline chain they observe at runtime matches the committed artefacts. This is a manual assurance step, not a CI check.
+- **Non-engineer approval channel.** The GitHub issue `/approve-dor` interface is built and wired; `process-dor-approval.js` writes `dorStatus` on receipt of the command. No live Jira/Confluence/Slack channel is configured. Until a real approver uses it in a live environment, this remains a tested-but-not-proven capability — process assurance, not structural.
+- **Platform change governance.** From Phase 2 complete, all changes to `.github/skills/`, `.github/templates/`, `standards/`, and pipeline infrastructure must be merged via PR with platform team review. This is a policy control (enforced by convention and code review) pending a CODEOWNERS rule that hard-blocks direct-to-master commits on those paths.
+
+### What the entitlements model means
+
+The platform does not displace entitlements — it validates the chain upstream of the point where entitlements operate. A change that passes the assurance gate and is approved by an authorised reviewer has a machine-verifiable, end-to-end traceable chain from benefit hypothesis through story, test plan, DoR, implementation, and DoD. What entitlements protect is the act of merging that chain into production. The two controls are complementary, not alternatives.
+
+For the first time, the chain from story → feature → initiative → benefit hypothesis is machine-traversable. A regulated auditor, a risk lead, or a compliance team can follow the chain from a production commit back to the original business justification without relying on verbal recall or a retrospective documentation effort. That traceability is the structural output the platform produces and the entitlements model protects.
+
+---
+
+## Conceptual lineage
+
+This platform assembles and evolves ideas from several published sources. The novel contributions are called out explicitly at the end of this section.
+
+| Source | Contribution |
+|--------|-------------|
+| [tikalk agentic-sdlc-spec-kit](https://github.com/tikalk/agentic-sdlc-spec-kit) | Original `/levelup` (now `/improve`) concept and CDR (Continuous Delivery of Requirements) extraction pattern. The skills pipeline here has evolved significantly in governance depth, multi-surface support, and fleet-scale architecture; the CDR extraction root is acknowledged. |
+| Karpathy autoresearch loop | Mutable artefact + fixed harness model. The separation between the workspace (mutable, accumulating) and the harness (versioned, hash-verified) maps directly to the learnings.md + SKILL.md split. The `workspace/` convention follows this pattern. |
+| Agent OS (Karpathy) | Standards injection before DoR — the idea that the agent's execution context is assembled from composable, domain-tagged standards at the phase boundary where they are needed, not passed as monolithic system prompts. The `standards/index.yml` routing table realises this pattern. |
+| BMAD Method | Multi-agent role separation and bootstrap ceremony concepts. The outer-loop / inner-loop split — the agent that defines requirements is not the agent that implements them — is the BMAD separation realised in a governed pipeline. The `/bootstrap` ceremony maps to BMAD's project initialisation step. |
+| OpenHarness (HKUDS) | Harness vocabulary and hook-based governance injection model. The assurance gate as a structurally independent CI hook that evaluates governance compliance (not code correctness) is the OpenHarness primitive. |
+| NeoSigma auto-harness | Auto-growing eval set and regression watermark pattern. The `workspace/suite.json` eval suite — where every entry guards a named failure pattern and must pass on every subsequent gate run — follows this pattern. |
+| AutoAgent (ThirdLayer) | Meta-agent / task-agent split validation and overfitting guardrail concept. The improvement agent's challenger pre-check (a proposal must generalise beyond the triggering trace set before it can be applied) is the AutoAgent anti-overfitting primitive. |
+| Financial services maker/checker controls | Assurance independence primitive. The DoR sign-off and assurance gate CI are structurally independent from the delivery agent they evaluate — the same maker/checker separation used in regulated financial operations, applied to AI-delivered software. |
+| IAM / entitlements model | Structural vs process controls framing. The distinction between what the platform validates (the upstream chain) and what entitlements protect (the act of merging) is a direct application of the separation-of-duties model from identity and access management. |
+
+### What is novel (not derived from published sources)
+
+- **Regulated-enterprise governance model.** The three-level assurance independence model (instruction identity, commit traceability, structurally independent gate verdict) assembled specifically for a Tier 1 financial services audit context. No published source covers this combination.
+- **Three-tier standards inheritance.** Core (platform-maintained) → domain (discipline POLICY.md floor) → squad (squad-specific overrides without modifying platform files). The composition path and the POLICY.md floor-verification mechanism are original to this platform.
+- **Delivery surface as a branching dimension.** The surface adapter contract (`execute(surface, context) → result`) that keeps the governance brain surface-agnostic while routing surface-specific DoD criteria, CI topology, and artefact format through the adapter. Five surfaces operational (see M2).
+- **Benefit traceability at fleet scale.** The machine-traversable chain from production commit → story → feature → initiative → benefit hypothesis, queryable at fleet scale via `/trace` and the improvement agent. No published agentic SDLC framework has implemented this at the fleet level.
+- **Dog-fooding constraint as governance signal.** The platform improves itself using the same pipeline it governs. The `/improve` skill, governed by the same PR policy it enforces, is the concrete realisation of this. The improvement agent's proposals are subject to the same human-review gate as any other platform change. This recursive governance structure is not derived from any single published source.
 
 ---
 

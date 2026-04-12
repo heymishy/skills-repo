@@ -103,7 +103,7 @@ const PIPELINE_PATHS = [
   {
     path:      'artefacts/[feature]/dod/[story-slug]-dod.md',
     writtenBy: 'definition-of-done',
-    readBy:    ['levelup'],
+    readBy:    ['improve'],
     // trace + release use "DoD" concept not dod/ path; excluded
   },
   {
@@ -114,7 +114,7 @@ const PIPELINE_PATHS = [
   {
     path:      'artefacts/[feature]/decisions.md',
     writtenBy: 'decisions',
-    readBy:    ['trace', 'levelup'],
+    readBy:    ['trace', 'improve'],
     // definition-of-ready references /decisions skill not decisions.md path; excluded
   },
   {

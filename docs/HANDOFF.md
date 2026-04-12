@@ -1,9 +1,10 @@
-# Enterprise Handoff: Skills Platform Phase 1 + Phase 2
+# Enterprise Handoff: Skills Platform Phase 1 + Phase 2 + Phase 3 Init
 
 **Document type:** Enterprise handoff bundle
 **Prepared:** 2026-04-12
+**Updated:** 2026-04-13 (Phase 3 initialisation — see Section 6)
 **Prepared by:** Platform maintainer (Hamish)
-**Status:** Phase 2 complete — all 21 stories DoD-signed, pipeline-state current
+**Status:** Phase 2 complete, Phase 3 initialised — PR `feat/phase3-init-rename-improve` open
 
 ---
 
@@ -195,6 +196,8 @@ Domain-tier extensions (squad-specific overrides) are declared in the squad's `c
 | Model risk register | `MODEL-RISK.md` |
 | Onboarding | `ONBOARDING.md` |
 | Skills (all phases) | `.github/skills/*/SKILL.md` |
+| Post-merge improvement skill | `.github/skills/improve/SKILL.md` (formerly `levelup/`) |
+| Coding agent orientation | `.github/instructions/agent-orientation.instructions.md` |
 | Standards | `standards/index.yml` + `standards/[discipline]/` |
 | Phase 1 artefacts | `artefacts/2026-04-09-skills-platform-phase1/` |
 | Phase 2 artefacts | `artefacts/2026-04-11-skills-platform-phase2/` |
@@ -203,3 +206,65 @@ Domain-tier extensions (squad-specific overrides) are declared in the squad's `c
 | Eval regression suite | `workspace/suite.json` |
 | Delivery traces | `workspace/traces/` |
 | Improvement proposals | `workspace/proposals/` |
+| Adoption readiness (RAG) | `workspace/adoption-readiness.md` |
+
+---
+
+## 6. Phase 3 Initialisation (2026-04-13)
+
+### 6.1 Entry condition met
+
+T3M1 (Tier 3, Meta-metric 1 — independent non-engineer audit) is on record in `MODEL-RISK.md` with Hamish sign-off 2026-04-12, outcome "approved with conditions", 3/8 Y baseline. Phase 3 /discovery is unblocked. The five T3M1 gap closures (Q2, Q5, Q6, Q7, Q8 — see Section 3.1) become Phase 3 story candidates.
+
+### 6.2 /levelup renamed to /improve
+
+The post-merge learning extraction skill has been renamed from `/levelup` to `/improve`. The rename reflects iterative lean-improvement intent without requiring familiarity with gaming or level-up terminology. The skill directory moved from `.github/skills/levelup/` to `.github/skills/improve/`.
+
+**Scope of rename:** SKILL.md frontmatter and body; `config.yml`; `.github/pipeline-state.json` (fields `lastImprove`, `improveNotes`); `workspace/suite.json` (task `s-improve`); `skill-pipeline-instructions.md`; `estimate/SKILL.md`; `bootstrap/SKILL.md`; `discovery/SKILL.md`; `README.md` (all 9 references); `workspace/adoption-readiness.md` (MM2, MM4); `.github/pull_request_template.md`; `.github/templates/definition-of-done.md`; `.github/architecture-guardrails.md`; `feature-additions.md`; `CHANGELOG.md`; `workspace/learnings.md` (forward-looking action items). Historical entries that record what ran at the time (e.g. session logs, Phase 2 /improve D-batch heading) retain the original `levelup` text as factual records.
+
+### 6.3 D-batch: copilot-instructions.md slimmed
+
+The `copilot-instructions.md` base layer has been slimmed from 473 lines to ~280 lines (D-batch items 1–5 from the 2026-04-12 learnings.md entry). Content removed:
+
+| Item | What moved / removed | Where |
+|------|---------------------|-------|
+| D-batch 1 | Coding agent orientation (orient, structure, verify, PR-open steps; "What the coding agent should NOT do") | Extracted to `.github/instructions/agent-orientation.instructions.md` with `applyTo: "**"` |
+| D-batch 2 | 34-row templates table (~49 lines) | Replaced with single sentence: "All artefact templates are in `.github/templates/` — each skill references its own template in its SKILL.md." |
+| D-batch 3 | Artefact storage directory tree (~45 lines) | Replaced with 3-line naming convention statement |
+| D-batch 4 | Context handoff protocol (~28 lines) | Replaced with 2-line instruction |
+| D-batch 5 | Product context files table (~18 lines) | Replaced with 1-line pointer |
+
+New `.github/instructions/agent-orientation.instructions.md` — scoped to GitHub Actions coding agent context. Contains: 4-step orientation (orient from artefacts, understand structure, verify baseline, open PRs as drafts), "When to stop" guidance, "What the coding agent should NOT do" (7 items, including: do not directly edit SKILL.md files, templates, or standards files).
+
+### 6.4 Platform change PR policy (active from Phase 2 complete)
+
+All changes to `.github/skills/`, `.github/templates/`, `standards/`, `.github/governance-gates.yml`, and `scripts/` must be merged via PR — not committed directly to the default branch. This policy is documented in `copilot-instructions.md` under "Platform change policy (Phase 2+)". It is a process control today, pending a CODEOWNERS rule for hard enforcement. The current branch (`feat/phase3-init-rename-improve`) is the first instance of this policy in practice.
+
+### 6.5 Governed upward standards loop
+
+When `/improve` identifies a pattern that warrants a SKILL.md update, the flow is:
+
+1. `/improve` produces a `proposed-skill-update.md` diff in `workspace/proposals/` with rationale and confidence score.
+2. Squad lead reviews the proposal and raises a PR against the fleet repo.
+3. Platform team reviews and merges.
+4. Consuming repos receive the update on their next skills sync (`.github/context.yml` `skills_upstream` configuration).
+
+`/improve` does not edit SKILL.md files directly. The improvement agent's diff proposals follow the same path. This creates a single governed channel for all upward standards updates regardless of whether they originate from a human operator or the improvement agent.
+
+### 6.6 README additions
+
+Two new sections added to `README.md` in this Phase 3 init:
+
+**"Current state vs structural controls"** — documents what is currently structural (artefact read-only instruction, DoR scope immutability, assurance gate CI, CODEOWNERS/branch protection, POLICY.md floors) vs what is currently process-assurance (DoR sign-off authority, T3M1 completeness, non-engineer approval channel, platform change governance). Clarifies the entitlements model: the platform validates the upstream chain; entitlements protect the act of merging. First explicit statement that "for the first time, the chain from story → feature → initiative → benefit hypothesis is machine-traversable."
+
+**"Conceptual lineage"** — attribution table covering: tikalk agentic-sdlc-spec-kit, Karpathy autoresearch loop, Agent OS, BMAD Method, OpenHarness (HKUDS), NeoSigma auto-harness, AutoAgent (ThirdLayer), financial services maker/checker controls, IAM entitlements model. Novel (not derived) contributions listed explicitly: regulated-enterprise governance model, three-tier standards inheritance, surface-as-branching-dimension, benefit traceability at fleet scale, dog-fooding constraint as governance signal.
+
+### 6.7 Adoption readiness current state
+
+`workspace/adoption-readiness.md` is current as of 2026-04-13. Amber items:
+
+- **M1** — requires a genuine second operator completing a full outer loop unassisted (Westpac pilot entry event).
+- **MM2** — requires running `scripts/parse-session-timing.js` against Phase 2 transcripts to produce the E3 actuals row in `workspace/estimation-norms.md`. ~30-minute operator action, no new code required.
+- **MM4** — closes at Phase 3 `/improve` when the third feature's actuals are ingested. Error bound until then: ±40%.
+
+Red item: **M5** — non-engineer approval requires a live configured environment and a real approver. Requires scoping effort before Westpac pilot can claim this outcome.
