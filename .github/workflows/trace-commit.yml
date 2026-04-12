@@ -1,0 +1,113 @@
+name: Trace Commit
+
+# Fires after a PR is merged to master. Finds the trace artefact produced by the
+# most recent successful assurance-gate run and commits it to master, creating a
+# permanent, in-git audit record alongside the merged code.
+#
+# Design rationale:
+#   The assurance gate evaluates the PR branch and posts the verdict. It does not
+#   commit anything back to the PR branch. This prevents the HEAD-chase loop where
+#   a bot commit to the PR branch would require another gate run before merge.
+#   Instead, the trace is uploaded as a workflow artefact during the gate run and
+#   committed to master here — after the PR has merged — by this separate workflow.
+#
+#   Governance properties preserved:
+#   - Trace is durable: committed to master (permanent canonical history)
+#   - Trace is linked: the traceHash in the PR comment cross-references the trace
+#     entry committed here; the commitSha field identifies the exact PR HEAD
+#   - Maker/checker separation: evaluation (gate) and recording (this workflow)
+#     are two separate workflows triggered by two separate events
+#   - Architecture guardrail compliance: workspace/traces/ is never committed to
+#     story/feature branches (see .github/architecture-guardrails.md)
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  trace-commit:
+    name: Commit trace artefact to master
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      actions: read
+
+    steps:
+      - name: Skip if trace-only commit
+        id: precheck
+        run: |
+          msg="${{ github.event.head_commit.message }}"
+          if echo "$msg" | grep -qF '[post-merge]'; then
+            echo "Trace-only commit detected — skipping to prevent re-trigger loop."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout master
+        if: steps.precheck.outputs.skip != 'true'
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      - name: Find gate trace artifact
+        if: steps.precheck.outputs.skip != 'true'
+        id: find
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+
+            // Find the most recent successful assurance-gate run
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner, repo,
+              workflow_id: 'assurance-gate.yml',
+              status: 'success',
+              per_page: 5,
+            });
+
+            if (!runs.data.workflow_runs.length) {
+              core.warning('No successful assurance gate runs found — skipping trace commit');
+              core.setOutput('found', 'false');
+              return;
+            }
+
+            const run = runs.data.workflow_runs[0];
+            core.info(`Using gate run ${run.id} (head SHA: ${run.head_sha})`);
+
+            // Find the trace artifact in this run
+            const arts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner, repo,
+              run_id: run.id,
+            });
+
+            const art = arts.data.artifacts.find(a => a.name === 'assurance-trace');
+            if (!art) {
+              core.warning(`No assurance-trace artifact in run ${run.id} — skipping trace commit`);
+              core.setOutput('found', 'false');
+              return;
+            }
+
+            core.setOutput('run_id', String(run.id));
+            core.setOutput('found', 'true');
+
+      - name: Download trace artifact
+        if: steps.precheck.outputs.skip != 'true' && steps.find.outputs.found == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: assurance-trace
+          path: workspace/traces/
+          run-id: ${{ steps.find.outputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit trace to master
+        if: steps.precheck.outputs.skip != 'true' && steps.find.outputs.found == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f workspace/traces/
+          git diff --staged --quiet || git commit -m "chore: assurance trace [post-merge] ${{ github.sha }}"
+          git push origin master
