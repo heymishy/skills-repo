@@ -383,7 +383,7 @@ Phase 2 outer loop focus time (1h) reflects high pipeline fluency at Phase 2 sta
 | ADR-005 | Agent instructions format (copilot-instructions.md vs AGENTS.md) is a surface adapter concern driven by `vcs.type` in context.yml; AGENTS.md is the vendor-neutral default | Active |
 | ADR-006 | Non-engineer approval routing is an adapter pattern (`approval_channel`); first implementation is the GitHub Issue workflow | Active |
 
-Full decision history: [`.github/architecture-guardrails.md`](.github/architecture-guardrails.md) · [HANDOFF.md](HANDOFF.md)
+Full decision history: [`.github/architecture-guardrails.md`](.github/architecture-guardrails.md) · [HANDOFF.md](docs/HANDOFF.md)
 
 ---
 
@@ -404,4 +404,4 @@ The `artefacts/`, `.github/skills/`, `.github/templates/`, and `.github/governan
 
 Built with the skills platform's own pipeline — 21 stories, 4 calendar days.
 
-[HANDOFF.md](HANDOFF.md) · [Architecture decisions](.github/architecture-guardrails.md) · [Model risk](MODEL-RISK.md)
+[HANDOFF.md](docs/HANDOFF.md) · [Architecture decisions](.github/architecture-guardrails.md) · [Model risk](docs/MODEL-RISK.md)

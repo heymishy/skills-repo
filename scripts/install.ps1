@@ -129,7 +129,7 @@ Write-Info "Step 1/5: Core pipeline files"
     '.github/pipeline-state.json'
     '.github/pipeline-state.schema.json'
     '.github/pipeline-viz.html'
-    'skill-pipeline-instructions.md'
+    'docs/skill-pipeline-instructions.md'
 ) | ForEach-Object {
     Copy-SkillFile $_ (Join-Path $Target $_)
 }
@@ -384,7 +384,7 @@ skills_upstream:
     - .github/skills/
     - .github/templates/
     - scripts/
-    - skill-pipeline-instructions.md
+    - docs/skill-pipeline-instructions.md
   strategy: manual$(if ($UpstreamStrategy -eq 'fork') { "`n  fork_of: https://github.com/$OWNER/$REPO.git" } else { '' })
 "@
         Add-Content -Path $ContextYml -Value $upstreamBlock
@@ -394,7 +394,7 @@ skills_upstream:
     Write-Host ""
     Write-Host "  To pull future skills updates:" -ForegroundColor DarkGray
     Write-Host "    git fetch skills-upstream" -ForegroundColor DarkGray
-    Write-Host "    git checkout skills-upstream/master -- .github/skills/ .github/templates/ scripts/ skill-pipeline-instructions.md" -ForegroundColor DarkGray
+    Write-Host "    git checkout skills-upstream/master -- .github/skills/ .github/templates/ scripts/ docs/skill-pipeline-instructions.md" -ForegroundColor DarkGray
     Write-Host "    git diff --staged   # review changes" -ForegroundColor DarkGray
     Write-Host "    git commit -m `"chore: sync skills from skills-upstream [date]`"" -ForegroundColor DarkGray
     Write-Host ""

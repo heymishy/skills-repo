@@ -21,7 +21,7 @@ To sync skills from upstream:
 ```bash
 git fetch <skills_upstream.remote>
 git diff HEAD <skills_upstream.remote>/master -- .github/skills/
-git checkout <skills_upstream.remote>/master -- .github/skills/ .github/templates/ scripts/ skill-pipeline-instructions.md
+git checkout <skills_upstream.remote>/master -- .github/skills/ .github/templates/ scripts/ docs/skill-pipeline-instructions.md
 git diff --staged
 git commit -m "chore: sync skills from skills-upstream [date]"
 ```

@@ -6,6 +6,10 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- **Repo structure (feat/repo-tidy):** All human-readable reference docs and diagram assets moved out of repo root into `docs/` following modern engineering conventions. Root now contains only universal files: `README.md`, `CHANGELOG.md`, `package.json`, `.gitignore`, `.github/`, plus operational directories (`artefacts/`, `workspace/`, `src/`, `tests/`, `scripts/`, `standards/`, `product/`, `contexts/`, `fleet/`). `docs/diagrams/` holds all diagram source and image assets. `trace-validation-report.json` removed from git tracking (CI output, already gitignored). New governance check `check-docs-structure.js` added (12 checks, D1–D8 existence + R1–R4 root-absence). All SKILL.md/framework references and install scripts updated. Files moved: `HANDOFF.md`, `MODEL-RISK.md`, `ONBOARDING.md`, `skill-pipeline-instructions.md`, `feature-additions.md`, `pipeline-flow.drawio`, `diagram-preview.html`, `.github/pipeline-vis-example.png`, `.github/skills-pipeline-flow.jpg`.
+
 ### Fixed
 
 - `.github/workflows/assurance-gate.yml` — `permissions.contents` upgraded from `read` to `write`; "Commit trace file" step added after gate run (runs with `if: always()`) to `git add workspace/traces/`, commit with `[ci skip]` message, and push back to the PR branch ref via `HEAD:${{ github.head_ref }}`. Fixes gap where trace JSONL files were written to runner filesystem during gate execution but discarded on runner exit — they existed long enough for the PR comment step to read but were never persisted to the repo. Required for p1.8 AC3 evaluation and p2.11/p2.12 DoR gate clearance (2026-04-12)
