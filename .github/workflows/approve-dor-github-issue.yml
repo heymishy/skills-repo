@@ -1,0 +1,61 @@
+name: DoR Approval — github-issue channel
+
+# Triggered when a comment is posted on an issue or pull request.
+# Processes /approve-dor comments to write dorStatus: "signed-off" to
+# the relevant squad's pipeline-state.json (p2.8).
+#
+# approval_channel: github-issue (context.yml) selects this workflow.
+# Channel target (issue URL) is read from context.yml — no hardcoded values (ADR-004).
+#
+# Security: MC-PII — dorApprover stores GitHub username only (github.actor),
+#           never email or full name.
+# ADR-002: dorStatus: "signed-off" — same evidence field as VS Code sign-off.
+# ADR-003: dorApprover, dorChannel, dorSignedOffAt defined in schema before write.
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  process-approve-dor:
+    name: Process /approve-dor comment
+    runs-on: ubuntu-latest
+
+    # Only run when the comment contains the /approve-dor command.
+    if: contains(github.event.comment.body, '/approve-dor')
+
+    permissions:
+      contents: write
+      issues: read
+      pull-requests: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Process DoR approval
+        env:
+          # GitHub username of the commenter — stored as dorApprover (MC-PII: username only).
+          ACTOR_USERNAME: ${{ github.event.comment.user.login }}
+          # Full comment body — script extracts story slug with /approve-dor <slug> pattern.
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          # Timestamp of the comment — stored as dorSignedOffAt.
+          COMMENT_CREATED_AT: ${{ github.event.comment.created_at }}
+        run: node scripts/process-dor-approval.js
+
+      - name: Commit pipeline-state.json if changed
+        run: |
+          git config user.email "dor-approval@ci"
+          git config user.name "DoR Approval [bot]"
+          git add .github/pipeline-state.json
+          if git diff --cached --quiet; then
+            echo "pipeline-state.json unchanged — nothing to commit"
+          else
+            git commit -m "chore: DoR sign-off via /approve-dor comment [skip ci]"
+            git push
+          fi
