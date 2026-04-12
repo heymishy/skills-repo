@@ -567,3 +567,44 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 | D10a (dispatch close-loop) | Add PR body guidance to include `Closes #[issue]` for dispatched story issues so merge auto-closes the canonical tracking issue | `.github/skills/issue-dispatch/SKILL.md` and PR body template guidance |
 
 **Status:** Logged for pipeline-evolution write-back; no direct skill-file modification in this /levelup step.
+
+---
+
+## Phase 2 inner loop CI learnings — 2026-04-12
+
+### [ci skip] in commit message prevents workflow trigger
+
+**Circumstance:** A commit to a PR branch included `[ci skip]` in the message — standard git convention to suppress CI runs for housekeeping commits. GitHub Actions honours `[ci skip]` and `[skip ci]` by skipping all workflow runs for that push event.
+
+**What went wrong:** The commit was intended to re-trigger the assurance gate after a fix was applied. Because the message contained `[ci skip]`, no workflow run was created. The PR appeared stuck with no new CI status — the fix was correct but produced no passing gate.
+
+**Rule:** Never include `[ci skip]` or `[skip ci]` in a commit message on a PR branch when the intent is to trigger CI. Use these strings only on documentation-only or housekeeping commits pushed directly to `master` where no CI gate run is expected or desired.
+
+---
+
+### Job re-run uses cached workflow, not current master — push a new commit
+
+**Circumstance:** After a workflow failure, the operator used GitHub's "Re-run all jobs" button to retry the CI run. The re-run picked up the workflow YAML as it existed at run-creation time (the SHA when the run was first triggered), not from the current `master`.
+
+**What went wrong:** A fix had been pushed to the workflow YAML itself between the original failure and the re-run. The re-run executed the old, unfixed workflow. The fix appeared not to work until a fresh commit to the PR branch triggered a new run that loaded the updated workflow.
+
+**Rule:** When a workflow YAML has been modified and the intent is to validate the fix against CI, push a new commit to the PR branch — do not use "Re-run all jobs." Re-run always replays the workflow from the run's original creation SHA.
+
+---
+
+### T3M1 honest gap — 5 of 8 audit questions unanswered at Phase 2 close
+
+**Date:** 2026-04-12
+**Context:** p1.8 AC3 — T3M1 acceptance test evaluated against first real Phase 2 inner loop trace (story p2.4, PR #31, trace `workspace/traces/2026-04-11T21-33-02-002Z-ci-84f82370.jsonl`).
+
+**Result:** 3/8 Y. The 5 unanswered questions and their Phase 3 fill targets:
+
+| # | Question | Gap reason | Phase 3 target |
+|---|---|---|---|
+| Q2 | `standardsInjected` hashes visible and verifiable in trace | Hash reconciliation not yet wired into CI trace write | p1.7 / p2.1 gate enhancement |
+| Q5 | Watermark row visible in PR (pass/fail reason surfaced) | Watermark gate does not yet emit result to PR comment | p1.4 PR reporting story |
+| Q6 | `stalenessFlag` present in trace for this skill version | Skill-version staleness field not in trace schema | Phase 3 schema story |
+| Q7 | Agent independence evidenced by three separate trace entries | CI does not validate entry count or cross-session independence | Phase 3 CI gate story |
+| Q8 | Hash recomputation confirms no drift since approval | Hash drift check not yet wired into assurance gate CI step | Phase 3 assurance story |
+
+**Implication for adoption gate:** `MODEL-RISK.md` Section 4 sign-off is conditional on re-evaluation after all 5 gaps are resolved. Full 8/8 is required before any regulated-enterprise adoption (e.g. Westpac). Tracked in `MODEL-RISK.md` Section 3 T3M1 evidence block.

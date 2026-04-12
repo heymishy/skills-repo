@@ -264,3 +264,42 @@ Three pilot domain names selected for the ≥3 pilot domain POLICY.md files requ
 - `standards/domains/ecommerce/POLICY.md`
 
 **Rationale:** These three domains represent distinct regulatory and operational contexts, making them useful as pilot signal for how domain-tier policy floors differentiate from discipline-tier floors.
+
+---
+
+## ARCH — 2026-04-12 (inner loop — CI setup)
+
+### ARCH-02: Assurance gate checkout uses `ref: ${{ github.head_ref }}` + `fetch-depth: 0`
+
+**Date:** 2026-04-12
+**Decided by:** Hamish (operator)
+**Decision type:** ARCH
+
+**Context:** The assurance gate CI job checks out the repository to run governance checks and write the assurance trace back to the PR branch. Using the default `actions/checkout@v4` with no parameters produces a detached HEAD state — any attempt to `git push` the trace commit back to the PR branch fails with a detached HEAD error or writes to the wrong ref.
+
+**Decision:** Set `ref: ${{ github.head_ref }}` and `fetch-depth: 0` in the `actions/checkout@v4` step of the assurance gate job. `github.head_ref` resolves to the PR head branch name (e.g. `copilot/implement-p2.4`). `fetch-depth: 0` ensures the full history is available for hash verification and watermark comparison against the `workspace/results.tsv` baseline.
+
+**Consequences:**
+- Easier: `git push origin HEAD:<branch>` after the trace commit succeeds without manual ref resolution.
+- Harder / constrained: `github.head_ref` is only set on `pull_request` and `pull_request_target` events. Jobs triggered on `push` to `master` must use `github.ref_name` instead.
+- Off the table: Default detached-HEAD checkout for any CI job that writes back to the repository.
+
+**Revisit trigger:** When migrating to Bitbucket Pipelines, use the `$BITBUCKET_BRANCH` environment variable in place of `github.head_ref` — same intent, different variable name.
+
+---
+
+## PROCESS — 2026-04-12 (inner loop — CI setup)
+
+### PROCESS-01: No PR approval required for Copilot coding agent PRs — dogfood context
+
+**Date:** 2026-04-12
+**Decided by:** Hamish (operator)
+**Decision type:** PROCESS
+
+**Context:** GitHub's "required reviewers" branch protection would block the Copilot coding agent from merging its own PRs during the inner loop. In the dogfood context (solo operator, single-squad, platform = consumer), requiring a human approval before every agent PR merge adds synchronous delay disproportionate to the risk — particularly for stories already through a full DoR cycle with a passing assurance gate.
+
+**Decision:** Branch protection on `master` does not require a human reviewer for Copilot agent PRs in the dogfood context. The operator inspects the diff manually and merges after review. The assurance gate (automated) and DoR sign-off (governance) together substitute for the formal PR approval step in this context.
+
+**Accepted risk:** A faulty PR could land on `master` without a second human reviewer. Mitigated by: (a) all stories completing DoR before dispatch; (b) assurance gate running on PR open; (c) operator inspecting the diff before merge.
+
+**Revisit trigger:** Westpac Bitbucket migration. Bitbucket Data Center imposes at least one approver on protected branches by default. At migration, configure a merge check that verifies the assurance gate passed — this allows the operator to serve as the sole approver without blocking agent PRs. Do not drop approver checks entirely in a regulated context.
