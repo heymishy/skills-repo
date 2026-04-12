@@ -17,7 +17,7 @@
   To evolve: update this file, open a PR, tag tech lead for review.
 -->
 
-**Last updated:** 2026-04-12
+**Last updated:** 2026-04-13
 **Maintained by:** Repo owner (solo)
 
 ---
@@ -87,6 +87,8 @@ Skill files and templates are content, not code — they are governed by pipelin
 - **Config reading in skills:** Skills read `.github/context.yml` for org/tooling config. Never hardcode tool names, branch names, or org labels in skill instruction text — use `context.yml` fields.
 - **Execution pre-condition gate on runtime artefact existence:** When a story requires a live-environment artefact to exist before it can be meaningfully implemented or tested (e.g. a real trace file in `workspace/traces/`), express this as a DoR PROCEED-BLOCKED condition keyed on artefact path existence — not as an AC caveat or a note. The story is dispatched only when the gate condition is met.
 - **Group instruction-text-only changes at the same exit point into a single story:** When multiple pipeline gaps are all resolved by changes to the same SKILL.md at the same exit sequence, group them into one story. Separate review/DoR pass-through cycles for trivially co-located changes produce overhead without quality uplift. Exceptions: if grouped changes share an exit point but have independent failure modes, separate them.
+- **Two-workflow CI audit pattern:** Governance gate fires on `pull_request` with `contents: read` — evaluates, uploads artifact, posts verdict comment, exits. A separate post-merge workflow fires on `push` to main with `contents: write` — downloads artifact, commits audit record to `workspace/traces/`. The two workflows have non-overlapping permission grants and separate trigger events. This structurally enforces maker/checker independence: the evaluator cannot modify its own evaluation target.
+- **`git commit --allow-empty` to force required check re-run:** When a required check shows "Waiting for status" after a push (because GitHub did not generate a new `synchronize` event, or a bot commit moved the HEAD SHA without re-triggering the gate), use `git commit --allow-empty -m "ci: trigger <gate> on <sha>"` to create a minimal new SHA that produces a clean `synchronize` event. Never use "Re-run jobs" when a workflow YAML has itself been modified between the failure and the retry — re-running uses the old YAML.
 
 ---
 
@@ -102,6 +104,8 @@ Skill files and templates are content, not code — they are governed by pipelin
 | Deleting or mutating pipeline artefacts in `pipeline-state.json` directly | Can corrupt feature history | Use skills to write state; manual edits only for scaffolding |
 | Bundling changes from story B into story A's PR | Makes root-cause traceability noisy; DoD evidence becomes ambiguous; violates ADR-008 | One PR per story; amend the DoR contract if scope genuinely expands |
 | Committing runtime artefact churn (trace files, validation reports) in story branches | Non-functional CI side effects inflate diff noise and make PR review harder | Add generated runtime paths to `.gitignore`; do not commit `workspace/traces/` or `trace-validation-report.json` in story branches |
+| Required-check workflow committing back to the branch it evaluates | Fires a new `synchronize` event on every evaluation — gate re-triggers itself → infinite loop; the evaluator modifies its own evaluation target | Two-workflow pattern: evaluate on `pull_request` with `contents: read`, persist post-merge with `contents: write` on `push` to main |
+| Using `[ci skip]` on a branch with required checks | Suppresses all workflow runs on that SHA, including required status reporters; the SHA is permanently stuck on "Waiting for status" with no way to recover without a new commit | Reserve `[ci skip]` for direct housekeeping commits to main where no required checks apply |
 
 ---
 
@@ -143,6 +147,8 @@ Skill files and templates are content, not code — they are governed by pipelin
 | ADR-006 | Active | Approval-channel adapter pattern for non-engineer DoR sign-off | DoR routing workflows, state write path |
 | ADR-007 | Active | EA registry surface-type mapping table — `technology.hosting` → platform surface type | EA registry resolver (p2.6), any future surface adapter consuming EA registry |
 | ADR-008 | Active | DoR touch-point contract is binding at pre-merge — no silent scope bundling | All PRs, /verify-completion step, DoR contract amendment workflow |
+| ADR-009 | Active | Evaluation and write-back workflows must be separate triggers with separate permission scopes | All CI/CD workflows that produce audit artefacts |
+| ADR-010 | Active | CI audit records must be persisted to main post-merge, not to feature branches | assurance-gate.yml, trace-commit.yml, all future governance gates |
 
 ---
 
@@ -329,6 +335,52 @@ The DoR contract touch-point list is binding at pre-merge review. PRs must not i
 
 #### Revisit trigger
 If the DoR contract proves too granular for fast-moving stories, introduce a tiered contract model (declared files + an allowed-extras list).
+
+---
+
+### ADR-009: Evaluation and write-back workflows must be separate triggers with separate permission scopes
+
+**Status:** Active
+**Date:** 2026-04-13
+**Source finding:** `workspace/learnings.md` — feat/repo-tidy architectural fix learnings (2026-04-13)
+**Decided by:** Hamish
+
+#### Context
+`assurance-gate.yml` combined evaluation (checking pipeline artefacts) and write-back (committing the trace record to the feature branch) in a single workflow triggered on `pull_request`. When the workflow committed back to the branch, GitHub generated a new `synchronize` event, which re-triggered the same workflow — producing an infinite loop. The root cause was not the commit itself but the structural conflation of evaluation and write-back roles within a single permission scope and trigger event.
+
+#### Decision
+Evaluation workflows receive `contents: read` only and fire on `pull_request`. They may upload artifacts (using `actions/upload-artifact`) and post comments, but must never commit to the branch. Write-back workflows receive `contents: write` and fire on `push` to `main` (post-merge). They download the uploaded artifact and commit it to the permanent audit record on the default branch. The two workflows must be separate YAML files with non-overlapping trigger events and permission grants.
+
+#### Consequences
+**Easier:** Infinite loop is structurally impossible — the evaluator cannot trigger itself. Maker/checker independence is enforced by permission scope, not convention. Clear audit separation: gate output is immutable post-evaluation; the write-back is a separate, auditable action.
+**Harder / constrained:** Two workflow files required per gate instead of one. The artifact handoff introduces a timing dependency (the write-back workflow must wait for the artifact to be available). Runtime artefacts reach `workspace/traces/` only after PR merge, not during the branch review period.
+**Off the table:** Single workflow that both evaluates a PR and commits back to that PR's branch.
+
+#### Revisit trigger
+If GitHub Actions introduces a native mechanism to safely commit audit records from within a `pull_request` workflow without triggering `synchronize`, re-evaluate whether the two-workflow split is still necessary.
+
+---
+
+### ADR-010: CI audit records must be persisted to main post-merge, not to feature branches
+
+**Status:** Active
+**Date:** 2026-04-13
+**Source finding:** `workspace/learnings.md` — feat/repo-tidy architectural fix learnings (2026-04-13)
+**Decided by:** Hamish
+
+#### Context
+The original `assurance-gate.yml` committed trace files to the feature branch. Feature branches are ephemeral — they are deleted after PR merge. A trace record written only to a branch may be lost when the branch is pruned. More importantly, `master` is the canonical permanent ledger; audit records on feature branches are second-class citizens that cannot be reliably queried from the main history.
+
+#### Decision
+All CI audit records (assurance gate traces, validation reports, verification artefacts) are committed to `main` post-merge by a dedicated write-back workflow. The evaluation workflow uploads the record as a GitHub Actions artifact during the PR phase. The write-back workflow, triggered by `push` to `main`, downloads the artifact and commits it to `workspace/traces/`. Feature branches never receive audit commits.
+
+#### Consequences
+**Easier:** Audit records live in main history permanently. They survive branch deletion. They can be queried chronologically from `workspace/traces/`. The trace commit does not appear in PR diffs.
+**Harder / constrained:** A short window exists between PR merge and trace commit where the trace is in GitHub Actions artifact storage but not yet in `workspace/traces/`. The write-back workflow must use `[ci skip]` (or equivalent) so its commit does not itself trigger required checks on main.
+**Off the table:** Committing audit artefacts to feature branches. Writing `workspace/traces/` files from within PR evaluation workflows.
+
+#### Revisit trigger
+If the two-workflow artifact handoff proves unreliable at scale (e.g. artifact expiry before write-back runs), consider alternative persistence mechanisms (e.g. writing directly to a separate audit branch or using GitHub Releases as an artifact store).
 
 ---
 
@@ -559,5 +611,35 @@ This repository is operated by a single engineer. The following posture applies 
 - id: AP-08
   category: anti-pattern
   label: "Committing runtime artefact churn (traces, validation reports) in story branches"
+  section: Anti-Patterns
+
+- id: ADR-009
+  category: adr
+  label: "Evaluation and write-back workflows must be separate triggers with separate permission scopes"
+  section: Active ADRs
+
+- id: ADR-010
+  category: adr
+  label: "CI audit records must be persisted to main post-merge, not to feature branches"
+  section: Active ADRs
+
+- id: PAT-08
+  category: pattern
+  label: "Two-workflow CI audit pattern: evaluate on pull_request (contents:read) + persist post-merge to main (contents:write)"
+  section: Approved Patterns
+
+- id: PAT-09
+  category: pattern
+  label: "git commit --allow-empty to force synchronize event when required check has not re-run"
+  section: Approved Patterns
+
+- id: AP-09
+  category: anti-pattern
+  label: "Required-check workflow committing back to the branch it evaluates (synchronize loop)"
+  section: Anti-Patterns
+
+- id: AP-10
+  category: anti-pattern
+  label: "[ci skip] on a branch with required checks (suppresses status reporting)"
   section: Anti-Patterns
 ```
