@@ -129,7 +129,7 @@ The outer loop produces fully specified, DoR-gated work items before any code is
 | `/test-plan` | Writes failing tests and an AC verification script for a reviewed story |
 | `/definition-of-ready` | Final gate check before the story is handed to the coding agent |
 | `/spike` | Time-boxed investigation for unknowns blocking pipeline progress |
-| `/estimate` | E1 (rough forecast), E2 (refined), E3 (actuals comparison against norms) |
+| `/estimate` | Records a phase-by-phase focus-time estimate at feature start (E1 — Rough Forecast), refines it when story count is known (E2 — Refined Estimate), and compares against actuals at /levelup (E3 — Actuals Comparison). Feeds the cross-feature estimation norms table. |
 
 ### 🟢 Inner loop
 
@@ -182,10 +182,11 @@ Each trace entry carries the skill name, hash, phase, verdict, and timestamp. Tr
 The T3M1 model audit assesses whether an independent non-engineer reviewer can answer eight governance questions from the trace alone, without engineering assistance. At Phase 2 close, three of eight questions are answered: Q1 (phase evident), Q3 (skill identified), Q4 (verdict present). Five questions — Q2 (standardsInjected hashes visible), Q5 (watermark result in PR), Q6 (stalenessFlag present), Q7 (agent independence evidenced by three structurally separate entries), Q8 (hash recomputation confirms no drift) — are Phase 3 delivery obligations. Independent T3M1 validation by a genuine non-engineering reviewer outside the platform engineering reporting line is a hard Phase 3 entry condition.
 
 ```jsonc
-// workspace/traces/sample.jsonl — abbreviated
-{"phase":"discovery","skill":"discovery","hash":"sha256:a1b2c3d4...","verdict":"pass","timestamp":"2026-04-12T14:00:01Z"}
-{"phase":"definition","skill":"definition","hash":"sha256:d4e5f6a7...","verdict":"pass","timestamp":"2026-04-12T14:05:23Z"}
-{"phase":"assurance","skill":"assurance-gate","hash":"sha256:g7h8i9b0...","verdict":"pass","watermark":{"passRate":1.0,"result":"pass"},"timestamp":"2026-04-12T15:12:44Z"}
+// workspace/traces/2026-04-11T21-33-02-002Z-ci-84f82370.jsonl — real Phase 2 gate run (PR #31)
+// Entry 1 — gate started
+{"status":"inProgress","trigger":"ci","prRef":"refs/pull/31/merge","commitSha":"f2581b0ee5075becdb9a727272b459f125bd7de5","startedAt":"2026-04-11T21:33:02.002Z"}
+// Entry 2 — gate completed
+{"status":"completed","trigger":"ci","prRef":"refs/pull/31/merge","commitSha":"f2581b0ee5075becdb9a727272b459f125bd7de5","startedAt":"2026-04-11T21:33:02.002Z","completedAt":"2026-04-11T21:33:02.003Z","verdict":"pass","traceHash":"85e4a239b856523f","checks":[{"name":"workspace-state-valid","passed":true},{"name":"pipeline-state-valid","passed":true},{"name":"artefacts-dir-exists","passed":true},{"name":"governance-gates-exists","passed":true}]}
 ```
 
 ---
@@ -237,7 +238,7 @@ Each squad runs the platform in their own repository with their own `pipeline-st
 
 | Phase | Stories | Outer loop focus | Calendar days | Status |
 |-------|---------|-----------------|---------------|--------|
-| Phase 1 — Foundation, distribution, self-improving harness | 8 | 18h | 2 | ✅ Complete |
+| Phase 1 — Foundation, distribution, self-improving harness | 8 | 13h | 2 | ✅ Complete |
 | Phase 2 — Scale, observability, full adapter model | 13 | 1h | 2 | ✅ Complete |
 | Phase 3 — Governance hardening, T3M1, cross-team autoresearch | TBD | TBD | TBD | ⏳ Design phase (T3M1 3/8 outstanding) |
 | Phase 4 — Operational domains, agent identity, policy lifecycle | TBD | TBD | TBD | ⏳ Not started |
@@ -279,6 +280,12 @@ Phase 2 outer loop focus time (1h) reflects high pipeline fluency at Phase 2 sta
 
 **Non-engineer approvals:** Set `tools.approval_channel: github-issue` in `context.yml` and run `/persona-routing` to configure the sign-off workflow. Other channel adapters require implementing the ADR-006 interface.
 
+**Agent instructions format:** Set `vcs.type` in `context.yml` to control whether the assembly script emits `.github/copilot-instructions.md` (GitHub) or `AGENTS.md` (vendor-neutral default for Jenkins, Bitbucket, and other non-GitHub surfaces) — per ADR-005.
+
+**Jenkins/Bitbucket CI gate adapter:** Replace `assurance-gate.yml` with an equivalent Bitbucket Pipelines or Jenkins declarative pipeline. Reference validators are in `tests/check-bitbucket-cloud.js` and `tests/check-bitbucket-dc.js`. Full adapter parity (including Docker Compose Bitbucket DC tests) is a Phase 3 delivery.
+
+**Jira / Teams approval channel:** Implement the ADR-006 `approval_channel` interface for your organisation's tool and declare it in `context.yml`. The GitHub Issue adapter is the Phase 2 reference implementation; Jira and Teams channel adapters are Phase 3 delivery items.
+
 </details>
 
 ---
@@ -288,7 +295,7 @@ Phase 2 outer loop focus time (1h) reflects high pipeline fluency at Phase 2 sta
 | ADR | Decision | Status |
 |-----|----------|--------|
 | ADR-001 | `pipeline-viz.html` is a single self-contained file; no external runtime dependencies. Parallel extraction (`viz-functions.js`) for testability; browser inline functions untouched. | Active |
-| ADR-002 | Metric evidence fields in `pipeline-state.json` use a structured schema, not free-text, to enable automated signal extraction | Active |
+| ADR-002 | Governance gates must use evidence fields, not stage-proxy — stage alone cannot pass a gate | Active |
 | ADR-003 | `standards/index.yml` uses a schema-first model; prompt hash verification is the primary audit signal — hash is stored in the trace at execution time | Active |
 | ADR-004 | All tool and channel integrations are declared in `.github/context.yml`; no hardcoded provider values in skills or scripts | Active |
 | ADR-005 | Agent instructions format (copilot-instructions.md vs AGENTS.md) is a surface adapter concern driven by `vcs.type` in context.yml; AGENTS.md is the vendor-neutral default | Active |

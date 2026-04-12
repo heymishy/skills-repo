@@ -81,15 +81,16 @@
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-04-12T21:30:00+10:00",
-    "contextAtWrite": "Session timing tooling complete and integrated into platform. scripts/parse-session-timing.js created and committed (17d3ae1). Bug fixes: idle-gap negative filter, --max-gap arg parsing with --summary flag (65630df). estimate/SKILL.md E3b/E3c revised to use parser as primary derivation method — E3c now confirmatory, not estimative (4903b70). Phase 1 E3 actuals revised in estimation-norms.md and results.tsv: 18h/50% -> 11.1h/28% at --max-gap 15 canonical threshold (35eaa23). workspace/learnings.md updated with tool entry. Phase 2 E3 actuals remain medium-low confidence (JSONL unavailable at time of write); will be revised at Phase 2 /levelup using parser.",
-    "resumeInstruction": "Session timing parser is complete and integrated. Next work is Phase 2 inner loop — dispatch p2.1-p2.5b stories (already DoR signed-off). p2.6 remains BLOCKED on ASSUMPTION-02. p2.11/p2.12 gated on ≥1 Phase 2 trace in workspace/traces/. Before dispatch: review workspace/state.json pendingActions (Docker-gated p2.10 tests still open). Phase 2 E3 actuals should be rerun with parse-session-timing.js at /levelup.",
+    "writtenAt": "2026-04-12T23:00:00+10:00",
+    "contextAtWrite": "Phase 1+2 fully closed. All 13 Phase 2 stories merged and DoD-complete. Phase 2 /levelup complete: ADR-007 (EA registry mapping), ADR-008 (DoR contract binding), PAT-06, PAT-07, AP-07, AP-08, Operating Posture section all written to architecture-guardrails.md. Automation displacement finding added to learnings.md. Phase 1+2 close commit (cd484d5): learnings entries, MODEL-RISK.md Section 3 filled with 3/8 T3M1 actuals, workspace/adoption-readiness.md created for Westpac pilot. README fixes committed. workspace/state.json checkpoint updated.",
+    "resumeInstruction": "Phase 1 and Phase 2 are both complete and levelup-complete. Outstanding items before Phase 3 begins: (1) p1.8 AC3 T3M1 evidence record — deferred to Phase 3 (requires p1.7 completion); (2) p2.10 Docker-gated tests AC3/AC4/AC5 still need DC environment evidence; (3) Phase 2 E3 actuals are medium-low confidence — rerun parse-session-timing.js when JSONL logs are available. Phase 3 scope: T3M1 8/8 gap closures (Q2/Q5/Q6/Q7/Q8), state timestamp monotonicity guard, E2 automation-level fork, Windows validate-trace.ps1, parse-session-timing.js telemetry path restoration. Run /workflow or /discovery to start Phase 3 scoping.",
     "pendingActions": [
-      "Run p2.10 AC3/AC4/AC5 Docker-gated tests in a Docker-enabled Bitbucket DC environment and capture pass evidence",
-      "Dispatch p2.1-p2.5b inner loop (all DoR signed-off) — use /issue-dispatch --target github-agent",
-      "Resolve ASSUMPTION-02 before dispatching p2.6",
-      "Rerun Phase 2 E3 actuals with parse-session-timing.js at Phase 2 /levelup (current norms entry is medium-low confidence)",
-      "Optional: prepare release artefacts for Phase 2 if requested"
+      "Phase 3 scoping: run /discovery for T3M1 gap closure and state timestamp guard stories",
+      "p1.8 AC3: T3M1 evidence record — deferred; closes when Phase 3 delivers p1.7 hash reconciliation",
+      "p2.10 Docker-gated tests (AC3/AC4/AC5): run in real DC environment when available",
+      "Phase 2 E3 actuals: rerun parse-session-timing.js when JSONL debug logs are accessible",
+      "Westpac pilot M1 amber: schedule a real second-operator outer loop run to close M1 green",
+      "Westpac pilot M5 red: configure live approval channel (Jira/Teams/Slack) and run a real non-engineer sign-off"
     ]
   },
   "phase1Reference": {
