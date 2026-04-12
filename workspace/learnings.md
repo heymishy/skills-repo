@@ -713,6 +713,23 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 
 ---
 
+### Phase 2 finding — inner loop automation displacement is the dominant outer-loop efficiency signal
+
+**Date:** 2026-04-12
+**Context:** Phase 2 E3 actuals vs E2 forecast. E2 forecast: ~30h outer loop (13 stories × 2.3h/story Phase 1 norm). E3 actuals: ~1h outer loop (medium-low confidence, JSONL unavailable). Premium requests actual: 68 vs ~322 forecast — an ~80% reduction. Inner loop: agent-autonomous for all 13 stories, 0 human implementation sessions required.
+
+**Finding:** When the inner loop is fully agent-autonomous, operator outer-loop focus approaches a structural minimum — not a calibration gap. The E2 forecast based on Phase 1 norms overstates outer-loop effort because Phase 1 had significant human implementation time mixed into the engagement figure. The Phase 1 norm of ~2.3h/story conflates outer-loop planning/artefact work with human inner-loop time; once the inner loop is autonomous, only the former remains.
+
+**Implication for estimation norms:** The correct Phase 2 estimate baseline is not `storyCount × focusHPerStory` but rather `storyCount × outerLoopOnlyH/story` — approximately 0.08h/story when the inner loop is fully autonomous. This is not a freak result; it is the automation dividend.
+
+**Implication for the E2 model:** `/estimate` E2 should fork its forecast on the expected automation level:
+- Inner loop human-assisted → use Phase 1 norm (~1.4h outer-loop/story at 28% engagement)
+- Inner loop agent-autonomous → use Phase 2 norm (~0.08h outer-loop/story at 25% engagement, medium-low confidence; revise after telemetry-path E3 is available)
+
+**Action:** Note in `estimation-norms.md` that the Phase 2 entry is the automation-displacement baseline. Update `/estimate` E2 instructions at Phase 3 to include the automation-level fork. **Phase 3 story candidate:** Add inner-loop automation level as an E2 input field, with a calibrated low-automation vs high-automation h/story norm.
+
+---
+
 ### T3M1 honest gap — 5 of 8 audit questions unanswered at Phase 2 close
 
 **Date:** 2026-04-12

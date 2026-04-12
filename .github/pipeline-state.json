@@ -800,8 +800,10 @@
       "standards": {
         "recentUpdates": [
           "standards/quality-assurance/core.md",
-          ".github/architecture-guardrails.md"
-        ]
+          ".github/architecture-guardrails.md",
+          "workspace/learnings.md"
+        ],
+        "levelupNotes": "Phase 2 /levelup: ADR-007 (EA registry mapping), ADR-008 (DoR contract binding), PAT-06 (execution pre-condition gate), PAT-07 (grouped instruction-text changes), AP-07 (multi-story contamination), AP-08 (runtime artefact churn), Operating Posture section (W4 solo operator). Automation displacement finding added to learnings.md."
       },
       "dorBatch1": {
         "complete": [

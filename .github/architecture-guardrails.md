@@ -85,6 +85,8 @@ Skill files and templates are content, not code — they are governed by pipelin
 - **Gate logic:** Gate pass/fail is determined by reading specific evidence fields from `pipeline-state.json` stories — not by checking `feature.stage` alone (see ADR-002).
 - **Schema evolution:** Add new fields to `pipeline-state.schema.json` at the same time as adding them to any skill or viz code that reads or writes them. Schema and implementation stay in sync.
 - **Config reading in skills:** Skills read `.github/context.yml` for org/tooling config. Never hardcode tool names, branch names, or org labels in skill instruction text — use `context.yml` fields.
+- **Execution pre-condition gate on runtime artefact existence:** When a story requires a live-environment artefact to exist before it can be meaningfully implemented or tested (e.g. a real trace file in `workspace/traces/`), express this as a DoR PROCEED-BLOCKED condition keyed on artefact path existence — not as an AC caveat or a note. The story is dispatched only when the gate condition is met.
+- **Group instruction-text-only changes at the same exit point into a single story:** When multiple pipeline gaps are all resolved by changes to the same SKILL.md at the same exit sequence, group them into one story. Separate review/DoR pass-through cycles for trivially co-located changes produce overhead without quality uplift. Exceptions: if grouped changes share an exit point but have independent failure modes, separate them.
 
 ---
 
@@ -98,6 +100,8 @@ Skill files and templates are content, not code — they are governed by pipelin
 | Adding fields used by viz/skills but not in schema | Schema becomes stale; validators miss them | Add to `pipeline-state.schema.json` simultaneously |
 | Committing changes to `pipeline-viz.html` without passing `check-viz-syntax.js` | Breaks the pre-commit gate silently | Run `node .github/scripts/check-viz-syntax.js` locally before committing |
 | Deleting or mutating pipeline artefacts in `pipeline-state.json` directly | Can corrupt feature history | Use skills to write state; manual edits only for scaffolding |
+| Bundling changes from story B into story A's PR | Makes root-cause traceability noisy; DoD evidence becomes ambiguous; violates ADR-008 | One PR per story; amend the DoR contract if scope genuinely expands |
+| Committing runtime artefact churn (trace files, validation reports) in story branches | Non-functional CI side effects inflate diff noise and make PR review harder | Add generated runtime paths to `.gitignore`; do not commit `workspace/traces/` or `trace-validation-report.json` in story branches |
 
 ---
 
@@ -137,6 +141,8 @@ Skill files and templates are content, not code — they are governed by pipelin
 | ADR-004 | Active | `context.yml` is the single config source of truth | Skill files, viz config reading |
 | ADR-005 | Active | Agent instructions format is a surface adapter concern driven by `vcs.type` | Assembly script, skill distribution |
 | ADR-006 | Active | Approval-channel adapter pattern for non-engineer DoR sign-off | DoR routing workflows, state write path |
+| ADR-007 | Active | EA registry surface-type mapping table — `technology.hosting` → platform surface type | EA registry resolver (p2.6), any future surface adapter consuming EA registry |
+| ADR-008 | Active | DoR touch-point contract is binding at pre-merge — no silent scope bundling | All PRs, /verify-completion step, DoR contract amendment workflow |
 
 ---
 
@@ -274,6 +280,72 @@ When adding a new approval surface, verify the adapter preserves the same eviden
 
 ---
 
+### ADR-007: EA registry surface-type mapping table
+
+**Status:** Active
+**Date:** 2026-04-12
+**Source decision:** `artefacts/2026-04-11-skills-platform-phase2/decisions.md` — RESOLUTION-ASSUMPTION-02 (confirmed from live `heymishy/ea-registry` schema)
+**Decided by:** Hamish
+
+#### Context
+The skills-platform surface adapter resolver (p2.6) requires a mapping from EA registry application fields to platform surface type identifiers. The initial assumption was a single `surfaceType` field. Live schema inspection revealed this field does not exist. The correct source is `technology.hosting`.
+
+#### Decision
+EA registry surface type is derived from `technology.hosting` via a fixed mapping table:
+- `saas` → `saas-api` (default; `saas-gui` and `m365-admin` specified via `context.yml adapter_override`)
+- `cloud` → `iac`
+- `on-prem` → `manual`
+- `hybrid` → context-dependent (falls back to `context.yml` override or returns an error)
+
+No `surfaceType` field exists in the EA registry schema. Any resolver consuming the EA registry must use `technology.hosting` and this mapping, not a direct field read.
+
+#### Consequences
+**Easier:** Mapping is explicit and testable with a fixture.
+**Harder / constrained:** Adding a new surface type requires updating this mapping table and the EA registry `technology.hosting` enum negotiation.
+**Off the table:** Direct field reads like `application.surfaceType` — this field does not exist.
+
+#### Revisit trigger
+If the EA registry schema adds a dedicated surface-type field in a future version, migrate to direct field read and retire this mapping table.
+
+---
+
+### ADR-008: DOr touch-point contract is binding at pre-merge
+
+**Status:** Active
+**Date:** 2026-04-12
+**Source finding:** `artefacts/2026-04-11-skills-platform-phase2/dod/p2.1-definition-skill-improvements-dod.md` — DoD Observation #1 (contract drift); `dod/p2.5b-saas-gui-m365-manual-adapters-dod.md` — Scope Deviation (multi-story contamination)
+**Decided by:** Hamish
+
+#### Context
+Two Phase 2 PRs shipped files outside the DoR contract touch-point list: p2.1 included test-harness files not named in the contract; p2.5b bundled unrelated p2.11 implementation. Both PRs satisfied their ACs, but the scope deviations introduced traceability noise and made root-cause analysis harder.
+
+#### Decision
+The DoR contract touch-point list is binding at pre-merge review. PRs must not include changes to files not named in the DoR contract. When additional scope is identified as genuinely necessary, the DoR contract must be amended before merge — not silently included. The /verify-completion step must check that all changed files are in the contract before declaring a PR ready.
+
+#### Consequences
+**Easier:** Scope deviations are caught at review, not documented post-merge in DoD artefacts.
+**Harder / constrained:** Operator must amend the DoR contract (a 5-minute edit) rather than bundling silent scope.
+**Off the table:** Accepting "ACs satisfied, scope violations noted" as the normal pattern.
+
+#### Revisit trigger
+If the DoR contract proves too granular for fast-moving stories, introduce a tiered contract model (declared files + an allowed-extras list).
+
+---
+
+## Operating Posture
+
+### Solo operator / W4 RISK-ACCEPT posture
+
+This repository is operated by a single engineer. The following posture applies to all delivery within this context and is applied uniformly — it is not a per-story judgment:
+
+- **W4 RISK-ACCEPT is the standard posture.** The W4 warning (no second reviewer) is acknowledged and risk-accepted for every story in every phase. No individual story decision entry is required beyond the first W4 log per feature.
+- **The single-operator constraint is a feature context, not an exception.** Skills and DoR checklists should treat W4 as expected, not flagged.
+- **Human oversight level defaults to High.** Not because complexity demands it, but because the operator is also the reviewer and final approver — the oversight is implicit in the operating model.
+
+**If the operating context changes** (second operator onboards, regulated enterprise adoption), this section must be updated and W4 handling revisited before the next feature begins.
+
+---
+
 ## Guardrails Registry
 
 <!--
@@ -404,6 +476,16 @@ When adding a new approval surface, verify the adapter preserves the same eviden
   label: "Approval-channel adapter pattern for DoR sign-off"
   section: Active ADRs
 
+- id: ADR-007
+  category: adr
+  label: "EA registry surface-type mapping table (technology.hosting → platform surface type)"
+  section: Active ADRs
+
+- id: ADR-008
+  category: adr
+  label: "DoR touch-point contract is binding at pre-merge"
+  section: Active ADRs
+
 - id: PAT-01
   category: pattern
   label: "Single-file HTML viz architecture"
@@ -427,6 +509,16 @@ When adding a new approval surface, verify the adapter preserves the same eviden
 - id: PAT-05
   category: pattern
   label: "Config reading via context.yml"
+  section: Approved Patterns
+
+- id: PAT-06
+  category: pattern
+  label: "Execution pre-condition gate on runtime artefact existence (DoR PROCEED-BLOCKED)"
+  section: Approved Patterns
+
+- id: PAT-07
+  category: pattern
+  label: "Group instruction-text-only changes at the same SKILL.md exit point into one story"
   section: Approved Patterns
 
 - id: AP-01
@@ -457,5 +549,15 @@ When adding a new approval surface, verify the adapter preserves the same eviden
 - id: AP-06
   category: anti-pattern
   label: "Directly mutating pipeline-state.json outside skills"
+  section: Anti-Patterns
+
+- id: AP-07
+  category: anti-pattern
+  label: "Bundling changes from story B into story A's PR (multi-story contamination)"
+  section: Anti-Patterns
+
+- id: AP-08
+  category: anti-pattern
+  label: "Committing runtime artefact churn (traces, validation reports) in story branches"
   section: Anti-Patterns
 ```
