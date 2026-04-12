@@ -209,6 +209,25 @@ flowchart TB
 
 **Currently live:** 3 core disciplines (software-engineering, security-engineering, quality-assurance) with full POLICY.md floors delivered in Phase 1. 8 additional domain-tier discipline standards delivered as pilots in Phase 2 (p2.9). `standards/index.yml` is the composition routing table. The composition path is: core → domain extension → squad specification → POLICY.md validation → injected as one composed standards document.
 
+### How standards injection works
+
+Each discipline directory under `standards/` contains two files:
+
+- **`core.md`** — the full set of requirements for that discipline (MUST / SHOULD / MAY). Written as actionable rules the agent follows during delivery. Example: `standards/software-engineering/core.md` requires atomic-replace writes for mutable state files, platform-guarded test scripts, and dependency manifest pinning.
+- **`POLICY.md`** — the binary floor for that discipline. Three to five requirements lifted from `core.md` that are non-negotiable regardless of domain or squad context. Any delivery that does not meet the floor requirements fails the assurance gate. Example: `standards/software-engineering/POLICY.md` requires a passing automated test suite before PR merge, pinned dependency manifests, and a decision log entry for every architectural decision.
+
+**When and how injection occurs:**
+
+At `/definition-of-ready`, the skill reads `standards/index.yml` to identify which disciplines apply to the story's declared surfaces and domains. For each matched discipline, it reads the corresponding `core.md` and `POLICY.md` files and appends the full text to the **Coding Agent Instructions block** inside the DoR artefact. The coding agent executing the story receives these standards as part of its work specification — the same artefact-first orientation that prevents scope drift. There is no runtime call to a standards service; the standards are committed text in the repository, hash-verifiable at any point.
+
+**What the POLICY.md floor enforces:**
+
+POLICY.md floors are checked by the assurance gate CI on every PR. The gate reads the DoR artefact, extracts the injected POLICY.md blocks, and verifies that the PR's test results, manifest files, and trace entries satisfy every floor requirement. A PR that fails a floor requirement cannot merge — the gate exit code is non-zero.
+
+**Extending the standards:**
+
+Add a new discipline by creating `standards/[discipline]/core.md` and `standards/[discipline]/POLICY.md`, then adding the discipline to `standards/index.yml` with its surface and domain routing keys. Existing floor requirements in any checked-in POLICY.md cannot be relaxed without a pipeline evolution cycle (new story, new DoR, new assurance gate test). Domain and squad tiers may add requirements on top of the floor; they may not remove any floor requirement.
+
 ---
 
 ## Delivery surfaces
