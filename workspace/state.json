@@ -1,6 +1,6 @@
 {
   "feature": "2026-04-11-skills-platform-phase2",
-  "lastUpdated": "2026-04-13T00:45:00+10:00",
+  "lastUpdated": "2026-04-13T10:30:00+10:00",
   "lastLevelup": "2026-04-13",
   "currentPhase": "phase-3-init",
   "cycle": {
@@ -82,15 +82,15 @@
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-04-13T00:45:00+10:00",
-    "contextAtWrite": "Phase 3 init complete. Branch feat/phase3-init-rename-improve pushed (commit 5d1b926). All 23 npm tests pass (70 viz + 23 checks). D-batch executed: copilot-instructions.md 473->~280 lines, agent-orientation.instructions.md extracted. /levelup renamed to /improve across all operational refs. Platform PR policy documented. README 'Current state vs structural controls' and 'Conceptual lineage' sections added. HANDOFF.md Section 6 added. governance scripts (check-skill-contracts.js, check-pipeline-artefact-paths.js) updated for /improve rename.",
-    "resumeInstruction": "Phase 3 init PR (feat/phase3-init-rename-improve) is open and pushed. Next: merge the PR, then run Phase 3 /discovery. T3M1 is on record (Hamish sign-off 2026-04-12, 3/8 Y, approved with conditions) — Phase 3 /discovery is unblocked. Pending amber items: MM2 (~30-min parse-session-timing.js run for E3 actuals), MM4 (closes at Phase 3 /improve). Red item M5 requires live environment config.",
+    "writtenAt": "2026-04-13T10:30:00+10:00",
+    "contextAtWrite": "PR #49 feat/phase3-init-rename-improve rebase complete. Resolved workspace/state.json conflict (took phase-3-init forward-state, preserved lastLevelup from HEAD). All 4 rebase commits applied cleanly. npm test 0 failures (70 viz + 23 checks). Force-pushed bda4658. Gate did not trigger after force-push (synchronize event reliability gap on rebase). Fixed with empty commit 67c6cb5 — gate now retriggering. ADR-009 and ADR-010 confirmed in .github/architecture-guardrails.md (registry, full decision blocks, YAML section) — queryable by /trace and /definition-of-ready. Session learnings written: force-push synchronize gap pattern, state.json rebase conflict resolution pattern.",
+    "resumeInstruction": "Gate retrigger commit 67c6cb5 pushed to feat/phase3-init-rename-improve. Monitor PR #49 assurance gate — once green, merge. After merge: run Phase 3 /discovery (T3M1 met: Hamish sign-off 2026-04-12, 3/8 Y, approved with conditions). ADR-009 (separate evaluation and write-back workflows) and ADR-010 (CI audit records on main not feature branches) are in .github/architecture-guardrails.md and will be injected as standards context by /trace and /definition-of-ready. Pending amber: MM2 (parse-session-timing.js against Phase 2 JSONL transcripts for E3 actuals). Red: M5 (non-engineer approval live environment for Westpac pilot).",
     "pendingActions": [
-      "Merge PR feat/phase3-init-rename-improve on GitHub: https://github.com/heymishy/skills-repo/pull/new/feat/phase3-init-rename-improve",
-      "Run Phase 3 /discovery — T3M1 entry condition met",
-      "MM2 amber: run scripts/parse-session-timing.js against Phase 2 JSONL transcripts to write E3 actuals row in workspace/estimation-norms.md (~30 minute operator action, no new code)",
-      "M5 red: scope non-engineer approval live environment before Westpac pilot",
-      "Five T3M1 gap closures (Q2 hash reconciliation, Q5 watermark PR comment, Q6 stalenessFlag schema, Q7 agent independence CI check, Q8 hash drift gate) are Phase 3 story candidates"
+      "Monitor PR #49 (feat/phase3-init-rename-improve) assurance gate — commit 67c6cb5 should trigger it; merge once green",
+      "Run Phase 3 /discovery — T3M1 (Tier 3, Meta-metric 1 — independent non-engineer audit) entry condition met",
+      "MM2 (Meta-metric 2 — estimation actuals) amber: run scripts/parse-session-timing.js against Phase 2 JSONL transcripts to write E3 actuals row in workspace/estimation-norms.md (~30 minute operator action, no new code)",
+      "M5 (Metric 5 — non-engineer approval live environment) red: scope live environment before Westpac pilot",
+      "Five T3M1 gap closures are Phase 3 story candidates: Q2 standardsInjected hash reconciliation, Q5 watermark gate PR comment reporting, Q6 stalenessFlag trace schema field, Q7 agent independence CI validation, Q8 automated hash drift check in assurance gate"
     ]
   },
   "phase1Reference": {

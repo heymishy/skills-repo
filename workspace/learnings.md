@@ -955,3 +955,39 @@ This is the enterprise-standard maker/checker pattern: the gate that signs off a
 **The audit-ready framing:** When describing the assurance architecture in MODEL-RISK.md or a governance submission, the permission separation should be stated explicitly: "The evaluation workflow (assurance-gate.yml) is granted `contents: read` only. It cannot modify the repository. The persistence workflow (trace-commit.yml) fires post-merge on main and has `contents: write`. It has no evaluation logic. These are structurally separate workflows triggered by separate events with non-overlapping permission grants."
 
 **Action:** Add this framing to `MODEL-RISK.md` Section 2 (architecture description) and Section 4 (governance properties) when updating for the feat/repo-tidy changes.
+
+---
+
+## Tool-use gap — force-push after rebase does not reliably trigger GitHub `synchronize` event
+
+### Observed — 2026-04-13
+
+**Circumstance:** `feat/phase3-init-rename-improve` was rebased onto master and force-pushed (`bda4658`). The PR's required assurance gate did not fire for several minutes, and monitoring confirmed no new gate run was triggered. This was not a transient delay — GitHub's `pull_request: synchronize` event is unreliable when a force-push rewrites history significantly (as rebase does, replacing all commit SHAs rather than adding a new commit on top).
+
+**Root cause:** GitHub fires the `synchronize` event on `git push --force` to a PR branch, but when the rebase rewrites every commit SHA in the series (not adding a new commit, but replacing the full commit chain), the event may not fire reliably. This is a known edge case distinct from a regular additive push.
+
+**Fix:** Push an empty commit after any rebase + force-push: `git commit --allow-empty -m "ci: retrigger gate after rebase"` followed by `git push`. This creates a new commit SHA (not a rewrite), generating a clean `synchronize` event that GitHub handles reliably. Result: `67c6cb5` triggered the gate immediately.
+
+**Relationship to existing patterns:** PAT-09 in `.github/architecture-guardrails.md` already captures the allow-empty pattern for the assurance-gate write-back context. This entry extends the same pattern to the outer-loop PR retrigger context — the mechanism is identical, the trigger condition is different.
+
+**Rule:** After any rebase + force-push on a PR branch where CI must trigger, always follow with an empty commit push to guarantee the synchronize event fires.
+
+**Action:** Reference PAT-09 in architecture-guardrails.md. No new ADR required — same pattern, new usage context.
+
+---
+
+## Rebase pattern — `workspace/state.json` conflicts resolve to forward-phase version with HEAD field preservation
+
+### Observed — 2026-04-13
+
+**Circumstance:** Rebasing `feat/phase3-init-rename-improve` onto master after PR #51 (`feat/repo-tidy`) had merged. `workspace/state.json` had a conflict with two separate conflict markers: the header fields region and the checkpoint block region. The two sides were:
+- HEAD (master, PR #51 merge): `"currentPhase": "phase-2-complete"` + `"lastLevelup": "2026-04-13"` + PR #51's checkpoint
+- Branch (PR #49 commit): `"currentPhase": "phase-3-init"` + no `lastLevelup` field (predated its addition) + phase-3-init checkpoint block
+
+**Resolution principle:** `workspace/state.json` is an ordered temporal record — `currentPhase`, `lastUpdated`, and the checkpoint block always represent the most recent intended state. The conflict always has a more-forward-looking side (higher `currentPhase`, later `lastUpdated`, richer `pendingActions`). Take that side wholesale. Then inspect the HEAD side for fields that the PR's commit did not touch (e.g. `"lastLevelup"` was added by a different commit after the branch was cut) and reinsert those fields manually.
+
+**Concretely:** Took `"currentPhase": "phase-3-init"` and the full phase-3-init checkpoint block from the branch side (PR #49). Then manually added `"lastLevelup": "2026-04-13"` from HEAD (master had added this field; the branch's commit predated it and therefore had no entry for it at all).
+
+**General rule:** `workspace/state.json` conflicts must never be resolved by mechanical merge (accepting "both sides"). Always identify which side represents the more current intended state and take it, then patch in isolated fields from the other side that are not outdated. The wrong resolution (taking the lower `currentPhase` side) would revert pipeline progress and cause the next session to resume at a stale phase.
+
+**Action:** Record as the canonical resolution pattern for workspace/state.json rebase conflicts. Reference when any future rebase surfaces this file in conflict.
