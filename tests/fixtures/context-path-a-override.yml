@@ -1,0 +1,8 @@
+# context.yml — Path A fixture: adapter_override takes precedence
+# Verifies: AC2 — context.yml adapter_override beats registry-derived type
+# Registry will return saas (→ saas-api) but override forces iac
+
+registry_source: ea-registry
+registry_url: "https://stub.ea-registry.test/apps"
+app_id: "app-saas-001"
+adapter_override: "iac"

@@ -1,0 +1,7 @@
+# context.yml — Path A fixture: EA registry lookup, cloud hosting
+# Verifies: AC2 — cloud maps to iac
+# No surface: block — Path A only
+
+registry_source: ea-registry
+registry_url: "https://stub.ea-registry.test/apps"
+app_id: "app-cloud-001"

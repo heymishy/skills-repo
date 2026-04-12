@@ -1,0 +1,6 @@
+# context.yml — Path A fixture: plain HTTP registry_url (MC-SEC-03 rejection test)
+# Verifies: NFR Security — plain HTTP rejected before any call
+
+registry_source: ea-registry
+registry_url: "http://plain-http.ea-registry.test/apps"
+app_id: "app-001"
