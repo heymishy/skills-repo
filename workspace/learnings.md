@@ -827,3 +827,131 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 5. Compress the product context files table (~18 lines) to a 1-line pointer to `product/`.
 
 **Pre-condition for Phase 3 D-batch execution:** Verify that each target section is fully covered in the relevant SKILL.md or a new scoped instructions file before removing from the base layer. Do not remove without a verified landing zone. Risk: agent context gaps if migration is incomplete.
+
+---
+
+## `feat/repo-tidy` architectural fix learnings — 2026-04-13
+
+**Context:** PR #50 (`feat/repo-tidy`) fixed an infinite-loop flaw in the assurance gate introduced during Phase 1 delivery. The gate was committing trace files back to PR branches from within the required-check workflow — causing the commit to trigger a new required-check run, which committed again, indefinitely. The fix restructured the gate into two separate workflows with separate permissions and separate trigger events. These learnings generalise beyond the specific fix.
+
+---
+
+### Architectural — Evaluation workflows and write-back workflows must be separate triggers with separate permission scopes
+
+**Date:** 2026-04-13
+
+**Circumstance:** The assurance gate workflow (`assurance-gate.yml`) was structured as a single workflow triggered by `pull_request` events. It evaluated the PR, then committed a trace file back to the PR branch using `git push origin HEAD:${{ github.head_ref }}`. This push generated a new `synchronize` event on the pull request, which re-triggered the same workflow, which committed again — a structural loop, not an implementation error.
+
+**Root cause:** The workflow conflated two logically distinct roles — evaluation (read, assess, surface verdict) and persistence (write artefact to repository). Giving a single workflow both roles creates a structural self-triggering hazard whenever the workflow fires on the same event type that a push to the branch would generate (`synchronize`).
+
+**Why it generalises:** This is not a GitHub-specific failure. Any pipeline where an evaluation step can write to the evaluated artefact risks a loop or a contaminated evaluation record — the evaluator modifying its own input. The structural constraint is: **the gate that evaluates a change must not have write authority over the target it evaluates, and must not be the workflow that persists the audit record.** These are separate responsibilities and must be structurally separated.
+
+**The correct pattern for CI audit records in a protected-branch environment:**
+1. `pull_request` trigger → evaluate → upload GitHub Actions artifact → post verdict comment → exit (`contents: read` permission only)
+2. `push` to main trigger → download artifact from gate run → commit audit record to main → exit (`contents: write` permission; separate workflow; separate event)
+
+This is the enterprise-standard maker/checker pattern: the gate that signs off and the workflow that writes the permanent record are operationally independent. A gate with `contents: read` cannot produce the audit record even if the code attempted it — the permission scope is the enforcement mechanism, not just a convention.
+
+**Implication for future gates:** When adding any new governance gate to the platform or to fleet repos, the design question is: "Does this gate need to persist a record? If yes, that persistence must be a separate post-merge workflow, not a step inside the gate itself." Start from `contents: read` and escalate only when a clear, reviewed justification exists.
+
+**Action:** Add this constraint to `.github/architecture-guardrails.md` as a named workflow authoring guardrail. The principle (separate evaluation from persistence; separate trigger from commit) is the generalised form — more useful than "don't commit from a required check."
+
+---
+
+### Architectural — Branch protection surfaces latent structural violations; add it early in fleet repos
+
+**Date:** 2026-04-13
+
+**Circumstance:** The assurance gate's commit-back pattern had been present since Phase 1 delivery. It was only discovered to be a structural loop when branch protection was added to the platform repo — specifically when required checks were configured and the loop (previously just wasteful) became an infinite cycle that blocked PRs.
+
+**Finding:** Branch protection is not just a safety mechanism — it is a structural test. A workflow architecture that works without branch protection may fail structurally under it, because branch protection enforces invariants (required check per SHA, no direct push to main) that expose conflicts hidden by looser settings.
+
+**Implication for fleet deployment:** Consuming squad repos that adopt the platform should add branch protection during onboarding, not after the pipeline is mature. A structural flaw in a workflow that ships to 20 repos is 20× harder to fix than one caught in a single onboarding repo. The cost of finding architectural issues early (during setup) is far lower than the cost of finding them at scale.
+
+**Operational rule:** Any new platform repo should have branch protection (required checks, restrict direct push to main) configured before the first story enters the inner loop. If branch protection is deferred, the onboarding is not structurally complete.
+
+**Action:** Add to the `/branch-setup` or `/bootstrap` skill a mandatory "verify branch protection is configured before dispatching inner loop" check. At minimum, document this requirement in `ONBOARDING.md` as a day-1 platform setup step.
+
+---
+
+### Architectural — Post-merge trace on main is a stronger audit record than a trace on a feature branch
+
+**Date:** 2026-04-13
+
+**Circumstance:** The post-merge `trace-commit.yml` workflow commits the assurance trace to `master` after PR merge, not to the feature branch as the old architecture did.
+
+**Why this is a positive governance property, not just a technical implementation detail:** Feature branches have a defined lifecycle — they are created, used, and deleted. A trace committed only to a feature branch may be pruned from history when the branch is deleted, depending on git history retention configuration. `master` (or `main`) is permanent by convention and typically backed by stronger retention policy in regulated environments. An audit record on `master` is retrievable years later without branch retention special-casing.
+
+**The governance framing:** The assurance trace is an audit artefact — evidence that a specific governance check ran, passed, and evaluated specific content. Audit artefacts should be committed to the permanent record, not to the ephemeral working branch. This is the same principle that governs where change management records, compliance certificates, and deployment logs are stored: the permanent ledger, not the working copy.
+
+**Action:** Add this framing to `MODEL-RISK.md` as an explicit positive governance property of the two-workflow architecture when describing the post-merge trace commit pattern.
+
+---
+
+### Implementation — `[ci skip]` suppresses status reporting and is incompatible with protected required checks
+
+**Date:** 2026-04-13
+
+**Circumstance:** A commit message containing `[ci skip]` was used to suppress re-triggering of the assurance gate after a trace file was committed back to the PR branch. GitHub Actions honours `[ci skip]` by skipping all workflow runs for that push event — including the `Post verdict to PR` step that surfaces the gate result. With no gate run on the latest SHA, the required check shows "Waiting for status to be reported" indefinitely.
+
+**Why `[ci skip]` is the wrong tool here:** Its purpose is to suppress workflow runs for commits that are purely non-functional (documentation, whitespace, etc.) where CI is unnecessary. It is a blunt-instrument: it suppresses all workflows, including required ones that must report back to branch protection. When a commit is on a branch with required checks, `[ci skip]` converts "CI ran and the commit is covered" to "CI never ran, SHA has no status" — which GitHub treats identically to a failing check.
+
+**The right fix:** Do not use `[ci skip]` to break a self-triggering loop. The loop is the structural problem; `[ci skip]` is a workaround that introduces a different failure mode. The structural fix is the two-workflow separation described above — the gate never commits to the branch, so there is nothing to suppress.
+
+**Generalised principle:** Never use `[ci skip]` on a branch where required checks are enforced. The only safe use of `[ci skip]` is on commits pushed directly to `main`/`master` for housekeeping purposes where no gate or required check applies.
+
+---
+
+### Implementation — GitHub branch protection evaluates required checks per HEAD SHA; any branch commit resets the requirement
+
+**Date:** 2026-04-13
+
+**Circumstance:** After pushing commit `60d8768` (the architectural fix) to `feat/repo-tidy`, the PR still showed "Waiting for status to be reported" even though the gate had previously passed on the prior HEAD. A second empty commit (`48a6745`) was required to trigger a new gate run.
+
+**Root cause:** GitHub branch protection requires a passing check result specifically on the current HEAD SHA. A check that passed on SHA A does not satisfy the requirement for SHA B, even if A and B differ only in metadata. When `git pull --ff-only` fast-forwarded through a bot commit (`e46d876`) before our push, GitHub's per-SHA tracking required a fresh check on the new HEAD.
+
+**Why this matters:** This behaviour is expected and correct by design — it ensures the check that signed off on a PR actually evaluated the code that is being merged, not a prior version. But it is non-obvious and causes confusion when: (a) a bot commits to the PR branch (resetting the requirement), or (b) a push that looked like a fast-forward from the user's perspective is actually a SHA change in GitHub's tracking.
+
+**The `git commit --allow-empty` pattern:** An empty commit is the correct way to force a `synchronize` event on a PR when GitHub has not picked up a previous push as requiring a new check run. `git commit --allow-empty -m "ci: trigger <gate> on <sha>"` creates a minimal new SHA with no content change, generates a `synchronize` event, and causes the required check to run without introducing any code change.
+
+**Known-behaviour documentation:** Add to the platform's known GitHub Actions behaviours reference: "Required check status is per-SHA. Any commit to the PR branch — including bot commits — creates a new HEAD SHA and resets the required check requirement to 'waiting'. Use `git commit --allow-empty` to re-trigger the check without a code change."
+
+---
+
+### Implementation — Artifact handoff between workflows has a timing dependency; monitor early post-merge trace runs
+
+**Date:** 2026-04-13
+
+**Circumstance:** `trace-commit.yml` (post-merge workflow) finds the assurance gate artifact by querying `listWorkflowRuns` + `listWorkflowRunArtifacts` for the most recent completed gate run against the merged SHA. This introduces a timing dependency: the gate run must be complete and its artifact must exist before `trace-commit.yml` executes. If the gate run is still in progress when the push-to-main event fires (unlikely but possible), or if the artifact has expired (retention-days: 7), `trace-commit.yml` will fail to find the artifact and exit without committing.
+
+**Why this is acceptable risk:** The gate verdict is committed to the PR comment (permanent) regardless of whether `trace-commit.yml` succeeds. The trace commit is an additional quality record — its absence is an observable gap, not a silent failure. The artifact retention window (7 days) is sufficient for any normal merge cadence.
+
+**Monitoring instruction:** For the first 3–5 post-merge uses of `trace-commit.yml`, check the GitHub Actions tab after each PR merge to confirm: (a) the workflow ran, (b) it found the artifact (no "artifact not found" log line), (c) a `chore: assurance trace [post-merge]` commit appears on `master`. If any run fails, note which step failed — this distinguishes timing issues from API query logic errors.
+
+---
+
+### Implementation — Silent test scripts are invisible in test summaries; document them explicitly
+
+**Date:** 2026-04-13
+
+**Circumstance:** `check-changelog-readme.js` produced no stdout output during the `npm test` run, because it exits cleanly with no output when no files are staged (its only relevant condition in a non-pre-commit context). This caused it to be omitted from the test run summary table, creating an apparent "22 vs 23 suite" discrepancy that required investigation to resolve.
+
+**Finding:** A test script that produces no output on a passing run is functionally invisible in any summary that counts output lines or suite headers. It is present in the 22-count but indistinguishable from "didn't run" from the output alone.
+
+**Pattern to avoid:** When writing governance check scripts, include at minimum one line of stdout output on a passing run — e.g. `[check-name] SKIP — no staged files (outside pre-commit context)`. This makes the script visible in run output without changing its exit behaviour. A test that is silent on pass is harder to audit than one that confirms it ran.
+
+**Generalised principle:** CI check output should be auditable from the log alone. A passing run that leaves no trace in the log creates ambiguity about whether it ran at all. This applies to any governance check, not just changelog validators.
+
+---
+
+### Governance — Maker/checker independence is now structurally enforced via permission scope separation
+
+**Date:** 2026-04-13
+
+**Circumstance:** Old architecture: single workflow with `contents: write` performed both evaluation (assurance gate logic) and write-back (git push trace file). New architecture: gate workflow has `contents: read` only; post-merge workflow has `contents: write` only; they are triggered by separate events (`pull_request` vs `push` to main).
+
+**Why this is a meaningful governance property, not just a technical implementation detail:** Maker/checker independence is a core principle in regulated environments — the party that creates a record and the party that approves/audits it must be independent. In the old architecture, the same workflow execution context that ran the evaluation also wrote the record, using the same credentials and permission scope. The gate could theoretically modify its own output between evaluation and persistence. In the new architecture, the gate cannot write anything — the permission scope prevents it at the infrastructure level, not by code convention. The write-back workflow has no evaluation logic. These are provably independent.
+
+**The audit-ready framing:** When describing the assurance architecture in MODEL-RISK.md or a governance submission, the permission separation should be stated explicitly: "The evaluation workflow (assurance-gate.yml) is granted `contents: read` only. It cannot modify the repository. The persistence workflow (trace-commit.yml) fires post-merge on main and has `contents: write`. It has no evaluation logic. These are structurally separate workflows triggered by separate events with non-overlapping permission grants."
+
+**Action:** Add this framing to `MODEL-RISK.md` Section 2 (architecture description) and Section 4 (governance properties) when updating for the feat/repo-tidy changes.
