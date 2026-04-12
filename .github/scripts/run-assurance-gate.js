@@ -62,6 +62,35 @@ function buildRunId(trigger) {
   return ts + '-' + trigger + '-' + rand;
 }
 
+function toKebabCase(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function deriveFailurePattern(checks) {
+  const failed = (checks || []).find(function (check) { return !check.passed; });
+  if (!failed) {
+    return null;
+  }
+
+  if (failed.failurePattern) {
+    return toKebabCase(failed.failurePattern);
+  }
+
+  if (failed.failurePatternGuarded) {
+    return toKebabCase(failed.failurePatternGuarded);
+  }
+
+  if (failed.name) {
+    return toKebabCase(failed.name);
+  }
+
+  return 'unknown-failure-pattern';
+}
+
 // ── Structural and audit checks ───────────────────────────────────────────────
 
 /**
@@ -176,6 +205,7 @@ function runGate(ctx) {
 
   const allPassed = checks.every(function (c) { return c.passed; });
   const verdict   = allPassed ? 'pass' : 'fail';
+  const failurePattern = verdict === 'fail' ? deriveFailurePattern(checks) : null;
 
   // ── STEP 3: Write completed trace entry ───────────────────────────────────
   const completedAt = new Date().toISOString();
@@ -189,6 +219,7 @@ function runGate(ctx) {
     startedAt,
     completedAt,
     verdict,
+    failurePattern,
     traceHash,
     checks,
   };
