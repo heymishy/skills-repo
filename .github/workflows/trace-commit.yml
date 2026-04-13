@@ -122,10 +122,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
+          # CRITICAL FIX: Fetch all refs from origin FIRST, before any ref checks
+          # This ensures origin/traces detection is accurate, not based on stale local refs
+          git fetch origin
+          
           # Checkout traces branch, creating a tracking branch if needed
           if git rev-parse --verify origin/traces >/dev/null 2>&1; then
             echo "Checking out existing remote traces branch"
-            git fetch origin traces
             git checkout -b traces origin/traces 2>/dev/null || git checkout traces
           else
             echo "Creating new traces branch from current HEAD"
@@ -145,8 +148,8 @@ jobs:
             exit 1
           fi
           
-          # Push to traces branch (should not have the same branch protection as master)
-          if ! git push origin traces; then
+          # Push to traces branch with force-with-lease for safe append-only semantics
+          if ! git push -u origin traces --force-with-lease; then
             echo "ERROR: push to traces branch failed"
             echo "Troubleshooting: checking branch state..."
             git remote -v
