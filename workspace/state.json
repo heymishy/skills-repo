@@ -27,8 +27,8 @@
                           "observabilityGapsIdentified":  4,
                           "status":  "complete"
                       },
-    "lastUpdated":  "2026-04-13T12:34:52Z",
-    "currentPhase":  "post-phase-2-checkpoint",
+    "lastUpdated":  "2026-04-14T00:00:00Z",
+    "currentPhase":  "pre-phase-3-discovery",
     "cycle":  {
                   "discovery":  {
                                     "status":  "completed",
@@ -36,14 +36,16 @@
                                     "completedAt":  null
                                 }
               },
+    "docsPRsMerged":  [61, 63, 64, 65],
     "checkpoint":  {
-                       "resumeInstruction":  "New session: run \u0027/workflow\u0027 to begin Phase 3. Backlog story \u0027phase3-backlog-trace-commit-observability\u0027 is registered in workspace/ and ready for /discovery intake immediately.",
-                       "contextAtWrite":  "Phase 2 complete: 6/7 stories signed-off (p2.6 blocked). Post-merge workflow trace-commit.yml fixed (PR #55). Four observability gaps logged to learnings.md. Phase 3 backlog story created: phase3-backlog-trace-commit-observability.md. Ready for phase 3 discovery.",
-                       "writtenAt":  "2026-04-13T12:34:52Z",
+                       "resumeInstruction":  "New session: HANDOFF.md Section 7 is fully hardened (PR #65 merged). All 5 agent failure modes are mitigated. Next action is Phase 3 discovery — run /discovery on workspace/phase3-backlog-trace-commit-observability.md (or workspace/phase3-backlog-test-coverage-governance-gaps.md if that is the target). Run /workflow to confirm entry condition.",
+                       "contextAtWrite":  "PR #65 merged (2026-04-14): HANDOFF Section 7 hardened with pre-Phase-1 baseline state table, explicit Depends-on columns for all 21 stories, npm test mid-stream warning, manual AC visibility warning, and p2.6 ASSUMPTION-02 footnote. All 5 agent failure modes addressed. Local master synced to fcbdac4.",
+                       "writtenAt":  "2026-04-14T00:00:00Z",
                        "pendingActions":  [
-                                              "Phase 3: Run /discovery on phase3-backlog-trace-commit-observability story",
+                                              "Phase 3: Run /discovery on workspace/phase3-backlog-trace-commit-observability.md or workspace/phase3-backlog-test-coverage-governance-gaps.md",
                                               "Phase 3: Define 4 ACs into 4 separate stories or 1 epic (decision needed)",
-                                              "Learnings: Review Phase 2 /improve (formerly /levelup) decisions logged in workspace/learnings.md"
+                                              "Validation playbook: Parts 2 and 3 not yet run or recorded",
+                                              "Deferred: git stash pop for FINAL-TEST.md and TEST-TRACE.md deletions (confirm with operator before restoring)"
                                           ]
                    }
 }
