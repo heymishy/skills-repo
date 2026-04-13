@@ -122,13 +122,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Check if traces branch exists; if not, create it
-          if ! git rev-parse --verify origin/traces >/dev/null 2>&1; then
-            echo "traces branch does not exist; creating from master"
-            git checkout -b traces
+          # Checkout traces branch, creating a tracking branch if needed
+          if git rev-parse --verify origin/traces >/dev/null 2>&1; then
+            echo "Checking out existing remote traces branch"
+            git fetch origin traces
+            git checkout -b traces origin/traces 2>/dev/null || git checkout traces
           else
-            git checkout traces
-            git pull origin traces --ff-only || git pull origin traces
+            echo "Creating new traces branch from current HEAD"
+            git checkout -b traces
           fi
           
           # Add trace files and commit
@@ -147,9 +148,10 @@ jobs:
           # Push to traces branch (should not have the same branch protection as master)
           if ! git push origin traces; then
             echo "ERROR: push to traces branch failed"
-            echo "Troubleshooting: checking branch rules..."
+            echo "Troubleshooting: checking branch state..."
             git remote -v
             git branch -vv
+            git log --oneline -3
             exit 1
           fi
           
