@@ -44,7 +44,7 @@ Run a smoke test when you:
 | /definition-of-done | ✅ | — (requires merged PR) |
 | /trace | ✅ | T10 |
 | /release | ✅ | — (requires DoD artefacts) |
-| /levelup | ✅ | — (requires merged PR) |
+| /improve | ✅ | — (requires merged PR) |
 | /systematic-debugging | ✅ | — (requires failing test) |
 | /implementation-review | ✅ | — (requires code) |
 | /spike | ✅ | — (requires specific question) |

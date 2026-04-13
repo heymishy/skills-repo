@@ -2,7 +2,7 @@
 
 **Prepared:** 2026-04-12
 **Source data:** `workspace/estimation-norms.md`, `workspace/results.tsv`, `workspace/state.json`
-**E3 run date:** 2026-04-12 (Phase 2 /levelup)
+**E3 run date:** 2026-04-12 (Phase 2 /improve)
 
 ---
 
