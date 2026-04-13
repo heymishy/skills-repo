@@ -955,3 +955,26 @@ This is the enterprise-standard maker/checker pattern: the gate that signs off a
 **The audit-ready framing:** When describing the assurance architecture in MODEL-RISK.md or a governance submission, the permission separation should be stated explicitly: "The evaluation workflow (assurance-gate.yml) is granted `contents: read` only. It cannot modify the repository. The persistence workflow (trace-commit.yml) fires post-merge on main and has `contents: write`. It has no evaluation logic. These are structurally separate workflows triggered by separate events with non-overlapping permission grants."
 
 **Action:** Add this framing to `MODEL-RISK.md` Section 2 (architecture description) and Section 4 (governance properties) when updating for the feat/repo-tidy changes.
+
+## Workflow health visibility gap — post-merge trace-commit failures (PR #53–#57)
+
+### Observed — 2026-04-13
+
+**Circumstance:** PR #51 and #52 post-merge trace-commit.yml workflows failed silently. Workflow exited with code 1, but no alert or visible signal. Root cause discovered only when manually verifying traces branch state.
+
+**Primary root cause:** trace-commit.yml checked \git rev-parse --verify origin/traces\ BEFORE doing \git fetch origin\. Stale local refs meant remote branch detection always failed. When traces branch existed remotely, push rejected with "fetch first" error. Fixed in PR #55 by moving \git fetch origin\ to start of script.
+
+**Contributing gap:** No automated test/verification validates post-merge workflows complete successfully. \/verify-completion\ skill does not check workflow health. \/trace\ skill does not validate traces branch state. No governance gate prevents silent workflow failures.
+
+**Four gaps identified for Phase 3 (backlog story scope — do not implement now):**
+
+| Gap | Item | Phase 3 Scope |
+|-----|------|---------------|
+| (1) | No governance assertion | Implement check-trace-commit.js: assert traces branch exists, has =1 recent entry, report workflow success rate |
+| (2) | No post-merge health check | Add /verify-completion skill warning to check Actions tab for trace-commit.yml; OR add post-merge health-check.yml workflow |
+| (3) | /trace skill does not validate traces branch | Update /trace skill to check origin/traces exists, list recent entries, detect trace-commit failures |
+| (4) | No defensive docs in skills | Update /verify-completion SKILL.md: add "Post-merge workflow verification" section directing users to check Actions tab or \git log origin/traces\ |
+
+**Decision:** Post-Phase-2 work. Document as Phase 3 backlog story with all four AC items, acceptance criteria, and learnings linkage. Register for Phase 3 /discovery intake.
+
+**Action:** Create \workspace/phase3-backlog-trace-commit-observability.md\ story file with full AC list. Register in workspace/state.json for Phase 3 discovery.
