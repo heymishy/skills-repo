@@ -29,6 +29,13 @@
                       },
     "lastUpdated":  "2026-04-13T12:34:52Z",
     "currentPhase":  "post-phase-2-checkpoint",
+    "cycle":  {
+                  "discovery":  {
+                                    "status":  "completed",
+                                    "artefact":  "artefacts/2026-04-11-skills-platform-phase2/discovery.md",
+                                    "completedAt":  null
+                                }
+              },
     "checkpoint":  {
                        "resumeInstruction":  "New session: run \u0027/workflow\u0027 to begin Phase 3. Backlog story \u0027phase3-backlog-trace-commit-observability\u0027 is registered in workspace/ and ready for /discovery intake immediately.",
                        "contextAtWrite":  "Phase 2 complete: 6/7 stories signed-off (p2.6 blocked). Post-merge workflow trace-commit.yml fixed (PR #55). Four observability gaps logged to learnings.md. Phase 3 backlog story created: phase3-backlog-trace-commit-observability.md. Ready for phase 3 discovery.",
