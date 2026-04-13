@@ -2,7 +2,7 @@
 
 **Document type:** Enterprise handoff bundle
 **Prepared:** 2026-04-12
-**Updated:** 2026-04-13 (Phase 3 initialisation — see Section 6)
+**Updated:** 2026-04-14 (enterprise operator notice + raw links added — see Section 4 notice)
 **Prepared by:** Platform maintainer (Hamish)
 **Status:** Phase 2 complete, Phase 3 initialised — PR `feat/phase3-init-rename-improve` open
 
@@ -53,7 +53,7 @@
 
 ## 2. Architectural Decisions (ADR-001 through ADR-006)
 
-All ADRs are maintained in the live guardrails file: [`.github/architecture-guardrails.md`](../.github/architecture-guardrails.md)
+All ADRs are maintained in the live guardrails file: [`.github/architecture-guardrails.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/architecture-guardrails.md)
 
 ### ADR-001 — Single-file viz, no build step (Active, 2026-03-22)
 
@@ -109,7 +109,7 @@ Channel wiring for DoR sign-off is selected from `.github/context.yml` and imple
 
 **Required action:** Execute the 3 deferred tests in a Docker-enabled runner or CI environment (e.g. self-hosted GitHub Actions runner with Docker, or `services: docker:dind` in a CI job). No code changes required — the tests exist and expect the Docker daemon path. Recommendation: create a separate CI job scoped to `tests/p2.10-docker/**` that requires `docker` service.
 
-**Artefact:** `artefacts/2026-04-11-skills-platform-phase2/dod/p2.10-*-dod.md`
+**Artefact:** [`artefacts/2026-04-11-skills-platform-phase2/dod/`](https://github.com/heymishy/skills-repo/tree/master/artefacts/2026-04-11-skills-platform-phase2/dod) — look for files prefixed `p2.10-`
 
 ### 3.3 D-batch pending skill-file writes (D10 + D10a)
 
@@ -117,11 +117,11 @@ Two pipeline evolution proposals were identified during internal delivery and lo
 
 **D10 — `/definition-of-ready` dispatch forward pointer:**
 Add a forward pointer from the DoR all-PROCEED batch exit to `/issue-dispatch`, plus a mandatory `git push origin master` gate that must pass before dispatch. This closes a gap where DoR can sign off in state without the branch being pushed, causing the dispatch to fail with a "ref not found" error.
-Target file: `.github/skills/definition-of-ready/SKILL.md`
+Target file: [`.github/skills/definition-of-ready/SKILL.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/skills/definition-of-ready/SKILL.md)
 
 **D10a — `/issue-dispatch` PR body `Closes #[issue]` guidance:**
 Add explicit guidance to the issue-dispatch SKILL.md instructing the PR body template to include `Closes #[issue-number]`. This enables automatic GitHub issue close on PR merge and completes the dispatch loop without a manual close step.
-Target file: `.github/skills/issue-dispatch/SKILL.md`
+Target file: [`.github/skills/issue-dispatch/SKILL.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/skills/issue-dispatch/SKILL.md)
 
 **Required action:** Create Phase 3 (or short-track) stories for D10 and D10a. Do not edit skill files directly without a test plan and DoR.
 
@@ -130,6 +130,20 @@ Target file: `.github/skills/issue-dispatch/SKILL.md`
 ## 4. Enterprise Adaptation Path
 
 This section documents the specific configuration and integration changes required to operate the platform in a Bitbucket/Jenkins enterprise environment (e.g. Bank or equivalent regulated financial-services org using non-GitHub tooling).
+
+> **Enterprise operator notice — this reference repo is GitHub-native.**
+> The `heymishy/skills-repo` reference operates on GitHub with GitHub Actions CI and the GitHub Copilot coding agent as the inner loop agent. If your enterprise instance runs Bitbucket, each of the following differences applies. Read this notice before Sections 4.1–4.5 to understand what must change in your fork before running any inner loop story.
+>
+> | Aspect | This reference repo | Your enterprise instance | Required action |
+> |--------|---------------------|--------------------------|------------------|
+> | VCS | GitHub | Bitbucket (Cloud or DC) | Set `vcs.type: bitbucket` in `.github/context.yml` before running any skill. |
+> | Inner loop agent | GitHub Copilot coding agent | **Not available** — GitHub Copilot agent requires a GitHub.com or GHES repo | Use Cursor, Claude Code, or another AAIF-compliant tool that reads `AGENTS.md` at repo root. The inner loop instructions are identical — only the file name changes. |
+> | Agent instructions file | `.github/copilot-instructions.md` | `AGENTS.md` at repo root | Run `scripts/assemble-copilot-instructions.sh` with `vcs.type: bitbucket` set; it emits `AGENTS.md`. Do not manually create `.github/copilot-instructions.md` — it will be ignored by non-GitHub tooling. |
+> | Issue dispatch (`/issue-dispatch`) | Creates GitHub Issues to trigger coding agent | GitHub Issues not available | Skip `/issue-dispatch`. Trigger inner loop tasks manually in your chosen AAIF tool by pointing it at the DoR artefact. |
+> | CI | GitHub Actions (`.github/workflows/`) | Bitbucket Pipelines (`bitbucket-pipelines.yml`) | Port the three workflow files (`assurance-gate.yml`, `trace-commit.yml`, `governance-sync.yml`) to Bitbucket Pipelines step syntax. The Node.js scripts they invoke are CI-agnostic — no changes to the scripts are required. |
+> | Approval channel | `github-issue` (`/approve-dor` GitHub Actions workflow) | Not available | Set `approval_channel: jira`, `teams`, or `confluence` in `.github/context.yml`. Do **not** set `github-issue` — the GitHub Actions handler will not exist in a Bitbucket repo. |
+> | Branch protection (`traces` branch) | GitHub branch ruleset: push allowed only from `trace-commit.yml` workflow identity | Bitbucket branch permissions | Create the `traces` branch and set a Bitbucket branch permission restricting pushes to the CI service account identity running the assurance gate step. The principle is identical; the mechanism is Bitbucket-specific. |
+> | Raw artefact links in this document | `https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/[path]` | Bitbucket raw URL pattern | When distributing this handoff document internally, substitute: `https://bitbucket.org/[workspace]/[repo]/raw/master/[path]` for all raw links. |
 
 ### 4.1 VCS and CI topology: Bitbucket Pipelines
 
@@ -190,25 +204,25 @@ Domain-tier extensions (squad-specific overrides) are declared in the squad's `c
 
 | Item | Path |
 |------|------|
-| Pipeline state (live) | `.github/pipeline-state.json` |
-| Architecture guardrails + ADRs | `.github/architecture-guardrails.md` |
-| Context configuration | `.github/context.yml` |
-| Model risk register | `MODEL-RISK.md` |
-| Onboarding | `ONBOARDING.md` |
-| Skills (all phases) | `.github/skills/*/SKILL.md` |
-| Post-merge improvement skill | `.github/skills/improve/SKILL.md` (formerly `levelup/`) |
-| Coding agent orientation | `.github/instructions/agent-orientation.instructions.md` |
-| Standards | `standards/index.yml` + `standards/[discipline]/` |
-| Phase 1 artefacts | `artefacts/2026-04-09-skills-platform-phase1/` |
-| Phase 2 artefacts | `artefacts/2026-04-11-skills-platform-phase2/` |
-| Estimation actuals | `workspace/phase2-actuals.md` |
-| State and checkpoint | `workspace/state.json` |
-| Eval regression suite | `workspace/suite.json` |
-| Delivery traces | `workspace/traces/` (files); `origin/traces` branch (permanent store) |
-| Improvement proposals | `workspace/proposals/` |
-| Adoption readiness (RAG) | `workspace/adoption-readiness.md` |
+| Pipeline state (live) | [`.github/pipeline-state.json`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/pipeline-state.json) |
+| Architecture guardrails + ADRs | [`.github/architecture-guardrails.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/architecture-guardrails.md) |
+| Context configuration | [`.github/context.yml`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/context.yml) |
+| Model risk register | [`docs/MODEL-RISK.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/docs/MODEL-RISK.md) |
+| Onboarding | [`docs/ONBOARDING.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/docs/ONBOARDING.md) |
+| Skills (all phases) | [`.github/skills/`](https://github.com/heymishy/skills-repo/tree/master/.github/skills) — one `SKILL.md` per subdirectory |
+| Post-merge improvement skill | [`.github/skills/improve/SKILL.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/skills/improve/SKILL.md) (formerly `levelup/`) |
+| Coding agent orientation | [`.github/instructions/agent-orientation.instructions.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/instructions/agent-orientation.instructions.md) |
+| Standards index | [`standards/index.yml`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/standards/index.yml) + [`standards/`](https://github.com/heymishy/skills-repo/tree/master/standards) |
+| Phase 1 artefacts | [`artefacts/2026-04-09-skills-platform-phase1/`](https://github.com/heymishy/skills-repo/tree/master/artefacts/2026-04-09-skills-platform-phase1) |
+| Phase 2 artefacts | [`artefacts/2026-04-11-skills-platform-phase2/`](https://github.com/heymishy/skills-repo/tree/master/artefacts/2026-04-11-skills-platform-phase2) |
+| Estimation actuals | [`workspace/phase2-actuals.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/workspace/phase2-actuals.md) |
+| State and checkpoint | [`workspace/state.json`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/workspace/state.json) |
+| Eval regression suite | [`workspace/suite.json`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/workspace/suite.json) |
+| Delivery traces | [`workspace/traces/`](https://github.com/heymishy/skills-repo/tree/master/workspace/traces) (files); `origin/traces` branch (permanent store) |
+| Improvement proposals | [`workspace/proposals/`](https://github.com/heymishy/skills-repo/tree/master/workspace/proposals) |
+| Adoption readiness (RAG) | [`workspace/adoption-readiness.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/workspace/adoption-readiness.md) |
 
-**`traces` branch — ruleset note:** The `traces` branch is a permanent append-only branch that holds all CI assurance trace JSONL files. It is written exclusively by the `trace-commit.yml` GitHub Actions workflow (github-actions bot push) after each inner loop PR merge. No human direct-push is permitted; no PR is required to write to this branch. The branch ruleset should allow pushes only from the `trace-commit.yml` workflow identity. **Fleet fork operators:** recreate the `traces` branch and matching branch ruleset on your fork before running any inner loop story. Without the branch and ruleset in place, the `trace-commit.yml` post-merge step will fail silently and traces will be lost.
+**`traces` branch — ruleset note:** The `traces` branch is a permanent append-only branch that holds all CI assurance trace JSONL files. It is written exclusively by the `trace-commit.yml` GitHub Actions workflow (github-actions bot push) after each inner loop PR merge. No human direct-push is permitted; no PR is required to write to this branch. The branch ruleset should allow pushes only from the `trace-commit.yml` workflow identity. **Fleet fork operators (GitHub):** recreate the `traces` branch and matching branch ruleset on your fork before running any inner loop story. Without the branch and ruleset in place, the `trace-commit.yml` post-merge step will fail silently and traces will be lost. **Bitbucket operators:** create the `traces` branch and restrict pushes via Bitbucket branch permissions to the CI service account; the GitHub Actions ruleset does not apply. The Bitbucket Pipelines equivalent of `trace-commit.yml` performs the same append-and-push step using the Bitbucket Pipelines OIDC identity.
 
 ---
 
@@ -287,3 +301,52 @@ Two new sections added to `README.md` in this Phase 3 init:
 - **MM4** — closes at Phase 3 `/improve` when the third feature's actuals are ingested. Error bound until then: ±40%.
 
 Red item: **M5** — non-engineer approval requires a live configured environment and a real approver. Requires scoping effort before ent. pilot can claim this outcome.
+
+---
+
+## 7. Story Implementation Reference (Upgrade-Path Agent Index)
+
+This section is the entry point for an agent upgrading a working pre-Phase-1 baseline to the full Phase 1 + Phase 2 feature set. CHANGELOG.md and this document provide the architectural context and decision rationale; the DoR (Definition of Ready) artefacts and test plans are the authoritative implementation spec and acceptance criteria for each story.
+
+**Reading order for an upgrade-path agent:**
+1. Read CHANGELOG.md in full for the "what" and "why" across all stories.
+2. Work through each story in the table below, in phase and story-ID order (p1.1 → p1.8, then p2.1 → p2.12).
+3. For each story: read the DoR (scope contract + Coding Agent Instructions block), then the DoR contract (exact file touchpoints + out-of-scope constraints), then the test plan (failing tests you must make pass). There is no DoR contract for p2.6 onwards — the DoR file is the complete spec.
+4. After all Phase 1 stories pass: run `npm test` (22 checks) and confirm baseline before starting Phase 2.
+
+**Raw URL pattern for fork operators:**
+- GitHub: `https://raw.githubusercontent.com/[owner]/[repo]/refs/heads/master/[path]`
+- Bitbucket: `https://bitbucket.org/[workspace]/[repo]/raw/master/[path]`
+
+### Phase 1 Stories
+
+| Story | Title | DoR | Contract | Test plan |
+|-------|-------|-----|----------|-----------|
+| p1.1 | Distribution infrastructure and progressive skill disclosure | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.1-distribution-progressive-disclosure-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.1-distribution-progressive-disclosure-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/test-plans/p1.1-distribution-progressive-disclosure-test-plan.md) |
+| p1.2 | Surface adapter model — foundations (git-native, Path B) | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.2-surface-adapter-model-foundations-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.2-surface-adapter-model-foundations-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/test-plans/p1.2-surface-adapter-model-foundations-test-plan.md) |
+| p1.3 | Assurance agent as automated CI gate | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.3-assurance-agent-ci-gate-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.3-assurance-agent-ci-gate-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/test-plans/p1.3-assurance-agent-ci-gate-test-plan.md) |
+| p1.4 | Watermark gate | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.4-watermark-gate-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.4-watermark-gate-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/test-plans/p1.4-watermark-gate-test-plan.md) |
+| p1.5 | `workspace/state.json` and session continuity | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.5-workspace-state-session-continuity-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.5-workspace-state-session-continuity-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/test-plans/p1.5-workspace-state-session-continuity-test-plan.md) |
+| p1.6 | Living eval regression suite (`workspace/suite.json`) | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.6-living-eval-regression-suite-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.6-living-eval-regression-suite-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/test-plans/p1.6-living-eval-regression-suite-test-plan.md) |
+| p1.7 | Standards model — Phase 1 disciplines (software-eng, security-eng, QA) | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.7-standards-model-phase1-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.7-standards-model-phase1-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/test-plans/p1.7-standards-model-phase1-test-plan.md) |
+| p1.8 | Model risk documentation (`MODEL-RISK.md`) | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.8-model-risk-documentation-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/dor/p1.8-model-risk-documentation-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-09-skills-platform-phase1/test-plans/p1.8-model-risk-documentation-test-plan.md) |
+
+### Phase 2 Stories
+
+Stories p2.1–p2.5b each have a DoR contract file. Stories p2.6–p2.12 were delivered under a streamlined DoR process — the DoR file is the complete spec; no separate contract file was produced.
+
+| Story | Title | DoR | Contract | Test plan |
+|-------|-------|-----|----------|-----------|
+| p2.1 | `/definition` skill improvements (D1/D2/D3) | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.1-definition-skill-improvements-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.1-definition-skill-improvements-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/test-plans/p2.1-definition-skill-improvements-test-plan.md) |
+| p2.2 | `/review` incremental state write | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.2-review-incremental-write-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.2-review-incremental-write-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/test-plans/p2.2-review-incremental-write-test-plan.md) |
+| p2.3 | DoR/DoD template improvements | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.3-dor-dod-template-improvements-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.3-dor-dod-template-improvements-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/test-plans/p2.3-dor-dod-template-improvements-test-plan.md) |
+| p2.4 | `AGENTS.md` adapter (non-GitHub inner loop support) | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.4-agents-md-adapter-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.4-agents-md-adapter-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/test-plans/p2.4-agents-md-adapter-test-plan.md) |
+| p2.5a | IaC + SaaS-API surface adapters | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.5a-iac-saas-api-adapters-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.5a-iac-saas-api-adapters-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/test-plans/p2.5a-iac-saas-api-adapters-test-plan.md) |
+| p2.5b | SaaS-GUI + M365-admin + manual surface adapters | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.5b-saas-gui-m365-manual-adapters-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.5b-saas-gui-m365-manual-adapters-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/test-plans/p2.5b-saas-gui-m365-manual-adapters-test-plan.md) |
+| p2.6 | EA registry resolver (Path A, 3-field stub contract) | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.6-ea-registry-path-a-dor.md) | — | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/test-plans/p2.6-ea-registry-path-a-test-plan.md) |
+| p2.7 | Fleet registry CI aggregation | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.7-fleet-registry-ci-aggregation-dor.md) | — | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/test-plans/p2.7-fleet-registry-ci-aggregation-test-plan.md) |
+| p2.8 | Non-engineer approval interface (approval-channel adapter) | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.8-persona-routing-non-engineer-approval-dor.md) | — | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/test-plans/p2.8-persona-routing-non-engineer-approval-test-plan.md) |
+| p2.9 | 8 remaining discipline standards (POLICY.md floors) | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.9-discipline-standards-remaining-dor.md) | — | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/test-plans/p2.9-discipline-standards-remaining-test-plan.md) |
+| p2.10 | Bitbucket Pipelines CI topology validation | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.10-bitbucket-ci-validation-dor.md) | — | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/test-plans/p2.10-bitbucket-ci-validation-test-plan.md) |
+| p2.11 | Improvement agent — failure pattern detection and diff proposal | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.11-improvement-agent-trace-proposals-dor.md) | — | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/test-plans/p2.11-improvement-agent-trace-proposals-test-plan.md) |
+| p2.12 | Improvement agent — challenger pre-check and proposal review | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/dor/p2.12-improvement-agent-challenger-skill-dor.md) | — | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/test-plans/p2.12-improvement-agent-challenger-skill-test-plan.md) |

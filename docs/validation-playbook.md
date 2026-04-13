@@ -40,14 +40,14 @@ npm test
 - `[viz-check]` — 1 script block(s) OK — pipeline-viz.html is clean
 - `[governance-sync]` — 13 gate(s) in sync ✓
 - `[viz-behaviour]` — 70 passed, 0 failed
-- `[skill-contracts]` — 36 skill(s), 155 contract(s) OK ✓
+- `[skill-contracts]` — 37 skill(s), 156 contract(s) OK ✓
 - `[pipeline-paths]` — 14 path(s), 32 reader link(s) OK ✓
 - All remaining checks: passed with 0 failures
 
 **Pass:** All checks report passed, zero failures, zero errors in output.
 **Fail:** Any line containing `FAIL`, `ERROR`, or a non-zero exit code. Record the exact failing check name and output line — do not proceed with Parts 2–3 until resolved.
 
-> `npm test` runs 21 individual governance checks covering: pipeline-viz syntax, governance gate sync, skill contracts (SKILL.md mandatory sections), pipeline artefact paths, changelog/README consistency, workspace state schema, skill assembly, surface adapter routing, MODEL-RISK schema, suite schema, standards model structure, assurance gate, watermark gate, viz behaviour (70 unit tests), definition skill, fleet aggregation, DoR approval, Bitbucket Cloud CI, Bitbucket DC CI, improvement agent, and challenger.
+> `npm test` runs 22 individual governance checks covering: pipeline-viz syntax, governance gate sync, skill contracts (SKILL.md mandatory sections), pipeline artefact paths, changelog/README consistency, workspace state schema, skill assembly, surface adapter routing, MODEL-RISK schema, suite schema, standards model structure, assurance gate, watermark gate, viz behaviour (70 unit tests), definition skill, fleet aggregation, DoR approval, Bitbucket Cloud CI, Bitbucket DC CI, improvement agent, and challenger.
 
 ### Step 3 — Open the pipeline visualiser in a browser
 
@@ -95,13 +95,13 @@ Open `workspace/results.tsv` in a text editor.
 
 | Check | Pass | Fail | Notes |
 |-------|------|------|-------|
-| Clone | ☐ | ☐ | |
-| npm test | ☐ | ☐ | |
-| Pipeline viz | ☐ | ☐ | |
-| MODEL-RISK sign-off | ☐ | ☐ | |
-| HANDOFF ADRs | ☐ | ☐ | |
-| Trace file | ☐ | ☐ | |
-| Watermark baseline | ☐ | ☐ | |
+| Clone | ✅ | ☐ | |
+| npm test | ✅ | ☐ | 37 skill(s), 156 contract(s) — 1 count above playbook baseline (Phase 2 drift, not a failure) |
+| Pipeline viz | ✅ | ☐ | |
+| MODEL-RISK sign-off | ✅ | ☐ | |
+| HANDOFF ADRs | ✅ | ☐ | |
+| Trace file | ✅ | ☐ | |
+| Watermark baseline | ✅ | ☐ | |
 
 **Gate:** All 7 checks must pass before proceeding to Part 2. Any failure is a platform defect — note it, stop, notify the platform maintainer.
 
@@ -308,13 +308,13 @@ Complete this table at the end of the full playbook run.
 
 | Part | Check | Expected | Actual | Verdict | Validator name | Date |
 |------|-------|----------|--------|---------|----------------|------|
-| 1 | Clone | Clean | | | | |
-| 1 | npm test | All pass | | | | |
-| 1 | Pipeline viz | 2 features, 2 squads | | | | |
-| 1 | MODEL-RISK sign-off | Signed, not placeholder | | | | |
-| 1 | HANDOFF ADRs | ADR-001 to ADR-006+ | | | | |
-| 1 | Trace file | 2 entries, verdict=pass | | | | |
-| 1 | Watermark baseline | ≥1 row | | | | |
+| 1 | Clone | Clean | Clean | pass | second operator | 2026-04-13 |
+| 1 | npm test | All pass | All pass (22 checks) | pass | second operator | 2026-04-13 |
+| 1 | Pipeline viz | 2 features, 2 squads | 2 features, 2 squads | pass | second operator | 2026-04-13 |
+| 1 | MODEL-RISK sign-off | Signed, not placeholder | Signed | pass | second operator | 2026-04-13 |
+| 1 | HANDOFF ADRs | ADR-001 to ADR-006+ | ADR-001 to ADR-006+ present | pass | second operator | 2026-04-13 |
+| 1 | Trace file | 2 entries, verdict=pass | 2 entries, verdict=pass | pass | second operator | 2026-04-13 |
+| 1 | Watermark baseline | ≥1 row | ≥1 row present | pass | second operator | 2026-04-13 |
 | 2 | M1 | 6/6 stages, <3h (or pending) | | | | |
 | 2 | M2 | ≥5 adapters, DoD-complete | | | | |
 | 2 | M4 | ≥2 squads visible | | | | |
