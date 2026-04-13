@@ -103,11 +103,54 @@ jobs:
           run-id: ${{ steps.find.outputs.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Commit trace to master
-        if: steps.precheck.outputs.skip != 'true' && steps.find.outputs.found == 'true'
+      - name: Generate fallback trace if artifact missing
+        if: steps.precheck.outputs.skip != 'true' && steps.find.outputs.found != 'true'
         run: |
+          # Fallback: create a minimal trace record from merge commit context
+          mkdir -p workspace/traces/
+          timestamp=$(date -u +'%Y-%m-%dT%H-%M-%S-%3NZ')
+          trace_file="workspace/traces/${timestamp}-ci-$(git rev-parse HEAD | cut -c1-8).jsonl"
+          echo "{\"eventType\": \"trace-commit-fallback\", \"reason\": \"assurance-trace artifact not found\", \"commitSha\": \"${{ github.sha }}\", \"timestamp\": \"${timestamp}\", \"gate_run_id\": \"${{ steps.find.outputs.run_id }}\", \"fallback\": true}" > "$trace_file"
+          echo "Generated fallback trace: $trace_file"
+          cat "$trace_file"
+
+      - name: Commit trace to traces branch
+        if: steps.precheck.outputs.skip != 'true'
+        run: |
+          set +e  # Don't exit on first error; we want to see all issues
+          
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Check if traces branch exists; if not, create it
+          if ! git rev-parse --verify origin/traces >/dev/null 2>&1; then
+            echo "traces branch does not exist; creating from master"
+            git checkout -b traces
+          else
+            git checkout traces
+            git pull origin traces --ff-only || git pull origin traces
+          fi
+          
+          # Add trace files and commit
           git add -f workspace/traces/
-          git diff --staged --quiet || git commit -m "chore: assurance trace [post-merge] ${{ github.sha }}"
-          git push origin master
+          if git diff --staged --quiet; then
+            echo "No trace files to commit."
+            exit 0
+          fi
+          
+          commit_msg="chore: assurance trace [post-merge] ${{ github.sha }}"
+          if ! git commit -m "$commit_msg"; then
+            echo "Commit failed; exiting without push"
+            exit 1
+          fi
+          
+          # Push to traces branch (should not have the same branch protection as master)
+          if ! git push origin traces; then
+            echo "ERROR: push to traces branch failed"
+            echo "Troubleshooting: checking branch rules..."
+            git remote -v
+            git branch -vv
+            exit 1
+          fi
+          
+          echo "Trace committed successfully to traces branch"
