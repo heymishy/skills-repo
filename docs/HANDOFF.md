@@ -282,8 +282,8 @@ Two new sections added to `README.md` in this Phase 3 init:
 
 `workspace/adoption-readiness.md` is current as of 2026-04-13. Amber items:
 
-- **M1** — requires a genuine second operator completing a full outer loop unassisted (Westpac pilot entry event).
+- **M1** — requires a genuine second operator completing a full outer loop unassisted (enterprise pilot entry event).
 - **MM2** — requires running `scripts/parse-session-timing.js` against Phase 2 transcripts to produce the E3 actuals row in `workspace/estimation-norms.md`. ~30-minute operator action, no new code required.
 - **MM4** — closes at Phase 3 `/improve` when the third feature's actuals are ingested. Error bound until then: ±40%.
 
-Red item: **M5** — non-engineer approval requires a live configured environment and a real approver. Requires scoping effort before Westpac pilot can claim this outcome.
+Red item: **M5** — non-engineer approval requires a live configured environment and a real approver. Requires scoping effort before ent. pilot can claim this outcome.

@@ -1,7 +1,7 @@
 # Validation Playbook — Skills Platform Phase 1 + Phase 2
 
 **Audience:** Second operator with no prior knowledge of this platform. Written for clean Windows or macOS.
-**Purpose:** Confirm the platform is installable, functionally correct, and meets its stated benefit metrics before proceeding to Westpac pilot or Phase 3 scoping.
+**Purpose:** Confirm the platform is installable, functionally correct, and meets its stated benefit metrics before proceeding to ent. pilot or Phase 3 scoping.
 **Total estimated time:** 2–3 hours (30 min + 60–90 min + 20 min)
 **References:** `MODEL-RISK.md`, `HANDOFF.md`, `.github/architecture-guardrails.md`
 
@@ -62,7 +62,7 @@ Open `.github/pipeline-viz.html` directly in any browser (double-click, or `open
 Open `MODEL-RISK.md` and scroll to **Section 4 — Sign-off Record**.
 
 **Pass:** The sign-off block contains a reviewer name, a review date, and a verdict value of `approved for adoption` or `approved with conditions`. No placeholder text (e.g. `[FILL IN]`) appears in the block.
-**Fail:** Sign-off block contains placeholder text or is absent — the platform has not been cleared for non-dogfood adoption. Do not proceed with a Westpac pilot until the block is complete and signed.
+**Fail:** Sign-off block contains placeholder text or is absent — the platform has not been cleared for non-dogfood adoption. Do not proceed with a Ent.  pilot until the block is complete and signed.
 
 ### Step 5 — Confirm HANDOFF.md enterprise architecture section
 
@@ -228,7 +228,7 @@ This part tests whether the five most important platform benefits are present an
 | MM1 — ADR-001 self-contained viz | 0 external requests | | pass / fail | |
 | MM2 — T3M1 honest baseline | 3/8 Y documented | | pass / fail | |
 
-**Gate:** M2, M4, MM1, MM2 must pass. M1 may be marked "pending second-operator run" if you are the platform maintainer — but it must be run and recorded before the Westpac pilot begins.
+**Gate:** M2, M4, MM1, MM2 must pass. M1 may be marked "pending second-operator run" if you are the platform maintainer — but it must be run and recorded before the Ent. pilot begins.
 
 ---
 
@@ -322,5 +322,5 @@ Complete this table at the end of the full playbook run.
 | 2 | MM2 | 3/8 Y documented | | | | |
 | 3 | T3M1 audit | 3/8 Y (honest baseline) | | | | |
 
-**Platform adoption gate:** All Part 1 checks pass + M2, M4, MM1, MM2 pass + T3M1 audit signed → platform is cleared for Westpac pilot.
+**Platform adoption gate:** All Part 1 checks pass + M2, M4, MM1, MM2 pass + T3M1 audit signed → platform is cleared for Ent. pilot.
 **Blocked items before full clearance:** M1 requires a real second-operator outer loop run (pending). T3M1 full 8/8 requires Phase 3 delivery.

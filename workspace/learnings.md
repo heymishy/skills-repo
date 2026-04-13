@@ -656,7 +656,7 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 
 ### Observed â€” 2026-04-12 (Phase 1+2 close â€” governance honest-scope assessment)
 
-**Context:** Before the Westpac pilot conversation, the platform's governance claims were tested against RBNZ-style regulatory audit challenges â€” the seven hardest questions a risk-function reviewer would ask about an AI-governed delivery pipeline in a regulated context.
+**Context:** Before the Ent. pilot conversation, the platform's governance claims were tested against RBNZ-style regulatory audit challenges â€” the seven hardest questions a risk-function reviewer would ask about an AI-governed delivery pipeline in a regulated context.
 
 **The seven challenges and the platform's current honest answers:**
 
@@ -674,7 +674,7 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 
 **What this means for the pilot conversation:** The honest framing is "structured governance with verified traceability for 3 of 7 regulatory challenges, and a Phase 3 roadmap for the remaining 4." Overclaiming full regulatory compliance at this stage would produce an adversarial review outcome. The bounded claim is both more credible and more defensible.
 
-**Action:** Use this table as the governance claim calibration reference for the Westpac pilot conversation. Update the table when Phase 3 delivers. Do not advance the claim beyond what the evidence record supports.
+**Action:** Use this table as the governance claim calibration reference for the Ent. pilot conversation. Update the table when Phase 3 delivers. Do not advance the claim beyond what the evidence record supports.
 
 ---
 
@@ -956,9 +956,9 @@ This is the enterprise-standard maker/checker pattern: the gate that signs off a
 
 **Action:** Add this framing to `MODEL-RISK.md` Section 2 (architecture description) and Section 4 (governance properties) when updating for the feat/repo-tidy changes.
 
-## Workflow health visibility gap — post-merge trace-commit failures (PR #53–#57)
+## Workflow health visibility gap ï¿½ post-merge trace-commit failures (PR #53ï¿½#57)
 
-### Observed — 2026-04-13
+### Observed ï¿½ 2026-04-13
 
 **Circumstance:** PR #51 and #52 post-merge trace-commit.yml workflows failed silently. Workflow exited with code 1, but no alert or visible signal. Root cause discovered only when manually verifying traces branch state.
 
@@ -966,7 +966,7 @@ This is the enterprise-standard maker/checker pattern: the gate that signs off a
 
 **Contributing gap:** No automated test/verification validates post-merge workflows complete successfully. \/verify-completion\ skill does not check workflow health. \/trace\ skill does not validate traces branch state. No governance gate prevents silent workflow failures.
 
-**Four gaps identified for Phase 3 (backlog story scope — do not implement now):**
+**Four gaps identified for Phase 3 (backlog story scope ï¿½ do not implement now):**
 
 | Gap | Item | Phase 3 Scope |
 |-----|------|---------------|
