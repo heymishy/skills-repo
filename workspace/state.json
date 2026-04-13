@@ -1,200 +1,42 @@
 {
-  "feature": "2026-04-11-skills-platform-phase2",
-  "lastUpdated": "2026-04-13T00:45:00+10:00",
-  "lastLevelup": "2026-04-13",
-  "currentPhase": "phase-3-init",
-  "cycle": {
-    "discovery": {
-      "status": "approved",
-      "artefact": "artefacts/2026-04-11-skills-platform-phase2/discovery.md",
-      "startedAt": "2026-04-11T18:35:00+10:00",
-      "completedAt": "2026-04-11T18:40:00+10:00",
-      "approvedBy": "Hamish",
-      "approvedDate": "2026-04-11"
-    },
-    "benefitMetric": {
-      "status": "complete",
-      "artefact": "artefacts/2026-04-11-skills-platform-phase2/benefit-metric.md",
-      "startedAt": "2026-04-11T18:40:00+10:00",
-      "completedAt": "2026-04-11T19:10:00+10:00"
-    },
-    "definition": {
-      "status": "complete",
-      "completedAt": "2026-04-11T22:45:00+10:00",
-      "slicingStrategy": "risk-first",
-      "storyCount": 13,
-      "batch1": {
-        "status": "complete",
-        "storiesWritten": ["p2.1", "p2.2", "p2.3", "p2.4", "p2.5a", "p2.5b", "p2.6"],
-        "epicsWritten": ["epic-1-pipeline-evolution-foundation", "epic-2-full-surface-adapter-model"],
-        "note": "p2.5 split into p2.5a+p2.5b — AC count exceeded 8 threshold; see decisions.md SCOPE-01"
-      },
-      "batch2": {
-        "status": "complete",
-        "storiesWritten": ["p2.7", "p2.8", "p2.9", "p2.10", "p2.11", "p2.12"],
-        "epicsWritten": ["epic-3-fleet-observability-personas", "epic-4-standards-ci-validation", "epic-5-self-improving-harness"],
-        "notes": [
-          "p2.8 depends on p2.7 (fleet registry must be DoD-complete before p2.8 end-to-end integration path can be tested)",
-          "p2.11 and p2.12 sequenced after first Phase 2 inner loop batch — requires real delivery traces; do not dispatch until traces exist",
-          "p2.11 complexity 3 (unstable) — failure pattern heuristics and anti-overfitting gate are high-ambiguity",
-          "p2.12 complexity 3 (unstable) — challenger spec template and proposal review workflow UI are high-ambiguity"
-        ]
-      }
-    },
-    "innerLoop": {
-      "status": "not-started"
-    }
-  },
-  "review": {
-    "status": "complete",
-    "completedAt": "2026-05-01T18:00:00+10:00",
-    "resolvedAt": "2026-04-11",
-    "totalStories": 13,
-    "passed": 13,
-    "hasFindings": 0,
-    "blocked": 0,
-    "highFindings": 0,
-    "note": "9 stories amended (p2.3/p2.4/p2.5a/p2.5b/p2.6/p2.7/p2.8/p2.10/p2.11) — all MEDIUM findings resolved by AC amendment. p2.11 HIGH resolved; /review Run 2 PASSED 0H/0M/0L. ASSUMPTION-02 added to decisions.md. All 13 stories green/passed."
-  },
-  "testPlan": {
-    "status": "complete",
-    "completedAt": "2026-04-11T22:30:00+10:00",
-    "totalStories": 13,
-    "totalTests": 198,
-    "note": "All 13 Phase 2 test plans and verification scripts written. E5 stories (p2.11/p2.12) include DoR execution gate: cannot run until ≥1 Phase 2 inner loop story merged and trace written to workspace/traces/. ASSUMPTION-P2.11-01 (P1.6 trace field name) is a DoR H1 gate for p2.11. Test counts: p2.1=14, p2.2=9, p2.3=13, p2.4=13, p2.5a=18, p2.5b=20, p2.6=15, p2.7=18, p2.8=17, p2.9=17, p2.10=15, p2.11=21, p2.12=22."
-  },
-  "definitionOfReady": {
-    "status": "complete",
-    "completedAt": "2026-04-11T00:00:00+10:00",
-    "startedAt": "2026-05-01T00:00:00+10:00",
-    "batch1": {
-      "status": "complete",
-      "completedAt": "2026-04-11T00:00:00+10:00",
-      "signedOff": ["p2.1", "p2.2", "p2.3", "p2.4", "p2.5a", "p2.5b", "p2.6"],
-      "blocked": []
-    },
-    "batch2": {
-      "status": "complete",
-      "completedAt": "2026-04-11T00:00:00+10:00",
-      "signedOff": ["p2.7", "p2.8", "p2.9", "p2.10", "p2.11", "p2.12"],
-      "proceedBlocked": ["p2.11", "p2.12"],
-      "proceedBlockedReason": "p2.11 and p2.12 PROCEED-BLOCKED: dispatch gated on workspace/traces/ containing ≥1 real Phase 2 inner loop trace. p2.12 additionally gated on p2.11 DoD-complete."
-    }
-  },
-  "checkpoint": {
-    "writtenAt": "2026-04-13T00:45:00+10:00",
-    "contextAtWrite": "Phase 3 init complete. Branch feat/phase3-init-rename-improve pushed (commit 5d1b926). All 23 npm tests pass (70 viz + 23 checks). D-batch executed: copilot-instructions.md 473->~280 lines, agent-orientation.instructions.md extracted. /levelup renamed to /improve across all operational refs. Platform PR policy documented. README 'Current state vs structural controls' and 'Conceptual lineage' sections added. HANDOFF.md Section 6 added. governance scripts (check-skill-contracts.js, check-pipeline-artefact-paths.js) updated for /improve rename.",
-    "resumeInstruction": "Phase 3 init PR (feat/phase3-init-rename-improve) is open and pushed. Next: merge the PR, then run Phase 3 /discovery. T3M1 is on record (Hamish sign-off 2026-04-12, 3/8 Y, approved with conditions) — Phase 3 /discovery is unblocked. Pending amber items: MM2 (~30-min parse-session-timing.js run for E3 actuals), MM4 (closes at Phase 3 /improve). Red item M5 requires live environment config.",
-    "pendingActions": [
-      "Merge PR feat/phase3-init-rename-improve on GitHub: https://github.com/heymishy/skills-repo/pull/new/feat/phase3-init-rename-improve",
-      "Run Phase 3 /discovery — T3M1 entry condition met",
-      "MM2 amber: run scripts/parse-session-timing.js against Phase 2 JSONL transcripts to write E3 actuals row in workspace/estimation-norms.md (~30 minute operator action, no new code)",
-      "M5 red: scope non-engineer approval live environment before Westpac pilot",
-      "Five T3M1 gap closures (Q2 hash reconciliation, Q5 watermark PR comment, Q6 stalenessFlag schema, Q7 agent independence CI check, Q8 hash drift gate) are Phase 3 story candidates"
-    ]
-  },
-  "phase1Reference": {
-    "feature": "2026-04-09-skills-platform-phase1",
-    "status": "complete",
-    "storiesMerged": 8,
-    "openItems": [
-      "p1.8 AC3: T3M1 evidence record — deferred; closes when first Phase 2 inner loop story runs through P1.3 CI gate"
-    ],
-    "estimateActuals": {
-      "outerLoopSessions": 11,
-      "engagementFraction": 0.28,
-      "totalSessionSpanH": 40,
-      "outerLoopFocusH": 11.1,
-      "innerLoopHuman": 1,
-      "calendarDays": 2,
-      "storyCount": 8,
-      "focusHPerStory": 1.4,
-      "derivedBy": "parse-session-timing.js --max-gap 15 (revised 2026-04-12 from manual 18h/50%)",
-      "premiumRequestsActual": "~185 (gauge 84.4% at close)"
-    }
-  },
-  "estimate": {
-    "e1": {
-      "date": "2026-04-11",
-      "expectedCalendarDays": 2,
-      "engagementFraction": 0.50,
-      "outerLoopFocusH": "~32 (calibrated from Phase 1 norm: 14 stories × 2.3h/story; formula 2×2×0.50=2h overridden by norm)",
-      "innerLoopHuman": 1,
-      "expectedStoryCount": 14,
-      "confidence": "low",
-      "assumptions": "GitHub Actions only; no Bitbucket enterprise; ~14 stories; pipeline evolution debt D1-D9+B1 included in count; outer loop ~2 calendar days matching Phase 1 baseline",
-      "gaugeAtStart": "86.7% of 300 (260 used; ~40 remaining; resets May 1)",
-      "premiumRequestsForecast": "~322 (14 × 23/story Phase 1 rate) — exceeds current period remainder; inner loop uses refreshed May quota"
-    },
-    "e2": {
-      "date": "2026-05-01",
-      "storyCount": 13,
-      "byStory": {
-        "count": 13,
-        "complexity": { "1": 3, "2": 10, "3": 0 },
-        "p75FocusHPerStory": 2.88
-      },
-      "expectedCalendarDays": 2,
-      "engagementFraction": 0.50,
-      "outerLoopFocusH": "~30h (13 stories × 2.3h/story Phase 1 norm; formula output 2h overridden by norm)",
-      "innerLoopHuman": 1,
-      "confidence": "medium",
-      "notes": "Story count 14→13: p2.5 split 1→2 stories, no other scope additions. Complexity C1×3 (p2.1-p2.3: SKILL.md text changes only), C2×10 (remainder). E5 stories p2.11/p2.12 written as C3 but operator specifies C2 avg for estimate. Calendar span holds at 2 days; p75FocusH/story = 2.88h vs Phase 1 actuals of 2.3h/story (expected increase for C2 vs C1 mix).",
-      "premiumRequestsForecast": null
-    },
-    "actuals": {
-      "date": "2026-04-12",
-      "calendarDays": 2,
-      "outerLoopSessions": null,
-      "engagementFraction": 0.25,
-      "totalCalendarH": 4,
-      "outerLoopFocusH": 1,
-      "innerLoopHuman": 1,
-      "agentAutonomousH": null,
-      "storyCount": 13,
-      "focusHPerStory": 0.08,
-      "estimateSource": "e2",
-      "estimateOuterLoopH": 30,
-      "outerLoopDeltaH": -29,
-      "premiumRequestsForecast": "~322",
-      "premiumRequestsActual": 68,
-      "premiumGaugeStart": "86.7% of 300",
-      "premiumGaugeNow": "109.5% of 300",
-      "notes": "JSONL session logs were not accessible from this workspace. Tier-1 ISO timestamps are present on some Phase 2 blocks but review and DoR timestamps remain inconsistent, so E3 was rerun using a manual calendar override of Apr 11 start to Apr 12 end = 2 days. Per estimate skill fallback, totalCalendarH = calendarDays × 2 = 4h and outerLoopFocusH = 4h × 0.25 = 1h. Treat as medium-low confidence until telemetry-complete E3 is possible."
-    },
-    "flowFindings": [
-      {
-        "id": "E3-F1",
-        "title": "State timestamp consistency gap",
-        "actual": "Discovery/benefit-metric blocks have valid ISO datetimes, but review and DoR timestamps remain inconsistent enough that manual Apr 11 to Apr 12 override was required",
-        "estimate": "Tier-1 ISO timestamps should permit direct phase-span reconstruction with no manual intervention",
-        "delta": "Tier-1 derivation partially usable but not complete",
-        "causeHypothesis": "Phase updates were written with mixed date values across sessions before the timestamp discipline was fully applied",
-        "improvement": "Add a state-write guard that validates monotonic phase timestamps before commit and rejects month drift",
-        "effort": "Medium"
-      },
-      {
-        "id": "E3-F2",
-        "title": "Session telemetry access gap",
-        "actual": "JSONL debug logs unavailable in workspace context",
-        "estimate": "E3 expects session-level wall-clock reconstruction",
-        "delta": "Fallback approximation used",
-        "causeHypothesis": "Telemetry path not mounted in current execution environment",
-        "improvement": "Persist per-session wall-clock totals into workspace/state.json at checkpoint time",
-        "effort": "Low"
-      },
-      {
-        "id": "E3-F3",
-        "title": "Outer-loop estimate variance high",
-        "actual": "1h outer-loop focus (manual-date fallback-derived)",
-        "estimate": "30h E2 outer-loop forecast",
-        "delta": "-29h",
-        "causeHypothesis": "Fallback method still understates active time when session telemetry is missing, even after manual calendar correction",
-        "improvement": "Require telemetry-complete E3 before using deltas for forecast calibration",
-        "effort": "Low"
-      }
-    ]
-  },
-  "proposals": []
+    "phase2Summary":  {
+                          "prsMerged":  [
+                                            58,
+                                            57,
+                                            56,
+                                            55,
+                                            54,
+                                            53,
+                                            52,
+                                            51,
+                                            50,
+                                            49
+                                        ],
+                          "postMergeWorkflowFixed":  "true (PR #55 trace-commit.yml)",
+                          "storiesSignedOff":  [
+                                                   "p2.1",
+                                                   "p2.2",
+                                                   "p2.3",
+                                                   "p2.4",
+                                                   "p2.5a",
+                                                   "p2.5b"
+                                               ],
+                          "storiesBlocked":  [
+                                                 "p2.6-assumption-02-unconfirmed"
+                                             ],
+                          "observabilityGapsIdentified":  4,
+                          "status":  "complete"
+                      },
+    "lastUpdated":  "2026-04-13T12:34:52Z",
+    "currentPhase":  "post-phase-2-checkpoint",
+    "checkpoint":  {
+                       "resumeInstruction":  "New session: run \u0027/workflow\u0027 to begin Phase 3. Backlog story \u0027phase3-backlog-trace-commit-observability\u0027 is registered in workspace/ and ready for /discovery intake immediately.",
+                       "contextAtWrite":  "Phase 2 complete: 6/7 stories signed-off (p2.6 blocked). Post-merge workflow trace-commit.yml fixed (PR #55). Four observability gaps logged to learnings.md. Phase 3 backlog story created: phase3-backlog-trace-commit-observability.md. Ready for phase 3 discovery.",
+                       "writtenAt":  "2026-04-13T12:34:52Z",
+                       "pendingActions":  [
+                                              "Phase 3: Run /discovery on phase3-backlog-trace-commit-observability story",
+                                              "Phase 3: Define 4 ACs into 4 separate stories or 1 epic (decision needed)",
+                                              "Learnings: Review Phase 2 /improve (formerly /levelup) decisions logged in workspace/learnings.md"
+                                          ]
+                   }
 }
-
