@@ -120,3 +120,15 @@ improvement_agent:
   failure_pattern_threshold: 3        # min occurrences of same failurePattern to trigger proposal
   staleness_window_days: 90           # days of inactivity before a surface triggers staleness proposal
   sliding_window_size: 10             # number of most-recent traces per surface type in each window
+# Skills upstream sync — pulls skill updates from heymishy/skills-repo into this working instance.
+# Remote configured: git remote add skills-upstream https://github.com/heymishy/skills-repo.git
+# To sync: git fetch skills-upstream && git checkout skills-upstream/master -- .github/skills/ .github/templates/ scripts/ docs/skill-pipeline-instructions.md
+skills_upstream:
+  remote: skills-upstream
+  repo_url: "https://github.com/heymishy/skills-repo.git"
+  sync_paths:
+    - .github/skills/
+    - .github/templates/
+    - scripts/
+    - docs/skill-pipeline-instructions.md
+  strategy: merge                     # merge | overwrite — merge preserves local changes

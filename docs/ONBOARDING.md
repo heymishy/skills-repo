@@ -62,6 +62,99 @@ Before starting, confirm you have:
 
 ---
 
+## First steps after cloning for a new squad
+
+This section captures what you actually need to do immediately after cloning, based on
+first-hand new-squad experience. None of these steps are implied by the bootstrap script —
+they are easy to miss and each one will silently break things if skipped.
+
+### 1. Set `repoUrl` in `context.yml`
+
+`context.yml` is blank after a fresh clone. The `repoUrl` field is not populated by the
+bootstrap script. Set it immediately:
+
+```yaml
+# .github/context.yml
+repoUrl: https://github.com/<your-org>/<your-repo>
+```
+
+Without this, the fleet aggregator cannot resolve your squad's pipeline state, and several
+skill assertions that read `context.yml` will silently pass against an empty value.
+
+### 2. Reconfigure your remotes
+
+After cloning you will still have `origin` pointing at the platform skills repo. You need to
+redirect `origin` to your team's own repo and add a separate upstream remote for receiving
+platform updates:
+
+```bash
+# Point origin at your own squad repo
+git remote set-url origin https://github.com/<your-org>/<your-repo>.git
+
+# Add the platform repo as an upstream for syncing skill updates
+git remote add skills-upstream https://github.com/heymishy/skills-repo.git
+git fetch skills-upstream
+```
+
+To pull skill updates later:
+```bash
+git fetch skills-upstream
+git merge skills-upstream/master --allow-unrelated-histories
+```
+
+### 3. Fleet registration is manual — no self-registration
+
+Cloning the repo does not register your squad in the fleet. You must:
+
+1. Create `fleet/squads/<your-squad-id>.json` in your repo following the schema in
+   `fleet/squads/squad-alpha.json`
+2. Raise a PR against `heymishy/skills-repo` adding your squad file to the same directory
+   in that repo
+
+There is no self-registration mechanism. The fleet aggregator only reads squad files
+committed to the platform repo.
+
+### 4. Private repos show `unknown` fleet health
+
+If your squad repo is private, the fleet health aggregator will return `unknown` for your
+pipeline state. This is expected — the aggregator fetches `pipeline-state.json` from a raw
+GitHub URL which requires auth that the aggregator does not have for private repos.
+
+Your options: make the repo public, or accept `unknown` status and check your own pipeline
+state locally via `cat .github/pipeline-state.json`.
+
+### 5. `[skip ci]` on fleet commits may block branch protection
+
+The fleet aggregator emits commits tagged `[skip ci]` to avoid infinite CI loops when
+updating fleet state. If your branch protection rules require all CI checks to pass before
+merge, those commits will be blocked.
+
+Configure a PR check exemption for commits containing `[skip ci]` in your repo's branch
+protection settings, or exclude the fleet state file path from required checks.
+
+### 6. Validate your full setup before the first story
+
+Before running `/workflow` for the first time, verify that:
+
+```bash
+# Remotes are correct
+git remote -v
+
+# context.yml has your repoUrl
+grep repoUrl .github/context.yml
+
+# pipeline-state.json exists and is valid JSON
+node -e "JSON.parse(require('fs').readFileSync('.github/pipeline-state.json','utf8')); console.log('OK')"
+
+# Tests pass on a clean clone
+npm test
+```
+
+All four checks should pass cleanly. If `npm test` fails on a fresh clone, that is a
+platform defect — raise it in the skills repo before proceeding.
+
+---
+
 ## Step 1: Understand the skill sequence
 
 Every inner loop story runs the same sequence. Before touching any commands, read through this
