@@ -58,6 +58,14 @@ Each entry states the risk clearly and records either a mitigation (a control th
 
 ---
 
+### Risk R6: T3M1 Q8 tamper-evidence implementation is platform-specific
+
+**Risk:** The tamper-evidence registry for T3M1 Q8 (`traceHash` attestation) is implemented in the dogfood instance (`heymishy/skills-repo`) using GitHub Artifact Attestation, which is available only on GitHub.com and GitHub Enterprise Server. Enterprise adopters running Bitbucket or Jenkins cannot use this implementation and must apply Option B (a dedicated read-only registry repository with a CI service account). The Q8 evidence mechanism therefore differs between the dogfood instance and a Bitbucket enterprise deployment. A reviewer applying T3M1 against a Bitbucket deployment will see `tamperEvidence.registryType: "registry-repo"` and a Git commit SHA as the `registryRef`, not an Artifact Attestation URL. The independent hash re-verification procedure (recompute SHA-256 of the trace file; compare the result against the registry entry) is procedurally identical for both options — only the retrieval step differs.
+
+**Mitigation:** The `tamperEvidence` object in the trace schema explicitly records `registryType` (`"github-artifact-attestation"` or `"registry-repo"`), so a reviewer always knows which retrieval method to apply. `docs/HANDOFF.md` Section 2 (DEC-P3-002 note) documents the full Option B requirements for enterprise adopters. Decision DEC-P3-002 in `artefacts/2026-04-14-skills-platform-phase3/decisions.md` records this divergence and the enterprise porting note. Enterprise pilot onboarding must explicitly implement Option B and confirm that the Q8 entry is retrievable via `git log` on the registry repo before the T3M1 re-evaluation session is scheduled.
+
+---
+
 ## 2. Audit Question Mapping Table (§9.8)
 
 This table maps all eight audit questions from the platform operating model (§9.8) to specific named fields in the assurance trace. A non-engineering reviewer can use this table to locate the answer to each question by opening the relevant file and reading the named field.
