@@ -27,12 +27,12 @@
                           "observabilityGapsIdentified":  4,
                           "status":  "complete"
                       },
-    "lastUpdated":  "2026-04-14T20:00:00Z",
-    "currentPhase":  "pre-phase-3-discovery",
+    "lastUpdated":  "2026-04-14T08:00:00Z",
+    "currentPhase":  "phase-3-discovery",
     "cycle":  {
                   "discovery":  {
-                                    "status":  "completed",
-                                    "artefact":  "artefacts/2026-04-11-skills-platform-phase2/discovery.md",
+                                    "status":  "in-progress",
+                                    "artefact":  "artefacts/2026-04-14-skills-platform-phase3/discovery.md",
                                     "completedAt":  null
                                 }
               },
@@ -52,18 +52,17 @@
                     }
                 ],
     "checkpoint":  {
-                       "writtenAt":  "2026-04-14T20:00:00Z",
-                       "contextAtWrite":  "End of 2026-04-14 session. Phase 3 backlog complete: AC1-AC9 all fully specified with acceptance criteria in workspace/phase3-backlog-test-coverage-governance-gaps.md. Validation playbook updated with Step 0 squad registration for trial users. Exceptions.json conversion identified as pre-conversation deliverable (Decision 2A). Risk/audit conversation prep completed — positions locked: (1) validator independence = not yet solved, Phase 3 closure path; (2) exception register = convert backlog to exceptions.json before first colleague conversation; (3) AC1 = known gap, owned, on register with Phase 3 closure story. Skill versioning question answered: git history + PR records + contract checks cover structural integrity; no hash pinning against upstream canonical — known open item.",
-                       "resumeInstruction":  "New session: Two draft PRs open — #66 (workspace checkpoint + learnings) and #67 (AC8+AC9 backlog + playbook squad registration). Merge both before starting Phase 3 work. Pre-conversation deliverable: convert workspace/phase3-backlog-test-coverage-governance-gaps.md AC1-AC9 entries into a structured exceptions.json deviation register (fields: control-id, description, date-identified, owner, remediation-story, risk-acceptance-rationale). After that: run /workflow to confirm Phase 3 discovery entry condition, then /discovery on the test-coverage-governance-gaps backlog file.",
+                       "writtenAt":  "2026-04-14",
+                       "contextAtWrite":  "Phase 3 discovery written (commit 5e312e4). Full reading of ref-skills-platform-phase3.md + workspace backlog files + operating-model + standards-model + phase3-4. 13 priority groups. FINAL-TEST.md and TEST-TRACE.md deleted. Local master synced to origin/master (02d637d).",
+                       "resumeInstruction":  "Phase 3 discovery in progress. Artefact at artefacts/2026-04-14-skills-platform-phase3/discovery.md — Draft, awaiting approval. Next: human review and approval of discovery artefact, then /benefit-metric. Priority order within Phase 3: (1) test/governance hardening, (2) T3M1 Q2-Q8 fill, (3) gate structural independence, (4) eval anti-gaming, (5) Windows validator, (6) D10/D10a, (7) cross-team trace registry, (8) enterprise channel adapters, (9) AGENTS.md validation, (10-13) EA registry, estimation calibration, contribution flow, compliance report.",
                        "pendingActions":  [
-                                              "IMMEDIATE: Merge PR #66 (workspace checkpoint + learnings.md) — draft, CI should be green",
-                                              "IMMEDIATE: Merge PR #67 (AC8+AC9 backlog + validation playbook Step 0) — draft, all 22 checks passed locally",
-                                              "PRE-CONVERSATION: Convert AC1-AC9 backlog entries to structured exceptions.json with fields: control-id, description, date-identified, owner, remediation-story, risk-acceptance-rationale",
-                                              "Phase 3: Run /workflow then /discovery on workspace/phase3-backlog-test-coverage-governance-gaps.md",
-                                              "Validation playbook: Parts 2 and 3 not yet run or recorded — needs genuine second operator for M1",
-                                              "Tonight: trial squad onboarding — they need validation-playbook.md Step 0 (now in PR #67)",
-                                              "Tomorrow: Run /improve with combined signal (operator learnings + trial squad feedback)",
-                                              "Deferred: git stash pop for FINAL-TEST.md and TEST-TRACE.md deletions (confirm with operator before restoring)"
+                                              "Human review and approval of artefacts/2026-04-14-skills-platform-phase3/discovery.md",
+                                              "Confirm ASSUMPTION-01: separate platform-infrastructure repository creation is feasible in target Git host",
+                                              "Confirm ASSUMPTION-02: T3M1 Q8 tamper-evidence — GitHub Artifact Attestation (preferred) or read-only registry repo (fallback for Bitbucket/Jenkins)",
+                                              "Confirm ASSUMPTION-03: Teams + Jira adapter priority order correct for first Enterprise adopter",
+                                              "Confirm ASSUMPTION-04: non-GitHub inner loop tooling available for AGENTS.md validation (Cursor or Claude Code)",
+                                              "After discovery approval: run /benefit-metric",
+                                              "Validation playbook: Parts 2 and 3 not yet run or recorded (deferred from Phase 2)"
                                           ]
                    }
 }
