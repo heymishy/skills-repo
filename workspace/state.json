@@ -27,14 +27,21 @@
                           "observabilityGapsIdentified":  4,
                           "status":  "complete"
                       },
-    "lastUpdated":  "2026-04-14T08:00:00Z",
-    "currentPhase":  "phase-3-discovery",
+    "lastUpdated":  "2026-04-14T09:00:00Z",
+    "currentPhase":  "phase-3-benefit-metric",
     "cycle":  {
                   "discovery":  {
-                                    "status":  "in-progress",
+                                    "status":  "complete",
                                     "artefact":  "artefacts/2026-04-14-skills-platform-phase3/discovery.md",
-                                    "completedAt":  null
-                                }
+                                    "completedAt":  "2026-04-14",
+                                    "approvedBy":  "Operator, 2026-04-14. ASSUMPTION-01 through ASSUMPTION-04 confirmed."
+                                },
+                  "benefitMetric":  {
+                                        "status":  "complete",
+                                        "artefact":  "artefacts/2026-04-14-skills-platform-phase3/benefit-metric.md",
+                                        "completedAt":  "2026-04-14",
+                                        "metrics":  ["M1","M2","M3","M4","M5","MM1","MM2","MM3","CR1","CR2"]
+                                    }
               },
     "docsPRsMerged":  [61, 63, 64, 65],
     "openPRs":  [
@@ -53,16 +60,12 @@
                 ],
     "checkpoint":  {
                        "writtenAt":  "2026-04-14",
-                       "contextAtWrite":  "Phase 3 discovery written (commit 5e312e4). Full reading of ref-skills-platform-phase3.md + workspace backlog files + operating-model + standards-model + phase3-4. 13 priority groups. FINAL-TEST.md and TEST-TRACE.md deleted. Local master synced to origin/master (02d637d).",
-                       "resumeInstruction":  "Phase 3 discovery in progress. Artefact at artefacts/2026-04-14-skills-platform-phase3/discovery.md — Draft, awaiting approval. Next: human review and approval of discovery artefact, then /benefit-metric. Priority order within Phase 3: (1) test/governance hardening, (2) T3M1 Q2-Q8 fill, (3) gate structural independence, (4) eval anti-gaming, (5) Windows validator, (6) D10/D10a, (7) cross-team trace registry, (8) enterprise channel adapters, (9) AGENTS.md validation, (10-13) EA registry, estimation calibration, contribution flow, compliance report.",
+                       "contextAtWrite":  "Phase 3 benefit-metric complete. 5 Tier 1 product metrics (M1–M5), 3 Tier 2 meta-metrics (MM1–MM3), 2 Tier 3 compliance metrics (CR1–CR2). pipeline-state.json updated with Phase 3 feature entry (stage: benefit-metric, health: green, 10 seeded metrics). Committed c9ee368. 3 local commits not yet pushed (5e312e4, e3753d7, c9ee368).",
+                       "resumeInstruction":  "Phase 3 benefit-metric is complete. Next step: /definition — break the 13 priority groups into epics and stories, starting with Priority 1 test/governance hardening stories (1A trace-commit observability, 1B assurance gate substantive checks, 1C test suite integrity). Use artefacts/2026-04-14-skills-platform-phase3/discovery.md and benefit-metric.md as inputs.",
                        "pendingActions":  [
-                                              "Human review and approval of artefacts/2026-04-14-skills-platform-phase3/discovery.md",
-                                              "Confirm ASSUMPTION-01: separate platform-infrastructure repository creation is feasible in target Git host",
-                                              "Confirm ASSUMPTION-02: T3M1 Q8 tamper-evidence — GitHub Artifact Attestation (preferred) or read-only registry repo (fallback for Bitbucket/Jenkins)",
-                                              "Confirm ASSUMPTION-03: Teams + Jira adapter priority order correct for first Enterprise adopter",
-                                              "Confirm ASSUMPTION-04: non-GitHub inner loop tooling available for AGENTS.md validation (Cursor or Claude Code)",
-                                              "After discovery approval: run /benefit-metric",
-                                              "Validation playbook: Parts 2 and 3 not yet run or recorded (deferred from Phase 2)"
+                                              "Run /definition to write epics and stories for Phase 3, starting with Priority 1A–1D (test/governance hardening) stories",
+                                              "Push 3 pending local commits to origin: 5e312e4 (discovery), e3753d7 (state.json checkpoint), c9ee368 (benefit-metric)",
+                                              "Validation playbook: Parts 2 and 3 not yet run or recorded (deferred from Phase 2 — requires genuine second operator for M1)"
                                           ]
                    }
 }
