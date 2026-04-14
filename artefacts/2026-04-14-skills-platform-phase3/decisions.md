@@ -32,3 +32,42 @@
 **Reversibility:** Fully reversible. When a Bitbucket DC Docker service is provisioned in CI, Option A can be implemented by: creating `bitbucket-dc-auth.yml`, updating `tests/check-bitbucket-dc.js` to remove Manual annotations, and archiving or removing the `smoke-tests.md` entries for the four tests.
 
 **Logged by:** Operator (tech lead), 2026-04-14
+
+---
+
+## DEC-P3-002 — Tamper-evidence registry type: Option A (GitHub Artifact Attestation) adopted
+
+**Date:** 2026-04-15
+**Story:** p3.2b — Implement tamper-evidence registry for traceHash (T3M1 Q8)
+**Decision type:** ASSUMPTION-02 resolution — implementation path choice
+**Status:** Accepted
+**Owner:** Hamish
+
+**Context:** Story p3.2b (Architecture Constraints, ASSUMPTION-02) specifies two implementation options for the tamper-evidence registry that publishes `traceHash` to an append-only external store the delivery team cannot modify:
+
+- Option A — GitHub Artifact Attestation with OIDC-signed workflow identity. The preferred path when the repository is on GitHub. The CI workflow uses OIDC tokens to publish an attestation record; the attestation is cryptographically signed by the workflow identity and is immutable — no PAT or stored credential required.
+- Option B — Dedicated read-only registry repository. The fallback for Bitbucket/Jenkins environments where GitHub Artifact Attestation is not available. Requires a CI service account with write access to the registry repo only.
+
+**Decision:** Option A — GitHub Artifact Attestation with OIDC-signed workflow identity.
+
+**Rationale:** The repository `heymishy/skills-repo` is hosted on GitHub — exactly the condition the story specifies triggers the preferred path. GitHub Artifact Attestation provides a cryptographically signed, OIDC-anchored record with no PAT or service account token required. Option B adds service-account token management overhead with no security or auditability benefit in this environment.
+
+**Enterprise porting note — known divergence:** The enterprise deployment target uses Bitbucket. GitHub Artifact Attestation (Option A) is not available in Bitbucket/Jenkins environments. Enterprise adopters must implement Option B: a dedicated read-only registry repository with a CI service account token that has write access to the registry repo only (not the delivery repository). Option B requirements:
+- A separate registry repository (e.g. `[org]/trace-registry`) with branch protection: no human write access; only the CI service account may push.
+- A CI service account token with write access to the registry repo only — must not be a personal access token.
+- The traceHash publication step commits one entry per story merge as an append-only commit to the registry repo's main branch.
+- `tamperEvidence.registryRef` in the trace records the commit SHA of the registry repo entry.
+- Auditor retrieval: `git log` on the registry repo is sufficient — no special tooling required.
+
+This divergence must be revisited at enterprise pilot onboarding. The Q8 dogfood evidence (Artifact Attestation records) is not directly portable to a Bitbucket deployment — the registry type and retrieval mechanism differ.
+
+**Impact on story p3.2b:**
+- AC1: "published to Artifact Attestation" is the active implementation path.
+- AC3: Artifact Attestation records are immutable by design — modification attempted by a delivery team member is denied by GitHub's attestation infrastructure.
+- AC4: `tamperEvidence.registryType` = `"github-artifact-attestation"`, `registryRef` = attestation URL.
+
+**Alternatives considered:** Option B — deferred to enterprise adoption. Option B is architecturally equivalent for regulated deployments; the difference is the platform and credential model.
+
+**Reversibility:** Reversible at enterprise pilot onboarding by implementing Option B as an environment-specific alternate for non-GitHub deployments. The trace schema `tamperEvidence` object already accommodates both values for `registryType`.
+
+**Logged by:** Hamish (tech lead), 2026-04-15
