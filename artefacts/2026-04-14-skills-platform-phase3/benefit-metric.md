@@ -156,16 +156,16 @@ Tier 3 metrics apply: Phase 3 explicitly targets regulated-enterprise audit read
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1 — T3M1 audit question coverage | Priority 2 stories (trace fields + tamper-evidence registry) | Gap — stories not yet written |
-| M2 — Assurance gate substantive signal | Priority 1B (gate content checks) | Gap — stories not yet written |
-| M3 — Post-merge silent failure detection | Priority 1A (check-trace-commit.js) | Gap — stories not yet written |
-| M4 — Enterprise approval channel | Priority 8 | Gap — stories not yet written |
-| M5 — AGENTS.md adapter validation | Priority 9 | Gap — stories not yet written |
-| MM1 — Estimation calibration continuity | All Priority 1–13 stories (via /estimate E2→E3) | Covered by process |
-| MM2 — Outer loop self-sufficiency | Phase 3 outer loop execution | Covered by process |
-| MM3 — Priority 1 hardening failure reduction | Priority 1A–1D stories | Gap — stories not yet written |
-| CR1 — T3M1 on record | Priority 2 stories (prerequisite); external review (not a story) | Partial — prerequisite stories not yet written |
-| CR2 — Gate structural independence | Priority 3 | Gap — stories not yet written |
+| M1 — T3M1 audit question coverage | p3.2a (T3M1 trace fields), p3.2b (tamper-evidence registry) | Covered — 2 stories |
+| M2 — Assurance gate substantive signal | p3.1b (assurance gate substantive checks) | Covered — 1 story |
+| M3 — Post-merge silent failure detection | p3.1a (trace-commit observability), p3.5 (Windows native validator) | Covered — 2 stories |
+| M4 — Enterprise approval channel | p3.8 (enterprise approval channel adapters) | Covered — 1 story |
+| M5 — AGENTS.md adapter validation | p3.9 (agents-md compatibility matrix — Phase 3 tier: matrix only) | Covered — 1 story (Phase 3 min signal) |
+| MM1 — Estimation calibration continuity | All 18 stories via /estimate E2→E3 process; p3.11 (calibration eval dimension) | Covered by process + p3.11 |
+| MM2 — Outer loop self-sufficiency | p3.5 (Windows CI parity), p3.6 (dispatch forward-pointer), p3.10 (EA registry integration), p3.12 (squad contribution flow) | Covered — 4 stories |
+| MM3 — Priority 1 hardening failure reduction | p3.1a, p3.1b, p3.1c, p3.1d, p3.1e, p3.4 (anti-gaming controls), p3.7 (cross-team registry) | Covered — 7 stories |
+| CR1 — T3M1 on record | p3.2a + p3.2b (prerequisites), p3.7 (cross-team traces for audit sampling), p3.13 (compliance monitoring report); external review (not a story) | Covered (prerequisite stories + reporting; external review is human gate) |
+| CR2 — Gate structural independence | p3.3 (gate structural independence — requires p3.1a, p3.1b, p3.1c as prereqs), p3.4 (anti-gaming — depends on p3.3) | Covered — 2 stories (ASSUMPTION-01 gated) |
 
 ---
 

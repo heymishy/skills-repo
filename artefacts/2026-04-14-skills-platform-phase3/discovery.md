@@ -1,8 +1,8 @@
 # Discovery: Skills Platform — Phase 3
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-04-14
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Operator, 2026-04-14. Assumptions ASSUMPTION-01 through ASSUMPTION-04 confirmed.
 **Author:** Copilot
 **Feature slug:** 2026-04-14-skills-platform-phase3
 **Primary reference:** `artefacts/2026-04-11-skills-platform-phase2/reference/ref-skills-platform-phase3.md`

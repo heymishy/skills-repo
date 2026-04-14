@@ -27,8 +27,8 @@
                           "observabilityGapsIdentified":  4,
                           "status":  "complete"
                       },
-    "lastUpdated":  "2026-04-14T09:00:00Z",
-    "currentPhase":  "phase-3-benefit-metric",
+    "lastUpdated":  "2026-04-14T12:00:00Z",
+    "currentPhase":  "phase-3-definition",
     "cycle":  {
                   "discovery":  {
                                     "status":  "complete",
@@ -41,7 +41,17 @@
                                         "artefact":  "artefacts/2026-04-14-skills-platform-phase3/benefit-metric.md",
                                         "completedAt":  "2026-04-14",
                                         "metrics":  ["M1","M2","M3","M4","M5","MM1","MM2","MM3","CR1","CR2"]
-                                    }
+                                    },
+                  "definition": {
+                                    "status": "complete",
+                                    "artefact": "artefacts/2026-04-14-skills-platform-phase3/",
+                                    "completedAt": "2026-04-14",
+                                    "epicCount": 7,
+                                    "storyCount": 18,
+                                    "slicingStrategy": "risk-first",
+                                    "nfrProfile": "artefacts/2026-04-14-skills-platform-phase3/nfr-profile.md",
+                                    "scopeAdjustment": "p3.9 scoped to compatibility matrix only — no live delivery run (operator confirmed 2026-04-14, ASSUMPTION-04 gated)"
+                                }
               },
     "docsPRsMerged":  [61, 63, 64, 65],
     "openPRs":  [
@@ -60,12 +70,15 @@
                 ],
     "checkpoint":  {
                        "writtenAt":  "2026-04-14",
-                       "contextAtWrite":  "Phase 3 benefit-metric complete. 5 Tier 1 product metrics (M1–M5), 3 Tier 2 meta-metrics (MM1–MM3), 2 Tier 3 compliance metrics (CR1–CR2). pipeline-state.json updated with Phase 3 feature entry (stage: benefit-metric, health: green, 10 seeded metrics). Committed c9ee368. 3 local commits not yet pushed (5e312e4, e3753d7, c9ee368).",
-                       "resumeInstruction":  "Phase 3 benefit-metric is complete. Next step: /definition — break the 13 priority groups into epics and stories, starting with Priority 1 test/governance hardening stories (1A trace-commit observability, 1B assurance gate substantive checks, 1C test suite integrity). Use artefacts/2026-04-14-skills-platform-phase3/discovery.md and benefit-metric.md as inputs.",
+                       "contextAtWrite":  "Phase 3 definition complete. 7 epics, 18 stories written (risk-first slicing, p3.1a–p3.13). NFR profile written. benefit-metric.md coverage matrix updated with all story slugs. pipeline-state.json updated: stage definition, all contributingStories populated, epics and stories arrays populated. p3.9 scoped to compat matrix only per operator instruction. p3.2b and p3.3 are ASSUMPTION-gated (ASSUMPTION-02 and ASSUMPTION-01 respectively). Next step: /review per story batch.",
+                       "resumeInstruction":  "Phase 3 definition is complete. Next pipeline step is /review — run it per story or per epic batch starting with E1 stories (p3.1a–p3.1e). All 18 story artefacts are at artefacts/2026-04-14-skills-platform-phase3/stories/. After /review passes (no HIGH findings), proceed to /test-plan per story, then /definition-of-ready. Also run /estimate E2 to record Phase 3 estimate before coding begins.",
                        "pendingActions":  [
-                                              "Run /definition to write epics and stories for Phase 3, starting with Priority 1A–1D (test/governance hardening) stories",
-                                              "Push 3 pending local commits to origin: 5e312e4 (discovery), e3753d7 (state.json checkpoint), c9ee368 (benefit-metric)",
-                                              "Validation playbook: Parts 2 and 3 not yet run or recorded (deferred from Phase 2 — requires genuine second operator for M1)"
+                                              "Run /review on Phase 3 stories — starting with E1 batch (p3.1a through p3.1e). All HIGH findings must be resolved before moving to /test-plan.",
+                                              "Run /estimate E2: record Phase 3 refined estimates now that 18 stories and their complexity ratings are known (9 at complexity 1, 6 at complexity 2, 3 at complexity 3).",
+                                              "Confirm ASSUMPTION-01 (separate platform-infrastructure repo feasibility) before DoR for p3.3.",
+                                              "Confirm ASSUMPTION-02 (tamper-evidence registry type: GitHub Artifact Attestation vs read-only registry repo) before DoR for p3.2b.",
+                                              "Push 4+ local commits to origin: 5e312e4 (discovery), e3753d7 (state checkpoint), c9ee368 (benefit-metric), plus the definition commit once created.",
+                                              "Validation playbook: Parts 2 and 3 not yet run or recorded (deferred from Phase 2 — requires genuine second operator for M1)."
                                           ]
                    }
 }
