@@ -42,6 +42,7 @@ const root = path.join(__dirname, '..', '..');
 // ── Load module under test ────────────────────────────────────────────────────
 
 const {
+  FLOOR_PASS_RATE,
   parseSuite,
   parseResultsTsv,
   findBestWatermark,
@@ -460,6 +461,98 @@ console.log('  NFR: Performance, security, audit');
   assert(r3 && r3.verdict === 'pass',    'nfr-results-tsv-append-only-run1-verdict-pass',    `Expected pass, got ${r3 && r3.verdict}`);
   assert(r4 && r4.verdict === 'blocked', 'nfr-results-tsv-append-only-run2-verdict-blocked', `Expected blocked, got ${r4 && r4.verdict}`);
   assert(r5 && r5.verdict === 'pass',    'nfr-results-tsv-append-only-run3-verdict-pass',    `Expected pass, got ${r5 && r5.verdict}`);
+}
+
+// ── p3.1c: FLOOR_PASS_RATE tests (U2–U5) ─────────────────────────────────────
+
+console.log('');
+console.log('  p3.1c: passRate floor enforcement (FLOOR_PASS_RATE = 0.70)');
+
+{
+  // U2 — below floor (passRate = 0.60): baseline creation must be rejected
+  const dir          = makeTmpDir();
+  const fixturePath  = path.join(root, 'tests', 'fixtures', 'watermark-scenarios', 'below-floor.json');
+  const suiteJson    = JSON.parse(fs.readFileSync(fixturePath, 'utf8'));
+  const suitePath    = writeSuiteJson(dir, suiteJson);
+  const resultsTsv   = path.join(dir, 'results.tsv');
+
+  let threw = false;
+  let errMessage = '';
+  try {
+    runWatermarkGate({ suiteJsonPath: suitePath, resultsTsvPath: resultsTsv });
+  } catch (e) {
+    threw     = true;
+    errMessage = e.message || '';
+  }
+
+  assert(threw,                              'floor-below-0.60-throws-error',      'Expected runWatermarkGate to throw when passRate < FLOOR_PASS_RATE');
+  assert(!fs.existsSync(resultsTsv),         'floor-below-0.60-baseline-not-written', 'Baseline file should NOT be written when passRate < FLOOR_PASS_RATE');
+  assert(/floor/i.test(errMessage),          'floor-below-0.60-error-message-mentions-floor', `Error message should mention floor; got: "${errMessage}"`);
+}
+
+{
+  // U3 — exactly at floor (passRate = 0.70): baseline creation must succeed
+  const dir          = makeTmpDir();
+  const fixturePath  = path.join(root, 'tests', 'fixtures', 'watermark-scenarios', 'at-floor.json');
+  const suiteJson    = JSON.parse(fs.readFileSync(fixturePath, 'utf8'));
+  const suitePath    = writeSuiteJson(dir, suiteJson);
+  const resultsTsv   = path.join(dir, 'results.tsv');
+
+  let result;
+  let threw = false;
+  try {
+    result = runWatermarkGate({ suiteJsonPath: suitePath, resultsTsvPath: resultsTsv });
+  } catch (e) {
+    threw = true;
+  }
+
+  assert(!threw,                      'floor-at-0.70-no-throw',          'passRate exactly at FLOOR_PASS_RATE must not throw');
+  assert(fs.existsSync(resultsTsv),   'floor-at-0.70-baseline-written',  'Baseline file must be written when passRate === FLOOR_PASS_RATE');
+  assert(result && result.verdict === 'baseline', 'floor-at-0.70-verdict-baseline', `Expected verdict=baseline, got ${result && result.verdict}`);
+}
+
+{
+  // U4 — above floor (passRate = 1.00): baseline creation must succeed
+  const dir          = makeTmpDir();
+  const fixturePath  = path.join(root, 'tests', 'fixtures', 'watermark-scenarios', 'above-floor.json');
+  const suiteJson    = JSON.parse(fs.readFileSync(fixturePath, 'utf8'));
+  const suitePath    = writeSuiteJson(dir, suiteJson);
+  const resultsTsv   = path.join(dir, 'results.tsv');
+
+  let result;
+  let threw = false;
+  try {
+    result = runWatermarkGate({ suiteJsonPath: suitePath, resultsTsvPath: resultsTsv });
+  } catch (e) {
+    threw = true;
+  }
+
+  assert(!threw,                      'floor-above-1.00-no-throw',         'passRate above FLOOR_PASS_RATE must not throw');
+  assert(fs.existsSync(resultsTsv),   'floor-above-1.00-baseline-written', 'Baseline file must be written when passRate > FLOOR_PASS_RATE');
+  assert(result && result.verdict === 'baseline', 'floor-above-1.00-verdict-baseline', `Expected verdict=baseline, got ${result && result.verdict}`);
+}
+
+{
+  // U5 — FLOOR_PASS_RATE named constant is exported and equals 0.70
+  assert(
+    typeof FLOOR_PASS_RATE === 'number',
+    'floor-constant-exported-as-number',
+    `FLOOR_PASS_RATE must be a number; got ${typeof FLOOR_PASS_RATE}`
+  );
+  assert(
+    FLOOR_PASS_RATE === 0.70,
+    'floor-constant-value-is-0.70',
+    `FLOOR_PASS_RATE must equal 0.70; got ${FLOOR_PASS_RATE}`
+  );
+
+  // Also verify the constant name appears literally in the source file
+  const srcPath  = path.join(root, '.github', 'scripts', 'watermark-gate.js');
+  const srcText  = fs.readFileSync(srcPath, 'utf8');
+  assert(
+    /FLOOR_PASS_RATE/.test(srcText),
+    'floor-constant-name-in-source',
+    'String "FLOOR_PASS_RATE" not found in watermark-gate.js source'
+  );
 }
 
 // ── Summary ───────────────────────────────────────────────────────────────────
