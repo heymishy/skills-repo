@@ -1611,6 +1611,307 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "2026-04-14-skills-platform-phase3",
+      "name": "Skills Platform — Phase 3: Governance Hardening, T3M1 Close, and Enterprise Scale",
+      "stage": "definition",
+      "health": "green",
+      "discoveryArtefact": "artefacts/2026-04-14-skills-platform-phase3/discovery.md",
+      "benefitMetricArtefact": "artefacts/2026-04-14-skills-platform-phase3/benefit-metric.md",
+      "nfrProfileArtefact": "artefacts/2026-04-14-skills-platform-phase3/nfr-profile.md",
+      "metaBenefit": true,
+      "slicingStrategy": "risk-first",
+      "storyCount": 18,
+      "epicCount": 7,
+      "createdAt": "2026-04-14",
+      "updatedAt": "2026-04-14",
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "T3M1 audit question coverage",
+          "target": "8/8 questions answered by independent non-engineer reviewer",
+          "baseline": "3/8 at Phase 2 close",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["p3.2a", "p3.2b"]
+        },
+        {
+          "id": "M2",
+          "name": "Assurance gate substantive signal (completedAt duration)",
+          "target": "All post-Phase-3 production traces show completedAt >50ms after startedAt",
+          "baseline": "1–2ms (Phase 2 actuals, adversarial audit 2026-04-12)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["p3.1b"]
+        },
+        {
+          "id": "M3",
+          "name": "Post-merge silent failure detection rate",
+          "target": "Zero silent failures persisting beyond one CI cycle",
+          "baseline": "4 silent failures across Phase 2 (PRs #51, #52, #56)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["p3.1a", "p3.5"]
+        },
+        {
+          "id": "M4",
+          "name": "Enterprise approval channel end-to-end",
+          "target": "At least one complete DoR sign-off via Teams or Jira adapter",
+          "baseline": "GitHub Issue adapter only — no enterprise channel exists",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["p3.8"]
+        },
+        {
+          "id": "M5",
+          "name": "AGENTS.md adapter: non-GitHub inner loop validated",
+          "target": "One complete story delivered end-to-end via real non-GitHub agent",
+          "baseline": "Adapter delivered but validated against fixture mocks only (Phase 2)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["p3.9"]
+        },
+        {
+          "id": "MM1",
+          "name": "Estimation calibration continuity (Phase 3 E1→E3)",
+          "target": "Phase 3 E2 estimates within 25% of E3 actuals for ≥70% of stories",
+          "baseline": "Phase 2 E3 actuals in workspace/estimation-norms.md",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["p3.1a","p3.1b","p3.1c","p3.1d","p3.1e","p3.2a","p3.2b","p3.3","p3.4","p3.5","p3.6","p3.7","p3.8","p3.9","p3.10","p3.11","p3.12","p3.13"]
+        },
+        {
+          "id": "MM2",
+          "name": "Outer loop self-sufficiency: zero blocking lookups",
+          "target": "Zero blocking external lookups during Phase 3 outer loop stages",
+          "baseline": "Zero blocking lookups during Phase 2 outer loop (established as baseline)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["p3.5","p3.6","p3.10","p3.12"]
+        },
+        {
+          "id": "MM3",
+          "name": "Priority 1 hardening: reduction in governance check failures per story",
+          "target": "Zero npm test failures on master after any Phase 3 story merge",
+          "baseline": "Phase 2: non-zero post-merge governance failures (establishing Phase 3 baseline from first PR)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["p3.1a","p3.1b","p3.1c","p3.1d","p3.1e","p3.4","p3.7"]
+        },
+        {
+          "id": "CR1",
+          "name": "T3M1 independent validation on record",
+          "target": "8/8 MODEL-RISK.md audit questions answered by named independent reviewer with date and role on record",
+          "baseline": "Not on record — prerequisite: Priority 2 trace-field stories must be DoD-complete first",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["p3.2a","p3.2b","p3.7","p3.13"]
+        },
+        {
+          "id": "CR2",
+          "name": "Gate structural independence: agent cannot weaken its own gate",
+          "target": "Gate scripts in separate repo, CI validates SHA-256 checksum before execution",
+          "baseline": "Gate scripts in delivery repo — agent has write access (structural gap confirmed Phase 2)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["p3.3","p3.4"]
+        }
+      ],
+      "epics": [
+        { "slug": "e1-governance-chain-integrity", "name": "Governance Chain Integrity Hardened", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e1-governance-chain-integrity.md", "stories": ["p3.1a","p3.1b","p3.1c","p3.1d","p3.1e"] },
+        { "slug": "e2-t3m1-audit-gap-closure", "name": "T3M1 Audit Gap Closed", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e2-t3m1-audit-gap-closure.md", "stories": ["p3.2a","p3.2b"] },
+        { "slug": "e3-platform-structural-integrity", "name": "Platform Structural Integrity", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e3-platform-structural-integrity.md", "stories": ["p3.3","p3.4"] },
+        { "slug": "e4-windows-ci-parity-pipeline-evolution", "name": "Windows CI Parity and Pipeline Evolution", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e4-windows-ci-parity-pipeline-evolution.md", "stories": ["p3.5","p3.6"] },
+        { "slug": "e5-cross-team-trace-registry", "name": "Cross-Team Trace Registry", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e5-cross-team-trace-registry.md", "stories": ["p3.7"] },
+        { "slug": "e6-enterprise-adapters-agents-validation", "name": "Enterprise Adapters and AGENTS.md Validation", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e6-enterprise-adapters-agents-validation.md", "stories": ["p3.8","p3.9"] },
+        { "slug": "e7-platform-maturity", "name": "Platform Maturity", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e7-platform-maturity.md", "stories": ["p3.10","p3.11","p3.12","p3.13"] }
+      ],
+      "guardrails": [
+        {
+          "id": "MC-SEC-01",
+          "category": "mandatory-constraint",
+          "label": "No user-supplied content in innerHTML without sanitisation",
+          "status": "na",
+          "evidence": "No viz/DOM changes in any E1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "No credentials, tokens, or personal data in committed files",
+          "status": "met",
+          "evidence": "All E1 stories specify read-only operations. p3.1a, p3.1b, p3.1c, p3.1d: read-only filesystem access only, no network calls. p3.1e: documentation only. No credentials or PII in any deliverable.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-SEC-03",
+          "category": "mandatory-constraint",
+          "label": "Viz reads local JSON only — no external fetch calls",
+          "status": "na",
+          "evidence": "No viz changes in any E1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-CORRECT-01",
+          "category": "mandatory-constraint",
+          "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)",
+          "status": "met",
+          "evidence": "p3.1b Architecture Constraints cite ADR-002 — new gate checks must evaluate at least one evidence field per file, not merely assert file existence.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-CORRECT-02",
+          "category": "mandatory-constraint",
+          "label": "Fields written to pipeline-state.json must exist in schema",
+          "status": "met",
+          "evidence": "p3.1b Architecture Constraints cite ADR-003 — any new gate output fields (e.g. checksRun, failedChecks) must be added to pipeline-state.schema.json in the same commit.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-CORRECT-03",
+          "category": "mandatory-constraint",
+          "label": "Fields read by viz from pipeline-state.json must exist in schema",
+          "status": "na",
+          "evidence": "No new pipeline-state.json fields read by viz introduced in E1 stories reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-SELF-01",
+          "category": "mandatory-constraint",
+          "label": "pipeline-viz.html renders without build step, server, or network",
+          "status": "na",
+          "evidence": "No viz changes in any E1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-SELF-02",
+          "category": "mandatory-constraint",
+          "label": "No npm devDependencies in pipeline-viz.html runtime",
+          "status": "na",
+          "evidence": "No viz changes in any E1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-CONSIST-01",
+          "category": "mandatory-constraint",
+          "label": "Stage enum in schema updated when skill adds/removes stage",
+          "status": "na",
+          "evidence": "No new pipeline stages added or removed in E1 stories reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-CONSIST-02",
+          "category": "mandatory-constraint",
+          "label": "Gate add/remove synced with SKILL.md criteria",
+          "status": "na",
+          "evidence": "No new governance gates added or removed in E1 stories reviewed (p3.1b extends an existing gate, not a new gate)",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-A11Y-01",
+          "category": "mandatory-constraint",
+          "label": "Interactive elements keyboard-accessible",
+          "status": "na",
+          "evidence": "No viz/UI changes in any E1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-A11Y-02",
+          "category": "mandatory-constraint",
+          "label": "Colour not sole indicator of gate status (icons/labels present)",
+          "status": "na",
+          "evidence": "No viz/UI changes in any E1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "ADR-002",
+          "category": "adr",
+          "label": "Gates must use evidence fields, not stage-proxy",
+          "status": "met",
+          "evidence": "p3.1b Architecture Constraints cite ADR-002 — assurance gate extension must evaluate at least one evidence field per file. Assessed in p3.1b-assurance-gate-substantive-checks-review-1.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "ADR-003",
+          "category": "adr",
+          "label": "Schema-first: fields defined before use",
+          "status": "met",
+          "evidence": "p3.1b Architecture Constraints cite ADR-003 — new gate output fields added to pipeline-state.schema.json in same commit. Assessed in p3.1b-assurance-gate-substantive-checks-review-1.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "ADR-008",
+          "category": "adr",
+          "label": "DoR touch-point contract binding at pre-merge — no silent scope bundling",
+          "status": "met",
+          "evidence": "p3.1c Architecture Constraints cite ADR-008 — anti-overfitting gate change applies only to proposals evaluated after merge; retroactive re-evaluation explicitly excluded. Assessed in p3.1c-test-suite-integrity-review-1.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "ADR-009",
+          "category": "adr",
+          "label": "Evaluation and write-back workflows must be separate triggers with separate permission scopes",
+          "status": "met",
+          "evidence": "p3.1a and p3.1d Architecture Constraints both cite ADR-009. p3.1a: check-trace-commit.js reads origin/traces (not local). p3.1d Option A: scheduled workflow must follow two-workflow CI audit pattern. Assessed in p3.1a-review-1 and p3.1d-review-1.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "ADR-010",
+          "category": "adr",
+          "label": "CI audit records must be persisted to main post-merge, not to feature branches",
+          "status": "met",
+          "evidence": "p3.1a and p3.1d Architecture Constraints both cite ADR-010. p3.1a reads from origin/traces (post-merge main). p3.1d Option A: scheduled workflow persists audit records to main post-merge. Assessed in p3.1a-review-1 and p3.1d-review-1.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        }
+      ],
+      "stories": [
+        { "slug": "p3.1a", "name": "Trace-commit observability", "stage": "definition-of-ready", "dorStatus": "signed-off", "reviewStatus": "passed", "highFindings": 0, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1a-trace-commit-observability-review-1.md", "testPlan": { "status": "written", "totalTests": 12, "passing": 0 }, "acTotal": 6, "acVerified": 0, "health": "green", "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "updatedAt": "2026-04-14", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1a-trace-commit-observability.md" },
+        { "slug": "p3.1b", "name": "Assurance gate substantive checks", "stage": "definition-of-ready", "dorStatus": "signed-off", "reviewStatus": "passed", "highFindings": 0, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1b-assurance-gate-substantive-checks-review-1.md", "testPlan": { "status": "written", "totalTests": 15, "passing": 0 }, "acTotal": 6, "acVerified": 0, "health": "green", "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "updatedAt": "2026-04-14", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1b-assurance-gate-substantive-checks.md" },
+        { "slug": "p3.1c", "name": "Test suite integrity", "stage": "definition-of-ready", "dorStatus": "signed-off", "reviewStatus": "passed", "highFindings": 0, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1c-test-suite-integrity-review-1.md", "testPlan": { "status": "written", "totalTests": 11, "passing": 0 }, "acTotal": 5, "acVerified": 0, "health": "green", "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "updatedAt": "2026-04-14", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1c-test-suite-integrity.md" },
+        { "slug": "p3.1d", "name": "Bitbucket DC auth tests", "stage": "definition-of-ready", "dorStatus": "signed-off", "reviewStatus": "passed", "highFindings": 0, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1d-bitbucket-dc-auth-tests-review-1.md", "testPlan": { "status": "written", "totalTests": 10, "passing": 0 }, "acTotal": 5, "acVerified": 0, "health": "green", "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "updatedAt": "2026-04-14", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1d-bitbucket-dc-auth-tests.md" },
+        { "slug": "p3.1e", "name": "Agent behaviour observability register", "stage": "definition-of-ready", "dorStatus": "signed-off", "reviewStatus": "passed", "highFindings": 0, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1e-agent-behaviour-observability-register-review-1.md", "testPlan": { "status": "written", "totalTests": 7, "passing": 0 }, "acTotal": 3, "acVerified": 0, "health": "green", "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "updatedAt": "2026-04-14", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1e-agent-behaviour-observability-register.md" },
+        { "slug": "p3.2a", "name": "T3M1 trace fields", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.2a-t3m1-trace-fields.md" },
+        { "slug": "p3.2b", "name": "T3M1 tamper-evidence registry", "stage": "not-started", "assumption": "ASSUMPTION-02", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.2b-t3m1-tamper-evidence-registry.md" },
+        { "slug": "p3.3", "name": "Gate structural independence", "stage": "not-started", "assumption": "ASSUMPTION-01", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.3-gate-structural-independence.md" },
+        { "slug": "p3.4", "name": "Eval anti-gaming controls", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.4-eval-anti-gaming-controls.md" },
+        { "slug": "p3.5", "name": "Windows native trace validator", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.5-windows-native-trace-validator.md" },
+        { "slug": "p3.6", "name": "Pipeline evolution dispatch", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.6-pipeline-evolution-dispatch.md" },
+        { "slug": "p3.7", "name": "Cross-team trace registry", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.7-cross-team-trace-registry.md" },
+        { "slug": "p3.8", "name": "Enterprise approval channel adapters", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.8-enterprise-approval-channel-adapters.md" },
+        { "slug": "p3.9", "name": "AGENTS.md compatibility matrix", "stage": "not-started", "scopeNote": "compat-matrix-only-phase3", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.9-agents-md-compatibility-matrix.md" },
+        { "slug": "p3.10", "name": "EA registry live integration", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.10-ea-registry-live-integration.md" },
+        { "slug": "p3.11", "name": "Estimation calibration eval", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.11-estimation-calibration-eval.md" },
+        { "slug": "p3.12", "name": "Squad contribution flow", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.12-squad-contribution-flow.md" },
+        { "slug": "p3.13", "name": "Compliance monitoring report", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.13-compliance-monitoring-report.md" }
+      ]
     }
   ]
 }

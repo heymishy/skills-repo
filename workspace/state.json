@@ -27,15 +27,53 @@
                           "observabilityGapsIdentified":  4,
                           "status":  "complete"
                       },
-    "lastUpdated":  "2026-04-14T20:00:00Z",
-    "currentPhase":  "pre-phase-3-discovery",
+    "lastUpdated":  "2026-04-14T12:00:00Z",
+    "currentPhase":  "phase-3-definition",
     "cycle":  {
                   "discovery":  {
-                                    "status":  "completed",
-                                    "artefact":  "artefacts/2026-04-11-skills-platform-phase2/discovery.md",
-                                    "completedAt":  null
+                                    "status":  "complete",
+                                    "artefact":  "artefacts/2026-04-14-skills-platform-phase3/discovery.md",
+                                    "completedAt":  "2026-04-14",
+                                    "approvedBy":  "Operator, 2026-04-14. ASSUMPTION-01 through ASSUMPTION-04 confirmed."
+                                },
+                  "benefitMetric":  {
+                                        "status":  "complete",
+                                        "artefact":  "artefacts/2026-04-14-skills-platform-phase3/benefit-metric.md",
+                                        "completedAt":  "2026-04-14",
+                                        "metrics":  ["M1","M2","M3","M4","M5","MM1","MM2","MM3","CR1","CR2"]
+                                    },
+                  "definition": {
+                                    "status": "complete",
+                                    "artefact": "artefacts/2026-04-14-skills-platform-phase3/",
+                                    "completedAt": "2026-04-14",
+                                    "epicCount": 7,
+                                    "storyCount": 18,
+                                    "slicingStrategy": "risk-first",
+                                    "nfrProfile": "artefacts/2026-04-14-skills-platform-phase3/nfr-profile.md",
+                                    "scopeAdjustment": "p3.9 scoped to compatibility matrix only — no live delivery run (operator confirmed 2026-04-14, ASSUMPTION-04 gated)"
                                 }
               },
+    "estimate": {
+        "e2": {
+            "date": "2026-04-14",
+            "mode": "E2",
+            "storyCount": 18,
+            "complexity": { "1": 9, "2": 6, "3": 3 },
+            "outerLoopFocusH": 2.5,
+            "outerLoopFocusHRange": "2–3h (operator-stated directly)",
+            "engagementFraction": 0.25,
+            "impliedCalendarDays": 5,
+            "p75FocusHPerStory": 0.17,
+            "premiumRequestsForecast": 8,
+            "confidence": "medium",
+            "calibratedComparison": {
+                "phase1Actual": "1.4h/story — 28% engagement, 2 days, 8 stories (reference baseline)",
+                "phase2Actual": "0.08h/story — 25% engagement, 2 days, 13 stories (low-confidence anomaly, agent-heavy)",
+                "phase3E2": "0.17h/story — consistent with agent-heavy outer loop; between phase2 anomaly and phase1 reference"
+            },
+            "notes": "No E1 recorded — first Phase 3 estimate. outerLoopFocusH provided directly by operator (2–3h range; 2.5h midpoint used for p75 derivation). Phase 2 anomaly excluded as calibration anchor."
+        }
+    },
     "docsPRsMerged":  [61, 63, 64, 65],
     "openPRs":  [
                     {
@@ -52,18 +90,16 @@
                     }
                 ],
     "checkpoint":  {
-                       "writtenAt":  "2026-04-14T20:00:00Z",
-                       "contextAtWrite":  "End of 2026-04-14 session. Phase 3 backlog complete: AC1-AC9 all fully specified with acceptance criteria in workspace/phase3-backlog-test-coverage-governance-gaps.md. Validation playbook updated with Step 0 squad registration for trial users. Exceptions.json conversion identified as pre-conversation deliverable (Decision 2A). Risk/audit conversation prep completed — positions locked: (1) validator independence = not yet solved, Phase 3 closure path; (2) exception register = convert backlog to exceptions.json before first colleague conversation; (3) AC1 = known gap, owned, on register with Phase 3 closure story. Skill versioning question answered: git history + PR records + contract checks cover structural integrity; no hash pinning against upstream canonical — known open item.",
-                       "resumeInstruction":  "New session: Two draft PRs open — #66 (workspace checkpoint + learnings) and #67 (AC8+AC9 backlog + playbook squad registration). Merge both before starting Phase 3 work. Pre-conversation deliverable: convert workspace/phase3-backlog-test-coverage-governance-gaps.md AC1-AC9 entries into a structured exceptions.json deviation register (fields: control-id, description, date-identified, owner, remediation-story, risk-acceptance-rationale). After that: run /workflow to confirm Phase 3 discovery entry condition, then /discovery on the test-coverage-governance-gaps backlog file.",
+                       "writtenAt":  "2026-04-14",
+                       "contextAtWrite":  "Phase 3 definition complete. 7 epics, 18 stories written (risk-first slicing, p3.1a–p3.13). NFR profile written. benefit-metric.md coverage matrix updated with all story slugs. pipeline-state.json updated: stage definition, all contributingStories populated, epics and stories arrays populated. p3.9 scoped to compat matrix only per operator instruction. p3.2b and p3.3 are ASSUMPTION-gated (ASSUMPTION-02 and ASSUMPTION-01 respectively). Next step: /review per story batch.",
+                       "resumeInstruction":  "Phase 3 definition is complete. Next pipeline step is /review — run it per story or per epic batch starting with E1 stories (p3.1a–p3.1e). All 18 story artefacts are at artefacts/2026-04-14-skills-platform-phase3/stories/. After /review passes (no HIGH findings), proceed to /test-plan per story, then /definition-of-ready. Also run /estimate E2 to record Phase 3 estimate before coding begins.",
                        "pendingActions":  [
-                                              "IMMEDIATE: Merge PR #66 (workspace checkpoint + learnings.md) — draft, CI should be green",
-                                              "IMMEDIATE: Merge PR #67 (AC8+AC9 backlog + validation playbook Step 0) — draft, all 22 checks passed locally",
-                                              "PRE-CONVERSATION: Convert AC1-AC9 backlog entries to structured exceptions.json with fields: control-id, description, date-identified, owner, remediation-story, risk-acceptance-rationale",
-                                              "Phase 3: Run /workflow then /discovery on workspace/phase3-backlog-test-coverage-governance-gaps.md",
-                                              "Validation playbook: Parts 2 and 3 not yet run or recorded — needs genuine second operator for M1",
-                                              "Tonight: trial squad onboarding — they need validation-playbook.md Step 0 (now in PR #67)",
-                                              "Tomorrow: Run /improve with combined signal (operator learnings + trial squad feedback)",
-                                              "Deferred: git stash pop for FINAL-TEST.md and TEST-TRACE.md deletions (confirm with operator before restoring)"
+                                              "Run /review on Phase 3 stories — starting with E1 batch (p3.1a through p3.1e). All HIGH findings must be resolved before moving to /test-plan.",
+                                              "Run /estimate E2: record Phase 3 refined estimates now that 18 stories and their complexity ratings are known (9 at complexity 1, 6 at complexity 2, 3 at complexity 3).",
+                                              "Confirm ASSUMPTION-01 (separate platform-infrastructure repo feasibility) before DoR for p3.3.",
+                                              "Confirm ASSUMPTION-02 (tamper-evidence registry type: GitHub Artifact Attestation vs read-only registry repo) before DoR for p3.2b.",
+                                              "Push 4+ local commits to origin: 5e312e4 (discovery), e3753d7 (state checkpoint), c9ee368 (benefit-metric), plus the definition commit once created.",
+                                              "Validation playbook: Parts 2 and 3 not yet run or recorded (deferred from Phase 2 — requires genuine second operator for M1)."
                                           ]
                    }
 }
