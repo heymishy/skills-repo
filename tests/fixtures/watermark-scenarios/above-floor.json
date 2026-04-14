@@ -1,0 +1,11 @@
+{
+  "skillSetHash": "floor-test-hash",
+  "surfaceType": "github-copilot",
+  "scenarios": [
+    { "id": "s1", "pass": true },
+    { "id": "s2", "pass": true },
+    { "id": "s3", "pass": true },
+    { "id": "s4", "pass": true },
+    { "id": "s5", "pass": true }
+  ]
+}
