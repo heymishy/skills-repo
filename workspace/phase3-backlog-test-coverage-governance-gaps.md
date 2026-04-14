@@ -116,6 +116,44 @@ Additionally:
 
 ---
 
+### AC8 — Lift platform invariants from README into architecture-guardrails.md and Coding Standards
+
+**Requirement:** The core principles stated in README.md (spec immutability, spec as truth, artefact-first convention, pipeline step sequencing) must be promoted into machine-readable or agent-readable locations that are enforced at review or gate time, not just visible in human-browsable documentation.
+
+**Acceptance:**
+- [ ] `.github/architecture-guardrails.md` contains a **Platform Invariants** section listing at minimum: spec immutability (artefacts are read-only pipeline inputs), spec as truth (no implementation without a corresponding artefact chain), human approval at every merge gate, and gate structural independence
+- [ ] `copilot-instructions.md` Coding Standards section (currently `[FILL IN BEFORE COMMITTING]`) is populated with those same invariants as active working constraints, not background reading
+- [ ] README.md is updated to point to `.github/architecture-guardrails.md` as the canonical source — it becomes a pointer, not the source
+- [ ] `check-governance-sync.js` or a new `check-platform-invariants.js` validates that the Platform Invariants section exists and is non-empty on every PR
+- [ ] A test is added: `invariants-section-present-and-non-empty` — fails if the section is missing or contains only placeholder text
+- [ ] The `/review` Category E check (architecture) references `architecture-guardrails.md` invariants — already the case per existing instructions, but a test scenario in `workspace/suite.json` confirms it
+
+**Why:** A principle that only lives in README.md is advisory. Every agent session loads `copilot-instructions.md` before acting — if the invariants are not there, agents are making decisions without the constraints loaded. Any PR that removes a core invariant must fail the governance gate, not just fail human review. The spec-immutability learning (2026-04-14, `workspace/learnings.md`) identified this gap concretely: the `/estimation` skill was delivered without a full artefact chain because nothing in the gate suite required one.
+
+**Origin:** Learning signal from 2026-04-14 HANDOFF.md porting session. Recorded in `workspace/learnings.md` under "Pipeline gap — spec immutability principle broken by out-of-band feature delivery".
+
+---
+
+### AC9 — Artefact-first governance gate (`check-artefact-coverage.js`)
+
+**Requirement:** A governance gate check must enforce the artefact-first rule: every SKILL.md file in `.github/skills/` and every source module in `src/` must have a corresponding DoR artefact file committed to `artefacts/`. A PR that adds or modifies a skill or source module without a linked DoR story must be flagged by the gate, not just by human code review.
+
+**Acceptance:**
+- [ ] `tests/check-artefact-coverage.js` (or `.github/scripts/check-artefact-coverage.js`) enumerates all SKILL.md files in `.github/skills/` and all top-level module directories in `src/`
+- [ ] For each skill/module, the check verifies that at least one DoR file exists in `artefacts/` whose filename contains the skill slug or module name (case-insensitive, hyphen-normalised)
+- [ ] Skills or modules with no matching DoR file are reported as `UNCOVERED` findings with their paths
+- [ ] The check exits non-zero if any UNCOVERED finding exists AND the finding is not in an explicit exemption list in `package.json` or a `artefact-coverage-exemptions.json` config file
+- [ ] `package.json` test chain is updated to include this check
+- [ ] **Baseline audit:** Before the gate is enforced, a one-time audit lists all current UNCOVERED skills and modules. Known gaps (e.g. `/estimation` skill, `/decisions` skill) are added to the exemption list with a comment explaining the gap and the owner. The exemption list is not a permanent waiver — it is a tracked technical debt register. Each item must have a Phase 3 story to close it.
+- [ ] The gate passes on a clean Phase 1+2 repo (all Phase 1 and Phase 2 skills and src/ modules have artefacts)
+- [ ] A test is added: `uncovered-skill-fails-gate`, `covered-skill-passes-gate`, `exempted-skill-passes-gate`, `exempted-skill-requires-comment`
+
+**Why:** The pipeline's spec-immutability principle states that artefacts are the authoritative spec for everything in the repo. Without a gate check, this principle is aspirational. The `/estimation` skill is the concrete evidence of the failure mode: it exists in `.github/skills/` with no discovery, story, test-plan, or DoR, making it untraceable, unportable, and unverifiable by any upgrade-path agent reading Section 7 of HANDOFF.md. This check closes the structural gap. The exemption list makes the technical debt visible rather than hidden.
+
+**Origin:** Learning signal from 2026-04-14 HANDOFF.md porting session. Recorded in `workspace/learnings.md` under "Pipeline gap — spec immutability principle broken by out-of-band feature delivery".
+
+---
+
 ### AC7 — Resolve Bitbucket DC auth test gap
 
 **Requirement:** The four permanently-skipped Bitbucket DC auth tests become either (a) runnable in CI via a GitHub Actions service container, or (b) explicitly documented as requiring local Docker pre-condition with a manual test record on file.
@@ -147,3 +185,5 @@ Additionally:
 | 5 | AC4 — Anti-overfitting harden | Medium | Medium — closes bypass path |
 | 6 | AC7 — Bitbucket DC tests | Medium | Medium — security regression risk |
 | 7 | AC6 — Agent observability doc | Small | High (strategic) — Phase 4 framing |
+| 8 | AC8 — Lift platform invariants from README to guardrails | Small | High — makes spec-immutability principle enforceable |
+| 9 | AC9 — Artefact-first governance gate | Medium | High — prevents out-of-band feature delivery |

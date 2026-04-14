@@ -16,6 +16,57 @@
 
 ---
 
+## Step 0 — Register as a squad (trial users only)
+
+**Who this is for:** If you are a trial user asked to validate the platform, complete this step before Part 1. It registers your team in the fleet so that the pipeline visualiser and governance checks reflect your squad.
+
+If you are the platform maintainer re-running the playbook, skip this step — you are already registered in the fleet.
+
+### What a squad entry is
+
+Each squad is a single JSON file in `fleet/squads/`. The file tells the fleet aggregator where your delivery repo lives and what your `pipeline-state.json` URL is. The fleet panel in the pipeline visualiser reads from this data.
+
+### Create your squad file
+
+1. Clone the skills repo (see Part 1 Step 1 — or if you are doing this before Part 1, clone it now).
+2. In `fleet/squads/`, create a file named `[your-squad-id].json`. Use a kebab-case identifier that is unique to your team, e.g. `squad-gamma.json`.
+3. Paste and fill in the following template:
+
+```json
+{
+  "squadId": "your-squad-id",
+  "repoUrl": "https://github.com/your-org/your-repo",
+  "pipelineStateUrl": "https://raw.githubusercontent.com/your-org/your-repo/master/.github/pipeline-state.json",
+  "registeredAt": "2026-04-14T09:00:00.000Z",
+  "registry_mode": "publishing"
+}
+```
+
+| Field | What to put |
+|-------|-------------|
+| `squadId` | Same as the filename prefix, e.g. `squad-gamma` |
+| `repoUrl` | HTTPS URL of your delivery repo |
+| `pipelineStateUrl` | Raw GitHub URL to `pipeline-state.json` on your default branch. Must be accessible to the CI runner — use a public repo or a token URL for private repos. |
+| `registeredAt` | ISO 8601 timestamp of now (UTC) |
+| `registry_mode` | Always `"publishing"` for trial squads |
+
+4. Raise a PR adding your file to `fleet/squads/`. **Do not push directly to master** — branch protection is in place. Once merged, the fleet aggregator runs and your squad card appears in `fleet-state.json` and the pipeline visualiser.
+
+### Verify registration
+
+After your PR is merged:
+
+- Open `fleet-state.json` in the repo root and confirm your `squadId` appears in the `squads` array.
+- Open `.github/pipeline-viz.html` in a browser (Step 3 of Part 1) and confirm the Fleet panel lists your squad.
+- Run `npm test` — the fleet aggregation check (`check-fleet-aggregation.js`) must pass with ≥ 2 squad entries.
+
+If any of these fail, check that:
+- The JSON in your squad file is valid (no trailing commas, quoted strings)
+- Your `pipelineStateUrl` responds with a valid JSON document when fetched directly in a browser
+- Your PR was merged before running the validation
+
+---
+
 ## Part 1 — Clean Install Validation (~30 min)
 
 This part confirms the platform installs correctly and all governance checks pass from a cold start. Run every step in order. Do not skip or reorder.
