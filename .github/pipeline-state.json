@@ -1611,6 +1611,121 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "2026-04-14-skills-platform-phase3",
+      "name": "Skills Platform — Phase 3: Governance Hardening, T3M1 Close, and Enterprise Scale",
+      "stage": "benefit-metric",
+      "health": "green",
+      "discoveryArtefact": "artefacts/2026-04-14-skills-platform-phase3/discovery.md",
+      "benefitMetricArtefact": "artefacts/2026-04-14-skills-platform-phase3/benefit-metric.md",
+      "metaBenefit": true,
+      "createdAt": "2026-04-14",
+      "updatedAt": "2026-04-14",
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "T3M1 audit question coverage",
+          "target": "8/8 questions answered by independent non-engineer reviewer",
+          "baseline": "3/8 at Phase 2 close",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M2",
+          "name": "Assurance gate substantive signal (completedAt duration)",
+          "target": "All post-Phase-3 production traces show completedAt >50ms after startedAt",
+          "baseline": "1–2ms (Phase 2 actuals, adversarial audit 2026-04-12)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M3",
+          "name": "Post-merge silent failure detection rate",
+          "target": "Zero silent failures persisting beyond one CI cycle",
+          "baseline": "4 silent failures across Phase 2 (PRs #51, #52, #56)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M4",
+          "name": "Enterprise approval channel end-to-end",
+          "target": "At least one complete DoR sign-off via Teams or Jira adapter",
+          "baseline": "GitHub Issue adapter only — no enterprise channel exists",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M5",
+          "name": "AGENTS.md adapter: non-GitHub inner loop validated",
+          "target": "One complete story delivered end-to-end via real non-GitHub agent",
+          "baseline": "Adapter delivered but validated against fixture mocks only (Phase 2)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "MM1",
+          "name": "Estimation calibration continuity (Phase 3 E1→E3)",
+          "target": "Phase 3 E2 estimates within 25% of E3 actuals for ≥70% of stories",
+          "baseline": "Phase 2 E3 actuals in workspace/estimation-norms.md",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "MM2",
+          "name": "Outer loop self-sufficiency: zero blocking lookups",
+          "target": "Zero blocking external lookups during Phase 3 outer loop stages",
+          "baseline": "Zero blocking lookups during Phase 2 outer loop (established as baseline)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "MM3",
+          "name": "Priority 1 hardening: reduction in governance check failures per story",
+          "target": "Zero npm test failures on master after any Phase 3 story merge",
+          "baseline": "Phase 2: non-zero post-merge governance failures (establishing Phase 3 baseline from first PR)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "CR1",
+          "name": "T3M1 independent validation on record",
+          "target": "8/8 MODEL-RISK.md audit questions answered by named independent reviewer with date and role on record",
+          "baseline": "Not on record — prerequisite: Priority 2 trace-field stories must be DoD-complete first",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "CR2",
+          "name": "Gate structural independence: agent cannot weaken its own gate",
+          "target": "Gate scripts in separate repo, CI validates SHA-256 checksum before execution",
+          "baseline": "Gate scripts in delivery repo — agent has write access (structural gap confirmed Phase 2)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "epics": [],
+      "stories": []
     }
   ]
 }
