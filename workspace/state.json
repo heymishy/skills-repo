@@ -27,8 +27,8 @@
                           "observabilityGapsIdentified":  4,
                           "status":  "complete"
                       },
-    "lastUpdated":  "2026-04-13T12:34:52Z",
-    "currentPhase":  "post-phase-2-checkpoint",
+    "lastUpdated":  "2026-04-14T20:00:00Z",
+    "currentPhase":  "pre-phase-3-discovery",
     "cycle":  {
                   "discovery":  {
                                     "status":  "completed",
@@ -36,14 +36,34 @@
                                     "completedAt":  null
                                 }
               },
+    "docsPRsMerged":  [61, 63, 64, 65],
+    "openPRs":  [
+                    {
+                        "pr":  66,
+                        "branch":  "chore/session-checkpoint-and-learnings-2026-04-14",
+                        "description":  "Workspace checkpoint (state.json) + learnings.md spec-immutability entry",
+                        "status":  "draft — awaiting merge"
+                    },
+                    {
+                        "pr":  67,
+                        "branch":  "docs/phase3-backlog-ac8-ac9-playbook-squad-registration",
+                        "description":  "AC8+AC9 full story blocks in phase3 backlog + Step 0 squad registration in validation playbook",
+                        "status":  "draft — awaiting merge"
+                    }
+                ],
     "checkpoint":  {
-                       "resumeInstruction":  "New session: run \u0027/workflow\u0027 to begin Phase 3. Backlog story \u0027phase3-backlog-trace-commit-observability\u0027 is registered in workspace/ and ready for /discovery intake immediately.",
-                       "contextAtWrite":  "Phase 2 complete: 6/7 stories signed-off (p2.6 blocked). Post-merge workflow trace-commit.yml fixed (PR #55). Four observability gaps logged to learnings.md. Phase 3 backlog story created: phase3-backlog-trace-commit-observability.md. Ready for phase 3 discovery.",
-                       "writtenAt":  "2026-04-13T12:34:52Z",
+                       "writtenAt":  "2026-04-14T20:00:00Z",
+                       "contextAtWrite":  "End of 2026-04-14 session. Phase 3 backlog complete: AC1-AC9 all fully specified with acceptance criteria in workspace/phase3-backlog-test-coverage-governance-gaps.md. Validation playbook updated with Step 0 squad registration for trial users. Exceptions.json conversion identified as pre-conversation deliverable (Decision 2A). Risk/audit conversation prep completed — positions locked: (1) validator independence = not yet solved, Phase 3 closure path; (2) exception register = convert backlog to exceptions.json before first colleague conversation; (3) AC1 = known gap, owned, on register with Phase 3 closure story. Skill versioning question answered: git history + PR records + contract checks cover structural integrity; no hash pinning against upstream canonical — known open item.",
+                       "resumeInstruction":  "New session: Two draft PRs open — #66 (workspace checkpoint + learnings) and #67 (AC8+AC9 backlog + playbook squad registration). Merge both before starting Phase 3 work. Pre-conversation deliverable: convert workspace/phase3-backlog-test-coverage-governance-gaps.md AC1-AC9 entries into a structured exceptions.json deviation register (fields: control-id, description, date-identified, owner, remediation-story, risk-acceptance-rationale). After that: run /workflow to confirm Phase 3 discovery entry condition, then /discovery on the test-coverage-governance-gaps backlog file.",
                        "pendingActions":  [
-                                              "Phase 3: Run /discovery on phase3-backlog-trace-commit-observability story",
-                                              "Phase 3: Define 4 ACs into 4 separate stories or 1 epic (decision needed)",
-                                              "Learnings: Review Phase 2 /improve (formerly /levelup) decisions logged in workspace/learnings.md"
+                                              "IMMEDIATE: Merge PR #66 (workspace checkpoint + learnings.md) — draft, CI should be green",
+                                              "IMMEDIATE: Merge PR #67 (AC8+AC9 backlog + validation playbook Step 0) — draft, all 22 checks passed locally",
+                                              "PRE-CONVERSATION: Convert AC1-AC9 backlog entries to structured exceptions.json with fields: control-id, description, date-identified, owner, remediation-story, risk-acceptance-rationale",
+                                              "Phase 3: Run /workflow then /discovery on workspace/phase3-backlog-test-coverage-governance-gaps.md",
+                                              "Validation playbook: Parts 2 and 3 not yet run or recorded — needs genuine second operator for M1",
+                                              "Tonight: trial squad onboarding — they need validation-playbook.md Step 0 (now in PR #67)",
+                                              "Tomorrow: Run /improve with combined signal (operator learnings + trial squad feedback)",
+                                              "Deferred: git stash pop for FINAL-TEST.md and TEST-TRACE.md deletions (confirm with operator before restoring)"
                                           ]
                    }
 }
