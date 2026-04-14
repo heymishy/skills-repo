@@ -339,6 +339,30 @@ Alternatively, if using `create_file` or similar tools that overwrite the full f
 
 **Finding:** This is a form of independent review that the pipeline does not currently formalise. It is structurally similar to the "second pair of eyes" operator step in the oversight model, but applied at the AI output level rather than the artefact level. Its effectiveness depends entirely on the operator remembering to do it and having context available in the verification session.
 
+---
+
+## Pipeline gap — spec immutability principle broken by out-of-band feature delivery
+
+### Observed — 2026-04-14 (HANDOFF.md Section 7 porting session)
+
+**Circumstance:** While writing Section 7 of HANDOFF.md — the upgrade-path agent index — the operator attempted to trace every feature in the current repo back to a Phase 1 or Phase 2 artefact (DoR, contract, test plan). This exercise surfaced that certain features in the repo do not have a corresponding artefact chain. The `/estimation` skill was noted as a concrete example: it was delivered without a discovery artefact, benefit-metric, stories, test-plan, or DoR. It exists in the codebase but cannot be referenced in Section 7 because there is no spec to link to.
+
+**The spec immutability principle (from README):** The artefacts directory contains pipeline inputs — discovery artefacts, stories, test plans, DoR checklists, verification scripts, and review reports. These files are the specification that governs what gets built. They are read-only inputs for the coding agent. The principle implies a one-to-one correspondence: every feature in the codebase must trace back to an artefact chain. A feature with no artefact chain is untraceable, and therefore cannot be reproduced, ported, or validated by an agent reading the spec.
+
+**The practical failure mode:** When an upgrade-path agent reads Section 7 and works through the story index, it builds a repo that matches the spec. Any feature that was never in the spec will be absent from the resulting repo — silently, with no error. The operator then has to reconcile by hand, which is exactly the friction that the pipeline was designed to eliminate.
+
+**Root cause:** The pipeline has no enforcement mechanism that prevents a change from landing on master without a corresponding artefact chain. Changes can be made to SKILL.md files, scripts, and src/ directly via PR without going through discovery → definition → DoR. The artefact convention is advisory, not structural.
+
+**What is needed:** A governance rule that any new feature — including skill additions, new src/ modules, and new check scripts — must follow the full artefact chain before the implementation is merged. The rule must apply to README-level primitives, design principles, and skill behaviours, not just to functional stories. The `/estimation` skill is the canonical example of what happens when this rule is absent.
+
+**Proposed rule (for `copilot-instructions.md` or a new governance gate):**
+
+> **Artefact-first rule:** Every new feature, skill, or behavioural change merged to master must have a corresponding artefact chain (discovery → benefit-metric → story → test-plan → DoR) committed to `artefacts/` before the implementation file is merged. A PR that adds or modifies a SKILL.md file, a src/ module, a check script, or a `.github/skills/` file without a linked DoR story is out-of-process. Exception: documentation-only changes, typo fixes, and configuration changes that make no behavioural difference do not require a full chain. The governance gate for this rule should check that any changed SKILL.md or src/ module has a corresponding committed test-plan artefact that covers its ACs.
+
+**Scope of the gap in the current repo:** The following are known or suspected to lack a full artefact chain: `/estimation` skill, `/decisions` skill (partial — some ACs exist but the test-plan is incomplete), any SKILL.md file added via direct commit after the Phase 2 delivery window without a matching DoR. A full audit should be run before onboarding the first Westpac squad to establish a clean traceability baseline.
+
+**Action:** Add the artefact-first rule to `copilot-instructions.md` under Coding Standards. Add a governance gate check (`check-artefact-coverage.js` or equivalent) that flags any SKILL.md in `.github/skills/` or module in `src/` that has no corresponding DoR artefact file. Flag for Phase 3 scope or a short-track story. Record as a pre-Westpac-onboarding prerequisite.
+
 **Why it matters:** As AI-generated pipeline outputs become longer and more complex, the probability that any single session misses an error grows. A structured verification step — even a lightweight prompt in a second session — provides a consistent quality floor that doesn't depend on operator vigilance under time pressure.
 
 **Proposed formalisation options (for /improve consideration):**
