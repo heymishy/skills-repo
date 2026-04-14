@@ -1737,12 +1737,167 @@
         { "slug": "e6-enterprise-adapters-agents-validation", "name": "Enterprise Adapters and AGENTS.md Validation", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e6-enterprise-adapters-agents-validation.md", "stories": ["p3.8","p3.9"] },
         { "slug": "e7-platform-maturity", "name": "Platform Maturity", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e7-platform-maturity.md", "stories": ["p3.10","p3.11","p3.12","p3.13"] }
       ],
+      "guardrails": [
+        {
+          "id": "MC-SEC-01",
+          "category": "mandatory-constraint",
+          "label": "No user-supplied content in innerHTML without sanitisation",
+          "status": "na",
+          "evidence": "No viz/DOM changes in any E1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "No credentials, tokens, or personal data in committed files",
+          "status": "met",
+          "evidence": "All E1 stories specify read-only operations. p3.1a, p3.1b, p3.1c, p3.1d: read-only filesystem access only, no network calls. p3.1e: documentation only. No credentials or PII in any deliverable.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-SEC-03",
+          "category": "mandatory-constraint",
+          "label": "Viz reads local JSON only — no external fetch calls",
+          "status": "na",
+          "evidence": "No viz changes in any E1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-CORRECT-01",
+          "category": "mandatory-constraint",
+          "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)",
+          "status": "met",
+          "evidence": "p3.1b Architecture Constraints cite ADR-002 — new gate checks must evaluate at least one evidence field per file, not merely assert file existence.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-CORRECT-02",
+          "category": "mandatory-constraint",
+          "label": "Fields written to pipeline-state.json must exist in schema",
+          "status": "met",
+          "evidence": "p3.1b Architecture Constraints cite ADR-003 — any new gate output fields (e.g. checksRun, failedChecks) must be added to pipeline-state.schema.json in the same commit.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-CORRECT-03",
+          "category": "mandatory-constraint",
+          "label": "Fields read by viz from pipeline-state.json must exist in schema",
+          "status": "na",
+          "evidence": "No new pipeline-state.json fields read by viz introduced in E1 stories reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-SELF-01",
+          "category": "mandatory-constraint",
+          "label": "pipeline-viz.html renders without build step, server, or network",
+          "status": "na",
+          "evidence": "No viz changes in any E1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-SELF-02",
+          "category": "mandatory-constraint",
+          "label": "No npm devDependencies in pipeline-viz.html runtime",
+          "status": "na",
+          "evidence": "No viz changes in any E1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-CONSIST-01",
+          "category": "mandatory-constraint",
+          "label": "Stage enum in schema updated when skill adds/removes stage",
+          "status": "na",
+          "evidence": "No new pipeline stages added or removed in E1 stories reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-CONSIST-02",
+          "category": "mandatory-constraint",
+          "label": "Gate add/remove synced with SKILL.md criteria",
+          "status": "na",
+          "evidence": "No new governance gates added or removed in E1 stories reviewed (p3.1b extends an existing gate, not a new gate)",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-A11Y-01",
+          "category": "mandatory-constraint",
+          "label": "Interactive elements keyboard-accessible",
+          "status": "na",
+          "evidence": "No viz/UI changes in any E1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "MC-A11Y-02",
+          "category": "mandatory-constraint",
+          "label": "Colour not sole indicator of gate status (icons/labels present)",
+          "status": "na",
+          "evidence": "No viz/UI changes in any E1 story deliverables reviewed",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "ADR-002",
+          "category": "adr",
+          "label": "Gates must use evidence fields, not stage-proxy",
+          "status": "met",
+          "evidence": "p3.1b Architecture Constraints cite ADR-002 — assurance gate extension must evaluate at least one evidence field per file. Assessed in p3.1b-assurance-gate-substantive-checks-review-1.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "ADR-003",
+          "category": "adr",
+          "label": "Schema-first: fields defined before use",
+          "status": "met",
+          "evidence": "p3.1b Architecture Constraints cite ADR-003 — new gate output fields added to pipeline-state.schema.json in same commit. Assessed in p3.1b-assurance-gate-substantive-checks-review-1.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "ADR-008",
+          "category": "adr",
+          "label": "DoR touch-point contract binding at pre-merge — no silent scope bundling",
+          "status": "met",
+          "evidence": "p3.1c Architecture Constraints cite ADR-008 — anti-overfitting gate change applies only to proposals evaluated after merge; retroactive re-evaluation explicitly excluded. Assessed in p3.1c-test-suite-integrity-review-1.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "ADR-009",
+          "category": "adr",
+          "label": "Evaluation and write-back workflows must be separate triggers with separate permission scopes",
+          "status": "met",
+          "evidence": "p3.1a and p3.1d Architecture Constraints both cite ADR-009. p3.1a: check-trace-commit.js reads origin/traces (not local). p3.1d Option A: scheduled workflow must follow two-workflow CI audit pattern. Assessed in p3.1a-review-1 and p3.1d-review-1.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        },
+        {
+          "id": "ADR-010",
+          "category": "adr",
+          "label": "CI audit records must be persisted to main post-merge, not to feature branches",
+          "status": "met",
+          "evidence": "p3.1a and p3.1d Architecture Constraints both cite ADR-010. p3.1a reads from origin/traces (post-merge main). p3.1d Option A: scheduled workflow persists audit records to main post-merge. Assessed in p3.1a-review-1 and p3.1d-review-1.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-14"
+        }
+      ],
       "stories": [
-        { "slug": "p3.1a", "name": "Trace-commit observability", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1a-trace-commit-observability.md" },
-        { "slug": "p3.1b", "name": "Assurance gate substantive checks", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1b-assurance-gate-substantive-checks.md" },
-        { "slug": "p3.1c", "name": "Test suite integrity", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1c-test-suite-integrity.md" },
-        { "slug": "p3.1d", "name": "Bitbucket DC auth tests", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1d-bitbucket-dc-auth-tests.md" },
-        { "slug": "p3.1e", "name": "Agent behaviour observability register", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1e-agent-behaviour-observability-register.md" },
+        { "slug": "p3.1a", "name": "Trace-commit observability", "stage": "review", "reviewStatus": "passed", "highFindings": 0, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1a-trace-commit-observability-review-1.md", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1a-trace-commit-observability.md" },
+        { "slug": "p3.1b", "name": "Assurance gate substantive checks", "stage": "review", "reviewStatus": "passed", "highFindings": 0, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1b-assurance-gate-substantive-checks-review-1.md", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1b-assurance-gate-substantive-checks.md" },
+        { "slug": "p3.1c", "name": "Test suite integrity", "stage": "review", "reviewStatus": "passed", "highFindings": 0, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1c-test-suite-integrity-review-1.md", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1c-test-suite-integrity.md" },
+        { "slug": "p3.1d", "name": "Bitbucket DC auth tests", "stage": "review", "reviewStatus": "passed", "highFindings": 0, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1d-bitbucket-dc-auth-tests-review-1.md", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1d-bitbucket-dc-auth-tests.md" },
+        { "slug": "p3.1e", "name": "Agent behaviour observability register", "stage": "review", "reviewStatus": "passed", "highFindings": 0, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1e-agent-behaviour-observability-register-review-1.md", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1e-agent-behaviour-observability-register.md" },
         { "slug": "p3.2a", "name": "T3M1 trace fields", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.2a-t3m1-trace-fields.md" },
         { "slug": "p3.2b", "name": "T3M1 tamper-evidence registry", "stage": "not-started", "assumption": "ASSUMPTION-02", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.2b-t3m1-tamper-evidence-registry.md" },
         { "slug": "p3.3", "name": "Gate structural independence", "stage": "not-started", "assumption": "ASSUMPTION-01", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.3-gate-structural-independence.md" },
