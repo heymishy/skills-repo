@@ -53,6 +53,27 @@
                                     "scopeAdjustment": "p3.9 scoped to compatibility matrix only — no live delivery run (operator confirmed 2026-04-14, ASSUMPTION-04 gated)"
                                 }
               },
+    "estimate": {
+        "e2": {
+            "date": "2026-04-14",
+            "mode": "E2",
+            "storyCount": 18,
+            "complexity": { "1": 9, "2": 6, "3": 3 },
+            "outerLoopFocusH": 2.5,
+            "outerLoopFocusHRange": "2–3h (operator-stated directly)",
+            "engagementFraction": 0.25,
+            "impliedCalendarDays": 5,
+            "p75FocusHPerStory": 0.17,
+            "premiumRequestsForecast": 8,
+            "confidence": "medium",
+            "calibratedComparison": {
+                "phase1Actual": "1.4h/story — 28% engagement, 2 days, 8 stories (reference baseline)",
+                "phase2Actual": "0.08h/story — 25% engagement, 2 days, 13 stories (low-confidence anomaly, agent-heavy)",
+                "phase3E2": "0.17h/story — consistent with agent-heavy outer loop; between phase2 anomaly and phase1 reference"
+            },
+            "notes": "No E1 recorded — first Phase 3 estimate. outerLoopFocusH provided directly by operator (2–3h range; 2.5h midpoint used for p75 derivation). Phase 2 anomaly excluded as calibration anchor."
+        }
+    },
     "docsPRsMerged":  [61, 63, 64, 65],
     "openPRs":  [
                     {
