@@ -1615,11 +1615,15 @@
     {
       "slug": "2026-04-14-skills-platform-phase3",
       "name": "Skills Platform — Phase 3: Governance Hardening, T3M1 Close, and Enterprise Scale",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "discoveryArtefact": "artefacts/2026-04-14-skills-platform-phase3/discovery.md",
       "benefitMetricArtefact": "artefacts/2026-04-14-skills-platform-phase3/benefit-metric.md",
+      "nfrProfileArtefact": "artefacts/2026-04-14-skills-platform-phase3/nfr-profile.md",
       "metaBenefit": true,
+      "slicingStrategy": "risk-first",
+      "storyCount": 18,
+      "epicCount": 7,
       "createdAt": "2026-04-14",
       "updatedAt": "2026-04-14",
       "metrics": [
@@ -1631,7 +1635,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["p3.2a", "p3.2b"]
         },
         {
           "id": "M2",
@@ -1641,7 +1645,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["p3.1b"]
         },
         {
           "id": "M3",
@@ -1651,7 +1655,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["p3.1a", "p3.5"]
         },
         {
           "id": "M4",
@@ -1661,7 +1665,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["p3.8"]
         },
         {
           "id": "M5",
@@ -1671,7 +1675,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["p3.9"]
         },
         {
           "id": "MM1",
@@ -1681,7 +1685,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["p3.1a","p3.1b","p3.1c","p3.1d","p3.1e","p3.2a","p3.2b","p3.3","p3.4","p3.5","p3.6","p3.7","p3.8","p3.9","p3.10","p3.11","p3.12","p3.13"]
         },
         {
           "id": "MM2",
@@ -1691,7 +1695,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["p3.5","p3.6","p3.10","p3.12"]
         },
         {
           "id": "MM3",
@@ -1701,7 +1705,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["p3.1a","p3.1b","p3.1c","p3.1d","p3.1e","p3.4","p3.7"]
         },
         {
           "id": "CR1",
@@ -1711,7 +1715,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["p3.2a","p3.2b","p3.7","p3.13"]
         },
         {
           "id": "CR2",
@@ -1721,11 +1725,38 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["p3.3","p3.4"]
         }
       ],
-      "epics": [],
-      "stories": []
+      "epics": [
+        { "slug": "e1-governance-chain-integrity", "name": "Governance Chain Integrity Hardened", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e1-governance-chain-integrity.md", "stories": ["p3.1a","p3.1b","p3.1c","p3.1d","p3.1e"] },
+        { "slug": "e2-t3m1-audit-gap-closure", "name": "T3M1 Audit Gap Closed", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e2-t3m1-audit-gap-closure.md", "stories": ["p3.2a","p3.2b"] },
+        { "slug": "e3-platform-structural-integrity", "name": "Platform Structural Integrity", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e3-platform-structural-integrity.md", "stories": ["p3.3","p3.4"] },
+        { "slug": "e4-windows-ci-parity-pipeline-evolution", "name": "Windows CI Parity and Pipeline Evolution", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e4-windows-ci-parity-pipeline-evolution.md", "stories": ["p3.5","p3.6"] },
+        { "slug": "e5-cross-team-trace-registry", "name": "Cross-Team Trace Registry", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e5-cross-team-trace-registry.md", "stories": ["p3.7"] },
+        { "slug": "e6-enterprise-adapters-agents-validation", "name": "Enterprise Adapters and AGENTS.md Validation", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e6-enterprise-adapters-agents-validation.md", "stories": ["p3.8","p3.9"] },
+        { "slug": "e7-platform-maturity", "name": "Platform Maturity", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e7-platform-maturity.md", "stories": ["p3.10","p3.11","p3.12","p3.13"] }
+      ],
+      "stories": [
+        { "slug": "p3.1a", "name": "Trace-commit observability", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1a-trace-commit-observability.md" },
+        { "slug": "p3.1b", "name": "Assurance gate substantive checks", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1b-assurance-gate-substantive-checks.md" },
+        { "slug": "p3.1c", "name": "Test suite integrity", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1c-test-suite-integrity.md" },
+        { "slug": "p3.1d", "name": "Bitbucket DC auth tests", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1d-bitbucket-dc-auth-tests.md" },
+        { "slug": "p3.1e", "name": "Agent behaviour observability register", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1e-agent-behaviour-observability-register.md" },
+        { "slug": "p3.2a", "name": "T3M1 trace fields", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.2a-t3m1-trace-fields.md" },
+        { "slug": "p3.2b", "name": "T3M1 tamper-evidence registry", "stage": "not-started", "assumption": "ASSUMPTION-02", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.2b-t3m1-tamper-evidence-registry.md" },
+        { "slug": "p3.3", "name": "Gate structural independence", "stage": "not-started", "assumption": "ASSUMPTION-01", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.3-gate-structural-independence.md" },
+        { "slug": "p3.4", "name": "Eval anti-gaming controls", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.4-eval-anti-gaming-controls.md" },
+        { "slug": "p3.5", "name": "Windows native trace validator", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.5-windows-native-trace-validator.md" },
+        { "slug": "p3.6", "name": "Pipeline evolution dispatch", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.6-pipeline-evolution-dispatch.md" },
+        { "slug": "p3.7", "name": "Cross-team trace registry", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.7-cross-team-trace-registry.md" },
+        { "slug": "p3.8", "name": "Enterprise approval channel adapters", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.8-enterprise-approval-channel-adapters.md" },
+        { "slug": "p3.9", "name": "AGENTS.md compatibility matrix", "stage": "not-started", "scopeNote": "compat-matrix-only-phase3", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.9-agents-md-compatibility-matrix.md" },
+        { "slug": "p3.10", "name": "EA registry live integration", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.10-ea-registry-live-integration.md" },
+        { "slug": "p3.11", "name": "Estimation calibration eval", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.11-estimation-calibration-eval.md" },
+        { "slug": "p3.12", "name": "Squad contribution flow", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.12-squad-contribution-flow.md" },
+        { "slug": "p3.13", "name": "Compliance monitoring report", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.13-compliance-monitoring-report.md" }
+      ]
     }
   ]
 }
