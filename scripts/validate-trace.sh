@@ -163,8 +163,7 @@ check_test_plan_coverage() {
         ok "No pipeline-state.json — skipping"
         return
     fi
-    local missing=0
-    python3 - <<PYTHON
+    if python3 - <<PYTHON
 import json, os, sys
 
 with open('$STATE_FILE') as f:
@@ -174,18 +173,33 @@ stages_needing_test_plan = {'test-plan','definition-of-ready','implementation','
 missing = []
 for feature in state.get('features', []):
     feature_slug = feature.get('slug', 'unknown')
-    for epic in feature.get('epics', []):
-        for story in epic.get('stories', []):
-            story_slug = story.get('slug', 'unknown')
-            stage = story.get('stage', '')
-            if stage in stages_needing_test_plan:
-                test_plan_path = os.path.join('artefacts', feature_slug, 'test-plans', f'{story_slug}-test-plan.md')
-                if not os.path.exists(test_plan_path):
-                    print(f'MISSING: {test_plan_path}')
-                    missing.append(test_plan_path)
+
+    # Collect all story objects. Phase 3+ stores full objects in feature.stories[];
+    # Phase 1/2 stores full objects nested inside epic.stories[].
+    # Epic.stories[] may also contain plain string slugs (Phase 3) — skip those.
+    stories = [s for s in feature.get('stories', []) if isinstance(s, dict)]
+    if not stories:
+        for epic in feature.get('epics', []):
+            stories += [s for s in epic.get('stories', []) if isinstance(s, dict)]
+
+    for story in stories:
+        stage = story.get('stage', '')
+        if stage not in stages_needing_test_plan:
+            continue
+        # Derive the file slug from the artefact path basename so that both
+        # short slugs (e.g. "p3.1a") and full slugs resolve to the correct filename.
+        artefact = story.get('artefact', '')
+        if artefact:
+            file_slug = os.path.basename(artefact).replace('.md', '')
+        else:
+            file_slug = story.get('slug', 'unknown')
+        test_plan_path = os.path.join('artefacts', feature_slug, 'test-plans', f'{file_slug}-test-plan.md')
+        if not os.path.exists(test_plan_path):
+            print(f'MISSING: {test_plan_path}')
+            missing.append(test_plan_path)
 sys.exit(1 if missing else 0)
 PYTHON
-    if [[ $? -eq 0 ]]; then
+    then
         record_pass "test_plan_coverage"
         ok "All in-flight stories have test plans"
     else
