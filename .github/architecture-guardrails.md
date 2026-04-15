@@ -17,7 +17,7 @@
   To evolve: update this file, open a PR, tag tech lead for review.
 -->
 
-**Last updated:** 2026-04-13
+**Last updated:** 2026-04-16
 **Maintained by:** Repo owner (solo)
 
 ---
@@ -104,6 +104,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 | Deleting or mutating pipeline artefacts in `pipeline-state.json` directly | Can corrupt feature history | Use skills to write state; manual edits only for scaffolding |
 | Bundling changes from story B into story A's PR | Makes root-cause traceability noisy; DoD evidence becomes ambiguous; violates ADR-008 | One PR per story; amend the DoR contract if scope genuinely expands |
 | Committing runtime artefact churn (trace files, validation reports) in story branches | Non-functional CI side effects inflate diff noise and make PR review harder | Add generated runtime paths to `.gitignore`; do not commit `workspace/traces/` or `trace-validation-report.json` in story branches |
+| Committing a new SKILL.md, `src/` module, or governance check script without a story artefact | Breaks the traceability claim the platform makes; creates BETWEEN-STORIES items with no reproducible spec. Evidenced by the 2026-04-16 artefact coverage audit (11 uncovered items, 2 HIGH-risk) | Create a story and DoR first (forward-looking) or a retrospective story using `.github/templates/retrospective-story.md` (if already committed). Use `# no-artefact: [reason]` in a governed exemption list for explicitly excluded low-risk items. |
 | Required-check workflow committing back to the branch it evaluates | Fires a new `synchronize` event on every evaluation — gate re-triggers itself → infinite loop; the evaluator modifies its own evaluation target | Two-workflow pattern: evaluate on `pull_request` with `contents: read`, persist post-merge with `contents: write` on `push` to main |
 | Using `[ci skip]` on a branch with required checks | Suppresses all workflow runs on that SHA, including required status reporters; the SHA is permanently stuck on "Waiting for status" with no way to recover without a new commit | Reserve `[ci skip]` for direct housekeeping commits to main where no required checks apply |
 
@@ -149,6 +150,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 | ADR-008 | Active | DoR touch-point contract is binding at pre-merge — no silent scope bundling | All PRs, /verify-completion step, DoR contract amendment workflow |
 | ADR-009 | Active | Evaluation and write-back workflows must be separate triggers with separate permission scopes | All CI/CD workflows that produce audit artefacts |
 | ADR-010 | Active | CI audit records must be persisted to main post-merge, not to feature branches | assurance-gate.yml, trace-commit.yml, all future governance gates |
+| ADR-011 | Active | Artefact-first: new SKILL.md files, src/ modules, and governance check scripts require a story artefact before or alongside the commit | All contributors; /definition-of-ready H9 check; coding agent |
 
 ---
 
@@ -381,6 +383,39 @@ All CI audit records (assurance gate traces, validation reports, verification ar
 
 #### Revisit trigger
 If the two-workflow artifact handoff proves unreliable at scale (e.g. artifact expiry before write-back runs), consider alternative persistence mechanisms (e.g. writing directly to a separate audit branch or using GitHub Releases as an artifact store).
+
+---
+
+### ADR-011: Artefact-first — new skills, modules, and governance scripts require a story artefact
+
+**Status:** Active
+**Date:** 2026-04-16
+**Source finding:** `workspace/retrospective-audit-2026-04-16.md` — Finding 2 (11 BETWEEN-STORIES items, 2 HIGH-risk)
+**Decided by:** Hamish
+
+#### Context
+The retrospective artefact coverage audit (2026-04-16) found that 45% of post-pipeline CHANGELOG items had no covering story — including two HIGH-risk functional primitives (the `/estimate` and `/issue-dispatch` skills) added directly between story cycles. The platform's core traceability claim — that every behavioural change has a discoverable chain from problem statement to tested implementation — was violated for these items. The root cause was the absence of a structural constraint that made the violation visible before commit.
+
+#### Decision
+Any new SKILL.md file under `.github/skills/`, any new module under `src/`, and any new governance check script under `tests/` or `scripts/` committed to master must have a corresponding story artefact (discovery → benefit-metric → story → test-plan → DoR) committed to `artefacts/` before or alongside the implementation.
+
+**Exemptions** (do not require a full artefact chain):
+- Documentation-only changes (README, CHANGELOG, `workspace/` notes)
+- Typo or configuration fixes that make no behavioural difference
+- Changes explicitly recorded in the governed exemption register (`# no-artefact: [reason]` marker in the affected file)
+
+**Retrospective path:** For work already committed without a chain, use `.github/templates/retrospective-story.md` to create a lightweight retrospective story. Retrospective stories close the traceability gap without requiring a full pre-implementation chain.
+
+#### Consequences
+**Easier:** Future audits will not find BETWEEN-STORIES items for functional primitives. The traceability claim the platform makes is substantiated by its own delivery history.
+**Harder / constrained:** Lightweight between-cycle improvements (a quick skill tweak, a one-line script addition) now require at minimum a retrospective story to stay in compliance. This adds modest overhead for small improvements.
+**Off the table:** Committing a new SKILL.md, `src/` module, or governance check script to master without either (a) a pre-existing story artefact or (b) a simultaneous retrospective story commit.
+
+#### H9 enforcement
+`/definition-of-ready` H9 (Architecture Constraints) checks that new SKILL.md and script additions referenced by a story do not already exist on master without a story artefact. Any violation is a H9 finding. The coding agent must read this ADR at DoR time and confirm compliance.
+
+#### Revisit trigger
+If a `check-artefact-coverage.js` CI governance gate is implemented (Phase 3 exit criterion — proposed in `workspace/retrospective-audit-2026-04-16.md` Finding 5, Prevention mechanism 3), this ADR transitions from a voluntary constraint to a CI-enforced constraint. Re-evaluate the exemption register mechanism at that point.
 
 ---
 
@@ -642,4 +677,14 @@ This repository is operated by a single engineer. The following posture applies 
   category: anti-pattern
   label: "[ci skip] on a branch with required checks (suppresses status reporting)"
   section: Anti-Patterns
+
+- id: AP-11
+  category: anti-pattern
+  label: "Committing a new SKILL.md, src/ module, or governance check script without a story artefact (artefact-first violation)"
+  section: Anti-Patterns
+
+- id: ADR-011
+  category: adr
+  label: "Artefact-first: new SKILL.md files, src/ modules, and governance check scripts require a story artefact before or alongside the commit"
+  section: Active ADRs
 ```
