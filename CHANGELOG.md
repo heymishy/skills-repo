@@ -16,6 +16,8 @@ All notable changes to this repository will be documented in this file.
 
 ### Fixed
 
+- **`scripts/validate-trace.sh` — `check_test_plan_coverage` three-bug fix (2026-04-15):** (1) Phase 3 stores string slugs (e.g. `"p3.1a"`) in `epic.stories[]`, not story objects — calling `.get()` on a string raised `AttributeError`, crashing the check on every PR touching `.github/skills/**`. (2) Phase 3 story slugs are short (`p3.1a`) while filenames use the full name (`p3.1a-trace-commit-observability-test-plan.md`) — path construction was wrong even if (1) were fixed. (3) The `python3 ...; if [[ $? -eq 0 ]]` pattern is unsafe under `set -euo pipefail` — a non-zero Python exit kills the script before the `if` runs. Fix: collect story objects from `feature.stories[]` first (Phase 3+ style), falling back to epic-nested objects (Phase 1/2 style); derive the file slug from the story's `artefact` path basename; convert to `if python3 ...; then` syntax.
+
 - `.github/workflows/assurance-gate.yml` — `permissions.contents` upgraded from `read` to `write`; "Commit trace file" step added after gate run (ran with `if: always()`) to `git add workspace/traces/`, commit with `[ci skip]` message, and push back to the PR branch ref via `HEAD:${{ github.head_ref }}`. Fixed gap where trace JSONL files were written to runner filesystem during gate execution but discarded on runner exit. This was a necessary intermediate step (required for p1.8 AC3 evaluation and p2.11/p2.12 DoR gate clearance) that has since been superseded by the post-merge architecture described in Changed above (2026-04-12; superseded 2026-04-13)
 
 ### Added
