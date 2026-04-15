@@ -459,6 +459,45 @@ If either is missing: add it with today's date as a carry-forward entry, referen
 
 **Impact on E3 flow:** The `/estimate` SKILL.md E3b step now uses the parser as the primary method. E3c (engagement fraction question) is now a confirmatory `ok` step when parser data is available — it shows the computed fraction and asks if the idle threshold looks right. The "one guess question" is replaced by a computed confirmation. Engagement fraction becomes an output of the tool, not an input from the operator.
 
+---
+
+## Artefact-first enforcement — inline framework changes without a story artefact break spec-is-truth
+
+### Observed — 2026-04-16 (retrospective artefact coverage audit; ADR-011 adoption; stories p3.15, p3.16, p3.17)
+
+**Circumstance:** A structured audit of the post-pipeline CHANGELOG against committed artefact chains (discovery → benefit-metric → story → test-plan → DoR) revealed that 11 of 20 post-pipeline item groups had no formal story artefact at all. Two were HIGH-risk (the `/estimate` skill and the `/issue-dispatch` skill — fully operational, customer-facing capabilities delivered with zero pipeline coverage). The remainder were a mix of structural decisions, UI enhancements, and governance check scripts. Coverage score at audit time: 45%.
+
+The root cause was not operator carelessness — it was the absence of any enforcement mechanism. The pipeline has an "artefact-first" convention in the README but no gate that fires when a SKILL.md file, `src/` module, or governance check script is committed without a corresponding DoR artefact. Changes can — and did — land on master silently. The first signal that coverage had drifted was the manual audit, not a failing CI check.
+
+**The spec-is-truth principle:** The artefacts directory is the specification. Every feature in the codebase that is not in the spec is untraceable — it cannot be reproduced by an agent reading the spec, it cannot be ported, and it cannot be validated by /trace. When an AI agent (or a human) makes an inline framework change without going through the pipeline, the spec and the codebase diverge. This is not a process inconvenience: it is a structural failure of the traceable delivery model. The whole value proposition of the pipeline is that the spec is the complete, authoritative, machine-traversable record of what was built and why.
+
+**What makes this failure mode dangerous for AI-assisted delivery:** A coding agent given a task will look at the DoR artefact and the spec. If a capability exists in the codebase that has no artefact, the agent has no signal that it exists or that its behaviour is intentional. The agent may duplicate it, conflict with it, or silently rely on it without understanding its contract. The more inline changes accumulate without artefacts, the more the codebase-as-delivered diverges from the codebase-as-specified — and the more agent outputs become unreliable. This compounds at machine speed.
+
+**What "spec is truth" means as an operational principle:**
+1. **The artefact is the mandate.** An agent or operator implementing something without a signed-off DoR is operating outside the mandate. The implementation may be correct, but it is ungoverned — there is no AC list that defines what "correct" means, no scope contract that bounds what the implementation is allowed to touch, and no human sign-off that approved the work.
+2. **Inline changes to the framework are the highest-risk category.** A change to a SKILL.md file, a governance check script, or a `src/` module changes the rules by which future work is evaluated. A governance check committed without a story has no authoritative specification for what it checks or when it should fire. A SKILL.md change committed without a story has no test plan — there is no evidence that it was tested against the failure patterns it was meant to address.
+3. **The retrospective path exists but is a last resort.** The `retrospective-story.md` template and ADR-011 provide a structured repair path for items that slipped through. Using the retrospective path has real cost: the covering artefacts are written post-delivery, so the ACs are described-as-implemented rather than defined-before-implementation. The spec-first discipline is lost even if the traceability is partially recovered.
+
+**Resolution applied — 2026-04-16:**
+- ADR-011 adopted in `.github/architecture-guardrails.md`: artefact-first rule formalised as a hard architectural constraint for all new SKILL.md files, `src/` modules, and governance check scripts. Retrospective path explicitly defined.
+- Rule added to `.github/copilot-instructions.md` Coding Standards section — visible to the coding agent at every DoR orientation.
+- ADR-011 and anti-pattern AP-11 added to architecture-guardrails.md ADR table, anti-patterns table, full ADR entry, and machine-readable YAML block.
+- ONBOARDING.md updated with "Artefact-first rule (ADR-011)" subsection — visible to new squad members.
+- README.md ADR table updated with ADR-011.
+- Retrospective stories p3.15 (/estimate skill), p3.16 (/issue-dispatch skill), and p3.17 (feat/repo-tidy docs structure and check-docs-structure.js) raised and signed off (DoR signed 2026-04-16). Coverage score moves from 45% toward the Phase 3 exit criterion of 80%.
+
+**Prompts the agent should treat as artefact-first triggers — flag these as potential inline changes requiring a story:**
+- "add a check for X to the governance suite"
+- "update the skill to also handle Y"
+- "add a new skill for Z"
+- "move these files / restructure the directory"
+- "add a new module that does W"
+- Any implementation request targeting `.github/skills/`, `src/`, `tests/`, or `scripts/` that does not reference a DoR artefact slug in the task description
+
+**Concrete detection heuristic:** If a user prompt contains no reference to a story slug (e.g. `p3.x`, `p2.x`) and the requested change would touch a SKILL.md file, a `src/` module, or a check script, the agent should pause and ask: "Is there a DoR artefact for this change? If not, this is an inline framework change that requires a story first per ADR-011."
+
+**Action:** Add a spec-is-truth check to the `/definition-of-ready` H9 block — when a story touches `.github/skills/`, `src/`, or `tests/`, confirm that this DoR is the authoritative artefact for the change and that no prior implementation exists on master without a corresponding DoR. Flag for `/improve` and as a candidate `check-artefact-coverage.js` governance gate under Phase 3.
+
 **Usage:**
 ```powershell
 # All sessions (auto-discovered across workspace storage)
