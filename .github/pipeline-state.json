@@ -1735,7 +1735,7 @@
         { "slug": "e4-windows-ci-parity-pipeline-evolution", "name": "Windows CI Parity and Pipeline Evolution", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e4-windows-ci-parity-pipeline-evolution.md", "stories": ["p3.5","p3.6"] },
         { "slug": "e5-cross-team-trace-registry", "name": "Cross-Team Trace Registry", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e5-cross-team-trace-registry.md", "stories": ["p3.7"] },
         { "slug": "e6-enterprise-adapters-agents-validation", "name": "Enterprise Adapters and AGENTS.md Validation", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e6-enterprise-adapters-agents-validation.md", "stories": ["p3.8","p3.9"] },
-        { "slug": "e7-platform-maturity", "name": "Platform Maturity", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e7-platform-maturity.md", "stories": ["p3.10","p3.11","p3.12","p3.13"] }
+        { "slug": "e7-platform-maturity", "name": "Platform Maturity", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e7-platform-maturity.md", "stories": ["p3.10","p3.11","p3.12","p3.13","p3.14"] }
       ],
       "guardrails": [
         {
@@ -1910,7 +1910,8 @@
         { "slug": "p3.10", "name": "EA registry live integration", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.10-ea-registry-live-integration.md" },
         { "slug": "p3.11", "name": "Estimation calibration eval", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.11-estimation-calibration-eval.md" },
         { "slug": "p3.12", "name": "Squad contribution flow", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.12-squad-contribution-flow.md" },
-        { "slug": "p3.13", "name": "Compliance monitoring report", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.13-compliance-monitoring-report.md" }
+        { "slug": "p3.13", "name": "Compliance monitoring report", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.13-compliance-monitoring-report.md" },
+        { "slug": "p3.14", "name": "New-user onboarding concepts documentation", "stage": "not-started", "origin": "phase-2-user-feedback", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.14-new-user-onboarding-concepts-documentation.md" }
       ]
     }
   ]

@@ -30,6 +30,7 @@ When this epic is complete, the platform supports the full self-improvement life
 - [ ] p3.11 — Estimation calibration as improvement agent eval dimension
 - [ ] p3.12 — Squad-to-platform skill contribution governed flow
 - [ ] p3.13 — Compliance monitoring report: periodic attestation for risk function
+- [ ] p3.14 — Framework concepts documentation suite for new-user onboarding (Phase 2 user feedback)
 
 ## Human Oversight Level
 
