@@ -110,15 +110,16 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["slug", "name", "status"],
+              "required": ["slug", "name"],
               "properties": {
                 "slug":   { "type": "string" },
                 "name":   { "type": "string" },
                 "status": { "type": "string", "enum": ["not-started", "in-progress", "complete"] },
                 "stories": {
                   "type": "array",
+                  "description": "Story items — may be full story objects (Phase 1/2 style) or string slug references (Phase 3+ style where full objects live in feature.stories[])",
                   "items": {
-                    "type": "object",
+                      "type": ["object", "string"],
                     "required": ["slug", "name", "stage", "health"],
                     "properties": {
                       "slug":         { "type": "string" },
@@ -146,6 +147,11 @@
                       "dodStatus":   { "type": "string", "enum": ["not-started", "complete"] },
                       "acVerified":            { "type": "integer", "description": "Number of ACs verified" },
                       "acTotal":               { "type": "integer" },
+                      "regulated":         { "type": "boolean", "description": "True when the story requires regulated (T3M1) audit fields in its trace entry. Derived from the parent feature complianceProfile value." },
+                      "standardsInjected": { "type": "array",   "description": "Q2 (MODEL-RISK T3M1): Standards injected into this story's evaluation. Each item has at minimum { id: string, hash: string }.", "items": { "type": "object" } },
+                      "watermarkResult":   { "type": "object",  "description": "Q5 (MODEL-RISK T3M1): Regression check result. Object { pass: boolean, passRate: number } where passRate is 0.0–1.0.", "properties": { "pass": { "type": "boolean" }, "passRate": { "type": "number" } } },
+                      "stalenessFlag":     { "type": "boolean", "description": "Q6 (MODEL-RISK T3M1): True when the evaluation detected a stale baseline that may have inflated pass rates." },
+                      "sessionIdentity":   { "type": "object",  "description": "Q7 (MODEL-RISK T3M1): Agency of the agent session that ran the evaluation. Object { sessionId: string, agentType: string, startedAt: string (ISO 8601) }.", "properties": { "sessionId": { "type": "string" }, "agentType": { "type": "string" }, "startedAt": { "type": "string" } } },
                       "releaseReady":           { "type": "boolean", "description": "Set true by /definition-of-done when all ACs are covered" },
                       "layoutGapsAtMerge":      { "type": "boolean", "description": "True if CSS-layout test gaps existed at merge time (written by /definition-of-done)" },
                       "layoutGapsRiskAccepted": { "type": "boolean", "description": "True if the layout gap risk was explicitly accepted at merge (written by /definition-of-done)" },

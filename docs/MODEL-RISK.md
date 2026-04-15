@@ -58,6 +58,14 @@ Each entry states the risk clearly and records either a mitigation (a control th
 
 ---
 
+### Risk R6: T3M1 Q8 tamper-evidence implementation is platform-specific
+
+**Risk:** The tamper-evidence registry for T3M1 Q8 (`traceHash` attestation) is implemented in the dogfood instance (`heymishy/skills-repo`) using GitHub Artifact Attestation, which is available only on GitHub.com and GitHub Enterprise Server. Enterprise adopters running Bitbucket or Jenkins cannot use this implementation and must apply Option B (a dedicated read-only registry repository with a CI service account). The Q8 evidence mechanism therefore differs between the dogfood instance and a Bitbucket enterprise deployment. A reviewer applying T3M1 against a Bitbucket deployment will see `tamperEvidence.registryType: "registry-repo"` and a Git commit SHA as the `registryRef`, not an Artifact Attestation URL. The independent hash re-verification procedure (recompute SHA-256 of the trace file; compare the result against the registry entry) is procedurally identical for both options — only the retrieval step differs.
+
+**Mitigation:** The `tamperEvidence` object in the trace schema explicitly records `registryType` (`"github-artifact-attestation"` or `"registry-repo"`), so a reviewer always knows which retrieval method to apply. `docs/HANDOFF.md` Section 2 (DEC-P3-002 note) documents the full Option B requirements for enterprise adopters. Decision DEC-P3-002 in `artefacts/2026-04-14-skills-platform-phase3/decisions.md` records this divergence and the enterprise porting note. Enterprise pilot onboarding must explicitly implement Option B and confirm that the Q8 entry is retrievable via `git log` on the registry repo before the T3M1 re-evaluation session is scheduled.
+
+---
+
 ## 2. Audit Question Mapping Table (§9.8)
 
 This table maps all eight audit questions from the platform operating model (§9.8) to specific named fields in the assurance trace. A non-engineering reviewer can use this table to locate the answer to each question by opening the relevant file and reading the named field.
@@ -94,12 +102,12 @@ Evidence was evaluated against the first real Phase 2 inner loop trace. This is 
 | Story ID used as evidence | `p2.4` (AGENTS.md adapter — PR #31, merged 2026-04-11) |
 | Trace file path | `workspace/traces/2026-04-11T21-33-02-002Z-ci-84f82370.jsonl` |
 | Q1: Instruction set identified (`traceHash` present and non-empty)? | **Y** — `traceHash` present and non-empty in the `completed` trace entry; verifiable against git history of `.github/skills/`. |
-| Q2: Standards applied (`standardsInjected` array present with ≥1 entry)? | **N** — `standardsInjected` field absent from trace. Hash reconciliation not yet wired into CI trace write. Closes in Phase 3 (p1.7/p2.1 gate enhancement). |
+| Q2: Standards applied (`standardsInjected` array present with ≥1 entry)? | **Y** — Wired in p3.2a. Story schema defines `standardsInjected` at `.github/pipeline-state.schema.json` (story items). `run-assurance-gate.js` validates it via `validateT3M1Fields()` for regulated stories and fails with a named field reason when null/absent. Reviewers can inspect `standardsInjected` as an array of `{ id, hash }` objects in trace `completed` entries. |
 | Q3: Model/commit identified (`commitSha` present and non-empty)? | **Y** — `commitSha` present and non-empty in the `completed` trace entry; identifies exact repository state at gate run time. |
 | Q4: Output validated (`verdict` field present with `pass` or `fail`)? | **Y** — `verdict: pass` present in `completed` trace entry (CI gate passed for p2.4 PR #31). |
-| Q5: Regression check present (`results.tsv` row with matching `skillSetHash`)? | **N** — Watermark gate does not yet emit a result row to `results.tsv` or surfaced in the PR comment. Watermark gate operational but result not linked to the audit trace. Closes in Phase 3 (p1.4 PR reporting story). |
-| Q6: Staleness flag assessed (`stalenessFlag` field present in entry)? | **N** — `stalenessFlag` field absent from trace schema. Skill-version staleness detection not yet wired. Closes in Phase 3 (trace schema story). |
-| Q7: Agent independence evidenced (three trace entries with correct `trigger` values)? | **N** — CI validates gate ran (`trigger: ci` present) but does not validate that three separate, genuinely independent trace entries exist for the story. Closes in Phase 3 (CI gate entry-count validation story). |
+| Q5: Regression check present (`results.tsv` row with matching `skillSetHash`)? | **Y** — Wired in p3.2a for trace audit visibility. Story schema defines `watermarkResult` and gate enforcement requires non-null `{ pass, passRate }` for regulated stories. `runGate()` writes `watermarkResult.pass` and `watermarkResult.passRate` into trace `completed` entries for reviewer inspection. |
+| Q6: Staleness flag assessed (`stalenessFlag` field present in entry)? | **Y** — Wired in p3.2a. Story schema defines `stalenessFlag: boolean`; `runGate()` fails regulated traces when null/absent and persists `stalenessFlag: true|false` in trace `completed` entries. |
+| Q7: Agent independence evidenced (three trace entries with correct `trigger` values)? | **Y (trace identity field wired)** — p3.2a wires `sessionIdentity` into schema and gate output for regulated stories. `runGate()` enforces non-null `sessionIdentity` and writes `{ sessionId, agentType, startedAt }` to trace `completed` entries. `sessionId` is required to be opaque (hex-hash style), preventing PII leakage while preserving session-level audit identity. |
 | Q8: Hash verifiable (recomputed hash matches `traceHash` in trace entry)? | **N** — Recomputation is possible manually against git history but is not automated in the assurance gate. No tooling exists to perform this check on a reviewer's behalf. Closes in Phase 3 (automated hash drift check story). |
 | Overall verdict | **partial — 3/8 Y** — Instruction identity (Q1), commit traceability (Q3), and gate verdict (Q4) are confirmed. This is the honest Phase 1+2 baseline. Re-evaluate after Phase 3 delivers the five remaining gap closures. |
 
