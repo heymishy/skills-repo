@@ -8,7 +8,7 @@
 
 > Delivery standards, quality gates, and discipline practices encoded as versioned, hash-verified instruction sets. Executed by AI agents inside GitHub Copilot. Verified automatically on every PR. No hosted service required.
 
-**Quick nav:** [Mission](#mission-and-intent) · [Problems](#problems-this-solves) · [Principles](#core-principles) · [Primitives](#primitives) · [Pipeline](#pipeline-overview) · [Skills](#skills-reference) · [Assurance](#assurance-and-traceability) · [Self-improving harness](#self-improving-harness) · [Standards](#standards-model) · [Surfaces](#delivery-surfaces) · [Status](#phase-delivery-status) · [Known gaps](#known-gaps) · [Getting started](#getting-started) · [ADRs](#architecture-decisions)
+**Quick nav:** [Mission](#mission-and-intent) · [Problems](#problems-this-solves) · [Principles](#core-principles) · [Primitives](#primitives) · [Pipeline](#pipeline-overview) · [Skills](#skills-reference) · [Assurance](#assurance-and-traceability) · [Self-improving harness](#self-improving-harness) · [Standards](#standards-model) · [Surfaces](#delivery-surfaces) · [Status](#phase-delivery-status) · [Known gaps](#known-gaps) · [Getting started](#getting-started) · [Docs](#platform-documentation) · [ADRs](#architecture-decisions)
 
 ---
 
@@ -437,8 +437,24 @@ Phase 2 outer loop focus time (1h) reflects high pipeline fluency at Phase 2 sta
 | ADR-004 | All tool and channel integrations are declared in `.github/context.yml`; no hardcoded provider values in skills or scripts | Active |
 | ADR-005 | Agent instructions format (copilot-instructions.md vs AGENTS.md) is a surface adapter concern driven by `vcs.type` in context.yml; AGENTS.md is the vendor-neutral default | Active |
 | ADR-006 | Non-engineer approval routing is an adapter pattern (`approval_channel`); first implementation is the GitHub Issue workflow | Active |
+| ADR-011 | Artefact-first: new SKILL.md files, `src/` modules, and governance check scripts require a story artefact before or alongside the commit; retrospective path available via `retrospective-story.md` template | Active |
 
 Full decision history: [`.github/architecture-guardrails.md`](.github/architecture-guardrails.md) · [HANDOFF.md](docs/HANDOFF.md)
+
+---
+
+## Platform documentation
+
+All human-readable reference documents live in `docs/`. Machine-consumed instruction content (SKILL.md files, standards, governance gates) stays at root depth — see the Standards model section for the layout rationale.
+
+| Document | Purpose |
+|----------|---------|
+| [ONBOARDING.md](docs/ONBOARDING.md) | Squad onboarding guide — step-by-step setup, required reading list, and first-run checklist |
+| [HANDOFF.md](docs/HANDOFF.md) | Session handoff and context recovery — how to resume work across sessions without a verbal briefing |
+| [MODEL-RISK.md](docs/MODEL-RISK.md) | Model risk register — T3M1 audit questions, risk ratings, and the 2026-04-16 artefact coverage audit record |
+| [validation-playbook.md](docs/validation-playbook.md) | AC verification playbook — how to run the plain-language AC verification scripts produced by `/test-plan` |
+| [skill-pipeline-instructions.md](docs/skill-pipeline-instructions.md) | Full pipeline instructions reference — the complete sequence of skills, entry conditions, and exit conditions |
+| [feature-additions.md](docs/feature-additions.md) | Feature additions log — a record of capabilities added between formal story cycles |
 
 ---
 
@@ -459,4 +475,4 @@ The `artefacts/`, `.github/skills/`, `.github/templates/`, and `.github/governan
 
 Built with the skills platform's own pipeline — 21 stories, 4 calendar days.
 
-[Onboarding guide](docs/ONBOARDING.md) · [HANDOFF.md](docs/HANDOFF.md) · [Architecture decisions](.github/architecture-guardrails.md) · [Model risk](docs/MODEL-RISK.md)
+[Onboarding](docs/ONBOARDING.md) · [Handoff](docs/HANDOFF.md) · [Model risk](docs/MODEL-RISK.md) · [Validation playbook](docs/validation-playbook.md) · [Pipeline instructions](docs/skill-pipeline-instructions.md) · [Feature additions](docs/feature-additions.md) · [Architecture decisions](.github/architecture-guardrails.md)

@@ -71,3 +71,66 @@ This divergence must be revisited at enterprise pilot onboarding. The Q8 dogfood
 **Reversibility:** Reversible at enterprise pilot onboarding by implementing Option B as an environment-specific alternate for non-GitHub deployments. The trace schema `tamperEvidence` object already accommodates both values for `registryType`.
 
 **Logged by:** Hamish (tech lead), 2026-04-15
+
+---
+
+## DEC-RETRO-001 — [0.5.18] Inline-chat repo reorganisation accepted as structural decision
+
+**Date:** 2026-04-16
+**Decision type:** Structural — affects repo layout and documentation entry points
+**Trigger:** Retrospective artefact coverage audit (2026-04-16), classification category A (structural decision requiring permanent record)
+
+**Context:** CHANGELOG entry [0.5.18] records an inline-chat project reorganisation — restructuring files and directories within the repository. This change was committed between story cycles without a formal story artefact and without a corresponding decision-log entry. The audit identified this as a BETWEEN-STORIES gap in category A: structural decisions that should be permanently recorded even when no formal story chain exists.
+
+**Decision recorded:**
+The [0.5.18] repo reorganisation was intentional and load-bearing. The layout established in that change is the canonical structure that subsequent stories (including `feat/repo-tidy` in p3.17) build on. The decision to reorganise was made by the platform tech lead and is not subject to reversal. Future contributors should not revert to the pre-[0.5.18] structure; any further reorganisation requires a short-track story.
+
+**Alternatives considered:** Reverting to pre-reorganisation structure — rejected; the [0.5.18] layout is stable and has been in use for all Phase 2 and Phase 3 artefacts.
+
+**Risk accepted:** MEDIUM — The reorganisation was not announced via a formal artefact chain. Any consumer of this repository who cached file paths may have been broken by the change. Remediation: ONBOARDING.md documents the canonical docs/ structure; no further action required.
+
+**Reversibility:** Not warranted — the layout is stable and all active artefact paths reflect the [0.5.18] structure.
+
+**Logged by:** Hamish (tech lead), 2026-04-16
+
+---
+
+## DEC-RETRO-002 — pipeline-viz.html enhancements [0.6.0, 0.6.1] accepted as p2.7 scope extension
+
+**Date:** 2026-04-16
+**Decision type:** UI/tooling — cosmetic visualisation enhancements
+**Trigger:** Retrospective artefact coverage audit (2026-04-16), classification category B (intentional additive scope)
+
+**Context:** CHANGELOG entries [0.6.0] and [0.6.1] record enhancements to `pipeline-viz.html` — a visualisation tool added under story p2.7. The enhancements were cosmetic improvements (display, layout, readability) committed beyond the explicit p2.7 AC scope. The audit classified these as category B: intentional additive scope that was a reasonable extension of the parent story but was not formally AC-tracked.
+
+**Decision recorded:**
+The [0.6.0] and [0.6.1] `pipeline-viz.html` enhancements are accepted as de facto extensions of p2.7 scope. They do not introduce new behaviour — they improve the readability of existing visualisation output. No retrospective story is required; this decision log entry is sufficient to establish permanent record. Future visualisation changes beyond cosmetic readability should be tracked as short-track stories.
+
+**Alternatives considered:** Raising a retrospective story — not warranted at LOW risk for cosmetic UI changes; decision log entry is proportionate.
+
+**Risk accepted:** LOW — Cosmetic changes only; no functional behaviour introduced. No consumer impact.
+
+**Reversibility:** Reversible at any time by rolling back the specific commits; no dependencies on these cosmetic changes.
+
+**Logged by:** Hamish (tech lead), 2026-04-16
+
+---
+
+## DEC-RETRO-003 — Standards D-batch seeding accepted as p1.7 scope extension
+
+**Date:** 2026-04-16
+**Decision type:** Content / artefact scope — standards catalogue addition
+**Trigger:** Retrospective artefact coverage audit (2026-04-16), classification category B (intentional additive scope)
+
+**Context:** The retrospective audit identified that the standards D-batch (a batch of domain standards seeded into the `standards/` directory) was committed during Phase 1 in the vicinity of story p1.7 but without explicit AC coverage in p1.7. The audit classified this as category B: intentional additive scope consistent with the p1.7 framework-scaffolding purpose.
+
+**Decision recorded:**
+The standards D-batch seeding is accepted as a scope extension of p1.7 (the story that established the `standards/` directory and indexing framework). Adding standards content to a framework that p1.7 set up is consistent with the spirit of p1.7 even if the specific batch was not AC-tracked. No retrospective story is required. Future standards batches of material size should be tracked as short-track stories to preserve audit trails as the catalogue grows.
+
+**Alternatives considered:** Raising a retrospective story — not warranted at LOW risk for additive standards content; decision log entry is proportionate.
+
+**Risk accepted:** LOW — Content addition only. Standards content is purely informational; no executable code, no consumer-breaking changes.
+
+**Reversibility:** Reversible by removing the specific standards files; no downstream dependencies hard-coded to D-batch content.
+
+**Logged by:** Hamish (tech lead), 2026-04-16

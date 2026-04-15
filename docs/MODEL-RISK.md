@@ -4,7 +4,7 @@
 **Document status:** Authored — pending T3M1 evidence record and sign-off (dependency-gated on P1.3 + P1.7 DoD-complete)  
 **Audience:** Platform adopters, governance functions, risk reviewers  
 **Maintained by:** Platform maintainer  
-**Last substantive update:** 2026-04-10
+**Last substantive update:** 2026-04-16
 
 > **Adoption gate:** This document must be read and signed off before the platform is used beyond the dogfood context. A `MODEL-RISK.md` without a completed sign-off record (Section 4) is not cleared for non-dogfood adoption.
 
@@ -63,6 +63,14 @@ Each entry states the risk clearly and records either a mitigation (a control th
 **Risk:** The tamper-evidence registry for T3M1 Q8 (`traceHash` attestation) is implemented in the dogfood instance (`heymishy/skills-repo`) using GitHub Artifact Attestation, which is available only on GitHub.com and GitHub Enterprise Server. Enterprise adopters running Bitbucket or Jenkins cannot use this implementation and must apply Option B (a dedicated read-only registry repository with a CI service account). The Q8 evidence mechanism therefore differs between the dogfood instance and a Bitbucket enterprise deployment. A reviewer applying T3M1 against a Bitbucket deployment will see `tamperEvidence.registryType: "registry-repo"` and a Git commit SHA as the `registryRef`, not an Artifact Attestation URL. The independent hash re-verification procedure (recompute SHA-256 of the trace file; compare the result against the registry entry) is procedurally identical for both options — only the retrieval step differs.
 
 **Mitigation:** The `tamperEvidence` object in the trace schema explicitly records `registryType` (`"github-artifact-attestation"` or `"registry-repo"`), so a reviewer always knows which retrieval method to apply. `docs/HANDOFF.md` Section 2 (DEC-P3-002 note) documents the full Option B requirements for enterprise adopters. Decision DEC-P3-002 in `artefacts/2026-04-14-skills-platform-phase3/decisions.md` records this divergence and the enterprise porting note. Enterprise pilot onboarding must explicitly implement Option B and confirm that the Q8 entry is retrievable via `git log` on the registry repo before the T3M1 re-evaluation session is scheduled.
+
+---
+
+## 1.1 Artefact Coverage Audit Record
+
+Artefact coverage audit conducted 2026-04-16. Phase 1: 8/8 complete. Phase 2: 13/13 complete. Post-pipeline changelog coverage: 45% (9/20 item groups covered by a formal story). Two HIGH gaps identified (/estimate, /issue-dispatch) — retrospective stories p3.15 and p3.16 raised. Full audit: workspace/retrospective-audit-2026-04-16.md
+
+**Coverage score improvement target:** 80%+ of post-pipeline CHANGELOG item groups covered by a formal story before Phase 3 closes. Currently at 45% (9/20) at time of audit. Retrospective stories p3.15 and p3.16 bring the count to approximately 50% (10/20). Remaining A-classification items from the audit (see `workspace/retrospective-audit-2026-04-16.md` Finding 2) must be actioned to close the gap.
 
 ---
 
