@@ -79,6 +79,26 @@ The assembly script emits `.github/copilot-instructions.md` when `context.yml` s
 
 Channel wiring for DoR sign-off is selected from `.github/context.yml` and implemented in channel-specific adapters. The core write contract is channel-agnostic and always updates the same evidence fields: `dorStatus`, `dorApprover`, `dorChannel`. Phase 2 reference path: `approval_channel: github-issue` with `/approve-dor` event handling. Off the table: hardcoding one approval channel into DoR skill logic. Delivered by p2.8.
 
+### DEC-P3-002 — Tamper-evidence registry: GitHub-only implementation (2026-04-15)
+
+**Decision recorded in:** `artefacts/2026-04-14-skills-platform-phase3/decisions.md`
+
+Story p3.2b (T3M1 Q8 — tamper-evidence registry) is implemented using **GitHub Artifact Attestation with OIDC-signed workflow identity** in this reference repository (`heymishy/skills-repo` on GitHub). This is Option A of ASSUMPTION-02, resolved 2026-04-15.
+
+**Enterprise adopters on Bitbucket must implement Option B.** GitHub Artifact Attestation is not available outside GitHub.com / GHES. The required Option B path for Bitbucket environments:
+
+| Requirement | Detail |
+|---|---|
+| Registry | Separate read-only registry repository (e.g. `[org]/trace-registry`) |
+| Branch protection | No human write access; only the CI service account may push |
+| Credential | CI service account token with write access to the registry repo only — not a personal access token |
+| Publication step | One append-only commit per story merge; `tamperEvidence.registryRef` records the commit SHA |
+| Auditor retrieval | `git log` on the registry repo is sufficient — no special tooling required |
+
+This is a **known divergence between the dogfood instance and enterprise deployment.** Q8 evidence produced by the dogfood instance (Artifact Attestation records) is not directly portable to a Bitbucket deployment — the registry type and retrieval mechanism differ. The independent re-verification procedure (recompute SHA-256 of the trace file; compare to the registry entry) is identical for both options — only the retrieval step differs.
+
+**Action required at enterprise pilot onboarding:** Implement Option B for the enterprise Bitbucket instance. Do not use the dogfood `tamperEvidence.registryRef` entries as enterprise audit evidence — they reference GitHub Artifact Attestation records retrievable only from GitHub.
+
 ---
 
 ## 3. Known Gaps
