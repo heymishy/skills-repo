@@ -223,6 +223,14 @@ If you are new to writing stories at this level of precision, run `/discovery` f
 discovery skill helps you work through the problem space and produces a structured definition
 that feeds directly into a DoR-compliant story.
 
+### Artefact-first rule (ADR-011)
+
+Any new SKILL.md file, `src/` module, or governance check script committed to master must have a corresponding story artefact committed to `artefacts/` before or alongside the implementation. This is not bureaucracy — it is the mechanism that makes the platform's own traceability claims credible. A platform that tracks delivery traceability for other teams but cannot trace its own changes is not credible.
+
+If you have already committed something without a story (it happens), use `.github/templates/retrospective-story.md` to create a lightweight retrospective story. The retrospective path closes the gap without requiring you to reverse the commit.
+
+Exemptions (no story required): documentation-only changes, typo/config fixes with no behavioural effect. If in doubt, raise a one-line story — the overhead is lower than the audit finding.
+
 ---
 
 ## Step 4: Run your first story end to end

@@ -166,6 +166,24 @@ Tier 3 metrics apply: Phase 3 explicitly targets regulated-enterprise audit read
 | MM3 — Priority 1 hardening failure reduction | p3.1a, p3.1b, p3.1c, p3.1d, p3.1e, p3.4 (anti-gaming controls), p3.7 (cross-team registry) | Covered — 7 stories |
 | CR1 — T3M1 on record | p3.2a + p3.2b (prerequisites), p3.7 (cross-team traces for audit sampling), p3.13 (compliance monitoring report); external review (not a story) | Covered (prerequisite stories + reporting; external review is human gate) |
 | CR2 — Gate structural independence | p3.3 (gate structural independence — requires p3.1a, p3.1b, p3.1c as prereqs), p3.4 (anti-gaming — depends on p3.3) | Covered — 2 stories (ASSUMPTION-01 gated) |
+| EC1 — Artefact coverage score | p3.15 (estimate retrospective), p3.16 (issue-dispatch retrospective), remaining A-classification items from retrospective audit | In progress — 45% at audit 2026-04-16; target 80% at Phase 3 close |
+
+---
+
+## Phase 3 Exit Criterion: Artefact Coverage Score
+
+**Added:** 2026-04-16 — following retrospective artefact coverage audit (`workspace/retrospective-audit-2026-04-16.md`).
+
+| Field | Value |
+|-------|-------|
+| **Exit criterion** | EC1 — Post-pipeline CHANGELOG artefact coverage score reaches 80%+ before Phase 3 closes |
+| **Current score** | 45% (9/20 item groups covered by a formal story) — measured 2026-04-16 |
+| **Target** | 80% (16/20 item groups) — minimum required before Phase 3 DoD is claimed |
+| **Baseline** | 45% at retrospective audit date (2026-04-16). Two HIGH-risk gaps (/estimate, /issue-dispatch) resolved by retrospective stories p3.15 and p3.16 (raising score to ~50%). |
+| **Gap to close** | Raise ~6 additional items from BETWEEN-STORIES to covered status through retrospective stories or /decisions records for the remaining A-classification and B-classification items identified in the audit. |
+| **Measurement method** | Hamish re-runs item group count against CHANGELOG at Phase 3 close: count covered items (PHASE-1 + PHASE-2 + PHASE-3 + any newly raised retrospective stories) / total post-pipeline items. Records result in `workspace/retrospective-audit-2026-04-16.md` or a dated follow-up audit file. |
+| **Hard gate** | Phase 3 benefit-metric is not satisfied if this criterion is not met. Phase 3 DoD artefact must record the final coverage score and confirm 80%+ target met. |
+| **Rationale** | A pipeline that produces artefacts for stories but allows ~half of all committed changes to land with no artefact chain undermines the traceability claim of the platform itself. The 80% target allows a reasonable residual of low-risk documentation edits (exempted via `# no-artefact:` marker in a governed exemption list) while requiring the platform to demonstrate the artefact-first discipline it prescribes. |
 
 ---
 
