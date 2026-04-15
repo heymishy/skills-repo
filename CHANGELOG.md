@@ -6,6 +6,10 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- **`/improvement` write-backs — 6 learnings applied across 4 skill files (2026-04-16):** Improvement candidates extracted from `workspace/learnings.md` materialised into SKILL.md and instruction changes, each backed by a new retrospective story artefact (p3.18–p3.21) to satisfy the artefact-first rule. Changes: (1) `definition/SKILL.md` — D2-platform mandatory availability gate added; D1-prereq cross-codebase validation block added. (2) `definition-of-done/SKILL.md` and `definition-of-ready/SKILL.md` — schema-valid guardrail enum enforcement block added; invalid status/category synonyms listed with CI failure consequence. (3) `copilot-instructions.md` — state write-path safety added (atomic-replace via temp file; partial-write prevention for `workspace/state.json`). (4) `systematic-debugging/SKILL.md` — coupled-change workflow section added (5-step protocol for fixes spanning `script → schema → state → CI` layers). All 4 story/test-plan/DoR artefact chains pass 14/14 DoR hard blocks. Test suite: 38 passed, 7 failed — 7 failures are pre-existing (`check-p3.14-concepts-docs.js`; `docs/concepts/README.md` not yet created), zero regressions introduced.
+
 ### Added
 
 - **Retrospective artefact coverage audit (2026-04-16):** Full audit of all 28 CHANGELOG versions (0.1.0 through [Unreleased]) against Phase 1 and Phase 2 artefact chains. Direction 1: all 8 Phase 1 and 13 Phase 2 production stories confirmed COMPLETE. Direction 2: 22 versions classified PRE-PIPELINE, 9/20 post-pipeline item groups covered by a story (45% coverage score), 11 BETWEEN-STORIES items identified (2 HIGH-risk: `/estimate` and `/issue-dispatch` skills). Full audit report at `workspace/retrospective-audit-2026-04-16.md`.

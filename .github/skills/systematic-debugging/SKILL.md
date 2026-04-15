@@ -241,6 +241,20 @@ If you catch yourself thinking:
 
 ---
 
+## Coupled-change workflow (use when a fix crosses contract layers)
+
+When debugging a failure and the fix chain crosses `script → schema → state data → CI` (or any equivalent multi-layer contract boundary), classify it early as a coupled-change workflow and switch to stricter verification:
+
+1. **Baseline snapshot first:** Before any edits, capture the current failing check logs, schema validation result, and a short map of touched contracts (state shape, schema, validator script, CI check name)
+2. **Single-axis fix loops:** Change one contract layer at a time, then re-run only the closest validator before moving to the next layer — do not bundle changes across layers
+3. **Dual-path hypothesis logging:** Explicitly track two hypotheses: (A) model/execution variability, (B) code/data coupling. Only promote one to root cause after gathering evidence from both
+4. **Guard against shape drift:** When one phase stores object arrays and another stores slug arrays (or similar schema divergence), prefer compatibility patterns that preserve existing test navigation paths over normalising shapes mid-fix
+5. **CI parity check early:** Run local checks with the same assumptions as CI (including schema toolchain) before final push — do not rely on `npm test` alone if CI runs additional validators (e.g. `validate-trace.sh --ci`)
+
+This pattern applies whenever: a fix for check A reveals a problem in check B, or when fixing a script requires also fixing a schema which requires also fixing state data.
+
+---
+
 ## Integration
 
 **Use when:** any task fails during /tdd, /subagent-execution, or ad-hoc debugging

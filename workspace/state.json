@@ -27,8 +27,8 @@
                           "observabilityGapsIdentified":  4,
                           "status":  "complete"
                       },
-    "lastUpdated":  "2026-04-14T12:00:00Z",
-    "currentPhase":  "phase-3-definition",
+    "lastUpdated":  "2026-04-16T00:00:00Z",
+    "currentPhase":  "phase-3-improvement",
     "cycle":  {
                   "discovery":  {
                                     "status":  "complete",
@@ -90,16 +90,15 @@
                     }
                 ],
     "checkpoint":  {
-                       "writtenAt":  "2026-04-14",
-                       "contextAtWrite":  "Phase 3 definition complete. 7 epics, 18 stories written (risk-first slicing, p3.1a–p3.13). NFR profile written. benefit-metric.md coverage matrix updated with all story slugs. pipeline-state.json updated: stage definition, all contributingStories populated, epics and stories arrays populated. p3.9 scoped to compat matrix only per operator instruction. p3.2b and p3.3 are ASSUMPTION-gated (ASSUMPTION-02 and ASSUMPTION-01 respectively). Next step: /review per story batch.",
-                       "resumeInstruction":  "Phase 3 definition is complete. Next pipeline step is /review — run it per story or per epic batch starting with E1 stories (p3.1a–p3.1e). All 18 story artefacts are at artefacts/2026-04-14-skills-platform-phase3/stories/. After /review passes (no HIGH findings), proceed to /test-plan per story, then /definition-of-ready. Also run /estimate E2 to record Phase 3 estimate before coding begins.",
+                       "writtenAt":  "2026-04-16",
+                       "contextAtWrite":  "/improvement run complete. 6 write-backs applied across definition/SKILL.md (D2-platform gate, D1-prereq validation), definition-of-done/SKILL.md (schema-valid enum), definition-of-ready/SKILL.md (schema-valid enum), copilot-instructions.md (state write-path safety), systematic-debugging/SKILL.md (coupled-change workflow). 4 retrospective stories created (p3.18–p3.21) with test plans and DoRs to satisfy artefact-first rule. Items 7+8 deferred pending operator confirmation.",
+                       "resumeInstruction":  "Phase 3 improvement write-back is on branch chore/improvement-write-backs-2026-04-16 awaiting merge. After merge: (1) confirm items 7+8 with operator — item 7 is docs/conflict-resolution-guide.md (PR merge conflict patterns), item 8 is second-session verification prompt (lightweight/moderate/structural). (2) Continue Phase 3 inner loop: issues #89-#92 are dispatched for p3.1a/p3.1b/p3.1d/p3.1e. (3) Stories p3.18–p3.21 are DoR-signed-off and ready for dispatch.",
                        "pendingActions":  [
-                                              "Run /review on Phase 3 stories — starting with E1 batch (p3.1a through p3.1e). All HIGH findings must be resolved before moving to /test-plan.",
-                                              "Run /estimate E2: record Phase 3 refined estimates now that 18 stories and their complexity ratings are known (9 at complexity 1, 6 at complexity 2, 3 at complexity 3).",
-                                              "Confirm ASSUMPTION-01 (separate platform-infrastructure repo feasibility) before DoR for p3.3.",
-                                              "Confirm ASSUMPTION-02 (tamper-evidence registry type: GitHub Artifact Attestation vs read-only registry repo) before DoR for p3.2b.",
-                                              "Push 4+ local commits to origin: 5e312e4 (discovery), e3753d7 (state checkpoint), c9ee368 (benefit-metric), plus the definition commit once created.",
-                                              "Validation playbook: Parts 2 and 3 not yet run or recorded (deferred from Phase 2 — requires genuine second operator for M1)."
+                                              "Merge PR for chore/improvement-write-backs-2026-04-16 (improvement write-backs + p3.18–p3.21 artefacts).",
+                                              "Confirm item 7: create docs/conflict-resolution-guide.md with two PR merge conflict patterns (package.json sequential additions, workflow filename collision).",
+                                              "Confirm item 8: choose placement for second-session verification prompt — options: (A) lightweight: add to DoD template, (B) moderate: add verify-output sub-step to DoR/verify-completion, (C) structural: new /verify-output skill.",
+                                              "Monitor GitHub agent runs for issues #89 (p3.1a), #90 (p3.1b), #91 (p3.1d), #92 (p3.1e) — dispatch target: github-agent.",
+                                              "Dispatch p3.18–p3.21 once improvement PR is merged."
                                           ]
                    }
 }
