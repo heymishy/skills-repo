@@ -71,3 +71,23 @@ This divergence must be revisited at enterprise pilot onboarding. The Q8 dogfood
 **Reversibility:** Reversible at enterprise pilot onboarding by implementing Option B as an environment-specific alternate for non-GitHub deployments. The trace schema `tamperEvidence` object already accommodates both values for `registryType`.
 
 **Logged by:** Hamish (tech lead), 2026-04-15
+
+---
+
+## DEC-P3-003 — W4 RISK-ACCEPT: verification script not pre-reviewed by a separate domain expert (p3.14)
+
+**Date:** 2026-04-15
+**Story:** p3.14 — Author framework concepts documentation suite for new-user onboarding
+**Decision type:** RISK-ACCEPT — DoR Warning W4 acknowledgement
+**Status:** Accepted
+**Owner:** Operator (tech lead)
+
+**Context:** DoR Warning W4 fires when the verification script has not been reviewed by a domain expert independently of the author before coding begins. For p3.14, the verification script was produced by the AI agent (GitHub Copilot) and reviewed only by the operator. The operator is also the tech lead and the only contributor on this repository. No independent domain expert is available.
+
+**Decision:** Accept the risk and proceed. Content quality review (readability, completeness, AC7 self-contained check) will be conducted post-merge as part of the Definition of Done rather than pre-code.
+
+**Rationale:** Solo project — tech lead and operator are the same person. The risk profile of p3.14 is low: it produces reference documentation only, creates no code paths, modifies no governance gates, and makes no changes to `.github/`, `src/`, or `artefacts/`. The worst-case outcome of an insufficiently reviewed verification script is a documentation file that passes automated tests but fails a readability/completeness spot-check — detectable and correctable at DoD with no downstream blast radius.
+
+**Residual risk:** The three manual scenarios in the verification script (AC7, NFR-Readability, NFR-Completeness) require a human reader who can assess without prior context. The operator will perform this review at DoD as part of the standard post-merge validation. If the spot-check reveals a gap in the verification script's criteria, a follow-on documentation patch story can be raised without pipeline cost.
+
+**Logged by:** Operator (tech lead), 2026-04-15
