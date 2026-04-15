@@ -1686,7 +1686,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p3.1a","p3.1b","p3.1c","p3.1d","p3.1e","p3.2a","p3.2b","p3.3","p3.4","p3.5","p3.6","p3.7","p3.8","p3.9","p3.10","p3.11","p3.12","p3.13"]
+          "contributingStories": ["p3.1a","p3.1b","p3.1c","p3.1d","p3.1e","p3.2a","p3.2b","p3.3","p3.4","p3.5","p3.6","p3.7","p3.8","p3.9","p3.10","p3.11","p3.12","p3.13","p3.15","p3.16","p3.17"]
         },
         {
           "id": "MM2",
@@ -1719,6 +1719,16 @@
           "contributingStories": ["p3.2a","p3.2b","p3.7","p3.13"]
         },
         {
+          "id": "EC1",
+          "name": "Phase 3 exit criterion: artefact coverage score \u226580%",
+          "target": "Post-pipeline CHANGELOG coverage score \u226580% by Phase 3 close",
+          "baseline": "45% coverage at 2026-04-16 audit (9/20 post-pipeline item groups covered by a formal story)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["p3.15","p3.16","p3.17"]
+        },
+        {
           "id": "CR2",
           "name": "Gate structural independence: agent cannot weaken its own gate",
           "target": "Gate scripts in separate repo, CI validates SHA-256 checksum before execution",
@@ -1736,7 +1746,7 @@
         { "slug": "e4-windows-ci-parity-pipeline-evolution", "name": "Windows CI Parity and Pipeline Evolution", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e4-windows-ci-parity-pipeline-evolution.md", "stories": ["p3.5","p3.6"] },
         { "slug": "e5-cross-team-trace-registry", "name": "Cross-Team Trace Registry", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e5-cross-team-trace-registry.md", "stories": ["p3.7"] },
         { "slug": "e6-enterprise-adapters-agents-validation", "name": "Enterprise Adapters and AGENTS.md Validation", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e6-enterprise-adapters-agents-validation.md", "stories": ["p3.8","p3.9"] },
-        { "slug": "e7-platform-maturity", "name": "Platform Maturity", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e7-platform-maturity.md", "stories": ["p3.10","p3.11","p3.12","p3.13"] }
+        { "slug": "e7-platform-maturity", "name": "Platform Maturity", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e7-platform-maturity.md", "stories": ["p3.10","p3.11","p3.12","p3.13","p3.15","p3.16","p3.17"] }
       ],
       "guardrails": [
         {
@@ -1911,7 +1921,10 @@
         { "slug": "p3.10", "name": "EA registry live integration", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.10-ea-registry-live-integration.md" },
         { "slug": "p3.11", "name": "Estimation calibration eval", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.11-estimation-calibration-eval.md" },
         { "slug": "p3.12", "name": "Squad contribution flow", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.12-squad-contribution-flow.md" },
-        { "slug": "p3.13", "name": "Compliance monitoring report", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.13-compliance-monitoring-report.md" }
+        { "slug": "p3.13", "name": "Compliance monitoring report", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.13-compliance-monitoring-report.md" },
+        { "slug": "p3.15", "name": "Retrospective — /estimate skill", "stage": "definition-of-ready", "dorStatus": "signed-off", "retrospective": true, "health": "green", "updatedAt": "2026-04-16", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.15-estimate-skill-retrospective.md", "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.15-estimate-skill-retrospective-dor.md" },
+        { "slug": "p3.16", "name": "Retrospective — /issue-dispatch skill", "stage": "definition-of-ready", "dorStatus": "signed-off", "retrospective": true, "health": "green", "updatedAt": "2026-04-16", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.16-issue-dispatch-skill-retrospective.md", "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.16-issue-dispatch-skill-retrospective-dor.md" },
+        { "slug": "p3.17", "name": "Retrospective — feat/repo-tidy docs structure", "stage": "definition-of-ready", "dorStatus": "signed-off", "retrospective": true, "health": "green", "updatedAt": "2026-04-16", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.17-repo-tidy-docs-structure-retrospective.md", "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.17-repo-tidy-docs-structure-retrospective-dor.md" }
       ]
     }
   ]
