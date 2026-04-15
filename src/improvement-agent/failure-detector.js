@@ -263,15 +263,73 @@ function detectStalenessSignals(traces, config, now) {
 /**
  * Apply the anti-overfitting gate to a proposal.
  *
- * If the proposal proposes to remove or weaken an existing check, and that
- * check has passed on ALL traces in the current window, the gate BLOCKS the
- * proposal.
+ * Two evaluation paths:
  *
- * @param {{proposedAction: string, targetCheckName?: string}} proposal
+ * Path A — compound add/remove counter (p3.1c AC3/AC4):
+ *   If the proposal has checksAdded and/or checksRemoved arrays, track additions
+ *   and removals separately. If removedCount > 0, the gate BLOCKS regardless of
+ *   how many checks were added. Reports pass/added/removed counts in the result.
+ *   (ADR-008: only proposals evaluated after merge are subject to this logic.)
+ *
+ * Path B — single-action gate (original behaviour, preserved for backward compat):
+ *   If the proposal proposes to remove or weaken an existing check, and that
+ *   check has passed on ALL traces in the current window, the gate BLOCKS the
+ *   proposal.
+ *
+ * @param {{proposedAction: string, targetCheckName?: string, checksAdded?: string[], checksRemoved?: string[]}} proposal
  * @param {object[]} windowTraces  - traces in the current sliding window
- * @returns {{passed: boolean, blockedCheckName?: string, traceCount?: number, reason?: string}}
+ * @returns {{passed: boolean, addedCount?: number, removedCount?: number, passCount?: number, blockedCheckName?: string, traceCount?: number, reason?: string}}
  */
 function checkAntiOverfitting(proposal, windowTraces) {
+  // ── Path A: compound add/remove counter ──────────────────────────────────
+  // Triggered when the proposal explicitly lists checksAdded or checksRemoved.
+  var checksAdded   = Array.isArray(proposal.checksAdded)   ? proposal.checksAdded   : null;
+  var checksRemoved = Array.isArray(proposal.checksRemoved) ? proposal.checksRemoved : null;
+
+  if (checksAdded !== null || checksRemoved !== null) {
+    var addedCount   = checksAdded   ? checksAdded.length   : 0;
+    var removedCount = checksRemoved ? checksRemoved.length : 0;
+
+    // passCount: traces in window that contain at least one passing check not in checksRemoved
+    var remainingRemoved = checksRemoved || [];
+    var passCount = 0;
+    if (Array.isArray(windowTraces)) {
+      for (var wi = 0; wi < windowTraces.length; wi++) {
+        var wTrace  = windowTraces[wi];
+        var wChecks = Array.isArray(wTrace.checks) ? wTrace.checks : [];
+        var hasPassingCheck = false;
+        for (var wj = 0; wj < wChecks.length; wj++) {
+          if (wChecks[wj].passed && remainingRemoved.indexOf(wChecks[wj].name) === -1) {
+            hasPassingCheck = true;
+            break;
+          }
+        }
+        if (hasPassingCheck) passCount++;
+      }
+    }
+
+    if (removedCount > 0) {
+      return {
+        passed:       false,
+        addedCount:   addedCount,
+        removedCount: removedCount,
+        passCount:    passCount,
+        reason:       'Proposal removes ' + removedCount + ' previously-passing check(s) ' +
+                      '(added: ' + addedCount + ', removed: ' + removedCount +
+                      ', pass: ' + passCount + '). ' +
+                      'Add-and-remove proposals are blocked regardless of added count.',
+      };
+    }
+
+    return {
+      passed:       true,
+      addedCount:   addedCount,
+      removedCount: removedCount,
+      passCount:    passCount,
+    };
+  }
+
+  // ── Path B: single-action gate (original behaviour) ───────────────────────
   var action = (proposal.proposedAction || '').toLowerCase();
 
   // Only removal or weakening triggers the gate

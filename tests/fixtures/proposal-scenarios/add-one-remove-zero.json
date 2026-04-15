@@ -1,0 +1,22 @@
+{
+  "description": "Proposal scenario: 1 check added, 0 removed. Anti-overfitting gate must pass this.",
+  "windowTraces": [
+    {
+      "traceId": "wt1",
+      "surfaceType": "ci",
+      "checks": [
+        { "name": "must-have-test-plan", "passed": true },
+        { "name": "must-have-dor",       "passed": true }
+      ]
+    }
+  ],
+  "proposal": {
+    "proposedAction": "modify-checks",
+    "checksAdded":   ["new-check-name"],
+    "checksRemoved": [],
+    "skillSlug":     "test-skill",
+    "surfaceType":   "ci",
+    "fileName":      "2026-04-14-test-add-one-remove-zero-proposal.md",
+    "created_at":    "2026-04-14T00:00:00Z"
+  }
+}

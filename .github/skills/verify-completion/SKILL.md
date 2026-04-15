@@ -115,6 +115,26 @@ If a commit exists that doesn't correspond to either:
 
 ---
 
+### Traces Branch Health
+
+If `npm test` fails with a stale-traces error, run:
+
+```bash
+git log origin/traces --oneline -5
+```
+
+Expected output: recent commits within the last 24 hours. If the last commit is >24h ago, or the branch is absent, the post-merge trace workflow has not run since the last story merge. Re-trigger the workflow or push a trace manually to resolve.
+
+To see the exact timestamp of the last commit:
+
+```bash
+git log origin/traces -1 --format="%ci %s"
+```
+
+If `check-trace-commit.js` exits 1 with a stale message, the hours-elapsed value in its output indicates how long the traces branch has been idle.
+
+---
+
 ## Common failures
 
 | Claim | Requires | Not sufficient |
