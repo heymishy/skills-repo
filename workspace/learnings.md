@@ -1111,3 +1111,27 @@ This is the enterprise-standard maker/checker pattern: the gate that signs off a
 **Operational rule:** If a GitHub cloud agent run ends with planning-only output and no code changes, do not re-run the same target repeatedly. Re-dispatch the story as a VS Code agent task and continue from the existing plan artefact.
 
 **Action:** Update dispatch guidance to prefer VS Code target for high-context stories (for example, p3.2a-scale plans) and reserve GitHub cloud agent dispatch for smaller bounded tasks.
+
+---
+
+## /improvement run — 2026-04-16
+
+**Phase:** /improvement (write-back of outstanding learnings candidates)
+**Scope:** 6 items applied to 4 target files; 4 retrospective stories created (p3.18–p3.21) to satisfy artefact-first rule before SKILL.md modifications
+
+**Items applied:**
+
+| # | Target file | Change |
+|---|-------------|--------|
+| 1 | .github/skills/definition/SKILL.md | Added D2-platform mandatory gate (platform-availability check before writing ACs) |
+| 2 | .github/skills/definition/SKILL.md | Added D1-prereq cross-codebase validation before writing RISK-ACCEPT prerequisite stories |
+| 3 | .github/skills/definition-of-done/SKILL.md | Added schema-valid guardrail enum reminder block after Merge-by-id instruction |
+| 4 | .github/skills/definition-of-ready/SKILL.md | Added schema-valid guardrail enum reminder block after Merge-by-id instruction |
+| 5 | .github/copilot-instructions.md | Added state write-path safety paragraph in /checkpoint section |
+| 6 | .github/skills/systematic-debugging/SKILL.md | Added Coupled-change workflow section before ## Integration |
+
+**Artefacts created:** p3.18, p3.19, p3.20, p3.21 — each with story, test-plan, and DoR in artefacts/2026-04-14-skills-platform-phase3/
+
+**Items deferred to operator confirmation:** Item 7 (docs/conflict-resolution-guide.md) and Item 8 (second-session verification prompt) remain pending.
+
+**Key learning this run:** The artefact-first rule (copilot-instructions.md Coding Standards) applies to SKILL.md modifications as much as to src/ or governance check scripts. The rule must be checked before applying any improvement write-back. Failure to do so would itself have been a governance violation.
