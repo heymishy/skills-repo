@@ -1002,3 +1002,17 @@ This is the enterprise-standard maker/checker pattern: the gate that signs off a
 **Decision:** Post-Phase-2 work. Document as Phase 3 backlog story with all four AC items, acceptance criteria, and learnings linkage. Register for Phase 3 /discovery intake.
 
 **Action:** Create \workspace/phase3-backlog-trace-commit-observability.md\ story file with full AC list. Register in workspace/state.json for Phase 3 discovery.
+
+---
+
+### Dispatch strategy - large plan stories should run in VS Code agent mode
+
+**Date:** 2026-04-15
+
+**Circumstance:** Story p3.2a was dispatched to the GitHub cloud agent and repeatedly produced only an "Initial plan" commit, then cancelled with no implementation. The implementation plan file was very large and the run consistently stopped before task execution.
+
+**Learning:** For stories with long implementation plans and multi-file TDD tasks, dispatch should target VS Code agent execution instead of GitHub cloud agent execution. The local VS Code agent can iterate with stable context and complete RED-GREEN-REFACTOR loops without cloud run cancellation.
+
+**Operational rule:** If a GitHub cloud agent run ends with planning-only output and no code changes, do not re-run the same target repeatedly. Re-dispatch the story as a VS Code agent task and continue from the existing plan artefact.
+
+**Action:** Update dispatch guidance to prefer VS Code target for high-context stories (for example, p3.2a-scale plans) and reserve GitHub cloud agent dispatch for smaller bounded tasks.
