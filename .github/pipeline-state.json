@@ -1911,7 +1911,7 @@
         { "slug": "p3.11", "name": "Estimation calibration eval", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.11-estimation-calibration-eval.md" },
         { "slug": "p3.12", "name": "Squad contribution flow", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.12-squad-contribution-flow.md" },
         { "slug": "p3.13", "name": "Compliance monitoring report", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.13-compliance-monitoring-report.md" },
-        { "slug": "p3.14", "name": "New-user onboarding concepts documentation", "stage": "not-started", "origin": "phase-2-user-feedback", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.14-new-user-onboarding-concepts-documentation.md" }
+        { "slug": "p3.14", "name": "New-user onboarding concepts documentation", "stage": "test-plan", "origin": "phase-2-user-feedback", "reviewStatus": "passed", "highFindings": 0, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.14-new-user-onboarding-concepts-documentation-review-1.md", "testPlan": { "status": "written", "totalTests": 16, "passing": 0 }, "acTotal": 7, "acVerified": 0, "health": "green", "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "updatedAt": "2026-04-15", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.14-new-user-onboarding-concepts-documentation.md" }
       ]
     }
   ]
