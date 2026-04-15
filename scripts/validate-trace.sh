@@ -231,6 +231,8 @@ for feature in state.get('features', []):
     # Check story-level health
     for epic in feature.get('epics', []):
         for story in epic.get('stories', []):
+            if not isinstance(story, dict):
+                continue  # epics may store stories as string slugs rather than full objects
             story_slug = story.get('slug', 'unknown')
             if story.get('health') == 'red' and not story.get('blocker'):
                 print(f'UNRESOLVED BLOCKER: {feature_slug}/{story_slug} has health=red but no blocker recorded')
