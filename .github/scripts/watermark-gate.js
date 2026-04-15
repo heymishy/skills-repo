@@ -36,6 +36,12 @@
 const fs   = require('fs');
 const path = require('path');
 
+// ── Minimum pass-rate floor (p3.1c AC2) ──────────────────────────────────────
+// A baseline may not be written when fewer than this fraction of scenarios pass.
+// The floor prevents a degraded suite from being watermarked as a new baseline.
+
+const FLOOR_PASS_RATE = 0.70;
+
 // ── Column indices in the TSV (0-based) ──────────────────────────────────────
 
 const COL_TIMESTAMP     = 0;
@@ -253,6 +259,13 @@ function runWatermarkGate({ suiteJsonPath, resultsTsvPath }) {
   let verdict, trigger;
   if (watermark === null) {
     // First run for this composite key — establish baseline
+    // Refuse to write a baseline below the minimum pass-rate floor (p3.1c AC2)
+    if (passRate < FLOOR_PASS_RATE) {
+      throw new Error(
+        `passRate ${passRate.toFixed(4)} is below the minimum floor of ${FLOOR_PASS_RATE} ` +
+        `— baseline not written (FLOOR_PASS_RATE = ${FLOOR_PASS_RATE})`
+      );
+    }
     verdict = 'baseline';
     trigger = '';
   } else {
@@ -271,6 +284,7 @@ function runWatermarkGate({ suiteJsonPath, resultsTsvPath }) {
 // ── Exports ───────────────────────────────────────────────────────────────────
 
 module.exports = {
+  FLOOR_PASS_RATE,
   parseSuite,
   parseResultsTsv,
   findBestWatermark,

@@ -250,6 +250,26 @@ Add to a pre-push git hook if you want it enforced locally.
 
 ---
 
+## Traces Branch Health
+
+During master branch validation, check `origin/traces` currency:
+
+- Run `git log origin/traces --oneline -1` to retrieve the last commit timestamp
+- If last commit is within 24 hours: ✅ Current — traces are up to date
+- If last commit is older than 24 hours: ⚠️ Stale — post-merge workflow may not have run. Check CI logs for the last story merge.
+
+Include this in the trace output under "Traces Branch Health":
+
+```
+Traces Branch Health:
+  Last commit: [ISO 8601 timestamp]
+  Status: ✅ Current / ⚠️ Stale
+```
+
+If `npm test` fails with a stale-traces error, the traces branch has not received a commit since the last story merge. Re-trigger the post-merge workflow or run `git log origin/traces` to inspect the most recent commits.
+
+---
+
 ## What this skill does NOT do
 
 - Does not fix broken links — reports for human or skill action

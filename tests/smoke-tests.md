@@ -271,3 +271,52 @@ Run /trace on this feature. The story has passed review and has a test plan.
 - [ ] Skill runs a Chain walk per story — traces discovery → epic → story → test → DoR
 - [ ] Output explicitly lists broken links, orphaned artefacts, and scope deviations (or confirms none)
 - [ ] Report is read-only — skill does not attempt to fix any gaps it finds
+
+---
+
+## Bitbucket DC Auth Tests — Manual Test Records (p3.1d)
+
+These entries are the formal manual test record for the four Bitbucket DC Docker auth tests
+that cannot run in standard CI (no Docker service available). Each entry satisfies Option B
+of story p3.1d per decision DEC-P3-001.
+
+## app-password auth test
+
+| Field | Value |
+|-------|-------|
+| Test name | app-password auth |
+| Last-run date | 2026-04-14 |
+| Result | SKIP |
+| Runner | operator |
+| Docker dependency | Requires a live Bitbucket DC instance via Docker service container. Docker not available in standard CI runner. Deferred per DEC-P3-001. |
+
+## OAuth auth test
+
+| Field | Value |
+|-------|-------|
+| Test name | OAuth auth |
+| Last-run date | 2026-04-14 |
+| Result | SKIP |
+| Runner | operator |
+| Docker dependency | Requires a live Bitbucket DC instance via Docker service container. Docker not available in standard CI runner. Deferred per DEC-P3-001. |
+
+## SSH key auth test
+
+| Field | Value |
+|-------|-------|
+| Test name | SSH key auth |
+| Last-run date | 2026-04-14 |
+| Result | SKIP |
+| Runner | operator |
+| Docker dependency | Requires a live Bitbucket DC instance via Docker service container. Docker not available in standard CI runner. Deferred per DEC-P3-001. |
+
+## PAT auth test
+
+| Field | Value |
+|-------|-------|
+| Test name | PAT auth |
+| Last-run date | 2026-04-14 |
+| Result | SKIP |
+| Runner | operator |
+| Docker dependency | Requires a live Bitbucket DC instance via Docker service container. Docker not available in standard CI runner. Deferred per DEC-P3-001. |
+
