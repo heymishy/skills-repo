@@ -459,6 +459,120 @@ node scripts/parse-session-timing.js --summary --max-gap 30
 
 ---
 
+## Inner loop sequencing — story dependencies not surfaced in dispatch instructions, forcing operator to query for order
+
+### Observed — 2026-04-15 (Phase 3 p3.1a–p3.14 dispatch session)
+
+**Circumstance:** After completing DoR sign-off for 6 Phase 3 stories (p3.1a, p3.1b, p3.1c, p3.1d, p3.1e, p3.2a), the operator asked: "what order should I get the agent to build?" This question was not answerable from the dispatch artefacts or pipeline-state.json directly. The operator had to query the session agent, which manually read each DoR's dependency notes, cross-referenced the package.json conflict history from learnings.md, and reasoned about file-level conflicts (e.g. p3.2a touches the same gate scripts as p3.1b) to produce a safe build order.
+
+**The structural gap:** The `/definition-of-ready` and `/issue-dispatch` skills produce per-story outputs. Neither skill produces a delivery-order table for the set of stories being dispatched together. The operator must reconstruct sequencing from dependency notes scattered across individual DoR artefacts — or ask the session agent to do it. In a solo context this adds friction; in a multi-team or multi-agent context this becomes a coordination failure mode.
+
+**Specific conflict types observed (Phase 3):**
+- **package.json chain conflicts:** Any two stories that both add a new check script to the npm test chain will conflict on package.json. Detectable from DoR contracts (file touchpoints section). Stories that touch `package.json` must be dispatched serially, each waiting for the prior merge.
+- **Shared file conflicts:** p3.2a modifies `.github/governance-gates.yml` and `pipeline-viz.html`; p3.1b also modifies `pipeline-viz.html`. Dispatching them in parallel guarantees a merge conflict. Detectable from DoR contract touchpoint lists.
+- **Logical ordering (not file-level):** p3.1a (trace fields) must merge before p3.2a (T3M1 gate check) because p3.2a's tests assert on the fields p3.1a adds. This is a runtime dependency, not a file-level conflict, and is harder to detect automatically.
+
+**What good looks like:** The `/issue-dispatch` skill (or a companion `/delivery-order` skill) should, when dispatching multiple stories in a batch:
+1. Read all DoR contracts for the batch and extract file touchpoints.
+2. Build a conflict matrix: which pairs of stories touch overlapping files.
+3. Detect logical dependencies from DoR "Dependencies" sections.
+4. Produce a sequenced delivery table (parallel lanes where safe, serial where not) and include it in the dispatch summary.
+5. Optionally add a `deliveryOrder` field to the pipeline-state.json entry for each dispatched story.
+
+**Minimum viable improvement:** Add a step to `/issue-dispatch` that, when dispatching 2+ stories, reads their DoR contracts, lists file touchpoints in a simple table, and flags any overlaps to the operator before creating issues. The operator then confirms the order. This adds one informative step without requiring automated sequencing logic.
+
+**Action:** Flag for `/improve` — candidate update to `/issue-dispatch` SKILL.md. Add a "batch conflict check" step when N > 1 stories are dispatched. Also investigate adding a `deliveryOrder` field to pipeline-state.json dispatch records so sequencing intent is machine-readable.
+
+---
+
+## Issue dispatch — full detail with hyperlinks required; stub-with-links pattern fails for GitHub Actions agent
+
+### Observed — 2026-04-15 (p3.14 dispatch, --target github-agent)
+
+**Circumstance:** Initial dispatch attempts for Phase 3 stories used the `--target vscode` (stub) format: 3–5 lines pointing to artefact file paths. The operator then requested full inlined body for p3.14 — all 16 test specs, 7 tasks with exact file paths, file touchpoints listed individually, decisions logged, and non-negotiable rules. The difference in issue quality was significant: the stub format requires the GitHub Actions agent to read 4–5 files before it can begin; the rich format is self-contained.
+
+**The structural problem with stubs for GitHub Actions agents:** The GitHub Actions Copilot agent clones the repo and reads the issue body as its primary work specification. A stub issue that says "read `artefacts/.../dor.md`" requires the agent to: (1) locate the file, (2) parse the Coding Agent Instructions block correctly, (3) resolve all relative references within it. Each hop introduces a failure mode — if any file is not found, the wrong block is parsed, or a relative path resolves incorrectly, the agent proceeds on incorrect context. A rich inlined body with all paths, all test specs, all file touchpoints expanded removes these failure modes.
+
+**What "full detail" means in practice for GitHub Actions dispatches:**
+- All tasks listed with exact file paths (not directory references)
+- All test specifications expanded inline (not "see test plan")
+- All file touchpoints individually enumerated (CREATE / MODIFY per file)
+- All non-negotiable rules repeated verbatim (not "see DoR")
+- Any decision entries (RISK-ACCEPTs, option choices) inlined in the issue
+- Artefact paths as a reference table at the bottom — for the agent to read *in addition* to the issue, not instead of it
+
+**Hyperlinks vs plain paths:** GitHub renders relative links in issues as clickable only when they resolve to files in the same repo on the same branch. Artefact paths should be formatted as `[filename](artefacts/.../filename.md)` using the repo-relative path so the agent can navigate directly. Code paths (files to create/modify) should be in inline code rather than links.
+
+**Proposed update to `/issue-dispatch` SKILL.md:** Change the default target from `--target vscode` to `--target github-agent` when the dispatch context indicates a GitHub Actions workflow will handle the issue. Add guidance: when creating issues for GitHub Actions agents, always inline all task specifications. The `--target vscode` stub format is appropriate only for VS Code assisted sessions where the operator is co-piloting alongside the agent in an IDE session.
+
+**Action:** Update `/issue-dispatch` SKILL.md `--target github-agent` body format section to require: expanded task list, expanded test specs, enumerated file touchpoints, inlined decisions, verbatim non-negotiable rules. Flag the default-target choice as a dispatch context decision — include a step in the skill that asks the operator which agent surface will handle the issue.
+
+---
+
+## Inner loop CI — copilot-setup-steps workflow "Verify baseline — trace validation" failure is a GitHub workflow approval gate, not a real failure
+
+### Observed — 2026-04-15 (Phase 3 p3.1a–p3.1e agent PRs open)
+
+**Circumstance:** All GitHub Actions inner-loop agent PRs showed the following error on the copilot-setup-steps workflow:
+
+> "Copilot stopped work due to an error — The 'Verify baseline — trace validation' custom setup step from your `.github/workflows/copilot-setup-steps.yml` file failed."
+
+Investigation revealed this was not a genuine step failure. Three workflows showed "awaiting approval" on the PR, and a "Review requested" note indicated Copilot had requested review from the operator. The actual cause: GitHub requires a maintainer to approve first-run workflows on PRs from agents/forks. The trace validation step (`bash scripts/validate-trace.sh --ci`) had never been approved in the GitHub Actions interface for the agent's workflow context, so the entire workflow was blocked pending maintainer approval.
+
+**Why it looks like a failure:** GitHub surfaces workflow approval blocks identically to step failures in the Copilot agent UI: "Copilot stopped work due to an error." There is no distinction between "a step returned exit code 1" and "the workflow requires approval before it can run." The operator must look directly at the PR's "Checks" tab to see the "3 workflows awaiting approval" banner, then click "Approve and run" to unblock.
+
+**The required operator action:** When an agent PR shows this error message, check the PR's Checks tab for "awaiting approval" before investigating the workflow step. If approval is pending, click "Approve and run" — this is a one-time gate per workflow per repository context, not a recurring step. After approval, the workflow will re-run automatically and the agent will continue.
+
+**Medium-term fix options:**
+1. **Add `pull_request_target` trigger to copilot-setup-steps.yml:** `pull_request_target` runs in the context of the base repo (not the fork/agent context), which means it does not require maintainer approval. This is the standard pattern for CI workflows that should auto-run on agent PRs.
+2. **Pre-approve the workflow in GitHub Actions settings:** Repository → Actions Settings → "Allow all actions and reusable workflows" + "Approve all first-time contributors" policy removes the approval gate entirely.
+3. **Document the operator approval step explicitly:** Until a structural fix is in place, add a note to the inner loop dispatch instructions that the operator must approve workflows on the first agent PR per repository session.
+
+**Current state:** The approval gate is per-workflow, per-repository, and potentially per-agent-session. It is not a one-time fix — it may recur. The most reliable fix is option 1 (add `pull_request_target` trigger) or option 2 (repository-level policy).
+
+**Action:** Investigate adding `pull_request_target` to `.github/workflows/copilot-setup-steps.yml`. If safe to do so (validate-trace.sh --ci does not write secrets or require elevated permissions), switch the trigger. Document in inner loop operator guide that "awaiting approval" is a workflow gate, not a step failure, and is resolved by clicking "Approve and run" on the PR's Checks tab.
+
+---
+
+## Skills improvement — proactive learnings prompting should be a first-class pipeline behaviour, not an operator initiative
+
+### Observed — 2026-04-15 (across Phase 1–3 delivery)
+
+**Circumstance:** Every meaningful learning in `workspace/learnings.md` was written because the operator noticed friction, a failure mode, or an improvement opportunity and chose to log it. The pipeline skills (review, test-plan, DoR, DoD, issue-dispatch, tdd, verify-completion) do not currently prompt for learnings at natural pause points. The result: learnings are sparse and operator-dependent. When a session compacts before the operator reaches the end, learnings are lost entirely. When the operator is in flow, they do not interrupt to write learnings.
+
+**The pattern that should be standardised:**
+
+At the end of every skill run — or whenever a friction point, workaround, repeated manual step, or improvement idea surfaces mid-run — the executing skill should:
+1. Surface any learnings candidates it observed during its run (e.g. "I noticed you had to manually query build order — this suggests a gap in /issue-dispatch. Should I log this?")
+2. Offer to write the learning directly to `workspace/learnings.md` in the standard format.
+3. If the session is approaching context threshold, prioritise learnings write over artefact polish.
+
+**Two categories of learnings that should be prompted for:**
+
+- **Meta-skill improvements:** Gaps in SKILL.md files, missing steps in skill exit sequences, checks that should exist but don't, format inconsistencies, template gaps. These feed /improve runs. Examples from Phase 1–3: the /review skill not doing per-story incremental state writes; the /definition skill not validating dependency chains; the /issue-dispatch skill not producing a batch conflict matrix.
+
+- **Flow improvements:** Operator friction points, repeated manual lookups, steps the operator had to do that a skill should do, patterns that emerged across multiple sessions. Examples: operator always having to query build order; operator manually approving GitHub workflows; operator manually reconciling package.json conflicts.
+
+**What should trigger a proactive learnings prompt:**
+- Operator performs a manual step that a skill was supposed to cover
+- Operator asks a question whose answer should have been in a prior skill output
+- A CI check blocks an agent PR for a reason that was predictable from the artefacts
+- A merge conflict occurs that was predictable from the DoR contracts
+- Any workaround is used that the pipeline does not document
+- Any step takes more operator time than the pipeline models assume
+
+**Proposed mechanism:**
+
+Add a "Learnings check" section to each skill's exit sequence:
+
+> Before closing: review the run for any of the following: (1) steps you had to perform that are not in the skill's documented procedure; (2) questions from the operator that should have been answered by a prior skill output; (3) checks you wish existed but didn't; (4) patterns that have now occurred more than once. If any of the above: surface them as learning candidates with a one-sentence summary and offer to write them to workspace/learnings.md. Do not wait for the operator to notice — prompt proactively.
+
+Additionally: add a standing "potential learnings" column or note to the DoR, DoD, and verification script templates so friction signals are captured in structured artefacts, not only in ad-hoc learnings log entries.
+
+**Action:** Flag for /improve. Candidate updates: add "Learnings check" to /definition, /review, /test-plan, /definition-of-ready, /issue-dispatch, /verify-completion, /definition-of-done exit sequences. Add "potential improvement observations" field to DoD artefact template. Consider a lightweight `/signal` shortcut command that logs a single learning candidate without invoking a full skill.
+
+---
+
 ## Pipeline gap D6 — /issue-dispatch not automatically prompted at /definition-of-ready batch completion
 
 ### Observed — 2026-04-12
