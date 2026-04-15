@@ -261,6 +261,107 @@ if (state.proposals !== undefined) {
   }
 }
 
+// ── p3.1e: Agent behaviour observability documentation checks ─────────────────
+// U1–U7: Validate that the docs file and workspace backlog file exist and
+// contain the required structural elements.
+
+// U1 — docs/agent-behaviour-observability.md exists
+const obsDocPath = path.join(root, 'docs', 'agent-behaviour-observability.md');
+const u1 = 'agent-behaviour-observability-doc-exists';
+if (!fs.existsSync(obsDocPath)) {
+  fail(u1, 'docs/agent-behaviour-observability.md does not exist');
+} else {
+  pass(u1);
+
+  const obsDoc = fs.readFileSync(obsDocPath, 'utf8');
+
+  // U2 — Exactly 3 candidate sections (## headings after the first #)
+  const u2 = 'agent-behaviour-observability-exactly-3-candidates';
+  const candidateSections = obsDoc.match(/^##\s+.+/gm) || [];
+  if (candidateSections.length !== 3) {
+    fail(u2, `Expected exactly 3 ## candidate sections, found ${candidateSections.length}`);
+  } else {
+    pass(u2);
+  }
+
+  // U3 — Each of the 3 candidates has a non-empty name and an effort level
+  const u3 = 'agent-behaviour-observability-candidates-have-effort';
+  const effortPattern = /\*\*Effort:\*\*\s*(Low|Medium|High)/gi;
+  const effortMatches = obsDoc.match(effortPattern) || [];
+  if (effortMatches.length < 3) {
+    fail(u3, `Expected at least 3 Effort: Low/Medium/High entries, found ${effortMatches.length}`);
+  } else {
+    pass(u3);
+  }
+
+  // U4 — Each candidate has a mechanism paragraph and a tradeoff label
+  const u4 = 'agent-behaviour-observability-candidates-have-mechanism-and-tradeoff';
+  const tradeoffPattern = /trade[\-]?off/gi;
+  const tradeoffMatches = obsDoc.match(tradeoffPattern) || [];
+  if (tradeoffMatches.length < 3) {
+    fail(u4, `Expected at least 3 tradeoff/trade-off references, found ${tradeoffMatches.length}`);
+  } else {
+    pass(u4);
+  }
+
+  // U5 — Document states no implementation in Phase 3 and references Phase 4
+  const u5 = 'agent-behaviour-observability-states-no-impl-phase3-and-references-phase4';
+  const hasNoImpl = /no implementation|not implemented/i.test(obsDoc);
+  const hasPhase4 = /Phase 4/i.test(obsDoc);
+  if (!hasNoImpl) {
+    fail(u5, 'Document does not contain "no implementation" or "not implemented" (case-insensitive)');
+  } else {
+    pass(u5);
+  }
+  if (!hasPhase4) {
+    fail(u5, 'Document does not reference "Phase 4"');
+  } else {
+    pass(u5);
+  }
+}
+
+// U6 — workspace/phase4-backlog-*.md file exists
+const u6 = 'agent-behaviour-observability-phase4-backlog-file-exists';
+const workspaceDir = path.join(root, 'workspace');
+const phase4BacklogFiles = fs.readdirSync(workspaceDir)
+  .filter(f => f.startsWith('phase4-backlog-') && f.endsWith('.md'));
+if (phase4BacklogFiles.length === 0) {
+  fail(u6, 'No file matching workspace/phase4-backlog-*.md found');
+} else {
+  pass(u6);
+
+  // U7 — Phase 4 backlog file has required content fields
+  const u7 = 'agent-behaviour-observability-phase4-backlog-has-required-fields';
+  const backlogPath = path.join(workspaceDir, phase4BacklogFiles[0]);
+  const backlogContent = fs.readFileSync(backlogPath, 'utf8');
+
+  const hasTitleHeading = /^#\s+.+/m.test(backlogContent);
+  if (!hasTitleHeading) {
+    fail(u7, 'Phase 4 backlog file does not have a non-empty # title heading');
+  } else {
+    pass(u7);
+  }
+
+  const hasProblemStatement = /\w.*\.\s/m.test(backlogContent);
+  if (!hasProblemStatement) {
+    fail(u7, 'Phase 4 backlog file does not appear to have a problem statement paragraph');
+  } else {
+    pass(u7);
+  }
+
+  if (!backlogContent.includes('agent-behaviour-observability')) {
+    fail(u7, 'Phase 4 backlog file does not reference "agent-behaviour-observability"');
+  } else {
+    pass(u7);
+  }
+
+  if (!backlogContent.includes('NOT STARTED')) {
+    fail(u7, 'Phase 4 backlog file does not contain "NOT STARTED" status marker');
+  } else {
+    pass(u7);
+  }
+}
+
 // ── Output ────────────────────────────────────────────────────────────────────
 
 function report() {
@@ -274,7 +375,7 @@ function report() {
     );
     process.exit(1);
   }
-  const testCount = 10; // number of named non-conditional test checks above
+  const testCount = 17; // 10 original + 7 new p3.1e agent-behaviour-observability checks
                         // (proposals block validation is conditional — only runs when proposals key is present)
   process.stdout.write(`[workspace-state] ${testCount} check(s) OK \u2713\n`);
   process.exit(0);
