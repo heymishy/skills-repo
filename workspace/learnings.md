@@ -258,6 +258,28 @@ This makes the self-checkpoint structural: it will happen reliably across models
 
 ### Observed — 2026-04-12 (Phase 2 Wave 1a inner loop)
 
+---
+
+## Delivery stability gap — uncertain model routing under rate limits vs inherent change complexity
+
+### Observed — 2026-04-15 10:55
+
+**Circumstance:** A change set that initially looked simple (trace validation fix) expanded into multiple dependent fixes: runtime script assumptions, schema compatibility across phase shapes, and CI path differences. During the same window, there was uncertainty about whether agent behavior changed because of model routing (for example, fallback from Sonnet to Auto/Codex under rate limiting) versus the task itself being genuinely high-coupling.
+
+**What was learned:**
+- Treat model-routing uncertainty as an operational risk signal, not as a root-cause conclusion.
+- When a fix chain crosses `script -> schema -> state data -> CI`, classify it early as a coupled-change workflow and switch to stricter verification steps.
+- Even when behavior feels "messy," the controlling factor is often hidden coupling in contracts and validators, not only model quality.
+
+**Next-time improvement protocol:**
+1. **Baseline snapshot before edits:** capture current failing check logs, schema validation result, and a quick map of touched contracts (`state`, `schema`, `validator script`).
+2. **Single-axis fix loops:** change one contract layer at a time, then re-run only the closest validator before moving on.
+3. **Dual-path hypothesis logging:** explicitly track two hypotheses in notes: (A) execution/model variability, (B) code/data coupling; only promote one after evidence.
+4. **Guard against shape drift:** when one phase stores object arrays and another stores slug arrays, prefer schema compatibility patterns that preserve existing test navigation paths.
+5. **CI parity check early:** run local checks with the same assumptions as CI (including schema toolchain) before final push.
+
+**Action:** For future CI-fix stories, start with a short "coupling map" in working notes and enforce one-layer-at-a-time validation to reduce thrash when model behavior or routing is uncertain.
+
 **Circumstance:** Two Copilot agent PRs (#28 p2.1, #29 p2.2) failed the `Trace Validation` CI check with `Process completed with exit code 1`. The `validate-trace.sh --ci` `check_schema_valid` step is a hard-fail. Root cause: `pipeline-state.json` contained guardrail `status` and `category` values that are not in the schema enum.
 
 **Invalid values written by DoD and DoR skills:**
@@ -1002,3 +1024,17 @@ This is the enterprise-standard maker/checker pattern: the gate that signs off a
 **Decision:** Post-Phase-2 work. Document as Phase 3 backlog story with all four AC items, acceptance criteria, and learnings linkage. Register for Phase 3 /discovery intake.
 
 **Action:** Create \workspace/phase3-backlog-trace-commit-observability.md\ story file with full AC list. Register in workspace/state.json for Phase 3 discovery.
+
+---
+
+### Dispatch strategy - large plan stories should run in VS Code agent mode
+
+**Date:** 2026-04-15
+
+**Circumstance:** Story p3.2a was dispatched to the GitHub cloud agent and repeatedly produced only an "Initial plan" commit, then cancelled with no implementation. The implementation plan file was very large and the run consistently stopped before task execution.
+
+**Learning:** For stories with long implementation plans and multi-file TDD tasks, dispatch should target VS Code agent execution instead of GitHub cloud agent execution. The local VS Code agent can iterate with stable context and complete RED-GREEN-REFACTOR loops without cloud run cancellation.
+
+**Operational rule:** If a GitHub cloud agent run ends with planning-only output and no code changes, do not re-run the same target repeatedly. Re-dispatch the story as a VS Code agent task and continue from the existing plan artefact.
+
+**Action:** Update dispatch guidance to prefer VS Code target for high-context stories (for example, p3.2a-scale plans) and reserve GitHub cloud agent dispatch for smaller bounded tasks.
