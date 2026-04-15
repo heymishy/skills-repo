@@ -138,6 +138,7 @@ process.stdout.write('  Integration: AC6 \u2014 Cloud/DC independent execution\n
 }
 
 // ── Integration: AC3 — app-password auth topology (Docker-gated) ─────────────
+// MANUAL: see smoke-tests.md
 
 process.stdout.write('\n  Integration: AC3 \u2014 app-password auth (Docker-gated)\n');
 
@@ -158,6 +159,7 @@ var appPasswordPromise = (function () {
 })();
 
 // ── Integration: AC4 — OAuth consumer auth topology (Docker-gated) ───────────
+// MANUAL: see smoke-tests.md
 
 process.stdout.write('\n  Integration: AC4 \u2014 OAuth consumer auth (Docker-gated)\n');
 
@@ -178,6 +180,7 @@ var oauthPromise = (function () {
 })();
 
 // ── Integration: AC5 — SSH key auth topology (Docker-gated) ──────────────────
+// MANUAL: see smoke-tests.md
 
 process.stdout.write('\n  Integration: AC5 \u2014 SSH key auth (Docker-gated)\n');
 
@@ -196,6 +199,17 @@ var sshPromise = (function () {
     fail(testName, 'Unexpected error: ' + e.message);
   });
 })();
+
+// ── Integration: PAT — PAT auth topology (Docker-gated) ──────────────────────
+// MANUAL: see smoke-tests.md
+
+// pat-auth-no-401-403
+// PAT (Personal Access Token) auth is not yet implemented in the DC validator.
+// Formally skipped — see tests/smoke-tests.md for the manual test record.
+process.stdout.write('\n  Integration: PAT \u2014 PAT auth (Docker-gated)\n');
+(function () {
+  skip('pat-auth-no-401-403', 'MANUAL: see smoke-tests.md \u2014 PAT auth not yet implemented in dcValidator');
+}());
 
 // ── Integration: AC7 — docker-compose-up-starts-dc (Docker-gated) ────────────
 
