@@ -477,6 +477,40 @@ node scripts/parse-session-timing.js --summary --max-gap 30
 
 ---
 
+---
+
+## Pipeline coverage gap — between-stories changes and inline-chat structural reorganisation
+
+### Observed — 2026-04-16 (retrospective artefact coverage audit)
+
+**Circumstance:** A full retrospective audit of the repository CHANGELOG (all 28 versions, 0.1.0 through [Unreleased]) was conducted against the Phase 1 and Phase 2 artefact chains. The audit found that approximately 45% of post-pipeline CHANGELOG item groups (9 of 20) trace back to a formal story. The remaining 55% (11 item groups) are BETWEEN-STORIES — committed after the pipeline start date (2026-04-09) with no covering story in any phase.
+
+**Two root causes identified:**
+
+**Root cause A — Inline chat sessions:** VS Code inline Copilot chat has no pipeline awareness. The canonical example is CHANGELOG version 0.5.18 (2026-04-09): a structural directory reorganisation (moving `product/`, `contexts/`, `artefacts/`, `files/` to the repo root) was committed through an inline chat session with no discovery → story → DoR chain. Inline chat is always available regardless of whether a story is open, and it produces no artefact footprint.
+
+**Root cause B — Between-cycle skill additions:** New skills (`/estimate`, `/issue-dispatch`) and utility scripts (`scripts/parse-session-timing.js`) were created between story cycles without a full artefact chain. These are HIGH-risk items because they are functional pipeline primitives that cannot be reproduced from spec by an upgrade-path agent — the spec simply does not include them. The artefact-first rule was not yet enforced when these were added.
+
+**The practical failure mode (confirmed in HANDOFF.md Section 7 port):** When an upgrade-path agent reads the story index and rebuilds the repo from spec, any BETWEEN-STORIES feature is silently absent from the result. The operator must reconcile by hand, which is the friction the pipeline was designed to eliminate. `/estimate` and `/issue-dispatch` are the two confirmed casualties.
+
+**Full audit results:** See `workspace/retrospective-audit-2026-04-16.md`.
+
+**HIGH-risk BETWEEN-STORIES items confirmed:**
+1. `/estimate` skill — full SKILL.md delivered without any artefact chain (no discovery, no story, no DoR, no test plan)
+2. `/issue-dispatch` skill — same pattern
+
+**Prevention mechanisms (three tiers, ordered by effort):**
+
+**Tier 1 (immediate, this PR):** Guard line added to `.github/copilot-instructions.md` — any new SKILL.md file, `src/` module, or governance check script committed to master must have a corresponding story artefact. This makes the violation visible in every agent's context, even if it does not structurally prevent it.
+
+**Tier 2 (retroactive coverage, this PR):** New template `.github/templates/retrospective-story.md` provides a lightweight story format for work that has already landed without a chain. It produces a minimal DoR with the committed code as the known implementation and focuses artefact work on test coverage and trace linkage. Use for LOW and MEDIUM risk BETWEEN-STORIES items.
+
+**Tier 3 (structural, Phase 3 scope):** A `check-artefact-coverage.js` governance check that queries `.github/skills/` and `src/` for modules with no corresponding DoR artefact and fails `npm test` if any are found. Proposed under "spec immutability" entry above. Once implemented, HIGH-risk BETWEEN-STORIES additions become a CI failure before merge. Target: Phase 3 short-track story.
+
+**Coverage score at time of audit:** 45% (9/20 post-pipeline item groups covered by a story). Target after Tier 3: ≥90% (exemptions for LOW-risk documentation and tooling edits via a governed opt-out marker).
+
+**Action:** Tier 1 and Tier 2 implemented in this PR (`docs/retrospective-audit-learnings`). Tier 3 scoped as a Phase 3 short-track story. The two HIGH-risk items (`/estimate`, `/issue-dispatch`) are candidates for retroactive retrospective stories using the new template.
+
 *More signals will be added here as Phase 1 dogfood run progresses.*
 
 ---
