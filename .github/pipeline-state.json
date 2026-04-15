@@ -1617,6 +1617,7 @@
       "name": "Skills Platform — Phase 3: Governance Hardening, T3M1 Close, and Enterprise Scale",
       "stage": "definition",
       "health": "green",
+      "track": "library",
       "discoveryArtefact": "artefacts/2026-04-14-skills-platform-phase3/discovery.md",
       "benefitMetricArtefact": "artefacts/2026-04-14-skills-platform-phase3/benefit-metric.md",
       "nfrProfileArtefact": "artefacts/2026-04-14-skills-platform-phase3/nfr-profile.md",
