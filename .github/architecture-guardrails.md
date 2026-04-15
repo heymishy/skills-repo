@@ -17,7 +17,7 @@
   To evolve: update this file, open a PR, tag tech lead for review.
 -->
 
-**Last updated:** 2026-04-13
+**Last updated:** 2026-04-15
 **Maintained by:** Repo owner (solo)
 
 ---
@@ -106,6 +106,81 @@ Skill files and templates are content, not code — they are governed by pipelin
 | Committing runtime artefact churn (trace files, validation reports) in story branches | Non-functional CI side effects inflate diff noise and make PR review harder | Add generated runtime paths to `.gitignore`; do not commit `workspace/traces/` or `trace-validation-report.json` in story branches |
 | Required-check workflow committing back to the branch it evaluates | Fires a new `synchronize` event on every evaluation — gate re-triggers itself → infinite loop; the evaluator modifies its own evaluation target | Two-workflow pattern: evaluate on `pull_request` with `contents: read`, persist post-merge with `contents: write` on `push` to main |
 | Using `[ci skip]` on a branch with required checks | Suppresses all workflow runs on that SHA, including required status reporters; the SHA is permanently stuck on "Waiting for status" with no way to recover without a new commit | Reserve `[ci skip]` for direct housekeeping commits to main where no required checks apply |
+
+---
+
+## Core Platform Design Principles
+
+These six principles define what this platform fundamentally *is*. They are not aspirational — they describe the design decisions already made and in effect. Every proposed story, ADR, new skill, or architectural change must be checked against them. A change that violates a principle requires an explicit entry in `decisions.md` before proceeding — not a silent exception.
+
+Full conceptual explanations live in `docs/concepts/principles/` (delivered by p3.14). The enforcement guidance here is the concrete constraint for use at /review Category E and /definition-of-ready H9.
+
+### P1 — Governance by demonstration
+
+**Statement:** Every governed action must produce a verifiable, committed artefact — a trace entry with a verifiable hash, a state field containing evidence. Governance that can only be attested ("someone says it happened") does not count.
+
+**Enforcement:**
+- Story ACs must produce observable, committed evidence records. "The skill runs X" with no trace or state output is not a passing AC.
+- /review Category E: if no AC produces a committed, independently inspectable artefact, flag as MEDIUM finding.
+- Any PR that removes trace fields without a replacement evidence path violates this principle.
+
+### P2 — The subset is the on-ramp
+
+**Statement:** Any team must be able to adopt a meaningful subset of skills without running the full pipeline. No skill may create a hard undeclared dependency on another skill's artefact output — partial stacks must remain functional.
+
+**Enforcement:**
+- Skills must declare optional upstream artefact dependencies explicitly in their entry-condition blocks.
+- A skill that errors (not just warns) when its optional upstream artefact is absent violates this principle.
+- /review: any story that binds two previously independent skills into a mandatory sequence without an ADR must flag this as a coupling finding.
+
+### P3 — Adapter-isolated surface concerns
+
+**Statement:** The governance brain (skills, gates, trace format) must never branch on delivery surface type. All surface-specific logic — DoD criteria, CI topology, artefact format — lives behind the surface adapter behind the `execute(surface, context) → result` interface. Formerly referred to in the README as "Surface-agnostic by contract".
+
+**Enforcement:**
+- No `if surface.type === 'saas-api'` conditional logic in skill instruction text.
+- No surface-conditional branching in viz gate evaluation logic.
+- Any new surface requires a new adapter — not a branch in existing skill or gate code.
+- /review Category E: surface-conditional logic inside a skill file is a HIGH finding.
+
+### P4 — Spec immutability
+
+**Statement:** Once a DoR artefact is signed off, its scope contract is binding until a new pipeline run. The coding agent cannot widen its own mandate mid-story. `artefacts/` is read-only to the coding agent by instruction.
+
+**Enforcement:** Enforced via ADR-008 (touch-point contract binding at pre-merge) and the agent instructions block in every DoR artefact. Any PR containing changes to files outside the DoR touch-point list without a logged contract amendment is a violation.
+
+### P5 — Human approval at every gate
+
+**Statement:** DoR sign-off, assurance gate merge decision, and DoD confirmation all require a named human signal with a date and role. Automated CI produces the verdict; it never records the sign-off.
+
+**Enforcement:**
+- No gate may be set to `"state": "pass"` in pipeline-state.json by an automated process without a corresponding `signedOffBy` field containing a non-CI human identifier.
+- A bot or job ID (e.g. `github-actions[bot]`) in `signedOffBy` is a violation.
+- If auto-merge tooling is ever introduced, it must be prohibited from writing sign-off fields.
+
+### P6 — Self-improving harness
+
+**Statement:** Every completed feature loop must produce at least one improvement signal — a `workspace/learnings.md` entry, a standards update, or an improvement agent proposal. The platform improves from its own real delivery signal, not synthetic benchmarks.
+
+**Enforcement:**
+- /definition-of-done requires a learnings signal before DoD is confirmed.
+- If /improve is skipped at feature close, this is recorded as a process deviation in the DoD artefact — it is not silent.
+- The improvement agent's human review gate must not be bypassed. Auto-merged proposals without review violate this principle.
+
+---
+
+## Core Platform Primitives
+
+When a story, ADR, or architectural discussion uses the terms below, they must conform to these definitions. Introducing a component that performs the function of a primitive under a different name — without an ADR justifying the divergence — is an architectural drift finding.
+
+| Primitive | Canonical definition | What it is not |
+|-----------|---------------------|----------------|
+| **Skill** | A `SKILL.md` file encoding a complete delivery phase or discipline practice. Versioned, hash-verified, loaded progressively at the phase boundary where first needed. | Not a prompt template. Not a CI script. Encodes expected behaviour, quality criteria, and the phase state-write contract. |
+| **Surface adapter** | The interface between the governance brain and a delivery surface. All surface-specific complexity lives behind it; the brain never branches on surface type. | Not a CI template. Not a deployment script. Governs any surface that implements `execute(surface, context) → result`. |
+| **Assurance gate** | Automated CI check on every PR. Verifies instruction set hashes, evaluates DoD criteria against the trace, and gates merge. Structurally independent from the delivery code it evaluates. | Not a linter. Not a unit test runner. Evaluates governance compliance, not code correctness. |
+| **Pipeline state** | `workspace/state.json` — the structured session record written at each phase boundary. Enables cross-session continuity: a new session reads state.json and resumes without verbal priming. | Not a project management ticket. Not a progress report. The ground-truth handoff record between sessions. |
+| **Eval suite** | `workspace/suite.json` — the living regression suite for harness behaviour. Each entry guards a named failure pattern observed in real delivery. An added scenario must pass on every subsequent gate run. | Not a CI test suite for application behaviour. Guards harness integrity: does the platform do what it says it does? |
+| **Learnings log** | `workspace/learnings.md` — structured delivery findings, failure patterns, and standards improvements written by `/improve` at feature close. Evidence-backed from the artefact chain, not from recall. | Not a retrospective note. Not a personal log. Entries must cite the artefact, trace, or metric that produced the finding. |
 
 ---
 
