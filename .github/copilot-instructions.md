@@ -217,6 +217,8 @@ Rules:
 
 [FILL IN BEFORE COMMITTING]
 
+**Artefact-first rule:** Any new SKILL.md file under `.github/skills/`, any new module under `src/`, and any new governance check script under `tests/` or `scripts/` committed to master must have a corresponding story artefact (discovery → benefit-metric → story → test-plan → DoR) committed to `artefacts/` before or alongside the implementation. A PR that adds or modifies a SKILL.md, `src/` module, or check script without a DoR story artefact is out-of-process. Exception: documentation-only changes (README, CHANGELOG, workspace notes), typo/configuration fixes that make no behavioural difference, and changes explicitly listed in the governed exemption register do not require a full chain. For work that has already landed without a chain, use `.github/templates/retrospective-story.md` to create a retroactive story.
+
 ---
 
 ## Product context files

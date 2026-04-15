@@ -6,6 +6,18 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **Retrospective artefact coverage audit (2026-04-16):** Full audit of all 28 CHANGELOG versions (0.1.0 through [Unreleased]) against Phase 1 and Phase 2 artefact chains. Direction 1: all 8 Phase 1 and 13 Phase 2 production stories confirmed COMPLETE. Direction 2: 22 versions classified PRE-PIPELINE, 9/20 post-pipeline item groups covered by a story (45% coverage score), 11 BETWEEN-STORIES items identified (2 HIGH-risk: `/estimate` and `/issue-dispatch` skills). Full audit report at `workspace/retrospective-audit-2026-04-16.md`.
+
+- **`workspace/learnings.md`** — new entry: "Pipeline coverage gap — between-stories changes and inline-chat structural reorganisation". Documents root causes A (inline chat sessions have no pipeline awareness) and B (between-cycle skill additions). Three-tier prevention mechanism: (1) copilot-instructions.md guard (this PR), (2) retrospective-story.md template (this PR), (3) `check-artefact-coverage.js` governance check (Phase 3 scope).
+
+- **`.github/templates/retrospective-story.md`** — new template for retroactive artefact coverage of BETWEEN-STORIES items. Produces a minimal story with DoR focusing on test coverage and trace linkage rather than re-implementing existing code. Includes AC status classification (ALREADY-MET / NEEDS-TESTS / NEEDS-IMPLEMENTATION) and traceability linkage section.
+
+### Changed
+
+- **`.github/copilot-instructions.md` — Coding Standards section:** Artefact-first rule added. Any new SKILL.md file, `src/` module, or governance check script committed to master must have a corresponding story artefact committed to `artefacts/` before or alongside the implementation. Exception: documentation-only changes, typo fixes, and configuration changes that make no behavioural difference. For work that has already landed without a chain, use `retrospective-story.md`. This rule closes the pipeline gap documented in "spec immutability principle broken by out-of-band feature delivery" (learnings.md, 2026-04-14).
+
 ### Changed
 
 - **Assurance gate trace commit — post-merge architecture (2026-04-13):** The gate no longer commits trace files back to the PR feature branch. Previously, the "Commit trace file" step would push `workspace/traces/` back to the PR HEAD, creating a branch-protection HEAD-chase loop: the gate passes → commits a trace → that commit becomes the new HEAD → branch protection requires the gate to re-run on the new HEAD → indefinitely. The fix separates evaluation from recording. The gate runs on the PR branch, evaluates, posts the PR verdict comment with trace hash and commit SHA, and uploads the trace as a GitHub Actions workflow artefact (`assurance-trace`). A new post-merge workflow (`.github/workflows/trace-commit.yml`) triggers on `push` to `master`, downloads the artefact from the most recent successful gate run, and commits the trace to `workspace/traces/` on master with message `chore: assurance trace [post-merge] <sha>`. Governance properties preserved: trace is durable (committed to master — permanent canonical history), linked (traceHash in PR comment cross-references the master trace entry), and maker/checker independent (evaluation workflow and recording workflow are separate, triggered by separate events). This change also brings the workflow into compliance with the existing architecture guardrail: "do not commit `workspace/traces/` in story branches." `permissions.contents` on `assurance-gate.yml` reverted from `write` to `read`. `assurance-gate.yml` `if: always()` restored on verdict-posting step.
