@@ -151,6 +151,32 @@ function runChecks(root) {
   return checks;
 }
 
+// ── T3M1 regulated trace field validation ────────────────────────────────────
+
+/**
+ * Validate T3M1 mandatory trace fields for regulated stories.
+ * Returns { passed: true } when the record is non-regulated or all four
+ * required fields are present and non-null.
+ * Returns { passed: false, failedField: string } when a required field is
+ * null or absent in a regulated record.
+ *
+ * @param {object} record - object with regulated: boolean and T3M1 field values
+ * @returns {{ passed: boolean, failedField?: string }}
+ */
+function validateT3M1Fields(record) {
+  if (!record || record.regulated !== true) {
+    return { passed: true };
+  }
+  var required = ['standardsInjected', 'watermarkResult', 'stalenessFlag', 'sessionIdentity'];
+  for (var i = 0; i < required.length; i++) {
+    var field = required[i];
+    if (record[field] === undefined || record[field] === null) {
+      return { passed: false, failedField: field };
+    }
+  }
+  return { passed: true };
+}
+
 // ── Gate runner ───────────────────────────────────────────────────────────────
 
 /**
@@ -176,6 +202,11 @@ function runGate(ctx) {
     root         = DEFAULT_ROOT,
     checksRunner = null,
     runId        = buildRunId(trigger),
+    regulated         = false,
+    standardsInjected = undefined,
+    watermarkResult   = undefined,
+    stalenessFlag     = undefined,
+    sessionIdentity   = undefined,
   } = ctx || {};
 
   const startedAt = new Date().toISOString();
@@ -203,6 +234,23 @@ function runGate(ctx) {
     checks = [{ name: 'checks-exception', passed: false, reason: err.message }];
   }
 
+  // ── T3M1 validation for regulated stories ────────────────────────────────
+  if (regulated) {
+    var t3m1 = validateT3M1Fields({
+      regulated:         regulated,
+      standardsInjected: standardsInjected,
+      watermarkResult:   watermarkResult,
+      stalenessFlag:     stalenessFlag,
+      sessionIdentity:   sessionIdentity,
+    });
+    checks.push(t3m1.passed
+      ? { name: 't3m1-fields-valid', passed: true }
+      : { name: 't3m1-fields-valid', passed: false,
+          reason: 't3m1 required field missing or null: ' + t3m1.failedField,
+          failurePattern: 't3m1-missing-' + t3m1.failedField }
+    );
+  }
+
   const allPassed = checks.every(function (c) { return c.passed; });
   const verdict   = allPassed ? 'pass' : 'fail';
   const failurePattern = verdict === 'fail' ? deriveFailurePattern(checks) : null;
@@ -223,6 +271,12 @@ function runGate(ctx) {
     traceHash,
     checks,
   };
+  if (regulated) {
+    completedEntry.standardsInjected = standardsInjected !== undefined ? standardsInjected : null;
+    completedEntry.watermarkResult   = watermarkResult   !== undefined ? watermarkResult   : null;
+    completedEntry.stalenessFlag     = stalenessFlag     !== undefined ? stalenessFlag     : null;
+    completedEntry.sessionIdentity   = sessionIdentity   !== undefined ? sessionIdentity   : null;
+  }
   appendTraceEntry(tracesDir, runId, completedEntry);
 
   return { verdict, traceHash, runId, tracePath };
@@ -230,7 +284,7 @@ function runGate(ctx) {
 
 // ── Exports ───────────────────────────────────────────────────────────────────
 
-module.exports = { runGate, computeTraceHash, runChecks, appendTraceEntry, buildRunId };
+module.exports = { runGate, computeTraceHash, runChecks, appendTraceEntry, buildRunId, validateT3M1Fields };
 
 // ── CLI entry point ───────────────────────────────────────────────────────────
 
