@@ -2202,6 +2202,9 @@
           "stage": "definition-of-ready",
           "dorStatus": "signed-off",
           "blockerCleared": "p3.2a DoD complete 2026-04-17 — fields [standardsInjected, watermarkResult, stalenessFlag, sessionIdentity] now in pipeline-state.schema.json and gate enforcement active",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/117",
+          "dispatchedAt": "2026-04-17",
+          "dispatchTarget": "vscode",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 2,
@@ -2214,11 +2217,11 @@
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.2b-t3m1-tamper-evidence-registry-dor.md",
           "acTotal": 5,
           "acVerified": 0,
-          "health": "red",
+          "health": "amber",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "assumptionResolved": "DEC-P3-002 (2026-04-15): Option A — GitHub Artifact Attestation",
-          "updatedAt": "2026-04-15",
+          "updatedAt": "2026-04-17",
           "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.2b-t3m1-tamper-evidence-registry.md"
         },
         {
