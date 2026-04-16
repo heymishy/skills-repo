@@ -2,7 +2,8 @@
 
 **Platform:** Skills-based SDLC governance pipeline  
 **Audience:** Squad tech leads and engineers adopting the platform  
-**Time to first loop closure:** ~2 hours for setup + one practice story
+**Time to first loop closure:** ~2 hours for setup + one practice story  
+**Framework concepts reference:** [docs/concepts/README.md](docs/concepts/README.md)
 
 ---
 
