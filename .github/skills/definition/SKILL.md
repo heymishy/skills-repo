@@ -161,6 +161,16 @@ If the operator accepts the AC as-is, story writing continues without removing o
 
 **This filter is advisory only** — do not halt story creation or block story progression for testability warnings.
 
+**Platform-availability gate (D2-platform — mandatory, applied before writing any AC or Architecture Constraint):**
+
+Before writing any AC or Architecture Constraint that requires an external platform, tool, or environment (e.g. Bitbucket Pipelines, a specific cloud service, a third-party API), verify: "Is this platform/environment available and testable in the delivery context?" If not:
+- Defer the AC/constraint to the phase where it becomes testable
+- Log a SCOPE decision in `decisions.md` referencing the unavailability
+- Add a revisit trigger: "Reinstate when [platform] is available in delivery context"
+- Do not embed an unverifiable AC in the story — untestable ACs produce unreliable artefacts that cannot be verified at DoD
+
+This gate is mandatory — it is not a warning. An AC that cannot be tested is not a valid AC for the current delivery context.
+
 **Scope guard — per story:**
 If a story is necessary but was not in the discovery MVP scope, surface it
 immediately rather than silently writing it:
@@ -203,6 +213,19 @@ After writing and saving a story's Dependencies block, check whether each named 
 If the operator selects option 2 (external dependency) and provides a description, record the following annotation in the story's Dependencies block and do not re-surface the warning for that slug in the same session:
 
 > `[External: <description> — confirmed by operator on <date>]`
+
+**Prerequisite cross-codebase validation (D1-prereq — run before writing any prerequisite story flagged from a RISK-ACCEPT):**
+
+Before writing a prerequisite story whose need was identified from a RISK-ACCEPT entry in `decisions.md`, verify all three:
+1. Does this prerequisite exist in the same target repository as the stories that depend on it?
+2. Does resolving this prerequisite trace to at least one metric in the benefit-metric artefact via a story that is in scope for this feature?
+3. If the RISK-ACCEPT was originally logged against a different codebase (e.g. a proof-of-concept or prototype repo), is that codebase actually the delivery target for this feature?
+
+If any check fails: surface to the operator with a dependency chain gap summary before writing the story:
+
+> "Prerequisite story [slug] failed D1-prereq check: [which check failed and why]. Do not write this story until the operator confirms the dependency chain is valid."
+
+Do not write the story on the assumption that the discovery artefact's named prerequisites are fully validated.
 
 ---
 

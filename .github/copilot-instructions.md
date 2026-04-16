@@ -185,6 +185,8 @@ Each step is mandatory. Skipping step 1 leaves no learnings signal. Skipping ste
 **Completion expectation:**
 The entire `/checkpoint` write — from invocation to closing confirmation message — must complete within 60 seconds. If it does not, the session likely ran out of context headroom before the write finished. Invoke earlier next time.
 
+**State write safety:** When writing `workspace/state.json`, always write the complete JSON object (never a delta or append). If using a tool that does not guarantee atomic full-file replacement, write to a temp file first (`state.json.tmp`), verify the content is valid JSON, then rename over the target. A partial write, append, or non-truncating replace will produce a concatenated-JSON file that fails `check-workspace-state.js` with "Unexpected non-whitespace character after JSON".
+
 **After writing:**
 The closing confirmation message must include "Pipeline state updated ✅". A new session reading `workspace/state.json` will resume from the checkpoint without verbal priming.
 
