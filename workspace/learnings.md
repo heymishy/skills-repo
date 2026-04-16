@@ -398,6 +398,102 @@ Alternatively, if using `create_file` or similar tools that overwrite the full f
 
 ---
 
+## Pipeline gap — benefit metric signal recording is not prompted by any outer loop checkpoint
+
+### Observed — 2026-04-17
+
+**Circumstance:** During the Phase 3 dogfood session, benefit metric signals (MM2 on-track, CR1/M1 at-risk) were captured only because the operator explicitly ran `/record-signal`. No checkpoint step, session-start sequence, or outer loop gate asked: "have any of your active metrics moved since the last checkpoint? Do you have evidence to record?"
+
+**Root cause:** The outer loop checkpoint sequence in `copilot-instructions.md` lists: write learnings → write state → stage artefacts → commit. It does not include a "review active metrics" step. The benefit-metric artefact is written once at `/benefit-metric` and then read passively by DoD. There is no recurring signal-check gate.
+
+**Finding:** Signal recording currently depends entirely on operator initiative. An operator who doesn't know to run `/record-signal` will produce a benefit-metric artefact that shows no signal data, even if real evidence exists. This undermines the measurement loop that the platform is designed to produce.
+
+**Proposed fix:** Add a mandatory "metric signal check" step to the outer loop checkpoint sequence:
+1. After writing learnings, before writing state — list each active metric from the feature's benefit-metric artefact
+2. Ask: "Has any of these metrics moved since the last checkpoint? Do you have any evidence (usage counts, session timings, error rates, qualitative feedback)?"
+3. If yes: invoke `/record-signal` inline before finalising the checkpoint
+4. If no: note "no new signals observed" in pendingActions
+
+This makes signal recording structural rather than discretionary.
+
+**Action:** Update the Session Conventions > Ending a session sequence in `copilot-instructions.md` to add the metric signal check step. Also update the `/benefit-metric` skill to remind the operator at each phase boundary that active metrics require regular signal recording. Flag for `/improve` post-merge.
+
+---
+
+## Pipeline gap — branch protection applies uniformly to docs and artefact changes, blocking low-risk commits
+
+### Observed — 2026-04-17
+
+**Circumstance:** A documentation-only update to `docs/HANDOFF.md` (no code, no scripts, no skills changed) was blocked from direct push to master by branch protection rules. The rules require (a) a pull request and (b) the "Run assurance gate" status check to pass before any merge. This forced the creation of branch `docs/handoff-phase3-update` and draft PR #119 for a change that had zero behavioural risk.
+
+**Root cause:** The repository ruleset applies to all pushes to master with no carve-out for file path or change type. The assurance gate is designed to verify that governance checks pass — meaningful for code and skill changes, but disproportionate for a docs update or a new artefact in `artefacts/`.
+
+**Finding:** The friction is proportional to the frequency of documentation updates. Phase 3 has produced multiple doc commits (HANDOFF.md, CHANGELOG, workspace/learnings.md). Each one requiring a full PR cycle and CI gate pass adds overhead that discourages timely documentation. The observable outcome was a HANDOFF.md that sat 3 days out of date because the cost of updating it was non-trivially high.
+
+**Options:**
+1. Add a GitHub repository ruleset bypass for paths matching `docs/**`, `artefacts/**`, `workspace/**`, and `CHANGELOG.md` — allow direct push for documentation-only commits
+2. Add a lightweight governance gate that runs only a path-scope check (if changed files are all in documentation paths, skip the assurance gate)
+3. Accept the current rules and update the session start protocol to note that documentation commits require a PR — reduces the surprise factor without changing the rules
+
+**Preferred option (operator-stated):** Change repo rules to not require a PR for artefact/documentation changes. This is the lowest-friction path and is consistent with the artefact-protection principle (artefacts are read-only pipeline inputs — protecting them from agent modification is correct, but protecting them from operator documentation updates is overhead).
+
+**Action:** Investigate GitHub repository ruleset bypass rules for protected paths. Create a short-track story or operator task: "Configure repo ruleset to allow direct push to master for changes scoped entirely to docs/, artefacts/, workspace/, and CHANGELOG.md." Record as a Phase 3/4 backlog item. Until resolved, note in the session-end protocol that documentation commits require a separate branch.
+
+---
+
+## Pipeline gap — README, docs/, and CHANGELOG not consistently updated on PR merge
+
+### Observed — 2026-04-17
+
+**Circumstance:** Reconstructing HANDOFF.md required reading 34 commits across 11 PRs spanning 3 days (2026-04-14 to 2026-04-17). The work took a significant portion of a dedicated session. Multiple merged PRs included skill additions, governance check scripts, and structural changes that were not reflected in CHANGELOG.md or HANDOFF.md at merge time. Some PRs modified SKILL.md files without updating the skill's quick-reference row in HANDOFF.md Section 5.
+
+**Root cause:** No gate or checklist item in the current DoD template requires the PR author to update README, HANDOFF.md, or CHANGELOG. The documentation update is operator-discretionary. The artefact-first rule (added to `copilot-instructions.md` in Phase 3) governs the existence of artefact chains but does not mandate living documentation updates on merge.
+
+**Finding:** The longer documentation updates are deferred, the harder they become to reconstruct — and the more likely the handoff document will be stale at exactly the moment it is most needed (onboarding, session start, upgrade-path tracing). Each PR that merges without a documentation touch compounds the gap.
+
+**Evidence of harm:** HANDOFF.md Section 5 quick-reference rows, Section 6 narrative sections, and Section 7 story index all had to be written from scratch by reading CHANGELOG + git log, rather than being incrementally maintained. This is a documentation debt pattern, not a one-off.
+
+**Proposed fix:** Add a mandatory "Documentation updated" checklist item to the DoD template (`.github/templates/dod.md`) and the DoD skill (`definition-of-done/SKILL.md`):
+- [ ] CHANGELOG.md: entry written under Unreleased or the correct version
+- [ ] README.md: updated if a new skill, capability, or structural change is introduced
+- [ ] HANDOFF.md: Section 5 quick-reference row added/updated if applicable; phase status updated if a phase boundary was crossed
+- [ ] All documentation changes include a back-reference to the story artefact (e.g. `<!-- p3.2a -->`) so the documentation history is traceable
+
+**Make it concrete:** The back-reference requirement means a CHANGELOG entry for a skill change should include the story ID (e.g. `### p3.2a — T3M1 audit field enforcement`), not just a free-text description. This links the changelog back into the pipeline's traceability chain.
+
+**Action:** Update the DoD template and skill to add the documentation checklist. Update the inner loop's `/branch-complete` or `/verify-completion` skill to surface the checklist before opening a PR. Flag for `/improve` post-merge.
+
+---
+
+## Agent observation — HANDOFF.md staleness is a lagging indicator of outer loop documentation discipline
+
+### Observed — 2026-04-17
+
+**Circumstance:** HANDOFF.md was last updated 2026-04-14. By 2026-04-17, 34 commits across 11 PRs had been merged without updating it. The agent spent a substantial session reconstructing the document from CHANGELOG + git log.
+
+**Finding:** The age of HANDOFF.md relative to the last merge is a reliable signal of outer loop documentation discipline. When it lags by more than 1–2 working sessions, the outer loop has no documentation gate. Unlike code quality metrics (test coverage, lint pass rate), documentation staleness has no automated signal — it requires a human or agent to notice the gap.
+
+**Proposed metric:** Track `days since HANDOFF.md last commit` as a session-start health indicator. If greater than 2 sessions since last update and new PRs have merged, surface a warning at session start: "HANDOFF.md has not been updated since [date]. [N] PRs have merged since then. Consider updating before proceeding."
+
+**Action:** Add a HANDOFF.md staleness check to the session-start sequence (or the `/workflow` skill's diagnostic output). This is a low-cost, high-signal indicator that requires reading only git log and the HANDOFF.md last-modified date.
+
+---
+
+## Agent observation — held decisions in pendingActions are not surfaced at session start
+
+### Observed — 2026-04-17
+
+**Circumstance:** PR #98 (external contributor — new branch for a community-contributed story) has been in a "held pending operator decision" state across multiple sessions. The decision item appears in `workspace/state.json` pendingActions but is not surfaced at session start in any structured way. The session-start sequence reads state.json and reports "last completed phase" and "in-progress story" but does not present held decisions as a prioritised action item.
+
+**Finding:** Held decisions represent a pipeline blockage with a human dependency. They are the highest-priority items for a session start — more urgent than resuming implementation, because the decision gate may be blocking downstream stories. By not surfacing them prominently, the session-start sequence allows held decisions to age silently across sessions.
+
+**Proposed fix:** Update the session-start sequence to include a "held decisions" step:
+> After reading state.json, if `pendingActions` contains any item whose description includes "pending operator decision", "held", or "awaiting approval": present these as the first action item, not buried in the pendingActions list. Ask the operator to resolve or defer each one before proceeding to other work.
+
+**Action:** Update the Session Start sequence in `copilot-instructions.md` to add a held-decisions surfacing step. Consider adding a `decisionStatus: "held"` field to pendingActions entries to make the query structural rather than pattern-matched. Flag for `/improve` post-merge.
+
+---
+
 ## Pipeline gap — decisions.md cross-session continuity check needed before Phase 2 discovery
 
 ### Observed — 2026-04-11 (post p1.4 DoD session)
@@ -1114,10 +1210,10 @@ This is the enterprise-standard maker/checker pattern: the gate that signs off a
 
 ---
 
-## /improvement run � 2026-04-16
+## /improvement run � 2026-04-16
 
 **Phase:** /improvement (write-back of outstanding learnings candidates)
-**Scope:** 6 items applied to 4 target files; 4 retrospective stories created (p3.18�p3.21) to satisfy artefact-first rule before SKILL.md modifications
+**Scope:** 6 items applied to 4 target files; 4 retrospective stories created (p3.18�p3.21) to satisfy artefact-first rule before SKILL.md modifications
 
 **Items applied:**
 
@@ -1130,7 +1226,7 @@ This is the enterprise-standard maker/checker pattern: the gate that signs off a
 | 5 | .github/copilot-instructions.md | Added state write-path safety paragraph in /checkpoint section |
 | 6 | .github/skills/systematic-debugging/SKILL.md | Added Coupled-change workflow section before ## Integration |
 
-**Artefacts created:** p3.18, p3.19, p3.20, p3.21 � each with story, test-plan, and DoR in artefacts/2026-04-14-skills-platform-phase3/
+**Artefacts created:** p3.18, p3.19, p3.20, p3.21 � each with story, test-plan, and DoR in artefacts/2026-04-14-skills-platform-phase3/
 
 **Items deferred to operator confirmation:** Item 7 (docs/conflict-resolution-guide.md) and Item 8 (second-session verification prompt) remain pending.
 
