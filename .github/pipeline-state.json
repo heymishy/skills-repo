@@ -795,7 +795,7 @@
       "discoveryStatus": "approved",
       "benefitMetricStatus": "active",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-04-12",
+      "updatedAt": "2026-05-01",
       "lastImprove": "2026-04-12",
       "standards": {
         "recentUpdates": [
@@ -843,7 +843,6 @@
         "reviewCompleted": "2026-04-11",
         "note": "8 MEDIUM findings resolved by operator-directed AC amendments; p2.11 HIGH resolved and re-reviewed (Run 2 PASSED)"
       },
-      "updatedAt": "2026-05-01",
       "guardrails": [
         {
           "id": "MC-SEC-01",
@@ -1236,7 +1235,7 @@
               "slug": "p2.5b-saas-gui-m365-manual-adapters",
               "name": "SaaS-GUI, M365-admin, and manual surface adapters with POLICY.md floor variants (p2.5b)",
               "stage": "definition-of-done",
-              "health": "green",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -1260,7 +1259,6 @@
               "dodStatus": "complete",
               "prStatus": "merged",
               "releaseReady": false,
-              "health": "amber",
               "blocker": "Scope deviation recorded in DoD: PR bundled unrelated p2.11 implementation payload.",
               "dodArtefact": "artefacts/2026-04-11-skills-platform-phase2/dod/p2.5b-saas-gui-m365-manual-adapters-dod.md",
               "layoutGapsAtMerge": false,
@@ -1633,10 +1631,13 @@
           "name": "T3M1 audit question coverage",
           "target": "8/8 questions answered by independent non-engineer reviewer",
           "baseline": "3/8 at Phase 2 close",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": ["p3.2a", "p3.2b"]
+          "signal": "at-risk",
+          "lastMeasured": "2026-04-16",
+          "evidence": "Named independent reviewer on record: craigfo (PR #98, 2026-04-15). Full pipeline run completed autonomously. Formal MODEL-RISK.md 8/8 audit answers not yet documented — dependency for full on-track exists. Signal: partial — independent operator identified and pipeline-capable, formal audit artefact pending.",
+          "contributingStories": [
+            "p3.2a",
+            "p3.2b"
+          ]
         },
         {
           "id": "M2",
@@ -1646,7 +1647,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p3.1b"]
+          "contributingStories": [
+            "p3.1b"
+          ]
         },
         {
           "id": "M3",
@@ -1656,7 +1659,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p3.1a", "p3.5"]
+          "contributingStories": [
+            "p3.1a",
+            "p3.5"
+          ]
         },
         {
           "id": "M4",
@@ -1666,7 +1672,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p3.8"]
+          "contributingStories": [
+            "p3.8"
+          ]
         },
         {
           "id": "M5",
@@ -1676,7 +1684,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p3.9"]
+          "contributingStories": [
+            "p3.9"
+          ]
         },
         {
           "id": "MM1",
@@ -1686,17 +1696,44 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p3.1a","p3.1b","p3.1c","p3.1d","p3.1e","p3.2a","p3.2b","p3.3","p3.4","p3.5","p3.6","p3.7","p3.8","p3.9","p3.10","p3.11","p3.12","p3.13","p3.15","p3.16","p3.17"]
+          "contributingStories": [
+            "p3.1a",
+            "p3.1b",
+            "p3.1c",
+            "p3.1d",
+            "p3.1e",
+            "p3.2a",
+            "p3.2b",
+            "p3.3",
+            "p3.4",
+            "p3.5",
+            "p3.6",
+            "p3.7",
+            "p3.8",
+            "p3.9",
+            "p3.10",
+            "p3.11",
+            "p3.12",
+            "p3.13",
+            "p3.15",
+            "p3.16",
+            "p3.17"
+          ]
         },
         {
           "id": "MM2",
           "name": "Outer loop self-sufficiency: zero blocking lookups",
           "target": "Zero blocking external lookups during Phase 3 outer loop stages",
           "baseline": "Zero blocking lookups during Phase 2 outer loop (established as baseline)",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": ["p3.5","p3.6","p3.10","p3.12"]
+          "signal": "on-track",
+          "lastMeasured": "2026-04-16",
+          "evidence": "Independent operator craigfo submitted PR #98 (2026-04-15): ran full outer loop unassisted (discovery -> benefit-metric -> definition -> review -> test-plan -> DoR with contracts -> implementation plans -> DoD -> verification scripts) for feature 2026-04-15-productise-cli-and-sidecar. Delivered working CLI (TypeScript, ~15 source files, E2E tests) and a second discovery (2026-04-16-engine-consolidation). Zero blocking lookups from operator. First independent non-operator pipeline run on record.",
+          "contributingStories": [
+            "p3.5",
+            "p3.6",
+            "p3.10",
+            "p3.12"
+          ]
         },
         {
           "id": "MM3",
@@ -1706,27 +1743,44 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p3.1a","p3.1b","p3.1c","p3.1d","p3.1e","p3.4","p3.7"]
+          "contributingStories": [
+            "p3.1a",
+            "p3.1b",
+            "p3.1c",
+            "p3.1d",
+            "p3.1e",
+            "p3.4",
+            "p3.7"
+          ]
         },
         {
           "id": "CR1",
           "name": "T3M1 independent validation on record",
           "target": "8/8 MODEL-RISK.md audit questions answered by named independent reviewer with date and role on record",
           "baseline": "Not on record — prerequisite: Priority 2 trace-field stories must be DoD-complete first",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": ["p3.2a","p3.2b","p3.7","p3.13"]
+          "signal": "at-risk",
+          "lastMeasured": "2026-04-16",
+          "evidence": "Named independent reviewer on record: craigfo (PR #98, 2026-04-15). Full pipeline run completed autonomously. Formal MODEL-RISK.md 8/8 audit answers not yet documented — dependency for full on-track exists. Signal: partial — independent operator identified and pipeline-capable, formal audit artefact pending.",
+          "contributingStories": [
+            "p3.2a",
+            "p3.2b",
+            "p3.7",
+            "p3.13"
+          ]
         },
         {
           "id": "EC1",
-          "name": "Phase 3 exit criterion: artefact coverage score \u226580%",
-          "target": "Post-pipeline CHANGELOG coverage score \u226580% by Phase 3 close",
+          "name": "Phase 3 exit criterion: artefact coverage score ≥80%",
+          "target": "Post-pipeline CHANGELOG coverage score ≥80% by Phase 3 close",
           "baseline": "45% coverage at 2026-04-16 audit (9/20 post-pipeline item groups covered by a formal story)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p3.15","p3.16","p3.17"]
+          "contributingStories": [
+            "p3.15",
+            "p3.16",
+            "p3.17"
+          ]
         },
         {
           "id": "CR2",
@@ -1736,17 +1790,83 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p3.3","p3.4"]
+          "contributingStories": [
+            "p3.3",
+            "p3.4"
+          ]
         }
       ],
       "epics": [
-        { "slug": "e1-governance-chain-integrity", "name": "Governance Chain Integrity Hardened", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e1-governance-chain-integrity.md", "stories": ["p3.1a","p3.1b","p3.1c","p3.1d","p3.1e"] },
-        { "slug": "e2-t3m1-audit-gap-closure", "name": "T3M1 Audit Gap Closed", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e2-t3m1-audit-gap-closure.md", "stories": ["p3.2a","p3.2b"] },
-        { "slug": "e3-platform-structural-integrity", "name": "Platform Structural Integrity", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e3-platform-structural-integrity.md", "stories": ["p3.3","p3.4"] },
-        { "slug": "e4-windows-ci-parity-pipeline-evolution", "name": "Windows CI Parity and Pipeline Evolution", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e4-windows-ci-parity-pipeline-evolution.md", "stories": ["p3.5","p3.6"] },
-        { "slug": "e5-cross-team-trace-registry", "name": "Cross-Team Trace Registry", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e5-cross-team-trace-registry.md", "stories": ["p3.7"] },
-        { "slug": "e6-enterprise-adapters-agents-validation", "name": "Enterprise Adapters and AGENTS.md Validation", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e6-enterprise-adapters-agents-validation.md", "stories": ["p3.8","p3.9"] },
-        { "slug": "e7-platform-maturity", "name": "Platform Maturity", "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e7-platform-maturity.md", "stories": ["p3.10","p3.11","p3.12","p3.13","p3.15","p3.16","p3.17"] }
+        {
+          "slug": "e1-governance-chain-integrity",
+          "name": "Governance Chain Integrity Hardened",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e1-governance-chain-integrity.md",
+          "stories": [
+            "p3.1a",
+            "p3.1b",
+            "p3.1c",
+            "p3.1d",
+            "p3.1e"
+          ]
+        },
+        {
+          "slug": "e2-t3m1-audit-gap-closure",
+          "name": "T3M1 Audit Gap Closed",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e2-t3m1-audit-gap-closure.md",
+          "stories": [
+            "p3.2a",
+            "p3.2b"
+          ]
+        },
+        {
+          "slug": "e3-platform-structural-integrity",
+          "name": "Platform Structural Integrity",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e3-platform-structural-integrity.md",
+          "stories": [
+            "p3.3",
+            "p3.4"
+          ]
+        },
+        {
+          "slug": "e4-windows-ci-parity-pipeline-evolution",
+          "name": "Windows CI Parity and Pipeline Evolution",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e4-windows-ci-parity-pipeline-evolution.md",
+          "stories": [
+            "p3.5",
+            "p3.6"
+          ]
+        },
+        {
+          "slug": "e5-cross-team-trace-registry",
+          "name": "Cross-Team Trace Registry",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e5-cross-team-trace-registry.md",
+          "stories": [
+            "p3.7"
+          ]
+        },
+        {
+          "slug": "e6-enterprise-adapters-agents-validation",
+          "name": "Enterprise Adapters and AGENTS.md Validation",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e6-enterprise-adapters-agents-validation.md",
+          "stories": [
+            "p3.8",
+            "p3.9"
+          ]
+        },
+        {
+          "slug": "e7-platform-maturity",
+          "name": "Platform Maturity",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/epics/e7-platform-maturity.md",
+          "stories": [
+            "p3.10",
+            "p3.11",
+            "p3.12",
+            "p3.13",
+            "p3.15",
+            "p3.16",
+            "p3.17"
+          ]
+        }
       ],
       "guardrails": [
         {
@@ -1904,27 +2024,271 @@
         }
       ],
       "stories": [
-        { "slug": "p3.1a", "name": "Trace-commit observability", "stage": "definition-of-ready", "dorStatus": "signed-off", "reviewStatus": "passed", "highFindings": 0, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1a-trace-commit-observability-review-1.md", "testPlan": { "status": "written", "totalTests": 12, "passing": 0 }, "acTotal": 6, "acVerified": 0, "health": "green", "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "updatedAt": "2026-04-14", "issueUrl": "https://github.com/heymishy/skills-repo/issues/89", "dispatchedAt": "2026-04-16T00:00:00Z", "dispatchTarget": "github-agent", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1a-trace-commit-observability.md" },
-        { "slug": "p3.1b", "name": "Assurance gate substantive checks", "stage": "definition-of-ready", "dorStatus": "signed-off", "reviewStatus": "passed", "highFindings": 0, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1b-assurance-gate-substantive-checks-review-1.md", "testPlan": { "status": "written", "totalTests": 15, "passing": 0 }, "acTotal": 6, "acVerified": 0, "health": "green", "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "updatedAt": "2026-04-14", "issueUrl": "https://github.com/heymishy/skills-repo/issues/90", "dispatchedAt": "2026-04-16T00:00:00Z", "dispatchTarget": "github-agent", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1b-assurance-gate-substantive-checks.md" },
-        { "slug": "p3.1c", "name": "Test suite integrity", "stage": "definition-of-ready", "dorStatus": "signed-off", "reviewStatus": "passed", "highFindings": 0, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1c-test-suite-integrity-review-1.md", "testPlan": { "status": "written", "totalTests": 11, "passing": 0 }, "acTotal": 5, "acVerified": 0, "health": "green", "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "updatedAt": "2026-04-14", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1c-test-suite-integrity.md" },
-        { "slug": "p3.1d", "name": "Bitbucket DC auth tests", "stage": "definition-of-ready", "dorStatus": "signed-off", "reviewStatus": "passed", "highFindings": 0, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1d-bitbucket-dc-auth-tests-review-1.md", "testPlan": { "status": "written", "totalTests": 10, "passing": 0 }, "acTotal": 5, "acVerified": 0, "health": "green", "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "updatedAt": "2026-04-14", "issueUrl": "https://github.com/heymishy/skills-repo/issues/91", "dispatchedAt": "2026-04-16T00:00:00Z", "dispatchTarget": "github-agent", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1d-bitbucket-dc-auth-tests.md" },
-        { "slug": "p3.1e", "name": "Agent behaviour observability register", "stage": "definition-of-ready", "dorStatus": "signed-off", "reviewStatus": "passed", "highFindings": 0, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1e-agent-behaviour-observability-register-review-1.md", "testPlan": { "status": "written", "totalTests": 7, "passing": 0 }, "acTotal": 3, "acVerified": 0, "health": "green", "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "updatedAt": "2026-04-14", "issueUrl": "https://github.com/heymishy/skills-repo/issues/92", "dispatchedAt": "2026-04-16T00:00:00Z", "dispatchTarget": "github-agent", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1e-agent-behaviour-observability-register.md" },
-        { "slug": "p3.2a", "name": "T3M1 trace fields", "stage": "definition-of-ready", "dorStatus": "signed-off", "reviewStatus": "passed", "highFindings": 0, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.2a-t3m1-trace-fields-review-1.md", "testPlan": { "status": "written", "totalTests": 17, "passing": 0 }, "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.2a-t3m1-trace-fields-dor.md", "acTotal": 5, "acVerified": 0, "health": "green", "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "updatedAt": "2026-04-15", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.2a-t3m1-trace-fields.md" },
-        { "slug": "p3.2b", "name": "T3M1 tamper-evidence registry", "stage": "definition-of-ready", "dorStatus": "blocked", "blocker": "H8-ext: fields [standardsInjected, watermarkResult, stalenessFlag, sessionIdentity] not yet in pipeline-state.schema.json — pending p3.2a DoD", "reviewStatus": "passed", "highFindings": 0, "mediumFindings": 2, "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.2b-t3m1-tamper-evidence-registry-review-1.md", "testPlan": { "status": "written", "totalTests": 12, "passing": 0 }, "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.2b-t3m1-tamper-evidence-registry-dor.md", "acTotal": 5, "acVerified": 0, "health": "red", "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "assumptionResolved": "DEC-P3-002 (2026-04-15): Option A — GitHub Artifact Attestation", "updatedAt": "2026-04-15", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.2b-t3m1-tamper-evidence-registry.md" },
-        { "slug": "p3.3", "name": "Gate structural independence", "stage": "not-started", "assumption": "ASSUMPTION-01", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.3-gate-structural-independence.md" },
-        { "slug": "p3.4", "name": "Eval anti-gaming controls", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.4-eval-anti-gaming-controls.md" },
-        { "slug": "p3.5", "name": "Windows native trace validator", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.5-windows-native-trace-validator.md" },
-        { "slug": "p3.6", "name": "Pipeline evolution dispatch", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.6-pipeline-evolution-dispatch.md" },
-        { "slug": "p3.7", "name": "Cross-team trace registry", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.7-cross-team-trace-registry.md" },
-        { "slug": "p3.8", "name": "Enterprise approval channel adapters", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.8-enterprise-approval-channel-adapters.md" },
-        { "slug": "p3.9", "name": "AGENTS.md compatibility matrix", "stage": "not-started", "scopeNote": "compat-matrix-only-phase3", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.9-agents-md-compatibility-matrix.md" },
-        { "slug": "p3.10", "name": "EA registry live integration", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.10-ea-registry-live-integration.md" },
-        { "slug": "p3.11", "name": "Estimation calibration eval", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.11-estimation-calibration-eval.md" },
-        { "slug": "p3.12", "name": "Squad contribution flow", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.12-squad-contribution-flow.md" },
-        { "slug": "p3.13", "name": "Compliance monitoring report", "stage": "not-started", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.13-compliance-monitoring-report.md" },
-        { "slug": "p3.15", "name": "Retrospective — /estimate skill", "stage": "definition-of-ready", "dorStatus": "signed-off", "retrospective": true, "health": "green", "updatedAt": "2026-04-16", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.15-estimate-skill-retrospective.md", "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.15-estimate-skill-retrospective-dor.md" },
-        { "slug": "p3.16", "name": "Retrospective — /issue-dispatch skill", "stage": "definition-of-ready", "dorStatus": "signed-off", "retrospective": true, "health": "green", "updatedAt": "2026-04-16", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.16-issue-dispatch-skill-retrospective.md", "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.16-issue-dispatch-skill-retrospective-dor.md" },
-        { "slug": "p3.17", "name": "Retrospective — feat/repo-tidy docs structure", "stage": "definition-of-ready", "dorStatus": "signed-off", "retrospective": true, "health": "green", "updatedAt": "2026-04-16", "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.17-repo-tidy-docs-structure-retrospective.md", "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.17-repo-tidy-docs-structure-retrospective-dor.md" }
+        {
+          "slug": "p3.1a",
+          "name": "Trace-commit observability",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1a-trace-commit-observability-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 12,
+            "passing": 0
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-04-14",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/89",
+          "dispatchedAt": "2026-04-16T00:00:00Z",
+          "dispatchTarget": "github-agent",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1a-trace-commit-observability.md"
+        },
+        {
+          "slug": "p3.1b",
+          "name": "Assurance gate substantive checks",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1b-assurance-gate-substantive-checks-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 15,
+            "passing": 0
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-04-14",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/90",
+          "dispatchedAt": "2026-04-16T00:00:00Z",
+          "dispatchTarget": "github-agent",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1b-assurance-gate-substantive-checks.md"
+        },
+        {
+          "slug": "p3.1c",
+          "name": "Test suite integrity",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1c-test-suite-integrity-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 11,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-04-14",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1c-test-suite-integrity.md"
+        },
+        {
+          "slug": "p3.1d",
+          "name": "Bitbucket DC auth tests",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1d-bitbucket-dc-auth-tests-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 10,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-04-14",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/91",
+          "dispatchedAt": "2026-04-16T00:00:00Z",
+          "dispatchTarget": "github-agent",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1d-bitbucket-dc-auth-tests.md"
+        },
+        {
+          "slug": "p3.1e",
+          "name": "Agent behaviour observability register",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.1e-agent-behaviour-observability-register-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 0
+          },
+          "acTotal": 3,
+          "acVerified": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-04-14",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/92",
+          "dispatchedAt": "2026-04-16T00:00:00Z",
+          "dispatchTarget": "github-agent",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.1e-agent-behaviour-observability-register.md"
+        },
+        {
+          "slug": "p3.2a",
+          "name": "T3M1 trace fields",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.2a-t3m1-trace-fields-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 17,
+            "passing": 0
+          },
+          "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.2a-t3m1-trace-fields-dor.md",
+          "acTotal": 5,
+          "acVerified": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-04-15",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.2a-t3m1-trace-fields.md"
+        },
+        {
+          "slug": "p3.2b",
+          "name": "T3M1 tamper-evidence registry",
+          "stage": "definition-of-ready",
+          "dorStatus": "blocked",
+          "blocker": "H8-ext: fields [standardsInjected, watermarkResult, stalenessFlag, sessionIdentity] not yet in pipeline-state.schema.json — pending p3.2a DoD",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 2,
+          "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.2b-t3m1-tamper-evidence-registry-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 12,
+            "passing": 0
+          },
+          "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.2b-t3m1-tamper-evidence-registry-dor.md",
+          "acTotal": 5,
+          "acVerified": 0,
+          "health": "red",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "assumptionResolved": "DEC-P3-002 (2026-04-15): Option A — GitHub Artifact Attestation",
+          "updatedAt": "2026-04-15",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.2b-t3m1-tamper-evidence-registry.md"
+        },
+        {
+          "slug": "p3.3",
+          "name": "Gate structural independence",
+          "stage": "not-started",
+          "assumption": "ASSUMPTION-01",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.3-gate-structural-independence.md"
+        },
+        {
+          "slug": "p3.4",
+          "name": "Eval anti-gaming controls",
+          "stage": "not-started",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.4-eval-anti-gaming-controls.md"
+        },
+        {
+          "slug": "p3.5",
+          "name": "Windows native trace validator",
+          "stage": "not-started",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.5-windows-native-trace-validator.md"
+        },
+        {
+          "slug": "p3.6",
+          "name": "Pipeline evolution dispatch",
+          "stage": "not-started",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.6-pipeline-evolution-dispatch.md"
+        },
+        {
+          "slug": "p3.7",
+          "name": "Cross-team trace registry",
+          "stage": "not-started",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.7-cross-team-trace-registry.md"
+        },
+        {
+          "slug": "p3.8",
+          "name": "Enterprise approval channel adapters",
+          "stage": "not-started",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.8-enterprise-approval-channel-adapters.md"
+        },
+        {
+          "slug": "p3.9",
+          "name": "AGENTS.md compatibility matrix",
+          "stage": "not-started",
+          "scopeNote": "compat-matrix-only-phase3",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.9-agents-md-compatibility-matrix.md"
+        },
+        {
+          "slug": "p3.10",
+          "name": "EA registry live integration",
+          "stage": "not-started",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.10-ea-registry-live-integration.md"
+        },
+        {
+          "slug": "p3.11",
+          "name": "Estimation calibration eval",
+          "stage": "not-started",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.11-estimation-calibration-eval.md"
+        },
+        {
+          "slug": "p3.12",
+          "name": "Squad contribution flow",
+          "stage": "not-started",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.12-squad-contribution-flow.md"
+        },
+        {
+          "slug": "p3.13",
+          "name": "Compliance monitoring report",
+          "stage": "not-started",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.13-compliance-monitoring-report.md"
+        },
+        {
+          "slug": "p3.15",
+          "name": "Retrospective — /estimate skill",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "retrospective": true,
+          "health": "green",
+          "updatedAt": "2026-04-16",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.15-estimate-skill-retrospective.md",
+          "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.15-estimate-skill-retrospective-dor.md"
+        },
+        {
+          "slug": "p3.16",
+          "name": "Retrospective — /issue-dispatch skill",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "retrospective": true,
+          "health": "green",
+          "updatedAt": "2026-04-16",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.16-issue-dispatch-skill-retrospective.md",
+          "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.16-issue-dispatch-skill-retrospective-dor.md"
+        },
+        {
+          "slug": "p3.17",
+          "name": "Retrospective — feat/repo-tidy docs structure",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "retrospective": true,
+          "health": "green",
+          "updatedAt": "2026-04-16",
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.17-repo-tidy-docs-structure-retrospective.md",
+          "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.17-repo-tidy-docs-structure-retrospective-dor.md"
+        }
       ]
     }
   ]
