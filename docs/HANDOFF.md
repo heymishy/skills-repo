@@ -1,10 +1,10 @@
-# Enterprise Handoff: Skills Platform Phase 1 + Phase 2 + Phase 3 Init
+# Enterprise Handoff: Skills Platform Phase 1 + Phase 2 + Phase 3 (in progress)
 
 **Document type:** Enterprise handoff bundle
 **Prepared:** 2026-04-12
-**Updated:** 2026-04-14 (enterprise operator notice + raw links added — see Section 4 notice)
+**Updated:** 2026-04-17 (Phase 3 governance hardening in progress — 11 stories DoD-complete, T3M1 at 7/8 Y, /improvement run complete — see Sections 6.8–6.13 and Phase 3 story table in Section 7)
 **Prepared by:** Platform maintainer (Hamish)
-**Status:** Phase 2 complete, Phase 3 initialised — PR `feat/phase3-init-rename-improve` open
+**Status:** Phase 2 complete, Phase 3 in progress — 11 of 18 stories DoD-complete as of 2026-04-17
 
 ---
 
@@ -48,6 +48,31 @@
 | p2.12 | Improvement agent — challenger pre-check and proposal review | E5 — Self-Improving Harness | DoD-complete |
 
 **Phase 2 outcome:** Full surface adapter model (all 6 types). Non-engineer approval channel. Fleet observability. Bitbucket Pipelines topology validated. All 11 discipline POLICY.md floors live. Self-improving harness (improvement agent) operational. Non-GitHub inner loop (`AGENTS.md`) supported.
+
+### Phase 3 — Governance Hardening and T3M1 Completion (2026-04-14 → current, in progress)
+
+Phase 3 launched 2026-04-14. Primary objectives: close the five T3M1 (Tier 3, Meta-metric 1 — independent non-engineer audit) gaps (Q2–Q8) identified in Phase 2, harden the assurance gate from structural file-existence checks to content-level governance substance, fix CI observability gaps, and validate the platform for enterprise-scale adoption. 18 stories defined, 11 DoD-complete as of 2026-04-17.
+
+| Story | Title | Epic | Status |
+|-------|-------|------|--------|
+| p3.1a | Trace-commit observability | E1 — Test and Governance Hardening | DoD-complete |
+| p3.1b | Assurance gate substantive checks | E1 — Test and Governance Hardening | DoD-complete |
+| p3.1c | Test suite integrity | E1 — Test and Governance Hardening | DoD-complete |
+| p3.1d | Bitbucket DC auth tests resolved | E1 — Test and Governance Hardening | DoD-complete |
+| p3.1e | Agent behaviour observability register | E1 — Test and Governance Hardening | DoD-complete |
+| p3.2a | T3M1 trace fields (Q2/Q5/Q6/Q7 schema + gate) | E2 — T3M1 Audit Gap Closure | DoD-complete |
+| p3.2b | T3M1 tamper-evidence registry (Q8) | E2 — T3M1 Audit Gap Closure | DoR-signed-off, in progress |
+| p3.3–p3.14 | Gate structural independence, enterprise adapters, eval anti-gaming, Windows validator, cross-team trace, compatibility matrix | E3–E7 | Outer loop defined — no DoR yet |
+| p3.15 | `/estimate` skill — retrospective coverage | E1 — Test and Governance Hardening | DoR-signed-off |
+| p3.16 | `/issue-dispatch` skill — retrospective coverage | E1 — Test and Governance Hardening | DoR-signed-off |
+| p3.17 | Repo-tidy docs-structure — retrospective coverage | E1 — Test and Governance Hardening | DoR-signed-off |
+| p3.18 | `/definition` skill quality gates (D2-platform gate, D1-prereq cross-codebase) | E1 — Test and Governance Hardening | DoD-complete |
+| p3.19 | Guardrail enum enforcement in DoR/DoD | E1 — Test and Governance Hardening | DoD-complete |
+| p3.20 | `workspace/state.json` write-path safety | E1 — Test and Governance Hardening | DoD-complete |
+| p3.21 | Systematic-debugging coupled-change workflow | E1 — Test and Governance Hardening | DoD-complete |
+| p3.22 | `/verify-completion` second-session check (Step 0) | E1 — Test and Governance Hardening | DoD-complete |
+
+**Phase 3 outcome so far (2026-04-17):** 11 of 18 stories DoD-complete. T3M1 advanced from 3/8 Y to 7/8 Y (Q8 in progress via p3.2b — see DEC-P3-002 in Section 2). Assurance gate upgraded from file-existence to content-level governance substance checks. CI observability gaps closed: trace-commit health now in `npm test`. Eight /improvement write-backs applied across four SKILL.md files (p3.18–p3.22). Artefact-first rule formally codified. Retrospective coverage audit complete — prevention mechanism in place.
 
 ---
 
@@ -103,23 +128,30 @@ This is a **known divergence between the dogfood instance and enterprise deploym
 
 ## 3. Known Gaps
 
-### 3.1 T3M1 — Trace readability for risk review: 3/8 audit questions satisfied
+### 3.1 T3M1 — Trace readability for risk review: 7/8 audit questions satisfied (Q8 in progress)
 
 **What T3M1 is:** `MODEL-RISK.md` defines eight audit questions that a risk reviewer must be able to answer from a trace alone, without engineering assistance. This is the governance readability test for the assurance trace. Full 8/8 satisfies the adoption gate for non-dogfood use.
 
-**Current state (recorded 2026-04-12):** T3M1 evaluated against the first real Phase 2 inner loop trace (`workspace/traces/2026-04-11T21-33-02-002Z-ci-84f82370.jsonl`, story p2.4, PR #31). Result: **3/8 Y** — Q1 (model identity), Q3 (standards injected), Q4 (trace transition complete) satisfied. **5 questions unanswered:**
+**Baseline (recorded 2026-04-12):** T3M1 evaluated against the first real Phase 2 inner loop trace (`workspace/traces/2026-04-11T21-33-02-002Z-ci-84f82370.jsonl`, story p2.4, PR #31). Result: **3/8 Y** — Q1 (model identity), Q3 (standards injected), Q4 (trace transition complete) satisfied.
 
-| # | Question | Gap | Phase 3 fill target |
+**Updated state (2026-04-17):** Story p3.2a (PR #86, merged 2026-04-15) added four mandatory trace fields to the schema and wired gate enforcement, closing Q2, Q5, Q6, and Q7 in a single delivery. Current result: **7/8 Y**. Q8 is targeted by p3.2b (T3M1 tamper-evidence registry, DoR-signed-off, in progress) — see DEC-P3-002 in Section 2 for the GitHub Artifact Attestation vs. separate registry-repo decision and the enterprise Bitbucket path.
+
+| # | Question | Status | Delivery |
 |---|---|---|---|
-| Q2 | `standardsInjected` hashes visible and verifiable | Hash reconciliation not wired into CI trace write | p1.7 / p2.1 gate enhancement |
-| Q5 | Watermark row visible in PR (pass/fail reason) | Watermark gate does not emit to PR comment | p1.4 PR reporting story |
-| Q6 | `stalenessFlag` present in trace | Skill-version staleness field absent from trace schema | Phase 3 schema story |
-| Q7 | Agent independence evidenced (three separate trace entries) | CI does not validate entry count or cross-session independence | Phase 3 CI gate story |
-| Q8 | Hash recomputation confirms no drift since approval | Hash drift check not wired into assurance gate CI step | Phase 3 assurance story |
+| Q1 | Model identity visible in trace | ✅ Satisfied | Phase 2 baseline |
+| Q2 | `standardsInjected` hashes visible and verifiable | ✅ Closed | p3.2a — field added to trace schema; gate enforces presence for regulated stories |
+| Q3 | Standards injected visible in trace | ✅ Satisfied | Phase 2 baseline |
+| Q4 | Trace transition complete | ✅ Satisfied | Phase 2 baseline |
+| Q5 | Watermark row visible (pass/fail reason) | ✅ Closed | p3.2a — `watermarkResult` field (pass/passRate sub-fields) added to trace schema |
+| Q6 | `stalenessFlag` present in trace | ✅ Closed | p3.2a — boolean field added to schema |
+| Q7 | Agent independence evidenced | ✅ Closed | p3.2a — `sessionIdentity` field (sessionId, agentType, startedAt) added to schema; gate blocks null for regulated stories |
+| Q8 | Hash recomputation confirms no drift since approval | ⏳ In progress | p3.2b — GitHub Artifact Attestation (reference implementation); enterprise Bitbucket path: separate read-only registry repo (see DEC-P3-002) |
 
-**Required action before non-dogfood adoption:** Re-run T3M1 evaluation against a real Phase 3+ trace after all five gaps are resolved. Full 8/8 unlocks the `MODEL-RISK.md` adoption gate. The sign-off record in `MODEL-RISK.md` Section 4 carries this as a condition of approval.
+**Test coverage:** `tests/check-t3m1-fields.js` — 13 tests across schema field presence, gate enforcement for regulated traces, gate pass-through for non-regulated traces, and `docs/MODEL-RISK.md` field documentation check. All 13 pass.
 
-**Artefact:** `MODEL-RISK.md` → Section 3 (T3M1 evidence block) and Section 4 (sign-off conditions).
+**Required action before non-dogfood adoption:** Complete p3.2b (Q8 — tamper-evidence registry) and re-run T3M1 evaluation against a Phase 3+ trace with all four new fields populated. Full 8/8 unlocks the `MODEL-RISK.md` adoption gate. Enterprise Bitbucket operators must implement Option B (separate read-only registry repository) — see DEC-P3-002 in Section 2.
+
+**Artefacts:** `docs/MODEL-RISK.md` → Section 3 (T3M1 evidence block) and Section 4 (sign-off conditions). `tests/check-t3m1-fields.js` (13 automated checks). `artefacts/2026-04-14-skills-platform-phase3/dor/p3.2a-t3m1-trace-fields-dor.md` and `p3.2b-t3m1-tamper-evidence-registry-dor.md`.
 
 ### 3.2 Docker-gated tests skipped (p2.10 AC3/AC4/AC5)
 
@@ -241,6 +273,18 @@ Domain-tier extensions (squad-specific overrides) are declared in the squad's `c
 | Delivery traces | [`workspace/traces/`](https://github.com/heymishy/skills-repo/tree/master/workspace/traces) (files); `origin/traces` branch (permanent store) |
 | Improvement proposals | [`workspace/proposals/`](https://github.com/heymishy/skills-repo/tree/master/workspace/proposals) |
 | Adoption readiness (RAG) | [`workspace/adoption-readiness.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/workspace/adoption-readiness.md) |
+| Phase 3 artefacts | [`artefacts/2026-04-14-skills-platform-phase3/`](https://github.com/heymishy/skills-repo/tree/master/artefacts/2026-04-14-skills-platform-phase3) |
+| Phase 3 discovery | [`artefacts/2026-04-14-skills-platform-phase3/discovery.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/discovery.md) |
+| Phase 3 benefit-metric | [`artefacts/2026-04-14-skills-platform-phase3/benefit-metric.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/benefit-metric.md) |
+| Phase 3 decisions | [`artefacts/2026-04-14-skills-platform-phase3/decisions.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/decisions.md) |
+| T3M1 fields check (13 tests) | [`tests/check-t3m1-fields.js`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/tests/check-t3m1-fields.js) |
+| Trace-commit check (12 tests) | [`tests/check-trace-commit.js`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/tests/check-trace-commit.js) |
+| Conflict-resolution guide | [`docs/conflict-resolution-guide.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/docs/conflict-resolution-guide.md) |
+| Agent behaviour observability doc | [`docs/agent-behaviour-observability.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/docs/agent-behaviour-observability.md) |
+| Phase 4 backlog — agent behaviour | [`workspace/phase4-backlog-agent-behaviour-observability.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/workspace/phase4-backlog-agent-behaviour-observability.md) |
+| Phase 4 backlog — second-model review | [`workspace/phase4-backlog-second-model-review.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/workspace/phase4-backlog-second-model-review.md) |
+| Retrospective artefact audit (2026-04-16) | [`workspace/retrospective-audit-2026-04-16.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/workspace/retrospective-audit-2026-04-16.md) |
+| Retrospective story template | [`.github/templates/retrospective-story.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/templates/retrospective-story.md) |
 
 **`traces` branch — ruleset note:** The `traces` branch is a permanent append-only branch that holds all CI assurance trace JSONL files. It is written exclusively by the `trace-commit.yml` GitHub Actions workflow (github-actions bot push) after each inner loop PR merge. No human direct-push is permitted; no PR is required to write to this branch. The branch ruleset should allow pushes only from the `trace-commit.yml` workflow identity. **Fleet fork operators (GitHub):** recreate the `traces` branch and matching branch ruleset on your fork before running any inner loop story. Without the branch and ruleset in place, the `trace-commit.yml` post-merge step will fail silently and traces will be lost. **Bitbucket operators:** create the `traces` branch and restrict pushes via Bitbucket branch permissions to the CI service account; the GitHub Actions ruleset does not apply. The Bitbucket Pipelines equivalent of `trace-commit.yml` performs the same append-and-push step using the Bitbucket Pipelines OIDC identity.
 
@@ -320,7 +364,77 @@ Two new sections added to `README.md` in this Phase 3 init:
 - **MM2** — requires running `scripts/parse-session-timing.js` against Phase 2 transcripts to produce the E3 actuals row in `workspace/estimation-norms.md`. ~30-minute operator action, no new code required.
 - **MM4** — closes at Phase 3 `/improve` when the third feature's actuals are ingested. Error bound until then: ±40%.
 
-Red item: **M5** — non-engineer approval requires a live configured environment and a real approver. Requires scoping effort before ent. pilot can claim this outcome.
+Red item: **M5** — non-engineer approval requires a live configured environment and a real approver. Requires scoping effort before enterprise pilot can claim this outcome.
+
+---
+
+### 6.8 Phase 3 E1 batch: governance hardening stories delivered (2026-04-14 → 2026-04-16)
+
+Five governance hardening stories from the Phase 2 adversarial audit delivered in the first Phase 3 sprint. Each closes a specific test or observability gap identified before Phase 3 launched.
+
+**p3.1a — Trace-commit observability** (PR #94, merged 2026-04-16): `tests/check-trace-commit.js` added to `npm test` with 12 tests asserting `origin/traces` branch health, trace file commit age within 24-hour window, and stale-branch failure mode. `/verify-completion` and `/trace` SKILL.md files gain "Traces Branch Health" diagnostic sections. Prior to this story a silent trace-commit workflow failure went undetected — four such silent failures occurred during Phase 2 (PRs #51, #52, #56) before the root-cause bug was fixed in PR #55. DoR: [`p3.1a-trace-commit-observability-dor.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.1a-trace-commit-observability-dor.md).
+
+**p3.1b — Assurance gate substantive checks** (merged 2026-04-16): `run-assurance-gate.js` extended from file-existence to content-level checks: `workspace/state.json` `currentPhase` non-empty and `lastUpdated` ISO 8601 validated; `pipeline-state.json` `version` field and `features` array asserted; at least one artefact subdirectory under `artefacts/` required (not just the directory); `governance-gates.yml` `gates:` key present and non-empty; `completedAt: null` with `status: "completed"` detected and blocked. Closes the gap where an empty repo with four minimal files passed all four gate checks identically to a correct delivery. DoR: [`p3.1b-assurance-gate-substantive-checks-dor.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.1b-assurance-gate-substantive-checks-dor.md).
+
+**p3.1c — Test suite integrity** (PR #85, merged 2026-04-15): Three suite integrity fixes: (1) `check-definition-skill.js` refactored to import from `src/definition-skill/` production path — eliminates test-only re-implementations that could diverge from production code. (2) `watermark-gate.js` enforces minimum `passRate` floor (default 0.70; configurable via `FLOOR_PASS_RATE`) on baseline creation — prevents a 0% pass rate floor from being stored. (3) `failure-detector.js` anti-overfitting gate counts check additions and removals separately — a proposal that removes one passing check and adds one new check is blocked, not warned. DoR: [`p3.1c-test-suite-integrity-dor.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.1c-test-suite-integrity-dor.md).
+
+**p3.1d — Bitbucket DC auth tests resolved** (PR #78, merged 2026-04-15): The four permanently-skipped Bitbucket Data Center auth tests (app-password, OAuth, SSH key) resolved via Option B — formal manual test records in `tests/smoke-tests.md` with last-run date and result. `[PREREQ-DOCKER]` annotations replaced with `[MANUAL]` throughout. Decision logged in `artefacts/2026-04-14-skills-platform-phase3/decisions.md`. **Enterprise note:** this also supersedes the Section 3.2 Docker-deferred items for the DC auth test category. The Docker-deferred items in Section 3.2 relate to p2.10 standards composition tests — those remain open on a separate track. DoR: [`p3.1d-bitbucket-dc-auth-tests-dor.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.1d-bitbucket-dc-auth-tests-dor.md).
+
+**p3.1e — Agent behaviour observability register** (PR #77, merged 2026-04-15): `docs/agent-behaviour-observability.md` produced with three candidate approaches and effort estimates. Phase 4 story registered in `workspace/phase4-backlog-agent-behaviour-observability.md`. No implementation — scoping and registration only. The three candidate approaches: (A) structured activity log emitted by the agent per task; (B) post-session diff audit comparing PR changeset to implementation plan; (C) CI-time comparison of declared file touchpoints (from DoR contract) against actual files changed in the PR. DoR: [`p3.1e-agent-behaviour-observability-register-dor.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.1e-agent-behaviour-observability-register-dor.md).
+
+**CI script fix** (PR #82, merged alongside Phase 3 work): `scripts/validate-trace.sh` had three bugs when processing Phase 3 story artefacts: (1) `check_unresolved_blockers` called `.get()` on string slugs — Phase 3 epics store story references as `"p3.1a"` strings, not objects; (2) `check_test_plan_coverage` had the same `AttributeError` plus wrong test plan file path construction for short slugs; (3) unsafe `python3 ...; if [[ $? -eq 0 ]]` pattern under `set -euo pipefail`. All three fixed. Script now handles mixed Phase 1/2 object-form stories and Phase 3+ string-slug stories.
+
+### 6.9 T3M1 advanced to 7/8 — p3.2a delivered (PR #86, merged 2026-04-15)
+
+Story p3.2a added four mandatory trace fields to the schema (`standardsInjected`, `watermarkResult`, `stalenessFlag`, `sessionIdentity`) and wired gate enforcement that blocks merge of regulated stories when any field is null or absent. This closes T3M1 (Tier 3, Meta-metric 1 — independent non-engineer audit) questions Q2, Q5, Q6, and Q7 in a single delivery. See the updated Section 3.1 table for the current 7/8 breakdown. Q8 (tamper-evidence registry) is targeted by p3.2b — see DEC-P3-002 in Section 2 for the GitHub Artifact Attestation vs. separate registry-repo decision and the enterprise Bitbucket path.
+
+`docs/MODEL-RISK.md` updated with field-level entries for all four fields: field name, MODEL-RISK question answered (Q2/Q5/Q6/Q7), expected reviewer observations, and schema reference.
+
+New test file: `tests/check-t3m1-fields.js` — 13 tests (schema field presence ×5, gate enforcement for regulated traces ×4, gate pass-through for non-regulated traces ×3, MODEL-RISK field documentation check ×1). All 13 pass.
+
+DoR: [`p3.2a-t3m1-trace-fields-dor.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.2a-t3m1-trace-fields-dor.md) | Contract: [`p3.2a-t3m1-trace-fields-dor-contract.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.2a-t3m1-trace-fields-dor-contract.md)
+
+### 6.10 /improvement run: eight write-backs applied (PRs #99 and #100, 2026-04-16)
+
+An /improvement run against `workspace/learnings.md` produced eight write-back items. Each was backed by a retrospective story artefact (p3.18–p3.22) satisfying the artefact-first rule, with all story/test-plan/DoR chains passing 14/14 DoR hard blocks.
+
+| Item | Change | Story | PR |
+|------|--------|-------|-----|
+| 1 | `definition/SKILL.md` — D2-platform mandatory availability gate added | p3.18 | #99 |
+| 2 | `definition/SKILL.md` — D1-prereq cross-codebase validation block added | p3.18 | #99 |
+| 3 | `definition-of-done/SKILL.md` + `definition-of-ready/SKILL.md` — schema-valid guardrail enum enforcement; invalid status/category synonyms listed with CI failure consequence | p3.19 | #99 |
+| 4 | `copilot-instructions.md` — state write-path safety added (atomic-replace via temp file; partial-write prevention for `workspace/state.json`) | p3.20 | #99 |
+| 5–6 | `systematic-debugging/SKILL.md` — coupled-change workflow section added (5-step protocol for fixes spanning `script → schema → state → CI` layers) | p3.21 | #99 |
+| 7 | `docs/conflict-resolution-guide.md` created — two PR merge conflict patterns (Pattern 1: `package.json` sequential script additions; Pattern 2: `.github/workflows/` filename collision) | p3.22 | #100 |
+| 8 | `verify-completion/SKILL.md` — new `## Step 0 — Fresh-session check` positioned before Step 1, with trigger conditions and four-point independent verification protocol | p3.22 | #100 |
+
+### 6.11 Retrospective artefact coverage audit (PR #87, 2026-04-16)
+
+Full audit of all 28 CHANGELOG versions (0.1.0 through [Unreleased]) against Phase 1 and Phase 2 artefact chains. Findings: all 8 Phase 1 and 13 Phase 2 production stories confirmed COMPLETE. 22 CHANGELOG versions classified as pre-pipeline (no story artefact expected). 11 between-stories items identified; 2 rated HIGH-risk — the `/estimate` and `/issue-dispatch` skills were added between delivery cycles without pipeline entries. Full audit report: [`workspace/retrospective-audit-2026-04-16.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/workspace/retrospective-audit-2026-04-16.md).
+
+**Retrospective stories created to close coverage gaps:** p3.15 (`/estimate` skill), p3.16 (`/issue-dispatch` skill), p3.17 (repo-tidy docs structure). All DoR-signed-off; dispatched to coding agent.
+
+**Artefact-first rule** formally codified in `copilot-instructions.md` Coding Standards section: any new SKILL.md file, `src/` module, or governance check script committed to master must have a corresponding story artefact committed to `artefacts/` in the same commit. Exception: documentation-only changes, typo fixes, and configuration changes with no behavioural difference. For work that has already landed without a chain, use the new `.github/templates/retrospective-story.md` template (also added in this PR).
+
+### 6.12 Phase 4 backlog registered
+
+Two Phase 4 forward-looking items registered during Phase 3:
+
+**Agent behaviour observability** (`workspace/phase4-backlog-agent-behaviour-observability.md`): The platform currently has no mechanism for auditing what actions a coding agent took during a session — which tools were called, which files were modified, whether actions were consistent with the implementation plan. Three candidate approaches documented in `docs/agent-behaviour-observability.md`. No approach selected; Phase 4 design decision.
+
+**Second-model review — formal maker/checker** (`workspace/phase4-backlog-second-model-review.md`): All Phase 1–3 governance review is single-model. During Phase 3 validation a manual second-model check pattern (pasting agent output to a second model for independent review) caught issues the primary agent did not surface. Two candidate implementations: Option A — a `/second-opinion` skill invoked at defined pipeline checkpoints (before DoR sign-off, before merge approval); Option B — `--second-model` flag on `/review` and `/verify-completion` that triggers a second API call for divergence detection. Phase 4 design decision.
+
+**Forward-referenced item (not yet written):** `workspace/phase4-backlog-governance-integrity-test-scripts.md` is referenced by `workspace/phase4-backlog-second-model-review.md` but has not yet been created.
+
+### 6.13 External contributor — PR #98 (held pending operator decision)
+
+PR #98 (`craigfo:feature/productise-cli-and-sidecar`) is held pending operator decision. Two components require separate resolution paths:
+
+**Part 1 — TypeScript CLI MVP:** A TypeScript CLI and engine consolidation proposal. Hold reason: TypeScript has not been accepted as a tech-stack boundary for CLI-tier code in `product/tech-stack.md`. Required operator action: (1) decide whether TypeScript is accepted for CLI-tier code and update `product/tech-stack.md` if yes; (2) if yes, ask contributor to rebase onto current master and confirm `npm test` passes before re-evaluating the PR for import.
+
+**Part 2 — Engine-consolidation proposal:** Full pipeline engine replacement. This is out-of-scope for a direct PR import without a pipeline entry. Required path: contributor submits standalone /discovery → /benefit-metric pipeline entry as Phase 4 scope before any implementation begins.
+
+**Metric signal recorded (PR #102, 2026-04-16):** An independent full outer loop run by the external contributor was observed and recorded as a benefit metric signal. MM2 (E2 (unassisted outer loop replication) — rate metric) is on-track. CR1 (adoption confidence rating) and M1 (independent operator outer loop completion) remain at-risk — require the contributor to complete `docs/MODEL-RISK.md` 8/8 audit questions with name, date, and role on record before CR1/M1 can move to on-track.
 
 ---
 
@@ -397,3 +511,35 @@ Stories p2.1–p2.5b each have a separate DoR contract file. Stories p2.6–p2.1
 **¹ p2.6 — ASSUMPTION-02 resolution required before implementation.** The DoR was initially BLOCKED because the EA registry field names had not been confirmed. Read [decisions.md — ASSUMPTION-02 and RESOLUTION-ASSUMPTION-02](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-11-skills-platform-phase2/decisions.md) before writing any code. The resolved field mapping is: `technology.hosting` (enum `saas`/`cloud`/`on-prem`/`hybrid`) → surface type; `owner` → squad identifier; `adapter_override` in `context.yml` (not in registry schema) → granular surface type override for `saas-gui` and `m365-admin`. The DoR and test plan fixtures already reflect these resolved values — reading the resolution log explains why `surfaceType` and `teamId` do not appear anywhere in the implementation.
 
 **Phase 2 gate:** Run `npm test` (22/22 expected). All checks must pass before claiming Phase 2 complete. Note: the 3 `[PREREQ-DOCKER]` tests in p2.10 are deferred — they require a Docker-enabled runner (see Section 3.2). The remaining 19 automated checks will all pass without Docker.
+
+### Phase 3 Stories
+
+Phase 3 stories are grouped into the governance hardening batch (p3.1x), the T3M1 audit gap closure batch (p3.2x), retrospective coverage stories (p3.15–p3.17), and /improvement write-backs (p3.18–p3.22). 18 stories defined; 11 DoD-complete as of 2026-04-17. Stories p3.3–p3.14 are defined in the Phase 3 outer loop (stories/ folder) but have no DoR artefacts yet — they are in the inner loop queue for the next Phase 3 sprint.
+
+**All Phase 3 stories depend on all Phase 1 and Phase 2 stories being DoD-complete.** The "Depends on" column lists cross-Phase-3 dependencies only.
+
+Stories p3.1a–p3.1e and p3.2a/p3.2b each have a separate DoR contract file. Retrospective and improvement stories (p3.15–p3.22) use a streamlined DoR — no separate contract file.
+
+| Story | Title | DoD? | Depends on | DoR | Contract | Test plan |
+|-------|-------|------|-----------|-----|----------|-----------|
+| p3.1a | Trace-commit observability | ✅ PR #94 | — | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.1a-trace-commit-observability-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.1a-trace-commit-observability-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.1a-trace-commit-observability-test-plan.md) |
+| p3.1b | Assurance gate substantive checks | ✅ | — | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.1b-assurance-gate-substantive-checks-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.1b-assurance-gate-substantive-checks-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.1b-assurance-gate-substantive-checks-test-plan.md) |
+| p3.1c | Test suite integrity | ✅ PR #85 | — | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.1c-test-suite-integrity-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.1c-test-suite-integrity-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.1c-test-suite-integrity-test-plan.md) |
+| p3.1d | Bitbucket DC auth tests resolved | ✅ PR #78 | — | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.1d-bitbucket-dc-auth-tests-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.1d-bitbucket-dc-auth-tests-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.1d-bitbucket-dc-auth-tests-test-plan.md) |
+| p3.1e | Agent behaviour observability register | ✅ PR #77 | — | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.1e-agent-behaviour-observability-register-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.1e-agent-behaviour-observability-register-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.1e-agent-behaviour-observability-register-test-plan.md) |
+| p3.2a | T3M1 trace fields — Q2/Q5/Q6/Q7 schema and gate | ✅ PR #86 | — | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.2a-t3m1-trace-fields-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.2a-t3m1-trace-fields-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.2a-t3m1-trace-fields-test-plan.md) |
+| p3.2b ² | T3M1 tamper-evidence registry — Q8 | ⏳ in progress | p3.2a | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.2b-t3m1-tamper-evidence-registry-dor.md) | [Contract](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.2b-t3m1-tamper-evidence-registry-dor-contract.md) | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.2b-t3m1-tamper-evidence-registry-test-plan.md) |
+| p3.15 | `/estimate` skill — retrospective coverage | ⏳ DoR-signed | — | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.15-estimate-skill-retrospective-dor.md) | — | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.15-estimate-skill-retrospective-test-plan.md) |
+| p3.16 | `/issue-dispatch` skill — retrospective coverage | ⏳ DoR-signed | — | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.16-issue-dispatch-skill-retrospective-dor.md) | — | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.16-issue-dispatch-skill-retrospective-test-plan.md) |
+| p3.17 | Repo-tidy docs-structure — retrospective coverage | ⏳ DoR-signed | — | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.17-repo-tidy-docs-structure-retrospective-dor.md) | — | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.17-repo-tidy-docs-structure-retrospective-test-plan.md) |
+| p3.18 | `/definition` skill quality gates | ✅ PR #99 | — | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.18-definition-skill-quality-gates-dor.md) | — | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.18-definition-skill-quality-gates-test-plan.md) |
+| p3.19 | Guardrail enum enforcement in DoR/DoD | ✅ PR #99 | — | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.19-guardrail-enum-enforcement-dor.md) | — | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.19-guardrail-enum-enforcement-test-plan.md) |
+| p3.20 | `workspace/state.json` write-path safety | ✅ PR #99 | — | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.20-state-write-safety-dor.md) | — | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.20-state-write-safety-test-plan.md) |
+| p3.21 | Systematic-debugging coupled-change workflow | ✅ PR #99 | — | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.21-debugger-coupling-map-dor.md) | — | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.21-debugger-coupling-map-test-plan.md) |
+| p3.22 | `/verify-completion` second-session check + conflict-resolution-guide | ✅ PR #100 | — | [DoR](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/dor/p3.22-verify-completion-second-session-dor.md) | — | [Test plan](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.22-verify-completion-second-session-test-plan.md) |
+
+**² p3.2b — DEC-P3-002 required before implementation.** Read [decisions.md — DEC-P3-002](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/decisions.md) before writing any code. The tamper-evidence registry is implemented using GitHub Artifact Attestation with OIDC-signed workflow identity in the reference repository (Option A). Enterprise operators on Bitbucket must implement Option B (see DEC-P3-002 and Section 2 of this document for the full constraint table). The DoR and test plan already reflect the resolved approach — reading the decision log explains why the implementation diverges between the reference repo and enterprise deployments.
+
+**Stories p3.3–p3.14** (defined in outer loop, no DoR yet): gate structural independence (p3.3), eval anti-gaming controls (p3.4), Windows-native trace validator (p3.5), pipeline-evolution dispatch (p3.6), cross-team trace registry (p3.7), enterprise approval channel adapters (p3.8), AGENTS.md compatibility matrix (p3.9), EA registry live integration (p3.10), estimation calibration eval (p3.11), squad contribution flow (p3.12), compliance monitoring report (p3.13), concepts documentation (p3.14). These remain in-scope for Phase 3 completion. View story definitions at: [`artefacts/2026-04-14-skills-platform-phase3/stories/`](https://github.com/heymishy/skills-repo/tree/master/artefacts/2026-04-14-skills-platform-phase3/stories).
+
+**Phase 3 gate (in progress):** Run `npm test` after all Phase 3 stories are applied. T3M1 must reach 8/8 Y (Q8 requires p3.2b to be DoD-complete) before the Phase 3 exit criterion is satisfied. See `workspace/adoption-readiness.md` for current RAG status across all benefit metrics.
