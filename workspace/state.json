@@ -27,7 +27,7 @@
                           "observabilityGapsIdentified":  4,
                           "status":  "complete"
                       },
-    "lastUpdated":  "2026-04-16T18:00:00Z",
+    "lastUpdated":  "2026-04-17T00:00:00Z",
     "currentPhase":  "phase-3-improvement",
     "cycle":  {
                   "discovery":  {
@@ -91,18 +91,20 @@
                 ],
     "mergedPRs": [99, 100, 101, 102],
     "checkpoint":  {
-                       "writtenAt":  "2026-04-16",
-                       "contextAtWrite":  "Session complete. /improvement run (8 items) fully merged across PRs #99 and #100. Phase 4 backlog files registered: workspace/phase4-backlog-second-model-review.md (PR #101), workspace/phase4-backlog-skills-drift-observability.md (PR #103). Benefit metric signals recorded for PR #98 independent operator run: MM2 on-track, CR1/M1 at-risk (PR #102). PR #103 awaiting assurance gate. PR #98 (craigfo) held pending operator decision — two-part review completed (CLI MVP + engine-consolidation proposal).",
-                       "resumeInstruction":  "PRs #99-#102 merged. PR #103 (skills-drift-observability backlog) pending assurance gate — merge when ready. PR #98 (craigfo) requires operator decision before import: (1) TypeScript as accepted tech-stack boundary for CLI tier? (2) If yes, ask craigfo to rebase onto current master and confirm npm test passes in this repo's governance suite. (3) Engine-consolidation (Part 2 of PR #98) needs standalone /discovery → /benefit-metric pipeline entry as Phase 4 scope — ask craigfo to submit that separately. Phase 3 inner loop: issues #89-#92 dispatched for p3.1a/p3.1b/p3.1d/p3.1e. Stories p3.18-p3.22 are DoR-signed-off and ready for dispatch. CR1/M1 move from at-risk to on-track requires craigfo to complete MODEL-RISK.md 8/8 audit questions with name/date/role on record.",
+                       "writtenAt":  "2026-04-17",
+                       "contextAtWrite":  "Session complete. DoD artefacts written for p3.18-p3.22 (all confirmed implemented via PRs #99/#100 — empty stub commits #111-#115 noted). p3.14 fixed: docs/concepts/README.md created, ONBOARDING.md updated, 45/45 tests passing. p3.2b DoR blocker cleared: Proceed changed from BLOCKED to Yes, issue #117 dispatched to coding agent. All changes committed on branch chore/signals-dod-p3.1a-p3.2a-2026-04-17, pushed (489373b). PR #116 still draft — operator to merge.",
+                       "resumeInstruction":  "Merge PR #116 (branch chore/signals-dod-p3.1a-p3.2a-2026-04-17) — contains signals + DoD for p3.1a-p3.2a (from previous session) plus DoD for p3.18-p3.22, p3.14 fix, and p3.2b DoR update (from this session). After merge: (1) Check agent run results for issues #89-#92 (p3.1a/p3.1b/p3.1d/p3.1e) — open sub-issues may need DoD. (2) Monitor issue #117 (p3.2b — T3M1 tamper-evidence registry) — Complexity 3, High oversight. (3) Merge PR #103 (skills-drift-observability backlog) once assurance gate passes. (4) PR #98 (craigfo) still pending TypeScript decision.",
                        "pendingActions":  [
+                                              "Operator: merge PR #116 (draft) — signals + DoD p3.1a-p3.2a + DoD p3.18-p3.22 + p3.14 fix + p3.2b DoR update.",
+                                              "Monitor issue #117 (p3.2b — T3M1 tamper-evidence registry) coding agent — Complexity 3, High oversight, 12 tests.",
+                                              "Check agent run results for issues #89 (p3.1a), #90 (p3.1b), #91 (p3.1d), #92 (p3.1e) — verify PRs opened, run DoD when merged.",
                                               "Merge PR #103 (skills-drift-observability backlog) once assurance gate passes.",
                                               "PR #98 (craigfo): decide whether TypeScript is accepted for CLI-tier code — update product/tech-stack.md if yes.",
-                                              "PR #98 (craigfo): if TypeScript decision is yes, ask craigfo to rebase onto current master and confirm npm test passes in this repo's governance suite, then re-evaluate import.",
-                                              "PR #98 (craigfo): ask craigfo to submit engine-consolidation Part 2 as a standalone discovery through the /benefit-metric pipeline — it needs full /discovery before any implementation.",
-                                              "CR1/M1 at-risk: ask craigfo to complete MODEL-RISK.md 8/8 audit questions with their name, date, and role on record — then run /record-signal to move both metrics to on-track.",
-                                              "Phase 3 inner loop: monitor GitHub agent runs for issues #89 (p3.1a — discovery skill), #90 (p3.1b — benefit-metric skill), #91 (p3.1d — definition skill), #92 (p3.1e — review skill).",
-                                              "Dispatch stories p3.18-p3.22 to coding agent (all DoR-signed-off).",
-                                              "Create workspace/phase4-backlog-governance-integrity-test-scripts.md — forward-referenced by phase4-backlog-second-model-review.md but not yet written."
+                                              "PR #98 (craigfo): if TypeScript decision is yes, ask craigfo to rebase onto current master and confirm npm test passes, then re-evaluate import.",
+                                              "PR #98 (craigfo): ask craigfo to submit engine-consolidation Part 2 as a standalone discovery through the pipeline.",
+                                              "CR1/M1 at-risk: ask craigfo to complete MODEL-RISK.md 8/8 audit questions with name, date, and role on record — then run /record-signal.",
+                                              "Create workspace/phase4-backlog-governance-integrity-test-scripts.md — forward-referenced by phase4-backlog-second-model-review.md but not yet written.",
+                                              "Stories p3.3-p3.13 and p3.15-p3.17: still not-started — Phase 3 backlog for future dispatch."
                                           ]
                    }
 }
