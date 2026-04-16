@@ -49,6 +49,28 @@ Before Step 1, read `.github/context.yml` and apply policy overlays:
 
 ---
 
+## Step 0 — Fresh-session check (run when resuming work from a previous session)
+
+**Applies when:** you are starting a new session and any of the following are true:
+- `workspace/state.json` shows `currentPhase` or `checkpoint.resumeInstruction` from a session you did not run
+- A previous session's closing message, PR comment, or artefact claims the story is complete or in progress
+- You are picking up work after a context window reset or summarisation boundary
+
+**Instructions:**
+
+1. **Do NOT inherit the previous session's completion claim.** A prior session's "done", "all ACs pass", or "tests passing" declaration is not evidence — it is a statement that must be independently verified in this session.
+
+2. **Read the prior state first:** Check `workspace/state.json` (`checkpoint.contextAtWrite`, `checkpoint.resumeInstruction`) and the story's DoR artefact to understand what was claimed as complete.
+
+3. **Run Step 1 fresh regardless.** Even if the prior session's output looks complete, execute the full test suite in this message before making any claim. Do not skip Step 1 because "it passed last time".
+
+4. **Surface any discrepancy before proceeding.** If the prior session claimed all ACs pass but fresh Step 1 results show failures, state the discrepancy explicitly:
+   > ⚠️ **Session-boundary mismatch:** Prior session claimed [X] but fresh run shows [Y]. Investigating before proceeding.
+
+   Then use /systematic-debugging to root-cause before continuing.
+
+---
+
 ## Step 1 — Run the full test suite
 
 ```bash
