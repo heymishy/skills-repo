@@ -342,3 +342,19 @@ Full orientation reference (VS Code context): `.github/instructions/agent-orient
 | On-call alerting | Incident response | Set in `context.yml: tools.alerting` |
 | Issue tracking | Project management | Set in `context.yml: tools.project_management` |
 | Artefact repository | Build artefacts | Set in `context.yml: tools.artifact_registry` |
+
+---
+
+## Skill Performance Capture (instrumentation)
+
+At session start, read `.github/context.yml`. Check `instrumentation.enabled`. If `instrumentation.enabled: true`, append a capture block to each phase output artefact you write in this session. If `instrumentation.enabled` is absent or `false`, do not append any capture block.
+
+**When to append:** After writing a phase output artefact of one of these types — `discovery.md`, `benefit-metric.md`, story artefacts (files under `stories/`), test plan artefacts (files under `test-plans/`) — append the capture block template from `.github/templates/capture-block.md` as the final section of that file.
+
+**Appendix-only constraint:** The capture block is an appendix. Do not modify the primary artefact body content. Append after the last line of existing content only.
+
+**Excluded artefact types:** Do not append capture blocks to gate artefacts — DoR (definition-of-ready) artefacts and DoD (definition-of-done) artefacts are explicitly excluded.
+
+**Field names:** When populating the capture block, use the exact field names defined in the template: `experiment_id`, `model_label`, `cost_tier`, `skill_name`, `artefact_path`, `run_timestamp`.
+
+**Security constraint (MC-SEC-02):** The `fidelity_self_report` field must not contain session tokens, user identifiers, or API credentials. Record only model behaviour observations.
