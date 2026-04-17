@@ -58,4 +58,10 @@ checks:
 exemption_labels:
   - skip-trace
   - chore
+
+# Reference-only directories under artefacts/ that are not feature directories
+# and should not be required to have a discovery artefact chain.
+# Use this for resource/reference packages that live alongside pipeline artefacts.
+reference_dirs:
+  - 2026-04-18-skills-platform-phase4-revised
   - docs-only

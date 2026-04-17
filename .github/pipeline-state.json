@@ -2589,6 +2589,90 @@
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.22-verify-completion-second-session-dor.md"
         }
       ]
+    },
+    {
+      "slug": "2026-04-18-skill-performance-capture",
+      "name": "Skill Performance Capture",
+      "title": "Skill Performance Capture — opt-in per-experiment instrumentation for cross-model comparison",
+      "track": "library",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "discoveryStatus": "approved",
+      "benefitMetricStatus": "complete",
+      "slicingStrategy": "risk-first",
+      "discoveryArtefact": "artefacts/2026-04-18-skill-performance-capture/discovery.md",
+      "benefitMetricArtefact": "artefacts/2026-04-18-skill-performance-capture/benefit-metric.md",
+      "nfrProfileArtefact": "artefacts/2026-04-18-skill-performance-capture/nfr-profile.md",
+      "updatedAt": "2026-04-18",
+      "guardrails": [
+        { "id": "MC-SEC-01", "category": "mandatory-constraint", "label": "No user-supplied content in innerHTML without sanitisation", "status": "na", "evidence": "Feature produces no viz or innerHTML changes", "assessedBy": "/review", "assessedAt": "2026-04-18" },
+        { "id": "MC-SEC-02", "category": "mandatory-constraint", "label": "No credentials, tokens, or personal data in committed files", "status": "met", "evidence": "All 5 stories explicitly reference MC-SEC-02; model_label and cost_tier constrained to descriptive strings; fidelity_self_report warned against credentials in template", "assessedBy": "/review", "assessedAt": "2026-04-18" },
+        { "id": "MC-SEC-03", "category": "mandatory-constraint", "label": "Viz reads local JSON only — no external fetch calls", "status": "na", "evidence": "Feature produces no viz changes", "assessedBy": "/review", "assessedAt": "2026-04-18" },
+        { "id": "MC-CORRECT-01", "category": "mandatory-constraint", "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)", "status": "na", "evidence": "Feature produces no gate logic changes", "assessedBy": "/review", "assessedAt": "2026-04-18" },
+        { "id": "MC-CORRECT-02", "category": "mandatory-constraint", "label": "Fields written to pipeline-state.json must exist in schema", "status": "met", "evidence": "spc.5 explicitly notes script does not write to pipeline-state.json; no story writes new state fields", "assessedBy": "/review", "assessedAt": "2026-04-18" },
+        { "id": "MC-CORRECT-03", "category": "mandatory-constraint", "label": "Fields read by viz from pipeline-state.json must exist in schema", "status": "na", "evidence": "Feature produces no viz changes", "assessedBy": "/review", "assessedAt": "2026-04-18" },
+        { "id": "MC-SELF-01", "category": "mandatory-constraint", "label": "pipeline-viz.html renders without build step, server, or network", "status": "na", "evidence": "Feature produces no viz changes", "assessedBy": "/review", "assessedAt": "2026-04-18" },
+        { "id": "MC-SELF-02", "category": "mandatory-constraint", "label": "No npm devDependencies in pipeline-viz.html runtime", "status": "na", "evidence": "Feature produces no viz changes", "assessedBy": "/review", "assessedAt": "2026-04-18" },
+        { "id": "MC-CONSIST-01", "category": "mandatory-constraint", "label": "Stage enum in schema updated when skill adds/removes stage", "status": "na", "evidence": "Feature adds no new pipeline stages", "assessedBy": "/review", "assessedAt": "2026-04-18" },
+        { "id": "MC-CONSIST-02", "category": "mandatory-constraint", "label": "Gate add/remove synced with SKILL.md criteria", "status": "na", "evidence": "Feature adds no governance gates", "assessedBy": "/review", "assessedAt": "2026-04-18" },
+        { "id": "MC-A11Y-01", "category": "mandatory-constraint", "label": "Interactive elements keyboard-accessible", "status": "na", "evidence": "Feature produces no viz or UI changes", "assessedBy": "/review", "assessedAt": "2026-04-18" }
+      ],
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Capture block completeness rate",
+          "target": "100%",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["spc.1-context-yml-instrumentation-config", "spc.3-agent-instruction-integration", "spc.5-governance-check-capture-completeness"]
+        },
+        {
+          "id": "mm1",
+          "name": "Context breadth — unprompted repo file references",
+          "target": "≥2 file difference between model runs",
+          "baseline": "Established during first model run",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["spc.2-capture-block-schema-template", "spc.3-agent-instruction-integration"]
+        },
+        {
+          "id": "mm2",
+          "name": "Constraint inference rate",
+          "target": "Directional delta between model runs",
+          "baseline": "Established during first model run",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["spc.2-capture-block-schema-template", "spc.3-agent-instruction-integration"]
+        },
+        {
+          "id": "mm3",
+          "name": "Artefact linkage richness",
+          "target": "Directional delta between model runs",
+          "baseline": "Established during first model run",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["spc.2-capture-block-schema-template", "spc.3-agent-instruction-integration"]
+        }
+      ],
+      "epics": [
+        {
+          "slug": "e1-skill-performance-capture",
+          "name": "Operator can capture structured performance data across model runs",
+          "status": "not-started",
+          "stories": [
+            { "slug": "spc.1-context-yml-instrumentation-config", "name": "Define context.yml instrumentation config schema", "stage": "definition-of-ready", "health": "green", "reviewStatus": "passed", "highFindings": 0, "dorStatus": "signed-off", "testPlan": { "status": "written", "automatedTests": 7, "manualScenarios": 1, "artefact": "artefacts/2026-04-18-skill-performance-capture/test-plans/spc.1-test-plan.md", "verificationScript": "artefacts/2026-04-18-skill-performance-capture/verification-scripts/spc.1-verification.md" }, "dorArtefact": "artefacts/2026-04-18-skill-performance-capture/dor/spc.1-dor.md", "dorContract": "artefacts/2026-04-18-skill-performance-capture/dor/spc.1-dor-contract.md", "issueUrl": "https://github.com/heymishy/skills-repo/issues/142", "dispatchedAt": "2026-04-18T00:00:00Z", "dispatchTarget": "vscode", "acTotal": 5, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "oversightLevel": "medium", "updatedAt": "2026-04-18" },
+            { "slug": "spc.2-capture-block-schema-template", "name": "Define capture block schema and Markdown template", "stage": "definition-of-ready", "health": "green", "reviewStatus": "passed", "highFindings": 0, "dorStatus": "signed-off", "testPlan": { "status": "written", "automatedTests": 12, "manualScenarios": 0, "artefact": "artefacts/2026-04-18-skill-performance-capture/test-plans/spc.2-test-plan.md", "verificationScript": "artefacts/2026-04-18-skill-performance-capture/verification-scripts/spc.2-verification.md" }, "dorArtefact": "artefacts/2026-04-18-skill-performance-capture/dor/spc.2-dor.md", "dorContract": "artefacts/2026-04-18-skill-performance-capture/dor/spc.2-dor-contract.md", "issueUrl": "https://github.com/heymishy/skills-repo/issues/143", "dispatchedAt": "2026-04-18T00:00:00Z", "dispatchTarget": "vscode", "acTotal": 5, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "oversightLevel": "medium", "updatedAt": "2026-04-18" },
+            { "slug": "spc.3-agent-instruction-integration", "name": "Add instrumentation instruction to copilot-instructions.md", "stage": "definition-of-ready", "health": "amber", "reviewStatus": "passed", "highFindings": 0, "dorStatus": "signed-off", "testPlan": { "status": "written", "automatedTests": 8, "manualScenarios": 2, "gaps": ["AC2 agent-runtime-behaviour — requires live session", "AC3 agent-runtime-behaviour (negative) — requires live session"], "artefact": "artefacts/2026-04-18-skill-performance-capture/test-plans/spc.3-test-plan.md", "verificationScript": "artefacts/2026-04-18-skill-performance-capture/verification-scripts/spc.3-verification.md" }, "dorArtefact": "artefacts/2026-04-18-skill-performance-capture/dor/spc.3-dor.md", "dorContract": "artefacts/2026-04-18-skill-performance-capture/dor/spc.3-dor-contract.md", "acTotal": 5, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "oversightLevel": "medium", "platformChangeRequired": true, "platformChangeNote": "copilot-instructions.md is a governed platform file — change must go via PR per Platform change policy (RISK-ACCEPT 1-M6)", "issueUrl": "https://github.com/heymishy/skills-repo/issues/146", "dispatchedAt": "2026-04-18T00:00:00Z", "dispatchTarget": "vscode", "updatedAt": "2026-04-18" },
+            { "slug": "spc.4-experiment-workspace-structure", "name": "Define experiment workspace structure and manifest format", "stage": "definition-of-ready", "health": "green", "reviewStatus": "passed", "highFindings": 0, "dorStatus": "signed-off", "testPlan": { "status": "written", "automatedTests": 10, "manualScenarios": 0, "artefact": "artefacts/2026-04-18-skill-performance-capture/test-plans/spc.4-test-plan.md", "verificationScript": "artefacts/2026-04-18-skill-performance-capture/verification-scripts/spc.4-verification.md" }, "dorArtefact": "artefacts/2026-04-18-skill-performance-capture/dor/spc.4-dor.md", "dorContract": "artefacts/2026-04-18-skill-performance-capture/dor/spc.4-dor-contract.md", "issueUrl": "https://github.com/heymishy/skills-repo/issues/144", "dispatchedAt": "2026-04-18T00:00:00Z", "dispatchTarget": "vscode", "acTotal": 4, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "oversightLevel": "medium", "updatedAt": "2026-04-18" },
+            { "slug": "spc.5-governance-check-capture-completeness", "name": "Governance check: validate capture block completeness", "stage": "definition-of-ready", "health": "green", "reviewStatus": "passed", "highFindings": 0, "dorStatus": "signed-off", "testPlan": { "status": "written", "automatedTests": 10, "manualScenarios": 0, "artefact": "artefacts/2026-04-18-skill-performance-capture/test-plans/spc.5-test-plan.md", "verificationScript": "artefacts/2026-04-18-skill-performance-capture/verification-scripts/spc.5-verification.md" }, "dorArtefact": "artefacts/2026-04-18-skill-performance-capture/dor/spc.5-dor.md", "dorContract": "artefacts/2026-04-18-skill-performance-capture/dor/spc.5-dor-contract.md", "issueUrl": "https://github.com/heymishy/skills-repo/issues/145", "dispatchedAt": "2026-04-18T00:00:00Z", "dispatchTarget": "vscode", "acTotal": 5, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "oversightLevel": "medium", "updatedAt": "2026-04-18" }
+          ]
+        }
+      ]
     }
   ]
 }

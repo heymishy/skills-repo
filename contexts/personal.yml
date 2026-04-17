@@ -122,3 +122,11 @@ compliance:
   #   - "card numbers (PANs, CVVs)"
   #   - "account numbers"
   #   - "health record identifiers"
+
+instrumentation:
+  enabled: false              # boolean — set true to activate capture; false (default) = no capture
+  experiment_id: ""           # string — unique slug, e.g. 2026-04-18-model-comparison
+  model_label: ""             # string — descriptive label only, e.g. "claude-sonnet-4-6" (NO API keys — MC-SEC-02)
+  cost_tier: ""               # string — standard | premium
+# To activate: set enabled: true, fill in experiment_id, model_label, and cost_tier.
+# Results are written to workspace/experiments/[experiment-id]/ — see workspace/experiments/README.md.

@@ -600,6 +600,37 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 
 ---
 
+## Pipeline gap D7 — `--target vscode` minimal issue body produces empty agent PRs; `--target github-agent` must be the default
+
+### Observed — 2026-04-18 (spc.1–spc.5 inner loop dispatch)
+
+**Circumstance:** Five stories (spc.1–spc.5) for the `2026-04-18-skill-performance-capture` feature were dispatched via `/issue-dispatch` using the default `--target vscode` mode. All 5 GitHub Copilot coding agent runs produced only a single empty "Initial plan" commit with zero file changes. Each story's PR was merged with no deliverable implemented.
+
+**Root cause:** The `--target vscode` issue body is a minimal 5-line stub listing only artefact paths. It contains no task list, no concrete file touchpoints, no implementation context, and no AC details. When the GitHub Copilot SWE agent receives this body, it has insufficient context to determine what to build. The agent writes a plan comment and opens a PR, but the plan contains no actionable steps because the issue body provided no actionable steps. The agent's PR is then reviewed and merged as-not-implemented.
+
+**The structural failure:** `--target vscode` was designed for the VS Code inline chat agent, which has access to the full workspace filesystem and can read artefact files directly. The GitHub Copilot SWE agent (GitHub Actions) clones the repo at assignment time but has no session continuity — it infers its task only from the issue body. A minimal stub that says "read artefact/x.md" requires the agent to discover, read, parse, and execute from artefact files without any scaffolding. In practice, the agent stalls and produces empty output rather than discovering the full task chain.
+
+**Recovery applied:** `git merge origin/feature/p3-remaining-stories` — recovered all 39 artefact files that were only on the feature branch; all 5 deliverables implemented manually in operator session.
+
+**D-batch classification:** D7 — default dispatch target produces unusable agent output. Structural fix is changing the SKILL.md default.
+
+| ID | Gap | Fix location |
+|----|-----|-------------|
+| D3 | learnings-write step missing from skill exits | Multiple SKILL.md exit sequences |
+| D5 | /checkpoint missing from numbered exit sequence | /definition-of-ready SKILL.md |
+| D6 | /issue-dispatch not prompted after all-PROCEED batch | /definition-of-ready SKILL.md exit + push gate |
+| **D7** | **`--target vscode` minimal body produces empty agent PRs** | **`/issue-dispatch` SKILL.md Step 2 default** |
+
+**Structural fix applied:** `/issue-dispatch` SKILL.md Step 2 default changed from `--target vscode` to `--target github-agent`. The `--target vscode` option is retained but requires explicit opt-in. A warning note added explaining when `--target vscode` is appropriate (only when operator confirms the agent runtime reads artefact files independently, e.g. VS Code inline chat with full workspace access).
+
+**Rule for future dispatch decisions:**
+- **`--target github-agent`** (default): use for all standard inner loop dispatches. Inlines Coding Agent Instructions, AC list, file touchpoints, and implementation context from DoR artefacts into the issue body. The agent can complete the task from the issue body alone without reading additional files.
+- **`--target vscode`** (opt-in): use only when the agent runtime is VS Code inline chat with confirmed access to the full workspace. Requires the operator to verify the agent can read artefact files during the session. Not appropriate for GitHub Actions / SWE agent runs.
+
+**Action:** `/issue-dispatch` SKILL.md Step 2 default updated to `--target github-agent` in this session. Log as a Phase 3 /improve candidate for validation that the change holds across future dispatch runs.
+
+---
+
 ## Tool-use gap — duplicate GitHub issues created by combined heredoc+gh-issue-create PowerShell calls
 
 ### Observed — 2026-04-12
@@ -675,6 +706,20 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 ```
 
 **Pattern:** Any workflow that must push commits back to the PR branch must include `ref: ${{ github.head_ref }}` + `fetch-depth: 0` on checkout. Without these, the runner is in detached HEAD at the merge commit — commits succeed locally but pushes will be rejected whenever the branch has advanced since the workflow started.
+
+---
+
+## Definition skill — story count may be disproportionate for tooling/instrumentation features
+
+### Observed — 2026-04-18
+
+**Circumstance:** `/definition` for the `2026-04-18-skill-performance-capture` feature produced 5 stories for what is architecturally a config schema addition + a Markdown template + an instruction text addition + a directory convention + a check script. The operator flagged that 5 stories feels heavyweight relative to other features of similar complexity.
+
+**Hypothesis:** The /definition skill's default decomposition is calibrated for user-facing feature work (stories = independently shippable slices of user value). For tooling/instrumentation features with no UI and no external consumers, user stories impose overhead that doesn't match the verification model — there is no "operator tries to do X and can/can't" demarcation between most of these stories.
+
+**Not confirmed yet** — this may be correct decomposition for a governed pipeline (each story = one change to a governed file type, independently reviewable). But worth checking at /review whether story boundaries feel artificial or add overhead rather than reduce it.
+
+**Action:** At /review, note whether story boundaries for spc.1–spc.5 feel natural or manufactured. If 3 stories would have covered the same scope without losing reviewability, flag as a calibration signal for the definition skill. Consider a future heuristic: for features where all stories touch the same 1–2 file types with no external persona consuming intermediate output, a single "thin feature" story may be more appropriate than vertical slices.
 
 **Action:** Add to `.github/architecture-guardrails.md` as a workflow authoring guardrail. Log as Phase 2 /improve candidate.
 
