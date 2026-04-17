@@ -6,6 +6,10 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **Phase 3 remaining stories implementation — p3.2b, p3.5, p3.6, p3.7, p3.8, p3.10, p3.11 (2026-04-19):** All 7 outstanding Phase 3 Tier 1 stories implemented; full `npm test` green. p3.2b: `scripts/attestation-publisher.js` (SHA-256 tamper-evidence), `.github/workflows/attestation-publisher.yml` (OIDC, no PAT), `tests/check-p3.2b-attestation.js`, `docs/MODEL-RISK.md` Q8 closed. p3.5: `scripts/validate-trace.ps1` (PowerShell 5.1+ trace validation, 5 checks, `--ci` flag), `tests/check-p3.5-validate-trace.js`. p3.6: `issue-dispatch/SKILL.md` `Closes #[issueNumber]` keyword + auto-close docs; `definition-of-ready/SKILL.md` forward-pointer; `tests/check-p3.6-dispatch.js`. p3.7: `src/trace-registry/getTraces.js`, `src/trace-registry/getTraces.test.js`, `.github/workflows/trace-aggregation.yml`, `tests/check-trace-registry.js`. p3.8: `src/approval-channel/adapters/teams-adapter.js` (HMAC-SHA256), `src/approval-channel/adapters/jira-adapter.js`, `tests/check-approval-adapters.js`. p3.10: `discovery/SKILL.md` EA registry Path A/B Step 0 block; `tests/check-discovery-skill.js`. p3.11: `src/improvement-agent/calibration.js` (CRLF-normalised YAML parser, estimation underrun detection), `src/improvement-agent/calibration.test.js`, fixtures. `package.json` test chain updated with all 8 new test files.
+
 ### Changed
 
 - **`copilot-instructions.md` — state and artefact updates no-PR rule (2026-04-17):** Added "State and artefact updates — no standalone PR required" rule to `## Coding standards`. Changes to `workspace/state.json`, `.github/pipeline-state.json`, and files under `artefacts/` are pipeline bookkeeping, not code. Rule: bundle into implementation PR when possible; for standalone checkpoint commits use a short-lived branch + immediate merge; never open a standalone draft PR for state-only changes. Operator one-time action flagged: configure GitHub Ruleset path bypass for `workspace/**`, `artefacts/**`, `.github/pipeline-state.json` to allow direct push.
