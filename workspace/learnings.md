@@ -1114,10 +1114,10 @@ This is the enterprise-standard maker/checker pattern: the gate that signs off a
 
 ---
 
-## /improvement run — 2026-04-16
+## /improvement run ï¿½ 2026-04-16
 
 **Phase:** /improvement (write-back of outstanding learnings candidates)
-**Scope:** 6 items applied to 4 target files; 4 retrospective stories created (p3.18–p3.21) to satisfy artefact-first rule before SKILL.md modifications
+**Scope:** 6 items applied to 4 target files; 4 retrospective stories created (p3.18ï¿½p3.21) to satisfy artefact-first rule before SKILL.md modifications
 
 **Items applied:**
 
@@ -1130,7 +1130,7 @@ This is the enterprise-standard maker/checker pattern: the gate that signs off a
 | 5 | .github/copilot-instructions.md | Added state write-path safety paragraph in /checkpoint section |
 | 6 | .github/skills/systematic-debugging/SKILL.md | Added Coupled-change workflow section before ## Integration |
 
-**Artefacts created:** p3.18, p3.19, p3.20, p3.21 — each with story, test-plan, and DoR in artefacts/2026-04-14-skills-platform-phase3/
+**Artefacts created:** p3.18, p3.19, p3.20, p3.21 ï¿½ each with story, test-plan, and DoR in artefacts/2026-04-14-skills-platform-phase3/
 
 **Items deferred to operator confirmation:** Item 7 (docs/conflict-resolution-guide.md) and Item 8 (second-session verification prompt) remain pending.
 
