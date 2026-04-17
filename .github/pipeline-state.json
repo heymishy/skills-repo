@@ -2594,7 +2594,7 @@
       "slug": "2026-04-18-skill-performance-capture",
       "name": "Skill Performance Capture",
       "title": "Skill Performance Capture — opt-in per-experiment instrumentation for cross-model comparison",
-      "track": "tooling",
+      "track": "library",
       "stage": "definition-of-ready",
       "health": "green",
       "discoveryStatus": "approved",
