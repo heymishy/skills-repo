@@ -108,12 +108,28 @@ check_discovery_exists() {
         ok "artefacts/ is empty — no features to check"
         return
     fi
+    # Load reference_dirs skip list from trace-validation.yml
+    local ref_dirs_pattern=""
+    if [[ -f "$CONFIG_FILE" ]]; then
+        ref_dirs_pattern=$(python3 - "$CONFIG_FILE" <<'PYTHON' 2>/dev/null || echo "")
+import sys, yaml
+with open(sys.argv[1]) as f:
+    config = yaml.safe_load(f)
+dirs = config.get('reference_dirs', [])
+print('|'.join(dirs))
+PYTHON
+    fi
     local missing=0
     for feature_dir in "$ARTEFACTS"/*/; do
         [[ -d "$feature_dir" ]] || continue
         local feature
         feature="$(basename "$feature_dir")"
         [[ "$feature" == ".*" ]] && continue
+        # Skip directories explicitly listed as reference-only in trace-validation.yml
+        if [[ -n "$ref_dirs_pattern" ]] && echo "$feature" | grep -qE "^(${ref_dirs_pattern})$" 2>/dev/null; then
+            ok "Skipping reference dir: artefacts/$feature (listed in reference_dirs)"
+            continue
+        fi
         if [[ ! -f "$feature_dir/discovery.md" ]]; then
             record_fail "discovery_exists" "$feature is missing discovery.md"
             fail "Missing: artefacts/$feature/discovery.md"
@@ -186,14 +202,21 @@ for feature in state.get('features', []):
         stage = story.get('stage', '')
         if stage not in stages_needing_test_plan:
             continue
-        # Derive the file slug from the artefact path basename so that both
-        # short slugs (e.g. "p3.1a") and full slugs resolve to the correct filename.
-        artefact = story.get('artefact', '')
-        if artefact:
-            file_slug = os.path.basename(artefact).replace('.md', '')
+        # Use testPlan.artefact directly when the pipeline-state records it explicitly.
+        # This handles cases where the test plan filename uses a short slug (e.g. spc.1-test-plan.md)
+        # rather than the full story slug (spc.1-context-yml-instrumentation-config-test-plan.md).
+        direct_artefact = story.get('testPlan', {}).get('artefact', '')
+        if direct_artefact:
+            test_plan_path = direct_artefact
         else:
-            file_slug = story.get('slug', 'unknown')
-        test_plan_path = os.path.join('artefacts', feature_slug, 'test-plans', f'{file_slug}-test-plan.md')
+            # Fallback: derive the file slug from the story artefact path basename,
+            # so that both short slugs (e.g. "p3.1a") and full slugs resolve correctly.
+            artefact = story.get('artefact', '')
+            if artefact:
+                file_slug = os.path.basename(artefact).replace('.md', '')
+            else:
+                file_slug = story.get('slug', 'unknown')
+            test_plan_path = os.path.join('artefacts', feature_slug, 'test-plans', f'{file_slug}-test-plan.md')
         if not os.path.exists(test_plan_path):
             print(f'MISSING: {test_plan_path}')
             missing.append(test_plan_path)
