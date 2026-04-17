@@ -1681,9 +1681,9 @@
           "name": "AGENTS.md adapter: non-GitHub inner loop validated",
           "target": "One complete story delivered end-to-end via real non-GitHub agent",
           "baseline": "Adapter delivered but validated against fixture mocks only (Phase 2)",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "at-risk",
+          "lastMeasured": "2026-04-18",
+          "evidence": "Phase 3 evidence tier: docs/agent-compatibility-matrix.md produced covering 4 tools (GitHub Copilot, Cursor, Claude Code, Amazon Q Developer) with specific gap assessments. Full M5 target (live delivery run) deferred to Phase 4 under ASSUMPTION-04 gate. Phase 4 backlog story registered at workspace/phase4-backlog-agent-live-delivery-run.md.",
           "contributingStories": [
             "p3.9"
           ]
@@ -2324,7 +2324,7 @@
         {
           "slug": "p3.9",
           "name": "AGENTS.md compatibility matrix",
-          "stage": "subagent-execution",
+          "stage": "definition-of-done",
           "scopeNote": "compat-matrix-only-phase3",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -2332,8 +2332,11 @@
           "testPlanArtefact": "artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.9-agents-md-compatibility-matrix-test-plan.md",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.9-agents-md-compatibility-matrix-dor.md",
-          "prStatus": "open",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-04-14-skills-platform-phase3/dod/p3.9-agents-md-compatibility-matrix-dod.md",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/130",
+          "releaseReady": true,
           "health": "green",
           "updatedAt": "2026-04-18",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.9-agents-md-compatibility-matrix-review-1.md",
