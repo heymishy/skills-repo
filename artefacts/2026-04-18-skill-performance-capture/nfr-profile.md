@@ -3,7 +3,7 @@
 **Feature:** 2026-04-18-skill-performance-capture
 **Created:** 2026-04-18
 **Last updated:** 2026-04-18
-**Status:** Active
+**Status:** Verified at 2026-04-18
 
 ---
 
