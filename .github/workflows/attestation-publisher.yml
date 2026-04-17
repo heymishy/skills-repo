@@ -1,0 +1,77 @@
+name: Attestation Publisher (T3M1 Q8)
+
+# Triggered when regulated trace files are merged to main.
+# Computes the SHA-256 hash of each new/updated trace file,
+# publishes it to GitHub Artifact Attestation (Option A — DEC-P3-002),
+# and writes the tamperEvidence object back to the trace file.
+#
+# Security NFR: OIDC token (id-token: write) is used for attestation.
+# No personal access token (PAT) is required or accepted.
+#
+# Access separation evidence (AC3 / Q8):
+#   id-token: write  — required to call the GitHub Attestation API
+#   contents: write  — required to commit the tamperEvidence write-back
+#   Delivery agents do NOT have attestations: write; published attestation
+#   records cannot be deleted or modified via the GITHUB_TOKEN.
+#
+# Reference: artefacts/2026-04-14-skills-platform-phase3/stories/p3.2b-t3m1-tamper-evidence-registry.md
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'workspace/traces/**.jsonl'
+
+permissions:
+  id-token: write   # OIDC — required for GitHub Artifact Attestation API (no PAT)
+  contents: write   # required to commit the tamperEvidence write-back to trace files
+  attestations: write  # required to create Artifact Attestation records
+
+jobs:
+  publish-attestation:
+    name: Publish trace attestation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Find changed trace files
+        id: changed-traces
+        run: |
+          # Identify trace files changed in this push
+          CHANGED=$(git diff --name-only HEAD~1 HEAD -- 'workspace/traces/*.jsonl' 2>/dev/null || \
+                    git show --name-only --format="" HEAD -- 'workspace/traces/*.jsonl' 2>/dev/null || echo "")
+          echo "changed_files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$CHANGED" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          echo "Changed trace files: $CHANGED"
+
+      - name: Publish attestations and write-back tamperEvidence
+        id: attest
+        env:
+          TRACE_FILE_DIR: workspace/traces
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node scripts/attestation-publisher.js
+
+      - name: Commit tamperEvidence write-backs
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add workspace/traces/
+          # Only commit if there are changes
+          if git diff --cached --quiet; then
+            echo "No tamperEvidence changes to commit."
+          else
+            git commit -m "chore(attestation): write-back tamperEvidence to trace files [skip ci]"
+            git push
+          fi
