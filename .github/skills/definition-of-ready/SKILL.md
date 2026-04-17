@@ -260,6 +260,8 @@ Save the approved Contract Proposal to `artefacts/[feature]/dor/[story-slug]-dor
 >
 > Support skills available throughout: /tdd, /systematic-debugging, /implementation-review
 >
+> **Dispatch to GitHub agent:** After sign-off, run `/issue-dispatch` to create the GitHub issue for the coding agent. The dispatch skill automatically generates a `Closes #[issueNumber]` line in the PR description — this causes GitHub to auto-close the dispatch issue when the PR is merged. You do not need to add the Closes keyword to the PR body manually.
+>
 > [If Medium:]
 > Share the DoR artefact with the tech lead, then begin the inner coding loop above.
 >

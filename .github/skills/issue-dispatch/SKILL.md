@@ -101,6 +101,11 @@ Implement [story-id]: [story title]
 [**Implementation plan:** `artefacts/[feature-slug]/plans/[story-slug]-plan.md`]  ← include only if file exists
 
 Read the **Coding Agent Instructions** block in the DoR artefact before writing any code.
+
+Closes #[issueNumber]
+<!-- GitHub auto-close: when this PR is merged, GitHub automatically closes issue #[issueNumber].
+     Reference: https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue
+     The [issueNumber] placeholder is replaced with the actual issue number at dispatch time. -->
 ```
 
 ### `--target github-agent` body format
