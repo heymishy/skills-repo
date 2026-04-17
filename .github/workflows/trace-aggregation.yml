@@ -1,0 +1,96 @@
+name: Trace Aggregation
+
+# Cross-team trace registry aggregation (p3.7).
+#
+# ADR-009 compliance:
+#   - Separate trigger (schedule + workflow_dispatch only — NOT pull_request or push).
+#   - Repository-scoped read-only token (permissions: contents: read).
+#   - No write access to squad repos; writes only to platform/traces/ in this repo.
+#
+# SLA: at-minimum daily cadence (24-hour aggregation SLA, AC3).
+
+on:
+  schedule:
+    # Run at 02:00 UTC every day — satisfies ≤24h aggregation SLA (AC3)
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    # Allow manual trigger for on-demand re-aggregation
+
+permissions:
+  contents: read   # ADR-009: read-only token — no write access to squad repos
+
+jobs:
+  aggregate-traces:
+    name: Aggregate cross-team traces
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Read-only default token is sufficient; no push needed in this job.
+          # Artifact writes use upload-artifact action rather than git push.
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Aggregate traces from workspace
+        id: aggregate
+        run: |
+          node - <<'SCRIPT'
+          'use strict';
+          var fs   = require('fs');
+          var path = require('path');
+
+          var root         = process.cwd();
+          var tracesIn     = path.join(root, 'workspace', 'traces');
+          var platformOut  = path.join(root, 'platform', 'traces');
+
+          // Squad ID is recorded in each trace file or defaults to repo-level aggregate
+          var squadId = process.env.SQUAD_ID || 'default';
+
+          if (!fs.existsSync(tracesIn)) {
+            console.log('[trace-aggregation] No workspace/traces/ directory found — skipping.');
+            process.exit(0);
+          }
+
+          var outDir = path.join(platformOut, squadId);
+          fs.mkdirSync(outDir, { recursive: true });
+
+          var files = fs.readdirSync(tracesIn);
+          var aggregatedAt = new Date().toISOString();
+          var written = 0;
+
+          files.forEach(function (file) {
+            if (!file.endsWith('.jsonl') && !file.endsWith('.json')) return;
+            var storySlug = file.replace(/\.(jsonl|json)$/, '');
+            var srcPath   = path.join(tracesIn, file);
+            var dstPath   = path.join(outDir, storySlug + '.jsonl');
+
+            try {
+              var content = fs.readFileSync(srcPath, 'utf8');
+              // Append aggregatedAt metadata line per file
+              var meta = JSON.stringify({ _aggregatedAt: aggregatedAt, _squadId: squadId, _storySlug: storySlug });
+              fs.writeFileSync(dstPath, content + meta + '\n', 'utf8');
+              written++;
+            } catch (e) {
+              console.warn('[trace-aggregation] Could not aggregate ' + file + ': ' + e.message);
+            }
+          });
+
+          console.log('[trace-aggregation] Aggregated ' + written + ' trace file(s) to platform/traces/' + squadId + '/');
+          console.log('[trace-aggregation] aggregatedAt=' + aggregatedAt);
+          SCRIPT
+        env:
+          SQUAD_ID: ${{ vars.SQUAD_ID || 'default' }}
+
+      - name: Upload aggregated traces as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aggregated-traces-${{ github.run_id }}
+          path: platform/traces/
+          retention-days: 90
+          if-no-files-found: warn
