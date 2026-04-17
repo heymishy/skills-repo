@@ -1,8 +1,25 @@
 {
   "version": "1",
-  "updated": "2026-04-11",
+  "updated": "2026-04-18",
   "programmes": [],
   "features": [
+    {
+      "slug": "2026-04-18-cli-approach",
+      "name": "CLI approach for AI-assisted workflow",
+      "title": "CLI approach for AI-assisted workflow",
+      "track": "library",
+      "stage": "discovery",
+      "health": "green",
+      "discoveryStatus": "draft",
+      "updatedAt": "2026-04-18",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "guardrails": [],
+      "discoveryArtefact": "artefacts/2026-04-18-cli-approach/discovery.md",
+      "epics": []
+    },
     {
       "slug": "2026-04-09-skills-platform-phase1",
       "name": "Skills Platform â€” Phase 1 Foundation",
