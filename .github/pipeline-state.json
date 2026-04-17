@@ -2324,7 +2324,7 @@
         {
           "slug": "p3.9",
           "name": "AGENTS.md compatibility matrix",
-          "stage": "definition-of-ready",
+          "stage": "subagent-execution",
           "scopeNote": "compat-matrix-only-phase3",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -2332,6 +2332,8 @@
           "testPlanArtefact": "artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.9-agents-md-compatibility-matrix-test-plan.md",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.9-agents-md-compatibility-matrix-dor.md",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/130",
           "health": "green",
           "updatedAt": "2026-04-18",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.9-agents-md-compatibility-matrix-review-1.md",
