@@ -221,6 +221,14 @@ Rules:
 
 **Artefact-first rule:** Any new SKILL.md file under `.github/skills/`, any new module under `src/`, and any new governance check script under `tests/` or `scripts/` committed to master must have a corresponding story artefact (discovery → benefit-metric → story → test-plan → DoR) committed to `artefacts/` before or alongside the implementation. A PR that adds or modifies a SKILL.md, `src/` module, or check script without a DoR story artefact is out-of-process. Exception: documentation-only changes (README, CHANGELOG, workspace notes), typo/configuration fixes that make no behavioural difference, and changes explicitly listed in the governed exemption register do not require a full chain. For work that has already landed without a chain, use `.github/templates/retrospective-story.md` to create a retroactive story.
 
+**State and artefact updates — no standalone PR required:** Changes to `workspace/state.json`, `.github/pipeline-state.json`, and files under `artefacts/` are pipeline bookkeeping, not code. They do not need a standalone draft PR with a review cycle. Rules:
+- **Bundle first:** whenever practical, include state/artefact updates in the same commit and branch as the implementation they record. Merge once — not twice.
+- **Standalone checkpoint commits:** when no implementation branch is open (e.g. a mid-session `/checkpoint` write or DoD artefact after a PR has already merged), commit the changes on a short-lived branch and merge it immediately — or, once the GitHub branch protection path bypass below is configured, push directly to master.
+- **Never open a standalone draft PR and wait for review** for a state-only or artefact-only change. This creates unnecessary pipeline overhead for non-code changes with no quality-gate value.
+- **Exception:** if the state or artefact update is bundled with a chore that also touches other governed files (SKILL.md, src/, tests/), the PR is required for those other files — include the state/artefact update in the same PR rather than splitting it.
+
+> **Operator one-time action (GitHub branch protection):** Configure a path-based bypass in the repository's GitHub Ruleset (Settings → Rules → your master ruleset) for paths `workspace/**`, `artefacts/**`, and `.github/pipeline-state.json`. This allows direct push without a PR for these bookkeeping paths while keeping the PR gate intact for all code paths. Until that bypass is in place, use a short-lived branch + immediate merge as described above.
+
 ---
 
 ## Product context files
