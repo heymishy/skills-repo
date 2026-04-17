@@ -122,3 +122,11 @@ compliance:
   #   - "card numbers (PANs, CVVs)"
   #   - "account numbers"
   #   - "health record identifiers"
+
+instrumentation:
+  performance_capture:
+    enabled: true
+    experiment_id: "2026-04-18-model-comparison"   # adjust date/label as you prefer
+    experiment_started: "2026-04-18T00:00:00Z"      # replace with actual ISO 8601 start time
+    experiment_note: "Cross-model comparison of outer-loop skill fidelity ahead of Phase 4 discovery run"
+    model_label: "sonnet-4-6"                       # confirm or correct the model label for this session
