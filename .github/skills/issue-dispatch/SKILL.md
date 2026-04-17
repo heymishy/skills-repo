@@ -4,7 +4,7 @@ description: >
   Creates GitHub issues for DoR-signed-off stories to trigger the GitHub Copilot
   coding agent. Reads pipeline-state.json to find stories with dorStatus: signed-off
   that have not yet been dispatched. Supports two issue body targets:
-  --target vscode (minimal stub, default) and --target github-agent (rich inlined body).
+  --target github-agent (rich inlined body, default) and --target vscode (minimal stub, explicit opt-in only).
   Updates pipeline-state.json with issueUrl, dispatchedAt, and dispatchTarget after
   each issue is created.
 triggers:
@@ -65,10 +65,12 @@ If none found: report "No undispatched DoR-signed-off stories found." and stop.
 
 Check for a `--target` parameter in the invocation:
 
-- `--target vscode` — minimal stub issue body (default if not specified)
-- `--target github-agent` — rich inlined body drawn from artefacts
+- `--target github-agent` — rich inlined body drawn from artefacts (default)
+- `--target vscode` — minimal stub issue body (explicit opt-in only — see warning below)
 
-If no parameter is given, use `--target vscode`.
+If no parameter is given, use `--target github-agent`.
+
+> **Warning — `--target vscode`:** The minimal stub body contains only artefact paths. The GitHub Copilot SWE agent (GitHub Actions) receives no task list, no file touchpoints, and no implementation context — it will produce an empty "Initial plan" commit with zero file changes. Use `--target vscode` only when the agent runtime is VS Code inline chat with confirmed full workspace access and the operator has verified the agent reads artefact files independently during the session. For all standard inner loop dispatches to GitHub Actions / SWE agent, use `--target github-agent`.
 
 ---
 
