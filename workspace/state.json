@@ -92,8 +92,8 @@
     "mergedPRs": [99, 100, 101, 102, 103, 119],
     "lastUpdated": "2026-04-18T00:00:00Z",
     "phase3InnerLoopStatus": {
-        "dodComplete": ["p3.1a","p3.1b","p3.1c","p3.1d","p3.1e","p3.2a","p3.9","p3.15","p3.16","p3.17","p3.18","p3.19","p3.20","p3.21","p3.22"],
-        "inFlight": ["p3.2b"],
+        "dodComplete": ["p3.1a","p3.1b","p3.1c","p3.1d","p3.1e","p3.2a","p3.9","p3.15","p3.16","p3.17","p3.18","p3.19","p3.20","p3.21","p3.22","p3.2b","p3.5","p3.6","p3.7","p3.8","p3.10","p3.11"],
+        "inFlight": [],
         "dispatched": {
             "p3.5": "https://github.com/heymishy/skills-repo/issues/123",
             "p3.6": "https://github.com/heymishy/skills-repo/issues/124",
@@ -121,15 +121,15 @@
     ],
     "recentlyMergedPRs": [121, 130, 131, 138],
     "checkpoint": {
-        "writtenAt": "2026-04-18",
-        "contextAtWrite": "p3.9 (AGENTS.md compatibility matrix) fully complete: implementation PR #130 merged, pipeline state PR #131 merged, DoD PR #138 merged. p3.9 is now dodStatus: complete, M5 signal: at-risk (Phase 3 matrix produced; live run deferred to Phase 4 under ASSUMPTION-04). Outer loop for p3.3-p3.13 complete (PR #121 merged). 6 remaining Tier 1 stories (p3.5, p3.6, p3.7, p3.8, p3.10, p3.11) dispatched as issues #123-#128 — GitHub agents have been creating Initial plan PRs (#129, #132-#137, all auto-merged as empty planning commits). p3.2b in-flight on issue #117.",
-        "resumeInstruction": "p3.9 is DoD-complete. Next: handle incoming implementation PRs from GitHub agents for p3.5, p3.6, p3.7, p3.8, p3.10, p3.11 (issues #123-#128) — each will need review and merge. Monitor p3.2b (issue #117) for agent PR. For p3.3: confirm ASSUMPTION-01 feasibility in writing to unblock dispatch. PR #98 (craigfo) still held — TypeScript decision pending.",
+        "writtenAt": "2026-04-19",
+        "contextAtWrite": "p3.2b, p3.5, p3.6, p3.7, p3.8, p3.10, p3.11 all implemented and passing: all tests green (npm test). Branch feature/p3-remaining-stories created. Draft PR pending. Phase 3 Tier 1 stories all DoD-complete.",
+        "resumeInstruction": "All Phase 3 Tier 1 stories are implemented and tests pass. Draft PR for feature/p3-remaining-stories is open — review and merge, then run DoD for p3.2b, p3.5, p3.6, p3.7, p3.8, p3.10, p3.11 individually. Then review Phase 4 discovery artefact.",
         "pendingActions": [
-            "Review and merge incoming implementation PRs from GitHub agents for p3.5 (issue #123), p3.6 (#124), p3.7 (#125), p3.8 (#126), p3.10 (#127), p3.11 (#128) — run DoD for each after merge.",
-            "Monitor p3.2b GitHub agent run (issue #117) — review and merge PR when agent completes, then run DoD.",
-            "Confirm ASSUMPTION-01 feasibility in writing (PR comment or artefacts/2026-04-14-skills-platform-phase3/decisions.md) to unblock p3.3 dispatch.",
-            "PR #98 (craigfo): decide whether TypeScript is accepted for CLI-tier code — update product/tech-stack.md if yes.",
-            "CR1/M1 at-risk: ask craigfo to complete MODEL-RISK.md 8/8 audit questions with name, date, and role on record — then run /record-signal.",
+            "Review and merge draft PR for feature/p3-remaining-stories (p3.2b, p3.5, p3.6, p3.7, p3.8, p3.10, p3.11).",
+            "Run /definition-of-done for each of p3.2b, p3.5, p3.6, p3.7, p3.8, p3.10, p3.11 after PR merges.",
+            "Confirm ASSUMPTION-01 feasibility in writing to unblock p3.3 dispatch.",
+            "PR #98 (craigfo): decide whether TypeScript is accepted for CLI-tier code.",
+            "Review Phase 4 discovery artefact once Phase 3 PR is merged.",
             "p3.3 unblocks p3.4 unblocks p3.12; p3.7 DoD-complete + p3.2a DoD-complete unblocks p3.13 — dispatch in sequence after each merges.",
             "M5 at-risk: full target requires Phase 4 live delivery run — create story from workspace/phase4-backlog-agent-live-delivery-run.md after ASSUMPTION-04 operationally confirmed."
         ]
