@@ -97,6 +97,34 @@ If no input has been provided, ask this first:
 >
 > Reply: describe it
 
+**3. EA registry blast-radius integration:**
+
+After checking product context and reference materials, read `.github/context.yml` and check the `architecture.ea_registry_authoritative` field.
+
+### Path A — EA registry authoritative (`architecture.ea_registry_authoritative: true`)
+
+When this flag is `true` in `context.yml`, call `getBlastRadius(systemId)` for any system named in the problem statement or scope. Surface the blast-radius summary inline in the discovery artefact:
+
+> **EA registry blast-radius (from EA registry):**
+> System: [systemId]
+> Affected consumers: [count from registry]
+> Downstream consumers: [list from registry]
+> Domain owner: [domain owner from registry]
+>
+> **Impact note:** [n] downstream consumers are affected. Review the /ea-registry artefact for full dependency graph before defining scope boundaries.
+
+Include a note in the Architecture / Technical Context section of the discovery artefact referencing this blast-radius summary. This integration is read-only — do not write to or modify the EA registry during discovery. (ADR-007: EA registry surface-type mapping table governs which surface types are in scope for `getBlastRadius()` queries.)
+
+If the EA registry has no entry for the named system, surface this gracefully:
+
+> **EA registry:** no EA registry entry found for [systemId]. Proceed without blast-radius data — this does not block discovery.
+
+The discovery session continues regardless of whether a registry entry exists.
+
+### Path B — EA registry not authoritative (`architecture.ea_registry_authoritative: false` or absent)
+
+When `architecture.ea_registry_authoritative` is `false` or the key is absent from `context.yml`, behave as before: no blast-radius section is surfaced, no error is raised, and no EA registry query is attempted. The discovery session proceeds identically to pre-Phase-3 behaviour.
+
 ---
 
 ## Purpose
