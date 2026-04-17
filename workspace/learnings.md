@@ -676,6 +676,20 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 
 **Pattern:** Any workflow that must push commits back to the PR branch must include `ref: ${{ github.head_ref }}` + `fetch-depth: 0` on checkout. Without these, the runner is in detached HEAD at the merge commit — commits succeed locally but pushes will be rejected whenever the branch has advanced since the workflow started.
 
+---
+
+## Definition skill — story count may be disproportionate for tooling/instrumentation features
+
+### Observed — 2026-04-18
+
+**Circumstance:** `/definition` for the `2026-04-18-skill-performance-capture` feature produced 5 stories for what is architecturally a config schema addition + a Markdown template + an instruction text addition + a directory convention + a check script. The operator flagged that 5 stories feels heavyweight relative to other features of similar complexity.
+
+**Hypothesis:** The /definition skill's default decomposition is calibrated for user-facing feature work (stories = independently shippable slices of user value). For tooling/instrumentation features with no UI and no external consumers, user stories impose overhead that doesn't match the verification model — there is no "operator tries to do X and can/can't" demarcation between most of these stories.
+
+**Not confirmed yet** — this may be correct decomposition for a governed pipeline (each story = one change to a governed file type, independently reviewable). But worth checking at /review whether story boundaries feel artificial or add overhead rather than reduce it.
+
+**Action:** At /review, note whether story boundaries for spc.1–spc.5 feel natural or manufactured. If 3 stories would have covered the same scope without losing reviewability, flag as a calibration signal for the definition skill. Consider a future heuristic: for features where all stories touch the same 1–2 file types with no external persona consuming intermediate output, a single "thin feature" story may be more appropriate than vertical slices.
+
 **Action:** Add to `.github/architecture-guardrails.md` as a workflow authoring guardrail. Log as Phase 2 /improve candidate.
 
 ---
