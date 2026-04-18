@@ -2680,7 +2680,7 @@
     {
       "slug": "2026-04-18-dashboard-v2",
       "name": "Dashboard v2 — pipeline-state.json-driven portfolio visualiser",
-      "track": "tooling",
+      "track": "short",
       "stage": "definition-of-ready",
       "health": "green",
       "regulated": false,
@@ -2723,7 +2723,7 @@
         }
       ],
       "guardrails": [
-        { "id": "MC-SEC-02", "appliesTo": ["dviz.1-pipeline-adapter", "dviz.2-pages-workflow", "dviz.3-governance-check"], "note": "No credentials, API keys, tokens, or personal identifiers in any new file" }
+        { "id": "MC-SEC-02", "category": "mandatory-constraint", "label": "No credentials, API keys, tokens, or personal identifiers in any new file", "status": "not-assessed", "appliesTo": ["dviz.1-pipeline-adapter", "dviz.2-pages-workflow", "dviz.3-governance-check"] }
       ],
       "epics": [
         {
