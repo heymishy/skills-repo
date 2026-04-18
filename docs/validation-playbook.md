@@ -57,7 +57,7 @@ Each squad is a single JSON file in `fleet/squads/`. The file tells the fleet ag
 After your PR is merged:
 
 - Open `fleet-state.json` in the repo root and confirm your `squadId` appears in the `squads` array.
-- Open `.github/pipeline-viz.html` in a browser (Step 3 of Part 1) and confirm the Fleet panel lists your squad.
+- Open `dashboards/pipeline-viz.html` in a browser (Step 3 of Part 1) and confirm the Fleet panel lists your squad.
 - Run `npm test` — the fleet aggregation check (`check-fleet-aggregation.js`) must pass with ≥ 2 squad entries.
 
 If any of these fail, check that:
@@ -102,7 +102,7 @@ npm test
 
 ### Step 3 — Open the pipeline visualiser in a browser
 
-Open `.github/pipeline-viz.html` directly in any browser (double-click, or `open .github/pipeline-viz.html` on macOS / `start .github/pipeline-viz.html` on Windows).
+Open `dashboards/pipeline-viz.html` directly in any browser (double-click, or `open dashboards/pipeline-viz.html` on macOS / `start dashboards/pipeline-viz.html` on Windows).
 
 **Pass:** Page renders without error. The feature list shows at least two features labelled `2026-04-09-skills-platform-phase1` and `2026-04-11-skills-platform-phase2`. Story counts are visible. Fleet panel shows at least two squad entries.
 **Fail (check):** Page is blank or shows a JS error in browser console — check that you opened the file from the repo root (not a downloaded copy with blocked assets).
@@ -216,7 +216,7 @@ This part tests whether the five most important platform benefits are present an
 **How to measure:**
 1. Open `fleet/squads/` — confirm at least two JSON files (e.g. `squad-alpha.json`, `squad-beta.json`).
 2. Open `fleet-state.json` at repo root — confirm at least two squad entries are present.
-3. Open `.github/pipeline-viz.html` in a browser — confirm the fleet panel renders both squad cards.
+3. Open `dashboards/pipeline-viz.html` in a browser — confirm the fleet panel renders both squad cards.
 
 **Expected:** Two squad JSON files in `fleet/squads/`, two entries in `fleet-state.json`, two squad cards visible in the fleet panel.
 **Fail:** `fleet-state.json` is missing, has fewer than two entries, or was last edited manually (check `git log fleet-state.json` — the committer should be the CI job or platform maintainer running the aggregator, not an ad-hoc edit).
@@ -234,7 +234,7 @@ This part tests whether the five most important platform benefits are present an
 **What you are measuring:** Pipeline-viz.html has no external CDN dependencies and no build step (ADR-001 from `.github/architecture-guardrails.md`).
 
 **How to measure:**
-1. Open `.github/pipeline-viz.html` in a browser with no internet access (disable wifi/ethernet), or use browser developer tools to block all external requests.
+1. Open `dashboards/pipeline-viz.html` in a browser with no internet access (disable wifi/ethernet), or use browser developer tools to block all external requests.
 2. Confirm the viz renders fully — all panels visible, all features shown, fleet panel rendered.
 3. In the browser developer tools Network tab, confirm zero external HTTP requests fired. All resources must be inline.
 

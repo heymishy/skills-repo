@@ -26,7 +26,7 @@ The schema is schema-first: new fields must be added to `pipeline-state.schema.j
 
 ## What you do with it
 
-You do not edit `pipeline-state.json` directly in normal operation — skills write it. If you need to inspect pipeline state, read the file or use the pipeline visualisation tool (`pipeline-viz.html`).
+You do not edit `pipeline-state.json` directly in normal operation — skills write it. If you need to inspect pipeline state, read the file or use the pipeline visualisation tool (`dashboards/pipeline-viz.html`).
 
 If the state file is missing or corrupt, run `/workflow` — it will diagnose the state and tell you how to recover. If a field is absent that you expect to be present, check that the corresponding skill completed its mandatory state write.
 

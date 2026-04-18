@@ -128,7 +128,7 @@ Write-Info "Step 1/5: Core pipeline files"
     '.github/architecture-guardrails.md'
     '.github/pipeline-state.json'
     '.github/pipeline-state.schema.json'
-    '.github/pipeline-viz.html'
+    'dashboards/pipeline-viz.html'
     'docs/skill-pipeline-instructions.md'
 ) | ForEach-Object {
     Copy-SkillFile $_ (Join-Path $Target $_)
@@ -332,7 +332,7 @@ if (-not $DryRun) {
     Write-Host "  Next steps:"
     Write-Host "    1. Fill in product/ (mission, roadmap, tech-stack, constraints)"
     Write-Host "    2. Fill in .github/standards/ domain stubs with your rules"
-    Write-Host "    3. Open pipeline-viz.html in browser (Live Server or file://)"
+    Write-Host "    3. Open dashboards/pipeline-viz.html in browser (Live Server or file://)"
     Write-Host "    4. Run /workflow to start your first feature"
     Write-Host ""
 }

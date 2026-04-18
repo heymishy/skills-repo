@@ -1,15 +1,15 @@
 # governance-gates.yml — Canonical governance gate definitions
 #
 # SINGLE SOURCE OF TRUTH for all governance gates in this pipeline.
-# Both pipeline-viz.html (GOVERNANCE_GATES constant) and individual skill files
+# Both dashboards/pipeline-viz.html (GOVERNANCE_GATES constant) and individual skill files
 # are derived from / must stay consistent with this file.
 #
 # Validation: .github/scripts/check-governance-sync.js runs on pre-commit and
-# verifies that GOVERNANCE_GATES in pipeline-viz.html matches this file.
+# verifies that GOVERNANCE_GATES in dashboards/pipeline-viz.html matches this file.
 #
 # When adding or removing a gate:
 #   1. Update this file
-#   2. Update GOVERNANCE_GATES in pipeline-viz.html in the SAME commit
+#   2. Update GOVERNANCE_GATES in dashboards/pipeline-viz.html in the SAME commit
 #   3. Update the corresponding skill's SKILL.md to document the evidence fields
 #   4. Add any new evidence fields to pipeline-state.schema.json
 #

@@ -25,7 +25,7 @@ git fetch $Remote
 
 # ── 3. Show diff summary before applying ─────────────────────────────────────
 $changed = git diff --name-only HEAD "$Remote/$Branch" -- `
-  .github/skills/ .github/templates/ .github/pipeline-viz.html `
+  .github/skills/ .github/templates/ dashboards/pipeline-viz.html `
   .github/copilot-instructions.md .github/pipeline-state.schema.json `
   .github/architecture-guardrails.md .github/pull_request_template.md `
   .github/standards/ .github/workflows/ `
@@ -47,7 +47,7 @@ if ($DryRun) {
 # ── 4. Apply ──────────────────────────────────────────────────────────────────
 Write-Host "`nApplying..." -ForegroundColor Cyan
 git checkout "$Remote/$Branch" -- `
-  .github/skills/ .github/templates/ .github/pipeline-viz.html `
+  .github/skills/ .github/templates/ dashboards/pipeline-viz.html `
   .github/copilot-instructions.md .github/pipeline-state.schema.json `
   .github/architecture-guardrails.md .github/pull_request_template.md `
   .github/standards/ .github/workflows/ `
