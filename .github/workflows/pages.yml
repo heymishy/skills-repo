@@ -9,10 +9,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents:      read
-  pages:         write
-  id-token:      write
-  administration: write
+  contents: read
+  pages:    write
+  id-token: write
 
 concurrency:
   group: pages
@@ -32,6 +31,9 @@ jobs:
         uses: actions/configure-pages@v5
         with:
           enablement: true
+
+      - name: Inject pipeline-state.json for Pages
+        run: cp .github/pipeline-state.json dashboards/pipeline-state.json
 
       - name: Upload dashboards/ as Pages artefact
         uses: actions/upload-pages-artifact@v3
