@@ -1,0 +1,83 @@
+{
+  "version": "1",
+  "updated": "2026-04-18",
+  "features": [
+    {
+      "slug": "completed-feature-1",
+      "name": "Completed Feature 1",
+      "track": "library",
+      "stage": "definition-of-done",
+      "health": "green",
+      "updatedAt": "2026-04-10",
+      "benefitMetrics": { "m1": { "signal": "on-track" } },
+      "epics": [
+        {
+          "slug": "epic-a",
+          "name": "Epic A",
+          "status": "complete",
+          "stories": ["s1", "s2"]
+        }
+      ],
+      "stories": [
+        { "slug": "s1", "name": "Story 1", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" },
+        { "slug": "s2", "name": "Story 2", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" }
+      ]
+    },
+    {
+      "slug": "completed-feature-2",
+      "name": "Completed Feature 2",
+      "track": "short",
+      "stage": "definition-of-done",
+      "health": "green",
+      "updatedAt": "2026-04-11",
+      "epics": [],
+      "stories": [
+        { "slug": "s3", "name": "Story 3", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" }
+      ]
+    },
+    {
+      "slug": "active-feature-3",
+      "name": "Active Feature 3 (mixed stories)",
+      "track": "library",
+      "stage": "definition",
+      "health": "green",
+      "updatedAt": "2026-04-18",
+      "epics": [
+        {
+          "slug": "epic-b",
+          "name": "Epic B",
+          "status": "in-progress",
+          "stories": ["s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "s12", "s13", "s14", "s15", "s16", "s17", "s18", "s19"]
+        }
+      ],
+      "stories": [
+        { "slug": "s4", "name": "Story 4", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" },
+        { "slug": "s5", "name": "Story 5", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" },
+        { "slug": "s6", "name": "Story 6", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" },
+        { "slug": "s7", "name": "Story 7", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" },
+        { "slug": "s8", "name": "Story 8", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" },
+        { "slug": "s9", "name": "Story 9", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" },
+        { "slug": "s10", "name": "Story 10", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" },
+        { "slug": "s11", "name": "Story 11", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" },
+        { "slug": "s12", "name": "Story 12", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" },
+        { "slug": "s13", "name": "Story 13", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" },
+        { "slug": "s14", "name": "Story 14", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" },
+        { "slug": "s15", "name": "Story 15", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" },
+        { "slug": "s16", "name": "Story 16", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" },
+        { "slug": "s17", "name": "Story 17", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" },
+        { "slug": "s18", "name": "Story 18", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" },
+        { "slug": "s19", "name": "Story 19", "stage": "definition-of-done", "health": "green", "dodStatus": "complete", "prStatus": "merged" },
+        { "slug": "s20", "name": "Story 20 (in-flight)", "stage": "definition-of-ready", "health": "green" },
+        { "slug": "s21", "name": "Story 21 (in-flight)", "stage": "definition-of-ready", "health": "green" },
+        { "slug": "s22", "name": "Story 22 (in-flight)", "stage": "definition-of-ready", "health": "red", "blocker": "D8" },
+        { "slug": "s23", "name": "Story 23 (in-flight)", "stage": "review", "health": "green" },
+        { "slug": "s24", "name": "Story 24 (in-flight)", "stage": "test-plan", "health": "green" },
+        { "slug": "s25", "name": "Story 25 (in-flight)", "stage": "definition-of-ready", "health": "green" },
+        { "slug": "s26", "name": "Story 26 (in-flight)", "stage": "definition-of-ready", "health": "green" },
+        { "slug": "s27", "name": "Story 27 (in-flight)", "stage": "definition-of-ready", "health": "green" },
+        { "slug": "s28", "name": "Story 28 (in-flight)", "stage": "definition-of-ready", "health": "green" },
+        { "slug": "s29", "name": "Story 29 (in-flight)", "stage": "definition-of-ready", "health": "green" }
+      ]
+    }
+  ]
+}
