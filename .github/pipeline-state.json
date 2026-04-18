@@ -8,19 +8,104 @@
       "name": "CLI approach for AI-assisted workflow",
       "title": "CLI approach for AI-assisted workflow",
       "track": "library",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "discoveryStatus": "approved",
+      "benefitMetricStatus": "complete",
+      "metaBenefitFlag": true,
       "updatedAt": "2026-04-18",
       "approvedBy": "craigfo",
       "approvedAt": "2026-04-18",
       "decisionsArtefact": "artefacts/2026-04-18-cli-approach/decisions.md",
+      "benefitMetricArtefact": "artefacts/2026-04-18-cli-approach/benefit-metric.md",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "guardrails": [],
       "discoveryArtefact": "artefacts/2026-04-18-cli-approach/discovery.md",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Skill-as-contract (P1)",
+          "target": "100% hash-classification-correct and output-shape-valid on MVP harness; zero false positives/negatives",
+          "baseline": "0% (CLI does not exist; skill-fidelity is instructional only pre-CLI)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Active context injection (P2)",
+          "target": "100% of Mode 1 invocations produce an envelope before handoff; 100% traces record assembled context",
+          "baseline": "0% (no envelope boundary exists in chat-native progressive skill disclosure)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Per-invocation trace anchoring (P3)",
+          "target": "100% trace-emission, 100% gate-reverification, 100% hash-matching-across-runs",
+          "baseline": "0% (no CLI-emitted trace entries exist in platform traces today)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m4",
+          "name": "Interaction mediation (P4)",
+          "target": "100% of per-exchange-prescribed-skill invocations show exactly one exchange in trace",
+          "baseline": "0% (winging-it failure mode documented in phase4-5 §Problem 2; batched artefacts pass schema today)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m5",
+          "name": "Non-fork adoption",
+          "target": "100% of MVP consumers adopt without forking the skills repository",
+          "baseline": "0% (forking is the observed pre-CLI adoption pattern per phase4-5 §1a)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "mm1",
+          "name": "Spike B2 viability verdict (meta)",
+          "target": "PROCEED or REDESIGN verdict from Spike B2 published in phase4-5 mechanism-selection ADR",
+          "baseline": "Not established — Spike B2 not yet run",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "mm2",
+          "name": "Workflow portability across runtimes (meta)",
+          "target": "100% of non-linear-navigation scenarios execute as declared; >=1 hash-equivalent CLI/chat-native trace pair demonstrated",
+          "baseline": "0% (no second runtime consumes workflow declarations today)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "mm3",
+          "name": "Coreutils sharpness discipline (meta)",
+          "target": "100% of CLI commands audited still sharp (no reasoning accretion) at 6-month review",
+          "baseline": "100% at MVP launch (9 deterministic commands)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
       "epics": []
     },
     {
