@@ -60,6 +60,7 @@ Before starting, confirm you have:
 | VS Code with GitHub Copilot extension | Agent mode runs in VS Code, not the browser |
 | Access to this skills repo | Read access minimum; your squad repo needs to reference it |
 | Your squad repo bootstrapped | See [Bootstrap your repo](#step-2-bootstrap-your-repo) below |
+| Platform infrastructure repo (for gate structural independence) | Create an equivalent of [`heymishy/skills-framework-infra`](https://github.com/heymishy/skills-framework-infra) in your org. Delivery agent CI identities must have read-only access. Required for p3.3+ gate separation — see HANDOFF.md Section 6.8a. |
 
 ---
 
