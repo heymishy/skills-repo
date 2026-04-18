@@ -1246,3 +1246,23 @@ This is the enterprise-standard maker/checker pattern: the gate that signs off a
 **Items deferred to operator confirmation:** Item 7 (docs/conflict-resolution-guide.md) and Item 8 (second-session verification prompt) remain pending.
 
 **Key learning this run:** The artefact-first rule (copilot-instructions.md Coding Standards) applies to SKILL.md modifications as much as to src/ or governance check scripts. The rule must be checked before applying any improvement write-back. Failure to do so would itself have been a governance violation.
+
+---
+
+## D10 — pipeline-state.json stage values must match schema enum (2nd CI-only trace failure this session)
+
+**Date:** 2026-04-18
+**Detected at:** CI on PR #171 (trace validation hard-fail: `schema_valid` check)
+**Severity:** Medium (blocks PR merge)
+
+**What happened:** After implementing psa.1 archive script, the pipeline-state.json was updated with `"stage": "implementation"` for the PSA feature and psa.1 story. This value is not in the `pipeline-state.schema.json` stage enum. The `npm test` suite passed locally (no test validates the state against the schema), but CI runs `bash scripts/validate-trace.sh --ci` which includes `jsonschema` validation via Python. CI failed with: `'implementation' is not one of [...]`.
+
+**Root cause:** The agent used an intuitive but invalid stage name. The valid inner-loop stages are: `branch-setup`, `implementation-plan`, `subagent-execution`, `implementation-review`, `verify-completion`, `branch-complete`. There is no generic `implementation` stage — the pipeline uses granular inner-loop phase names.
+
+**Pattern:** This is the same class of failure as D9 — a CI check (`validate-trace.sh`) catches issues that the local `npm test` suite doesn't test for. D9 was missing `discovery.md`; D10 is an invalid enum value in the schema.
+
+**Fix applied:** Changed `"stage": "implementation"` to `"stage": "subagent-execution"` for both the PSA feature and the psa.1 epic story.
+
+**Preventive rule:** When setting `stage` values in pipeline-state.json, always reference the enum in `pipeline-state.schema.json` (search for `"stage":` with `"enum":`). Never use a stage name from memory — copy from the schema. Valid inner-loop stages: `branch-setup` → `implementation-plan` → `subagent-execution` → `implementation-review` → `verify-completion` → `branch-complete`.
+
+**Systemic fix candidate:** Add a schema validation step to the local `npm test` chain so this class of error is caught before push. This would eliminate the D9/D10 pattern entirely.
