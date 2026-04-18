@@ -9,7 +9,7 @@ const os   = require('os');
 const { execFileSync } = require('child_process');
 
 const root   = path.join(__dirname, '..', '..');
-const target = path.join(root, '.github', 'pipeline-viz.html');
+const target = path.join(root, 'dashboards', 'pipeline-viz.html');
 
 if (!fs.existsSync(target)) {
   console.log('[viz-check] pipeline-viz.html not found — skipping.');

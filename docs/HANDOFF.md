@@ -82,7 +82,7 @@ All ADRs are maintained in the live guardrails file: [`.github/architecture-guar
 
 ### ADR-001 — Single-file viz, no build step (Active, 2026-03-22)
 
-`pipeline-viz.html` is a self-contained single file. No build step, no runtime npm dependencies, no external CDN. Opens directly in any browser from a local clone. Revisit trigger: file grows beyond ~3,000 lines and maintainability is significantly impacted.
+`dashboards/pipeline-viz.html` is a self-contained single file. No build step, no runtime npm dependencies, no external CDN. Opens directly in any browser from a local clone. Revisit trigger: file grows beyond ~3,000 lines and maintainability is significantly impacted.
 
 ### ADR-002 — Gates must use evidence fields, not stage-proxy (Active, 2026-03-22)
 
