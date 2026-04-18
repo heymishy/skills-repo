@@ -2,9 +2,9 @@
 
 **Document type:** Enterprise handoff bundle
 **Prepared:** 2026-04-12
-**Updated:** 2026-04-17 (Phase 3 governance hardening in progress — 11 stories DoD-complete, T3M1 at 7/8 Y, /improvement run complete — see Sections 6.8–6.13 and Phase 3 story table in Section 7)
+**Updated:** 2026-04-18 (Phase 3 governance hardening in progress — 22 stories DoD-complete, T3M1 at 7/8 Y, /improvement run complete — see Sections 6.8–6.13 and Phase 3 story table in Section 7. ASSUMPTION-01 confirmed: `skills-framework-infra` repo created 2026-04-18.)
 **Prepared by:** Platform maintainer (Hamish)
-**Status:** Phase 2 complete, Phase 3 in progress — 11 of 18 stories DoD-complete as of 2026-04-17
+**Status:** Phase 2 complete, Phase 3 in progress — 22 of 28 stories DoD-complete as of 2026-04-18. ASSUMPTION-01 unblocked.
 
 ---
 
@@ -256,6 +256,7 @@ Domain-tier extensions (squad-specific overrides) are declared in the squad's `c
 
 | Item | Path |
 |------|------|
+| Platform infrastructure repo | [`heymishy/skills-framework-infra`](https://github.com/heymishy/skills-framework-infra) — gate scripts, eval suite, governance enforcement. Read-only for delivery agents. |
 | Pipeline state (live) | [`.github/pipeline-state.json`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/pipeline-state.json) |
 | Architecture guardrails + ADRs | [`.github/architecture-guardrails.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/architecture-guardrails.md) |
 | Context configuration | [`.github/context.yml`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/context.yml) |
@@ -367,6 +368,18 @@ Two new sections added to `README.md` in this Phase 3 init:
 Red item: **M5** — non-engineer approval requires a live configured environment and a real approver. Requires scoping effort before enterprise pilot can claim this outcome.
 
 ---
+
+### 6.8a Platform infrastructure repository created (2026-04-18)
+
+**ASSUMPTION-01 confirmed.** The `skills-framework-infra` repository has been created at [`heymishy/skills-framework-infra`](https://github.com/heymishy/skills-framework-infra). This unblocks the p3.3 → p3.4 → p3.12 story chain.
+
+**Name mapping:** The Phase 3 story artefacts (p3.3, p3.4, p3.12) reference `platform-infrastructure` as the repository name. The actual repository is `skills-framework-infra`. When implementing these stories, substitute `skills-framework-infra` wherever the artefacts say `platform-infrastructure`.
+
+**Purpose:** Houses `run-assurance-gate.js` and all scripts it invokes, separated from the delivery repository so that delivery agents cannot modify the gate that evaluates their own work. Also houses `platform/suite.json` (eval regression suite) once p3.4 completes.
+
+**Enterprise adopter action:** Any team adopting the skills framework must create an equivalent infrastructure repository in their own Git host. The repository must be configured with read-only access for delivery agent CI identities — no push, no create-branch, no delete. On GitHub, this is a repository visibility + collaborator permission setting. On Bitbucket, use repository permissions to restrict the CI service account to read access only.
+
+**Phase 4 note:** The ref doc's Spike A (governance logic extractability and interface definition) may subsume or extend this repository as the governance package extraction progresses. The `skills-framework-infra` repo is the Phase 3 structural control; Phase 4 may evolve it into a broader governance package.
 
 ### 6.8 Phase 3 E1 batch: governance hardening stories delivered (2026-04-14 → 2026-04-16)
 

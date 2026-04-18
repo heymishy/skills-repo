@@ -103,10 +103,10 @@
             "p3.11": "https://github.com/heymishy/skills-repo/issues/128"
         },
         "blocked": {
-            "p3.3": "ASSUMPTION-01 not confirmed — confirm feasibility of platform-infrastructure repository to unblock",
+            "p3.3": "UNBLOCKED — ASSUMPTION-01 confirmed 2026-04-18. skills-framework-infra repo created. Ready for DoR re-run and dispatch.",
             "p3.4": "p3.3 DoD-complete required",
             "p3.12": "p3.4 DoD-complete required",
-            "p3.13": "p3.7 DoD-complete AND p3.2a DoD-complete both required"
+            "p3.13": "p3.7 DoD-complete AND p3.2a DoD-complete both required — BOTH SATISFIED, ready for dispatch"
         },
         "outerLoopComplete": true,
         "outerLoopPR": "https://github.com/heymishy/skills-repo/pull/121"
@@ -117,21 +117,34 @@
             "branch": "craigfo:feature/productise-cli-and-sidecar",
             "description": "External contributor (craigfo): CLI MVP + engine-consolidation proposal. DO NOT MERGE as-is — see pendingActions.",
             "status": "open — requires architectural decision before import"
+        },
+        {
+            "pr": 155,
+            "branch": "craigfo:feature/cli-approach-discovery",
+            "description": "External contributor (craigfo): CLI approach discovery + reference material (012, 013, discovery.md). Reframes CLI as one enforcement mechanism in multi-mechanism architecture.",
+            "status": "open — operator review response drafted, awaiting post on PR"
         }
     ],
-    "recentlyMergedPRs": [121, 130, 131, 138],
+    "recentlyMergedPRs": [121, 130, 131, 138, 159, 160],
+    "githubPages": {
+        "status": "live",
+        "url": "https://heymishy.github.io/skills-repo/",
+        "deploysFrom": "dashboards/",
+        "workflowFile": ".github/workflows/pages.yml",
+        "setupPRs": [159, 160]
+    },
     "checkpoint": {
-        "writtenAt": "2026-04-19",
-        "contextAtWrite": "p3.2b, p3.5, p3.6, p3.7, p3.8, p3.10, p3.11 all implemented and passing: all tests green (npm test). Branch feature/p3-remaining-stories created. Draft PR pending. Phase 3 Tier 1 stories all DoD-complete.",
-        "resumeInstruction": "All Phase 3 Tier 1 stories are implemented and tests pass. Draft PR for feature/p3-remaining-stories is open — review and merge, then run DoD for p3.2b, p3.5, p3.6, p3.7, p3.8, p3.10, p3.11 individually. Then review Phase 4 discovery artefact.",
+        "writtenAt": "2026-04-18",
+        "contextAtWrite": "Session covered two items: (1) GitHub Pages deployment — now live, deploys dashboards/ directory. (2) Comprehensive review of Craig's PR #155 (CLI approach discovery) against ref-skills-platform-phase4-5.md, product docs, pipeline-state.json, and Phase 4 backlog. Operator drafted summary and detailed response to Craig. Detailed response maps Craig's 12 open questions (section 16) against the spike programme — 10 of 12 land in Spikes A/B2/C/D. Key architectural divergence identified: Craig's 013 positions CLI as the unified execution model (modes 1/2/3), ref doc positions CLI as one mechanism in a shared-core-with-adapters architecture. Spike A (governance logic extractability) resolves this with evidence.",
+        "resumeInstruction": "Operator has drafted response to PR #155 (summary + detailed follow-up) — needs to post it on the PR. Phase 3 inner loop status unchanged (22 stories DoD-complete, 4 blocked on ASSUMPTION-01). Phase 4 ref doc (ref-skills-platform-phase4-5.md) is committed and ready for outer loop run. Next actions: post PR #155 response, then continue Phase 3 closing or begin Phase 4 outer loop.",
         "pendingActions": [
-            "Review and merge draft PR for feature/p3-remaining-stories (p3.2b, p3.5, p3.6, p3.7, p3.8, p3.10, p3.11).",
-            "Run /definition-of-done for each of p3.2b, p3.5, p3.6, p3.7, p3.8, p3.10, p3.11 after PR merges.",
+            "Post drafted response (summary + detailed follow-up) on PR #155.",
             "Confirm ASSUMPTION-01 feasibility in writing to unblock p3.3 dispatch.",
-            "PR #98 (craigfo): decide whether TypeScript is accepted for CLI-tier code.",
-            "Review Phase 4 discovery artefact once Phase 3 PR is merged.",
+            "PR #98 (craigfo): decide whether TypeScript is accepted for CLI-tier code — may be informed by Spike A (governance logic extractability) outcome.",
             "p3.3 unblocks p3.4 unblocks p3.12; p3.7 DoD-complete + p3.2a DoD-complete unblocks p3.13 — dispatch in sequence after each merges.",
-            "M5 at-risk: full target requires Phase 4 live delivery run — create story from workspace/phase4-backlog-agent-live-delivery-run.md after ASSUMPTION-04 operationally confirmed."
+            "M5 at-risk: full target requires Phase 4 live delivery run — create story from workspace/phase4-backlog-agent-live-delivery-run.md after ASSUMPTION-04 operationally confirmed.",
+            "Begin Phase 4 outer loop when ready — ref doc is the input artefact.",
+            "Strip pipeline-state.json feature block from PR #155 if it lands — pipeline-state.json is per-repo, not for external contributor PRs."
         ]
     }
 }
