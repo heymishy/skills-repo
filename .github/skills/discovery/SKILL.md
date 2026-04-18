@@ -319,7 +319,7 @@ If the operator replies `skip`, write `"e1": null` to `estimate` in `workspace/s
 
 When the discovery artefact is saved and approved, update `.github/pipeline-state.json` in the **project repository**:
 
-- If the feature does not exist in `features[]`: add a new entry with `stage: "discovery"`, `health: "green"`, `updatedAt: [now]`
+- If the feature does not exist in `features[]`: add a new entry with `stage: "discovery"`, `track: "[short|standard|programme-workstream|library]"`, `health: "green"`, `updatedAt: [now]`. Valid `track` values (from `pipeline-state.schema.json`): `"short"` (bugs, small fixes, bounded refactors), `"standard"` (normal feature pipeline), `"programme-workstream"` (multi-team programme), `"library"` (reusable library/package). Default to `"standard"` unless the operator explicitly routed via short-track or programme.
 - If it exists: set `stage: "discovery"`, `health: "green"`, `updatedAt: [now]`
 **Compliance context bridge:** Read `.github/context.yml` and copy these fields to the feature entry:
 - `regulated: [value of meta.regulated]` (boolean)

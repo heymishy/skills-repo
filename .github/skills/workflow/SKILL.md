@@ -448,7 +448,7 @@ For each feature in `pipeline-state.json`:
      - Check which artefacts are present (`discovery.md`, `benefit-metric.md`, `stories/`, `test-plans/`, `dor/`, `plans/`, `dod/`)
      - Infer the most advanced stage from the deepest artefact present
      - Extract the feature name from the `# [Title]` line of `discovery.md` if available, otherwise use the slug
-     - Add a new `features[]` entry: `{ "slug": "[slug]", "name": "[name]", "stage": "[inferred]", "health": "green", "updatedAt": "[now]", "epics": [] }`
+     - Add a new `features[]` entry: `{ "slug": "[slug]", "name": "[name]", "track": "[inferred — short|standard|programme-workstream|library]", "stage": "[inferred]", "health": "green", "updatedAt": "[now]", "epics": [] }`. Infer `track` from context: `"short"` if only story/test-plan/dor artefacts exist (no benefit-metric or epics), `"standard"` if full pipeline artefacts exist, `"programme-workstream"` if a programme artefact references it, `"library"` if the feature produces a reusable package. Default to `"standard"` when uncertain. Valid values are defined in `pipeline-state.schema.json`.
      - Note in reconciliation output: "[slug] — new feature detected, added at stage [stage]"
 
 4. **Do not overwrite human-set fields without evidence:**

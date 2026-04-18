@@ -1266,3 +1266,21 @@ This is the enterprise-standard maker/checker pattern: the gate that signs off a
 **Preventive rule:** When setting `stage` values in pipeline-state.json, always reference the enum in `pipeline-state.schema.json` (search for `"stage":` with `"enum":`). Never use a stage name from memory — copy from the schema. Valid inner-loop stages: `branch-setup` → `implementation-plan` → `subagent-execution` → `implementation-review` → `verify-completion` → `branch-complete`.
 
 **Systemic fix candidate:** Add a schema validation step to the local `npm test` chain so this class of error is caught before push. This would eliminate the D9/D10 pattern entirely.
+
+---
+
+## Phase 3 dogfood finding D12 — Invalid `track` enum value in pipeline-state.json
+
+### Observed — 2026-04-18
+
+**Circumstance:** CI on PR #172 (atr.1 audit trace report) failed trace validation. The ATR feature entry in `pipeline-state.json` had `"track": "short-track"`. The schema at `.github/pipeline-state.schema.json` line 69 defines `"track": { "type": "string", "enum": ["short", "standard", "programme-workstream", "library"] }`. `"short-track"` is not a valid value.
+
+**Root cause:** No skill writes the `track` field when creating a new `features[]` entry in pipeline-state.json. The `/discovery` state update section instructs the agent to create entries with `stage`, `health`, and `updatedAt` — but not `track`. The `/workflow` reconciliation template similarly omits `track`. Because `track` is `required` in the schema but never specified in any skill instruction, the agent guesses intuitively — and `"short-track"` is a plausible but invalid guess for a short-track feature.
+
+**Pattern:** This is the third CI trace validation failure in one session caused by the agent using intuitive but schema-invalid enum values (D9 = missing discovery.md, D10 = invalid `stage` enum, D12 = invalid `track` enum). The common root cause is that skills don't specify valid enum values when instructing agents to write schema-constrained fields.
+
+**Fix applied:** Changed `"track": "short-track"` to `"track": "short"` in pipeline-state.json. Updated `/discovery` and `/workflow` SKILL.md files to include the `track` field with valid enum values in their state update instructions.
+
+**Preventive rule:** When setting `track` in pipeline-state.json, use one of: `"short"`, `"standard"`, `"programme-workstream"`, `"library"`. Never use a compound or hyphenated variant — copy from the schema enum. Selection guide: `short` = bugs, small fixes, bounded refactors; `standard` = normal feature pipeline; `programme-workstream` = multi-team programme; `library` = reusable library/package.
+
+**Systemic fix (same as D10):** Add schema validation to local `npm test` chain. This would catch all enum mismatches before push.
