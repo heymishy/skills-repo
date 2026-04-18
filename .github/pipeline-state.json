@@ -2231,7 +2231,7 @@
         {
           "slug": "p3.3",
           "name": "Gate structural independence",
-          "stage": "definition-of-done",
+          "stage": "definition-of-ready",
           "assumption": "ASSUMPTION-01",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -2245,8 +2245,9 @@
           "dispatchedAt": "2026-04-18T00:00:00Z",
           "dispatchTarget": "github-agent",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/166",
-          "prStatus": "merged",
-          "health": "green",
+          "prStatus": "merged-empty",
+          "blocker": "D8: PR #166 merged with 0 file changes — agent produced empty PR. Requires re-dispatch.",
+          "health": "red",
           "updatedAt": "2026-04-18",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.3-gate-structural-independence-review-1.md",
           "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.3-gate-structural-independence.md"
@@ -2397,7 +2398,7 @@
         {
           "slug": "p3.13",
           "name": "Compliance monitoring report",
-          "stage": "definition-of-done",
+          "stage": "definition-of-ready",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlanStatus": "complete",
@@ -2410,8 +2411,9 @@
           "dispatchedAt": "2026-04-18T00:00:00Z",
           "dispatchTarget": "github-agent",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/165",
-          "prStatus": "merged",
-          "health": "green",
+          "prStatus": "merged-empty",
+          "blocker": "D8: PR #165 merged with 0 file changes — agent produced empty PR. Requires re-dispatch.",
+          "health": "red",
           "updatedAt": "2026-04-18",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.13-compliance-monitoring-report-review-1.md",
           "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.13-compliance-monitoring-report.md"
