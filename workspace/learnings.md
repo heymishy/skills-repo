@@ -705,6 +705,56 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
     fetch-depth: 0
 ```
 
+---
+
+## Pipeline gap D8 — `--target github-agent` rich issue body still produces empty PRs from GitHub Copilot coding agent (2nd occurrence)
+
+### Observed — 2026-04-18 (p3.3 #163/PR #166, p3.13 #164/PR #165)
+
+**Circumstance:** Two stories (p3.3 and p3.13) were dispatched via `/issue-dispatch` using `--target github-agent` — the structural fix introduced by D7. Both issue bodies were comprehensive: full AC lists, implementation task breakdowns, file touchpoints (CREATE/MODIFY/EXTERNAL), non-negotiable rules, and artefact reference tables. Both issues were assigned to the GitHub Copilot coding agent. Both PRs (#165, #166) were merged. Both had **0 additions, 0 deletions, 0 changed files**.
+
+**This is the second occurrence.** D7 (spc.1–spc.5) was attributed to `--target vscode` minimal issue bodies giving the agent insufficient context. The fix was to switch the default to `--target github-agent` with rich inlined bodies. That fix does not address this occurrence — the bodies were rich and complete. The agent still produced empty PRs.
+
+**Why this happened — analysis of likely causes:**
+
+1. **Agent plan-without-execute pattern.** The GitHub Copilot coding agent follows a two-phase pattern: (a) read the issue, write a plan comment, create a branch; (b) execute the plan by making code changes. In both D7 and D8, the agent completed phase (a) but not phase (b). PR #166's description explicitly ticked all 5 ACs and listed implementation details — the agent understood the spec. It just didn't write any code. This suggests the agent's execution phase is either timing out, hitting a context limit, or encountering a blocker it doesn't surface.
+
+2. **Repo complexity / orientation failure.** The skills-repo has ~700+ files across deeply nested artefact directories, dashboard files, standards, and governance scripts. The agent's `.github/instructions/agent-orientation.instructions.md` directs it to read `workspace/state.json`, DoR artefacts, and run `npm test` + `validate-trace.sh` before changing anything. If the agent spends its budget on orientation reads (state.json is large, pipeline-state.json is 2400+ lines), it may exhaust its execution budget before making changes.
+
+3. **External repo dependency (p3.3 specifically).** p3.3 required creating files in `heymishy/skills-framework-infra` (an external repo) AND modifying the delivery repo. The agent may not have permissions or capability to push to a second repository, causing it to stall silently.
+
+4. **No test failure to drive TDD.** The issue bodies described what tests to write, but the tests didn't exist yet on master. The agent couldn't run a red-green cycle because there was nothing red to start from. For stories that require creating new test files and new source files from scratch, the agent may need pre-committed failing test stubs.
+
+5. **Operator merged without reviewing file changes.** The empty PRs were merged because the PR descriptions looked complete (all ACs ticked, well-formatted body). The merge gate (human review) didn't catch that 0 files were changed. This is a process gap independent of the agent.
+
+**Resolution options for future dispatch — by agent runtime:**
+
+| Runtime | Strengths | Weaknesses for this pattern | When to use |
+|---------|-----------|---------------------------|-------------|
+| **GitHub Copilot coding agent** (current) | Autonomous, no operator time, creates own PR | Empty PR pattern (D7, D8), no way to inspect mid-execution, black box when it stalls, cannot push to external repos | Simple single-repo stories with clear file paths; stories where failing tests already exist on master |
+| **VS Code Copilot agent** (this session pattern) | Full workspace context, operator can monitor and intervene, can read all artefact files, can run tests interactively | Requires operator focus time, not fully autonomous, single-threaded (one story at a time) | Complex stories, external repo dependencies, stories requiring orientation across many files, stories where the agent needs mid-execution guidance |
+| **Claude Code** (CLI agent) | Deep context window, strong multi-file editing, can be given explicit tool access, good at TDD cycles, can be pointed at specific repos | Requires local setup / API key, no native GitHub PR integration (manual PR step), operator must monitor terminal | Stories requiring deep codebase understanding, large refactors, stories touching 5+ files |
+| **Cursor** (AI IDE) | Visual file context, inline diff review, multi-model support, composer mode for multi-file changes | Requires operator presence in Cursor IDE, not automatable for batch dispatch, no headless mode | Interactive implementation sessions, stories where the operator wants to pair with the agent, UI-heavy or layout work |
+
+**Recommended dispatch strategy going forward:**
+
+1. **Pre-dispatch validation gate:** Before dispatching to the GitHub agent, check: (a) Do failing tests already exist on master? (b) Is the story single-repo only? (c) Are ALL target file paths within the delivery repo? If any answer is no, dispatch to VS Code agent or Claude Code instead.
+
+2. **Post-merge empty-PR check:** Add a governance check (or manual checklist item) that verifies `changedFiles > 0` before merging any agent PR. Could be a GitHub Actions check: `gh pr view $PR --json changedFiles --jq '.changedFiles'` must be > 0.
+
+3. **Pre-committed failing test stubs:** For stories dispatched to the GitHub agent, commit the test file stubs (with `test.todo()` or `test.skip()`) to master BEFORE assigning the issue. This gives the agent a red starting point.
+
+4. **Tiered dispatch model:**
+   - **Tier 1 (GitHub agent):** Single-repo, tests pre-committed, clear file CRUD, no external dependencies
+   - **Tier 2 (VS Code / Claude Code):** Multi-repo, complex orientation, no pre-existing tests, external dependencies
+   - **Tier 3 (Operator direct):** Governance infrastructure changes, SKILL.md modifications, cross-cutting refactors
+
+**Actions:**
+- [ ] Add empty-PR merge guard to assurance gate workflow or PR template checklist
+- [ ] Add pre-dispatch validation checklist to `/issue-dispatch` SKILL.md
+- [ ] Re-dispatch p3.3 and p3.13 via VS Code agent (operator session) or Claude Code
+- [ ] Consider pre-committing failing test stubs for remaining stories dispatched to GitHub agent (p3.4, p3.12)
+
 **Pattern:** Any workflow that must push commits back to the PR branch must include `ref: ${{ github.head_ref }}` + `fetch-depth: 0` on checkout. Without these, the runner is in detached HEAD at the merge commit — commits succeed locally but pushes will be rejected whenever the branch has advanced since the workflow started.
 
 ---
