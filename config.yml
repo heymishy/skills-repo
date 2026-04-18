@@ -63,7 +63,7 @@ skills:
 extras:
   standards_directory: true       # .github/standards/ with index.yml
   product_directory: true         # product/ (repo root) with starter context files
-  pipeline_visualiser: true       # .github/pipeline-viz.html
+  pipeline_visualiser: true       # dashboards/pipeline-viz.html
   pipeline_state_sample: true     # .github/pipeline-state.sample.json
   pr_template: true               # .github/pull_request_template.md
   architecture_guardrails: true   # .github/architecture-guardrails.md

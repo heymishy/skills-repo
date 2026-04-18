@@ -1,0 +1,2753 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-density="comfortable" data-layout="swimlane">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Repo — Skills Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="md-renderer.js"></script>
+<script src="artefact-content.js"></script>
+<script src="extra-data.js"></script>
+<script src="pipeline-adapter.js"></script>
+<script src="artefact-fetcher.js"></script>
+<link rel="stylesheet" href="extra-views.css">
+<style>
+  :root {
+    --paper: oklch(0.985 0.004 85);
+    --paper-2: oklch(0.965 0.006 85);
+    --paper-3: oklch(0.945 0.008 85);
+    --paper-4: oklch(0.925 0.010 85);
+    --rule: oklch(0.88 0.008 85);
+    --rule-soft: oklch(0.92 0.006 85);
+    --rule-strong: oklch(0.78 0.010 85);
+    --ink: oklch(0.22 0.012 270);
+    --ink-2: oklch(0.38 0.012 270);
+    --ink-3: oklch(0.55 0.010 270);
+    --ink-4: oklch(0.70 0.008 270);
+
+    --outer: oklch(0.48 0.11 250);
+    --inner: oklch(0.48 0.10 190);
+    --gate:  oklch(0.58 0.11 75);
+    --improve: oklch(0.50 0.11 300);
+    --pass: oklch(0.52 0.10 150);
+    --fail: oklch(0.55 0.14 25);
+
+    --outer-wash: oklch(0.95 0.025 250);
+    --inner-wash: oklch(0.95 0.025 190);
+    --gate-wash:  oklch(0.95 0.030 75);
+    --improve-wash: oklch(0.95 0.025 300);
+
+    --font-serif: "Source Serif 4", ui-serif, Georgia, serif;
+    --font-ui: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  html[data-theme="dark"] {
+    --paper: oklch(0.16 0.008 270);
+    --paper-2: oklch(0.20 0.010 270);
+    --paper-3: oklch(0.24 0.012 270);
+    --paper-4: oklch(0.28 0.012 270);
+    --rule: oklch(0.30 0.012 270);
+    --rule-soft: oklch(0.25 0.010 270);
+    --rule-strong: oklch(0.40 0.012 270);
+    --ink: oklch(0.94 0.006 85);
+    --ink-2: oklch(0.80 0.006 85);
+    --ink-3: oklch(0.65 0.008 85);
+    --ink-4: oklch(0.50 0.010 85);
+    --outer: oklch(0.72 0.12 250);
+    --inner: oklch(0.72 0.11 190);
+    --gate:  oklch(0.78 0.13 75);
+    --improve: oklch(0.72 0.12 300);
+    --pass: oklch(0.72 0.12 150);
+    --fail: oklch(0.72 0.15 25);
+    --outer-wash: oklch(0.26 0.045 250);
+    --inner-wash: oklch(0.26 0.040 190);
+    --gate-wash:  oklch(0.27 0.050 75);
+    --improve-wash: oklch(0.26 0.045 300);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+  body {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+  ::selection { background: var(--gate-wash); color: var(--ink); }
+
+  .app {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+  }
+
+  /* ───────── Top bar ───────── */
+  .ledger-bar {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: end;
+    gap: 28px;
+    padding: 24px 32px 14px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper);
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex; gap: 12px; align-items: center;
+  }
+  .eyebrow .sep { color: var(--ink-4); }
+  .eyebrow .live { display: inline-flex; align-items: center; gap: 6px; color: var(--pass); }
+  .eyebrow .live::before { content:""; width:6px; height:6px; border-radius:50%; background: var(--pass); }
+  .title {
+    font-family: var(--font-serif);
+    font-weight: 300;
+    font-size: 46px;
+    letter-spacing: -0.025em;
+    margin: 8px 0 0;
+    line-height: 1;
+  }
+  .title em { font-style: italic; font-weight: 400; color: var(--ink-3); }
+  .subtitle {
+    margin-top: 8px;
+    font-family: var(--font-serif);
+    font-size: 14px;
+    color: var(--ink-3);
+    max-width: 58ch;
+  }
+  .ledger-meta {
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    gap: 18px;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+  .ledger-meta dt {
+    color: var(--ink-4);
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .ledger-meta dd { margin: 0; color: var(--ink); font-weight: 500; }
+  .nav {
+    display: flex; gap: 2px; border: 1px solid var(--rule); padding: 2px; align-self: end;
+    background: var(--paper-2);
+  }
+  .nav a {
+    padding: 6px 10px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    text-decoration: none;
+    border: 1px solid transparent;
+  }
+  .nav a.active { background: var(--paper); color: var(--ink); border-color: var(--rule); }
+  .nav a:hover:not(.active) { color: var(--ink); background: var(--paper-3); }
+
+  /* ───────── Phase header strip (column header) ───────── */
+  .phase-header {
+    display: grid;
+    grid-template-columns: var(--row-left) repeat(12, minmax(86px, 1fr));
+    border-bottom: 1px solid var(--rule-strong);
+    background: var(--paper-2);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+  :root { --row-left: 280px; }
+  html[data-density="compact"] { --row-left: 240px; }
+  .phase-header .ph-corner {
+    padding: 12px 16px;
+    border-right: 1px solid var(--rule);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+  }
+  .phase-header .ph-cell {
+    padding: 10px 8px 8px;
+    border-right: 1px solid var(--rule);
+    display: flex; flex-direction: column; gap: 4px;
+    min-width: 0;
+  }
+  .phase-header .ph-cell:last-child { border-right: 0; }
+  .phase-header .ph-idx {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    color: var(--ink-4);
+  }
+  .phase-header .ph-name {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+    line-height: 1.15;
+  }
+  .phase-header .ph-loop {
+    margin-top: 3px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+  }
+  .phase-header .ph-cell[data-loop="outer"] { border-top: 2px solid var(--outer); }
+  .phase-header .ph-cell[data-loop="inner"] { border-top: 2px solid var(--inner); }
+  .phase-header .ph-cell[data-loop="gate"]  { border-top: 2px solid var(--gate); }
+  .phase-header .ph-cell[data-loop="improve"] { border-top: 2px solid var(--improve); }
+
+  /* ───────── Body layout ───────── */
+  main.body {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    min-height: 0;
+  }
+  html[data-density="compact"] main.body { grid-template-columns: 1fr 320px; }
+  main.body[data-top="outcomes"],
+  main.body[data-top="governance"],
+  main.body[data-top="guardrails"],
+  main.body[data-top="storymap"],
+  main.body[data-top="benefits"],
+  main.body[data-top="fleet"] { grid-template-columns: 1fr; }
+  .swim-col, .side-col { min-width: 0; }
+  .side-col {
+    border-left: 1px solid var(--rule-strong);
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 0;
+    background: var(--paper);
+  }
+
+  /* ───────── Swimlane rows ───────── */
+  .cycle-group { border-bottom: 1px solid var(--rule-strong); }
+  .cycle-head {
+    display: grid;
+    grid-template-columns: var(--row-left) 1fr;
+    background: var(--paper-3);
+    border-bottom: 1px solid var(--rule);
+  }
+  .cycle-head .ch-left {
+    padding: 10px 16px;
+    border-right: 1px solid var(--rule);
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  .cycle-head .ch-tag {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .cycle-head .ch-name {
+    font-family: var(--font-serif);
+    font-size: 17px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .cycle-head .ch-right {
+    padding: 10px 16px;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    flex-wrap: wrap;
+  }
+  .cycle-head .ch-right .stat { display: inline-flex; gap: 6px; align-items: baseline; }
+  .cycle-head .ch-right .stat .n { color: var(--ink); font-weight: 600; font-size: 12px; }
+  .cycle-head .ch-right .stat.ok .n { color: var(--pass); }
+  .cycle-head .ch-right .stat.bk .n { color: var(--fail); }
+  .cycle-head .ch-right .stat.flight .n { color: var(--inner); }
+  .cycle-head .ch-right .phase-ind {
+    display: flex; gap: 3px; align-items: center;
+  }
+  .cycle-head .ch-right .phase-ind .dot {
+    width: 7px; height: 7px; background: var(--ink-4);
+  }
+  .cycle-head .ch-right .phase-ind .dot.done { background: var(--pass); }
+  .cycle-head .ch-right .phase-ind .dot.cur  { background: var(--gate); width: 10px; }
+  .cycle-head .ch-right .phase-ind .dot.blk  { background: var(--fail); }
+
+  .epic-row {
+    display: grid;
+    grid-template-columns: var(--row-left) repeat(12, minmax(86px, 1fr));
+    border-bottom: 1px solid var(--rule);
+    cursor: pointer;
+    transition: background 120ms ease;
+  }
+  .epic-row:hover { background: var(--paper-2); }
+  .epic-row.selected { background: var(--paper-2); }
+  .epic-row.selected .e-left { background: var(--paper-3); }
+
+  .e-left {
+    padding: 10px 16px;
+    border-right: 1px solid var(--rule);
+    min-width: 0;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 4px;
+  }
+  .e-id {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex; gap: 8px; align-items: center;
+  }
+  .e-id .risk {
+    padding: 1px 5px; border: 1px solid var(--rule);
+    font-size: 9px; color: var(--ink-3);
+  }
+  .e-id .risk[data-r="high"] { color: var(--fail); border-color: color-mix(in oklch, var(--fail) 40%, var(--rule)); }
+  .e-id .risk[data-r="med"]  { color: var(--gate); border-color: color-mix(in oklch, var(--gate) 40%, var(--rule)); }
+  .e-id .risk[data-r="low"]  { color: var(--pass); border-color: color-mix(in oklch, var(--pass) 40%, var(--rule)); }
+
+  .e-name {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.25;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .e-foot {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-3);
+    display: flex; gap: 8px; align-items: center;
+  }
+  .e-foot .spark {
+    flex: 1;
+    height: 4px;
+    display: grid;
+    grid-auto-flow: column;
+    gap: 1px;
+    min-width: 60px;
+  }
+  .e-foot .spark > div { background: var(--paper-4); }
+  .e-foot .spark > div.d { background: var(--pass); }
+  .e-foot .spark > div.c { background: var(--inner); }
+  .e-foot .spark > div.b { background: var(--fail); }
+
+  .cell {
+    padding: 7px 6px;
+    border-right: 1px solid var(--rule);
+    min-width: 0;
+    min-height: var(--cell-h, 78px);
+    display: flex; flex-direction: column; gap: 4px;
+    position: relative;
+    background: transparent;
+  }
+  html[data-density="compact"] { --cell-h: 58px; }
+  :root { --cell-h: 78px; }
+  .cell:last-child { border-right: 0; }
+  .cell[data-loop="outer"] { background: color-mix(in oklch, var(--outer-wash) 20%, transparent); }
+  .cell[data-loop="inner"] { background: color-mix(in oklch, var(--inner-wash) 20%, transparent); }
+  .cell[data-loop="gate"]  { background: color-mix(in oklch, var(--gate-wash) 20%, transparent); }
+  .cell[data-loop="improve"] { background: color-mix(in oklch, var(--improve-wash) 20%, transparent); }
+  .cell.empty { background: transparent; }
+  .cell.has-content.outer { background: color-mix(in oklch, var(--outer-wash) 55%, transparent); }
+  .cell.has-content.inner { background: color-mix(in oklch, var(--inner-wash) 55%, transparent); }
+  .cell.has-content.gate  { background: color-mix(in oklch, var(--gate-wash) 55%, transparent); }
+  .cell.has-content.improve { background: color-mix(in oklch, var(--improve-wash) 55%, transparent); }
+
+  .story {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 5px;
+    border: 1px solid var(--rule-soft);
+    color: var(--ink-2);
+    background: var(--paper);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .story.done {
+    color: var(--pass);
+    border-color: color-mix(in oklch, var(--pass) 40%, var(--rule));
+    background: color-mix(in oklch, var(--pass) 10%, var(--paper));
+  }
+  .story.current {
+    color: var(--inner);
+    border-color: color-mix(in oklch, var(--inner) 40%, var(--rule));
+    background: color-mix(in oklch, var(--inner) 10%, var(--paper));
+    font-weight: 600;
+  }
+  .story.blocked {
+    color: var(--fail);
+    border-color: color-mix(in oklch, var(--fail) 45%, var(--rule));
+    background: color-mix(in oklch, var(--fail) 8%, var(--paper));
+    font-weight: 600;
+  }
+  .story.review {
+    color: var(--gate);
+    border-color: color-mix(in oklch, var(--gate) 45%, var(--rule));
+    background: color-mix(in oklch, var(--gate) 10%, var(--paper));
+  }
+  .story .dot-b {
+    width: 4px; height: 4px; background: var(--fail); border-radius: 50%;
+    box-shadow: 0 0 0 2px color-mix(in oklch, var(--fail) 15%, transparent);
+  }
+
+  /* current phase (cycle's active) highlight column */
+  .epic-row .cell.cur-col {
+    box-shadow: inset 0 2px 0 var(--gate), inset 0 -2px 0 var(--gate);
+  }
+
+  /* ───────── Side column (tabs + content) ───────── */
+  .side-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper-2);
+  }
+  .side-tabs button {
+    flex: 1;
+    appearance: none;
+    border: 0;
+    background: transparent;
+    padding: 12px 14px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    cursor: pointer;
+    border-right: 1px solid var(--rule);
+    border-bottom: 2px solid transparent;
+  }
+  .side-tabs button:last-child { border-right: 0; }
+  .side-tabs button.active {
+    background: var(--paper);
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
+  .side-tabs button .n {
+    display: inline-block;
+    margin-left: 6px;
+    color: var(--ink-3);
+  }
+  .side-tabs button.active .n { color: var(--ink); }
+
+  .side-body {
+    overflow-y: auto;
+    min-height: 0;
+    scrollbar-width: thin;
+  }
+  .side-body::-webkit-scrollbar { width: 6px; }
+  .side-body::-webkit-scrollbar-thumb { background: var(--rule); }
+
+  /* Artefacts table */
+  .artefact-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rule-soft);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+  }
+  .artefact-row:hover { background: var(--paper-2); }
+  .a-path { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .a-path .cy { color: var(--ink-3); }
+  .a-path .fn { color: var(--ink); font-weight: 600; }
+  .a-meta { text-align: right; color: var(--ink-3); font-size: 9.5px; letter-spacing: 0.08em; }
+  .a-meta .sha { color: var(--ink-2); margin-left: 6px; }
+  .a-meta .st {
+    display: inline-block;
+    padding: 1px 5px;
+    border: 1px solid var(--rule);
+    font-size: 8.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .a-meta .st.signed { color: var(--pass); border-color: color-mix(in oklch, var(--pass) 40%, var(--rule)); }
+  .a-meta .st.draft  { color: var(--gate); border-color: color-mix(in oklch, var(--gate) 40%, var(--rule)); }
+  .a-meta .st.stale  { color: var(--fail); border-color: color-mix(in oklch, var(--fail) 40%, var(--rule)); }
+  .a-meta .st.live   { color: var(--inner); border-color: color-mix(in oklch, var(--inner) 40%, var(--rule)); }
+
+  .artefacts-head, .blockers-head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    background: var(--paper-3);
+    position: sticky; top: 0;
+  }
+
+  /* Blockers */
+  .blocker-row {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .blocker-row:hover { background: var(--paper-2); }
+  .b-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .b-id {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--fail);
+    font-weight: 600;
+  }
+  .b-age {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .b-reason {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  .b-affect {
+    margin-top: 5px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-3);
+    display: flex; flex-wrap: wrap; gap: 5px;
+    align-items: center;
+  }
+  .b-affect .lbl { color: var(--ink-4); letter-spacing: 0.12em; text-transform: uppercase; font-size: 9px; }
+
+  /* ───────── Footer ───────── */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 10px 32px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 18px;
+    align-items: center;
+    background: var(--paper-2);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+  }
+  footer .legend {
+    display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;
+  }
+  footer .legend .item { display: inline-flex; align-items: center; gap: 6px; }
+  footer .legend .sw { width: 10px; height: 10px; border: 1px solid var(--rule); }
+  footer .legend .sw.outer { background: var(--outer-wash); border-top: 2px solid var(--outer); }
+  footer .legend .sw.inner { background: var(--inner-wash); border-top: 2px solid var(--inner); }
+  footer .legend .sw.gate  { background: var(--gate-wash);  border-top: 2px solid var(--gate); }
+  footer .legend .sw.improve { background: var(--improve-wash); border-top: 2px solid var(--improve); }
+  footer .legend .sw.blk { background: color-mix(in oklch, var(--fail) 10%, var(--paper)); border-color: color-mix(in oklch, var(--fail) 45%, var(--rule)); }
+  .kbd {
+    font-family: var(--font-mono);
+    padding: 1px 5px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    color: var(--ink-2);
+    font-size: 10px;
+  }
+
+  /* ───────── Drawer ───────── */
+  .drawer-backdrop {
+    position: fixed; inset: 0;
+    background: color-mix(in oklch, var(--ink) 30%, transparent);
+    opacity: 0; pointer-events: none; transition: opacity 160ms ease;
+    z-index: 19;
+  }
+  .drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: min(640px, 90vw);
+    background: var(--paper);
+    border-left: 1px solid var(--rule-strong);
+    transform: translateX(100%);
+    transition: transform 180ms ease;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    z-index: 20;
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer-head {
+    padding: 20px 24px 14px;
+    border-bottom: 1px solid var(--rule);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: baseline;
+  }
+  .drawer-head h3 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+  }
+  .drawer-head .d-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+    display: flex; gap: 10px; align-items: center;
+  }
+  .drawer-close {
+    appearance: none;
+    border: 1px solid var(--rule);
+    background: var(--paper-2);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 4px 8px;
+    color: var(--ink-3);
+    cursor: pointer;
+  }
+  .drawer-close:hover { color: var(--ink); background: var(--paper-3); }
+  .drawer-body {
+    overflow-y: auto;
+    padding: 18px 24px 24px;
+    display: grid;
+    gap: 18px;
+  }
+  .drawer-body h4 {
+    margin: 0 0 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+  .drawer-foot {
+    padding: 14px 24px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--paper-2);
+    gap: 12px;
+  }
+  .btn {
+    appearance: none;
+    border: 1px solid var(--rule-strong);
+    background: var(--paper);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    color: var(--ink);
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn:hover { background: var(--paper-3); }
+  .btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .btn.primary:hover { background: var(--ink-2); border-color: var(--ink-2); }
+
+  .mini-table {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    border: 1px solid var(--rule);
+    background: var(--paper-2);
+  }
+  .mini-table .mt-row {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 10px;
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .mini-table .mt-row:last-child { border-bottom: 0; }
+  .mini-table .mt-k { color: var(--ink-3); }
+  .mini-table .mt-v { color: var(--ink); }
+  .mini-table .mt-meta { color: var(--ink-3); font-size: 10px; }
+
+  /* Layout variant: Kanban-per-phase */
+  html[data-layout="kanban"] .swim-col { overflow-x: auto; }
+  html[data-layout="kanban"] .phase-header,
+  html[data-layout="kanban"] .epic-row,
+  html[data-layout="kanban"] .cycle-head { display: none; }
+  .kanban {
+    display: none;
+  }
+  html[data-layout="kanban"] .kanban {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    min-width: 2200px;
+  }
+  .k-col { background: var(--paper); display: flex; flex-direction: column; min-height: 0; }
+  .k-head {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper-2);
+    position: sticky; top: 0;
+  }
+  .k-head[data-loop="outer"] { border-top: 2px solid var(--outer); }
+  .k-head[data-loop="inner"] { border-top: 2px solid var(--inner); }
+  .k-head[data-loop="gate"]  { border-top: 2px solid var(--gate); }
+  .k-head[data-loop="improve"] { border-top: 2px solid var(--improve); }
+  .k-idx { font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-4); letter-spacing: 0.14em; }
+  .k-name { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--ink); }
+  .k-n { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); margin-top: 4px; }
+  .k-body { padding: 10px; display: grid; gap: 8px; align-content: start; }
+  .k-card {
+    padding: 10px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink-4);
+    cursor: pointer;
+  }
+  .k-card:hover { background: var(--paper-3); }
+  .k-card[data-cycle="cycle-0"] { border-left-color: var(--outer); }
+  .k-card[data-cycle="cycle-1"] { border-left-color: var(--inner); }
+  .k-card[data-cycle="cycle-2"] { border-left-color: var(--improve); }
+  .k-card[data-cycle="cycle-3"] { border-left-color: var(--gate); }
+  .k-card .kc-epic { font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-3); letter-spacing: 0.1em; text-transform: uppercase; }
+  .k-card .kc-stories { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 3px; }
+  .k-card .kc-name { font-family: var(--font-ui); font-size: 11.5px; font-weight: 500; color: var(--ink); margin-top: 4px; line-height: 1.25; }
+
+  /* ═══════ Markdown viewer ═══════ */
+  .mdv-backdrop {
+    position: fixed; inset: 0;
+    background: color-mix(in oklch, var(--ink) 40%, transparent);
+    opacity: 0; pointer-events: none; transition: opacity 160ms ease;
+    z-index: 39;
+  }
+  .mdv-backdrop.open { opacity: 1; pointer-events: auto; }
+  .mdv {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: min(760px, 92vw);
+    background: var(--paper);
+    border-left: 1px solid var(--rule-strong);
+    transform: translateX(100%);
+    transition: transform 200ms ease;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    z-index: 40;
+    box-shadow: -24px 0 40px -24px rgba(0,0,0,0.18);
+  }
+  .mdv.open { transform: translateX(0); }
+  .mdv-head {
+    padding: 18px 28px 14px;
+    border-bottom: 1px solid var(--rule);
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: baseline;
+    gap: 14px;
+    background: var(--paper-2);
+  }
+  .mdv-title {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink);
+    font-weight: 600;
+    display: flex; align-items: baseline; gap: 8px;
+    min-width: 0;
+  }
+  .mdv-title .path {
+    color: var(--ink-3);
+    font-weight: 400;
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .mdv-sha {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--ink-3);
+    padding: 3px 7px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+  }
+  .mdv-close {
+    appearance: none;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    color: var(--ink-3);
+    cursor: pointer;
+  }
+  .mdv-close:hover { color: var(--ink); background: var(--paper-3); }
+
+  .mdv-body {
+    overflow-y: auto;
+    padding: 28px 40px 40px;
+    scrollbar-width: thin;
+  }
+  .mdv-body::-webkit-scrollbar { width: 8px; }
+  .mdv-body::-webkit-scrollbar-thumb { background: var(--rule); }
+
+  /* Markdown typography */
+  .md {
+    font-family: var(--font-serif);
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ink);
+    max-width: 64ch;
+  }
+  .md h1, .md h2, .md h3, .md h4, .md h5, .md h6 {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin: 1.8em 0 0.5em;
+    line-height: 1.2;
+  }
+  .md h1 { font-size: 32px; font-weight: 400; margin-top: 0; letter-spacing: -0.025em; }
+  .md h2 { font-size: 22px; border-bottom: 1px solid var(--rule); padding-bottom: 6px; }
+  .md h3 { font-size: 18px; }
+  .md h4 { font-size: 15px; font-family: var(--font-ui); text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); }
+  .md p { margin: 0.6em 0 1em; }
+  .md strong { font-weight: 600; color: var(--ink); }
+  .md em { font-style: italic; }
+  .md a { color: var(--outer); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  .md a:hover { color: var(--ink); }
+  .md code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    padding: 1px 5px;
+    background: var(--paper-3);
+    border: 1px solid var(--rule-soft);
+    color: var(--ink);
+  }
+  .md pre {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    background: var(--paper-3);
+    border: 1px solid var(--rule);
+    padding: 14px 16px;
+    overflow-x: auto;
+    margin: 1em 0;
+    line-height: 1.55;
+  }
+  .md pre code {
+    padding: 0; border: 0; background: transparent;
+  }
+  .md blockquote {
+    margin: 1em 0;
+    padding: 8px 18px;
+    border-left: 3px solid var(--gate);
+    background: color-mix(in oklch, var(--gate-wash) 40%, var(--paper));
+    color: var(--ink-2);
+    font-family: var(--font-serif);
+    font-style: italic;
+  }
+  .md blockquote p { margin: 0.3em 0; }
+  .md blockquote strong { color: var(--fail); font-style: normal; }
+  .md ul, .md ol { margin: 0.6em 0 1em; padding-left: 1.4em; }
+  .md li { margin: 0.2em 0; }
+  .md li .task { font-family: var(--font-mono); font-size: 0.85em; color: var(--ink-3); display: inline-block; width: 1.3em; margin-left: -1.5em; }
+  .md li .task.checked { color: var(--pass); }
+  .md hr { border: 0; border-top: 1px solid var(--rule); margin: 2em 0; }
+  .md table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0 1.4em;
+    font-family: var(--font-ui);
+    font-size: 12.5px;
+  }
+  .md th, .md td {
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--rule-soft);
+    text-align: left;
+    vertical-align: top;
+  }
+  .md th {
+    background: var(--paper-3);
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border-bottom: 1px solid var(--rule);
+  }
+  .md tbody tr:hover { background: var(--paper-2); }
+
+  .mdv-foot {
+    padding: 12px 28px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--paper-2);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    gap: 12px;
+  }
+  .mdv-foot .nav-btns { display: flex; gap: 6px; }
+
+  /* clickable chips */
+  .story, .cell, .artefact-row, .k-card { }
+  .story[data-clickable] { cursor: pointer; }
+  .story[data-clickable]:hover { filter: brightness(0.97); outline: 1px solid var(--ink-3); }
+  .artefact-row { cursor: pointer; }
+  .epic-row .e-left[data-clickable] { cursor: pointer; }
+  .view-link {
+    appearance: none; border: 0; background: transparent;
+    font-family: var(--font-mono); font-size: 10.5px;
+    color: var(--outer);
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+  }
+  .view-link:hover { color: var(--ink); }
+
+  /* Tweaks panel */
+  .tweaks {
+    position: fixed; bottom: 16px; right: 16px;
+    width: 280px;
+    background: var(--paper);
+    border: 1px solid var(--rule-strong);
+    box-shadow: 0 8px 32px -12px rgba(0,0,0,0.18);
+    z-index: 30;
+    display: none;
+  }
+  .tweaks.open { display: block; }
+  .tweaks header {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .tweaks .row {
+    padding: 10px 14px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .tweaks .row:last-child { border-bottom: 0; }
+  .tweaks .row label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .tweaks .seg {
+    display: flex; gap: 2px; border: 1px solid var(--rule); background: var(--paper-2);
+  }
+  .tweaks .seg button {
+    appearance: none; border: 0; background: transparent;
+    padding: 4px 8px; cursor: pointer;
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.06em;
+  }
+  .tweaks .seg button.active { background: var(--paper); color: var(--ink); }
+
+  .muted { color: var(--ink-3); }
+  .mono { font-family: var(--font-mono); }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+<script>
+  window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "theme": "dark",
+    "density": "compact",
+    "layout": "kanban",
+    "sideTab": "artefacts",
+    "topView": "pipeline"
+  }/*EDITMODE-END*/;
+</script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useRef } = React;
+
+// ═══════════════════════════════════════════════════════════════════
+// PHASES — same 12-phase pipeline
+// ═══════════════════════════════════════════════════════════════════
+const PHASES = [
+  { i: "01", key: "discovery",     name: "/discovery",            loop: "outer" },
+  { i: "02", key: "benefit",       name: "/benefit-metric",       loop: "outer" },
+  { i: "03", key: "definition",    name: "/definition",           loop: "outer" },
+  { i: "04", key: "review",        name: "/review",               loop: "outer" },
+  { i: "05", key: "testplan",      name: "/test-plan",            loop: "outer" },
+  { i: "06", key: "dor",           name: "/definition-of-ready",  loop: "gate" },
+  { i: "07", key: "dispatch",      name: "/issue-dispatch",       loop: "outer" },
+  { i: "08", key: "inner",         name: "/tdd · inner loop",     loop: "inner" },
+  { i: "09", key: "assurance",     name: "CI assurance gate",     loop: "gate" },
+  { i: "10", key: "dod",           name: "/definition-of-done",   loop: "outer" },
+  { i: "11", key: "trace",         name: "/trace",                loop: "outer" },
+  { i: "12", key: "improve",       name: "/improve",              loop: "improve" },
+];
+const PHASE_IDX = Object.fromEntries(PHASES.map((p, i) => [p.key, i]));
+
+// ═══════════════════════════════════════════════════════════════════
+// CYCLES + EPICS — populated by pipeline-adapter.js when served via HTTP;
+// inline arrays below are the fallback for offline / direct file:// use.
+// ═══════════════════════════════════════════════════════════════════
+const CYCLES = window.CYCLES || [
+  {
+    id: "cycle-0", tag: "phase-3", name: "Skills Platform · governance hardening",
+    currentPhase: "dod", state: "in-flight",
+    note: "outer loop merged (#121) · inner loop 22/28 done",
+  },
+  {
+    id: "cycle-1", tag: "phase-4", name: "Adapter ecosystem · approval channels",
+    currentPhase: "inner", state: "in-flight",
+    note: "p4 inner loop · 3 stories in flight",
+  },
+  {
+    id: "cycle-2", tag: "phase-5", name: "Telemetry · metric watermarks",
+    currentPhase: "definition", state: "in-flight",
+    note: "definition in progress · 4 epics scoped",
+  },
+  {
+    id: "cycle-3", tag: "phase-6", name: "Runtime isolation · agent sandboxing",
+    currentPhase: "discovery", state: "nascent",
+    note: "discovery draft · ASSUMPTIONS-01..03 open",
+  },
+];
+
+// Epic shape: { id, cycleId, name, risk, stories: [{ id, phase, state, blockerId? }] }
+const EPICS = window.EPICS || [
+  // ── cycle-0 · phase-3 (real state.json)
+  { id: "e.p3.1", cycleId: "cycle-0", name: "State schema + suite registry",
+    risk: "low",
+    stories: [
+      { id:"p3.1a", phase:"dod", state:"done" },
+      { id:"p3.1b", phase:"dod", state:"done" },
+      { id:"p3.1c", phase:"dod", state:"done" },
+      { id:"p3.1d", phase:"dod", state:"done" },
+      { id:"p3.1e", phase:"dod", state:"done" },
+    ] },
+  { id: "e.p3.2", cycleId: "cycle-0", name: "T3M1 tamper-evidence registry",
+    risk: "med",
+    stories: [
+      { id:"p3.2a", phase:"dod", state:"done" },
+      { id:"p3.2b", phase:"dod", state:"current" },
+    ] },
+  { id: "e.p3.3", cycleId: "cycle-0", name: "Platform-infrastructure repo bootstrap",
+    risk: "high",
+    stories: [
+      { id:"p3.3",  phase:"dor",      state:"blocked", blockerId:"B-01" },
+      { id:"p3.4",  phase:"dor",      state:"blocked", blockerId:"B-02" },
+      { id:"p3.12", phase:"dor",      state:"blocked", blockerId:"B-02" },
+    ] },
+  { id: "e.p3.4", cycleId: "cycle-0", name: "Agent watermark compatibility",
+    risk: "med",
+    stories: [
+      { id:"p3.5",  phase:"inner", state:"current" },
+      { id:"p3.6",  phase:"inner", state:"current" },
+      { id:"p3.7",  phase:"inner", state:"current" },
+      { id:"p3.8",  phase:"inner", state:"current" },
+      { id:"p3.13", phase:"dispatch", state:"blocked", blockerId:"B-03" },
+    ] },
+  { id: "e.p3.5", cycleId: "cycle-0", name: "NFR profile + scope contracts",
+    risk: "low",
+    stories: [
+      { id:"p3.9",  phase:"dod", state:"done" },
+      { id:"p3.10", phase:"inner", state:"current" },
+      { id:"p3.11", phase:"inner", state:"current" },
+    ] },
+  { id: "e.p3.6", cycleId: "cycle-0", name: "Governance harness for SKILL.md",
+    risk: "low",
+    stories: [
+      { id:"p3.15", phase:"dod", state:"done" },
+      { id:"p3.16", phase:"dod", state:"done" },
+      { id:"p3.17", phase:"dod", state:"done" },
+      { id:"p3.18", phase:"dod", state:"done" },
+    ] },
+  { id: "e.p3.7", cycleId: "cycle-0", name: "Trace completeness + audit",
+    risk: "low",
+    stories: [
+      { id:"p3.19", phase:"dod", state:"done" },
+      { id:"p3.20", phase:"dod", state:"done" },
+      { id:"p3.21", phase:"dod", state:"done" },
+      { id:"p3.22", phase:"dod", state:"done" },
+    ] },
+
+  // ── cycle-1 · phase-4 (mock)
+  { id: "e.p4.1", cycleId: "cycle-1", name: "Jira approval-channel adapter",
+    risk: "med",
+    stories: [
+      { id:"p4.1a", phase:"dod",   state:"done" },
+      { id:"p4.1b", phase:"inner", state:"current" },
+      { id:"p4.1c", phase:"inner", state:"current" },
+      { id:"p4.1d", phase:"dispatch", state:"current" },
+    ] },
+  { id: "e.p4.2", cycleId: "cycle-1", name: "Slack approval-channel adapter",
+    risk: "med",
+    stories: [
+      { id:"p4.2a", phase:"dor",      state:"review" },
+      { id:"p4.2b", phase:"dor",      state:"review" },
+      { id:"p4.2c", phase:"testplan", state:"current" },
+    ] },
+  { id: "e.p4.3", cycleId: "cycle-1", name: "Adapter contract + ADR-006 compliance",
+    risk: "low",
+    stories: [
+      { id:"p4.3a", phase:"definition", state:"current" },
+      { id:"p4.3b", phase:"definition", state:"current" },
+      { id:"p4.3c", phase:"benefit",    state:"done" },
+    ] },
+  { id: "e.p4.4", cycleId: "cycle-1", name: "Approval idempotency + retry",
+    risk: "med",
+    stories: [
+      { id:"p4.4a", phase:"inner", state:"blocked", blockerId:"B-04" },
+      { id:"p4.4b", phase:"dispatch", state:"current" },
+    ] },
+
+  // ── cycle-2 · phase-5 (mock, earlier)
+  { id: "e.p5.1", cycleId: "cycle-2", name: "M1–M5 watermark recording",
+    risk: "med",
+    stories: [
+      { id:"p5.1a", phase:"definition", state:"current" },
+      { id:"p5.1b", phase:"definition", state:"current" },
+      { id:"p5.1c", phase:"benefit",    state:"done" },
+    ] },
+  { id: "e.p5.2", cycleId: "cycle-2", name: "Counter-metric pipeline (CR1/CR2)",
+    risk: "low",
+    stories: [
+      { id:"p5.2a", phase:"benefit",   state:"done" },
+      { id:"p5.2b", phase:"benefit",   state:"done" },
+      { id:"p5.2c", phase:"definition", state:"current" },
+    ] },
+  { id: "e.p5.3", cycleId: "cycle-2", name: "Estimation norms calibration",
+    risk: "low",
+    stories: [
+      { id:"p5.3a", phase:"discovery", state:"done" },
+      { id:"p5.3b", phase:"benefit",   state:"current" },
+    ] },
+  { id: "e.p5.4", cycleId: "cycle-2", name: "Non-engineering reviewer surfaces",
+    risk: "high",
+    stories: [
+      { id:"p5.4a", phase:"definition", state:"blocked", blockerId:"B-05" },
+      { id:"p5.4b", phase:"discovery",  state:"current" },
+    ] },
+
+  // ── cycle-3 · phase-6 (mock, earliest)
+  { id: "e.p6.1", cycleId: "cycle-3", name: "Agent worktree sandbox",
+    risk: "high",
+    stories: [
+      { id:"p6.1a", phase:"discovery", state:"current" },
+      { id:"p6.1b", phase:"discovery", state:"current" },
+    ] },
+  { id: "e.p6.2", cycleId: "cycle-3", name: "Context-isolation policy",
+    risk: "med",
+    stories: [
+      { id:"p6.2a", phase:"discovery", state:"review" },
+    ] },
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// ARTEFACTS — /artefacts/<date>-<cycle>/<file>.md
+// ═══════════════════════════════════════════════════════════════════
+const ARTEFACTS = [
+  // cycle-0
+  { cycleId:"cycle-0", cycle:"2026-04-14-skills-platform-phase3", phase:"discovery",   file:"discovery.md",      sha:"d41f8c7a", status:"signed", touched:"2026-04-14" },
+  { cycleId:"cycle-0", cycle:"2026-04-14-skills-platform-phase3", phase:"benefit",     file:"benefit-metric.md", sha:"a07b2f90", status:"signed", touched:"2026-04-14" },
+  { cycleId:"cycle-0", cycle:"2026-04-14-skills-platform-phase3", phase:"definition",  file:"definition.md",     sha:"b51cc903", status:"signed", touched:"2026-04-14" },
+  { cycleId:"cycle-0", cycle:"2026-04-14-skills-platform-phase3", phase:"definition",  file:"nfr-profile.md",    sha:"5cb221d7", status:"signed", touched:"2026-04-14" },
+  { cycleId:"cycle-0", cycle:"2026-04-14-skills-platform-phase3", phase:"review",      file:"review-notes.md",   sha:"66d91e27", status:"signed", touched:"2026-04-15" },
+  { cycleId:"cycle-0", cycle:"2026-04-14-skills-platform-phase3", phase:"testplan",    file:"test-plan.md",      sha:"0fe73a81", status:"signed", touched:"2026-04-15" },
+  { cycleId:"cycle-0", cycle:"2026-04-14-skills-platform-phase3", phase:"dor",         file:"dor.md",            sha:"c220bf4a", status:"signed", touched:"2026-04-16" },
+  { cycleId:"cycle-0", cycle:"2026-04-14-skills-platform-phase3", phase:"trace",       file:"trace.md",          sha:"aa7c4012", status:"draft",  touched:"2026-04-18" },
+
+  // cycle-1
+  { cycleId:"cycle-1", cycle:"2026-04-02-adapter-ecosystem-phase4", phase:"discovery",   file:"discovery.md",      sha:"f1102bae", status:"signed", touched:"2026-04-02" },
+  { cycleId:"cycle-1", cycle:"2026-04-02-adapter-ecosystem-phase4", phase:"benefit",     file:"benefit-metric.md", sha:"e3c1a5d8", status:"signed", touched:"2026-04-03" },
+  { cycleId:"cycle-1", cycle:"2026-04-02-adapter-ecosystem-phase4", phase:"definition",  file:"definition.md",     sha:"9a0b1cc2", status:"signed", touched:"2026-04-04" },
+  { cycleId:"cycle-1", cycle:"2026-04-02-adapter-ecosystem-phase4", phase:"definition",  file:"nfr-profile.md",    sha:"7d5a0ef1", status:"signed", touched:"2026-04-04" },
+  { cycleId:"cycle-1", cycle:"2026-04-02-adapter-ecosystem-phase4", phase:"testplan",    file:"test-plan.md",      sha:"4b8e9307", status:"draft",  touched:"2026-04-09" },
+  { cycleId:"cycle-1", cycle:"2026-04-02-adapter-ecosystem-phase4", phase:"dor",         file:"dor.md",            sha:"30c41b75", status:"draft",  touched:"2026-04-10" },
+  { cycleId:"cycle-1", cycle:"2026-04-02-adapter-ecosystem-phase4", phase:"inner",       file:"tdd-log.md",        sha:"e11a4c98", status:"live",   touched:"2026-04-18" },
+
+  // cycle-2
+  { cycleId:"cycle-2", cycle:"2026-04-10-telemetry-phase5", phase:"discovery",   file:"discovery.md",      sha:"0d40c1a7", status:"signed", touched:"2026-04-10" },
+  { cycleId:"cycle-2", cycle:"2026-04-10-telemetry-phase5", phase:"benefit",     file:"benefit-metric.md", sha:"a30bc87f", status:"signed", touched:"2026-04-12" },
+  { cycleId:"cycle-2", cycle:"2026-04-10-telemetry-phase5", phase:"definition",  file:"definition.md",     sha:"b9812f3e", status:"draft",  touched:"2026-04-16" },
+
+  // cycle-3
+  { cycleId:"cycle-3", cycle:"2026-04-17-runtime-isolation-phase6", phase:"discovery", file:"discovery.md", sha:"c77401a9", status:"draft", touched:"2026-04-17" },
+
+  // orphan/stale
+  { cycleId:"cycle-0", cycle:"2026-04-14-skills-platform-phase3", phase:"improve",     file:"improve-notes.md",  sha:"— (empty)", status:"stale",  touched:"2026-03-28" },
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// BLOCKERS
+// ═══════════════════════════════════════════════════════════════════
+const BLOCKERS = [
+  { id:"B-01", age:"5d", severity:"high", cycleId:"cycle-0",
+    title:"ASSUMPTION-01 unconfirmed — feasibility of platform-infrastructure repo",
+    affects:["p3.3"], owner:"Operator · awaiting Infra sign-off" },
+  { id:"B-02", age:"5d", severity:"high", cycleId:"cycle-0",
+    title:"p3.3 DoD required before p3.4 + p3.12 can proceed",
+    affects:["p3.4","p3.12"], owner:"chain · B-01" },
+  { id:"B-03", age:"3d", severity:"med", cycleId:"cycle-0",
+    title:"p3.13 depends on p3.7 DoD-complete AND p3.2a DoD-complete",
+    affects:["p3.13"], owner:"auto · gate" },
+  { id:"B-04", age:"2d", severity:"med", cycleId:"cycle-1",
+    title:"Retry contract not defined — p4.4a can't complete RED tests",
+    affects:["p4.4a"], owner:"Coding agent · needs ADR-006 clarification" },
+  { id:"B-05", age:"1d", severity:"med", cycleId:"cycle-2",
+    title:"T3M1 reviewer question Q5 blocks non-eng signoff dataflow",
+    affects:["p5.4a"], owner:"T3M1 independent reviewer" },
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// DOC RESOLUTION — map artefacts, epics, stories → markdown documents
+// ═══════════════════════════════════════════════════════════════════
+function docForArtefact(a) {
+  const md = (window.MD && window.MD[`${a.cycleId}:${a.file}`]) || `# ${a.file}\n\n_No content yet._`;
+  return {
+    key: `${a.cycleId}:${a.file}`,
+    path: `/artefacts/${a.cycle}/${a.file}`,
+    title: a.file,
+    sha: a.sha,
+    status: a.status,
+    phase: a.phase,
+    cycleId: a.cycleId,
+    md,
+  };
+}
+
+// epic → its cycle's definition.md (with synthesized header + traceability)
+function docForEpic(epic) {
+  const cycle = CYCLES.find(c => c.id === epic.cycleId);
+  const featureSlug = cycle?.featureSlug || cycle?.id || "";
+  const def = (window.MD && window.MD[`${epic.cycleId}:definition.md`]) || "";
+  const header = window.epicDoc ? window.epicDoc(epic, cycle) : `# ${epic.name}\n`;
+
+  // Summary table
+  const done = epic.stories.filter(s => s.state === "done").length;
+  const total = epic.stories.length;
+  const summary = `\n\n## Epic summary\n\n| Field | Value |\n|---|---|\n| Stories | ${done}/${total} done |\n| Risk | ${epic.risk} |\n`;
+
+  // Per-story list
+  const storyList = epic.stories.map(s =>
+    `- **${s.id}**${s.name ? " · " + s.name : ""} — ${s.state}${s.prUrl ? " · [PR](" + s.prUrl + ")" : ""}${s.issueUrl ? " · [Issue](" + s.issueUrl + ")" : ""}`
+  ).join("\n");
+
+  // Traceability links
+  const traceLinks = featureSlug ? [
+    "\n\n## Traceability\n",
+    "| Element | Link |",
+    "|---|---|",
+    "| Feature | " + (cycle?.name || featureSlug) + " |",
+    "| Discovery | [discovery.md](../artefacts/" + featureSlug + "/discovery.md) |",
+    "| Benefit metric | [benefit-metric.md](../artefacts/" + featureSlug + "/benefit-metric.md) |",
+    "| Definition | [definition.md](../artefacts/" + featureSlug + "/stories/) |",
+  ].join("\n") : "";
+
+  return {
+    key: `${epic.cycleId}:epic:${epic.id}`,
+    path: `/artefacts/${featureSlug}/epics/${epic.id}.md`,
+    title: `${epic.id} · ${epic.name}`,
+    sha: "b51cc903",
+    status: "signed",
+    phase: "definition",
+    cycleId: epic.cycleId,
+    featureSlug: featureSlug,
+    md: header + summary + "\n\n## Stories\n\n" + storyList + traceLinks + (def ? "\n\n---\n\n## Full definition\n\n" + def : ""),
+  };
+}
+
+// story → its phase's artefact, with a per-story preface + traceability links
+function docForStory(story, epic) {
+  const cycle = CYCLES.find(c => c.id === epic.cycleId);
+  const phase = PHASES[PHASE_IDX[story.phase]];
+  const featureSlug = cycle?.featureSlug || cycle?.id || "";
+  // map phase key → filename
+  const fileByPhase = {
+    discovery: "discovery.md",
+    benefit:   "benefit-metric.md",
+    definition:"definition.md",
+    review:    "review-notes.md",
+    testplan:  "test-plan.md",
+    dor:       "dor.md",
+    dispatch:  "dor.md",
+    inner:     "tdd-log.md",
+    assurance: "test-plan.md",
+    dod:       "trace.md",
+    trace:     "trace.md",
+    improve:   "improve-notes.md",
+  };
+  const fn = fileByPhase[story.phase] || "definition.md";
+  const backing = (window.MD && window.MD[`${epic.cycleId}:${fn}`]) || "";
+  const blockerReason = story.blockerId
+    ? (BLOCKERS.find(b => b.id === story.blockerId)?.title)
+    : null;
+
+  // Build metadata section
+  const AF = window.ArtefactFetcher;
+  const meta = AF ? AF.buildStoryMeta(story) : "";
+  const trace = AF ? AF.buildTraceLinks(story, featureSlug, epic.name) : "";
+
+  const preface = window.storyDoc
+    ? window.storyDoc(story.id, cycle?.tag, phase?.name, epic.name, story.state, story.blockerId, blockerReason)
+    : `# ${story.id}${story.name ? " · " + story.name : ""}\n\n${epic.name}\n`;
+  return {
+    key: `${epic.cycleId}:story:${story.id}`,
+    path: `/artefacts/${featureSlug}/stories/${story.id}.md`,
+    title: `${story.id}${story.name ? " · " + story.name : ""}`,
+    sha: "—",
+    status: story.state,
+    phase: story.phase,
+    cycleId: epic.cycleId,
+    featureSlug: featureSlug,
+    storySlug: story.id,
+    md: preface + "\n\n" + meta + "\n\n" + trace + (backing ? "\n\n---\n\n## Phase artefact\n\n" + backing : ""),
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Top-tab nav + new views (Outcomes, Governance, Guardrails, Story Map,
+// Benefits, Fleet). Uses data from extra-data.js + existing constants.
+// ═══════════════════════════════════════════════════════════════════
+
+// ── Top tab nav ────────────────────────────────────────────────────
+const TOP_TABS = [
+  { k: "pipeline",   label: "Pipeline",      count: () => CYCLES.length + " cycles" },
+  { k: "outcomes",   label: "Outcomes",      count: () => (window.OUTCOMES?.length || 0) + " KRs" },
+  { k: "governance", label: "Governance",    count: () => (window.COMPLIANCE_MATRIX?.length || 0) + " features" },
+  { k: "guardrails", label: "Guardrails",    count: () => (window.GUARDRAILS?.length || 0) + " rules" },
+  { k: "storymap",   label: "Story map",     count: () => (window.STORY_THEMES?.length || 0) + " themes" },
+  { k: "benefits",   label: "Benefits",      count: () => (window.BENEFIT_CHAINS?.length || 0) + " chains" },
+  { k: "fleet",      label: "Fleet",         count: () => (window.FLEET?.reduce((n,s)=>n+s.repos.length,0) || 0) + " repos" },
+];
+
+function TopTabs({ view, onView }) {
+  return (
+    <nav className="top-tabs" role="tablist">
+      {TOP_TABS.map(t => (
+        <button
+          key={t.k}
+          role="tab"
+          aria-selected={view === t.k}
+          className={view === t.k ? "active" : ""}
+          onClick={() => onView(t.k)}
+        >
+          {t.label}
+          <span className="tt-count">{t.count()}</span>
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+// ── Shared: status pill ────────────────────────────────────────────
+function StatusPill({ status }) {
+  const map = {
+    met: { cls: "s-met", glyph: "●", label: "on target" },
+    "on-track": { cls: "s-ok", glyph: "◐", label: "on track" },
+    "at-risk": { cls: "s-warn", glyph: "◑", label: "at risk" },
+    off: { cls: "s-fail", glyph: "◯", label: "off track" },
+    nascent: { cls: "s-muted", glyph: "·", label: "nascent" },
+    pending: { cls: "s-muted", glyph: "·", label: "pending" },
+  };
+  const e = map[status] || map.pending;
+  return (
+    <span className={"sp " + e.cls}>
+      <i>{e.glyph}</i>{e.label}
+    </span>
+  );
+}
+
+function openMd(onOpenDoc, def) {
+  onOpenDoc({
+    key: def.key,
+    path: def.path,
+    title: def.title,
+    sha: def.sha || "—",
+    md: def.md || `# ${def.title}\n\nArtefact preview — see source at \`${def.path}\`.`,
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// OUTCOMES
+// ═══════════════════════════════════════════════════════════════════
+function OutcomesView({ onOpenDoc, onOpenEpic }) {
+  const data = window.OUTCOMES || [];
+  const [horizon, setHorizon] = useState("all");
+  const [stat, setStat] = useState("all");
+
+  const filtered = useMemo(() => data.filter(o =>
+    (horizon === "all" || o.horizon === horizon) &&
+    (stat === "all" || o.status === stat)
+  ), [data, horizon, stat]);
+
+  const groups = useMemo(() => {
+    const m = {};
+    for (const o of filtered) (m[o.objective] ||= []).push(o);
+    return m;
+  }, [filtered]);
+
+  const last = data[0]?.updated || "—";
+  return (
+    <div className="view outcomes-view" data-screen-label="Outcomes">
+      <div className="view-head">
+        <div>
+          <div className="eyebrow">outcomes ledger</div>
+          <h2>Objectives &amp; key results.</h2>
+          <div className="view-meta">
+            <span>{data.length} key results across {Object.keys(groups).length || "—"} objectives</span>
+            <span className="sep">·</span>
+            <span>last review {last}</span>
+            <span className="sep">·</span>
+            <span>source <span className="mono">/outcomes/*.md</span></span>
+          </div>
+        </div>
+        <div className="view-filters">
+          <select value={horizon} onChange={e => setHorizon(e.target.value)}>
+            <option value="all">All horizons</option>
+            <option value="now">Now</option>
+            <option value="next">Next</option>
+            <option value="later">Later</option>
+          </select>
+          <select value={stat} onChange={e => setStat(e.target.value)}>
+            <option value="all">All statuses</option>
+            <option value="met">Met</option>
+            <option value="on-track">On track</option>
+            <option value="at-risk">At risk</option>
+            <option value="off">Off track</option>
+            <option value="nascent">Nascent</option>
+          </select>
+        </div>
+      </div>
+
+      {Object.keys(groups).length === 0 && (
+        <div className="empty-state">No outcomes match this filter.</div>
+      )}
+
+      {Object.entries(groups).map(([obj, krs]) => (
+        <div key={obj} className="outcome-group">
+          <div className="og-head">
+            <h3>{obj}</h3>
+            <div className="og-meta">{krs.length} KR{krs.length !== 1 ? "s" : ""}</div>
+          </div>
+          <div className="outcome-list">
+            {krs.map(o => (
+              <div key={o.id} className="outcome-card">
+                <div className="oc-head">
+                  <div>
+                    <div className="oc-id mono">{o.id} · {o.horizon}</div>
+                    <h4>{o.title}</h4>
+                  </div>
+                  <StatusPill status={o.status} />
+                </div>
+                <div className="oc-measure">
+                  <div className="oc-kv"><span>metric</span><b className="wrap">{o.metric}</b></div>
+                  <div className="oc-kv"><span>baseline</span><b className="mono">{o.baseline}</b></div>
+                  <div className="oc-kv"><span>current</span><b className="mono">{o.current}</b></div>
+                  <div className="oc-kv"><span>target</span><b className="mono">{o.target}</b></div>
+                </div>
+                <div className="oc-note">{o.note}</div>
+                <div className="oc-foot">
+                  <span className="muted mono">linked →</span>
+                  {(o.epics || []).map(eId => {
+                    const ep = EPICS.find(x => x.id === eId);
+                    return (
+                      <button key={eId} className="chip-mono"
+                        onClick={() => ep && onOpenEpic(ep)}
+                        title={ep?.name || eId}>
+                        {eId}
+                      </button>
+                    );
+                  })}
+                  <span className="sep">·</span>
+                  <button className="chip-mono"
+                    onClick={() => openMd(onOpenDoc, {
+                      key: o.id,
+                      path: `/outcomes/${o.id}.md`,
+                      title: `${o.id} · ${o.title}`,
+                      md: `# ${o.id} · ${o.title}\n\n**Objective.** ${o.objective}\n\n**Metric.** ${o.metric}\n- Baseline: \`${o.baseline}\`\n- Current: \`${o.current}\`\n- Target:   \`${o.target}\`\n\n**Status.** ${o.status}\n\n**Narrative.** ${o.note}\n\n**Linked epics.** ${(o.epics||[]).join(", ") || "—"}\n\n*Last reviewed ${o.updated}.*`,
+                    })}>
+                    artefact ↗
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// GOVERNANCE
+// ═══════════════════════════════════════════════════════════════════
+function GovernanceView({ onOpenDoc }) {
+  const floors = window.POLICY_FLOORS || [];
+  const matrix = window.COMPLIANCE_MATRIX || [];
+  const gates = window.GATE_CRITERIA || [];
+
+  // Count stories per phase for the strip
+  const storyCounts = useMemo(() => {
+    const map = {};
+    for (const e of EPICS) for (const s of e.stories) {
+      (map[s.phase] ||= { done: 0, current: 0, blocked: 0, review: 0 })[s.state] += 1;
+    }
+    return map;
+  }, []);
+
+  return (
+    <div className="view governance-view" data-screen-label="Governance">
+      <div className="view-head">
+        <div>
+          <div className="eyebrow">governance ledger</div>
+          <h2>Gates, policies &amp; compliance.</h2>
+          <div className="view-meta">
+            <span>{floors.length} policy floors</span>
+            <span className="sep">·</span>
+            <span>{matrix.length} regulated features</span>
+            <span className="sep">·</span>
+            <span>source <span className="mono">/governance/policies.md</span></span>
+          </div>
+        </div>
+      </div>
+
+      {/* Gate strip */}
+      <section className="gov-section">
+        <div className="gs-head">
+          <h3>Pipeline gate criteria</h3>
+          <div className="gs-sub mono">12 phases · DoR / CI / DoD enforcement</div>
+        </div>
+        <div className="gate-strip">
+          {PHASES.map(p => {
+            const c = storyCounts[p.key] || { done:0, current:0, blocked:0, review:0 };
+            const gate = gates.find(g => g.phase === p.key);
+            return (
+              <div key={p.key} className="gate-cell" data-loop={p.loop}
+                onClick={() => gate && openMd(onOpenDoc, {
+                  key: `gate-${p.key}`,
+                  path: `/governance/gates/${p.key}.md`,
+                  title: `${p.i} · ${p.name} — gate criteria`,
+                  md: `# ${p.i} · ${p.name}\n\n**Gate type.** ${gate.kind}\n\n**Owner.** ${gate.owner}\n\n## Entry criteria\n${gate.entry.map(x => "- " + x).join("\n")}\n\n## Exit criteria\n${gate.exit.map(x => "- " + x).join("\n")}\n\n## Policy\n${gate.policy}`,
+                })}
+                style={{ cursor: gate ? "pointer" : "default" }}>
+                <div className="gc-name">{p.i} · {p.name.replace(/^\//, "")}</div>
+                <div className="gc-counts">
+                  {c.done ? <span className="c-met">{c.done}✓</span> : null}
+                  {c.current ? <span className="c-ok"> {c.current}◐</span> : null}
+                  {c.review ? <span className="c-warn"> {c.review}◑</span> : null}
+                  {c.blocked ? <span className="c-fail"> {c.blocked}◯</span> : null}
+                  {!c.done && !c.current && !c.blocked && !c.review ? <span className="c-muted">—</span> : null}
+                </div>
+                <div className="gc-meta">
+                  {gate ? <><span className="policy-dot" />{gate.kind}</> : <span>no gate</span>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Policy floors */}
+      <section className="gov-section">
+        <div className="gs-head">
+          <h3>Policy floors</h3>
+          <div className="gs-sub mono">non-negotiable org minimums</div>
+        </div>
+        <div className="floors">
+          {floors.map(f => (
+            <div key={f.id} className="floor-card"
+              onClick={() => openMd(onOpenDoc, {
+                key: f.id, path: `/governance/${f.id}.md`, title: `${f.id} · ${f.name}`,
+                md: `# ${f.id} · ${f.name}\n\n**Scope.** ${f.scope}\n\n${f.details}\n\n*Locked by ${f.owner}, version ${f.version}.*`,
+              })}
+              style={{ cursor: "pointer" }}>
+              <div className="fc-top">
+                <span className="fc-name">{f.id}</span>
+                <span className="lock mono">🔒 locked</span>
+              </div>
+              <div className="fc-summary">{f.name}</div>
+              <div className="fc-meta mono">
+                <span>{f.scope}</span>
+                <span>·</span>
+                <span>{f.version}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Compliance matrix */}
+      <section className="gov-section">
+        <div className="gs-head">
+          <h3>Compliance matrix</h3>
+          <div className="gs-sub mono">feature × framework — click a cell to open evidence</div>
+        </div>
+        <div className="comp-matrix-wrap">
+          <table className="comp-matrix">
+            <thead>
+              <tr>
+                <th className="feat">Feature / surface</th>
+                <th>SOC 2</th>
+                <th>GDPR</th>
+                <th>ISO 27001</th>
+                <th>NIST AI RMF</th>
+                <th>Internal-T3M1</th>
+              </tr>
+            </thead>
+            <tbody>
+              {matrix.map(row => (
+                <tr key={row.feature}>
+                  <td className="feat">
+                    <div className="feat-title">{row.feature}</div>
+                    <div className="feat-sub mono">{row.surface}</div>
+                  </td>
+                  {["soc2","gdpr","iso27001","nistai","t3m1"].map(fk => {
+                    const cell = row[fk];
+                    if (!cell) return <td key={fk} className="cm-empty">—</td>;
+                    return (
+                      <td key={fk} className="cm-cell"
+                        onClick={() => openMd(onOpenDoc, {
+                          key: `comp-${row.feature}-${fk}`,
+                          path: `/governance/evidence/${fk}/${row.feature}.md`,
+                          title: `${row.feature} · ${fk.toUpperCase()}`,
+                          md: `# ${row.feature} — ${fk.toUpperCase()}\n\n**Control.** ${cell.control}\n\n**Status.** ${cell.status}\n\n**Evidence.** ${cell.artefact}\n\n${cell.note || ""}`,
+                        })}>
+                        <StatusPill status={cell.status} />
+                        <div className="cm-art mono">{cell.control}</div>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// GUARDRAILS
+// ═══════════════════════════════════════════════════════════════════
+function GuardrailsView({ onOpenDoc }) {
+  const rules = window.GUARDRAILS || [];
+  const cats = Array.from(new Set(rules.map(r => r.category)));
+  const [cat, setCat] = useState("all");
+  const [q, setQ] = useState("");
+  const filtered = rules.filter(r =>
+    (cat === "all" || r.category === cat) &&
+    (!q || (r.rule + " " + r.id + " " + r.rationale).toLowerCase().includes(q.toLowerCase()))
+  );
+  return (
+    <div className="view guardrails-view" data-screen-label="Guardrails">
+      <div className="view-head">
+        <div>
+          <div className="eyebrow">guardrails registry</div>
+          <h2>Rules, ADRs &amp; NFRs.</h2>
+          <div className="view-meta">
+            <span>{rules.length} active rules</span>
+            <span className="sep">·</span>
+            <span>{cats.length} categories</span>
+            <span className="sep">·</span>
+            <span>source <span className="mono">/guardrails/registry.md</span></span>
+          </div>
+        </div>
+        <div className="view-filters">
+          <input type="text" placeholder="filter…" value={q} onChange={e => setQ(e.target.value)} />
+        </div>
+      </div>
+
+      <div className="guard-cats">
+        <button className={"gc-filter " + (cat === "all" ? "active" : "")} onClick={() => setCat("all")}>all ({rules.length})</button>
+        {cats.map(c => (
+          <button key={c}
+            className={"gc-filter " + (cat === c ? "active" : "")}
+            onClick={() => setCat(c)}>
+            {c} ({rules.filter(r => r.category === c).length})
+          </button>
+        ))}
+      </div>
+
+      <table className="guard-table">
+        <thead>
+          <tr>
+            <th style={{width: 90}}>ID</th>
+            <th style={{width: 130}}>category</th>
+            <th>Rule</th>
+            <th>Evidence / enforcement</th>
+            <th style={{width: 140}}>refs</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filtered.map(r => (
+            <tr key={r.id} onClick={() => openMd(onOpenDoc, {
+              key: r.id,
+              path: `/guardrails/${r.id}.md`,
+              title: `${r.id} · ${r.rule}`,
+              md: `# ${r.id}\n\n**Category.** ${r.category}\n\n## Rule\n${r.rule}\n\n## Rationale\n${r.rationale}\n\n## Enforcement\n${r.enforcement}\n\n## Linked\n${(r.refs||[]).map(x=>"- "+x).join("\n") || "—"}\n`,
+            })} style={{ cursor: "pointer" }}>
+              <td className="mono" style={{fontWeight:600, color:"var(--ink)"}}>{r.id}</td>
+              <td><span className={"gcat c-" + r.category.replace(/\s+/g, "-")}>{r.category}</span></td>
+              <td className="rule">{r.rule}</td>
+              <td className="evidence">{r.enforcement}</td>
+              <td className="refs mono">{(r.refs || []).join(" · ") || "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// STORY MAP
+// ═══════════════════════════════════════════════════════════════════
+function StoryMapView({ onOpenDoc, onOpenEpic }) {
+  const themes = window.STORY_THEMES || [];
+  const [open, setOpen] = useState(() => new Set(themes.flatMap(t => t.epics.map(e => e.id))));
+  const toggle = (id) => setOpen(s => {
+    const n = new Set(s);
+    if (n.has(id)) n.delete(id); else n.add(id);
+    return n;
+  });
+  return (
+    <div className="view storymap-view" data-screen-label="Story map">
+      <div className="view-head">
+        <div>
+          <div className="eyebrow">story map</div>
+          <h2>Themes → epics → stories.</h2>
+          <div className="view-meta">
+            <span>{themes.length} themes</span>
+            <span className="sep">·</span>
+            <span>{themes.reduce((n,t)=>n+t.epics.length,0)} epics</span>
+            <span className="sep">·</span>
+            <span>source <span className="mono">/story-map/themes/*.md</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div className="sm-themes">
+        {themes.map(t => (
+          <div key={t.id} className="sm-theme">
+            <div className="sm-th">
+              <h3>{t.name}</h3>
+              <div className="sm-th-meta">{t.epics.length} epics · {t.epics.reduce((n,e)=>n+e.stories.length,0)} stories</div>
+            </div>
+            <div className="sm-epics">
+              {t.epics.map(ep => {
+                const isOpen = open.has(ep.id);
+                const epic = EPICS.find(e => e.id === ep.linkEpicId);
+                return (
+                  <div key={ep.id} className="sm-epic">
+                    <div className="sm-ep-head" onClick={() => toggle(ep.id)}>
+                      <span className="sm-ep-id">{ep.id}</span>
+                      <span className="sm-ep-name">{ep.name}</span>
+                      <span className="sm-ep-risk mono" data-r={ep.risk}>{ep.risk}</span>
+                    </div>
+                    {isOpen && (
+                      <ul className="sm-stories">
+                        {ep.stories.map(s => (
+                          <li key={s.id} className="sm-story"
+                            onClick={() => epic ? onOpenEpic(epic) : openMd(onOpenDoc, {
+                              key: s.id, path: `/story-map/${s.id}.md`, title: `${s.id} · ${s.title}`,
+                              md: `# ${s.id} · ${s.title}\n\n${s.acceptance || ""}`,
+                            })}>
+                            <div className="smS-head">
+                              <span className={"smS-state " + s.state}>{s.state}</span>
+                              <span className="smS-id mono">{s.id}</span>
+                              <span style={{flex:1}}>{s.title}</span>
+                              {s.state === "blocked" && <span className="smS-blk mono">{s.blocker}</span>}
+                            </div>
+                            <div className="smS-phase mono">phase {s.phase || "—"}{s.acceptance ? " · " + s.acceptance : ""}</div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// BENEFITS
+// ═══════════════════════════════════════════════════════════════════
+function BenefitsView({ onOpenDoc, onOpenEpic }) {
+  const chains = window.BENEFIT_CHAINS || [];
+  return (
+    <div className="view benefits-view" data-screen-label="Benefits">
+      <div className="view-head">
+        <div>
+          <div className="eyebrow">benefits mapping</div>
+          <h2>Hypothesis → metric → story → commit.</h2>
+          <div className="view-meta">
+            <span>{chains.length} chains</span>
+            <span className="sep">·</span>
+            <span>source <span className="mono">/benefits/chains/*.md</span></span>
+            <span className="sep">·</span>
+            <span>per <span className="mono">/phases/02-benefit-metric.md</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div className="ben-chains">
+        {chains.map(ch => (
+          <div key={ch.id} className="ben-chain">
+            <div className="bc-head">
+              <div className="bc-eyebrow mono">{ch.id} · traceability chain</div>
+              <h3>{ch.name}</h3>
+            </div>
+            <div className="bc-flow">
+              <div className="bc-col">
+                <div className="bc-label mono">hypothesis</div>
+                <div className="bc-hyp">“{ch.hypothesis}”</div>
+                <div className="bc-counter">
+                  <div className="bc-label mono">counter-metric</div>
+                  <div className="bc-counter-body"><StatusPill status={ch.counterStatus} /></div>
+                </div>
+              </div>
+              <div className="bc-arrow">→</div>
+              <div className="bc-col">
+                <div className="bc-label mono">metric ({ch.metrics.length})</div>
+                {ch.metrics.map(m => (
+                  <button key={m.id} className="bc-metric"
+                    onClick={() => openMd(onOpenDoc, {
+                      key: m.id, path: `/benefits/${m.id}.md`, title: `${m.id} · ${m.title}`,
+                      md: `# ${m.id} · ${m.title}\n\n**Target.** ${m.target}\n\n**Current.** ${m.current}\n\n**Source.** ${m.source}`,
+                    })}>
+                    <div className="bm-top">
+                      <span className="bm-id mono">{m.id}</span>
+                      <StatusPill status={m.status} />
+                    </div>
+                    <div className="bm-title">{m.title}</div>
+                    <div className="bm-target mono">{m.current} → {m.target}</div>
+                  </button>
+                ))}
+              </div>
+              <div className="bc-arrow">→</div>
+              <div className="bc-col">
+                <div className="bc-label mono">stories ({ch.stories.length})</div>
+                {ch.stories.map(s => (
+                  <button key={s.id} className="bc-story"
+                    onClick={() => {
+                      const epic = EPICS.find(e => e.stories.some(x => x.id === s.id));
+                      if (epic) onOpenEpic(epic);
+                    }}>
+                    <span className="bs-id mono">{s.id}</span>
+                    <span className="bs-title">{s.title}</span>
+                    <span className={"bs-state mono " + s.state}>{s.state}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="bc-arrow">→</div>
+              <div className="bc-col">
+                <div className="bc-label mono">commits ({ch.commits.length})</div>
+                {ch.commits.length === 0
+                  ? <div className="bc-empty">pending merge</div>
+                  : ch.commits.map(c => (
+                    <div key={c.sha} className="bc-commit"
+                      onClick={() => openMd(onOpenDoc, {
+                        key: c.sha, path: `/commits/${c.sha}`, title: `${c.sha} · ${c.title}`,
+                        md: `# commit ${c.sha}\n\n**Title.** ${c.title}\n\n**Author.** ${c.author}\n\n**Date.** ${c.date}\n\n\`\`\`\n${c.diff || "(diff unavailable)"}\n\`\`\``,
+                      })}
+                      style={{ cursor: "pointer" }}>
+                      <span className="bc-sha mono">{c.sha}</span>
+                      <span className="bc-c-title">{c.title}</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// FLEET
+// ═══════════════════════════════════════════════════════════════════
+function FleetView({ onOpenDoc }) {
+  const squads = window.FLEET || [];
+  return (
+    <div className="view fleet-view" data-screen-label="Fleet">
+      <div className="view-head">
+        <div>
+          <div className="eyebrow">fleet roll-up</div>
+          <h2>Repos, cycles &amp; health.</h2>
+          <div className="view-meta">
+            <span>{squads.length} squads</span>
+            <span className="sep">·</span>
+            <span>{squads.reduce((n,s)=>n+s.repos.length,0)} repos</span>
+            <span className="sep">·</span>
+            <span>source <span className="mono">/fleet/roll-up.json</span></span>
+          </div>
+        </div>
+      </div>
+
+      {squads.map(sq => (
+        <div key={sq.id} className="fleet-squad">
+          <div className="fs-head">
+            <h3>{sq.name}</h3>
+            <div className="fs-meta mono">{sq.repos.length} repos · lead {sq.lead}</div>
+          </div>
+          <div className="fleet-table">
+            <div className="ft-head">
+              <div>repo · owner</div>
+              <div>active cycle</div>
+              <div>phase</div>
+              <div>pipeline position</div>
+              <div style={{textAlign:"right"}}>loc</div>
+              <div style={{textAlign:"right"}}>story state</div>
+              <div style={{textAlign:"right"}}>last commit</div>
+            </div>
+            {sq.repos.map(r => (
+              <div key={r.name} className="ft-row"
+                onClick={() => openMd(onOpenDoc, {
+                  key: r.name, path: `/fleet/${r.name}.md`, title: r.name,
+                  md: `# ${r.name}\n\n**Owner.** ${r.owner}\n\n**Cycle.** ${r.cycle}\n\n**Phase.** ${r.phase}\n\n**Stories.** ${r.storyCounts.done} done · ${r.storyCounts.current} current · ${r.storyCounts.blocked} blocked\n\n**Last commit.** ${r.lastCommit}\n`,
+                })}
+                style={{ cursor: "pointer" }}>
+                <div className="ft-repo">
+                  <div className="ftR-name mono">{r.name}</div>
+                  <div className="ftR-owner mono">{r.owner}</div>
+                </div>
+                <div className="ft-cycle">{r.cycle}</div>
+                <div className="ft-phase mono">{r.phase}</div>
+                <div className="ft-spark">
+                  {PHASES.map(p => {
+                    const pIdx = PHASE_IDX[p.key];
+                    const cIdx = PHASE_IDX[r.phaseKey] ?? 0;
+                    let cls = "sp-next";
+                    if (pIdx < cIdx) cls = "sp-done";
+                    else if (pIdx === cIdx) cls = "sp-current";
+                    return <div key={p.key} className={"sp-seg " + cls} title={p.name} />;
+                  })}
+                </div>
+                <div className="ft-num mono">{r.loc.toLocaleString()}</div>
+                <div className="ft-counts mono">
+                  <span className="c-met">{r.storyCounts.done}✓</span>
+                  <span className="c-ok">{r.storyCounts.current}◐</span>
+                  {r.storyCounts.blocked > 0 && <span className="c-fail">{r.storyCounts.blocked}◯</span>}
+                </div>
+                <div className="ft-last mono">{r.lastCommit}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// APP
+// ═══════════════════════════════════════════════════════════════════
+function setHtmlAttr(k, v) { document.documentElement.setAttribute(k, v); }
+
+function App() {
+  const d = window.TWEAK_DEFAULTS || {};
+  const [theme, setTheme]     = useState(d.theme     || "light");
+  const [density, setDensity] = useState(d.density   || "comfortable");
+  const [layout, setLayout]   = useState(d.layout    || "swimlane");
+  const [sideTab, setSideTab] = useState(d.sideTab   || "artefacts");
+  const [topView, setTopView] = useState(d.topView   || "pipeline");
+  const [selectedEpic, setSelectedEpic] = useState(null);
+  const [viewDoc, setViewDoc] = useState(null);   // { key, path, title, sha, md, ... }
+  const [tweaksOpen, setTweaksOpen] = useState(false);
+
+  useEffect(() => { setHtmlAttr("data-theme", theme); }, [theme]);
+  useEffect(() => { setHtmlAttr("data-density", density); }, [density]);
+  useEffect(() => { setHtmlAttr("data-layout", layout); }, [layout]);
+
+  const persist = (edits) => {
+    try { window.parent.postMessage({ type:"__edit_mode_set_keys", edits }, "*"); } catch(_) {}
+  };
+  const update = (k, v, setter) => { setter(v); persist({ [k]: v }); };
+
+  // edit-mode protocol
+  useEffect(() => {
+    const onMsg = (e) => {
+      const t = e.data?.type;
+      if (t === "__activate_edit_mode") setTweaksOpen(true);
+      if (t === "__deactivate_edit_mode") setTweaksOpen(false);
+    };
+    window.addEventListener("message", onMsg);
+    window.parent.postMessage({ type:"__edit_mode_available" }, "*");
+    return () => window.removeEventListener("message", onMsg);
+  }, []);
+
+  // keyboard
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "t" && !e.metaKey && !e.ctrlKey) {
+        if (document.activeElement?.tagName !== "INPUT") setTweaksOpen(v => !v);
+      }
+      if (e.key === "Escape") { setSelectedEpic(null); setTweaksOpen(false); setViewDoc(null); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const epicsByCycle = useMemo(() => {
+    const m = {};
+    for (const e of EPICS) (m[e.cycleId] ||= []).push(e);
+    return m;
+  }, []);
+
+  useEffect(() => {
+    const handler = (e) => setViewDoc(e.detail);
+    window.addEventListener("mdv-jump", handler);
+    return () => window.removeEventListener("mdv-jump", handler);
+  }, []);
+
+  return (
+    <div className="app" data-screen-label={"Repo · " + topView}>
+      <TopBar />
+      <TopTabs view={topView} onView={(v) => update("topView", v, setTopView)} />
+      {topView === "pipeline" && <PhaseHeader />}
+      <main className="body" data-top={topView}>
+        {topView === "pipeline" && (
+          <>
+            <section className="swim-col" data-screen-label="Portfolio swimlane">
+              {layout === "swimlane" && CYCLES.map(c => (
+                <CycleGroup
+                  key={c.id}
+                  cycle={c}
+                  epics={epicsByCycle[c.id] || []}
+                  selected={selectedEpic?.id}
+                  onSelect={setSelectedEpic}
+                  onOpenDoc={setViewDoc}
+                />
+              ))}
+              {layout === "kanban" && <Kanban onSelect={setSelectedEpic} onOpenDoc={setViewDoc} />}
+            </section>
+            <SideColumn
+              sideTab={sideTab}
+              onTab={(v) => update("sideTab", v, setSideTab)}
+              onOpenDoc={setViewDoc}
+            />
+          </>
+        )}
+        {topView === "outcomes"   && <OutcomesView onOpenDoc={setViewDoc} onOpenEpic={setSelectedEpic} />}
+        {topView === "governance" && <GovernanceView onOpenDoc={setViewDoc} />}
+        {topView === "guardrails" && <GuardrailsView onOpenDoc={setViewDoc} />}
+        {topView === "storymap"   && <StoryMapView onOpenDoc={setViewDoc} onOpenEpic={setSelectedEpic} />}
+        {topView === "benefits"   && <BenefitsView onOpenDoc={setViewDoc} onOpenEpic={setSelectedEpic} />}
+        {topView === "fleet"      && <FleetView onOpenDoc={setViewDoc} />}
+      </main>
+      <FooterBar />
+
+      <Drawer epic={selectedEpic} onClose={() => setSelectedEpic(null)} onOpenDoc={setViewDoc} />
+      <MdViewer doc={viewDoc} onClose={() => setViewDoc(null)} />
+
+      <Tweaks
+        open={tweaksOpen}
+        onClose={() => setTweaksOpen(false)}
+        theme={theme}       setTheme={(v) => update("theme", v, setTheme)}
+        density={density}   setDensity={(v) => update("density", v, setDensity)}
+        layout={layout}     setLayout={(v) => update("layout", v, setLayout)}
+      />
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+function TopBar() {
+  const totalEpics = EPICS.length;
+  const totalStories = EPICS.reduce((n, e) => n + e.stories.length, 0);
+  const blockerCount = BLOCKERS.length;
+  return (
+    <header className="ledger-bar">
+      <div>
+        <div className="eyebrow">
+          <span className="mono">heymishy/skills-repo · master</span>
+          <span className="sep">·</span>
+          <span>4 cycles in flight</span>
+          <span className="sep">·</span>
+          <span className="live">pipeline live</span>
+        </div>
+        <h1 className="title">Repo <em>portfolio.</em></h1>
+        <div className="subtitle">
+          Every cycle, every epic, every story — on one page. Rows are epics grouped by cycle; columns are the twelve pipeline phases.
+        </div>
+      </div>
+      <dl className="ledger-meta">
+        <div><dt>cycles</dt><dd>{CYCLES.length}</dd></div>
+        <div><dt>epics</dt><dd>{totalEpics}</dd></div>
+        <div><dt>stories</dt><dd>{totalStories}</dd></div>
+        <div><dt>blockers</dt><dd style={{color: blockerCount ? "var(--fail)" : "var(--pass)"}}>{blockerCount}</dd></div>
+      </dl>
+      <nav className="nav">
+        <a className="active" href="index.html">Repo</a>
+        <select style={{
+          fontFamily:"var(--font-mono)", fontSize:"10.5px", letterSpacing:"0.08em",
+          background:"var(--paper-2)", color:"var(--ink-2)", border:"1px solid var(--rule)",
+          padding:"6px 10px", cursor:"pointer",
+        }}
+          onChange={(e) => { if (e.target.value) window.location.href = e.target.value; }}
+          defaultValue=""
+        >
+          <option value="" disabled>Feature ↗</option>
+          {CYCLES.map(c => (
+            <option key={c.id} value={`pipeline.html?feature=${encodeURIComponent(c.id)}`}>
+              {c.tag} · {c.name}
+            </option>
+          ))}
+        </select>
+      </nav>
+    </header>
+  );
+}
+
+function PhaseHeader() {
+  return (
+    <div className="phase-header">
+      <div className="ph-corner">
+        <span>epic ↓ · phase →</span>
+        <span className="mono">12</span>
+      </div>
+      {PHASES.map(p => (
+        <div key={p.key} className="ph-cell" data-loop={p.loop}>
+          <div className="ph-idx">{p.i}</div>
+          <div className="ph-name">{p.name}</div>
+          <div className="ph-loop">{p.loop}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CycleGroup({ cycle, epics, selected, onSelect, onOpenDoc }) {
+  const allStories = epics.flatMap(e => e.stories);
+  const done = allStories.filter(s => s.state === "done").length;
+  const flight = allStories.filter(s => s.state === "current").length;
+  const blk = allStories.filter(s => s.state === "blocked").length;
+  const review = allStories.filter(s => s.state === "review").length;
+
+  // dot indicator per phase
+  const phaseDots = PHASES.map(p => {
+    const ss = allStories.filter(s => s.phase === p.key);
+    if (ss.length === 0) return "empty";
+    if (ss.some(s => s.state === "blocked")) return "blk";
+    if (ss.some(s => s.state === "current") || ss.some(s => s.state === "review")) return "cur";
+    if (ss.every(s => s.state === "done")) return "done";
+    return "cur";
+  });
+
+  return (
+    <div className="cycle-group">
+      <div className="cycle-head">
+        <div className="ch-left">
+          <span className="ch-tag">{cycle.tag}</span>
+          <span className="ch-name">{cycle.name}</span>
+        </div>
+        <div className="ch-right">
+          <span className="stat ok"><span className="n">{done}</span><span>done</span></span>
+          <span className="stat flight"><span className="n">{flight}</span><span>in flight</span></span>
+          {review > 0 && <span className="stat"><span className="n">{review}</span><span>review</span></span>}
+          {blk > 0 && <span className="stat bk"><span className="n">{blk}</span><span>blocked</span></span>}
+          <span className="phase-ind" title="phase coverage">
+            {phaseDots.map((d, i) => (
+              <span key={i} className={`dot ${d === "empty" ? "" : d}`}
+                    title={`${PHASES[i].name} · ${d}`} />
+            ))}
+          </span>
+          <span className="muted">· {cycle.note}</span>
+        </div>
+      </div>
+      {epics.map(epic => (
+        <EpicRow
+          key={epic.id}
+          cycle={cycle}
+          epic={epic}
+          selected={selected === epic.id}
+          onSelect={onSelect}
+          onOpenDoc={onOpenDoc}
+        />
+      ))}
+    </div>
+  );
+}
+
+function EpicRow({ cycle, epic, selected, onSelect, onOpenDoc }) {
+  const total = epic.stories.length;
+  const done = epic.stories.filter(s => s.state === "done").length;
+  const curN = epic.stories.filter(s => s.state === "current").length;
+  const blkN = epic.stories.filter(s => s.state === "blocked").length;
+
+  const openEpicDoc = (e) => { e.stopPropagation(); onOpenDoc(docForEpic(epic)); };
+  const openStoryDoc = (e, s) => { e.stopPropagation(); onOpenDoc(docForStory(s, epic)); };
+
+  return (
+    <div className={`epic-row ${selected ? "selected" : ""}`} onClick={() => onSelect(epic)}>
+      <div className="e-left" data-clickable="true" onClick={openEpicDoc} title="Open epic doc">
+        <div className="e-id">
+          <span>{epic.id}</span>
+          <span className="risk" data-r={epic.risk}>{epic.risk}</span>
+        </div>
+        <div className="e-name">{epic.name}</div>
+        <div className="e-foot">
+          <span>{done}/{total}</span>
+          <span className="spark" aria-hidden>
+            {Array.from({ length: total }).map((_, i) => {
+              const s = epic.stories[i];
+              const cls = s.state === "done" ? "d" : s.state === "current" ? "c" : s.state === "blocked" ? "b" : "";
+              return <div key={i} className={cls} />;
+            })}
+          </span>
+          {blkN > 0 && <span style={{color:"var(--fail)"}}>{blkN} blk</span>}
+        </div>
+      </div>
+      {PHASES.map(p => {
+        const here = epic.stories.filter(s => s.phase === p.key);
+        const cls = here.length ? `has-content ${p.loop}` : "empty";
+        const isCur = cycle.currentPhase === p.key;
+        return (
+          <div key={p.key}
+               className={`cell ${cls} ${isCur ? "cur-col" : ""}`}
+               data-loop={p.loop}>
+            {here.map(s => (
+              <span key={s.id}
+                    className={`story ${s.state}`}
+                    data-clickable="true"
+                    onClick={(e) => openStoryDoc(e, s)}
+                    title={`${s.id}${s.name ? " · " + s.name : ""} · ${s.state}${s.blockerId ? " · " + s.blockerId : ""}${s.prUrl ? " · PR" : ""}${s.dodStatus === "complete" ? " · DoD ✓" : ""} · click to open doc`}>
+                {s.state === "blocked" && <span className="dot-b" />}
+                {s.id}
+                {s.dodStatus === "complete" && <span style={{fontSize:9, marginLeft:2, opacity:0.7}}>✓</span>}
+                {s.prUrl && <span style={{fontSize:9, marginLeft:2, opacity:0.7}}>⬤</span>}
+              </span>
+            ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+// Kanban view
+// ──────────────────────────────────────────────────────────────
+function Kanban({ onSelect, onOpenDoc }) {
+  // Group by phase, items are { epic, stories[] }
+  const byPhase = {};
+  for (const epic of EPICS) {
+    for (const s of epic.stories) {
+      (byPhase[s.phase] ||= []).push({ epic, story: s });
+    }
+  }
+  // Collapse per (phase, epic) — one card per epic per phase
+  const cards = {};
+  for (const [phase, items] of Object.entries(byPhase)) {
+    const map = {};
+    for (const it of items) (map[it.epic.id] ||= { epic: it.epic, stories: [] }).stories.push(it.story);
+    cards[phase] = Object.values(map);
+  }
+
+  return (
+    <div className="kanban">
+      {PHASES.map(p => {
+        const arr = cards[p.key] || [];
+        const n = arr.reduce((a, c) => a + c.stories.length, 0);
+        return (
+          <div key={p.key} className="k-col">
+            <div className="k-head" data-loop={p.loop}>
+              <div className="k-idx">{p.i} · {p.loop}</div>
+              <div className="k-name">{p.name}</div>
+              <div className="k-n">{arr.length} epic · {n} story</div>
+            </div>
+            <div className="k-body">
+              {arr.map(c => (
+                <div key={c.epic.id}
+                     className="k-card"
+                     data-cycle={c.epic.cycleId}
+                     onClick={() => onSelect(c.epic)}>
+                  <div className="kc-epic">{c.epic.id} · {CYCLES.find(x => x.id === c.epic.cycleId).tag}</div>
+                  <div className="kc-name">{c.epic.name}</div>
+                  <div className="kc-stories">
+                    {c.stories.map(s => (
+                      <span key={s.id}
+                            className={`story ${s.state}`}
+                            data-clickable="true"
+                            onClick={(e) => { e.stopPropagation(); onOpenDoc(docForStory(s, c.epic)); }}
+                            title={`${s.id}${s.name ? " · " + s.name : ""} · click to open doc`}>
+                        {s.state === "blocked" && <span className="dot-b" />}
+                        {s.id}
+                        {s.dodStatus === "complete" && <span style={{fontSize:9, marginLeft:2, opacity:0.7}}>✓</span>}
+                      </span>
+                    ))}
+                  </div>
+                  <button className="view-link"
+                          style={{marginTop:8}}
+                          onClick={(e) => { e.stopPropagation(); onOpenDoc(docForEpic(c.epic)); }}>
+                    view epic doc ↗
+                  </button>
+                </div>
+              ))}
+              {arr.length === 0 && (
+                <div style={{padding:"18px 6px",fontFamily:"var(--font-mono)",fontSize:10,color:"var(--ink-4)",letterSpacing:"0.08em"}}>— no epics here —</div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+// Side column: Artefacts + Blockers tabs
+// ──────────────────────────────────────────────────────────────
+function SideColumn({ sideTab, onTab, onOpenDoc }) {
+  return (
+    <aside className="side-col">
+      <div className="side-tabs">
+        <button className={sideTab === "artefacts" ? "active" : ""} onClick={() => onTab("artefacts")}>
+          Artefacts <span className="n">{ARTEFACTS.length}</span>
+        </button>
+        <button className={sideTab === "blockers" ? "active" : ""} onClick={() => onTab("blockers")}>
+          Blockers <span className="n" style={{color:"var(--fail)"}}>{BLOCKERS.length}</span>
+        </button>
+      </div>
+      {sideTab === "artefacts" && <ArtefactsPanel onOpenDoc={onOpenDoc} />}
+      {sideTab === "blockers"  && <BlockersPanel />}
+    </aside>
+  );
+}
+
+function ArtefactsPanel({ onOpenDoc }) {
+  // Group by cycle for scannability
+  const groups = {};
+  for (const a of ARTEFACTS) (groups[a.cycle] ||= []).push(a);
+
+  return (
+    <div className="side-body">
+      {Object.entries(groups).map(([cycle, items]) => (
+        <div key={cycle}>
+          <div className="artefacts-head">
+            <span>/artefacts/{cycle}/</span>
+            <span>{items.length} md</span>
+          </div>
+          {items.map((a) => {
+            const phase = PHASES[PHASE_IDX[a.phase]];
+            return (
+              <div key={cycle + a.file}
+                   className="artefact-row"
+                   onClick={() => onOpenDoc(docForArtefact(a))}
+                   title={`/artefacts/${a.cycle}/${a.file} · click to open`}>
+                <div className="a-path">
+                  <span className="fn">{a.file}</span>
+                  <span className="cy"> · {phase?.name}</span>
+                </div>
+                <div className="a-meta">
+                  <span className="st {a.status}" style={{
+                    borderColor: a.status === "signed" ? "color-mix(in oklch, var(--pass) 40%, var(--rule))" :
+                                 a.status === "draft"  ? "color-mix(in oklch, var(--gate) 40%, var(--rule))" :
+                                 a.status === "live"   ? "color-mix(in oklch, var(--inner) 40%, var(--rule))" :
+                                                         "color-mix(in oklch, var(--fail) 40%, var(--rule))",
+                    color: a.status === "signed" ? "var(--pass)" :
+                           a.status === "draft"  ? "var(--gate)" :
+                           a.status === "live"   ? "var(--inner)" :
+                                                   "var(--fail)"
+                  }}>{a.status}</span>
+                  <span className="sha">sha {a.sha}</span>
+                  <div style={{marginTop:3}}>{a.touched}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function BlockersPanel() {
+  const sorted = [...BLOCKERS].sort((a, b) => parseInt(b.age) - parseInt(a.age));
+  return (
+    <div className="side-body">
+      <div className="blockers-head">
+        <span>age-sorted · oldest first</span>
+        <span>{BLOCKERS.length}</span>
+      </div>
+      {sorted.map(b => {
+        const cycle = CYCLES.find(c => c.id === b.cycleId);
+        return (
+          <div key={b.id} className="blocker-row">
+            <div className="b-head">
+              <span className="b-id">⚠ {b.id}</span>
+              <span className="b-age">{b.age} · {b.severity}</span>
+            </div>
+            <div className="b-reason">{b.title}</div>
+            <div className="b-affect">
+              <span className="lbl">affects</span>
+              {b.affects.map(s => <span key={s} className="story blocked"><span className="dot-b" />{s}</span>)}
+              <span className="lbl" style={{marginLeft:6}}>· cycle</span>
+              <span className="mono">{cycle?.tag}</span>
+            </div>
+            <div className="b-affect" style={{marginTop:3}}>
+              <span className="lbl">owner</span>
+              <span className="mono">{b.owner}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+// Drawer — per-epic drill-down
+// ──────────────────────────────────────────────────────────────
+function Drawer({ epic, onClose, onOpenDoc }) {
+  if (!epic) return <div className="drawer-backdrop" />;
+  const cycle = CYCLES.find(c => c.id === epic.cycleId);
+  const artefacts = ARTEFACTS.filter(a => a.cycleId === epic.cycleId);
+  const blockers = BLOCKERS.filter(b => b.affects.some(s => epic.stories.map(x => x.id).includes(s)));
+
+  const phaseCounts = {};
+  for (const s of epic.stories) phaseCounts[s.phase] = (phaseCounts[s.phase] || 0) + 1;
+
+  return (
+    <>
+      <div className={`drawer-backdrop ${epic ? "open" : ""}`} onClick={onClose} />
+      <aside className={`drawer ${epic ? "open" : ""}`}>
+        <div className="drawer-head">
+          <div>
+            <div className="d-eyebrow">
+              <span>{cycle.tag} · {epic.id}</span>
+              <span>·</span>
+              <span>risk {epic.risk}</span>
+              <span>·</span>
+              <span>{epic.stories.length} stories</span>
+            </div>
+            <h3>{epic.name}</h3>
+          </div>
+          <button className="drawer-close" onClick={onClose}>close · esc</button>
+        </div>
+
+        <div className="drawer-body">
+          <section>
+            <h4>Stories by phase</h4>
+            <div className="mini-table">
+              {PHASES.filter(p => phaseCounts[p.key]).map(p => {
+                const here = epic.stories.filter(s => s.phase === p.key);
+                return (
+                  <div key={p.key} className="mt-row">
+                    <div className="mt-k">{p.i} · {p.loop}</div>
+                    <div className="mt-v">
+                      <div className="mono" style={{fontSize:10,color:"var(--ink-3)",marginBottom:3}}>{p.name}</div>
+                      <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+                        {here.map(s => (
+                          <span key={s.id}
+                                className={`story ${s.state}`}
+                                data-clickable="true"
+                                onClick={(e) => { e.stopPropagation(); onOpenDoc(docForStory(s, epic)); }}
+                                title={`${s.id}${s.name ? " · " + s.name : ""} · click to open story doc`}>
+                            {s.state === "blocked" && <span className="dot-b" />}
+                            {s.id}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mt-meta">{here.length}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          <section>
+            <h4>Cycle artefacts · {cycle.cycle || cycle.tag}</h4>
+            <div className="mini-table">
+              {artefacts.map(a => (
+                <div key={a.file} className="mt-row artefact-row" onClick={() => onOpenDoc(docForArtefact(a))}>
+                  <div className="mt-k">{PHASES[PHASE_IDX[a.phase]]?.name}</div>
+                  <div className="mt-v">{a.file} <span className="view-link" style={{marginLeft:6}}>open ↗</span></div>
+                  <div className="mt-meta">{a.status} · {a.sha}</div>
+                </div>
+              ))}
+              {artefacts.length === 0 && (
+                <div className="mt-row"><div className="mt-v muted" style={{gridColumn:"1 / -1"}}>no artefacts registered</div></div>
+              )}
+            </div>
+          </section>
+
+          {blockers.length > 0 && (
+            <section>
+              <h4>Blockers affecting this epic</h4>
+              <div className="mini-table">
+                {blockers.map(b => (
+                  <div key={b.id} className="mt-row">
+                    <div className="mt-k" style={{color:"var(--fail)"}}>{b.id}</div>
+                    <div className="mt-v">{b.title}</div>
+                    <div className="mt-meta">{b.age}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+
+        <div className="drawer-foot">
+          <div className="muted mono" style={{fontSize:10,letterSpacing:"0.08em"}}>
+            drill deeper →
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <button className="btn" onClick={onClose}>close</button>
+            <a className="btn primary" href={`pipeline.html?feature=${encodeURIComponent(epic.cycleId)}`}>Open feature dashboard →</a>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+// MdViewer — renders a markdown document in a right-side drawer
+// ──────────────────────────────────────────────────────────────
+function MdViewer({ doc, onClose }) {
+  const open = !!doc;
+  const [fetchedMd, setFetchedMd] = useState(null);
+  const [fetchState, setFetchState] = useState("idle"); // idle | loading | done
+  const [artefactList, setArtefactList] = useState([]); // available artefact paths
+  const [activeArtefact, setActiveArtefact] = useState(null);
+
+  // Fetch real .md artefacts when doc opens
+  useEffect(() => {
+    if (!doc) { setFetchedMd(null); setFetchState("idle"); setArtefactList([]); setActiveArtefact(null); return; }
+    const AF = window.ArtefactFetcher;
+    if (!AF || !doc.featureSlug) { setFetchState("done"); return; }
+
+    setFetchState("loading");
+    // Build artefact paths: story-specific + feature-level
+    const paths = [];
+    if (doc.storySlug) {
+      AF.storyPaths(doc.featureSlug, doc.storySlug).forEach(p => paths.push(p));
+    }
+    AF.featurePaths(doc.featureSlug).forEach(p => paths.push(p));
+
+    // Fetch all in parallel, keep the ones that resolve
+    Promise.all(paths.map(p =>
+      AF.fetch(p.path).then(content => content ? { ...p, content } : null)
+    )).then(results => {
+      const available = results.filter(Boolean);
+      setArtefactList(available);
+      // Auto-fetch the primary artefact (first story path that exists)
+      if (available.length > 0 && doc.storySlug) {
+        const primary = available.find(a => a.path.includes(doc.storySlug));
+        if (primary) { setFetchedMd(primary.content); setActiveArtefact(primary.path); }
+      }
+      setFetchState("done");
+    });
+  }, [doc?.key]);
+
+  const displayMd = activeArtefact && fetchedMd ? fetchedMd + "\n\n---\n\n" + (doc?.md || "") : (doc?.md || "");
+  const html = useMemo(() => doc ? (window.renderMarkdown?.(displayMd) || "") : "", [doc, displayMd]);
+
+  const loadArtefact = (a) => {
+    setActiveArtefact(a.path);
+    setFetchedMd(a.content);
+  };
+
+  // list of every doc in same cycle for prev/next nav
+  const sibling = useMemo(() => {
+    if (!doc) return { list: [], idx: -1 };
+    const list = ARTEFACTS
+      .filter(a => a.cycleId === doc.cycleId)
+      .map(a => docForArtefact(a));
+    const idx = list.findIndex(d => d.key === doc.key);
+    return { list, idx };
+  }, [doc]);
+
+  const jump = (delta) => {
+    const { list, idx } = sibling;
+    if (idx < 0 || list.length === 0) return;
+    const next = (idx + delta + list.length) % list.length;
+    window.dispatchEvent(new CustomEvent("mdv-jump", { detail: list[next] }));
+  };
+
+  const statusColor = doc && (
+    doc.status === "signed" ? "var(--pass)" :
+    doc.status === "draft"  ? "var(--gate)" :
+    doc.status === "live"   ? "var(--inner)" :
+    doc.status === "done"   ? "var(--pass)" :
+    doc.status === "current" ? "var(--inner)" :
+    doc.status === "blocked" ? "var(--fail)" :
+    "var(--ink-3)"
+  );
+
+  return (
+    <>
+      <div className={`mdv-backdrop ${open ? "open" : ""}`} onClick={onClose} />
+      <aside className={`mdv ${open ? "open" : ""}`} aria-hidden={!open}>
+        {doc && (
+          <>
+            <div className="mdv-head">
+              <div className="mdv-title">
+                <span>{doc.title}</span>
+                <span className="path">{doc.path}</span>
+              </div>
+              <span className="mdv-sha" style={{color: statusColor, borderColor: `color-mix(in oklch, ${statusColor} 40%, var(--rule))`}}>
+                {doc.status}
+              </span>
+              <button className="mdv-close" onClick={onClose}>close · esc</button>
+            </div>
+            {artefactList.length > 0 && (
+              <div className="mdv-artefact-nav" style={{
+                display:"flex", gap:4, padding:"6px 16px", borderBottom:"1px solid var(--rule)",
+                background:"var(--paper-2)", flexWrap:"wrap", fontSize:11,
+                fontFamily:"var(--font-mono)", letterSpacing:"0.04em",
+              }}>
+                <span style={{color:"var(--ink-3)", marginRight:4}}>artefacts:</span>
+                {artefactList.map(a => (
+                  <button key={a.path}
+                    onClick={() => loadArtefact(a)}
+                    style={{
+                      background: activeArtefact === a.path ? "var(--ink)" : "var(--paper-3)",
+                      color: activeArtefact === a.path ? "var(--paper)" : "var(--ink-2)",
+                      border: "1px solid var(--rule)", padding: "2px 8px", cursor: "pointer",
+                      fontFamily: "var(--font-mono)", fontSize: 10, borderRadius: 2,
+                    }}>
+                    {a.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="mdv-body" key={doc.key + (activeArtefact || "")}>
+              {fetchState === "loading" && (
+                <div style={{padding:16, color:"var(--ink-3)", fontFamily:"var(--font-mono)", fontSize:11}}>
+                  Loading artefacts…
+                </div>
+              )}
+              <article className="md" dangerouslySetInnerHTML={{ __html: html }} />
+            </div>
+            <div className="mdv-foot">
+              <div>sha · {doc.sha}</div>
+              <div className="nav-btns">
+                {sibling.list.length > 1 && (
+                  <>
+                    <button className="mdv-close" onClick={() => jump(-1)}>← prev artefact</button>
+                    <button className="mdv-close" onClick={() => jump(+1)}>next artefact →</button>
+                  </>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </aside>
+    </>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+function FooterBar() {
+  return (
+    <footer>
+      <div className="mono">state · workspace/state.json + 3 mocked cycles</div>
+      <div className="legend">
+        <span className="item"><span className="sw outer" /> outer</span>
+        <span className="item"><span className="sw inner" /> inner</span>
+        <span className="item"><span className="sw gate" /> gate</span>
+        <span className="item"><span className="sw improve" /> improve</span>
+        <span className="item"><span className="sw blk" /> blocked</span>
+      </div>
+      <div style={{textAlign:"right"}}>
+        <span className="muted">click an epic row · </span>
+        <span className="kbd">t</span>
+        <span className="muted"> tweaks · </span>
+        <span className="kbd">esc</span>
+      </div>
+    </footer>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+function Tweaks({ open, onClose, theme, setTheme, density, setDensity, layout, setLayout }) {
+  const Seg = ({ value, onChange, options }) => (
+    <div className="seg">
+      {options.map(o => (
+        <button key={o.v} className={value === o.v ? "active" : ""} onClick={() => onChange(o.v)}>{o.l}</button>
+      ))}
+    </div>
+  );
+  return (
+    <div className={`tweaks ${open ? "open" : ""}`}>
+      <header>
+        <span>Tweaks</span>
+        <button style={{appearance:"none",border:0,background:"transparent",color:"var(--ink-3)",cursor:"pointer"}} onClick={onClose}>×</button>
+      </header>
+      <div className="row">
+        <label>Layout</label>
+        <Seg value={layout} onChange={setLayout} options={[{v:"swimlane",l:"Swimlane"},{v:"kanban",l:"Kanban"}]} />
+      </div>
+      <div className="row">
+        <label>Theme</label>
+        <Seg value={theme} onChange={setTheme} options={[{v:"light",l:"Light"},{v:"dark",l:"Dark"}]} />
+      </div>
+      <div className="row">
+        <label>Density</label>
+        <Seg value={density} onChange={setDensity} options={[{v:"comfortable",l:"Comfort"},{v:"compact",l:"Compact"}]} />
+      </div>
+    </div>
+  );
+}
+
+const __root = ReactDOM.createRoot(document.getElementById("root"));
+let __appKey = 0;
+__root.render(<App key={__appKey} />);
+window.addEventListener('pipeline-loaded', () => {
+  if (window.CYCLES) { CYCLES.length = 0; window.CYCLES.forEach(c => CYCLES.push(c)); }
+  if (window.EPICS)  { EPICS.length  = 0; window.EPICS.forEach(e => EPICS.push(e)); }
+  __root.render(<App key={++__appKey} />);
+});
+</script>
+</body>
+</html>

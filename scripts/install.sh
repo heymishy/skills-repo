@@ -133,7 +133,7 @@ copy_file ".github/pull_request_template.md"   "$TARGET_DIR/.github/pull_request
 copy_file ".github/architecture-guardrails.md" "$TARGET_DIR/.github/architecture-guardrails.md"
 copy_file ".github/pipeline-state.json"        "$TARGET_DIR/.github/pipeline-state.json"
 copy_file ".github/pipeline-state.schema.json" "$TARGET_DIR/.github/pipeline-state.schema.json"
-copy_file ".github/pipeline-viz.html"          "$TARGET_DIR/.github/pipeline-viz.html"
+copy_file "dashboards/pipeline-viz.html"        "$TARGET_DIR/dashboards/pipeline-viz.html"
 copy_file "docs/skill-pipeline-instructions.md"  "$TARGET_DIR/docs/skill-pipeline-instructions.md"
 
 # ── Step 2: Context profiles ───────────────────────────────────────────────────
@@ -324,7 +324,7 @@ PYEOF
   echo "  Next steps:"
   echo "    1. Fill in product/ (mission, roadmap, tech-stack, constraints)"
   echo "    2. Fill in .github/standards/ domain stubs with your rules"
-  echo "    3. Open pipeline-viz.html in browser (Live Server or file://)"
+  echo "    3. Open dashboards/pipeline-viz.html in browser (Live Server or file://)"
   echo "    4. Run /workflow to start your first feature"
   echo ""
 fi

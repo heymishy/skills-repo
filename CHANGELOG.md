@@ -6,7 +6,13 @@ All notable changes to this repository will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- **`pipeline-viz.html` deprecated to `dashboards/` (2026-04-19):** Moved `.github/pipeline-viz.html` to `dashboards/pipeline-viz.html` as a deprecated backup. Updated all 16 referencing files: check-viz-syntax.js, check-governance-sync.js, viz-functions.js paths; install.sh/ps1, sync-from-upstream.sh/ps1 copy paths; copilot-setup-steps.yml error message; architecture-guardrails.md, governance-gates.yml, validation-playbook.md, HANDOFF.md, skill-pipeline-instructions.md, pipeline-state.md, config.yml documentation references. CHANGELOG.md historical entries left as-is.
+
 ### Added
+
+- **2026-04-18-dashboard-v2 — artefact chain (2026-04-18):** Full pipeline artefact chain produced for the dashboard v2 feature: discovery.md (approved, E1 estimate 3–5h, complexity 2), benefit-metric.md (3 metrics: M1 dashboard fidelity, MM1 CI governance coverage, MM2 Pages deployment health), 3 stories (dviz.1 pipeline adapter, dviz.2 pages.yml workflow, dviz.3 governance check), 3 test plans (25 tests total: T1-T10/T1-T8/T1-T7), nfr-profile.md, and 6 DoR artefacts (dviz.1/dviz.2/dviz.3 × dor.md + dor-contract.md). All 14/14 DoR hard blocks pass on all 3 stories. Scope: `dashboards/pipeline-adapter.js` wires index.html to live pipeline-state.json data; `.github/workflows/pages.yml` deploys dashboards/ to GitHub Pages; `tests/check-dashboard-viz.js` extends CI governance to cover dashboards/*.js files. No schema changes to pipeline-state.json required — all stage/health mappings bridged in the adapter. Out of scope: pipeline-viz.html deletion, secondary views real-data wiring, fleet dashboard, pipeline.html, auth. Pipeline state updated: feature entry added at stage `definition-of-ready`.
 
 - **skill-performance-capture feature — Definition of Done (2026-04-18):** Feature-level DoD check complete. Outcome: COMPLETE. All 5 stories (spc.1–spc.5) AC-verified (spc.3 AC2/AC3 manual live-session gaps pre-acknowledged via RISK-ACCEPT DoR-W4-spc.3). 42 automated tests passing; 3 manual scenarios acknowledged. All 6 NFRs evidenced. 4 benefit metrics (m1: capture completeness rate, mm1: context breadth, mm2: constraint inference, mm3: artefact linkage) remain `not-yet-measured` — infrastructure delivered, first signal requires a live session with `instrumentation.enabled:true`. DoD artefact at `artefacts/2026-04-18-skill-performance-capture/dod/feature-dod.md`. NFR profile updated to Verified. Pipeline state updated with `dodStatus: complete` on all 5 stories.
 

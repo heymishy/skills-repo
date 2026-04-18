@@ -35,7 +35,7 @@ jobs:
         run: |
           node .github/scripts/check-governance-sync.js 2>&1
           if [ $? -ne 0 ]; then
-            echo "::error::Governance sync failed — see output above for specific mismatches between governance-gates.yml and DEFAULT_GOVERNANCE_GATES in pipeline-viz.html. Fix before writing any code."
+            echo "::error::Governance sync failed — see output above for specific mismatches between governance-gates.yml and DEFAULT_GOVERNANCE_GATES in dashboards/pipeline-viz.html. Fix before writing any code."
             exit 1
           fi
 

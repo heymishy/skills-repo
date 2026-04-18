@@ -13,7 +13,7 @@ DRY_RUN="${3:-}"
 PATHS=(
   ".github/skills/"
   ".github/templates/"
-  ".github/pipeline-viz.html"
+  "dashboards/pipeline-viz.html"
   ".github/copilot-instructions.md"
   ".github/pipeline-state.schema.json"
   ".github/architecture-guardrails.md"

@@ -26,14 +26,14 @@
 
 This repository is a **skills-based SDLC pipeline library** — not an application.
 It contains:
-- `pipeline-viz.html` — single-file HTML/CSS/JS pipeline visualisation tool
+- `dashboards/pipeline-viz.html` — single-file HTML/CSS/JS pipeline visualisation tool
 - `.github/skills/*/SKILL.md` — agent skill instruction files (Markdown)
 - `.github/templates/*.md` — artefact templates (Markdown)
 - `.github/pipeline-state.json` + `pipeline-state.schema.json` — live + schema state files
 - `.github/scripts/` — Node.js pre-commit hooks and validators
 - `artefacts/` — per-feature pipeline artefacts produced during delivery
 
-Architecture guardrails apply to changes to the viz (`pipeline-viz.html`), the schema (`pipeline-state.schema.json`), and any new scripts added under `.github/scripts/`.
+Architecture guardrails apply to changes to the viz (`dashboards/pipeline-viz.html`), the schema (`pipeline-state.schema.json`), and any new scripts added under `.github/scripts/`.
 
 Skill files and templates are content, not code — they are governed by pipeline process, not these guardrails.
 
@@ -47,7 +47,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 
 ## Style Guide
 
-**Viz (`pipeline-viz.html`):**
+**Viz (`dashboards/pipeline-viz.html`):**
 - All styles live in the inline `<style>` block — no external CSS files
 - CSS custom properties (`--var-name`) for all colours and spacing values
 - No CSS frameworks (Bootstrap, Tailwind, etc.) — keep the file self-contained
@@ -69,8 +69,8 @@ Skill files and templates are content, not code — they are governed by pipelin
 
 | Capability | Reference path | Notes |
 |---|---|---|
-| Feature card rendering | `.github/pipeline-viz.html` — `featureCardHTML()` | Pattern for how state fields map to UI elements |
-| Governance gate evaluation | `.github/pipeline-viz.html` — `evaluateGate()` | Pattern for reading state fields and producing pass/warn/fail |
+| Feature card rendering | `dashboards/pipeline-viz.html` — `featureCardHTML()` | Pattern for how state fields map to UI elements |
+| Governance gate evaluation | `dashboards/pipeline-viz.html` — `evaluateGate()` | Pattern for reading state fields and producing pass/warn/fail |
 | JSON schema definition | `.github/pipeline-state.schema.json` | All new state fields must be added here before being used |
 | Pre-commit validation | `.github/scripts/check-viz-syntax.js` | Pattern for adding new validators |
 | Skill structural contracts | `.github/scripts/check-skill-contracts.js` | Defines required markers per skill; extend when adding structural invariants |
@@ -80,7 +80,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 
 ## Approved Patterns
 
-- **Viz architecture:** Single-file HTML — all JS, CSS, and markup inline in `pipeline-viz.html`. No build step. No external runtime dependencies.
+- **Viz architecture:** Single-file HTML — all JS, CSS, and markup inline in `dashboards/pipeline-viz.html`. No build step. No external runtime dependencies.
 - **State access in viz:** Read from the parsed `pipelineState` global — never fetch or import. State is loaded via `<script>` tag injection or `fetch('./pipeline-state.json')`.
 - **Gate logic:** Gate pass/fail is determined by reading specific evidence fields from `pipeline-state.json` stories — not by checking `feature.stage` alone (see ADR-002).
 - **Schema evolution:** Add new fields to `pipeline-state.schema.json` at the same time as adding them to any skill or viz code that reads or writes them. Schema and implementation stay in sync.
@@ -100,7 +100,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 | Hardcoding org/tool names in skill files | Breaks when context changes; violates configurability | Use `context.yml` fields via the skill's config-reading step |
 | External CDN dependencies in viz at runtime | Breaks offline use; supply chain risk | Bundle or inline, or omit |
 | Adding fields used by viz/skills but not in schema | Schema becomes stale; validators miss them | Add to `pipeline-state.schema.json` simultaneously |
-| Committing changes to `pipeline-viz.html` without passing `check-viz-syntax.js` | Breaks the pre-commit gate silently | Run `node .github/scripts/check-viz-syntax.js` locally before committing |
+| Committing changes to `dashboards/pipeline-viz.html` without passing `check-viz-syntax.js` | Breaks the pre-commit gate silently | Run `node .github/scripts/check-viz-syntax.js` locally before committing |
 | Deleting or mutating pipeline artefacts in `pipeline-state.json` directly | Can corrupt feature history | Use skills to write state; manual edits only for scaffolding |
 | Bundling changes from story B into story A's PR | Makes root-cause traceability noisy; DoD evidence becomes ambiguous; violates ADR-008 | One PR per story; amend the DoR contract if scope genuinely expands |
 | Committing runtime artefact churn (trace files, validation reports) in story branches | Non-functional CI side effects inflate diff noise and make PR review harder | Add generated runtime paths to `.gitignore`; do not commit `workspace/traces/` or `trace-validation-report.json` in story branches |
@@ -118,8 +118,8 @@ Skill files and templates are content, not code — they are governed by pipelin
 - Any field read by the viz from `pipeline-state.json` must exist in `pipeline-state.schema.json`
 
 ### Self-containment
-- `pipeline-viz.html` must open and render correctly without any build step, server, or network access
-- No npm `devDependencies` may be added to `pipeline-viz.html` at runtime; pre-commit scripts may use Node.js built-ins only
+- `dashboards/pipeline-viz.html` must open and render correctly without any build step, server, or network access
+- No npm `devDependencies` may be added to `dashboards/pipeline-viz.html` at runtime; pre-commit scripts may use Node.js built-ins only
 
 ### Security
 - No user-supplied content is ever injected into innerHTML without sanitisation
@@ -140,7 +140,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 
 | # | Status | Title | Constrains |
 |---|---|---|---|
-| ADR-001 | Active | Single-file viz, no build step | `pipeline-viz.html` architecture |
+| ADR-001 | Active | Single-file viz, no build step | `dashboards/pipeline-viz.html` architecture |
 | ADR-002 | Active | Gates must use evidence fields, not stage-proxy | All `evaluateGate()` implementations |
 | ADR-003 | Active | Schema-first: fields defined before use | `pipeline-state.schema.json` evolution |
 | ADR-004 | Active | `context.yml` is the single config source of truth | Skill files, viz config reading |
@@ -164,7 +164,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 The viz tool needs to be usable by anyone with a browser and a local clone — no Node, no npm install, no build step. It is a supporting tool for the pipeline, not a product.
 
 #### Decision
-`pipeline-viz.html` is a single self-contained file. All JS, CSS, and markup are inline. No external runtime npm dependencies. No bundler (webpack, vite, esbuild).
+`dashboards/pipeline-viz.html` is a single self-contained file. All JS, CSS, and markup are inline. No external runtime npm dependencies. No bundler (webpack, vite, esbuild).
 
 #### Consequences
 **Easier:** Zero setup to open and use. No dependency drift. No build pipeline to maintain.
@@ -439,7 +439,7 @@ This repository is operated by a single engineer. The following posture applies 
   GUARDRAILS_REGISTRY — Machine-parseable guardrail index.
   
   This block is read by:
-  - pipeline-viz.html (Guardrails Compliance sub-panel in governance view)
+  - dashboards/pipeline-viz.html (Guardrails Compliance sub-panel in governance view)
   - /review skill (Category E checklist)
   - /definition-of-ready (H9 guardrail compliance check)
   - /trace (architecture compliance check)
@@ -505,12 +505,12 @@ This repository is operated by a single engineer. The following posture applies 
 
 - id: MC-SELF-01
   category: mandatory-constraint
-  label: "pipeline-viz.html renders without build step, server, or network"
+  label: "dashboards/pipeline-viz.html renders without build step, server, or network"
   section: Self-containment
 
 - id: MC-SELF-02
   category: mandatory-constraint
-  label: "No npm devDependencies in pipeline-viz.html runtime"
+  label: "No npm devDependencies in dashboards/pipeline-viz.html runtime"
   section: Self-containment
 
 - id: MC-CONSIST-01

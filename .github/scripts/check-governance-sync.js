@@ -16,7 +16,7 @@ const path = require('path');
 
 const root     = path.join(__dirname, '..', '..');
 const ymlPath  = path.join(root, '.github', 'governance-gates.yml');
-const vizPath  = path.join(root, '.github', 'pipeline-viz.html');
+const vizPath  = path.join(root, 'dashboards', 'pipeline-viz.html');
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
