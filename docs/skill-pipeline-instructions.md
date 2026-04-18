@@ -90,7 +90,7 @@ rm -rf /tmp/skills-repo
 ```
 </details>
 
-The installer copies all skills, templates, `context.yml`, `pipeline-state.json`, `pipeline-viz.html`, and standards domain files (`.github/standards/`) into `.github/` of your repo. It also copies `scripts/sync-from-upstream.ps1` and `sync-from-upstream.sh` for future updates. With `--upstream-strategy remote` or `fork` it also wires a `skills-upstream` git remote.
+The installer copies all skills, templates, `context.yml`, `pipeline-state.json`, `dashboards/pipeline-viz.html`, and standards domain files (`.github/standards/`) into your repo. It also copies `scripts/sync-from-upstream.ps1` and `sync-from-upstream.sh` for future updates. With `--upstream-strategy remote` or `fork` it also wires a `skills-upstream` git remote.
 
 > **Enterprise fork note:** The org fork (`your-org/sdlc-skills`) is created once by your platform team. All project repos point at it. The platform team controls when upstream changes from `heymishy/skills-repo` are merged in before distributing to teams.
 
@@ -634,7 +634,7 @@ Skills that enforce it: `/review` (Category E), `/definition` (Step 1.5), `/defi
 
 ## Pipeline visualiser
 
-`.github/pipeline-viz.html` is a single-file SPA that reads `pipeline-state.json` and renders the current state of every feature in the pipeline.
+`dashboards/pipeline-viz.html` is a single-file SPA that reads `pipeline-state.json` and renders the current state of every feature in the pipeline.
 
 ![Pipeline visualiser — stage board with outer loop, inner loop, governance matrix, action queue, and outcomes view](diagrams/pipeline-vis-example.png)
 
@@ -827,7 +827,6 @@ This creates all skill files, templates, the instruction file, and the artefacts
     work.yml                       ← profile: enterprise Atlassian + regulated stack
   pull_request_template.md         ← PR checklist with AC and chain traceability fields
   architecture-guardrails.md       ← live guardrails file (create from template)
-  pipeline-viz.html                ← pipeline visualiser (open in browser with a local server)
   pipeline-state.json              ← live pipeline state (written by skills on every transition)
   pipeline-state.schema.json       ← JSON schema for pipeline-state.json
   trace-validation.yml             ← per-check hard-fail toggles + PR label exemptions
@@ -843,6 +842,8 @@ This creates all skill files, templates, the instruction file, and the artefacts
   workflows/
     trace-validation.yml           ← CI traceability check (GitHub Actions — only installed for ci: github-actions repos)
 config.yml                         ← install profile config (included skills, required placeholders)
+dashboards/
+  pipeline-viz.html                ← pipeline visualiser (open in browser)
 scripts/
   install.sh                       ← bash installer for Linux/macOS
   install.ps1                      ← PowerShell installer for Windows

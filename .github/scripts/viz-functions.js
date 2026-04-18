@@ -2,7 +2,7 @@
 /**
  * viz-functions.js
  *
- * Pure functions extracted from pipeline-viz.html for unit testing.
+ * Pure functions extracted from dashboards/pipeline-viz.html for unit testing.
  * Logic is identical to the browser version — no changes to behaviour.
  * Exported as CommonJS for consumption by check-viz-behaviour.js.
  *
@@ -28,7 +28,7 @@
 'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CONSTANTS  (mirrored from pipeline-viz.html CONFIG block)
+// CONSTANTS  (mirrored from dashboards/pipeline-viz.html CONFIG block)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const STAGES = [
@@ -543,7 +543,7 @@ function buildExportCSV(state) {
 // ─────────────────────────────────────────────────────────────────────────────
 // renderFleetPanel
 // Fleet panel rendering — pure HTML string from fleet-state.json squads array.
-// Used by pipeline-viz.html fleet panel and tested by check-viz-behaviour.js.
+// Used by dashboards/pipeline-viz.html fleet panel and tested by check-viz-behaviour.js.
 //
 // A11Y MC-A11Y-02: health shown as colour class PLUS text label (not colour alone).
 // A11Y MC-A11Y-01: squad cards rendered as <a> elements — natively keyboard-focusable.
