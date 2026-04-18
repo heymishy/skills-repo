@@ -75,7 +75,7 @@ Hash verification at envelope-build time is the audit anchor: whatever the agent
 
 A common first reaction to "CLI as control plane" is to imagine one fat program. That is not the shape.
 
-The CLI is a Unix-style **collection of small sharp commands**. `fetch`, `pin`, `verify`, `advance`, `emit-trace`, `upgrade`, and more as the workflow requires. Each command does one procedural thing well.
+The CLI is a Unix-style **collection of small sharp commands**. `fetch`, `pin`, `verify`, `workflow`, `advance`, `back`, `navigate`, `emit-trace`, `upgrade`, and more as the workflow requires. Each command does one procedural thing well.
 
 `coreutils` ships around a hundred commands and nobody calls that a Unix violation. Same logic applies.
 
@@ -87,7 +87,7 @@ The discipline that matters is not the size of the toolbox. It is that **every i
 
 The workflow is a declared artefact: checked in, versioned, hash-verifiable. It is not ambient in the agent's head or the user's head.
 
-It declares the ordered sequence of skills, the entry condition for each step, the skill hashes that must match at runtime, the expected output shape for each step, the approval gates where human signal is structurally required, and the approval channel that fulfils each gate.
+It declares the **graph** of skill steps and their allowed transitions (sequential, branching, or back-references), the entry condition for each step, the skill hashes that must match at runtime, the expected output shape for each step, the approval gates where human signal is structurally required, and the approval channel that fulfils each gate.
 
 Being first-class means the workflow can be consumed by more than one runtime. The CLI runs it on a developer laptop. A CI system runs the same workflow against a pull request. A chat-native harness can consume it to drive progressive skill disclosure in an interactive session. Same declared artefact, same structural sequence, different executors.
 
@@ -95,7 +95,7 @@ Being first-class means the workflow can be consumed by more than one runtime. T
 
 ## The shape of one step
 
-1. CLI reads the workflow, identifies the next step.
+1. CLI reads the workflow, identifies the next step (or surfaces options if the current node declares multiple transitions — operator picks).
 2. CLI builds the seam envelope (fetch skill body, verify hash, gather context, set constraints).
 3. CLI hands envelope to agent.
 4. Agent reads the skill, reasons, produces the artefact.

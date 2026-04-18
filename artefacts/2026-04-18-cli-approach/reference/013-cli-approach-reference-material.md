@@ -153,7 +153,7 @@ A **first-class declared artefact**. Checked in, versioned, hash-verifiable. Ans
 
 Declares:
 
-- The ordered sequence of skills to invoke.
+- The graph of skill steps and their allowed transitions (sequential, branching, or back-references).
 - The entry condition for each step.
 - The skill hashes that must match at runtime.
 - The expected output shape for each step.
@@ -242,7 +242,10 @@ The CLI is not one fat program. It is a collection of small sharp commands, each
 - `fetch` — retrieve declared content (skills, templates, standards) from the declared source; hash-verify on arrival.
 - `pin` — write a lockfile capturing the fetched content hashes.
 - `verify` — re-verify hashes against the lockfile; re-check artefact shapes.
-- `advance` — move the workflow to the next step, updating state.
+- `workflow` — surface current node + available transitions.
+- `advance` — take the default transition (or `--to=<step>`).
+- `back` — retreat one step (if permitted by the workflow declaration).
+- `navigate <step>` — jump to any reachable node.
 - `emit-trace` — write a trace artefact for independent recording.
 - `upgrade` — re-fetch against a newer source ref, diff, confirm, re-pin.
 - `init` — scaffold the sidecar, seed the workflow reference.
@@ -256,6 +259,8 @@ Each individual tool must stay **deterministic and sharp**. The collection can g
 ## 8. Workflow as first-class declared artefact
 
 The workflow is **not ambient** in any actor's head. It is a declared file, committed, versioned, hash-verified.
+
+The declaration is a **graph** of skill steps and their allowed transitions — sequential paths, branches with operator-chosen targets, back-references for retreat. Linear pipelines are one shape; multi-path navigation (`/workflow → any skill anytime`) is another. The CLI executes whatever topology the workflow declares.
 
 ### 8.1 Multiple runtimes may consume it
 
