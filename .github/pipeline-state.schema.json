@@ -6,7 +6,9 @@
   "required": ["version", "updated", "features"],
   "properties": {
     "version": { "type": "string", "description": "Schema version, currently 1" },
-    "updated": { "type": "string", "format": "date-time", "description": "ISO 8601 timestamp of last write" },  "config": {
+    "updated": { "type": "string", "format": "date-time", "description": "ISO 8601 timestamp of last write" },
+    "archive": { "type": "string", "description": "Relative path to the archive file containing completed features, e.g. .github/pipeline-state-archive.json" },
+    "config": {
     "type": "object",
     "description": "Repo-level config bridged from context.yml by skills. Consumed by the viz to set default governance mode.",
     "properties": {
