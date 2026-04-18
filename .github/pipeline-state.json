@@ -807,7 +807,7 @@
       "name": "Auditor Trace Report — CLI audit chain report generator",
       "stage": "definition-of-ready",
       "health": "green",
-      "track": "short-track",
+      "track": "short",
       "discoveryArtefact": "artefacts/2026-04-18-auditor-trace-report/discovery.md",
       "benefitMetricArtefact": "artefacts/2026-04-18-auditor-trace-report/benefit-metric.md",
       "metaBenefit": false,
