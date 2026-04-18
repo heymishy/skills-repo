@@ -2624,7 +2624,14 @@ function Tweaks({ open, onClose, theme, setTheme, density, setDensity, layout, s
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+const __root = ReactDOM.createRoot(document.getElementById("root"));
+let __appKey = 0;
+__root.render(<App key={__appKey} />);
+window.addEventListener('pipeline-loaded', () => {
+  if (window.CYCLES) { CYCLES.length = 0; window.CYCLES.forEach(c => CYCLES.push(c)); }
+  if (window.EPICS)  { EPICS.length  = 0; window.EPICS.forEach(e => EPICS.push(e)); }
+  __root.render(<App key={++__appKey} />);
+});
 </script>
 </body>
 </html>

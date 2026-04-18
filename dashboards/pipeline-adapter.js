@@ -3,11 +3,12 @@
  * Reads .github/pipeline-state.json and exposes window.CYCLES + window.EPICS
  * in the shape expected by dashboards/index.html.
  *
- * Runs synchronously before the Babel/React block so data is available at
- * component bootstrap. Tries two paths:
- *   1. pipeline-state.json  — same directory (GitHub Pages after workflow copy)
- *   2. ../.github/pipeline-state.json  — local dev server from repo root
- * Falls back silently; index.html falls back to inline mock data.
+ * Uses async fetch. Once data arrives, dispatches 'pipeline-loaded' so
+ * index.html can remount React with live data.
+ *
+ * URL candidates (resolved relative to document, not this script):
+ *   1. pipeline-state.json          — same directory (GitHub Pages copy step)
+ *   2. ../.github/pipeline-state.json — Live Server / local dev from repo root
  *
  * Security (MC-SEC-02): no credentials, tokens, or personal identifiers.
  */
@@ -101,23 +102,25 @@
       });
     });
     window.EPICS = epics;
+    window.dispatchEvent(new CustomEvent('pipeline-loaded'));
+    console.log('[pipeline-adapter] loaded ' + window.CYCLES.length + ' feature(s)');
   }
 
-  // ── Synchronous XHR load ─────────────────────────────────────────
-  function loadSync(url) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, false); // synchronous — intentional for pre-render population
-    xhr.send();
-    if (xhr.status === 200) return JSON.parse(xhr.responseText);
-    return null;
-  }
-
-  // Try local copy first (Pages deployment), then relative path for dev server
+  // ── Async fetch — try candidates in order ────────────────────────
+  // fetch() resolves relative URLs against the document URL, not this script.
+  // From http://127.0.0.1:5500/dashboards/index.html:
+  //   ./pipeline-state.json          → /dashboards/pipeline-state.json  (Pages deployment)
+  //   ../.github/pipeline-state.json → /.github/pipeline-state.json     (Live Server / dev)
   var candidates = ['./pipeline-state.json', '../.github/pipeline-state.json'];
-  for (var i = 0; i < candidates.length; i++) {
-    try {
-      var state = loadSync(candidates[i]);
-      if (state) { transform(state); break; }
-    } catch (e) { /* next candidate */ }
+  function tryLoad(i) {
+    if (i >= candidates.length) {
+      console.warn('[pipeline-adapter] could not load pipeline-state.json — dashboard shows mock data');
+      return;
+    }
+    fetch(candidates[i])
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (data) { transform(data); })
+      .catch(function () { tryLoad(i + 1); });
   }
+  tryLoad(0);
 })();
