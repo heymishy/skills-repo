@@ -733,6 +733,22 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 |---------|-----------|---------------------------|-------------|
 | **GitHub Copilot coding agent** (current) | Autonomous, no operator time, creates own PR | Empty PR pattern (D7, D8), no way to inspect mid-execution, black box when it stalls, cannot push to external repos | Simple single-repo stories with clear file paths; stories where failing tests already exist on master |
 | **VS Code Copilot agent** (this session pattern) | Full workspace context, operator can monitor and intervene, can read all artefact files, can run tests interactively | Requires operator focus time, not fully autonomous, single-threaded (one story at a time) | Complex stories, external repo dependencies, stories requiring orientation across many files, stories where the agent needs mid-execution guidance |
+
+---
+
+## D9 — Short-track features must still have discovery.md for trace validation
+
+**Date:** 2026-04-18
+**Detected at:** CI on PR #169 (trace validation hard-fail)
+**Severity:** Medium (blocks PR merge until fixed)
+
+**What happened:** The `2026-04-18-pipeline-state-archive` feature was created as a short-track (story originated from D8 learning, not a formal `/discovery` run). Story, test plan, review, and DoR artefacts were all created correctly — but no `discovery.md` was written. The `check_discovery_exists` hard-fail check in `scripts/validate-trace.sh` requires every directory under `artefacts/` (not listed in `.github/trace-validation.yml` `reference_dirs`) to have a `discovery.md`. CI failed.
+
+**Root cause:** The operator/agent workflow for short-track features assumed that "short-track = skip discovery" meant no discovery *artefact* was needed. In reality, `copilot-instructions.md` says short-track is `/test-plan → /definition-of-ready → coding agent` — it skips the formal `/discovery` *skill run*, but the trace validation CI check doesn't distinguish between formal and short-track features. Every feature directory needs a discovery.md on disk regardless of how it was initiated.
+
+**Fix applied:** Created a minimal `discovery.md` (Status: Approved) for the archive feature, modelled on the dashboard-v2 short-track discovery format.
+
+**Preventive rule:** When creating any new feature directory under `artefacts/`, always create a `discovery.md` — even for short-track features. The discovery can be minimal (problem statement, MVP scope, Status: Approved) but must exist to pass trace validation. Alternatively, add the directory to `reference_dirs` in `.github/trace-validation.yml` if it genuinely isn't a feature (e.g. reference packages, docs-only directories).
 | **Claude Code** (CLI agent) | Deep context window, strong multi-file editing, can be given explicit tool access, good at TDD cycles, can be pointed at specific repos | Requires local setup / API key, no native GitHub PR integration (manual PR step), operator must monitor terminal | Stories requiring deep codebase understanding, large refactors, stories touching 5+ files |
 | **Cursor** (AI IDE) | Visual file context, inline diff review, multi-model support, composer mode for multi-file changes | Requires operator presence in Cursor IDE, not automatable for batch dispatch, no headless mode | Interactive implementation sessions, stories where the operator wants to pair with the agent, UI-heavy or layout work |
 
