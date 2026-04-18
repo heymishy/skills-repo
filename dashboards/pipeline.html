@@ -1,0 +1,1622 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Pipeline — Skills Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  :root {
+    /* light (paper) */
+    --paper: oklch(0.985 0.004 85);
+    --paper-2: oklch(0.965 0.006 85);
+    --paper-3: oklch(0.945 0.008 85);
+    --rule: oklch(0.88 0.008 85);
+    --rule-strong: oklch(0.78 0.010 85);
+    --ink: oklch(0.22 0.012 270);
+    --ink-2: oklch(0.38 0.012 270);
+    --ink-3: oklch(0.55 0.010 270);
+    --ink-4: oklch(0.70 0.008 270);
+
+    --outer: oklch(0.48 0.11 250);   /* blue */
+    --inner: oklch(0.48 0.10 190);   /* teal */
+    --gate:  oklch(0.58 0.11 75);    /* amber */
+    --improve: oklch(0.50 0.11 300); /* violet */
+    --pass: oklch(0.52 0.10 150);    /* green */
+    --fail: oklch(0.55 0.14 25);     /* red */
+
+    --outer-wash: oklch(0.95 0.025 250);
+    --inner-wash: oklch(0.95 0.025 190);
+    --gate-wash:  oklch(0.95 0.030 75);
+    --improve-wash: oklch(0.95 0.025 300);
+
+    /* density */
+    --pad-1: 6px; --pad-2: 12px; --pad-3: 18px; --pad-4: 28px; --pad-5: 44px;
+    --row-h: 44px;
+
+    --font-serif: "Source Serif 4", ui-serif, Georgia, serif;
+    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  html[data-theme="dark"] {
+    --paper: oklch(0.16 0.008 270);
+    --paper-2: oklch(0.20 0.010 270);
+    --paper-3: oklch(0.24 0.012 270);
+    --rule: oklch(0.30 0.012 270);
+    --rule-strong: oklch(0.40 0.012 270);
+    --ink: oklch(0.94 0.006 85);
+    --ink-2: oklch(0.80 0.006 85);
+    --ink-3: oklch(0.65 0.008 85);
+    --ink-4: oklch(0.50 0.010 85);
+
+    --outer: oklch(0.72 0.12 250);
+    --inner: oklch(0.72 0.11 190);
+    --gate:  oklch(0.78 0.13 75);
+    --improve: oklch(0.72 0.12 300);
+    --pass: oklch(0.72 0.12 150);
+    --fail: oklch(0.72 0.15 25);
+
+    --outer-wash: oklch(0.26 0.045 250);
+    --inner-wash: oklch(0.26 0.040 190);
+    --gate-wash:  oklch(0.27 0.050 75);
+    --improve-wash: oklch(0.26 0.045 300);
+  }
+  html[data-density="compact"] {
+    --pad-1: 4px; --pad-2: 8px; --pad-3: 12px; --pad-4: 18px; --pad-5: 28px;
+    --row-h: 34px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+  body {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+  html[data-density="compact"] body { font-size: 13px; }
+
+  ::selection { background: var(--gate-wash); color: var(--ink); }
+
+  .app {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
+
+  /* ───────── Top ledger bar ───────── */
+  .ledger-bar {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: end;
+    gap: var(--pad-4);
+    padding: var(--pad-4) var(--pad-5) var(--pad-3);
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper);
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+  .eyebrow .sep { color: var(--ink-4); }
+  .eyebrow .live {
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .eyebrow .live::before {
+    content: "";
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--pass);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--pass) 20%, transparent);
+  }
+  h1.title {
+    font-family: var(--font-serif);
+    font-weight: 300;
+    font-size: 38px;
+    letter-spacing: -0.015em;
+    line-height: 1.05;
+    margin: 6px 0 2px;
+    color: var(--ink);
+  }
+  html[data-density="compact"] h1.title { font-size: 30px; }
+  .subtitle {
+    color: var(--ink-2);
+    font-size: 14px;
+    max-width: 820px;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .ledger-meta {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    gap: var(--pad-3);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    text-align: right;
+  }
+  .ledger-meta dt { text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-4); font-size: 10px; margin-bottom: 2px; }
+  .ledger-meta dd { margin: 0; color: var(--ink-2); font-weight: 500; }
+
+  /* ───────── Main grid ───────── */
+  main {
+    display: grid;
+    grid-template-columns: 320px 1fr 360px;
+    gap: 0;
+  }
+  @media (max-width: 1280px) {
+    main { grid-template-columns: 280px 1fr 320px; }
+  }
+
+  .col {
+    padding: var(--pad-4) var(--pad-4);
+    border-right: 1px solid var(--rule);
+    min-width: 0;
+  }
+  .col:last-child { border-right: 0; }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 var(--pad-3);
+  }
+  .section-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+  .section-label .num {
+    font-weight: 500;
+    color: var(--ink-4);
+  }
+
+  /* ───────── Feature identity (left) ───────── */
+  .feature-id {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+  }
+  .feature-id .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 2px;
+    color: var(--ink-2);
+    margin-right: 6px;
+    background: var(--paper-2);
+  }
+  .feature-title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin: 0 0 14px;
+    text-wrap: balance;
+  }
+  html[data-density="compact"] .feature-title { font-size: 18px; }
+
+  /* Benefit chain */
+  .chain {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--pad-4);
+    border-left: 1px solid var(--rule);
+  }
+  .chain li {
+    position: relative;
+    padding: 10px 0 10px 18px;
+    border-bottom: 1px dashed var(--rule);
+  }
+  html[data-density="compact"] .chain li { padding: 6px 0 6px 16px; }
+  .chain li:last-child { border-bottom: 0; }
+  .chain li::before {
+    content: "";
+    position: absolute;
+    left: -3.5px;
+    top: 16px;
+    width: 6px; height: 6px;
+    background: var(--ink-4);
+    border-radius: 50%;
+  }
+  html[data-density="compact"] .chain li::before { top: 12px; }
+  .chain .k {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 2px;
+  }
+  .chain .v {
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1.35;
+  }
+  .chain .meta {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    margin-top: 3px;
+  }
+
+  /* Hash manifest */
+  .manifest {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    border: 1px solid var(--rule);
+    background: var(--paper-2);
+  }
+  .manifest .m-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--rule);
+    gap: 8px;
+  }
+  html[data-density="compact"] .manifest .m-row { padding: 5px 8px; }
+  .manifest .m-row:last-child { border-bottom: 0; }
+  .manifest .m-name { color: var(--ink-2); }
+  .manifest .m-hash {
+    color: var(--ink-3);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .manifest .m-head {
+    background: var(--paper-3);
+    font-size: 9.5px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .manifest .m-verified {
+    display: inline-block;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--pass);
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  /* ───────── Center: Pipeline strip ───────── */
+  .center-col {
+    padding: var(--pad-4) var(--pad-4) var(--pad-5);
+    background:
+      linear-gradient(to bottom, var(--paper) 0%, var(--paper) 100%);
+  }
+
+  .loops {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin-bottom: var(--pad-4);
+  }
+  .loop {
+    background: var(--paper);
+    padding: var(--pad-3) var(--pad-3) var(--pad-2);
+  }
+  .loop .loop-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+  }
+  .loop .loop-head .dot {
+    display: inline-block; width: 7px; height: 7px;
+    margin-right: 8px; vertical-align: 1px;
+  }
+  .loop.outer .dot { background: var(--outer); }
+  .loop.inner .dot { background: var(--inner); }
+  .loop .loop-head .count { color: var(--ink-4); font-weight: 500; }
+
+  /* Phase strip */
+  .strip-wrap {
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .strip-wrap::-webkit-scrollbar { height: 6px; }
+  .strip-wrap::-webkit-scrollbar-thumb { background: var(--rule); }
+  .strip {
+    display: grid;
+    gap: 2px;
+    grid-template-columns: repeat(12, minmax(86px, 1fr));
+    position: relative;
+    min-width: min-content;
+  }
+  .phase {
+    position: relative;
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    border-radius: 0;
+    padding: 10px 10px 8px;
+    cursor: pointer;
+    transition: background 120ms ease;
+    min-height: 98px;
+    min-width: 0;
+    display: flex; flex-direction: column;
+    gap: 6px;
+    overflow: hidden;
+  }
+  .phase .p-name {
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+  html[data-density="compact"] .phase { min-height: 80px; padding: 7px 8px 6px; }
+  .phase:hover { background: var(--paper-3); }
+  .phase[data-state="done"] { background: var(--paper); }
+  .phase[data-state="current"] {
+    background: var(--gate-wash);
+    border-color: var(--gate);
+    box-shadow: inset 0 -2px 0 var(--gate);
+  }
+  .phase[data-state="upcoming"] { opacity: 0.55; }
+  .phase[data-loop="outer"][data-state="done"] { border-left: 2px solid var(--outer); }
+  .phase[data-loop="inner"][data-state="done"] { border-left: 2px solid var(--inner); }
+  .phase[data-loop="gate"][data-state="done"] { border-left: 2px solid var(--gate); }
+  .phase[data-loop="improve"][data-state="done"] { border-left: 2px solid var(--improve); }
+
+  .phase .p-idx {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--ink-4);
+    letter-spacing: 0.1em;
+  }
+  .phase .p-name {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+  .phase .p-verdict {
+    margin-top: auto;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .phase[data-state="done"] .p-verdict { color: var(--pass); }
+  .phase[data-state="current"] .p-verdict { color: var(--gate); font-weight: 600; }
+
+  /* Current phase detail */
+  .current-detail {
+    margin-top: var(--pad-4);
+    border: 1px solid var(--rule);
+    background: var(--paper-2);
+  }
+  .cd-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--pad-2) var(--pad-3);
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper-3);
+  }
+  .cd-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .cd-title .ribbon {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--gate);
+    color: var(--paper);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+  }
+  html[data-theme="dark"] .cd-title .ribbon { color: oklch(0.15 0.008 270); }
+  .cd-body {
+    padding: var(--pad-3);
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--pad-4);
+  }
+  @media (max-width: 1100px) { .cd-body { grid-template-columns: 1fr; } }
+
+  .criteria { list-style: none; padding: 0; margin: 0; }
+  .criteria li {
+    display: grid;
+    grid-template-columns: 16px 1fr auto;
+    align-items: start;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px dashed var(--rule);
+    font-size: 13px;
+  }
+  html[data-density="compact"] .criteria li { padding: 4px 0; font-size: 12.5px; }
+  .criteria li:last-child { border-bottom: 0; }
+  .criteria .box {
+    width: 14px; height: 14px;
+    border: 1px solid var(--rule-strong);
+    margin-top: 2px;
+    position: relative;
+    background: var(--paper);
+  }
+  .criteria .box.done {
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+  .criteria .box.done::after {
+    content: "";
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 6px; height: 3px;
+    border-left: 1.5px solid var(--paper);
+    border-bottom: 1.5px solid var(--paper);
+    transform: rotate(-45deg);
+  }
+  .criteria .box.pending {
+    background: repeating-linear-gradient(-45deg, var(--rule) 0 2px, transparent 2px 4px);
+  }
+  .criteria .c-text { color: var(--ink); }
+  .criteria .c-text.strike { color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--ink-4); }
+  .criteria .c-meta {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .approvals {
+    border-left: 1px solid var(--rule);
+    padding-left: var(--pad-3);
+  }
+  .approvals h4 {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 10px;
+  }
+  .approver {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px dashed var(--rule);
+    font-size: 13px;
+  }
+  .approver:last-child { border-bottom: 0; }
+  .approver .avatar {
+    width: 28px; height: 28px;
+    background: var(--paper-3);
+    border: 1px solid var(--rule-strong);
+    display: grid; place-items: center;
+    font-family: var(--font-serif);
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .approver .a-name { color: var(--ink); font-weight: 500; font-size: 13px; line-height: 1.1; }
+  .approver .a-role { color: var(--ink-3); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; }
+  .approver .a-status {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .approver .a-status.signed { color: var(--pass); }
+  .approver .a-status.pending { color: var(--gate); }
+
+  /* Estimation actuals */
+  .estimation {
+    margin-top: var(--pad-4);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border: 1px solid var(--rule);
+    background: var(--paper-2);
+  }
+  .est-cell {
+    padding: var(--pad-3);
+    border-right: 1px solid var(--rule);
+  }
+  .est-cell:last-child { border-right: 0; }
+  .est-k {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+  }
+  .est-v {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    line-height: 1;
+  }
+  html[data-density="compact"] .est-v { font-size: 22px; }
+  .est-delta {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    margin-top: 6px;
+  }
+  .est-delta.ahead { color: var(--pass); }
+  .est-delta.behind { color: var(--fail); }
+
+  /* Inner-loop status grid */
+  .inner-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1.3fr;
+    border: 1px solid var(--rule);
+    background: var(--paper-2);
+  }
+  .ig-col { border-right: 1px solid var(--rule); min-width: 0; }
+  .ig-col:last-child { border-right: 0; }
+  .ig-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px var(--pad-3);
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    background: var(--paper);
+  }
+  .ig-head span:last-child {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    text-transform: none;
+  }
+  .ig-done .ig-head { border-top: 2px solid var(--pass); }
+  .ig-disp .ig-head { border-top: 2px solid var(--inner); }
+  .ig-blk  .ig-head { border-top: 2px solid var(--fail); }
+  .ig-body {
+    padding: var(--pad-3);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 6px;
+    align-content: flex-start;
+  }
+  .ig-body.rows { flex-direction: column; flex-wrap: nowrap; gap: 8px; }
+  html[data-density="compact"] .ig-body { padding: 10px var(--pad-3); gap: 4px 5px; }
+  .story-chip {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    padding: 3px 7px;
+    border: 1px solid var(--rule-soft);
+    color: var(--ink-2);
+    background: var(--paper);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .story-chip.done {
+    color: var(--pass);
+    border-color: color-mix(in oklch, var(--pass) 40%, var(--rule));
+    background: color-mix(in oklch, var(--pass) 7%, var(--paper));
+  }
+  .story-chip.current {
+    color: var(--inner);
+    border-color: color-mix(in oklch, var(--inner) 40%, var(--rule));
+    background: color-mix(in oklch, var(--inner) 7%, var(--paper));
+  }
+  .story-chip.blocked {
+    color: var(--fail);
+    border-color: color-mix(in oklch, var(--fail) 40%, var(--rule));
+    background: color-mix(in oklch, var(--fail) 7%, var(--paper));
+  }
+  .disp-row, .blk-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    align-items: baseline;
+  }
+  .disp-url {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-2);
+  }
+  .blk-reason {
+    font-family: var(--font-ui);
+    font-size: 11.5px;
+    color: var(--ink-3);
+    line-height: 1.45;
+  }
+
+  /* ───────── Right: Trace ledger ───────── */
+  .trace-col { padding: var(--pad-4) 0 var(--pad-4) var(--pad-4); }
+  .trace-col .section-label { padding-right: var(--pad-4); }
+
+  .trace-stream {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    border-top: 1px solid var(--rule);
+  }
+  .trace-row {
+    display: grid;
+    grid-template-columns: 14px 58px 1fr auto;
+    gap: 10px;
+    padding: 10px var(--pad-4) 10px 0;
+    border-bottom: 1px solid var(--rule);
+    align-items: start;
+    position: relative;
+  }
+  html[data-density="compact"] .trace-row { padding: 6px var(--pad-4) 6px 0; }
+  .trace-row .gutter {
+    height: 100%;
+    border-left: 1px solid var(--rule);
+    position: relative;
+    margin-left: 6px;
+  }
+  .trace-row .gutter::after {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: -3.5px;
+    width: 6px; height: 6px;
+    background: var(--ink-3);
+    border-radius: 50%;
+  }
+  .trace-row[data-loop="outer"] .gutter::after { background: var(--outer); }
+  .trace-row[data-loop="inner"] .gutter::after { background: var(--inner); }
+  .trace-row[data-loop="gate"] .gutter::after { background: var(--gate); }
+  .trace-row[data-loop="improve"] .gutter::after { background: var(--improve); }
+
+  .trace-row .ts {
+    color: var(--ink-3);
+    font-size: 10px;
+    letter-spacing: 0.02em;
+    padding-top: 1px;
+  }
+  .trace-row .body { color: var(--ink-2); line-height: 1.4; }
+  .trace-row .body .skill { color: var(--ink); font-weight: 600; }
+  .trace-row .body .verdict {
+    display: inline-block;
+    padding: 0 5px;
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    margin-left: 4px;
+    text-transform: uppercase;
+    border: 1px solid currentColor;
+  }
+  .trace-row .body .verdict.pass { color: var(--pass); }
+  .trace-row .body .verdict.fail { color: var(--fail); }
+  .trace-row .body .verdict.inprog { color: var(--gate); }
+  .trace-row .hash {
+    color: var(--ink-3);
+    font-size: 10px;
+    text-align: right;
+    padding-top: 1px;
+  }
+  .trace-row .detail {
+    grid-column: 3 / -1;
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    color: var(--ink-2);
+    font-size: 10.5px;
+    line-height: 1.5;
+    display: none;
+    white-space: pre-wrap;
+  }
+  html[data-traces="detail"] .trace-row .detail { display: block; }
+
+  /* ───────── Footer: watermark + phase status ───────── */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: var(--pad-3) var(--pad-5);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: var(--pad-4);
+    background: var(--paper-2);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+  }
+  footer .phases {
+    display: flex; gap: 16px; justify-content: center;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  footer .phases .done { color: var(--pass); }
+  footer .phases .current { color: var(--gate); font-weight: 600; }
+  footer .phases .pending { color: var(--ink-4); }
+
+  /* ───────── Tweaks panel ───────── */
+  .tweaks {
+    position: fixed;
+    right: 20px; bottom: 20px;
+    width: 280px;
+    background: var(--paper);
+    border: 1px solid var(--rule-strong);
+    box-shadow: 0 12px 40px -12px oklch(0.1 0.02 270 / 0.22);
+    z-index: 60;
+    display: none;
+    font-size: 12.5px;
+  }
+  .tweaks.open { display: block; }
+  .tweaks header {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rule);
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--paper-2);
+  }
+  .tweaks header .t-title {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .tweaks header button {
+    background: none; border: 0; color: var(--ink-3);
+    cursor: pointer; font-size: 16px; line-height: 1; padding: 0;
+  }
+  .tweaks .t-row {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .tweaks .t-row:last-child { border-bottom: 0; }
+  .tweaks .t-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+  }
+  .seg {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    border: 1px solid var(--rule-strong);
+    background: var(--paper-2);
+  }
+  .seg button {
+    background: none;
+    border: 0;
+    border-right: 1px solid var(--rule);
+    padding: 7px 4px;
+    font-family: var(--font-sans);
+    font-size: 11.5px;
+    color: var(--ink-2);
+    cursor: pointer;
+    text-align: center;
+  }
+  .seg button:last-child { border-right: 0; }
+  .seg button.active {
+    background: var(--ink);
+    color: var(--paper);
+    font-weight: 500;
+  }
+  .seg button:hover:not(.active) { background: var(--paper-3); }
+
+  /* small helper */
+  .mono { font-family: var(--font-mono); }
+  .muted { color: var(--ink-3); }
+  .kbd {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    border: 1px solid var(--rule-strong);
+    padding: 1px 5px;
+    background: var(--paper-2);
+    color: var(--ink-2);
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="md-renderer.js"></script>
+<script src="pipeline-adapter.js"></script>
+<script src="artefact-fetcher.js"></script>
+
+<script>
+  window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "theme": "dark",
+    "density": "compact",
+    "traces": "summary",
+    "currentPhase": 8
+  }/*EDITMODE-END*/;
+</script>
+
+<script type="text/babel" data-presets="react">
+/* eslint-disable */
+const { useState, useEffect, useMemo, useRef } = React;
+
+/* ───────── URL param + dynamic feature ───────── */
+const FEATURE_PARAM = new URLSearchParams(window.location.search).get('feature');
+
+function buildFeatureFromState(slug, ps) {
+  if (!ps || !ps.features) return null;
+  const features = Array.isArray(ps.features) ? ps.features : [];
+  const feat = features.find(f => f.slug === slug);
+  if (!feat) return null;
+
+  const allStories = [];
+  (feat.epics || []).forEach(e => (e.stories || []).forEach(s => allStories.push(s)));
+
+  const cplx = { "1": 0, "2": 0, "3": 0 };
+  allStories.forEach(s => { const c = String(s.complexity || "2"); cplx[c] = (cplx[c] || 0) + 1; });
+
+  const feature = {
+    id: slug,
+    cycle: feat.track || slug.replace(/^\d{4}-\d{2}-\d{2}-/, ''),
+    title: feat.name || feat.title || slug,
+    surface: "git-native",
+    epicCount: (feat.epics || []).length,
+    storyCount: allStories.length,
+    complexity: cplx,
+    slicingStrategy: feat.slicingStrategy || "—",
+    metrics: [],
+    discoveryArtefact: `artefacts/${slug}/discovery.md`,
+    nfrProfile: `artefacts/${slug}/nfr-profile.md`,
+    approvedBy: feat.discoveryStatus === 'approved' ? "approved" : (feat.discoveryStatus || "—"),
+    approvedNote: "",
+    outerLoopPR: "",
+    checkpoint: feat.updatedAt || "",
+  };
+
+  const dodComplete = [], dispatched = {}, blocked = {};
+  allStories.forEach(s => {
+    if (s.dodStatus === 'complete') dodComplete.push(s.slug);
+    else if (s.issueUrl) dispatched[s.slug] = s.issueUrl;
+    if (s.health === 'red') blocked[s.slug] = 'blocked';
+  });
+
+  return {
+    feature,
+    innerStatus: {
+      dodComplete, dispatched, blocked,
+      outerLoopComplete: ['definition-of-done', 'improve'].includes(feat.stage),
+      outerLoopPR: "",
+    },
+    storyMap: Object.fromEntries(allStories.map(s => [s.slug, s])),
+    featureSlug: slug,
+    allStories,
+  };
+}
+
+/* ───────── Data ───────── */
+
+// Sourced from workspace/state.json + workspace/estimation-norms.md + fleet-state.json
+const FEATURE = {
+  id: "2026-04-14-skills-platform-phase3",
+  cycle: "phase-3-improvement",
+  title: "Phase 3 — Governance hardening & T3M1",
+  surface: "git-native",
+  epicCount: 7,
+  storyCount: 18,
+  complexity: { "1": 9, "2": 6, "3": 3 },
+  slicingStrategy: "risk-first",
+  metrics: ["M1","M2","M3","M4","M5","MM1","MM2","MM3","CR1","CR2"],
+  discoveryArtefact: "artefacts/2026-04-14-skills-platform-phase3/discovery.md",
+  nfrProfile: "artefacts/2026-04-14-skills-platform-phase3/nfr-profile.md",
+  approvedBy: "Operator, 2026-04-14",
+  approvedNote: "ASSUMPTION-01 through ASSUMPTION-04 confirmed",
+  outerLoopPR: "#121",
+  checkpoint: "2026-04-19",
+};
+
+// cycle.* keys from workspace/state.json
+const PHASES = [
+  { i: "01", name: "/discovery",           loop: "outer",   stateKey: "discovery",     skillHash: "d41f8c7a" },
+  { i: "02", name: "/benefit-metric",      loop: "outer",   stateKey: "benefitMetric", skillHash: "a07b2f90" },
+  { i: "03", name: "/definition",          loop: "outer",   stateKey: "definition",    skillHash: "b51cc903" },
+  { i: "04", name: "/review",              loop: "outer",   stateKey: "review",        skillHash: "66d91e27" },
+  { i: "05", name: "/test-plan",           loop: "outer",   stateKey: "testPlan",      skillHash: "0fe73a81" },
+  { i: "06", name: "/definition-of-ready", loop: "gate",    stateKey: "dor",           skillHash: "c220bf4a" },
+  { i: "07", name: "/issue-dispatch",      loop: "outer",   stateKey: "dispatch",      skillHash: "77ad291b" },
+  { i: "08", name: "/branch-setup → /tdd", loop: "inner",   stateKey: "innerLoop",     skillHash: "99e2117b" },
+  { i: "09", name: "CI assurance gate",    loop: "gate",    stateKey: "assurance",     skillHash: "1e4cc8d5" },
+  { i: "10", name: "/definition-of-done",  loop: "outer",   stateKey: "dod",           skillHash: "54a3d600" },
+  { i: "11", name: "/trace",               loop: "outer",   stateKey: "trace",         skillHash: "aa7c4012" },
+  { i: "12", name: "/improve",             loop: "improve", stateKey: "improve",       skillHash: "ee8710b2" },
+];
+
+// phase3InnerLoopStatus from workspace/state.json
+const INNER_STATUS = {
+  dodComplete: ["p3.1a","p3.1b","p3.1c","p3.1d","p3.1e","p3.2a","p3.9","p3.15","p3.16","p3.17","p3.18","p3.19","p3.20","p3.21","p3.22","p3.2b","p3.5","p3.6","p3.7","p3.8","p3.10","p3.11"],
+  dispatched: {
+    "p3.5":  "issues/123",
+    "p3.6":  "issues/124",
+    "p3.7":  "issues/125",
+    "p3.8":  "issues/126",
+    "p3.10": "issues/127",
+    "p3.11": "issues/128",
+  },
+  blocked: {
+    "p3.3":  "ASSUMPTION-01 not confirmed — feasibility of platform-infrastructure repo",
+    "p3.4":  "p3.3 DoD-complete required",
+    "p3.12": "p3.4 DoD-complete required",
+    "p3.13": "p3.7 DoD-complete AND p3.2a DoD-complete both required",
+  },
+  outerLoopComplete: true,
+  outerLoopPR: "#121",
+};
+
+// Per-phase checklist — mirrors governance-gate checks on each SKILL.md boundary
+const CRITERIA_BY_PHASE = {
+  0: [
+    { t: "discovery.md written to artefacts/2026-04-14-skills-platform-phase3/", d: true },
+    { t: "ASSUMPTION-01 through ASSUMPTION-04 confirmed", d: true },
+    { t: "Operator approval recorded · 2026-04-14", d: true },
+  ],
+  1: [
+    { t: "10 metrics bound: M1–M5, MM1–MM3, CR1–CR2", d: true },
+    { t: "Counter-metrics (CR1, CR2) declared", d: true },
+    { t: "benefit-metric.md written to artefacts/…phase3/", d: true },
+  ],
+  2: [
+    { t: "7 epics · 18 stories · risk-first slicing", d: true },
+    { t: "NFR profile attached · nfr-profile.md", d: true },
+    { t: "p3.9 scoped to compatibility matrix (ASSUMPTION-04 gated)", d: true },
+  ],
+  5: [
+    { t: "H8-ext — schemaDepends present in pipeline-state.schema.json", d: true },
+    { t: "H-NFR-profile — feature nfr-profile.md attached", d: true },
+    { t: "coding-agent-instructions block composed (core + POLICY)", d: true },
+    { t: "DoR SHA locked into scope contract", d: true },
+  ],
+  6: [
+    { t: "p3.5 → issues/123 · dispatched", d: true },
+    { t: "p3.6 → issues/124 · dispatched", d: true },
+    { t: "p3.7, p3.8, p3.10, p3.11 dispatched", d: true },
+    { t: "p3.3 dispatch withheld · ASSUMPTION-01 unconfirmed", d: false, pending: true },
+  ],
+  7: [
+    { t: "22 stories DoD-complete (p3.1a–e, p3.2a/b, p3.5–8, p3.9–11, p3.15–22)", d: true },
+    { t: "Draft PR open · feature/p3-remaining-stories", d: false, pending: true },
+    { t: "npm test — all 38 governance checks green", d: true },
+    { t: "p3.3 / p3.4 / p3.12 / p3.13 blocked on assumption + dep chain", d: false, pending: true },
+  ],
+  8: [
+    { t: "Instruction-set hashes verified against registry a1604b2e", d: false, pending: true },
+    { t: "POLICY.md floors checked (software-eng, security-eng, QA)", d: false, pending: true },
+    { t: "Scope contract honoured vs DoR manifest", d: false, pending: true },
+    { t: "Watermark gate — suite.json 42/42 scenarios", d: false, pending: true },
+  ],
+  9: [
+    { t: "Per-story DoD for p3.2b, p3.5, p3.6, p3.7, p3.8, p3.10, p3.11", d: false, pending: true },
+    { t: "M1–M5 signals recorded with lastMeasured", d: false, pending: true },
+    { t: "AC coverage table attached per story", d: false, pending: true },
+  ],
+  10: [
+    { t: "Full chain traversal — discovery → commit", d: false, pending: true },
+    { t: "Broken-link detection against artefacts/", d: false, pending: true },
+    { t: "T3M1: Q1 Q3 Q4 answered · Q2 Q5 Q6 Q7 Q8 outstanding", d: false, pending: true },
+  ],
+  11: [
+    { t: "Pattern extraction → workspace/learnings.md", d: false, pending: true },
+    { t: "Estimation-norms row for phase-3 appended", d: false, pending: true },
+    { t: "Challenger pre-check on any SKILL.md diff proposals", d: false, pending: true },
+  ],
+};
+
+// approvals recorded in cycle.discovery.approvedBy + checkpoint.pendingActions
+const APPROVERS = [
+  { initials: "OP", name: "Operator",              role: "discovery · 2026-04-14",   status: "signed",  at: "2026-04-14" },
+  { initials: "OP", name: "Operator",              role: "benefit-metric · 2026-04-14", status: "signed", at: "2026-04-14" },
+  { initials: "OP", name: "Operator",              role: "definition · 2026-04-14",  status: "signed",  at: "2026-04-14" },
+  { initials: "—",  name: "T3M1 independent reviewer", role: "non-engineering · Q2/Q5/Q6/Q7/Q8", status: "pending", at: null },
+];
+
+// estimate.e2 from state.json · calibrated against estimation-norms.md rows
+const ESTIMATION = {
+  e2: {    label: "E2 · refined",       v: "2.5h",       d: "2026-04-14 · 18 stories" },
+  perStory:{label: "p75 focus · story", v: "0.17h",      d: "medium confidence" },
+  phase1:  {label: "phase-1 actual",    v: "11.1h",      d: "8 stories · 28% eng" },
+  phase2:  {label: "phase-2 actual",    v: "1.0h",       d: "13 stories · −29h vs E2" },
+};
+
+// skillSetHash from workspace/suite.json + standards/index.yml POLICY floors
+const MANIFEST = [
+  { n: "skill-set · registry",   h: "sha256:a1604b2e" },
+  { n: "/discovery",             h: "sha256:d41f8c7a" },
+  { n: "/benefit-metric",        h: "sha256:a07b2f90" },
+  { n: "/definition",            h: "sha256:b51cc903" },
+  { n: "/definition-of-ready",   h: "sha256:c220bf4a" },
+  { n: "policy · software-eng",  h: "sha256:1aa9fde8" },
+  { n: "policy · security-eng",  h: "sha256:2e7b0c11" },
+  { n: "policy · quality-assur", h: "sha256:7c00a1f9" },
+];
+
+// trace rows drawn from state.json events: mergedPRs + dispatched + checkpoint
+const TRACE = [
+  { t:"2026-04-19", loop:"improve", verdict:"inprog", skill:"/checkpoint",
+    msg:"Draft PR pending · feature/p3-remaining-stories · 7 stories to DoD individually",
+    hash:"ck 2026-04-19", detail:`writtenAt: "2026-04-19"
+resume: "review+merge PR, then /definition-of-done for each of p3.2b, p3.5, p3.6, p3.7, p3.8, p3.10, p3.11"` },
+  { t:"2026-04-18", loop:"outer",  verdict:"pass",   skill:"state.lastUpdated",
+    msg:"workspace/state.json updated — phase-3 inner loop status captured",
+    hash:"state:2026-04-18", detail:null },
+  { t:"2026-04-17", loop:"inner",  verdict:"pass",   skill:"PR #138 merged",
+    msg:"recentlyMergedPRs += 138",
+    hash:"pr:138", detail:null },
+  { t:"2026-04-17", loop:"inner",  verdict:"pass",   skill:"PR #131 merged",
+    msg:"recentlyMergedPRs += 131",
+    hash:"pr:131", detail:null },
+  { t:"2026-04-17", loop:"inner",  verdict:"pass",   skill:"PR #130 merged",
+    msg:"recentlyMergedPRs += 130",
+    hash:"pr:130", detail:null },
+  { t:"2026-04-17", loop:"inner",  verdict:"inprog", skill:"PR #117",
+    msg:"p3.2b — T3M1 tamper-evidence registry · agent in-flight",
+    hash:"pr:117", detail:`branch: "agent/p3.2b-t3m1-tamper-evidence-registry"
+status: "in-flight — agent working"` },
+  { t:"2026-04-17", loop:"gate",   verdict:"pass",   skill:"PR #121 merged",
+    msg:"Outer-loop PR merged · phase3InnerLoopStatus.outerLoopComplete = true",
+    hash:"pr:121", detail:null },
+  { t:"2026-04-16", loop:"outer",  verdict:"pass",   skill:"/issue-dispatch",
+    msg:"6 stories dispatched · p3.5 #123 · p3.6 #124 · p3.7 #125 · p3.8 #126 · p3.10 #127 · p3.11 #128",
+    hash:"dispatch:p3", detail:`p3.5:  issues/123
+p3.6:  issues/124
+p3.7:  issues/125
+p3.8:  issues/126
+p3.10: issues/127
+p3.11: issues/128` },
+  { t:"2026-04-14", loop:"gate",   verdict:"pass",   skill:"/definition-of-ready",
+    msg:"Outer loop DoR signed off · scope contract locked",
+    hash:"c220bf4a", detail:`policy.floors: ["software-eng:1aa9fde8", "security-eng:2e7b0c11", "quality-assur:7c00a1f9"]
+nfr-profile: "artefacts/…phase3/nfr-profile.md"` },
+  { t:"2026-04-14", loop:"outer",  verdict:"pass",   skill:"/definition",
+    msg:"7 epics · 18 stories · risk-first · p3.9 scoped to compatibility matrix",
+    hash:"b51cc903", detail:`complexity: { "1": 9, "2": 6, "3": 3 }
+nfr-profile: present` },
+  { t:"2026-04-14", loop:"outer",  verdict:"pass",   skill:"/benefit-metric",
+    msg:"10 metrics bound · M1–M5, MM1–MM3, CR1–CR2",
+    hash:"a07b2f90", detail:null },
+  { t:"2026-04-14", loop:"outer",  verdict:"pass",   skill:"/discovery",
+    msg:"Discovery approved · ASSUMPTION-01…04 confirmed",
+    hash:"d41f8c7a", detail:`artefact: "artefacts/2026-04-14-skills-platform-phase3/discovery.md"
+approvedBy: "Operator, 2026-04-14"` },
+];
+
+/* ───────── Tweaks host integration ───────── */
+
+function useTweaks() {
+  const [state, setState] = useState(() => ({ ...window.TWEAK_DEFAULTS }));
+  const [editMode, setEditMode] = useState(false);
+
+  useEffect(() => {
+    const handler = (e) => {
+      const m = e.data || {};
+      if (m.type === "__activate_edit_mode") setEditMode(true);
+      if (m.type === "__deactivate_edit_mode") setEditMode(false);
+    };
+    window.addEventListener("message", handler);
+    window.parent.postMessage({ type: "__edit_mode_available" }, "*");
+    return () => window.removeEventListener("message", handler);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", state.theme);
+    document.documentElement.setAttribute("data-density", state.density);
+    document.documentElement.setAttribute("data-traces", state.traces);
+  }, [state]);
+
+  const update = (patch) => {
+    setState((s) => {
+      const next = { ...s, ...patch };
+      window.parent.postMessage({ type: "__edit_mode_set_keys", edits: patch }, "*");
+      return next;
+    });
+  };
+
+  return { state, update, editMode };
+}
+
+function TweaksPanel({ state, update, open, onClose }) {
+  if (!open) return null;
+  const Seg = ({ k, opts }) => (
+    <div className="seg">
+      {opts.map(([val, lbl]) => (
+        <button key={val}
+          className={state[k] === val ? "active" : ""}
+          onClick={() => update({ [k]: val })}>{lbl}</button>
+      ))}
+    </div>
+  );
+
+  const phaseOptions = [
+    [5, "DoR"], [6, "dispatch"], [7, "inner"], [8, "gate"]
+  ];
+  return (
+    <div className="tweaks open">
+      <header>
+        <span className="t-title">Tweaks</span>
+        <button onClick={onClose} aria-label="close">×</button>
+      </header>
+      <div className="t-row">
+        <div className="t-label">Theme</div>
+        <Seg k="theme" opts={[["light","Light"],["dark","Dark"]]} />
+      </div>
+      <div className="t-row">
+        <div className="t-label">Density</div>
+        <Seg k="density" opts={[["comfortable","Comfortable"],["compact","Compact"]]} />
+      </div>
+      <div className="t-row">
+        <div className="t-label">Trace detail</div>
+        <Seg k="traces" opts={[["summary","Summary"],["detail","Expanded"]]} />
+      </div>
+      <div className="t-row">
+        <div className="t-label">Current phase (sample feature)</div>
+        <div className="seg">
+          {phaseOptions.map(([v, l]) => (
+            <button key={v}
+              className={state.currentPhase === v ? "active" : ""}
+              onClick={() => update({ currentPhase: v })}>{l}</button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ───────── UI ───────── */
+
+function LedgerBar({ feature, featureSlug }) {
+  const f = feature || FEATURE;
+  return (
+    <header className="ledger-bar">
+      <div>
+        <div className="eyebrow">
+          <span className="mono">heymishy/skills-repo · master</span>
+          <span className="sep">·</span>
+          <span>{f.cycle}</span>
+          <span className="sep">·</span>
+          <span className="live">{f.checkpoint || 'live'}</span>
+        </div>
+        <h1 className="title">{f.title || 'Pipeline.'}</h1>
+        <div className="subtitle">
+          {f.epicCount} epics · {f.storyCount} stories · {f.slicingStrategy} slicing
+        </div>
+      </div>
+      <dl className="ledger-meta">
+        <div><dt>updated</dt><dd>{f.checkpoint || '—'}</dd></div>
+        <div><dt>epics</dt><dd>{f.epicCount}</dd></div>
+        <div><dt>stories</dt><dd>{f.storyCount}</dd></div>
+      </dl>
+      <nav style={{display:"flex",gap:2,border:"1px solid var(--rule)",padding:2,background:"var(--paper-2)",alignSelf:"end"}}>
+        <a href="index.html" style={{padding:"6px 10px",fontFamily:"var(--font-mono)",fontSize:"10.5px",letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--ink-3)",textDecoration:"none"}}>Repo</a>
+        <a href={"pipeline.html" + (featureSlug ? "?feature=" + encodeURIComponent(featureSlug) : "")} style={{padding:"6px 10px",fontFamily:"var(--font-mono)",fontSize:"10.5px",letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--ink)",textDecoration:"none",background:"var(--paper)",border:"1px solid var(--rule)"}}>Feature</a>
+      </nav>
+    </header>
+  );
+}
+
+function LeftCol({ feature }) {
+  const f = feature || FEATURE;
+  return (
+    <aside className="col">
+      <div className="section-label"><span className="num">i.</span> Feature identity</div>
+      <div className="feature-id">
+        <span className="pill">{f.id}</span>
+        <span className="pill">surface · {f.surface}</span>
+      </div>
+      <h2 className="feature-title">{f.title}</h2>
+
+      <ol className="chain">
+        <li>
+          <div className="k">cycle</div>
+          <div className="v mono" style={{fontSize:12.5}}>{f.cycle}</div>
+        </li>
+        <li>
+          <div className="k">discovery</div>
+          <div className="v">{f.approvedBy}</div>
+          <div className="meta">{f.approvedNote}</div>
+        </li>
+        <li>
+          <div className="k">benefit metrics{f.metrics.length > 0 ? ` · ${f.metrics.length}` : ''}</div>
+          <div className="v mono" style={{fontSize:11.5,lineHeight:1.5}}>
+            {f.metrics.length > 0 ? f.metrics.join(" · ") : "—"}
+          </div>
+        </li>
+        <li>
+          <div className="k">definition</div>
+          <div className="v">{f.epicCount} epics · {f.storyCount} stories · {f.slicingStrategy}</div>
+          <div className="meta">complexity · 1:{f.complexity["1"]} · 2:{f.complexity["2"]} · 3:{f.complexity["3"]}</div>
+        </li>
+        {f.outerLoopPR && (
+        <li>
+          <div className="k">outer loop · PR</div>
+          <div className="v mono">{f.outerLoopPR} merged</div>
+        </li>
+        )}
+      </ol>
+
+      <div className="section-label"><span className="num">ii.</span> Instruction hashes</div>
+      <div className="manifest">
+        <div className="m-head">
+          <span><span className="m-verified"></span>verified · suite.json 1.0</span>
+          <span>sha256 · {MANIFEST.length}</span>
+        </div>
+        {MANIFEST.map((m) => (
+          <div className="m-row" key={m.n}>
+            <span className="m-name">{m.n}</span>
+            <span className="m-hash">{m.h}</span>
+          </div>
+        ))}
+      </div>
+    </aside>
+  );
+}
+
+function CenterCol({ currentPhase, innerStatus, onStoryClick }) {
+  const IS = innerStatus || INNER_STATUS;
+  const phases = useMemo(() =>
+    PHASES.map((p, idx) => {
+      let state;
+      if (idx < currentPhase) state = "done";
+      else if (idx === currentPhase) state = "current";
+      else state = "upcoming";
+      return { ...p, state, idx };
+    })
+  , [currentPhase]);
+
+  const outer = phases.filter(p => p.loop === "outer" || p.loop === "gate" && (p.name.includes("ready") || p.name.includes("done") || p.name.includes("improve")));
+  // Simpler: separate by first-7 / last-5 visually
+  const outerIdx = [0,1,2,3,4,5,10,11];
+  const innerIdx = [6,7,8,9];
+
+  const safeIdx = Math.max(0, Math.min(PHASES.length - 1, currentPhase ?? 8));
+  const cur = phases[safeIdx] || phases[0];
+  const curCriteria = CRITERIA_BY_PHASE[safeIdx] || CRITERIA_BY_PHASE[8] || [];
+
+  return (
+    <section className="col center-col">
+      <div className="section-label"><span className="num">iii.</span> Pipeline · 12 phases · outer + inner</div>
+
+      <div className="strip-wrap">
+        <div className="strip">
+          {phases.map((p) => (
+            <div key={p.i}
+                 className="phase"
+                 data-state={p.state}
+                 data-loop={p.loop}
+                 title={`${p.name} · ${p.state}`}>
+              <div className="p-idx">{p.i}</div>
+              <div className="p-name">{p.name}</div>
+              <div className="p-verdict">
+                {p.state === "done"     ? "pass" :
+                 p.state === "current"  ? "in progress" :
+                                          "—"}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="current-detail">
+        <div className="cd-head">
+          <div className="cd-title">
+            <span className="ribbon">current</span>
+            <span>{cur.name}</span>
+            <span className="muted" style={{marginLeft:8,letterSpacing:"0.08em"}}>· hash {cur.skillHash}</span>
+          </div>
+          <div className="mono muted" style={{fontSize:10.5,letterSpacing:"0.1em"}}>
+            {cur.loop === "inner" ? "inner loop · coding agent" :
+             cur.loop === "outer" ? "outer loop · operator + agent" :
+             cur.loop === "gate"  ? "gate · automated" :
+             "improve · agent"}
+          </div>
+        </div>
+        <div className="cd-body">
+          <div>
+            <ul className="criteria">
+              {curCriteria.map((c, i) => (
+                <li key={i}>
+                  <span className={`box ${c.d ? "done" : (c.pending ? "pending" : "")}`}></span>
+                  <span className={`c-text ${c.d ? "strike" : ""}`}>{c.t}</span>
+                  <span className="c-meta">
+                    {c.d ? "verified" : (c.pending ? "pending" : "—")}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="approvals">
+            <h4>Approvers on this feature</h4>
+            {APPROVERS.map((a, i) => (
+              <div className="approver" key={`${a.initials}-${i}`}>
+                <div className="avatar">{a.initials}</div>
+                <div>
+                  <div className="a-name">{a.name}</div>
+                  <div className="a-role">{a.role}</div>
+                  <div className={`a-status ${a.status}`}>
+                    {a.status === "signed" ? `signed · ${a.at}` : "sign-off pending"}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="section-label" style={{marginTop: "var(--pad-4)"}}><span className="num">iv.</span> Inner-loop status</div>
+      <div className="inner-grid">
+        <div className="ig-col ig-done">
+          <div className="ig-head">
+            <span>dodComplete</span><span>{IS.dodComplete.length}</span>
+          </div>
+          <div className="ig-body">
+            {IS.dodComplete.map(s => <span key={s} className="story-chip done" style={{cursor:'pointer'}} onClick={() => onStoryClick && onStoryClick(s)}>{s}</span>)}
+          </div>
+        </div>
+        <div className="ig-col ig-disp">
+          <div className="ig-head">
+            <span>dispatched</span><span>{Object.keys(IS.dispatched).length}</span>
+          </div>
+          <div className="ig-body rows">
+            {Object.entries(IS.dispatched).map(([s, url]) => (
+              <div className="disp-row" key={s}>
+                <span className="story-chip current" style={{cursor:'pointer'}} onClick={() => onStoryClick && onStoryClick(s)}>{s}</span>
+                <span className="disp-url">{url}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="ig-col ig-blk">
+          <div className="ig-head">
+            <span>blocked</span><span>{Object.keys(IS.blocked).length}</span>
+          </div>
+          <div className="ig-body rows">
+            {Object.entries(IS.blocked).map(([s, reason]) => (
+              <div className="blk-row" key={s}>
+                <span className="story-chip blocked" style={{cursor:'pointer'}} onClick={() => onStoryClick && onStoryClick(s)}>{s}</span>
+                <span className="blk-reason">{reason}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="section-label" style={{marginTop: "var(--pad-4)"}}><span className="num">v.</span> Estimation · actuals (cross-feature)</div>
+      <div className="estimation" style={{gridTemplateColumns:"repeat(4, 1fr)"}}>
+        <div className="est-cell">
+          <div className="est-k">{ESTIMATION.e2.label}</div>
+          <div className="est-v">{ESTIMATION.e2.v}</div>
+          <div className="est-delta">{ESTIMATION.e2.d}</div>
+        </div>
+        <div className="est-cell">
+          <div className="est-k">{ESTIMATION.perStory.label}</div>
+          <div className="est-v">{ESTIMATION.perStory.v}</div>
+          <div className="est-delta">{ESTIMATION.perStory.d}</div>
+        </div>
+        <div className="est-cell">
+          <div className="est-k">{ESTIMATION.phase1.label}</div>
+          <div className="est-v">{ESTIMATION.phase1.v}</div>
+          <div className="est-delta">{ESTIMATION.phase1.d}</div>
+        </div>
+        <div className="est-cell">
+          <div className="est-k">{ESTIMATION.phase2.label}</div>
+          <div className="est-v">{ESTIMATION.phase2.v}</div>
+          <div className="est-delta ahead">{ESTIMATION.phase2.d}</div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function RightCol({ tracesDetail }) {
+  return (
+    <aside className="col trace-col">
+      <div className="section-label" style={{paddingRight: "var(--pad-4)"}}>
+        <span className="num">vi.</span> Trace ledger · phase-3
+      </div>
+      <div className="trace-stream">
+        {TRACE.map((row, i) => (
+          <div key={i} className="trace-row" data-loop={row.loop}>
+            <div className="gutter"></div>
+            <div className="ts">{row.t}</div>
+            <div className="body">
+              <span className="skill">{row.skill}</span>
+              <span className={`verdict ${row.verdict}`}>
+                {row.verdict === "inprog" ? "in prog" : row.verdict}
+              </span>
+              <div style={{marginTop:4,fontFamily:"var(--font-sans)"}}>{row.msg}</div>
+              {row.detail && <div className="detail">{row.detail}</div>}
+            </div>
+            <div className="hash">{row.hash}</div>
+          </div>
+        ))}
+      </div>
+    </aside>
+  );
+}
+
+function FooterBar({ innerStatus }) {
+  const IS = innerStatus || INNER_STATUS;
+  const nDod = IS.dodComplete.length;
+  const nDisp = Object.keys(IS.dispatched).length;
+  const nBlk = Object.keys(IS.blocked).length;
+  const blkList = Object.keys(IS.blocked).join(' · ');
+  return (
+    <footer>
+      <div>
+        <span>state · </span>
+        <span className="mono">pipeline-state.json</span>
+      </div>
+      <div className="phases">
+        <span className="done">dodComplete · {nDod}</span>
+        <span className="current">dispatched · {nDisp}</span>
+        <span className="pending">blocked · {nBlk}{blkList ? ` (${blkList})` : ''}</span>
+      </div>
+      <div style={{textAlign:"right"}}>
+        <span className="muted">press </span><span className="kbd">t</span><span className="muted"> for tweaks</span>
+      </div>
+    </footer>
+  );
+}
+
+function ArtefactDrawer({ storySlug, storyData, featureSlug, onClose }) {
+  const [md, setMd] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activePath, setActivePath] = useState(null);
+  const [paths, setPaths] = useState([]);
+
+  useEffect(() => {
+    if (!storySlug || !featureSlug || !window.ArtefactFetcher) { setLoading(false); return; }
+    const sp = window.ArtefactFetcher.storyPaths(featureSlug, storySlug);
+    const fp = window.ArtefactFetcher.featurePaths(featureSlug);
+    const all = [...fp, ...sp];
+    Promise.all(all.map(p =>
+      window.ArtefactFetcher.fetch(p.path).then(txt => ({ ...p, exists: txt !== null }))
+    )).then(results => {
+      const found = results.filter(r => r.exists);
+      setPaths(found);
+      if (found.length > 0) {
+        const storyFile = found.find(f => f.label.includes('story'));
+        const first = storyFile || found[0];
+        setActivePath(first.path);
+        window.ArtefactFetcher.fetch(first.path).then(txt => { setMd(txt); setLoading(false); });
+      } else {
+        setLoading(false);
+      }
+    });
+  }, [storySlug, featureSlug]);
+
+  const loadPath = (path) => {
+    setActivePath(path);
+    setLoading(true);
+    window.ArtefactFetcher.fetch(path).then(txt => { setMd(txt); setLoading(false); });
+  };
+
+  const rendered = useMemo(() => {
+    if (!md) return '';
+    if (window.renderMarkdown) return window.renderMarkdown(md);
+    return '<pre>' + md.replace(/</g, '&lt;') + '</pre>';
+  }, [md]);
+
+  const metaHtml = useMemo(() => {
+    if (!storyData || !window.ArtefactFetcher) return '';
+    const combined = window.ArtefactFetcher.buildStoryMeta(storyData) + '\n' + window.ArtefactFetcher.buildTraceLinks(storyData, featureSlug);
+    if (window.renderMarkdown) return window.renderMarkdown(combined);
+    return '<pre>' + combined.replace(/</g, '&lt;') + '</pre>';
+  }, [storyData, featureSlug]);
+
+  return (
+    <div style={{position:'fixed',top:0,right:0,bottom:0,width:'520px',background:'var(--paper)',borderLeft:'2px solid var(--rule)',zIndex:100,display:'flex',flexDirection:'column',boxShadow:'-4px 0 20px rgba(0,0,0,0.3)'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'var(--pad-2) var(--pad-3)',borderBottom:'1px solid var(--rule)'}}>
+        <span style={{fontFamily:'var(--font-mono)',fontSize:12,fontWeight:600}}>{storySlug}</span>
+        <button onClick={onClose} style={{background:'none',border:'none',color:'var(--ink)',cursor:'pointer',fontSize:18,padding:'4px 8px'}}>×</button>
+      </div>
+      {paths.length > 0 && (
+        <div style={{display:'flex',flexWrap:'wrap',gap:4,padding:'6px var(--pad-3)',borderBottom:'1px solid var(--rule)',background:'var(--paper-2)'}}>
+          {paths.map(p => (
+            <button key={p.path} onClick={() => loadPath(p.path)}
+              style={{fontSize:10,padding:'3px 8px',fontFamily:'var(--font-mono)',background:activePath === p.path ? 'var(--inner)' : 'var(--paper-3)',border:'1px solid var(--rule)',color:activePath === p.path ? '#fff' : 'var(--ink-2)',cursor:'pointer',borderRadius:2}}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+      )}
+      <div style={{flex:1,overflow:'auto',padding:'var(--pad-3)'}}>
+        {loading ? <div style={{color:'var(--ink-3)',fontStyle:'italic'}}>Loading…</div> :
+         md === null && paths.length === 0 ? <div style={{color:'var(--ink-3)'}}>No artefacts found for {storySlug}</div> :
+         <div dangerouslySetInnerHTML={{__html: rendered}} style={{fontFamily:'var(--font-sans)',fontSize:13,lineHeight:1.6,color:'var(--ink)'}} />}
+        {metaHtml && <div dangerouslySetInnerHTML={{__html: metaHtml}} style={{marginTop:16,paddingTop:16,borderTop:'1px solid var(--rule)',fontSize:13,lineHeight:1.6}} />}
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const { state, update, editMode } = useTweaks();
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [dynData, setDynData] = useState(null);
+  const [drawerSlug, setDrawerSlug] = useState(null);
+
+  useEffect(() => {
+    if (!FEATURE_PARAM) return;
+    const handler = () => {
+      const result = buildFeatureFromState(FEATURE_PARAM, window.PIPELINE_STATE);
+      if (result) setDynData(result);
+    };
+    window.addEventListener('pipeline-loaded', handler);
+    if (window.PIPELINE_STATE) handler();
+    return () => window.removeEventListener('pipeline-loaded', handler);
+  }, []);
+
+  const ef = dynData ? dynData.feature : FEATURE;
+  const eis = dynData ? dynData.innerStatus : INNER_STATUS;
+  const fSlug = dynData ? dynData.featureSlug : FEATURE.id;
+  const sMap = dynData ? dynData.storyMap : {};
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "t" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        if (document.activeElement && ["INPUT","TEXTAREA"].includes(document.activeElement.tagName)) return;
+        setPanelOpen((v) => !v);
+      }
+      if (e.key === "Escape") { setPanelOpen(false); setDrawerSlug(null); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => { if (editMode) setPanelOpen(true); }, [editMode]);
+
+  return (
+    <div className="app">
+      <LedgerBar feature={ef} featureSlug={fSlug} />
+      <main>
+        <LeftCol feature={ef} />
+        <CenterCol currentPhase={state.currentPhase} innerStatus={eis} onStoryClick={setDrawerSlug} />
+        <RightCol tracesDetail={state.traces === "detail"} />
+      </main>
+      <FooterBar innerStatus={eis} />
+      <TweaksPanel state={state} update={update} open={panelOpen} onClose={() => setPanelOpen(false)} />
+      {drawerSlug && <ArtefactDrawer storySlug={drawerSlug} storyData={sMap[drawerSlug]} featureSlug={fSlug} onClose={() => setDrawerSlug(null)} />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

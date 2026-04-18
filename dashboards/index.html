@@ -14,6 +14,7 @@
 <script src="artefact-content.js"></script>
 <script src="extra-data.js"></script>
 <script src="pipeline-adapter.js"></script>
+<script src="artefact-fetcher.js"></script>
 <link rel="stylesheet" href="extra-views.css">
 <style>
   :root {
@@ -998,7 +999,7 @@
     "density": "compact",
     "layout": "kanban",
     "sideTab": "artefacts",
-    "topView": "storymap"
+    "topView": "pipeline"
   }/*EDITMODE-END*/;
 </script>
 
@@ -1254,27 +1255,52 @@ function docForArtefact(a) {
   };
 }
 
-// epic → its cycle's definition.md (with synthesized header)
+// epic → its cycle's definition.md (with synthesized header + traceability)
 function docForEpic(epic) {
   const cycle = CYCLES.find(c => c.id === epic.cycleId);
+  const featureSlug = cycle?.featureSlug || cycle?.id || "";
   const def = (window.MD && window.MD[`${epic.cycleId}:definition.md`]) || "";
   const header = window.epicDoc ? window.epicDoc(epic, cycle) : `# ${epic.name}\n`;
+
+  // Summary table
+  const done = epic.stories.filter(s => s.state === "done").length;
+  const total = epic.stories.length;
+  const summary = `\n\n## Epic summary\n\n| Field | Value |\n|---|---|\n| Stories | ${done}/${total} done |\n| Risk | ${epic.risk} |\n`;
+
+  // Per-story list
+  const storyList = epic.stories.map(s =>
+    `- **${s.id}**${s.name ? " · " + s.name : ""} — ${s.state}${s.prUrl ? " · [PR](" + s.prUrl + ")" : ""}${s.issueUrl ? " · [Issue](" + s.issueUrl + ")" : ""}`
+  ).join("\n");
+
+  // Traceability links
+  const traceLinks = featureSlug ? [
+    "\n\n## Traceability\n",
+    "| Element | Link |",
+    "|---|---|",
+    "| Feature | " + (cycle?.name || featureSlug) + " |",
+    "| Discovery | [discovery.md](../artefacts/" + featureSlug + "/discovery.md) |",
+    "| Benefit metric | [benefit-metric.md](../artefacts/" + featureSlug + "/benefit-metric.md) |",
+    "| Definition | [definition.md](../artefacts/" + featureSlug + "/stories/) |",
+  ].join("\n") : "";
+
   return {
     key: `${epic.cycleId}:epic:${epic.id}`,
-    path: `/artefacts/${cycle?.cycle || cycle?.tag}/definition.md#${epic.id}`,
+    path: `/artefacts/${featureSlug}/epics/${epic.id}.md`,
     title: `${epic.id} · ${epic.name}`,
     sha: "b51cc903",
     status: "signed",
     phase: "definition",
     cycleId: epic.cycleId,
-    md: header + "\n\n---\n\n" + def,
+    featureSlug: featureSlug,
+    md: header + summary + "\n\n## Stories\n\n" + storyList + traceLinks + (def ? "\n\n---\n\n## Full definition\n\n" + def : ""),
   };
 }
 
-// story → its phase's artefact, with a per-story preface
+// story → its phase's artefact, with a per-story preface + traceability links
 function docForStory(story, epic) {
   const cycle = CYCLES.find(c => c.id === epic.cycleId);
   const phase = PHASES[PHASE_IDX[story.phase]];
+  const featureSlug = cycle?.featureSlug || cycle?.id || "";
   // map phase key → filename
   const fileByPhase = {
     discovery: "discovery.md",
@@ -1283,7 +1309,7 @@ function docForStory(story, epic) {
     review:    "review-notes.md",
     testplan:  "test-plan.md",
     dor:       "dor.md",
-    dispatch:  "dor.md",           // dispatch reads DoR manifest
+    dispatch:  "dor.md",
     inner:     "tdd-log.md",
     assurance: "test-plan.md",
     dod:       "trace.md",
@@ -1295,18 +1321,26 @@ function docForStory(story, epic) {
   const blockerReason = story.blockerId
     ? (BLOCKERS.find(b => b.id === story.blockerId)?.title)
     : null;
+
+  // Build metadata section
+  const AF = window.ArtefactFetcher;
+  const meta = AF ? AF.buildStoryMeta(story) : "";
+  const trace = AF ? AF.buildTraceLinks(story, featureSlug, epic.name) : "";
+
   const preface = window.storyDoc
     ? window.storyDoc(story.id, cycle?.tag, phase?.name, epic.name, story.state, story.blockerId, blockerReason)
-    : `# ${story.id}\n\n${epic.name}\n`;
+    : `# ${story.id}${story.name ? " · " + story.name : ""}\n\n${epic.name}\n`;
   return {
     key: `${epic.cycleId}:story:${story.id}`,
-    path: `/artefacts/${cycle?.cycle || cycle?.tag}/${fn}#${story.id}`,
-    title: `${story.id} · ${epic.name}`,
+    path: `/artefacts/${featureSlug}/stories/${story.id}.md`,
+    title: `${story.id}${story.name ? " · " + story.name : ""}`,
     sha: "—",
     status: story.state,
     phase: story.phase,
     cycleId: epic.cycleId,
-    md: preface + (backing ? "\n\n---\n\n## Phase artefact\n\n" + backing : ""),
+    featureSlug: featureSlug,
+    storySlug: story.id,
+    md: preface + "\n\n" + meta + "\n\n" + trace + (backing ? "\n\n---\n\n## Phase artefact\n\n" + backing : ""),
   };
 }
 
@@ -2092,7 +2126,21 @@ function TopBar() {
       </dl>
       <nav className="nav">
         <a className="active" href="index.html">Repo</a>
-        <a href="pipeline.html">Feature</a>
+        <select style={{
+          fontFamily:"var(--font-mono)", fontSize:"10.5px", letterSpacing:"0.08em",
+          background:"var(--paper-2)", color:"var(--ink-2)", border:"1px solid var(--rule)",
+          padding:"6px 10px", cursor:"pointer",
+        }}
+          onChange={(e) => { if (e.target.value) window.location.href = e.target.value; }}
+          defaultValue=""
+        >
+          <option value="" disabled>Feature ↗</option>
+          {CYCLES.map(c => (
+            <option key={c.id} value={`pipeline.html?feature=${encodeURIComponent(c.id)}`}>
+              {c.tag} · {c.name}
+            </option>
+          ))}
+        </select>
       </nav>
     </header>
   );
@@ -2210,9 +2258,11 @@ function EpicRow({ cycle, epic, selected, onSelect, onOpenDoc }) {
                     className={`story ${s.state}`}
                     data-clickable="true"
                     onClick={(e) => openStoryDoc(e, s)}
-                    title={`${s.id} · ${s.state}${s.blockerId ? " · " + s.blockerId : ""} · click to open doc`}>
+                    title={`${s.id}${s.name ? " · " + s.name : ""} · ${s.state}${s.blockerId ? " · " + s.blockerId : ""}${s.prUrl ? " · PR" : ""}${s.dodStatus === "complete" ? " · DoD ✓" : ""} · click to open doc`}>
                 {s.state === "blocked" && <span className="dot-b" />}
                 {s.id}
+                {s.dodStatus === "complete" && <span style={{fontSize:9, marginLeft:2, opacity:0.7}}>✓</span>}
+                {s.prUrl && <span style={{fontSize:9, marginLeft:2, opacity:0.7}}>⬤</span>}
               </span>
             ))}
           </div>
@@ -2267,9 +2317,10 @@ function Kanban({ onSelect, onOpenDoc }) {
                             className={`story ${s.state}`}
                             data-clickable="true"
                             onClick={(e) => { e.stopPropagation(); onOpenDoc(docForStory(s, c.epic)); }}
-                            title={`${s.id} · click to open doc`}>
+                            title={`${s.id}${s.name ? " · " + s.name : ""} · click to open doc`}>
                         {s.state === "blocked" && <span className="dot-b" />}
                         {s.id}
+                        {s.dodStatus === "complete" && <span style={{fontSize:9, marginLeft:2, opacity:0.7}}>✓</span>}
                       </span>
                     ))}
                   </div>
@@ -2439,7 +2490,7 @@ function Drawer({ epic, onClose, onOpenDoc }) {
                                 className={`story ${s.state}`}
                                 data-clickable="true"
                                 onClick={(e) => { e.stopPropagation(); onOpenDoc(docForStory(s, epic)); }}
-                                title="click to open story doc">
+                                title={`${s.id}${s.name ? " · " + s.name : ""} · click to open story doc`}>
                             {s.state === "blocked" && <span className="dot-b" />}
                             {s.id}
                           </span>
@@ -2491,7 +2542,7 @@ function Drawer({ epic, onClose, onOpenDoc }) {
           </div>
           <div style={{display:"flex",gap:8}}>
             <button className="btn" onClick={onClose}>close</button>
-            <a className="btn primary" href="pipeline.html">Open feature dashboard →</a>
+            <a className="btn primary" href={`pipeline.html?feature=${encodeURIComponent(epic.cycleId)}`}>Open feature dashboard →</a>
           </div>
         </div>
       </aside>
@@ -2504,7 +2555,47 @@ function Drawer({ epic, onClose, onOpenDoc }) {
 // ──────────────────────────────────────────────────────────────
 function MdViewer({ doc, onClose }) {
   const open = !!doc;
-  const html = useMemo(() => doc ? (window.renderMarkdown?.(doc.md) || "") : "", [doc]);
+  const [fetchedMd, setFetchedMd] = useState(null);
+  const [fetchState, setFetchState] = useState("idle"); // idle | loading | done
+  const [artefactList, setArtefactList] = useState([]); // available artefact paths
+  const [activeArtefact, setActiveArtefact] = useState(null);
+
+  // Fetch real .md artefacts when doc opens
+  useEffect(() => {
+    if (!doc) { setFetchedMd(null); setFetchState("idle"); setArtefactList([]); setActiveArtefact(null); return; }
+    const AF = window.ArtefactFetcher;
+    if (!AF || !doc.featureSlug) { setFetchState("done"); return; }
+
+    setFetchState("loading");
+    // Build artefact paths: story-specific + feature-level
+    const paths = [];
+    if (doc.storySlug) {
+      AF.storyPaths(doc.featureSlug, doc.storySlug).forEach(p => paths.push(p));
+    }
+    AF.featurePaths(doc.featureSlug).forEach(p => paths.push(p));
+
+    // Fetch all in parallel, keep the ones that resolve
+    Promise.all(paths.map(p =>
+      AF.fetch(p.path).then(content => content ? { ...p, content } : null)
+    )).then(results => {
+      const available = results.filter(Boolean);
+      setArtefactList(available);
+      // Auto-fetch the primary artefact (first story path that exists)
+      if (available.length > 0 && doc.storySlug) {
+        const primary = available.find(a => a.path.includes(doc.storySlug));
+        if (primary) { setFetchedMd(primary.content); setActiveArtefact(primary.path); }
+      }
+      setFetchState("done");
+    });
+  }, [doc?.key]);
+
+  const displayMd = activeArtefact && fetchedMd ? fetchedMd + "\n\n---\n\n" + (doc?.md || "") : (doc?.md || "");
+  const html = useMemo(() => doc ? (window.renderMarkdown?.(displayMd) || "") : "", [doc, displayMd]);
+
+  const loadArtefact = (a) => {
+    setActiveArtefact(a.path);
+    setFetchedMd(a.content);
+  };
 
   // list of every doc in same cycle for prev/next nav
   const sibling = useMemo(() => {
@@ -2520,7 +2611,6 @@ function MdViewer({ doc, onClose }) {
     const { list, idx } = sibling;
     if (idx < 0 || list.length === 0) return;
     const next = (idx + delta + list.length) % list.length;
-    // We can't call setViewDoc from here; use a custom event the app listens to
     window.dispatchEvent(new CustomEvent("mdv-jump", { detail: list[next] }));
   };
 
@@ -2550,7 +2640,33 @@ function MdViewer({ doc, onClose }) {
               </span>
               <button className="mdv-close" onClick={onClose}>close · esc</button>
             </div>
-            <div className="mdv-body" key={doc.key}>
+            {artefactList.length > 0 && (
+              <div className="mdv-artefact-nav" style={{
+                display:"flex", gap:4, padding:"6px 16px", borderBottom:"1px solid var(--rule)",
+                background:"var(--paper-2)", flexWrap:"wrap", fontSize:11,
+                fontFamily:"var(--font-mono)", letterSpacing:"0.04em",
+              }}>
+                <span style={{color:"var(--ink-3)", marginRight:4}}>artefacts:</span>
+                {artefactList.map(a => (
+                  <button key={a.path}
+                    onClick={() => loadArtefact(a)}
+                    style={{
+                      background: activeArtefact === a.path ? "var(--ink)" : "var(--paper-3)",
+                      color: activeArtefact === a.path ? "var(--paper)" : "var(--ink-2)",
+                      border: "1px solid var(--rule)", padding: "2px 8px", cursor: "pointer",
+                      fontFamily: "var(--font-mono)", fontSize: 10, borderRadius: 2,
+                    }}>
+                    {a.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="mdv-body" key={doc.key + (activeArtefact || "")}>
+              {fetchState === "loading" && (
+                <div style={{padding:16, color:"var(--ink-3)", fontFamily:"var(--font-mono)", fontSize:11}}>
+                  Loading artefacts…
+                </div>
+              )}
               <article className="md" dangerouslySetInnerHTML={{ __html: html }} />
             </div>
             <div className="mdv-foot">

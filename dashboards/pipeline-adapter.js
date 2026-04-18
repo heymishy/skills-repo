@@ -78,6 +78,8 @@
   function transform(state) {
     if (!state || !Array.isArray(state.features)) return;
 
+    window.PIPELINE_STATE = state;
+
     window.CYCLES = state.features.map(function (f) {
       var storyMap = buildStoryMap(f);
       var allRaw = collectEpicBatches(f).reduce(function (acc, e) {
@@ -98,6 +100,11 @@
         currentPhase: toPhaseKey(f.stage),
         state:        f.health === 'red' ? 'blocked' : isDone ? 'done' : 'in-flight',
         note:         note,
+        featureSlug:  f.slug,
+        stageRaw:     f.stage || '',
+        health:       f.health || '',
+        discoveryStatus:     f.discoveryStatus || '',
+        benefitMetricStatus: f.benefitMetricStatus || '',
       };
     });
 
@@ -107,7 +114,23 @@
       collectEpicBatches(f).forEach(function (epic) {
         var fullStories = (epic.stories || []).map(function (s) { return resolveStory(s, storyMap); });
         var mappedStories = fullStories.map(function (s) {
-          var obj = { id: s.slug, phase: toPhaseKey(s.stage), state: deriveStoryState(s) };
+          var obj = {
+            id: s.slug,
+            name: s.name || s.slug || '',
+            phase: toPhaseKey(s.stage),
+            state: deriveStoryState(s),
+            stageRaw: s.stage || '',
+            health: s.health || '',
+            dodStatus: s.dodStatus || '',
+            reviewStatus: s.reviewStatus || '',
+            prUrl: s.prUrl || '',
+            issueUrl: s.issueUrl || '',
+            mergedAt: s.mergedAt || '',
+            dorArtefact: s.dorArtefact || '',
+            acTotal: s.acTotal || 0,
+            acVerified: s.acVerified || 0,
+          };
+          if (s.testPlan) obj.testPlan = s.testPlan;
           if (s.health === 'red') obj.blockerId = s.slug + '-blocked';
           return obj;
         });
