@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-04-18T07:45:29.516Z",
+  "updated": "2026-04-18T08:49:50.803Z",
   "programmes": [],
   "features": [
     {
@@ -799,6 +799,80 @@
               "updatedAt": "2026-04-19T08:00:00Z"
             }
           ]
+        }
+      ]
+    },
+    {
+      "slug": "2026-04-18-auditor-trace-report",
+      "name": "Auditor Trace Report — CLI audit chain report generator",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "track": "short",
+      "discoveryArtefact": "artefacts/2026-04-18-auditor-trace-report/discovery.md",
+      "benefitMetricArtefact": "artefacts/2026-04-18-auditor-trace-report/benefit-metric.md",
+      "metaBenefit": false,
+      "storyCount": 1,
+      "epicCount": 0,
+      "createdAt": "2026-04-18",
+      "updatedAt": "2026-04-18",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Audit chain assembly time",
+          "target": "Under 30 seconds",
+          "baseline": "15-30 minutes manual",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "atr.1"
+          ]
+        },
+        {
+          "id": "M2",
+          "name": "Chain link coverage",
+          "target": "100% of chain link types checked",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "atr.1"
+          ]
+        },
+        {
+          "id": "M3",
+          "name": "Archive-aware operation",
+          "target": "100% archived features produce valid reports",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "atr.1"
+          ]
+        }
+      ],
+      "stories": [
+        {
+          "slug": "atr.1",
+          "title": "Generate standalone audit trace report from CLI",
+          "artefact": "artefacts/2026-04-18-auditor-trace-report/stories/atr.1-audit-trace-report-cli.md",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "health": "green",
+          "complexity": 1,
+          "scopeStability": "Stable",
+          "testPlan": {
+            "artefact": "artefacts/2026-04-18-auditor-trace-report/test-plans/atr.1-audit-trace-report-cli-test-plan.md",
+            "testCount": 12,
+            "acsCovered": 7
+          },
+          "updatedAt": "2026-04-18"
         }
       ]
     }

@@ -1,0 +1,114 @@
+{
+  "version": "1",
+  "updated": "2026-04-18T10:00:00Z",
+  "programmes": [],
+  "features": [
+    {
+      "slug": "test-feature",
+      "name": "Test Feature — Full Pipeline",
+      "stage": "definition-of-done",
+      "health": "green",
+      "discoveryArtefact": "artefacts/test-feature/discovery.md",
+      "benefitMetricArtefact": "artefacts/test-feature/benefit-metric.md",
+      "metrics": [],
+      "stories": [
+        {
+          "slug": "tf.1",
+          "name": "First story",
+          "stage": "definition-of-done",
+          "dodStatus": "complete",
+          "reviewStatus": "passed",
+          "testPlanStatus": "complete",
+          "dorStatus": "signed-off",
+          "artefact": "artefacts/test-feature/stories/tf.1-first-story.md",
+          "testPlanArtefact": "artefacts/test-feature/test-plans/tf.1-test-plan.md",
+          "dorArtefact": "artefacts/test-feature/dor/tf.1-dor.md",
+          "dodArtefact": "artefacts/test-feature/dod/tf.1-dod.md",
+          "reviewArtefact": "artefacts/test-feature/review/tf.1-review.md",
+          "prUrl": "https://github.com/example/repo/pull/1",
+          "prStatus": "merged",
+          "health": "green"
+        },
+        {
+          "slug": "tf.2",
+          "name": "Second story",
+          "stage": "definition-of-done",
+          "dodStatus": "complete",
+          "reviewStatus": "passed",
+          "testPlanStatus": "complete",
+          "dorStatus": "signed-off",
+          "artefact": "artefacts/test-feature/stories/tf.2-second-story.md",
+          "testPlanArtefact": "artefacts/test-feature/test-plans/tf.2-test-plan.md",
+          "dorArtefact": "artefacts/test-feature/dor/tf.2-dor.md",
+          "dodArtefact": "artefacts/test-feature/dod/tf.2-dod.md",
+          "reviewArtefact": "artefacts/test-feature/review/tf.2-review.md",
+          "prUrl": "https://github.com/example/repo/pull/2",
+          "prStatus": "merged",
+          "health": "green"
+        }
+      ]
+    },
+    {
+      "slug": "early-feature",
+      "name": "Early Stage Feature",
+      "stage": "definition",
+      "health": "green",
+      "discoveryArtefact": "artefacts/early-feature/discovery.md",
+      "benefitMetricArtefact": "artefacts/early-feature/benefit-metric.md",
+      "metrics": [],
+      "stories": [
+        {
+          "slug": "ef.1",
+          "name": "Early story — at definition",
+          "stage": "definition",
+          "reviewStatus": null,
+          "testPlanStatus": null,
+          "dorStatus": null,
+          "artefact": "artefacts/early-feature/stories/ef.1-early-story.md",
+          "health": "green"
+        },
+        {
+          "slug": "ef.2",
+          "name": "DoR story — at definition-of-ready",
+          "stage": "definition-of-ready",
+          "reviewStatus": "passed",
+          "testPlanStatus": "complete",
+          "dorStatus": "signed-off",
+          "artefact": "artefacts/early-feature/stories/ef.2-dor-story.md",
+          "testPlanArtefact": "artefacts/early-feature/test-plans/ef.2-test-plan.md",
+          "dorArtefact": "artefacts/early-feature/dor/ef.2-dor.md",
+          "reviewArtefact": "artefacts/early-feature/review/ef.2-review.md",
+          "health": "green"
+        }
+      ]
+    },
+    {
+      "slug": "missing-artefacts-feature",
+      "name": "Feature with Missing Artefacts",
+      "stage": "definition-of-done",
+      "health": "green",
+      "discoveryArtefact": "artefacts/missing-artefacts-feature/discovery.md",
+      "benefitMetricArtefact": "artefacts/missing-artefacts-feature/benefit-metric.md",
+      "metrics": [],
+      "stories": [
+        {
+          "slug": "mf.1",
+          "name": "Story with missing files",
+          "stage": "definition-of-done",
+          "dodStatus": "complete",
+          "reviewStatus": "passed",
+          "testPlanStatus": "complete",
+          "dorStatus": "signed-off",
+          "artefact": "artefacts/missing-artefacts-feature/stories/mf.1-story.md",
+          "testPlanArtefact": "artefacts/missing-artefacts-feature/test-plans/mf.1-test-plan.md",
+          "dorArtefact": "artefacts/missing-artefacts-feature/dor/mf.1-dor.md",
+          "dodArtefact": "artefacts/missing-artefacts-feature/dod/mf.1-dod.md",
+          "reviewArtefact": "artefacts/missing-artefacts-feature/review/mf.1-review.md",
+          "prUrl": "https://github.com/example/repo/pull/3",
+          "prStatus": "merged",
+          "health": "green"
+        }
+      ]
+    }
+  ]
+}
