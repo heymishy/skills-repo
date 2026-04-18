@@ -2676,6 +2676,115 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "2026-04-18-dashboard-v2",
+      "name": "Dashboard v2 — pipeline-state.json-driven portfolio visualiser",
+      "track": "tooling",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discoveryStatus": "approved",
+      "benefitMetricStatus": "active",
+      "updatedAt": "2026-04-18T00:00:00Z",
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Dashboard data fidelity — percentage of feature stages rendered correctly",
+          "target": "100% stage accuracy across all features present in pipeline-state.json",
+          "baseline": "0% — current index.html uses hardcoded mock data",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["dviz.1-pipeline-adapter"]
+        },
+        {
+          "id": "MM1",
+          "name": "CI governance coverage — dashboards/*.js files included in npm test syntax check",
+          "target": "Boolean: true — check-dashboard-viz.js exists and passes in CI",
+          "baseline": "false — no CI coverage for dashboards/*.js",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["dviz.3-governance-check"]
+        },
+        {
+          "id": "MM2",
+          "name": "GitHub Pages deployment health — pages.yml workflow exists and deploys dashboards/ on push",
+          "target": "Boolean: true — pages.yml exists, passes CI check, and deploys to GitHub Pages",
+          "baseline": "false — pages.yml does not exist",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["dviz.2-pages-workflow"]
+        }
+      ],
+      "guardrails": [
+        { "id": "MC-SEC-02", "appliesTo": ["dviz.1-pipeline-adapter", "dviz.2-pages-workflow", "dviz.3-governance-check"], "note": "No credentials, API keys, tokens, or personal identifiers in any new file" }
+      ],
+      "epics": [
+        {
+          "slug": "e1-dashboard-v2-wiring",
+          "name": "Wire dashboard to live pipeline data and deploy via GitHub Pages",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "dviz.1-pipeline-adapter",
+              "name": "Create pipeline-adapter.js to wire index.html to pipeline-state.json",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "dorStatus": "signed-off",
+              "complexity": 2,
+              "oversightLevel": "low",
+              "testPlan": { "status": "written", "totalTests": 10, "artefact": "artefacts/2026-04-18-dashboard-v2/test-plans/dviz.1-test-plan.md" },
+              "dorArtefact": "artefacts/2026-04-18-dashboard-v2/dor/dviz.1-dor.md",
+              "dorContract": "artefacts/2026-04-18-dashboard-v2/dor/dviz.1-dor-contract.md",
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "updatedAt": "2026-04-18T00:00:00Z"
+            },
+            {
+              "slug": "dviz.2-pages-workflow",
+              "name": "Create .github/workflows/pages.yml to deploy dashboards/ to GitHub Pages",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "dorStatus": "signed-off",
+              "complexity": 1,
+              "oversightLevel": "low",
+              "testPlan": { "status": "written", "totalTests": 8, "artefact": "artefacts/2026-04-18-dashboard-v2/test-plans/dviz.2-test-plan.md" },
+              "dorArtefact": "artefacts/2026-04-18-dashboard-v2/dor/dviz.2-dor.md",
+              "dorContract": "artefacts/2026-04-18-dashboard-v2/dor/dviz.2-dor-contract.md",
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "updatedAt": "2026-04-18T00:00:00Z"
+            },
+            {
+              "slug": "dviz.3-governance-check",
+              "name": "Create tests/check-dashboard-viz.js governance script for dashboards/*.js",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "dorStatus": "signed-off",
+              "complexity": 1,
+              "oversightLevel": "low",
+              "testPlan": { "status": "written", "totalTests": 7, "artefact": "artefacts/2026-04-18-dashboard-v2/test-plans/dviz.3-test-plan.md" },
+              "dorArtefact": "artefacts/2026-04-18-dashboard-v2/dor/dviz.3-dor.md",
+              "dorContract": "artefacts/2026-04-18-dashboard-v2/dor/dviz.3-dor-contract.md",
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "updatedAt": "2026-04-18T00:00:00Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
