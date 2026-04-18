@@ -2231,7 +2231,7 @@
         {
           "slug": "p3.3",
           "name": "Gate structural independence",
-          "stage": "definition-of-done",
+          "stage": "definition-of-ready",
           "assumption": "ASSUMPTION-01",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -2245,8 +2245,9 @@
           "dispatchedAt": "2026-04-18T00:00:00Z",
           "dispatchTarget": "github-agent",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/166",
-          "prStatus": "merged",
-          "health": "green",
+          "prStatus": "merged-empty",
+          "blocker": "D8: PR #166 merged with 0 file changes — agent produced empty PR. Requires re-dispatch.",
+          "health": "red",
           "updatedAt": "2026-04-18",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.3-gate-structural-independence-review-1.md",
           "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.3-gate-structural-independence.md"
@@ -2397,7 +2398,7 @@
         {
           "slug": "p3.13",
           "name": "Compliance monitoring report",
-          "stage": "definition-of-done",
+          "stage": "definition-of-ready",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlanStatus": "complete",
@@ -2410,8 +2411,9 @@
           "dispatchedAt": "2026-04-18T00:00:00Z",
           "dispatchTarget": "github-agent",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/165",
-          "prStatus": "merged",
-          "health": "green",
+          "prStatus": "merged-empty",
+          "blocker": "D8: PR #165 merged with 0 file changes — agent produced empty PR. Requires re-dispatch.",
+          "health": "red",
           "updatedAt": "2026-04-18",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.13-compliance-monitoring-report-review-1.md",
           "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.13-compliance-monitoring-report.md"
@@ -2793,6 +2795,62 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "updatedAt": "2026-04-18T00:00:00Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "2026-04-18-pipeline-state-archive",
+      "name": "Pipeline-state archive — reduce agent context load",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discoveryStatus": "short-track",
+      "benefitMetricStatus": "short-track",
+      "updatedAt": "2026-04-18T12:00:00Z",
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Agent dispatch success rate — dispatched stories that produce non-empty PRs",
+          "target": ">0% GitHub agent dispatch success (currently 0% due to context budget exhaustion)",
+          "baseline": "0% — all GitHub agent dispatches (D7, D8) produced empty PRs",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["psa.1-archive-completed-features"]
+        }
+      ],
+      "guardrails": [
+        { "id": "ADR-003", "category": "adr", "label": "Schema-first: archive field added to schema", "status": "not-assessed", "assessedBy": "/review", "assessedAt": "2026-04-18T12:00:00Z" },
+        { "id": "ADR-001", "category": "adr", "label": "Single-file viz: merge logic inline in pipeline-viz.html", "status": "met", "evidence": "No violations found — contract specifies inline merge, no build step", "assessedBy": "/review", "assessedAt": "2026-04-18T12:00:00Z" }
+      ],
+      "epics": [
+        {
+          "slug": "e1-pipeline-state-archive",
+          "name": "Archive completed features to reduce agent context budget",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "psa.1-archive-completed-features",
+              "name": "Archive completed features from pipeline-state.json to reduce agent context load",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "dorStatus": "signed-off",
+              "complexity": 2,
+              "oversightLevel": "low",
+              "testPlan": { "status": "written", "totalTests": 14, "artefact": "artefacts/2026-04-18-pipeline-state-archive/test-plans/psa.1-archive-completed-features-test-plan.md" },
+              "dorArtefact": "artefacts/2026-04-18-pipeline-state-archive/dor/psa.1-archive-completed-features-dor.md",
+              "dorContract": "artefacts/2026-04-18-pipeline-state-archive/dor/psa.1-archive-completed-features-dor-contract.md",
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "updatedAt": "2026-04-18T12:00:00Z"
             }
           ]
         }
