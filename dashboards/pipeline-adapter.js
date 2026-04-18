@@ -52,16 +52,26 @@
   }
 
   // ── Cycle note ───────────────────────────────────────────────────
-  function cycleNote(feature) {
-    var allStories = (feature.epics || []).reduce(function (acc, e) {
-      return acc.concat(e.stories || []);
+  // ── Schema variant helpers ───────────────────────────────────────
+  // Phase 1/2 epics: stories are full objects (.slug, .stage, .health …)
+  // Phase 2 batch 2: stored under f.epics_batch2 (same story shape)
+  // Phase 3 epics:   stories are slug strings → resolve from f.stories[]
+  function collectEpicBatches(f) {
+    return Object.keys(f).filter(function (k) {
+      return k === 'epics' || /^epics_/.test(k);
+    }).reduce(function (acc, k) {
+      return Array.isArray(f[k]) ? acc.concat(f[k]) : acc;
     }, []);
-    var done  = allStories.filter(function (s) {
-      return s.dodStatus === 'complete' || s.stage === 'definition-of-done';
-    }).length;
-    var total = allStories.length;
-    var base  = feature.stage;
-    return total > 0 ? base + ' \u00B7 ' + done + '/' + total + ' done' : base;
+  }
+
+  function buildStoryMap(f) {
+    var map = {};
+    (f.stories || []).forEach(function (s) { map[s.slug] = s; });
+    return map;
+  }
+
+  function resolveStory(s, storyMap) {
+    return typeof s === 'string' ? (storyMap[s] || { slug: s }) : s;
   }
 
   // ── Transform pipeline-state.json → CYCLES / EPICS ──────────────
@@ -69,26 +79,35 @@
     if (!state || !Array.isArray(state.features)) return;
 
     window.CYCLES = state.features.map(function (f) {
+      var storyMap = buildStoryMap(f);
+      var allRaw = collectEpicBatches(f).reduce(function (acc, e) {
+        return acc.concat(e.stories || []);
+      }, []);
+      var resolved = allRaw.map(function (s) { return resolveStory(s, storyMap); });
+      var doneN = resolved.filter(function (s) {
+        return s.dodStatus === 'complete' || s.stage === 'definition-of-done';
+      }).length;
+      var note = resolved.length > 0
+        ? f.stage + ' \u00B7 ' + doneN + '/' + resolved.length + ' done'
+        : f.stage;
       var isDone = f.stage === 'definition-of-done' || f.dodStatus === 'complete';
       return {
         id:           f.slug,
-        tag:          (f.track || f.slug.replace(/^\d{4}-\d{2}-\d{2}-/, '')),
+        tag:          f.track || f.slug.replace(/^\d{4}-\d{2}-\d{2}-/, ''),
         name:         f.name,
         currentPhase: toPhaseKey(f.stage),
         state:        f.health === 'red' ? 'blocked' : isDone ? 'done' : 'in-flight',
-        note:         cycleNote(f),
+        note:         note,
       };
     });
 
     var epics = [];
     state.features.forEach(function (f) {
-      (f.epics || []).forEach(function (epic) {
-        var stories = (epic.stories || []).map(function (s) {
-          var obj = {
-            id:    s.slug,
-            phase: toPhaseKey(s.stage),
-            state: deriveStoryState(s),
-          };
+      var storyMap = buildStoryMap(f);
+      collectEpicBatches(f).forEach(function (epic) {
+        var fullStories = (epic.stories || []).map(function (s) { return resolveStory(s, storyMap); });
+        var mappedStories = fullStories.map(function (s) {
+          var obj = { id: s.slug, phase: toPhaseKey(s.stage), state: deriveStoryState(s) };
           if (s.health === 'red') obj.blockerId = s.slug + '-blocked';
           return obj;
         });
@@ -96,14 +115,14 @@
           id:      epic.slug,
           cycleId: f.slug,
           name:    epic.name,
-          risk:    deriveRisk(epic.stories || []),
-          stories: stories,
+          risk:    deriveRisk(fullStories),
+          stories: mappedStories,
         });
       });
     });
     window.EPICS = epics;
     window.dispatchEvent(new CustomEvent('pipeline-loaded'));
-    console.log('[pipeline-adapter] loaded ' + window.CYCLES.length + ' feature(s)');
+    console.log('[pipeline-adapter] loaded ' + window.CYCLES.length + ' feature(s), ' + epics.length + ' epic(s)');
   }
 
   // ── Async fetch — try candidates in order ────────────────────────
