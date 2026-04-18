@@ -1185,14 +1185,26 @@ async function loadState() {
   // Try fetch first (works with VS Code Live Server, GitHub Pages, etc.).
   // On file:// the browser blocks fetch, so we silently fall back to the
   // drop-zone picker so the user can load the file from disk — no server needed.
+  let stateJson;
   try {
     const resp = await fetch(STATE_FILE + '?_=' + Date.now());
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    allData = normalizeData(await resp.json());
+    stateJson = await resp.json();
   } catch (e) {
     showDropZone();
     return;
   }
+  // Merge archived features if an archive file is referenced
+  if (stateJson.archive) {
+    try {
+      const archResp = await fetch(stateJson.archive + '?_=' + Date.now());
+      if (archResp.ok) {
+        const archJson = await archResp.json();
+        stateJson = mergeArchivedState(stateJson, archJson);
+      }
+    } catch (_) { /* archive missing or unreachable — render active-only */ }
+  }
+  allData = normalizeData(stateJson);
   // render() is outside the fetch catch — a JS render error shows as an error,
   // not a false "no data" drop zone.
   try { render(); } catch (re) { showError('render error: ' + re.message + '\n' + re.stack); }
@@ -1201,6 +1213,27 @@ async function loadState() {
   loadSkillMetadata().then(() => { try { render(); } catch (_) {} });
   // Load fleet registry if present; silently omit if absent (file:// or not deployed).
   loadFleetRegistry().then(loaded => { if (loaded) { try { render(); } catch (_) {} } });
+}
+
+function mergeArchivedState(activeData, archiveData) {
+  if (!archiveData || !archiveData.features) return activeData;
+  const activeSlugs = new Set((activeData.features || []).map(f => f.slug));
+  const merged = Object.assign({}, activeData);
+  merged.features = [...(activeData.features || [])];
+  for (const archFeature of archiveData.features) {
+    if (archFeature.completedStories && activeSlugs.has(archFeature.slug)) {
+      const activeFeature = merged.features.find(f => f.slug === archFeature.slug);
+      if (activeFeature) {
+        activeFeature.stories = [
+          ...(archFeature.completedStories || []),
+          ...(activeFeature.stories || [])
+        ];
+      }
+    } else if (!activeSlugs.has(archFeature.slug)) {
+      merged.features.unshift(archFeature);
+    }
+  }
+  return merged;
 }
 
 function normalizeData(data) {
