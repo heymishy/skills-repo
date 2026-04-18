@@ -1007,13 +1007,14 @@ const CRITERIA_BY_PHASE = {
     { t: "p3.5 → issues/123 · dispatched", d: true },
     { t: "p3.6 → issues/124 · dispatched", d: true },
     { t: "p3.7, p3.8, p3.10, p3.11 dispatched", d: true },
-    { t: "p3.3 dispatch withheld · ASSUMPTION-01 unconfirmed", d: false, pending: true },
+    { t: "p3.3 → issues/163 · dispatched 2026-04-18", d: true },
+    { t: "p3.13 → issues/164 · dispatched 2026-04-18", d: true },
   ],
   7: [
     { t: "22 stories DoD-complete (p3.1a–e, p3.2a/b, p3.5–8, p3.9–11, p3.15–22)", d: true },
     { t: "Draft PR open · feature/p3-remaining-stories", d: false, pending: true },
     { t: "npm test — all 38 governance checks green", d: true },
-    { t: "p3.3 / p3.4 / p3.12 / p3.13 blocked on assumption + dep chain", d: false, pending: true },
+    { t: "p3.3 dispatched, p3.13 assigned to agent \u00b7 p3.4 / p3.12 awaiting p3.3 DoD", d: false, pending: true },
   ],
   8: [
     { t: "Instruction-set hashes verified against registry a1604b2e", d: false, pending: true },

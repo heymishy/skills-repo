@@ -236,7 +236,7 @@ const COMPLIANCE_MATRIX = [
     t3m1:     { control:"T3M1-07", status:"met",    artefact:"evidence/t3m1/rollback.md" },
   },
   { feature:"Policy-as-code enforcement", surface:"/governance/opa",
-    soc2:     { control:"CC5.3", status:"at-risk",  artefact:"—", note:"Blocked on e.p3.3 (infra repo)." },
+    soc2:     { control:"CC5.3", status:"in-progress",  artefact:"—", note:"e.p3.3 unblocked — p3.3 dispatched (#163)." },
     gdpr:     null,
     iso27001: { control:"A.5.31", status:"at-risk", artefact:"—" },
     nistai:   { control:"GOVERN-1.1", status:"at-risk", artefact:"draft" },
@@ -368,7 +368,7 @@ const STORY_THEMES = [
         risk:"high",
         stories:[
           { id:"p3.3", title:"Bootstrap platform-infra repo",
-            state:"blocked", phase:"dor", blocker:"B-01",
+            state:"current", phase:"dispatch",
             acceptance:"repo + CODEOWNERS + CI template merged" },
           { id:"p3.4", title:"Define policy-as-code structure",
             state:"blocked", phase:"dor", blocker:"B-02",
