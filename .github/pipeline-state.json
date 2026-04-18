@@ -729,7 +729,7 @@
       "slug": "2026-04-18-pipeline-state-archive",
       "name": "Pipeline-state archive — reduce agent context load",
       "track": "short",
-      "stage": "implementation",
+      "stage": "subagent-execution",
       "health": "green",
       "regulated": false,
       "complianceProfile": "standard",
@@ -780,7 +780,7 @@
             {
               "slug": "psa.1-archive-completed-features",
               "name": "Archive completed features from pipeline-state.json to reduce agent context load",
-              "stage": "implementation",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
