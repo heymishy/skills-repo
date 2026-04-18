@@ -1,3 +1,4 @@
 .vscode/
 trace-validation-report.json
 .worktrees/
+dashboards/pipeline-state.json
