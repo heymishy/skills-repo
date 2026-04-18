@@ -150,7 +150,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 | ADR-008 | Active | DoR touch-point contract is binding at pre-merge — no silent scope bundling | All PRs, /verify-completion step, DoR contract amendment workflow |
 | ADR-009 | Active | Evaluation and write-back workflows must be separate triggers with separate permission scopes | All CI/CD workflows that produce audit artefacts |
 | ADR-010 | Active | CI audit records must be persisted to main post-merge, not to feature branches | assurance-gate.yml, trace-commit.yml, all future governance gates |
-| ADR-011 | Active | Artefact-first: new SKILL.md files, src/ modules, and governance check scripts require a story artefact before or alongside the commit | All contributors; /definition-of-ready H9 check; coding agent |
+| ADR-011 | Active | Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit | All contributors; /definition-of-ready H9 check; coding agent |
 
 ---
 
@@ -386,18 +386,27 @@ If the two-workflow artifact handoff proves unreliable at scale (e.g. artifact e
 
 ---
 
-### ADR-011: Artefact-first — new skills, modules, and governance scripts require a story artefact
+### ADR-011: Artefact-first — new skills, modules, governance scripts, dashboard logic, instructions, and structural state changes require a story artefact
 
 **Status:** Active
-**Date:** 2026-04-16
-**Source finding:** `workspace/retrospective-audit-2026-04-16.md` — Finding 2 (11 BETWEEN-STORIES items, 2 HIGH-risk)
+**Date:** 2026-04-18 (scope extended from 2026-04-16 original)
+**Source finding:** `workspace/retrospective-audit-2026-04-16.md` — Finding 2 (11 BETWEEN-STORIES items, 2 HIGH-risk); `workspace/learnings.md` D8 — empty-PR pattern caused by agent context budget exhaustion from oversized pipeline-state.json
 **Decided by:** Hamish
 
 #### Context
 The retrospective artefact coverage audit (2026-04-16) found that 45% of post-pipeline CHANGELOG items had no covering story — including two HIGH-risk functional primitives (the `/estimate` and `/issue-dispatch` skills) added directly between story cycles. The platform's core traceability claim — that every behavioural change has a discoverable chain from problem statement to tested implementation — was violated for these items. The root cause was the absence of a structural constraint that made the violation visible before commit.
 
+**2026-04-18 scope extension:** The D8 learning (empty-PR pattern) revealed that the original ADR-011 scope was too narrow. Dashboard behavioural changes (`dashboards/*.js`, `dashboards/*.html` logic), copilot-instructions.md behavioural changes, and structural changes to `pipeline-state.json` (schema evolution, file splitting, archive mechanisms) all change the rules by which agents and operators work, and all carry the same risk of silent divergence between codebase-as-delivered and codebase-as-specified. Data-only updates to dashboard static arrays (story phase/state changes reflecting pipeline-state.json) and pipeline bookkeeping updates (stage transitions, metric signals) remain exempt.
+
 #### Decision
-Any new SKILL.md file under `.github/skills/`, any new module under `src/`, and any new governance check script under `tests/` or `scripts/` committed to master must have a corresponding story artefact (discovery → benefit-metric → story → test-plan → DoR) committed to `artefacts/` before or alongside the implementation.
+Any new or behaviourally modified file in the following categories committed to master must have a corresponding story artefact (discovery → benefit-metric → story → test-plan → DoR) committed to `artefacts/` before or alongside the implementation:
+
+1. **SKILL.md files** under `.github/skills/`
+2. **Modules** under `src/`
+3. **Governance check scripts** under `tests/` or `scripts/`
+4. **Dashboard behavioural changes** — new JS logic, new rendering functions, structural changes to `dashboards/pipeline-viz.html` or `dashboards/*.js` (NOT data-only updates to static arrays reflecting pipeline state)
+5. **copilot-instructions.md behavioural changes** — new rules, guardrail additions, or workflow modifications that change agent behaviour (NOT typo fixes or clarifications of existing intent)
+6. **Structural pipeline-state.json changes** — schema evolution, file splitting, archive mechanisms, new top-level fields (NOT pipeline bookkeeping: stage transitions, metric signals, dispatch records)
 
 **Exemptions** (do not require a full artefact chain):
 - Documentation-only changes (README, CHANGELOG, `workspace/` notes)
@@ -680,11 +689,11 @@ This repository is operated by a single engineer. The following posture applies 
 
 - id: AP-11
   category: anti-pattern
-  label: "Committing a new SKILL.md, src/ module, or governance check script without a story artefact (artefact-first violation)"
+  label: "Committing a new SKILL.md, src/ module, governance check script, dashboard behavioural change, copilot-instructions behavioural change, or structural pipeline-state change without a story artefact (artefact-first violation)"
   section: Anti-Patterns
 
 - id: ADR-011
   category: adr
-  label: "Artefact-first: new SKILL.md files, src/ modules, and governance check scripts require a story artefact before or alongside the commit"
+  label: "Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit"
   section: Active ADRs
 ```
