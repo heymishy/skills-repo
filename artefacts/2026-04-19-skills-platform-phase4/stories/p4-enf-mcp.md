@@ -27,6 +27,7 @@ So that **my interactive outer-loop sessions are governed per-invocation (P1–P
 ## Dependencies
 
 - **Upstream:** p4.enf-decision must be committed (confirms MCP is the mechanism for the interactive surface class); p4.enf-package must be complete (provides `resolveSkill`, `verifyHash`, `evaluateGate`, `advanceState`, `writeTrace` entry points); p4.spike-b1 must have PROCEED or REDESIGN verdict
+- Spike A output artefact: the governance package interface that p4-enf-package implements is derived from Spike A's verdict at `artefacts/2026-04-19-skills-platform-phase4/spikes/spike-a-output.md`; the MCP adapter depends on the governance package (p4.enf-package) which in turn implements the Spike A interface — this story must not enter DoR until Spike A has a PROCEED or REDESIGN verdict
 - **Downstream:** p4.enf-second-line — the MCP adapter's trace output is an input to the second-line evidence chain
 
 ## Acceptance Criteria

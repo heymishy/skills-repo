@@ -268,6 +268,24 @@
           "items": { "$ref": "#/$defs/fleetStateEntry" }
         }
       }
+    },
+    "phase4": {
+      "type": "object",
+      "description": "Phase 4 spike verdicts shortcut — convenience lookup for tests and tooling. Updated at spike closeout alongside features[0].spikes[].verdict.",
+      "properties": {
+        "spikes": {
+          "type": "object",
+          "description": "Spike verdict map. Keys are spike-id strings (spike-a, spike-b1, spike-b2, spike-c, spike-d).",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "verdict":        { "type": ["string", "null"], "enum": ["PROCEED", "REDESIGN", "DEFER", "REJECT", null] },
+              "verdictAt":      { "type": ["string", "null"], "format": "date-time" },
+              "outputArtefact": { "type": "string", "description": "Relative path to the spike output artefact" }
+            }
+          }
+        }
+      }
     }
   }
 }
