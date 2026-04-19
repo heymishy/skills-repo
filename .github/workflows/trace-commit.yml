@@ -122,6 +122,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
+          # Stage trace files in temp dir BEFORE branch switch to avoid
+          # "untracked working tree files would be overwritten" errors
+          mkdir -p /tmp/traces-staging
+          cp workspace/traces/* /tmp/traces-staging/ 2>/dev/null || true
+          rm -rf workspace/traces/
+          
           # CRITICAL FIX: Fetch all refs from origin FIRST, before any ref checks
           # This ensures origin/traces detection is accurate, not based on stale local refs
           git fetch origin
@@ -134,6 +140,10 @@ jobs:
             echo "Creating new traces branch from current HEAD"
             git checkout -b traces
           fi
+          
+          # Restore trace files from staging
+          mkdir -p workspace/traces/
+          cp /tmp/traces-staging/* workspace/traces/
           
           # Add trace files and commit
           git add -f workspace/traces/
