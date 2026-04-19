@@ -151,6 +151,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 | ADR-009 | Active | Evaluation and write-back workflows must be separate triggers with separate permission scopes | All CI/CD workflows that produce audit artefacts |
 | ADR-010 | Active | CI audit records must be persisted to main post-merge, not to feature branches | assurance-gate.yml, trace-commit.yml, all future governance gates |
 | ADR-011 | Active | Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit | All contributors; /definition-of-ready H9 check; coding agent |
+| ADR-012 | Active | Platform-agnostic architecture: prefer portable, multi-VCS-compatible implementations over vendor-specific optimisations; adapters enable platform adaptation without core fragmentation | All infrastructure, registry, and audit features; Phase 3 T3M1 Q8 implementation; enterprise adapter architecture |
 
 ---
 
@@ -428,6 +429,50 @@ If a `check-artefact-coverage.js` CI governance gate is implemented (Phase 3 exi
 
 ---
 
+### ADR-012: Platform-agnostic architecture via adapters
+
+**Status:** Active
+**Date:** 2026-04-19
+**Decided by:** Operator
+**Triggered by:** ASSUMPTION-02 (T3M1 Q8 tamper-evidence registry implementation choice); Phase 3 MVP scope
+
+#### Context
+Phase 3 must implement a tamper-evidence registry for T3M1 Q8 (audit-readiness). Two options existed:
+
+**Option A:** GitHub Artifact Attestation with OIDC-signed workflow identity. Fast, GitHub-native, cryptographically strong. Limitation: only works on GitHub Actions. Requires OIDC token support.
+
+**Option B:** Read-only registry repository. Portable across GitHub, Bitbucket, GitLab, and any Git host. Append-only, immutable by design. Requires second repository; slower to query. Limitation: no cryptographic attestation layer.
+
+The platform's founding principle (ADR-003, ADR-004, ADR-006) is platform neutrality: the pipeline operates across GitHub, Bitbucket, GitLab, and on-premise Git without code fragmentation. Adapters — modular interfaces keyed on `context.yml` settings — allow the core platform to remain Git-host-agnostic while supporting host-specific optimizations.
+
+#### Decision
+**Choose Option B (portable read-only registry).** The T3M1 Q8 implementation must not introduce GitHub-specific dependencies. The registry is a portable Git-based append-only store, not a GitHub Actions primitive. When an enterprise adopter targets Bitbucket or on-premise Git, the same registry implementation works without core changes.
+
+The platform architecture commits to this posture: core infrastructure (gates, traces, registries, audit artefacts) uses portable primitives; host-specific optimizations (OIDC-signed attestation, GitHub Checks API integration, Bitbucket Deployment environments) land in adapter implementations, not the core platform code.
+
+#### Consequences
+**Easier:** Portable implementation from day one. No future migration cost if tooling changes. Enterprise adoption blocked only by adapter availability, not core incompatibility. Consistent mental model: all enterprise adapters follow the same pattern (`context.yml` → adapter selection → adapter-specific logic).
+
+**Harder / constrained:** No GitHub-native optimizations (OIDC attestation, direct GitHub API trust anchors). The registry is slower to query than a database. Tamper-evidence relies on immutability-by-design (append-only storage, no write access granted to agents) rather than cryptographic proof.
+
+**Off the table:** Assuming a default GitHub-Actions-only implementation and adding adapters "later" (deferral creates de facto GitHub-first expectations in the core code). Fragmented core implementations that differ between VCS hosts.
+
+#### Alternatives considered
+**Option A (GitHub OIDC attestation):** Rejected because it blocks Bitbucket and on-premise Git environments, contradicting ADR-003.
+
+**Hybrid approach:** Use Option B now, add OIDC verification via an adapter layer on GitHub. Rejected because it adds complexity without solving the core problem — the registry still needs to be portable.
+
+#### Implications on Phase 3 and Phase 4
+- **T3M1 Q8 implementation (Phase 3):** Read-only registry repository. Delivery agents have no write access. Audit records committed post-merge by a dedicated workflow. Immutability enforced by access control and branch protection rules, not cryptography.
+- **Enterprise adapters (Phase 3, Priority 8):** Teams and Jira adapters confirmed as minimum viable set. Both use portable auth mechanisms (OAuth, PAT) — no GitHub Checks API dependencies.
+- **OIDC verification (Phase 4 or later):** If GitHub enterprises require attestation, a GitHub-specific adapter can optionally verify OIDC tokens against the registry. This is host-specific logic in an adapter, not platform core.
+- **Cross-VCS trace aggregation (Phase 3, Priority 7):** Git-based, works identically on GitHub, Bitbucket, GitLab. Scheduled CI job aggregates `workspace/traces/` JSONL across squads into a shared `platform/traces/` partition.
+
+#### Revisit trigger
+If a future enterprise adopter requires cryptographic attestation and OIDC is not available in their environment (e.g. self-hosted Git without OIDC support), re-evaluate whether a time-stamping service or blockchain-based immutability service becomes necessary. The decision to remain portable supersedes any individual adopter's attestation preference unless the preference is universal.
+
+---
+
 ## Operating Posture
 
 ### Solo operator / W4 RISK-ACCEPT posture
@@ -695,5 +740,10 @@ This repository is operated by a single engineer. The following posture applies 
 - id: ADR-011
   category: adr
   label: "Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit"
+  section: Active ADRs
+
+- id: ADR-012
+  category: adr
+  label: "Platform-agnostic architecture: prefer portable multi-VCS implementations over vendor-specific optimisations; adapters enable platform adaptation without fragmentation"
   section: Active ADRs
 ```

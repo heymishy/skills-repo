@@ -45,7 +45,7 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "guardrails": [
-        { "id": "ADR-phase4-enforcement", "file": ".github/architecture-guardrails.md", "status": "pending — written after Spike A/B1/B2 verdicts" },
+        { "id": "ADR-phase4-enforcement", "category": "adr", "label": "Phase 4 enforcement architecture ADR — written after Spike A/B1/B2 verdicts", "file": ".github/architecture-guardrails.md", "status": "not-assessed", "assessedBy": "/definition-of-done", "assessedAt": "2026-04-19", "evidence": "Spike A PROCEED verdict recorded. ADR authoring blocked on Spike B1/B2 verdicts. Revisit when both spikes complete." },
         { "id": "ADR-004", "category": "adr", "label": "context.yml is the single configuration source — no hardcoded values", "status": "confirmed-compliant", "assessedBy": "/review", "assessedAt": "2026-04-19" },
         { "id": "C1", "category": "constraint", "label": "Non-fork update channel — consumers must not fork", "status": "confirmed-compliant", "assessedBy": "/review", "assessedAt": "2026-04-19" },
         { "id": "C4", "category": "constraint", "label": "Human approval gate — no automated merge", "status": "confirmed-compliant", "assessedBy": "/review", "assessedAt": "2026-04-19" },
@@ -136,7 +136,7 @@
         { "id": "spike-d",  "storySlug": "p4-spike-d",  "verdict": null }
       ],
       "stories": [
-        { "id": "p4-spike-a",            "epic": "e1", "dorStatus": "signed-off", "stage": "implementation", "health": "green", "branchSetupAt": "2026-04-19", "worktreePath": ".worktrees/p4-spike-a", "branch": "feature/p4-spike-a", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-a-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-a-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-spike-a.js",            "totalTests": 13,  "passing": 0 },
+        { "id": "p4-spike-a",            "epic": "e1", "dorStatus": "signed-off", "stage": "definition-of-done", "dodStatus": "complete", "prStatus": "merged", "releaseReady": true, "health": "green", "branchSetupAt": "2026-04-19", "updatedAt": "2026-04-19T23:59:00.000Z", "worktreePath": ".worktrees/p4-spike-a", "branch": "feature/p4-spike-a", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-a-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-a-dor-contract.md", "dorSignedOffAt": "2026-04-19", "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-spike-a-dod.md", "testPlan": { "status": "written", "testFile": "tests/check-p4-spike-a.js",            "totalTests": 13,  "passing": 24 },
           "tasks": [
             { "id": "task-1", "name": "Phase4 schema + state scaffold + p4-enf-mcp fix", "tddState": "green", "file": "artefacts/2026-04-19-skills-platform-phase4/plans/p4-spike-a-plan.md" },
             { "id": "task-2", "name": "Run governance logic extractability investigation (OPERATOR)", "tddState": "green", "file": "artefacts/2026-04-19-skills-platform-phase4/plans/p4-spike-a-plan.md" },
