@@ -1,18 +1,18 @@
 {
   "version": "1",
-  "updated": "2026-04-19T20:30:00.000Z",
+  "updated": "2026-04-19T23:45:00.000Z",
   "programmes": [],
   "features": [
     {
       "slug": "2026-04-19-skills-platform-phase4",
       "name": "Skills Platform — Phase 4: Distribution, Structural Enforcement, and Non-Technical Access",
-      "stage": "definition-of-ready",
+      "stage": "branch-setup",
       "reviewStatus": "passed",
       "reviewHighFindings": 0,
       "reviewArtefacts": "artefacts/2026-04-19-skills-platform-phase4/review/",
       "discoveryStatus": "approved",
-      "health": "amber",
-      "healthReason": "Review passed — 0 HIGH findings across 24 stories; systematic MEDIUM finding (1-M1: So-that clause does not name metric) present in 18/24 stories; must be acknowledged via /decisions before /test-plan for each affected story",
+      "health": "green",
+      "healthReason": "Branch-setup complete for p4-spike-a: worktree at .worktrees/p4-spike-a, branch feature/p4-spike-a, baseline 32 suites 0 failures",
       "track": "library",
       "discoveryArtefact": "artefacts/2026-04-19-skills-platform-phase4/discovery.md",
       "benefitMetricArtefact": "artefacts/2026-04-19-skills-platform-phase4/benefit-metric.md",
@@ -47,7 +47,7 @@
         { "id": "MC-CORRECT-02", "category": "mandatory-constraint", "label": "Fields written to pipeline-state.json must exist in schema", "status": "confirmed-compliant", "assessedBy": "/review", "assessedAt": "2026-04-19" }
       ],
       "createdAt": "2026-04-19",
-      "updatedAt": "2026-04-19T20:30:00.000Z",
+      "updatedAt": "2026-04-19T23:45:00.000Z",
       "metrics": [
         {
           "id": "m1",
@@ -127,7 +127,7 @@
         { "id": "spike-d",  "storySlug": "p4-spike-d",  "verdict": null }
       ],
       "stories": [
-        { "id": "p4-spike-a",            "epic": "e1", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-a-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-a-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-spike-a.js",            "totalTests": 8,  "passing": 0 } },
+        { "id": "p4-spike-a",            "epic": "e1", "dorStatus": "signed-off", "stage": "branch-setup", "health": "green", "branchSetupAt": "2026-04-19", "worktreePath": ".worktrees/p4-spike-a", "branch": "feature/p4-spike-a", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-a-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-a-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-spike-a.js",            "totalTests": 8,  "passing": 0 } },
         { "id": "p4-spike-b1",           "epic": "e1", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b1-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b1-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-spike-b1.js",           "totalTests": 9,  "passing": 0 } },
         { "id": "p4-spike-b2",           "epic": "e1", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b2-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b2-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-spike-b2.js",           "totalTests": 9,  "passing": 0 } },
         { "id": "p4-spike-c",            "epic": "e1", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-c-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-c-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-spike-c.js",            "totalTests": 9,  "passing": 0 } },
