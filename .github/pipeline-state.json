@@ -4,11 +4,31 @@
   "programmes": [],
   "phase4": {
     "spikes": {
-      "spike-a":  { "verdict": "PROCEED", "verdictAt": "2026-04-19T23:59:00.000Z", "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-a-output.md" },
-      "spike-b1": { "verdict": "PROCEED", "verdictAt": "2026-04-20T12:00:00.000Z", "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b1-output.md" },
-      "spike-b2": { "verdict": null, "verdictAt": null, "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b2-output.md" },
-      "spike-c":  { "verdict": null, "verdictAt": null, "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-c-output.md" },
-      "spike-d":  { "verdict": null, "verdictAt": null, "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-d-output.md" }
+      "spike-a": {
+        "verdict": "PROCEED",
+        "verdictAt": "2026-04-19T23:59:00.000Z",
+        "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-a-output.md"
+      },
+      "spike-b1": {
+        "verdict": "PROCEED",
+        "verdictAt": "2026-04-20T12:00:00.000Z",
+        "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b1-output.md"
+      },
+      "spike-b2": {
+        "verdict": "PROCEED",
+        "verdictAt": "2026-04-19T23:59:00.000Z",
+        "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b2-output.md"
+      },
+      "spike-c": {
+        "verdict": null,
+        "verdictAt": null,
+        "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-c-output.md"
+      },
+      "spike-d": {
+        "verdict": null,
+        "verdictAt": null,
+        "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-d-output.md"
+      }
     }
   },
   "features": [
@@ -35,25 +55,110 @@
         "complexity-1": 3
       },
       "epics": [
-        { "id": "e1", "name": "Spike programme", "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e1-spike-programme.md", "storyCount": 5 },
-        { "id": "e2", "name": "Distribution model", "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e2-distribution-model.md", "storyCount": 8 },
-        { "id": "e3", "name": "Structural enforcement", "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e3-structural-enforcement.md", "storyCount": 6 },
-        { "id": "e4", "name": "Non-technical access", "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e4-non-technical-access.md", "storyCount": 5 }
+        {
+          "id": "e1",
+          "name": "Spike programme",
+          "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e1-spike-programme.md",
+          "storyCount": 5
+        },
+        {
+          "id": "e2",
+          "name": "Distribution model",
+          "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e2-distribution-model.md",
+          "storyCount": 8
+        },
+        {
+          "id": "e3",
+          "name": "Structural enforcement",
+          "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e3-structural-enforcement.md",
+          "storyCount": 6
+        },
+        {
+          "id": "e4",
+          "name": "Non-technical access",
+          "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e4-non-technical-access.md",
+          "storyCount": 5
+        }
       ],
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "guardrails": [
-        { "id": "ADR-phase4-enforcement", "category": "adr", "label": "Phase 4 enforcement architecture ADR — written after Spike A/B1/B2 verdicts", "file": ".github/architecture-guardrails.md", "status": "not-assessed", "assessedBy": "/definition-of-done", "assessedAt": "2026-04-19", "evidence": "Spike A PROCEED verdict recorded. ADR authoring blocked on Spike B1/B2 verdicts. Revisit when both spikes complete." },
-        { "id": "ADR-004", "category": "adr", "label": "context.yml is the single configuration source — no hardcoded values", "status": "confirmed-compliant", "assessedBy": "/review", "assessedAt": "2026-04-19" },
-        { "id": "C1", "category": "constraint", "label": "Non-fork update channel — consumers must not fork", "status": "confirmed-compliant", "assessedBy": "/review", "assessedAt": "2026-04-19" },
-        { "id": "C4", "category": "constraint", "label": "Human approval gate — no automated merge", "status": "confirmed-compliant", "assessedBy": "/review", "assessedAt": "2026-04-19" },
-        { "id": "C5", "category": "constraint", "label": "Hash verification on sync — no force/skip bypass", "status": "confirmed-compliant", "assessedBy": "/review", "assessedAt": "2026-04-19" },
-        { "id": "C7", "category": "constraint", "label": "One question at a time in all surfaces", "status": "confirmed-compliant", "assessedBy": "/review", "assessedAt": "2026-04-19" },
-        { "id": "C11", "category": "constraint", "label": "No persistent hosted runtime", "status": "confirmed-compliant", "assessedBy": "/review", "assessedAt": "2026-04-19" },
-        { "id": "MC-SEC-02", "category": "mandatory-constraint", "label": "No credentials, tokens, or personal data in committed files", "status": "confirmed-compliant", "assessedBy": "/review", "assessedAt": "2026-04-19" },
-        { "id": "MC-CORRECT-02", "category": "mandatory-constraint", "label": "Fields written to pipeline-state.json must exist in schema", "status": "confirmed-compliant", "assessedBy": "/review", "assessedAt": "2026-04-19" }
+        {
+          "id": "ADR-phase4-enforcement",
+          "category": "adr",
+          "label": "Phase 4 enforcement architecture ADR — written after Spike A/B1/B2 verdicts",
+          "file": ".github/architecture-guardrails.md",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-19",
+          "evidence": "Spike A PROCEED verdict recorded. ADR authoring blocked on Spike B1/B2 verdicts. Revisit when both spikes complete."
+        },
+        {
+          "id": "ADR-004",
+          "category": "adr",
+          "label": "context.yml is the single configuration source — no hardcoded values",
+          "status": "confirmed-compliant",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-19"
+        },
+        {
+          "id": "C1",
+          "category": "constraint",
+          "label": "Non-fork update channel — consumers must not fork",
+          "status": "confirmed-compliant",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-19"
+        },
+        {
+          "id": "C4",
+          "category": "constraint",
+          "label": "Human approval gate — no automated merge",
+          "status": "confirmed-compliant",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-19"
+        },
+        {
+          "id": "C5",
+          "category": "constraint",
+          "label": "Hash verification on sync — no force/skip bypass",
+          "status": "confirmed-compliant",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-19"
+        },
+        {
+          "id": "C7",
+          "category": "constraint",
+          "label": "One question at a time in all surfaces",
+          "status": "confirmed-compliant",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-19"
+        },
+        {
+          "id": "C11",
+          "category": "constraint",
+          "label": "No persistent hosted runtime",
+          "status": "confirmed-compliant",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-19"
+        },
+        {
+          "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "No credentials, tokens, or personal data in committed files",
+          "status": "confirmed-compliant",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-19"
+        },
+        {
+          "id": "MC-CORRECT-02",
+          "category": "mandatory-constraint",
+          "label": "Fields written to pipeline-state.json must exist in schema",
+          "status": "confirmed-compliant",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-19"
+        }
       ],
       "createdAt": "2026-04-19",
       "updatedAt": "2026-04-19T23:50:00.000Z",
@@ -65,7 +170,17 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p4-spike-c", "p4-dist-install", "p4-dist-no-commits", "p4-dist-commit-format", "p4-dist-lockfile", "p4-dist-upgrade", "p4-dist-upstream", "p4-dist-migration", "p4-dist-registry"]
+          "contributingStories": [
+            "p4-spike-c",
+            "p4-dist-install",
+            "p4-dist-no-commits",
+            "p4-dist-commit-format",
+            "p4-dist-lockfile",
+            "p4-dist-upgrade",
+            "p4-dist-upstream",
+            "p4-dist-migration",
+            "p4-dist-registry"
+          ]
         },
         {
           "id": "m2",
@@ -75,7 +190,20 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p4-spike-a", "p4-spike-b1", "p4-spike-b2", "p4-enf-decision", "p4-enf-package", "p4-enf-mcp", "p4-enf-cli", "p4-enf-schema", "p4-enf-second-line", "p4-dist-lockfile", "p4-nta-artefact-parity", "p4-nta-standards-inject"]
+          "contributingStories": [
+            "p4-spike-a",
+            "p4-spike-b1",
+            "p4-spike-b2",
+            "p4-enf-decision",
+            "p4-enf-package",
+            "p4-enf-mcp",
+            "p4-enf-cli",
+            "p4-enf-schema",
+            "p4-enf-second-line",
+            "p4-dist-lockfile",
+            "p4-nta-artefact-parity",
+            "p4-nta-standards-inject"
+          ]
         },
         {
           "id": "m3",
@@ -85,7 +213,14 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p4-spike-d", "p4-nta-surface", "p4-nta-gate-translation", "p4-nta-artefact-parity", "p4-nta-standards-inject", "p4-nta-ci-artefact"]
+          "contributingStories": [
+            "p4-spike-d",
+            "p4-nta-surface",
+            "p4-nta-gate-translation",
+            "p4-nta-artefact-parity",
+            "p4-nta-standards-inject",
+            "p4-nta-ci-artefact"
+          ]
         },
         {
           "id": "mm-a",
@@ -95,7 +230,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["all-24"]
+          "contributingStories": [
+            "all-24"
+          ]
         },
         {
           "id": "mm-b",
@@ -105,7 +242,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["all-24"]
+          "contributingStories": [
+            "all-24"
+          ]
         },
         {
           "id": "mm-c",
@@ -115,7 +254,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["all-24"]
+          "contributingStories": [
+            "all-24"
+          ]
         },
         {
           "id": "mm-d",
@@ -125,48 +266,439 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["all-24"]
+          "contributingStories": [
+            "all-24"
+          ]
         }
       ],
       "spikes": [
-        { "id": "spike-a",  "storySlug": "p4-spike-a",  "verdict": "PROCEED" },
-        { "id": "spike-b1", "storySlug": "p4-spike-b1", "verdict": "PROCEED", "verdictAt": "2026-04-20T12:00:00.000Z", "verdictArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b1-output.md", "decisionsEntry": "artefacts/2026-04-19-skills-platform-phase4/decisions.md" },
-        { "id": "spike-b2", "storySlug": "p4-spike-b2", "verdict": null },
-        { "id": "spike-c",  "storySlug": "p4-spike-c",  "verdict": null },
-        { "id": "spike-d",  "storySlug": "p4-spike-d",  "verdict": null }
+        {
+          "id": "spike-a",
+          "storySlug": "p4-spike-a",
+          "verdict": "PROCEED"
+        },
+        {
+          "id": "spike-b1",
+          "storySlug": "p4-spike-b1",
+          "verdict": "PROCEED",
+          "verdictAt": "2026-04-20T12:00:00.000Z",
+          "verdictArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b1-output.md",
+          "decisionsEntry": "artefacts/2026-04-19-skills-platform-phase4/decisions.md"
+        },
+        {
+          "id": "spike-b2",
+          "storySlug": "p4-spike-b2",
+          "verdict": "PROCEED",
+          "verdictAt": "2026-04-19T23:59:00.000Z",
+          "verdictArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b2-output.md",
+          "decisionsEntry": "artefacts/2026-04-19-skills-platform-phase4/decisions.md"
+        },
+        {
+          "id": "spike-c",
+          "storySlug": "p4-spike-c",
+          "verdict": null
+        },
+        {
+          "id": "spike-d",
+          "storySlug": "p4-spike-d",
+          "verdict": null
+        }
       ],
       "stories": [
-        { "id": "p4-spike-a",            "epic": "e1", "dorStatus": "signed-off", "stage": "definition-of-done", "dodStatus": "complete", "prStatus": "merged", "releaseReady": true, "health": "green", "branchSetupAt": "2026-04-19", "updatedAt": "2026-04-19T23:59:00.000Z", "worktreePath": ".worktrees/p4-spike-a", "branch": "feature/p4-spike-a", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-a-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-a-dor-contract.md", "dorSignedOffAt": "2026-04-19", "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-spike-a-dod.md", "testPlan": { "status": "written", "testFile": "tests/check-p4-spike-a.js",            "totalTests": 13,  "passing": 24 },
+        {
+          "id": "p4-spike-a",
+          "epic": "e1",
+          "dorStatus": "signed-off",
+          "stage": "definition-of-done",
+          "dodStatus": "complete",
+          "prStatus": "merged",
+          "releaseReady": true,
+          "health": "green",
+          "branchSetupAt": "2026-04-19",
+          "updatedAt": "2026-04-19T23:59:00.000Z",
+          "worktreePath": ".worktrees/p4-spike-a",
+          "branch": "feature/p4-spike-a",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-a-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-a-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-spike-a-dod.md",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-spike-a.js",
+            "totalTests": 13,
+            "passing": 24
+          },
           "tasks": [
-            { "id": "task-1", "name": "Phase4 schema + state scaffold + p4-enf-mcp fix", "tddState": "green", "file": "artefacts/2026-04-19-skills-platform-phase4/plans/p4-spike-a-plan.md" },
-            { "id": "task-2", "name": "Run governance logic extractability investigation (OPERATOR)", "tddState": "green", "file": "artefacts/2026-04-19-skills-platform-phase4/plans/p4-spike-a-plan.md" },
-            { "id": "task-3", "name": "Write spike output artefact with verdict + rationale", "tddState": "green", "file": "artefacts/2026-04-19-skills-platform-phase4/plans/p4-spike-a-plan.md" },
-            { "id": "task-4", "name": "Write verdict to pipeline-state.json (both paths)", "tddState": "green", "file": "artefacts/2026-04-19-skills-platform-phase4/plans/p4-spike-a-plan.md" },
-            { "id": "task-5", "name": "Add Spike A ADR entry to decisions.md", "tddState": "green", "file": "artefacts/2026-04-19-skills-platform-phase4/plans/p4-spike-a-plan.md" }
-          ] },
-        { "id": "p4-spike-b1",           "epic": "e1", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b1-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b1-dor-contract.md", "dorSignedOffAt": "2026-04-19", "stage": "implementation", "branchSetupAt": "2026-04-20", "worktreePath": ".worktrees/p4-spike-b1", "branch": "feature/p4-spike-b1", "health": "green", "updatedAt": "2026-04-20T12:00:00.000Z", "spikeVerdict": "PROCEED", "spikeVerdictArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b1-output.md", "testPlan": { "status": "written", "testFile": "tests/check-p4-spike-b1.js",           "totalTests": 9,  "passing": 0 } },
-        { "id": "p4-spike-b2",           "epic": "e1", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b2-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b2-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-spike-b2.js",           "totalTests": 9,  "passing": 0 } },
-        { "id": "p4-spike-c",            "epic": "e1", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-c-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-c-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-spike-c.js",            "totalTests": 9,  "passing": 0 } },
-        { "id": "p4-spike-d",            "epic": "e1", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-d-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-d-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-spike-d.js",            "totalTests": 9,  "passing": 0 } },
-        { "id": "p4-dist-install",       "epic": "e2", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-install-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-install-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-dist-install.js",       "totalTests": 10, "passing": 0 } },
-        { "id": "p4-dist-no-commits",    "epic": "e2", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-no-commits-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-no-commits-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-dist-no-commits.js",    "totalTests": 10, "passing": 0 } },
-        { "id": "p4-dist-commit-format", "epic": "e2", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-commit-format-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-commit-format-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-dist-commit-format.js", "totalTests": 10, "passing": 0 } },
-        { "id": "p4-dist-lockfile",      "epic": "e2", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-lockfile-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-lockfile-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-dist-lockfile.js",      "totalTests": 10, "passing": 0 } },
-        { "id": "p4-dist-upgrade",       "epic": "e2", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-upgrade-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-upgrade-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-dist-upgrade.js",       "totalTests": 10, "passing": 0 } },
-        { "id": "p4-dist-upstream",      "epic": "e2", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-upstream-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-upstream-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-dist-upstream.js",      "totalTests": 10, "passing": 0 } },
-        { "id": "p4-dist-migration",     "epic": "e2", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-migration-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-migration-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-dist-migration.js",     "totalTests": 10, "passing": 0 } },
-        { "id": "p4-dist-registry",      "epic": "e2", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-registry-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-registry-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-dist-registry.js",      "totalTests": 10, "passing": 0 } },
-        { "id": "p4-enf-decision",       "epic": "e3", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-decision-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-decision-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-enf-decision.js",       "totalTests": 24, "passing": 0 } },
-        { "id": "p4-enf-package",        "epic": "e3", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-package-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-package-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-enf-package.js",        "totalTests": 11, "passing": 0 } },
-        { "id": "p4-enf-mcp",           "epic": "e3", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-mcp-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-mcp-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-enf-mcp.js",           "totalTests": 11, "passing": 0 } },
-        { "id": "p4-enf-cli",           "epic": "e3", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-cli-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-cli-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-enf-cli.js",           "totalTests": 11, "passing": 0 } },
-        { "id": "p4-enf-schema",        "epic": "e3", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-schema-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-schema-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-enf-schema.js",        "totalTests": 11, "passing": 0 } },
-        { "id": "p4-enf-second-line",   "epic": "e3", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-second-line-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-second-line-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-enf-second-line.js",   "totalTests": 10, "passing": 0 } },
-        { "id": "p4-nta-surface",       "epic": "e4", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-surface-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-surface-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-nta-surface.js",       "totalTests": 11, "passing": 0 } },
-        { "id": "p4-nta-gate-translation", "epic": "e4", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-gate-translation-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-gate-translation-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-nta-gate-translation.js", "totalTests": 11, "passing": 0 } },
-        { "id": "p4-nta-artefact-parity", "epic": "e4", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-artefact-parity-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-artefact-parity-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-nta-artefact-parity.js", "totalTests": 11, "passing": 0 } },
-        { "id": "p4-nta-standards-inject", "epic": "e4", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-standards-inject-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-standards-inject-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-nta-standards-inject.js", "totalTests": 11, "passing": 0 } },
-        { "id": "p4-nta-ci-artefact",   "epic": "e4", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-ci-artefact-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-ci-artefact-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-nta-ci-artefact.js",   "totalTests": 11, "passing": 0 } }
+            {
+              "id": "task-1",
+              "name": "Phase4 schema + state scaffold + p4-enf-mcp fix",
+              "tddState": "green",
+              "file": "artefacts/2026-04-19-skills-platform-phase4/plans/p4-spike-a-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Run governance logic extractability investigation (OPERATOR)",
+              "tddState": "green",
+              "file": "artefacts/2026-04-19-skills-platform-phase4/plans/p4-spike-a-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Write spike output artefact with verdict + rationale",
+              "tddState": "green",
+              "file": "artefacts/2026-04-19-skills-platform-phase4/plans/p4-spike-a-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Write verdict to pipeline-state.json (both paths)",
+              "tddState": "green",
+              "file": "artefacts/2026-04-19-skills-platform-phase4/plans/p4-spike-a-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Add Spike A ADR entry to decisions.md",
+              "tddState": "green",
+              "file": "artefacts/2026-04-19-skills-platform-phase4/plans/p4-spike-a-plan.md"
+            }
+          ]
+        },
+        {
+          "id": "p4-spike-b1",
+          "epic": "e1",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b1-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b1-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "stage": "implementation",
+          "branchSetupAt": "2026-04-20",
+          "worktreePath": ".worktrees/p4-spike-b1",
+          "branch": "feature/p4-spike-b1",
+          "health": "green",
+          "updatedAt": "2026-04-20T12:00:00.000Z",
+          "spikeVerdict": "PROCEED",
+          "spikeVerdictArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b1-output.md",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-spike-b1.js",
+            "totalTests": 9,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-spike-b2",
+          "epic": "e1",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b2-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b2-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-spike-b2.js",
+            "totalTests": 9,
+            "passing": 0
+          },
+          "stage": "implementation",
+          "branch": "feature/p4-spike-b2",
+          "worktreePath": ".worktrees/p4-spike-b2",
+          "branchSetupAt": "2026-04-19",
+          "health": "green",
+          "spikeVerdict": "PROCEED",
+          "spikeVerdictArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b2-output.md",
+          "updatedAt": "2026-04-19T23:59:00.000Z"
+        },
+        {
+          "id": "p4-spike-c",
+          "epic": "e1",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-c-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-c-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-spike-c.js",
+            "totalTests": 9,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-spike-d",
+          "epic": "e1",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-d-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-d-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-spike-d.js",
+            "totalTests": 9,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-dist-install",
+          "epic": "e2",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-install-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-install-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-dist-install.js",
+            "totalTests": 10,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-dist-no-commits",
+          "epic": "e2",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-no-commits-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-no-commits-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-dist-no-commits.js",
+            "totalTests": 10,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-dist-commit-format",
+          "epic": "e2",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-commit-format-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-commit-format-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-dist-commit-format.js",
+            "totalTests": 10,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-dist-lockfile",
+          "epic": "e2",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-lockfile-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-lockfile-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-dist-lockfile.js",
+            "totalTests": 10,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-dist-upgrade",
+          "epic": "e2",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-upgrade-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-upgrade-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-dist-upgrade.js",
+            "totalTests": 10,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-dist-upstream",
+          "epic": "e2",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-upstream-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-upstream-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-dist-upstream.js",
+            "totalTests": 10,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-dist-migration",
+          "epic": "e2",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-migration-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-migration-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-dist-migration.js",
+            "totalTests": 10,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-dist-registry",
+          "epic": "e2",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-registry-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-registry-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-dist-registry.js",
+            "totalTests": 10,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-enf-decision",
+          "epic": "e3",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-decision-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-decision-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-enf-decision.js",
+            "totalTests": 24,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-enf-package",
+          "epic": "e3",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-package-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-package-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-enf-package.js",
+            "totalTests": 11,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-enf-mcp",
+          "epic": "e3",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-mcp-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-mcp-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-enf-mcp.js",
+            "totalTests": 11,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-enf-cli",
+          "epic": "e3",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-cli-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-cli-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-enf-cli.js",
+            "totalTests": 11,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-enf-schema",
+          "epic": "e3",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-schema-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-schema-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-enf-schema.js",
+            "totalTests": 11,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-enf-second-line",
+          "epic": "e3",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-second-line-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-second-line-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-enf-second-line.js",
+            "totalTests": 10,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-nta-surface",
+          "epic": "e4",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-surface-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-surface-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-nta-surface.js",
+            "totalTests": 11,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-nta-gate-translation",
+          "epic": "e4",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-gate-translation-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-gate-translation-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-nta-gate-translation.js",
+            "totalTests": 11,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-nta-artefact-parity",
+          "epic": "e4",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-artefact-parity-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-artefact-parity-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-nta-artefact-parity.js",
+            "totalTests": 11,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-nta-standards-inject",
+          "epic": "e4",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-standards-inject-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-standards-inject-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-nta-standards-inject.js",
+            "totalTests": 11,
+            "passing": 0
+          }
+        },
+        {
+          "id": "p4-nta-ci-artefact",
+          "epic": "e4",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-ci-artefact-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-ci-artefact-dor-contract.md",
+          "dorSignedOffAt": "2026-04-19",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-nta-ci-artefact.js",
+            "totalTests": 11,
+            "passing": 0
+          }
+        }
       ]
     },
     {
@@ -190,27 +722,113 @@
         "complexity-1": 3
       },
       "epics": [
-        { "id": "e1", "name": "Governance extractability — enforcement selection", "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e1-governance-extractability-enforcement-selection.md", "storyCount": 5 },
-        { "id": "e2", "name": "Distribution — zero-commit install", "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e2-distribution-zero-commit-install.md", "storyCount": 7 },
-        { "id": "e3", "name": "Non-technical participation", "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e3-non-technical-participation.md", "storyCount": 6 },
-        { "id": "e4", "name": "Readable governance — second-line audit", "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e4-readable-governance-second-line-audit.md", "storyCount": 5 }
+        {
+          "id": "e1",
+          "name": "Governance extractability — enforcement selection",
+          "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e1-governance-extractability-enforcement-selection.md",
+          "storyCount": 5
+        },
+        {
+          "id": "e2",
+          "name": "Distribution — zero-commit install",
+          "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e2-distribution-zero-commit-install.md",
+          "storyCount": 7
+        },
+        {
+          "id": "e3",
+          "name": "Non-technical participation",
+          "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e3-non-technical-participation.md",
+          "storyCount": 6
+        },
+        {
+          "id": "e4",
+          "name": "Readable governance — second-line audit",
+          "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e4-readable-governance-second-line-audit.md",
+          "storyCount": 5
+        }
       ],
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "guardrails": [
-        { "id": "ADR-004", "category": "adr", "label": "context.yml is the single configuration source — no hardcoded values", "status": "pending", "assessedBy": "/definition" },
-        { "id": "ADR-012", "category": "adr", "label": "Platform-agnostic: no CI/CD vendor lock-in", "status": "pending", "assessedBy": "/definition" },
-        { "id": "C1", "category": "constraint", "label": "Non-fork update channel — consumers must not fork", "status": "pending", "assessedBy": "/definition" },
-        { "id": "C4", "category": "constraint", "label": "Human approval gate — no automated merge", "status": "pending", "assessedBy": "/definition" },
-        { "id": "C5", "category": "constraint", "label": "Hash verification on sync", "status": "pending", "assessedBy": "/definition" },
-        { "id": "C7", "category": "constraint", "label": "One question at a time in all surfaces", "status": "pending", "assessedBy": "/definition" },
-        { "id": "C11", "category": "constraint", "label": "No persistent hosted runtime", "status": "pending", "assessedBy": "/definition" },
-        { "id": "MC-SEC-02", "category": "mandatory-constraint", "label": "No credentials, tokens, or personal data in committed files", "status": "pending", "assessedBy": "/definition" },
-        { "id": "MC-CORRECT-02", "category": "mandatory-constraint", "label": "Fields written to pipeline-state.json must exist in schema", "status": "pending", "assessedBy": "/definition" },
-        { "id": "MC-A11Y-01", "category": "mandatory-constraint", "label": "Interactive elements keyboard-accessible", "status": "pending", "assessedBy": "/definition" },
-        { "id": "MC-A11Y-02", "category": "mandatory-constraint", "label": "Colour not sole indicator of gate status", "status": "pending", "assessedBy": "/definition" }
+        {
+          "id": "ADR-004",
+          "category": "adr",
+          "label": "context.yml is the single configuration source — no hardcoded values",
+          "status": "pending",
+          "assessedBy": "/definition"
+        },
+        {
+          "id": "ADR-012",
+          "category": "adr",
+          "label": "Platform-agnostic: no CI/CD vendor lock-in",
+          "status": "pending",
+          "assessedBy": "/definition"
+        },
+        {
+          "id": "C1",
+          "category": "constraint",
+          "label": "Non-fork update channel — consumers must not fork",
+          "status": "pending",
+          "assessedBy": "/definition"
+        },
+        {
+          "id": "C4",
+          "category": "constraint",
+          "label": "Human approval gate — no automated merge",
+          "status": "pending",
+          "assessedBy": "/definition"
+        },
+        {
+          "id": "C5",
+          "category": "constraint",
+          "label": "Hash verification on sync",
+          "status": "pending",
+          "assessedBy": "/definition"
+        },
+        {
+          "id": "C7",
+          "category": "constraint",
+          "label": "One question at a time in all surfaces",
+          "status": "pending",
+          "assessedBy": "/definition"
+        },
+        {
+          "id": "C11",
+          "category": "constraint",
+          "label": "No persistent hosted runtime",
+          "status": "pending",
+          "assessedBy": "/definition"
+        },
+        {
+          "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "No credentials, tokens, or personal data in committed files",
+          "status": "pending",
+          "assessedBy": "/definition"
+        },
+        {
+          "id": "MC-CORRECT-02",
+          "category": "mandatory-constraint",
+          "label": "Fields written to pipeline-state.json must exist in schema",
+          "status": "pending",
+          "assessedBy": "/definition"
+        },
+        {
+          "id": "MC-A11Y-01",
+          "category": "mandatory-constraint",
+          "label": "Interactive elements keyboard-accessible",
+          "status": "pending",
+          "assessedBy": "/definition"
+        },
+        {
+          "id": "MC-A11Y-02",
+          "category": "mandatory-constraint",
+          "label": "Colour not sole indicator of gate status",
+          "status": "pending",
+          "assessedBy": "/definition"
+        }
       ],
       "createdAt": "2026-04-19",
       "updatedAt": "2026-04-19",
@@ -223,7 +841,16 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["spike-a", "spike-c", "design-package-manifest", "implement-zero-commit-install", "implement-sync-command", "implement-lockfile-hash-verification", "implement-context-yml-seeding", "validate-install-sync-e2e"]
+          "contributingStories": [
+            "spike-a",
+            "spike-c",
+            "design-package-manifest",
+            "implement-zero-commit-install",
+            "implement-sync-command",
+            "implement-lockfile-hash-verification",
+            "implement-context-yml-seeding",
+            "validate-install-sync-e2e"
+          ]
         },
         {
           "id": "m2",
@@ -233,7 +860,19 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["spike-a", "spike-b1", "spike-b2", "synthesise-enforcement-recommendation", "record-enforcement-adr", "design-readable-governance-format", "implement-trace-plain-language", "implement-gate-verdict-narrative", "implement-second-line-audit-export", "validate-readable-output-review", "implement-teams-pipeline-health"]
+          "contributingStories": [
+            "spike-a",
+            "spike-b1",
+            "spike-b2",
+            "synthesise-enforcement-recommendation",
+            "record-enforcement-adr",
+            "design-readable-governance-format",
+            "implement-trace-plain-language",
+            "implement-gate-verdict-narrative",
+            "implement-second-line-audit-export",
+            "validate-readable-output-review",
+            "implement-teams-pipeline-health"
+          ]
         },
         {
           "id": "m3",
@@ -243,7 +882,14 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["spike-d", "implement-teams-bot-scaffold", "implement-teams-dor-approval", "implement-teams-pipeline-health", "implement-teams-governance-output", "validate-teams-e2e-session"]
+          "contributingStories": [
+            "spike-d",
+            "implement-teams-bot-scaffold",
+            "implement-teams-dor-approval",
+            "implement-teams-pipeline-health",
+            "implement-teams-governance-output",
+            "validate-teams-e2e-session"
+          ]
         },
         {
           "id": "mm-a",
@@ -253,7 +899,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["all-23"]
+          "contributingStories": [
+            "all-23"
+          ]
         },
         {
           "id": "mm-b",
@@ -263,7 +911,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": "Opus self-report: 5/5 captured unprompted (C1, C4, C5, C7, C11)",
-          "contributingStories": ["all-23"]
+          "contributingStories": [
+            "all-23"
+          ]
         },
         {
           "id": "mm-c",
@@ -273,7 +923,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["all-23"]
+          "contributingStories": [
+            "all-23"
+          ]
         },
         {
           "id": "mm-d",
@@ -283,7 +935,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": "Opus actual: 2 operator corrections (slicing strategy re-ask, benefit-metric skip)",
-          "contributingStories": ["all-23"]
+          "contributingStories": [
+            "all-23"
+          ]
         }
       ]
     },
