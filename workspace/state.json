@@ -90,7 +90,7 @@
                     }
                 ],
     "mergedPRs": [99, 100, 101, 102, 103, 119],
-    "lastUpdated": "2026-04-18T00:00:00Z",
+    "lastUpdated": "2026-04-19T00:00:00Z",
     "phase3InnerLoopStatus": {
         "dodComplete": ["p3.1a","p3.1b","p3.1c","p3.1d","p3.1e","p3.2a","p3.9","p3.15","p3.16","p3.17","p3.18","p3.19","p3.20","p3.21","p3.22","p3.2b","p3.5","p3.6","p3.7","p3.8","p3.10","p3.11"],
         "inFlight": [],
@@ -133,18 +133,152 @@
         "workflowFile": ".github/workflows/pages.yml",
         "setupPRs": [159, 160]
     },
+    "phase4": {
+        "currentPhase": "definition",
+        "lastUpdated": "2026-04-19T19:05:00Z",
+        "cycle": {
+            "discovery": {
+                "status": "complete",
+                "artefact": "artefacts/2026-04-19-skills-platform-phase4/discovery.md",
+                "completedAt": "2026-04-19",
+                "approvedBy": "Hamish, 2026-04-19 17:28",
+                "clarifyStatus": "complete (3 questions answered)"
+            },
+            "decisions": {
+                "status": "active",
+                "artefact": "artefacts/2026-04-19-skills-platform-phase4/decisions.md",
+                "entries": 3
+            },
+            "benefitMetric": {
+                "status": "complete",
+                "artefact": "artefacts/2026-04-19-skills-platform-phase4/benefit-metric.md",
+                "completedAt": "2026-04-19",
+                "metrics": ["m1","m2","m3","mm-a","mm-b","mm-c","mm-d"]
+            },
+            "definition": {
+                "status": "complete",
+                "completedAt": "2026-04-19",
+                "epicCount": 4,
+                "storyCount": 24,
+                "slicingStrategy": "risk-first",
+                "complexityDistribution": { "1": 3, "2": 12, "3": 9 },
+                "nfrProfile": "artefacts/2026-04-19-skills-platform-phase4/nfr-profile.md",
+                "experimentScorecard": "artefacts/2026-04-19-skills-platform-phase4/experiment-scorecard.md",
+                "epics": [
+                    { "id": "e1", "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e1-spike-programme.md", "storyCount": 5 },
+                    { "id": "e2", "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e2-distribution-model.md", "storyCount": 8 },
+                    { "id": "e3", "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e3-structural-enforcement.md", "storyCount": 6 },
+                    { "id": "e4", "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e4-non-technical-access.md", "storyCount": 5 }
+                ]
+            },
+            "review": {
+                "status": "complete",
+                "completedAt": "2026-04-19",
+                "artefactsDir": "artefacts/2026-04-19-skills-platform-phase4/review/",
+                "storiesReviewed": 24,
+                "highFindings": 0,
+                "verdict": "PASS — all 24 stories",
+                "systemicFinding": "1-M1 (MEDIUM): So-that clause omits metric name in 18/24 stories — each must have RISK-ACCEPT in /decisions or So-that clause update before entering /test-plan",
+                "storiesWithCleanSoThat": ["p4-spike-c","p4-spike-d","p4-dist-upgrade","p4-dist-registry","p4-dist-no-commits","p4-dist-migration"],
+                "architectureVerdict": "All 24 stories E:5. ADR-004, C1, C4, C5, C7, C11, MC-SEC-02, MC-CORRECT-02 all confirmed present in relevant stories. No violations."
+            }
+        },
+        "opusArm": {
+            "currentPhase": "definition",
+            "lastUpdated": "2026-04-19T19:05:00Z",
+            "experimentId": "exp-phase4-sonnet-vs-opus-20260419",
+            "modelLabel": "claude-opus-4-6",
+            "cycle": {
+                "benefitMetric": {
+                    "status": "complete",
+                    "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/benefit-metric.md",
+                    "completedAt": "2026-04-19"
+                },
+                "definition": {
+                    "status": "complete",
+                    "completedAt": "2026-04-19",
+                    "epicCount": 4,
+                    "storyCount": 23,
+                    "slicingStrategy": "risk-first",
+                    "complexityDistribution": { "1": 3, "2": 16, "3": 4 },
+                    "nfrProfile": "artefacts/2026-04-19-skills-platform-phase4-opus/nfr-profile.md",
+                    "experimentScorecard": "artefacts/2026-04-19-skills-platform-phase4-opus/experiment-scorecard.md",
+                    "scopeAccumulator": "artefacts/2026-04-19-skills-platform-phase4-opus/scope-accumulator.md",
+                    "epics": [
+                        { "id": "e1", "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e1-governance-extractability-enforcement-selection.md", "storyCount": 5 },
+                        { "id": "e2", "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e2-distribution-zero-commit-install.md", "storyCount": 7 },
+                        { "id": "e3", "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e3-non-technical-participation.md", "storyCount": 6 },
+                        { "id": "e4", "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e4-readable-governance-second-line-audit.md", "storyCount": 5 }
+                    ]
+                }
+            },
+            "operatorCorrections": 2,
+            "sessionCount": 3
+        },
+        "estimate": {
+            "e1": {
+                "date": "2026-04-19",
+                "mode": "E1",
+                "expectedCalendarDays": 1,
+                "engagementFraction": 0.50,
+                "outerLoopFocusH": 1.0,
+                "innerLoopHuman": 3,
+                "expectedStoryCount": 30,
+                "confidence": "low",
+                "assumptions": "30 stories is a large count for 1 calendar day — agent-heavy outer loop with operator in oversight mode only. Consistent with Phase 2 pattern. E2 will recalibrate once story decomposition is known.",
+                "gaugeAtStart": "536.1/1500 premium requests consumed (IDE gauge: 18.7%)",
+                "premiumRequestsForecast": null
+            },
+            "e2": {
+                "date": "2026-04-19",
+                "storyCount": 24,
+                "byStory": {
+                    "count": 24,
+                    "complexity": { "1": 3, "2": 12, "3": 9 },
+                    "p75FocusHPerStory": 0.039
+                },
+                "expectedCalendarDays": 0.75,
+                "engagementFraction": 0.50,
+                "outerLoopFocusH": 0.75,
+                "innerLoopHuman": 3,
+                "confidence": "medium",
+                "notes": "Revised from E1: 1.0d → 0.75d. Story count came in under E1 forecast (24 vs 30), but complexity skews heavy — 9 stories at complexity-3. Risk-first slicing forces sequential inner-loop dispatch; calendar span slightly shorter than E1 due to lower story count. Engagement fraction unchanged at 50%.",
+                "premiumRequestsForecast": null
+            }
+        }
+    },
+    "currentPhase": "test-plan",
+    "lastUpdated": "2026-04-19T22:00:00.000Z",
+    "testPlanCycle": {
+        "featureSlug": "2026-04-19-skills-platform-phase4",
+        "status": "complete",
+        "storiesTotal": 24,
+        "storiesWithTestPlans": 24,
+        "storiesWithVerificationScripts": 24,
+        "storiesWithTestJsFiles": 24,
+        "tddRedConfirmed": {
+            "e1-spikes": true,
+            "e2-distribution": true,
+            "e3-enforcement": true,
+            "e4-non-technical-access": true
+        },
+        "artefact": "artefacts/2026-04-19-skills-platform-phase4/test-plans/"
+    },
     "checkpoint": {
-        "writtenAt": "2026-04-18",
-        "contextAtWrite": "Session covered two items: (1) GitHub Pages deployment — now live, deploys dashboards/ directory. (2) Comprehensive review of Craig's PR #155 (CLI approach discovery) against ref-skills-platform-phase4-5.md, product docs, pipeline-state.json, and Phase 4 backlog. Operator drafted summary and detailed response to Craig. Detailed response maps Craig's 12 open questions (section 16) against the spike programme — 10 of 12 land in Spikes A/B2/C/D. Key architectural divergence identified: Craig's 013 positions CLI as the unified execution model (modes 1/2/3), ref doc positions CLI as one mechanism in a shared-core-with-adapters architecture. Spike A (governance logic extractability) resolves this with evidence.",
-        "resumeInstruction": "Operator has drafted response to PR #155 (summary + detailed follow-up) — needs to post it on the PR. Phase 3 inner loop status unchanged (22 stories DoD-complete, 4 blocked on ASSUMPTION-01). Phase 4 ref doc (ref-skills-platform-phase4-5.md) is committed and ready for outer loop run. Next actions: post PR #155 response, then continue Phase 3 closing or begin Phase 4 outer loop.",
+        "writtenAt": "2026-04-19",
+        "contextAtWrite": "/test-plan phase complete for all 24 Sonnet arm Phase 4 stories. All test plans, verification scripts, and test JS files written. TDD red baseline confirmed for all 4 epics (E1: 5 spikes, E2: 8 distribution, E3: 6 enforcement, E4: 5 non-technical-access). pipeline-state.json updated: stage=test-plan, spikes array (5 entries with verdict: null), stories array (24 entries with testPlan records). BOM stripped from pipeline-state.json after PowerShell write. Helper script scripts/update-pipeline-state-p4.js left in place (can be deleted post-session).",
+        "resumeInstruction": "Run /definition-of-ready for all 24 Phase 4 Sonnet arm stories. All test plans and test JS files are written and confirmed failing (TDD red). DoR hard blocks: H1-H9, H-E2E, H-NFR to H-NFR3. All 24 stories passed /review (0 HIGH). RISK-ACCEPT for 1-M1 MEDIUM finding already logged in /decisions for the 18 affected stories — DoR should treat as acknowledged. Recommended order: risk-first, E1 spikes first (p4-spike-a → p4-spike-b1 → p4-spike-b2 → p4-spike-c → p4-spike-d), then E2, E3, E4. E4 stories are dependent on Spike D PROCEED verdict — if Spike D defers, defer E4 stories to Phase 5.",
         "pendingActions": [
-            "Post drafted response (summary + detailed follow-up) on PR #155.",
-            "Confirm ASSUMPTION-01 feasibility in writing to unblock p3.3 dispatch.",
-            "PR #98 (craigfo): decide whether TypeScript is accepted for CLI-tier code — may be informed by Spike A (governance logic extractability) outcome.",
-            "p3.3 unblocks p3.4 unblocks p3.12; p3.7 DoD-complete + p3.2a DoD-complete unblocks p3.13 — dispatch in sequence after each merges.",
-            "M5 at-risk: full target requires Phase 4 live delivery run — create story from workspace/phase4-backlog-agent-live-delivery-run.md after ASSUMPTION-04 operationally confirmed.",
-            "Begin Phase 4 outer loop when ready — ref doc is the input artefact.",
-            "Strip pipeline-state.json feature block from PR #155 if it lands — pipeline-state.json is per-repo, not for external contributor PRs."
+            "Run /definition-of-ready for p4-spike-a (Acceptance Criterion 1–4 for Spike A: runtime surface C11 feasibility question — Complexity 3, Unstable).",
+            "Run /definition-of-ready for p4-spike-b1 (Spike B1: VS Code inline surface feasibility — Complexity 3, Unstable).",
+            "Run /definition-of-ready for p4-spike-b2 (Spike B2: GitHub Issue surface feasibility — Complexity 2, Unstable).",
+            "Run /definition-of-ready for p4-spike-c (Spike C: zero-commit distribution mechanism feasibility — Complexity 3, Stable).",
+            "Run /definition-of-ready for p4-spike-d (Spike D: Teams bot per-invocation feasibility — Complexity 3, Unstable).",
+            "Run /definition-of-ready for p4-dist-install, p4-dist-no-commits, p4-dist-commit-format, p4-dist-lockfile, p4-dist-upgrade, p4-dist-upstream, p4-dist-migration, p4-dist-registry (8 E2 distribution stories).",
+            "Run /definition-of-ready for p4-enf-decision, p4-enf-package, p4-enf-mcp, p4-enf-cli, p4-enf-schema, p4-enf-second-line (6 E3 enforcement stories).",
+            "Run /definition-of-ready for p4-nta-surface, p4-nta-gate-translation, p4-nta-artefact-parity, p4-nta-standards-inject, p4-nta-ci-artefact (5 E4 non-technical-access stories — dependent on Spike D PROCEED verdict).",
+            "Delete or archive scripts/update-pipeline-state-p4.js after session close (one-time migration script).",
+            "Post PR #155 response to craigfo (external contributor, cli-approach-discovery PR, pending since 2026-04-18)."
         ]
     }
 }
