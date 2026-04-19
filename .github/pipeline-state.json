@@ -88,12 +88,12 @@
         {
           "id": "ADR-phase4-enforcement",
           "category": "adr",
-          "label": "Phase 4 enforcement architecture ADR — written after Spike A/B1/B2 verdicts",
+          "label": "Phase 4 enforcement architecture ADR — 3-operation shared contract for all surface adapters",
           "file": ".github/architecture-guardrails.md",
-          "status": "not-assessed",
+          "status": "met",
           "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-04-19",
-          "evidence": "Spike A PROCEED verdict recorded. ADR authoring blocked on Spike B1/B2 verdicts. Revisit when both spikes complete."
+          "assessedAt": "2026-04-20",
+          "evidence": "Spikes A, B1, B2 all PROCEED. ADR-013 written to .github/architecture-guardrails.md. Enforcement package (resolveAndVerifySkill, evaluateGateAndAdvance, writeVerifiedTrace) confirmed as shared contract for all surface adapters. P2/P4 PARTIAL for Mode 1 surfaces acknowledged; Mode 2 headless subprocess is the resolution path."
         },
         {
           "id": "ADR-004",
@@ -368,19 +368,23 @@
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b1-dor.md",
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b1-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
-          "stage": "implementation",
+          "stage": "definition-of-done",
+          "dodStatus": "complete",
+          "prStatus": "merged",
+          "releaseReady": true,
           "branchSetupAt": "2026-04-20",
           "worktreePath": ".worktrees/p4-spike-b1",
           "branch": "feature/p4-spike-b1",
           "health": "green",
-          "updatedAt": "2026-04-20T12:00:00.000Z",
+          "updatedAt": "2026-04-20T14:00:00.000Z",
           "spikeVerdict": "PROCEED",
           "spikeVerdictArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b1-output.md",
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-spike-b1-dod.md",
           "testPlan": {
             "status": "written",
             "testFile": "tests/check-p4-spike-b1.js",
-            "totalTests": 9,
-            "passing": 0
+            "totalTests": 24,
+            "passing": 24
           }
         },
         {
@@ -390,20 +394,24 @@
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b2-dor.md",
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b2-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
-          "testPlan": {
-            "status": "written",
-            "testFile": "tests/check-p4-spike-b2.js",
-            "totalTests": 9,
-            "passing": 0
-          },
-          "stage": "implementation",
+          "stage": "definition-of-done",
+          "dodStatus": "complete",
+          "prStatus": "merged",
+          "releaseReady": true,
           "branch": "feature/p4-spike-b2",
           "worktreePath": ".worktrees/p4-spike-b2",
           "branchSetupAt": "2026-04-19",
           "health": "green",
           "spikeVerdict": "PROCEED",
           "spikeVerdictArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b2-output.md",
-          "updatedAt": "2026-04-19T23:59:00.000Z"
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-spike-b2-dod.md",
+          "updatedAt": "2026-04-20T14:00:00.000Z",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-spike-b2.js",
+            "totalTests": 25,
+            "passing": 25
+          }
         },
         {
           "id": "p4-spike-c",
