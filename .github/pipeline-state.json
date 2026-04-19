@@ -20,8 +20,8 @@
         "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b2-output.md"
       },
       "spike-c": {
-        "verdict": null,
-        "verdictAt": null,
+        "verdict": "PROCEED",
+        "verdictAt": "2026-04-20T14:00:00.000Z",
         "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-c-output.md"
       },
       "spike-d": {
@@ -420,10 +420,18 @@
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-c-dor.md",
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-c-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
+          "stage": "implementation",
+          "branch": "feature/p4-spike-c",
+          "worktreePath": ".worktrees/p4-spike-c",
+          "branchSetupAt": "2026-04-20",
+          "health": "green",
+          "spikeVerdict": "PROCEED",
+          "spikeVerdictArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-c-output.md",
+          "updatedAt": "2026-04-20T14:00:00.000Z",
           "testPlan": {
             "status": "written",
             "testFile": "tests/check-p4-spike-c.js",
-            "totalTests": 9,
+            "totalTests": 15,
             "passing": 0
           }
         },
