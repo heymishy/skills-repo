@@ -5,7 +5,7 @@
   "phase4": {
     "spikes": {
       "spike-a":  { "verdict": "PROCEED", "verdictAt": "2026-04-19T23:59:00.000Z", "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-a-output.md" },
-      "spike-b1": { "verdict": null, "verdictAt": null, "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b1-output.md" },
+      "spike-b1": { "verdict": "PROCEED", "verdictAt": "2026-04-20T12:00:00.000Z", "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b1-output.md" },
       "spike-b2": { "verdict": null, "verdictAt": null, "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b2-output.md" },
       "spike-c":  { "verdict": null, "verdictAt": null, "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-c-output.md" },
       "spike-d":  { "verdict": null, "verdictAt": null, "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-d-output.md" }
@@ -130,7 +130,7 @@
       ],
       "spikes": [
         { "id": "spike-a",  "storySlug": "p4-spike-a",  "verdict": "PROCEED" },
-        { "id": "spike-b1", "storySlug": "p4-spike-b1", "verdict": null },
+        { "id": "spike-b1", "storySlug": "p4-spike-b1", "verdict": "PROCEED", "verdictAt": "2026-04-20T12:00:00.000Z", "verdictArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b1-output.md", "decisionsEntry": "artefacts/2026-04-19-skills-platform-phase4/decisions.md" },
         { "id": "spike-b2", "storySlug": "p4-spike-b2", "verdict": null },
         { "id": "spike-c",  "storySlug": "p4-spike-c",  "verdict": null },
         { "id": "spike-d",  "storySlug": "p4-spike-d",  "verdict": null }
@@ -144,7 +144,7 @@
             { "id": "task-4", "name": "Write verdict to pipeline-state.json (both paths)", "tddState": "green", "file": "artefacts/2026-04-19-skills-platform-phase4/plans/p4-spike-a-plan.md" },
             { "id": "task-5", "name": "Add Spike A ADR entry to decisions.md", "tddState": "green", "file": "artefacts/2026-04-19-skills-platform-phase4/plans/p4-spike-a-plan.md" }
           ] },
-        { "id": "p4-spike-b1",           "epic": "e1", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b1-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b1-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-spike-b1.js",           "totalTests": 9,  "passing": 0 } },
+        { "id": "p4-spike-b1",           "epic": "e1", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b1-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b1-dor-contract.md", "dorSignedOffAt": "2026-04-19", "stage": "implementation", "branchSetupAt": "2026-04-20", "worktreePath": ".worktrees/p4-spike-b1", "branch": "feature/p4-spike-b1", "health": "green", "updatedAt": "2026-04-20T12:00:00.000Z", "spikeVerdict": "PROCEED", "spikeVerdictArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b1-output.md", "testPlan": { "status": "written", "testFile": "tests/check-p4-spike-b1.js",           "totalTests": 9,  "passing": 0 } },
         { "id": "p4-spike-b2",           "epic": "e1", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b2-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b2-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-spike-b2.js",           "totalTests": 9,  "passing": 0 } },
         { "id": "p4-spike-c",            "epic": "e1", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-c-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-c-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-spike-c.js",            "totalTests": 9,  "passing": 0 } },
         { "id": "p4-spike-d",            "epic": "e1", "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-d-dor.md", "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-d-dor-contract.md", "dorSignedOffAt": "2026-04-19", "testPlan": { "status": "written", "testFile": "tests/check-p4-spike-d.js",            "totalTests": 9,  "passing": 0 } },
