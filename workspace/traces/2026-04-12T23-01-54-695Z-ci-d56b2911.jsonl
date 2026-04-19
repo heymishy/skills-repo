@@ -1,0 +1,2 @@
+{"status":"inProgress","trigger":"ci","prRef":"","commitSha":"","startedAt":"2026-04-12T23:01:54.698Z"}
+{"status":"completed","trigger":"ci","prRef":"","commitSha":"","startedAt":"2026-04-12T23:01:54.698Z","completedAt":"2026-04-12T23:01:54.705Z","verdict":"pass","failurePattern":null,"traceHash":"0addca6a885558fd","checks":[{"name":"workspace-state-valid","passed":true},{"name":"pipeline-state-valid","passed":true},{"name":"artefacts-dir-exists","passed":true},{"name":"governance-gates-exists","passed":true}]}
