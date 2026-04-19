@@ -754,6 +754,31 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 
 **Recommended dispatch strategy going forward:**
 
+---
+
+## Pipeline gap — agent framed experiment model switching as its own action
+
+### Observed — 2026-04-19 14:00
+
+**Circumstance:** Setting up a Sonnet 4.6 vs Opus 4.6 outer-loop comparison experiment. The agent copied `contexts/experiment-sonnet-phase4.yml` to `.github/context.yml` and described this as "switching to Sonnet" — implying the context file copy changed the active model.
+
+**What was wrong:** The `model_label` and `cost_tier` fields in the instrumentation block of `context.yml` are **telemetry labels only**. They record which model the operator has already selected. Copying a context file does not and cannot change which model the agent runs on. Model selection is always an operator action: VS Code model picker, API configuration, or equivalent IDE setting.
+
+**Root cause:** The experiment framing conflated two distinct things: (1) setting the telemetry label so capture blocks record the correct model name, and (2) actually switching the model. Only the operator can do (2). The agent can do (1) by writing the label, but must explicitly instruct the operator to perform (2) first.
+
+**Correct experiment flow:**
+1. Operator switches model in IDE (e.g. VS Code Copilot model picker → Claude Sonnet 4.6)
+2. Operator copies matching context file (`cp contexts/experiment-sonnet-phase4.yml .github/context.yml`) to set the telemetry label
+3. Agent confirms the label is set correctly (read `model_label` from active context.yml)
+4. Agent runs the skill — capture blocks auto-append with the correct `model_label`
+5. Operator switches model in IDE to Claude Opus 4.6
+6. Operator copies Opus context file to set label
+7. Agent confirms and runs again
+
+**Rule:** Never present copying a context file as "switching to a model." Always instruct the operator to switch the model in their IDE before confirming the experiment phase can begin. The agent's role is confirming the telemetry label is correctly set — not performing or claiming to perform model switching.
+
+**Action:** Flag for `/improve`. Consider adding an explicit note to the experiment frame template (or `/benefit-metric` instrumentation guidance) clarifying that `model_label` is operator-set telemetry, not agent-controlled routing.
+
 1. **Pre-dispatch validation gate:** Before dispatching to the GitHub agent, check: (a) Do failing tests already exist on master? (b) Is the story single-repo only? (c) Are ALL target file paths within the delivery repo? If any answer is no, dispatch to VS Code agent or Claude Code instead.
 
 2. **Post-merge empty-PR check:** Add a governance check (or manual checklist item) that verifies `changedFiles > 0` before merging any agent PR. Could be a GitHub Actions check: `gh pr view $PR --json changedFiles --jq '.changedFiles'` must be > 0.

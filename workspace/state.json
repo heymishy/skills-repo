@@ -247,8 +247,8 @@
             }
         }
     },
-    "currentPhase": "test-plan",
-    "lastUpdated": "2026-04-19T22:00:00.000Z",
+    "currentPhase": "definition-of-ready",
+    "lastUpdated": "2026-04-19T23:30:00.000Z",
     "testPlanCycle": {
         "featureSlug": "2026-04-19-skills-platform-phase4",
         "status": "complete",
@@ -264,20 +264,23 @@
         },
         "artefact": "artefacts/2026-04-19-skills-platform-phase4/test-plans/"
     },
+    "definitionOfReadyCycle": {
+        "featureSlug": "2026-04-19-skills-platform-phase4",
+        "status": "complete",
+        "storiesTotal": 24,
+        "storiesSignedOff": 24,
+        "dorArtefactDir": "artefacts/2026-04-19-skills-platform-phase4/dor/",
+        "commitHash": "15f9c8e"
+    },
     "checkpoint": {
         "writtenAt": "2026-04-19",
-        "contextAtWrite": "/test-plan phase complete for all 24 Sonnet arm Phase 4 stories. All test plans, verification scripts, and test JS files written. TDD red baseline confirmed for all 4 epics (E1: 5 spikes, E2: 8 distribution, E3: 6 enforcement, E4: 5 non-technical-access). pipeline-state.json updated: stage=test-plan, spikes array (5 entries with verdict: null), stories array (24 entries with testPlan records). BOM stripped from pipeline-state.json after PowerShell write. Helper script scripts/update-pipeline-state-p4.js left in place (can be deleted post-session).",
-        "resumeInstruction": "Run /definition-of-ready for all 24 Phase 4 Sonnet arm stories. All test plans and test JS files are written and confirmed failing (TDD red). DoR hard blocks: H1-H9, H-E2E, H-NFR to H-NFR3. All 24 stories passed /review (0 HIGH). RISK-ACCEPT for 1-M1 MEDIUM finding already logged in /decisions for the 18 affected stories — DoR should treat as acknowledged. Recommended order: risk-first, E1 spikes first (p4-spike-a → p4-spike-b1 → p4-spike-b2 → p4-spike-c → p4-spike-d), then E2, E3, E4. E4 stories are dependent on Spike D PROCEED verdict — if Spike D defers, defer E4 stories to Phase 5.",
+        "contextAtWrite": "/definition-of-ready complete for all 24 Sonnet arm Phase 4 stories. All 48 DoR artefact files (dor.md + dor-contract.md per story) written to artefacts/2026-04-19-skills-platform-phase4/dor/. pipeline-state.json updated: stage=definition-of-ready, all 24 stories have dorStatus=signed-off + dorArtefact + dorContractArtefact + dorSignedOffAt. Schema fix committed (spikes[] and stories[] arrays added to pipeline-state.schema.json). All hooks passed. Commit: 15f9c8e.",
+        "resumeInstruction": "DoR is complete for all 24 Sonnet arm Phase 4 stories (commit 15f9c8e). Next: run /branch-setup then /implementation-plan for the first story. Execute spikes in risk-first order: Spike A first (no upstream deps), then Spike B1 and Spike B2 (both gate on Spike A PROCEED), then Spike C (soft gate — distribution stories can begin in parallel), then Spike D (independent; gates all E4 stories). E2 distribution stories (8) gate on Spike C PROCEED. E3 enforcement stories (6) gate on Spike A + B1 + B2 PROCEED via p4-enf-decision. E4 non-technical-access stories (5) gate on Spike D PROCEED — if Spike D returns DEFER, all 5 E4 stories are deferred to Phase 5. Oversight levels: E1 spikes = HIGH (heymishy explicit sign-off; no coding agent approval), E2 = Medium (PR review by heymishy), E3 = High (heymishy explicit approval for each PR), E4 = High (heymishy review required before each PR enters main branch).",
         "pendingActions": [
-            "Run /definition-of-ready for p4-spike-a (Acceptance Criterion 1–4 for Spike A: runtime surface C11 feasibility question — Complexity 3, Unstable).",
-            "Run /definition-of-ready for p4-spike-b1 (Spike B1: VS Code inline surface feasibility — Complexity 3, Unstable).",
-            "Run /definition-of-ready for p4-spike-b2 (Spike B2: GitHub Issue surface feasibility — Complexity 2, Unstable).",
-            "Run /definition-of-ready for p4-spike-c (Spike C: zero-commit distribution mechanism feasibility — Complexity 3, Stable).",
-            "Run /definition-of-ready for p4-spike-d (Spike D: Teams bot per-invocation feasibility — Complexity 3, Unstable).",
-            "Run /definition-of-ready for p4-dist-install, p4-dist-no-commits, p4-dist-commit-format, p4-dist-lockfile, p4-dist-upgrade, p4-dist-upstream, p4-dist-migration, p4-dist-registry (8 E2 distribution stories).",
-            "Run /definition-of-ready for p4-enf-decision, p4-enf-package, p4-enf-mcp, p4-enf-cli, p4-enf-schema, p4-enf-second-line (6 E3 enforcement stories).",
-            "Run /definition-of-ready for p4-nta-surface, p4-nta-gate-translation, p4-nta-artefact-parity, p4-nta-standards-inject, p4-nta-ci-artefact (5 E4 non-technical-access stories — dependent on Spike D PROCEED verdict).",
-            "Delete or archive scripts/update-pipeline-state-p4.js after session close (one-time migration script).",
+            "Run /branch-setup for Spike A (p4-spike-a): first story to implement — C11 feasibility spike, Complexity 3, Unstable scope, HIGH oversight (heymishy explicit sign-off required; no coding agent approval for this epic).",
+            "Run /branch-setup + /implementation-plan for p4-dist-install after Spike C PROCEED verdict — first E2 distribution story, Medium oversight.",
+            "Gate E3 stories (p4-enf-decision first) on Spike A + B1 + B2 PROCEED verdicts — each requires heymishy explicit approval before merge.",
+            "Gate all E4 stories on Spike D PROCEED verdict — if DEFER, defer all 5 to Phase 5.",
             "Post PR #155 response to craigfo (external contributor, cli-approach-discovery PR, pending since 2026-04-18)."
         ]
     }
