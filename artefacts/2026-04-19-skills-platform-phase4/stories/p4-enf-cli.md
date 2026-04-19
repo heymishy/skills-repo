@@ -17,6 +17,7 @@ So that **regulated and CI consumers have a deterministic, auditable governance 
 
 ## Architecture Constraints
 
+- Spike A output artefact: the governance enforcement package interface established at `artefacts/2026-04-19-skills-platform-phase4/spikes/spike-a-output.md` (verdict: PROCEED) defines the 3-operation shared contract (`resolveAndVerifySkill`, `evaluateGateAndAdvance`, `writeVerifiedTrace`) that this CLI adapter calls — do not reimplement these operations independently
 - Craig's CLI design artefacts: `artefacts/2026-04-18-cli-approach/discovery.md` (Mode 1 MVP command set), `artefacts/2026-04-18-cli-approach/reference/012-cli-approach-explained-v2.md`, and `artefacts/2026-04-18-cli-approach/reference/013-cli-approach-reference-material.md` are the source reference implementation — this story integrates Craig's design with the Phase 4 governance package; it does not re-derive the CLI design from scratch
 - Spike B2 output artefact: the evaluation at `artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b2-output.md` provides the P1–P4 gap analysis and Assumption A2 validation result — this story addresses any gaps flagged in the B2 verdict before implementation begins
 - C5: hash verification at envelope build is the load-bearing property — `advance` must call `verifyHash` before building the skill envelope; a hash mismatch must abort `advance` with a structured error identifying the mismatching skill
