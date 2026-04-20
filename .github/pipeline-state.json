@@ -575,11 +575,14 @@
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-decision-dor.md",
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-decision-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
+          "stage": "verify-completion",
+          "health": "green",
+          "updatedAt": "2026-04-20T20:00:00.000Z",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "testFile": "tests/check-p4-enf-decision.js",
             "totalTests": 24,
-            "passing": 0
+            "passing": 24
           }
         },
         {

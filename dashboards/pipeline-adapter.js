@@ -1,3 +1,6 @@
+// no-artefact: bug-fix — Phase 3+ schema id/slug normalisation and epic back-ref story grouping;
+// corrects broken rendering of Phase 4 stories; no new governance behaviour added.
+
 /**
  * pipeline-adapter.js
  * Reads .github/pipeline-state.json and exposes window.CYCLES + window.EPICS
