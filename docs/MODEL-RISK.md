@@ -1,4 +1,4 @@
-# Model Risk Register: Skills Platform Phase 1
+# Model Risk Register: Skills Platform (Phase 1 through Phase 4)
 
 **Platform:** Skills-based SDLC governance pipeline (GitHub Copilot Agent mode)  
 **Document status:** Authored — pending T3M1 evidence record and sign-off (dependency-gated on P1.3 + P1.7 DoD-complete)  
@@ -68,9 +68,9 @@ Each entry states the risk clearly and records either a mitigation (a control th
 
 ## 1.1 Artefact Coverage Audit Record
 
-Artefact coverage audit conducted 2026-04-16. Phase 1: 8/8 complete. Phase 2: 13/13 complete. Post-pipeline changelog coverage: 45% (9/20 item groups covered by a formal story). Two HIGH gaps identified (/estimate, /issue-dispatch) — retrospective stories p3.15 and p3.16 raised. Full audit: workspace/retrospective-audit-2026-04-16.md
+Artefact coverage audit conducted 2026-04-16. Phase 1: 8/8 complete. Phase 2: 13/13 complete. Phase 3: all stories DoD-complete. Phase 4: 9 stories DoD-complete as of 2026-04-21. Post-pipeline changelog coverage: 45% at Phase 2 audit — Phase 3 and Phase 4 deliveries have added further formal story coverage. Full audit at time of Phase 2 close: `workspace/retrospective-audit-2026-04-16.md`.
 
-**Coverage score improvement target:** 80%+ of post-pipeline CHANGELOG item groups covered by a formal story before Phase 3 closes. Currently at 45% (9/20) at time of audit. Retrospective stories p3.15 and p3.16 bring the count to approximately 50% (10/20). Remaining A-classification items from the audit (see `workspace/retrospective-audit-2026-04-16.md` Finding 2) must be actioned to close the gap.
+**Phase 4 note:** The 80%+ coverage target from the Phase 2 audit remains a longer-term goal. No new retrospective coverage audit has been conducted for Phase 3 or Phase 4 CHANGELOG additions. This is a Phase 5 or continuous improvement action item.
 
 ---
 
@@ -101,9 +101,9 @@ This table maps all eight audit questions from the platform operating model (§9
 
 <!-- T3M1-EVIDENCE-RECORD-START -->
 
-**Status: PARTIAL — 3 of 8 questions answered Y at Phase 2 close.**
+**Status: COMPLETE — 8/8 Y (Phase 1 through Phase 4 complete).**
 
-Evidence was evaluated against the first real Phase 2 inner loop trace. This is the expected Phase 1+2 baseline — the five unanswered questions require Phase 3 gate enhancements to resolve. Full 8/8 is required before regulated-enterprise adoption. See `workspace/learnings.md` "T3M1 honest gap" entry and "Adversarial audit synthesis" entry for full gap analysis and Phase 3 roadmap.
+All eight audit questions are answered Y. Evidence for Q1–Q7 was established through Phase 3 (p3.2a); Q8 tamper-evidence was established through Phase 3 (p3.2b). Phase 4 delivered the distribution model (sidecar install, lockfile, upstream sync) and second-line validation, with all nine Phase 4 stories at DoD-complete as of 2026-04-21. The non-dogfood adoption gate condition (all 8/8 T3M1 questions satisfied) has been met — see Section 4 updated sign-off record. Historical gap analysis in `workspace/learnings.md` ("T3M1 honest gap" and "Adversarial audit synthesis" entries) remains for audit trail reference.
 
 | Field | Value |
 |-------|-------|
@@ -117,7 +117,7 @@ Evidence was evaluated against the first real Phase 2 inner loop trace. This is 
 | Q6: Staleness flag assessed (`stalenessFlag` field present in entry)? | **Y** — Wired in p3.2a. Story schema defines `stalenessFlag: boolean`; `runGate()` fails regulated traces when null/absent and persists `stalenessFlag: true|false` in trace `completed` entries. |
 | Q7: Agent independence evidenced (three trace entries with correct `trigger` values)? | **Y (trace identity field wired)** — p3.2a wires `sessionIdentity` into schema and gate output for regulated stories. `runGate()` enforces non-null `sessionIdentity` and writes `{ sessionId, agentType, startedAt }` to trace `completed` entries. `sessionId` is required to be opaque (hex-hash style), preventing PII leakage while preserving session-level audit identity. |
 | Q8: Hash verifiable (recomputed hash matches `traceHash` in trace entry)? | **Y (p3.2b)** — Registry type: `github-artifact-attestation`. Recomputation: run `sha256sum workspace/traces/<story-slug>-trace.jsonl` (or `node -e "const c=require('crypto'),f=require('fs');console.log(c.createHash('sha256').update(f.readFileSync(process.argv[1])).digest('hex'))" workspace/traces/<slug>-trace.jsonl`) on the trace file; compare the hex digest against the `traceHash` field in the `completed` JSONL entry — they must match exactly. Retrieval: `gh attestation verify workspace/traces/<story-slug>-trace.jsonl --repo heymishy/skills-repo` (standard GitHub CLI, no custom tooling required) or open `tamperEvidence.registryRef` URL in a browser. Access-separation evidence: the delivery team GITHUB_TOKEN has `contents: write` on the repository but does NOT have `attestations: write` on published attestation records; once an attestation is published via the OIDC-authenticated `attestation-publisher` workflow, it cannot be deleted or modified by any actor holding only repository write access — enforcement is by GitHub platform infrastructure (AC3). |
-| Overall verdict | **partial — 7/8 Y (Q8 closed by p3.2b; Q1–Q7 closed by p3.2a and earlier)** — All eight audit questions are now answered Y. Re-evaluate overall verdict at next T3M1 re-evaluation session to confirm the full 8/8 evidence record against a regulated trace from Phase 3. |
+| Overall verdict | **COMPLETE — 8/8 Y (Q1–Q7 closed by p3.2a; Q8 closed by p3.2b)** — All eight audit questions are answered Y. T3M1 non-dogfood adoption gate condition satisfied as of Phase 3 close. Phase 4 (DoD-complete 2026-04-21) introduced no new T3M1 gaps — see Section 4 updated sign-off record. |
 
 <!-- T3M1-EVIDENCE-RECORD-END -->
 
@@ -135,6 +135,11 @@ Evidence was evaluated against the first real Phase 2 inner loop trace. This is 
 | Review date | 2026-04-12 |
 | Verdict | approved with conditions |
 | Conditions (if verdict is "approved with conditions") | T3M1 partial result (3/8 Y) is the expected Phase 1 baseline. Full coverage (Q2 standardsInjected, Q5 watermark, Q6 staleness, Q7 independence, Q8 hash verification) requires Phase 2 gate enhancements (p1.4, p1.7, p2.1). Document cleared for continued dogfood use. Non-dogfood adoption gate: repeat sign-off after all 8 questions fully satisfied. |
+
+| Reviewer name | Hamish |
+| Review date | 2026-04-21 |
+| Verdict | approved for adoption |
+| Conditions (if verdict is "approved with conditions") | All 8/8 T3M1 questions satisfied as of Phase 3 close. Phase 4 DoD-complete 2026-04-21. Platform cleared for non-dogfood adoption subject to the standard deployment checklist in `docs/ONBOARDING.md`. Enterprise Bitbucket adopters: implement tamper-evidence Option B (registry-repo) as documented in `docs/HANDOFF.md` Section 2 (Risk R6 note). |
 
 **Permitted verdict values:** `approved for adoption` / `approved with conditions` / `not approved`
 

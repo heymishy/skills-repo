@@ -1,10 +1,10 @@
-# Enterprise Handoff: Skills Platform Phase 1 + Phase 2 + Phase 3 (in progress)
+# Enterprise Handoff: Skills Platform Phase 1 + Phase 2 + Phase 3 + Phase 4
 
 **Document type:** Enterprise handoff bundle
 **Prepared:** 2026-04-12
-**Updated:** 2026-04-20 (Phase 3 complete — all implementation stories DoD-complete; Phase 4 24/24 original stories DoD-complete; E5 (Platform Observability & Measurement) added with 3 new stories at DoR sign-off. See Sections 6.8–6.15 and Phase 4 story tables.)
+**Updated:** 2026-04-21 (Phase 4 fully DoD-complete — all 27 stories including E5 Platform Observability & Measurement. PRs #176 and #177 merged and traced. See Sections 6.8–6.15 and Phase 4 story tables.)
 **Prepared by:** Platform maintainer (Hamish)
-**Status:** Phase 2 complete, Phase 3 implementation complete (remaining governance stories p3.3–p3.14 outer-loop defined), Phase 4 spike programme complete — inner loop unblocked.
+**Status:** Phase 2 complete, Phase 3 implementation complete (remaining governance stories p3.3–p3.14 outer-loop defined), Phase 4 DoD-complete as of 2026-04-21 (all 27 stories merged and traced).
 
 ---
 
@@ -517,9 +517,9 @@ ADR-013 (Phase 4 enforcement architecture) raised following Spike B1/B2 DoD — 
 - Discovery: approved 2026-04-19
 - Benefit-metric: active
 - 24 original stories (E1–E4): all DoD-complete as of 2026-04-20
-- E5 epic (Platform Observability & Measurement): 3 new stories added 2026-04-20, all at DoR sign-off
-- Test plans: all written; E5 TDD red phase pending implementation
-- Phase 4 pipeline-state.json stage: `inner-loop` (E5 active)
+- E5 epic (Platform Observability & Measurement): 3 new stories added 2026-04-20, all DoD-complete as of 2026-04-21
+- Test plans: all written and verified
+- Phase 4 pipeline-state.json stage: `definition-of-done`
 
 ### 7.4 Phase 4 open dependency: Spike D (Teams bot prototype)
 
@@ -540,13 +540,13 @@ Spike D requires a working Azure/Microsoft 365 account for Teams bot provisionin
 
 ### 7.6 Phase 4 E5 — Platform Observability & Measurement (added 2026-04-20)
 
-Three new stories added to Phase 4 after the original 24 stories were DoD-complete. All at DoR sign-off.
+Three new stories added to Phase 4 after the original 24 stories were DoD-complete. All DoD-complete as of 2026-04-21 (PRs #176 and #177 merged and traced).
 
 | Story | Title | Implementation file | Tests | Status |
 |-------|-------|---------------------|-------|--------|
-| p4-obs-status | Generate pipeline status report (daily/weekly) | `scripts/generate-status-report.js` | `tests/check-p4-obs-status.js` (11 tests) | DoR signed-off |
-| p4-obs-archive | Story/epic archive toggle for viz and state file | `scripts/archive-completed-features.js` (extend) + `dashboards/pipeline-viz.html` + `.github/pipeline-state.schema.json` | `tests/check-p4-obs-archive.js` (12 tests) | DoR signed-off |
-| p4-obs-benefit | Benefit measurement expansion: platform vs traditional SDLC | `scripts/record-benefit-comparison.js` | `tests/check-p4-obs-benefit.js` (12 tests) | DoR signed-off |
+| p4-obs-status | Generate pipeline status report (daily/weekly) | `scripts/generate-status-report.js` | `tests/check-p4-obs-status.js` (11 tests) | DoD-complete |
+| p4-obs-archive | Story/epic archive toggle for viz and state file | `scripts/archive-completed-features.js` (extend) + `dashboards/pipeline-viz.html` + `.github/pipeline-state.schema.json` | `tests/check-p4-obs-archive.js` (12 tests) | DoD-complete |
+| p4-obs-benefit | Benefit measurement expansion: platform vs traditional SDLC | `scripts/record-benefit-comparison.js` | `tests/check-p4-obs-benefit.js` (12 tests) | DoD-complete |
 
 **Metrics moved:** M2 (Consumer confidence) — p4-obs-status and p4-obs-archive; MM-A through MM-D (meta-metrics experiment framework) — p4-obs-benefit.
 

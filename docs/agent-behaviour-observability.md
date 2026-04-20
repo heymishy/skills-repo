@@ -37,3 +37,13 @@ No implementation is included in Phase 3. The only Phase 3 deliverable from this
 ---
 
 **Phase 3 Scope:** No agent behaviour observability implementation is included in Phase 3. The only Phase 3 deliverable from this story is the Phase 4 backlog registration below. Implementation approach selection is a Phase 4 decision.
+
+---
+
+## Phase 4 Outcome
+
+Phase 4 was delivered without implementing any of the three candidates above. The Phase 4 scope was focused on distribution (sidecar install, lockfile, upstream sync), structural enforcement, non-technical access surface, and second-line validation (E1–E4) plus platform observability metrics (E5). Agent behaviour observability via Candidate 1, 2, or 3 was not included in Phase 4 delivery.
+
+**Phase 5 status:** Agent behaviour observability remains a Phase 5 backlog item. The DoR contract diff-check mechanism delivered in Phase 4 (part of the second-line validation workstream) provides a lightweight precursor to Candidate 3 — PR diff is compared against DoR contract file touchpoints. Full Candidate 3 implementation (plan-level task-to-diff coverage) is a separate, larger effort.
+
+**Recommended next step:** Revisit at Phase 5 discovery. Candidate 3 (Behaviour diff gate on PR) has the highest audit value and builds on the existing DoR contract mechanism. Candidate 2 (session replay via `parse-session-timing.js`) is already partially implemented in the toolchain and could deliver low-effort observability within a Phase 5 spike.

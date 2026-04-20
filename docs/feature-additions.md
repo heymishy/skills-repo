@@ -10,6 +10,25 @@ These 10 features are ordered by value-to-effort ratio across two tiers. Feature
 
 ---
 
+## Delivery Status (as of Phase 4 close — 2026-04-21)
+
+| # | Feature | Status |
+|---|---------|--------|
+| 1 | Standards injection before DoR | ✅ Delivered — `standards/` directory, Phase 2 p1.7, Phase 3 standards model with 10+ discipline files |
+| 2 | `/improve` retrospective extraction skill | ✅ Delivered — `.github/skills/improve/` SKILL.md, Phase 2 p2.2 |
+| 3 | Timestamped per-feature artefact structure | ✅ Delivered — `artefacts/YYYY-MM-DD-slug/` convention enforced by all skills |
+| 4 | Structured `/spike` output format | ✅ Delivered — `.github/skills/spike/`, `.github/templates/spike-output.md`, `spike-outcome.md` |
+| 5 | Distribution mechanism (install script) | ✅ Delivered — `scripts/install.sh`, `scripts/install.ps1`, Phase 4 sidecar model with `skills-lock.json` |
+| 6 | Persistent product context layer | ✅ Delivered — `product/` directory (mission.md, roadmap.md, tech-stack.md, constraints.md) |
+| 7 | Scale-adaptive complexity routing | 🔄 Partial — short-track (bugs/fixes), standard, and programme tracks exist in `copilot-instructions.md`; graduated complexity assessment at `/workflow` not fully implemented |
+| 8 | `/clarify` skill | ✅ Delivered — `.github/skills/clarify/` SKILL.md exists |
+| 9 | Outer-loop CI traceability enforcement | ✅ Delivered — `scripts/validate-trace.sh`, `scripts/validate-trace.ps1`, CI workflow, `tests/check-p3.5-validate-trace.js` |
+| 10 | NFRs as first-class tracked artefacts | ✅ Delivered — `.github/templates/nfr-profile.md`, NFR gates in `/definition-of-ready` (H-NFR, H-NFR2, H-NFR3) and `/definition-of-done` |
+
+**9 of 10 features fully delivered.** Feature 7 (graduated complexity routing) is partially delivered — the routing pathways exist but the automated complexity assessment step at `/workflow` was not explicitly implemented as described in this document.
+
+---
+
 ## Tier 1 — High value, lower effort
 
 ---
