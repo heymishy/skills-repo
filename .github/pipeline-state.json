@@ -1908,7 +1908,7 @@
     {
       "slug": "2026-04-18-auditor-trace-report",
       "name": "Auditor Trace Report — CLI audit chain report generator",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "track": "short",
       "discoveryArtefact": "artefacts/2026-04-18-auditor-trace-report/discovery.md",
@@ -1928,9 +1928,9 @@
           "name": "Audit chain assembly time",
           "target": "Under 30 seconds",
           "baseline": "15-30 minutes manual",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-04-20",
+          "evidence": "NFR1 test: 20-story report completes in under 5 seconds. Target: under 30 seconds.",
           "contributingStories": [
             "atr.1"
           ]
@@ -1940,9 +1940,9 @@
           "name": "Chain link coverage",
           "target": "100% of chain link types checked",
           "baseline": "0%",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-04-20",
+          "evidence": "T1 verifies all 6 chain link types plus gate evidence are present in output. Target: 100% of link types.",
           "contributingStories": [
             "atr.1"
           ]
@@ -1952,9 +1952,9 @@
           "name": "Archive-aware operation",
           "target": "100% archived features produce valid reports",
           "baseline": "0%",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-04-20",
+          "evidence": "T3, T4 confirm archived feature produces valid report via archive fallback path.",
           "contributingStories": [
             "atr.1"
           ]
@@ -1965,7 +1965,7 @@
           "slug": "atr.1",
           "title": "Generate standalone audit trace report from CLI",
           "artefact": "artefacts/2026-04-18-auditor-trace-report/stories/atr.1-audit-trace-report-cli.md",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "health": "green",
           "complexity": 1,
@@ -1975,9 +1975,13 @@
             "testCount": 12,
             "acsCovered": 7
           },
-          "updatedAt": "2026-04-18"
+          "updatedAt": "2026-04-20",
+          "dodStatus": "complete",
+          "prStatus": "merged",
+          "releaseReady": true
         }
-      ]
+      ],
+      "dodStatus": "complete"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
