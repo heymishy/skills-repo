@@ -88,6 +88,7 @@
           },
           "health":   { "type": "string", "enum": ["green", "amber", "red"] },
           "updatedAt":{ "type": "string", "format": "date-time" },
+          "archivedStoryCount": { "type": "integer", "description": "Number of stories moved to archive for this feature by archiveStories(). Set by scripts/archive-completed-features.js." },
           "blocker":  { "type": "string", "description": "Human-readable blocker description if health is red" },
           "traceStatus": { "type": "string", "enum": ["not-run", "passed", "has-findings"], "description": "Traceability check result written by /trace skill" },
           "guardrails": {
