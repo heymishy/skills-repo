@@ -40,7 +40,7 @@ No implementation is included in Phase 3. The only Phase 3 deliverable from this
 
 ---
 
-## Phase 4 Outcome
+### Phase 4 Outcome
 
 Phase 4 was delivered without implementing any of the three candidates above. The Phase 4 scope was focused on distribution (sidecar install, lockfile, upstream sync), structural enforcement, non-technical access surface, and second-line validation (E1–E4) plus platform observability metrics (E5). Agent behaviour observability via Candidate 1, 2, or 3 was not included in Phase 4 delivery.
 
