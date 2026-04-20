@@ -27,7 +27,7 @@
     "observabilityGapsIdentified": 4,
     "status": "complete"
   },
-  "lastUpdated": "2026-04-20T20:00:00.000Z",
+  "lastUpdated": "2026-04-20T23:00:00Z",
   "currentPhase": "definition-of-done",
   "cycle": {
     "discovery": {
@@ -415,11 +415,41 @@
   },
   "checkpoint": {
     "writtenAt": "2026-04-20",
-    "contextAtWrite": "Phase 4 fully closed. DoD artefact written, /improve done (3 SE standards + ADR-014), D11-D14 learnings written, E3 actuals added to estimation-norms, experiment artefacts committed.",
-    "resumeInstruction": "Phase 4 is complete (definition-of-done stage, all 24 stories, 455/456 tests). All learnings written (D11-D14). E3 actuals in estimation-norms.md. Next activities: (1) Phase 5 planning — read artefacts/2026-04-19-skills-platform-phase4/discovery.md for any Phase 5 scope hints, (2) EXP-001 Opus comparison run — switch to contexts/experiment-opus-phase4.yml and re-run discovery+definition+test-plan+DoR for a Phase 4/5 reference feature to compare Sonnet vs Opus outer loop performance, (3) run /workflow to check if any pipeline state items need attention.",
+    "contextAtWrite": "atr.1 DoD complete. Phase 3 6 stories DoD complete (p3.5/p3.6/p3.7/p3.8/p3.10/p3.11). Remaining Phase 3: p3.4/p3.12 blocked, p3.3/p3.13 merged-empty. Next: check if Phase 3 feature can advance to definition-of-done stage or if blocked stories prevent it.",
+    "resumeInstruction": "atr.1 and Phase 3 (p3.5/p3.6/p3.7/p3.8/p3.10/p3.11) DoD artefacts committed (fac1730, b4a89a4). Phase 3 feature level: p3.4/p3.12 blocked, p3.3/p3.13 merged-empty. Next: (1) check pipeline-state to see if Phase 3 can be advanced, (2) look at p3.4/p3.12 blockers to assess if they can be unblocked or RISK-ACCEPTed, (3) EXP-001 Opus run is Phase 5 pending activity.",
     "pendingActions": [
+      "Phase 3 remaining stories: p3.4 and p3.12 are blocked — review blockers in their DoR artefacts to determine if RISK-ACCEPT or unblocking work is needed before Phase 3 can close",
       "EXP-001 Opus comparison run (Phase 5 meta-measurement activity) — use contexts/experiment-opus-phase4.yml; target artefact: workspace/experiments/EXP-001-discovery-phase4-5/; update mm-a through mm-d metrics when complete",
       "Phase 5 planning — no discovery artefact yet; run /workflow then /discovery when ready"
     ]
+  },
+  "atr1": {
+    "status": "definition-of-done",
+    "dodArtefact": "artefacts/2026-04-18-auditor-trace-report/dod/atr.1-audit-trace-report-cli-dod.md",
+    "commit": "fac1730",
+    "outcome": "COMPLETE — 12/12 tests, 7 ACs satisfied"
+  },
+  "phase3Dod": {
+    "storiesClosed": [
+      "p3.5",
+      "p3.6",
+      "p3.7",
+      "p3.8",
+      "p3.10",
+      "p3.11"
+    ],
+    "prRef": "#141 (8754323)",
+    "dodCommit": "b4a89a4",
+    "remaining": {
+      "blocked": [
+        "p3.4",
+        "p3.12"
+      ],
+      "mergedEmpty": [
+        "p3.3",
+        "p3.13"
+      ]
+    },
+    "note": "p3.3 and p3.13 are merged-empty (content delivered elsewhere). p3.4 and p3.12 remain blocked — no action until blockers resolved."
   }
 }
