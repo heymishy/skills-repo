@@ -1,0 +1,36 @@
+name: Compliance Monitoring Report
+
+# AC4 — Monthly schedule trigger only.
+# No push/PR triggers — this workflow runs on a fixed cadence.
+# ADR-009: separate workflow file per concern.
+on:
+  schedule:
+    - cron: '0 0 1 * *'
+
+permissions:
+  contents: read
+
+jobs:
+  generate-report:
+    name: Generate monthly compliance report
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate compliance report
+        run: |
+          node -e "
+            var path = require('path');
+            var getTraces = require('./src/trace-registry/getTraces.js').getTraces;
+            var generateComplianceReport = require('./src/improvement-agent/compliance-report.js').generateComplianceReport;
+            var traces = getTraces({ filter: { period: 'last-30-days' }, registryDir: 'platform/traces' });
+            var result = generateComplianceReport({ traces: traces });
+            process.stdout.write('Report written to: ' + result.outputPath + '\n');
+          "
