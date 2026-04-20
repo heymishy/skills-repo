@@ -517,6 +517,42 @@ If the 3-operation interface proves too coarse-grained for a future surface type
 
 ---
 
+### ADR-014: Sidecar directory as the distribution boundary for skills files
+
+**Status:** Active
+**Date:** 2026-04-20
+**Decided by:** Operator (heymishy)
+**Triggered by:** Spike C (sidecar distribution feasibility — PROCEED), E2 distribution model stories delivered (8 stories, 27/27 registry tests).
+
+#### Context
+Phase 4 distribution (E2) needed a mechanism to deliver skill files to consumer repositories without requiring consumers to fork the platform repo or commit generated files into their repository's tracked history on every update.
+
+Three distribution boundary options were evaluated during Spike C:
+1. **Fork model** — consumer forks `heymishy/skills-repo`; merge upstream periodically. Simple but violates C1 (non-fork consumer requirement) and produces N diverging skill copies with no reliable upgrade path.
+2. **Flat file copy into tracked repo** — skill files copied directly into consumer `.github/skills/` on each sync; committed to the consumer repo. Maximal visibility but zero-commit install is not achievable; every update produces a commit diff.
+3. **Sidecar directory (`.skills-repo/`)** — a gitignored subdirectory at consumer repo root; files fetched and pinned here; consumer repo tracks only the `skills-lock.json` pointer. Consumer never commits skill file content; only the lockfile (pinned ref + hashes) enters tracked history.
+
+#### Decision
+The `.skills-repo/` sidecar directory is the authoritative distribution boundary for all skills files delivered to consumer repositories. Sidecar properties:
+- Created at `init`; path is always `<consumer-repo-root>/.skills-repo/`.
+- Appended to consumer `.gitignore` at `init` if not already present. The install module MUST check before appending to prevent duplicate entries.
+- Contains only content sourced from the authoritative upstream (`skills_upstream.repo` in consumer `context.yml`). Consumers must not manually edit sidecar files — edits are overwritten on the next `upgrade` run.
+- The `skills-lock.json` file at repo root (tracked) is the consumer's durable pointer to the sidecar content. It contains: `skillsRepoVersion`, `pinnedRef`, `upstream`, `installedAt`, `previousPinnedRef` (audit trail). It does NOT contain skill file content.
+- All hash verification (`verifyLockfile`) re-computes SHA-256 from current sidecar file content and compares against the hash in `skills-lock.json`. Sidecar tamper is detected structurally, not by git diff.
+
+#### Consequences
+**Easier:** Zero-commit install by default. Consumers can upgrade skills without polluting their commit history. Hash verification is local and does not require network access after install. Consumer `context.yml` and `pipeline-state.json` are not touched by the distribution mechanism (permanent exclusion list enforced by CLI).
+
+**Harder / constrained:** Sidecar files are not version-controlled in the consumer repo. If the sidecar is deleted or corrupted, a `skills-repo init` re-run is required. The lockfile pointer must always agree with sidecar content — drift is a hard verification failure.
+
+**Off the table:** Distribution mechanisms that require the consumer to commit skill file content (violates zero-commit default). Distribution mechanisms that require a fork (violates C1). Writing to consumer `context.yml` or `pipeline-state.json` during install or upgrade (permanent exclusions).
+
+#### Revisit triggers
+- If a consumer requires hermetic offline operation (no git fetch), evaluate a bundle-based variant where the sidecar is pre-populated from a tarball instead of a git clone. The sidecar boundary is the same; only the population mechanism changes.
+- If `skills-lock.json` needs to move (e.g. into a `.github/` subdirectory), this ADR must be updated and the `upgrade.js` lockfile-location search logic updated at the same time.
+
+---
+
 ### ADR-phase4-enforcement: Mechanism selection — which enforcement mechanism applies to each surface class
 
 **Status:** Active
@@ -554,19 +590,22 @@ The mechanism for each surface class is:
 
 3. **Chat-native progressive (Copilot Chat) → Deferred.** No spike has evaluated the Copilot Chat surface specifically. Spike B1 validated MCP for VS Code / Claude Code; Copilot Chat operates with a different tool invocation model that has not been confirmed as MCP-compatible without modification. Reason for deferral: no PROCEED spike verdict for this surface class. Revisit trigger: a dedicated Copilot Chat / chat-native progressive spike returning PROCEED before any E3 story targets this surface.
 
-4. **Non-git-native (Teams, Confluence) → Deferred.** Spike D (non-git-native surface feasibility) has not yet returned a verdict. Reason for deferral: Spike D pending. Revisit trigger: Spike D PROCEED verdict; mechanism selection for non-git-native surfaces follows immediately.
+4. **Non-git-native (Teams, Confluence) → Stateless bot module pattern (Teams bot library).** Spike D verdict: PROCEED. E4 (non-technical access epic) delivered 5 stories (102/102 assertions) confirming C7 (0 violations across all prototype turns) and C11 (stateless handler, no persistent runtime). The Teams bot module (`bot-handler.js`, `bot-approval-router.js`, `standards-injector.js`, `artefact-assembler.js`, `ci-reporter.js`) is invoked per-message; all session state is passed in and returned; no module-level mutable state. The `AWAITING_RESPONSE` state lock makes Type B violations (advance-without-answer) structurally impossible. See ADR-014-addendum in decisions.md (spike-d entry) for the full mechanism rationale.
+
+#### Addendum — 2026-04-20 (Spike D PROCEED, E4 shipped)
+Spike D returned PROCEED. E4 (non-technical access) is now complete — all 5 stories delivered and 102 assertions passing. The "Non-git-native surfaces → Deferred" status is superseded. The Teams bot stateless module pattern is confirmed as the mechanism for non-git-native surfaces. Chat-native progressive (Copilot Chat) remains the one deferred surface class.
 
 #### Consequences
-**Easier:** E3 implementation stories (p4-enf-package, p4-enf-mcp, p4-enf-cli, p4-enf-schema) have unambiguous mechanism targets. No mechanism debate deferred to implementation time. Deferred surfaces generate Phase 5 story requirements rather than Phase 4 technical debt.
+**Easier:** E3 and E4 implementation stories all have unambiguous mechanism targets. No mechanism debate deferred to implementation time. Deferred surfaces (Copilot Chat only, post-E4) generate Phase 5 story requirements rather than Phase 4 technical debt.
 
-**Harder / constrained:** Two of four surface classes are deferred. Chat-native progressive (Copilot Chat) and non-git-native (Teams / Confluence) surfaces are not covered by Phase 4 enforcement. Operators on these surfaces will not have P1–P4 enforcement until a later phase delivers it.
+**Harder / constrained:** One of four surface classes remains deferred. Chat-native progressive (Copilot Chat) surfaces are not covered by Phase 4 enforcement. Operators on these surfaces will not have P1–P4 enforcement until a later phase delivers it. Non-git-native surfaces (Teams) ARE now covered by E4.
 
-**Off the table:** Implementing enforcement for Copilot Chat or non-git-native surfaces in Phase 4 without a preceding PROCEED spike verdict. Selecting a mechanism for any surface class not backed by spike evidence.
+**Off the table:** Implementing enforcement for Copilot Chat (chat-native progressive) surfaces without a preceding PROCEED spike verdict. Selecting a mechanism for any surface class not backed by spike evidence.
 
 #### Revisit triggers
-- **Spike D verdict:** Non-git-native mechanism selection proceeds immediately once Spike D returns PROCEED.
-- **Chat-native progressive spike:** A dedicated spike targeting Copilot Chat must return PROCEED before this surface class receives an E3 story.
-- **Phase 5 planning:** If either deferred surface class has a Spike PROCEED verdict at Phase 5 planning, an ADR addendum for that class supersedes the "deferred" status recorded here.
+- **Spike D verdict:** RESOLVED — Spike D returned PROCEED 2026-04-20. Non-git-native surface (Teams) is now implemented via the stateless bot module pattern.
+- **Chat-native progressive spike:** A dedicated spike targeting Copilot Chat must return PROCEED before this surface class receives an E3/E5 story.
+- **Phase 5 planning:** If Copilot Chat spike returns PROCEED at Phase 5 planning, an ADR addendum for that class supersedes the "deferred" status recorded here.
 - **MCP specification evolution:** If the MCP specification adds structural ambient context isolation (resolving the P2 PARTIAL for interactive surfaces), re-evaluate the p4-enf-mcp skill-file isolation approach.
 
 ---
