@@ -25,11 +25,30 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Checkout gate script from platform-infrastructure
+        uses: actions/checkout@v4
+        with:
+          repository: heymishy/skills-framework-infra
+          ref: 327d73110c9899268ce899eab2fd4d2e5e967097
+          path: .gate-download
+
+      - name: Validate gate script checksum
+        run: |
+          EXPECTED=$(cat .github/gate-checksum.sha256 | tr -d '[:space:]')
+          ACTUAL=$(sha256sum .gate-download/scripts/run-assurance-gate.js | awk '{print $1}')
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo "Gate script checksum mismatch — aborting"
+            echo "  actual:   ${ACTUAL}"
+            echo "  expected: ${EXPECTED}"
+            exit 1
+          fi
+          echo "Gate script checksum verified: ${ACTUAL}"
+
       - name: Run assurance gate
         id: gate
         env:
           TRIGGER: ci
-        run: node .github/scripts/run-assurance-gate.js
+        run: node .gate-download/scripts/run-assurance-gate.js
 
       - name: Upload trace artifact
         if: always()

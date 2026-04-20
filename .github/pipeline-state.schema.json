@@ -187,6 +187,8 @@
                       "prStatus":    { "type": "string", "enum": ["none", "draft", "open", "merged"] },
                       "prUrl":       { "type": "string" },
                       "dodStatus":   { "type": "string", "enum": ["not-started", "complete"] },
+                      "gateScriptRef":          { "type": "string",  "description": "The platform-infrastructure ref (full commit SHA or version tag) used to download the gate script for this delivery. Part of the immutable gate audit trail (p3.3)." },
+                      "gateChecksumVerified":   { "type": "boolean", "description": "True when the downloaded gate script's SHA-256 checksum matched the known-good value at execution time (p3.3)." },
                       "acVerified":            { "type": "integer", "description": "Number of ACs verified" },
                       "acTotal":               { "type": "integer" },
                       "regulated":         { "type": "boolean", "description": "True when the story requires regulated (T3M1) audit fields in its trace entry. Derived from the parent feature complianceProfile value." },
