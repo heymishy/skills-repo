@@ -25,8 +25,8 @@
         "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-c-output.md"
       },
       "spike-d": {
-        "verdict": null,
-        "verdictAt": null,
+        "verdict": "PROCEED",
+        "verdictAt": "2026-04-20T16:00:00.000Z",
         "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-d-output.md"
       }
     }
@@ -35,7 +35,7 @@
     {
       "slug": "2026-04-19-skills-platform-phase4",
       "name": "Skills Platform — Phase 4: Distribution, Structural Enforcement, and Non-Technical Access",
-      "stage": "implementation-plan",
+      "stage": "definition-of-done",
       "reviewStatus": "passed",
       "reviewHighFindings": 0,
       "reviewArtefacts": "artefacts/2026-04-19-skills-platform-phase4/review/",
@@ -161,7 +161,7 @@
         }
       ],
       "createdAt": "2026-04-19",
-      "updatedAt": "2026-04-19T23:50:00.000Z",
+      "updatedAt": "2026-04-20T18:00:00.000Z",
       "metrics": [
         {
           "id": "m1",
@@ -450,11 +450,18 @@
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-d-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "testFile": "tests/check-p4-spike-d.js",
-            "totalTests": 9,
-            "passing": 0
-          }
+            "totalTests": 21,
+            "passing": 21
+          },
+          "stage": "definition-of-done",
+          "health": "green",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-spike-d-dod.md",
+          "updatedAt": "2026-04-20T18:00:00.000Z"
         },
         {
           "id": "p4-dist-install",
@@ -464,11 +471,18 @@
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-install-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "testFile": "tests/check-p4-dist-install.js",
-            "totalTests": 10,
-            "passing": 0
-          }
+            "totalTests": 18,
+            "passing": 18
+          },
+          "stage": "definition-of-done",
+          "health": "green",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-install-dod.md",
+          "updatedAt": "2026-04-20T18:00:00.000Z"
         },
         {
           "id": "p4-dist-no-commits",
@@ -478,11 +492,18 @@
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-no-commits-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "testFile": "tests/check-p4-dist-no-commits.js",
-            "totalTests": 10,
-            "passing": 0
-          }
+            "totalTests": 15,
+            "passing": 15
+          },
+          "stage": "definition-of-done",
+          "health": "green",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-no-commits-dod.md",
+          "updatedAt": "2026-04-20T18:00:00.000Z"
         },
         {
           "id": "p4-dist-commit-format",
@@ -492,11 +513,18 @@
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-commit-format-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "testFile": "tests/check-p4-dist-commit-format.js",
-            "totalTests": 10,
-            "passing": 0
-          }
+            "totalTests": 14,
+            "passing": 14
+          },
+          "stage": "definition-of-done",
+          "health": "green",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-commit-format-dod.md",
+          "updatedAt": "2026-04-20T18:00:00.000Z"
         },
         {
           "id": "p4-dist-lockfile",
@@ -506,11 +534,18 @@
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-lockfile-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "testFile": "tests/check-p4-dist-lockfile.js",
-            "totalTests": 10,
-            "passing": 0
-          }
+            "totalTests": 13,
+            "passing": 13
+          },
+          "stage": "definition-of-done",
+          "health": "green",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-lockfile-dod.md",
+          "updatedAt": "2026-04-20T18:00:00.000Z"
         },
         {
           "id": "p4-dist-upgrade",
@@ -520,11 +555,18 @@
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-upgrade-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "testFile": "tests/check-p4-dist-upgrade.js",
-            "totalTests": 10,
-            "passing": 0
-          }
+            "totalTests": 15,
+            "passing": 15
+          },
+          "stage": "definition-of-done",
+          "health": "green",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-upgrade-dod.md",
+          "updatedAt": "2026-04-20T18:00:00.000Z"
         },
         {
           "id": "p4-dist-upstream",
@@ -534,11 +576,18 @@
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-upstream-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "testFile": "tests/check-p4-dist-upstream.js",
             "totalTests": 10,
-            "passing": 0
-          }
+            "passing": 10
+          },
+          "stage": "definition-of-done",
+          "health": "green",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-upstream-dod.md",
+          "updatedAt": "2026-04-20T18:00:00.000Z"
         },
         {
           "id": "p4-dist-migration",
@@ -548,11 +597,18 @@
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-migration-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "testFile": "tests/check-p4-dist-migration.js",
-            "totalTests": 10,
-            "passing": 0
-          }
+            "totalTests": 12,
+            "passing": 12
+          },
+          "stage": "definition-of-done",
+          "health": "green",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-migration-dod.md",
+          "updatedAt": "2026-04-20T18:00:00.000Z"
         },
         {
           "id": "p4-dist-registry",
@@ -562,11 +618,18 @@
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-dist-registry-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "testFile": "tests/check-p4-dist-registry.js",
-            "totalTests": 10,
-            "passing": 0
-          }
+            "totalTests": 27,
+            "passing": 27
+          },
+          "stage": "definition-of-done",
+          "health": "green",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-registry-dod.md",
+          "updatedAt": "2026-04-20T18:00:00.000Z"
         },
         {
           "id": "p4-enf-decision",
