@@ -1236,9 +1236,9 @@
           "name": "Priority 1 hardening: reduction in governance check failures per story",
           "target": "Zero npm test failures on master after any Phase 3 story merge",
           "baseline": "Phase 2: non-zero post-merge governance failures (establishing Phase 3 baseline from first PR)",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-04-18",
+          "evidence": "PR #141 (8754323) merged p3.5, p3.6, p3.7, p3.8, p3.10, p3.11 — all tests green, zero npm test failures post-merge.",
           "contributingStories": [
             "p3.1a",
             "p3.1b",
@@ -1563,7 +1563,7 @@
         {
           "slug": "p3.5",
           "name": "Windows native trace validator",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlanStatus": "complete",
@@ -1571,14 +1571,17 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.5-windows-native-trace-validator-dor.md",
           "health": "green",
-          "updatedAt": "2026-04-18",
+          "updatedAt": "2026-04-20",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.5-windows-native-trace-validator-review-1.md",
-          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.5-windows-native-trace-validator.md"
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.5-windows-native-trace-validator.md",
+          "dodStatus": "complete",
+          "prStatus": "merged",
+          "releaseReady": true
         },
         {
           "slug": "p3.6",
           "name": "Pipeline evolution dispatch",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlanStatus": "complete",
@@ -1586,14 +1589,17 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.6-pipeline-evolution-dispatch-dor.md",
           "health": "green",
-          "updatedAt": "2026-04-18",
+          "updatedAt": "2026-04-20",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.6-pipeline-evolution-dispatch-review-1.md",
-          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.6-pipeline-evolution-dispatch.md"
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.6-pipeline-evolution-dispatch.md",
+          "dodStatus": "complete",
+          "prStatus": "merged",
+          "releaseReady": true
         },
         {
           "slug": "p3.7",
           "name": "Cross-team trace registry",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlanStatus": "complete",
@@ -1601,14 +1607,17 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.7-cross-team-trace-registry-dor.md",
           "health": "green",
-          "updatedAt": "2026-04-18",
+          "updatedAt": "2026-04-20",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.7-cross-team-trace-registry-review-1.md",
-          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.7-cross-team-trace-registry.md"
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.7-cross-team-trace-registry.md",
+          "dodStatus": "complete",
+          "prStatus": "merged",
+          "releaseReady": true
         },
         {
           "slug": "p3.8",
           "name": "Enterprise approval channel adapters",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlanStatus": "complete",
@@ -1616,14 +1625,17 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.8-enterprise-approval-channel-adapters-dor.md",
           "health": "green",
-          "updatedAt": "2026-04-18",
+          "updatedAt": "2026-04-20",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.8-enterprise-approval-channel-adapters-review-1.md",
-          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.8-enterprise-approval-channel-adapters.md"
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.8-enterprise-approval-channel-adapters.md",
+          "dodStatus": "complete",
+          "prStatus": "merged",
+          "releaseReady": true
         },
         {
           "slug": "p3.10",
           "name": "EA registry live integration",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlanStatus": "complete",
@@ -1631,14 +1643,17 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.10-ea-registry-live-integration-dor.md",
           "health": "green",
-          "updatedAt": "2026-04-18",
+          "updatedAt": "2026-04-20",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.10-ea-registry-live-integration-review-1.md",
-          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.10-ea-registry-live-integration.md"
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.10-ea-registry-live-integration.md",
+          "dodStatus": "complete",
+          "prStatus": "merged",
+          "releaseReady": true
         },
         {
           "slug": "p3.11",
           "name": "Estimation calibration eval",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlanStatus": "complete",
@@ -1646,9 +1661,12 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.11-estimation-calibration-eval-dor.md",
           "health": "green",
-          "updatedAt": "2026-04-18",
+          "updatedAt": "2026-04-20",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.11-estimation-calibration-eval-review-1.md",
-          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.11-estimation-calibration-eval.md"
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.11-estimation-calibration-eval.md",
+          "dodStatus": "complete",
+          "prStatus": "merged",
+          "releaseReady": true
         },
         {
           "slug": "p3.12",
