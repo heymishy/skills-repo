@@ -153,6 +153,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 | ADR-011 | Active | Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit | All contributors; /definition-of-ready H9 check; coding agent |
 | ADR-012 | Active | Platform-agnostic architecture: prefer portable, multi-VCS-compatible implementations over vendor-specific optimisations; adapters enable platform adaptation without core fragmentation | All infrastructure, registry, and audit features; Phase 3 T3M1 Q8 implementation; enterprise adapter architecture |
 | ADR-013 | Active | Phase 4 enforcement architecture: shared 3-operation governance package (`resolveAndVerifySkill`, `evaluateGateAndAdvance`, `writeVerifiedTrace`) is the contract all surface adapters call — no surface adapter reimplements governance logic independently | All Phase 4 enforcement adapters (p4-enf-mcp, p4-enf-cli, and any future surface adapter); E3 implementation stories |
+| ADR-phase4-enforcement | Active | Mechanism selection: which enforcement mechanism (MCP, CLI, or deferred) applies to each Phase 4 surface class | E3 enforcement stories (p4-enf-package, p4-enf-mcp, p4-enf-cli, p4-enf-schema); all surface adapters |
 
 ---
 
@@ -516,6 +517,60 @@ If the 3-operation interface proves too coarse-grained for a future surface type
 
 ---
 
+### ADR-phase4-enforcement: Mechanism selection — which enforcement mechanism applies to each surface class
+
+**Status:** Active
+**Date:** 2026-04-20
+**Decided by:** Operator (heymishy)
+**Triggered by:** Spike A (PROCEED — shared governance package feasibility), Spike B1 (PROCEED — MCP for VS Code / Claude Code interactive surface), Spike B2 (PROCEED — CLI for regulated / CI surface); three PROCEED verdicts enable mechanism selection before E3 implementation stories begin.
+
+#### Context
+Phase 4 adds per-invocation skill fidelity enforcement (P1–P4 properties) across multiple operator surface classes. ADR-013 established the shared 3-operation governance package as the contract all surface adapters call. This ADR records which enforcement mechanism is selected for each surface class so that E3 implementation stories have an unambiguous mandate.
+
+Four surface classes must be addressed:
+
+1. **Interactive operator surfaces** — VS Code / Claude Code and equivalent interactive environments consuming skills via MCP tools.
+2. **Regulated / CI surfaces** — headless CI pipelines and regulated environments consuming skills via CLI.
+3. **Chat-native progressive surfaces** — Copilot Chat and equivalent chat-native environments where skill delivery occurs through a conversational interface.
+4. **Non-git-native surfaces** — Teams, Confluence, and equivalent non-git-native or messaging-based environments where skills surface through a bot or plugin layer.
+
+Spike A confirmed the 3-operation package design is sound. Spike B1 validated MCP transport for the VS Code / Claude Code interactive surface. Spike B2 validated CLI enforcement at three seams for the regulated / CI surface. Spike D (non-git-native surface feasibility) has not yet returned a verdict.
+
+#### Options considered
+**Option A — MCP for all four surface classes:** Apply MCP transport uniformly. Rejected: CI/headless environments and non-git-native surfaces cannot reliably spawn an MCP subprocess. Chat-native progressive surfaces (Copilot Chat) use a different tool invocation model that has not been evaluated in a spike.
+
+**Option B — CLI for all four surface classes:** Apply CLI enforcement uniformly. Rejected: interactive operator surfaces already invoke governance through MCP tool calls; requiring a CLI subprocess inside an MCP tool handler duplicates the enforcement seam without benefit.
+
+**Option C — Mechanism per surface class (selected):** Select the most architecturally appropriate mechanism for each surface class based on spike evidence. Deferred surfaces require a PROCEED spike verdict before an E3 story targets them. Produces the cleanest seam definition per surface and avoids speculative implementation.
+
+**Option D — Defer all mechanism decisions until E3 begins:** Begin E3 without upfront mechanism selection. Rejected: Spikes A, B1, and B2 exist precisely to produce this decision before E3; deferral discards the spike investment.
+
+#### Decision
+The mechanism for each surface class is:
+
+1. **VS Code / Claude Code interactive → MCP (stdio-transport enforcement tool).** Spike B1 verdict: PROCEED. The MCP enforcement tool calls the 3-operation package at envelope-build time. P2 ambient bypass remains PARTIAL for interactive mode; the resolution path (skill-file isolation) is an explicit AC in the p4-enf-mcp story.
+
+2. **Regulated / CI headless → CLI (command-line enforcement wrapper, Mode 1 declarative + Mode 2 headless subprocess).** Spike B2 verdict: PROCEED. The CLI wrapper calls the 3-operation package at three seams (envelope-build, gate-check, trace-write). P2 and P4 are PARTIAL for Mode 1; Mode 2 headless subprocess is the closure path and an explicit AC in the p4-enf-cli story.
+
+3. **Chat-native progressive (Copilot Chat) → Deferred.** No spike has evaluated the Copilot Chat surface specifically. Spike B1 validated MCP for VS Code / Claude Code; Copilot Chat operates with a different tool invocation model that has not been confirmed as MCP-compatible without modification. Reason for deferral: no PROCEED spike verdict for this surface class. Revisit trigger: a dedicated Copilot Chat / chat-native progressive spike returning PROCEED before any E3 story targets this surface.
+
+4. **Non-git-native (Teams, Confluence) → Deferred.** Spike D (non-git-native surface feasibility) has not yet returned a verdict. Reason for deferral: Spike D pending. Revisit trigger: Spike D PROCEED verdict; mechanism selection for non-git-native surfaces follows immediately.
+
+#### Consequences
+**Easier:** E3 implementation stories (p4-enf-package, p4-enf-mcp, p4-enf-cli, p4-enf-schema) have unambiguous mechanism targets. No mechanism debate deferred to implementation time. Deferred surfaces generate Phase 5 story requirements rather than Phase 4 technical debt.
+
+**Harder / constrained:** Two of four surface classes are deferred. Chat-native progressive (Copilot Chat) and non-git-native (Teams / Confluence) surfaces are not covered by Phase 4 enforcement. Operators on these surfaces will not have P1–P4 enforcement until a later phase delivers it.
+
+**Off the table:** Implementing enforcement for Copilot Chat or non-git-native surfaces in Phase 4 without a preceding PROCEED spike verdict. Selecting a mechanism for any surface class not backed by spike evidence.
+
+#### Revisit triggers
+- **Spike D verdict:** Non-git-native mechanism selection proceeds immediately once Spike D returns PROCEED.
+- **Chat-native progressive spike:** A dedicated spike targeting Copilot Chat must return PROCEED before this surface class receives an E3 story.
+- **Phase 5 planning:** If either deferred surface class has a Spike PROCEED verdict at Phase 5 planning, an ADR addendum for that class supersedes the "deferred" status recorded here.
+- **MCP specification evolution:** If the MCP specification adds structural ambient context isolation (resolving the P2 PARTIAL for interactive surfaces), re-evaluate the p4-enf-mcp skill-file isolation approach.
+
+---
+
 ## Operating Posture
 
 ### Solo operator / W4 RISK-ACCEPT posture
@@ -793,5 +848,10 @@ This repository is operated by a single engineer. The following posture applies 
 - id: ADR-013
   category: adr
   label: "Phase 4 enforcement architecture: shared 3-operation governance package is the contract all surface adapters call — no surface adapter reimplements governance logic independently"
+  section: Active ADRs
+
+- id: ADR-phase4-enforcement
+  category: adr
+  label: "Mechanism selection: which enforcement mechanism (MCP, CLI, or deferred) applies to each Phase 4 surface class"
   section: Active ADRs
 ```

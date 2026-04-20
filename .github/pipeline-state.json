@@ -90,7 +90,7 @@
           "category": "adr",
           "label": "Phase 4 enforcement architecture ADR — 3-operation shared contract for all surface adapters",
           "file": ".github/architecture-guardrails.md",
-          "status": "met",
+          "status": "active",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-04-20",
           "evidence": "Spikes A, B1, B2 all PROCEED. ADR-013 written to .github/architecture-guardrails.md. Enforcement package (resolveAndVerifySkill, evaluateGateAndAdvance, writeVerifiedTrace) confirmed as shared contract for all surface adapters. P2/P4 PARTIAL for Mode 1 surfaces acknowledged; Mode 2 headless subprocess is the resolution path."
