@@ -36,7 +36,7 @@
     "features":  [
                      {
                          "slug":  "2026-04-19-skills-platform-phase4",
-                         "name":  "Skills Platform â€” Phase 4: Distribution, Structural Enforcement, and Non-Technical Access",
+                         "name":  "Skills Platform Ã¢â‚¬â€ Phase 4: Distribution, Structural Enforcement, and Non-Technical Access",
                          "stage":  "definition-of-done",
                          "reviewStatus":  "passed",
                          "reviewHighFindings":  0,
@@ -176,8 +176,8 @@
                          "metrics":  [
                                          {
                                              "id":  "m1",
-                                             "name":  "Distribution sync â€” zero-commit install + sync success rate",
-                                             "baseline":  "0% â€” no zero-commit sync mechanism exists today",
+                                             "name":  "Distribution sync Ã¢â‚¬â€ zero-commit install + sync success rate",
+                                             "baseline":  "0% Ã¢â‚¬â€ no zero-commit sync mechanism exists today",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
                                              "evidence":  "Zero-commit assertion mechanism verified by automated tests (check-p4-dist-no-commits.js). Real consumer end-to-end install not yet run by Craig or Thomas.",
@@ -195,9 +195,9 @@
                                          },
                                          {
                                              "id":  "m2",
-                                             "name":  "Consumer confidence â€” unassisted team member onboarding",
+                                             "name":  "Consumer confidence Ã¢â‚¬â€ unassisted team member onboarding",
                                              "target":  "At least 1 team member completes full outer loop (discovery through DoR) on a real story without platform team involvement",
-                                             "baseline":  "0 â€” no unassisted onboarding achieved to date",
+                                             "baseline":  "0 Ã¢â‚¬â€ no unassisted onboarding achieved to date",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
                                              "evidence":  "Onboarding tooling (distribution modules, migration guide, Teams bot, status reports, archive toggle) all implemented. Real unassisted onboarding session not yet run.",
@@ -220,7 +220,7 @@
                                              "id":  "m3",
                                              "name":  "Teams bot C7 fidelity",
                                              "target":  "0 C7 violations across a complete test session of one outer loop step",
-                                             "baseline":  "not-applicable â€” no Teams bot exists today",
+                                             "baseline":  "not-applicable Ã¢â‚¬â€ no Teams bot exists today",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
                                              "evidence":  "Spike D minimum validation signal met (3 consecutive C7-compliant turns, 0 violations). Full test session across complete outer loop step not yet run in live Teams environment.",
@@ -237,7 +237,7 @@
                                              "id":  "mm-a",
                                              "name":  "Meta: Scope fidelity (Sonnet vs Opus)",
                                              "target":  "0 scope drift items in either run; delta between Sonnet and Opus counts",
-                                             "baseline":  "Sonnet 4.6 run score â€” recorded at /definition close",
+                                             "baseline":  "Sonnet 4.6 run score Ã¢â‚¬â€ recorded at /definition close",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
                                              "evidence":  "Sonnet baseline run complete. record-benefit-comparison.js tooling now available for EXP-001 measurement. Opus comparison run not yet completed.",
@@ -249,7 +249,7 @@
                                              "id":  "mm-b",
                                              "name":  "Meta: Constraint capture (Sonnet vs Opus)",
                                              "target":  "5/5 named constraints captured in story ACs without operator prompting",
-                                             "baseline":  "Sonnet 4.6 run score â€” recorded at /definition close",
+                                             "baseline":  "Sonnet 4.6 run score Ã¢â‚¬â€ recorded at /definition close",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
                                              "evidence":  "Sonnet baseline run complete. Opus comparison run not yet completed.",
@@ -260,8 +260,8 @@
                                          {
                                              "id":  "mm-c",
                                              "name":  "Meta: AC completeness (Sonnet vs Opus)",
-                                             "target":  "â‰¥80% of ACs rated testable and specific",
-                                             "baseline":  "Sonnet 4.6 run score â€” recorded at /definition close",
+                                             "target":  "Ã¢â€°Â¥80% of ACs rated testable and specific",
+                                             "baseline":  "Sonnet 4.6 run score Ã¢â‚¬â€ recorded at /definition close",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
                                              "evidence":  "Sonnet baseline run complete. Opus comparison run not yet completed.",
@@ -273,7 +273,7 @@
                                              "id":  "mm-d",
                                              "name":  "Meta: Operator intervention rate (Sonnet vs Opus)",
                                              "target":  "0 unprompted operator corrections; lower count in Opus run vs Sonnet run",
-                                             "baseline":  "Sonnet 4.6 run count â€” recorded by heymishy during this session",
+                                             "baseline":  "Sonnet 4.6 run count Ã¢â‚¬â€ recorded by heymishy during this session",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
                                              "evidence":  "Sonnet baseline run complete. Opus comparison run not yet completed.",
@@ -921,7 +921,7 @@
                                              "releaseReady":  true,
                                              "layoutGapsAtMerge":  true,
                                              "layoutGapsRiskAccepted":  true,
-                                             "blocker":  "DoR contract referenced pipeline-viz.html but implementation correctly targets index.html â€” recorded as scope deviation in DoD; no AC gaps.",
+                                             "blocker":  "DoR contract referenced pipeline-viz.html but implementation correctly targets index.html Ã¢â‚¬â€ recorded as scope deviation in DoD; no AC gaps.",
                                              "updatedAt":  "2026-04-21T00:00:00.000Z"
                                          },
                                          {
@@ -965,7 +965,7 @@
                      },
                      {
                          "slug":  "2026-04-19-skills-platform-phase4-opus",
-                         "name":  "Skills Platform â€” Phase 4 (Opus 4.6 arm): Distribution, Structural Enforcement, and Non-Technical Access",
+                         "name":  "Skills Platform Ã¢â‚¬â€ Phase 4 (Opus 4.6 arm): Distribution, Structural Enforcement, and Non-Technical Access",
                          "stage":  "definition",
                          "discoveryStatus":  "approved",
                          "health":  "green",
@@ -986,13 +986,13 @@
                          "epics":  [
                                        {
                                            "id":  "e1",
-                                           "name":  "Governance extractability â€” enforcement selection",
+                                           "name":  "Governance extractability Ã¢â‚¬â€ enforcement selection",
                                            "artefact":  "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e1-governance-extractability-enforcement-selection.md",
                                            "storyCount":  5
                                        },
                                        {
                                            "id":  "e2",
-                                           "name":  "Distribution â€” zero-commit install",
+                                           "name":  "Distribution Ã¢â‚¬â€ zero-commit install",
                                            "artefact":  "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e2-distribution-zero-commit-install.md",
                                            "storyCount":  7
                                        },
@@ -1004,7 +1004,7 @@
                                        },
                                        {
                                            "id":  "e4",
-                                           "name":  "Readable governance â€” second-line audit",
+                                           "name":  "Readable governance Ã¢â‚¬â€ second-line audit",
                                            "artefact":  "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e4-readable-governance-second-line-audit.md",
                                            "storyCount":  5
                                        }
@@ -1021,7 +1021,7 @@
                                             {
                                                 "id":  "ADR-004",
                                                 "category":  "adr",
-                                                "label":  "context.yml is the single configuration source â€” no hardcoded values",
+                                                "label":  "context.yml is the single configuration source Ã¢â‚¬â€ no hardcoded values",
                                                 "status":  "pending",
                                                 "assessedBy":  "/definition"
                                             },
@@ -1035,14 +1035,14 @@
                                             {
                                                 "id":  "C1",
                                                 "category":  "constraint",
-                                                "label":  "Non-fork update channel â€” consumers must not fork",
+                                                "label":  "Non-fork update channel Ã¢â‚¬â€ consumers must not fork",
                                                 "status":  "pending",
                                                 "assessedBy":  "/definition"
                                             },
                                             {
                                                 "id":  "C4",
                                                 "category":  "constraint",
-                                                "label":  "Human approval gate â€” no automated merge",
+                                                "label":  "Human approval gate Ã¢â‚¬â€ no automated merge",
                                                 "status":  "pending",
                                                 "assessedBy":  "/definition"
                                             },
@@ -1101,9 +1101,9 @@
                          "metrics":  [
                                          {
                                              "id":  "m1",
-                                             "name":  "Distribution sync â€” zero-commit install + sync success rate",
-                                             "target":  "100% zero-commit install + â‰¥90% sync success",
-                                             "baseline":  "0% â€” no mechanism exists",
+                                             "name":  "Distribution sync Ã¢â‚¬â€ zero-commit install + sync success rate",
+                                             "target":  "100% zero-commit install + Ã¢â€°Â¥90% sync success",
+                                             "baseline":  "0% Ã¢â‚¬â€ no mechanism exists",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
                                              "evidence":  null,
@@ -1120,9 +1120,9 @@
                                          },
                                          {
                                              "id":  "m2",
-                                             "name":  "Consumer confidence â€” unassisted team member onboarding",
-                                             "target":  "â‰¥1 team member completes full outer loop unassisted",
-                                             "baseline":  "0 â€” no unassisted onboarding achieved",
+                                             "name":  "Consumer confidence Ã¢â‚¬â€ unassisted team member onboarding",
+                                             "target":  "Ã¢â€°Â¥1 team member completes full outer loop unassisted",
+                                             "baseline":  "0 Ã¢â‚¬â€ no unassisted onboarding achieved",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
                                              "evidence":  null,
@@ -1142,9 +1142,9 @@
                                          },
                                          {
                                              "id":  "m3",
-                                             "name":  "Teams bot C7 fidelity â€” zero violations in test session",
+                                             "name":  "Teams bot C7 fidelity Ã¢â‚¬â€ zero violations in test session",
                                              "target":  "0 C7 violations across complete test session",
-                                             "baseline":  "not-applicable â€” no Teams bot exists",
+                                             "baseline":  "not-applicable Ã¢â‚¬â€ no Teams bot exists",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
                                              "evidence":  null,
@@ -1184,7 +1184,7 @@
                                          {
                                              "id":  "mm-c",
                                              "name":  "Meta: AC completeness",
-                                             "target":  "â‰¥80% ACs testable and specific",
+                                             "target":  "Ã¢â€°Â¥80% ACs testable and specific",
                                              "baseline":  "Sonnet run score",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
@@ -1209,7 +1209,7 @@
                      },
                      {
                          "slug":  "2026-04-14-skills-platform-phase3",
-                         "name":  "Skills Platform â€” Phase 3: Governance Hardening, T3M1 Close, and Enterprise Scale",
+                         "name":  "Skills Platform Ã¢â‚¬â€ Phase 3: Governance Hardening, T3M1 Close, and Enterprise Scale",
                          "stage":  "definition-of-done",
                          "health":  "green",
                          "track":  "library",
@@ -1230,7 +1230,7 @@
                                              "baseline":  "3/8 at Phase 2 close",
                                              "signal":  "at-risk",
                                              "lastMeasured":  "2026-04-16",
-                                             "evidence":  "Named independent reviewer on record: craigfo (PR #98, 2026-04-15). Full pipeline run completed autonomously. Formal MODEL-RISK.md 8/8 audit answers not yet documented â€” dependency for full on-track exists. Signal: partial â€” independent operator identified and pipeline-capable, formal audit artefact pending.",
+                                             "evidence":  "Named independent reviewer on record: craigfo (PR #98, 2026-04-15). Full pipeline run completed autonomously. Formal MODEL-RISK.md 8/8 audit answers not yet documented Ã¢â‚¬â€ dependency for full on-track exists. Signal: partial Ã¢â‚¬â€ independent operator identified and pipeline-capable, formal audit artefact pending.",
                                              "contributingStories":  [
                                                                          "p3.2a",
                                                                          "p3.2b"
@@ -1240,7 +1240,7 @@
                                              "id":  "M2",
                                              "name":  "Assurance gate substantive signal (completedAt duration)",
                                              "target":  "All post-Phase-3 production traces show completedAt \u003e50ms after startedAt",
-                                             "baseline":  "1â€“2ms (Phase 2 actuals, adversarial audit 2026-04-12)",
+                                             "baseline":  "1Ã¢â‚¬â€œ2ms (Phase 2 actuals, adversarial audit 2026-04-12)",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
                                              "evidence":  null,
@@ -1265,7 +1265,7 @@
                                              "id":  "M4",
                                              "name":  "Enterprise approval channel end-to-end",
                                              "target":  "At least one complete DoR sign-off via Teams or Jira adapter",
-                                             "baseline":  "GitHub Issue adapter only â€” no enterprise channel exists",
+                                             "baseline":  "GitHub Issue adapter only Ã¢â‚¬â€ no enterprise channel exists",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
                                              "evidence":  null,
@@ -1287,8 +1287,8 @@
                                          },
                                          {
                                              "id":  "MM1",
-                                             "name":  "Estimation calibration continuity (Phase 3 E1â†’E3)",
-                                             "target":  "Phase 3 E2 estimates within 25% of E3 actuals for â‰¥70% of stories",
+                                             "name":  "Estimation calibration continuity (Phase 3 E1Ã¢â€ â€™E3)",
+                                             "target":  "Phase 3 E2 estimates within 25% of E3 actuals for Ã¢â€°Â¥70% of stories",
                                              "baseline":  "Phase 2 E3 actuals in workspace/estimation-norms.md",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
@@ -1339,7 +1339,7 @@
                                              "baseline":  "Phase 2: non-zero post-merge governance failures (establishing Phase 3 baseline from first PR)",
                                              "signal":  "on-track",
                                              "lastMeasured":  "2026-04-18",
-                                             "evidence":  "PR #141 (8754323) merged p3.5, p3.6, p3.7, p3.8, p3.10, p3.11 â€” all tests green, zero npm test failures post-merge.",
+                                             "evidence":  "PR #141 (8754323) merged p3.5, p3.6, p3.7, p3.8, p3.10, p3.11 Ã¢â‚¬â€ all tests green, zero npm test failures post-merge.",
                                              "contributingStories":  [
                                                                          "p3.1a",
                                                                          "p3.1b",
@@ -1354,10 +1354,10 @@
                                              "id":  "CR1",
                                              "name":  "T3M1 independent validation on record",
                                              "target":  "8/8 MODEL-RISK.md audit questions answered by named independent reviewer with date and role on record",
-                                             "baseline":  "Not on record â€” prerequisite: Priority 2 trace-field stories must be DoD-complete first",
+                                             "baseline":  "Not on record Ã¢â‚¬â€ prerequisite: Priority 2 trace-field stories must be DoD-complete first",
                                              "signal":  "at-risk",
                                              "lastMeasured":  "2026-04-16",
-                                             "evidence":  "Named independent reviewer on record: craigfo (PR #98, 2026-04-15). Full pipeline run completed autonomously. Formal MODEL-RISK.md 8/8 audit answers not yet documented â€” dependency for full on-track exists. Signal: partial â€” independent operator identified and pipeline-capable, formal audit artefact pending.",
+                                             "evidence":  "Named independent reviewer on record: craigfo (PR #98, 2026-04-15). Full pipeline run completed autonomously. Formal MODEL-RISK.md 8/8 audit answers not yet documented Ã¢â‚¬â€ dependency for full on-track exists. Signal: partial Ã¢â‚¬â€ independent operator identified and pipeline-capable, formal audit artefact pending.",
                                              "contributingStories":  [
                                                                          "p3.2a",
                                                                          "p3.2b",
@@ -1367,8 +1367,8 @@
                                          },
                                          {
                                              "id":  "EC1",
-                                             "name":  "Phase 3 exit criterion: artefact coverage score â‰¥80%",
-                                             "target":  "Post-pipeline CHANGELOG coverage score â‰¥80% by Phase 3 close",
+                                             "name":  "Phase 3 exit criterion: artefact coverage score Ã¢â€°Â¥80%",
+                                             "target":  "Post-pipeline CHANGELOG coverage score Ã¢â€°Â¥80% by Phase 3 close",
                                              "baseline":  "45% coverage at 2026-04-16 audit (9/20 post-pipeline item groups covered by a formal story)",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
@@ -1383,7 +1383,7 @@
                                              "id":  "CR2",
                                              "name":  "Gate structural independence: agent cannot weaken its own gate",
                                              "target":  "Gate scripts in separate repo, CI validates SHA-256 checksum before execution",
-                                             "baseline":  "Gate scripts in delivery repo â€” agent has write access (structural gap confirmed Phase 2)",
+                                             "baseline":  "Gate scripts in delivery repo Ã¢â‚¬â€ agent has write access (structural gap confirmed Phase 2)",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
                                              "evidence":  null,
@@ -1487,7 +1487,7 @@
                                             {
                                                 "id":  "MC-SEC-03",
                                                 "category":  "mandatory-constraint",
-                                                "label":  "Viz reads local JSON only â€” no external fetch calls",
+                                                "label":  "Viz reads local JSON only Ã¢â‚¬â€ no external fetch calls",
                                                 "status":  "na",
                                                 "evidence":  "No viz changes in any E1 story deliverables reviewed",
                                                 "assessedBy":  "/review",
@@ -1498,7 +1498,7 @@
                                                 "category":  "mandatory-constraint",
                                                 "label":  "Gate logic reads evidence fields from pipeline-state.json (not stage alone)",
                                                 "status":  "met",
-                                                "evidence":  "p3.1b Architecture Constraints cite ADR-002 â€” new gate checks must evaluate at least one evidence field per file, not merely assert file existence.",
+                                                "evidence":  "p3.1b Architecture Constraints cite ADR-002 Ã¢â‚¬â€ new gate checks must evaluate at least one evidence field per file, not merely assert file existence.",
                                                 "assessedBy":  "/review",
                                                 "assessedAt":  "2026-04-14"
                                             },
@@ -1507,7 +1507,7 @@
                                                 "category":  "mandatory-constraint",
                                                 "label":  "Fields written to pipeline-state.json must exist in schema",
                                                 "status":  "met",
-                                                "evidence":  "p3.1b Architecture Constraints cite ADR-003 â€” any new gate output fields (e.g. checksRun, failedChecks) must be added to pipeline-state.schema.json in the same commit.",
+                                                "evidence":  "p3.1b Architecture Constraints cite ADR-003 Ã¢â‚¬â€ any new gate output fields (e.g. checksRun, failedChecks) must be added to pipeline-state.schema.json in the same commit.",
                                                 "assessedBy":  "/review",
                                                 "assessedAt":  "2026-04-14"
                                             },
@@ -1579,7 +1579,7 @@
                                                 "category":  "adr",
                                                 "label":  "Gates must use evidence fields, not stage-proxy",
                                                 "status":  "met",
-                                                "evidence":  "p3.1b Architecture Constraints cite ADR-002 â€” assurance gate extension must evaluate at least one evidence field per file. Assessed in p3.1b-assurance-gate-substantive-checks-review-1.",
+                                                "evidence":  "p3.1b Architecture Constraints cite ADR-002 Ã¢â‚¬â€ assurance gate extension must evaluate at least one evidence field per file. Assessed in p3.1b-assurance-gate-substantive-checks-review-1.",
                                                 "assessedBy":  "/review",
                                                 "assessedAt":  "2026-04-14"
                                             },
@@ -1588,16 +1588,16 @@
                                                 "category":  "adr",
                                                 "label":  "Schema-first: fields defined before use",
                                                 "status":  "met",
-                                                "evidence":  "p3.1b Architecture Constraints cite ADR-003 â€” new gate output fields added to pipeline-state.schema.json in same commit. Assessed in p3.1b-assurance-gate-substantive-checks-review-1.",
+                                                "evidence":  "p3.1b Architecture Constraints cite ADR-003 Ã¢â‚¬â€ new gate output fields added to pipeline-state.schema.json in same commit. Assessed in p3.1b-assurance-gate-substantive-checks-review-1.",
                                                 "assessedBy":  "/review",
                                                 "assessedAt":  "2026-04-14"
                                             },
                                             {
                                                 "id":  "ADR-008",
                                                 "category":  "adr",
-                                                "label":  "DoR touch-point contract binding at pre-merge â€” no silent scope bundling",
+                                                "label":  "DoR touch-point contract binding at pre-merge Ã¢â‚¬â€ no silent scope bundling",
                                                 "status":  "met",
-                                                "evidence":  "p3.1c Architecture Constraints cite ADR-008 â€” anti-overfitting gate change applies only to proposals evaluated after merge; retroactive re-evaluation explicitly excluded. Assessed in p3.1c-test-suite-integrity-review-1.",
+                                                "evidence":  "p3.1c Architecture Constraints cite ADR-008 Ã¢â‚¬â€ anti-overfitting gate change applies only to proposals evaluated after merge; retroactive re-evaluation explicitly excluded. Assessed in p3.1c-test-suite-integrity-review-1.",
                                                 "assessedBy":  "/review",
                                                 "assessedAt":  "2026-04-14"
                                             },
@@ -1632,7 +1632,7 @@
                                              "testPlanArtefact":  "artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.3-gate-structural-independence-test-plan.md",
                                              "dorStatus":  "signed-off",
                                              "dorArtefact":  "artefacts/2026-04-14-skills-platform-phase3/dor/p3.3-gate-structural-independence-dor.md",
-                                             "signedOffBy":  "Hamish â€” platform maintainer / operator",
+                                             "signedOffBy":  "Hamish Ã¢â‚¬â€ platform maintainer / operator",
                                              "signedOffAt":  "2026-04-18",
                                              "issueUrl":  "https://github.com/heymishy/skills-repo/issues/163",
                                              "dispatchedAt":  "2026-04-19T08:00:00Z",
@@ -1658,7 +1658,7 @@
                                              "testPlanArtefact":  "artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.4-eval-anti-gaming-controls-test-plan.md",
                                              "dorStatus":  "blocked",
                                              "dorArtefact":  "artefacts/2026-04-14-skills-platform-phase3/dor/p3.4-eval-anti-gaming-controls-dor.md",
-                                             "blocker":  "p3.3 DoD-complete required â€” platform/suite.json host location established by p3.3",
+                                             "blocker":  "p3.3 DoD-complete required Ã¢â‚¬â€ platform/suite.json host location established by p3.3",
                                              "health":  "red",
                                              "updatedAt":  "2026-04-18",
                                              "reviewArtefact":  "artefacts/2026-04-14-skills-platform-phase3/review/p3.4-eval-anti-gaming-controls-review-1.md",
@@ -1785,7 +1785,7 @@
                                              "testPlanArtefact":  "artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.12-squad-contribution-flow-test-plan.md",
                                              "dorStatus":  "blocked",
                                              "dorArtefact":  "artefacts/2026-04-14-skills-platform-phase3/dor/p3.12-squad-contribution-flow-dor.md",
-                                             "blocker":  "p3.4 DoD-complete required â€” contribution guide references p3.4 anti-gaming requirements",
+                                             "blocker":  "p3.4 DoD-complete required Ã¢â‚¬â€ contribution guide references p3.4 anti-gaming requirements",
                                              "health":  "red",
                                              "updatedAt":  "2026-04-18",
                                              "reviewArtefact":  "artefacts/2026-04-14-skills-platform-phase3/review/p3.12-squad-contribution-flow-review-1.md",
@@ -1804,7 +1804,7 @@
                                              "testPlanArtefact":  "artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.13-compliance-monitoring-report-test-plan.md",
                                              "dorStatus":  "signed-off",
                                              "dorArtefact":  "artefacts/2026-04-14-skills-platform-phase3/dor/p3.13-compliance-monitoring-report-dor.md",
-                                             "signedOffBy":  "Hamish â€” platform maintainer / operator",
+                                             "signedOffBy":  "Hamish Ã¢â‚¬â€ platform maintainer / operator",
                                              "signedOffAt":  "2026-04-18",
                                              "issueUrl":  "https://github.com/heymishy/skills-repo/issues/164",
                                              "dispatchedAt":  "2026-04-19T08:00:00Z",
@@ -1827,9 +1827,9 @@
                      },
                      {
                          "slug":  "2026-04-18-dashboard-v2",
-                         "name":  "Dashboard v2 â€” pipeline-state.json-driven portfolio visualiser",
+                         "name":  "Dashboard v2 Ã¢â‚¬â€ pipeline-state.json-driven portfolio visualiser",
                          "track":  "short",
-                         "stage":  "definition-of-ready",
+                         "stage":  "definition-of-done",
                          "health":  "green",
                          "regulated":  false,
                          "complianceProfile":  "standard",
@@ -1841,13 +1841,13 @@
                                                      ],
                          "discoveryStatus":  "approved",
                          "benefitMetricStatus":  "active",
-                         "updatedAt":  "2026-04-18T00:00:00Z",
+                         "updatedAt":  "2026-04-21T09:00:00Z",
                          "metrics":  [
                                          {
                                              "id":  "M1",
-                                             "name":  "Dashboard data fidelity â€” percentage of feature stages rendered correctly",
+                                             "name":  "Dashboard data fidelity Ã¢â‚¬â€ percentage of feature stages rendered correctly",
                                              "target":  "100% stage accuracy across all features present in pipeline-state.json",
-                                             "baseline":  "0% â€” current index.html uses hardcoded mock data",
+                                             "baseline":  "0% Ã¢â‚¬â€ current index.html uses hardcoded mock data",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
                                              "evidence":  null,
@@ -1857,9 +1857,9 @@
                                          },
                                          {
                                              "id":  "MM1",
-                                             "name":  "CI governance coverage â€” dashboards/*.js files included in npm test syntax check",
-                                             "target":  "Boolean: true â€” check-dashboard-viz.js exists and passes in CI",
-                                             "baseline":  "false â€” no CI coverage for dashboards/*.js",
+                                             "name":  "CI governance coverage Ã¢â‚¬â€ dashboards/*.js files included in npm test syntax check",
+                                             "target":  "Boolean: true Ã¢â‚¬â€ check-dashboard-viz.js exists and passes in CI",
+                                             "baseline":  "false Ã¢â‚¬â€ no CI coverage for dashboards/*.js",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
                                              "evidence":  null,
@@ -1869,9 +1869,9 @@
                                          },
                                          {
                                              "id":  "MM2",
-                                             "name":  "GitHub Pages deployment health â€” pages.yml workflow exists and deploys dashboards/ on push",
-                                             "target":  "Boolean: true â€” pages.yml exists, passes CI check, and deploys to GitHub Pages",
-                                             "baseline":  "false â€” pages.yml does not exist",
+                                             "name":  "GitHub Pages deployment health Ã¢â‚¬â€ pages.yml workflow exists and deploys dashboards/ on push",
+                                             "target":  "Boolean: true Ã¢â‚¬â€ pages.yml exists, passes CI check, and deploys to GitHub Pages",
+                                             "baseline":  "false Ã¢â‚¬â€ pages.yml does not exist",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
                                              "evidence":  null,
@@ -1902,7 +1902,7 @@
                                                            {
                                                                "slug":  "dviz.1-pipeline-adapter",
                                                                "name":  "Create pipeline-adapter.js to wire index.html to pipeline-state.json",
-                                                               "stage":  "definition-of-ready",
+                                                               "stage":  "definition-of-done",
                                                                "health":  "green",
                                                                "reviewStatus":  "passed",
                                                                "highFindings":  0,
@@ -1918,12 +1918,12 @@
                                                                "dorContract":  "artefacts/2026-04-18-dashboard-v2/dor/dviz.1-dor-contract.md",
                                                                "hasLayoutDependentGaps":  false,
                                                                "e2eToolingRequired":  false,
-                                                               "updatedAt":  "2026-04-18T00:00:00Z"
+                                                               "updatedAt":  "2026-04-21T09:00:00Z"
                                                            },
                                                            {
                                                                "slug":  "dviz.2-pages-workflow",
                                                                "name":  "Create .github/workflows/pages.yml to deploy dashboards/ to GitHub Pages",
-                                                               "stage":  "definition-of-ready",
+                                                               "stage":  "definition-of-done",
                                                                "health":  "green",
                                                                "reviewStatus":  "passed",
                                                                "highFindings":  0,
@@ -1939,12 +1939,12 @@
                                                                "dorContract":  "artefacts/2026-04-18-dashboard-v2/dor/dviz.2-dor-contract.md",
                                                                "hasLayoutDependentGaps":  false,
                                                                "e2eToolingRequired":  false,
-                                                               "updatedAt":  "2026-04-18T00:00:00Z"
+                                                               "updatedAt":  "2026-04-21T09:00:00Z"
                                                            },
                                                            {
                                                                "slug":  "dviz.3-governance-check",
                                                                "name":  "Create tests/check-dashboard-viz.js governance script for dashboards/*.js",
-                                                               "stage":  "definition-of-ready",
+                                                               "stage":  "definition-of-done",
                                                                "health":  "green",
                                                                "reviewStatus":  "passed",
                                                                "highFindings":  0,
@@ -1960,7 +1960,7 @@
                                                                "dorContract":  "artefacts/2026-04-18-dashboard-v2/dor/dviz.3-dor-contract.md",
                                                                "hasLayoutDependentGaps":  false,
                                                                "e2eToolingRequired":  false,
-                                                               "updatedAt":  "2026-04-18T00:00:00Z"
+                                                               "updatedAt":  "2026-04-21T09:00:00Z"
                                                            }
                                                        ]
                                        }
@@ -1968,9 +1968,9 @@
                      },
                      {
                          "slug":  "2026-04-18-pipeline-state-archive",
-                         "name":  "Pipeline-state archive â€” reduce agent context load",
+                         "name":  "Pipeline-state archive Ã¢â‚¬â€ reduce agent context load",
                          "track":  "short",
-                         "stage":  "subagent-execution",
+                         "stage":  "definition-of-done",
                          "health":  "green",
                          "regulated":  false,
                          "complianceProfile":  "standard",
@@ -1982,13 +1982,13 @@
                                                      ],
                          "discoveryStatus":  "short-track",
                          "benefitMetricStatus":  "short-track",
-                         "updatedAt":  "2026-04-19T08:00:00Z",
+                         "updatedAt":  "2026-04-21T09:00:00Z",
                          "metrics":  [
                                          {
                                              "id":  "M1",
-                                             "name":  "Agent dispatch success rate â€” dispatched stories that produce non-empty PRs",
+                                             "name":  "Agent dispatch success rate Ã¢â‚¬â€ dispatched stories that produce non-empty PRs",
                                              "target":  "\u003e0% GitHub agent dispatch success (currently 0% due to context budget exhaustion)",
-                                             "baseline":  "0% â€” all GitHub agent dispatches (D7, D8) produced empty PRs",
+                                             "baseline":  "0% Ã¢â‚¬â€ all GitHub agent dispatches (D7, D8) produced empty PRs",
                                              "signal":  "not-yet-measured",
                                              "lastMeasured":  null,
                                              "evidence":  null,
@@ -2011,7 +2011,7 @@
                                                 "category":  "adr",
                                                 "label":  "Single-file viz: merge logic inline in pipeline-viz.html",
                                                 "status":  "met",
-                                                "evidence":  "No violations found â€” contract specifies inline merge, no build step",
+                                                "evidence":  "No violations found Ã¢â‚¬â€ contract specifies inline merge, no build step",
                                                 "assessedBy":  "/review",
                                                 "assessedAt":  "2026-04-18T12:00:00Z"
                                             }
@@ -2020,18 +2020,21 @@
                                        {
                                            "slug":  "e1-pipeline-state-archive",
                                            "name":  "Archive completed features to reduce agent context budget",
-                                           "status":  "in-progress",
+                                           "status":  "complete",
                                            "stories":  [
                                                            {
                                                                "slug":  "psa.1-archive-completed-features",
                                                                "name":  "Archive completed features from pipeline-state.json to reduce agent context load",
-                                                               "stage":  "subagent-execution",
+                                                               "stage":  "definition-of-done",
                                                                "health":  "green",
                                                                "reviewStatus":  "passed",
                                                                "highFindings":  0,
                                                                "dorStatus":  "signed-off",
+                                                               "dodStatus":  "complete",
                                                                "complexity":  2,
                                                                "oversightLevel":  "low",
+                                                               "prUrl":  "https://github.com/heymishy/skills-repo/pull/171",
+                                                               "mergedAt":  "2026-04-21",
                                                                "testPlan":  {
                                                                                 "status":  "written",
                                                                                 "totalTests":  14,
@@ -2041,7 +2044,7 @@
                                                                "dorContract":  "artefacts/2026-04-18-pipeline-state-archive/dor/psa.1-archive-completed-features-dor-contract.md",
                                                                "hasLayoutDependentGaps":  false,
                                                                "e2eToolingRequired":  false,
-                                                               "updatedAt":  "2026-04-19T08:00:00Z"
+                                                               "updatedAt":  "2026-04-21T09:00:00Z"
                                                            }
                                                        ]
                                        }
@@ -2049,7 +2052,7 @@
                      },
                      {
                          "slug":  "2026-04-18-auditor-trace-report",
-                         "name":  "Auditor Trace Report â€” CLI audit chain report generator",
+                         "name":  "Auditor Trace Report Ã¢â‚¬â€ CLI audit chain report generator",
                          "stage":  "definition-of-done",
                          "health":  "green",
                          "track":  "short",
