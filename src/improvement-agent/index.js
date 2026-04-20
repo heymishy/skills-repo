@@ -19,9 +19,10 @@
  */
 'use strict';
 
-var path           = require('path');
-var failureDetector = require('./failure-detector.js');
-var calibration     = require('./calibration.js');
+var path              = require('path');
+var failureDetector    = require('./failure-detector.js');
+var calibration        = require('./calibration.js');
+var complianceReport   = require('./compliance-report.js');
 
 var ROOT = path.join(__dirname, '..', '..');
 
@@ -29,6 +30,7 @@ var ROOT = path.join(__dirname, '..', '..');
 var DIMENSIONS = [
   { name: 'failure-detector',  run: function (opts) { return failureDetector.runAgent(opts); } },
   { name: 'calibration',       run: function (opts) { return calibration.runCalibration(opts); } },
+  { name: 'compliance-report', run: function (opts) { return complianceReport.generateComplianceReport(opts); } },
 ];
 
 /**
