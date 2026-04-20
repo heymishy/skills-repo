@@ -422,14 +422,13 @@
     "commitHash": "15f9c8e"
   },
   "checkpoint": {
-    "writtenAt": "2026-04-20",
-    "contextAtWrite": "Phase 4 E5 definition-of-done complete. All 3 E5 stories DoD: p4-obs-status (COMPLETE, 32 pass, PR #175), p4-obs-archive (COMPLETE WITH DEVIATIONS — scope note: targets index.html not pipeline-viz.html as stated in DoR contract, PR #176), p4-obs-benefit (COMPLETE, 27 pass, PR #177). Epic e5 status set to complete. External contributor PRs #98 and #155 closed by craigfo — new fork branch in progress for real CLI implementation. Pre-existing T6/p4-enf-second-line WSL failure unchanged.",
-    "resumeInstruction": "E5 DoD complete. All 3 DoD artefacts written to artefacts/2026-04-19-skills-platform-phase4/dod/. pipeline-state.json updated: stage=definition-of-done, dodStatus=complete, releaseReady=true for all 3. Next: /trace to verify chain health across the full Phase 4 delivery. After trace: EXP-001 Opus comparison run (meta-metrics mm-a through mm-d).",
+    "writtenAt": "2026-04-21",
+    "contextAtWrite": "Phase 4 E5 fully merged. PRs #175 (p4-obs-status, bf2ea61), #176 (p4-obs-archive, 852d25e), #177 (p4-obs-benefit, d7f189a) all merged to master. All 3 stories prStatus=merged in pipeline-state.json. Epic e5 complete. validate-trace.sh slug/id fallback bug fixed (a627e14). craigfo PR #155 still open — in progress.",
+    "resumeInstruction": "Phase 4 E5 inner loop complete and merged. Next steps: (1) /trace — run chain health check across full Phase 4 now that all PRs are merged; (2) EXP-001 Opus comparison run for meta-metrics mm-a through mm-d; (3) monitor craigfo new fork branch for p4-enf-cli PR. Pipeline state fully up to date.",
     "pendingActions": [
-      "/trace — verify chain health across full Phase 4 delivery (all 27 stories). Run: bash scripts/validate-trace.sh --ci. Check trace report for any broken links or missing DoD artefacts.",
-      "EXP-001 Opus comparison run (Phase 5 meta-measurement) — use contexts/experiment-opus-phase4.yml; target: workspace/experiments/EXP-001-discovery-phase4-5/; update mm-a through mm-d signal fields in pipeline-state.json when complete. Tooling now available: node scripts/record-benefit-comparison.js --feature <slug>.",
-      "Merge draft PRs #175, #176, #177 — operator action required (do not auto-merge). After merge, update prStatus to merged in pipeline-state.json.",
-      "craigfo new fork branch — monitor for new PR. When new PR opens, assess CLI implementation against p4-enf-cli scope and architecture guardrails before any import decision."
+      "/trace — verify chain health across full Phase 4 delivery (all 27 stories, all merged). Run: bash scripts/validate-trace.sh --ci on master.",
+      "EXP-001 Opus comparison run (Phase 5 meta-measurement) — use contexts/experiment-opus-phase4.yml; target: workspace/experiments/EXP-001-discovery-phase4-5/; update mm-a through mm-d signal fields in pipeline-state.json when complete. Tooling: node scripts/record-benefit-comparison.js --feature <slug>.",
+      "craigfo new fork branch — monitor for new PR implementing p4-enf-cli (7 stubbed commands: init, fetch, pin, verify, workflow, back, navigate). When PR opens, assess against p4-enf-cli ACs and architecture guardrails before any import decision."
     ]
   },
   "atr1": {
