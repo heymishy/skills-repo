@@ -1291,3 +1291,68 @@ This is the enterprise-standard maker/checker pattern: the gate that signs off a
 **Preventive rule:** When setting `stage` values in pipeline-state.json, always reference the enum in `pipeline-state.schema.json` (search for `"stage":` with `"enum":`). Never use a stage name from memory — copy from the schema. Valid inner-loop stages: `branch-setup` → `implementation-plan` → `subagent-execution` → `implementation-review` → `verify-completion` → `branch-complete`.
 
 **Systemic fix candidate:** Add a schema validation step to the local `npm test` chain so this class of error is caught before push. This would eliminate the D9/D10 pattern entirely.
+
+---
+
+## D11 — test count metadata drift: totalTests written from estimate, not from final test run
+
+**Date:** 2026-04-20
+**Detected at:** /definition-of-done Phase 4 — test count cross-check against actual runner output
+**Severity:** Medium (misleading DoD evidence; DoD evidence integrity requires accurate counts)
+
+**What happened:** When DoD ran, pipeline-state.json contained stale `testPlan.totalTests` and `testPlan.passing` values for 6 stories: spike-a (13 actual: 24), enf-package (11/36), enf-mcp (11/27), enf-cli (11/46), enf-schema (10/20), enf-second-line (10/22). The values came from an early estimate written at story creation time; they were never updated after the final test suites were authored.
+
+**Root cause:** No mandatory step in the inner loop requires the agent to re-read test runner output after writing the final test suite and reconcile the count in pipeline-state.json. The standard says "update testPlan" but does not say "run the tests first and copy the count from stdout."
+
+**Fix applied:** Atomic correction script using `.tmp` rename pattern. All 6 stories corrected before DoD artefact was written.
+
+**Preventive rule (added to standards/software-engineering/core.md):** `testPlan.totalTests` and `testPlan.passing` must be populated from actual test runner output — run the test suite, read the count from stdout, then write the field. Never estimate the count and never leave it as a placeholder from story creation.
+
+**Action:** Add a DoD pre-check step: before writing the DoD artefact, run each story's test suite and verify the count matches pipeline-state. If any count differs by more than 0, correct it atomically before proceeding.
+
+---
+
+## D12 — consolidated feature-level DoD is the correct pattern for 20+ story phases
+
+**Date:** 2026-04-20
+**Observed at:** Phase 4 /definition-of-done (24 stories across 4 epics)
+
+**What happened:** DoD for Phase 4 was run as a single consolidated artefact covering all 24 stories rather than 24 individual per-story DoD runs. This was the correct choice — individual per-story DoD runs would have added 24 artefacts with largely redundant content (each story's test count + single AC table) and no additional assurance value when the entire phase shipped as an integrated set.
+
+**When to use consolidated DoD:**
+- Feature has 10+ stories AND they shipped as a coordinated inner-loop batch (not independent releases)
+- All stories share a single PR/commit boundary (or equivalent phase boundary)
+- NFRs are feature-level constraints, not per-story (C1/C4/C5/C7/C11 applied across all stories as a set)
+- Metrics are feature-level signals, not per-story signals
+
+**When to use per-story DoD:**
+- Stories ship to production independently with separate releases or deployments
+- A story has story-specific NFRs or metrics distinct from the rest of the feature
+- The DoD artefact will be the primary audit trail for a single-story change (hotfix, solo bug fix)
+
+**Format note:** A consolidated DoD must include an explicit AC coverage table per story (not just per epic) so that individual story traceability is preserved. "Epic X: all stories complete" is not sufficient — the table must show each story's test count and AC-by-AC verification summary.
+
+**Action:** Add consolidated vs per-story DoD guidance to the `/definition-of-done` SKILL.md entry criteria section. Flag for next /improvement run.
+
+---
+
+## D13 — spike-first gate: novel mechanisms require PROCEED verdict before E3 implementation
+
+**Date:** 2026-04-20
+**Observed at:** Phase 4 — 5-spike programme (E1) gating 3 implementation epics (E2, E3, E4)
+
+**What happened:** Phase 4 front-loaded a 5-spike programme (p4-spike-a through p4-spike-d) before any implementation stories began. Each spike asked a specific feasibility question about a mechanism the implementation stories would depend on. Implementation epics were explicitly blocked from starting until all relevant spikes returned PROCEED verdicts. One spike (spike-d, Teams non-git-native surface) initially listed the E4 epic as "Deferred" in ADR-phase4-enforcement — E4 was unblocked the moment spike-d returned PROCEED.
+
+**Why this worked:** Implementation stories with novel mechanism dependencies have a structural risk: if the mechanism proves infeasible mid-implementation, the story either fails or requires a REDESIGN that may invalidate ACs already written. Spikes absorb that risk before ACs are written. The 5-spike programme took approximately the same elapsed time as one implementation story — the risk reduction was disproportionate to the investment.
+
+**Pattern — spike-first gate:**
+1. At definition time, identify any AC that depends on a mechanism not previously confirmed by evidence in the codebase
+2. Create a spike story (1-2 days scope limit) with a specific PROCEED/REDESIGN/DEFER verdict question
+3. Block the implementation story(ies) from DoR sign-off until the spike returns PROCEED
+4. If the spike returns REDESIGN: revise the story ACs before DoR; do not proceed with original ACs
+5. If the spike returns DEFER: descope the story from the current phase; create a future-phase placeholder
+
+**Anti-pattern to avoid:** Writing implementation ACs for a novel mechanism (e.g. "Teams bot enforces C7 structurally") before validating that C7 can be enforced at all on that surface. Writing ACs speculatively and then hoping the spike confirms them is backwards — the spike conclusion should drive the ACs, not the other way around.
+
+**Action:** Add spike-gate guidance to `/definition` SKILL.md — when an epic or story depends on a novel surface or mechanism, propose a spike story before the implementation story reaches DoR. Flag for next /improvement run.
+
