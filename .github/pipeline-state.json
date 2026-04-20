@@ -83,7 +83,8 @@
           "id": "e5",
           "name": "Platform Observability & Measurement",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e5-platform-observability.md",
-          "storyCount": 3
+          "storyCount": 3,
+          "status": "complete"
         }
       ],
       "regulated": false,
@@ -193,7 +194,7 @@
           "baseline": "0 — no unassisted onboarding achieved to date",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "Onboarding tooling (distribution modules, migration guide, Teams bot) all implemented. Real unassisted onboarding session not yet run.",
+          "evidence": "Onboarding tooling (distribution modules, migration guide, Teams bot, status reports, archive toggle) all implemented. Real unassisted onboarding session not yet run.",
           "contributingStories": [
             "p4-spike-a",
             "p4-spike-b1",
@@ -233,7 +234,7 @@
           "baseline": "Sonnet 4.6 run score — recorded at /definition close",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "Sonnet baseline run complete. Opus comparison run not yet completed.",
+          "evidence": "Sonnet baseline run complete. record-benefit-comparison.js tooling now available for EXP-001 measurement. Opus comparison run not yet completed.",
           "contributingStories": [
             "all-24"
           ]
@@ -869,7 +870,7 @@
         {
           "id": "p4-obs-status",
           "epic": "e5",
-          "stage": "subagent-execution",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-obs-status-dor.md",
@@ -885,14 +886,15 @@
           "prUrl": "https://github.com/heymishy/skills-repo/pull/175",
           "prNumber": 175,
           "commitHash": "66e1dcc",
-          "dodStatus": null,
-          "releaseReady": false,
-          "updatedAt": "2026-04-21T00:00:00.000Z"
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-obs-status-dod.md",
+          "releaseReady": true,
+          "updatedAt": "2026-04-20T23:59:00.000Z"
         },
         {
           "id": "p4-obs-archive",
           "epic": "e5",
-          "stage": "subagent-execution",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-obs-archive-dor.md",
@@ -908,14 +910,18 @@
           "prUrl": "https://github.com/heymishy/skills-repo/pull/176",
           "prNumber": 176,
           "commitHash": "060b4c5",
-          "dodStatus": null,
-          "releaseReady": false,
-          "updatedAt": "2026-04-21T00:00:00.000Z"
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-obs-archive-dod.md",
+          "releaseReady": true,
+          "layoutGapsAtMerge": true,
+          "layoutGapsRiskAccepted": true,
+          "blocker": "DoR contract referenced pipeline-viz.html but implementation correctly targets index.html — recorded as scope deviation in DoD; no AC gaps.",
+          "updatedAt": "2026-04-20T23:59:00.000Z"
         },
         {
           "id": "p4-obs-benefit",
           "epic": "e5",
-          "stage": "subagent-execution",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-obs-benefit-dor.md",
@@ -931,9 +937,10 @@
           "prUrl": "https://github.com/heymishy/skills-repo/pull/177",
           "prNumber": 177,
           "commitHash": "81c6b21",
-          "dodStatus": null,
-          "releaseReady": false,
-          "updatedAt": "2026-04-21T00:00:00.000Z"
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-obs-benefit-dod.md",
+          "releaseReady": true,
+          "updatedAt": "2026-04-20T23:59:00.000Z"
         }
       ],
       "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-phase4-dod.md",
