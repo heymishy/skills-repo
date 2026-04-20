@@ -296,7 +296,10 @@
         {
           "id": "spike-c",
           "storySlug": "p4-spike-c",
-          "verdict": null
+          "verdict": "PROCEED",
+          "verdictAt": "2026-04-20T14:00:00.000Z",
+          "verdictArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-c-output.md",
+          "decisionsEntry": "artefacts/2026-04-19-skills-platform-phase4/decisions.md"
         },
         {
           "id": "spike-d",
@@ -420,19 +423,23 @@
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-c-dor.md",
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-c-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
-          "stage": "implementation",
+          "stage": "definition-of-done",
+          "dodStatus": "complete",
+          "prStatus": "merged",
+          "releaseReady": true,
           "branch": "feature/p4-spike-c",
           "worktreePath": ".worktrees/p4-spike-c",
           "branchSetupAt": "2026-04-20",
           "health": "green",
           "spikeVerdict": "PROCEED",
           "spikeVerdictArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-c-output.md",
-          "updatedAt": "2026-04-20T14:00:00.000Z",
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-spike-c-dod.md",
+          "updatedAt": "2026-04-20T15:00:00.000Z",
           "testPlan": {
             "status": "written",
             "testFile": "tests/check-p4-spike-c.js",
-            "totalTests": 15,
-            "passing": 0
+            "totalTests": 27,
+            "passing": 27
           }
         },
         {
