@@ -27,8 +27,8 @@
     "observabilityGapsIdentified": 4,
     "status": "complete"
   },
-  "lastUpdated": "2026-04-20T23:59:00Z",
-  "currentPhase": "inner-loop",
+  "lastUpdated": "2026-04-21T00:00:00Z",
+  "currentPhase": "branch-complete",
   "cycle": {
     "discovery": {
       "status": "complete",
@@ -419,14 +419,13 @@
     "commitHash": "15f9c8e"
   },
   "checkpoint": {
-    "writtenAt": "2026-04-20",
-    "contextAtWrite": "Phase 4 E5 (Platform Observability & Measurement) fully artefacted. 3 new stories (p4-obs-status, p4-obs-archive, p4-obs-benefit) added to Phase 4: story artefacts, reviews (0 HIGH), test plans (11/12/12 tests), DoR + DoR-contracts all signed off. pipeline-state.json updated (storyCount: 27, epicCount: 5, stage: inner-loop). CHANGELOG.md and docs/HANDOFF.md updated.",
-    "resumeInstruction": "Phase 4 E5 all artefacts complete. Run: git add artefacts/2026-04-19-skills-platform-phase4/ .github/pipeline-state.json CHANGELOG.md docs/HANDOFF.md workspace/state.json && git commit -m 'chore: Phase 4 E5 — 3 new stories (p4-obs-status, p4-obs-archive, p4-obs-benefit) + full pipeline artefacts'. After commit, next activities: (1) Inner loop implementation for p4-obs-status, p4-obs-archive, p4-obs-benefit. (2) EXP-001 Opus comparison run — use contexts/experiment-opus-phase4.yml; target: workspace/experiments/EXP-001-discovery-phase4-5/. (3) External contributor PRs #98 and #155 from craigfo — require architectural decision before merge.",
+    "writtenAt": "2026-04-21",
+    "contextAtWrite": "Phase 4 E5 inner loop complete. All 3 stories implemented via TDD: p4-obs-status (32 pass, commit 66e1dcc, PR #175), p4-obs-archive (24 pass, commit 060b4c5, PR #176), p4-obs-benefit (27 pass, commit 81c6b21, PR #177). pipeline-state.json updated for all 3 stories: stage=subagent-execution, prStatus=draft. Pre-existing T6/p4-enf-second-line WSL failure unchanged.",
+    "resumeInstruction": "E5 inner loop done. All 3 draft PRs open (#175, #176, #177). Next: /definition-of-done for each story (read DoD artefacts, verify AC coverage). After DoD: /trace to verify chain health. External contributor PRs #98 and #155 from craigfo still pending architectural decision.",
     "pendingActions": [
-      "git add artefacts/2026-04-19-skills-platform-phase4/ .github/pipeline-state.json CHANGELOG.md docs/HANDOFF.md workspace/state.json && git commit -m 'chore: Phase 4 E5 — 3 new stories (p4-obs-status, p4-obs-archive, p4-obs-benefit) + full pipeline artefacts'",
-      "Inner loop — implement p4-obs-status (scripts/generate-status-report.js, tests/check-p4-obs-status.js) per DoR at artefacts/2026-04-19-skills-platform-phase4/dor/p4-obs-status-dor.md",
-      "Inner loop — implement p4-obs-archive (extend scripts/archive-completed-features.js, dashboards/pipeline-viz.html, .github/pipeline-state.schema.json, tests/check-p4-obs-archive.js) per DoR at artefacts/2026-04-19-skills-platform-phase4/dor/p4-obs-archive-dor.md",
-      "Inner loop — implement p4-obs-benefit (scripts/record-benefit-comparison.js, tests/check-p4-obs-benefit.js) per DoR at artefacts/2026-04-19-skills-platform-phase4/dor/p4-obs-benefit-dor.md",
+      "/definition-of-done for p4-obs-status (PR #175, commit 66e1dcc) — artefact: artefacts/2026-04-19-skills-platform-phase4/dod/",
+      "/definition-of-done for p4-obs-archive (PR #176, commit 060b4c5) — artefact: artefacts/2026-04-19-skills-platform-phase4/dod/",
+      "/definition-of-done for p4-obs-benefit (PR #177, commit 81c6b21) — artefact: artefacts/2026-04-19-skills-platform-phase4/dod/",
       "EXP-001 Opus comparison run (Phase 5 meta-measurement activity) — use contexts/experiment-opus-phase4.yml; target artefact: workspace/experiments/EXP-001-discovery-phase4-5/; update mm-a through mm-d metrics in pipeline-state.json when complete",
       "External contributor PRs #98 (craigfo CLI MVP) and #155 (craigfo CLI approach discovery) — require architectural decision before merge; do not merge without operator decision"
     ]
