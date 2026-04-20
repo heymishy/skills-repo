@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-04-19T23:50:00.000Z",
+  "updated": "2026-04-20T23:59:00.000Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -1109,7 +1109,7 @@
     {
       "slug": "2026-04-14-skills-platform-phase3",
       "name": "Skills Platform — Phase 3: Governance Hardening, T3M1 Close, and Enterprise Scale",
-      "stage": "definition",
+      "stage": "definition-of-done",
       "health": "green",
       "track": "library",
       "discoveryArtefact": "artefacts/2026-04-14-skills-platform-phase3/discovery.md",
@@ -1523,7 +1523,7 @@
         {
           "slug": "p3.3",
           "name": "Gate structural independence",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "assumption": "ASSUMPTION-01",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -1542,12 +1542,15 @@
           "health": "green",
           "updatedAt": "2026-04-19",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.3-gate-structural-independence-review-1.md",
-          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.3-gate-structural-independence.md"
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.3-gate-structural-independence.md",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-04-14-skills-platform-phase3/dod/p3.3-gate-structural-independence-dod.md",
+          "dodDate": "2026-04-20"
         },
         {
           "slug": "p3.4",
           "name": "Eval anti-gaming controls",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlanStatus": "complete",
@@ -1558,7 +1561,10 @@
           "health": "red",
           "updatedAt": "2026-04-18",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.4-eval-anti-gaming-controls-review-1.md",
-          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.4-eval-anti-gaming-controls.md"
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.4-eval-anti-gaming-controls.md",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-04-14-skills-platform-phase3/dod/p3.4-eval-anti-gaming-controls-dod.md",
+          "dodDate": "2026-04-20"
         },
         {
           "slug": "p3.5",
@@ -1671,7 +1677,7 @@
         {
           "slug": "p3.12",
           "name": "Squad contribution flow",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlanStatus": "complete",
@@ -1682,12 +1688,15 @@
           "health": "red",
           "updatedAt": "2026-04-18",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.12-squad-contribution-flow-review-1.md",
-          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.12-squad-contribution-flow.md"
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.12-squad-contribution-flow.md",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-04-14-skills-platform-phase3/dod/p3.12-squad-contribution-flow-dod.md",
+          "dodDate": "2026-04-20"
         },
         {
           "slug": "p3.13",
           "name": "Compliance monitoring report",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlanStatus": "complete",
@@ -1705,9 +1714,15 @@
           "health": "green",
           "updatedAt": "2026-04-19",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.13-compliance-monitoring-report-review-1.md",
-          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.13-compliance-monitoring-report.md"
+          "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.13-compliance-monitoring-report.md",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-04-14-skills-platform-phase3/dod/p3.13-compliance-monitoring-report-dod.md",
+          "dodDate": "2026-04-20"
         }
-      ]
+      ],
+      "dodStatus": "complete",
+      "dodDate": "2026-04-20",
+      "updated": "2026-04-20"
     },
     {
       "slug": "2026-04-18-dashboard-v2",
