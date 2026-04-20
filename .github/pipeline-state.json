@@ -461,13 +461,12 @@
             "passing": 21
           },
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-spike-d-dod.md",
-          "updatedAt": "2026-04-21T00:00:00.000Z",
-          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-dist-install",
@@ -483,13 +482,12 @@
             "passing": 18
           },
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-install-dod.md",
-          "updatedAt": "2026-04-21T00:00:00.000Z",
-          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-dist-no-commits",
@@ -505,13 +503,12 @@
             "passing": 15
           },
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-no-commits-dod.md",
-          "updatedAt": "2026-04-21T00:00:00.000Z",
-          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-dist-commit-format",
@@ -527,13 +524,12 @@
             "passing": 14
           },
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-commit-format-dod.md",
-          "updatedAt": "2026-04-21T00:00:00.000Z",
-          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-dist-lockfile",
@@ -549,13 +545,12 @@
             "passing": 13
           },
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-lockfile-dod.md",
-          "updatedAt": "2026-04-21T00:00:00.000Z",
-          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-dist-upgrade",
@@ -571,13 +566,12 @@
             "passing": 15
           },
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-upgrade-dod.md",
-          "updatedAt": "2026-04-21T00:00:00.000Z",
-          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-dist-upstream",
@@ -593,13 +587,12 @@
             "passing": 10
           },
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-upstream-dod.md",
-          "updatedAt": "2026-04-21T00:00:00.000Z",
-          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-dist-migration",
@@ -615,13 +608,12 @@
             "passing": 12
           },
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-migration-dod.md",
-          "updatedAt": "2026-04-21T00:00:00.000Z",
-          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-dist-registry",
@@ -637,13 +629,12 @@
             "passing": 27
           },
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-registry-dod.md",
-          "updatedAt": "2026-04-21T00:00:00.000Z",
-          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-enf-decision",
@@ -956,7 +947,7 @@
       "dodStatus": "complete",
       "releaseReady": false,
       "lastImprove": "2026-04-20",
-      "traceStatus": "amber",
+      "traceStatus": "green",
       "traceArtefact": "artefacts/2026-04-19-skills-platform-phase4/trace/2026-04-21-trace.md",
       "traceRunAt": "2026-04-21T00:00:00.000Z"
     },
