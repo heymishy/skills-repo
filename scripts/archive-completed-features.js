@@ -126,21 +126,73 @@ function mergeState(activeData, archiveData) {
 
   for (const archFeature of archiveData.features) {
     if (archFeature.completedStories && activeSlugs.has(archFeature.slug)) {
-      // Partial archive — merge completed stories back into the active feature
+      // Old-style partial archive — merge completed stories back with archived: true
       const activeFeature = merged.features.find(f => f.slug === archFeature.slug);
       if (activeFeature) {
+        const reconstituted = (archFeature.completedStories || []).map(s => Object.assign({}, s, { archived: true }));
         activeFeature.stories = [
-          ...(archFeature.completedStories || []),
+          ...reconstituted,
+          ...(activeFeature.stories || [])
+        ];
+      }
+    } else if (archFeature.stories && activeSlugs.has(archFeature.slug)) {
+      // New-style archiveStories() format — merge back with archived: true
+      const activeFeature = merged.features.find(f => f.slug === archFeature.slug);
+      if (activeFeature) {
+        const reconstituted = archFeature.stories.map(s => Object.assign({}, s, { archived: true }));
+        activeFeature.stories = [
+          ...reconstituted,
           ...(activeFeature.stories || [])
         ];
       }
     } else if (!activeSlugs.has(archFeature.slug)) {
-      // Fully archived feature — add to merged list
+      // Fully archived feature — add to merged list as-is
       merged.features.unshift(archFeature);
     }
   }
 
   return merged;
+}
+
+// ── archiveStories ────────────────────────────────────────────────
+// In-memory story-level archive. Moves completed stories from the active
+// feature to an archive entry. Does NOT write to disk.
+//
+// @param {object} activeState  — full pipeline-state.json object (deep-cloned)
+// @param {object} archiveState — existing archive object (or {} for new)
+// @param {string} featureSlug  — slug of the feature to archive stories from
+// @returns {{ active: object, archive: object }}
+function archiveStories(activeState, archiveState, featureSlug) {
+  const active  = JSON.parse(JSON.stringify(activeState));
+  const archive = JSON.parse(JSON.stringify(archiveState || {}));
+
+  if (!archive.features) archive.features = [];
+
+  const feature = (active.features || []).find(f => f.slug === featureSlug);
+  if (!feature) return { active, archive };
+
+  const stories   = feature.stories || [];
+  const completed = stories.filter(s => isStoryCompleted(s));
+  const remaining = stories.filter(s => !isStoryCompleted(s));
+
+  if (completed.length === 0) return { active, archive };
+
+  // Add completed stories to archive entry for this feature
+  let archEntry = archive.features.find(f => f.slug === featureSlug);
+  if (!archEntry) {
+    archEntry = { slug: featureSlug, stories: [] };
+    archive.features.push(archEntry);
+  }
+  if (!archEntry.stories) archEntry.stories = [];
+  for (const s of completed) {
+    archEntry.stories.push(JSON.parse(JSON.stringify(s)));
+  }
+
+  // Update active feature: remove completed stories, record count
+  feature.stories = remaining;
+  feature.archivedStoryCount = (feature.archivedStoryCount || 0) + completed.length;
+
+  return { active, archive };
 }
 
 // CLI mode
@@ -152,4 +204,4 @@ if (require.main === module) {
   console.log(`Archive: ${result.archivePath}`);
 }
 
-module.exports = { archive, mergeState };
+module.exports = { archive, mergeState, archiveStories, isStoryCompleted, isFeatureFullyCompleted };
