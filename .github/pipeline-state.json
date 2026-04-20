@@ -592,16 +592,23 @@
         {
           "id": "p4-enf-package",
           "epic": "e3",
+          "stage": "definition-of-done",
+          "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-package-dor.md",
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-package-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "testFile": "tests/check-p4-enf-package.js",
             "totalTests": 11,
-            "passing": 0
-          }
+            "passing": 11
+          },
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-enf-package-dod.md",
+          "updatedAt": "2026-04-20T21:00:00.000Z"
         },
         {
           "id": "p4-enf-mcp",
