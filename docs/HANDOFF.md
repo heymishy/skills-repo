@@ -131,6 +131,8 @@ New files in `dashboards/` (PR #158):
 - `md-renderer.js` — `MdViewer` component fetches and renders real `.md` artefacts from `artefacts/` inline in the dashboard
 - `dashboards/README.md` — operator guide for local and GitHub Pages usage
 - `tests/check-dashboard-viz.js` — 44 governance checks for dashboard file existence and adapter contract
+- `tests/check-dviz1-adapter.js` — 10 governance checks (T1–T10) for `pipeline-adapter.js` wiring in `index.html` (added 2026-04-21 to complete DoD evidence)
+- `tests/check-dviz2-pages-workflow.js` — 8 governance checks (T1–T8) for `.github/workflows/pages.yml` (added 2026-04-21 to complete DoD evidence)
 
 GitHub Pages deployment (PR #159):
 - `.github/workflows/pages.yml` — deploys `dashboards/` to GitHub Pages on push to master; static HTML/JS/CSS only, no build step
