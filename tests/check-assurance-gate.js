@@ -545,6 +545,173 @@ process.stdout.write('\n  NFR: Performance, security, audit\n');
   }
 }
 
+// ── p3.3: Gate structural independence — checksum validation (AC3) ────────────
+
+process.stdout.write('\n  p3.3 Unit: AC3 — checksum validation\n');
+
+const checksumValidator = require('../src/gate-validator/checksum-validator.js');
+const { ChecksumMismatchError } = checksumValidator;
+
+// checksum-match-allows-execution (AC3)
+{
+  const testName = 'checksum-match-allows-execution';
+  const dir = mkTmpDir();
+  try {
+    const content = 'console.log("gate script content");';
+    const gatePath = path.join(dir, 'gate.js');
+    fs.writeFileSync(gatePath, content, 'utf8');
+    const expectedHash = require('crypto').createHash('sha256').update(content, 'utf8').digest('hex');
+    const result = checksumValidator.validateChecksum(gatePath, expectedHash);
+    if (result !== true) {
+      fail(testName, 'Expected validateChecksum to return true on match, got: ' + result);
+    } else {
+      pass(testName);
+    }
+  } catch (e) {
+    fail(testName, 'Unexpected error: ' + e.message);
+  } finally {
+    rmDir(dir);
+  }
+}
+
+// checksum-mismatch-exits-with-abort-message (AC3)
+{
+  const testName = 'checksum-mismatch-exits-with-abort-message';
+  const dir = mkTmpDir();
+  try {
+    const content = 'console.log("gate script content");';
+    const gatePath = path.join(dir, 'gate.js');
+    fs.writeFileSync(gatePath, content, 'utf8');
+    const wrongHash = 'aabbccdd00112233aabbccdd00112233aabbccdd00112233aabbccdd00112233';
+    try {
+      checksumValidator.validateChecksum(gatePath, wrongHash);
+      fail(testName, 'Expected ChecksumMismatchError to be thrown, but no error was thrown');
+    } catch (e) {
+      if (!(e instanceof ChecksumMismatchError)) {
+        fail(testName, 'Expected ChecksumMismatchError, got: ' + e.constructor.name + ' — ' + e.message);
+      } else if (!e.message.includes('Gate script checksum mismatch \u2014 aborting')) {
+        fail(testName, 'Error message does not include required text. Got: ' + e.message);
+      } else {
+        pass(testName);
+      }
+    }
+  } catch (e) {
+    fail(testName, 'Unexpected outer error: ' + e.message);
+  } finally {
+    rmDir(dir);
+  }
+}
+
+// checksum-mismatch-does-not-execute-gate (AC3)
+{
+  const testName = 'checksum-mismatch-does-not-execute-gate';
+  const dir = mkTmpDir();
+  try {
+    const content = 'console.log("gate script");';
+    const gatePath = path.join(dir, 'gate.js');
+    fs.writeFileSync(gatePath, content, 'utf8');
+    const wrongHash = 'deadbeef00000000deadbeef00000000deadbeef00000000deadbeef00000000';
+    let gateCalled = false;
+    function mockGate() { gateCalled = true; }
+    try {
+      checksumValidator.validateChecksum(gatePath, wrongHash);
+      mockGate(); // must not be reached
+    } catch (_) {
+      // expected — mismatch throws
+    }
+    if (gateCalled) {
+      fail(testName, 'Gate execution mock was called despite checksum mismatch');
+    } else {
+      pass(testName);
+    }
+  } catch (e) {
+    fail(testName, 'Unexpected error: ' + e.message);
+  } finally {
+    rmDir(dir);
+  }
+}
+
+// ── p3.3 Integration: AC2 — workflow uses pinned immutable ref ────────────────
+
+process.stdout.write('\n  p3.3 Integration: AC2 — workflow pinned ref\n');
+
+{
+  const testName = 'workflow-yaml-uses-pinned-immutable-ref';
+  try {
+    if (!fs.existsSync(workflowPath)) {
+      fail(testName, '.github/workflows/assurance-gate.yml not found');
+    } else {
+      const yml = fs.readFileSync(workflowPath, 'utf8');
+      // Find ref: <value> — must be a full 40-char SHA or a vX.Y version tag
+      const refMatch = yml.match(/\bref:\s*([0-9a-f]{40}|v\d+\.\d+[^\s\n]*)/i);
+      if (!refMatch) {
+        fail(testName, 'Workflow does not contain a ref: field with a full commit SHA or version tag for the gate-download step');
+      } else {
+        const ref = refMatch[1].trim();
+        pass(testName + ' (ref: ' + ref.slice(0, 12) + '...)');
+      }
+    }
+  } catch (e) {
+    fail(testName, 'Unexpected error: ' + e.message);
+  }
+}
+
+// ── p3.3 Integration: AC4 — schema contains gateScriptRef fields ──────────────
+
+process.stdout.write('\n  p3.3 Integration: AC4 — schema gate fields\n');
+
+{
+  const testName = 'schema-contains-gate-script-ref-fields';
+  const schemaPath = path.join(root, '.github', 'pipeline-state.schema.json');
+  try {
+    if (!fs.existsSync(schemaPath)) {
+      fail(testName, '.github/pipeline-state.schema.json not found');
+    } else {
+      const schemaText = fs.readFileSync(schemaPath, 'utf8');
+      const hasGateScriptRef     = schemaText.includes('gateScriptRef');
+      const hasChecksumVerified  = schemaText.includes('gateChecksumVerified');
+      if (!hasGateScriptRef) {
+        fail(testName, 'Schema does not contain gateScriptRef field definition');
+      } else if (!hasChecksumVerified) {
+        fail(testName, 'Schema does not contain gateChecksumVerified field definition');
+      } else {
+        pass(testName);
+      }
+    }
+  } catch (e) {
+    fail(testName, 'Unexpected error: ' + e.message);
+  }
+}
+
+// ── p3.3 NFR: gate download uses HTTPS, no PAT ────────────────────────────────
+
+process.stdout.write('\n  p3.3 NFR: HTTPS download, no PAT\n');
+
+{
+  const testName = 'download-uses-https-not-http';
+  try {
+    if (!fs.existsSync(workflowPath)) {
+      fail(testName, '.github/workflows/assurance-gate.yml not found');
+    } else {
+      const yml = fs.readFileSync(workflowPath, 'utf8');
+      const hasInfraRef   = yml.includes('skills-framework-infra');
+      const hasPlainHttp  = /\bhttp:\/\/[a-zA-Z]/.test(yml);
+      const hasPatLiteral = /ghp_[A-Za-z0-9]{10}/.test(yml);
+      if (!hasInfraRef) {
+        fail(testName, 'Workflow does not reference skills-framework-infra repository');
+      } else if (hasPlainHttp) {
+        fail(testName, 'Workflow contains plain http:// URL — must use https://');
+      } else if (hasPatLiteral) {
+        fail(testName, 'Workflow contains a hardcoded PAT literal (ghp_...) — MC-SEC-01 violation');
+      } else {
+        pass(testName);
+      }
+    }
+  } catch (e) {
+    fail(testName, 'Unexpected error: ' + e.message);
+  }
+}
+
 // ── Summary ───────────────────────────────────────────────────────────────────
 
 process.stdout.write('\n[assurance-gate-check] Results: ' + passed + ' passed, ' + failed + ' failed\n');
