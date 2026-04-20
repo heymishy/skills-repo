@@ -1381,3 +1381,26 @@ This is the enterprise-standard maker/checker pattern: the gate that signs off a
 
 **Action:** None blocking Phase 4 close. Mark EXP-001 as a scheduled Phase 5 meta-measurement run. Do not re-open Phase 4 DoD for it.
 
+---
+
+## D15 — outer loop character: genuine-decisions vs artefact-validation runs have structurally different focus time profiles
+
+**Date:** 2026-04-20
+**Observed at:** Phase 4 E3 estimate normalisation
+
+**What happened:** When reviewing why Phase 4's outer loop actual (~6h) was 8× over the E2 forecast (0.75h), story count and complexity alone did not explain the gap. The additional factor was the character of the operator's role in this particular outer loop. Phase 4 had a 5-spike programme where the operator had to: review agent-proposed options for novel mechanisms, weigh architectural trade-offs, query a second model for independent validation before committing, and then issue PROCEED/REDESIGN/DEFER verdicts — each of which could reshape the following epics. This is qualitatively different from Phases 1–3, where the operator's role was primarily to validate artefacts the agent had already proposed (confirm the discovery scope is right, approve the story decomposition, accept the test plan).
+
+**Two distinct outer loop character types:**
+
+- **`artefact-validation`** (Phases 1, 2, 3): Agent proposes; operator validates and approves. Focus time scales with volume — number of artefacts to review — but each review is bounded. Engagement fraction ~25–50%.
+- **`genuinely-novel-decisions`** (Phase 4, spike-heavy features): Operator must reason through options, adjudicate trade-offs, and in novel cases seek external validation (second model, reference material, prior precedent). The agent produces candidate options but the decision belongs to the operator. Focus time scales with decision complexity, not story count. Cannot be shortened by agent autonomy.
+
+**Calibration rule:**
+At E2, classify the outer loop character:
+- `artefact-validation`: use the standard formula (`calendarDays × 2 × engagementFraction`)
+- `genuinely-novel-decisions`: add +0.5h flat per spike epic, or a minimum floor of storyCount × 0.35h (whichever is higher) to the derived estimate
+
+**Why this matters for future estimates:** A feature with 5 spikes and 24 stories under `genuinely-novel-decisions` character should not be estimated the same way as a 24-story `artefact-validation` feature. The spike reviews, trade-off sessions, and second-model consultations are not captured in the standard engagement-fraction formula because they are not idle time between agent runs — they are active focus time that the formula was never designed to model.
+
+**Action:** Add `outerLoopCharacter` field to E2 estimate prompt in `/estimate` SKILL.md. When operator selects `genuinely-novel-decisions`, apply the +0.5h/spike-epic floor before recording E2. Flag for next /improvement run.
+

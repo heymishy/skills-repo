@@ -383,9 +383,10 @@
           "calendarDays": 1.25,
           "note": "E2 8x undershoot on outer loop; inner loop was lighter than forecast (1h vs 3h); calendar took 2 days vs 0.75d forecast"
         },
-        "calibrationInsight": "E2 floor error: treating a 24-story complexity-heavy outer loop as 0.75h total is not feasible. Minimum floor = storyCount × 0.25h for features with majority complexity-2/3. Updated: for any feature with >8 stories or >3 complexity-3 stories, E2 should set outerLoopFocusH = max(derived, storyCount × 0.15h) for low complexity, max(derived, storyCount × 0.25h) for mixed/high complexity.",
+        "calibrationInsight": "E2 undershot for two compounding reasons: (1) Volume + complexity floor: 24 stories, 9 at complexity-3. Minimum floor = storyCount × 0.25h for mixed/high complexity features. (2) Outer loop character: this run required genuine decision-making — reviewing spike feasibility options, weighing trade-offs, querying a second model for validation before committing to a mechanism. This is distinct from the typical validate-suggested-artefacts pattern of Phases 1–3. When the operator adjudicates novel mechanisms rather than approving agent proposals, focus time is structurally higher regardless of story count. Calibration rule added: features with ≥1 spike epic or novel surface mechanism should add +0.5h flat to E2 OL estimate.",
         "premiumRequestsActual": "not-measured (gauge at start: 18.7%; gauge at end: not recorded)",
-        "confidence": "medium-high (parse-session-timing.js used for main session; ~1h DoD/improve estimated for current active session)"
+        "confidence": "medium-high (parse-session-timing.js used for main session; ~1h DoD/improve estimated for current active session)",
+        "outerLoopCharacter": "genuinely-novel-decisions"
       }
     }
   },
