@@ -35,7 +35,7 @@
     {
       "slug": "2026-04-19-skills-platform-phase4",
       "name": "Skills Platform — Phase 4: Distribution, Structural Enforcement, and Non-Technical Access",
-      "stage": "inner-loop",
+      "stage": "definition-of-done",
       "reviewStatus": "passed",
       "reviewHighFindings": 0,
       "reviewArtefacts": "artefacts/2026-04-19-skills-platform-phase4/review/",
@@ -166,7 +166,7 @@
         }
       ],
       "createdAt": "2026-04-19",
-      "updatedAt": "2026-04-20T18:30:00.000Z",
+      "updatedAt": "2026-04-21T00:00:00.000Z",
       "metrics": [
         {
           "id": "m1",
@@ -317,13 +317,13 @@
           "id": "p4-spike-a",
           "epic": "e1",
           "dorStatus": "signed-off",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "dodStatus": "complete",
           "prStatus": "merged",
           "releaseReady": true,
           "health": "green",
           "branchSetupAt": "2026-04-19",
-          "updatedAt": "2026-04-19T23:59:00.000Z",
+          "updatedAt": "2026-04-21T00:00:00.000Z",
           "worktreePath": ".worktrees/p4-spike-a",
           "branch": "feature/p4-spike-a",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-a-dor.md",
@@ -376,7 +376,7 @@
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b1-dor.md",
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b1-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "dodStatus": "complete",
           "prStatus": "merged",
           "releaseReady": true,
@@ -384,7 +384,7 @@
           "worktreePath": ".worktrees/p4-spike-b1",
           "branch": "feature/p4-spike-b1",
           "health": "green",
-          "updatedAt": "2026-04-20T14:00:00.000Z",
+          "updatedAt": "2026-04-21T00:00:00.000Z",
           "spikeVerdict": "PROCEED",
           "spikeVerdictArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b1-output.md",
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-spike-b1-dod.md",
@@ -402,7 +402,7 @@
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b2-dor.md",
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-b2-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "dodStatus": "complete",
           "prStatus": "merged",
           "releaseReady": true,
@@ -413,7 +413,7 @@
           "spikeVerdict": "PROCEED",
           "spikeVerdictArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b2-output.md",
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-spike-b2-dod.md",
-          "updatedAt": "2026-04-20T14:00:00.000Z",
+          "updatedAt": "2026-04-21T00:00:00.000Z",
           "testPlan": {
             "status": "written",
             "testFile": "tests/check-p4-spike-b2.js",
@@ -428,7 +428,7 @@
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-c-dor.md",
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-spike-c-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "dodStatus": "complete",
           "prStatus": "merged",
           "releaseReady": true,
@@ -439,7 +439,7 @@
           "spikeVerdict": "PROCEED",
           "spikeVerdictArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-c-output.md",
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-spike-c-dod.md",
-          "updatedAt": "2026-04-20T15:00:00.000Z",
+          "updatedAt": "2026-04-21T00:00:00.000Z",
           "testPlan": {
             "status": "written",
             "testFile": "tests/check-p4-spike-c.js",
@@ -461,12 +461,13 @@
             "passing": 21
           },
           "stage": "definition-of-done",
-          "health": "green",
+          "health": "amber",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-spike-d-dod.md",
-          "updatedAt": "2026-04-20T18:00:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z",
+          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
         },
         {
           "id": "p4-dist-install",
@@ -482,12 +483,13 @@
             "passing": 18
           },
           "stage": "definition-of-done",
-          "health": "green",
+          "health": "amber",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-install-dod.md",
-          "updatedAt": "2026-04-20T18:00:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z",
+          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
         },
         {
           "id": "p4-dist-no-commits",
@@ -503,12 +505,13 @@
             "passing": 15
           },
           "stage": "definition-of-done",
-          "health": "green",
+          "health": "amber",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-no-commits-dod.md",
-          "updatedAt": "2026-04-20T18:00:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z",
+          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
         },
         {
           "id": "p4-dist-commit-format",
@@ -524,12 +527,13 @@
             "passing": 14
           },
           "stage": "definition-of-done",
-          "health": "green",
+          "health": "amber",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-commit-format-dod.md",
-          "updatedAt": "2026-04-20T18:00:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z",
+          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
         },
         {
           "id": "p4-dist-lockfile",
@@ -545,12 +549,13 @@
             "passing": 13
           },
           "stage": "definition-of-done",
-          "health": "green",
+          "health": "amber",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-lockfile-dod.md",
-          "updatedAt": "2026-04-20T18:00:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z",
+          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
         },
         {
           "id": "p4-dist-upgrade",
@@ -566,12 +571,13 @@
             "passing": 15
           },
           "stage": "definition-of-done",
-          "health": "green",
+          "health": "amber",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-upgrade-dod.md",
-          "updatedAt": "2026-04-20T18:00:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z",
+          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
         },
         {
           "id": "p4-dist-upstream",
@@ -587,12 +593,13 @@
             "passing": 10
           },
           "stage": "definition-of-done",
-          "health": "green",
+          "health": "amber",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-upstream-dod.md",
-          "updatedAt": "2026-04-20T18:00:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z",
+          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
         },
         {
           "id": "p4-dist-migration",
@@ -608,12 +615,13 @@
             "passing": 12
           },
           "stage": "definition-of-done",
-          "health": "green",
+          "health": "amber",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-migration-dod.md",
-          "updatedAt": "2026-04-20T18:00:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z",
+          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
         },
         {
           "id": "p4-dist-registry",
@@ -629,12 +637,13 @@
             "passing": 27
           },
           "stage": "definition-of-done",
-          "health": "green",
+          "health": "amber",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-dist-registry-dod.md",
-          "updatedAt": "2026-04-20T18:00:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z",
+          "traceNote": "DoD artefact file missing on disk — see trace/2026-04-21-trace.md F-01"
         },
         {
           "id": "p4-enf-decision",
@@ -643,12 +652,12 @@
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-decision-dor.md",
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-decision-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "dodStatus": "complete",
           "prStatus": "merged",
           "releaseReady": true,
           "health": "green",
-          "updatedAt": "2026-04-20T20:30:00.000Z",
+          "updatedAt": "2026-04-21T00:00:00.000Z",
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-enf-decision-dod.md",
           "testPlan": {
             "status": "all-passing",
@@ -660,7 +669,7 @@
         {
           "id": "p4-enf-package",
           "epic": "e3",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-package-dor.md",
@@ -676,12 +685,12 @@
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-enf-package-dod.md",
-          "updatedAt": "2026-04-20T21:00:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-enf-mcp",
           "epic": "e3",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-mcp-dor.md",
@@ -697,12 +706,12 @@
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-enf-mcp-dod.md",
-          "updatedAt": "2026-04-20T21:30:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-enf-cli",
           "epic": "e3",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-cli-dor.md",
@@ -718,12 +727,12 @@
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-enf-cli-dod.md",
-          "updatedAt": "2026-04-20T22:00:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-enf-schema",
           "epic": "e3",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-schema-dor.md",
@@ -739,12 +748,12 @@
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-enf-schema-dod.md",
-          "updatedAt": "2026-04-20T22:30:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-enf-second-line",
           "epic": "e3",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-second-line-dor.md",
@@ -760,12 +769,12 @@
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-enf-second-line-dod.md",
-          "updatedAt": "2026-04-20T23:00:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-nta-surface",
           "epic": "e4",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-surface-dor.md",
@@ -781,12 +790,12 @@
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-nta-surface-dod.md",
-          "updatedAt": "2026-04-20T23:30:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-nta-gate-translation",
           "epic": "e4",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-gate-translation-dor.md",
@@ -802,12 +811,12 @@
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-nta-gate-translation-dod.md",
-          "updatedAt": "2026-04-20T23:35:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-nta-artefact-parity",
           "epic": "e4",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-artefact-parity-dor.md",
@@ -823,12 +832,12 @@
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-nta-artefact-parity-dod.md",
-          "updatedAt": "2026-04-20T23:40:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-nta-standards-inject",
           "epic": "e4",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-standards-inject-dor.md",
@@ -844,12 +853,12 @@
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-nta-standards-inject-dod.md",
-          "updatedAt": "2026-04-20T23:45:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-nta-ci-artefact",
           "epic": "e4",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-nta-ci-artefact-dor.md",
@@ -865,12 +874,12 @@
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-nta-ci-artefact-dod.md",
-          "updatedAt": "2026-04-20T23:50:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-obs-status",
           "epic": "e5",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-obs-status-dor.md",
@@ -889,12 +898,12 @@
           "dodStatus": "complete",
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-obs-status-dod.md",
           "releaseReady": true,
-          "updatedAt": "2026-04-21T00:30:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-obs-archive",
           "epic": "e5",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-obs-archive-dor.md",
@@ -916,12 +925,12 @@
           "layoutGapsAtMerge": true,
           "layoutGapsRiskAccepted": true,
           "blocker": "DoR contract referenced pipeline-viz.html but implementation correctly targets index.html — recorded as scope deviation in DoD; no AC gaps.",
-          "updatedAt": "2026-04-21T00:30:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         },
         {
           "id": "p4-obs-benefit",
           "epic": "e5",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-obs-benefit-dor.md",
@@ -940,14 +949,16 @@
           "dodStatus": "complete",
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-obs-benefit-dod.md",
           "releaseReady": true,
-          "updatedAt": "2026-04-21T00:30:00.000Z"
+          "updatedAt": "2026-04-21T00:00:00.000Z"
         }
       ],
       "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-phase4-dod.md",
       "dodStatus": "complete",
       "releaseReady": false,
       "lastImprove": "2026-04-20",
-      "updatedAt": "2026-04-20T23:59:00.000Z"
+      "traceStatus": "amber",
+      "traceArtefact": "artefacts/2026-04-19-skills-platform-phase4/trace/2026-04-21-trace.md",
+      "traceRunAt": "2026-04-21T00:00:00.000Z"
     },
     {
       "slug": "2026-04-19-skills-platform-phase4-opus",
