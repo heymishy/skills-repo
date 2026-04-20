@@ -460,7 +460,7 @@
             "totalTests": 21,
             "passing": 21
           },
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
@@ -481,7 +481,7 @@
             "totalTests": 18,
             "passing": 18
           },
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
@@ -502,7 +502,7 @@
             "totalTests": 15,
             "passing": 15
           },
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
@@ -523,7 +523,7 @@
             "totalTests": 14,
             "passing": 14
           },
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
@@ -544,7 +544,7 @@
             "totalTests": 13,
             "passing": 13
           },
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
@@ -565,7 +565,7 @@
             "totalTests": 15,
             "passing": 15
           },
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
@@ -586,7 +586,7 @@
             "totalTests": 10,
             "passing": 10
           },
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
@@ -607,7 +607,7 @@
             "totalTests": 12,
             "passing": 12
           },
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
@@ -628,7 +628,7 @@
             "totalTests": 27,
             "passing": 27
           },
-          "stage": "definition-of-done",
+          "stage": "trace",
           "health": "green",
           "prStatus": "merged",
           "dodStatus": "complete",
@@ -947,9 +947,15 @@
       "dodStatus": "complete",
       "releaseReady": false,
       "lastImprove": "2026-04-20",
-      "traceStatus": "green",
+      "traceStatus": "amber",
       "traceArtefact": "artefacts/2026-04-19-skills-platform-phase4/trace/2026-04-21-trace.md",
-      "traceRunAt": "2026-04-21T00:00:00.000Z"
+      "traceRunAt": "2026-04-21T00:00:00.000Z",
+      "traceFindings": {
+        "high": 0,
+        "medium": 0,
+        "low": 2,
+        "info": 3
+      }
     },
     {
       "slug": "2026-04-19-skills-platform-phase4-opus",
