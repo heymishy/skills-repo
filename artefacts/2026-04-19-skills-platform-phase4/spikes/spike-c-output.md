@@ -158,3 +158,32 @@ The following fields will be written by E2 implementation stories. They must be 
 1. **Schema update (MC-CORRECT-02):** Add the four new fields above to the pipeline-state.json schema before any E2 story writes them. Story p4-dist-lockfile is the gating story.
 2. **heymishy approval gate (C4):** This Spike C verdict requires explicit heymishy approval before E2 stories enter DoR — consistent with the approval gate applied to Spike A.
 3. **Craig's PR #155:** The PR merge decision is a separate entry. This spike verdict does not merge or close the PR; it establishes that Craig's artefacts (`artefacts/2026-04-18-cli-approach/`) are valid reference inputs for p4-enf-cli in E3.
+4. **Permanent exclusion addendum:** See Sub-problem 1d addendum section below — story p4-dist-install (distribution install story) must add an Acceptance Criterion (AC) verifying that `install` does not write to any permanently excluded path even if that path appears in `managed_paths`; story p4-dist-upgrade (distribution upgrade story) must add an AC verifying that `upgrade` does not overwrite consumer-authored ADR entries in `.github/architecture-guardrails.md` and that the managed-merge strategy produces a valid file.
+
+---
+
+## Addendum: Sub-problem 1d — Permanent exclusion list — Decision: PROCEED
+
+**Added:** 2026-04-20 (post-spike, prompted by review of installation boundary completeness)
+
+**Design decision:** The `install` and `upgrade` commands maintain a permanent exclusion list — files and directory trees that the CLI must never write to, overwrite, or delete, regardless of whether they appear in `managed_paths`. The exclusion list is evaluated before any write operation. A file on the permanent exclusion list takes precedence over any `managed_paths` entry.
+
+**Permanent exclusion list:**
+
+| Path | Reason |
+|------|--------|
+| `.github/pipeline-state.json` | Consumer delivery state — written by pipeline skills at runtime; upstream must not overwrite |
+| `.github/pipeline-state.schema.json` | Paired schema for pipeline-state.json; consumer-versioned |
+| `.github/context.yml` | Consumer configuration — contains upstream URL, pinned ref, commit format, and all operator-configured controls |
+| `.github/copilot-instructions.md` | Consumer instruction set — assembled from skills by the consumer; upstream ships SKILL.md inputs, not the assembled output |
+| `workspace/**` | Session state, learnings, estimation norms — consumer runtime data; not governed content |
+| `artefacts/**` | All delivery artefacts — consumer-authored pipeline outputs; upstream has no authority over them |
+| `.github/workflows/` | Consumer CI/CD definitions — supply-chain risk: upstream must not be able to overwrite consumer-controlled workflow files |
+| `fleet/`, `fleet-state.json` | Fleet aggregation data — consumer deployment topology; not upstream content |
+| `product/**` | Consumer-owned product context (mission.md, roadmap.md, tech-stack.md, constraints.md) — upstream ships a blank placeholder template at `init` time only; subsequent content is consumer-authored and permanently excluded from overwrite |
+
+**Architecture-guardrails.md — partial exclusion (special case):** `.github/architecture-guardrails.md` is not permanently excluded. Upstream may ship a new version of the file (e.g. adding a new ADR template section or a new guardrail). However, existing consumer-authored ADR entries within the file must not be overwritten. The `upgrade` command treats `architecture-guardrails.md` as a **managed-merge** file: upstream additions are applied; consumer-authored blocks (identified by the `## ADR-NNN` heading pattern) are preserved. If an upstream change conflicts with a consumer-authored ADR entry, the upgrade halts and surfaces the conflict for manual resolution before re-pinning.
+
+**Enforcement:** The CLI maintains the permanent exclusion list as a hardcoded constant in the install/upgrade implementation — it is not configurable via `context.yml`. Consumers cannot remove entries from the permanent exclusion list. Consumers may add additional paths to the exclusion list via `context.yml: skills_upstream.extra_exclusions`. This prevents operators from accidentally or deliberately configuring the CLI to overwrite their own pipeline-state.json, copilot-instructions.md, or workflow files.
+
+**Verdict for sub-problem 1d:** PROCEED — permanent exclusion list is defined and hardcoded; managed-merge approach for `.github/architecture-guardrails.md` is specified.

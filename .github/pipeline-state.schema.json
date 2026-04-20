@@ -100,7 +100,7 @@
                 "id":        { "type": "string", "description": "Unique guardrail identifier, e.g. MC-SEC-01, ADR-001, NFR-PERF-01, CF-PCI-01" },
                 "category":  { "type": "string", "enum": ["mandatory-constraint", "adr", "nfr", "compliance-framework", "pattern", "anti-pattern"], "description": "Source category of the guardrail" },
                 "label":     { "type": "string", "description": "Short human-readable label" },
-                "status":    { "type": "string", "enum": ["met", "not-met", "na", "excepted", "not-assessed"], "description": "Compliance status" },
+                "status":    { "type": "string", "enum": ["met", "not-met", "na", "excepted", "not-assessed", "active"], "description": "Compliance status" },
                 "evidence":  { "type": "string", "description": "Brief evidence or reference: story slug, review finding ID, decision ID" },
                 "exception": { "type": "string", "description": "If excepted: RISK-ACCEPT reference from decisions.md" },
                 "assessedBy":{ "type": "string", "description": "Skill that last assessed this guardrail, e.g. /review, /definition-of-ready" },
