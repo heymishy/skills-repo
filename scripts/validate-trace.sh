@@ -215,7 +215,8 @@ for feature in state.get('features', []):
             if artefact:
                 file_slug = os.path.basename(artefact).replace('.md', '')
             else:
-                file_slug = story.get('slug', 'unknown')
+                # Phase 3+ stories use 'id' key; Phase 1/2 stories use 'slug' key
+                file_slug = story.get('slug') or story.get('id', 'unknown')
             test_plan_path = os.path.join('artefacts', feature_slug, 'test-plans', f'{file_slug}-test-plan.md')
         if not os.path.exists(test_plan_path):
             print(f'MISSING: {test_plan_path}')
