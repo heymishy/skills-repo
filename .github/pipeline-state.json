@@ -655,30 +655,44 @@
         {
           "id": "p4-enf-schema",
           "epic": "e3",
+          "stage": "definition-of-done",
+          "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-schema-dor.md",
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-schema-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "testFile": "tests/check-p4-enf-schema.js",
-            "totalTests": 11,
-            "passing": 0
-          }
+            "totalTests": 10,
+            "passing": 10
+          },
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-enf-schema-dod.md",
+          "updatedAt": "2026-04-20T22:30:00.000Z"
         },
         {
           "id": "p4-enf-second-line",
           "epic": "e3",
+          "stage": "definition-of-done",
+          "health": "green",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-second-line-dor.md",
           "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-enf-second-line-dor-contract.md",
           "dorSignedOffAt": "2026-04-19",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "testFile": "tests/check-p4-enf-second-line.js",
             "totalTests": 10,
-            "passing": 0
-          }
+            "passing": 10
+          },
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-enf-second-line-dod.md",
+          "updatedAt": "2026-04-20T23:00:00.000Z"
         },
         {
           "id": "p4-nta-surface",
