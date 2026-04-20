@@ -35,7 +35,7 @@
     {
       "slug": "2026-04-19-skills-platform-phase4",
       "name": "Skills Platform — Phase 4: Distribution, Structural Enforcement, and Non-Technical Access",
-      "stage": "definition-of-done",
+      "stage": "inner-loop",
       "reviewStatus": "passed",
       "reviewHighFindings": 0,
       "reviewArtefacts": "artefacts/2026-04-19-skills-platform-phase4/review/",
@@ -47,12 +47,12 @@
       "benefitMetricArtefact": "artefacts/2026-04-19-skills-platform-phase4/benefit-metric.md",
       "nfrProfileArtefact": "artefacts/2026-04-19-skills-platform-phase4/nfr-profile.md",
       "slicingStrategy": "risk-first",
-      "storyCount": 24,
-      "epicCount": 4,
+      "storyCount": 27,
+      "epicCount": 5,
       "complexityDistribution": {
         "complexity-3": 9,
-        "complexity-2": 12,
-        "complexity-1": 3
+        "complexity-2": 14,
+        "complexity-1": 4
       },
       "epics": [
         {
@@ -78,6 +78,12 @@
           "name": "Non-technical access",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e4-non-technical-access.md",
           "storyCount": 5
+        },
+        {
+          "id": "e5",
+          "name": "Platform Observability & Measurement",
+          "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e5-platform-observability.md",
+          "storyCount": 3
         }
       ],
       "regulated": false,
@@ -859,12 +865,73 @@
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-nta-ci-artefact-dod.md",
           "updatedAt": "2026-04-20T23:50:00.000Z"
+        },
+        {
+          "id": "p4-obs-status",
+          "epic": "e5",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-obs-status-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-obs-status-dor-contract.md",
+          "dorSignedOffAt": "2026-04-20",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-obs-status.js",
+            "totalTests": 11,
+            "passing": 0
+          },
+          "prStatus": null,
+          "dodStatus": null,
+          "releaseReady": false,
+          "updatedAt": "2026-04-20T23:59:00.000Z"
+        },
+        {
+          "id": "p4-obs-archive",
+          "epic": "e5",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-obs-archive-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-obs-archive-dor-contract.md",
+          "dorSignedOffAt": "2026-04-20",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-obs-archive.js",
+            "totalTests": 12,
+            "passing": 0
+          },
+          "prStatus": null,
+          "dodStatus": null,
+          "releaseReady": false,
+          "updatedAt": "2026-04-20T23:59:00.000Z"
+        },
+        {
+          "id": "p4-obs-benefit",
+          "epic": "e5",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-obs-benefit-dor.md",
+          "dorContractArtefact": "artefacts/2026-04-19-skills-platform-phase4/dor/p4-obs-benefit-dor-contract.md",
+          "dorSignedOffAt": "2026-04-20",
+          "testPlan": {
+            "status": "written",
+            "testFile": "tests/check-p4-obs-benefit.js",
+            "totalTests": 12,
+            "passing": 0
+          },
+          "prStatus": null,
+          "dodStatus": null,
+          "releaseReady": false,
+          "updatedAt": "2026-04-20T23:59:00.000Z"
         }
       ],
       "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-phase4-dod.md",
       "dodStatus": "complete",
-      "releaseReady": true,
-      "lastImprove": "2026-04-20"
+      "releaseReady": false,
+      "lastImprove": "2026-04-20",
+      "updatedAt": "2026-04-20T23:59:00.000Z"
     },
     {
       "slug": "2026-04-19-skills-platform-phase4-opus",
