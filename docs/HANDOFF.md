@@ -2,9 +2,9 @@
 
 **Document type:** Enterprise handoff bundle
 **Prepared:** 2026-04-12
-**Updated:** 2026-04-18 (Phase 3 governance hardening in progress — 22 stories DoD-complete, T3M1 at 7/8 Y, /improvement run complete — see Sections 6.8–6.13 and Phase 3 story table in Section 7. ASSUMPTION-01 confirmed: `skills-framework-infra` repo created 2026-04-18.)
+**Updated:** 2026-04-20 (Phase 3 complete — all implementation stories DoD-complete; Phase 4 spike programme complete — all 4 spikes PROCEED, 24 stories DoR-signed-off, inner loop ready pending Spike D Azure provisioning. See Sections 6.8–6.15 and Phase 3/4 story tables.)
 **Prepared by:** Platform maintainer (Hamish)
-**Status:** Phase 2 complete, Phase 3 in progress — 22 of 28 stories DoD-complete as of 2026-04-18. ASSUMPTION-01 unblocked.
+**Status:** Phase 2 complete, Phase 3 implementation complete (remaining governance stories p3.3–p3.14 outer-loop defined), Phase 4 spike programme complete — inner loop unblocked.
 
 ---
 
@@ -51,7 +51,7 @@
 
 ### Phase 3 — Governance Hardening and T3M1 Completion (2026-04-14 → current, in progress)
 
-Phase 3 launched 2026-04-14. Primary objectives: close the five T3M1 (Tier 3, Meta-metric 1 — independent non-engineer audit) gaps (Q2–Q8) identified in Phase 2, harden the assurance gate from structural file-existence checks to content-level governance substance, fix CI observability gaps, and validate the platform for enterprise-scale adoption. 18 stories defined, 11 DoD-complete as of 2026-04-17.
+Phase 3 launched 2026-04-14. Primary objectives: close the five T3M1 (Tier 3, Meta-metric 1 — independent non-engineer audit) gaps (Q2–Q8) identified in Phase 2, harden the assurance gate from structural file-existence checks to content-level governance substance, fix CI observability gaps, and validate the platform for enterprise-scale adoption. 28 stories defined; implementation stories complete as of 2026-04-19.
 
 | Story | Title | Epic | Status |
 |-------|-------|------|--------|
@@ -61,8 +61,19 @@ Phase 3 launched 2026-04-14. Primary objectives: close the five T3M1 (Tier 3, Me
 | p3.1d | Bitbucket DC auth tests resolved | E1 — Test and Governance Hardening | DoD-complete |
 | p3.1e | Agent behaviour observability register | E1 — Test and Governance Hardening | DoD-complete |
 | p3.2a | T3M1 trace fields (Q2/Q5/Q6/Q7 schema + gate) | E2 — T3M1 Audit Gap Closure | DoD-complete |
-| p3.2b | T3M1 tamper-evidence registry (Q8) | E2 — T3M1 Audit Gap Closure | DoR-signed-off, in progress |
-| p3.3–p3.14 | Gate structural independence, enterprise adapters, eval anti-gaming, Windows validator, cross-team trace, compatibility matrix | E3–E7 | Outer loop defined — no DoR yet |
+| p3.2b | T3M1 tamper-evidence registry (Q8) | E2 — T3M1 Audit Gap Closure | DoD-complete |
+| p3.3 | Gate structural independence (skills-framework-infra) | E3 — Enterprise Structural Controls | Outer loop defined — story dispatched, PR merged empty (D8) |
+| p3.4 | Platform eval suite migration | E3 — Enterprise Structural Controls | Outer loop defined |
+| p3.5 | PowerShell trace validation (`validate-trace.ps1`) | E4 — Cross-Platform and Windows | DoD-complete |
+| p3.6 | Issue dispatch `Closes #[issueNumber]` auto-close | E5 — Pipeline Loop Closure | DoD-complete |
+| p3.7 | Trace registry CI aggregation | E5 — Pipeline Loop Closure | DoD-complete |
+| p3.8 | Approval-channel adapters (Teams + Jira) | E3 — Enterprise Structural Controls | DoD-complete |
+| p3.9 | AGENTS.md compatibility matrix | E1 — Test and Governance Hardening | DoD-complete |
+| p3.10 | EA registry Path A/B in `/discovery` | E3 — Enterprise Structural Controls | DoD-complete |
+| p3.11 | Improvement agent calibration | E5 — Pipeline Loop Closure | DoD-complete |
+| p3.12 | Cross-team trace federation | E3 — Enterprise Structural Controls | Outer loop defined — no DoR yet |
+| p3.13 | Windows CI validator | E4 — Cross-Platform and Windows | Outer loop defined — story dispatched, PR merged empty (D8) |
+| p3.14 | Concepts documentation | E1 — Test and Governance Hardening | Outer loop defined — tests failing (pre-existing) |
 | p3.15 | `/estimate` skill — retrospective coverage | E1 — Test and Governance Hardening | DoR-signed-off |
 | p3.16 | `/issue-dispatch` skill — retrospective coverage | E1 — Test and Governance Hardening | DoR-signed-off |
 | p3.17 | Repo-tidy docs-structure — retrospective coverage | E1 — Test and Governance Hardening | DoR-signed-off |
@@ -72,7 +83,70 @@ Phase 3 launched 2026-04-14. Primary objectives: close the five T3M1 (Tier 3, Me
 | p3.21 | Systematic-debugging coupled-change workflow | E1 — Test and Governance Hardening | DoD-complete |
 | p3.22 | `/verify-completion` second-session check (Step 0) | E1 — Test and Governance Hardening | DoD-complete |
 
-**Phase 3 outcome so far (2026-04-17):** 11 of 18 stories DoD-complete. T3M1 advanced from 3/8 Y to 7/8 Y (Q8 in progress via p3.2b — see DEC-P3-002 in Section 2). Assurance gate upgraded from file-existence to content-level governance substance checks. CI observability gaps closed: trace-commit health now in `npm test`. Eight /improvement write-backs applied across four SKILL.md files (p3.18–p3.22). Artefact-first rule formally codified. Retrospective coverage audit complete — prevention mechanism in place.
+**Phase 3 outcome (2026-04-19):** All implementation stories DoD-complete. T3M1 advanced from 3/8 Y to 8/8 Y (Q8 closed by p3.2b — GitHub Artifact Attestation; see DEC-P3-002). Assurance gate upgraded to content-level governance substance checks. PowerShell trace validator live. Approval-channel adapters for Teams and Jira delivered. EA registry integrated into `/discovery`. Improvement agent calibration live. Issue dispatch auto-close loop closed. Agent behaviour observability register published. Remaining outer-loop-defined stories (p3.3, p3.4, p3.12, p3.14) require further delivery cycle.
+
+**Updated T3M1 state (2026-04-19):** Q8 closed by p3.2b — all 8/8 audit questions now satisfied. Full T3M1 satisfaction unlocks the `MODEL-RISK.md` adoption gate for non-dogfood use.
+
+### Short-track companion features delivered alongside Phase 3 (2026-04-18)
+
+Three short-track features were delivered concurrently with Phase 3 inner loop work. Each followed the full short-track pipeline (test-plan → DoR → implementation). All PRs merged 2026-04-18.
+
+#### Skill-performance-capture (spc.1–spc.5) — DoD-complete
+
+Experiment instrumentation for multi-model performance comparison. Full artefact chain at `artefacts/2026-04-18-skill-performance-capture/`.
+
+| Story | Title | Delivery |
+|-------|-------|---------|
+| spc.1 | `capture-block.md` template in `.github/templates/` | Template appended to phase artefacts when `instrumentation.enabled: true` in `context.yml` |
+| spc.2 | `context.yml` instrumentation block | `experiment_id`, `model_label`, `cost_tier` fields; consumed by all skills at artefact write time |
+| spc.3 | `copilot-instructions.md` Skill Performance Capture section | System-level instruction for when/how to append capture blocks; security constraint MC-SEC-02 for `fidelity_self_report` |
+| spc.4 | `workspace/experiments/README.md` | Operator playbook for running Sonnet vs Opus comparison experiments |
+| spc.5 | `scripts/check-capture-completeness.js` | Governance check verifying capture blocks are present on all instrumented artefacts |
+
+**Experiment context files:** `contexts/experiment-sonnet-phase4.yml` and `contexts/experiment-opus-phase4.yml` — parallel experiment profiles for Phase 4 Sonnet vs Opus outer-loop comparison. Copy to `.github/context.yml` before each experiment run. These are telemetry label files only — model switching is an operator action (IDE model picker or API config); see memory note `experiment-model-switching.md`.
+
+#### Pipeline-state-archive (psa.1) — DoD-complete
+
+Compressed active pipeline state from 147 KB to 36 KB (75% reduction), resolving the D8 context budget exhaustion risk for the GitHub coding agent. Full artefact chain at `artefacts/2026-04-18-pipeline-state-archive/`.
+
+Key deliverables (PR #171):
+- `scripts/archive-completed-features.js` — `archive()` moves DoD-complete features to `.github/pipeline-state-archive.json`; supports Phase 3 partial archive (split completed from in-flight stories within same feature); `mergeState()` reconstitutes full view for dashboard rendering
+- `.github/pipeline-state-archive.json` — Phase 1, Phase 2, and skill-performance-capture features archived; Phase 3 partially archived
+- `dashboards/pipeline-viz.html` — `loadState()` fetches and merges archive on page load
+- `.github/pipeline-state.schema.json` — `archive` pointer field added
+- `tests/check-archive.js` — 25 tests (T1–T11 + NFR1/NFR2) all passing
+- `tests/fixtures/archive-test-fixture.json` — synthetic 3-feature fixture
+
+#### Dashboard v2 (dviz.1/dviz.2/dviz.3) — DoD-complete
+
+Live data dashboard wiring and GitHub Pages deployment. Replaced hardcoded mock arrays in `index.html` with real pipeline-state data. Full artefact chain at `artefacts/2026-04-18-dashboard-v2/`. Delivered across two PRs (#158 + #159).
+
+New files in `dashboards/` (PR #158):
+- `pipeline-adapter.js` — fetches `.github/pipeline-state.json` at page load via `fetch()`; transforms pipeline-state shapes to `CYCLES`/`EPICS`/`PHASES`; handles Phase 2 `epics_batch2` and Phase 3 slug-only story patterns; dispatches `pipeline-loaded` CustomEvent for React remount
+- `pipeline.html` — feature-scoped view with `?feature=<slug>` URL param; `LedgerBar`, `LeftCol`, `CenterCol`, `FooterBar` components; `ArtefactDrawer` (click story chip to browse artefact chain inline); default view set to `pipeline`
+- `artefact-content.js` — artefact markdown content rendering layer
+- `artefact-fetcher.js` — path builders and cache for story/feature `.md` artefact files
+- `extra-data.js` — supplementary data layer for story enrichment
+- `extra-views.css` — story state styles (`story-row-active`, `story-row-done`, `story-row-queued`), inner loop stage progress dots, epic progress summary bar, active-story auto-expand
+- `md-renderer.js` — `MdViewer` component fetches and renders real `.md` artefacts from `artefacts/` inline in the dashboard
+- `dashboards/README.md` — operator guide for local and GitHub Pages usage
+- `tests/check-dashboard-viz.js` — 44 governance checks for dashboard file existence and adapter contract
+
+GitHub Pages deployment (PR #159):
+- `.github/workflows/pages.yml` — deploys `dashboards/` to GitHub Pages on push to master; static HTML/JS/CSS only, no build step
+
+`dashboards/pipeline-viz.html` also moved from `.github/pipeline-viz.html` to `dashboards/pipeline-viz.html` in this batch (PR #158). All governance check paths, install scripts, and documentation updated (25 reference updates across 7 files).
+
+#### Auditor trace report CLI (atr.1) — DoD-complete
+
+CLI tool for auditors and platform maintainers to generate a full traceability report without running a Copilot session. Full artefact chain at `artefacts/2026-04-18-auditor-trace-report/`.
+
+Key deliverables (PR #172):
+- `scripts/trace-report.js` — `generateReport()` reads both `pipeline-state.json` and `pipeline-state-archive.json` (psa.1 merge pattern); walks all artefact paths; marks missing files as `MISSING`; correlates `workspace/traces/` JSONL for gate evidence (verdict, traceHash, check results); exits non-zero with available-slug list if feature not found
+- `tests/check-trace-report.js` — 12 tests (T1–T11 + NFR1) all passing; covers active + archived features, gate evidence correlation, missing artefact handling, non-zero exit on unknown slug
+- `tests/fixtures/trace-report-test-fixture.json` — synthetic test data
+
+**Usage:** `node scripts/trace-report.js --feature <feature-slug>` — outputs Markdown to stdout.
 
 ---
 
@@ -128,13 +202,13 @@ This is a **known divergence between the dogfood instance and enterprise deploym
 
 ## 3. Known Gaps
 
-### 3.1 T3M1 — Trace readability for risk review: 7/8 audit questions satisfied (Q8 in progress)
+### 3.1 T3M1 — Trace readability for risk review: 8/8 audit questions satisfied ✅
 
 **What T3M1 is:** `MODEL-RISK.md` defines eight audit questions that a risk reviewer must be able to answer from a trace alone, without engineering assistance. This is the governance readability test for the assurance trace. Full 8/8 satisfies the adoption gate for non-dogfood use.
 
 **Baseline (recorded 2026-04-12):** T3M1 evaluated against the first real Phase 2 inner loop trace (`workspace/traces/2026-04-11T21-33-02-002Z-ci-84f82370.jsonl`, story p2.4, PR #31). Result: **3/8 Y** — Q1 (model identity), Q3 (standards injected), Q4 (trace transition complete) satisfied.
 
-**Updated state (2026-04-17):** Story p3.2a (PR #86, merged 2026-04-15) added four mandatory trace fields to the schema and wired gate enforcement, closing Q2, Q5, Q6, and Q7 in a single delivery. Current result: **7/8 Y**. Q8 is targeted by p3.2b (T3M1 tamper-evidence registry, DoR-signed-off, in progress) — see DEC-P3-002 in Section 2 for the GitHub Artifact Attestation vs. separate registry-repo decision and the enterprise Bitbucket path.
+**Updated state (2026-04-19):** Story p3.2a (PR #86, merged 2026-04-15) closed Q2/Q5/Q6/Q7. Story p3.2b (merged 2026-04-19) closed Q8 via GitHub Artifact Attestation. Current result: **8/8 Y**. Full T3M1 satisfaction achieved — the `MODEL-RISK.md` adoption gate is now unblocked for non-dogfood use.
 
 | # | Question | Status | Delivery |
 |---|---|---|---|
@@ -145,11 +219,11 @@ This is a **known divergence between the dogfood instance and enterprise deploym
 | Q5 | Watermark row visible (pass/fail reason) | ✅ Closed | p3.2a — `watermarkResult` field (pass/passRate sub-fields) added to trace schema |
 | Q6 | `stalenessFlag` present in trace | ✅ Closed | p3.2a — boolean field added to schema |
 | Q7 | Agent independence evidenced | ✅ Closed | p3.2a — `sessionIdentity` field (sessionId, agentType, startedAt) added to schema; gate blocks null for regulated stories |
-| Q8 | Hash recomputation confirms no drift since approval | ⏳ In progress | p3.2b — GitHub Artifact Attestation (reference implementation); enterprise Bitbucket path: separate read-only registry repo (see DEC-P3-002) |
+| Q8 | Hash recomputation confirms no drift since approval | ✅ Closed | p3.2b — GitHub Artifact Attestation (reference implementation); enterprise Bitbucket path: separate read-only registry repo (see DEC-P3-002) |
 
 **Test coverage:** `tests/check-t3m1-fields.js` — 13 tests across schema field presence, gate enforcement for regulated traces, gate pass-through for non-regulated traces, and `docs/MODEL-RISK.md` field documentation check. All 13 pass.
 
-**Required action before non-dogfood adoption:** Complete p3.2b (Q8 — tamper-evidence registry) and re-run T3M1 evaluation against a Phase 3+ trace with all four new fields populated. Full 8/8 unlocks the `MODEL-RISK.md` adoption gate. Enterprise Bitbucket operators must implement Option B (separate read-only registry repository) — see DEC-P3-002 in Section 2.
+**Enterprise Bitbucket note:** The Q8 implementation in this reference repo uses GitHub Artifact Attestation, which is not available outside GitHub.com/GHES. Enterprise Bitbucket operators must implement Option B (separate read-only registry repository) — see DEC-P3-002 in Section 2.
 
 **Artefacts:** `docs/MODEL-RISK.md` → Section 3 (T3M1 evidence block) and Section 4 (sign-off conditions). `tests/check-t3m1-fields.js` (13 automated checks). `artefacts/2026-04-14-skills-platform-phase3/dor/p3.2a-t3m1-trace-fields-dor.md` and `p3.2b-t3m1-tamper-evidence-registry-dor.md`.
 
@@ -278,6 +352,11 @@ Domain-tier extensions (squad-specific overrides) are declared in the squad's `c
 | Phase 3 discovery | [`artefacts/2026-04-14-skills-platform-phase3/discovery.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/discovery.md) |
 | Phase 3 benefit-metric | [`artefacts/2026-04-14-skills-platform-phase3/benefit-metric.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/benefit-metric.md) |
 | Phase 3 decisions | [`artefacts/2026-04-14-skills-platform-phase3/decisions.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-14-skills-platform-phase3/decisions.md) |
+| Phase 4 artefacts | [`artefacts/2026-04-19-skills-platform-phase4/`](https://github.com/heymishy/skills-repo/tree/master/artefacts/2026-04-19-skills-platform-phase4) |
+| Phase 4 discovery | [`artefacts/2026-04-19-skills-platform-phase4/discovery.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-19-skills-platform-phase4/discovery.md) |
+| Phase 4 decisions | [`artefacts/2026-04-19-skills-platform-phase4/decisions.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-04-19-skills-platform-phase4/decisions.md) |
+| Phase 4 spike outputs | [`artefacts/2026-04-19-skills-platform-phase4/spikes/`](https://github.com/heymishy/skills-repo/tree/master/artefacts/2026-04-19-skills-platform-phase4/spikes) |
+| CLI approach artefacts (Craig) | [`artefacts/2026-04-18-cli-approach/`](https://github.com/heymishy/skills-repo/tree/master/artefacts/2026-04-18-cli-approach) |
 | T3M1 fields check (13 tests) | [`tests/check-t3m1-fields.js`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/tests/check-t3m1-fields.js) |
 | Trace-commit check (12 tests) | [`tests/check-trace-commit.js`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/tests/check-trace-commit.js) |
 | Conflict-resolution guide | [`docs/conflict-resolution-guide.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/docs/conflict-resolution-guide.md) |
@@ -286,6 +365,17 @@ Domain-tier extensions (squad-specific overrides) are declared in the squad's `c
 | Phase 4 backlog — second-model review | [`workspace/phase4-backlog-second-model-review.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/workspace/phase4-backlog-second-model-review.md) |
 | Retrospective artefact audit (2026-04-16) | [`workspace/retrospective-audit-2026-04-16.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/workspace/retrospective-audit-2026-04-16.md) |
 | Retrospective story template | [`.github/templates/retrospective-story.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/templates/retrospective-story.md) |
+| Dashboard v2 artefacts | [`artefacts/2026-04-18-dashboard-v2/`](https://github.com/heymishy/skills-repo/tree/master/artefacts/2026-04-18-dashboard-v2) |
+| Dashboard directory | [`dashboards/`](https://github.com/heymishy/skills-repo/tree/master/dashboards) — `index.html`, `pipeline.html`, `pipeline-adapter.js`, `pipeline-viz.html` (moved from `.github/`), plus supporting JS/CSS files |
+| Pipeline-state archive | [`.github/pipeline-state-archive.json`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/pipeline-state-archive.json) — Phase 1, Phase 2, SPC, and partial Phase 3 archived features |
+| Archive script | [`scripts/archive-completed-features.js`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/scripts/archive-completed-features.js) |
+| Pipeline-state-archive artefacts | [`artefacts/2026-04-18-pipeline-state-archive/`](https://github.com/heymishy/skills-repo/tree/master/artefacts/2026-04-18-pipeline-state-archive) |
+| Audit trace report CLI | [`scripts/trace-report.js`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/scripts/trace-report.js) — `node scripts/trace-report.js --feature <slug>` |
+| Auditor-trace-report artefacts | [`artefacts/2026-04-18-auditor-trace-report/`](https://github.com/heymishy/skills-repo/tree/master/artefacts/2026-04-18-auditor-trace-report) |
+| Skill-performance-capture artefacts | [`artefacts/2026-04-18-skill-performance-capture/`](https://github.com/heymishy/skills-repo/tree/master/artefacts/2026-04-18-skill-performance-capture) |
+| Experiment context files | [`contexts/experiment-sonnet-phase4.yml`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/contexts/experiment-sonnet-phase4.yml) / [`contexts/experiment-opus-phase4.yml`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/contexts/experiment-opus-phase4.yml) |
+| Capture block template | [`.github/templates/capture-block.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/templates/capture-block.md) |
+| GitHub Pages workflow | [`.github/workflows/pages.yml`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/workflows/pages.yml) |
 
 **`traces` branch — ruleset note:** The `traces` branch is a permanent append-only branch that holds all CI assurance trace JSONL files. It is written exclusively by the `trace-commit.yml` GitHub Actions workflow (github-actions bot push) after each inner loop PR merge. No human direct-push is permitted; no PR is required to write to this branch. The branch ruleset should allow pushes only from the `trace-commit.yml` workflow identity. **Fleet fork operators (GitHub):** recreate the `traces` branch and matching branch ruleset on your fork before running any inner loop story. Without the branch and ruleset in place, the `trace-commit.yml` post-merge step will fail silently and traces will be lost. **Bitbucket operators:** create the `traces` branch and restrict pushes via Bitbucket branch permissions to the CI service account; the GitHub Actions ruleset does not apply. The Bitbucket Pipelines equivalent of `trace-commit.yml` performs the same append-and-push step using the Bitbucket Pipelines OIDC identity.
 
@@ -381,7 +471,71 @@ Red item: **M5** — non-engineer approval requires a live configured environmen
 
 **Phase 4 note:** The ref doc's Spike A (governance logic extractability and interface definition) may subsume or extend this repository as the governance package extraction progresses. The `skills-framework-infra` repo is the Phase 3 structural control; Phase 4 may evolve it into a broader governance package.
 
-### 6.8 Phase 3 E1 batch: governance hardening stories delivered (2026-04-14 → 2026-04-16)
+### 6.8 Phase 3 E1 batch: governance hardening stories delivered (2026-04-14 → 2026-04-19)
+
+Phase 3 implementation stories p3.1a–p3.1e, p3.2a–p3.2b, p3.5–p3.11, and p3.18–p3.22 are all DoD-complete. Key deliverables:
+
+- **p3.2b (T3M1 Q8):** GitHub Artifact Attestation using OIDC workflow identity. SHA-256 tamper-evidence for all assurance traces. `scripts/attestation-publisher.js` publishes attestations post-merge. T3M1 now 8/8 Y — adoption gate fully satisfied.
+- **p3.5:** `scripts/validate-trace.ps1` — PowerShell 5.1+ trace validation with `--ci` flag; mirrors `validate-trace.sh` behaviour on Windows. `tests/check-p3.5-validate-trace.js` (8 tests).
+- **p3.6:** `issue-dispatch/SKILL.md` updated with `Closes #[issueNumber]` keyword in PR body template — issues auto-close on PR merge. `definition-of-ready/SKILL.md` gains forward pointer to `/issue-dispatch`.
+- **p3.7:** `src/trace-registry/getTraces.js` — trace aggregation module; `.github/workflows/trace-aggregation.yml` — CI workflow aggregating traces across registered repos.
+- **p3.8:** `src/approval-channel/adapters/teams-adapter.js` (HMAC-SHA256 verified) and `jira-adapter.js` — enterprise approval channel adapters beyond `github-issue`.
+- **p3.9:** `docs/agent-behaviour-observability.md` — AGENTS.md compatibility matrix and Phase 4 live-run backlog item.
+- **p3.10:** `/discovery/SKILL.md` gains EA registry Path A/B Step 0 block — discovery now reads EA registry context when `ea_registry_authoritative: true`.
+- **p3.11:** `src/improvement-agent/calibration.js` — CRLF-normalised YAML parser, estimation underrun detection, calibration loop integration.
+- **p3.18–p3.22:** Eight `/improvement` write-backs across definition, DoR/DoD enum enforcement, state write-path safety, systematic-debugging, and verify-completion. All backed by retrospective story artefacts.
+
+**Phase 3 remaining outer-loop-defined stories:** p3.3 (gate structural independence — `skills-framework-infra` integration), p3.4 (platform eval suite migration), p3.12 (cross-team trace federation), p3.14 (concepts documentation) — require a further delivery cycle. p3.3 and p3.13 were dispatched but PRs merged empty (D8 learning — issue dispatch `--target vscode` minimal body caused empty agent PRs; D7 learning recorded, default changed to `--target github-agent`).
+
+---
+
+## 7. Phase 4 — Distribution, Structural Enforcement, and Non-Technical Access (2026-04-19 → current)
+
+### 7.1 Phase 4 scope
+
+Phase 4 addresses three categories blocking adoption at scale:
+
+1. **Distribution and sync:** consumers (Craig's work context, Thomas as independent senior engineer) hit repo structure collisions, commit provenance requirements, and update channel drift trying to onboard. The `git clone` + remote pull assumption has proven wrong for enterprise consumers.
+2. **Structural enforcement with navigation flexibility:** Phase 3 dogfood evidence — an agent can read a skill verbatim, understand design intent, and still choose to violate the prescribed method. Post-hoc gate evaluation cannot detect this. Structural enforcement at invocation time is needed, without collapsing the multi-path navigation model.
+3. **Non-technical access:** Product managers, BAs, and business leads work in Teams/Word/PowerPoint — currently cannot participate in governed delivery at all. Auditors need readable governance output without engineering assistance.
+
+### 7.2 Phase 4 spike programme (complete)
+
+All four spikes returned PROCEED verdicts as of 2026-04-20:
+
+| Spike | Focus | Verdict | Key finding |
+|-------|-------|---------|-------------|
+| Spike A | Governance logic extractability | PROCEED | 3-operation enforcement package (resolve+hash, gate+advance, trace-write) extractable; outer loop remains instructional |
+| Spike B1 | MCP tool-boundary enforcement | PROCEED | MCP boundary viable in VS Code+Copilot and Claude Code; P2 ambient bypass open item (deferred to p4-enf-decision) |
+| Spike B2 | Craig's CLI enforcement / shared core | PROCEED | CLI MVP viable for regulated/CI surface; Mode 1 declarative SATISFIED; Mode 2 back-navigation PARTIAL (resolution path identified) |
+| Spike C | Distribution model | PROCEED | All 4 sub-problems resolved: managed-paths collision avoidance, zero-commit install, upstream authority (`heymishy/skills-repo`), lockfile design |
+
+ADR-013 (Phase 4 enforcement architecture) raised following Spike B1/B2 DoD — recorded in `.github/architecture-guardrails.md`.
+
+### 7.3 Phase 4 outer loop status
+
+- Discovery: approved 2026-04-19
+- Benefit-metric: active
+- 24 stories across 5 epics: all DoR-signed-off
+- Test plans: all written (E1–E4 TDD red confirmed)
+- Inner loop: ready to begin
+
+### 7.4 Phase 4 open dependency: Spike D (Teams bot prototype)
+
+Spike D requires a working Azure/Microsoft 365 account for Teams bot provisioning. This is an external dependency not under direct team control. Spike D cannot begin until the Azure/MS account is confirmed provisioned. Until then, the Teams non-technical access workstream (E4) is blocked. All other Phase 4 epics (E1 distribution, E2 structural enforcement, E3 CLI, E5 governance output) are unblocked.
+
+### 7.5 Phase 4 artefact locations
+
+| Artefact | Path |
+|----------|------|
+| Discovery | `artefacts/2026-04-19-skills-platform-phase4/discovery.md` |
+| Benefit-metric | `artefacts/2026-04-19-skills-platform-phase4/benefit-metric.md` |
+| Decisions | `artefacts/2026-04-19-skills-platform-phase4/decisions.md` |
+| Spike outputs | `artefacts/2026-04-19-skills-platform-phase4/spikes/` |
+| DoR artefacts | `artefacts/2026-04-19-skills-platform-phase4/dor/` |
+| Stories | `artefacts/2026-04-19-skills-platform-phase4/stories/` |
+| Test plans | `artefacts/2026-04-19-skills-platform-phase4/test-plans/` |
+| Craig's CLI discovery | `artefacts/2026-04-18-cli-approach/` |
 
 Five governance hardening stories from the Phase 2 adversarial audit delivered in the first Phase 3 sprint. Each closes a specific test or observability gap identified before Phase 3 launched.
 
