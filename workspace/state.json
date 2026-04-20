@@ -142,7 +142,11 @@
       "p3.7",
       "p3.8",
       "p3.10",
-      "p3.11"
+      "p3.11",
+      "p3.3",
+      "p3.4",
+      "p3.12",
+      "p3.13"
     ],
     "inFlight": [],
     "dispatched": {
@@ -153,12 +157,7 @@
       "p3.10": "https://github.com/heymishy/skills-repo/issues/127",
       "p3.11": "https://github.com/heymishy/skills-repo/issues/128"
     },
-    "blocked": {
-      "p3.3": "UNBLOCKED — ASSUMPTION-01 confirmed 2026-04-18. skills-framework-infra repo created. Ready for DoR re-run and dispatch.",
-      "p3.4": "p3.3 DoD-complete required",
-      "p3.12": "p3.4 DoD-complete required",
-      "p3.13": "p3.7 DoD-complete AND p3.2a DoD-complete both required — BOTH SATISFIED, ready for dispatch"
-    },
+    "blocked": {},
     "outerLoopComplete": true,
     "outerLoopPR": "https://github.com/heymishy/skills-repo/pull/121"
   },
@@ -415,12 +414,12 @@
   },
   "checkpoint": {
     "writtenAt": "2026-04-20",
-    "contextAtWrite": "atr.1 DoD complete. Phase 3 6 stories DoD complete (p3.5/p3.6/p3.7/p3.8/p3.10/p3.11). Remaining Phase 3: p3.4/p3.12 blocked, p3.3/p3.13 merged-empty. Next: check if Phase 3 feature can advance to definition-of-done stage or if blocked stories prevent it.",
-    "resumeInstruction": "atr.1 and Phase 3 (p3.5/p3.6/p3.7/p3.8/p3.10/p3.11) DoD artefacts committed (fac1730, b4a89a4). Phase 3 feature level: p3.4/p3.12 blocked, p3.3/p3.13 merged-empty. Next: (1) check pipeline-state to see if Phase 3 can be advanced, (2) look at p3.4/p3.12 blockers to assess if they can be unblocked or RISK-ACCEPTed, (3) EXP-001 Opus run is Phase 5 pending activity.",
+    "contextAtWrite": "Phase 3 fully closed. All remaining stories DoD-complete: p3.3 (gate structural independence, commit 9b9c27a, 18/18 tests), p3.4 (eval anti-gaming controls, commit cf05518, 9/9 tests), p3.12 (squad contribution flow, commit 2693289, 9/9 tests), p3.13 (compliance monitoring report, commit c790ebb, 8/8 tests). DoD artefacts written for all 4. pipeline-state.json updated. Phase 4 all 24 stories DoD-complete.",
+    "resumeInstruction": "Phase 3 and Phase 4 are both fully closed. All stories DoD-complete. Next activities: (1) EXP-001 Opus comparison run — use contexts/experiment-opus-phase4.yml; target: workspace/experiments/EXP-001-discovery-phase4-5/; updates mm-a through mm-d in pipeline-state.json when complete. (2) Phase 5 /discovery — no artefact yet; run /workflow then /discovery when ready. (3) External contributor PRs #98 and #155 from craigfo remain open — require architectural decision before merge. Do not merge without operator decision.",
     "pendingActions": [
-      "Phase 3 remaining stories: p3.4 and p3.12 are blocked — review blockers in their DoR artefacts to determine if RISK-ACCEPT or unblocking work is needed before Phase 3 can close",
-      "EXP-001 Opus comparison run (Phase 5 meta-measurement activity) — use contexts/experiment-opus-phase4.yml; target artefact: workspace/experiments/EXP-001-discovery-phase4-5/; update mm-a through mm-d metrics when complete",
-      "Phase 5 planning — no discovery artefact yet; run /workflow then /discovery when ready"
+      "EXP-001 Opus comparison run (Phase 5 meta-measurement activity) — use contexts/experiment-opus-phase4.yml; target artefact: workspace/experiments/EXP-001-discovery-phase4-5/; update mm-a through mm-d metrics in pipeline-state.json when complete",
+      "Phase 5 /discovery — no artefact yet; run /workflow then /discovery when ready",
+      "External contributor PRs #98 (craigfo CLI MVP) and #155 (craigfo CLI approach discovery) — require architectural decision before merge; do not merge without operator decision"
     ]
   },
   "atr1": {
@@ -436,20 +435,16 @@
       "p3.7",
       "p3.8",
       "p3.10",
-      "p3.11"
+      "p3.11",
+      "p3.3",
+      "p3.4",
+      "p3.12",
+      "p3.13"
     ],
-    "prRef": "#141 (8754323)",
-    "dodCommit": "b4a89a4",
-    "remaining": {
-      "blocked": [
-        "p3.4",
-        "p3.12"
-      ],
-      "mergedEmpty": [
-        "p3.3",
-        "p3.13"
-      ]
-    },
-    "note": "p3.3 and p3.13 are merged-empty (content delivered elsewhere). p3.4 and p3.12 remain blocked — no action until blockers resolved."
+    "prRef": "#141 (8754323) + commits 9b9c27a / cf05518 / 2693289 / c790ebb",
+    "dodCommit": "pending — this session",
+    "remaining": {},
+    "note": "All Phase 3 stories DoD-complete as of 2026-04-20. p3.3 (9b9c27a), p3.4 (cf05518), p3.12 (2693289), p3.13 (c790ebb). Phase 3 inner loop fully closed.",
+    "phaseStatus": "complete"
   }
 }
