@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Trace Entry",
+  "description": "Schema for a single enforcement trace entry written by governance-package writeTrace / cli emitTrace / mcp handleToolCall. executorIdentity is optional per ADR-003 (Craig's Q4 clarification).",
+  "type": "object",
+  "properties": {
+    "skillId": {
+      "type": "string",
+      "description": "Identifier of the skill invoked"
+    },
+    "skillHash": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "description": "SHA-256 hex digest of the resolved skill content"
+    },
+    "inputHash": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "description": "SHA-256 hex digest of the operator input for this call"
+    },
+    "outputRef": {
+      "type": "string",
+      "description": "Artefact path or reference identifier for the output"
+    },
+    "transitionTaken": {
+      "type": "string",
+      "description": "State transition recorded, e.g. discovery->definition"
+    },
+    "surfaceType": {
+      "type": "string",
+      "description": "Surface class that produced this trace: cli, mcp-interactive, github-agent"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of the trace entry"
+    },
+    "executorIdentity": {
+      "type": "string",
+      "description": "Optional: identity of the executing agent or operator. Optional per ADR-003 — second-line reviewers cannot require its presence."
+    }
+  },
+  "required": [
+    "skillHash",
+    "inputHash",
+    "outputRef",
+    "transitionTaken",
+    "surfaceType",
+    "timestamp"
+  ],
+  "additionalProperties": true
+}
