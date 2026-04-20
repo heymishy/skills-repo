@@ -1356,3 +1356,28 @@ This is the enterprise-standard maker/checker pattern: the gate that signs off a
 
 **Action:** Add spike-gate guidance to `/definition` SKILL.md — when an epic or story depends on a novel surface or mechanism, propose a spike story before the implementation story reaches DoR. Flag for next /improvement run.
 
+---
+
+## D14 — experiment framework created; Sonnet run is Phase 4 itself; Opus comparison run is Phase 5 activity
+
+**Date:** 2026-04-20
+**Observed at:** Phase 4 close — post-/improve artefact review
+
+**What happened:** During Phase 4, an experiment framework was designed to compare Sonnet 4.6 vs Opus 4.6 performance on the skills platform outer loop (tracks: discovery, definition, test-plan, DoR). The framework consists of: a design document (`workspace/experiment-sonnet-vs-opus-phase4.md`), two context variants (`contexts/experiment-sonnet-phase4.yml`, `contexts/experiment-opus-phase4.yml`), and an EXP-001 manifest (`workspace/experiments/EXP-001-discovery-phase4-5/manifest.md`). The experiment was instrumented at the discovery artefact level — the Phase 4 Sonnet run is Run 1. However, only the design and framework were committed during Phase 4. The Opus comparison run (EXP-001 Run 2) was not executed. No comparative results data exists.
+
+**Status at Phase 4 close:**
+- Sonnet 4.6 baseline (Run 1): complete — Phase 4 delivery itself is the Sonnet run data
+- Opus 4.6 comparison (Run 2): pending — EXP-001 manifest lists Run 1 status as "pending" (referring to the Opus run)
+- Meta-metrics mm-a through mm-d: all `not-yet-measured` — require the Opus comparison run to populate
+- Experiment framework files committed as-is (design + context variants + manifest with pending Opus run)
+
+**Why this matters:** The benefit-metric for Phase 4 includes 4 meta-metrics (mm-a: token budget comparison, mm-b: outer-loop fidelity, mm-c: operator friction, mm-d: cost/quality tradeoff) that can only be measured by running the same outer loop with both models and comparing outputs. Without the Opus run, these metrics remain `not-yet-measured`. This is expected and was anticipated in the Phase 4 discovery scope.
+
+**Next steps (Phase 5 / meta-measurement activity):**
+1. Execute EXP-001 Run 2: switch context to `contexts/experiment-opus-phase4.yml` and re-run Phase 4/5 discovery + benefit-metric + definition using Opus 4.6
+2. Compare capture block data from both runs against the 4 measurement dimensions
+3. Record results in `workspace/experiments/EXP-001-discovery-phase4-5/` and update pipeline-state mm-a through mm-d signals
+4. The Opus run is a deliberate Phase 5 activity — Phase 4 closes without it
+
+**Action:** None blocking Phase 4 close. Mark EXP-001 as a scheduled Phase 5 meta-measurement run. Do not re-open Phase 4 DoD for it.
+

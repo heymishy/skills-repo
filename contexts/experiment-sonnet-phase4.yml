@@ -1,0 +1,64 @@
+# context.yml — Experiment variant: Sonnet 4.6 on Phase 4
+# Profile: personal (skills library / tooling repo, non-regulated)
+#
+# USE THIS CONTEXT FOR: Sonnet 4.6 discovery → definition run on Phase 4 ref doc
+# SWITCH TO THIS: cp contexts/experiment-sonnet-phase4.yml .github/context.yml
+
+meta:
+  name: "SDLC Skills Pipeline Library"
+  scope: personal
+  regulated: false
+
+source_control:
+  platform: github
+  base_branch: master
+  merge_request_term: "pull request"
+  pr_command: "gh pr create --draft"
+  artefact_root: ".github"
+
+agent:
+  instruction_file: "copilot-instructions.md"
+
+architecture:
+  ea_registry_repo: "https://github.com/heymishy/ea-registry"
+  ea_registry_local_path: "C:/Users/Hamis/code/ea-registry-repo"
+  ea_registry_authoritative: true
+
+optimization:
+  token_policy:
+    per_turn_soft_budget: 12000
+    per_story_budget: 120000
+    per_feature_budget: 800000
+  routing:
+    default_model_class: "balanced"
+    escalation_model_class: "deep-reasoning"
+
+mapping:
+  stage_aliases: {}
+  artefact_aliases: {}
+  governance:
+    gates: []
+
+scaling:
+  maturity_level: "team"
+  target_team_count: 1
+  state_strategy: "per-repo-json"
+
+skills_upstream:
+  enabled: true
+  remote: "skills-upstream"
+  url: "https://github.com/heymishy/skills-repo.git"
+  sync_paths:
+    - .github/skills/
+    - .github/templates/
+    - scripts/
+    - docs/skill-pipeline-instructions.md
+  strategy: merge
+
+# Instrumentation — Skill Performance Capture experiment: Sonnet 4.6
+# This context variant is FOR SONNET. See experiment-opus-phase4.yml for Opus variant.
+instrumentation:
+  enabled: true
+  experiment_id: "exp-phase4-sonnet-vs-opus-20260419"
+  model_label: "claude-sonnet-4-6"
+  cost_tier: "fast"

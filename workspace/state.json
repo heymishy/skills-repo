@@ -1,287 +1,424 @@
 {
-    "phase2Summary":  {
-                          "prsMerged":  [
-                                            58,
-                                            57,
-                                            56,
-                                            55,
-                                            54,
-                                            53,
-                                            52,
-                                            51,
-                                            50,
-                                            49
-                                        ],
-                          "postMergeWorkflowFixed":  "true (PR #55 trace-commit.yml)",
-                          "storiesSignedOff":  [
-                                                   "p2.1",
-                                                   "p2.2",
-                                                   "p2.3",
-                                                   "p2.4",
-                                                   "p2.5a",
-                                                   "p2.5b"
-                                               ],
-                          "storiesBlocked":  [
-                                                 "p2.6-assumption-02-unconfirmed"
-                                             ],
-                          "observabilityGapsIdentified":  4,
-                          "status":  "complete"
-                      },
-    "lastUpdated":  "2026-04-16T18:00:00Z",
-    "currentPhase":  "phase-3-improvement",
-    "cycle":  {
-                  "discovery":  {
-                                    "status":  "complete",
-                                    "artefact":  "artefacts/2026-04-14-skills-platform-phase3/discovery.md",
-                                    "completedAt":  "2026-04-14",
-                                    "approvedBy":  "Operator, 2026-04-14. ASSUMPTION-01 through ASSUMPTION-04 confirmed."
-                                },
-                  "benefitMetric":  {
-                                        "status":  "complete",
-                                        "artefact":  "artefacts/2026-04-14-skills-platform-phase3/benefit-metric.md",
-                                        "completedAt":  "2026-04-14",
-                                        "metrics":  ["M1","M2","M3","M4","M5","MM1","MM2","MM3","CR1","CR2"]
-                                    },
-                  "definition": {
-                                    "status": "complete",
-                                    "artefact": "artefacts/2026-04-14-skills-platform-phase3/",
-                                    "completedAt": "2026-04-14",
-                                    "epicCount": 7,
-                                    "storyCount": 18,
-                                    "slicingStrategy": "risk-first",
-                                    "nfrProfile": "artefacts/2026-04-14-skills-platform-phase3/nfr-profile.md",
-                                    "scopeAdjustment": "p3.9 scoped to compatibility matrix only — no live delivery run (operator confirmed 2026-04-14, ASSUMPTION-04 gated)"
-                                }
-              },
-    "estimate": {
-        "e2": {
-            "date": "2026-04-14",
-            "mode": "E2",
-            "storyCount": 18,
-            "complexity": { "1": 9, "2": 6, "3": 3 },
-            "outerLoopFocusH": 2.5,
-            "outerLoopFocusHRange": "2–3h (operator-stated directly)",
-            "engagementFraction": 0.25,
-            "impliedCalendarDays": 5,
-            "p75FocusHPerStory": 0.17,
-            "premiumRequestsForecast": 8,
-            "confidence": "medium",
-            "calibratedComparison": {
-                "phase1Actual": "1.4h/story — 28% engagement, 2 days, 8 stories (reference baseline)",
-                "phase2Actual": "0.08h/story — 25% engagement, 2 days, 13 stories (low-confidence anomaly, agent-heavy)",
-                "phase3E2": "0.17h/story — consistent with agent-heavy outer loop; between phase2 anomaly and phase1 reference"
-            },
-            "notes": "No E1 recorded — first Phase 3 estimate. outerLoopFocusH provided directly by operator (2–3h range; 2.5h midpoint used for p75 derivation). Phase 2 anomaly excluded as calibration anchor."
-        }
-    },
-    "docsPRsMerged":  [61, 63, 64, 65, 103, 119],
-    "openPRs":  [
-                    {
-                        "pr":  98,
-                        "branch":  "craigfo:feature/productise-cli-and-sidecar",
-                        "description":  "External contributor (craigfo): CLI MVP + engine-consolidation proposal. DO NOT MERGE as-is — see pendingActions.",
-                        "status":  "open — requires architectural decision before import"
-                    },
-                    {
-                        "pr":  117,
-                        "branch":  "agent/p3.2b-t3m1-tamper-evidence-registry",
-                        "description":  "p3.2b — T3M1 tamper-evidence registry. GitHub agent run in progress.",
-                        "status":  "in-flight — agent working"
-                    }
-                ],
-    "mergedPRs": [99, 100, 101, 102, 103, 119],
-    "lastUpdated": "2026-04-19T00:00:00Z",
-    "phase3InnerLoopStatus": {
-        "dodComplete": ["p3.1a","p3.1b","p3.1c","p3.1d","p3.1e","p3.2a","p3.9","p3.15","p3.16","p3.17","p3.18","p3.19","p3.20","p3.21","p3.22","p3.2b","p3.5","p3.6","p3.7","p3.8","p3.10","p3.11"],
-        "inFlight": [],
-        "dispatched": {
-            "p3.5": "https://github.com/heymishy/skills-repo/issues/123",
-            "p3.6": "https://github.com/heymishy/skills-repo/issues/124",
-            "p3.7": "https://github.com/heymishy/skills-repo/issues/125",
-            "p3.8": "https://github.com/heymishy/skills-repo/issues/126",
-            "p3.10": "https://github.com/heymishy/skills-repo/issues/127",
-            "p3.11": "https://github.com/heymishy/skills-repo/issues/128"
-        },
-        "blocked": {
-            "p3.3": "UNBLOCKED — ASSUMPTION-01 confirmed 2026-04-18. skills-framework-infra repo created. Ready for DoR re-run and dispatch.",
-            "p3.4": "p3.3 DoD-complete required",
-            "p3.12": "p3.4 DoD-complete required",
-            "p3.13": "p3.7 DoD-complete AND p3.2a DoD-complete both required — BOTH SATISFIED, ready for dispatch"
-        },
-        "outerLoopComplete": true,
-        "outerLoopPR": "https://github.com/heymishy/skills-repo/pull/121"
-    },
-    "openPRs": [
-        {
-            "pr": 98,
-            "branch": "craigfo:feature/productise-cli-and-sidecar",
-            "description": "External contributor (craigfo): CLI MVP + engine-consolidation proposal. DO NOT MERGE as-is — see pendingActions.",
-            "status": "open — requires architectural decision before import"
-        },
-        {
-            "pr": 155,
-            "branch": "craigfo:feature/cli-approach-discovery",
-            "description": "External contributor (craigfo): CLI approach discovery + reference material (012, 013, discovery.md). Reframes CLI as one enforcement mechanism in multi-mechanism architecture.",
-            "status": "open — operator review response drafted, awaiting post on PR"
-        }
+  "phase2Summary": {
+    "prsMerged": [
+      58,
+      57,
+      56,
+      55,
+      54,
+      53,
+      52,
+      51,
+      50,
+      49
     ],
-    "recentlyMergedPRs": [121, 130, 131, 138, 159, 160],
-    "githubPages": {
-        "status": "live",
-        "url": "https://heymishy.github.io/skills-repo/",
-        "deploysFrom": "dashboards/",
-        "workflowFile": ".github/workflows/pages.yml",
-        "setupPRs": [159, 160]
+    "postMergeWorkflowFixed": "true (PR #55 trace-commit.yml)",
+    "storiesSignedOff": [
+      "p2.1",
+      "p2.2",
+      "p2.3",
+      "p2.4",
+      "p2.5a",
+      "p2.5b"
+    ],
+    "storiesBlocked": [
+      "p2.6-assumption-02-unconfirmed"
+    ],
+    "observabilityGapsIdentified": 4,
+    "status": "complete"
+  },
+  "lastUpdated": "2026-04-20T20:00:00.000Z",
+  "currentPhase": "definition-of-done",
+  "cycle": {
+    "discovery": {
+      "status": "complete",
+      "artefact": "artefacts/2026-04-14-skills-platform-phase3/discovery.md",
+      "completedAt": "2026-04-14",
+      "approvedBy": "Operator, 2026-04-14. ASSUMPTION-01 through ASSUMPTION-04 confirmed."
     },
-    "phase4": {
-        "currentPhase": "definition",
-        "lastUpdated": "2026-04-19T19:05:00Z",
-        "cycle": {
-            "discovery": {
-                "status": "complete",
-                "artefact": "artefacts/2026-04-19-skills-platform-phase4/discovery.md",
-                "completedAt": "2026-04-19",
-                "approvedBy": "Hamish, 2026-04-19 17:28",
-                "clarifyStatus": "complete (3 questions answered)"
-            },
-            "decisions": {
-                "status": "active",
-                "artefact": "artefacts/2026-04-19-skills-platform-phase4/decisions.md",
-                "entries": 3
-            },
-            "benefitMetric": {
-                "status": "complete",
-                "artefact": "artefacts/2026-04-19-skills-platform-phase4/benefit-metric.md",
-                "completedAt": "2026-04-19",
-                "metrics": ["m1","m2","m3","mm-a","mm-b","mm-c","mm-d"]
-            },
-            "definition": {
-                "status": "complete",
-                "completedAt": "2026-04-19",
-                "epicCount": 4,
-                "storyCount": 24,
-                "slicingStrategy": "risk-first",
-                "complexityDistribution": { "1": 3, "2": 12, "3": 9 },
-                "nfrProfile": "artefacts/2026-04-19-skills-platform-phase4/nfr-profile.md",
-                "experimentScorecard": "artefacts/2026-04-19-skills-platform-phase4/experiment-scorecard.md",
-                "epics": [
-                    { "id": "e1", "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e1-spike-programme.md", "storyCount": 5 },
-                    { "id": "e2", "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e2-distribution-model.md", "storyCount": 8 },
-                    { "id": "e3", "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e3-structural-enforcement.md", "storyCount": 6 },
-                    { "id": "e4", "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e4-non-technical-access.md", "storyCount": 5 }
-                ]
-            },
-            "review": {
-                "status": "complete",
-                "completedAt": "2026-04-19",
-                "artefactsDir": "artefacts/2026-04-19-skills-platform-phase4/review/",
-                "storiesReviewed": 24,
-                "highFindings": 0,
-                "verdict": "PASS — all 24 stories",
-                "systemicFinding": "1-M1 (MEDIUM): So-that clause omits metric name in 18/24 stories — each must have RISK-ACCEPT in /decisions or So-that clause update before entering /test-plan",
-                "storiesWithCleanSoThat": ["p4-spike-c","p4-spike-d","p4-dist-upgrade","p4-dist-registry","p4-dist-no-commits","p4-dist-migration"],
-                "architectureVerdict": "All 24 stories E:5. ADR-004, C1, C4, C5, C7, C11, MC-SEC-02, MC-CORRECT-02 all confirmed present in relevant stories. No violations."
-            }
-        },
-        "opusArm": {
-            "currentPhase": "definition",
-            "lastUpdated": "2026-04-19T19:05:00Z",
-            "experimentId": "exp-phase4-sonnet-vs-opus-20260419",
-            "modelLabel": "claude-opus-4-6",
-            "cycle": {
-                "benefitMetric": {
-                    "status": "complete",
-                    "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/benefit-metric.md",
-                    "completedAt": "2026-04-19"
-                },
-                "definition": {
-                    "status": "complete",
-                    "completedAt": "2026-04-19",
-                    "epicCount": 4,
-                    "storyCount": 23,
-                    "slicingStrategy": "risk-first",
-                    "complexityDistribution": { "1": 3, "2": 16, "3": 4 },
-                    "nfrProfile": "artefacts/2026-04-19-skills-platform-phase4-opus/nfr-profile.md",
-                    "experimentScorecard": "artefacts/2026-04-19-skills-platform-phase4-opus/experiment-scorecard.md",
-                    "scopeAccumulator": "artefacts/2026-04-19-skills-platform-phase4-opus/scope-accumulator.md",
-                    "epics": [
-                        { "id": "e1", "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e1-governance-extractability-enforcement-selection.md", "storyCount": 5 },
-                        { "id": "e2", "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e2-distribution-zero-commit-install.md", "storyCount": 7 },
-                        { "id": "e3", "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e3-non-technical-participation.md", "storyCount": 6 },
-                        { "id": "e4", "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e4-readable-governance-second-line-audit.md", "storyCount": 5 }
-                    ]
-                }
-            },
-            "operatorCorrections": 2,
-            "sessionCount": 3
-        },
-        "estimate": {
-            "e1": {
-                "date": "2026-04-19",
-                "mode": "E1",
-                "expectedCalendarDays": 1,
-                "engagementFraction": 0.50,
-                "outerLoopFocusH": 1.0,
-                "innerLoopHuman": 3,
-                "expectedStoryCount": 30,
-                "confidence": "low",
-                "assumptions": "30 stories is a large count for 1 calendar day — agent-heavy outer loop with operator in oversight mode only. Consistent with Phase 2 pattern. E2 will recalibrate once story decomposition is known.",
-                "gaugeAtStart": "536.1/1500 premium requests consumed (IDE gauge: 18.7%)",
-                "premiumRequestsForecast": null
-            },
-            "e2": {
-                "date": "2026-04-19",
-                "storyCount": 24,
-                "byStory": {
-                    "count": 24,
-                    "complexity": { "1": 3, "2": 12, "3": 9 },
-                    "p75FocusHPerStory": 0.039
-                },
-                "expectedCalendarDays": 0.75,
-                "engagementFraction": 0.50,
-                "outerLoopFocusH": 0.75,
-                "innerLoopHuman": 3,
-                "confidence": "medium",
-                "notes": "Revised from E1: 1.0d → 0.75d. Story count came in under E1 forecast (24 vs 30), but complexity skews heavy — 9 stories at complexity-3. Risk-first slicing forces sequential inner-loop dispatch; calendar span slightly shorter than E1 due to lower story count. Engagement fraction unchanged at 50%.",
-                "premiumRequestsForecast": null
-            }
-        }
+    "benefitMetric": {
+      "status": "complete",
+      "artefact": "artefacts/2026-04-14-skills-platform-phase3/benefit-metric.md",
+      "completedAt": "2026-04-14",
+      "metrics": [
+        "M1",
+        "M2",
+        "M3",
+        "M4",
+        "M5",
+        "MM1",
+        "MM2",
+        "MM3",
+        "CR1",
+        "CR2"
+      ]
     },
-    "currentPhase": "definition-of-ready",
-    "lastUpdated": "2026-04-19T23:30:00.000Z",
-    "testPlanCycle": {
-        "featureSlug": "2026-04-19-skills-platform-phase4",
-        "status": "complete",
-        "storiesTotal": 24,
-        "storiesWithTestPlans": 24,
-        "storiesWithVerificationScripts": 24,
-        "storiesWithTestJsFiles": 24,
-        "tddRedConfirmed": {
-            "e1-spikes": true,
-            "e2-distribution": true,
-            "e3-enforcement": true,
-            "e4-non-technical-access": true
-        },
-        "artefact": "artefacts/2026-04-19-skills-platform-phase4/test-plans/"
-    },
-    "definitionOfReadyCycle": {
-        "featureSlug": "2026-04-19-skills-platform-phase4",
-        "status": "complete",
-        "storiesTotal": 24,
-        "storiesSignedOff": 24,
-        "dorArtefactDir": "artefacts/2026-04-19-skills-platform-phase4/dor/",
-        "commitHash": "15f9c8e"
-    },
-    "checkpoint": {
-        "writtenAt": "2026-04-19",
-        "contextAtWrite": "/definition-of-ready complete for all 24 Sonnet arm Phase 4 stories. All 48 DoR artefact files (dor.md + dor-contract.md per story) written to artefacts/2026-04-19-skills-platform-phase4/dor/. pipeline-state.json updated: stage=definition-of-ready, all 24 stories have dorStatus=signed-off + dorArtefact + dorContractArtefact + dorSignedOffAt. Schema fix committed (spikes[] and stories[] arrays added to pipeline-state.schema.json). All hooks passed. Commit: 15f9c8e.",
-        "resumeInstruction": "DoR is complete for all 24 Sonnet arm Phase 4 stories (commit 15f9c8e). Next: run /branch-setup then /implementation-plan for the first story. Execute spikes in risk-first order: Spike A first (no upstream deps), then Spike B1 and Spike B2 (both gate on Spike A PROCEED), then Spike C (soft gate — distribution stories can begin in parallel), then Spike D (independent; gates all E4 stories). E2 distribution stories (8) gate on Spike C PROCEED. E3 enforcement stories (6) gate on Spike A + B1 + B2 PROCEED via p4-enf-decision. E4 non-technical-access stories (5) gate on Spike D PROCEED — if Spike D returns DEFER, all 5 E4 stories are deferred to Phase 5. Oversight levels: E1 spikes = HIGH (heymishy explicit sign-off; no coding agent approval), E2 = Medium (PR review by heymishy), E3 = High (heymishy explicit approval for each PR), E4 = High (heymishy review required before each PR enters main branch).",
-        "pendingActions": [
-            "Run /branch-setup for Spike A (p4-spike-a): first story to implement — C11 feasibility spike, Complexity 3, Unstable scope, HIGH oversight (heymishy explicit sign-off required; no coding agent approval for this epic).",
-            "Run /branch-setup + /implementation-plan for p4-dist-install after Spike C PROCEED verdict — first E2 distribution story, Medium oversight.",
-            "Gate E3 stories (p4-enf-decision first) on Spike A + B1 + B2 PROCEED verdicts — each requires heymishy explicit approval before merge.",
-            "Gate all E4 stories on Spike D PROCEED verdict — if DEFER, defer all 5 to Phase 5.",
-            "Post PR #155 response to craigfo (external contributor, cli-approach-discovery PR, pending since 2026-04-18)."
-        ]
+    "definition": {
+      "status": "complete",
+      "artefact": "artefacts/2026-04-14-skills-platform-phase3/",
+      "completedAt": "2026-04-14",
+      "epicCount": 7,
+      "storyCount": 18,
+      "slicingStrategy": "risk-first",
+      "nfrProfile": "artefacts/2026-04-14-skills-platform-phase3/nfr-profile.md",
+      "scopeAdjustment": "p3.9 scoped to compatibility matrix only — no live delivery run (operator confirmed 2026-04-14, ASSUMPTION-04 gated)"
     }
+  },
+  "estimate": {
+    "e2": {
+      "date": "2026-04-14",
+      "mode": "E2",
+      "storyCount": 18,
+      "complexity": {
+        "1": 9,
+        "2": 6,
+        "3": 3
+      },
+      "outerLoopFocusH": 2.5,
+      "outerLoopFocusHRange": "2–3h (operator-stated directly)",
+      "engagementFraction": 0.25,
+      "impliedCalendarDays": 5,
+      "p75FocusHPerStory": 0.17,
+      "premiumRequestsForecast": 8,
+      "confidence": "medium",
+      "calibratedComparison": {
+        "phase1Actual": "1.4h/story — 28% engagement, 2 days, 8 stories (reference baseline)",
+        "phase2Actual": "0.08h/story — 25% engagement, 2 days, 13 stories (low-confidence anomaly, agent-heavy)",
+        "phase3E2": "0.17h/story — consistent with agent-heavy outer loop; between phase2 anomaly and phase1 reference"
+      },
+      "notes": "No E1 recorded — first Phase 3 estimate. outerLoopFocusH provided directly by operator (2–3h range; 2.5h midpoint used for p75 derivation). Phase 2 anomaly excluded as calibration anchor."
+    }
+  },
+  "docsPRsMerged": [
+    61,
+    63,
+    64,
+    65,
+    103,
+    119
+  ],
+  "openPRs": [
+    {
+      "pr": 98,
+      "branch": "craigfo:feature/productise-cli-and-sidecar",
+      "description": "External contributor (craigfo): CLI MVP + engine-consolidation proposal. DO NOT MERGE as-is — see pendingActions.",
+      "status": "open — requires architectural decision before import"
+    },
+    {
+      "pr": 155,
+      "branch": "craigfo:feature/cli-approach-discovery",
+      "description": "External contributor (craigfo): CLI approach discovery + reference material (012, 013, discovery.md). Reframes CLI as one enforcement mechanism in multi-mechanism architecture.",
+      "status": "open — operator review response drafted, awaiting post on PR"
+    }
+  ],
+  "mergedPRs": [
+    99,
+    100,
+    101,
+    102,
+    103,
+    119
+  ],
+  "phase3InnerLoopStatus": {
+    "dodComplete": [
+      "p3.1a",
+      "p3.1b",
+      "p3.1c",
+      "p3.1d",
+      "p3.1e",
+      "p3.2a",
+      "p3.9",
+      "p3.15",
+      "p3.16",
+      "p3.17",
+      "p3.18",
+      "p3.19",
+      "p3.20",
+      "p3.21",
+      "p3.22",
+      "p3.2b",
+      "p3.5",
+      "p3.6",
+      "p3.7",
+      "p3.8",
+      "p3.10",
+      "p3.11"
+    ],
+    "inFlight": [],
+    "dispatched": {
+      "p3.5": "https://github.com/heymishy/skills-repo/issues/123",
+      "p3.6": "https://github.com/heymishy/skills-repo/issues/124",
+      "p3.7": "https://github.com/heymishy/skills-repo/issues/125",
+      "p3.8": "https://github.com/heymishy/skills-repo/issues/126",
+      "p3.10": "https://github.com/heymishy/skills-repo/issues/127",
+      "p3.11": "https://github.com/heymishy/skills-repo/issues/128"
+    },
+    "blocked": {
+      "p3.3": "UNBLOCKED — ASSUMPTION-01 confirmed 2026-04-18. skills-framework-infra repo created. Ready for DoR re-run and dispatch.",
+      "p3.4": "p3.3 DoD-complete required",
+      "p3.12": "p3.4 DoD-complete required",
+      "p3.13": "p3.7 DoD-complete AND p3.2a DoD-complete both required — BOTH SATISFIED, ready for dispatch"
+    },
+    "outerLoopComplete": true,
+    "outerLoopPR": "https://github.com/heymishy/skills-repo/pull/121"
+  },
+  "recentlyMergedPRs": [
+    121,
+    130,
+    131,
+    138,
+    159,
+    160
+  ],
+  "githubPages": {
+    "status": "live",
+    "url": "https://heymishy.github.io/skills-repo/",
+    "deploysFrom": "dashboards/",
+    "workflowFile": ".github/workflows/pages.yml",
+    "setupPRs": [
+      159,
+      160
+    ]
+  },
+  "phase4": {
+    "currentPhase": "definition",
+    "lastUpdated": "2026-04-19T19:05:00Z",
+    "cycle": {
+      "discovery": {
+        "status": "complete",
+        "artefact": "artefacts/2026-04-19-skills-platform-phase4/discovery.md",
+        "completedAt": "2026-04-19",
+        "approvedBy": "Hamish, 2026-04-19 17:28",
+        "clarifyStatus": "complete (3 questions answered)"
+      },
+      "decisions": {
+        "status": "active",
+        "artefact": "artefacts/2026-04-19-skills-platform-phase4/decisions.md",
+        "entries": 3
+      },
+      "benefitMetric": {
+        "status": "complete",
+        "artefact": "artefacts/2026-04-19-skills-platform-phase4/benefit-metric.md",
+        "completedAt": "2026-04-19",
+        "metrics": [
+          "m1",
+          "m2",
+          "m3",
+          "mm-a",
+          "mm-b",
+          "mm-c",
+          "mm-d"
+        ]
+      },
+      "definition": {
+        "status": "complete",
+        "completedAt": "2026-04-19",
+        "epicCount": 4,
+        "storyCount": 24,
+        "slicingStrategy": "risk-first",
+        "complexityDistribution": {
+          "1": 3,
+          "2": 12,
+          "3": 9
+        },
+        "nfrProfile": "artefacts/2026-04-19-skills-platform-phase4/nfr-profile.md",
+        "experimentScorecard": "artefacts/2026-04-19-skills-platform-phase4/experiment-scorecard.md",
+        "epics": [
+          {
+            "id": "e1",
+            "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e1-spike-programme.md",
+            "storyCount": 5
+          },
+          {
+            "id": "e2",
+            "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e2-distribution-model.md",
+            "storyCount": 8
+          },
+          {
+            "id": "e3",
+            "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e3-structural-enforcement.md",
+            "storyCount": 6
+          },
+          {
+            "id": "e4",
+            "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e4-non-technical-access.md",
+            "storyCount": 5
+          }
+        ]
+      },
+      "review": {
+        "status": "complete",
+        "completedAt": "2026-04-19",
+        "artefactsDir": "artefacts/2026-04-19-skills-platform-phase4/review/",
+        "storiesReviewed": 24,
+        "highFindings": 0,
+        "verdict": "PASS — all 24 stories",
+        "systemicFinding": "1-M1 (MEDIUM): So-that clause omits metric name in 18/24 stories — each must have RISK-ACCEPT in /decisions or So-that clause update before entering /test-plan",
+        "storiesWithCleanSoThat": [
+          "p4-spike-c",
+          "p4-spike-d",
+          "p4-dist-upgrade",
+          "p4-dist-registry",
+          "p4-dist-no-commits",
+          "p4-dist-migration"
+        ],
+        "architectureVerdict": "All 24 stories E:5. ADR-004, C1, C4, C5, C7, C11, MC-SEC-02, MC-CORRECT-02 all confirmed present in relevant stories. No violations."
+      }
+    },
+    "opusArm": {
+      "currentPhase": "definition",
+      "lastUpdated": "2026-04-19T19:05:00Z",
+      "experimentId": "exp-phase4-sonnet-vs-opus-20260419",
+      "modelLabel": "claude-opus-4-6",
+      "cycle": {
+        "benefitMetric": {
+          "status": "complete",
+          "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/benefit-metric.md",
+          "completedAt": "2026-04-19"
+        },
+        "definition": {
+          "status": "complete",
+          "completedAt": "2026-04-19",
+          "epicCount": 4,
+          "storyCount": 23,
+          "slicingStrategy": "risk-first",
+          "complexityDistribution": {
+            "1": 3,
+            "2": 16,
+            "3": 4
+          },
+          "nfrProfile": "artefacts/2026-04-19-skills-platform-phase4-opus/nfr-profile.md",
+          "experimentScorecard": "artefacts/2026-04-19-skills-platform-phase4-opus/experiment-scorecard.md",
+          "scopeAccumulator": "artefacts/2026-04-19-skills-platform-phase4-opus/scope-accumulator.md",
+          "epics": [
+            {
+              "id": "e1",
+              "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e1-governance-extractability-enforcement-selection.md",
+              "storyCount": 5
+            },
+            {
+              "id": "e2",
+              "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e2-distribution-zero-commit-install.md",
+              "storyCount": 7
+            },
+            {
+              "id": "e3",
+              "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e3-non-technical-participation.md",
+              "storyCount": 6
+            },
+            {
+              "id": "e4",
+              "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e4-readable-governance-second-line-audit.md",
+              "storyCount": 5
+            }
+          ]
+        }
+      },
+      "operatorCorrections": 2,
+      "sessionCount": 3
+    },
+    "estimate": {
+      "e1": {
+        "date": "2026-04-19",
+        "mode": "E1",
+        "expectedCalendarDays": 1,
+        "engagementFraction": 0.5,
+        "outerLoopFocusH": 1,
+        "innerLoopHuman": 3,
+        "expectedStoryCount": 30,
+        "confidence": "low",
+        "assumptions": "30 stories is a large count for 1 calendar day — agent-heavy outer loop with operator in oversight mode only. Consistent with Phase 2 pattern. E2 will recalibrate once story decomposition is known.",
+        "gaugeAtStart": "536.1/1500 premium requests consumed (IDE gauge: 18.7%)",
+        "premiumRequestsForecast": null
+      },
+      "e2": {
+        "date": "2026-04-19",
+        "storyCount": 24,
+        "byStory": {
+          "count": 24,
+          "complexity": {
+            "1": 3,
+            "2": 12,
+            "3": 9
+          },
+          "p75FocusHPerStory": 0.039
+        },
+        "expectedCalendarDays": 0.75,
+        "engagementFraction": 0.5,
+        "outerLoopFocusH": 0.75,
+        "innerLoopHuman": 3,
+        "confidence": "medium",
+        "notes": "Revised from E1: 1.0d → 0.75d. Story count came in under E1 forecast (24 vs 30), but complexity skews heavy — 9 stories at complexity-3. Risk-first slicing forces sequential inner-loop dispatch; calendar span slightly shorter than E1 due to lower story count. Engagement fraction unchanged at 50%.",
+        "premiumRequestsForecast": null
+      },
+      "e3": {
+        "date": "2026-04-20",
+        "mode": "E3",
+        "sessions": [
+          {
+            "start": "2026-04-19T04:25Z",
+            "focus": "4h52m",
+            "span": "24h25m",
+            "prompts": 129,
+            "note": "main outer loop session — discovery through 24 DoRs + inner loop dispatch; session still active at parse time"
+          },
+          {
+            "start": "2026-04-20T01:02Z",
+            "focus": "13m",
+            "span": "34m55s",
+            "prompts": 4,
+            "note": "small session today"
+          }
+        ],
+        "outerLoopFocusH": 6.08,
+        "outerLoopFocusHNote": "4h52m (main session at parse time) + ~1h today DoD/improve work + 13m small session",
+        "innerLoopHumanH": 1,
+        "calendarDays": 2,
+        "engagementFraction": 0.25,
+        "focusHPerStory": 0.25,
+        "derivedBy": "parse-session-timing.js --max-gap 15 (sessions 2026-04-19 to 2026-04-20)",
+        "e2delta": {
+          "outerLoopH": 5.33,
+          "innerLoopH": -2,
+          "calendarDays": 1.25,
+          "note": "E2 8x undershoot on outer loop; inner loop was lighter than forecast (1h vs 3h); calendar took 2 days vs 0.75d forecast"
+        },
+        "calibrationInsight": "E2 floor error: treating a 24-story complexity-heavy outer loop as 0.75h total is not feasible. Minimum floor = storyCount × 0.25h for features with majority complexity-2/3. Updated: for any feature with >8 stories or >3 complexity-3 stories, E2 should set outerLoopFocusH = max(derived, storyCount × 0.15h) for low complexity, max(derived, storyCount × 0.25h) for mixed/high complexity.",
+        "premiumRequestsActual": "not-measured (gauge at start: 18.7%; gauge at end: not recorded)",
+        "confidence": "medium-high (parse-session-timing.js used for main session; ~1h DoD/improve estimated for current active session)"
+      }
+    }
+  },
+  "testPlanCycle": {
+    "featureSlug": "2026-04-19-skills-platform-phase4",
+    "status": "complete",
+    "storiesTotal": 24,
+    "storiesWithTestPlans": 24,
+    "storiesWithVerificationScripts": 24,
+    "storiesWithTestJsFiles": 24,
+    "tddRedConfirmed": {
+      "e1-spikes": true,
+      "e2-distribution": true,
+      "e3-enforcement": true,
+      "e4-non-technical-access": true
+    },
+    "artefact": "artefacts/2026-04-19-skills-platform-phase4/test-plans/"
+  },
+  "definitionOfReadyCycle": {
+    "featureSlug": "2026-04-19-skills-platform-phase4",
+    "status": "complete",
+    "storiesTotal": 24,
+    "storiesSignedOff": 24,
+    "dorArtefactDir": "artefacts/2026-04-19-skills-platform-phase4/dor/",
+    "commitHash": "15f9c8e"
+  },
+  "checkpoint": {
+    "writtenAt": "2026-04-20",
+    "contextAtWrite": "Phase 4 fully closed. DoD artefact written, /improve done (3 SE standards + ADR-014), D11-D14 learnings written, E3 actuals added to estimation-norms, experiment artefacts committed.",
+    "resumeInstruction": "Phase 4 is complete (definition-of-done stage, all 24 stories, 455/456 tests). All learnings written (D11-D14). E3 actuals in estimation-norms.md. Next activities: (1) Phase 5 planning — read artefacts/2026-04-19-skills-platform-phase4/discovery.md for any Phase 5 scope hints, (2) EXP-001 Opus comparison run — switch to contexts/experiment-opus-phase4.yml and re-run discovery+definition+test-plan+DoR for a Phase 4/5 reference feature to compare Sonnet vs Opus outer loop performance, (3) run /workflow to check if any pipeline state items need attention.",
+    "pendingActions": [
+      "EXP-001 Opus comparison run (Phase 5 meta-measurement activity) — use contexts/experiment-opus-phase4.yml; target artefact: workspace/experiments/EXP-001-discovery-phase4-5/; update mm-a through mm-d metrics when complete",
+      "Phase 5 planning — no discovery artefact yet; run /workflow then /discovery when ready"
+    ]
+  }
 }
