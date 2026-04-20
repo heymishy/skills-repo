@@ -882,14 +882,14 @@
             "totalTests": 11,
             "passing": 32
           },
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/175",
           "prNumber": 175,
-          "commitHash": "66e1dcc",
+          "commitHash": "bf2ea61",
           "dodStatus": "complete",
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-obs-status-dod.md",
           "releaseReady": true,
-          "updatedAt": "2026-04-20T23:59:00.000Z"
+          "updatedAt": "2026-04-21T00:30:00.000Z"
         },
         {
           "id": "p4-obs-archive",
@@ -906,17 +906,17 @@
             "totalTests": 12,
             "passing": 24
           },
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/176",
           "prNumber": 176,
-          "commitHash": "060b4c5",
+          "commitHash": "852d25e",
           "dodStatus": "complete",
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-obs-archive-dod.md",
           "releaseReady": true,
           "layoutGapsAtMerge": true,
           "layoutGapsRiskAccepted": true,
           "blocker": "DoR contract referenced pipeline-viz.html but implementation correctly targets index.html — recorded as scope deviation in DoD; no AC gaps.",
-          "updatedAt": "2026-04-20T23:59:00.000Z"
+          "updatedAt": "2026-04-21T00:30:00.000Z"
         },
         {
           "id": "p4-obs-benefit",
@@ -933,14 +933,14 @@
             "totalTests": 12,
             "passing": 27
           },
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/177",
           "prNumber": 177,
-          "commitHash": "81c6b21",
+          "commitHash": "d7f189a",
           "dodStatus": "complete",
           "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-obs-benefit-dod.md",
           "releaseReady": true,
-          "updatedAt": "2026-04-20T23:59:00.000Z"
+          "updatedAt": "2026-04-21T00:30:00.000Z"
         }
       ],
       "dodArtefact": "artefacts/2026-04-19-skills-platform-phase4/dod/p4-phase4-dod.md",
