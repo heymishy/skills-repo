@@ -1,18 +1,19 @@
 {
-  "generatedAt": "2026-04-20T13:17:17.587Z",
+  "generatedAt": "2026-04-20T15:13:18.357Z",
   "squads": [
     {
       "squadId": "skills-platform-val",
       "stage": "unknown",
       "health": "unknown",
-      "updatedAt": "2026-04-20T13:17:17.587Z",
-      "sourceUrl": "https://raw.githubusercontent.com/heymishy/skills-platform-val/master/.github/pipeline-state.json"
+      "updatedAt": "2026-04-20T15:13:18.357Z",
+      "sourceUrl": "https://raw.githubusercontent.com/heymishy/skills-platform-val/master/.github/pipeline-state.json",
+      "error": "HTTP 404"
     },
     {
       "squadId": "squad-alpha",
       "stage": "unknown",
       "health": "unknown",
-      "updatedAt": "2026-04-20T13:17:17.587Z",
+      "updatedAt": "2026-04-20T15:13:18.357Z",
       "sourceUrl": "https://raw.githubusercontent.com/example-org/squad-alpha-repo/master/.github/pipeline-state.json",
       "error": "HTTP 404"
     },
@@ -20,7 +21,7 @@
       "squadId": "squad-beta",
       "stage": "unknown",
       "health": "unknown",
-      "updatedAt": "2026-04-20T13:17:17.587Z",
+      "updatedAt": "2026-04-20T15:13:18.357Z",
       "sourceUrl": "https://raw.githubusercontent.com/example-org/squad-beta-repo/master/.github/pipeline-state.json",
       "error": "HTTP 404"
     }
