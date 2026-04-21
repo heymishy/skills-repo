@@ -8,6 +8,36 @@
 const fs   = require('fs');
 const path = require('path');
 
+// ── Template loader ───────────────────────────────────────────────
+// Reads .github/templates/status-report.md and returns parsed headers.
+// Returns null on missing file (caller uses hardcoded defaults).
+
+function loadReportTemplate(rootDir) {
+  const tplPath = path.join(rootDir || path.join(__dirname, '..'), '.github', 'templates', 'status-report.md');
+  if (!fs.existsSync(tplPath)) return null;
+  const lines = fs.readFileSync(tplPath, 'utf8').split('\n');
+  const result = { daily: {}, weekly: {} };
+  let section = null;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed === '[daily]')   { section = 'daily';  continue; }
+    if (trimmed === '[weekly]')  { section = 'weekly'; continue; }
+    if (trimmed.startsWith('#') || trimmed === '') continue;
+    if (section && trimmed.includes('=')) {
+      const [key, ...rest] = trimmed.split('=');
+      result[section][key.trim()] = rest.join('=').trim();
+    }
+  }
+  return result;
+}
+
+// Cached template (loaded once per process)
+let _tpl = undefined;
+function getTpl(rootDir) {
+  if (_tpl === undefined) _tpl = loadReportTemplate(rootDir);
+  return _tpl;
+}
+
 // ── Helpers ──────────────────────────────────────────────────────
 
 function weekStart(date) {
@@ -48,6 +78,8 @@ function generateDailyReport(state, opts) {
   opts = opts || {};
   const now = new Date();
   const stories = allStories(state);
+  const tpl = getTpl(opts._rootDir);
+  const h = (key, def) => (tpl && tpl.daily && tpl.daily[key]) || def;
 
   const inFlight = stories.filter(s => s.dodStatus !== 'complete' && s.stage && s.stage !== 'definition-of-done');
   const blocked  = stories.filter(s => s.health === 'red');
@@ -70,7 +102,7 @@ function generateDailyReport(state, opts) {
   lines.push('# Daily Pipeline Status Report');
   lines.push('\nGenerated: ' + now.toISOString() + '\n');
 
-  lines.push('## In-Flight Stories');
+  lines.push('## ' + h('section1', 'In-Flight Stories'));
   if (inFlight.length === 0) {
     lines.push('_None_');
   } else {
@@ -83,7 +115,7 @@ function generateDailyReport(state, opts) {
     }
   }
 
-  lines.push('\n## Blocked Items');
+  lines.push('\n## ' + h('section2', 'Blocked Items'));
   if (blocked.length === 0) {
     lines.push('_None_');
   } else {
@@ -92,7 +124,7 @@ function generateDailyReport(state, opts) {
     }
   }
 
-  lines.push('\n## Pending Human Actions');
+  lines.push('\n## ' + h('section3', 'Pending Human Actions'));
   if (pending.length === 0) {
     lines.push('_None_');
   } else {
@@ -101,7 +133,7 @@ function generateDailyReport(state, opts) {
     }
   }
 
-  lines.push('\n## Recent Activity');
+  lines.push('\n## ' + h('section4', 'Recent Activity'));
   if (recent.length === 0) {
     lines.push('_No activity in the last 3 days_');
   } else {
@@ -110,7 +142,7 @@ function generateDailyReport(state, opts) {
     }
   }
 
-  lines.push('\n## Test Count');
+  lines.push('\n## ' + h('section5', 'Test Count'));
   lines.push('- Total tests: ' + totalTests);
   lines.push('- Passing: ' + passing);
 
@@ -136,6 +168,8 @@ function generateWeeklyReport(state, opts) {
 
   const stories = allStories(state);
   const signals = allSignals(state);
+  const tpl = getTpl(opts._rootDir);
+  const h = (key, def) => (tpl && tpl.weekly && tpl.weekly[key]) || def;
 
   const thisWeek = stories.filter(s => {
     if (!s.dodAt) return false;
@@ -167,11 +201,11 @@ function generateWeeklyReport(state, opts) {
   lines.push('\nGenerated: ' + now.toISOString());
   lines.push('Week: ' + wMon.toISOString().slice(0, 10) + ' \u2013 ' + wSun.toISOString().slice(0, 10) + '\n');
 
-  lines.push('## This Week');
+  lines.push('## ' + h('section1', 'This Week'));
   lines.push(thisWeek.length + ' stor' + (thisWeek.length === 1 ? 'y' : 'ies') + ' completed this week.');
   for (const s of thisWeek) lines.push('- ' + (s.id || s.slug || ''));
 
-  lines.push('\n## Pipeline Funnel');
+  lines.push('\n## ' + h('section2', 'Pipeline Funnel'));
   lines.push('| Stage | Count |');
   lines.push('|-------|-------|');
   lines.push('| Discovery | '     + counts.discovery  + ' |');
@@ -180,7 +214,7 @@ function generateWeeklyReport(state, opts) {
   lines.push('| Inner loop | '    + counts.inner      + ' |');
   lines.push('| Done | '          + counts.done       + ' |');
 
-  lines.push('\n## Metric Signal Health');
+  lines.push('\n## ' + h('section3', 'Metric Signal Health'));
   if (signals.length === 0) {
     lines.push('_No metric signals recorded._');
   } else {
@@ -191,14 +225,14 @@ function generateWeeklyReport(state, opts) {
     }
   }
 
-  lines.push('\n## Cycle Time');
+  lines.push('\n## ' + h('section4', 'Cycle Time'));
   if (avgCycle !== null) {
     lines.push('Average cycle time: ' + avgCycle + ' days');
   } else {
     lines.push('_No completed stories with full timing data._');
   }
 
-  lines.push('\n## Risk Flags');
+  lines.push('\n## ' + h('section5', 'Risk Flags'));
   if (risks.length === 0) {
     lines.push('_No risk flags._');
   } else {
@@ -238,4 +272,4 @@ if (require.main === module) {
   if (result) console.log(result);
 }
 
-module.exports = { generateDailyReport, generateWeeklyReport };
+module.exports = { generateDailyReport, generateWeeklyReport, loadReportTemplate };
