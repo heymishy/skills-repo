@@ -2715,13 +2715,42 @@ function MdViewer({ doc, onClose }) {
     });
   }, [doc?.key]);
 
-  const displayMd = activeArtefact && fetchedMd ? fetchedMd + "\n\n---\n\n" + (doc?.md || "") : (doc?.md || "");
+  // Show the real fetched file when available; fall back to synthetic summary only.
+  const displayMd = fetchedMd || (doc?.md || "");
   const html = useMemo(() => doc ? (window.renderMarkdown?.(displayMd) || "") : "", [doc, displayMd]);
 
   const loadArtefact = (a) => {
     setActiveArtefact(a.path);
     setFetchedMd(a.content);
   };
+
+  // Intercept <a> clicks in the rendered article body — open artefact links
+  // inside the viewer instead of navigating the browser to a new page.
+  const articleRef = useRef(null);
+  useEffect(() => {
+    const el = articleRef.current;
+    if (!el) return;
+    const handler = (e) => {
+      const a = e.target.closest('a');
+      if (!a) return;
+      const href = a.getAttribute('href') || '';
+      // Match ../artefacts/... or /artefacts/... paths
+      const m = href.match(/(?:\.\.\/artefacts\/|\/artefacts\/)(.+)/);
+      if (!m) return; // external link — let browser handle it
+      e.preventDefault();
+      const relPath = m[1];
+      const AF = window.ArtefactFetcher;
+      if (!AF) return;
+      AF.fetch(relPath).then(content => {
+        if (content) {
+          setFetchedMd(content);
+          setActiveArtefact(relPath);
+        }
+      });
+    };
+    el.addEventListener('click', handler);
+    return () => el.removeEventListener('click', handler);
+  }, [html]);
 
   // list of every doc in same cycle for prev/next nav
   const sibling = useMemo(() => {
@@ -2761,7 +2790,7 @@ function MdViewer({ doc, onClose }) {
                 md={displayMd}
                 filePath={activeArtefact || doc.path}
                 onClose={() => setEditorOpen(false)}
-                onSave={(edited) => { if (edited !== fetchedMd) setFetchedMd(edited); }}
+                onSave={(edited) => { if (edited !== displayMd) setFetchedMd(edited); }}
               />
             )}
             <div className="mdv-head">
@@ -2802,7 +2831,7 @@ function MdViewer({ doc, onClose }) {
                   Loading artefacts…
                 </div>
               )}
-              <article className="md" dangerouslySetInnerHTML={{ __html: html }} />
+              <article ref={articleRef} className="md" dangerouslySetInnerHTML={{ __html: html }} />
             </div>
             <div className="mdv-foot">
               <div>sha · {doc.sha}</div>
