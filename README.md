@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/heymishy/skills-repo/actions/workflows/assurance-gate.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![Phase 2 Complete](https://img.shields.io/badge/Phase%202-Complete-14b8a6)
+![Phase 4 Complete](https://img.shields.io/badge/Phase%204-Complete-14b8a6)
 ![Node v20](https://img.shields.io/badge/node-20-green)
 ![Platform](https://img.shields.io/badge/platform-GitHub%20Copilot-blue)
 
@@ -374,25 +374,33 @@ Each squad runs the platform in their own repository with their own `pipeline-st
 ## Phase delivery status
 
 | Phase | Stories | Outer loop focus | Calendar days | Status |
-|-------|---------|-----------------|---------------|--------|
+|-------|---------|-----------------|---------------|---------|
 | Phase 1 — Foundation, distribution, self-improving harness | 8 | 13h | 2 | ✅ Complete |
 | Phase 2 — Scale, observability, full adapter model | 13 | 1h | 2 | ✅ Complete |
-| Phase 3 — Governance hardening, T3M1, cross-team autoresearch | TBD | TBD | TBD | ⏳ Design phase (T3M1 3/8 outstanding) |
-| Phase 4 — Operational domains, agent identity, policy lifecycle | TBD | TBD | TBD | ⏳ Not started |
+| Phase 3 — Governance hardening, T3M1, cross-team autoresearch | 22 | ~2.5h | 5 | ✅ Complete (T3M1 8/8 closed) |
+| Phase 4 — Structural enforcement, distribution, second-line independence | 27 | TBD | 8 | ✅ Complete (all 27 stories DoD) |
+| Phase 5 — Harness infrastructure, spec integrity, platform intelligence | WS0–WS7 | TBD | TBD | 📋 Roadmap — see `artefacts/phase5-6-roadmap.md` |
+| Phase 6 — Policy lifecycle, agent identity, second model review | WS8–WS11 | TBD | TBD | 📋 Roadmap — entry conditions from Phase 5 |
 
-Phase 2 outer loop focus time (1h) reflects high pipeline fluency at Phase 2 start and an engagement fraction of approximately 25%. Confidence on that figure is medium-low — it is not a reliable planning baseline for new teams.
+Phase 2 outer loop focus time (1h) reflects high pipeline fluency at Phase 2 start and an engagement fraction of approximately 25%. Confidence on that figure is medium-low. Phase 4 delivered 27 stories across 5 epics including the shared governance package (ADR-013), p4-enf-mcp and p4-enf-cli enforcement spokes, E5 platform observability tooling, and two enforcement spikes (B1/B2). Scope narrowing deferred non-technical channel and distribution completion to Phase 5 WS0.
+
+For Phase 5/6 workstream detail, dependency sequencing, gap audit (19 gaps), and competitive positioning, see [`artefacts/phase5-6-roadmap.md`](artefacts/phase5-6-roadmap.md).
 
 ---
 
 ## Known gaps
 
-> ⚠️ **T3M1 audit readiness: 3/8.** Five of eight independent audit questions (Q2, Q5, Q6, Q7, Q8) are unanswered at Phase 2 close. The platform cannot be described as audit-ready for regulated enterprises until all 8 are answered and an independent non-engineering T3M1 evaluation is on record in `MODEL-RISK.md`. These are Phase 3 delivery obligations.
+> ✅ **T3M1 audit readiness: 8/8 closed.** All eight independent audit questions satisfied as of Phase 3 close (p3.2b — GitHub Artifact Attestation). The platform is structurally audit-ready for regulated enterprises. Independent non-engineering T3M1 evaluation record in `docs/MODEL-RISK.md`.
 
-> ⚠️ **Non-engineer approval: single channel.** Persona routing currently supports the GitHub Issue workflow only (ADR-006). Teams using Jira, Confluence, or Slack-native approval workflows require a new approval_channel adapter before non-engineer sign-offs can be routed to those surfaces.
+> ⚠️ **Non-engineer approval: single channel.** Persona routing supports the GitHub Issue workflow only (ADR-006). Jira, Confluence, and Slack-native approval workflows require a new approval_channel adapter. Teams and Jira adapters are in `src/approval-channel/` (Phase 3 p3.8) but not yet wired to live environments.
 
-> ⚠️ **Phase 2 E3 confidence: medium-low.** Outer loop focus time of 1h across 13 stories was derived at ~25% engagement fraction. The signal is real but the hours figure is not suitable as a planning baseline without independent corroboration from a second team.
+> ⚠️ **Non-technical discipline channel not yet delivered.** Phase 4 WS0 (non-technical channel for product managers, BAs, UX practitioners) was deferred from Phase 4 and is now Phase 5 WS0. Gated on Spike D (interaction model) result. Until WS0 is delivered, non-git-native participants must use VS Code or a git-native workflow.
 
-> ⚠️ **Windows trace validator missing.** `scripts/validate-trace.sh` requires bash and Python 3 and fails in PowerShell-only environments. A Windows-native `validate-trace.ps1` is a Phase 3 candidate.
+> ⚠️ **Distribution completion deferred.** Versioned consumer lockfile (`skills.lock`), `upgrade` command, upstream authority resolution, and non-git consumer distribution path are Phase 5 WS0 (WS0.1–WS0.6). The current `sync-from-upstream.sh/ps1` is the interim distribution mechanism.
+
+> ⚠️ **Artefact-first governance gate not yet structural.** The artefact-first rule (ADR-011) is instruction-enforced, not CI-enforced. `check-artefact-coverage.js` — a governance gate that fails `npm test` when a skill or src module has no corresponding DoR artefact — is a pending short-track delivery.
+
+> ℹ️ **Phase 4 scope narrowing.** Operational domain standards (Phase 5 WS7), agent identity layer (Phase 6 WS9), and policy lifecycle management (Phase 6 WS8) were originally scoped to Phase 4. They are deferred. See `product/roadmap.md` for the scope-narrowing rationale and Phase 5/6 delivery targets.
 
 ---
 
@@ -438,6 +446,9 @@ Phase 2 outer loop focus time (1h) reflects high pipeline fluency at Phase 2 sta
 | ADR-005 | Agent instructions format (copilot-instructions.md vs AGENTS.md) is a surface adapter concern driven by `vcs.type` in context.yml; AGENTS.md is the vendor-neutral default | Active |
 | ADR-006 | Non-engineer approval routing is an adapter pattern (`approval_channel`); first implementation is the GitHub Issue workflow | Active |
 | ADR-011 | Artefact-first: new SKILL.md files, `src/` modules, and governance check scripts require a story artefact before or alongside the commit; retrospective path available via `retrospective-story.md` template | Active |
+| ADR-012 | Platform is file-system-native and platform-agnostic — no hosted runtime, no persistent agent process, no proprietary orchestration dependency | Active |
+| ADR-013 | Phase 4 shared governance package: three-operation contract (`resolveAndVerifySkill`, `evaluateGateAndAdvance`, `writeVerifiedTrace`) called by all enforcement surface adapters; outer-loop navigation remains instructional | Active |
+| ADR-phase4-enforcement | Enforcement mechanism by surface class: VS Code/Claude Code → MCP tool boundary (p4-enf-mcp); regulated/CI → CLI (p4-enf-cli); chat-native → deferred; non-git-native → deferred pending Spike D | Active |
 
 Full decision history: [`.github/architecture-guardrails.md`](.github/architecture-guardrails.md) · [HANDOFF.md](docs/HANDOFF.md)
 
@@ -450,11 +461,16 @@ All human-readable reference documents live in `docs/`. Machine-consumed instruc
 | Document | Purpose |
 |----------|---------|
 | [ONBOARDING.md](docs/ONBOARDING.md) | Squad onboarding guide — step-by-step setup, required reading list, and first-run checklist |
-| [HANDOFF.md](docs/HANDOFF.md) | Session handoff and context recovery — how to resume work across sessions without a verbal briefing |
-| [MODEL-RISK.md](docs/MODEL-RISK.md) | Model risk register — T3M1 audit questions, risk ratings, and the 2026-04-16 artefact coverage audit record |
+| [HANDOFF.md](docs/HANDOFF.md) | Session handoff and context recovery — Phase 1–4 delivery record, Phase 5/6 roadmap context, current open items |
+| [MODEL-RISK.md](docs/MODEL-RISK.md) | Model risk register — T3M1 audit questions (8/8 closed), risk ratings, and the 2026-04-16 artefact coverage audit record |
 | [validation-playbook.md](docs/validation-playbook.md) | AC verification playbook — how to run the plain-language AC verification scripts produced by `/test-plan` |
 | [skill-pipeline-instructions.md](docs/skill-pipeline-instructions.md) | Full pipeline instructions reference — the complete sequence of skills, entry conditions, and exit conditions |
 | [feature-additions.md](docs/feature-additions.md) | Feature additions log — a record of capabilities added between formal story cycles |
+| [agent-behaviour-observability.md](docs/agent-behaviour-observability.md) | Phase 3 observability candidate approaches (Candidate 1–3) and Phase 5 backlog registration |
+| [agent-compatibility-matrix.md](docs/agent-compatibility-matrix.md) | AGENTS.md compatibility matrix — which agent runtimes support which surface and skill combinations |
+| [conflict-resolution-guide.md](docs/conflict-resolution-guide.md) | PR merge conflict resolution patterns for common multi-story parallel delivery scenarios |
+| [migration-guide.md](docs/migration-guide.md) | Upstream sync and migration guide — upgrade path, breaking change handling, and fork recovery |
+| [squad-contribution-guide.md](docs/squad-contribution-guide.md) | How squads contribute skill improvements or standards updates back to the platform |
 
 ---
 
@@ -473,6 +489,6 @@ The `artefacts/`, `.github/skills/`, `.github/templates/`, and `.github/governan
 
 <hr>
 
-Built with the skills platform's own pipeline — 21 stories, 4 calendar days.
+Built with the skills platform's own pipeline — 70+ stories across 4 phases, ~15 calendar days.
 
-[Onboarding](docs/ONBOARDING.md) · [Handoff](docs/HANDOFF.md) · [Model risk](docs/MODEL-RISK.md) · [Validation playbook](docs/validation-playbook.md) · [Pipeline instructions](docs/skill-pipeline-instructions.md) · [Feature additions](docs/feature-additions.md) · [Architecture decisions](.github/architecture-guardrails.md)
+[Onboarding](docs/ONBOARDING.md) · [Handoff](docs/HANDOFF.md) · [Model risk](docs/MODEL-RISK.md) · [Validation playbook](docs/validation-playbook.md) · [Pipeline instructions](docs/skill-pipeline-instructions.md) · [Feature additions](docs/feature-additions.md) · [Architecture decisions](.github/architecture-guardrails.md) · [Phase 5/6 roadmap](artefacts/phase5-6-roadmap.md) · [Product roadmap](product/roadmap.md)
