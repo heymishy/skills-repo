@@ -147,12 +147,21 @@
             {
               "slug": "md-2",
               "name": "Register skill in check-skill-contracts.js",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "mediumFindings": 0,
-              "updatedAt": "2026-04-22T14:05:00Z"
+              "updatedAt": "2026-04-22T14:30:00Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "md-3",
