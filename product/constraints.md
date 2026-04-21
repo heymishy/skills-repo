@@ -47,6 +47,8 @@ The actual tamper prevention controls are: branch protection on the platform rep
 
 `traces/` and `proposals/` are freely writable by automated processes — they accumulate evidence, not governance parameters. `SKILL.md`, `POLICY.md`, and `standards/` files remain fully branch-protected.
 
+**Intentional gap — verbatim instruction assembly record (G19):** The audit trail records which SKILL.md file ran (hash-verified) and which standards were injected (by name and version). It does not record the verbatim text of the composed instruction sent to the model per invocation. This is an intentional scope boundary in Phase 5: storing verbatim per-invocation instruction text requires a data governance model covering retention period, storage cost, access controls, and personally identifiable information risk that has not yet been designed. Phase 6 WS9 (agent identity layer) will determine whether and how this record becomes feasible. Until that decision is made, the hash-of-file-at-known-version is the audit record.
+
 ---
 
 ## 6. Platform surface type must be explicitly declared
