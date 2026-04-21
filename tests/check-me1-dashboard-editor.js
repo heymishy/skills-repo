@@ -28,10 +28,12 @@ function fail(id, msg) {
 }
 
 const pipelinePath = path.resolve('dashboards', 'pipeline.html');
+const indexPath    = path.resolve('dashboards', 'index.html');
 const cssPath      = path.resolve('dashboards', 'extra-views.css');
 
 const pipelineHtml = fs.existsSync(pipelinePath) ? fs.readFileSync(pipelinePath, 'utf8') : '';
-const cssContent   = fs.existsSync(cssPath)       ? fs.readFileSync(cssPath, 'utf8')       : '';
+const indexHtml    = fs.existsSync(indexPath)    ? fs.readFileSync(indexPath,    'utf8') : '';
+const cssContent   = fs.existsSync(cssPath)      ? fs.readFileSync(cssPath,      'utf8') : '';
 
 // ── T1 — pipeline.html exists ────────────────────────────────────────────────
 if (fs.existsSync(pipelinePath)) {
@@ -94,6 +96,37 @@ if (pipelineHtml.includes('createObjectURL')) {
   pass('T9', 'pipeline.html uses createObjectURL for file download');
 } else {
   fail('T9', 'pipeline.html is missing createObjectURL — Download button not implemented');
+}
+
+// ── T10 — index.html has MdEditorOverlay ─────────────────────────────────────
+if (fs.existsSync(indexPath)) {
+  pass('T10', 'dashboards/index.html exists');
+} else {
+  fail('T10', 'dashboards/index.html not found');
+}
+
+if (indexHtml.includes('md-editor-overlay')) {
+  pass('T11', 'index.html contains md-editor-overlay marker');
+} else {
+  fail('T11', 'index.html is missing md-editor-overlay marker — MdEditorOverlay not wired');
+}
+
+if (indexHtml.includes('editorOpen')) {
+  pass('T12', 'index.html contains editorOpen state variable');
+} else {
+  fail('T12', 'index.html is missing editorOpen state in MdViewer');
+}
+
+if (indexHtml.includes('navigator.clipboard')) {
+  pass('T13', 'index.html uses navigator.clipboard for copy');
+} else {
+  fail('T13', 'index.html is missing navigator.clipboard — Copy button not implemented');
+}
+
+if (indexHtml.includes('createObjectURL')) {
+  pass('T14', 'index.html uses createObjectURL for file download');
+} else {
+  fail('T14', 'index.html is missing createObjectURL — Download button not implemented');
 }
 
 // ── Summary ───────────────────────────────────────────────────────────────────
