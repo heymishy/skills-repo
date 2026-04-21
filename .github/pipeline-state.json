@@ -138,8 +138,12 @@
             {
               "slug": "md-2",
               "name": "Register skill in check-skill-contracts.js",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "mediumFindings": 0,
+              "updatedAt": "2026-04-22T14:05:00Z"
             },
             {
               "slug": "md-3",
