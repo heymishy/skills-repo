@@ -28,7 +28,19 @@
                           "status":  "complete"
                       },
     "lastUpdated":  "2026-04-21T11:00:00Z",
-    "currentPhase":  "improve-docs-review-complete",
+    "currentPhase":  "modernisation-decompose-discovery",
+    "activeFeature":  "2026-04-22-modernisation-decompose",
+    "lastUpdated":  "2026-04-22T00:00:00Z",
+    "checkpoint":  {
+        "writtenAt":  "2026-04-22",
+        "contextAtWrite":  "Discovery complete for modernisation-decompose feature. Artefact at artefacts/2026-04-22-modernisation-decompose/discovery.md. Awaiting operator approval before proceeding to /benefit-metric.",
+        "resumeInstruction":  "Read artefacts/2026-04-22-modernisation-decompose/discovery.md. If operator approves discovery, proceed to /benefit-metric. Feature slug: 2026-04-22-modernisation-decompose.",
+        "pendingActions":  [
+            "Operator approval of discovery artefact (artefacts/2026-04-22-modernisation-decompose/discovery.md) — review all 8 sections, confirm ASSUMPTION-01 through ASSUMPTION-04, and reply 'approved — [name], 2026-04-22'",
+            "After approval: run /benefit-metric to define measurable outcomes for the modernisation-decompose feature",
+            "After benefit-metric: run /definition to produce epics and stories (expected 2-4 stories: SKILL.md authoring, convergence criterion, umbrella metric convention, ADR-012)"
+        ]
+    },
     "cycle":  {
                   "discovery":  {
                                     "status":  "complete",
