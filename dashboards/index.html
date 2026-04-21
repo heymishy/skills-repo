@@ -2590,6 +2590,75 @@ function Drawer({ epic, onClose, onOpenDoc }) {
 }
 
 // ──────────────────────────────────────────────────────────────
+// MdEditorOverlay — full-screen markdown editor (me.1)
+// ──────────────────────────────────────────────────────────────
+function MdEditorOverlay({ md: initialMd, filePath, onClose, onSave }) {
+  const [text, setText] = useState(initialMd || '');
+  const [preview, setPreview] = useState('');
+  const [copyLabel, setCopyLabel] = useState('Copy');
+  const debounceRef = useRef(null);
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      if (window.renderMarkdown) {
+        setPreview(window.renderMarkdown(text));
+      } else {
+        setPreview('<pre>' + text.replace(/</g, '&lt;') + '</pre>');
+      }
+    }, 200);
+    return () => clearTimeout(debounceRef.current);
+  }, [text]);
+
+  useEffect(() => {
+    const handleKey = (e) => { if (e.key === 'Escape') { onSave(text); onClose(); } };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [text, onClose, onSave]);
+
+  const handleCopy = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        setCopyLabel('Copied!');
+        setTimeout(() => setCopyLabel('Copy'), 1500);
+      });
+    }
+  };
+
+  const handleDownload = () => {
+    const filename = filePath ? filePath.split('/').pop() : 'artefact.md';
+    const blob = new Blob([text], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="md-editor-overlay">
+      <div className="md-editor-toolbar">
+        <span className="md-editor-path">{filePath || 'artefact'}</span>
+        <button className="md-editor-btn" onClick={handleCopy}>{copyLabel}</button>
+        <button className="md-editor-btn" onClick={handleDownload}>Download .md</button>
+        <button className="md-editor-btn-close" onClick={() => { onSave(text); onClose(); }} aria-label="Close editor">×</button>
+      </div>
+      <div className="md-editor-panes">
+        <div className="md-editor-source">
+          <div className="md-editor-source-label">Markdown source</div>
+          <textarea className="md-editor-textarea" value={text} onChange={e => setText(e.target.value)} spellCheck={false} />
+        </div>
+        <div className="md-editor-preview">
+          <div className="md-editor-preview-label">Preview</div>
+          <div className="md-editor-preview-body" dangerouslySetInnerHTML={{__html: preview}} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
 // MdViewer — renders a markdown document in a right-side drawer
 // ──────────────────────────────────────────────────────────────
 function MdViewer({ doc, onClose }) {
@@ -2598,6 +2667,7 @@ function MdViewer({ doc, onClose }) {
   const [fetchState, setFetchState] = useState("idle"); // idle | loading | done
   const [artefactList, setArtefactList] = useState([]); // available artefact paths
   const [activeArtefact, setActiveArtefact] = useState(null);
+  const [editorOpen, setEditorOpen] = useState(false);
 
   // Fetch real .md artefacts when doc opens
   useEffect(() => {
@@ -2669,6 +2739,14 @@ function MdViewer({ doc, onClose }) {
       <aside className={`mdv ${open ? "open" : ""}`} aria-hidden={!open}>
         {doc && (
           <>
+            {editorOpen && (
+              <MdEditorOverlay
+                md={displayMd}
+                filePath={activeArtefact || doc.path}
+                onClose={() => setEditorOpen(false)}
+                onSave={(edited) => { if (edited !== fetchedMd) setFetchedMd(edited); }}
+              />
+            )}
             <div className="mdv-head">
               <div className="mdv-title">
                 <span>{doc.title}</span>
@@ -2677,6 +2755,7 @@ function MdViewer({ doc, onClose }) {
               <span className="mdv-sha" style={{color: statusColor, borderColor: `color-mix(in oklch, ${statusColor} 40%, var(--rule))`}}>
                 {doc.status}
               </span>
+              <button className="md-editor-btn" onClick={() => setEditorOpen(true)} style={{marginRight:4}}>Edit</button>
               <button className="mdv-close" onClick={onClose}>close · esc</button>
             </div>
             {artefactList.length > 0 && (
