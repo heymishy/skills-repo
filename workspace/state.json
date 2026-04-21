@@ -485,7 +485,8 @@
                                               "Run npm test in PR branch to confirm all 10 sro1 tests pass",
                                               "EXP-001 Opus comparison run: node scripts/record-benefit-comparison.js --feature 2026-04-19-skills-platform-phase4 (deferred)",
                                               "CHANGELOG.md: correct premature PR #155 merged entry when Craig PR actually lands",
-                                              "PR #155 (Craig WIP): DO NOT MERGE until Craig rebases on current master"
+                                              "PR #155 (Craig WIP): DO NOT MERGE until Craig rebases on current master",
+                                              "FUTURE CANDIDATE: extract status report format from generate-status-report.js into .github/templates/status-report.md and refactor script to read from template — requires new short-track story (behavioural change to script + platform infrastructure file)"
                                           ]
                    }
 }
