@@ -35,7 +35,7 @@
     {
       "slug": "2026-04-22-modernisation-decompose",
       "name": "Modernisation Decompose — Bridging /reverse-engineer to the Delivery Pipeline",
-      "stage": "review",
+      "stage": "test-plan",
       "health": "amber",
       "track": "library",
       "regulated": false,
@@ -54,7 +54,7 @@
         "complexity-2": 0,
         "complexity-1": 2
       },
-      "updatedAt": "2026-04-22T14:10:00Z",
+      "updatedAt": "2026-04-22T14:40:00Z",
       "metrics": [
         {
           "id": "m1",
@@ -166,12 +166,21 @@
             {
               "slug": "md-3",
               "name": "Add ADR-014 to architecture-guardrails.md",
-              "stage": "review",
-              "health": "amber",
+              "stage": "test-plan",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "mediumFindings": 1,
-              "updatedAt": "2026-04-22T14:10:00Z"
+              "updatedAt": "2026-04-22T14:40:00Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 0
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
