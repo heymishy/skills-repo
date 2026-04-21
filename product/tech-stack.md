@@ -356,3 +356,62 @@ The PAT value never appears in any tracked file. The MCP proxy fetches it from t
 | 2026-04-09 | Decision trace — `status`, `stalenessFlags` fields added | §Decision trace |
 | 2026-04-09 | MCP configuration — credentials moved to secrets store; `secretRef` pattern replaces inline credential | §MCP |
 | 2026-04-07 | Harness engineering vocabulary; workspace/ directory; workspace primitives initial set | All |
+| 2026-04-21 | Phase 4 enforcement architecture section added — shared governance package (ADR-013), enforcement spoke adapters, `pipeline-state.json` formal fields | §Phase 4 enforcement (new) |
+
+---
+
+## Phase 4 enforcement architecture <!-- ADDED: 2026-04-21 -->
+
+Phase 4 introduces a shared governance package (ADR-013) that all enforcement surface adapters call through. No surface reimplements governance logic independently.
+
+### Shared governance package — three-operation contract
+
+```javascript
+// All operations are pure: no side effects beyond the outputs described.
+// Called by every surface adapter in exactly this sequence.
+
+resolveAndVerifySkill(skillName, lockfileEntry)
+// → { skillPath, contentHash, verified: boolean }
+// Reads the SKILL.md at the resolved path, computes SHA-256, compares to lockfileEntry.hash.
+// Returns verified: false (not an exception) on mismatch — adapter decides whether to block.
+
+evaluateGateAndAdvance(storyId, gateId, evidenceFields, pipelineState)
+// → { verdict: 'pass' | 'fail' | 'warn', advancedTo: phase | null, gateRecord }
+// Reads evidence fields from pipelineState for the named gate. Does not check stage alone (ADR-002).
+// Writes the gate record to pipelineState in-memory. Caller persists.
+
+writeVerifiedTrace(tracePayload, destination)
+// → { traceRef: string, written: boolean }
+// Writes a completed trace entry with hash, model version, standards injected, gate verdict.
+// destination is 'workspace/traces/' for in-flight; 'traces/' branch for post-merge.
+```
+
+### Enforcement spoke adapters
+
+| Adapter | Surface | Mechanism | Delivery |
+|---------|---------|-----------|----------|
+| `p4-enf-mcp` | VS Code, Claude Code | MCP tool boundary — governance package called at tool invocation | Phase 4 |
+| `p4-enf-cli` | Regulated contexts, CI | CLI prompt injection — governance package called at command entry point | Phase 4 |
+
+Spike B1 verdict determines whether MCP boundary is structurally enforced or conventionally enforced. If B1 resolves unfavourably (boundary is bypassable), `p4-enf-mcp` isolation guarantees are scoped to CLI-first surfaces. Phase 5 WS2 (subagent isolation) accounts for both outcomes.
+
+### `pipeline-state.json` formal fields added in Phase 4
+
+Fields now declared in `pipeline-state.schema.json` (ADR-003 compliance):
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `regulated` | boolean | Activates H-NFR2, H-NFR3 DoR hard blocks; restricts permission tiers |
+| `complianceProfile` | `"standard" \| "regulated"` | Surface-level compliance profile; read by governance package |
+| `dorStatus` | `"not-started" \| "in-progress" \| "signed-off"` | Gate evidence field for DoR (not stage-proxy — ADR-002) |
+
+Field `oversightLevel: low/medium/high` is present in pipeline-state data as an informal convention. Phase 5 WS2 prerequisite promotes it to a formally declared schema field before WS2 and WS3.3 depend on it.
+
+### Phase 5 additions (upcoming — not yet delivered)
+
+The following Phase 5 primitives will be added to this section on delivery:
+
+- **Hook event schema (WS1.1)** — typed pre-tool / post-tool / turn-start / turn-end event vocabulary; written to sidechain transcript by governance package.
+- **Capability manifest in SKILL.md (WS2.1)** — declared required capabilities per skill; validated at invocation time against permission tier.
+- **Consumer lockfile (WS0.1)** — per-release lockfile with per-skill hash pinning; read by `resolveAndVerifySkill` as the authoritative hash source at invocation time.
+- **`oversightLevel` formal schema field (WS2 prerequisite)** — promoted from informal convention to declared field in `pipeline-state.schema.json`.

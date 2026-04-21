@@ -57,8 +57,12 @@ The platform is the collaboration surface between disciplines, not a replacement
 - Security into the delivery pipeline (OWASP floor applied at assurance gate, not as an afterthought)
 - Regulatory into the delivery pipeline (compliance traceability AC required for regulatory-tagged stories)
 - Quality into the delivery pipeline (test plan required before implementation begins)
+- Product management and business analysis into the delivery pipeline (benefit metric, story AC quality, and outcome measurement owned by product and BA personas; governed by discipline standards injected at DoR boundary)
+- UX design and research into the delivery pipeline (design system artefacts and user research signal reference at Phase B discovery; UX researcher provides empirical basis for UX-facing POLICY.md floors)
 
 Discipline experts own their standards at the relevant tier. The platform delivers those standards to the agent at the point of execution.
+
+**Non-technical channel (Phase 5 WS0):** Product managers, business analysts, UX practitioners, and other non-git-native participants currently require either VS Code or a git-native workflow to participate in governed delivery. Phase 5 WS0 delivers a governed channel for non-technical disciplines — with artefact parity (the chain produced via the non-technical channel is structurally identical to the chain produced via engineering surfaces) and plain-language gate translation (DoR hard blocks expressed as discipline-appropriate questions). All discipline entry points above will be reachable from the non-technical channel once WS0 is delivered.
 
 ---
 
@@ -70,3 +74,4 @@ Discipline experts own their standards at the relevant tier. The platform delive
 - Not a compliance management system — it produces compliance evidence; it does not manage compliance programmes
 - Not a persistent agent runtime — it uses existing CI/CD infrastructure as the execution environment; it does not require a hosted agent service
 - Not a second-line control in isolation — the platform provides second-line-style automation; organisational second-line independence requires the risk function to independently review the assurance agent's SKILL.md, not just its outputs
+- Not a Layer 1 AI coding assistant — the platform governs the execution layer (GitHub Copilot, Claude Code, Cursor) rather than replacing it. The three market layers are distinct: Layer 1 (AI coding assistants: Copilot, Claude Code, Cursor, Kiro), Layer 2 (single-project specification frameworks: GitHub Spec Kit, Vistaly), Layer 3 (enterprise fleet governance: this platform, GitLab Duo Agent Platform, Harness.io). The platform operates at Layer 3, layered on top of Layer 1 tools, without requiring a platform migration or commercial runtime subscription.
