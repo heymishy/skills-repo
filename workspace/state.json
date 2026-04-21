@@ -28,15 +28,15 @@
                           "status":  "complete"
                       },
     "lastUpdated":  "2026-04-21T11:00:00Z",
-    "currentPhase":  "modernisation-decompose-benefit-metric",
+    "currentPhase":  "modernisation-decompose-definition",
     "activeFeature":  "2026-04-22-modernisation-decompose",
-    "lastUpdated":  "2026-04-22T00:00:00Z",
+    "lastUpdated":  "2026-04-22T12:00:00Z",
     "checkpoint":  {
         "writtenAt":  "2026-04-22",
-        "contextAtWrite":  "Benefit-metric complete for modernisation-decompose. Discovery approved by Hamish 2026-04-22. 3 Tier-1 metrics (M1-M3) and 2 meta metrics (MM-A, MM-B) defined. Ready for /definition.",
-        "resumeInstruction":  "Read artefacts/2026-04-22-modernisation-decompose/benefit-metric.md and discovery.md. Proceed to /definition. Feature slug: 2026-04-22-modernisation-decompose. Expected story count: 3-5 stories covering: SKILL.md authoring, Java decomposition heuristics, convergence criterion writing, umbrella parity metric convention, ADR-012.",
+        "contextAtWrite":  "Definition complete for modernisation-decompose. 1 epic (e1-modernisation-pipeline-bridging), 3 stories: md-1 (SKILL.md authoring, complexity 3), md-2 (skill contracts registration, complexity 1), md-3 (ADR-014 dual-scope model, complexity 1). Slicing strategy: risk-first. Benefit-metric coverage matrix populated. NFR profile written. pipeline-state.json updated to stage: definition with epics[] and guardrails[] seeded.",
+        "resumeInstruction":  "Read artefacts/2026-04-22-modernisation-decompose/ folder (epic, 3 stories, nfr-profile). Definition is complete. Next step: /review on the 3 stories. Key concerns for review: md-1 (complexity 3, unstable scope) — heuristic design decisions may need scrutiny. md-2 and md-3 are complexity 1 and should pass review quickly.",
         "pendingActions":  [
-            "Run /definition to produce epics and stories for modernisation-decompose. Expected: 3-5 stories. Slicing strategy: risk-first. Metrics to trace: M1, M2, M3, MM-A, MM-B."
+            "Run /review on artefacts/2026-04-22-modernisation-decompose/stories/ — 3 stories to review: md-1 (Write /modernisation-decompose SKILL.md), md-2 (Register skill in check-skill-contracts.js), md-3 (Add ADR-014 dual-scope model to architecture-guardrails.md). No HIGH findings expected for md-2/md-3. md-1 may require design discussion on Java heuristic priority order and low-signal escalation path."
         ]
     },
     "cycle":  {

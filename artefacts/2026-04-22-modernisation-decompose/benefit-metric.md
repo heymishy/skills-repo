@@ -85,15 +85,15 @@ This initiative tests whether a codified decomposition heuristic can replace ad-
 
 ## Metric Coverage Matrix
 
-*(Populated by `/definition` after stories are created)*
+*(Populated by `/definition` — updated 2026-04-22)*
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1 — Decomposition consistency | TBD | Gap — pending /definition |
-| M2 — Outer-loop entry rate | TBD | Gap — pending /definition |
-| M3 — Convergence metric visibility | TBD | Gap — pending /definition |
-| MM-A — First-run acceptance rate | TBD | Gap — pending /definition |
-| MM-B — Heuristic coverage for low-signal codebases | TBD | Gap — pending /definition |
+| M1 — Decomposition consistency | md-1 (SKILL.md heuristic spec) | Covered — heuristics in md-1 define the boundary signals that produce consistent outputs |
+| M2 — Outer-loop entry rate | md-1 (skill exists and is invocable), md-2 (passes governance suite), md-3 (ADR makes path explicit) | Covered — all three stories contribute to the skill being usable by teams |
+| M3 — Convergence metric visibility | md-1 (mandatory state update step writes corpus-state.md convergence fields) | Covered — AC4 on md-1 requires corpus-state.md write on every run |
+| MM-A — First-run acceptance rate | md-1 (Java boundary heuristic quality in AC3, AC5) | Covered — quality of heuristics and candidate-features.md format in md-1 determines acceptance |
+| MM-B — Heuristic coverage for low-signal codebases | md-1 (low-signal escalation path in AC6) | Covered — AC6 on md-1 requires an explicit escalation prompt for ambiguous-signal systems |
 
 ---
 
