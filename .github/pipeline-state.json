@@ -35,8 +35,8 @@
     {
       "slug": "2026-04-22-modernisation-decompose",
       "name": "Modernisation Decompose — Bridging /reverse-engineer to the Delivery Pipeline",
-      "stage": "definition",
-      "health": "green",
+      "stage": "review",
+      "health": "amber",
       "track": "library",
       "regulated": false,
       "complianceProfile": "standard",
@@ -54,7 +54,7 @@
         "complexity-2": 0,
         "complexity-1": 2
       },
-      "updatedAt": "2026-04-22T12:00:00Z",
+      "updatedAt": "2026-04-22T14:10:00Z",
       "metrics": [
         {
           "id": "m1",
@@ -148,8 +148,12 @@
             {
               "slug": "md-3",
               "name": "Add ADR-014 to architecture-guardrails.md",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "mediumFindings": 1,
+              "updatedAt": "2026-04-22T14:10:00Z"
             }
           ]
         }
@@ -165,7 +169,10 @@
           "id": "MC-SEC-02",
           "category": "mandatory-constraint",
           "label": "No credentials, tokens, or personal data in committed files",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "corpus-state.md records metrics only (counts, ratios, timestamps). No business rules or customer data. Per md-1 NFR Security.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-22T14:10:00Z"
         },
         {
           "id": "MC-SEC-03",
@@ -255,7 +262,10 @@
           "id": "ADR-005",
           "category": "adr",
           "label": "Agent instructions format driven by vcs.type",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "md-2 NFR explicitly constrains no external npm dependencies. No new require() calls for external packages.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-22T14:10:00Z"
         },
         {
           "id": "ADR-006",
@@ -291,7 +301,10 @@
           "id": "ADR-011",
           "category": "adr",
           "label": "Artefact-first: new SKILL.md files require a story artefact before or alongside the commit",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "All 3 stories exist as artefacts before implementation. Artefact-first rule satisfied.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-22T14:10:00Z"
         },
         {
           "id": "ADR-012",
