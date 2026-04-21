@@ -35,6 +35,20 @@
                },
     "features":  [
                      {
+                         "slug":  "2026-04-22-modernisation-decompose",
+                         "name":  "Modernisation Decompose — Bridging /reverse-engineer to the Delivery Pipeline",
+                         "stage":  "discovery",
+                         "health":  "green",
+                         "track":  "library",
+                         "regulated":  false,
+                         "complianceProfile":  "standard",
+                         "complianceFrameworks":  [],
+                         "sensitiveDataCategories":  [],
+                         "discoveryStatus":  "draft",
+                         "discoveryArtefact":  "artefacts/2026-04-22-modernisation-decompose/discovery.md",
+                         "updatedAt":  "2026-04-22T00:00:00Z"
+                     },
+                     {
                          "slug":  "2026-04-19-skills-platform-phase4",
                          "name":  "Skills Platform Ã¢â‚¬â€ Phase 4: Distribution, Structural Enforcement, and Non-Technical Access",
                          "stage":  "definition-of-done",
