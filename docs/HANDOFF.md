@@ -2,10 +2,11 @@
 
 **Document type:** Enterprise handoff bundle
 **Prepared:** 2026-04-12
+**Updated:** 2026-04-22 — me.1 dashboard markdown editor delivered; MdViewer full-screen responsive layout; acc.1 and sr.1 short-tracks completed. See Section 8 pending items.
 **Updated:** 2026-04-21 (2) — Phase 5/6 roadmap published; product/ docs updated with Phase 4 actual delivery scope, enforcement architecture, competitive positioning, and G19 intentional gap note. See Section 8.
 **Updated:** 2026-04-21 (1) — Phase 4 fully DoD-complete — all 27 stories including E5 Platform Observability & Measurement. PRs #176 and #177 merged and traced. See Sections 6.8–6.15 and Phase 4 story tables.
 **Prepared by:** Platform maintainer (Hamish)
-**Status:** Phases 1–4 DoD-complete. Phase 5 (WS0–WS7) and Phase 6 (WS8–WS11) roadmapped. Two short-track pending items in queue (check-artefact-coverage gate; status-report template extraction). src.1 SKILL.md additions pending draft PR.
+**Status:** Phases 1–4 DoD-complete. Phase 5 (WS0–WS7) and Phase 6 (WS8–WS11) roadmapped. src.1 SKILL.md additions pending draft PR #178.
 
 ---
 
@@ -44,11 +45,15 @@ Four product-context files were updated to reflect Phase 4 delivery actuals and 
 - [`product/mission.md`](../product/mission.md) — Collaboration surface extended with product/BA and UX discipline entry points and Phase 5 WS0 non-technical channel note. Layer 1/2/3 competitive positioning added to "What the platform is not".
 - [`product/constraints.md`](../product/constraints.md) — Constraint 5 extended with G19 intentional gap note: verbatim per-invocation instruction assembly record is an explicit scope boundary deferred to Phase 6 WS9.
 
-### Pending items as of 2026-04-21
+### Delivered since 2026-04-21
 
-- **src.1 SKILL.md additions** — `workflow/SKILL.md` (generate-status-report.js callout at session start) and `improve/SKILL.md` (record-benefit-comparison.js Benefit Measurement callout). Both require a draft PR — platform change policy prohibits direct commit to master for SKILL.md files.
-- **check-artefact-coverage.js** — short-track story chain not yet created. Artefact-first rule currently instruction-enforced only. See AC9 in `workspace/phase3-backlog-test-coverage-governance-gaps.md` for the full specification.
-- **Status-report template extraction** — `.github/templates/status-report.md` + refactored `generate-status-report.js`. Requires short-track story chain. Currently marked `FUTURE CANDIDATE` in `workspace/state.json`.
+- **me.1 — Dashboard markdown editor (2026-04-22):** `MdEditorOverlay` component (split-pane editor with live preview, Copy, Download, Escape-to-close) wired into `ArtefactDrawer` in `pipeline.html` and `MdViewer` in `index.html`. `MdViewer` simultaneously made full-screen and responsive (`inset:0` fade-in, `clamp` padding, centred prose, `@media ≤640px` breakpoint). 14 governance checks pass (`tests/check-me1-dashboard-editor.js`). Artefact chain at `artefacts/2026-04-22-dashboard-md-editor/`.
+- **acc.1 — Artefact-first governance gate (2026-04-21):** `tests/check-artefact-coverage.js` live in CI. `artefact-coverage-exemptions.json` with 25 baseline exemptions. 8/8 self-tests pass.
+- **sr.1 — Status report section headers extracted to template (2026-04-21):** `.github/templates/status-report.md` created. `scripts/generate-status-report.js` reads headers from template with graceful fallback. 5/5 self-tests pass.
+
+### Pending items as of 2026-04-22
+
+- **src.1 SKILL.md additions** — `workflow/SKILL.md` (generate-status-report.js callout at session start) and `improve/SKILL.md` (record-benefit-comparison.js Benefit Measurement callout). Draft PR #178 open — awaiting review and merge. Platform change policy prohibits direct commit to master for SKILL.md files.
 
 ---
 
