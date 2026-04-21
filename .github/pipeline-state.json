@@ -37,16 +37,24 @@
                      {
                          "slug":  "2026-04-22-modernisation-decompose",
                          "name":  "Modernisation Decompose — Bridging /reverse-engineer to the Delivery Pipeline",
-                         "stage":  "discovery",
+                         "stage":  "benefit-metric",
                          "health":  "green",
                          "track":  "library",
                          "regulated":  false,
                          "complianceProfile":  "standard",
                          "complianceFrameworks":  [],
                          "sensitiveDataCategories":  [],
-                         "discoveryStatus":  "draft",
+                         "discoveryStatus":  "approved",
                          "discoveryArtefact":  "artefacts/2026-04-22-modernisation-decompose/discovery.md",
-                         "updatedAt":  "2026-04-22T00:00:00Z"
+                         "benefitMetricArtefact":  "artefacts/2026-04-22-modernisation-decompose/benefit-metric.md",
+                         "updatedAt":  "2026-04-22T00:00:00Z",
+                         "metrics":  [
+                             { "id": "m1", "name": "Decomposition consistency", "target": "≥80% agreement on feature count and rule assignment", "baseline": "0%", "signal": "not-yet-measured", "lastMeasured": null, "evidence": null, "contributingStories": [] },
+                             { "id": "m2", "name": "Modernisation outer-loop entry rate", "target": "100% of modernisation projects use the skill", "baseline": "0%", "signal": "not-yet-measured", "lastMeasured": null, "evidence": null, "contributingStories": [] },
+                             { "id": "m3", "name": "Convergence metric visibility", "target": "Written by default on every run, visible in viz", "baseline": "not tracked", "signal": "not-yet-measured", "lastMeasured": null, "evidence": null, "contributingStories": [] },
+                             { "id": "mm-a", "name": "First-run acceptance rate", "target": "≥75% first-run acceptance", "baseline": "not measurable pre-skill", "signal": "not-yet-measured", "lastMeasured": null, "evidence": null, "contributingStories": [] },
+                             { "id": "mm-b", "name": "Heuristic coverage for low-signal codebases", "target": "0 abandoned runs from unclear low-signal guidance", "baseline": "not measurable pre-skill", "signal": "not-yet-measured", "lastMeasured": null, "evidence": null, "contributingStories": [] }
+                         ]
                      },
                      {
                          "slug":  "2026-04-19-skills-platform-phase4",

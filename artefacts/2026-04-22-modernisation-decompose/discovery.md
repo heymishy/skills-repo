@@ -1,8 +1,8 @@
 # Discovery: Modernisation Decompose — Bridging /reverse-engineer to the Delivery Pipeline
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-04-22
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Hamish, 2026-04-22
 **Author:** Copilot / Hamish (via problem brief 2026-04-22)
 
 ---
@@ -34,7 +34,7 @@ Three related gaps share the same root cause:
 
 ## Why Now
 
-The `/reverse-engineer` skill reached maturity in Phase 3. The handoff gap is now the binding constraint in the modernisation pipeline flow. With the Westpac context (~50 teams ramping for a multi-year programme), inconsistency in feature decomposition now scales linearly. Waiting compounds the problem: squads who decompose now will have produced divergent artefacts that require retroactive re-decomposition when the bridging skill lands later. The correct time to fix the handoff is before the programme scales, not during it.
+The `/reverse-engineer` skill reached maturity in Phase 3. The handoff gap is now the binding constraint in the modernisation pipeline flow. With an enterprise modernisation programme (~50 teams ramping across multiple systems), inconsistency in feature decomposition now scales linearly. Waiting compounds the problem: squads who decompose now will have produced divergent artefacts that require retroactive re-decomposition when the bridging skill lands later. The correct time to fix the handoff is before the programme scales, not during it.
 
 ---
 
@@ -58,7 +58,7 @@ The `/reverse-engineer` skill reached maturity in Phase 3. The handoff gap is no
 
 - **Formal spec changes to `/review` Category A** — the umbrella metric convention is sufficient to resolve the mis-calibration for modernisation work. Formal spec changes to `/review` are governed changes that require their own pipeline chain. Out of scope here.
 
-- **Non-Java codebase decomposition heuristics** (COBOL, PL/SQL, .NET, etc.) — the immediate use case is Westpac Java systems. Other language signals may differ substantially; deferring to avoid premature generalisation. The skill design should accommodate future extension points but not implement them in this iteration.
+- **Non-Java codebase decomposition heuristics** (COBOL, PL/SQL, .NET, etc.) — the immediate use case is enterprise Java systems. Other language signals may differ substantially; deferring to avoid premature generalisation. The skill design should accommodate future extension points but not implement them in this iteration.
 
 ---
 
@@ -68,7 +68,7 @@ The `/reverse-engineer` skill reached maturity in Phase 3. The handoff gap is no
 
 **ASSUMPTION-02 — Umbrella metric convention is sufficient for `/review` Category A.** We assume that requiring every story from a modernisation candidate feature to reference an umbrella parity metric is enough to prevent false HIGH findings in `/review` Category A — without changing `/review`'s formal spec. Risk: if `/review` Category A checks for metric linkage at story level rather than allowing umbrella inheritance, the convention alone may not suppress the finding. The test-plan must validate this.
 
-**ASSUMPTION-03 — Java boundary signals generalise to Westpac's stack.** Maven module boundaries, Spring `@Service` clustering, JPA aggregate ownership, and `@Transactional` span analysis are the primary decomposition signals. Risk: if the target systems are poorly modularised (pre-Maven, multi-module monolith with circular dependencies), the signals may be ambiguous. The skill must have an explicit escalation path for low-confidence boundaries.
+**ASSUMPTION-03 — Java boundary signals generalise in enterprise  stack.** Maven module boundaries, Spring `@Service` clustering, JPA aggregate ownership, and `@Transactional` span analysis are the primary decomposition signals. Risk: if the target systems are poorly modularised (pre-Maven, multi-module monolith with circular dependencies), the signals may be ambiguous. The skill must have an explicit escalation path for low-confidence boundaries.
 
 **ASSUMPTION-04 — Convergence as a metric (not a gate) is the right model.** Making outer-loop convergence a hard gate incentivises gaming. A visible metric on the visualiser provides real signal without forcing teams to hit an arbitrary threshold before proceeding. Confirmed by brief author. Risk: teams may re-run `/reverse-engineer` indefinitely without the metric becoming a natural stopping signal.
 
