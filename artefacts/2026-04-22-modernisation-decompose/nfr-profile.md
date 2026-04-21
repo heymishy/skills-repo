@@ -15,6 +15,14 @@
 | `corpus-state.md` must not contain raw business rules, customer data references, or regulatory clause text from the source system | md-1 | The file records metrics only: counts, ratios, timestamps. No system data. Verified by AC4 on md-1. |
 | No credentials or personal data in any committed artefact | All | Enforced by repo-level mandatory constraint in architecture-guardrails.md. |
 
+**Data classification:**
+- [x] Public — no PII, no sensitive data
+- [ ] Internal — non-public but low sensitivity
+- [ ] Confidential — PII or commercially sensitive
+- [ ] Restricted — regulated data (PCI, PHI, etc.)
+
+**Rationale:** The feature produces only SKILL.md instruction files, ADR documentation, and governance script changes. The `corpus-state.md` file written at runtime records metrics only (counts, ratios, timestamps) — no business rules, customer data, or regulated information. Classification: Public.
+
 **Assessment:** 2 active security constraints. Both are addressed by story-level ACs and existing repo mandatory constraints. No additional security controls required.
 
 ### Performance
