@@ -128,12 +128,21 @@
             {
               "slug": "md-1",
               "name": "Write /modernisation-decompose SKILL.md",
-              "stage": "review",
-              "health": "amber",
+              "stage": "test-plan",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "mediumFindings": 2,
-              "updatedAt": "2026-04-22T14:00:00Z"
+              "updatedAt": "2026-04-22T14:20:00Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 19,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "md-2",
