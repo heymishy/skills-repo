@@ -107,6 +107,18 @@ for future features.
 
 Run `/estimate` now before presenting findings to the operator.
 
+### Category F — Benefit measurement (non-blocking)
+
+If the feature has a `benefit-metric.md` artefact and the story is linked to an experiment (EXP-001 or similar experiment chain entry in `workspace/experiments/`), run the benefit comparison script to record a structured platform-vs-traditional SDLC comparison:
+
+```
+node scripts/record-benefit-comparison.js --feature <slug> --story <story-id>
+```
+
+This writes a structured Markdown report to `workspace/experiments/benefit-comparison-<slug>.md` with YAML front-matter (8 required fields) and populates the E3 actuals section from `workspace/estimation-norms.md` if present.
+
+**This step is non-blocking** — skip if no experiment chain entry exists or if the operator opts out.
+
 Present findings for confirmation:
 
 > **Patterns identified:**
