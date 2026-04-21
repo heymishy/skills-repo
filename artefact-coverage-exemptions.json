@@ -1,0 +1,104 @@
+{
+  "exemptions": [
+    {
+      "slug": "bitbucket-cloud-validator",
+      "reason": "Phase 2 p2.10 story delivered this module; DoR artefact path uses 'bitbucket-ci' slug not 'bitbucket-cloud-validator'. Covered by artefacts/2026-04-11-skills-platform-phase2/dor/p2.10-bitbucket-ci-validation-dor.md — slug mismatch only."
+    },
+    {
+      "slug": "bitbucket-dc-validator",
+      "reason": "Phase 2 p2.10 story delivered this module alongside bitbucket-cloud-validator. Same slug mismatch as above — artefact exists under 'bitbucket-ci' slug."
+    },
+    {
+      "slug": "bootstrap",
+      "reason": "Bootstrap skill added out-of-band as a platform utility with no formal story chain. Retroactive story pending — tracked in artefact-coverage-exemptions.json as technical debt."
+    },
+    {
+      "slug": "branch-complete",
+      "reason": "Branch-complete skill added as part of inner loop skill set without a separate story artefact. Covered by Phase 1/2 pipeline scope but no individual DoR. Retroactive story pending."
+    },
+    {
+      "slug": "branch-setup",
+      "reason": "Branch-setup skill added as part of inner loop skill set without a separate story artefact. Same as branch-complete — retroactive story pending."
+    },
+    {
+      "slug": "clarify",
+      "reason": "Clarify skill added out-of-band as a support skill. No formal story chain. Retroactive story pending."
+    },
+    {
+      "slug": "coverage-map",
+      "reason": "Coverage-map skill added out-of-band. No formal story chain. Retroactive story pending."
+    },
+    {
+      "slug": "definition-of-done",
+      "reason": "Definition-of-done skill added as part of Phase 1/2 pipeline skill set. Individual DoR artefact exists under Phase 1 p2.3 story but filename uses 'dor-dod-template' slug not 'definition-of-done'. Slug mismatch only."
+    },
+    {
+      "slug": "definition-of-ready",
+      "reason": "Definition-of-ready skill part of Phase 1/2 pipeline skill set. Same as definition-of-done — artefact exists under 'dor-dod-template' slug. Slug mismatch only."
+    },
+    {
+      "slug": "gate-validator",
+      "reason": "Gate-validator src module added as part of Phase 4 enforcement infrastructure. Covered by Phase 4 enforcement stories but no artefact file directly named 'gate-validator'. Retroactive story pending."
+    },
+    {
+      "slug": "ideate",
+      "reason": "Ideate skill added out-of-band as a discovery support skill. No formal story chain. Retroactive story pending."
+    },
+    {
+      "slug": "implementation-plan",
+      "reason": "Implementation-plan skill added as inner loop skill. No individual story artefact — it is referenced in inner loop dispatch but has no dedicated DoR. Retroactive story pending."
+    },
+    {
+      "slug": "implementation-review",
+      "reason": "Implementation-review skill added as inner loop support skill. No individual story artefact. Retroactive story pending."
+    },
+    {
+      "slug": "loop-design",
+      "reason": "Loop-design skill added out-of-band as a platform meta-skill. No formal story chain. Retroactive story pending."
+    },
+    {
+      "slug": "metric-review",
+      "reason": "Metric-review skill added out-of-band as a benefit metric support skill. No formal story chain. Retroactive story pending."
+    },
+    {
+      "slug": "org-mapping",
+      "reason": "Org-mapping skill added out-of-band as an enterprise adaptation skill. No formal story chain. Retroactive story pending."
+    },
+    {
+      "slug": "record-signal",
+      "reason": "Record-signal skill added out-of-band as a metric capture utility. No formal story chain. Retroactive story pending."
+    },
+    {
+      "slug": "release",
+      "reason": "Release skill added out-of-band as a regulated release support skill. No formal story chain. Retroactive story pending."
+    },
+    {
+      "slug": "reverse-engineer",
+      "reason": "Reverse-engineer skill added out-of-band as a codebase analysis skill. No formal story chain. Retroactive story pending."
+    },
+    {
+      "slug": "scale-pipeline",
+      "reason": "Scale-pipeline skill added out-of-band as an enterprise scaling skill. No formal story chain. Retroactive story pending."
+    },
+    {
+      "slug": "subagent-execution",
+      "reason": "Subagent-execution skill added as inner loop skill alongside implementation-plan. No individual story artefact. Retroactive story pending."
+    },
+    {
+      "slug": "suite-parser",
+      "reason": "Suite-parser src module added as part of Phase 1/2 suite validation infrastructure. Covered by Phase 1 p1.6 scope but no artefact file with 'suite-parser' in the name. Retroactive story pending."
+    },
+    {
+      "slug": "systematic-debugging",
+      "reason": "Systematic-debugging skill added out-of-band as a support skill for stuck inner loop tasks. No formal story chain. Retroactive story pending."
+    },
+    {
+      "slug": "tdd",
+      "reason": "TDD skill added out-of-band as inner loop RED-GREEN-REFACTOR enforcement skill. No formal story chain. Retroactive story pending."
+    },
+    {
+      "slug": "token-optimization",
+      "reason": "Token-optimization skill added out-of-band as a model routing and token policy skill. No formal story chain. Retroactive story pending."
+    }
+  ]
+}
