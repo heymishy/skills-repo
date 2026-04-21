@@ -2,9 +2,53 @@
 
 **Document type:** Enterprise handoff bundle
 **Prepared:** 2026-04-12
-**Updated:** 2026-04-21 (Phase 4 fully DoD-complete — all 27 stories including E5 Platform Observability & Measurement. PRs #176 and #177 merged and traced. See Sections 6.8–6.15 and Phase 4 story tables.)
+**Updated:** 2026-04-21 (2) — Phase 5/6 roadmap published; product/ docs updated with Phase 4 actual delivery scope, enforcement architecture, competitive positioning, and G19 intentional gap note. See Section 8.
+**Updated:** 2026-04-21 (1) — Phase 4 fully DoD-complete — all 27 stories including E5 Platform Observability & Measurement. PRs #176 and #177 merged and traced. See Sections 6.8–6.15 and Phase 4 story tables.
 **Prepared by:** Platform maintainer (Hamish)
-**Status:** Phase 2 complete, Phase 3 implementation complete (remaining governance stories p3.3–p3.14 outer-loop defined), Phase 4 DoD-complete as of 2026-04-21 (all 27 stories merged and traced).
+**Status:** Phases 1–4 DoD-complete. Phase 5 (WS0–WS7) and Phase 6 (WS8–WS11) roadmapped. Two short-track pending items in queue (check-artefact-coverage gate; status-report template extraction). src.1 SKILL.md additions pending draft PR.
+
+---
+
+## 8. Phase 5/6 Roadmap Context — 2026-04-21
+
+### Phase 5 workstreams (roadmapped)
+
+Phase 4 narrowed scope: three originally-scoped items (operational domain standards, agent identity layer, policy lifecycle management) were deferred. They are now formally placed in Phase 5/6. The full workstream detail — dependency sequencing, gap audit (19 gaps), competitive positioning, and MVP tracks A/B/C — is in [`artefacts/phase5-6-roadmap.md`](../artefacts/phase5-6-roadmap.md).
+
+| WS | Title | Entry condition |
+|----|-------|----------------|
+| WS0 | Phase 4 completion (distribution, non-technical channel) | Phase 4 DoD-complete ✅ — ready |
+| WS1 | Harness infrastructure (hook events, capability manifest) | WS0 distribution complete |
+| WS2 | Subagent isolation (oversight enforcement, capability manifest) | WS1 hooks live |
+| WS3 | Context governance (context budget, session compression) | WS1 hooks live |
+| WS4 | Spec integrity (verbatim instruction record) | WS0 complete, data governance model resolved |
+| WS5 | Platform intelligence (signal-driven improvement cycle) | WS1 hooks, improvement agent Phase 2 |
+| WS6 | Human capability (adoption, assessment, playbooks) | WS0 non-technical channel, T3M1 full trail |
+| WS7 | Operational domain standards (cloud, GenAI, infra floors) | WS0 distribution, Phase 4 standards model |
+
+### Phase 6 workstreams (roadmapped — entry conditions from Phase 5)
+
+| WS | Title | Entry condition |
+|----|-------|----------------|
+| WS8 | Policy lifecycle management | Phase 5 WS1 hooks, WS5 intelligence signal |
+| WS9 | Agent identity layer + G19 verbatim instruction record | Phase 5 WS4 spec integrity, WS2 subagent isolation |
+| WS10 | Second model review capability | Phase 5 WS5 intelligence |
+| WS11 | Enterprise federation + OST visualisation | Phase 5 WS6 adoption programme |
+
+### Product/ docs updated 2026-04-21
+
+Four product-context files were updated to reflect Phase 4 delivery actuals and the Phase 5/6 roadmap:
+
+- [`product/roadmap.md`](../product/roadmap.md) — Phase 4 section replaced with accurate delivery scope + explicit scope-narrowing note. Phase 5 (WS0–WS7) and Phase 6 (WS8–WS11) sections added with workstream summaries and entry conditions.
+- [`product/tech-stack.md`](../product/tech-stack.md) — Phase 4 enforcement architecture section added: shared governance package 3-operation contract (ADR-013), enforcement spoke adapter table (p4-enf-mcp vs p4-enf-cli), formal pipeline-state.json fields, Phase 5 vocabulary forward-reference table.
+- [`product/mission.md`](../product/mission.md) — Collaboration surface extended with product/BA and UX discipline entry points and Phase 5 WS0 non-technical channel note. Layer 1/2/3 competitive positioning added to "What the platform is not".
+- [`product/constraints.md`](../product/constraints.md) — Constraint 5 extended with G19 intentional gap note: verbatim per-invocation instruction assembly record is an explicit scope boundary deferred to Phase 6 WS9.
+
+### Pending items as of 2026-04-21
+
+- **src.1 SKILL.md additions** — `workflow/SKILL.md` (generate-status-report.js callout at session start) and `improve/SKILL.md` (record-benefit-comparison.js Benefit Measurement callout). Both require a draft PR — platform change policy prohibits direct commit to master for SKILL.md files.
+- **check-artefact-coverage.js** — short-track story chain not yet created. Artefact-first rule currently instruction-enforced only. See AC9 in `workspace/phase3-backlog-test-coverage-governance-gaps.md` for the full specification.
+- **Status-report template extraction** — `.github/templates/status-report.md` + refactored `generate-status-report.js`. Requires short-track story chain. Currently marked `FUTURE CANDIDATE` in `workspace/state.json`.
 
 ---
 
