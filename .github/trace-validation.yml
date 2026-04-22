@@ -64,4 +64,6 @@ exemption_labels:
 # Use this for resource/reference packages that live alongside pipeline artefacts.
 reference_dirs:
   - 2026-04-18-skills-platform-phase4-revised
+  - 2026-04-19-skills-platform-phase4-opus
+  - 2026-04-21-skill-routing-cli-tools
   - docs-only
