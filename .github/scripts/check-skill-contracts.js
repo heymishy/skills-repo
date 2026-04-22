@@ -380,6 +380,18 @@ const CONTRACTS = [
       'Control plane design',
     ],
   },
+  // ── Modernisation skills ──────────────────────────────────────────────────
+  {
+    skill: 'modernisation-decompose',
+    file:  '.github/skills/modernisation-decompose/SKILL.md',
+    required: [
+      'reverse-engineering-report.md',
+      'candidate-features.md',
+      'corpus-state.md',
+      'umbrellaMetric',
+      '## Completion output',
+    ],
+  },
   // ── Dispatch skills ───────────────────────────────────────────────────────
   {
     skill: 'issue-dispatch',
