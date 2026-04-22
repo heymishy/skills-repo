@@ -20,6 +20,11 @@ triggers:
   - "why is this stuck"
   - "what's blocking"
   - "pipeline health"
+  - "daily report"
+  - "weekly report"
+  - "pipeline status report"
+  - "generate a report"
+  - "show me the status report"
 ---
 
 # Workflow Skill — Pipeline Navigator and Diagnostic
@@ -184,6 +189,17 @@ Before confirming short-track, verify it actually qualifies:
 > 4. Multi-team scale operating model for the whole skills system — `/scale-pipeline`
 >
 > Reply: 1, 2, 3, or 4
+
+**If trigger is "daily report", "weekly report", "pipeline status report", "generate a report", or "show me the status report":**
+
+> **Status report route confirmed.**
+> Run: `node scripts/generate-status-report.js` (daily) or `node scripts/generate-status-report.js --weekly` (weekly)
+> Optional: `--output <path>` to write to a file instead of stdout.
+>
+> The report reads `.github/pipeline-state.json` (plus archive) and produces a Markdown report.
+> Section headers are defined in `.github/templates/status-report.md` — edit that file to customise headings without touching the script.
+>
+> Ready to generate? Reply: daily — or weekly
 
 Notes:
 - `/loop-design`, `/token-optimization`, and `/scale-pipeline` are meta-level design skills for evolving the skill library
