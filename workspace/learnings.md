@@ -1466,3 +1466,21 @@ At E2, classify the outer loop character:
 
 **Action:** Document this resolution formula in the branch-complete or branch-setup SKILL.md as a "high-churn shared file rebase recipe". Flag for next /improvement run.
 
+---
+
+## Dashboard UX consistency session — 2026-04-22 22:30
+
+### Observed — 2026-04-22 22:30
+
+**Circumstance:** Multi-session delivery of cross-dashboard UX consistency (site-nav, callSave, md-editor, filter persistence). Two context-exhaustion events across three sessions.
+
+**Key learnings:**
+
+- **callSave 403 root cause pattern:** artefact-fetcher.js stores paths as bare slugs (2026-04-22-feature/stories/story.md). Server uses path.join(REPO_ROOT, filePath) so bare slugs resolve outside rtefacts/ ? 403. Fix is one normalisation line at the top of callSave in each consumer. Always prefix-normalise before sending to the save endpoint.
+
+- **Backfill ACs for previously-delivered behaviour:** When context exhaustion ends a session mid-delivery, the completed code may not have corresponding ACs in the story artefact. On resumption, always audit the story artefact against what was actually shipped — missing ACs (AC13/AC14 for me.1 MdViewer layout and link interception) can silently escape governance unless explicitly checked.
+
+- **Governance test count drift:** Artefact test plans can accumulate T-entries across sessions, but the .js governance script must be updated in the same session or the next-session summary will show a count mismatch. Keep the .js script in sync with the test plan as each new T-entry is written.
+
+- **Multi-page shared callSave pattern:** When the same server-integration code is needed across 4 HTML files, write it once, document the canonical form, then apply identically. The path-normalisation line was applied identically to all 4 dashboards — no per-file variation. This is the correct pattern for cross-cutting fixes.
+

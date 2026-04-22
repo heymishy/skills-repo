@@ -37,6 +37,36 @@
 **T10 — pipeline-html-syntax-clean**
 `node --check dashboards/pipeline.html` (JS syntax check). Pass if exit 0. Note: pipeline.html contains JSX so this test is advisory; the check-dashboard-viz.js already runs JS-only files.
 
+**T11 — index-html-overlay-marker**
+`dashboards/index.html` contains `md-editor-overlay`. Fail if absent.
+
+**T12 — index-html-editor-open**
+`dashboards/index.html` contains `editorOpen` (state variable that controls the overlay in MdViewer). Fail if absent.
+
+**T13 — index-html-clipboard**
+`dashboards/index.html` contains `navigator.clipboard`. Fail if absent.
+
+**T14 — index-html-download**
+`dashboards/index.html` contains `createObjectURL`. Fail if absent.
+
+**T15 — pipeline-review-server-integration**
+`dashboards/pipeline.html` contains `REVIEW_SERVER` constant (server integration for save). Fail if absent.
+
+**T16 — pipeline-server-up-state**
+`dashboards/pipeline.html` contains `serverUp` (server health state variable). Fail if absent.
+
+**T17 — index-review-server-integration**
+`dashboards/index.html` contains `REVIEW_SERVER` constant. Fail if absent.
+
+**T18 — index-server-up-state**
+`dashboards/index.html` contains `serverUp`. Fail if absent.
+
+**T19 — index-mdviewer-fullscreen**
+`dashboards/index.html` contains `inset:0` or `inset: 0` (full-screen MdViewer overlay CSS). Fail if absent.
+
+**T20 — index-mdviewer-link-intercept**
+`dashboards/index.html` contains `artefacts/` and `preventDefault` in proximity — i.e. the traceability link-click interception handler. Check that both strings are present in the file. Fail if either is absent.
+
 ---
 
 ## Test script

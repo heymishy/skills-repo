@@ -27,16 +27,17 @@
     "observabilityGapsIdentified": 4,
     "status": "complete"
   },
-  "lastUpdated": "2026-04-22T21:00:00Z",
-  "currentPhase": "definition-of-done",
-  "activeFeature": "2026-04-22-modernisation-decompose",
+  "lastUpdated": "2026-04-22T22:30:00Z",
+  "currentPhase": "implementation-complete",
+  "activeFeature": "2026-04-22-dashboard-md-editor",
   "checkpoint": {
     "writtenAt": "2026-04-22",
-    "contextAtWrite": "All 3 modernisation-decompose stories (md-1/md-2/md-3) merged and DoD-complete. Feature 0 stage updated to definition-of-done. Pipeline-state.json updated.",
-    "resumeInstruction": "All 3 modernisation-decompose stories (md-1/md-2/md-3) are DoD-complete. DoD artefacts written to artefacts/2026-04-22-modernisation-decompose/dod/. pipeline-state.json updated. Next: operator has 3 new things to work through — wait for user to reveal them. Feature 7 (skill-routing-cli-tools, stage definition-of-ready) is next in queue for inner loop when ready.",
+    "contextAtWrite": "Cross-dashboard UX consistency delivery complete: site-nav on all 4 dashboards, callSave 403 path-normalization fix, canvas filter persistence + overflow dropdown, MdEditorOverlay with server-gated save on all pages. me.1 story AC13 (MdViewer full-screen) + AC14 (traceability link interception) backfilled, T19/T20 added to test plan and governance test script. All 3 dashboard test scripts passing: check-me1 20/20, check-cv1 20/20, check-dr1 14/14.",
+    "resumeInstruction": "Dashboard UX consistency work is complete and committed. All governance tests pass (20/20/14). CHANGELOG and HANDOFF.md updated. Remaining pre-existing failure: npm test p4-enf-second-line T6 (WSL execvpe /bin/bash — infrastructure, not caused by this work). Next actions: (1) commit/push this session's final changes (tests/check-me1-dashboard-editor.js T19+T20 additions); (2) verify npm test overall output; (3) if operator wants, proceed to next queued feature.",
     "pendingActions": [
-      "Operator to share 3 new topics for this session",
-      "Feature 7 (2026-04-21-skill-routing-cli-tools) inner loop when ready: /branch-setup then /implementation-plan then /subagent-execution"
+      "Commit and push tests/check-me1-dashboard-editor.js (T19 and T20 additions)",
+      "Confirm pre-existing npm test failure (p4-enf-second-line T6 WSL execvpe) is unchanged and not introduced by this session",
+      "Feature 7 (2026-04-21-skill-routing-cli-tools) inner loop when operator is ready: /branch-setup then /implementation-plan then /subagent-execution"
     ]
   },
   "cycle": {
