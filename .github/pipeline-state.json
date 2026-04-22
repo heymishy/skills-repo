@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-04-20T23:59:00.000Z",
+  "updated": "2026-04-22T21:00:00Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -35,7 +35,7 @@
     {
       "slug": "2026-04-22-modernisation-decompose",
       "name": "Modernisation Decompose — Bridging /reverse-engineer to the Delivery Pipeline",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -54,7 +54,7 @@
         "complexity-2": 0,
         "complexity-1": 2
       },
-      "updatedAt": "2026-04-22T18:30:00Z",
+      "updatedAt": "2026-04-22T21:00:00Z",
       "metrics": [
         {
           "id": "m1",
@@ -128,24 +128,24 @@
             {
               "slug": "md-1",
               "name": "Write /modernisation-decompose SKILL.md",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "mediumFindings": 2,
-              "updatedAt": "2026-04-22T18:30:00Z",
+              "updatedAt": "2026-04-22T21:00:00Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 19,
                 "passing": 22
               },
               "acTotal": 7,
-              "acVerified": 6,
+              "acVerified": 7,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "prNumber": 179,
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/179",
               "tasks": [
                 {
@@ -160,17 +160,19 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-04-22-modernisation-decompose/plans/md-1-plan.md"
                 }
-              ]
+              ],
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "md-2",
               "name": "Register skill in check-skill-contracts.js",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "mediumFindings": 0,
-              "updatedAt": "2026-04-22T19:30:00Z",
+              "updatedAt": "2026-04-22T21:00:00Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
@@ -183,7 +185,7 @@
               "dorStatus": "signed-off",
               "tddState": "committed",
               "prNumber": 180,
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/180",
               "tasks": [
                 {
@@ -193,17 +195,19 @@
                   "file": "artefacts/2026-04-22-modernisation-decompose/plans/md-2-plan.md",
                   "name": "T1"
                 }
-              ]
+              ],
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "md-3",
               "name": "Add ADR-015 to architecture-guardrails.md",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "mediumFindings": 1,
-              "updatedAt": "2026-04-22T19:45:00Z",
+              "updatedAt": "2026-04-22T21:00:00Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -216,7 +220,7 @@
               "dorStatus": "signed-off",
               "tddState": "committed",
               "prNumber": 181,
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/181",
               "tasks": [
                 {
@@ -226,7 +230,9 @@
                   "file": "artefacts/2026-04-22-modernisation-decompose/plans/md-3-plan.md",
                   "name": "T1"
                 }
-              ]
+              ],
+              "dodStatus": "complete-with-deviations",
+              "releaseReady": true
             }
           ]
         }
