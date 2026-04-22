@@ -855,6 +855,7 @@
 <script src="md-renderer.js"></script>
 <script src="pipeline-adapter.js"></script>
 <script src="artefact-fetcher.js"></script>
+<link rel="stylesheet" href="extra-views.css">
 
 <script>
   window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
@@ -868,6 +869,31 @@
 <script type="text/babel" data-presets="react">
 /* eslint-disable */
 const { useState, useEffect, useMemo, useRef } = React;
+
+// ── Review-server helpers ──────────────────────────────────────────
+const REVIEW_SERVER = 'http://localhost:3131';
+
+async function checkServer() {
+  try {
+    const r = await fetch(REVIEW_SERVER + '/health', { signal: AbortSignal.timeout(1200) });
+    return r.ok;
+  } catch (_) { return false; }
+}
+
+async function callSave(filePath, content) {
+  // Normalize: strip any leading '../artefacts/' then ensure 'artefacts/' prefix
+  filePath = 'artefacts/' + filePath.replace(/^(\.\.\/)*artefacts\//, '');
+  const r = await fetch(REVIEW_SERVER + '/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ filePath, content }),
+  });
+  if (!r.ok) {
+    const msg = await r.text().catch(() => r.statusText);
+    throw new Error(msg || r.statusText);
+  }
+  return r.json();
+}
 
 /* ───────── URL param + dynamic feature ───────── */
 const FEATURE_PARAM = new URLSearchParams(window.location.search).get('feature');
@@ -1222,9 +1248,11 @@ function LedgerBar({ feature, featureSlug }) {
         <div><dt>epics</dt><dd>{f.epicCount}</dd></div>
         <div><dt>stories</dt><dd>{f.storyCount}</dd></div>
       </dl>
-      <nav style={{display:"flex",gap:2,border:"1px solid var(--rule)",padding:2,background:"var(--paper-2)",alignSelf:"end"}}>
-        <a href="index.html" style={{padding:"6px 10px",fontFamily:"var(--font-mono)",fontSize:"10.5px",letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--ink-3)",textDecoration:"none"}}>Repo</a>
-        <a href={"pipeline.html" + (featureSlug ? "?feature=" + encodeURIComponent(featureSlug) : "")} style={{padding:"6px 10px",fontFamily:"var(--font-mono)",fontSize:"10.5px",letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--ink)",textDecoration:"none",background:"var(--paper)",border:"1px solid var(--rule)"}}>Feature</a>
+      <nav className="site-nav" style={{alignSelf:"end"}}>
+        <a href="index.html">Pipeline</a>
+        <a href={"pipeline.html" + (featureSlug ? "?feature=" + encodeURIComponent(featureSlug) : "")} className="active">Feature</a>
+        <a href="review.html">Review</a>
+        <a href="canvas.html">Canvas</a>
       </nav>
     </header>
   );
@@ -1494,10 +1522,11 @@ function FooterBar({ innerStatus }) {
   );
 }
 
-function MdEditorOverlay({ md: initialMd, filePath, onClose, onSave }) {
+function MdEditorOverlay({ md: initialMd, filePath, onClose, onSave, serverUp, onSaveToDisk }) {
   const [text, setText] = useState(initialMd || '');
   const [preview, setPreview] = useState('');
   const [copyLabel, setCopyLabel] = useState('Copy');
+  const [saveLabel, setSaveLabel] = useState('Save');
   const debounceRef = useRef(null);
 
   useEffect(() => {
@@ -1527,6 +1556,21 @@ function MdEditorOverlay({ md: initialMd, filePath, onClose, onSave }) {
     }
   };
 
+  const handleSaveToDisk = () => {
+    if (!onSaveToDisk) return;
+    setSaveLabel('Saving…');
+    onSaveToDisk(text)
+      .then(() => {
+        setSaveLabel('Saved ✓');
+        setTimeout(() => setSaveLabel('Save'), 2000);
+      })
+      .catch(e => {
+        setSaveLabel('Error');
+        console.error('[save]', e);
+        setTimeout(() => setSaveLabel('Save'), 2500);
+      });
+  };
+
   const handleDownload = () => {
     const filename = filePath ? filePath.split('/').pop() : 'artefact.md';
     const blob = new Blob([text], { type: 'text/markdown' });
@@ -1544,6 +1588,9 @@ function MdEditorOverlay({ md: initialMd, filePath, onClose, onSave }) {
         <span className="md-editor-path">{filePath || 'artefact'}</span>
         <button className="md-editor-btn" onClick={handleCopy}>{copyLabel}</button>
         <button className="md-editor-btn" onClick={handleDownload}>Download .md</button>
+        {serverUp && onSaveToDisk && (
+          <button className="md-editor-btn" onClick={handleSaveToDisk} disabled={saveLabel === 'Saving…'}>{saveLabel}</button>
+        )}
         <button className="md-editor-btn-close" onClick={() => { onSave(text); onClose(); }} aria-label="Close editor">×</button>
       </div>
       <div className="md-editor-panes">
@@ -1560,7 +1607,7 @@ function MdEditorOverlay({ md: initialMd, filePath, onClose, onSave }) {
   );
 }
 
-function ArtefactDrawer({ storySlug, storyData, featureSlug, onClose }) {
+function ArtefactDrawer({ storySlug, storyData, featureSlug, onClose, serverUp }) {
   const [md, setMd] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activePath, setActivePath] = useState(null);
@@ -1615,6 +1662,8 @@ function ArtefactDrawer({ storySlug, storyData, featureSlug, onClose }) {
           filePath={activePath}
           onClose={() => setEditorOpen(false)}
           onSave={(edited) => { if (edited !== md) setMd(edited); }}
+          serverUp={serverUp}
+          onSaveToDisk={serverUp ? (text) => callSave(activePath, text).then(() => setMd(text)) : null}
         />
       )}
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'var(--pad-2) var(--pad-3)',borderBottom:'1px solid var(--rule)'}}>
@@ -1649,6 +1698,13 @@ function App() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [dynData, setDynData] = useState(null);
   const [drawerSlug, setDrawerSlug] = useState(null);
+  const [serverUp, setServerUp] = useState(false);
+
+  useEffect(() => {
+    checkServer().then(setServerUp);
+    const iv = setInterval(() => checkServer().then(setServerUp), 10000);
+    return () => clearInterval(iv);
+  }, []);
 
   useEffect(() => {
     if (!FEATURE_PARAM) return;
@@ -1690,7 +1746,7 @@ function App() {
       </main>
       <FooterBar innerStatus={eis} />
       <TweaksPanel state={state} update={update} open={panelOpen} onClose={() => setPanelOpen(false)} />
-      {drawerSlug && <ArtefactDrawer storySlug={drawerSlug} storyData={sMap[drawerSlug]} featureSlug={fSlug} onClose={() => setDrawerSlug(null)} />}
+      {drawerSlug && <ArtefactDrawer storySlug={drawerSlug} storyData={sMap[drawerSlug]} featureSlug={fSlug} onClose={() => setDrawerSlug(null)} serverUp={serverUp} />}
     </div>
   );
 }

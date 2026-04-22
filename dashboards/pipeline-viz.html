@@ -1185,12 +1185,17 @@ async function loadState() {
   // Try fetch first (works with VS Code Live Server, GitHub Pages, etc.).
   // On file:// the browser blocks fetch, so we silently fall back to the
   // drop-zone picker so the user can load the file from disk — no server needed.
+  // Dual-URL: try same-dir copy first (GitHub Pages), then repo-relative path (Live Server).
+  const STATE_CANDIDATES = [STATE_FILE, '../.github/pipeline-state.json'];
   let stateJson;
-  try {
-    const resp = await fetch(STATE_FILE + '?_=' + Date.now());
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    stateJson = await resp.json();
-  } catch (e) {
+  let fetchOk = false;
+  for (const candidate of STATE_CANDIDATES) {
+    try {
+      const resp = await fetch(candidate + '?_=' + Date.now());
+      if (resp.ok) { stateJson = await resp.json(); fetchOk = true; break; }
+    } catch (_) {}
+  }
+  if (!fetchOk) {
     showDropZone();
     return;
   }

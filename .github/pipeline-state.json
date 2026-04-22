@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-04-22T21:00:00Z",
+  "updated": "2026-04-22T11:17:20.045Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -1530,7 +1530,7 @@
     {
       "slug": "2026-04-19-skills-platform-phase4-opus",
       "name": "Skills Platform Ã¢â‚¬â€ Phase 4 (Opus 4.6 arm): Distribution, Structural Enforcement, and Non-Technical Access",
-      "stage": "definition",
+      "stage": "review",
       "discoveryStatus": "approved",
       "health": "green",
       "track": "library",
@@ -1661,7 +1661,7 @@
         }
       ],
       "createdAt": "2026-04-19",
-      "updatedAt": "2026-04-19",
+      "updatedAt": "2026-04-22T11:17:20.045Z",
       "metrics": [
         {
           "id": "m1",
@@ -2759,6 +2759,50 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "updatedAt": "2026-04-21T00:00:00.000Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "2026-04-22-dashboard-review",
+      "name": "Pipeline review dashboard",
+      "stage": "definition-of-done",
+      "updatedAt": "2026-04-22T22:00:00Z",
+      "epics": [
+        {
+          "slug": "non-technical-access",
+          "name": "Non-technical stakeholder tooling",
+          "stories": [
+            {
+              "slug": "dr.1",
+              "name": "Pipeline review page",
+              "stage": "definition-of-done",
+              "dorStatus": "signed-off",
+              "dodStatus": "complete",
+              "prStatus": "merged"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "2026-04-22-canvas-views",
+      "name": "Canvas artefact relationship views",
+      "stage": "definition-of-ready",
+      "updatedAt": "2026-04-22T22:00:00Z",
+      "epics": [
+        {
+          "slug": "pipeline-visualisation",
+          "name": "Pipeline visualisation",
+          "stories": [
+            {
+              "slug": "cv.1",
+              "name": "Canvas artefact relationship views",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
+              "dodStatus": null,
+              "prStatus": null
             }
           ]
         }

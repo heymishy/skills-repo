@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html data-theme="light" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pipeline Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;1,8..60,300;1,8..60,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+  <script src="md-renderer.js"></script>
+  <script src="artefact-fetcher.js"></script>
+  <style>
+    /* ─── CSS variables ─── */
+    :root {
+      --paper:        #f9f7f4;
+      --paper-2:      #f3f1ed;
+      --paper-3:      #ede9e4;
+      --paper-4:      #e6e2db;
+      --rule:         #d6d2cb;
+      --rule-soft:    #e2ded8;
+      --rule-strong:  #c0bbb2;
+      --ink:          #1a1814;
+      --ink-2:        #3d3a35;
+      --ink-3:        #7a7469;
+      --ink-4:        #b0aaa1;
+      --font-serif:   'Source Serif 4', Georgia, serif;
+      --font-ui:      'Inter', -apple-system, sans-serif;
+      --font-mono:    'JetBrains Mono', 'Menlo', monospace;
+      --pass:         #2d6a32;
+      --fail:         #b91c1c;
+      --gate:         #b45309;
+      --inner:        #1d4ed8;
+      --outer:        #5b21b6;
+      --pass-wash:    #f0faf0;
+      --fail-wash:    #fef2f2;
+      --gate-wash:    #fffbeb;
+      --inner-wash:   #eff6ff;
+    }
+    [data-theme="dark"] {
+      --paper:       #1a1a1e;
+      --paper-2:     #22222a;
+      --paper-3:     #2a2a34;
+      --paper-4:     #32323e;
+      --rule:        #3a3a48;
+      --rule-soft:   #32323e;
+      --rule-strong: #44445a;
+      --ink:         #e8e4dc;
+      --ink-2:       #c0bbb2;
+      --ink-3:       #7a7a90;
+      --ink-4:       #4a4a60;
+      --pass:        #4ade80;
+      --fail:        #f87171;
+      --gate:        #fbbf24;
+      --inner:       #60a5fa;
+      --outer:       #a78bfa;
+      --pass-wash:   rgba(74, 222, 128, 0.07);
+      --fail-wash:   rgba(248, 113, 113, 0.07);
+      --gate-wash:   rgba(251, 191, 36, 0.07);
+      --inner-wash:  rgba(96, 165, 250, 0.07);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: var(--paper); color: var(--ink); }
+    body { font-family: var(--font-ui); font-size: 13px; line-height: 1.5; }
+
+    /* ─── App shell ─── */
+    .app {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ─── Header ─── */
+    .header {
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--rule-strong);
+      background: var(--paper-2);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+    .header-title {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 400;
+      letter-spacing: -0.015em;
+      flex: 1;
+    }
+    .header-title em { font-style: italic; color: var(--ink-3); }
+
+    .server-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border: 1px solid var(--rule);
+      white-space: nowrap;
+    }
+    .server-badge.up   { color: var(--pass); border-color: color-mix(in oklch, var(--pass) 40%, var(--rule)); }
+    .server-badge.down { color: var(--ink-3); }
+
+    /* ─── Two-column layout ─── */
+    .layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      overflow: hidden;
+    }
+
+    /* ─── Feature / doc list (left panel) ─── */
+    .feature-list {
+      border-right: 1px solid var(--rule-strong);
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+    .feature-list::-webkit-scrollbar { width: 6px; }
+    .feature-list::-webkit-scrollbar-thumb { background: var(--rule); }
+
+    .feature-card { border-bottom: 1px solid var(--rule); }
+
+    .feature-head {
+      padding: 11px 14px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: start;
+      background: var(--paper-2);
+      border-bottom: 1px solid var(--rule);
+      cursor: pointer;
+      user-select: none;
+    }
+    .feature-head:hover { background: var(--paper-3); }
+
+    .feature-slug {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--ink-4);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+    .feature-name {
+      font-family: var(--font-serif);
+      font-size: 13.5px;
+      font-weight: 400;
+      line-height: 1.3;
+      color: var(--ink);
+    }
+    .feature-collapse-icon {
+      font-size: 9px;
+      color: var(--ink-4);
+      margin-top: 2px;
+    }
+
+    .stage-badge {
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border: 1px solid var(--rule);
+      white-space: nowrap;
+      flex-shrink: 0;
+      align-self: start;
+    }
+    .stage-badge[data-stage="discovery"]            { color: var(--outer); border-color: color-mix(in oklch, var(--outer) 40%, var(--rule)); }
+    .stage-badge[data-stage="benefit-metric"]       { color: var(--outer); border-color: color-mix(in oklch, var(--outer) 40%, var(--rule)); }
+    .stage-badge[data-stage="definition"]           { color: var(--outer); border-color: color-mix(in oklch, var(--outer) 40%, var(--rule)); }
+    .stage-badge[data-stage="review"]               { color: var(--gate);  border-color: color-mix(in oklch, var(--gate)  40%, var(--rule)); }
+    .stage-badge[data-stage="test-plan"]            { color: var(--gate);  border-color: color-mix(in oklch, var(--gate)  40%, var(--rule)); }
+    .stage-badge[data-stage="definition-of-ready"]  { color: var(--gate);  border-color: color-mix(in oklch, var(--gate)  40%, var(--rule)); }
+    .stage-badge[data-stage="dispatched"]           { color: var(--inner); border-color: color-mix(in oklch, var(--inner) 40%, var(--rule)); }
+    .stage-badge[data-stage="inner-loop"]           { color: var(--inner); border-color: color-mix(in oklch, var(--inner) 40%, var(--rule)); }
+    .stage-badge[data-stage="definition-of-done"]   { color: var(--pass);  border-color: color-mix(in oklch, var(--pass)  40%, var(--rule)); }
+
+    /* Document list inside a feature card */
+    .feature-body { padding: 6px 0 4px; }
+
+    .doc-section-head {
+      padding: 6px 14px 2px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+    }
+
+    .doc-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 14px 5px 26px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      color: var(--ink-2);
+      border-left: 2px solid transparent;
+    }
+    .doc-item:hover { background: var(--paper-3); }
+    .doc-item.active {
+      background: var(--paper-3);
+      border-left-color: var(--ink);
+      color: var(--ink);
+    }
+    .doc-item .doc-phase {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      color: var(--ink-4);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .doc-item.absent {
+      opacity: 0.38;
+      cursor: default;
+      font-style: italic;
+    }
+    .doc-item.absent:hover { background: transparent; }
+    .doc-item .doc-presence {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      flex-shrink: 0;
+      width: 14px;
+      text-align: center;
+      color: var(--pass);
+    }
+    .doc-item.absent .doc-presence { color: var(--ink-4); }
+
+    /* Story group */
+    .story-group { margin: 3px 0 0; }
+    .story-group-head {
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+      padding: 5px 14px 3px;
+      border-top: 1px solid var(--rule-soft);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--ink-2);
+    }
+    .story-group-name {
+      font-family: var(--font-ui);
+      font-size: 10.5px;
+      font-weight: 400;
+      color: var(--ink-3);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .story-status-chip {
+      font-family: var(--font-mono);
+      font-size: 8px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 1px 5px;
+      border: 1px solid var(--rule-soft);
+      color: var(--ink-4);
+      flex-shrink: 0;
+    }
+    .story-status-chip.done { color: var(--pass); border-color: color-mix(in oklch, var(--pass) 40%, var(--rule)); }
+
+    /* Advance controls */
+    .feature-advance {
+      padding: 10px 14px;
+      border-top: 1px solid var(--rule-soft);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .advance-hint {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--ink-4);
+      letter-spacing: 0.06em;
+    }
+
+    /* ─── Buttons ─── */
+    .btn {
+      appearance: none;
+      border: 1px solid var(--rule-strong);
+      background: var(--paper);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      color: var(--ink);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover { background: var(--paper-3); }
+    .btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+    .btn.primary:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* ─── Reader pane (right) ─── */
+    .reader-pane {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .reader-empty {
+      grid-row: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--ink-4);
+      padding: 40px;
+    }
+    .reader-empty .empty-icon { font-size: 36px; opacity: 0.35; }
+    .reader-empty p {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .reader-head {
+      padding: 11px 24px;
+      border-bottom: 1px solid var(--rule);
+      background: var(--paper-2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      min-width: 0;
+    }
+    .reader-title { flex: 1; min-width: 0; }
+    .reader-title .rt-label {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .reader-title .rt-path {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ink-3);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-top: 1px;
+    }
+
+    .reader-body {
+      overflow-y: auto;
+      padding: 40px clamp(20px, 6vw, 120px) 60px;
+      scrollbar-width: thin;
+      min-height: 0;
+    }
+    .reader-body::-webkit-scrollbar { width: 8px; }
+    .reader-body::-webkit-scrollbar-thumb { background: var(--rule); }
+
+    .reader-loading {
+      padding: 40px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-3);
+      letter-spacing: 0.08em;
+    }
+
+    /* ─── Markdown typography ─── */
+    .md {
+      font-family: var(--font-serif);
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--ink);
+      max-width: 72ch;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .md h1, .md h2, .md h3, .md h4, .md h5, .md h6 {
+      font-family: var(--font-serif);
+      font-weight: 500;
+      letter-spacing: -0.015em;
+      color: var(--ink);
+      margin: 1.8em 0 0.5em;
+      line-height: 1.2;
+    }
+    .md h1 { font-size: 32px; font-weight: 400; margin-top: 0; letter-spacing: -0.025em; }
+    .md h2 { font-size: 22px; border-bottom: 1px solid var(--rule); padding-bottom: 6px; }
+    .md h3 { font-size: 18px; }
+    .md h4 { font-size: 14px; font-family: var(--font-ui); text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); }
+    .md p  { margin: 0.6em 0 1em; }
+    .md strong { font-weight: 600; color: var(--ink); }
+    .md em { font-style: italic; }
+    .md a { color: var(--outer); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+    .md a:hover { color: var(--ink); }
+    .md code { font-family: var(--font-mono); font-size: 0.87em; padding: 1px 5px; background: var(--paper-3); border: 1px solid var(--rule-soft); color: var(--ink); }
+    .md pre { font-family: var(--font-mono); font-size: 12.5px; background: var(--paper-3); border: 1px solid var(--rule); padding: 14px 16px; overflow-x: auto; margin: 1em 0; line-height: 1.55; }
+    .md pre code { padding: 0; border: 0; background: transparent; }
+    .md blockquote { margin: 1em 0; padding: 8px 18px; border-left: 3px solid var(--gate); background: color-mix(in oklch, var(--gate-wash) 40%, var(--paper)); color: var(--ink-2); font-style: italic; }
+    .md blockquote p { margin: 0.3em 0; }
+    .md blockquote strong { color: var(--fail); font-style: normal; }
+    .md ul, .md ol { margin: 0.6em 0 1em; padding-left: 1.4em; }
+    .md li { margin: 0.2em 0; }
+    .md li .task { font-family: var(--font-mono); font-size: 0.85em; color: var(--ink-3); display: inline-block; width: 1.3em; margin-left: -1.5em; }
+    .md li .task.checked { color: var(--pass); }
+    .md hr { border: 0; border-top: 1px solid var(--rule); margin: 2em 0; }
+    .md table { border-collapse: collapse; width: 100%; margin: 1em 0 1.4em; font-family: var(--font-ui); font-size: 12.5px; }
+    .md th, .md td { padding: 7px 12px; border-bottom: 1px solid var(--rule-soft); text-align: left; vertical-align: top; }
+    .md th { background: var(--paper-3); font-family: var(--font-mono); font-weight: 600; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); border-bottom: 1px solid var(--rule); }
+    .md tbody tr:hover { background: var(--paper-2); }
+
+    /* ─── Manual-advance fallback modal ─── */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: color-mix(in oklch, var(--ink) 40%, transparent);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200;
+    }
+    .modal {
+      background: var(--paper);
+      border: 1px solid var(--rule-strong);
+      width: min(540px, 94vw);
+      max-height: 82vh;
+      overflow-y: auto;
+      padding: 24px;
+      display: grid;
+      gap: 14px;
+    }
+    .modal h3 { font-family: var(--font-serif); font-weight: 400; font-size: 20px; }
+    .modal p { font-size: 13px; color: var(--ink-2); line-height: 1.55; }
+    .modal pre {
+      font-family: var(--font-mono); font-size: 11.5px;
+      background: var(--paper-3); border: 1px solid var(--rule);
+      padding: 12px 14px; overflow-x: auto; line-height: 1.5; white-space: pre-wrap;
+    }
+    .modal-foot {
+      display: flex; gap: 8px; justify-content: flex-end;
+      border-top: 1px solid var(--rule-soft); padding-top: 12px;
+    }
+
+    /* ─── Markdown editor overlay ─── */
+    .md-editor-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      display: flex; flex-direction: column;
+      background: var(--paper);
+      font-family: var(--font-ui);
+    }
+    .md-editor-toolbar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px; border-bottom: 1px solid var(--rule);
+      background: var(--paper-2); flex-shrink: 0;
+    }
+    .md-editor-path {
+      font-family: var(--font-mono); font-size: 12px; color: var(--ink-2);
+      flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .md-editor-btn {
+      appearance: none; background: var(--paper-3); border: 1px solid var(--rule);
+      color: var(--ink); font-family: var(--font-ui); font-size: 12px; font-weight: 500;
+      padding: 5px 12px; border-radius: 3px; cursor: pointer; flex-shrink: 0;
+    }
+    .md-editor-btn:hover { background: var(--paper-2); }
+    .md-editor-btn-close {
+      background: none; border: none; font-size: 20px; color: var(--ink-2);
+      cursor: pointer; padding: 2px 8px; line-height: 1; flex-shrink: 0;
+    }
+    .md-editor-btn-close:hover { color: var(--ink); }
+    .md-editor-panes { display: flex; flex: 1; overflow: hidden; }
+    .md-editor-source { flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--rule); overflow: hidden; }
+    .md-editor-source-label, .md-editor-preview-label {
+      font-family: var(--font-ui); font-size: 10.5px; font-weight: 600;
+      letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-3);
+      padding: 6px 14px; border-bottom: 1px solid var(--rule);
+      background: var(--paper-3); flex-shrink: 0;
+    }
+    .md-editor-textarea {
+      flex: 1; border: none; outline: none; resize: none;
+      font-family: var(--font-mono); font-size: 12.5px; line-height: 1.6;
+      background: var(--paper); color: var(--ink);
+      padding: 16px; overflow-y: auto; scrollbar-width: thin;
+    }
+    .md-editor-preview { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .md-editor-preview-body {
+      flex: 1; overflow-y: auto; padding: 20px 24px; scrollbar-width: thin;
+      font-family: var(--font-serif); font-size: 14px; line-height: 1.6; color: var(--ink);
+    }
+    .md-editor-preview-body h1, .md-editor-preview-body h2, .md-editor-preview-body h3,
+    .md-editor-preview-body h4 {
+      font-family: var(--font-serif); font-weight: 500; letter-spacing: -0.015em;
+      color: var(--ink); margin: 1.6em 0 0.4em; line-height: 1.2;
+    }
+    .md-editor-preview-body h1 { font-size: 28px; font-weight: 400; margin-top: 0; }
+    .md-editor-preview-body h2 { font-size: 20px; border-bottom: 1px solid var(--rule); padding-bottom: 4px; }
+    .md-editor-preview-body h3 { font-size: 16px; }
+    .md-editor-preview-body p  { margin: 0.6em 0 1em; }
+    .md-editor-preview-body code { font-family: var(--font-mono); font-size: 0.87em; padding: 1px 5px; background: var(--paper-3); border: 1px solid var(--rule-soft); }
+    .md-editor-preview-body pre { background: var(--paper-3); border: 1px solid var(--rule); padding: 14px 16px; overflow-x: auto; margin: 1em 0; }
+    .md-editor-preview-body pre code { padding: 0; border: 0; background: transparent; }
+    .md-editor-preview-body ul, .md-editor-preview-body ol { margin: 0.6em 0 1em; padding-left: 1.4em; }
+    .md-editor-preview-body li { margin: 0.2em 0; }
+    .md-editor-preview-body blockquote { margin: 1em 0; padding: 8px 18px; border-left: 3px solid var(--gate); background: color-mix(in oklch, var(--gate-wash) 40%, var(--paper)); color: var(--ink-2); font-style: italic; }
+    .md-editor-preview-body table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+    .md-editor-preview-body th, .md-editor-preview-body td { padding: 7px 12px; border-bottom: 1px solid var(--rule-soft); text-align: left; }
+    .md-editor-preview-body th { background: var(--paper-3); font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; text-transform: uppercase; color: var(--ink-3); }
+    .md-editor-preview-body hr { border: 0; border-top: 1px solid var(--rule); margin: 2em 0; }
+    .md-editor-preview-body strong { font-weight: 600; }
+    .md-editor-preview-body em { font-style: italic; }
+    .md-editor-preview-body a { color: var(--outer); text-decoration: underline; }
+
+    /* ── Site-wide navigation bar ── */
+    .site-nav {
+      display: flex; gap: 2px; align-items: center;
+      padding: 2px; background: var(--paper-2); border: 1px solid var(--rule);
+    }
+    .site-nav a {
+      padding: 5px 10px; font-family: var(--font-mono); font-size: 10.5px;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3);
+      text-decoration: none; border: 1px solid transparent; white-space: nowrap;
+    }
+    .site-nav a.active { background: var(--paper); color: var(--ink); border-color: var(--rule); }
+    .site-nav a:hover:not(.active) { color: var(--ink); background: var(--paper-3); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect, useRef, useMemo } = React;
+
+    const REVIEW_SERVER = 'http://localhost:3131';
+
+    const STAGE_ORDER = [
+      'discovery',
+      'benefit-metric',
+      'definition',
+      'review',
+      'test-plan',
+      'definition-of-ready',
+      'dispatched',
+      'inner-loop',
+      'definition-of-done',
+    ];
+
+    function nextStage(current) {
+      const idx = STAGE_ORDER.indexOf(current);
+      if (idx < 0 || idx >= STAGE_ORDER.length - 1) return null;
+      return STAGE_ORDER[idx + 1];
+    }
+
+    // ─── Pipeline state loader (dual-URL, same pattern as pipeline-adapter.js) ───
+    async function loadPipelineState() {
+      const candidates = [
+        'pipeline-state.json',           // same dir — GitHub Pages copy
+        '../.github/pipeline-state.json', // Live Server from repo root
+      ];
+      for (const url of candidates) {
+        try {
+          const r = await fetch(url);
+          if (r.ok) return await r.json();
+        } catch (_) { /* try next */ }
+      }
+      return null;
+    }
+
+    // ─── Server health check ─────────────────────────────────────────────────
+    async function checkServer() {
+      try {
+        const r = await fetch(REVIEW_SERVER + '/health', {
+          signal: AbortSignal.timeout(1200),
+        });
+        return r.ok;
+      } catch (_) { return false; }
+    }
+
+    // ─── Advance stage via review-server.js ─────────────────────────────────
+    async function callAdvance(featureSlug, newStage) {
+      const r = await fetch(REVIEW_SERVER + '/advance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ featureSlug, newStage }),
+      });
+      if (!r.ok) {
+        const msg = await r.text().catch(() => r.statusText);
+        throw new Error(msg || r.statusText);
+      }
+      return r.json();
+    }
+
+    // ─── Save artefact to disk via review-server ───────────────────────────
+    async function callSave(filePath, content) {
+      // Normalize: strip any leading '../artefacts/' then ensure 'artefacts/' prefix
+      filePath = 'artefacts/' + filePath.replace(/^(\.\.\/)*artefacts\//, '');
+      const r = await fetch(REVIEW_SERVER + '/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filePath, content }),
+      });
+      if (!r.ok) {
+        const msg = await r.text().catch(() => r.statusText);
+        throw new Error(msg || r.statusText);
+      }
+      return r.json();
+    }
+
+    // ─── MdEditorOverlay (same as index.html me.1) ──────────────────────────
+    function MdEditorOverlay({ md: initialMd, filePath, onClose, onSave, serverUp, onSaveToDisk }) {
+      const [text, setText] = useState(initialMd || '');
+      const [preview, setPreview] = useState('');
+      const [copyLabel, setCopyLabel] = useState('Copy');
+      const [saveLabel, setSaveLabel] = useState('Save');
+      const debounceRef = useRef(null);
+
+      useEffect(() => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+          if (window.renderMarkdown) {
+            setPreview(window.renderMarkdown(text));
+          } else {
+            setPreview('<pre>' + text.replace(/</g, '&lt;') + '</pre>');
+          }
+        }, 200);
+        return () => clearTimeout(debounceRef.current);
+      }, [text]);
+
+      useEffect(() => {
+        const handleKey = (e) => { if (e.key === 'Escape') { onSave(text); onClose(); } };
+        window.addEventListener('keydown', handleKey);
+        return () => window.removeEventListener('keydown', handleKey);
+      }, [text, onClose, onSave]);
+
+      const handleCopy = () => {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(text).then(() => {
+            setCopyLabel('Copied!');
+            setTimeout(() => setCopyLabel('Copy'), 1500);
+          });
+        }
+      };
+
+      const handleSaveToDisk = () => {
+        if (!onSaveToDisk) return;
+        setSaveLabel('Saving…');
+        onSaveToDisk(text)
+          .then(() => {
+            setSaveLabel('Saved ✓');
+            setTimeout(() => setSaveLabel('Save'), 2000);
+          })
+          .catch(e => {
+            setSaveLabel('Error');
+            console.error('[save]', e);
+            setTimeout(() => setSaveLabel('Save'), 2500);
+          });
+      };
+
+      const handleDownload = () => {
+        const filename = filePath ? filePath.split('/').pop() : 'artefact.md';
+        const blob = new Blob([text], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      return (
+        <div className="md-editor-overlay">
+          <div className="md-editor-toolbar">
+            <span className="md-editor-path">{filePath || 'artefact'}</span>
+            <button className="md-editor-btn" onClick={handleCopy}>{copyLabel}</button>
+            <button className="md-editor-btn" onClick={handleDownload}>Download .md</button>
+            {serverUp && onSaveToDisk && (
+              <button
+                className="md-editor-btn"
+                onClick={handleSaveToDisk}
+                disabled={saveLabel === 'Saving…'}
+              >{saveLabel}</button>
+            )}
+            <button
+              className="md-editor-btn-close"
+              onClick={() => { onSave(text); onClose(); }}
+              aria-label="Close editor"
+            >×</button>
+          </div>
+          <div className="md-editor-panes">
+            <div className="md-editor-source">
+              <div className="md-editor-source-label">Markdown source</div>
+              <textarea
+                className="md-editor-textarea"
+                value={text}
+                onChange={e => setText(e.target.value)}
+                spellCheck={false}
+              />
+            </div>
+            <div className="md-editor-preview">
+              <div className="md-editor-preview-label">Preview</div>
+              <div
+                className="md-editor-preview-body"
+                dangerouslySetInnerHTML={{ __html: preview }}
+              />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ─── Manual advance fallback modal ──────────────────────────────────────
+    function AdvanceModal({ featureSlug, currentStage, newStage, onClose }) {
+      const [copyLabel, setCopyLabel] = useState('Copy instructions');
+
+      const instructions = [
+        `File: .github/pipeline-state.json`,
+        `Find the feature with "slug": "${featureSlug}"`,
+        `Change "stage": "${currentStage}"  →  "stage": "${newStage}"`,
+        `Update "updatedAt" to the current ISO timestamp`,
+      ].join('\n');
+
+      const handleCopy = () => {
+        navigator.clipboard?.writeText(instructions).then(() => {
+          setCopyLabel('Copied!');
+          setTimeout(() => setCopyLabel('Copy instructions'), 1600);
+        });
+      };
+
+      const closeOnBackdrop = (e) => { if (e.target === e.currentTarget) onClose(); };
+
+      return (
+        <div className="modal-backdrop" onClick={closeOnBackdrop}>
+          <div className="modal">
+            <h3>Advance stage manually</h3>
+            <p>
+              The review server is not running. To advance <strong>{featureSlug}</strong>{' '}
+              from <strong>{currentStage}</strong> to <strong>{newStage}</strong>,
+              apply this edit to <code>.github/pipeline-state.json</code>:
+            </p>
+            <pre>{instructions}</pre>
+            <p>
+              Or start the server with <code>node scripts/review-server.js</code>,
+              then refresh this page and try again.
+            </p>
+            <div className="modal-foot">
+              <button className="btn" onClick={handleCopy}>{copyLabel}</button>
+              <button className="btn primary" onClick={onClose}>Close</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ─── Presence hook — checks all given paths via ArtefactFetcher ───────────
+    function usePresence(paths) {
+      const [state, setState] = useState(() => Object.fromEntries(paths.map(p => [p, null])));
+      useEffect(() => {
+        const AF = window.ArtefactFetcher;
+        if (!AF) return;
+        paths.forEach(p => {
+          AF.fetch(p)
+            .then(txt => setState(prev => ({ ...prev, [p]: !!(txt && txt.length > 10) })))
+            .catch(() => setState(prev => ({ ...prev, [p]: false })));
+        });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [paths.join('|')]);
+      return state; // null = loading, true = present, false = absent
+    }
+
+    // ─── Single document link item ───────────────────────────────────────────
+    function DocItem({ label, path, phase, active, onSelect, present }) {
+      // present: null = still checking, true = exists, false = absent
+      const isAbsent = present === false;
+      const isPresent = present === true;
+      return (
+        <div
+          className={'doc-item' + (active ? ' active' : '') + (isAbsent ? ' absent' : '')}
+          onClick={() => !isAbsent && onSelect({ label, path, phase })}
+          title={isAbsent ? path + ' (not found)' : path}
+        >
+          <span className="doc-presence">
+            {isPresent ? '✓' : isAbsent ? '−' : ''}
+          </span>
+          <span>{label}</span>
+          <span className="doc-phase">{phase}</span>
+        </div>
+      );
+    }
+
+    // ─── Feature card (left panel) ───────────────────────────────────────────
+    function FeatureCard({ feature, selectedDocPath, onSelectDoc, serverUp, onStateChange }) {
+      const [open, setOpen] = useState(true);
+      const [advancing, setAdvancing] = useState(false);
+      const [advModal, setAdvModal] = useState(null);
+
+      const slug = feature.slug;
+      const stage = feature.stage;
+      const next = nextStage(stage);
+
+      // Feature-level docs
+      const featureDocs = [
+        { label: 'Discovery',     path: slug + '/discovery.md',      phase: 'discovery' },
+        { label: 'Benefit metric', path: slug + '/benefit-metric.md', phase: 'benefit'   },
+        { label: 'NFR Profile',   path: slug + '/nfr-profile.md',    phase: 'definition' },
+      ];
+
+      // Flatten stories from all epics
+      const stories = (feature.epics || []).flatMap(e =>
+        (e.stories || []).map(s => ({ ...s, epicName: e.name || e.slug }))
+      );
+
+      // Collect all paths to presence-check in one hook call
+      const allPaths = useMemo(() => [
+        ...featureDocs.map(d => d.path),
+        ...stories.flatMap(s => [
+          slug + '/stories/' + (s.slug || s.id) + '.md',
+          slug + '/test-plans/' + (s.slug || s.id) + '-test-plan.md',
+          slug + '/dor/' + (s.slug || s.id) + '-dor.md',
+          slug + '/dod/' + (s.slug || s.id) + '-dod.md',
+        ]),
+      ], [slug, stories.map(s => s.slug || s.id).join(',')]);
+
+      const presence = usePresence(allPaths);
+
+      const handleAdvance = async () => {
+        if (!next) return;
+        setAdvancing(true);
+        try {
+          if (serverUp) {
+            await callAdvance(slug, next);
+            onStateChange();
+          } else {
+            setAdvModal({ currentStage: stage, newStage: next });
+          }
+        } catch (_) {
+          setAdvModal({ currentStage: stage, newStage: next });
+        } finally {
+          setAdvancing(false);
+        }
+      };
+
+      return (
+        <div className="feature-card">
+          {/* Header — click to collapse/expand */}
+          <div className="feature-head" onClick={() => setOpen(v => !v)}>
+            <div>
+              <div className="feature-slug">{slug}</div>
+              <div className="feature-name">{feature.name || slug}</div>
+            </div>
+            <span className="stage-badge" data-stage={stage}>{stage}</span>
+          </div>
+
+          {open && (
+            <div className="feature-body">
+              <div className="doc-section-head">Feature</div>
+              {featureDocs.map(d => (
+                <DocItem
+                  key={d.path}
+                  {...d}
+                  active={selectedDocPath === d.path}
+                  onSelect={onSelectDoc}
+                  present={presence[d.path] ?? null}
+                />
+              ))}
+
+              {stories.length > 0 && (
+                <div className="doc-section-head" style={{ marginTop: 8 }}>Stories</div>
+              )}
+              {stories.map(s => (
+                <div key={s.slug} className="story-group">
+                  <div className="story-group-head">
+                    <span>{s.slug}</span>
+                    <span className="story-group-name">{s.name}</span>
+                    <span className={'story-status-chip' + (s.dodStatus === 'complete' ? ' done' : '')}>
+                      {s.dodStatus === 'complete' ? 'DoD ✓' : s.stage || '—'}
+                    </span>
+                  </div>
+                  {[
+                    { label: 'Story',     path: slug + '/stories/' + (s.slug || s.id) + '.md',                          phase: 'definition' },
+                    { label: 'Test plan', path: slug + '/test-plans/' + (s.slug || s.id) + '-test-plan.md',             phase: 'testplan'   },
+                    { label: 'DoR',       path: slug + '/dor/' + (s.slug || s.id) + '-dor.md',                          phase: 'dor'        },
+                    { label: 'DoD',       path: slug + '/dod/' + (s.slug || s.id) + '-dod.md',                          phase: 'dod'        },
+                  ].map(d => (
+                    <DocItem
+                      key={d.path}
+                      {...d}
+                      active={selectedDocPath === d.path}
+                      onSelect={onSelectDoc}
+                      present={presence[d.path] ?? null}
+                    />
+                  ))}
+                </div>
+              ))}
+
+              {next && (
+                <div className="feature-advance">
+                  <button
+                    className="btn primary"
+                    onClick={handleAdvance}
+                    disabled={advancing}
+                  >
+                    {advancing ? 'Advancing…' : `Advance → ${next}`}
+                  </button>
+                  {!serverUp && (
+                    <span className="advance-hint">server offline — shows diff</span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {advModal && (
+            <AdvanceModal
+              featureSlug={slug}
+              currentStage={stage}
+              newStage={advModal.newStage}
+              onClose={() => setAdvModal(null)}
+            />
+          )}
+        </div>
+      );
+    }
+
+    // ─── Document reader (right panel) ──────────────────────────────────────
+    function DocReader({ doc, onClose, serverUp }) {
+      const [content, setContent] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const [editedContent, setEditedContent] = useState(null);
+      const [editorOpen, setEditorOpen] = useState(false);
+
+      useEffect(() => {
+        if (!doc) { setContent(null); setEditedContent(null); return; }
+        setContent(null);
+        setEditedContent(null);
+        setLoading(true);
+        const AF = window.ArtefactFetcher;
+        if (!AF) {
+          setLoading(false);
+          setContent('_ArtefactFetcher not available. Serve this page via HTTP (Live Server or similar)._');
+          return;
+        }
+        AF.fetch(doc.path).then(text => {
+          setContent(
+            text || `# ${doc.label}\n\n_File not found at \`${doc.path}\`._\n\nThis document may not exist yet for this stage.`
+          );
+          setLoading(false);
+        });
+      }, [doc && doc.path]);
+
+      const displayContent = editedContent !== null ? editedContent : content;
+      const html = useMemo(
+        () => displayContent ? (window.renderMarkdown?.(displayContent) || '') : '',
+        [displayContent]
+      );
+
+      if (!doc) {
+        return (
+          <div className="reader-empty">
+            <div className="empty-icon">📄</div>
+            <p>Select a document to read</p>
+          </div>
+        );
+      }
+
+      return (
+        <>
+          {editorOpen && displayContent !== null && (
+            <MdEditorOverlay
+              md={displayContent}
+              filePath={doc.path}
+              onClose={() => setEditorOpen(false)}
+              onSave={(edited) => { setEditedContent(edited); setEditorOpen(false); }}
+              serverUp={serverUp}
+              onSaveToDisk={serverUp ? (text) => callSave(doc.path, text).then(() => setEditedContent(text)) : null}
+            />
+          )}
+          <div className="reader-head">
+            <div className="reader-title">
+              <div className="rt-label">{doc.label}</div>
+              <div className="rt-path">{doc.path}</div>
+            </div>
+            <button className="btn" onClick={() => setEditorOpen(true)} disabled={!displayContent}>
+              Edit
+            </button>
+            <button className="btn" onClick={onClose} title="Close (Escape)">✕</button>
+          </div>
+          <div className="reader-body">
+            {loading && <div className="reader-loading">Loading…</div>}
+            {!loading && displayContent !== null && (
+              <div className="md" dangerouslySetInnerHTML={{ __html: html }} />
+            )}
+          </div>
+        </>
+      );
+    }
+
+    // ─── App root ────────────────────────────────────────────────────────────
+    function App() {
+      const [state, setState] = useState(null);
+      const [loadError, setLoadError] = useState(false);
+      const [selectedDoc, setSelectedDoc] = useState(null);
+      const [serverUp, setServerUp] = useState(false);
+      const [theme, setTheme] = useState(() =>
+        window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light'
+      );
+
+      useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+      }, [theme]);
+
+      const reloadState = () => {
+        loadPipelineState().then(data => {
+          if (data) setState(data);
+          else setLoadError(true);
+        });
+      };
+
+      useEffect(() => {
+        reloadState();
+        checkServer().then(setServerUp);
+        // Recheck server every 10s so badge updates when server starts
+        const id = setInterval(() => checkServer().then(setServerUp), 10000);
+        return () => clearInterval(id);
+      }, []);
+
+      // Keyboard: Escape closes reader
+      useEffect(() => {
+        const onKey = (e) => { if (e.key === 'Escape') setSelectedDoc(null); };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+      }, []);
+
+      return (
+        <div className="app">
+          <header className="header">
+            <div className="header-title">Pipeline <em>review.</em></div>
+            <div className={'server-badge ' + (serverUp ? 'up' : 'down')}>
+              {serverUp ? '● server online' : '○ server offline'}
+            </div>
+            <button
+              className="btn"
+              style={{ fontSize: '10px' }}
+              onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+            >
+              {theme === 'dark' ? 'Light' : 'Dark'}
+            </button>
+            <nav className="site-nav">
+              <a href="index.html">Pipeline</a>
+              <a href="pipeline.html">Feature</a>
+              <a href="review.html" className="active">Review</a>
+              <a href="canvas.html">Canvas</a>
+            </nav>
+          </header>
+
+          <div className="layout">
+            {/* Left: feature + document list */}
+            <nav className="feature-list">
+              {loadError && (
+                <div style={{ padding: '20px 14px', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fail)', lineHeight: 1.55 }}>
+                  Could not load pipeline-state.json.<br />
+                  Serve this page via HTTP — e.g. <code>node scripts/review-server.js</code> or Live Server.
+                </div>
+              )}
+              {!state && !loadError && (
+                <div style={{ padding: '20px 14px', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-3)' }}>
+                  Loading…
+                </div>
+              )}
+              {state && state.features && state.features.map(f => (
+                <FeatureCard
+                  key={f.slug}
+                  feature={f}
+                  selectedDocPath={selectedDoc && selectedDoc.path}
+                  onSelectDoc={setSelectedDoc}
+                  serverUp={serverUp}
+                  onStateChange={reloadState}
+                />
+              ))}
+            </nav>
+
+            {/* Right: document reader */}
+            <main className="reader-pane">
+              <DocReader doc={selectedDoc} onClose={() => setSelectedDoc(null)} serverUp={serverUp} />
+            </main>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
