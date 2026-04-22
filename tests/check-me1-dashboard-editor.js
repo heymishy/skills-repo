@@ -129,6 +129,48 @@ if (indexHtml.includes('createObjectURL')) {
   fail('T14', 'index.html is missing createObjectURL — Download button not implemented');
 }
 
+// T15 — pipeline.html contains REVIEW_SERVER (server integration)
+if (pipelineHtml.includes('REVIEW_SERVER')) {
+  pass('T15', 'pipeline.html contains REVIEW_SERVER constant (server integration)');
+} else {
+  fail('T15', 'pipeline.html is missing REVIEW_SERVER — server integration not added');
+}
+
+// T16 — pipeline.html contains serverUp (server state)
+if (pipelineHtml.includes('serverUp')) {
+  pass('T16', 'pipeline.html contains serverUp state (server health tracking)');
+} else {
+  fail('T16', 'pipeline.html is missing serverUp state');
+}
+
+// T17 — index.html contains REVIEW_SERVER (server integration)
+if (indexHtml.includes('REVIEW_SERVER')) {
+  pass('T17', 'index.html contains REVIEW_SERVER constant (server integration)');
+} else {
+  fail('T17', 'index.html is missing REVIEW_SERVER — server integration not added');
+}
+
+// T18 — index.html contains serverUp (server state)
+if (indexHtml.includes('serverUp')) {
+  pass('T18', 'index.html contains serverUp state (server health tracking)');
+} else {
+  fail('T18', 'index.html is missing serverUp state');
+}
+
+// T19 — index.html MdViewer full-screen overlay
+if (indexHtml.includes('inset:0') || indexHtml.includes('inset: 0')) {
+  pass('T19', 'index.html contains inset:0 (MdViewer full-screen overlay)');
+} else {
+  fail('T19', 'index.html is missing inset:0 — MdViewer full-screen layout not applied');
+}
+
+// T20 — index.html traceability link interception
+if (indexHtml.includes('artefacts/') && indexHtml.includes('preventDefault')) {
+  pass('T20', 'index.html contains traceability link-click interception (artefacts/ + preventDefault)');
+} else {
+  fail('T20', 'index.html is missing traceability link interception handler');
+}
+
 // ── Summary ───────────────────────────────────────────────────────────────────
 if (failed > 0) {
   console.error(SUITE + ' ' + passed + ' passed, ' + failed + ' failed');

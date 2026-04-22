@@ -47,11 +47,22 @@ The Escape key closes the editor overlay (keyboard-accessible).
 **AC10 — Governance test:**
 `tests/check-me1-dashboard-editor.js` exists and passes. It checks: (1) the pipeline.html file contains the editor overlay element marker, (2) the file contains "Copy" button text, (3) the file contains "Download" button text, (4) the file contains the Escape key handler, (5) the extra-views.css file contains `md-editor-overlay` style rule.
 
+**AC11 — Save to disk in pipeline.html:**
+`pipeline.html` includes `REVIEW_SERVER` constant, `checkServer()`, and `callSave(filePath, content)` helpers. The `App` component tracks `serverUp` state (polled every 10 seconds). `MdEditorOverlay` accepts `serverUp` and `onSaveToDisk` props; when `serverUp` is `true` and `onSaveToDisk` is provided, a Save button is displayed in the toolbar. When the server is offline the Save button is absent (graceful fallback).
+
+**AC12 — Save to disk in index.html:**
+`index.html` includes `REVIEW_SERVER`, `checkServer()`, and `callSave()` at module scope. The `App` component tracks `serverUp` state with 10-second polling. `MdEditorOverlay` accepts `serverUp` and `onSaveToDisk` props. `MdViewer` receives `serverUp` from App and passes `onSaveToDisk` to `MdEditorOverlay`. Save button shown only when server is online; graceful fallback otherwise.
+
+**AC13 — MdViewer full-screen responsive layout in index.html:**
+`MdViewer` in `index.html` is a full-screen overlay (`position:fixed`, `inset:0`) with a fade-in transition. Body padding uses `clamp(20px, 6vw, 120px)`. Prose content is centred at `max-width:72ch` with `margin:auto`. A `@media (max-width:640px)` breakpoint reduces padding, hides `.mdv-sha`, and reduces font sizes. The overlay stacks above all pipeline content.
+
+**AC14 — Traceability link interception in index.html MdViewer:**
+In `MdViewer` (`index.html`), clicks on `<a>` elements whose `href` matches `../artefacts/...` or `/artefacts/...` are intercepted (default navigation prevented). The linked `.md` file is fetched via `ArtefactFetcher` and displayed in the same viewer without a page reload. External links are unaffected.
+
 ---
 
 ## Out of scope
 
-- Saving changes back to the GitHub repository (requires a backend or GitHub API integration — deferred)
 - Syntax highlighting in the textarea (external library dependency — deferred)
 - Mobile-specific toolbar layout (CSS responsive stacking is sufficient for now)
 
