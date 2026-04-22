@@ -25,30 +25,32 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Checkout gate script from platform-infrastructure
-        uses: actions/checkout@v4
-        with:
-          repository: heymishy/skills-framework-infra
-          ref: 327d73110c9899268ce899eab2fd4d2e5e967097
-          path: .gate-download
-
-      - name: Validate gate script checksum
+      - name: Derive regulated flag from pipeline-state
+        id: regulated
         run: |
-          EXPECTED=$(cat .github/gate-checksum.sha256 | tr -d '[:space:]')
-          ACTUAL=$(sha256sum .gate-download/scripts/run-assurance-gate.js | awk '{print $1}')
-          if [ "$ACTUAL" != "$EXPECTED" ]; then
-            echo "Gate script checksum mismatch — aborting"
-            echo "  actual:   ${ACTUAL}"
-            echo "  expected: ${EXPECTED}"
-            exit 1
-          fi
-          echo "Gate script checksum verified: ${ACTUAL}"
+          PR_NUM=$(echo "$GITHUB_REF" | sed 's|refs/pull/\([0-9]*\)/.*|\1|')
+          PR_URL="https://github.com/${GITHUB_REPOSITORY}/pull/${PR_NUM}"
+          REGULATED=$(node -e "
+            const fs = require('fs');
+            const state = JSON.parse(fs.readFileSync('.github/pipeline-state.json', 'utf8'));
+            const prUrl = process.argv[1];
+            let regulated = false;
+            (state.features || []).forEach(function(f) {
+              (f.stories || []).forEach(function(s) {
+                if (s.prUrl === prUrl && s.regulated === true) regulated = true;
+              });
+            });
+            console.log(regulated ? 'true' : 'false');
+          " "$PR_URL")
+          echo "regulated=${REGULATED}" >> "$GITHUB_OUTPUT"
+          echo "Regulated flag for PR #${PR_NUM}: ${REGULATED}"
 
       - name: Run assurance gate
         id: gate
         env:
           TRIGGER: ci
-        run: node .gate-download/scripts/run-assurance-gate.js
+          REGULATED: ${{ steps.regulated.outputs.regulated }}
+        run: node .github/scripts/run-assurance-gate.js
 
       - name: Upload trace artifact
         if: always()

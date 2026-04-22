@@ -292,16 +292,18 @@ if (require.main === module) {
   const trigger   = process.env.TRIGGER    || 'ci';
   const prRef     = process.env.PR_REF     || process.env.GITHUB_REF  || '';
   const commitSha = process.env.COMMIT_SHA || process.env.GITHUB_SHA  || '';
+  const regulated = process.env.REGULATED  === 'true';
 
   process.stdout.write(
     '[assurance-gate] Starting (trigger=' + trigger +
     ' prRef=' + prRef +
-    ' sha=' + commitSha.slice(0, 8) + ')\n'
+    ' sha=' + commitSha.slice(0, 8) +
+    ' regulated=' + regulated + ')\n'
   );
 
   var result;
   try {
-    result = runGate({ trigger, prRef, commitSha });
+    result = runGate({ trigger, prRef, commitSha, regulated });
   } catch (err) {
     process.stderr.write('[assurance-gate] Fatal error: ' + err.message + '\n');
     process.exit(1);
