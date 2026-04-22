@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-04-22T11:17:20.045Z",
+  "updated": "2026-04-23T00:00:00Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -32,6 +32,21 @@
     }
   },
   "features": [
+    {
+      "slug": "2026-04-23-non-technical-channel",
+      "name": "Non-Technical Channel — Framework Adoption Friction (Phase 5 WS0 / G0b)",
+      "stage": "ideation",
+      "health": "green",
+      "track": "library",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discoveryStatus": "not-started",
+      "ideationPath": "artefacts/2026-04-23-non-technical-channel/research/ideation.md",
+      "ideationSignal": "proceed",
+      "updatedAt": "2026-04-23T00:00:00Z"
+    },
     {
       "slug": "2026-04-22-modernisation-decompose",
       "name": "Modernisation Decompose — Bridging /reverse-engineer to the Delivery Pipeline",
