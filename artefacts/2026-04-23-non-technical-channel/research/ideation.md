@@ -3,8 +3,8 @@
 **Feature:** 2026-04-23-non-technical-channel
 **Date:** 2026-04-23
 **Artefact path:** `artefacts/2026-04-23-non-technical-channel/research/ideation.md`
-**Lenses run:** E, A, B, D (abbreviated)
-**Pipeline state signal:** proceed (REDESIGN signal on solution surface AND adoption strategy — role identity threat is a deeper blocker than setup friction)
+**Lenses run:** E, A, B, D (abbreviated) — updated pass 3: facilitation-native web UI hypothesis
+**Pipeline state signal:** proceed (REDESIGN signal on solution surface AND adoption strategy AND solution architecture — facilitation-native web UI is a materially different direction from Teams bot)
 **Relates to:** G0b (Phase 5/6 roadmap) — Non-technical discipline channel: CONFIRMED gap
 
 ---
@@ -169,10 +169,41 @@ Outcome: PM/BA can run the governed outer loop in their existing environment,
 | Copilot Chat extension in Teams (Microsoft 365 Copilot) | Runs in Teams Copilot sidebar; wraps skills without terminal | Requires Copilot M365 licence and extension approval — enterprise entitlement risk |
 | Email-to-artefact flow — PM writes in natural language, conversion step structures it | Zero interaction model change for PM | Quality risk: natural language → structured artefact without guidance may produce thin artefacts |
 | SharePoint / Power Apps form → backend committer | Familiar MS ecosystem; no new tool for PM | Power Apps licencing; form maintenance cost; may not support full outer loop |
+| **Facilitation-native web UI** — collaborative canvas where the BA runs ideation/discovery methods live; artefact is produced *during* the session, not after | BA is the facilitator, not a user filling in a form; resolves role identity threat structurally; works for workshops and stakeholder sessions | Real-time collaboration infrastructure (WebSockets, shared state, presence) is a meaningful engineering investment not covered by the Copilot SDK; facilitation method design requires product design expertise |
+
+### Facilitation-native web UI — why this is architecturally different
+
+The Teams bot, hosted form, and email flow are all *input channel* hypotheses — they lower the friction for a non-technical persona to produce a pipeline artefact that already existed in a VS Code session. The facilitation-native web UI is a different category: it treats the outer loop as a **collaborative facilitation tool first** and a **pipeline feeder second**.
+
+The core insight: BA/PMs are often expert facilitators. They run discovery workshops, ideation sessions, and stakeholder alignment meetings. They know how to hold space for competing perspectives, surface implicit assumptions, reframe problems when a room is stuck, and synthesise fragmented input into a coherent direction. None of that skill lives in a SKILL.md. The pipeline currently treats it as a black box that produces inputs — you run the workshop somehow, then go into VS Code and turn the outputs into artefacts. The facilitation and the artefact production are sequential, disconnected, and lossy.
+
+In a facilitation-native surface, they happen simultaneously. The BA runs the ideation methods they are already expert in. The structure that emerges from those methods feeds directly into the governed pipeline artefact as the session progresses. The artefact is not produced *after* the workshop — it is produced *during* it, by the participants, with the facilitator using the tool as a scaffold for structured thinking rather than a form to fill in.
+
+**Why this resolves the role identity threat in a way surface changes alone do not:**
+
+The identity threat exists because a skilled engineer can run /discovery and produce a plausible artefact without a BA in the room. In a facilitation-native surface, the tool does not produce the discovery artefact — the facilitator does, using the tool to structure and capture what emerges from a live collaborative session. The BA is not *a user of the pipeline*; they are *the person running the session that the pipeline captures*. That is a completely different relationship to the tool. Their expertise — knowing which questions to ask, how to read a room, how to surface what stakeholders actually need versus what they say they want — is now load-bearing, not invisible.
+
+Engineers can still run the outer loop in VS Code. But the facilitation-native surface is the BA's native environment, not an engineering tool with the friction sanded off. That distinction matters for the adoption narrative.
+
+**What a session looks like in practice:**
+
+A BA opens the web UI, creates a new discovery session, and invites two or three stakeholders. The session view renders a structured collaborative canvas guided by the ideation methods from the pipeline — opportunity mapping, JTBD framing, assumption surfacing — but presented as facilitation scaffolding, not form fields. Participants contribute in real time. The BA facilitates using the structure the tool provides; the content comes from the room. As the session progresses, the tool structures the output into the pipeline artefact format. The BA does not see SKILL.md section headers — they see "problem framing", "evidence", "success indicators". When the session closes, the pipeline artefact is committed to the repo. The BA exports a human-readable summary to Confluence for stakeholders. The engineering pipeline has its governed artefact. Neither group compromised their way of working.
+
+**Relationship to the Copilot SDK:**
+
+The GitHub Copilot SDK makes the agentic model layer buildable without a separate model subscription. The web UI backend embeds the SDK; the governance package (SKILL.md skills) sits as middleware; the facilitation session drives the model through the outer loop skills in real time. The SDK handles authentication, model management, and agentic infrastructure. What the SDK does *not* provide is the collaboration layer — shared state, WebSocket connections, presence, conflict resolution when two participants edit simultaneously. That is custom infrastructure the team would build.
+
+**Three genuine hard things (not blocking — but honest):**
+
+| Hard thing | Why it is hard | What this means for sequencing |
+|---|---|---|
+| Real-time collaboration infrastructure | WebSockets, shared state, conflict resolution, presence model — meaningful engineering investment not covered by any existing dependency | Phase 1 of the web UI should be single-facilitator (no live multi-participant), proving the artefact production loop before adding collaboration complexity |
+| Facilitation method design | Which methods, in which order, how structured vs. freeform, when the tool guides vs. gets out of the way — these decisions require facilitation expertise to get right; wrong decisions produce a constraint, not a scaffold | Facilitation method design must be done with real BAs running real sessions, not derived from the SKILL.md structure alone |
+| Artefact parity in a live session | Quality depends on the facilitator's skill as much as the tool's design; the pipeline currently validates structure not content depth; a skilled BA produces a complete artefact, an inexperienced user produces a thin one | Content depth validation (not just structure) must be a design requirement for the facilitation-native surface |
 
 > **Key insight from Cluster 1:** All surface hypotheses move the IT dependency, not remove it. The Teams bot moves it from "VS Code + Copilot extension approval" to "bot API registration + service account". A hosted web UI moves it from "managed device restrictions" to "can we access an external URL". The enterprise constraint is a class of problem that runs across all surface options — it is not solved by surface choice alone.
 
-> **Key insight from Cluster 5:** No surface choice addresses the role identity threat. A BA who perceives the platform as a replacement for their job will not engage with a Teams bot any more than with VS Code. The structural fix is not in the surface layer — it is in the governance model. The platform must be designed so that engineer-only outer loop execution is visibly insufficient: discovery artefacts should surface explicit gaps when customer/stakeholder evidence is absent; DoR checks should include questions only a BA can answer from genuine domain work. Making BA/PM input authoritative — not optional — is a prerequisite for any surface investment to pay off.
+> **Key insight from Cluster 5:** No *access surface* choice addresses the role identity threat — a BA who perceives the platform as a replacement will not engage with a Teams bot any more than with VS Code. The facilitation-native web UI addresses this differently: it does not give the BA a lower-friction way to do what the pipeline already does, it gives the BA a way to do what *they* already do (facilitate, synthesise, align) with the pipeline capturing the output. That is a structural reframe, not a surface change. It still requires the governance model fix (BA input authoritative) — but the facilitation-native surface makes that fix natural rather than imposed.
 
 ---
 
@@ -198,6 +229,10 @@ Outcome: PM/BA can run the governed outer loop in their existing environment,
 | BAs and PMs will engage with the platform once they see it as a force multiplier for their work | Desirability | High | Guess | 🔴 Test first — "force multiplier" is a positioning claim, not a structural property of the current platform |
 | The outer loop currently structurally requires BA/PM input — engineer-only execution produces visibly inferior artefacts | Viability | High | Evidence against this | 🔴 Known gap — the outer loop today does NOT require BA/PM input; this is what must be fixed before surface work |
 | The discovery/benefit-metric/DoR skills can be evolved to make BA domain expertise structurally necessary without making engineer adoption harder | Feasibility | Medium | Inference | 🟡 Test via skill redesign spike |
+| The facilitation-native web UI resolves the role identity threat — BA as facilitator rather than user changes their relationship to the platform structurally | Desirability | High | Inference | 🔴 Test with BA population — does the facilitator framing change the adoption response? |
+| A Phase 1 single-facilitator web UI (no real-time collaboration) is sufficient to prove the artefact production loop before investing in collaboration infrastructure | Feasibility | Medium | Inference | 🟡 Test via prototype — is single-facilitator a viable first proof point or does the collaborative session format require multi-participant from the start? |
+| The GitHub Copilot SDK is an appropriate backend for the facilitation-native UX — it handles model management and agentic infrastructure | Feasibility | Medium | Inference | 🟡 Spike before building — SDK fits single-session, single-facilitator model; multi-participant real-time may require different architecture |
+| Facilitation method design can be derived from the pipeline's ideation SKILL.md structure without real facilitation expertise input — the SKILL.md maps cleanly to a visual canvas | Design | High | Evidence against this | 🔴 Known risk — this assumption is likely wrong; facilitation method design requires real BAs testing real sessions; a SKILL.md-derived canvas may feel like a form, not a facilitation scaffold |
 
 ### Test designs (for 🔴 assumptions)
 
@@ -239,6 +274,17 @@ Outcome: PM/BA can run the governed outer loop in their existing environment,
 | Comparative prototype | Offer three PMs three surface prototypes: (a) guided conversation in Teams DM, (b) a minimal form-based web UI, (c) Copilot Chat in M365. Ask them to complete a real discovery. Observe, do not ask preference directly. | PMs complete more steps and produce higher-quality content in the Teams DM format | PMs produce comparable or better output in the web UI; Teams DM creates confusion around conversational context length |
 
 **Decision:** Do not commit to a surface until this test is run. The Phase 4 Spike D decision to build a Teams bot was made on architectural grounds (C7 compliance), not on evidence of PM preference or comparative usability.
+
+---
+
+**Assumption:** The facilitation-native web UI resolves the role identity threat
+
+| Test approach | Description | Would observe if true | Would observe if false |
+|---|---|---|---|
+| Framing interview | Present two descriptions to a BA: (a) "A lower-friction way to run /discovery without VS Code"; (b) "A facilitation canvas where you run discovery workshops and the pipeline artefact is produced as a byproduct of the session." Ask: "How would you describe your role in each scenario?" | In (a): "I'm a user of the tool"; in (b): "I'm the facilitator — the tool is supporting my session" | BA describes their role the same way in both; the framing distinction does not change their perceived relationship to the tool |
+| Live session observation | Run a BA through a simulated facilitation session using the description from (b) above — a structured conversation with two stakeholder participants, the BA facilitating, the tool capturing. Observe whether the BA spends time on method and content (good) or on figuring out the tool (bad). | BA focuses on facilitation; tool is invisible; artefact emerges from the conversation | BA spends > 30% of time on tool navigation; facilitation is disrupted; participants disengage |
+
+**Decision:** The framing interview is a 30-minute test. Run it before any design work on the facilitation-native surface. If the finding is "framing doesn't change the response", the identity resolution requires governance model change, not a different surface design.
 
 ---
 
@@ -289,9 +335,17 @@ Outcome: PM/BA can run the governed outer loop in their existing environment,
 
 **REDESIGN signal 2 — Governance model prerequisite.** Before any non-technical surface is built, the outer loop must be redesigned so that engineer-only execution is visibly insufficient. Concretely: discovery and benefit-metric skills should require evidence of customer or stakeholder contact (interview notes, stakeholder confirmation) as a non-optional field — absence is surfaced as a quality gap, not filled with plausible engineer assumptions. DoR hard blocks should include at least one check that is genuinely satisfiable only by someone with domain access. This is the structural basis for the "force multiplier" claim; without it, the claim is rhetoric.
 
-**REDESIGN signal 3 — Surface choice.** The prior Teams bot hypothesis was architectural, not empirical. Surface choice must follow from the role identity and access tests, not precede them.
+**REDESIGN signal 3 — Surface choice and architecture.** The prior Teams bot hypothesis was architectural, not empirical. A third direction now exists — the facilitation-native web UI — which is architecturally different from all prior hypotheses. It does not lower friction for an existing pipeline interaction; it creates a new interaction model where the BA's facilitation expertise is load-bearing. This direction warrants its own feasibility assessment before a surface is chosen.
 
-**Revised first move:** Do not build a surface. Run two things in parallel: (a) the role identity interview ("what would have to be true for you to want to use this?") with 2–3 BAs; (b) the governance model audit ("can an engineer run the outer loop and produce an artefact a BA cannot distinguish from their own work?"). Both are half-day exercises. The findings from these two experiments determine whether the next step is governance model redesign, surface investment, or both — and in which order.
+**Revised first move — three parallel experiments, all half-day or less:**
+
+| Experiment | What to run | Finding determines |
+|---|---|---|
+| Role identity interview | "What would have to be true for you to want to use this?" with 2–3 BAs | Whether barrier is access friction (→ surface investment) or role threat (→ framing/governance fix first) |
+| Framing interview | Present both the "lower-friction tool" framing and the "facilitation canvas" framing to the same BAs | Whether the facilitation-native framing changes the adoption response — if yes, the surface architecture matters, not just the access channel |
+| Governance model audit | Assess three engineer-produced outer loop artefacts against: customer evidence quality, stakeholder context accuracy, business model coverage | Whether engineer-only outer loop is visibly insufficient today, or requires intentional skill redesign |
+
+All three experiments are independent. Run in parallel. The surface investment decision — Teams bot, hosted web UI, facilitation-native canvas, or something else — follows from the combined findings, not from prior architectural commitments.
 
 ---
 
@@ -337,3 +391,9 @@ This is still the right functional outcome but the sequencing precondition has c
 7. **Vocabulary translation completeness:** Can the full outer loop vocabulary be translated into PM-native terms without losing governance precision? Or are some concepts inherently technical in a way that requires simplification rather than translation?
 
 8. **Is the adoption strategy different for PMs vs. BAs?** The role identity threat may be more acute for BAs (whose core job is requirements/discovery) than for PMs (who own outcomes and tend to be less invested in the production of specific artefact formats). A segmented adoption approach may be warranted.
+
+9. **Does the facilitation-native framing change the adoption response for BAs specifically?** The framing interview test above is the quickest way to answer this. If "facilitator running a session" lands differently from "user filling in a pipeline form," the surface architecture decision shifts significantly toward the web UI direction.
+
+10. **What is the minimum viable facilitation session?** To prove the loop (facilitation session → governed pipeline artefact committed to repo), what is the smallest session design that produces a complete-enough discovery artefact? A 30-minute single-facilitator structured conversation? A 90-minute multi-participant workshop? The answer determines whether a Phase 1 prototype is a solo-use tool or requires real-time collaboration infrastructure from the start.
+
+11. **Copilot SDK feasibility for this architecture:** The SDK handles the model and agentic layer. Does it fit a persistent, multi-turn facilitation session where the model is driving SKILL.md steps across a 60–90 minute live session, not just answering a single prompt? This is a spike question, not an assumption to carry forward.
