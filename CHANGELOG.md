@@ -12,6 +12,10 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- **md-2 — Register `/modernisation-decompose` in `check-skill-contracts.js` (2026-04-22):** Added `modernisation-decompose` entry to the `CONTRACTS` array in `.github/scripts/check-skill-contracts.js` with 5 required structural markers: `reverse-engineering-report.md`, `candidate-features.md`, `corpus-state.md`, `umbrellaMetric`, `## Completion output`. Skill-contracts suite now reports 38 skills, 161 contracts. `tests/check-md-2-skill-contracts.js` — 8 assertions (T1.1–T1.3 registration passes, T2.1–T2.3 named failure on removed State update section, T3.1–T3.2 no regressions) all passing. Artefact chain at `artefacts/2026-04-22-modernisation-decompose/`.
+
+
+
 - **md-3 — Add ADR-015 to `architecture-guardrails.md` (2026-04-22):** Added ADR-015 row to the Active ADRs table (title: "Two-tier artefact scope model: system corpus vs feature delivery", status: Active, constrains: all contributors working on modernisation programmes and `/modernisation-decompose` skill invocations). Added full `### ADR-015:` write-up section with Context, Decision, Consequences sub-sections and `**Decided:** 2026-04-22`. Added `ADR-015` entry to the guardrails-registry YAML block. ADR number 015 used — ADR-014 slot is pre-occupied by the existing Sidecar distribution ADR write-up. `tests/check-md-3-adr.js` — 9 assertions (T1.1–T1.3 table row, T2.1–T2.4 write-up content, T3.1 Decided date field, T4.1 no regressions) all passing. Artefact chain at `artefacts/2026-04-22-modernisation-decompose/`.
 
 
