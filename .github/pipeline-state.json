@@ -165,42 +165,66 @@
             {
               "slug": "md-2",
               "name": "Register skill in check-skill-contracts.js",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "mediumFindings": 0,
-              "updatedAt": "2026-04-22T16:00:00Z",
+              "updatedAt": "2026-04-22T19:30:00Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 4,
-                "passing": 0
+                "totalTests": 8,
+                "passing": 8
               },
               "acTotal": 3,
-              "acVerified": 0,
+              "acVerified": 3,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tddState": "committed",
+              "prNumber": 180,
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/180",
+              "tasks": [
+                {
+                  "id": "T1",
+                  "description": "Add modernisation-decompose CONTRACTS entry to check-skill-contracts.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-04-22-modernisation-decompose/plans/md-2-plan.md"
+                }
+              ]
             },
             {
               "slug": "md-3",
-              "name": "Add ADR-014 to architecture-guardrails.md",
-              "stage": "definition-of-ready",
+              "name": "Add ADR-015 to architecture-guardrails.md",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "mediumFindings": 1,
-              "updatedAt": "2026-04-22T16:00:00Z",
+              "updatedAt": "2026-04-22T19:45:00Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 8,
-                "passing": 0
+                "totalTests": 9,
+                "passing": 9
               },
               "acTotal": 3,
-              "acVerified": 0,
+              "acVerified": 3,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tddState": "committed",
+              "prNumber": 181,
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/181",
+              "tasks": [
+                {
+                  "id": "T1",
+                  "description": "Add ADR-015 row to Active ADRs table and write-up section to architecture-guardrails.md",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-04-22-modernisation-decompose/plans/md-3-plan.md"
+                }
+              ]
             }
           ]
         }
