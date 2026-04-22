@@ -2,6 +2,7 @@
 
 **Document type:** Enterprise handoff bundle
 **Prepared:** 2026-04-12
+**Updated:** 2026-04-22 (2) — Cross-dashboard UX consistency delivered: site-nav on all 4 pages, canvas filter persistence + overflow dropdown, MdEditorOverlay Save button (server-gated) on all pages, graceful offline fallback. Review.html latent bugs fixed. Story artefacts updated: cv.1 (AC12–14), dr.1 (AC12), me.1 (AC11–12). Test suites extended: check-me1 18/18, check-cv1 20/20, check-dr1 14/14. See Section 8 pending items.
 **Updated:** 2026-04-22 — me.1 dashboard markdown editor delivered; MdViewer full-screen responsive layout; acc.1 and sr.1 short-tracks completed. See Section 8 pending items.
 **Updated:** 2026-04-21 (2) — Phase 5/6 roadmap published; product/ docs updated with Phase 4 actual delivery scope, enforcement architecture, competitive positioning, and G19 intentional gap note. See Section 8.
 **Updated:** 2026-04-21 (1) — Phase 4 fully DoD-complete — all 27 stories including E5 Platform Observability & Measurement. PRs #176 and #177 merged and traced. See Sections 6.8–6.15 and Phase 4 story tables.
@@ -46,6 +47,8 @@ Four product-context files were updated to reflect Phase 4 delivery actuals and 
 - [`product/constraints.md`](../product/constraints.md) — Constraint 5 extended with G19 intentional gap note: verbatim per-invocation instruction assembly record is an explicit scope boundary deferred to Phase 6 WS9.
 
 ### Delivered since 2026-04-21
+
+- **Cross-dashboard UX consistency (2026-04-22):** `<nav className="site-nav">` added to all four dashboard pages (CSS in `extra-views.css`; inline in `review.html`). Canvas filter state persisted to `localStorage` key `cv-filter`; chips switch to search-input + select dropdown when `features.length > 8`. `MdEditorOverlay` Save button on all four pages, conditional on `serverUp` (10-second poll). `callSave(filePath, content)` and `REVIEW_SERVER` constant added to all four pages. Graceful fallback: Save absent when `review-server.js` offline. Latent `review.html` bugs fixed (`callSave` undefined, `MdEditorOverlay` broken params, missing `saveLabel` state). `extra-views.css` linked from `canvas.html` and `pipeline.html`. Tests: check-me1 18/18, check-cv1 20/20, check-dr1 14/14. Story artefacts updated: cv.1 (AC12–14), dr.1 (AC12), me.1 (AC11–12). Test plans updated: cv.1 (T16–T20), dr.1 (T14), me.1 (T11–T18).
 
 - **me.1 — Dashboard markdown editor (2026-04-22):** `MdEditorOverlay` component (split-pane editor with live preview, Copy, Download, Escape-to-close) wired into `ArtefactDrawer` in `pipeline.html` and `MdViewer` in `index.html`. `MdViewer` simultaneously made full-screen and responsive (`inset:0` fade-in, `clamp` padding, centred prose, `@media ≤640px` breakpoint). 14 governance checks pass (`tests/check-me1-dashboard-editor.js`). Artefact chain at `artefacts/2026-04-22-dashboard-md-editor/`.
 - **acc.1 — Artefact-first governance gate (2026-04-21):** `tests/check-artefact-coverage.js` live in CI. `artefact-coverage-exemptions.json` with 25 baseline exemptions. 8/8 self-tests pass.

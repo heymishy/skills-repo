@@ -1039,6 +1039,31 @@
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useMemo, useRef } = React;
 
+// ── Review-server helpers ────────────────────────────────────────────────────
+const REVIEW_SERVER = 'http://localhost:3131';
+
+async function checkServer() {
+  try {
+    const r = await fetch(REVIEW_SERVER + '/health', { signal: AbortSignal.timeout(1200) });
+    return r.ok;
+  } catch (_) { return false; }
+}
+
+async function callSave(filePath, content) {
+  // Normalize: strip any leading '../artefacts/' then ensure 'artefacts/' prefix
+  const serverPath = 'artefacts/' + filePath.replace(/^(\.\.\/)*artefacts\//, '');
+  const r = await fetch(REVIEW_SERVER + '/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ filePath: serverPath, content }),
+  });
+  if (!r.ok) {
+    const msg = await r.text().catch(() => r.statusText);
+    throw new Error(msg || r.statusText);
+  }
+  return r.json();
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // PHASES — same 12-phase pipeline
 // ═══════════════════════════════════════════════════════════════════
@@ -2044,6 +2069,13 @@ function App() {
   const [selectedEpic, setSelectedEpic] = useState(null);
   const [viewDoc, setViewDoc] = useState(null);   // { key, path, title, sha, md, ... }
   const [tweaksOpen, setTweaksOpen] = useState(false);
+  const [serverUp, setServerUp] = useState(false);
+
+  useEffect(() => {
+    checkServer().then(setServerUp);
+    const iv = setInterval(() => checkServer().then(setServerUp), 10000);
+    return () => clearInterval(iv);
+  }, []);
 
   useEffect(() => { setHtmlAttr("data-theme", theme); }, [theme]);
   useEffect(() => { setHtmlAttr("data-density", density); }, [density]);
@@ -2128,7 +2160,7 @@ function App() {
       <FooterBar />
 
       <Drawer epic={selectedEpic} onClose={() => setSelectedEpic(null)} onOpenDoc={setViewDoc} />
-      <MdViewer doc={viewDoc} onClose={() => setViewDoc(null)} />
+      <MdViewer doc={viewDoc} onClose={() => setViewDoc(null)} serverUp={serverUp} />
 
       <Tweaks
         open={tweaksOpen}
@@ -2167,13 +2199,10 @@ function TopBar() {
         <div><dt>stories</dt><dd>{totalStories}</dd></div>
         <div><dt>blockers</dt><dd style={{color: blockerCount ? "var(--fail)" : "var(--pass)"}}>{blockerCount}</dd></div>
       </dl>
-      <nav className="nav">
-        <a className="active" href="index.html">Repo</a>
-        <select style={{
-          fontFamily:"var(--font-mono)", fontSize:"10.5px", letterSpacing:"0.08em",
-          background:"var(--paper-2)", color:"var(--ink-2)", border:"1px solid var(--rule)",
-          padding:"6px 10px", cursor:"pointer",
-        }}
+      <nav className="site-nav" style={{alignSelf:"end"}}>
+        <a className="active" href="index.html">Pipeline</a>
+        <select
+          className="filter-select"
           onChange={(e) => { if (e.target.value) window.location.href = e.target.value; }}
           defaultValue=""
         >
@@ -2184,6 +2213,8 @@ function TopBar() {
             </option>
           ))}
         </select>
+        <a href="review.html">Review</a>
+        <a href="canvas.html">Canvas</a>
       </nav>
     </header>
   );
@@ -2609,10 +2640,11 @@ function Drawer({ epic, onClose, onOpenDoc }) {
 // ──────────────────────────────────────────────────────────────
 // MdEditorOverlay — full-screen markdown editor (me.1)
 // ──────────────────────────────────────────────────────────────
-function MdEditorOverlay({ md: initialMd, filePath, onClose, onSave }) {
+function MdEditorOverlay({ md: initialMd, filePath, onClose, onSave, serverUp, onSaveToDisk }) {
   const [text, setText] = useState(initialMd || '');
   const [preview, setPreview] = useState('');
   const [copyLabel, setCopyLabel] = useState('Copy');
+  const [saveLabel, setSaveLabel] = useState('Save');
   const debounceRef = useRef(null);
 
   useEffect(() => {
@@ -2642,6 +2674,21 @@ function MdEditorOverlay({ md: initialMd, filePath, onClose, onSave }) {
     }
   };
 
+  const handleSaveToDisk = () => {
+    if (!onSaveToDisk) return;
+    setSaveLabel('Saving…');
+    onSaveToDisk(text)
+      .then(() => {
+        setSaveLabel('Saved ✓');
+        setTimeout(() => setSaveLabel('Save'), 2000);
+      })
+      .catch(e => {
+        setSaveLabel('Error');
+        console.error('[save]', e);
+        setTimeout(() => setSaveLabel('Save'), 2500);
+      });
+  };
+
   const handleDownload = () => {
     const filename = filePath ? filePath.split('/').pop() : 'artefact.md';
     const blob = new Blob([text], { type: 'text/markdown' });
@@ -2659,6 +2706,9 @@ function MdEditorOverlay({ md: initialMd, filePath, onClose, onSave }) {
         <span className="md-editor-path">{filePath || 'artefact'}</span>
         <button className="md-editor-btn" onClick={handleCopy}>{copyLabel}</button>
         <button className="md-editor-btn" onClick={handleDownload}>Download .md</button>
+        {serverUp && onSaveToDisk && (
+          <button className="md-editor-btn" onClick={handleSaveToDisk} disabled={saveLabel === 'Saving…'}>{saveLabel}</button>
+        )}
         <button className="md-editor-btn-close" onClick={() => { onSave(text); onClose(); }} aria-label="Close editor">×</button>
       </div>
       <div className="md-editor-panes">
@@ -2678,7 +2728,7 @@ function MdEditorOverlay({ md: initialMd, filePath, onClose, onSave }) {
 // ──────────────────────────────────────────────────────────────
 // MdViewer — renders a markdown document in a right-side drawer
 // ──────────────────────────────────────────────────────────────
-function MdViewer({ doc, onClose }) {
+function MdViewer({ doc, onClose, serverUp }) {
   const open = !!doc;
   const [fetchedMd, setFetchedMd] = useState(null);
   const [fetchState, setFetchState] = useState("idle"); // idle | loading | done
@@ -2791,6 +2841,8 @@ function MdViewer({ doc, onClose }) {
                 filePath={activeArtefact || doc.path}
                 onClose={() => setEditorOpen(false)}
                 onSave={(edited) => { if (edited !== displayMd) setFetchedMd(edited); }}
+                serverUp={serverUp}
+                onSaveToDisk={serverUp ? (text) => callSave(activeArtefact || doc.path, text).then(() => setFetchedMd(text)) : null}
               />
             )}
             <div className="mdv-head">
