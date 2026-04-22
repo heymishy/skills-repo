@@ -154,6 +154,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 | ADR-012 | Active | Platform-agnostic architecture: prefer portable, multi-VCS-compatible implementations over vendor-specific optimisations; adapters enable platform adaptation without core fragmentation | All infrastructure, registry, and audit features; Phase 3 T3M1 Q8 implementation; enterprise adapter architecture |
 | ADR-013 | Active | Phase 4 enforcement architecture: shared 3-operation governance package (`resolveAndVerifySkill`, `evaluateGateAndAdvance`, `writeVerifiedTrace`) is the contract all surface adapters call — no surface adapter reimplements governance logic independently | All Phase 4 enforcement adapters (p4-enf-mcp, p4-enf-cli, and any future surface adapter); E3 implementation stories |
 | ADR-phase4-enforcement | Active | Mechanism selection: which enforcement mechanism (MCP, CLI, or deferred) applies to each Phase 4 surface class | E3 enforcement stories (p4-enf-package, p4-enf-mcp, p4-enf-cli, p4-enf-schema); all surface adapters |
+| ADR-015 | Active | Two-tier artefact scope model: system corpus vs feature delivery — `/modernisation-decompose` is the canonical bridge mechanism; ad-hoc cross-scope artefact sharing is not permitted | All contributors working on modernisation programmes; /modernisation-decompose skill invocations |
 
 ---
 
@@ -610,6 +611,38 @@ Spike D returned PROCEED. E4 (non-technical access) is now complete — all 5 st
 
 ---
 
+### ADR-015: Two-tier artefact scope model — system corpus vs feature delivery
+
+**Status:** Active
+**Decided:** 2026-04-22
+**Decided by:** Operator (heymishy)
+**Triggered by:** `/modernisation-decompose` skill design — the skill must bridge two distinct artefact scopes (system-level corpus analysis and feature-level delivery artefacts) without polluting either.
+
+#### Context
+
+Legacy modernisation work produces two fundamentally different classes of artefact. The first is **corpus-level artefacts** — system-wide analysis outputs (reverse-engineering reports, module boundary maps, uncertainty inventories) that describe the target system as a whole and outlive any single feature delivery cycle. The second is **feature-level artefacts** — story chains, test plans, and delivery evidence scoped to a specific bounded change, stored under `artefacts/[feature-slug]/` and governed by the artefact-first rule (ADR-011).
+
+Without an explicit scope boundary these two classes blur: corpus artefacts get committed into feature folders (polluting the trace chain), or feature deliverables reference corpus state that has changed since the feature was scoped (breaking traceability). Teams have historically tried to bridge these scopes ad hoc — copying files across directories, embedding corpus snippets in story ACs, or duplicating analysis work per feature.
+
+#### Decision
+
+The two artefact scopes are formally separated. Corpus-level artefacts live in `artefacts/[system-slug]/` (e.g. `reverse-engineering-report.md`, `corpus-state.md`, `candidate-features.md`). Feature-level artefacts live in `artefacts/[feature-slug]/` under the standard pipeline structure. The `/modernisation-decompose` skill is the **canonical and only authorised bridge mechanism** between these two scopes. It reads corpus state, selects a bounded scope of work, and writes the output as a feature-level `candidate-features.md` that the standard pipeline (discovery → definition → coding loop) can consume. No other mechanism for moving artefacts or context between the two scopes is permitted.
+
+#### Consequences
+
+**Easier:** Corpus analysis is stable across multiple feature cycles — teams are not forced to re-run system-wide analysis for each feature. Feature chains remain self-contained and traceable. The `/modernisation-decompose` skill provides a single auditable entry point for every corpus-to-feature transition.
+
+**Harder / constrained:** Any corpus update (new modules discovered, uncertainty resolved) must be reflected in `corpus-state.md` before the next `/modernisation-decompose` invocation. A feature that depends on corpus state must re-invoke `/modernisation-decompose` if the corpus changes materially during delivery — it cannot silently inherit an outdated snapshot.
+
+**Off the table:** Ad-hoc cross-scope artefact sharing — copying corpus files into feature folders, referencing corpus paths directly from story ACs, or writing feature deliverables into the corpus directory — is a violation of this ADR. If a legitimate cross-scope operation is identified that `/modernisation-decompose` cannot handle, an addendum to this ADR is required before implementation.
+
+#### Revisit triggers
+
+- If the corpus scope needs to be subdivided (e.g. per-bounded-context corpus directories), this ADR must be updated to specify the directory naming convention and the `/modernisation-decompose` path resolution rules.
+- If a second bridge skill is introduced (e.g. `/modernisation-validate` that reads feature outcomes back into corpus state), this ADR must be extended to cover the reverse direction and the conditions under which it is safe to invoke.
+
+---
+
 ## Operating Posture
 
 ### Solo operator / W4 RISK-ACCEPT posture
@@ -892,5 +925,10 @@ This repository is operated by a single engineer. The following posture applies 
 - id: ADR-phase4-enforcement
   category: adr
   label: "Mechanism selection: which enforcement mechanism (MCP, CLI, or deferred) applies to each Phase 4 surface class"
+  section: Active ADRs
+
+- id: ADR-015
+  category: adr
+  label: "Two-tier artefact scope model: system corpus vs feature delivery — /modernisation-decompose is the canonical bridge; ad-hoc cross-scope sharing not permitted"
   section: Active ADRs
 ```
