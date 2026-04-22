@@ -1,10 +1,10 @@
-# Ideation Artefact — Framework Adoption Friction (Non-Technical Channel)
+# Ideation Artefact — Enterprise Discovery Governance Friction (Non-Technical Channel)
 
 **Feature:** 2026-04-23-non-technical-channel
 **Date:** 2026-04-23
 **Artefact path:** `artefacts/2026-04-23-non-technical-channel/research/ideation.md`
-**Lenses run:** E, A, B, D (abbreviated) — updated pass 3: facilitation-native web UI hypothesis
-**Pipeline state signal:** proceed (REDESIGN signal on solution surface AND adoption strategy AND solution architecture — facilitation-native web UI is a materially different direction from Teams bot)
+**Lenses run:** E, A, B, D (abbreviated) — updated pass 4: full multi-stakeholder enterprise governance reframe
+**Pipeline state signal:** proceed (REDESIGN signals maintained: governance model prerequisite, adoption strategy sequencing, surface architecture; new REDESIGN signal added on problem framing — the problem is enterprise discovery governance dysfunction, not access friction)
 **Relates to:** G0b (Phase 5/6 roadmap) — Non-technical discipline channel: CONFIRMED gap
 
 ---
@@ -20,76 +20,141 @@
 
 ---
 
+## Problem reframe — pass 4
+
+Passes 1–3 framed the problem as **access friction for a non-technical persona** (the BA or PM who cannot get to VS Code + git) combined with a **BA-specific role identity threat**. That framing was too narrow. The real problem — as understood after deeper reflection — is an enterprise-wide cultural and governance dysfunction around who owns, participates in, and decides during discovery and scoping. The BA role identity threat is a specific instance of this broader pattern.
+
+The accurate problem statement is:
+
+> In enterprise delivery, everyone involved in discovery and scoping — business leads, SMEs, product managers, product owners, BAs — carries strong ownership and involvement expectations around that process. There is no agreed model for who decides, who is consulted, and who is informed. This ambiguity produces: (1) political friction about involvement rights that extends the time to reach discovery consensus; (2) scope drift and silent change downstream when assumptions and decisions evolve without a clear impact trail; and (3) resistance to adopting a structured pipeline because it creates accountability — attribution of decisions, visibility of what was and wasn't considered — that some stakeholders experience as threatening rather than enabling.
+
+The pipeline's most valuable property in this framing is not the surface it runs on or the structure it enforces. It is the **traceable, attributed decision record** it produces. That record makes it harder to claim you weren't consulted when the artefact shows you were. It makes it harder to change scope silently when every assumption is named and any change can be traced back to a decision. It makes it harder to relitigate discovery when the artefact is governed, versioned, and signed off. For the people who bear the cost of ambiguity — engineers who build the wrong thing, PMs blamed for rework, delivery teams absorbing undisclosed scope changes — this is exactly what they want. For the people who benefit from ambiguity as protection, this is threatening.
+
+This reframe shifts the adoption strategy significantly. The problem is not "give non-technical personas a lower-friction way to use the pipeline." The problem is "create a governance model for discovery that enterprise organisations will adopt and sustain, given that the most powerful stakeholders often benefit from the current ambiguity."
+
+---
+
 ## Lens E — Jobs-to-be-Done
 
 *Framework: Clayton Christensen, Bob Moesta — JTBD / Switch interview*
 
-### Job statement
-
-> When I am responsible for a piece of work moving from idea to delivered — and I need to be able to defend the scope, the rationale, and the acceptance criteria if challenged later — I want to produce governance-quality artefacts in the environment I already work in, with a process that guides me through structure I do not know by heart, so I can be a genuine co-owner of delivery quality, not a downstream approver who signs off on things they do not fully understand.
-
-| Dimension | Description |
-|-----------|-------------|
-| Functional job | Produce a discovery artefact, benefit metric definition, and story ACs that engineers implement correctly without coming back for clarification — without needing a technical co-author |
-| Social job | Be seen as the person who drives delivery rigour and bridges business intent to engineering execution — not as the person who "doesn't get the technical stuff" |
-| Emotional job | Feel confident that what gets built is what was intended, and that the trace back to original intent is intact if it is ever questioned by a stakeholder, auditor, or retrospective |
-
-### Current hire and real competition
-
-| Current hire | Strengths | Friction / switch drivers |
-|-------------|-----------|--------------------------|
-| Confluence + Word specs | Familiar, shareable, stakeholder-readable, zero setup, no new vocabulary | Artefacts drift from what's built; engineers don't read them; no traceability; approval via comment thread with no audit trail |
-| Jira stories | Shared with engineering, in the existing flow, approved by the organisation | ACs are free-text; no structured review; no trace to upstream rationale; same clarification conversations repeat on every story |
-| Meeting-based refinement | Fast iteration, builds shared understanding quickly | No persistent record; knowledge lives in heads not artefacts; decisions get revisited because they were never written down |
-| Email approval chains | Fits existing governance process; familiar to senior stakeholders | Not linked to artefacts; no version history; auditors cannot reconstruct decisions reliably |
-
-**Real competition:** The combination of Confluence + Jira + meetings + email — which a PM can use today with zero setup cost, zero unfamiliar vocabulary, and full social legitimacy in their organisation. The pipeline's bar to clear: it must produce demonstrably better outcomes on the functional job (stories built correctly, decisions traceable) by enough to overcome the switching cost. That bar is currently blocked at the *access* stage — the PM never gets to prove the functional benefit because the setup cost stops them before the first session.
-
-### Four Forces analysis
-
-| Force | Direction | Key findings |
-|-------|-----------|-------------|
-| Push | Away from current | "I wrote a 10-page spec and the team built something different." "We keep having the same clarification conversations on every story." "I can't prove to an auditor what we agreed — it's in a Confluence comment thread." "I don't know what's been delivered against what I signed off on." |
-| Pull | Toward new | Stories that engineers implement without clarification follow-ups. A trace that proves what was agreed, when, by whom. Seeing fewer rework cycles on a well-specified story vs. an informal one. Being able to run the outer loop without waiting for an engineer to translate. |
-| Anxiety | Resisting new | "I might break something in git and need an engineer to fix it." "I'll produce an artefact with the wrong structure and it will be rejected." "The vocabulary is engineering jargon I don't recognise — I'll say something wrong." "IT will take three weeks to approve VS Code and Copilot extensions, and I'll lose momentum." "The proxy won't work and I won't know how to configure it." |
-| Habit / inertia | Resisting new | "My manager expects requirements in Confluence — I'd have to justify a format change." "The rest of my team isn't using this, so I'm the outlier, and my artefacts have to be reconciled with their Jira tickets anyway." "I review work in Teams; anything I can't share in a Teams message or link is extra friction for my approvers." "I've been writing requirements this way for ten years — I'm trusted partly because I produce familiar formats." |
-
-### Switch threshold
-
-> The new solution must outperform the current hire on **producing well-specified work that gets built correctly** by enough to overcome **the combined IT setup barrier (admin rights, proxy, extensions) that stops a non-technical user before the first session**.
-
-> Implication: removing setup friction is not sufficient. The PM must be able to *prove* the functional benefit within the first session, or the switching cost will not justify the access investment. The MVP must produce a moment of proof — "this story was built right because of how it was specified" — not just a working setup.
+This lens is now applied across the full multi-stakeholder ecosystem involved in enterprise discovery. The jobs are different by role but share a root: each stakeholder needs to know that what they contributed to the discovery process actually shaped the outcome, is on record, and will hold when challenged.
 
 ---
 
-### Second job — the BA whose professional identity is at stake
+### Job 1 — The person accountable for the outcome (Business Lead / Senior Sponsor)
 
-> When **a new delivery framework is being adopted by my team — and it automates or structures the work I am recognised for doing (requirements, discovery, stakeholder alignment) —** I want to **understand whether this replaces or amplifies my contribution**, so I can **protect my professional standing and continue to be seen as the expert who bridges business intent and delivery execution, not as someone whose role has been made redundant by an AI tool.**
+> When **I have committed my organisation and budget to a direction based on a discovery process I participated in — and the delivery team produces something different, or someone challenges the original rationale months later —** I want to **be able to point to a clear record of what was agreed, who was consulted, and why the decision was made**, so I can **defend the investment, account for the deviation, and not be exposed as having authorised something based on an undocumented assumption**.
 
 | Dimension | Description |
 |-----------|-------------|
-| Functional job | Assess whether to engage with the framework or actively/passively resist it before it erodes my role |
-| Social job | Remain the recognised expert in the team for "what should be built and why" — not become the person who rubber-stamps what an AI and an engineer have already decided |
-| Emotional job | Feel that my ten years of domain expertise and stakeholder relationship knowledge is more valuable with this framework than without it — not that it has been commoditised |
+| Functional job | Reconstruct any governance-level decision in a discovery without relying on memory, meeting notes, or other people's recollections |
+| Social job | Be seen as the executive who runs rigorous, transparent governance — not the one who approves informally and then claims ignorance when things go wrong |
+| Emotional job | Feel protected rather than exposed; know that if anything is challenged by audit, regulation, or internal scrutiny, the artefact trail is there |
 
-**Why this job matters more than the first:** The first job (produce durable, traceable artefacts) has a straightforward solution path — lower the surface friction. The second job has no engineering solution. If a BA concludes that their answer to "does this amplify or replace me?" is "replace," no amount of better tooling changes the adoption outcome. They will not engage, and they will explain their non-engagement to others in ways that make the narrative worse.
+**Current hire:** Meeting minutes, email threads, Confluence approval comments, informal verbal sign-off. Strengths: fast, familiar, no setup. Friction: not linked to what's built; minutes are selectively written; approvals are not versioned; when scope changes, there is no clear line to what was originally decided.
 
-**The BA's reading of the current evidence is not irrational:** The pipeline can currently be run entirely by an engineer. Discovery artefacts, benefit metrics, story ACs, and DoR sign-off can all be produced without a BA being involved. If that is how the platform is adopted in practice, the BA's concern is correct — their role has been reduced to reviewing something they did not shape. That is a weaker position than the one they hold today.
+**Switch threshold:** The governed artefact must be more defensible under scrutiny than the email chain it replaces — and it must be accessible to the business lead in a format they can read without a technical co-author.
 
-**The two failure modes this creates:**
+---
+
+### Job 2 — The person whose domain knowledge is essential (Subject Matter Expert / SME)
+
+> When **I am brought into a discovery process to contribute specialist knowledge — regulatory context, customer domain, operational constraint — and I spend time in workshops and reviews providing that input —** I want to **see my contribution captured correctly, traceable to the final scope, and acknowledged in the record**, so I can **be confident my expertise actually shaped the outcome, not just appeared to be consulted**.
+
+| Dimension | Description |
+|-----------|-------------|
+| Functional job | Verify that the specific constraints and insights I provided are reflected in the artefacts, not diluted, misrepresented, or overridden without explanation |
+| Social job | Be recognised as the expert whose input was load-bearing, not one of twelve people who sat in a workshop |
+| Emotional job | Feel that participating in the discovery process is worth the time investment — that my contribution makes a traceable difference |
+
+**Current hire:** Workshop attendance, email review comments, verbal confirmation that "we considered that." Strengths: low overhead for the SME. Friction: no verification of whether the constraint was captured; no way to flag when an artefact misrepresents domain input; SME has no record of what they contributed, only of what they attended.
+
+**Switch threshold:** The SME must be able to see their specific contribution attributed in the artefact — not just confirm general participation. A review step where the SME validates a draft artefact and their feedback is committed with attribution is the minimum.
+
+---
+
+### Job 3 — The person who runs the process (BA / Delivery Analyst)
+
+> When **I am responsible for producing the discovery artefact — running the workshops, synthesising input, writing up the requirements — and a new framework automates or structures that work —** I want to **understand whether this amplifies my contribution or commoditises it**, so I can **either be the person who brings this skill to my organisation, or protect my standing before it is eroded without my awareness**.
+
+| Dimension | Description |
+|-----------|-------------|
+| Functional job | Assess whether the platform makes my existing work more durable and impactful — or replaces it with a process I don't control |
+| Social job | Remain the recognised expert in the team for "what should be built and why" — not become the person who reviews what an AI and an engineer have already produced |
+| Emotional job | Feel that ten years of domain expertise and stakeholder relationship knowledge is more valuable with this framework than without it |
+
+**Note on why this job is now correctly scoped:** In pass 1–3, this was framed as a BA-specific threat. It is more accurately understood as the BA's version of a pattern that runs across all roles. The SME's version: "my domain input may be ignored." The business lead's version: "I may be bypassed on decisions I should own." The product owner's version: "my product vision may get overridden by whoever writes the story." The BA's version is particularly acute because the BA's core job — producing discovery artefacts — is the most directly overlapping with what the pipeline produces. But the underlying job (retain meaningful ownership of the discovery output) is shared across roles.
+
+**The two failure modes for the BA job remain from pass 3 but are now understood as a specific instance of a broader governance failure:**
 
 | Mode | What it looks like | Why it matters |
 |---|---|---|
-| Passive non-adoption | BA doesn't engage; engineers run the outer loop; governance is technically satisfied but upstream thinking is engineer-biased | Pipeline delivers compliant output faster, but quality of upstream thinking is lower; accumulates over time |
-| Active resistance | BA frames the platform as "engineers bypassing proper requirements process" to stakeholders | Adoption stalls because the social narrative becomes self-reinforcing: the more engineer-driven adoption looks, the more the narrative is confirmed |
+| Passive non-adoption | BA doesn't engage; engineers run the outer loop; the BA is bypassed and the pipeline confirms the threat | Pipeline delivers compliant output but the upstream thinking is engineer-biased; the governance claim is hollow |
+| Active resistance | BA frames the platform as "engineers bypassing proper requirements" to other stakeholders, including business leads and SMEs who have their own ownership concerns | This narrative finds a receptive audience because it maps onto the pre-existing concern that their input will not be captured — the resistance becomes a coalition, not an individual position |
 
-**Force multiplier has to be structural, not rhetorical.** If an engineer can produce a complete discovery artefact without a BA, "force multiplier" is a positioning statement with no mechanism behind it. For it to be real, the platform must have places where BA/PM input is structurally required and where engineer-only input is structurally insufficient. Concretely: the discovery skill should surface the absence of domain knowledge (customer interview evidence, stakeholder context, regulatory awareness) as a quality gap — not fill it with plausible-sounding engineer assumptions. The DoR gate should include checks only a BA can genuinely satisfy, not checks an engineer can answer dishonestly.
+---
 
-**The reframe that resolves the threat (and why it must be lived, not stated):**
+### Job 4 — The person who owns the product (Product Owner / Product Manager)
 
-> "Right now, the work you produce in discovery does not survive contact with the delivery process. It gets rewritten, reinterpreted, filed in Confluence, and then ignored. This platform makes your work durable. Your thinking governs what gets built, with your name on it, traceable back to your original intent — and it is there if anyone ever asks why a decision was made."
+> When **I am accountable for the product roadmap and the decisions that flow from it — and a structured discovery framework is being introduced into my team's delivery process —** I want to **run the outer loop end-to-end, producing artefacts I own and can defend**, so that **I am not in the position of reviewing what others have decided and having my name attached to it as the product owner on record**.
 
-This framing works because it is about the *outcome* of the BA's existing work, not about a new tool. It positions the platform as the mechanism by which their current work becomes more valuable, not as a replacement for it. But it only holds if the BA is *producing* the upstream input, not *reviewing* what an engineer has already produced. The traceability is the BA's professional protection only if the trace leads back to them.
+| Dimension | Description |
+|-----------|-------------|
+| Functional job | Be the person who drives discovery, not the person who validates what a cross-functional group decided in a workshop I wasn't in |
+| Social job | Be seen as the product leader who brings structure and rigour to discovery — not the person who delegates requirements to an AI tool and then approves them |
+| Emotional job | Feel that the pipeline makes my ownership clearer and more defensible, not more diffuse and political |
+
+**Current hire:** Roadmap sessions, sprint planning, backlog grooming, stakeholder presentations. The PO's current artefacts (Jira backlog, roadmap slide, sprint goal) are formats they own and recognise as theirs. A pipeline artefact (discovery.md, benefit-metric.md) is a new format that may feel like someone else's domain.
+
+**Switch threshold:** The PO must be able to run the outer loop without depending on an engineer to produce or translate the artefact — otherwise the platform reinforces the dynamic where technical team members hold the actual product artefacts, not the PO.
+
+---
+
+### Job 5 — The team-level governance job (the negotiation that happens before any discovery starts)
+
+> When **a cross-functional team begins a new feature or initiative — and there are multiple stakeholders who believe they should own, drive, or at minimum shape the discovery process —** I want to **reach a clear, agreed, and recorded model for who is responsible, who is consulted, and who makes the final call on the discovery artefact**, so that **the team can stop negotiating process and start doing discovery, without the resulting artefact being relitigated by the stakeholders who felt excluded**.
+
+| Dimension | Description |
+|-----------|-------------|
+| Functional job | Establish an unambiguous, agreed decision rights model for discovery before discovery begins |
+| Social job | All participating stakeholders feel heard and properly positioned relative to the artefact — not bypassed or relegated to a review comment |
+| Emotional job | The team starts discovery in a state of productive alignment, not political tension |
+
+**Why this is the meta-job:** Jobs 1–4 are each a specific stakeholder's version of the same underlying need: "my involvement and input was real, recorded, and shaped the outcome." Job 5 is the organisational condition that makes it possible for Jobs 1–4 to be simultaneously satisfied. Without an agreed governance model (RACI equivalent for the discovery artefact), each stakeholder presses their version of the job independently, creating the exact conflict that extends discovery timelines and produces the ownership arguments.
+
+**This is the enterprise's most expensive undone job:** The cost is not in the artefact quality — it is in the time spent in meetings before any artefact is produced, the relitigating of scope after sign-off, and the silent scope changes downstream when someone who didn't feel properly consulted drives a change without surfacing it through the original discovery record.
+
+**Current hire for this meta-job:** Nothing structured. Teams improvise — a kickoff meeting, a RACI spreadsheet, a Confluence page with "stakeholders and responsibilities". These are rarely shared, rarely enforced, and do not link to the artefact structure. The governance model is ambiguous by default and resolved by whoever asserts the most authority, not by whoever has the best process.
+
+**Switch threshold:** The platform must offer a model for discovery ownership that is clear enough for stakeholders to accept before discovery starts — not after. A sign-off structure embedded in the pipeline artefact (who reviewed, who approved, when) is the minimum. An explicit RACI section in the discovery template makes it visible. A workflow that routes the draft artefact to named reviewers (not "whoever wants to comment") operationalises it.
+
+---
+
+### Cross-job synthesis — what the platform is actually competing with
+
+The real competition across all five jobs is not VS Code + Confluence + Jira. It is the **political economy of informal governance**: the set of unwritten rules about who gets to be in what room, who gets the last word, and whose concerns are treated as blocking versus advisory. This informal governance system is stable, self-reinforcing, and maintained by the people who benefit most from its ambiguity. The pipeline is not competing with a tool — it is competing with a social system.
+
+**What this means for adoption strategy:**
+
+First: the people who bear the cost of informal governance are not the same as the people who maintain it. Engineers who absorb rework, PMs blamed for scope drift, delivery managers who manage change-the-change cycles — these are the people who want the pipeline's traceability most acutely. They are not the stakeholders driving discovery. An adoption strategy that starts with the people currently running discovery (business leads, BAs, POs) is asking the people who benefit most from the status quo to be the first movers. That is structurally backwards.
+
+Second: the right first movers are the delivery teams and the stakeholders who carry the cost. A pilot framed as "teams that want better scope traceability" will find more genuine early adopters than a pilot framed as "non-technical personas who want to use the pipeline."
+
+Third: the traceability chain is the primary value proposition, not the surface. The right positioning is not "a lower-friction way to run /discovery" — it is "a shared, signed, versioned record of what was agreed in discovery, who contributed, and why — so that when scope changes, the impact is visible and the appropriate people are notified." That proposition lands differently for different stakeholders, but it lands for all of them.
+
+---
+
+### Four Forces analysis (cross-stakeholder view)
+
+| Force | Shared across all roles | Role-specific variants |
+|-------|------------------------|----------------------|
+| Push | "We keep re-doing discovery because someone who wasn't in the room says we got it wrong." "Scope changed three months in and nobody could point to what had changed in the original rationale." "The audit asked for the original requirements document and we sent a Confluence page with fifty unresolved comments." | BA: "I wrote a 50-page spec and the team built something different." Business lead: "I signed off on a direction and then found out scope had been changed without a formal decision." SME: "I told them about the regulatory constraint in the kickoff and it wasn't in the final spec." PO: "My backlog keeps getting re-shaped by stakeholders who were in one discovery meeting." |
+| Pull | "One place to see what was agreed, who agreed it, and what has changed." "Traceable scope decisions I can point to when anyone asks why we built this way." "Being able to reconstruct the discovery rationale six months later without calling a meeting." | BA: artefacts that survive into delivery; name on the governance record. Business lead: a defensible paper trail for audit or exec challenge. SME: visible attribution for domain input. PO: a record that proves what was agreed at discovery, protecting the backlog from informal override. |
+| Anxiety | "This creates a formal paper trail — if I get a decision wrong, it's attributed to me." "My involvement (or non-involvement) in the discovery process becomes visible — right now I can claim I was consulted without it being easy to verify." "If decisions are written down formally, I can't change direction without a process." | BA: see pass 3 — role commoditisation fear. Business lead: attribution accountability may surface decisions they'd rather not have in writing. PO: if the artefact is owned collaboratively, the PO's ownership authority becomes ambiguous. |
+| Habit | "We've always decided this in a room and then one person writes it up." "Our stakeholders don't read formal documents — they ask questions in Teams." "I don't know what 'correct structure' looks like so I default to what I've always done." | All roles: the current informal governance model is stable precisely because it accommodates everyone's preference for flexibility. Formalising it removes that accommodation. |
+
+---
 
 ---
 
@@ -99,111 +164,163 @@ This framing works because it is about the *outcome* of the BA's existing work, 
 
 ### Desired outcome
 
-A PM or BA can complete the outer delivery loop — from idea to DoR sign-off — producing governance-quality artefacts, without VS Code, git, or terminal access, in a time budget that competes favourably with the current Confluence + Jira approach.
+Any non-technical stakeholder involved in enterprise delivery — business leads, SMEs, product managers, product owners, BAs — can participate in governed discovery on equal terms with engineering teams, producing a shared, signed, traceable artefact that all parties recognise as the authoritative record of what was agreed, in a time budget that competes favourably with the current Confluence + meetings + email approach.
 
 ### Opportunity tree
 
 ```
-Outcome: PM/BA can run the governed outer loop in their existing environment,
-         producing artefacts accepted as-is by the pipeline
+Outcome: Enterprise discovery produces a shared, signed, version-controlled record
+         that all participating stakeholders accept as authoritative — and that
+         traces directly to what gets built, with scope change impact visible
 
 ├── Cluster 1: Environment access is prohibitively expensive (GATE — blocks all others)
 │   ├── Unmet need: "I cannot get admin rights to install VS Code without an IT ticket"
-│   ├── Unmet need: "Proxy configuration and git credentials require someone technical to help me"
-│   ├── Pain point: "Even once set up, every session starts with re-orienting to a foreign environment"
-│   ├── Pain point: "The setup process requires decisions I don't have context to make correctly"
-│   └── Enterprise constraint: "Procurement/security approvals for marketplace extensions take weeks"
+│   ├── Unmet need: "Proxy configuration and git credentials require someone technical"
+│   ├── Pain point: "Every session starts with re-orienting to a foreign environment"
+│   ├── Pain point: "The setup process requires decisions I don't have context to make"
+│   └── Enterprise constraint: "Procurement/security approvals for extensions take weeks"
 │
 ├── Cluster 2: The artefact structure is a barrier independent of the content
 │   ├── Pain point: "I know what a user story is but not what AC format this pipeline requires"
-│   ├── Pain point: "Section headers and field names are engineering conventions — not how I think about requirements"
-│   ├── Unmet need: "I need a guide to produce valid structure, but that guide is a SKILL.md that assumes I understand the pipeline"
-│   └── Pain point: "When I produce the wrong structure, the rejection is technical — I don't understand what to fix"
+│   ├── Pain point: "Section headers are engineering conventions — not how I think"
+│   ├── Unmet need: "I need a guide to produce valid structure, but that guide assumes
+│   │               I understand the pipeline"
+│   └── Pain point: "When I produce the wrong structure, the rejection is technical"
 │
 ├── Cluster 3: My work context doesn't include these tools
-│   ├── Unmet need: "Stakeholders review work in Teams — I can't share a .md file they can read without a new tool"
-│   ├── Pain point: "Approvals happen in Teams threads or Jira comments, not GitHub PR reviews"
-│   ├── Pain point: "The pipeline produces artefacts in a format my manager doesn't recognise as a deliverable"
-│   └── Desire: "Link discovery artefacts to a Teams meeting note or a Jira epic without manual copy-paste"
+│   ├── Unmet need: "Stakeholders review work in Teams — I can't share a .md file
+│   │               they can read without a new tool"
+│   ├── Pain point: "Approvals happen in Teams threads or Jira, not GitHub PR reviews"
+│   ├── Pain point: "The pipeline produces artefacts in a format my manager doesn't
+│   │               recognise as a deliverable"
+│   └── Desire: "Link discovery artefacts to a Teams meeting note or a Jira epic"
 │
-├── Cluster 4: The adoption narrative works against the PM
-│   ├── Pain point: "This is perceived as a developer workflow — I am seen as encroaching on engineering territory"
-│   ├── Pain point: "'You have to learn VS Code too' is not a value proposition — it's a demand"
-│   ├── Unmet need: "There are no PMs using this today — there is no social proof to point to"
-│   └── Pain point: "My manager sees this as extra overhead on an existing process, not a replacement"
+├── Cluster 4: The adoption narrative works against non-technical stakeholders
+│   ├── Pain point: "This is perceived as a developer workflow"
+│   ├── Pain point: "'You have to learn VS Code too' is not a value proposition"
+│   ├── Unmet need: "There are no PMs or business leads using this today — no social proof"
+│   └── Pain point: "My manager sees this as extra overhead, not a replacement"
 │
-├── Cluster 5: Role identity threat — the BA sees this as replacing, not amplifying, their job
-│   ├── Root cause: the outer loop can currently be run entirely by an engineer without a BA
-│   ├── Pain point: "If an engineer can produce the discovery artefact, what is my role in this process?"
-│   ├── Pain point: "I will be reduced to approving something I didn't shape — that's weaker than where I am now"
-│   ├── Fear: "This platform is described as 'AI-assisted delivery' — that sounds like it does what I do, faster"
-│   ├── Unmet need: "Show me how my domain expertise is worth more with this, not commoditised by it"
-│   └── Structural gap: the platform has no mechanism that makes BA/PM input authoritative rather than optional
+├── Cluster 5: Enterprise discovery governance dysfunction (EXPANDED — core problem)
+│   │
+│   ├── 5a: Ownership and involvement ambiguity
+│   │   ├── Root cause: No agreed model for who owns, drives, and decides discovery
+│   │   ├── Pain: "We spent six weeks in discovery because three people thought they
+│   │   │         were the decision-maker — no one was wrong, the process was undefined"
+│   │   ├── Pain: "The business lead wasn't in the discovery sessions and came back
+│   │   │         three months later saying the direction was wrong — the decision
+│   │   │         was made but they weren't consulted on record"
+│   │   ├── Pain: "The SME gave us detailed constraints in the workshop but they
+│   │   │         never made it into the acceptance criteria — no attribution trail"
+│   │   ├── Desire: "Know who is responsible for each part of the discovery artefact
+│   │   │           before discovery starts, not after it produces a contested output"
+│   │   └── Structural gap: Discovery governance is improvised per team, per feature —
+│   │                       there is no shared model and the platform does not provide one
+│   │
+│   ├── 5b: The formal record creates accountability that feels threatening
+│   │   ├── Fear: "If I sign off on a formal artefact, I am accountable for what it says"
+│   │   ├── Fear: "If someone else owns the artefact, my input might not be represented
+│   │   │         correctly — and I'll have no record of what I actually said"
+│   │   ├── Fear: "Right now I can claim I was consulted without it being easy to verify;
+│   │   │         a formal record removes that protection"
+│   │   ├── Risk: "If my name is on a discovery decision that later goes wrong, I carry
+│   │   │         the accountability in a way I don't when it's in a meeting minute"
+│   │   └── Paradox: The traceability that protects delivery teams is the same
+│   │                traceability that removes the ambiguity that protects senior
+│   │                stakeholders who prefer to remain unattributed
+│   │
+│   ├── 5c: Role identity and contribution ownership (applies across all non-technical roles)
+│   │   ├── Root cause: the outer loop can currently be run entirely by an engineer
+│   │   ├── Pain (BA): "If an engineer can produce the discovery artefact, what is my role?"
+│   │   ├── Pain (PO): "I'm accountable for the product direction but the discovery
+│   │   │              artefact was produced by an engineer before I was involved"
+│   │   ├── Pain (Business Lead): "My strategic intent was interpreted by someone
+│   │   │                          technical — I have no way to verify it survived"
+│   │   ├── Pain (SME): "I wasn't involved until the review stage — my expertise was
+│   │   │               excluded from framing the problem, only applied to validating
+│   │   │               a frame someone else set"
+│   │   ├── Unmet need: Show each stakeholder how their specific expertise is
+│   │   │               structurally necessary, not optional to include
+│   │   └── Structural gap: the platform has no mechanism that makes any non-technical
+│   │                       input authoritative rather than advisory
+│   │
+│   └── 5d: The adoption resistance coalition
+│       ├── The resistance is not individual — it is a coalition of stakeholders with
+│       │   overlapping but distinct reasons not to engage
+│       ├── Each stakeholder type has a reason to resist that is rational from their
+│       │   position (accountability fear, role erosion, exclusion from framing)
+│       ├── When these concerns are expressed separately they look like tool friction;
+│       │   when they are understood together they look like a governance problem
+│       └── Coalition resistance cannot be solved by a better surface — it requires
+│           a governance model that addresses each stakeholder's concern structurally
+│
+├── Cluster 6: Downstream cost of decision ambiguity (NEW — scope drift and change debt)
+│   │
+│   ├── 6a: The silent scope change
+│   │   ├── Pain: "Assumptions in the original discovery evolved — nobody updated
+│   │   │         the artefact — what got built was based on the evolved assumption,
+│   │   │         not the original one, and nobody flagged the gap"
+│   │   ├── Pain: "Scope was changed after story sign-off without a formal decision —
+│   │   │         the change was absorbed by the delivery team without visibility"
+│   │   ├── Pain: "Six months in, we can't tell which scope changes were formally
+│   │   │         decided and which just drifted — the audit trail is broken"
+│   │   └── Unmet need: When a decision in the discovery artefact changes, the people
+│   │                   who were consulted on the original decision should know
+│   │
+│   ├── 6b: The discovery debt cycle
+│   │   ├── Pain: "We re-do discovery every cycle because last cycle's artefact is
+│   │   │         in Confluence and nobody trusts it anymore — the assumptions it
+│   │   │         was based on changed but the artefact never did"
+│   │   ├── Pain: "We spend the first two weeks of every project answering questions
+│   │   │         that were answered in the last project — there's no durable record"
+│   │   └── Desire: Discoveries that deprecate gracefully — linked to what was built,
+│   │               versioned when assumptions change, and queryable by anyone who
+│   │               needs to understand a past decision
+│   │
+│   └── 6c: The impact opacity problem
+│       ├── Pain: "A dependency changed and we don't know which stories are affected
+│       │         because the original assumptions aren't linked to the ACs"
+│       ├── Pain: "A regulatory constraint was updated — we have no way to identify
+│       │         which features were built on the old assumption"
+│       └── Unmet need: Changes to discovery decisions propagate automatically to
+│                       downstream artefacts, or at minimum trigger a review flag
 │
 └── Emerging (limited evidence, needs investigation)
     ├── "We use Azure DevOps, not GitHub — the pipeline assumes GitHub-native workflow"
-    └── "Entitlement management for repo access is handled by a separate team — I can't self-serve"
+    ├── "Entitlement management for repo access is handled by a separate team"
+    └── "Our legal/compliance team wants to own artefact retention — they won't
+        accept a git-hosted document as the governance record"
 ```
 
 ### Opportunity prioritisation
 
-| Opportunity | Importance to PM | Currently served | Priority |
+| Opportunity | Importance to enterprise | Currently served | Priority |
 |---|---|---|---|
-| Zero-install access to outer loop steps | High | Not at all | 🟢 Top (gate) |
-| Guided content extraction — PM never sees raw template structure | High | Not at all | 🟢 Top |
+| Shared, attributed discovery artefact — all stakeholders see their contribution on record | Very high | Not at all | 🟢 Top (new — this is the core value proposition) |
+| Explicit discovery governance model (who decides, who is consulted, who reviews) | Very high | Not at all | 🟢 Top (prerequisite for any adoption) |
+| Traceable scope change — when a decision changes, the impact trail is visible | High | Not at all | 🟢 Top (the downstream cost driver) |
+| Zero-install access to outer loop steps for non-technical stakeholders | High | Not at all | 🟢 Top (gate — blocks all Cluster 1 downstream benefit) |
+| Guided content extraction — stakeholder never sees raw template structure | High | Not at all | 🟢 Top |
 | Artefact shareable in Teams / readable by non-git stakeholders | High | Not at all | 🟢 Top |
-| PM-native vocabulary (not engineering jargon) | Medium | Not at all | 🟡 Watch |
-| Approval routing to existing channels (Teams, Jira) | Medium | Partially — persona-routing skill exists, but downstream of the setup gate | 🟡 Watch |
+| SME and business lead input structurally attributed and required | High | Not at all | 🟢 Top — prerequisite for the governance claim to hold |
+| Accountability model for the governance artefact — who signed off, when, on what | High | Not at all | 🟢 Top |
+| Decision rights model embedded in discovery template | Medium | Not at all | 🟡 Watch — design question: prescribe RACI or prompt for it? |
+| Scope change notification routing | Medium | Not at all | 🟡 Watch |
 | Enterprise constraint handling (proxy, ADO, entitlements) | High | Not at all | 🟢 Top — a prerequisite class, not a feature |
-| Social proof / adoption narrative | Low (currently) | Not at all | ⚪ Lagging indicator — follows when functional value is proven |
-| BA/PM input structurally required — engineer-only outer loop not possible | High | Not at all | 🟢 Top — prerequisite for the adoption narrative to be credible |
+| Audit-legible artefact format (retention, non-git governance record) | Medium | Not at all | 🟡 Watch |
 
 ### Top opportunity — seed solution hypotheses
 
-> **Primary opportunity:** Zero-install access to the outer loop (removes the gate blocking all downstream benefit)
+> **Primary opportunity:** A shared, attributed, governance-quality discovery record that all participating stakeholders accept as authoritative — not just a lower-friction way to produce a pipeline artefact.
 
 | Solution hypothesis | Addresses opportunity via | Feasibility signal |
 |---|---|---|
-| Hosted web UI — guided form that maps PM-familiar labels to pipeline field names | No install; runs in browser; can be accessed from managed device via URL | Requires a hosting service + API backend; artefact commit via service account |
-| Teams bot (Phase 4 E4 hypothesis) | No install for PM; lives in their existing environment | Requires Microsoft account + bot registration + API access — IT dependency moves from VS Code to bot provisioning; not obviously lower friction |
-| Copilot Chat extension in Teams (Microsoft 365 Copilot) | Runs in Teams Copilot sidebar; wraps skills without terminal | Requires Copilot M365 licence and extension approval — enterprise entitlement risk |
-| Email-to-artefact flow — PM writes in natural language, conversion step structures it | Zero interaction model change for PM | Quality risk: natural language → structured artefact without guidance may produce thin artefacts |
-| SharePoint / Power Apps form → backend committer | Familiar MS ecosystem; no new tool for PM | Power Apps licencing; form maintenance cost; may not support full outer loop |
-| **Facilitation-native web UI** — collaborative canvas where the BA runs ideation/discovery methods live; artefact is produced *during* the session, not after | BA is the facilitator, not a user filling in a form; resolves role identity threat structurally; works for workshops and stakeholder sessions | Real-time collaboration infrastructure (WebSockets, shared state, presence) is a meaningful engineering investment not covered by the Copilot SDK; facilitation method design requires product design expertise |
-
-### Facilitation-native web UI — why this is architecturally different
-
-The Teams bot, hosted form, and email flow are all *input channel* hypotheses — they lower the friction for a non-technical persona to produce a pipeline artefact that already existed in a VS Code session. The facilitation-native web UI is a different category: it treats the outer loop as a **collaborative facilitation tool first** and a **pipeline feeder second**.
-
-The core insight: BA/PMs are often expert facilitators. They run discovery workshops, ideation sessions, and stakeholder alignment meetings. They know how to hold space for competing perspectives, surface implicit assumptions, reframe problems when a room is stuck, and synthesise fragmented input into a coherent direction. None of that skill lives in a SKILL.md. The pipeline currently treats it as a black box that produces inputs — you run the workshop somehow, then go into VS Code and turn the outputs into artefacts. The facilitation and the artefact production are sequential, disconnected, and lossy.
-
-In a facilitation-native surface, they happen simultaneously. The BA runs the ideation methods they are already expert in. The structure that emerges from those methods feeds directly into the governed pipeline artefact as the session progresses. The artefact is not produced *after* the workshop — it is produced *during* it, by the participants, with the facilitator using the tool as a scaffold for structured thinking rather than a form to fill in.
-
-**Why this resolves the role identity threat in a way surface changes alone do not:**
-
-The identity threat exists because a skilled engineer can run /discovery and produce a plausible artefact without a BA in the room. In a facilitation-native surface, the tool does not produce the discovery artefact — the facilitator does, using the tool to structure and capture what emerges from a live collaborative session. The BA is not *a user of the pipeline*; they are *the person running the session that the pipeline captures*. That is a completely different relationship to the tool. Their expertise — knowing which questions to ask, how to read a room, how to surface what stakeholders actually need versus what they say they want — is now load-bearing, not invisible.
-
-Engineers can still run the outer loop in VS Code. But the facilitation-native surface is the BA's native environment, not an engineering tool with the friction sanded off. That distinction matters for the adoption narrative.
-
-**What a session looks like in practice:**
-
-A BA opens the web UI, creates a new discovery session, and invites two or three stakeholders. The session view renders a structured collaborative canvas guided by the ideation methods from the pipeline — opportunity mapping, JTBD framing, assumption surfacing — but presented as facilitation scaffolding, not form fields. Participants contribute in real time. The BA facilitates using the structure the tool provides; the content comes from the room. As the session progresses, the tool structures the output into the pipeline artefact format. The BA does not see SKILL.md section headers — they see "problem framing", "evidence", "success indicators". When the session closes, the pipeline artefact is committed to the repo. The BA exports a human-readable summary to Confluence for stakeholders. The engineering pipeline has its governed artefact. Neither group compromised their way of working.
-
-**Relationship to the Copilot SDK:**
-
-The GitHub Copilot SDK makes the agentic model layer buildable without a separate model subscription. The web UI backend embeds the SDK; the governance package (SKILL.md skills) sits as middleware; the facilitation session drives the model through the outer loop skills in real time. The SDK handles authentication, model management, and agentic infrastructure. What the SDK does *not* provide is the collaboration layer — shared state, WebSocket connections, presence, conflict resolution when two participants edit simultaneously. That is custom infrastructure the team would build.
-
-**Three genuine hard things (not blocking — but honest):**
-
-| Hard thing | Why it is hard | What this means for sequencing |
-|---|---|---|
-| Real-time collaboration infrastructure | WebSockets, shared state, conflict resolution, presence model — meaningful engineering investment not covered by any existing dependency | Phase 1 of the web UI should be single-facilitator (no live multi-participant), proving the artefact production loop before adding collaboration complexity |
-| Facilitation method design | Which methods, in which order, how structured vs. freeform, when the tool guides vs. gets out of the way — these decisions require facilitation expertise to get right; wrong decisions produce a constraint, not a scaffold | Facilitation method design must be done with real BAs running real sessions, not derived from the SKILL.md structure alone |
-| Artefact parity in a live session | Quality depends on the facilitator's skill as much as the tool's design; the pipeline currently validates structure not content depth; a skilled BA produces a complete artefact, an inexperienced user produces a thin one | Content depth validation (not just structure) must be a design requirement for the facilitation-native surface |
-
-> **Key insight from Cluster 1:** All surface hypotheses move the IT dependency, not remove it. The Teams bot moves it from "VS Code + Copilot extension approval" to "bot API registration + service account". A hosted web UI moves it from "managed device restrictions" to "can we access an external URL". The enterprise constraint is a class of problem that runs across all surface options — it is not solved by surface choice alone.
-
-> **Key insight from Cluster 5:** No *access surface* choice addresses the role identity threat — a BA who perceives the platform as a replacement will not engage with a Teams bot any more than with VS Code. The facilitation-native web UI addresses this differently: it does not give the BA a lower-friction way to do what the pipeline already does, it gives the BA a way to do what *they* already do (facilitate, synthesise, align) with the pipeline capturing the output. That is a structural reframe, not a surface change. It still requires the governance model fix (BA input authoritative) — but the facilitation-native surface makes that fix natural rather than imposed.
+| Discovery template with explicit RACI section (who owns, who contributed, who approved) | Makes governance roles explicit before discovery starts; attribution is built in | Low cost — template change only; requires governance model design work |
+| Stakeholder review workflow with attribution — named reviewers sign off on specific sections | Each stakeholder's contribution is committed with their name attached; creates the "I was heard" record | Requires persona-routing workflow extension; low-medium engineering cost |
+| Traceability notifications — when a discovery decision changes, named reviewers are notified | Closes the silent scope change gap; the downstream cost driver | Requires change-detection logic on artefact fields; medium engineering cost |
+| Facilitation-native web UI — collaborative canvas for live discovery sessions | BA/facilitator runs the session; artefact is produced during the session; all participant contributions are captured and attributed | Real-time collaboration infrastructure is significant investment; see pass 3 analysis |
+| Hosted web UI (non-facilitation-native) — guided form in browser | Zero-install for non-technical stakeholders; removes Cluster 1 gate | Does not address governance model gaps; access without attribution is insufficient |
+| Discovery governance primer — a short onboarding workflow that establishes the RACI before the first session begins | Creates the governance model as a first-class step, not an assumption | Low cost; may be a facilitation challenge if stakeholders resist making roles explicit |
 
 ---
 
@@ -211,69 +328,75 @@ The GitHub Copilot SDK makes the agentic model layer buildable without a separat
 
 *Framework: Teresa Torres — assumption mapping*
 
-### Assumptions extracted
+### Assumptions extracted — updated pass 4 (multi-stakeholder governance framing)
 
 | Assumption | Type | Risk if wrong | Known-ness | Priority |
 |---|---|---|---|---|
-| PMs perceive "producing governance artefacts" as part of their job, not as engineering overhead imposed on them | Desirability | High | Guess | 🔴 Test first |
-| Artefact parity via guided conversation is achievable — a conversation surface produces artefacts of equivalent structural and content quality to a VS Code + SKILL.md session | Feasibility | High | Guess | 🔴 Test first |
-| The SKILL.md vocabulary and concepts can be translated into PM-native language without losing the governance properties that matter | Viability | High | Inference | 🔴 Test before building |
-| The Teams bot is the right surface — PMs would switch to it if it existed; the barrier is the tool, not the concept | Desirability | High | Guess | 🔴 Test before committing to a surface |
-| PMs will invest time learning a new framework if the access surface is lower friction | Desirability | High | Inference | 🟡 Test via pull, not push |
-| Engineering teams will accept artefacts produced via a non-git surface as equivalent quality — no second-class citizen dynamic | Ethical/Social | Medium | Inference | 🟡 Test via pilot |
-| Enterprise bot provisioning (Teams API, service account, git write access) is manageable within a quarter | Feasibility | Medium | Guess | 🟡 Spike before committing to Teams surface |
-| The C7 constraint (one question at a time) is compatible with how PMs want to work | Desirability | Medium | Inference | 🟡 Test in prototype |
-| The outer loop steps (discovery → benefit-metric → definition → review → test-plan → DoR) are meaningfully executable by a non-technical persona without simplification | Viability | Medium | Inference | 🟡 Test via pilot |
+| The primary adoption barrier is tool access friction, not governance or accountability fear | Desirability | High | Guess | 🔴 Test first — this assumption was implicit in passes 1–3 and is now under challenge |
+| All non-technical stakeholders (business leads, SMEs, POs, PMs, BAs) experience the access barrier as the dominant friction | Desirability | High | Guess | 🔴 Test first — different roles may have very different barriers |
+| Enterprise stakeholders who resist the platform are motivated primarily by tool unfamiliarity, not accountability avoidance | Desirability | High | Inference | 🔴 Test before any surface investment |
+| Formalising discovery governance (explicit RACI, attributed sign-off) will be welcomed by enterprise stakeholders as clarity, not resisted as accountability exposure | Desirability | High | Inference against this | 🔴 Known risk — senior stakeholders may actively resist attribution if informal ambiguity currently protects them |
+| The shared, attributed artefact is experienced as protective by all stakeholders (my contribution is on record) rather than threatening (my decisions are on record) | Desirability | High | Guess | 🔴 Test first — the same record is protective for some stakeholders and threatening for others; this split is not uniform |
+| Different stakeholder types (BA, PO, business lead, SME) have the same adoption journey — lower friction for all means more engagement from all | Desirability | High | Inference against this | 🔴 Likely wrong — each role has a distinct concern; a single adoption journey serves none of them well |
+| The people currently running discovery (business leads, BAs, POs) are the right first movers for adoption | Desirability | High | Inference | 🔴 Likely wrong — the people carrying the cost of ambiguous discovery (delivery teams, engineers) may be stronger first movers because they have the most to gain |
+| Artefact parity via guided conversation is achievable — a conversation surface produces artefacts of equivalent structural and content quality | Feasibility | High | Guess | 🔴 Test first |
+| The SKILL.md vocabulary can be translated into multi-stakeholder-native language without losing governance properties | Viability | High | Inference | 🔴 Test before building — the translation must work for each role, not just for PMs |
+| The outer loop currently structurally requires any non-technical input — engineer-only execution produces visibly inferior artefacts | Viability | High | Evidence against this | 🔴 Known gap — this must be fixed before surface work |
+| Enterprise stakeholders will accept a shared artefact as the authoritative record rather than their own format (Confluence, email, meeting minutes) | Desirability | High | Guess | 🔴 Test first — this is the governance adoption question, not the tool adoption question |
+| Decision-rights ambiguity is resolvable at the artefact level (who signs off on what section) rather than requiring org-level governance redesign | Viability | High | Inference | 🔴 Must test — if the answer is "requires org governance redesign", the pipeline cannot resolve it alone |
+| The coalition of resistant stakeholders can be reached through the delivery team channel (pilot seeded by teams who want scope traceability) | Desirability | Medium | Inference | 🟡 Test via pilot design |
+| PMs will invest time learning a new framework if the access surface is lower friction | Desirability | High | Inference | 🟡 Test via pull, not push — access is necessary but not sufficient |
+| Engineering teams will accept artefacts produced via a non-git surface as equivalent quality | Ethical/Social | Medium | Inference | 🟡 Test via pilot |
+| Enterprise bot provisioning or web app deployment is manageable within a quarter | Feasibility | Medium | Guess | 🟡 Spike before committing to any surface |
 | Azure DevOps environments can be supported at the channel adapter layer without pipeline changes | Feasibility | Low | Inference | 🟢 Accept for now — note as constraint |
-| A lower-friction surface solves the adoption problem — the barrier is the tool, not the role | Desirability | High | Guess | 🔴 Test first — **this assumption is likely false for a meaningful segment of the target population** |
-| BAs and PMs will engage with the platform once they see it as a force multiplier for their work | Desirability | High | Guess | 🔴 Test first — "force multiplier" is a positioning claim, not a structural property of the current platform |
-| The outer loop currently structurally requires BA/PM input — engineer-only execution produces visibly inferior artefacts | Viability | High | Evidence against this | 🔴 Known gap — the outer loop today does NOT require BA/PM input; this is what must be fixed before surface work |
-| The discovery/benefit-metric/DoR skills can be evolved to make BA domain expertise structurally necessary without making engineer adoption harder | Feasibility | Medium | Inference | 🟡 Test via skill redesign spike |
-| The facilitation-native web UI resolves the role identity threat — BA as facilitator rather than user changes their relationship to the platform structurally | Desirability | High | Inference | 🔴 Test with BA population — does the facilitator framing change the adoption response? |
-| A Phase 1 single-facilitator web UI (no real-time collaboration) is sufficient to prove the artefact production loop before investing in collaboration infrastructure | Feasibility | Medium | Inference | 🟡 Test via prototype — is single-facilitator a viable first proof point or does the collaborative session format require multi-participant from the start? |
-| The GitHub Copilot SDK is an appropriate backend for the facilitation-native UX — it handles model management and agentic infrastructure | Feasibility | Medium | Inference | 🟡 Spike before building — SDK fits single-session, single-facilitator model; multi-participant real-time may require different architecture |
-| Facilitation method design can be derived from the pipeline's ideation SKILL.md structure without real facilitation expertise input — the SKILL.md maps cleanly to a visual canvas | Design | High | Evidence against this | 🔴 Known risk — this assumption is likely wrong; facilitation method design requires real BAs testing real sessions; a SKILL.md-derived canvas may feel like a form, not a facilitation scaffold |
-
-### Test designs (for 🔴 assumptions)
-
-**Assumption:** PMs perceive governance artefacts as their job, not extra overhead
-
-| Test approach | Description | Would observe if true | Would observe if false |
-|---|---|---|---|
-| Interview | "When a story gets built differently to what you agreed — what does that feel like, and what do you wish you had?" | PM reaches for traceability — "I wish I had a record of what was agreed" | PM reaches for communication — "I wish the team had listened better" |
-| Data proxy | Review the last 5 retrospectives involving this PM — do findings mention "better requirements" or only "better communication"? | "Better requirements / clearer ACs" appears as a finding | All findings are about process or communication; requirements quality not surfaced |
-
-**Decision:** Run interview before any surface design work. If the finding is "better communication", the job story needs revision — the PM may be hiring for visibility, not governance.
+| The facilitation-native web UI resolves the role identity threat structurally — BA as facilitator changes their relationship to the platform | Desirability | High | Inference | 🔴 Test with BA population — does the facilitator framing change the adoption response? |
+| A Phase 1 single-facilitator web UI (no real-time collaboration) is sufficient to prove the artefact production loop | Feasibility | Medium | Inference | 🟡 Test via prototype |
+| The GitHub Copilot SDK is an appropriate backend for the facilitation-native UX | Feasibility | Medium | Inference | 🟡 Spike before building |
+| Facilitation method design can be derived from the pipeline's SKILL.md structure without deep facilitation expertise input | Design | High | Evidence against this | 🔴 Known risk — a SKILL.md-derived canvas may feel like a form, not a facilitation scaffold |
+| Legal/compliance stakeholders will accept a git-hosted, version-controlled artefact as the enterprise governance record | Viability | Medium | Guess | 🟡 Spike required — some regulated sectors may have specific retention and format requirements |
 
 ---
 
-**Assumption:** Artefact parity via guided conversation is achievable
+### Test designs (for 🔴 assumptions — updated)
+
+**Assumption:** The primary adoption barrier is tool access friction, not governance or accountability fear
 
 | Test approach | Description | Would observe if true | Would observe if false |
 |---|---|---|---|
-| Prototype test | Run a PM through a /discovery session simulated entirely in Teams DM messages (no VS Code, no git). Read the output against the discovery template. Count missing or thin fields. | Fewer than 3 fields missing; content depth comparable to a git-native session | 5+ fields missing or thin; content requires significant augmentation by an engineer to be pipeline-usable |
+| Segmented interview | Ask separately: a BA who hasn't engaged, a PO who uses the pipeline, a business lead who was in a discovery but didn't engage further. Question: "What would have to be true for you to want to be the named owner of a discovery artefact on your next feature?" | Answer focuses on tool/setup: "I need it without VS Code" | Answer focuses on governance or accountability: "I need to know what I'm signing off on" / "I don't want my name on something I didn't fully control" |
+| Passive adoption observation | Give a BA full access and working setup — remove all Cluster 1 friction. Observe over 4 weeks. | BA uses the platform for at least one real story | BA still does not engage; defers to engineer to produce the first artefact |
 
-**Decision:** This is a half-day experiment. Run before any bot development. If the result is "5+ fields missing", the problem is not the surface — it is the vocabulary and guidance layer (Cluster 2), and that must be solved before any surface is built.
+**Decision:** If the interview finding is about governance/accountability, not tool — surface investment is premature. The required prior work is a governance model design and a template redesign that makes sign-off meaningful but bounded.
 
 ---
 
-**Assumption:** SKILL.md vocabulary can be translated without losing governance properties
+**Assumption:** Formalising discovery governance will be welcomed, not resisted, by enterprise stakeholders
 
 | Test approach | Description | Would observe if true | Would observe if false |
 |---|---|---|---|
-| Vocabulary audit | Take the /discovery SKILL.md. Rewrite all prompts in PM language (no "AC", no "DoR", no "pipeline"). Show the rewritten version to an engineer: "Does output from these prompts still satisfy the governance properties?" | Engineer confirms governance properties are intact; output passes the H1–H9 hard blocks | Engineer identifies specific properties that are lost — the rewrite either removes precision or introduces ambiguity that would fail downstream gates |
+| Governance model test | Present two discovery templates to three senior stakeholders: (a) current format — section headers with no attribution; (b) new format — sections with "Contributed by: [name]" and "Reviewed and approved by: [name, date]". Ask: "Which would you rather sign off on?" | Stakeholders prefer (b): "I know exactly what I'm agreeing to" | Stakeholders prefer (a): "This is too formal" / "I don't want my name on individual sections" / "This creates too much overhead for a simple feature" |
 
-**Decision:** Run the vocabulary audit as a single-session pair exercise (one PM, one engineer). Findings feed directly into /discovery vocabulary and Cluster 2 solutions.
+**Decision:** If the finding is "too formal" or accountability avoidance — explore bounded attribution (approve the whole artefact, not individual sections) and consider whether the sign-off model needs to be opt-in at the team level rather than mandatory.
 
 ---
 
-**Assumption:** The Teams bot is the right surface
+**Assumption:** Different stakeholder types have the same adoption journey
 
 | Test approach | Description | Would observe if true | Would observe if false |
 |---|---|---|---|
-| Comparative prototype | Offer three PMs three surface prototypes: (a) guided conversation in Teams DM, (b) a minimal form-based web UI, (c) Copilot Chat in M365. Ask them to complete a real discovery. Observe, do not ask preference directly. | PMs complete more steps and produce higher-quality content in the Teams DM format | PMs produce comparable or better output in the web UI; Teams DM creates confusion around conversational context length |
+| Role-segmented interview series | Run the same "what would have to be true" question with one person from each role (BA, PO, business lead, SME). Map their answers. | Consistent answer pattern across roles — one adoption journey serves all | Distinct answer patterns by role — BAs raise role identity concerns; business leads raise accountability concerns; SMEs raise contribution visibility concerns; POs raise ownership concerns |
 
-**Decision:** Do not commit to a surface until this test is run. The Phase 4 Spike D decision to build a Teams bot was made on architectural grounds (C7 compliance), not on evidence of PM preference or comparative usability.
+**Decision:** If the finding is role-segmented (expected), the adoption strategy must be role-specific. A single onboarding journey is insufficient. Design separate entry points — or at minimum, a first session that helps each role identify their specific concern before presenting the platform.
+
+---
+
+**Assumption:** Enterprise stakeholders will accept a shared artefact as the authoritative record
+
+| Test approach | Description | Would observe if true | Would observe if false |
+|---|---|---|---|
+| Artefact legitimacy test | Show a completed discovery artefact (pipeline format) to a business lead who did not produce it. Ask: "If a question comes up in six months about why we chose this direction, is this document the one you would point to?" | Business lead confirms the artefact as authoritative | Business lead says: "I'd also need the meeting notes" / "I'd need to see who was in the room" / "This is the technical record — the business record is the deck I took to the steering group" |
+
+**Decision:** If the finding is "I'd also need..." — explore whether the artefact can be extended to include the types of evidence that make it a complete governance record (participant list, meeting link, supporting materials). The artefact is currently oriented toward engineering pipeline quality, not enterprise governance quality.
 
 ---
 
@@ -281,31 +404,20 @@ The GitHub Copilot SDK makes the agentic model layer buildable without a separat
 
 | Test approach | Description | Would observe if true | Would observe if false |
 |---|---|---|---|
-| Framing interview | Present two descriptions to a BA: (a) "A lower-friction way to run /discovery without VS Code"; (b) "A facilitation canvas where you run discovery workshops and the pipeline artefact is produced as a byproduct of the session." Ask: "How would you describe your role in each scenario?" | In (a): "I'm a user of the tool"; in (b): "I'm the facilitator — the tool is supporting my session" | BA describes their role the same way in both; the framing distinction does not change their perceived relationship to the tool |
-| Live session observation | Run a BA through a simulated facilitation session using the description from (b) above — a structured conversation with two stakeholder participants, the BA facilitating, the tool capturing. Observe whether the BA spends time on method and content (good) or on figuring out the tool (bad). | BA focuses on facilitation; tool is invisible; artefact emerges from the conversation | BA spends > 30% of time on tool navigation; facilitation is disrupted; participants disengage |
+| Framing interview | Present two descriptions to a BA: (a) "A lower-friction way to run /discovery without VS Code"; (b) "A facilitation canvas where you run discovery workshops and the pipeline artefact is produced as a byproduct of the session." Ask: "How would you describe your role in each scenario?" | In (a): "I'm a user of the tool"; in (b): "I'm the facilitator — the tool is supporting my session" | BA describes their role the same way in both |
+| Live session observation | Run a BA through a simulated facilitation session. Observe whether the BA focuses on method and content (good) or tool navigation (bad). | BA focuses on facilitation; tool is invisible; artefact emerges | BA spends >30% of time on tool navigation; facilitation is disrupted |
 
-**Decision:** The framing interview is a 30-minute test. Run it before any design work on the facilitation-native surface. If the finding is "framing doesn't change the response", the identity resolution requires governance model change, not a different surface design.
-
----
-
-**Assumption:** A lower-friction surface solves the adoption problem
-
-| Test approach | Description | Would observe if true | Would observe if false |
-|---|---|---|---|
-| Targeted interview | Ask a BA who has been made aware of the platform but has not engaged: "What would have to be true for you to want to use this?" | Answer is about the tool: "I need it in Teams / without VS Code" | Answer is about role: "I need to know this doesn't make my job obsolete" / "I need to understand what I'm responsible for" |
-| Passive adoption observation | Give a BA full access and working setup — remove all Cluster 1 friction. Observe over 4 weeks. | BA uses the platform for at least one real story | BA still does not engage despite access; defers to engineer to "set it up" or produce the first artefact |
-
-**Decision:** If the interview finding is about role, not tool — surface investment is premature. The required prior work is a governance model redesign that makes BA input structurally authoritative. This is a discovery-level finding that must be resolved before any non-technical surface is built.
+**Decision:** The framing interview is a 30-minute test. Run before any design work on the facilitation-native surface. If the finding is "framing doesn't change the response", the identity resolution requires governance model change, not a different surface.
 
 ---
 
-**Assumption:** The outer loop currently requires BA/PM input — engineer-only outer loop produces visibly insufficient artefacts
+**Assumption:** The outer loop currently requires any non-technical input
 
 | Test approach | Description | Would observe if true | Would observe if false |
 |---|---|---|---|
-| Quality audit | Take three discovery artefacts produced by engineers without BA involvement. Have two BAs assess them against: (a) customer evidence quality, (b) stakeholder context accuracy, (c) business model implication coverage. | BAs identify significant gaps; artefacts would fail against an honest DoR check | BAs find artefacts adequate; the engineer-produced versions are not distinguishable in quality |
+| Quality audit | Take three discovery artefacts produced by engineers without BA/business lead involvement. Have two BAs and one business lead assess them against: (a) customer evidence quality, (b) stakeholder context accuracy, (c) business model implication coverage, (d) regulatory constraint capture. | Assessors identify significant gaps in all four dimensions; artefacts would fail an honest DoR check | Assessors find artefacts adequate; engineer-produced versions are not distinguishable in quality |
 
-**Decision:** If the audit finds engineer-produced artefacts are adequate, the structural fix (making BA input authoritative) requires intentional skill redesign — adding required evidence fields ("customer interview evidence", "stakeholder review record") that cannot be plausibly fabricated by an engineer without actual domain contact. This is a skills platform change, not a surface change.
+**Decision:** If the audit finds engineer-produced artefacts are adequate, the structural fix requires intentional skill redesign — adding required evidence fields that cannot be plausibly fabricated without genuine domain contact. This is a skills platform change, not a surface change.
 
 ---
 
@@ -317,35 +429,39 @@ The GitHub Copilot SDK makes the agentic model layer buildable without a separat
 
 | Question | Answer | Confidence |
 |---|---|---|
-| What problem will this solve? | Non-technical disciplines cannot participate in governed delivery without a VS Code + git setup that blocks them at first access — so the functional benefit of the pipeline is never tested against the alternative | Strong |
-| For whom? | PM/BA in an enterprise context — managed device, AD auth, Teams and Confluence daily, no git credentials, probable IT restrictions on extension installation | Strong |
-| How will we measure success? | N PMs complete outer loop unassisted (discovery → DoR sign-off); artefacts accepted without rework by downstream pipeline steps; measured on first real story per PM | Uncertain — metric not yet formally defined |
-| What alternatives exist today? | Confluence + Jira + meetings + email — zero setup, fully socially legitimate, in tools the organisation already paid for | Strong |
-| Why are we best suited? | The pipeline's functional output (correctly-built stories, traceable decisions) is the differentiator; we are not building a new pipeline, we are extending access to an existing one | Moderate |
-| Why now? | Enterprise AI tool adoption is creating an opening — PMs are already being asked to work alongside AI agents; the pipeline fits that framing better now than 18 months ago. Timing signal: "AI-assisted delivery" is entering PM vocabulary as a concept, not just an engineering one. | Moderate |
-| How will we reach customers? | Existing enterprise surface (Teams, M365) is the channel of least resistance — but the surface choice should be evidence-driven, not architectural | Uncertain |
-| What must the MVP demonstrate? | One PM completes discovery → DoR sign-off unassisted, producing an artefact accepted as-is by the downstream pipeline, on a managed device with no git setup | Concrete |
-| What are the critical risk factors? | (1) Role identity risk: BAs who perceive the platform as a replacement for their job will not engage regardless of surface. (2) Structural risk: the outer loop currently allows engineer-only execution, which confirms the BA's concern rather than resolving it. (3) Access risk: enterprise IT constraints are a class of problem across all surface options. (4) Quality risk: guided-conversation artefacts may be structurally valid but content-thin. (5) Surface risk: Teams bot was chosen architecturally, not empirically. | High |
+| What problem will this solve? | Enterprise discovery governance dysfunction: multiple stakeholders compete for ownership, no agreed decision rights model exists, discovery cycles are extended by ownership debates, and when scope evolves downstream the impact trail is invisible — so rework cycles accumulate and nobody can be held accountable against a clear original record | Strong |
+| For whom? | All non-technical stakeholders participating in enterprise delivery discovery: business leads, SMEs, product managers, product owners, BAs — across managed-device, AD-auth, Teams-and-Confluence-daily enterprise environments | Strong |
+| How will we measure success? | (1) Discovery cycle time reduced — time from idea to DoR sign-off per feature; (2) Scope change attribution rate — % of scope changes traceable to a specific logged decision vs. undocumented drift; (3) Stakeholder sign-off completeness — % of discovery artefacts with attribution from all nominated reviewers | Uncertain — metrics not yet formally defined; these are candidate signals for /benefit-metric |
+| What alternatives exist today? | Confluence + Jira + meetings + email — the informal governance system: zero setup, fully socially legitimate, maintained by the people who benefit from its ambiguity, and stable because it is not accountable to any standard | Strong |
+| Why are we best suited? | The pipeline's governed artefact chain is the mechanism that makes decisions traceable, attributed, and versioned. We are not building a new governance system — we are providing the artefact layer that makes the existing delivery process auditable. No other tool in the Confluence + Teams ecosystem produces a versioned, linked, cross-phase decision trail | Moderate |
+| Why now? | (1) Enterprise AI tool adoption is creating a moment where teams are actively re-evaluating how discovery is run — the "AI-assisted delivery" conversation is happening without a governance framework. (2) Organisations that have run any agile retrospective recently have data on scope drift and rework cost — the pain is measurable and fresh. (3) The formal accountability appetite in regulated industries (financial services, healthcare, public sector) is increasing, not decreasing — "we agreed this in a meeting" is no longer a sufficient governance record in an audit | Moderate |
+| How will we reach customers? | First movers: delivery teams and PMs who carry the downstream cost of informal discovery governance (rework, unattributed scope changes, relitigated decisions). Not: the business leads and BAs who currently run discovery and benefit from the informal system. Seed adoption in teams with active scope debt, not in teams with a working governance process. | Uncertain — this requires a channel strategy test |
+| What must the MVP demonstrate? | (1) A cross-functional discovery session produces a shared, attributed, versioned artefact that all participants — including at least one non-technical stakeholder — recognise as the authoritative record of what was agreed. (2) When a scope assumption changes after sign-off, the impacted downstream artefacts are identifiable within 10 minutes without a meeting. | Concrete — these are the two jobs with the highest enterprise cost |
+| What are the critical risk factors? | (1) **Accountability avoidance** — senior stakeholders who benefit from ambiguity will resist any governance model that creates a clear attribution trail; this is not about the tool, it is about political economy. (2) **Coalition resistance** — adoption resistance is multi-stakeholder and mutually reinforcing; solving for one role's concern does not unblock the others. (3) **Access risk** — enterprise IT constraints affect all surface options; moving the dependency is not removing it. (4) **Governance model prerequisite not delivered first** — if the outer loop remains engineer-executable without non-technical input, the adoption narrative is incoherent. (5) **Quality risk** — guided-conversation artefacts may be structurally valid but domain-knowledge thin. | High |
 
 ### Recommendation
 
-> **PROCEED** — with REDESIGN signals on both the solution surface and the adoption strategy.
+> **PROCEED** — with REDESIGN signals on problem framing, adoption strategy, governance model, and surface architecture.
 
-**REDESIGN signal 1 — Adoption strategy sequencing.** The current framing is "here is a tool for non-technical personas to use." That framing confirms the threat and triggers the role identity failure mode. The adoption conversation must lead with the pain — evidence that the BA's existing work does not survive into delivery (rework data, retrospective findings, the gap between what was specified and what was built) — before the platform is introduced as a solution. The platform is not a tool for BAs to use; it is a mechanism that makes their existing work durable and traceable. That reframe must be lived in the governance model (BA input structurally authoritative) not just stated in positioning.
+**REDESIGN signal 1 — Problem framing.** The problem is not "access friction for a non-technical persona." It is "enterprise discovery governance dysfunction." Framing it as an access problem produces solutions (lower-friction surfaces) that do not address the adoption barriers most senior stakeholders actually have. The correct problem framing is: the enterprise has no durable, attributed, versioned discovery record — and the political economy of informal governance actively maintains that gap. Any solution that does not address the political economy as well as the tooling is incomplete.
 
-**REDESIGN signal 2 — Governance model prerequisite.** Before any non-technical surface is built, the outer loop must be redesigned so that engineer-only execution is visibly insufficient. Concretely: discovery and benefit-metric skills should require evidence of customer or stakeholder contact (interview notes, stakeholder confirmation) as a non-optional field — absence is surfaced as a quality gap, not filled with plausible engineer assumptions. DoR hard blocks should include at least one check that is genuinely satisfiable only by someone with domain access. This is the structural basis for the "force multiplier" claim; without it, the claim is rhetoric.
+**REDESIGN signal 2 — Adoption strategy sequencing.** Starting adoption with the people currently running discovery (business leads, BAs) means starting with the people who benefit most from the status quo. The correct first movers are the people who carry the cost — delivery teams, engineers absorbing rework, PMs blamed for undocumented scope drift. A pilot framed as "teams that want scope traceability" will find more genuine early adopters than a pilot framed as "non-technical personas who want to use the pipeline." Proof from a delivery team pilot creates the social evidence that then becomes usable with the business lead and BA population.
 
-**REDESIGN signal 3 — Surface choice and architecture.** The prior Teams bot hypothesis was architectural, not empirical. A third direction now exists — the facilitation-native web UI — which is architecturally different from all prior hypotheses. It does not lower friction for an existing pipeline interaction; it creates a new interaction model where the BA's facilitation expertise is load-bearing. This direction warrants its own feasibility assessment before a surface is chosen.
+**REDESIGN signal 3 — Governance model prerequisite.** Before any non-technical surface is built, the outer loop must be redesigned so that engineer-only execution produces a visibly incomplete governance artefact. Specifically: discovery and benefit-metric skills should require named stakeholder attribution (who contributed domain expertise, who reviewed, who approved) as a required field — absence is a quality gap, not an optional section. This makes the governance model real, not rhetorical. Without this, the platform's claim to "make your work durable" is hollow — it just produces another Confluence page with a different structure.
 
-**Revised first move — three parallel experiments, all half-day or less:**
+**REDESIGN signal 4 — Surface architecture sequencing.** Surface investment (Teams bot, facilitation-native web UI, hosted form) is downstream of governance model design and adoption channel confirmation. The surface choice must follow from evidence of which access friction is actually blocking which stakeholder type — not from prior architectural decisions. The facilitation-native web UI remains the most architecturally distinct hypothesis because it resolves the role identity concern structurally (the BA is the facilitator, not the user), but this must be tested before any build investment.
 
-| Experiment | What to run | Finding determines |
-|---|---|---|
-| Role identity interview | "What would have to be true for you to want to use this?" with 2–3 BAs | Whether barrier is access friction (→ surface investment) or role threat (→ framing/governance fix first) |
-| Framing interview | Present both the "lower-friction tool" framing and the "facilitation canvas" framing to the same BAs | Whether the facilitation-native framing changes the adoption response — if yes, the surface architecture matters, not just the access channel |
-| Governance model audit | Assess three engineer-produced outer loop artefacts against: customer evidence quality, stakeholder context accuracy, business model coverage | Whether engineer-only outer loop is visibly insufficient today, or requires intentional skill redesign |
+**Revised first move — five parallel experiments, all half-day or less:**
 
-All three experiments are independent. Run in parallel. The surface investment decision — Teams bot, hosted web UI, facilitation-native canvas, or something else — follows from the combined findings, not from prior architectural commitments.
+| Experiment | Who to run with | What to ask / observe | Finding determines |
+|---|---|---|---|
+| Delivery team pain interview | 2–3 engineers or delivery managers on a team with recent scope drift | "Walk me through the last time scope changed after you'd already started. Could you trace it back to a specific decision?" | Whether the downstream cost of ambiguous discovery is acute enough to seed pilot adoption from the delivery side |
+| Barrier segmentation interview | One each: BA, PO, business lead, SME | "What would have to be true for you to be the named owner of a discovery artefact on your next feature?" | Whether barriers are role-segmented (expected) and what each role's specific concern is |
+| Accountability avoidance test | 2–3 senior stakeholders (business lead level) | Show template with explicit attribution sections; ask: "Would you sign off on a document with your name on specific sections?" | Whether senior stakeholders will resist attribution — if yes, governance model must offer bounded accountability options |
+| Framing test | 2–3 BAs | Present "lower-friction pipeline tool" vs. "facilitation canvas" descriptions | Whether the facilitation-native framing changes the adoption response |
+| Governance model quality audit | 3 engineer-produced outer loop artefacts reviewed by BAs + a business lead | Rate against: customer evidence quality, stakeholder context accuracy, business model coverage, regulatory constraint capture | Whether engineer-only outer loop is visibly insufficient today, or requires intentional skill redesign |
+
+All five experiments are independent. Run in parallel. No surface investment until barrier segmentation and accountability avoidance results are available.
 
 ---
 
@@ -353,47 +469,56 @@ All three experiments are independent. Run in parallel. The surface investment d
 
 | Output | Feeds | Notes |
 |---|---|---|
-| Job story | `/discovery` (customer section) | The job is the desired outcome at the root of the opportunity tree; real competition section names Confluence + Jira + meetings + email |
-| Opportunity map | `/discovery` (opportunity framing, MVP scope) | Cluster 1 (zero-install access) is the entry condition for any other cluster to matter |
-| Assumption inventory | `/discovery` (assumptions section) + `/decisions` (RISK-ACCEPT candidates) | Eight 🔴/🟡 assumptions across setup, role identity, and structural governance; none are RISK-ACCEPT at this stage |
-| Strategy framing | `/discovery` (rationale section) | PROCEED signal; REDESIGN on surface AND adoption strategy AND governance model; revised MVP threshold below |
-| Role identity threat (Cluster 5) | `/discovery` (constraints section) + governance model redesign | Structural fix is required before surface investment; this is a pre-condition, not a parallel workstream |
-| Lens D risk factors | `/definition` (NFRs) | Role identity risk and structural risk added; access risk (enterprise constraints) remains a story-level constraint |
+| Five job stories (cross-stakeholder) | `/discovery` (customer section) | Business lead, SME, BA, PO, and team-level governance jobs — each with distinct switch threshold and current hire |
+| Opportunity tree (6 clusters) | `/discovery` (opportunity framing, MVP scope) | Cluster 5 (enterprise governance dysfunction) and Cluster 6 (scope drift / decision debt) are the new core; Cluster 1 (access) is a prerequisite gate, not the primary problem |
+| Assumption inventory (21 assumptions) | `/discovery` (assumptions section) + `/decisions` (RISK-ACCEPT candidates) | Eight 🔴 assumptions; three known gaps (engineer-only outer loop, formal governance resistance, role-segmented barriers); none are RISK-ACCEPT at this stage |
+| Strategy framing | `/discovery` (rationale section) | PROCEED; four REDESIGN signals: problem framing, adoption sequencing, governance model prerequisite, surface architecture |
+| Multi-stakeholder governance dysfunction (Clusters 5a–5d) | `/discovery` (constraints section) + governance model redesign | Structural prerequisite: the outer loop must require non-technical input before surface investment is made |
+| Downstream scope drift (Cluster 6) | `/discovery` (rationale section) + `/benefit-metric` (candidate metrics) | Scope change attribution rate and discovery cycle time are the measurable signals that correspond to this cluster |
+| Lens D risk factors | `/definition` (NFRs) | Accountability avoidance risk, coalition resistance risk, governance model prerequisite — all must be reflected as NFRs or constraints in any story that touches the non-technical channel |
 
 ---
 
 ## Revised MVP threshold
 
-The original MVP threshold was: "One PM completes discovery → DoR sign-off unassisted, on a managed device with no git setup, producing an artefact accepted as-is."
+The pass 1–3 MVP threshold was: "One PM completes discovery → DoR sign-off unassisted, on a managed device with no git setup, producing an artefact accepted as-is."
 
-This is still the right functional outcome but the sequencing precondition has changed. The revised MVP threshold is:
+This was a correct functional outcome but the wrong starting condition. The revised MVP threshold, following the pass 4 reframe:
 
-> (a) At least one BA/PM interview confirms that the adoption barrier is primarily access friction, not role threat — OR the governance model has been redesigned to make BA input structurally authoritative before any surface is built.
-> (b) The quality audit confirms that engineer-only outer loop produces artefacts with identifiable domain-knowledge gaps — so the BA's structural necessity is real, not rhetorical.
-> (c) Given (a) and (b): one BA/PM completes discovery → DoR sign-off unassisted, on a managed device with no git setup, on a real story, producing an artefact a downstream engineer accepts without requesting changes.
+> **Precondition A:** The barrier segmentation interviews confirm which stakeholder type's adoption barrier is primarily access friction — OR the governance model has been redesigned to make non-technical input structurally required and attributed before any surface is built.
+
+> **Precondition B:** The quality audit confirms that engineer-only outer loop execution produces artefacts with identifiable domain-knowledge gaps — establishing that the BA/SME's structural necessity is real, not rhetorical.
+
+> **Precondition C:** The accountability avoidance test confirms that the discovery template with attribution sections is acceptable to senior stakeholders — OR the governance model is redesigned to offer bounded attribution options that senior stakeholders will accept.
+
+> **Given preconditions A–C are satisfied:** A cross-functional discovery session involving at least one non-technical stakeholder from each of the following groups — (business lead or SME) AND (BA or PO) — produces a shared, attributed, versioned discovery artefact. All named contributors confirm it is an accurate record of what was agreed. A downstream engineer confirms the artefact is sufficient to begin definition without requesting changes.
+
+The MVP is not a surface test. It is a governance model test. The surface is whatever makes the above possible for the specific stakeholder population in scope.
 
 ---
 
 ## Open questions
 
-1. **Role identity vs. access friction — which is the primary blocker for the specific BA/PM population in scope?** This is the most important unknown. The answer determines whether the first investment is governance model redesign (structural fix) or surface development (access fix). Run the role identity interview before any further planning.
+1. **Which stakeholder type's adoption barrier is primarily access friction vs. governance/accountability fear?** This is the most important unknown. The barrier segmentation interview is the quickest way to answer it. Do not assume the answer is uniform across roles.
 
-2. **What makes BA/PM input structurally non-optional?** Concretely: which fields in the discovery / benefit-metric / DoR artefacts can only be provided by someone with genuine domain access — customer interview data, stakeholder confirmation, regulatory constraint ownership? This requires a skill-by-skill audit, not a general answer.
+2. **Will senior enterprise stakeholders accept formal attribution?** The accountability avoidance test is a direct probe. If the answer is "no to section-level attribution", explore: (a) whole-artefact sign-off (less granular), (b) opt-in attribution (teams that want it can use it), (c) role-based attribution (contributor vs. approver distinction). If all three fail, the governance model question is an organisational governance problem the platform cannot solve alone.
 
-3. **Enterprise constraint scope:** How consistent are the IT/admin/proxy/entitlement barriers across the target PM population? Are these universal (all enterprise contexts) or specific to certain orgs? This determines whether the constraint is a product design requirement or a deployment configuration concern.
+3. **Who are the correct first movers for pilot adoption?** The reframe in pass 4 suggests delivery teams and PMs carrying scope debt are stronger first movers than business leads and BAs. The delivery team pain interview tests whether this is true. If delivery teams don't have acute scope drift pain, the pilot must start elsewhere.
 
-4. **Scope of "outer loop" for MVP:** The full outer loop is 7 phases (discovery → benefit-metric → definition → review → test-plan → DoR). Which subset is the minimum to prove the functional benefit? Discovery + benefit-metric alone may be sufficient for a first proof point — and a smaller scope reduces the governance model redesign burden.
+4. **What is the governance model prerequisite scope?** Specifically: which skills (discovery, benefit-metric, DoR) need to be changed, which fields need to become required, and what counts as "attributed non-technical input"? This requires a skill-by-skill audit — not a general answer.
 
-5. **Azure DevOps support timeline:** The pipeline assumes GitHub. If the target PM population is on Azure DevOps, how early in the design phase does this need to be addressed?
+5. **What makes non-technical input structurally non-optional?** Concretely: which fields in the discovery / benefit-metric / DoR artefacts can only be provided by someone with genuine domain access — customer interview data, stakeholder confirmation, regulatory constraint ownership, business model context? This is the design question for the governance model prerequisite.
 
-6. **What does "accepted artefact" mean in practice?** Who judges this — an engineer reviewing against DoR hard blocks, or automated gate validation? Needs to be defined before the metric is actionable.
+6. **Does the facilitation-native framing change the BA adoption response?** The framing test is a 30-minute experiment. If "facilitator running a session" lands differently from "user filling in a pipeline form", the surface architecture choice becomes a first-class design decision, not a downstream implementation detail.
 
-7. **Vocabulary translation completeness:** Can the full outer loop vocabulary be translated into PM-native terms without losing governance precision? Or are some concepts inherently technical in a way that requires simplification rather than translation?
+7. **Enterprise constraint scope:** How consistent are IT/admin/proxy/entitlement barriers across the target stakeholder population? Are these universal across all enterprise types or specific to certain orgs? This determines whether the constraint is a product design requirement or a deployment configuration concern.
 
-8. **Is the adoption strategy different for PMs vs. BAs?** The role identity threat may be more acute for BAs (whose core job is requirements/discovery) than for PMs (who own outcomes and tend to be less invested in the production of specific artefact formats). A segmented adoption approach may be warranted.
+8. **What does "accepted artefact" mean in practice?** Who judges this — a downstream engineer reviewing against DoR hard blocks, or automated gate validation? What is the minimum bar for a business lead or SME to confirm the artefact is accurate? Needs to be defined before the metric is actionable.
 
-9. **Does the facilitation-native framing change the adoption response for BAs specifically?** The framing interview test above is the quickest way to answer this. If "facilitator running a session" lands differently from "user filling in a pipeline form," the surface architecture decision shifts significantly toward the web UI direction.
+9. **Azure DevOps support timeline:** The pipeline assumes GitHub. If the target stakeholder population is on Azure DevOps, how early in the design phase does this need to be addressed? Is this a surface constraint or a pipeline architecture constraint?
 
-10. **What is the minimum viable facilitation session?** To prove the loop (facilitation session → governed pipeline artefact committed to repo), what is the smallest session design that produces a complete-enough discovery artefact? A 30-minute single-facilitator structured conversation? A 90-minute multi-participant workshop? The answer determines whether a Phase 1 prototype is a solo-use tool or requires real-time collaboration infrastructure from the start.
+10. **What is the minimum viable facilitation session?** To prove the facilitation-native loop (live session → governed pipeline artefact committed to repo), what is the smallest session design that produces a complete-enough discovery artefact? A 30-minute single-facilitator structured conversation? A 90-minute multi-participant workshop? The answer determines whether a Phase 1 prototype is a solo-use tool or requires real-time collaboration infrastructure from the start.
 
 11. **Copilot SDK feasibility for this architecture:** The SDK handles the model and agentic layer. Does it fit a persistent, multi-turn facilitation session where the model is driving SKILL.md steps across a 60–90 minute live session, not just answering a single prompt? This is a spike question, not an assumption to carry forward.
+
+12. **Legal/compliance artefact retention:** Will regulated-sector organisations accept a git-hosted, version-controlled markdown file as the enterprise governance record? Or do they require a separate export into a retention-managed system (SharePoint, Documentum, a legal DMS)? This determines whether the pipeline artefact is the governance record or a source that feeds one.
