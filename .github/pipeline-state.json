@@ -190,7 +190,8 @@
                   "id": "T1",
                   "description": "Add modernisation-decompose CONTRACTS entry to check-skill-contracts.js",
                   "tddState": "committed",
-                  "file": "artefacts/2026-04-22-modernisation-decompose/plans/md-2-plan.md"
+                  "file": "artefacts/2026-04-22-modernisation-decompose/plans/md-2-plan.md",
+                  "name": "T1"
                 }
               ]
             },
@@ -222,7 +223,8 @@
                   "id": "T1",
                   "description": "Add ADR-015 row to Active ADRs table and write-up section to architecture-guardrails.md",
                   "tddState": "committed",
-                  "file": "artefacts/2026-04-22-modernisation-decompose/plans/md-3-plan.md"
+                  "file": "artefacts/2026-04-22-modernisation-decompose/plans/md-3-plan.md",
+                  "name": "T1"
                 }
               ]
             }
@@ -608,32 +610,37 @@
           "id": "e1",
           "name": "Spike programme",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e1-spike-programme.md",
-          "storyCount": 5
+          "storyCount": 5,
+          "slug": "e1"
         },
         {
           "id": "e2",
           "name": "Distribution model",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e2-distribution-model.md",
-          "storyCount": 8
+          "storyCount": 8,
+          "slug": "e2"
         },
         {
           "id": "e3",
           "name": "Structural enforcement",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e3-structural-enforcement.md",
-          "storyCount": 6
+          "storyCount": 6,
+          "slug": "e3"
         },
         {
           "id": "e4",
           "name": "Non-technical access",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e4-non-technical-access.md",
-          "storyCount": 5
+          "storyCount": 5,
+          "slug": "e4"
         },
         {
           "id": "e5",
           "name": "Platform Observability & Measurement",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4/epics/e5-platform-observability.md",
           "storyCount": 3,
-          "status": "complete"
+          "status": "complete",
+          "slug": "e5"
         }
       ],
       "regulated": false,
@@ -648,7 +655,8 @@
           "status": "met",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-04-20T18:30:00.000Z",
-          "evidence": "p4-dist-install sidecar + p4-nta-artefact-parity origin-branch commit; npm test passes"
+          "evidence": "p4-dist-install sidecar + p4-nta-artefact-parity origin-branch commit; npm test passes",
+          "label": "No consumer fork required"
         },
         {
           "id": "C4-human-approval",
@@ -657,7 +665,8 @@
           "status": "met",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-04-20T18:30:00.000Z",
-          "evidence": "p4-dist-upgrade requires --confirm; p4-nta-gate-translation requires button press; no auto-approval path"
+          "evidence": "p4-dist-upgrade requires --confirm; p4-nta-gate-translation requires button press; no auto-approval path",
+          "label": "Human approval gate enforced"
         },
         {
           "id": "C5-hash-verify",
@@ -666,7 +675,8 @@
           "status": "met",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-04-20T18:30:00.000Z",
-          "evidence": "verifyHash returns HASH_MISMATCH with no bypass; verifyLockfile SHA-256 re-check; 36+27+46 tests cover all surface adapters"
+          "evidence": "verifyHash returns HASH_MISMATCH with no bypass; verifyLockfile SHA-256 re-check; 36+27+46 tests cover all surface adapters",
+          "label": "Hash verification non-negotiable"
         },
         {
           "id": "C7-single-question",
@@ -675,7 +685,8 @@
           "status": "met",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-04-20T18:30:00.000Z",
-          "evidence": "MCP single-question input schema; AWAITING_RESPONSE lock in Teams bot; spike-d 0 violations across 5 turns"
+          "evidence": "MCP single-question input schema; AWAITING_RESPONSE lock in Teams bot; spike-d 0 violations across 5 turns",
+          "label": "One question per turn structurally enforced"
         },
         {
           "id": "C11-no-persistent-runtime",
@@ -684,7 +695,8 @@
           "status": "met",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-04-20T18:30:00.000Z",
-          "evidence": "MCP per-call exit; Teams bot stateless handler; no daemon or always-on service"
+          "evidence": "MCP per-call exit; Teams bot stateless handler; no daemon or always-on service",
+          "label": "No persistent hosted runtime"
         },
         {
           "id": "ADR-004-config-injection",
@@ -693,7 +705,8 @@
           "status": "met",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-04-20T18:30:00.000Z",
-          "evidence": "No process.argv/env reads; no hardcoded URLs in src/distribution/ (T7 scan); all modules accept config parameter"
+          "evidence": "No process.argv/env reads; no hardcoded URLs in src/distribution/ (T7 scan); all modules accept config parameter",
+          "label": "All config injected from context.yml"
         },
         {
           "id": "MC-SEC-02-no-credentials",
@@ -702,7 +715,8 @@
           "status": "met",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-04-20T18:30:00.000Z",
-          "evidence": "Credential scan passes in all 24 test suites; migration guide T-NFR1 clean; registry PII scan clean"
+          "evidence": "Credential scan passes in all 24 test suites; migration guide T-NFR1 clean; registry PII scan clean",
+          "label": "No credentials in artefacts or outputs"
         },
         {
           "id": "MC-CORRECT-02-schema-first",
@@ -711,7 +725,8 @@
           "status": "met",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-04-20T18:30:00.000Z",
-          "evidence": "p4-enf-schema validates pipeline-state; executorIdentity optional field added before implementation; validate-trace.sh --ci passes"
+          "evidence": "p4-enf-schema validates pipeline-state; executorIdentity optional field added before implementation; validate-trace.sh --ci passes",
+          "label": "Schema-first field writes"
         }
       ],
       "createdAt": "2026-04-19",
@@ -1496,7 +1511,7 @@
       "dodStatus": "complete",
       "releaseReady": false,
       "lastImprove": "2026-04-21",
-      "traceStatus": "amber",
+      "traceStatus": "has-findings",
       "traceArtefact": "artefacts/2026-04-19-skills-platform-phase4/trace/2026-04-21-trace.md",
       "traceRunAt": "2026-04-21T00:00:00.000Z",
       "traceFindings": {
@@ -1531,25 +1546,29 @@
           "id": "e1",
           "name": "Governance extractability Ã¢â‚¬â€ enforcement selection",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e1-governance-extractability-enforcement-selection.md",
-          "storyCount": 5
+          "storyCount": 5,
+          "slug": "e1"
         },
         {
           "id": "e2",
           "name": "Distribution Ã¢â‚¬â€ zero-commit install",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e2-distribution-zero-commit-install.md",
-          "storyCount": 7
+          "storyCount": 7,
+          "slug": "e2"
         },
         {
           "id": "e3",
           "name": "Non-technical participation",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e3-non-technical-participation.md",
-          "storyCount": 6
+          "storyCount": 6,
+          "slug": "e3"
         },
         {
           "id": "e4",
           "name": "Readable governance Ã¢â‚¬â€ second-line audit",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e4-readable-governance-second-line-audit.md",
-          "storyCount": 5
+          "storyCount": 5,
+          "slug": "e4"
         }
       ],
       "regulated": false,
@@ -1561,77 +1580,77 @@
           "id": "ADR-004",
           "category": "adr",
           "label": "context.yml is the single configuration source Ã¢â‚¬â€ no hardcoded values",
-          "status": "pending",
+          "status": "not-assessed",
           "assessedBy": "/definition"
         },
         {
           "id": "ADR-012",
           "category": "adr",
           "label": "Platform-agnostic: no CI/CD vendor lock-in",
-          "status": "pending",
+          "status": "not-assessed",
           "assessedBy": "/definition"
         },
         {
           "id": "C1",
-          "category": "constraint",
+          "category": "mandatory-constraint",
           "label": "Non-fork update channel Ã¢â‚¬â€ consumers must not fork",
-          "status": "pending",
+          "status": "not-assessed",
           "assessedBy": "/definition"
         },
         {
           "id": "C4",
-          "category": "constraint",
+          "category": "mandatory-constraint",
           "label": "Human approval gate Ã¢â‚¬â€ no automated merge",
-          "status": "pending",
+          "status": "not-assessed",
           "assessedBy": "/definition"
         },
         {
           "id": "C5",
-          "category": "constraint",
+          "category": "mandatory-constraint",
           "label": "Hash verification on sync",
-          "status": "pending",
+          "status": "not-assessed",
           "assessedBy": "/definition"
         },
         {
           "id": "C7",
-          "category": "constraint",
+          "category": "mandatory-constraint",
           "label": "One question at a time in all surfaces",
-          "status": "pending",
+          "status": "not-assessed",
           "assessedBy": "/definition"
         },
         {
           "id": "C11",
-          "category": "constraint",
+          "category": "mandatory-constraint",
           "label": "No persistent hosted runtime",
-          "status": "pending",
+          "status": "not-assessed",
           "assessedBy": "/definition"
         },
         {
           "id": "MC-SEC-02",
           "category": "mandatory-constraint",
           "label": "No credentials, tokens, or personal data in committed files",
-          "status": "pending",
+          "status": "not-assessed",
           "assessedBy": "/definition"
         },
         {
           "id": "MC-CORRECT-02",
           "category": "mandatory-constraint",
           "label": "Fields written to pipeline-state.json must exist in schema",
-          "status": "pending",
+          "status": "not-assessed",
           "assessedBy": "/definition"
         },
         {
           "id": "MC-A11Y-01",
           "category": "mandatory-constraint",
           "label": "Interactive elements keyboard-accessible",
-          "status": "pending",
+          "status": "not-assessed",
           "assessedBy": "/definition"
         },
         {
           "id": "MC-A11Y-02",
           "category": "mandatory-constraint",
           "label": "Colour not sole indicator of gate status",
-          "status": "pending",
+          "status": "not-assessed",
           "assessedBy": "/definition"
         }
       ],
@@ -2185,7 +2204,8 @@
           "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.3-gate-structural-independence.md",
           "dodStatus": "complete",
           "dodArtefact": "artefacts/2026-04-14-skills-platform-phase3/dod/p3.3-gate-structural-independence-dod.md",
-          "dodDate": "2026-04-20"
+          "dodDate": "2026-04-20",
+          "id": "p3.3"
         },
         {
           "slug": "p3.4",
@@ -2204,7 +2224,8 @@
           "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.4-eval-anti-gaming-controls.md",
           "dodStatus": "complete",
           "dodArtefact": "artefacts/2026-04-14-skills-platform-phase3/dod/p3.4-eval-anti-gaming-controls-dod.md",
-          "dodDate": "2026-04-20"
+          "dodDate": "2026-04-20",
+          "id": "p3.4"
         },
         {
           "slug": "p3.5",
@@ -2222,7 +2243,8 @@
           "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.5-windows-native-trace-validator.md",
           "dodStatus": "complete",
           "prStatus": "merged",
-          "releaseReady": true
+          "releaseReady": true,
+          "id": "p3.5"
         },
         {
           "slug": "p3.6",
@@ -2240,7 +2262,8 @@
           "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.6-pipeline-evolution-dispatch.md",
           "dodStatus": "complete",
           "prStatus": "merged",
-          "releaseReady": true
+          "releaseReady": true,
+          "id": "p3.6"
         },
         {
           "slug": "p3.7",
@@ -2258,7 +2281,8 @@
           "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.7-cross-team-trace-registry.md",
           "dodStatus": "complete",
           "prStatus": "merged",
-          "releaseReady": true
+          "releaseReady": true,
+          "id": "p3.7"
         },
         {
           "slug": "p3.8",
@@ -2276,7 +2300,8 @@
           "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.8-enterprise-approval-channel-adapters.md",
           "dodStatus": "complete",
           "prStatus": "merged",
-          "releaseReady": true
+          "releaseReady": true,
+          "id": "p3.8"
         },
         {
           "slug": "p3.10",
@@ -2294,7 +2319,8 @@
           "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.10-ea-registry-live-integration.md",
           "dodStatus": "complete",
           "prStatus": "merged",
-          "releaseReady": true
+          "releaseReady": true,
+          "id": "p3.10"
         },
         {
           "slug": "p3.11",
@@ -2312,7 +2338,8 @@
           "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.11-estimation-calibration-eval.md",
           "dodStatus": "complete",
           "prStatus": "merged",
-          "releaseReady": true
+          "releaseReady": true,
+          "id": "p3.11"
         },
         {
           "slug": "p3.12",
@@ -2331,7 +2358,8 @@
           "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.12-squad-contribution-flow.md",
           "dodStatus": "complete",
           "dodArtefact": "artefacts/2026-04-14-skills-platform-phase3/dod/p3.12-squad-contribution-flow-dod.md",
-          "dodDate": "2026-04-20"
+          "dodDate": "2026-04-20",
+          "id": "p3.12"
         },
         {
           "slug": "p3.13",
@@ -2357,7 +2385,8 @@
           "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.13-compliance-monitoring-report.md",
           "dodStatus": "complete",
           "dodArtefact": "artefacts/2026-04-14-skills-platform-phase3/dod/p3.13-compliance-monitoring-report-dod.md",
-          "dodDate": "2026-04-20"
+          "dodDate": "2026-04-20",
+          "id": "p3.13"
         }
       ],
       "dodStatus": "complete",
@@ -2654,7 +2683,8 @@
           "updatedAt": "2026-04-20",
           "dodStatus": "complete",
           "prStatus": "merged",
-          "releaseReady": true
+          "releaseReady": true,
+          "id": "atr.1"
         }
       ],
       "dodStatus": "complete"
@@ -2689,7 +2719,7 @@
       "guardrails": [
         {
           "id": "platform-change-policy",
-          "category": "constraint",
+          "category": "mandatory-constraint",
           "label": "SKILL.md changes must go via PR — not committed directly to master",
           "status": "met",
           "assessedBy": "DoR",
