@@ -27,18 +27,16 @@
     "observabilityGapsIdentified": 4,
     "status": "complete"
   },
-  "lastUpdated": "2026-04-22T16:00:00Z",
-  "currentPhase": "definition-of-ready",
+  "lastUpdated": "2026-04-22T21:00:00Z",
+  "currentPhase": "definition-of-done",
   "activeFeature": "2026-04-22-modernisation-decompose",
   "checkpoint": {
     "writtenAt": "2026-04-22",
-    "contextAtWrite": "Feature 2026-04-22-modernisation-decompose — /definition-of-ready complete. All 3 stories (md-1, md-2, md-3) signed-off. DoR artefacts committed cc5b8ff. Feature health: green.",
-    "resumeInstruction": "Resume from inner coding loop. Run /branch-setup for md-1 first (complexity-3, unstable scope). Then /implementation-plan. Then /subagent-execution or /tdd per task. Then /verify-completion. Then /branch-complete (open draft PR, do not mark ready). Medium oversight — share DoR artefact with tech lead (Hamish) before assigning. Run /issue-dispatch if dispatching to GitHub agent. md-2 and md-3 unblock after md-1 is committed.",
+    "contextAtWrite": "All 3 modernisation-decompose stories (md-1/md-2/md-3) merged and DoD-complete. Feature 0 stage updated to definition-of-done. Pipeline-state.json updated.",
+    "resumeInstruction": "All 3 modernisation-decompose stories (md-1/md-2/md-3) are DoD-complete. DoD artefacts written to artefacts/2026-04-22-modernisation-decompose/dod/. pipeline-state.json updated. Next: operator has 3 new things to work through — wait for user to reveal them. Feature 7 (skill-routing-cli-tools, stage definition-of-ready) is next in queue for inner loop when ready.",
     "pendingActions": [
-      "Run /decisions to formally log RISK-ACCEPTs: md-1 review findings 1-M1 (incomplete benefit linkage) and 1-M2 (umbrellaMetric format ambiguity); md-3 review finding 1-M1 (guardrails-registry YAML block gap)",
-      "Inner coding loop: /branch-setup → /implementation-plan → /subagent-execution → /verify-completion → /branch-complete for each story",
-      "md-1 must be committed before md-2 or md-3 coding begins",
-      "After all PRs merged: run /definition-of-done for each story"
+      "Operator to share 3 new topics for this session",
+      "Feature 7 (2026-04-21-skill-routing-cli-tools) inner loop when ready: /branch-setup then /implementation-plan then /subagent-execution"
     ]
   },
   "cycle": {
