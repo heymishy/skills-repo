@@ -35,7 +35,7 @@
     {
       "slug": "2026-04-22-modernisation-decompose",
       "name": "Modernisation Decompose — Bridging /reverse-engineer to the Delivery Pipeline",
-      "stage": "implementation-plan",
+      "stage": "verify-completion",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -54,7 +54,7 @@
         "complexity-2": 0,
         "complexity-1": 2
       },
-      "updatedAt": "2026-04-22T17:00:00Z",
+      "updatedAt": "2026-04-22T18:00:00Z",
       "metrics": [
         {
           "id": "m1",
@@ -128,19 +128,19 @@
             {
               "slug": "md-1",
               "name": "Write /modernisation-decompose SKILL.md",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "mediumFindings": 2,
-              "updatedAt": "2026-04-22T17:00:00Z",
+              "updatedAt": "2026-04-22T18:00:00Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 19,
-                "passing": 0
+                "passing": 22
               },
               "acTotal": 7,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -148,13 +148,13 @@
                 {
                   "id": "task-1",
                   "name": "Write failing tests (RED): check-md-1-skill-md.js + package.json",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-04-22-modernisation-decompose/plans/md-1-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Write SKILL.md to make all 17 tests pass (GREEN)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-04-22-modernisation-decompose/plans/md-1-plan.md"
                 }
               ]
