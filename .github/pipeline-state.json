@@ -35,8 +35,8 @@
     {
       "slug": "2026-04-22-modernisation-decompose",
       "name": "Modernisation Decompose — Bridging /reverse-engineer to the Delivery Pipeline",
-      "stage": "test-plan",
-      "health": "amber",
+      "stage": "definition-of-ready",
+      "health": "green",
       "track": "library",
       "regulated": false,
       "complianceProfile": "standard",
@@ -54,7 +54,7 @@
         "complexity-2": 0,
         "complexity-1": 2
       },
-      "updatedAt": "2026-04-22T14:40:00Z",
+      "updatedAt": "2026-04-22T16:00:00Z",
       "metrics": [
         {
           "id": "m1",
@@ -128,12 +128,12 @@
             {
               "slug": "md-1",
               "name": "Write /modernisation-decompose SKILL.md",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "mediumFindings": 2,
-              "updatedAt": "2026-04-22T14:20:00Z",
+              "updatedAt": "2026-04-22T16:00:00Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 19,
@@ -142,17 +142,18 @@
               "acTotal": 7,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "md-2",
               "name": "Register skill in check-skill-contracts.js",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "mediumFindings": 0,
-              "updatedAt": "2026-04-22T14:30:00Z",
+              "updatedAt": "2026-04-22T16:00:00Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -161,17 +162,18 @@
               "acTotal": 3,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "md-3",
               "name": "Add ADR-014 to architecture-guardrails.md",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "mediumFindings": 1,
-              "updatedAt": "2026-04-22T14:40:00Z",
+              "updatedAt": "2026-04-22T16:00:00Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
@@ -180,7 +182,8 @@
               "acTotal": 3,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             }
           ]
         }
@@ -198,8 +201,8 @@
           "label": "No credentials, tokens, or personal data in committed files",
           "status": "met",
           "evidence": "corpus-state.md records metrics only (counts, ratios, timestamps). No business rules or customer data. Per md-1 NFR Security.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-04-22T14:10:00Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-22T16:00:00Z"
         },
         {
           "id": "MC-SEC-03",
@@ -291,8 +294,8 @@
           "label": "Agent instructions format driven by vcs.type",
           "status": "met",
           "evidence": "md-2 NFR explicitly constrains no external npm dependencies. No new require() calls for external packages.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-04-22T14:10:00Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-22T16:00:00Z"
         },
         {
           "id": "ADR-006",
@@ -330,8 +333,8 @@
           "label": "Artefact-first: new SKILL.md files require a story artefact before or alongside the commit",
           "status": "met",
           "evidence": "All 3 stories exist as artefacts before implementation. Artefact-first rule satisfied.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-04-22T14:10:00Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-22T16:00:00Z"
         },
         {
           "id": "ADR-012",
@@ -470,6 +473,70 @@
           "category": "anti-pattern",
           "label": "Committing a new SKILL.md or governed file without a story artefact",
           "status": "not-assessed"
+        },
+        {
+          "id": "NFR-security-corpus-state",
+          "category": "nfr",
+          "label": "corpus-state.md records metrics only — no business rule text or customer data",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-22T16:00:00Z"
+        },
+        {
+          "id": "NFR-security-no-pii",
+          "category": "nfr",
+          "label": "No credentials or personal data in any committed artefact",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-22T16:00:00Z"
+        },
+        {
+          "id": "NFR-consistency-determinism",
+          "category": "nfr",
+          "label": "Decomposition heuristics deterministic for same inputs",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-22T16:00:00Z"
+        },
+        {
+          "id": "NFR-audit-lastRunAt",
+          "category": "nfr",
+          "label": "corpus-state.md records lastRunAt timestamp on every write",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-22T16:00:00Z"
+        },
+        {
+          "id": "NFR-audit-decided-date",
+          "category": "nfr",
+          "label": "ADR-014 write-up includes Decided date field",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-22T16:00:00Z"
+        },
+        {
+          "id": "NFR-governance-skill-contracts",
+          "category": "nfr",
+          "label": "New SKILL.md passes all structural contract checks in check-skill-contracts.js",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-22T16:00:00Z"
+        },
+        {
+          "id": "NFR-governance-npm-test",
+          "category": "nfr",
+          "label": "npm test passes with 0 regressions after all changes",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-22T16:00:00Z"
+        },
+        {
+          "id": "NFR-governance-no-ext-deps",
+          "category": "nfr",
+          "label": "No external npm dependencies in updated governance scripts",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-22T16:00:00Z"
         }
       ]
     },
