@@ -1404,3 +1404,65 @@ At E2, classify the outer loop character:
 
 **Action:** Add `outerLoopCharacter` field to E2 estimate prompt in `/estimate` SKILL.md. When operator selects `genuinely-novel-decisions`, apply the +0.5h/spike-epic floor before recording E2. Flag for next /improvement run.
 
+---
+
+## D16 — `schema_valid` repeated CI failures caused by first-error-only validation and merge-commit caching
+
+**Date:** 2026-04-22
+**Observed at:** PRs #178, #179, #180 — multiple sessions of CI failure on the `schema_valid` check
+
+**What happened:** Three PRs failed `schema_valid` repeatedly across multiple sessions and multiple fix attempts. The root cause was a compound failure mode, not a single bug:
+
+1. **`jsonschema.validate()` stops at the first error.** CI calls `jsonschema.validate(state, schema)` which raises immediately on the first violation and reports only that one. Each fix-push-rebase-CI cycle surfaced a new single violation: `traceStatus: "amber"` → guardrail `label` missing → tasks `name` missing → epics `slug` missing → guardrail `status: "pending"` → guardrail `category: "constraint"` → flat stories `id` missing. There were 39 violations in total; each CI run only revealed one. At least 5 separate fix attempts and PR rebases were required before using `Draft7Validator.iter_errors()` found all violations at once.
+
+2. **GitHub caches PR merge commits.** When master is fixed and CI is re-run without a new push to the feature branch, GitHub uses the cached merge commit computed at the time of the last feature branch push. The fix on master is invisible to CI until the feature branch is force-pushed (via `git push --force-with-lease`).
+
+**Total rework cost:** ~3 sessions, 5+ fix commits on master, 5+ rebase cycles on each of 3 PR branches.
+
+**The correct first response to any `schema_valid` failure:**
+1. Run ALL-violations scan immediately:
+   ```
+   python -c "import json,jsonschema; v=jsonschema.Draft7Validator(json.load(open('.github/pipeline-state.schema.json',encoding='utf-8'))); errs=list(v.iter_errors(json.load(open('.github/pipeline-state.json',encoding='utf-8')))); print(len(errs),'errors'); [print(list(e.absolute_path),'|',e.message[:120]) for e in errs]"
+   ```
+2. Fix **all** violations in one pass.
+3. Confirm 0 errors locally.
+4. Commit to master and push.
+5. Rebase every open PR: `git rebase origin/master; git push --force-with-lease`.
+
+**Never** iterate one-violation-at-a-time via CI. That cycle is O(n) CI runs for n violations.
+
+**Additional note:** Python's `open()` on Windows defaults to `cp1252` encoding. `pipeline-state.json` contains a non-ASCII character (position ~21072) that crashes `cp1252`. Always open the file with `encoding='utf-8'`.
+
+**Action:** Update `validate-trace.sh`'s `check_schema_valid` to use `Draft7Validator.iter_errors()` and print all violations before exiting (not just the first). This would have cut the debugging cycle from 5+ sessions to one. Flag for next /improvement run.
+
+---
+
+## D17 — cascading PR merge conflicts when multiple branches share `package.json` and `CHANGELOG.md`
+
+**Date:** 2026-04-22
+**Observed at:** PRs #178, #179, #180, #181 — PRs merged in rapid sequence while sibling branches were being rebased
+
+**What happened:** Four PRs (src-1, md-1, md-2, md-3) were all open simultaneously. Each added one entry to `package.json`'s test chain and one entry to `CHANGELOG.md ### Added`. Branches were rebased in sequence, but GitHub merged PRs while sibling rebases were still in progress. This created a ratchet of cascading conflicts:
+
+1. md-3 was rebased onto master (post–PRs #178/#179 merge) → force-pushed → **GitHub immediately merged it** before md-2 was rebased.
+2. md-2 had already been force-pushed based on master at `60032fd`. But origin/master advanced to `e779a29` (md-3 merged), so GitHub showed md-2 as conflicted again.
+3. md-2 required a third rebase (package.json now ends with `check-md-3-adr.js`; CHANGELOG now has md-3's entry). Resolution: master content + append only `check-md-2-skill-contracts.js`; CHANGELOG: master content + prepend md-2 entry.
+
+**Total extra rework:** 2 extra rebase cycles on md-2 (3 total instead of 1). Each rebase required the same `package.json` and `CHANGELOG.md` resolution pattern.
+
+**Pattern: the conflict resolution formula for sequential `package.json` additions:**
+- Always use `git show origin/master:package.json` as the base (never the branch's own pre-conflict version).
+- Append only this branch's new test entry at the end.
+- All prior entries (from already-merged sibling PRs) are already present in master's version.
+- `node -e "const pkg=JSON.parse(execSync('git show origin/master:package.json').toString()); pkg.scripts.test+=' && node tests/check-THIS-story.js'; fs.writeFileSync('package.json',JSON.stringify(pkg,null,2))"` — reliable one-liner for every conflict.
+
+**Pattern: the conflict resolution formula for sequential `CHANGELOG.md` additions:**
+- Always use `git show origin/master:CHANGELOG.md` as the base.
+- Extract this branch's entry from `git show REBASE_HEAD:CHANGELOG.md` (the top entry under `### Added`).
+- Prepend that entry immediately after `### Added\n\n` in master's version.
+- `node -e` one-liner: extract `[indexOf('### Added')+len ... indexOf('\n- **', ...)+1]` from REBASE_HEAD version; insert at master's `### Added` offset.
+
+**Prevention:** When 3+ PRs all touch the same high-churn files (`package.json`, `CHANGELOG.md`), merge them in fast sequence — don't leave sibling branches open while rebasing. Alternatively, split the additions into a single "test chain" PR that lands last, accumulating all sibling additions in one commit. The artefact-first rule already gates this; the workflow gap is in execution timing, not pipeline design.
+
+**Action:** Document this resolution formula in the branch-complete or branch-setup SKILL.md as a "high-churn shared file rebase recipe". Flag for next /improvement run.
+
