@@ -35,7 +35,7 @@
     {
       "slug": "2026-04-22-modernisation-decompose",
       "name": "Modernisation Decompose — Bridging /reverse-engineer to the Delivery Pipeline",
-      "stage": "verify-completion",
+      "stage": "branch-complete",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -54,7 +54,7 @@
         "complexity-2": 0,
         "complexity-1": 2
       },
-      "updatedAt": "2026-04-22T18:00:00Z",
+      "updatedAt": "2026-04-22T18:30:00Z",
       "metrics": [
         {
           "id": "m1",
@@ -128,12 +128,12 @@
             {
               "slug": "md-1",
               "name": "Write /modernisation-decompose SKILL.md",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "mediumFindings": 2,
-              "updatedAt": "2026-04-22T18:00:00Z",
+              "updatedAt": "2026-04-22T18:30:00Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 19,
@@ -144,6 +144,9 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
+              "prNumber": 179,
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/179",
               "tasks": [
                 {
                   "id": "task-1",
