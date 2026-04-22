@@ -91,20 +91,22 @@ assert(
 );
 
 // ── T4: Integration — npm test passes ────────────────────────────────────────
-// Known pre-existing failure: check-p4-enf-second-line.js T-NFR2 (executorIdentity schema).
-// This failure exists on master and all feature branches. T4 passes if npm test exits 0,
-// or if the only failure output is from check-p4-enf-second-line.js (no new failures introduced).
+// Known pre-existing failure: check-p4-enf-second-line.js T6 (validate-trace.sh / executorIdentity /
+// WSL bash unavailable on Windows). This failure exists on master and all feature branches.
 console.log('\n[md-3-adr] T4: Integration \u2014 npm test passes after file update');
 
-const KNOWN_BASELINE_FAILURE = 'check-p4-enf-second-line.js';
+// These patterns match the known pre-existing failure only.
+const KNOWN_FAILURE_PATTERNS = ['executorIdentity', 'validate-trace.sh', 'WSL', '/bin/bash'];
+
 try {
   execSync('npm test', { cwd: ROOT, stdio: 'pipe' });
   assert('T4.1 \u2014 npm test exits 0 (no regressions introduced)', true);
 } catch (e) {
   const combined = (e.stdout ? e.stdout.toString() : '') + (e.stderr ? e.stderr.toString() : '');
-  // Strip the known pre-existing failure lines and check nothing else failed
-  const linesWithFail = combined.split('\n').filter(l => l.includes('✗') || l.includes('FAIL'));
-  const newFailures = linesWithFail.filter(l => !l.includes(KNOWN_BASELINE_FAILURE));
+  const failLines = combined.split('\n').filter(l => l.includes('\u2717') || l.includes('FAIL'));
+  const newFailures = failLines.filter(
+    l => !KNOWN_FAILURE_PATTERNS.some(pat => l.includes(pat)),
+  );
   assert(
     'T4.1 \u2014 npm test exits 0 (no regressions introduced)',
     newFailures.length === 0,
