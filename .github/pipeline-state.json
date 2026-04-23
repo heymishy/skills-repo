@@ -62,6 +62,24 @@
       "updatedAt": "2026-04-27"
     },
     {
+      "slug": "2026-04-24-platform-onboarding-distribution",
+      "name": "Platform onboarding, distribution, and brownfield adoption",
+      "stage": "ideation",
+      "health": "green",
+      "track": "library",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discoveryStatus": "not-started",
+      "ideationPath": "artefacts/2026-04-23-non-technical-channel/research/ideation.md",
+      "ideationSignal": "proceed",
+      "refDocPath": "artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md",
+      "relatedGaps": ["G0a", "G0b", "G14", "G17"],
+      "relatedWorkstreams": ["WS0.1", "WS0.2", "WS0.3", "WS0.4", "WS0.5", "WS0.6"],
+      "updatedAt": "2026-04-24T00:00:00Z"
+    },
+    {
       "slug": "2026-04-23-non-technical-channel",
       "name": "Non-Technical Channel — Framework Adoption Friction (Phase 5 WS0 / G0b)",
       "stage": "ideation",
