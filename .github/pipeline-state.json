@@ -2847,7 +2847,7 @@
     {
       "slug": "2026-04-23-ci-artefact-attachment",
       "name": "CI-Native Artefact Attachment (WS0.6)",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "discoveryStatus": "approved",
       "roadmapRef": "Phase 5 WS0.6 / Phase 4 item 4.B.9",
@@ -2997,12 +2997,12 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-23-ci-artefact-attachment/dor/caa.1-collect-flag-dor.md",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/186",
-          "dodStatus": "incomplete",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/190",
+          "dodStatus": "complete",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/183",
           "dispatchedAt": "2026-04-23T14:00:00Z",
           "dispatchTarget": "github-agent",
-          "releaseReady": false
+          "releaseReady": true
         },
         {
           "id": "caa.2",
@@ -3026,12 +3026,12 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-23-ci-artefact-attachment/dor/caa.2-github-actions-adapter-dor.md",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/188",
-          "dodStatus": "incomplete",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/190",
+          "dodStatus": "complete",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/184",
           "dispatchedAt": "2026-04-23T14:01:00Z",
           "dispatchTarget": "github-agent",
-          "releaseReady": false
+          "releaseReady": true
         },
         {
           "id": "caa.3",
@@ -3055,12 +3055,12 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-23-ci-artefact-attachment/dor/caa.3-context-yml-config-dor.md",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/189",
-          "dodStatus": "incomplete",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/190",
+          "dodStatus": "complete",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/185",
           "dispatchedAt": "2026-04-23T14:02:00Z",
           "dispatchTarget": "github-agent",
-          "releaseReady": false
+          "releaseReady": true
         }
       ],
       "updatedAt": "2026-04-23T17:00:00Z",
