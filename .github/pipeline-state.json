@@ -2980,7 +2980,7 @@
           "title": "Add --collect flag to trace-report.js: CI-platform-agnostic artefact assembly",
           "complexity": 1,
           "artefact": "artefacts/2026-04-23-ci-artefact-attachment/stories/caa.1-collect-flag.md",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -2998,19 +2998,18 @@
           "dorArtefact": "artefacts/2026-04-23-ci-artefact-attachment/dor/caa.1-collect-flag-dor.md",
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/186",
-          "stage": "definition-of-done",
-          "dodStatus": "not-started",
-          "acVerified": 6,
+          "dodStatus": "incomplete",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/183",
           "dispatchedAt": "2026-04-23T14:00:00Z",
-          "dispatchTarget": "github-agent"
+          "dispatchTarget": "github-agent",
+          "releaseReady": false
         },
         {
           "id": "caa.2",
           "title": "GitHub Actions adapter: upload artefact bundle and post summary link",
           "complexity": 2,
           "artefact": "artefacts/2026-04-23-ci-artefact-attachment/stories/caa.2-github-actions-adapter.md",
-          "stage": "subagent-execution",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -3028,18 +3027,18 @@
           "dorArtefact": "artefacts/2026-04-23-ci-artefact-attachment/dor/caa.2-github-actions-adapter-dor.md",
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/188",
-          "stage": "definition-of-done",
-          "dodStatus": "not-started",
+          "dodStatus": "incomplete",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/184",
           "dispatchedAt": "2026-04-23T14:01:00Z",
-          "dispatchTarget": "github-agent"
+          "dispatchTarget": "github-agent",
+          "releaseReady": false
         },
         {
           "id": "caa.3",
           "title": "context.yml opt-in gate and ci_platform adapter routing",
           "complexity": 1,
           "artefact": "artefacts/2026-04-23-ci-artefact-attachment/stories/caa.3-context-yml-config.md",
-          "stage": "subagent-execution",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -3057,11 +3056,11 @@
           "dorArtefact": "artefacts/2026-04-23-ci-artefact-attachment/dor/caa.3-context-yml-config-dor.md",
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/189",
-          "stage": "definition-of-done",
-          "dodStatus": "not-started",
+          "dodStatus": "incomplete",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/185",
           "dispatchedAt": "2026-04-23T14:02:00Z",
-          "dispatchTarget": "github-agent"
+          "dispatchTarget": "github-agent",
+          "releaseReady": false
         }
       ],
       "updatedAt": "2026-04-23T17:00:00Z",
@@ -3098,7 +3097,11 @@
           "id": "RA-all-W4",
           "decision": "AC verification scripts not expert-reviewed (solo repo). Human tech lead review at draft PR stage is the mitigation. Applies to caa.1, caa.2, caa.3.",
           "date": "2026-04-23",
-          "stories": ["caa.1", "caa.2", "caa.3"],
+          "stories": [
+            "caa.1",
+            "caa.2",
+            "caa.3"
+          ],
           "warning": "W4"
         }
       ]
