@@ -11,7 +11,7 @@
 
 As a tech lead configuring the delivery pipeline for my team,
 I want to enable CI artefact attachment and switch CI platform by editing only `context.yml`,
-So that I can control this feature for my repo without touching workflow YAML, adapter files, or any other configuration surface.
+So that I can control this feature for my repo without touching workflow YAML, adapter files, or any other configuration surface. (MM1-context-yml-config)
 
 ## Context and Background
 

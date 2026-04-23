@@ -11,7 +11,7 @@
 
 As a platform maintainer,
 I want `trace-report.js --collect` to assemble the full governed artefact chain for a feature into a flat staging directory,
-So that any CI platform adapter can upload the bundle without needing to know the internal artefact folder structure.
+So that any CI platform adapter can upload the bundle without needing to know the internal artefact folder structure. (serves MM2-zero-dep, M2-zero-breakage)
 
 ## Context and Background
 
