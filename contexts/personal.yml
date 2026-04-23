@@ -130,3 +130,8 @@ instrumentation:
   cost_tier: ""               # string — standard | premium
 # To activate: set enabled: true, fill in experiment_id, model_label, and cost_tier.
 # Results are written to workspace/experiments/[experiment-id]/ — see workspace/experiments/README.md.
+
+audit:
+  ci_attachment: false          # opt-in: set true to collect and upload governed artefact bundles on each PR
+  ci_platform: github-actions   # adapter to use for upload + comment; valid values: github-actions
+  artifact_retention_days: 7    # number of days to retain CI artefact bundles before auto-deletion
