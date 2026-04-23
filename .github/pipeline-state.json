@@ -2714,7 +2714,7 @@
       "slug": "2026-04-21-skill-routing-cli-tools",
       "name": "Skill routing — integrate CLI observability tools into /workflow and /improve",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-setup",
       "health": "green",
       "regulated": false,
       "complianceProfile": "standard",
@@ -2722,7 +2722,7 @@
       "sensitiveDataCategories": [],
       "discoveryStatus": "short-track",
       "benefitMetricStatus": "short-track",
-      "updatedAt": "2026-04-21T00:00:00.000Z",
+      "updatedAt": "2026-04-23T08:27:16.972Z",
       "metrics": [
         {
           "id": "M1",
@@ -2756,7 +2756,7 @@
             {
               "slug": "src.1-skill-routing-cli-integration",
               "name": "Add generate-status-report.js and record-benefit-comparison.js routing to /workflow and /improve SKILL.md",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -2773,7 +2773,7 @@
               "dorContract": "artefacts/2026-04-21-skill-routing-cli-tools/dor/src.1-skill-routing-cli-integration-dor-contract.md",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "updatedAt": "2026-04-21T00:00:00.000Z"
+              "updatedAt": "2026-04-23T08:27:16.972Z"
             }
           ]
         }
