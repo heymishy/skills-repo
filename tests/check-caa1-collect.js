@@ -13,7 +13,7 @@ const { spawnSync } = require('child_process');
 
 const ROOT       = path.join(__dirname, '..');
 const SCRIPT     = path.join(ROOT, 'scripts', 'trace-report.js');
-const { collectArtefacts, resolveActiveFeature } = require(SCRIPT);
+const { collectArtefacts, resolveActiveFeature, collectGovernanceInputs, classifyArtefact } = require(SCRIPT);
 
 let passed = 0;
 let failed = 0;
@@ -119,6 +119,10 @@ console.log('\n[caa1] T3 — buildManifest: writes required fields to manifest.j
     assert(manifest.fileCount === 3, 'T3d: fileCount is 3');
     assert(Array.isArray(manifest.files) && manifest.files.length === 3, 'T3e: files array has 3 entries');
     assert(manifest.files.every(f => f.filename && f.sourcePath), 'T3f: each file entry has filename and sourcePath');
+    assert(manifest.files.every(f => typeof f.sha256 === 'string' && f.sha256.length === 64), 'T3g: each file entry has sha256 (64-char hex)');
+    assert(Array.isArray(manifest.governanceInputs), 'T3h: manifest has governanceInputs array');
+    assert(manifest.files.every(f => typeof f.type === 'string' && f.type.length > 0), 'T3i: each file entry has a type string');
+    assert(manifest.files.every(f => typeof f.displayName === 'string' && f.displayName.length > 0), 'T3j: each file entry has a displayName string');
   } finally {
     cleanup(dir);
   }
@@ -239,12 +243,59 @@ console.log('\n[caa1] T8 — collectArtefacts: AC5 — second run clears and reb
 console.log('\n[caa1] T9 — AC6: no external npm packages used');
 {
   const src = fs.readFileSync(SCRIPT, 'utf8');
-  // The collect section must only require: fs, path, crypto, os — all built-ins
+  // The collect section must only require: fs, path, crypto, os, child_process — all built-ins
   const requireMatches = src.match(/require\(['"]([^'"]+)['"]\)/g) || [];
   const external = requireMatches
     .map(m => m.replace(/require\(['"]|['"]\)/g, ''))
-    .filter(m => !m.startsWith('.') && !['fs', 'path', 'crypto', 'os'].includes(m));
+    .filter(m => !m.startsWith('.') && !['fs', 'path', 'crypto', 'os', 'child_process'].includes(m));
   assert(external.length === 0, `T9: no external deps (found: ${external.join(', ') || 'none'})`);
+}
+
+// T9b — collectGovernanceInputs: returns array with sourcePath and sha256
+console.log('\n[caa1] T9b — collectGovernanceInputs: returns array with sourcePath + sha256');
+{
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'caa1-'));
+  fs.mkdirSync(path.join(dir, '.github', 'skills', 'test-skill'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.github', 'copilot-instructions.md'), '# Instructions\n', 'utf8');
+  fs.writeFileSync(path.join(dir, '.github', 'skills', 'test-skill', 'SKILL.md'), '# Skill\n', 'utf8');
+  try {
+    const inputs = collectGovernanceInputs(dir);
+    assert(Array.isArray(inputs), 'T9b-1: returns array');
+    assert(inputs.length >= 1, 'T9b-2: at least one governance input found');
+    assert(inputs.every(i => typeof i.sourcePath === 'string'), 'T9b-3: each entry has sourcePath');
+    assert(inputs.every(i => typeof i.sha256 === 'string' && i.sha256.length === 64), 'T9b-4: each entry has sha256 (64-char hex)');
+    assert(inputs.some(i => i.sourcePath === '.github/copilot-instructions.md'), 'T9b-5: copilot-instructions.md included');
+    assert(inputs.some(i => i.sourcePath.endsWith('SKILL.md')), 'T9b-6: SKILL.md files included');
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// T9c — classifyArtefact: correct type and displayName for known path patterns
+console.log('\n[caa1] T9c — classifyArtefact: type + displayName for known path patterns');
+{
+  const slug = 'my-feature';
+  const cases = [
+    { p: `artefacts/${slug}/discovery.md`,                              type: 'Discovery',           displayName: 'Discovery' },
+    { p: `artefacts/${slug}/benefit-metric.md`,                         type: 'Benefit Metric',      displayName: 'Benefit Metric' },
+    { p: `artefacts/${slug}/epics/e1-my-feature.md`,                    type: 'Epic',                displayName: null /* any string */ },
+    { p: `artefacts/${slug}/stories/caa.1-collect-flag.md`,             type: 'Story',               displayName: 'Caa.1 Collect Flag' },
+    { p: `artefacts/${slug}/test-plans/caa.1-collect-flag-test-plan.md`,type: 'Test Plan',           displayName: 'Caa.1 Collect Flag' },
+    { p: `artefacts/${slug}/dor/caa.1-collect-flag-dor.md`,             type: 'Definition of Ready', displayName: 'Caa.1 Collect Flag' },
+    { p: `artefacts/${slug}/dor/caa.1-collect-flag-dor-contract.md`,    type: 'Definition of Ready', displayName: 'Caa.1 Collect Flag (Contract)' },
+    { p: `artefacts/${slug}/dod/caa.1-collect-flag-dod.md`,             type: 'Definition of Done',  displayName: 'Caa.1 Collect Flag' },
+    { p: `artefacts/${slug}/review/caa.1-review-1.md`,                  type: 'Review',              displayName: 'Caa.1' },
+  ];
+  for (const c of cases) {
+    const result = classifyArtefact(c.p);
+    assert(result.type === c.type, `T9c type: ${c.p} → "${result.type}" (expected "${c.type}")`);
+    if (c.displayName !== null) {
+      assert(result.displayName === c.displayName, `T9c displayName: ${c.p} → "${result.displayName}" (expected "${c.displayName}")`);
+    } else {
+      assert(typeof result.displayName === 'string' && result.displayName.length > 0, `T9c displayName: ${c.p} → non-empty string`);
+    }
+    assert(typeof result.typeOrder === 'number', `T9c typeOrder: ${c.p} → number`);
+  }
 }
 
 // T10 — AC1: files sourced only from artefacts/[slug]/ subtree
