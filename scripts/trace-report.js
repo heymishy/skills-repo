@@ -207,19 +207,141 @@ function generateReport(opts) {
   return lines.join('\n');
 }
 
+// ── collect logic (AC1–AC6) ──────────────────────────────────────────────────
+
+// Blocked paths — these must never appear in the staging dir (security NFR)
+const BLOCKED_FILES = ['pipeline-state.json', 'context.yml'];
+
+/**
+ * Resolve the active feature slug.
+ * AC3: auto-resolves when exactly one non-archived feature exists.
+ * AC4: throws with the required stderr message when no feature can be resolved.
+ *
+ * @param {string|undefined} explicitSlug  Value of --feature flag (may be undefined)
+ * @param {string}           rootDir       Repo root
+ * @returns {string}                       Resolved feature slug
+ */
+function resolveActiveFeature(explicitSlug, rootDir) {
+  const stateFile = path.join(rootDir, '.github', 'pipeline-state.json');
+  const state = loadJSON(stateFile) || { features: [] };
+  const features = state.features || [];
+
+  if (explicitSlug) {
+    const found = features.find(f => f.slug === explicitSlug);
+    if (!found) {
+      const err = new Error(
+        `[trace-report --collect] No feature resolved. Pass --feature=<slug> or ensure exactly one active feature in pipeline-state.json.`
+      );
+      err.isCollectError = true;
+      throw err;
+    }
+    return found.slug;
+  }
+
+  // AC3: auto-resolve when exactly one non-archived feature exists
+  const active = features.filter(f => f.stage !== 'archived');
+  if (active.length === 1) return active[0].slug;
+
+  const err = new Error(
+    `[trace-report --collect] No feature resolved. Pass --feature=<slug> or ensure exactly one active feature in pipeline-state.json.`
+  );
+  err.isCollectError = true;
+  throw err;
+}
+
+/**
+ * Collect all artefact files for a feature into a flat staging dir.
+ * AC1: sequentially prefixed copies of every .md file under artefacts/[slug]/
+ * AC2: writes manifest.json alongside
+ * AC5: clears and rebuilds on second run
+ * AC6: uses only Node.js built-ins
+ *
+ * @param {string} featureSlug
+ * @param {string} rootDir
+ * @returns {{ stagingDir: string, fileCount: number }}
+ */
+function collectArtefacts(featureSlug, rootDir) {
+  const artefactsDir = path.join(rootDir, 'artefacts', featureSlug);
+  if (!fs.existsSync(artefactsDir)) {
+    throw new Error(`[trace-report --collect] Artefacts directory not found: artefacts/${featureSlug}/`);
+  }
+
+  const stagingDir = path.join(rootDir, '.ci-artefact-staging', featureSlug);
+
+  // AC5: clear on second run
+  if (fs.existsSync(stagingDir)) {
+    for (const entry of fs.readdirSync(stagingDir)) {
+      fs.unlinkSync(path.join(stagingDir, entry));
+    }
+  } else {
+    fs.mkdirSync(stagingDir, { recursive: true });
+  }
+
+  // Recursively collect .md files, excluding blocked paths
+  const collected = [];
+  (function walk(dir) {
+    for (const entry of fs.readdirSync(dir)) {
+      // AC1/Security: never include blocked files
+      if (BLOCKED_FILES.includes(entry)) continue;
+      const full = path.join(dir, entry);
+      const stat = fs.statSync(full);
+      if (stat.isDirectory()) {
+        walk(full);
+      } else if (entry.endsWith('.md')) {
+        // AC1/Security: must be under artefacts/[slug]/
+        const rel = path.relative(path.join(rootDir, 'artefacts', featureSlug), full);
+        collected.push({ sourcePath: path.join('artefacts', featureSlug, rel).replace(/\\/g, '/'), full, basename: entry });
+      }
+    }
+  })(artefactsDir);
+
+  // Write sequentially prefixed copies
+  const files = [];
+  collected.forEach((item, i) => {
+    const prefix = String(i + 1).padStart(2, '0');
+    const filename = `${prefix}-${item.basename}`;
+    fs.copyFileSync(item.full, path.join(stagingDir, filename));
+    files.push({ filename, sourcePath: item.sourcePath });
+  });
+
+  // AC2: write manifest.json
+  const manifest = {
+    featureSlug,
+    collectedAt: new Date().toISOString(),
+    fileCount: files.length,
+    files
+  };
+  fs.writeFileSync(path.join(stagingDir, 'manifest.json'), JSON.stringify(manifest, null, 2), 'utf8');
+
+  return { stagingDir, fileCount: files.length };
+}
+
 // CLI entry point
 if (require.main === module) {
   const args = process.argv.slice(2);
+  const isCollect = args.includes('--collect');
   const featureIdx = args.indexOf('--feature');
   const feature = featureIdx !== -1 ? args[featureIdx + 1] : undefined;
 
-  try {
-    const report = generateReport({ feature });
-    process.stdout.write(report);
-  } catch (e) {
-    process.stderr.write(e.message + '\n');
-    process.exit(1);
+  if (isCollect) {
+    try {
+      const rootDir = process.cwd();
+      const slug = resolveActiveFeature(feature, rootDir);
+      const { stagingDir, fileCount } = collectArtefacts(slug, rootDir);
+      process.stdout.write(`[trace-report --collect] Collected ${fileCount} file(s) to ${stagingDir}\n`);
+    } catch (e) {
+      process.stderr.write(e.message + '\n');
+      process.exit(1);
+    }
+  } else {
+    try {
+      const report = generateReport({ feature });
+      process.stdout.write(report);
+    } catch (e) {
+      process.stderr.write(e.message + '\n');
+      process.exit(1);
+    }
   }
 }
 
-module.exports = { generateReport };
+module.exports = { generateReport, collectArtefacts, resolveActiveFeature };
