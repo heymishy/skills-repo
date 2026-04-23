@@ -73,10 +73,26 @@ PR #188 merged with zero file changes. The GitHub Copilot coding agent committed
 
 **INCOMPLETE**
 
-**Follow-up actions:**
+**Follow-up actions (original — now resolved):**
 1. Re-open or create a new implementation issue for caa.2 — coding agent must implement `scripts/ci-adapters/github-actions.js` (upload + postComment), `scripts/ci-adapters/README.md`, and the corresponding steps in `assurance-gate.yml` as specified by all 5 ACs.
 2. Ensure test file `tests/check-caa2-adapter.js` is produced before or alongside implementation (per DoR TDD requirement).
 3. caa.1 must be re-delivered first (staging directory contract is a hard dependency for caa.2).
+
+---
+
+## Re-delivery — PR #190 (2026-04-23)
+
+**All ACs delivered.** Full implementation landed in PR #190. `scripts/ci-adapters/github-actions.js` (upload + postComment), `scripts/ci-adapters/README.md`, workflow collect/upload/comment steps, `tests/check-caa2-adapter.js`: 26/26 assertions passing. `dodStatus` set to `complete` in `pipeline-state.json`.
+
+---
+
+## Smoke-test finding — PR #191 (2026-04-23)
+
+**Finding:** After the first live CI run, the PR comment contained only a bundle download link. The user required each individual artefact to appear as a named hyperlink in the comment (artefact filename as link text, GitHub blob URL as target).
+
+**Fix applied in `.github/workflows/assurance-gate.yml`:** The `Post governed artefact chain comment` step now reads `.ci-artefact-staging/[slug]/manifest.json` and generates a `### Artefacts` section with one Markdown hyperlink per file. Link format: `[basename](https://github.com/owner/repo/blob/{sha}/artefacts/slug/relative-path)`. The bundle download link is retained as a secondary element.
+
+**`postComment` in `scripts/ci-adapters/github-actions.js` unchanged:** The comment is posted inline by `actions/github-script` (not via the adapter function) so no adapter code change is needed. Existing `check-caa2-adapter.js` tests continue to pass.
 
 ---
 
