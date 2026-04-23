@@ -246,7 +246,7 @@
                   "name": "T1"
                 }
               ],
-              "dodStatus": "complete-with-deviations",
+              "dodStatus": "complete",
               "releaseReady": true
             }
           ]
@@ -2795,29 +2795,38 @@
               "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "dodStatus": "complete",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "health": "green"
             }
           ]
         }
-      ]
+      ],
+      "track": "short",
+      "health": "green"
     },
     {
       "slug": "2026-04-22-canvas-views",
       "name": "Canvas artefact relationship views",
-      "stage": "definition-of-ready",
-      "updatedAt": "2026-04-22T22:00:00Z",
+      "track": "short",
+      "stage": "definition-of-done",
+      "health": "green",
+      "updatedAt": "2026-04-23T09:00:00Z",
       "epics": [
         {
           "slug": "pipeline-visualisation",
           "name": "Pipeline visualisation",
+          "status": "complete",
           "stories": [
             {
               "slug": "cv.1",
               "name": "Canvas artefact relationship views",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
-              "dodStatus": null,
-              "prStatus": null
+              "dodStatus": "complete",
+              "prStatus": "merged",
+              "health": "green",
+              "releaseReady": true,
+              "updatedAt": "2026-04-23T09:00:00Z"
             }
           ]
         }
