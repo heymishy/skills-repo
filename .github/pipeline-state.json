@@ -2419,14 +2419,14 @@
       "name": "Dashboard v2 Ã¢â‚¬â€ pipeline-state.json-driven portfolio visualiser",
       "track": "short",
       "stage": "definition-of-done",
-      "health": "green",
+      "health": "amber",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "discoveryStatus": "approved",
       "benefitMetricStatus": "active",
-      "updatedAt": "2026-04-21T09:00:00Z",
+      "updatedAt": "2026-04-23T00:00:00Z",
       "metrics": [
         {
           "id": "M1",
@@ -2503,7 +2503,9 @@
               "dorContract": "artefacts/2026-04-18-dashboard-v2/dor/dviz.1-dor-contract.md",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "updatedAt": "2026-04-21T09:00:00Z"
+              "updatedAt": "2026-04-21T09:00:00Z",
+              "prStatus": "merged",
+              "dodStatus": "complete"
             },
             {
               "slug": "dviz.2-pages-workflow",
@@ -2524,7 +2526,9 @@
               "dorContract": "artefacts/2026-04-18-dashboard-v2/dor/dviz.2-dor-contract.md",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "updatedAt": "2026-04-21T09:00:00Z"
+              "updatedAt": "2026-04-21T09:00:00Z",
+              "prStatus": "merged",
+              "dodStatus": "complete"
             },
             {
               "slug": "dviz.3-governance-check",
@@ -2545,11 +2549,14 @@
               "dorContract": "artefacts/2026-04-18-dashboard-v2/dor/dviz.3-dor-contract.md",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "updatedAt": "2026-04-21T09:00:00Z"
+              "updatedAt": "2026-04-21T09:00:00Z",
+              "prStatus": "merged",
+              "dodStatus": "complete"
             }
           ]
         }
-      ]
+      ],
+      "dodStatus": "complete-with-deviations"
     },
     {
       "slug": "2026-04-18-pipeline-state-archive",
