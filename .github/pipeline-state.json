@@ -2843,6 +2843,16 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "2026-04-23-ci-artefact-attachment",
+      "name": "CI-Native Artefact Attachment (WS0.6)",
+      "stage": "discovery",
+      "health": "green",
+      "discoveryStatus": "draft",
+      "roadmapRef": "Phase 5 WS0.6 / Phase 4 item 4.B.9",
+      "stories": [],
+      "track": "standard"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
