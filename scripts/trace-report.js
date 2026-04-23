@@ -13,6 +13,7 @@
 
 const fs   = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 // Pipeline stages in order — used for stage-aware chain link display
 const STAGE_ORDER = [
@@ -250,6 +251,38 @@ function resolveActiveFeature(explicitSlug, rootDir) {
 }
 
 /**
+ * Collect governance input files (skills, instructions) with SHA-256 hashes.
+ * These are the active governing documents — the rules the agent was required to follow.
+ *
+ * @param {string} rootDir
+ * @returns {Array<{ sourcePath: string, sha256: string }>}
+ */
+function collectGovernanceInputs(rootDir) {
+  const candidates = [
+    path.join(rootDir, '.github', 'copilot-instructions.md'),
+    path.join(rootDir, '.github', 'architecture-guardrails.md'),
+  ];
+
+  // All SKILL.md files under .github/skills/
+  const skillsDir = path.join(rootDir, '.github', 'skills');
+  if (fs.existsSync(skillsDir)) {
+    for (const skill of fs.readdirSync(skillsDir).sort()) {
+      const skillMd = path.join(skillsDir, skill, 'SKILL.md');
+      if (fs.existsSync(skillMd)) candidates.push(skillMd);
+    }
+  }
+
+  const inputs = [];
+  for (const full of candidates) {
+    if (!fs.existsSync(full)) continue;
+    const rel = path.relative(rootDir, full).replace(/\\/g, '/');
+    const sha256 = crypto.createHash('sha256').update(fs.readFileSync(full)).digest('hex');
+    inputs.push({ sourcePath: rel, sha256 });
+  }
+  return inputs;
+}
+
+/**
  * Collect all artefact files for a feature into a flat staging dir.
  * AC1: sequentially prefixed copies of every .md file under artefacts/[slug]/
  * AC2: writes manifest.json alongside
@@ -301,15 +334,20 @@ function collectArtefacts(featureSlug, rootDir) {
     const prefix = String(i + 1).padStart(2, '0');
     const filename = `${prefix}-${item.basename}`;
     fs.copyFileSync(item.full, path.join(stagingDir, filename));
-    files.push({ filename, sourcePath: item.sourcePath });
+    const sha256 = crypto.createHash('sha256').update(fs.readFileSync(item.full)).digest('hex');
+    files.push({ filename, sourcePath: item.sourcePath, sha256 });
   });
+
+  // Collect governance inputs (skills, instructions) with SHA-256 hashes
+  const governanceInputs = collectGovernanceInputs(rootDir);
 
   // AC2: write manifest.json
   const manifest = {
     featureSlug,
     collectedAt: new Date().toISOString(),
     fileCount: files.length,
-    files
+    files,
+    governanceInputs
   };
   fs.writeFileSync(path.join(stagingDir, 'manifest.json'), JSON.stringify(manifest, null, 2), 'utf8');
 
@@ -344,4 +382,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { generateReport, collectArtefacts, resolveActiveFeature };
+module.exports = { generateReport, collectArtefacts, resolveActiveFeature, collectGovernanceInputs };

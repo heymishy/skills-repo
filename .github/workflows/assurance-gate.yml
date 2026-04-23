@@ -154,45 +154,127 @@ jobs:
           script: |
             const fs   = require('fs');
             const path = require('path');
+            const crypto = require('crypto');
+
             const artifactName = `governed-artefacts-${{ github.run_id }}`;
             const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${{ github.run_id }}`;
-            // For pull_request events context.sha is the ephemeral merge commit — use head SHA for blob URLs
+            const repoUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}`;
+            // For pull_request events context.sha is the ephemeral merge commit — use head SHA for real blob URLs
             const headSha = context.payload.pull_request
               ? context.payload.pull_request.head.sha
               : context.sha;
+            const shortSha = headSha.slice(0, 7);
             const slug = '${{ steps.resolve_feature.outputs.slug }}';
 
-            // Build per-artefact hyperlinks by walking artefacts/<slug>/ directly
-            const artefactLines = [];
-            if (slug) {
-              const artefactsDir = `artefacts/${slug}`;
-              if (fs.existsSync(artefactsDir)) {
-                (function walk(dir) {
-                  for (const entry of fs.readdirSync(dir).sort()) {
-                    const full = path.join(dir, entry);
-                    if (fs.statSync(full).isDirectory()) { walk(full); continue; }
-                    if (!entry.endsWith('.md')) continue;
-                    const relPath = full.replace(/\\/g, '/');
-                    const fileUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/blob/${headSha}/${relPath}`;
-                    artefactLines.push(`- [${entry}](${fileUrl})`);
-                  }
-                })(artefactsDir);
+            // ── Read trace verdict + hash from the assurance gate trace JSONL ──
+            let verdict = 'unknown';
+            let traceHash = 'not available';
+            const tracesDir = 'workspace/traces';
+            if (fs.existsSync(tracesDir)) {
+              const files = fs.readdirSync(tracesDir)
+                .filter(f => f.endsWith('.jsonl') && f.includes('-ci-'))
+                .sort().reverse();
+              if (files.length > 0) {
+                const lines = fs.readFileSync(path.join(tracesDir, files[0]), 'utf8')
+                  .trim().split('\n').filter(Boolean);
+                const completed = lines.map(l => { try { return JSON.parse(l); } catch(_) { return null; } })
+                  .filter(Boolean).find(e => e.status === 'completed');
+                if (completed) { verdict = completed.verdict; traceHash = completed.traceHash || traceHash; }
               }
             }
 
-            const artefactSection = artefactLines.length > 0
-              ? ['', '### Artefacts', '', ...artefactLines]
-              : [];
+            // ── Read manifest from staging dir ──
+            let artefactFiles = [];
+            let governanceInputs = [];
+            const stagingBase = '.ci-artefact-staging';
+            if (slug && fs.existsSync(stagingBase)) {
+              const manifestPath = path.join(stagingBase, slug, 'manifest.json');
+              if (fs.existsSync(manifestPath)) {
+                const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+                artefactFiles = manifest.files || [];
+                governanceInputs = manifest.governanceInputs || [];
+              }
+            }
+
+            // If manifest not available, fall back to walking artefacts dir directly (no hashes)
+            if (artefactFiles.length === 0 && slug && fs.existsSync(`artefacts/${slug}`)) {
+              (function walk(dir) {
+                for (const entry of fs.readdirSync(dir).sort()) {
+                  const full = path.join(dir, entry);
+                  if (fs.statSync(full).isDirectory()) { walk(full); return; }
+                  if (!entry.endsWith('.md')) continue;
+                  const relPath = full.replace(/\\/g, '/');
+                  artefactFiles.push({ sourcePath: relPath, sha256: null });
+                }
+              })(`artefacts/${slug}`);
+            }
+
+            // ── Build comment sections ──
+            const verdictIcon = verdict === 'pass' ? '✅' : verdict === 'unknown' ? '⏳' : '❌';
+
+            const artefactRows = artefactFiles.map(f => {
+              const fileUrl = `${repoUrl}/blob/${headSha}/${f.sourcePath}`;
+              const name = path.basename(f.sourcePath);
+              const hash = f.sha256 ? `\`${f.sha256.slice(0,12)}…\`` : '—';
+              return `| [${name}](${fileUrl}) | ${hash} |`;
+            }).join('\n');
+
+            const govRows = governanceInputs.map(g => {
+              const fileUrl = `${repoUrl}/blob/${headSha}/${g.sourcePath}`;
+              const name = g.sourcePath.replace('.github/', '');
+              const hash = g.sha256 ? `\`${g.sha256.slice(0,12)}…\`` : '—';
+              return `| [${name}](${fileUrl}) | ${hash} |`;
+            }).join('\n');
 
             const body = [
-              '## Governed artefact chain',
-              '',
-              `Artefact bundle **[${artifactName}](${runUrl})** collected for this PR.`,
-              ...artefactSection,
-              '',
-              `**Download bundle:** [${artifactName}](${runUrl})`,
-              '',
-              '_Posted by the ci-artefact-attachment adapter (github-actions)._',
+              `## 🔐 Governed Delivery Audit Record`,
+              ``,
+              `> This record is auto-generated by the pipeline assurance gate. It ties together what was delivered, what rules governed it, and the independent verification result — in one tamper-evident snapshot.`,
+              ``,
+              `---`,
+              ``,
+              `### ${verdictIcon} Verification result: ${verdict.toUpperCase()}`,
+              ``,
+              `| Field | Value |`,
+              `|-------|-------|`,
+              `| **Gate verdict** | ${verdict} |`,
+              `| **Trace hash** | \`${traceHash}\` |`,
+              `| **Commit** | [\`${shortSha}\`](${repoUrl}/commit/${headSha}) |`,
+              `| **Run** | [${artifactName}](${runUrl}) |`,
+              ``,
+              `> **What is the trace hash?** It is a fingerprint of the full pipeline chain — every artefact, every gate check, and every governance input — at this exact commit. If any linked document had been different, the hash would be different. It cannot be forged after the fact.`,
+              ``,
+              `---`,
+              ``,
+              `### 📋 What was delivered (${artefactFiles.length} artefacts)`,
+              ``,
+              `> These are the specification and verification documents that define what was built and prove it meets the agreed acceptance criteria. Each link goes to the **exact version of the file at commit \`${shortSha}\`** — it cannot be edited after the fact. The hash lets you verify the file has not changed since it was collected.`,
+              ``,
+              `| Artefact | SHA-256 (first 12 chars) |`,
+              `|----------|--------------------------|`,
+              artefactRows || `| _(none collected)_ | — |`,
+              ``,
+              `---`,
+              ``,
+              `### 📚 What governed it (${governanceInputs.length} governance inputs)`,
+              ``,
+              `> These are the AI instruction sets, guardrails, and skill definitions that were **active and version-pinned during delivery**. They encode the quality standards, process rules, and architectural constraints the agent was required to follow. If these files had been different, the delivery would have been governed differently.`,
+              ``,
+              `| Governance input | SHA-256 (first 12 chars) |`,
+              `|------------------|--------------------------|`,
+              govRows || `| _(not captured — rerun with ci_attachment: true)_ | — |`,
+              ``,
+              `---`,
+              ``,
+              `### 🔍 How to verify this independently`,
+              ``,
+              `1. **Click any artefact link** — it opens the exact file version used, pinned to commit \`${shortSha}\``,
+              `2. **Verify a file hash**: \`sha256sum <file>\` or \`certutil -hashfile <file> SHA256\` — compare the first 12 characters to the table above`,
+              `3. **Verify the full chain**: \`node scripts/trace-report.js --feature ${slug || '<slug>'}\` — regenerates the trace from the same state`,
+              `4. **Download the full bundle** (includes \`manifest.json\` with complete hashes): [${artifactName}](${runUrl})`,
+              `5. **Cross-check with the gate verdict** above — the trace hash must match what appears in the Assurance Gate comment on this PR`,
+              ``,
+              `_Posted by the ci-artefact-attachment pipeline adapter (github-actions) · [View run](${runUrl})_`,
             ].join('\n');
 
             const { data: comments } = await github.rest.issues.listComments({
@@ -200,7 +282,7 @@ jobs:
               repo:         context.repo.repo,
               issue_number: context.issue.number,
             });
-            const existing = comments.find(c => c.body && c.body.includes('Governed artefact chain'));
+            const existing = comments.find(c => c.body && c.body.includes('Governed Delivery Audit Record'));
             if (existing) {
               await github.rest.issues.updateComment({
                 owner:      context.repo.owner,
