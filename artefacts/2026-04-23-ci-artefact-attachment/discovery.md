@@ -1,8 +1,8 @@
 # Discovery: CI-Native Artefact Attachment (WS0.6)
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-04-23
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Operator, 2026-04-23
 **Author:** Copilot
 **Roadmap reference:** Phase 5 WS0.6 (Phase 4 completion track); ref doc item 4.B.9
 
@@ -42,13 +42,22 @@ From a compliance readiness perspective, Theme F's organisational independence c
 
 3. A corresponding step that posts a summary comment to the associated GitHub issue (or PR) linking to the uploaded artifact. The comment includes the feature name, gate result, and a direct link to the CI run's artifact download. Issue/PR identification uses the PR number from the GitHub Actions event context, which is already available in the workflow.
 
-4. Consumer opt-in via `context.yml` under an `audit.ci_attachment: true/false` block (default `false`). The upload and comment steps are skipped when `ci_attachment` is `false` or absent.
+4. Consumer opt-in and CI platform configuration via `context.yml` under an `audit:` block:
+   ```yaml
+   audit:
+     ci_attachment: true          # default false — opt-in
+     ci_platform: github-actions  # github-actions | gitlab-ci | azure-devops | jenkins | circleci
+     artifact_retention_days: 90  # optional, platform default if absent
+   ```
+   The upload and comment steps are skipped when `ci_attachment` is `false` or absent. The `ci_platform` field selects which adapter is used for upload and comment; defaults to `github-actions` when absent. Each platform adapter is a thin wrapper around the platform's native artifact upload API/CLI, implementing a common `upload(stagingDir, runId)` and `postComment(issueRef, summaryLink)` interface defined in `trace-report.js`.
 
 5. Feature identification from `pipeline-state.json`: the `--collect` flag inherits the same feature resolution logic already in `trace-report.js` (walk `features[]`, match by `prStatus` and PR number from environment variable). No new feature-identification mechanism is designed.
 
+6. Platform adapter architecture: `trace-report.js` exposes the collection logic (`--collect` flag) as CI-platform-agnostic. A thin adapter layer handles platform-specific upload and comment steps. The MVP ships with the `github-actions` adapter. Additional adapters (GitLab CI, Azure DevOps Pipelines, Jenkins, CircleCI) are structured as additive platform adapter files that any consumer can contribute following the interface contract. No existing adapter is modified when a new one is added.
+
 ## Out of Scope
 
-- **Non-git consumer distribution (WS0.4):** This story does not deliver a distribution mechanism for Teams bots, Foundry deployments, or Confluence integrations. Those depend on Spike D output. WS0.6 uploads to the GitHub Actions artifact store only — a git-native CI platform is the target, not an alternative channel.
+- **Non-git consumer distribution (WS0.4):** This story does not deliver a distribution mechanism for Teams bots, Foundry deployments, or Confluence integrations. Those depend on Spike D output. WS0.6 uploads to a CI artifact store — the MVP ships the GitHub Actions adapter, with the adapter interface designed for extension to other CI platforms. It is not a non-git channel.
 
 - **Automated issue-tracker ticket creation or Jira integration:** The comment is posted to the GitHub PR or issue associated with the CI run. No integration with external project management tools (Jira, ServiceNow, Azure DevOps) is in scope. External tool integration is a consumer responsibility using the artifact download link.
 
@@ -76,7 +85,7 @@ From a compliance readiness perspective, Theme F's organisational independence c
 
 ## Directional Success Indicators
 
-- A non-technical stakeholder (product manager or auditor) who is given a link to a merged PR's CI run can access the full artefact chain — discovery through DoD — without any git access or tooling, in two clicks or fewer.
+- A non-technical stakeholder (product manager or auditor) who is given a link to a merged PR's CI run can access the full artefact chain — discovery through DoD — without any git access or tooling, in two clicks or fewer, regardless of whether the team uses GitHub Actions, GitLab CI, or Azure DevOps Pipelines.
 - Tech leads can share a stable artifact download link in a Slack message or email after a gate pass, without managing repository access permissions.
 - The second-line risk reviewer verifying Theme F organisational independence can download the evidence package from the CI platform (GitHub Actions) — a platform that is outside the delivery team's repository write boundary — and confirm chain integrity from that download alone.
 - No existing consumer is broken by the addition of the `--collect` flag or the new CI step (the flag is opt-in; the new step is skipped when `ci_attachment` is false).
@@ -87,7 +96,7 @@ From a compliance readiness perspective, Theme F's organisational independence c
 - **C1 (update channel not severed):** The new CI step is additive — it does not change the existing assurance gate logic or `trace-report.js` core behaviour. Existing consumers who do not set `ci_attachment: true` see no change.
 - **Tech stack constraint:** `trace-report.js` is the only permitted file-walking mechanism for the artefact chain. No new file-discovery script is introduced — the `--collect` flag extends the existing script.
 - **Dependency on WS0 track order:** WS0.6 can proceed without WS0.1–WS0.5 (distribution versioning and lockfile). WS0.6 is ADDITIVE and has no dependency on the lockfile model. It can be delivered in parallel with WS0.1–WS0.5 or independently.
-- **GitHub Actions only (MVP):** The MVP targets GitHub Actions as the CI platform. Other CI platforms (Azure DevOps, Jenkins, CircleCI) are out of scope for this story; the `--collect` flag in `trace-report.js` is CI-agnostic, but the upload and comment steps are GitHub-specific.
+- **GitHub Actions adapter ships in MVP; other adapters are additive:** The collection logic (`--collect`) is CI-platform-agnostic. The MVP ships the `github-actions` adapter. Other adapters (`gitlab-ci`, `azure-devops`, `jenkins`, `circleci`) are out of scope for the MVP implementation but are in scope as community or follow-on contributions following the defined adapter interface. Any platform configuration is expressed through `context.yml` `audit.ci_platform` — no workflow file changes are needed to switch platforms.
 
 ---
 

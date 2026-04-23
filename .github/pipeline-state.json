@@ -2847,12 +2847,24 @@
     {
       "slug": "2026-04-23-ci-artefact-attachment",
       "name": "CI-Native Artefact Attachment (WS0.6)",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
-      "discoveryStatus": "draft",
+      "discoveryStatus": "approved",
       "roadmapRef": "Phase 5 WS0.6 / Phase 4 item 4.B.9",
       "stories": [],
-      "track": "standard"
+      "track": "standard",
+      "benefitMetric": {
+        "artefact": "artefacts/2026-04-23-ci-artefact-attachment/benefit-metric.md",
+        "status": "active",
+        "metaBenefit": true,
+        "metrics": [
+          "M1-evidence-reach",
+          "M2-zero-breakage",
+          "M3-adapter-extensibility",
+          "MM1-context-yml-config",
+          "MM2-zero-dep"
+        ]
+      }
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
