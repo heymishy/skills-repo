@@ -85,16 +85,18 @@ This initiative delivers user value (non-technical reviewers reach evidence with
 
 ## Metric Coverage Matrix
 
-<!-- Populated by the /definition skill after stories are created. -->
-
 | Metric | Stories | Status |
 |--------|---------|--------|
-| M1 — Evidence reach without git access | TBD at /definition | Pending |
-| M2 — Zero breakage to existing consumers | TBD at /definition | Pending |
-| M3 — CI-platform adapter extensibility | TBD at /definition | Pending |
-| MM1 — `context.yml` as single configuration surface | TBD at /definition | Pending |
-| MM2 — `trace-report.js` zero-dependency constraint | TBD at /definition | Pending |
+| M1 — Evidence reach without git access | caa.2 (artifact upload + PR comment), caa.3 (opt-in gate) | Covered |
+| M2 — Zero breakage to existing consumers | caa.1 (test coverage on --collect), caa.3 (AC1: default off, AC5: full test suite passes) | Covered |
+| M3 — CI-platform adapter extensibility | caa.2 (AC3: adapter interface contract), caa.3 (AC3: routing by ci_platform) | Covered |
+| MM1 — `context.yml` as single configuration surface | caa.3 (AC2, AC4: context.yml-only platform switch) | Covered |
+| MM2 — `trace-report.js` zero-dependency constraint | caa.1 (AC6: zero new deps verified in test) | Covered |
 
 ---
 
-**Next step:** /definition — decompose into epics and stories
+**Definition completed:** 2026-04-23
+**Stories:** caa.1, caa.2, caa.3
+**Epic:** e1-ci-artefact-attachment
+**Slicing strategy:** Walking skeleton
+**Next step:** /review

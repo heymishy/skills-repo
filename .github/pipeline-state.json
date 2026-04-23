@@ -2847,12 +2847,20 @@
     {
       "slug": "2026-04-23-ci-artefact-attachment",
       "name": "CI-Native Artefact Attachment (WS0.6)",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "discoveryStatus": "approved",
       "roadmapRef": "Phase 5 WS0.6 / Phase 4 item 4.B.9",
-      "stories": [],
       "track": "standard",
+      "slicingStrategy": "walking-skeleton",
+      "storyCount": 3,
+      "epicCount": 1,
+      "complexityDistribution": {
+        "complexity-1": 2,
+        "complexity-2": 1,
+        "complexity-3": 0
+      },
+      "nfrProfile": "artefacts/2026-04-23-ci-artefact-attachment/nfr-profile.md",
       "benefitMetric": {
         "artefact": "artefacts/2026-04-23-ci-artefact-attachment/benefit-metric.md",
         "status": "active",
@@ -2864,7 +2872,33 @@
           "MM1-context-yml-config",
           "MM2-zero-dep"
         ]
-      }
+      },
+      "stories": [
+        {
+          "id": "caa.1",
+          "title": "Add --collect flag to trace-report.js: CI-platform-agnostic artefact assembly",
+          "complexity": 1,
+          "artefact": "artefacts/2026-04-23-ci-artefact-attachment/stories/caa.1-collect-flag.md",
+          "stage": "definition",
+          "prStatus": "none"
+        },
+        {
+          "id": "caa.2",
+          "title": "GitHub Actions adapter: upload artefact bundle and post summary link",
+          "complexity": 2,
+          "artefact": "artefacts/2026-04-23-ci-artefact-attachment/stories/caa.2-github-actions-adapter.md",
+          "stage": "definition",
+          "prStatus": "none"
+        },
+        {
+          "id": "caa.3",
+          "title": "context.yml opt-in gate and ci_platform adapter routing",
+          "complexity": 1,
+          "artefact": "artefacts/2026-04-23-ci-artefact-attachment/stories/caa.3-context-yml-config.md",
+          "stage": "definition",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
