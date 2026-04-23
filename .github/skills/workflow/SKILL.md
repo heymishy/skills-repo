@@ -55,6 +55,10 @@ no preamble. Then ask a single focused question.
 - ⚠️ Stalled — no progress for 2+ sessions, no clear cause in artefacts
 - 🔴 Blocked — no progress, cause identified
 
+If one or more features are not DoD-complete, also surface this callout:
+
+> **Status report available:** run `node scripts/generate-status-report.js --daily` for a daily summary or `node scripts/generate-status-report.js --weekly` for a weekly summary. Both write to stdout; add `--output <path>` to save to a file.
+
 Then ask:
 
 > **Which feature do you want to work on?**
@@ -193,7 +197,7 @@ Before confirming short-track, verify it actually qualifies:
 **If trigger is "daily report", "weekly report", "pipeline status report", "generate a report", or "show me the status report":**
 
 > **Status report route confirmed.**
-> Run: `node scripts/generate-status-report.js` (daily) or `node scripts/generate-status-report.js --weekly` (weekly)
+> Run: `node scripts/generate-status-report.js --daily` (daily) or `node scripts/generate-status-report.js --weekly` (weekly)
 > Optional: `--output <path>` to write to a file instead of stdout.
 >
 > The report reads `.github/pipeline-state.json` (plus archive) and produces a Markdown report.
