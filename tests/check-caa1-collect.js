@@ -13,7 +13,7 @@ const { spawnSync } = require('child_process');
 
 const ROOT       = path.join(__dirname, '..');
 const SCRIPT     = path.join(ROOT, 'scripts', 'trace-report.js');
-const { collectArtefacts, resolveActiveFeature, collectGovernanceInputs } = require(SCRIPT);
+const { collectArtefacts, resolveActiveFeature, collectGovernanceInputs, classifyArtefact } = require(SCRIPT);
 
 let passed = 0;
 let failed = 0;
@@ -121,6 +121,8 @@ console.log('\n[caa1] T3 — buildManifest: writes required fields to manifest.j
     assert(manifest.files.every(f => f.filename && f.sourcePath), 'T3f: each file entry has filename and sourcePath');
     assert(manifest.files.every(f => typeof f.sha256 === 'string' && f.sha256.length === 64), 'T3g: each file entry has sha256 (64-char hex)');
     assert(Array.isArray(manifest.governanceInputs), 'T3h: manifest has governanceInputs array');
+    assert(manifest.files.every(f => typeof f.type === 'string' && f.type.length > 0), 'T3i: each file entry has a type string');
+    assert(manifest.files.every(f => typeof f.displayName === 'string' && f.displayName.length > 0), 'T3j: each file entry has a displayName string');
   } finally {
     cleanup(dir);
   }
@@ -266,6 +268,33 @@ console.log('\n[caa1] T9b — collectGovernanceInputs: returns array with source
     assert(inputs.some(i => i.sourcePath.endsWith('SKILL.md')), 'T9b-6: SKILL.md files included');
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// T9c — classifyArtefact: correct type and displayName for known path patterns
+console.log('\n[caa1] T9c — classifyArtefact: type + displayName for known path patterns');
+{
+  const slug = 'my-feature';
+  const cases = [
+    { p: `artefacts/${slug}/discovery.md`,                              type: 'Discovery',           displayName: 'Discovery' },
+    { p: `artefacts/${slug}/benefit-metric.md`,                         type: 'Benefit Metric',      displayName: 'Benefit Metric' },
+    { p: `artefacts/${slug}/epics/e1-my-feature.md`,                    type: 'Epic',                displayName: null /* any string */ },
+    { p: `artefacts/${slug}/stories/caa.1-collect-flag.md`,             type: 'Story',               displayName: 'Caa.1 Collect Flag' },
+    { p: `artefacts/${slug}/test-plans/caa.1-collect-flag-test-plan.md`,type: 'Test Plan',           displayName: 'Caa.1 Collect Flag' },
+    { p: `artefacts/${slug}/dor/caa.1-collect-flag-dor.md`,             type: 'Definition of Ready', displayName: 'Caa.1 Collect Flag' },
+    { p: `artefacts/${slug}/dor/caa.1-collect-flag-dor-contract.md`,    type: 'Definition of Ready', displayName: 'Caa.1 Collect Flag (Contract)' },
+    { p: `artefacts/${slug}/dod/caa.1-collect-flag-dod.md`,             type: 'Definition of Done',  displayName: 'Caa.1 Collect Flag' },
+    { p: `artefacts/${slug}/review/caa.1-review-1.md`,                  type: 'Review',              displayName: 'Caa.1' },
+  ];
+  for (const c of cases) {
+    const result = classifyArtefact(c.p);
+    assert(result.type === c.type, `T9c type: ${c.p} → "${result.type}" (expected "${c.type}")`);
+    if (c.displayName !== null) {
+      assert(result.displayName === c.displayName, `T9c displayName: ${c.p} → "${result.displayName}" (expected "${c.displayName}")`);
+    } else {
+      assert(typeof result.displayName === 'string' && result.displayName.length > 0, `T9c displayName: ${c.p} → non-empty string`);
+    }
+    assert(typeof result.typeOrder === 'number', `T9c typeOrder: ${c.p} → number`);
   }
 }
 

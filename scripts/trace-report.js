@@ -251,6 +251,74 @@ function resolveActiveFeature(explicitSlug, rootDir) {
 }
 
 /**
+ * Classify a collected artefact file by its pipeline stage type and derive a human-readable display name.
+ * Classification is driven by directory structure conventions.
+ *
+ * @param {string} sourcePath  e.g. "artefacts/my-feature/stories/caa.1-collect-flag.md"
+ * @returns {{ type: string, typeOrder: number, displayName: string }}
+ */
+function classifyArtefact(sourcePath) {
+  const normalized = sourcePath.replace(/\\/g, '/');
+  const parts = normalized.split('/');
+  // parts[0]='artefacts', parts[1]=slug, parts[2]=subdir-or-toplevel-file, parts[3+]=filename
+  const isTopLevel = parts.length === 3;
+  const subdir = isTopLevel ? null : parts[2];
+  const basename = path.basename(normalized, '.md');
+
+  const SUBDIR_TYPES = {
+    'epics':                { type: 'Epic',                   order: 3 },
+    'stories':              { type: 'Story',                  order: 4 },
+    'test-plans':           { type: 'Test Plan',              order: 5 },
+    'review':               { type: 'Review',                 order: 6 },
+    'verification-scripts': { type: 'Verification Script',    order: 7 },
+    'dor':                  { type: 'Definition of Ready',    order: 8 },
+    'plans':                { type: 'Implementation Plan',    order: 9 },
+    'dod':                  { type: 'Definition of Done',     order: 10 },
+    'reference':            { type: 'Reference',              order: 11 },
+    'trace':                { type: 'Trace',                  order: 12 },
+  };
+
+  const TOPLEVEL_TYPES = {
+    'discovery':      { type: 'Discovery',      order: 1 },
+    'benefit-metric': { type: 'Benefit Metric', order: 2 },
+    'decisions':      { type: 'Decisions',       order: 13 },
+    'nfr-profile':    { type: 'NFR Profile',     order: 14 },
+  };
+
+  let type, order;
+  if (isTopLevel) {
+    const match = TOPLEVEL_TYPES[basename];
+    type  = match ? match.type  : 'Other';
+    order = match ? match.order : 99;
+    return { type, typeOrder: order, displayName: type === 'Other' ? basename : type };
+  }
+
+  const subdirMatch = SUBDIR_TYPES[subdir];
+  type  = subdirMatch ? subdirMatch.type  : 'Other';
+  order = subdirMatch ? subdirMatch.order : 99;
+
+  // Derive human-readable name by stripping well-known type suffixes, then humanizing
+  let displayName = basename
+    .replace(/-dor-contract$/, '')   // strip before -dor so -dor-contract → base name + " (Contract)" below
+    .replace(/-test-plan$/, '')
+    .replace(/-dor$/, '')
+    .replace(/-dod$/, '')
+    .replace(/-review-\d+$/, '')
+    .replace(/-verification$/, '');
+
+  // Mark contracts
+  if (basename.endsWith('-dor-contract')) displayName += ' (Contract)';
+
+  // Humanize: replace hyphens and underscores with spaces (preserve dots — used in story IDs like caa.1)
+  displayName = displayName
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase())
+    .trim();
+
+  return { type, typeOrder: order, displayName };
+}
+
+/**
  * Collect governance input files (skills, instructions) with SHA-256 hashes.
  * These are the active governing documents — the rules the agent was required to follow.
  *
@@ -335,7 +403,8 @@ function collectArtefacts(featureSlug, rootDir) {
     const filename = `${prefix}-${item.basename}`;
     fs.copyFileSync(item.full, path.join(stagingDir, filename));
     const sha256 = crypto.createHash('sha256').update(fs.readFileSync(item.full)).digest('hex');
-    files.push({ filename, sourcePath: item.sourcePath, sha256 });
+    const { type, typeOrder, displayName } = classifyArtefact(item.sourcePath);
+    files.push({ filename, sourcePath: item.sourcePath, sha256, type, typeOrder, displayName });
   });
 
   // Collect governance inputs (skills, instructions) with SHA-256 hashes
@@ -382,4 +451,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { generateReport, collectArtefacts, resolveActiveFeature, collectGovernanceInputs };
+module.exports = { generateReport, collectArtefacts, resolveActiveFeature, collectGovernanceInputs, classifyArtefact };

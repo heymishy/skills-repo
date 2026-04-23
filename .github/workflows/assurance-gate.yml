@@ -196,6 +196,48 @@ jobs:
               }
             }
 
+            // ── Inline classifyArtefact (mirrors scripts/trace-report.js) ──
+            function classifyArtefact(sourcePath) {
+              const normalized = sourcePath.replace(/\\/g, '/');
+              const parts = normalized.split('/');
+              const isTopLevel = parts.length === 3;
+              const subdir = isTopLevel ? null : parts[2];
+              const basename = normalized.split('/').pop().replace(/\.md$/, '');
+              const SUBDIR_TYPES = {
+                'epics': { type: 'Epic', order: 3 },
+                'stories': { type: 'Story', order: 4 },
+                'test-plans': { type: 'Test Plan', order: 5 },
+                'review': { type: 'Review', order: 6 },
+                'verification-scripts': { type: 'Verification Script', order: 7 },
+                'dor': { type: 'Definition of Ready', order: 8 },
+                'plans': { type: 'Implementation Plan', order: 9 },
+                'dod': { type: 'Definition of Done', order: 10 },
+                'reference': { type: 'Reference', order: 11 },
+                'trace': { type: 'Trace', order: 12 },
+              };
+              const TOPLEVEL_TYPES = {
+                'discovery': { type: 'Discovery', order: 1 },
+                'benefit-metric': { type: 'Benefit Metric', order: 2 },
+                'decisions': { type: 'Decisions', order: 13 },
+                'nfr-profile': { type: 'NFR Profile', order: 14 },
+              };
+              if (isTopLevel) {
+                const m = TOPLEVEL_TYPES[basename];
+                return { type: m ? m.type : 'Other', typeOrder: m ? m.order : 99, displayName: m ? m.type : basename };
+              }
+              const sm = SUBDIR_TYPES[subdir];
+              let displayName = basename
+                .replace(/-dor-contract$/, '')
+                .replace(/-test-plan$/, '')
+                .replace(/-dor$/, '')
+                .replace(/-dod$/, '')
+                .replace(/-review-\d+$/, '')
+                .replace(/-verification$/, '');
+              if (basename.endsWith('-dor-contract')) displayName += ' (Contract)';
+              displayName = displayName.replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim();
+              return { type: sm ? sm.type : 'Other', typeOrder: sm ? sm.order : 99, displayName };
+            }
+
             // If manifest not available, fall back to walking artefacts dir directly (no hashes)
             if (artefactFiles.length === 0 && slug && fs.existsSync(`artefacts/${slug}`)) {
               (function walk(dir) {
@@ -204,20 +246,44 @@ jobs:
                   if (fs.statSync(full).isDirectory()) { walk(full); return; }
                   if (!entry.endsWith('.md')) continue;
                   const relPath = full.replace(/\\/g, '/');
-                  artefactFiles.push({ sourcePath: relPath, sha256: null });
+                  const cls = classifyArtefact(relPath);
+                  artefactFiles.push({ sourcePath: relPath, sha256: null, ...cls });
                 }
               })(`artefacts/${slug}`);
             }
 
+            // Enrich manifest entries that pre-date classification (no type field)
+            artefactFiles = artefactFiles.map(f => {
+              if (f.type) return f;
+              return { ...f, ...classifyArtefact(f.sourcePath) };
+            });
+
             // ── Build comment sections ──
             const verdictIcon = verdict === 'pass' ? '✅' : verdict === 'unknown' ? '⏳' : '❌';
 
-            const artefactRows = artefactFiles.map(f => {
+            // Sort artefacts by typeOrder then displayName for a logical pipeline flow
+            const sorted = [...artefactFiles].sort((a, b) => {
+              const oa = a.typeOrder != null ? a.typeOrder : 99;
+              const ob = b.typeOrder != null ? b.typeOrder : 99;
+              if (oa !== ob) return oa - ob;
+              return (a.displayName || '').localeCompare(b.displayName || '');
+            });
+
+            // Group by type — each group gets a header row then its entries
+            const artefactRows = [];
+            let lastType = null;
+            for (const f of sorted) {
+              const typeName = f.type || '—';
+              if (typeName !== lastType) {
+                if (lastType !== null) artefactRows.push(`| | | |`); // blank separator between groups
+                artefactRows.push(`| **${typeName}** | | |`);
+                lastType = typeName;
+              }
               const fileUrl = `${repoUrl}/blob/${headSha}/${f.sourcePath}`;
-              const name = path.basename(f.sourcePath);
+              const displayName = f.displayName || path.basename(f.sourcePath, '.md');
               const hash = f.sha256 ? `\`${f.sha256.slice(0,12)}…\`` : '—';
-              return `| [${name}](${fileUrl}) | ${hash} |`;
-            }).join('\n');
+              artefactRows.push(`| | [${displayName}](${fileUrl}) | ${hash} |`);
+            }
 
             const govRows = governanceInputs.map(g => {
               const fileUrl = `${repoUrl}/blob/${headSha}/${g.sourcePath}`;
@@ -248,11 +314,11 @@ jobs:
               ``,
               `### 📋 What was delivered (${artefactFiles.length} artefacts)`,
               ``,
-              `> These are the specification and verification documents that define what was built and prove it meets the agreed acceptance criteria. Each link goes to the **exact version of the file at commit \`${shortSha}\`** — it cannot be edited after the fact. The hash lets you verify the file has not changed since it was collected.`,
+              `> These are the specification and verification documents for this feature, grouped by pipeline stage. Each link opens the **exact version of the document at commit \`${shortSha}\`**. Reading top-to-bottom traces the full delivery chain: from the original problem statement (Discovery) through to final verification (Definition of Done).`,
               ``,
-              `| Artefact | SHA-256 (first 12 chars) |`,
-              `|----------|--------------------------|`,
-              artefactRows || `| _(none collected)_ | — |`,
+              `| Stage | Document | SHA-256 (first 12) |`,
+              `|-------|----------|--------------------|`,
+              artefactRows.length > 0 ? artefactRows.join('\n') : `| _(none collected)_ | | — |`,
               ``,
               `---`,
               ``,
