@@ -67,3 +67,4 @@ audit:
   ci_attachment: true           # opt-in: collect and upload governed artefact bundles on each PR
   ci_platform: github-actions   # adapter to use for upload + comment
   artifact_retention_days: 7    # days to retain CI artefact bundles
+  feature_slug: 2026-04-23-ci-artefact-attachment  # explicit slug; overrides auto-resolve (remove when auto-resolve is correct)

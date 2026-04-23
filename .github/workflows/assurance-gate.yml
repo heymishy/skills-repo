@@ -57,12 +57,15 @@ jobs:
         run: |
           CI_ATTACHMENT=false
           CI_PLATFORM=github-actions
+          FEATURE_SLUG_OVERRIDE=""
           if [ -f ".github/context.yml" ]; then
             CI_ATTACHMENT=$(yq e '.audit.ci_attachment // false' .github/context.yml 2>/dev/null || echo "false")
             CI_PLATFORM=$(yq e '.audit.ci_platform // "github-actions"' .github/context.yml 2>/dev/null || echo "github-actions")
+            FEATURE_SLUG_OVERRIDE=$(yq e '.audit.feature_slug // ""' .github/context.yml 2>/dev/null || echo "")
           fi
           echo "ci_attachment=${CI_ATTACHMENT}" >> "$GITHUB_OUTPUT"
           echo "ci_platform=${CI_PLATFORM}" >> "$GITHUB_OUTPUT"
+          echo "feature_slug_override=${FEATURE_SLUG_OVERRIDE}" >> "$GITHUB_OUTPUT"
 
       - name: Upload trace artifact
         if: always()
@@ -121,16 +124,23 @@ jobs:
         id: resolve_feature
         if: steps.ci_attach_cfg.outputs.ci_attachment == 'true'
         run: |
-          FEATURE_SLUG=$(node -e "
-            const s = require('./.github/pipeline-state.json');
-            const DONE = new Set(['archived','definition-of-done','released']);
-            const inProgress = s.features.filter(f => !DONE.has(f.stage));
-            const pick = inProgress.length > 0
-              ? inProgress[inProgress.length - 1]
-              : s.features.filter(f => f.stage !== 'archived').slice(-1)[0];
-            process.stdout.write(pick ? pick.slug : '');
-          " 2>/dev/null || echo "")
-          echo "slug=${FEATURE_SLUG}" >> "$GITHUB_OUTPUT"
+          OVERRIDE='${{ steps.ci_attach_cfg.outputs.feature_slug_override }}'
+          if [ -n "${OVERRIDE}" ]; then
+            echo "slug=${OVERRIDE}" >> "$GITHUB_OUTPUT"
+            echo "[resolve_feature] Using explicit override: ${OVERRIDE}"
+          else
+            FEATURE_SLUG=$(node -e "
+              const s = require('./.github/pipeline-state.json');
+              const DONE = new Set(['archived','definition-of-done','released']);
+              const inProgress = s.features.filter(f => !DONE.has(f.stage));
+              const pick = inProgress.length > 0
+                ? inProgress[inProgress.length - 1]
+                : s.features.filter(f => f.stage !== 'archived').slice(-1)[0];
+              process.stdout.write(pick ? pick.slug : '');
+            " 2>/dev/null || echo "")
+            echo "slug=${FEATURE_SLUG}" >> "$GITHUB_OUTPUT"
+            echo "[resolve_feature] Auto-resolved: ${FEATURE_SLUG}"
+          fi
 
       - name: Collect governed artefacts
         id: collect
