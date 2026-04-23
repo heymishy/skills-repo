@@ -62,8 +62,19 @@ exemption_labels:
 # Reference-only directories under artefacts/ that are not feature directories
 # and should not be required to have a discovery artefact chain.
 # Use this for resource/reference packages that live alongside pipeline artefacts.
+# Note: pipeline features that follow a non-standard track (short, defect, library, spike)
+# are auto-exempted via tracks_without_discovery below — no manual entry needed here.
 reference_dirs:
   - 2026-04-18-skills-platform-phase4-revised
   - 2026-04-19-skills-platform-phase4-opus
-  - 2026-04-21-skill-routing-cli-tools
   - docs-only
+
+# Tracks that do not follow the full discovery → benefit-metric → story pipeline.
+# Features with these track values in pipeline-state.json are automatically exempted
+# from the discovery_exists check without needing a manual reference_dirs entry.
+# Extend this list when new non-standard pipeline variants are introduced.
+tracks_without_discovery:
+  - short
+  - defect
+  - library
+  - spike
