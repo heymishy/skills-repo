@@ -11,7 +11,7 @@
 
 As a second-line risk reviewer or product manager with no git access,
 I want the CI pipeline to upload the governed artefact bundle as a downloadable CI artifact and post a direct link to the associated PR or issue,
-So that I can reach the full evidence chain in two clicks or fewer from any CI run URL, without needing git credentials or local tooling.
+So that I can reach the full evidence chain in two clicks or fewer from any CI run URL, without needing git credentials or local tooling. (M1-evidence-reach)
 
 ## Context and Background
 
@@ -63,4 +63,4 @@ Per the **two-workflow CI audit pattern** (architecture-guardrails.md): the uplo
 
 - **Security:** The workflow step that posts the PR comment must use `${{ github.token }}` — no personal access tokens or secrets stored outside the GitHub Actions secrets mechanism.
 - **Permissions:** The `assurance-gate.yml` workflow must not acquire permissions beyond what it already holds. New steps must fit within `contents: read, pull-requests: write` (pull-requests write is needed for the comment).
-- **Idempotency:** If the workflow runs twice on the same PR (e.g. after a push), the comment should be updated in-place or a new comment posted — no silent failure.
+- **Idempotency:** If the workflow runs twice on the same PR (e.g. after a push), the adapter either updates the existing comment in-place or posts a new comment — silent skip or silent failure is a failing outcome.

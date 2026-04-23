@@ -3044,6 +3044,44 @@
           "dorArtefact": "artefacts/2026-04-23-ci-artefact-attachment/dor/caa.3-context-yml-config-dor.md",
           "prStatus": "none"
         }
+      ],
+      "updatedAt": "2026-04-23T12:00:00Z",
+      "riskAcceptances": [
+        {
+          "id": "RA-caa1-W3",
+          "decision": "MEDIUM finding F-A1 (missing error path for unreadable artefact files) resolved in story artefact (AC4 exit message spec). Accepted at /review pass.",
+          "date": "2026-04-23",
+          "story": "caa.1",
+          "warning": "W3"
+        },
+        {
+          "id": "RA-caa2-W3",
+          "decision": "MEDIUM findings F-A1 (idempotency language) and F-C1 (missing permissions constraint) resolved in caa.2 story artefact. Accepted at /review pass.",
+          "date": "2026-04-23",
+          "story": "caa.2",
+          "warning": "W3"
+        },
+        {
+          "id": "RA-caa2-W5",
+          "decision": "AC1/AC2 live GitHub Actions runtime gaps accepted. Manual Scenario 5 in verification script documents confirmation path.",
+          "date": "2026-04-23",
+          "story": "caa.2",
+          "warning": "W5"
+        },
+        {
+          "id": "RA-caa3-W3",
+          "decision": "MEDIUM finding F-A1 (YAML parsing constraint not explicit) resolved in caa.3 story artefact (Architecture Constraints). Accepted at /review pass.",
+          "date": "2026-04-23",
+          "story": "caa.3",
+          "warning": "W3"
+        },
+        {
+          "id": "RA-all-W4",
+          "decision": "AC verification scripts not expert-reviewed (solo repo). Human tech lead review at draft PR stage is the mitigation. Applies to caa.1, caa.2, caa.3.",
+          "date": "2026-04-23",
+          "stories": ["caa.1", "caa.2", "caa.3"],
+          "warning": "W4"
+        }
       ]
     }
   ],
