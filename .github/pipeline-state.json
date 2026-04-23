@@ -2996,7 +2996,10 @@
           "acVerified": 0,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-23-ci-artefact-attachment/dor/caa.1-collect-flag-dor.md",
-          "prStatus": "none"
+          "prStatus": "none",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/183",
+          "dispatchedAt": "2026-04-23T14:00:00Z",
+          "dispatchTarget": "github-agent"
         },
         {
           "id": "caa.2",
@@ -3019,7 +3022,10 @@
           "acVerified": 0,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-23-ci-artefact-attachment/dor/caa.2-github-actions-adapter-dor.md",
-          "prStatus": "none"
+          "prStatus": "none",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/184",
+          "dispatchedAt": "2026-04-23T14:01:00Z",
+          "dispatchTarget": "github-agent"
         },
         {
           "id": "caa.3",
@@ -3042,10 +3048,13 @@
           "acVerified": 0,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-23-ci-artefact-attachment/dor/caa.3-context-yml-config-dor.md",
-          "prStatus": "none"
+          "prStatus": "none",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/185",
+          "dispatchedAt": "2026-04-23T14:02:00Z",
+          "dispatchTarget": "github-agent"
         }
       ],
-      "updatedAt": "2026-04-23T12:00:00Z",
+      "updatedAt": "2026-04-23T14:02:00Z",
       "riskAcceptances": [
         {
           "id": "RA-caa1-W3",
