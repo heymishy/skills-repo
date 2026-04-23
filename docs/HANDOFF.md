@@ -2,12 +2,13 @@
 
 **Document type:** Enterprise handoff bundle
 **Prepared:** 2026-04-12
+**Updated:** 2026-04-23 — validate-trace.sh improvements: track-aware `check_discovery_exists` (auto-exempts `short`/`defect`/`library`/`spike` tracks from discovery gate); `check_schema_valid` now surfaces all violations inline via `Draft7Validator.iter_errors()`. No artefact chain — committed directly as a governance fix (improvement to existing script, not a new governed artefact type). See Section 8 pending items.
 **Updated:** 2026-04-22 (2) — Cross-dashboard UX consistency delivered: site-nav on all 4 pages, canvas filter persistence + overflow dropdown, MdEditorOverlay Save button (server-gated) on all pages, graceful offline fallback. Review.html latent bugs fixed. Story artefacts updated: cv.1 (AC12–14), dr.1 (AC12), me.1 (AC11–12). Test suites extended: check-me1 18/18, check-cv1 20/20, check-dr1 14/14. See Section 8 pending items.
 **Updated:** 2026-04-22 — me.1 dashboard markdown editor delivered; MdViewer full-screen responsive layout; acc.1 and sr.1 short-tracks completed. See Section 8 pending items.
 **Updated:** 2026-04-21 (2) — Phase 5/6 roadmap published; product/ docs updated with Phase 4 actual delivery scope, enforcement architecture, competitive positioning, and G19 intentional gap note. See Section 8.
 **Updated:** 2026-04-21 (1) — Phase 4 fully DoD-complete — all 27 stories including E5 Platform Observability & Measurement. PRs #176 and #177 merged and traced. See Sections 6.8–6.15 and Phase 4 story tables.
 **Prepared by:** Platform maintainer (Hamish)
-**Status:** Phases 1–4 DoD-complete. Phase 5 (WS0–WS7) and Phase 6 (WS8–WS11) roadmapped. src.1 SKILL.md additions pending draft PR #178.
+**Status:** Phases 1–4 DoD-complete. Phase 5 (WS0–WS7) and Phase 6 (WS8–WS11) roadmapped. src.1 implementation draft PR #182 pending CI pass + merge. src.1 SKILL.md-only additions pending draft PR #178.
 
 ---
 
@@ -54,7 +55,13 @@ Four product-context files were updated to reflect Phase 4 delivery actuals and 
 - **acc.1 — Artefact-first governance gate (2026-04-21):** `tests/check-artefact-coverage.js` live in CI. `artefact-coverage-exemptions.json` with 25 baseline exemptions. 8/8 self-tests pass.
 - **sr.1 — Status report section headers extracted to template (2026-04-21):** `.github/templates/status-report.md` created. `scripts/generate-status-report.js` reads headers from template with graceful fallback. 5/5 self-tests pass.
 
-### Pending items as of 2026-04-22
+### Delivered since 2026-04-22
+
+- **validate-trace.sh — track-aware discovery check + schema violation diagnostics (2026-04-23):** `check_discovery_exists` rewritten as a Python subprocess reading `track` from `pipeline-state.json`; features with `track: short`, `defect`, `library`, or `spike` are auto-exempted from the `discovery_exists` gate — no manual `reference_dirs` maintenance needed for pipeline-tracked features. Failure messages include track name and registration status. `check_schema_valid` upgraded from `jsonschema.validate()` (first-error-only, silenced) to `Draft7Validator.iter_errors()` — prints all violations with field path + message inline in CI log. `.github/trace-validation.yml` gains `tracks_without_discovery` config list; `2026-04-21-skill-routing-cli-tools` removed from `reference_dirs`. **No dedicated artefact chain** — committed directly to master as a governance fix to an existing script (same precedent as 2026-04-20 slug/id fix).
+
+### Pending items as of 2026-04-23
+
+- **src.1 — skill-routing-cli-integration implementation** — Draft PR #182 (`feature/src.1-skill-routing-cli-integration`) rebased onto master 2026-04-23; schema violations that caused CI failure resolved. Awaiting CI pass (trace validation, schema check) and merge. Two pre-existing assurance-gate failures (`workflow-yaml-uses-pinned-immutable-ref`, `download-uses-https-not-http`) are unrelated to this story and will continue to fail until resolved separately.
 
 - **src.1 SKILL.md additions** — `workflow/SKILL.md` (generate-status-report.js callout at session start) and `improve/SKILL.md` (record-benefit-comparison.js Benefit Measurement callout). Draft PR #178 open — awaiting review and merge. Platform change policy prohibits direct commit to master for SKILL.md files.
 
