@@ -67,6 +67,14 @@ jobs:
           echo "ci_platform=${CI_PLATFORM}" >> "$GITHUB_OUTPUT"
           echo "feature_slug_override=${FEATURE_SLUG_OVERRIDE}" >> "$GITHUB_OUTPUT"
 
+      - name: Run test suite
+        id: test_suite
+        if: steps.ci_attach_cfg.outputs.ci_attachment == 'true'
+        continue-on-error: true
+        run: |
+          npm test 2>&1 | tee .ci-test-results.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
       - name: Upload trace artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -279,6 +287,44 @@ jobs:
               } catch (_) { return '⚠ not found'; }
             }
 
+            // ── Parse test results from CI run ──
+            const testResultsByFile = {};
+            if (fs.existsSync('.ci-test-results.txt')) {
+              fs.readFileSync('.ci-test-results.txt', 'utf8').split('\n').forEach(line => {
+                const m = line.match(/\[(\w+)\]\s+Results:\s*(\d+)\s+passed,\s*(\d+)\s+failed/);
+                if (m) testResultsByFile[m[1]] = { passed: parseInt(m[2]), failed: parseInt(m[3]) };
+              });
+            }
+
+            // ── Load pipeline-state stories for this feature ──
+            let pipelineStories = [];
+            if (slug && fs.existsSync('.github/pipeline-state.json')) {
+              try {
+                const st = JSON.parse(fs.readFileSync('.github/pipeline-state.json', 'utf8'));
+                const feat = st.features && st.features.find(f => f.slug === slug);
+                pipelineStories = (feat && feat.stories) || [];
+              } catch (_) {}
+            }
+
+            // ── Parse Acceptance Criteria from a story .md file ──
+            function parseACs(filePath) {
+              try {
+                const content = fs.readFileSync(filePath, 'utf8');
+                const idx = content.indexOf('## Acceptance Criteria');
+                if (idx === -1) return [];
+                const section = content.slice(idx);
+                const nextH2 = section.indexOf('\n## ', 3);
+                const acBlock = nextH2 > -1 ? section.slice(0, nextH2) : section;
+                const results = [];
+                const acRegex = /\*\*(AC\d+):\*\*\s*([\s\S]*?)(?=\*\*AC\d+:\*\*|$)/g;
+                let match;
+                while ((match = acRegex.exec(acBlock)) !== null) {
+                  results.push({ id: match[1], text: match[2].replace(/\s+/g, ' ').trim() });
+                }
+                return results;
+              } catch (_) { return []; }
+            }
+
             // ── Build comment sections ──
             const verdictIcon = verdict === 'pass' ? '✅' : verdict === 'unknown' ? '⏳' : '❌';
 
@@ -320,6 +366,68 @@ jobs:
               const hash = g.sha256 ? `\`${g.sha256.slice(0,12)}…\`` : '—';
               return `| [${name}](${fileUrl}) | ${hash} |`;
             }).join('\n');
+
+            // ── Build AC verification section ──
+            let acSection = '';
+            if (pipelineStories.length > 0) {
+              const acBlocks = [];
+              for (const story of pipelineStories) {
+                const storyACs = parseACs(story.artefact);
+                // caa.1 → caa1, caa.2 → caa2 etc (normalize ID to match test suite tag)
+                const suiteKey = (story.id || story.slug || '').replace(/\./g, '').replace(/-/g, '').toLowerCase();
+                const suiteResult = testResultsByFile[suiteKey];
+                const allVerified = story.acVerified != null && story.acTotal != null && story.acVerified === story.acTotal;
+                const statusIcon = (() => {
+                  if (allVerified) return '✅';
+                  if (suiteResult && suiteResult.failed === 0) return '✅';
+                  if (suiteResult && suiteResult.failed > 0) return '⚠️';
+                  return '—';
+                })();
+                let issueLink = '';
+                let issueAcCheck = '';
+                if (story.issueUrl) {
+                  const issueNum = parseInt(story.issueUrl.split('/').pop());
+                  issueLink = ` · [Issue #${issueNum}](${story.issueUrl})`;
+                  try {
+                    const { data: issue } = await github.rest.issues.get({
+                      owner: context.repo.owner,
+                      repo:  context.repo.repo,
+                      issue_number: issueNum,
+                    });
+                    const hasACs = !!(issue.body && (
+                      issue.body.includes('Acceptance Criteria') || issue.body.includes('AC1:')
+                    ));
+                    issueAcCheck = hasACs ? ' · ACs in issue ✅' : ' · ⚠️ ACs not found in issue';
+                  } catch (_) {}
+                }
+                const testLine = suiteResult
+                  ? `Tests (this run): **${suiteResult.passed} passed, ${suiteResult.failed} failed**`
+                  : (story.testPlan && story.testPlan.passing != null)
+                    ? `Tests (pipeline-state): **${story.testPlan.passing}/${story.testPlan.totalTests} passing**`
+                    : '';
+                const acRows = storyACs.map(ac => {
+                  const short = ac.text.length > 90 ? ac.text.slice(0, 90) + '…' : ac.text;
+                  return `| \`${ac.id}\` | ${short} | ${statusIcon} |`;
+                }).join('\n');
+                const parts = [
+                  `**\`${story.id}\` — ${story.title || story.id}**${issueLink}${issueAcCheck}`,
+                  ``,
+                  `| AC | Description | Status |`,
+                  `|----|-------------|--------|`,
+                  acRows || `| _(no ACs extracted)_ | | — |`,
+                ];
+                if (testLine) parts.push(``, testLine);
+                acBlocks.push(parts.join('\n'));
+              }
+              acSection = [
+                `### ✅ Acceptance Criteria`,
+                ``,
+                `> ACs extracted from story artefacts. Status: ✅ = all verified at DoD or all tests passed this run. Issue links confirm ACs were published in the dispatch record.`,
+                ``,
+                acBlocks.join('\n\n---\n\n'),
+                ``,
+              ].join('\n');
+            }
 
             const body = [
               `## 🔐 Governed Delivery Audit Record`,
@@ -366,6 +474,7 @@ jobs:
               ``,
               `---`,
               ``,
+              ...(acSection ? [acSection, `---`, ``] : []),
               `### 🔍 How to verify this independently`,
               ``,
               `1. **Click any artefact link** — it opens the exact file version used, pinned to commit \`${shortSha}\``,
