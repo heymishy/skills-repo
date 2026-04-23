@@ -2847,7 +2847,7 @@
     {
       "slug": "2026-04-23-ci-artefact-attachment",
       "name": "CI-Native Artefact Attachment (WS0.6)",
-      "stage": "definition",
+      "stage": "review",
       "health": "green",
       "discoveryStatus": "approved",
       "roadmapRef": "Phase 5 WS0.6 / Phase 4 item 4.B.9",
@@ -2873,13 +2873,118 @@
           "MM2-zero-dep"
         ]
       },
+      "guardrails": [
+        {
+          "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "No credentials, tokens, or personal data in committed files",
+          "status": "met",
+          "evidence": "caa.1 AC1 excludes pipeline-state.json/context.yml from staging; caa.2 NFR mandates github.token only; caa.3 audit: block holds config values only",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-23T00:00:00Z"
+        },
+        {
+          "id": "MC-CORRECT-02",
+          "category": "mandatory-constraint",
+          "label": "Fields written to pipeline-state.json must exist in schema",
+          "status": "met",
+          "evidence": "Feature implementation writes nothing to pipeline-state.json at runtime; audit: block lives in context.yml",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-23T00:00:00Z"
+        },
+        {
+          "id": "ADR-004",
+          "category": "adr",
+          "label": "context.yml is the single config source of truth",
+          "status": "met",
+          "evidence": "caa.3 is the config harness story; audit: ci_attachment + ci_platform are the sole config surface",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-23T00:00:00Z"
+        },
+        {
+          "id": "ADR-009",
+          "category": "adr",
+          "label": "Evaluation and write-back workflows must be separate triggers with separate permission scopes",
+          "status": "met",
+          "evidence": "caa.2 AC5 prohibits contents:write on evaluator workflow; Architecture Constraints cite ADR-009",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-23T00:00:00Z"
+        },
+        {
+          "id": "ADR-010",
+          "category": "adr",
+          "label": "CI audit records must be persisted to main post-merge, not to feature branches",
+          "status": "met",
+          "evidence": "Upload targets GitHub Actions artifact store (not branch commit); post-merge write workflow is explicitly out of scope for caa.2",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-23T00:00:00Z"
+        },
+        {
+          "id": "PAT-08",
+          "category": "pattern",
+          "label": "Two-workflow CI audit pattern: evaluate on pull_request (contents:read) + persist post-merge to main (contents:write)",
+          "status": "met",
+          "evidence": "caa.2 Architecture Constraints cite PAT-08 explicitly; assurance-gate.yml permissions restricted to contents:read",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-23T00:00:00Z"
+        },
+        {
+          "id": "PAT-05",
+          "category": "pattern",
+          "label": "Config reading via context.yml",
+          "status": "met",
+          "evidence": "caa.3 implements config gate reading audit.ci_attachment and audit.ci_platform from context.yml",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-23T00:00:00Z"
+        },
+        {
+          "id": "ADR-012",
+          "category": "adr",
+          "label": "Platform-agnostic architecture: prefer portable multi-VCS implementations over vendor-specific optimisations",
+          "status": "met",
+          "evidence": "scripts/ci-adapters/ interface pattern; --collect flag is CI-agnostic; ci_platform routing is additive",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-23T00:00:00Z"
+        },
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: new src/ modules, governance check scripts, etc. require a story artefact before or alongside the commit",
+          "status": "met",
+          "evidence": "caa.1/caa.2/caa.3 story artefacts committed before implementation",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-23T00:00:00Z"
+        },
+        {
+          "id": "MC-SEC-01",
+          "category": "mandatory-constraint",
+          "label": "No user-supplied content in innerHTML without sanitisation",
+          "status": "na",
+          "evidence": "Feature has no dashboard or viz changes",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-23T00:00:00Z"
+        },
+        {
+          "id": "MC-SEC-03",
+          "category": "mandatory-constraint",
+          "label": "Viz reads local JSON only — no external fetch calls",
+          "status": "na",
+          "evidence": "Feature has no viz changes",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-23T00:00:00Z"
+        }
+      ],
       "stories": [
         {
           "id": "caa.1",
           "title": "Add --collect flag to trace-report.js: CI-platform-agnostic artefact assembly",
           "complexity": 1,
           "artefact": "artefacts/2026-04-23-ci-artefact-attachment/stories/caa.1-collect-flag.md",
-          "stage": "definition",
+          "stage": "review",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 1,
+          "reviewArtefact": "artefacts/2026-04-23-ci-artefact-attachment/review/caa.1-review-1.md",
           "prStatus": "none"
         },
         {
@@ -2887,7 +2992,11 @@
           "title": "GitHub Actions adapter: upload artefact bundle and post summary link",
           "complexity": 2,
           "artefact": "artefacts/2026-04-23-ci-artefact-attachment/stories/caa.2-github-actions-adapter.md",
-          "stage": "definition",
+          "stage": "review",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 2,
+          "reviewArtefact": "artefacts/2026-04-23-ci-artefact-attachment/review/caa.2-review-1.md",
           "prStatus": "none"
         },
         {
@@ -2895,7 +3004,11 @@
           "title": "context.yml opt-in gate and ci_platform adapter routing",
           "complexity": 1,
           "artefact": "artefacts/2026-04-23-ci-artefact-attachment/stories/caa.3-context-yml-config.md",
-          "stage": "definition",
+          "stage": "review",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 1,
+          "reviewArtefact": "artefacts/2026-04-23-ci-artefact-attachment/review/caa.3-review-1.md",
           "prStatus": "none"
         }
       ]
