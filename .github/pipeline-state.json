@@ -3010,7 +3010,7 @@
           "title": "GitHub Actions adapter: upload artefact bundle and post summary link",
           "complexity": 2,
           "artefact": "artefacts/2026-04-23-ci-artefact-attachment/stories/caa.2-github-actions-adapter.md",
-          "stage": "definition-of-ready",
+          "stage": "subagent-execution",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -3058,7 +3058,7 @@
           "dispatchTarget": "github-agent"
         }
       ],
-      "updatedAt": "2026-04-23T15:00:00Z",
+      "updatedAt": "2026-04-23T15:30:00Z",
       "riskAcceptances": [
         {
           "id": "RA-caa1-W3",
