@@ -258,6 +258,7 @@ if (require.main === module) {
   const statePath = path.join(rootDir, '.github', 'pipeline-state.json');
   const args      = process.argv.slice(2);
   const isWeekly  = args.includes('--weekly');
+  // --daily is the default; accepted as an explicit flag but has no effect
   const outIdx    = args.indexOf('--output');
   const outPath   = outIdx !== -1 ? args[outIdx + 1] : null;
 
