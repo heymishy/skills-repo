@@ -2714,24 +2714,24 @@
       "slug": "2026-04-21-skill-routing-cli-tools",
       "name": "Skill routing — integrate CLI observability tools into /workflow and /improve",
       "track": "short",
-      "stage": "branch-setup",
-      "health": "green",
+      "stage": "definition-of-done",
+      "health": "amber",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "discoveryStatus": "short-track",
       "benefitMetricStatus": "short-track",
-      "updatedAt": "2026-04-23T08:27:16.972Z",
+      "updatedAt": "2026-04-23T00:00:00Z",
       "metrics": [
         {
           "id": "M1",
           "name": "CLI observability tool discovery rate — proportion of pipeline sessions where operator uses status report or benefit comparison tool",
           "target": "Both tools referenced by skills; operator directed to them through normal pipeline flow",
           "baseline": "0% — neither tool is referenced by any skill today",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "tooling-deployed",
+          "lastMeasured": "2026-04-23",
+          "evidence": "workflow SKILL.md and improve SKILL.md both merged (PR #182). Both CLI tools now routed via skill instructions. Operator measurement pending first real session.",
           "contributingStories": [
             "src.1-skill-routing-cli-integration"
           ]
@@ -2777,7 +2777,10 @@
             }
           ]
         }
-      ]
+      ],
+      "dodStatus": "complete-with-deviations",
+      "prStatus": "merged",
+      "releaseReady": false
     },
     {
       "slug": "2026-04-22-dashboard-review",
