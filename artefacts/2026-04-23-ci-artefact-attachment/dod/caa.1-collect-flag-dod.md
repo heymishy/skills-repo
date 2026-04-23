@@ -76,7 +76,23 @@ PR #186 merged with zero file changes. The GitHub Copilot coding agent committed
 
 ## Outcome
 
-**INCOMPLETE**
+**INCOMPLETE** (original PR #186)
+
+---
+
+## Re-delivery — PR #190 (2026-04-23)
+
+**All ACs delivered.** Full implementation landed in PR #190 (VS Code inner loop reimplementation). `tests/check-caa1-collect.js`: 40/40 assertions passing. `dodStatus` set to `complete` in `pipeline-state.json`.
+
+---
+
+## Smoke-test finding — PR #191 (2026-04-23)
+
+**Finding:** Running `node scripts/trace-report.js --collect` without `--feature` in CI failed with `No feature resolved` because there are 12 non-archived features in `pipeline-state.json`. `resolveActiveFeature` requires exactly one (AC3).
+
+**Fix applied in `.github/workflows/assurance-gate.yml`:** Added `Resolve active feature` step (id: `resolve_feature`) that uses `node` to pick the last non-completed feature (falling back to the last non-archived feature). The `Collect governed artefacts` step now passes `--feature ${{ steps.resolve_feature.outputs.slug }}` explicitly, so `resolveActiveFeature` uses the explicit-slug path (no auto-resolve needed in CI).
+
+**AC3 behavior unchanged:** The auto-resolve logic in `resolveActiveFeature` is correct as specified. The workflow works around multi-feature repos by always supplying `--feature`. No code change to `scripts/trace-report.js` or tests required.
 
 **Follow-up actions:**
 1. Re-open or create a new implementation issue for caa.1 — coding agent must implement `trace-report.js --collect` flag, staging directory, and `manifest.json` as specified by all 6 ACs.
