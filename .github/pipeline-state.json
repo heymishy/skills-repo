@@ -2847,7 +2847,7 @@
     {
       "slug": "2026-04-23-ci-artefact-attachment",
       "name": "CI-Native Artefact Attachment (WS0.6)",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
       "discoveryStatus": "approved",
       "roadmapRef": "Phase 5 WS0.6 / Phase 4 item 4.B.9",
@@ -2980,7 +2980,8 @@
           "title": "Add --collect flag to trace-report.js: CI-platform-agnostic artefact assembly",
           "complexity": 1,
           "artefact": "artefacts/2026-04-23-ci-artefact-attachment/stories/caa.1-collect-flag.md",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
+          "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 1,
@@ -2993,7 +2994,8 @@
           },
           "acTotal": 6,
           "acVerified": 0,
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-23-ci-artefact-attachment/dor/caa.1-collect-flag-dor.md",
           "prStatus": "none"
         },
         {
@@ -3001,7 +3003,8 @@
           "title": "GitHub Actions adapter: upload artefact bundle and post summary link",
           "complexity": 2,
           "artefact": "artefacts/2026-04-23-ci-artefact-attachment/stories/caa.2-github-actions-adapter.md",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
+          "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 2,
@@ -3014,7 +3017,8 @@
           },
           "acTotal": 5,
           "acVerified": 0,
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-23-ci-artefact-attachment/dor/caa.2-github-actions-adapter-dor.md",
           "prStatus": "none"
         },
         {
@@ -3022,7 +3026,8 @@
           "title": "context.yml opt-in gate and ci_platform adapter routing",
           "complexity": 1,
           "artefact": "artefacts/2026-04-23-ci-artefact-attachment/stories/caa.3-context-yml-config.md",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
+          "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 1,
@@ -3035,7 +3040,8 @@
           },
           "acTotal": 6,
           "acVerified": 0,
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-04-23-ci-artefact-attachment/dor/caa.3-context-yml-config-dor.md",
           "prStatus": "none"
         }
       ]
