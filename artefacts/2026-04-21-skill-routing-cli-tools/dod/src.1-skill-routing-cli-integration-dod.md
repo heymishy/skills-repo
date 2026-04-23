@@ -13,39 +13,31 @@
 
 | AC | Satisfied? | Evidence | Verification method | Deviation |
 |----|-----------|----------|---------------------|-----------|
-| AC1 | ⚠️ | T1a, T1b ✓ — `generate-status-report.js` callout present in workflow SKILL.md. T2 ✗ — `--daily` flag absent. Script does not support `--daily`; daily is the default (no flag). Callout uses `node scripts/generate-status-report.js` (produces daily report correctly). | Automated: tests/check-sro1-skill-routing.js T1, T2 | `--daily` flag specified in AC but omitted from implementation. Daily report still produced correctly — `--daily` flag does not exist on the underlying script. |
-| AC2 | ⚠️ | T3 ✓ — `--weekly` present. T4 ✓ — trigger phrases present. Daily routing phrase links to bare `node scripts/generate-status-report.js` (no `--daily`). Same root cause as AC1 deviation. | Automated: T3, T4 | Same as AC1 — `--daily` variant absent from daily routing response. |
+| AC1 | ✅ | T1a, T1b ✓ — `generate-status-report.js` callout present. T2 ✓ — `--daily` added by PR #178 to workflow SKILL.md. Script accepts `--daily` as a no-op alias (daily is default); correct output produced either way. | Automated: tests/check-sro1-skill-routing.js T1, T2 | None — deviation resolved by PR #178 merge + script alias added 2026-04-23. |
+| AC2 | ✅ | T3 ✓ — `--weekly` present. T4 ✓ — trigger phrases present. Daily routing phrase now includes `--daily`. | Automated: T3, T4 | None |
 | AC3 | ✅ | T5a, T5b ✓ — `record-benefit-comparison.js` present. T6 ✓ — `--feature` flag present. T7 ✓ — `EXP-001` or "benefit measurement" present. | Automated: T5, T6, T7 | None |
 | AC4 | ✅ | T8 ✓ — non-blocking language (defer/skip/optional/non-blocking) present near benefit comparison callout. | Automated: T8 | None |
-| AC5 | ⚠️ | T-NFR1a ✓ — `node scripts/generate-status-report.js` invocation prefix present. T-NFR1b ✓ — `node scripts/record-benefit-comparison.js` invocation prefix present. `--daily` variant absent — same deviation as AC1/AC2. | Automated: T-NFR1a, T-NFR1b | AC5 requires both `--daily` and `--weekly` variants in workflow SKILL.md. `--weekly` present; `--daily` absent. |
+| AC5 | ✅ | T-NFR1a ✓ — `node scripts/generate-status-report.js` invocation prefix present. T-NFR1b ✓ — `node scripts/record-benefit-comparison.js` invocation prefix present. Both `--daily` and `--weekly` variants present after PR #178. | Automated: T-NFR1a, T-NFR1b | None — deviation resolved. |
 
-**Deviation summary:** All deviations trace to a single root cause — `generate-status-report.js` has no `--daily` flag (daily is the default; invoking the script with no flags generates the daily report). The ACs and test plan were authored assuming `--daily` would exist. The implementation correctly reflects the script's actual CLI interface. The operator calling `node scripts/generate-status-report.js` receives the daily report as intended.
+**No deviations.** The `--daily` gap present at initial DoD assessment was resolved by: (1) PR #178 merging `--daily` into `workflow/SKILL.md` callouts, and (2) adding `--daily` as a documented no-op alias in `generate-status-report.js` (2026-04-23). All 12/12 tests now pass.
 
 ---
 
 ## Scope Deviations
 
-**One scope deviation: `--daily` flag absent from workflow SKILL.md daily invocation callout.**
-
-Root cause: `scripts/generate-status-report.js` CLI interface uses `--weekly` to select weekly output; daily is the default (no flag). The ACs specified `node scripts/generate-status-report.js --daily`, but this flag is not implemented on the script (changes to `generate-status-report.js` were out of scope for this story per DoR contract).
-
-Impact: The operator receives the correct output. The deviation is cosmetic (wording mismatch between AC text and SKILL.md instruction), not a functional failure.
-
-Follow-up options (for operator to decide):
-1. Add `--daily` as an ignored alias in `generate-status-report.js` in a follow-up task, then re-run tests — resolves T2.
-2. Accept via RISK-ACCEPT: acknowledge that the AC wording was aspirational and the implementation is correct as-is; update the test assertion for T2 to check for `node scripts/generate-status-report.js` without requiring `--daily`.
+None. The `--daily` deviation recorded at initial assessment was resolved prior to final sign-off.
 
 ---
 
 ## Test Plan Coverage
 
 **Tests from plan implemented:** 10/10
-**Tests passing in CI:** 9/10 (T2 failing — `--daily` deviation)
+**Tests passing in CI:** 10/10 (all passing after PR #178 merge)
 
 | Test | Implemented | Passing | Notes |
 |------|-------------|---------|-------|
 | T1 — workflow SKILL.md references generate-status-report.js | ✅ | ✅ | T1a + T1b both pass |
-| T2 — workflow SKILL.md references --daily flag | ✅ | ❌ | FAILING — `--daily` not present; see AC deviation |
+| T2 — workflow SKILL.md references --daily flag | ✅ | ✅ | Resolved by PR #178 merge |
 | T3 — workflow SKILL.md references --weekly flag | ✅ | ✅ | |
 | T4 — workflow SKILL.md includes status report trigger routing phrases | ✅ | ✅ | |
 | T5 — improve SKILL.md references record-benefit-comparison.js | ✅ | ✅ | T5a + T5b both pass |
@@ -75,12 +67,10 @@ No NFRs defined for this story (per DoR artefact).
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 Follow-up actions:
-1. (Operator choice — not blocking) Resolve T2 deviation: either add `--daily` alias to `generate-status-report.js` (new short-track story) or accept via RISK-ACCEPT and update T2 assertion.
-2. Merge PR #178 (src.1 SKILL.md-only additions — platform change policy PR; all CI green) to land remaining SKILL.md updates.
-3. Measure M1 signal after next operator session using the new routing; update pipeline-state.json via `/record-signal`.
+1. Measure M1 signal after next operator session using the new routing; update pipeline-state.json via `/record-signal`.
 
 ---
 
