@@ -52,6 +52,18 @@ jobs:
           REGULATED: ${{ steps.regulated.outputs.regulated }}
         run: node .github/scripts/run-assurance-gate.js
 
+      - name: Read ci-artefact-attachment config
+        id: ci_attach_cfg
+        run: |
+          CI_ATTACHMENT=false
+          CI_PLATFORM=github-actions
+          if [ -f ".github/context.yml" ]; then
+            CI_ATTACHMENT=$(yq e '.audit.ci_attachment // false' .github/context.yml 2>/dev/null || echo "false")
+            CI_PLATFORM=$(yq e '.audit.ci_platform // "github-actions"' .github/context.yml 2>/dev/null || echo "github-actions")
+          fi
+          echo "ci_attachment=${CI_ATTACHMENT}" >> "$GITHUB_OUTPUT"
+          echo "ci_platform=${CI_PLATFORM}" >> "$GITHUB_OUTPUT"
+
       - name: Upload trace artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -104,3 +116,57 @@ jobs:
               issue_number: context.issue.number,
               body,
             });
+
+      - name: Collect governed artefacts
+        id: collect
+        if: steps.ci_attach_cfg.outputs.ci_attachment == 'true'
+        run: node scripts/trace-report.js --collect
+
+      - name: Upload governed artefact bundle
+        id: upload_bundle
+        if: steps.ci_attach_cfg.outputs.ci_attachment == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: governed-artefacts-${{ github.run_id }}
+          path: .ci-artefact-staging/
+          retention-days: 7
+
+      - name: Post governed artefact chain comment
+        if: always() && steps.ci_attach_cfg.outputs.ci_attachment == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const artifactName = `governed-artefacts-${{ github.run_id }}`;
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${{ github.run_id }}`;
+            const body = [
+              '## Governed artefact chain',
+              '',
+              `Artefact bundle **${artifactName}** collected for this PR.`,
+              '',
+              `**Download link:** ${runUrl}`,
+              '',
+              '_Posted by the ci-artefact-attachment adapter (github-actions)._',
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner:        context.repo.owner,
+              repo:         context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body && c.body.includes('Governed artefact chain'));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner:      context.repo.owner,
+                repo:       context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner:        context.repo.owner,
+                repo:         context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
