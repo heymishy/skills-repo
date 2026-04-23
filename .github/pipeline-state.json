@@ -2847,7 +2847,7 @@
     {
       "slug": "2026-04-23-ci-artefact-attachment",
       "name": "CI-Native Artefact Attachment (WS0.6)",
-      "stage": "review",
+      "stage": "test-plan",
       "health": "green",
       "discoveryStatus": "approved",
       "roadmapRef": "Phase 5 WS0.6 / Phase 4 item 4.B.9",
@@ -2980,11 +2980,20 @@
           "title": "Add --collect flag to trace-report.js: CI-platform-agnostic artefact assembly",
           "complexity": 1,
           "artefact": "artefacts/2026-04-23-ci-artefact-attachment/stories/caa.1-collect-flag.md",
-          "stage": "review",
+          "stage": "test-plan",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 1,
           "reviewArtefact": "artefacts/2026-04-23-ci-artefact-attachment/review/caa.1-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-04-23-ci-artefact-attachment/test-plans/caa.1-collect-flag-test-plan.md",
+            "totalTests": 18,
+            "passing": 0
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "dorStatus": "not-started",
           "prStatus": "none"
         },
         {
@@ -2992,11 +3001,20 @@
           "title": "GitHub Actions adapter: upload artefact bundle and post summary link",
           "complexity": 2,
           "artefact": "artefacts/2026-04-23-ci-artefact-attachment/stories/caa.2-github-actions-adapter.md",
-          "stage": "review",
+          "stage": "test-plan",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 2,
           "reviewArtefact": "artefacts/2026-04-23-ci-artefact-attachment/review/caa.2-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-04-23-ci-artefact-attachment/test-plans/caa.2-github-actions-adapter-test-plan.md",
+            "totalTests": 10,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "dorStatus": "not-started",
           "prStatus": "none"
         },
         {
@@ -3004,11 +3022,20 @@
           "title": "context.yml opt-in gate and ci_platform adapter routing",
           "complexity": 1,
           "artefact": "artefacts/2026-04-23-ci-artefact-attachment/stories/caa.3-context-yml-config.md",
-          "stage": "review",
+          "stage": "test-plan",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 1,
           "reviewArtefact": "artefacts/2026-04-23-ci-artefact-attachment/review/caa.3-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-04-23-ci-artefact-attachment/test-plans/caa.3-context-yml-config-test-plan.md",
+            "totalTests": 11,
+            "passing": 0
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "dorStatus": "not-started",
           "prStatus": "none"
         }
       ]
