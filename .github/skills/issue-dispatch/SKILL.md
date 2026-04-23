@@ -197,6 +197,31 @@ Commit the updated `pipeline-state.json` with message:
 
 ---
 
+## Post-dispatch monitoring — REQUIRED when dispatchTarget is github-agent
+
+> **This check has prevented empty-PR merges three times (D7, D8, D18 in `workspace/learnings.md`). Do not skip it.**
+
+The GitHub Copilot SWE agent (GitHub Actions) consistently produces an "Initial plan" commit and then stops — opening a PR with zero file changes. This happens even with rich `--target github-agent` issue bodies. The pattern is confirmed across multiple sessions and multiple stories.
+
+After the agent opens a PR:
+
+1. **Before reading the PR description or checking ACs, check the diff:**
+   ```bash
+   gh pr view <PR_NUMBER> --json additions,deletions,changedFiles --jq '{additions, deletions, changedFiles}'
+   ```
+   - `changedFiles > 0` — agent produced implementation files. Proceed with normal review.
+   - `changedFiles: 0` — agent produced only a plan comment with no code. **Do not merge.**
+
+2. **If `changedFiles: 0`:**
+   - The PR description may look complete (ACs ticked, plan outlined) — this is the plan comment, not evidence that code was written.
+   - Do not update `pipeline-state.json` with `acVerified` counts.
+   - Re-dispatch the story to the VS Code agent for an interactive implementation session.
+   - See D18 in `workspace/learnings.md` for full root cause analysis and re-dispatch guidance.
+
+3. **Prevention — pre-commit failing test stubs before GitHub SWE agent dispatch:** Commit the story's test file (with `test.todo()` or empty test functions) to master before creating the dispatch issue. A red starting point gives the agent a concrete TDD entry condition and significantly reduces the empty-PR risk.
+
+---
+
 ## Delivery order note
 
 Dispatch issues in delivery order as recorded in `workspace/state.json`
