@@ -1468,9 +1468,9 @@ At E2, classify the outer loop character:
 
 ---
 
-## Dashboard UX consistency session � 2026-04-22 22:30
+## Dashboard UX consistency session � 2026-04-22 22:30
 
-### Observed � 2026-04-22 22:30
+### Observed � 2026-04-22 22:30
 
 **Circumstance:** Multi-session delivery of cross-dashboard UX consistency (site-nav, callSave, md-editor, filter persistence). Two context-exhaustion events across three sessions.
 
@@ -1478,11 +1478,11 @@ At E2, classify the outer loop character:
 
 - **callSave 403 root cause pattern:** artefact-fetcher.js stores paths as bare slugs (2026-04-22-feature/stories/story.md). Server uses path.join(REPO_ROOT, filePath) so bare slugs resolve outside rtefacts/ ? 403. Fix is one normalisation line at the top of callSave in each consumer. Always prefix-normalise before sending to the save endpoint.
 
-- **Backfill ACs for previously-delivered behaviour:** When context exhaustion ends a session mid-delivery, the completed code may not have corresponding ACs in the story artefact. On resumption, always audit the story artefact against what was actually shipped � missing ACs (AC13/AC14 for me.1 MdViewer layout and link interception) can silently escape governance unless explicitly checked.
+- **Backfill ACs for previously-delivered behaviour:** When context exhaustion ends a session mid-delivery, the completed code may not have corresponding ACs in the story artefact. On resumption, always audit the story artefact against what was actually shipped � missing ACs (AC13/AC14 for me.1 MdViewer layout and link interception) can silently escape governance unless explicitly checked.
 
 - **Governance test count drift:** Artefact test plans can accumulate T-entries across sessions, but the .js governance script must be updated in the same session or the next-session summary will show a count mismatch. Keep the .js script in sync with the test plan as each new T-entry is written.
 
-- **Multi-page shared callSave pattern:** When the same server-integration code is needed across 4 HTML files, write it once, document the canonical form, then apply identically. The path-normalisation line was applied identically to all 4 dashboards � no per-file variation. This is the correct pattern for cross-cutting fixes.
+- **Multi-page shared callSave pattern:** When the same server-integration code is needed across 4 HTML files, write it once, document the canonical form, then apply identically. The path-normalisation line was applied identically to all 4 dashboards � no per-file variation. This is the correct pattern for cross-cutting fixes.
 
 
 
@@ -1504,10 +1504,55 @@ At E2, classify the outer loop character:
 
 ### Learning 2: Trace checks must be pipeline-track aware — not just a static skip-list
 
-**Observed:** The discovery_exists check required a manual entry in eference_dirs in .github/trace-validation.yml for every short-track or non-standard feature. The exemption mechanism is a manual static list that requires an operator action every time a new short-track feature is created. A missed entry creates a false CI failure.
+**Observed:** The discovery_exists check required a manual entry in 
+eference_dirs in .github/trace-validation.yml for every short-track or non-standard feature. The exemption mechanism is a manual static list that requires an operator action every time a new short-track feature is created. A missed entry creates a false CI failure.
 
 **Root problem:** The check was designed only for the standard full pipeline (discovery -> benefit-metric -> story). It had no awareness of the 	rack field in pipeline-state.json which records the pipeline variant each feature follows. Short-track, defect, library, and spike features legitimately have no discovery.md — this is by design, not a gap.
 
-**Improvement:** check_discovery_exists should load 	rack from pipeline-state.json for each feature directory and auto-exempt features whose track is short, defect, library, or spike — without needing a manual eference_dirs entry. The configurable 	racks_without_discovery list in 	race-validation.yml makes the policy explicit and extensible.
+**Improvement:** check_discovery_exists should load 	rack from pipeline-state.json for each feature directory and auto-exempt features whose track is short, defect, library, or spike — without needing a manual 
+eference_dirs entry. The configurable 	racks_without_discovery list in 	race-validation.yml makes the policy explicit and extensible.
 
 **Rule:** Pipeline governance checks should read the pipeline's own metadata (pipeline-state.json) to understand what rules apply to each feature, rather than maintaining a parallel manual exemption list that duplicates that metadata.
+
+---
+
+## D18 — GitHub Copilot coding agent (SWE agent) empty PR pattern — 3rd occurrence; pre-merge diff check is the required prevention gate
+
+**Date:** 2026-04-23
+**Observed at:** CAA feature — caa.1 (PR #186), caa.2 (PR #188), caa.3 (PR #189)
+**Previous occurrences:** D7 (spc.1–spc.5, `--target vscode`), D8 (p3.3/p3.13, `--target github-agent`)
+**Severity:** HIGH — all 3 stories merged with 0 file changes; feature scope undelivered; DoD INCOMPLETE for all 3
+
+**What happened:** caa.1, caa.2, and caa.3 were dispatched with `--target github-agent` (rich inlined issue bodies — full AC lists, task breakdowns, file touchpoints, non-negotiable rules). The GitHub Copilot SWE agent created branches, wrote "Initial plan" commit messages, opened PRs, and **made zero file changes**. All 3 PRs were reviewed and merged. Pipeline state was manually updated with `acVerified: 6/6`, `5/5`, `6/6` respectively — with no code evidence for any AC.
+
+**This is the 3rd occurrence of the same pattern.** D7 was attributed to `--target vscode` minimal bodies. D8 confirmed the pattern persists with `--target github-agent` rich bodies. D18 confirms it is not an issue body problem — the agent structure itself is the constraint.
+
+**Why the D8 action items did not prevent D18:**
+D8 recorded three prevention mechanisms: (1) pre-dispatch validation gate, (2) post-merge empty-PR check, (3) pre-committed failing test stubs. None of the three were implemented before caa dispatches ran. The action items remained as unchecked items in D8. The learning existed but was not operationalised.
+
+**Root cause (confirmed by 3 data points):**
+The GitHub Copilot SWE agent consistently produces only an "Initial plan" commit when assigned to this repository. Likely causes include: (a) repo orientation budget exhausted before execution begins (workspace/state.json + pipeline-state.json + artefact reads consume most of the context budget); (b) no pre-existing failing tests to drive TDD entry; (c) the agent plan step satisfies its internal completion signal, causing it to open the PR before executing. Regardless of root cause, the **operator merge step is the last safe gate** — and it failed in all 3 occurrences because the PR descriptions looked complete (ACs ticked in the plan comment).
+
+**The single highest-leverage prevention: check `changedFiles > 0` before merging any agent PR.**
+
+```bash
+gh pr view <PR_NUMBER> --json additions,deletions,changedFiles --jq '{additions, deletions, changedFiles}'
+```
+
+If `changedFiles: 0` → the PR is an empty plan. Do not merge. Assign the story to VS Code agent instead.
+
+**Prevention measures now implemented (this session):**
+1. PR template reviewer checklist — added: `gh pr view <PR> --json changedFiles` confirms changedFiles > 0 (if 0, agent produced only a plan — do not merge)
+2. `issue-dispatch` SKILL.md — added post-dispatch monitoring instruction (new section before "Delivery order note") with the `gh pr view` command and re-dispatch guidance
+
+**Tiered dispatch decision — confirmed guidance (from D8, still valid):**
+- **Dispatch to GitHub SWE agent:** ONLY when pre-committed failing tests already exist on master for the story's test file. No pre-committed tests → the agent cannot start from red → high risk of empty PR.
+- **Dispatch to VS Code agent:** Any story requiring multi-file authoring from scratch, orientation across 5+ artefact files, or where test files do not yet exist on master.
+- **Pre-commit test stubs before GitHub agent dispatch:** Create the test file with `test.todo()` stubs, merge to master, then dispatch. The red starting point is the agent's entry condition.
+
+**Actions taken this session:**
+- [x] D18 entry written to workspace/learnings.md
+- [x] PR template reviewer checklist updated with empty-diff check
+- [x] issue-dispatch SKILL.md updated with post-dispatch monitoring section
+- [ ] Re-deliver caa.1, caa.2, caa.3 via VS Code agent — create DoD artefacts after re-delivery
+- [ ] Before next GitHub SWE agent dispatch: pre-commit failing test stubs to master first

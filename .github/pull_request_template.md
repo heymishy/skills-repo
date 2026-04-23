@@ -132,6 +132,7 @@
 - [ ] Tests are meaningful — not just coverage theatre
 - [ ] Any AC deviations are understood and accepted
 - [ ] Decision log entries are adequate for future readers
+- [ ] **Agent PR — diff is non-empty:** if this PR was opened by the GitHub Copilot coding agent, run `gh pr view <PR_NUMBER> --json changedFiles --jq '.changedFiles'` — result must be > 0. A result of 0 means the agent produced only an "Initial plan" commit with no implementation. Do not merge; re-dispatch to VS Code agent instead. (See D18 in workspace/learnings.md)
 - [ ] Ready to merge — no outstanding questions
 
 ---
