@@ -1,6 +1,7 @@
 ## Story: Validate Teams E2E session with non-technical user
 
 **Epic reference:** artefacts/2026-04-19-skills-platform-phase4-opus/epics/e3-non-technical-participation.md
+<!-- reviewed: 2026-04-24 -->
 **Discovery reference:** artefacts/2026-04-19-skills-platform-phase4/discovery.md
 **Benefit-metric reference:** artefacts/2026-04-19-skills-platform-phase4-opus/benefit-metric.md
 

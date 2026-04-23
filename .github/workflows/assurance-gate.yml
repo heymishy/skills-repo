@@ -130,7 +130,7 @@ jobs:
               : s.features.filter(f => f.stage !== 'archived').slice(-1)[0];
             process.stdout.write(pick ? pick.slug : '');
           " 2>/dev/null || echo "")
-          echo "slug=${FEATURE_SLUG}" >> "\$GITHUB_OUTPUT"
+          echo "slug=${FEATURE_SLUG}" >> "$GITHUB_OUTPUT"
 
       - name: Collect governed artefacts
         id: collect
@@ -156,20 +156,27 @@ jobs:
             const path = require('path');
             const artifactName = `governed-artefacts-${{ github.run_id }}`;
             const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${{ github.run_id }}`;
-            const sha = context.sha;
+            // For pull_request events context.sha is the ephemeral merge commit — use head SHA for blob URLs
+            const headSha = context.payload.pull_request
+              ? context.payload.pull_request.head.sha
+              : context.sha;
+            const slug = '${{ steps.resolve_feature.outputs.slug }}';
 
-            // Build per-artefact hyperlinks from manifest.json
+            // Build per-artefact hyperlinks by walking artefacts/<slug>/ directly
             const artefactLines = [];
-            const stagingBase = '.ci-artefact-staging';
-            if (fs.existsSync(stagingBase)) {
-              for (const slugDir of fs.readdirSync(stagingBase)) {
-                const manifestPath = path.join(stagingBase, slugDir, 'manifest.json');
-                if (!fs.existsSync(manifestPath)) continue;
-                const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-                for (const file of (manifest.files || [])) {
-                  const fileUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/blob/${sha}/${file.sourcePath}`;
-                  artefactLines.push(`- [${path.basename(file.sourcePath)}](${fileUrl})`);
-                }
+            if (slug) {
+              const artefactsDir = `artefacts/${slug}`;
+              if (fs.existsSync(artefactsDir)) {
+                (function walk(dir) {
+                  for (const entry of fs.readdirSync(dir).sort()) {
+                    const full = path.join(dir, entry);
+                    if (fs.statSync(full).isDirectory()) { walk(full); continue; }
+                    if (!entry.endsWith('.md')) continue;
+                    const relPath = full.replace(/\\/g, '/');
+                    const fileUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/blob/${headSha}/${relPath}`;
+                    artefactLines.push(`- [${entry}](${fileUrl})`);
+                  }
+                })(artefactsDir);
               }
             }
 
