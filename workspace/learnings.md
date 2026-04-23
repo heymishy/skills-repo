@@ -1484,3 +1484,30 @@ At E2, classify the outer loop character:
 
 - **Multi-page shared callSave pattern:** When the same server-integration code is needed across 4 HTML files, write it once, document the canonical form, then apply identically. The path-normalisation line was applied identically to all 4 dashboards � no per-file variation. This is the correct pattern for cross-cutting fixes.
 
+
+
+---
+
+## Trace validation — CI diagnostics and track awareness — 2026-04-23
+
+### Learning 1: CI checks must surface specific violation details, not generic failure messages
+
+**Observed:** PR #182 (src.1) failed the "Trace Validation" CI check. The root cause was schema_valid failing due to 11 pipeline-state.json schema violations on the feature branch (predated master schema fixes). The CI failure message was "pipeline-state.json failed schema validation" with no enumeration of which fields violated and why. This forced a manual local run to diagnose, adding debugging friction.
+
+**Also observed:** The discovery_exists check reports only that "discovery.md is missing" without naming the feature's track, so an operator cannot distinguish "short-track feature that never needed discovery" from "standard feature with a genuine artefact gap".
+
+**Improvement:** CI checks should emit structured diagnostics inline in the failure output — not just "check X failed":
+- schema_valid should run Draft7Validator.iter_errors() and print all violations (field path + message). Remove 2>/dev/null silencing.
+- discovery_exists should include the feature's 	rack value in the failure message.
+
+**Rule:** Any check that can enumerate the specific items causing a failure should do so inline in the CI log. Generic "failed — run locally to see" messages are insufficient for CI debugging.
+
+### Learning 2: Trace checks must be pipeline-track aware — not just a static skip-list
+
+**Observed:** The discovery_exists check required a manual entry in eference_dirs in .github/trace-validation.yml for every short-track or non-standard feature. The exemption mechanism is a manual static list that requires an operator action every time a new short-track feature is created. A missed entry creates a false CI failure.
+
+**Root problem:** The check was designed only for the standard full pipeline (discovery -> benefit-metric -> story). It had no awareness of the 	rack field in pipeline-state.json which records the pipeline variant each feature follows. Short-track, defect, library, and spike features legitimately have no discovery.md — this is by design, not a gap.
+
+**Improvement:** check_discovery_exists should load 	rack from pipeline-state.json for each feature directory and auto-exempt features whose track is short, defect, library, or spike — without needing a manual eference_dirs entry. The configurable 	racks_without_discovery list in 	race-validation.yml makes the policy explicit and extensible.
+
+**Rule:** Pipeline governance checks should read the pipeline's own metadata (pipeline-state.json) to understand what rules apply to each feature, rather than maintaining a parallel manual exemption list that duplicates that metadata.

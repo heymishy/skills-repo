@@ -79,19 +79,28 @@ check_schema_valid() {
     fi
     if [[ -f "$SCHEMA_FILE" ]]; then
         if python3 -c "
-import json, jsonschema
-with open('$STATE_FILE') as f: state = json.load(f)
-with open('$SCHEMA_FILE') as f: schema = json.load(f)
-jsonschema.validate(state, schema)
-print('Valid')
-" 2>/dev/null; then
+import json, jsonschema, sys
+with open('$STATE_FILE', encoding='utf-8') as f: state = json.load(f)
+with open('$SCHEMA_FILE', encoding='utf-8') as f: schema = json.load(f)
+v = jsonschema.Draft7Validator(schema)
+errs = list(v.iter_errors(state))
+if not errs:
+    print('Valid')
+    sys.exit(0)
+print(str(len(errs)) + ' violation(s) found:')
+for e in sorted(errs, key=lambda x: list(x.absolute_path))[:10]:
+    path_str = ' > '.join(str(p) for p in e.absolute_path) or '(root)'
+    print('  ' + path_str + ': ' + e.message[:120])
+if len(errs) > 10:
+    print('  ... and ' + str(len(errs) - 10) + ' more — run validate-trace.sh locally to see all')
+sys.exit(1)"; then
             record_pass "schema_valid"
             ok "pipeline-state.json is schema-valid"
         else
-            record_fail "schema_valid" "pipeline-state.json failed schema validation"
+            record_fail "schema_valid" "pipeline-state.json failed schema validation — see violations above"
         fi
     else
-        if python3 -c "import json; json.load(open('$STATE_FILE'))" 2>/dev/null; then
+        if python3 -c "import json; json.load(open('$STATE_FILE', encoding='utf-8'))" 2>/dev/null; then
             record_pass "schema_valid"
             ok "pipeline-state.json is valid JSON (no schema file to validate against)"
         else
@@ -108,37 +117,99 @@ check_discovery_exists() {
         ok "artefacts/ is empty — no features to check"
         return
     fi
-    # Load reference_dirs skip list from trace-validation.yml
-    local ref_dirs_pattern=""
-    if [[ -f "$CONFIG_FILE" ]]; then
-        ref_dirs_pattern=$(python3 - "$CONFIG_FILE" <<'PYTHON' 2>/dev/null || echo "")
-import sys, yaml
-with open(sys.argv[1]) as f:
-    config = yaml.safe_load(f)
-dirs = config.get('reference_dirs', [])
-print('|'.join(dirs))
+    # Delegate entirely to Python so we can read pipeline-state.json for track-based
+    # auto-exemption and emit structured diagnostic lines for each feature.
+    local check_output missing_count
+    missing_count=0
+    check_output=$(ARTEFACTS_DIR="$ARTEFACTS" STATE_FILE="$STATE_FILE" CONFIG_FILE="$CONFIG_FILE" python3 - <<'PYTHON' 2>&1
+import os, json, sys
+try:
+    import yaml
+    has_yaml = True
+except ImportError:
+    has_yaml = False
+
+artefacts  = os.environ.get('ARTEFACTS_DIR', 'artefacts')
+state_file = os.environ.get('STATE_FILE', '')
+config_file = os.environ.get('CONFIG_FILE', '')
+
+# Load reference_dirs and tracks_without_discovery from trace-validation.yml
+reference_dirs = set()
+tracks_without_discovery = {'short', 'defect', 'library', 'spike'}
+if config_file and os.path.exists(config_file) and has_yaml:
+    with open(config_file) as f:
+        config = yaml.safe_load(f) or {}
+    reference_dirs = set(config.get('reference_dirs', []))
+    if 'tracks_without_discovery' in config:
+        tracks_without_discovery = set(config['tracks_without_discovery'])
+
+# Build feature slug → track map from pipeline-state.json
+track_map = {}
+if state_file and os.path.exists(state_file):
+    try:
+        with open(state_file, encoding='utf-8') as f:
+            state = json.load(f)
+        for feature in state.get('features', []):
+            slug  = feature.get('slug', '')
+            track = feature.get('track', 'standard')
+            if slug:
+                track_map[slug] = track
+    except Exception:
+        pass  # if state is unreadable, proceed without track info
+
+missing = 0
+try:
+    entries = sorted(os.listdir(artefacts))
+except Exception as ex:
+    print('ERROR:' + str(ex))
+    sys.exit(2)
+
+for entry in entries:
+    feature_dir = os.path.join(artefacts, entry)
+    if not os.path.isdir(feature_dir) or entry.startswith('.'):
+        continue
+    # reference_dirs: manual skip-list for directories that are not pipeline features
+    if entry in reference_dirs:
+        print('SKIP_REF:' + entry)
+        continue
+    # track-based auto-exemption: features on non-standard tracks do not require discovery.md
+    feature_track = track_map.get(entry, '')
+    if feature_track in tracks_without_discovery:
+        print('SKIP_TRACK:' + entry + ':' + feature_track)
+        continue
+    if not os.path.exists(os.path.join(feature_dir, 'discovery.md')):
+        track_hint = ('track: ' + feature_track) if feature_track else 'not registered in pipeline-state — add to reference_dirs or pipeline-state with correct track'
+        print('MISSING:' + entry + ':' + track_hint)
+        missing += 1
+
+sys.exit(1 if missing else 0)
 PYTHON
-    fi
-    local missing=0
-    for feature_dir in "$ARTEFACTS"/*/; do
-        [[ -d "$feature_dir" ]] || continue
-        local feature
-        feature="$(basename "$feature_dir")"
-        [[ "$feature" == ".*" ]] && continue
-        # Skip directories explicitly listed as reference-only in trace-validation.yml
-        if [[ -n "$ref_dirs_pattern" ]] && echo "$feature" | grep -qE "^(${ref_dirs_pattern})$" 2>/dev/null; then
-            ok "Skipping reference dir: artefacts/$feature (listed in reference_dirs)"
-            continue
-        fi
-        if [[ ! -f "$feature_dir/discovery.md" ]]; then
-            record_fail "discovery_exists" "$feature is missing discovery.md"
-            fail "Missing: artefacts/$feature/discovery.md"
-            ((missing++)) || true
-        fi
-    done
-    if [[ $missing -eq 0 ]]; then
+    )
+    while IFS= read -r line; do
+        case "$line" in
+            SKIP_REF:*)
+                ok "Skipping reference dir: artefacts/${line#SKIP_REF:}"
+                ;;
+            SKIP_TRACK:*)
+                local ts="${line#SKIP_TRACK:}"
+                ok "Skipping: artefacts/${ts%%:*} (track: ${ts#*:} — discovery not required on this track)"
+                ;;
+            MISSING:*)
+                local ms="${line#MISSING:}"
+                record_fail "discovery_exists" "${ms%%:*} is missing discovery.md (${ms#*:})"
+                fail "Missing: artefacts/${ms%%:*}/discovery.md  [${ms#*:}]"
+                ((missing_count++)) || true
+                ;;
+            ERROR:*)
+                fail "discovery_exists check internal error: ${line#ERROR:}"
+                record_fail "discovery_exists" "Internal error — ${line#ERROR:}"
+                ((missing_count++)) || true
+                ;;
+        esac
+    done <<< "$check_output"
+    if [[ $missing_count -eq 0 ]]; then
         record_pass "discovery_exists"
-        ok "All features have discovery.md"
+        ok "All standard-track features have discovery.md"
     fi
 }
 
