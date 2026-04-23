@@ -3020,13 +3020,16 @@
             "status": "written",
             "artefact": "artefacts/2026-04-23-ci-artefact-attachment/test-plans/caa.2-github-actions-adapter-test-plan.md",
             "totalTests": 10,
-            "passing": 0
+            "passing": 10
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-23-ci-artefact-attachment/dor/caa.2-github-actions-adapter-dor.md",
-          "prStatus": "none",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/188",
+          "stage": "definition-of-done",
+          "dodStatus": "not-started",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/184",
           "dispatchedAt": "2026-04-23T14:01:00Z",
           "dispatchTarget": "github-agent"
@@ -3058,7 +3061,7 @@
           "dispatchTarget": "github-agent"
         }
       ],
-      "updatedAt": "2026-04-23T15:30:00Z",
+      "updatedAt": "2026-04-23T16:00:00Z",
       "riskAcceptances": [
         {
           "id": "RA-caa1-W3",
