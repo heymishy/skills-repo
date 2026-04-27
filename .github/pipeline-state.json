@@ -3138,7 +3138,7 @@
     {
       "slug": "2026-04-27-prioritise-skill",
       "name": "/prioritise — Multi-Framework Prioritisation Skill (P6a)",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "discoveryStatus": "approved",
       "track": "library",
@@ -3146,7 +3146,54 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-04-27T00:00:00Z"
+      "updatedAt": "2026-04-27T00:00:00Z",
+      "benefitMetric": {
+        "artefact": "artefacts/2026-04-27-prioritise-skill/benefit-metric.md",
+        "status": "active",
+        "metaBenefit": true
+      },
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Session completion rate",
+          "target": ">=80% of sessions result in saved artefact (first 5 uses)",
+          "baseline": "0",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Rationale completeness",
+          "target": "100% of completed artefacts contain rationale per framework pass",
+          "baseline": "0",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Non-engineer unassisted completion",
+          "target": "First non-engineer user completes session unassisted",
+          "baseline": "not-yet-established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "mm1",
+          "name": "Cold-start replication (skill self-sufficiency)",
+          "target": "First cold-start operator run produces saved artefact with rationale without author assistance",
+          "baseline": "not-yet-established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
