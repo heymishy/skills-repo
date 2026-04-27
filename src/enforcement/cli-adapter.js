@@ -79,11 +79,12 @@ function workflow(opts) {
  *   declaration: object,
  *   govPackage: object,
  *   skillId?: string,
- *   expectedHash?: string
+ *   expectedHash?: string,
+ *   sidecarRoot?: string
  * }} opts
  */
 function advance(opts) {
-  const { current, next, declaration, govPackage, skillId, expectedHash } = opts || {};
+  const { current, next, declaration, govPackage, skillId, expectedHash, sidecarRoot } = opts || {};
 
   // Step 1 — ADR-002: transition must be declared
   const { allowed } = resolveTransition(declaration, current, next);
@@ -96,11 +97,15 @@ function advance(opts) {
   }
 
   // Step 2 — C5: hash verification before envelope build; no bypass parameter permitted
-  if (govPackage && skillId) {
+  if (govPackage && skillId && sidecarRoot) {
+    const resolved = govPackage.resolveSkill({ skillId: skillId, sidecarRoot: sidecarRoot });
+    if (!resolved) {
+      return { error: 'SKILL_NOT_FOUND', skillId: skillId };
+    }
     const hashResult = govPackage.verifyHash({
       skillId:  skillId,
       expected: expectedHash,
-      actual:   expectedHash,
+      actual:   resolved.contentHash,
     });
     if (hashResult) {
       const exp = hashResult.expected || expectedHash || '';
