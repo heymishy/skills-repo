@@ -430,6 +430,16 @@ const CONTRACTS = [
       'artefacts/',
     ],
   },
+  {
+    skill: 'prioritise',
+    file:  '.github/skills/prioritise/SKILL.md',
+    required: [
+      '## Available Frameworks',
+      '## Output Format',
+      '## Adding a New Framework',
+      '## State update',
+    ],
+  },
 ];
 
 // ── invariants applied to every SKILL.md ──────────────────────────────────────
