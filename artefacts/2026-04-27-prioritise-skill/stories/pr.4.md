@@ -29,7 +29,7 @@ So that **the ranked output feels owned by the group rather than imposed by a to
 
 **AC1:** Given the skill has received a confirmed candidate list, when it asks about session format, then it offers two modes: (1) solo scoring and (2) workshopping/group session — and does not default to solo without asking.
 
-**AC2:** Given workshopping mode is selected, when the skill begins a scoring dimension, then it provides a facilitation prompt that names the typical perspectives of at least two roles (e.g. "Tech lead: consider implementation risk and dependency chain. PM: consider user adoption urgency and business deadline.") — the prompt is written to invite multiple voices, not direct a single scorer.
+**AC2:** Given workshopping mode is selected, when the skill begins a scoring dimension, then it provides a facilitation prompt that names the typical perspectives of at least two roles (e.g. "Tech lead: consider implementation risk and dependency chain. PM: consider user adoption urgency and business deadline.") — the prompt contains wording addressed to at least two named roles and poses an open question ('What's driving your score for this?') rather than an imperative directive.
 
 **AC3:** Given workshopping mode is active and the group provides conflicting scores for an item, when the skill detects a range (e.g. two participants give different values), then it surfaces the range explicitly (e.g. "I heard 3 and 7 for this dimension — what's driving the gap?") and invites a brief discussion before the facilitator confirms a final value — it does not silently average or pick the first value.
 
@@ -38,6 +38,8 @@ So that **the ranked output feels owned by the group rather than imposed by a to
 **AC5:** Given workshopping mode is active, when the skill completes a dimension for all items, then it pauses and asks if the group is ready to proceed to the next dimension — it does not advance automatically as in solo mode.
 
 **AC6:** Given the operator switches back to solo mode mid-session (after starting in workshopping mode), when the skill receives the mode switch request, then it accepts the switch, continues scoring in solo mode, and does not re-prompt for workshopping mode for the remainder of the session.
+
+**AC7:** Given workshopping mode is active and scoring is complete, when the skill presents the final ranked list, then its closing statement attributes the result to the group's decisions — beginning with 'Based on your group's agreed scores...' or equivalent group-attribution phrasing — and does not begin with 'I recommend' or frame the ranking as the skill's own recommendation.
 
 ## Out of Scope
 
