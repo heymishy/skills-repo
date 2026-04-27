@@ -28,7 +28,7 @@ So that **I enter the scoring phase with a clear, agreed plan rather than a blan
 
 ## Acceptance Criteria
 
-**AC1:** Given the skill is invoked with no prior context, when the skill opens, then it displays a brief opening statement explaining what `/prioritise` does and names the three available frameworks (WSJF, RICE, MoSCoW) with a one-sentence plain-language description of each — sufficient for a non-engineer to understand the difference without external lookup.
+**AC1:** Given the skill is invoked with no prior context, when the skill opens, then it displays a brief opening statement explaining what `/prioritise` does and names the three available frameworks (WSJF, RICE, MoSCoW) with a one-sentence plain-language description of each — sufficient for a non-engineer to understand the difference without external lookup — where the WSJF description names 'cost of delay' as its primary signal, the RICE description names all four factors (Reach, Impact, Confidence, Effort), and the MoSCoW description names all four buckets (Must-have, Should-have, Could-have, Won't-have).
 
 **AC2:** Given the operator provides a list of candidate items (as free text, bullet list, or described in any order), when the skill receives the list, then it acknowledges all items, asks for any missing context it needs (goals, time horizon, decision audience), and does not proceed to framework selection until it has confirmed the candidate list is complete.
 
