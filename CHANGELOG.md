@@ -18,6 +18,8 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- **pr.3 — /prioritise SKILL.md: tie detection and divergence handling (2026-04-28):** Extends `.github/skills/prioritise/SKILL.md` with Step 6 (tie detection with three-option offer, divergence threshold ≥2 rank positions, WSJF/RICE model-level explanation, three-option resolution offer, record preservation, and single-pass guard). Adds `tests/check-pr.3.js` (10 assertions for AC1–AC6 and NFR). All 10 tests pass.
+
 - **pr.2 — /prioritise SKILL.md: conversational scoring pass (WSJF, RICE, MoSCoW) (2026-04-28):** Extends `.github/skills/prioritise/SKILL.md` with Step 3 (dimension-by-dimension WSJF and RICE scoring, one-item-at-a-time MoSCoW scoring), Step 4 (rationale elicitation with `[rationale not provided]` placeholder), and Step 5 (descending-order scored list with next-step offer). Adds `tests/check-pr.2.js` (15 assertions for AC1–AC7 and NFR). All 15 tests pass.
 
 
