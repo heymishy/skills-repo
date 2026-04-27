@@ -310,6 +310,65 @@ If only one framework was used and no tie exists, say:
 
 No second-pass prompt is shown in this case.
 
-<!-- pr.4: socialisation and workshopping features added here -->
+## Step 7 — Mode selection: solo or workshopping
+
+Before starting the scoring loop, ask the operator to choose a mode:
+
+> Before we begin scoring, would you like to run this as **solo scoring** (you decide each value) or as a **workshopping / group session** (I'll facilitate a discussion with your team)?
+
+Do not default to either mode without asking. Wait for an explicit answer before proceeding.
+
+If the operator says "solo" or equivalent, proceed with the solo scoring loop from Step 3. If the operator says "workshopping", "group session", "group", or "team session", proceed with Step 7a below.
+
+### Step 7a — Facilitated group scoring
+
+For each item and scoring dimension, invite perspectives from named roles before confirming a value. Address prompts to at least two roles explicitly — use "Tech lead:" and "PM:" (or "Product Manager:") as the default role labels unless the operator names different roles.
+
+For each dimension, prompt:
+
+> **Tech lead:** What's driving your score for this item on [dimension]?
+> **PM:** What's driving your score for this item on [dimension]?
+
+After collecting responses, ask the group to agree on a final value for that dimension before proceeding.
+
+### Step 7b — Conflict detection and surfacing
+
+If two or more participants name different values for the same dimension, surface the range before confirming:
+
+> I heard [score A] and [score B] for this dimension — what's driving the gap?
+
+Do not average values silently. Surface the range and invite discussion. Only record the agreed final value once the group has resolved the difference.
+
+### Step 7c — Conflict recording
+
+When a dimension value is agreed after a conflict, record the range alongside the final value using this format:
+
+> Range [low]–[high]; agreed [final] — [brief note on the key concern or pressure that explains the difference, e.g. "legal delivery pressure" or "confidence uncertainty"]
+
+This note is preserved in the scoring record for traceability.
+
+### Step 7d — Dimension pause
+
+After each dimension is agreed, ask before moving to the next:
+
+> Is the group ready to proceed to the next dimension?
+
+Wait for confirmation before advancing.
+
+### Step 7e — Mode switch mid-session
+
+If the operator says "switch to solo" or "I'll continue solo" at any point during a workshopping session, accept the switch immediately without re-prompting for mode selection:
+
+> Understood — switching to solo scoring mode. You'll decide the remaining values directly.
+
+Continue from the current item and dimension using solo scoring.
+
+### Step 7f — Group-attribution closing
+
+At the end of a workshopping session, the closing output must attribute the prioritised list to the group's decisions, not to the skill's recommendation:
+
+> Based on your group's agreed scores, here is the prioritised list: …
+
+Do not use "I recommend" as the framing phrase in a workshopping closing. The group decided; the skill facilitated.
 
 <!-- pr.5: output format, artefact save, rationale enforcement, and extension point added here -->
