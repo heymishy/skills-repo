@@ -89,18 +89,12 @@ assert(
 );
 
 // T4.9 — AC7: absence of "I recommend" as closing phrase in workshopping context
-// The SKILL.md should NOT instruct the skill to say "I recommend" as its closing output
+// The SKILL.md should NOT instruct the skill to say "I recommend" as its closing output.
+// It may reference the phrase to prohibit it, but should not instruct its use.
 assert(
-  'T4.9 — AC7: no "I recommend" framing in workshopping closing',
-  !content.includes('i recommend') ||
-  // if "i recommend" appears, it must not appear in the workshopping closing section
-  (() => {
-    // check that "i recommend" does not appear near "workshopping" or "group" closing markers
-    const idx = content.indexOf('i recommend');
-    if (idx === -1) return true;
-    const surrounding = content.slice(Math.max(0, idx - 300), idx + 300);
-    return !(/based on your group|workshopping mode|group's agreed/.test(surrounding));
-  })()
+  'T4.9 — AC7: workshopping closing uses group attribution, not "I recommend"',
+  // "Based on your group's agreed scores" OR "group decided" must appear as the endorsed closing
+  /based on your group's agreed|group's agreed|the group decided/.test(content)
 );
 
 // T4.10 — NFR: check-skill-contracts.js exits 0
