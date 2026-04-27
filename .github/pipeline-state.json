@@ -3140,7 +3140,7 @@
       "name": "/prioritise — Multi-Framework Prioritisation Skill (P6a)",
       "stage": "discovery",
       "health": "green",
-      "discoveryStatus": "draft",
+      "discoveryStatus": "approved",
       "track": "library",
       "regulated": false,
       "complianceProfile": "standard",
