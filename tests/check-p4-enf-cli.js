@@ -182,11 +182,13 @@ console.log('\n[p4-enf-cli] T6 — advance with hash mismatch → HASH_MISMATCH 
         next: 'definition',
         declaration: FIXTURE_DECL,
         govPackage: {
+          resolveSkill: () => ({ skillId: 'discovery', contentHash: 'b'.repeat(64) }),
           verifyHash: () => hashMismatch,
           advanceState: () => ({ current: 'definition' })
         },
         skillId:      'discovery',
         expectedHash: 'a'.repeat(64),
+        sidecarRoot:  '/fake/sidecar',
       });
     } catch (e) { threw = true; result = e; }
 
