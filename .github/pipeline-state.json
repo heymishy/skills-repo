@@ -3138,7 +3138,7 @@
     {
       "slug": "2026-04-27-prioritise-skill",
       "name": "/prioritise — Multi-Framework Prioritisation Skill (P6a)",
-      "stage": "review",
+      "stage": "test-plan",
       "health": "green",
       "discoveryStatus": "approved",
       "track": "library",
@@ -3146,7 +3146,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-04-27T00:00:00Z",
+      "updatedAt": "2026-04-27T12:00:00Z",
       "benefitMetric": {
         "artefact": "artefacts/2026-04-27-prioritise-skill/benefit-metric.md",
         "status": "active",
@@ -3204,37 +3204,87 @@
             {
               "slug": "pr.1",
               "name": "Candidate intake and framework selection",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "reviewStatus": "passed"
+              "reviewStatus": "passed",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-04-27-prioritise-skill/test-plans/pr.1-test-plan.md",
+                "totalTests": 11,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "pr.2",
               "name": "Conversational scoring: WSJF, RICE, and MoSCoW passes",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "reviewStatus": "passed"
+              "reviewStatus": "passed",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-04-27-prioritise-skill/test-plans/pr.2-test-plan.md",
+                "totalTests": 15,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "pr.3",
               "name": "Multi-pass orchestration and divergence handling",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "reviewStatus": "passed"
+              "reviewStatus": "passed",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-04-27-prioritise-skill/test-plans/pr.3-test-plan.md",
+                "totalTests": 11,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "pr.4",
               "name": "Socialisation and workshopping features",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "reviewStatus": "passed"
+              "reviewStatus": "passed",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-04-27-prioritise-skill/test-plans/pr.4-test-plan.md",
+                "totalTests": 11,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "pr.5",
               "name": "Output format, rationale enforcement, extension point, and artefact save",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "reviewStatus": "passed"
+              "reviewStatus": "passed",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-04-27-prioritise-skill/test-plans/pr.5-test-plan.md",
+                "totalTests": 16,
+                "passing": 0
+              },
+              "acTotal": 8,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
