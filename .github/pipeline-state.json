@@ -3138,7 +3138,7 @@
     {
       "slug": "2026-04-27-prioritise-skill",
       "name": "/prioritise — Multi-Framework Prioritisation Skill (P6a)",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
       "discoveryStatus": "approved",
       "track": "library",
@@ -3146,7 +3146,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-04-27T12:00:00Z",
+      "updatedAt": "2026-04-27T18:00:00Z",
       "benefitMetric": {
         "artefact": "artefacts/2026-04-27-prioritise-skill/benefit-metric.md",
         "status": "active",
@@ -3204,9 +3204,11 @@
             {
               "slug": "pr.1",
               "name": "Candidate intake and framework selection",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-04-27-prioritise-skill/dor/pr.1-dor.md",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-04-27-prioritise-skill/test-plans/pr.1-test-plan.md",
@@ -3221,9 +3223,11 @@
             {
               "slug": "pr.2",
               "name": "Conversational scoring: WSJF, RICE, and MoSCoW passes",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-04-27-prioritise-skill/dor/pr.2-dor.md",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-04-27-prioritise-skill/test-plans/pr.2-test-plan.md",
@@ -3238,9 +3242,11 @@
             {
               "slug": "pr.3",
               "name": "Multi-pass orchestration and divergence handling",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-04-27-prioritise-skill/dor/pr.3-dor.md",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-04-27-prioritise-skill/test-plans/pr.3-test-plan.md",
@@ -3255,9 +3261,11 @@
             {
               "slug": "pr.4",
               "name": "Socialisation and workshopping features",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-04-27-prioritise-skill/dor/pr.4-dor.md",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-04-27-prioritise-skill/test-plans/pr.4-test-plan.md",
@@ -3272,9 +3280,11 @@
             {
               "slug": "pr.5",
               "name": "Output format, rationale enforcement, extension point, and artefact save",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-04-27-prioritise-skill/dor/pr.5-dor.md",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-04-27-prioritise-skill/test-plans/pr.5-test-plan.md",
