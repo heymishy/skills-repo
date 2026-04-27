@@ -160,15 +160,7 @@ One item per line: "- CREATE: path/to/file" or "- MODIFY: path/to/file".]
 
 ## Step 5 — Create issues
 
-For each story, output the `gh` CLI command:
-
-```bash
-gh issue create \
-  --title "[story-id]: [story title]" \
-  --body "[body from Step 4]"
-```
-
-If running in agent mode with `gh` available, create the issues directly rather
+If running in agent mode with `gh` available, create issues directly rather
 than outputting commands. Confirm each creation with the returned URL.
 
 Add a note for any dependency-gated story found in the DoR: append this line to
@@ -177,6 +169,49 @@ the body before creation:
 > **Note:** One or more ACs in this story are dependency-gated. See the DoR
 > artefact for detail — do not attempt gated ACs until the stated prerequisites
 > are DoD-complete.
+
+### ⚠️ Platform-safe `gh issue create` — mandatory two-step pattern
+
+**Never use `--body "..."` inline.** Issue bodies for `--target github-agent` contain
+backtick-wrapped paths and inline code. In PowerShell, `` `a `` inside a double-quoted
+string is interpreted as the BEL escape character (ASCII 7), silently corrupting every
+path that starts with a backtick-quoted letter (e.g. `` `artefacts/... `` →
+`[BEL]rtefacts/...`).
+
+**Step A — write body to a temp file (one terminal call):**
+
+```powershell
+# PowerShell
+$body = @'
+[body content from Step 4 — backticks are literal inside @'...'@]
+'@
+$body | Out-File -FilePath "$env:TEMP\[story-id]-body.md" -Encoding utf8
+```
+
+```bash
+# bash / Linux
+cat > /tmp/[story-id]-body.md << 'EOF'
+[body content from Step 4]
+EOF
+```
+
+**Step B — create the issue (separate terminal call):**
+
+```powershell
+# PowerShell
+gh issue create --title "[story-id]: [story title]" --body-file "$env:TEMP\[story-id]-body.md"
+```
+
+```bash
+# bash / Linux
+gh issue create --title "[story-id]: [story title]" --body-file /tmp/[story-id]-body.md
+```
+
+**Why two separate calls?** Combining the write and `gh issue create` in a single
+chained command (`;`) causes silent double-execution on PowerShell: the heredoc
+assignment runs `gh issue create` once (URL hidden in output), then the agent issues
+a second call — creating a duplicate issue. See `workspace/learnings.md` for the
+2026-04-12 incident that produced duplicate issues #20, #22, #24, #26.
 
 ---
 

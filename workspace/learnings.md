@@ -657,6 +657,27 @@ After a DoR batch commit, write an explicit `pendingActions` entry to `workspace
 
 ---
 
+﻿
+## Tool-use gap ÔÇö PowerShell backtick escape corrupts `gh issue create --body` strings
+
+### Observed ÔÇö 2026-04-23
+
+**Circumstance:** Issue #183 (caa.1) was created with `gh issue create --body "..."` where the body string contained backtick-quoted code paths (e.g. `` `artefacts/... `` inside the double-quoted string). The artefacts reference table paths were corrupted: `artefacts/` became `\[BEL]rtefacts/` ÔÇö the leading `a` was swallowed and replaced by the BEL control character (ASCII 7).
+
+**Root cause:** In PowerShell double-quoted strings, the backtick `` ` `` is the escape character. `` `a `` is interpreted as the "alert" (BEL) escape sequence, not as a literal backtick followed by the letter `a`. So `` `artefacts `` ÔåÆ `[BEL]rtefacts`. Issue bodies for `--target github-agent` are heavy with backtick-wrapped paths and inline code, making this corruption near-certain when `--body "..."` is used inline.
+
+**Issues #184 and #185 were unaffected** because they were created using a here-string (`@'...'@`) written to a temp file via `Out-File`, then passed with `--body-file`. Inside a here-string (`@'...'@`), backticks are literal ÔÇö no escape interpretation. Issue #183 was created with `--body "..."` inline (the first story, before the here-string pattern was adopted), and required a subsequent `gh issue edit --body-file` to repair.
+
+**Fix ÔÇö /issue-dispatch SKILL.md Step 5:** NEVER use `gh issue create --body "..."` for multi-line bodies on Windows/PowerShell. Always:
+1. Write the body to a temp file using a here-string: `$body = @'...'@; $body | Out-File -FilePath "$env:TEMP\[story-id]-body.md" -Encoding utf8`
+2. In a **separate terminal call**: `gh issue create --title "..." --body-file "$env:TEMP\[story-id]-body.md"`
+
+The two calls must be separate (not chained with `;`) to avoid the silent-double-execution pattern from the April 2026 observation above.
+
+**Action:** Fix `/issue-dispatch` SKILL.md Step 5 `gh issue create` command block. Replace `--body "[body]"` with the two-step `--body-file` pattern and add a Windows/PowerShell platform note. Opened draft PR for SKILL.md change.
+
+---
+
 ## Assurance gate trace files not persisted — GitHub Actions `contents: read` prevents git push back to branch
 
 ### Observed — 2026-04-12
