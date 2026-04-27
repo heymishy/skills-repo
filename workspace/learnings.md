@@ -954,6 +954,64 @@ The two calls must be separate (not chained with `;`) to avoid the silent-double
 
 ---
 
+## D19 — Stacked PR rebase cascade: manual intervention required, fleet-scale risk signal
+
+### Observed — 2026-04-28 (/prioritise skill — pr.1–pr.5 inner loop delivery)
+
+**Context:** Five stacked PRs (#195–#199) delivered the /prioritise SKILL.md across a stacked branch chain (master → feature/pr.1 → feature/pr.2 → feature/pr.3 → feature/pr.4 → feature/pr.5). A trace-validation CI fix committed to master after all branches were pushed required a full cascade rebase.
+
+**What happened:**
+A single-line fix to `.github/trace-validation.yml` on master (adding `2026-04-26-portfolio-sequencing` to `reference_dirs`) was made after all five feature branches were already pushed. Propagating this fix required:
+
+1. `git rebase origin/master` on pr.1 → force-push
+2. `git rebase --onto origin/feature/pr.1 <old-tip>` on pr.2 → force-push
+3. Detect duplicate commit in pr.3 after naive `git rebase origin/feature/pr.2` → second `--onto` rebase to drop it → force-push
+4. `git rebase --onto origin/feature/pr.3 <old-tip>` on pr.4 → force-push
+5. `git rebase --onto origin/feature/pr.4 <old-tip>` on pr.5 → force-push
+
+Two branches also required CHANGELOG conflict resolution using the node one-liner (see `concurrent-pr-rebase-conflicts.md` user memory).
+
+**The fleet-scale signal:**
+At a single operator this is a 15-minute manual operation. At 50 teams each running a 3–5 story stacked PR workflow, this becomes a recurring friction event every time master moves during an active stack. Each team member needs to understand `--onto` rebase semantics, the duplicate-commit detection step, and the force-push safety rules. Without tooling or documented automation, this friction will cause:
+- Incorrect history (duplicate commits in PRs — CI passes but merge produces noise)
+- Abandoned rebases mid-cascade (branches diverge and accumulate drift)
+- Force-push accidents on shared branches
+
+**What this feeds:**
+
+| Portfolio item | Signal |
+|---------------|--------|
+| P11 — Bootstrap skill | Stacked PR workflow guidance must include rebase-cascade automation or a step-by-step runbook. The `branch-setup` and `branch-complete` skills should document the cascade pattern and provide a single-command script. |
+| P7 — Monitor and feedback signals | Stacked branch divergence is a fleet health signal. A branch that is N commits behind its upstream within the stack is a leading indicator of rebase friction accumulating. Should surface in fleet-state.json or dashboard. |
+| `/scale-pipeline` skill | Pre-requisite: rebase automation (e.g. Renovate-style auto-rebase on stack) or an explicit operator runbook must exist before recommending stacked PR workflow at multi-team scale. |
+
+**Proposed runbook entry (capture for P11):**
+```
+# Cascade rebase after master moves (stacked branches)
+# For stack: master → A → B → C → D → E
+
+# 1. Rebase base branch onto new master
+cd <worktree-A>
+git rebase origin/master
+git push --force-with-lease origin <branch-A>
+
+# 2. For each downstream branch, use --onto to replay only its own commits
+#    <old-upstream-tip> = the SHA that was at the top of the upstream branch
+#    before the rebase (visible in git log before step 1 runs)
+cd <worktree-B>
+git rebase --onto origin/<branch-A> <old-tip-A> <branch-B>
+git push --force-with-lease origin <branch-B>
+# Repeat for C, D, E with updated --onto targets
+
+# 3. After each rebase, verify commit count:
+#    git log --oneline origin/<upstream>..<branch> | wc -l
+#    should equal the number of commits this branch added (not cumulative)
+```
+
+**Action:** Log to `/workspace/learnings.md` (done). Reference in P11 bootstrap scope and P7 fleet-signal design when those features reach /definition.
+
+---
+
 ## Operational pattern — High model rate limit: 45-minute window, Auto model as structured-work fallback
 
 ### Observed — 2026-04-12 (Phase 2 inner loop delivery)
