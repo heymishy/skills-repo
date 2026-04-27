@@ -3285,7 +3285,7 @@
             {
               "slug": "pr.4",
               "name": "Socialisation and workshopping features",
-              "stage": "definition-of-ready",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
@@ -3293,13 +3293,19 @@
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-04-27-prioritise-skill/test-plans/pr.4-test-plan.md",
-                "totalTests": 11,
-                "passing": 0
+                "totalTests": 10,
+                "passing": 10
               },
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/198",
               "acTotal": 7,
-              "acVerified": 0,
+              "acVerified": 7,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "tasks": [
+                { "id": "pr.4.t1", "name": "Write failing tests (check-pr.4.js)", "tddState": "green" },
+                { "id": "pr.4.t2", "name": "Extend SKILL.md with Step 7 (workshopping mode)", "tddState": "green" }
+              ]
             },
             {
               "slug": "pr.5",
