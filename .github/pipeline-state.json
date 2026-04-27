@@ -33,6 +33,34 @@
   },
   "features": [
     {
+      "slug": "2026-04-27-p1-hash-defect",
+      "name": "Fix hash self-comparison defect in cli-adapter advance()",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "track": "short",
+      "nfrProfile": "artefacts/2026-04-27-p1-hash-defect/nfr-profile.md",
+      "stories": [
+        {
+          "id": "p1-hash-defect",
+          "name": "Fix hash self-comparison defect in cli-adapter advance()",
+          "artefact": "artefacts/2026-04-27-p1-hash-defect/stories/p1-hash-defect.md",
+          "complexity": 1,
+          "testPlan": {
+            "artefact": "artefacts/2026-04-27-p1-hash-defect/test-plans/p1-hash-defect-test-plan.md"
+          },
+          "dorArtefact": "artefacts/2026-04-27-p1-hash-defect/dor/p1-hash-defect-dor.md",
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/194",
+          "dodStatus": "none",
+          "dispatchTarget": "vscode"
+        }
+      ],
+      "updatedAt": "2026-04-27"
+    },
+    {
       "slug": "2026-04-23-non-technical-channel",
       "name": "Non-Technical Channel — Framework Adoption Friction (Phase 5 WS0 / G0b)",
       "stage": "ideation",
