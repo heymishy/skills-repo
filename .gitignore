@@ -1,3 +1,4 @@
 .vscode/
 trace-validation-report.json
 .worktrees/
+.ci-artefact-staging/
