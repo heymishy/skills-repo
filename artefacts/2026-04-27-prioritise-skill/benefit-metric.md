@@ -24,7 +24,7 @@ This initiative delivers a new library skill (product value) and simultaneously 
 | **Baseline** | 0 — skill does not exist; no sessions have been completed |
 | **Target** | ≥ 80% of sessions started result in a saved artefact (assessed across the first 5 real uses after ship) |
 | **Minimum validation signal** | 3 of the first 5 sessions produce a saved artefact (60%). Below this, the conversational UX has a friction problem that must be resolved before broader use |
-| **Measurement method** | Operator self-reports at end of session — artefact written to disk counts as completed. Reviewed at each `/definition-of-done` run during feature delivery. |
+| **Measurement method** | Artefact written to disk = completed (objective). Sessions *started* = honour-system self-count for v1 — there is no session-start log. **Measurement gap:** the 80% target requires a denominator that is currently untracked. Accept this for v1 (operator self-counts on a tally), or add a `## Session started` log line at the top of the skill's opening output as a lightweight counter. This gap must be acknowledged at DoD. |
 | **Feedback loop** | If minimum signal not met after 5 sessions: pause and review the conversational flow for the step where operators are abandoning. Revise the relevant SKILL.md section and re-test. Operator decides whether to continue or pivot. |
 
 ### M2: Input Quality — Rationale Completeness
@@ -46,7 +46,7 @@ This initiative delivers a new library skill (product value) and simultaneously 
 | **Baseline** | Not yet established — no non-engineer sessions exist. Will measure in the first real PM/business-lead use after ship. |
 | **Target** | First non-engineer user completes a session unassisted, with no mid-session framework explanation requests that the skill failed to pre-empt |
 | **Minimum validation signal** | One successful cold-start non-engineer run. Binary: completed unassisted yes/no. Failure means the framework introductions inside the skill need rewriting before broader use. |
-| **Measurement method** | Observed or self-reported by the non-engineer participant after the session. Test question: "Did you consult anything outside the skill conversation?" No = pass. |
+| **Measurement method** | Observed or self-reported by the non-engineer participant after the session. Test question: **"Did the skill fail to explain something you needed explained?"** No = pass. Curiosity-driven external lookups (e.g. googling a term for deeper context) do not constitute skill failure — the metric tests whether the skill's guidance was sufficient, not whether the user was incurious. |
 | **Feedback loop** | If first non-engineer run fails: review which framework explanation was insufficient. Revise the skill's opening framework description for that pass. Re-test with the same or another non-engineer user. |
 
 ---
