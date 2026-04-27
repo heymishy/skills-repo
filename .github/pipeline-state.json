@@ -3138,7 +3138,7 @@
     {
       "slug": "2026-04-27-prioritise-skill",
       "name": "/prioritise — Multi-Framework Prioritisation Skill (P6a)",
-      "stage": "definition-of-ready",
+      "stage": "implementation-plan",
       "health": "green",
       "discoveryStatus": "approved",
       "track": "library",
@@ -3146,7 +3146,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-04-27T18:00:00Z",
+      "updatedAt": "2026-04-28T06:30:00Z",
       "benefitMetric": {
         "artefact": "artefacts/2026-04-27-prioritise-skill/benefit-metric.md",
         "status": "active",
@@ -3199,16 +3199,26 @@
         {
           "slug": "pr-e1",
           "name": "Operators and non-engineers can run structured prioritisation sessions and produce traceable ranked artefacts",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "pr.1",
               "name": "Candidate intake and framework selection",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-04-27-prioritise-skill/dor/pr.1-dor.md",
+              "worktree": ".worktrees/pr.1",
+              "branch": "feature/pr.1",
+              "baselineFailures": 2,
+              "baselineFailureNote": "Pre-existing p3.3 failures (workflow pinned ref / HTTPS) — acknowledged, unrelated to pr.1",
+              "planArtefact": "artefacts/2026-04-27-prioritise-skill/plans/pr.1-plan.md",
+              "tasks": [
+                { "id": "task-1", "name": "Write failing test script (tests/check-pr.1.js)", "tddState": "not-started", "file": "artefacts/2026-04-27-prioritise-skill/plans/pr.1-plan.md" },
+                { "id": "task-2", "name": "Create SKILL.md with intake and framework selection", "tddState": "not-started", "file": "artefacts/2026-04-27-prioritise-skill/plans/pr.1-plan.md" },
+                { "id": "task-3", "name": "Open draft PR", "tddState": "not-started", "file": "artefacts/2026-04-27-prioritise-skill/plans/pr.1-plan.md" }
+              ],
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-04-27-prioritise-skill/test-plans/pr.1-test-plan.md",
