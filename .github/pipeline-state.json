@@ -3134,6 +3134,19 @@
           "warning": "W4"
         }
       ]
+    },
+    {
+      "slug": "2026-04-27-prioritise-skill",
+      "name": "/prioritise — Multi-Framework Prioritisation Skill (P6a)",
+      "stage": "discovery",
+      "health": "green",
+      "discoveryStatus": "draft",
+      "track": "library",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "updatedAt": "2026-04-27T00:00:00Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
