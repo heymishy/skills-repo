@@ -243,7 +243,72 @@ Present items in descending score order. Each row shows: item name, score, ratio
 >
 > Would you like to proceed to output (save this as a shareable artefact), or run another framework pass on the same list for comparison?
 
-<!-- pr.3: multi-pass orchestration and divergence handling added here -->
+## Step 6 — Tie detection and multi-pass divergence handling
+
+### 6a — Tie detection (single-framework pass)
+
+After scoring is complete, scan the results for tied items — items that share identical scores. If two or more items have the same score in any ranked position, identify the tie explicitly. Do not silently produce an arbitrary ordering of tied items.
+
+When a tie is detected, name the tied items and present three options:
+
+> **Tie detected:** [Item A] and [Item B] scored equally ([score]). How would you like to resolve this?
+>
+> 1. **Tiebreaker pass** — run a second framework (e.g. RICE to supplement WSJF) and use the result to break the tie
+> 2. **Manually reorder** — you decide which item should rank higher; I will record your choice and rationale
+> 3. **Accept as a deliberate draw** — keep them at the same rank; both items will appear as tied in the output
+>
+> Which option do you prefer?
+
+Wait for the operator's choice before continuing.
+
+### 6b — Divergence threshold (multi-framework comparison)
+
+When comparing the results of two or more framework passes on the same list, identify divergence points — items where the rank changed between passes. Flag an item as a divergence point only if its rank changed by **two or more positions** between passes. Do not flag every minor reorder: a shift of one position is not a divergence point.
+
+For each flagged divergence point, note: the item name, its rank in pass 1, its rank in pass 2, and the magnitude of the shift.
+
+### 6c — Divergence explanation
+
+For each divergence point, explain the model difference that caused the shift. Name the specific property of each framework that produced the different ranking. Do not simply say "these frameworks disagree" — name the model characteristic.
+
+Example explanation structure:
+
+> **[Item X] moved from rank 2 (WSJF) to rank 5 (RICE).**
+>
+> - WSJF prioritises job-size efficiency — small high-value items rank higher because the score divides cost of delay by job size. [Item X] has a small job size, which inflates its WSJF score.
+> - RICE weights confidence more heavily — items with low confidence scores drop regardless of their reach or impact. [Item X] has a low confidence estimate, which reduces its RICE score significantly.
+>
+> This model difference explains the divergence.
+
+The explanation must reference the actual model mechanics, not just the score difference.
+
+### 6d — Resolution offer (multi-framework divergence)
+
+After presenting the divergence explanation, offer the operator three resolution options. Do not choose for them.
+
+> **Divergence on [Item X] (rank shift: [n] positions).** How would you like to resolve this?
+>
+> 1. **Accept one framework as primary** — use [Framework A]'s ranking as the final order; note the divergence in the scoring record
+> 2. **Manually reorder the divergent items** — you decide the final rank for each divergent item; I will record your choices
+> 3. **Run a third framework as tiebreaker** — run [Framework C] on the full list; use it to arbitrate between the two divergent rankings
+>
+> Which option do you prefer?
+
+Wait for the operator's choice before continuing.
+
+### 6e — Record preservation
+
+After the operator resolves a tie or divergence, preserve both the divergence explanation and the operator's resolution choice in the scoring record. This information is included in the output artefact (Step 7). Mark the record entry: "divergence noted — preserved in scoring record."
+
+### 6f — Single-pass guard
+
+When only one framework pass has been run **and** no tie exists in the results, do not prompt for a second pass. Proceed directly to output. The second-pass prompt is only offered when (a) a tie is detected, or (b) the operator explicitly requests a comparison run.
+
+If only one framework was used and no tie exists, say:
+
+> All items are uniquely ranked. Proceeding to output.
+
+No second-pass prompt is shown in this case.
 
 <!-- pr.4: socialisation and workshopping features added here -->
 
