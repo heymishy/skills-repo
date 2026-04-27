@@ -67,6 +67,7 @@ exemption_labels:
 reference_dirs:
   - 2026-04-18-skills-platform-phase4-revised
   - 2026-04-19-skills-platform-phase4-opus
+  - 2026-04-26-portfolio-sequencing
   - docs-only
 
 # Tracks that do not follow the full discovery → benefit-metric → story pipeline.
