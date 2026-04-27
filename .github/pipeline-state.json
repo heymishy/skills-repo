@@ -3235,7 +3235,7 @@
             {
               "slug": "pr.2",
               "name": "Conversational scoring: WSJF, RICE, and MoSCoW passes",
-              "stage": "definition-of-ready",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
@@ -3244,12 +3244,18 @@
                 "status": "written",
                 "artefact": "artefacts/2026-04-27-prioritise-skill/test-plans/pr.2-test-plan.md",
                 "totalTests": 15,
-                "passing": 0
+                "passing": 15
               },
               "acTotal": 7,
-              "acVerified": 0,
+              "acVerified": 7,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/196",
+              "tasks": [
+                { "id": "pr.2.t1", "name": "Write failing tests (RED)", "tddState": "green" },
+                { "id": "pr.2.t2", "name": "Extend SKILL.md scoring section (GREEN)", "tddState": "green" }
+              ]
             },
             {
               "slug": "pr.3",
