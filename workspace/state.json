@@ -27,18 +27,17 @@
     "observabilityGapsIdentified": 4,
     "status": "complete"
   },
-  "lastUpdated": "2026-04-27T08:40:00Z",
+  "lastUpdated": "2026-04-27T08:52:00Z",
   "currentPhase": "released",
   "activeFeature": "2026-04-27-p1-hash-defect",
   "checkpoint": {
     "writtenAt": "2026-04-27",
-    "contextAtWrite": "P1 story p1-hash-defect COMPLETE. PR #194 merged (8584d53). DoD written and committed to master (1efc4ee). All 5 ACs satisfied, 16/16 tests green. C5 fidelity claim on CLI surface is now true. Feature 2026-04-27-p1-hash-defect: stage=released, dodStatus=complete. Next: PR #193 (CAA reimplementation, test/caa-ci-smoke-2) — review and merge. Then P6a + P5.",
-    "resumeInstruction": "P1 is fully done (DoD complete, merged, released). NEXT PRIORITY: merge PR #193 (CAA reimplementation at https://github.com/heymishy/skills-repo/pull/193 — check CI). Then P6a (/prioritise multi-framework skill, WSJF=7.0) and P5 (in-flight learning capture, WSJF=7.0).",
+    "contextAtWrite": "PR #187 (fix/issue-dispatch-body-encoding — mandatory --body-file two-step pattern) merged at 34614ff. Conflict resolved: workspace/learnings.md backtick-entry inserted before Assurance gate section; rebased onto master; CI passed (3/3 SUCCESS); squash merged. All open PRs now merged. Pipeline is clean. P1 story p1-hash-defect: stage=released, dodStatus=complete (prior session).",
+    "resumeInstruction": "All outstanding PRs merged. Pipeline is clean. NEXT PRIORITIES (by WSJF): (1) P6a — /prioritise multi-framework skill (WSJF, RICE, Kano, MoSCoW, ICE, Opportunity Scoring, CoD). WSJF=7.0. Unblocked. (2) P5 — in-flight learning capture skill, extends /checkpoint and /record-signal. WSJF=7.0. Unblocked. (3) Schema PR — add portfolioItems[] field to .github/pipeline-state.schema.json (ADR-003 requires schema-first) before writing WSJF scores to pipeline-state.json.",
     "pendingActions": [
-      "PR #193 (test/caa-ci-smoke-2, CAA reimplementation: caa.1/caa.2/caa.3) — check CI status and merge.",
+      "P6a — /prioritise multi-framework skill (WSJF, RICE, Kano, MoSCoW, ICE, Opportunity Scoring, CoD). WSJF=7.0. Unblocked. Start with /discovery.",
+      "P5 — in-flight learning capture skill, extends /checkpoint and /record-signal. WSJF=7.0. Unblocked.",
       "Schema PR — add portfolioItems[] field to .github/pipeline-state.schema.json (ADR-003 requires schema-first) before writing WSJF scores to pipeline-state.json.",
-      "P6a — /prioritise multi-framework skill (WSJF, RICE, Kano, MoSCoW, ICE, Opportunity Scoring, CoD). WSJF=7.0. Unblocked.",
-      "P5 — in-flight learning capture, extends /checkpoint and /record-signal. WSJF=7.0. Unblocked.",
       "P2 — Phase 4 WS0 completion (WS0.1-WS0.10: distribution versioning + non-technical channel + ADR-013 combined-op interface + 7 CLI stubs). WSJF=1.8 but blocks P3 Phase 5."
     ]
   },
