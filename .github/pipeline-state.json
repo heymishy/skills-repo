@@ -3199,7 +3199,7 @@
         {
           "slug": "pr-e1",
           "name": "Operators and non-engineers can run structured prioritisation sessions and produce traceable ranked artefacts",
-          "status": "completed",
+          "status": "complete",
           "stories": [
             {
               "slug": "pr.1",
@@ -3245,7 +3245,10 @@
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "updatedAt": "2026-04-28"
             },
             {
               "slug": "pr.2",
@@ -3278,7 +3281,10 @@
                   "name": "Extend SKILL.md scoring section (GREEN)",
                   "tddState": "green"
                 }
-              ]
+              ],
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "updatedAt": "2026-04-28"
             },
             {
               "slug": "pr.3",
@@ -3311,7 +3317,10 @@
                   "name": "Extend SKILL.md — tie detection and divergence handling",
                   "tddState": "green"
                 }
-              ]
+              ],
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "updatedAt": "2026-04-28"
             },
             {
               "slug": "pr.4",
@@ -3344,7 +3353,10 @@
                   "name": "Extend SKILL.md with Step 7 (workshopping mode)",
                   "tddState": "green"
                 }
-              ]
+              ],
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "updatedAt": "2026-04-28"
             },
             {
               "slug": "pr.5",
@@ -3382,7 +3394,10 @@
                   "name": "Add prioritise entry to CONTRACTS[]",
                   "tddState": "green"
                 }
-              ]
+              ],
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "updatedAt": "2026-04-28"
             }
           ]
         }
