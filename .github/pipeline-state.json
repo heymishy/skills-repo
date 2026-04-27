@@ -3260,21 +3260,27 @@
             {
               "slug": "pr.3",
               "name": "Multi-pass orchestration and divergence handling",
-              "stage": "definition-of-ready",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-04-27-prioritise-skill/dor/pr.3-dor.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/197",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-04-27-prioritise-skill/test-plans/pr.3-test-plan.md",
-                "totalTests": 11,
-                "passing": 0
+                "totalTests": 10,
+                "passing": 10
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "tasks": [
+                { "id": "pr.3-t1", "name": "Write failing tests (check-pr.3.js)", "tddState": "green" },
+                { "id": "pr.3-t2", "name": "Extend SKILL.md — tie detection and divergence handling", "tddState": "green" }
+              ]
             },
             {
               "slug": "pr.4",
