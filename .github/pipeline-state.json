@@ -3310,7 +3310,7 @@
             {
               "slug": "pr.5",
               "name": "Output format, rationale enforcement, extension point, and artefact save",
-              "stage": "definition-of-ready",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
@@ -3319,12 +3319,19 @@
                 "status": "written",
                 "artefact": "artefacts/2026-04-27-prioritise-skill/test-plans/pr.5-test-plan.md",
                 "totalTests": 16,
-                "passing": 0
+                "passing": 16
               },
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/199",
               "acTotal": 8,
-              "acVerified": 0,
+              "acVerified": 8,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "tasks": [
+                { "id": "pr.5.t1", "name": "Write failing tests (check-pr.5.js)", "tddState": "green" },
+                { "id": "pr.5.t2", "name": "Extend SKILL.md with output format, save, extension point", "tddState": "green" },
+                { "id": "pr.5.t3", "name": "Add prioritise entry to CONTRACTS[]", "tddState": "green" }
+              ]
             }
           ]
         }
