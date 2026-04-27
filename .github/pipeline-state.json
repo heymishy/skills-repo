@@ -35,7 +35,7 @@
     {
       "slug": "2026-04-27-p1-hash-defect",
       "name": "Fix hash self-comparison defect in cli-adapter advance()",
-      "stage": "definition-of-ready",
+      "stage": "released",
       "health": "green",
       "regulated": false,
       "complianceProfile": "standard",
@@ -52,10 +52,11 @@
           },
           "dorArtefact": "artefacts/2026-04-27-p1-hash-defect/dor/p1-hash-defect-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/194",
-          "dodStatus": "none",
-          "dispatchTarget": "vscode"
+          "dodStatus": "complete",
+          "dispatchTarget": "vscode",
+          "dodArtefact": "artefacts/2026-04-27-p1-hash-defect/dod/p1-hash-defect-dod.md"
         }
       ],
       "updatedAt": "2026-04-27"
