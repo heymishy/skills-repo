@@ -51,7 +51,7 @@ So that **the ranked output feels owned by the group rather than imposed by a to
 - **Security:** None — no credentials or personal data recorded.
 - **Accessibility:** Not applicable — instruction text.
 - **Audit:** None.
-- **Skill contract:** SKILL.md additions must pass `check-skill-contracts.js`.
+- **Skill contract:** SKILL.md additions must pass `node .github/scripts/check-skill-contracts.js`.
 
 ## Complexity Rating
 

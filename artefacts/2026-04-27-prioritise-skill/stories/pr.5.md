@@ -18,7 +18,7 @@ So that **I have a stakeholder-shareable decision record that does not require e
 ## Architecture Constraints
 
 - ADR-011: This story produces the final committed SKILL.md at `.github/skills/prioritise/SKILL.md`. It must be merged via PR with human review (C2 from discovery).
-- C6 (from discovery): The complete SKILL.md must pass `scripts/check-skill-contracts.js` — this story's AC6 verifies this.
+- C6 (from discovery): The complete SKILL.md must pass `node .github/scripts/check-skill-contracts.js` — this story's AC6 verifies this.
 - C5 (from discovery): Output format is plain markdown — self-contained, no runtime dependencies, readable without the pipeline dashboard.
 - Architecture pattern: *"Group instruction-text-only changes at the same exit point into a single story"* — output format, rationale enforcement, extension point, and save are all session-close concerns grouped here.
 
@@ -39,7 +39,7 @@ So that **I have a stakeholder-shareable decision record that does not require e
 
 **AC5:** Given the artefact is saved to disk, when the skill confirms the save, then it displays the confirmed path, states that the session is complete, and does not prompt for further actions within this session — it exits cleanly.
 
-**AC6:** Given all five pr.* stories have been implemented and the complete SKILL.md at `.github/skills/prioritise/SKILL.md` exists, when `node scripts/check-skill-contracts.js` is run, then it reports 0 contract violations for the new skill.
+**AC6:** Given all five pr.* stories have been implemented and the complete SKILL.md at `.github/skills/prioritise/SKILL.md` exists, when `node .github/scripts/check-skill-contracts.js` is run, then it reports 0 contract violations for the new skill — this requires that a `prioritise` entry has been added to `CONTRACTS[]` in `.github/scripts/check-skill-contracts.js` naming at least the required structural section markers (framework names section, output format marker, extension point section, and State update section), since without a contract entry the script passes vacuously for any file state.
 
 **AC7:** Given the output artefact, when a non-engineer stakeholder with no pipeline context reads it, then the artefact contains no unexplained pipeline jargon — all framework abbreviations (WSJF, RICE, MoSCoW) are expanded on first use in the artefact header or a brief legend section.
 
@@ -58,7 +58,7 @@ So that **I have a stakeholder-shareable decision record that does not require e
 - **Security:** No credentials, tokens, or personal identifiers in the output artefact — scores and rationale are operator-authored content.
 - **Accessibility:** Not applicable — instruction text and markdown output.
 - **Audit:** None beyond the artefact itself being the decision record.
-- **Skill contract:** Complete SKILL.md must pass `check-skill-contracts.js` with 0 violations (AC6).
+- **Skill contract:** Complete SKILL.md must pass `node .github/scripts/check-skill-contracts.js` with 0 violations (AC6). A `prioritise` entry must be added to `CONTRACTS[]` in that script as part of this story's implementation scope.
 
 ## Complexity Rating
 

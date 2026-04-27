@@ -51,7 +51,7 @@ So that **I can make an informed choice between conflicting signals rather than 
 - **Security:** None.
 - **Accessibility:** Not applicable.
 - **Audit:** None.
-- **Skill contract:** SKILL.md additions must pass `check-skill-contracts.js`.
+- **Skill contract:** SKILL.md additions must pass `node .github/scripts/check-skill-contracts.js`.
 
 ## Complexity Rating
 
