@@ -27,22 +27,19 @@
     "observabilityGapsIdentified": 4,
     "status": "complete"
   },
-  "lastUpdated": "2026-04-28T00:00:00Z",
+  "lastUpdated": "2026-04-28T12:00:00Z",
   "currentPhase": "released",
   "activeFeature": "2026-04-27-prioritise-skill",
   "checkpoint": {
     "writtenAt": "2026-04-28",
-    "contextAtWrite": "PRs #195–#199 (feature/pr.1–pr.5) all merged to master. /prioritise SKILL.md complete: candidate intake, framework selection, conversational scoring (WSJF/RICE/MoSCoW), tie detection/divergence, workshopping mode, output format, rationale enforcement, artefact save, extension point. D19 learning (stacked PR rebase cascade friction) logged to workspace/learnings.md and committed on test/caa-ci-smoke-2 — needs cherry-pick to master. Pipeline-state updated: feature stage=released, all 5 stories prStatus=merged.",
-    "resumeInstruction": "1. Cherry-pick D19 learnings commit (5fcb0ca from test/caa-ci-smoke-2) to master. 2. Run /definition-of-done for each story pr.1–pr.5 against merged PRs #195–#199. 3. Record M1/M2 metric signals from first real /prioritise session use. 4. Next portfolio priority: check artefacts/2026-04-24-platform-onboarding-distribution/ discovery input (committed on test/caa-ci-smoke-2) — run /discovery if not yet done.",
+    "contextAtWrite": "/definition-of-done complete for all 5 stories (pr.1–pr.5). DoD artefacts written to artefacts/2026-04-27-prioritise-skill/dod/. Pipeline-state updated: dodStatus=complete, releaseReady=true, health=green on all 5 stories. Epic status corrected to 'complete' (was 'completed' — schema fix). Committed 263e7d2 and pushed to master. All metrics (M1/M2/M3/MM1) are not-yet-measured — first real session required.",
+    "resumeInstruction": "DoD is complete for the /prioritise feature. Next actions: (1) Run first real /prioritise session — operator must actually invoke the skill in a chat session with real candidate items. (2) After session: record M1 signal (artefact saved? yes/no) and M2 signal (rationale present in artefact? yes/no) using /record-signal or pipeline-state.json metrics[] update. (3) Platform onboarding/distribution feature (artefacts/2026-04-24-platform-onboarding-distribution/): check if discovery artefact exists; if not, run /discovery.",
     "pendingActions": [
-      "Cherry-pick D19 learning commit (5fcb0ca on test/caa-ci-smoke-2) to master so workspace/learnings.md is on the default branch.",
-      "Run /definition-of-done for pr.1 (AC1–AC5, AC7, NFR) against merged PR #195.",
-      "Run /definition-of-done for pr.2 (conversational scoring ACs) against merged PR #196.",
-      "Run /definition-of-done for pr.3 (tie detection ACs) against merged PR #197.",
-      "Run /definition-of-done for pr.4 (workshopping mode ACs) against merged PR #198.",
-      "Run /definition-of-done for pr.5 (output format, rationale, save, extension ACs) against merged PR #199.",
-      "Record M1/M2 metric signals after first real /prioritise session.",
-      "Platform onboarding/distribution feature: discovery input already committed — run /discovery to generate artefact."
+      "Item 3: Run first real /prioritise session with actual candidate items — operator invokes /prioritise in a chat session, completes scoring, saves artefact to disk.",
+      "After first session: Record M1 signal (session completion rate — did artefact get written?) in pipeline-state.json metrics[] for 2026-04-27-prioritise-skill.",
+      "After first session: Record M2 signal (rationale completeness — does artefact contain rationale sentences per framework?) in pipeline-state.json metrics[].",
+      "After first non-engineer session: Record M3 signal (non-engineer unassisted completion — did the skill's explanations suffice?).",
+      "Platform onboarding/distribution feature: check artefacts/2026-04-24-platform-onboarding-distribution/ for discovery artefact; run /discovery if not present."
     ]
   },
   "cycle": {
