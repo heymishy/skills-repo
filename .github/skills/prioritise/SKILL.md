@@ -154,7 +154,94 @@ Example:
 
 ---
 
-<!-- pr.2: conversational scoring section (WSJF, RICE, MoSCoW passes) added here -->
+## Step 3 — Scoring pass
+
+### WSJF scoring
+
+Score each item across the four WSJF dimensions, one dimension at a time. Do not present all dimensions at once. For each dimension, suggest a plausible value (1–10 scale) with a one-sentence reason, then invite the operator to confirm or override.
+
+The four WSJF dimensions, in scoring order:
+
+1. **User/Business Value** — How much direct value does this item deliver to users or the business?
+2. **Time Criticality** — How much does the value decay over time? How urgent is delivery?
+3. **Risk Reduction / Opportunity Enablement** — Does this item reduce a significant risk or unlock future capability?
+4. **Job Size** — How much relative effort does this item require?
+
+**Scoring format (one dimension per turn):**
+
+> "[Item name] — **[Dimension name]**
+>
+> My suggested value: **[N]**
+> Reasoning: [One sentence explaining the suggested value.]
+>
+> Confirm or override? (Enter a number, or press Enter to accept [N].)"
+
+Rationale elicitation is part of the scoring pass. For each item, ask at least one rationale question — for example: "What's driving the high User/Business Value score for [item]?" Do not skip rationale elicitation even if the operator is moving quickly.
+
+### Override acceptance
+
+If the operator provides a different value, accept the corrected value without re-arguing. The corrected value is used in all subsequent calculations for that item. Note the correction without flagging it as unusual:
+
+> "Got it — using [corrected value] for [dimension] on [item]."
+
+Do not re-suggest the original value. Do not explain why the original suggestion was better.
+
+### RICE scoring
+
+Score each item across the four RICE dimensions using the same pattern as WSJF: one dimension at a time, with a suggested value, one-sentence reasoning, and a confirm or override invite.
+
+The four RICE dimensions, in scoring order:
+
+1. **Reach** — How many people or units are affected per time period?
+2. **Impact** — What is the magnitude of the change for each person/unit affected?
+3. **Confidence** — How certain are you about the Reach and Impact estimates? (0–100%)
+4. **Effort** — How many person-months does this item require?
+
+Invite confirm or override for each dimension following the same scoring format as WSJF.
+
+### MoSCoW scoring
+
+Score each item one at a time — assign to a bucket with a one-sentence rationale, then invite confirmation or reclassification. Does not present all items simultaneously.
+
+The four MoSCoW buckets are: **Must-have**, **Should-have**, **Could-have**, and **Won't-have**.
+
+**Scoring format (one item per turn):**
+
+> "[Item name]
+>
+> Suggested bucket: **[Bucket]**
+> Rationale: [One sentence explaining why this item fits this bucket.]
+>
+> Confirm, or move to a different bucket? (Must-have / Should-have / Could-have / Won't-have)"
+
+---
+
+## Step 4 — Rationale capture
+
+After completing the scoring pass, ensure at least one rationale sentence has been recorded for each item. If the operator has not provided rationale during scoring, perform rationale elicitation — ask one focused rationale question per item:
+
+> "What's driving the [high/low] [dimension] score for [item]?"
+
+Does not skip rationale elicitation even if the operator is moving quickly.
+
+If the operator does not respond to the rationale question, record `[rationale not provided]` as a placeholder and proceed without blocking progress. Do not block progress waiting for a rationale that was not provided.
+
+---
+
+## Step 5 — Scored list
+
+Present items in descending score order. Each row shows: item name, score, rationale (or `[rationale not provided]` if the operator did not provide one).
+
+**Output format:**
+
+> **Ranked results ([Framework] — [date])**
+>
+> | # | Item | Score | Rationale |
+> |---|------|-------|-----------|
+> | 1 | [Item] | [N] | [rationale or `[rationale not provided]`] |
+> | 2 | [Item] | [N] | [rationale or `[rationale not provided]`] |
+>
+> Would you like to proceed to output (save this as a shareable artefact), or run another framework pass on the same list for comparison?
 
 <!-- pr.3: multi-pass orchestration and divergence handling added here -->
 
