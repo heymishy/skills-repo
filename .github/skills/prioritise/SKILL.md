@@ -371,4 +371,129 @@ At the end of a workshopping session, the closing output must attribute the prio
 
 Do not use "I recommend" as the framing phrase in a workshopping closing. The group decided; the skill facilitated.
 
-<!-- pr.5: output format, artefact save, rationale enforcement, and extension point added here -->
+## Output Format
+
+After scoring and any divergence resolution are complete, assemble the output artefact. The artefact is a markdown document with four required sections:
+
+### (a) Ranked list — final rankings
+
+List all candidate items in descending priority order with their final rank number:
+
+```
+1. [Item A]
+2. [Item B]
+3. [Item C]
+```
+
+### (b) Scores per framework
+
+For each framework used, include a scores table with scores for each item across all dimensions:
+
+```
+#### WSJF scores
+| Item | Cost of Delay | Job Size | WSJF Score |
+|------|--------------|----------|-----------|
+| Item A | 8 | 2 | 4.0 |
+```
+
+Repeat this block for each framework used in the session.
+
+### (c) Rationale field per item per framework
+
+For each item and each framework, include the rationale elicited during scoring (or the `[rationale not provided]` placeholder from the scoring step):
+
+```
+**Item A — WSJF rationale:** Market window closing in Q3; delayed delivery loses first-mover advantage.
+**Item B — WSJF rationale:** [rationale not provided]
+```
+
+### (d) Session metadata block
+
+Include a session metadata block at the top of the artefact:
+
+```
+---
+date: [YYYY-MM-DD]
+frameworks used: [WSJF / RICE / MoSCoW]
+operator-confirmed resolution: [description if divergence was present, or "none"]
+---
+```
+
+### Missing rationale warning
+
+Before saving, check whether any rationale field contains `[rationale not provided]`. If so, state:
+
+> ⚠ [N] items are missing rationale — the artefact is complete but these gaps are visible to stakeholders.
+
+Then offer the operator a chance to fill in the missing rationales:
+
+> Would you like to fill in any of these rationale fields before saving?
+
+Do NOT silently omit this warning. An artefact with missing rationale fields is complete but explicitly flagged.
+
+### Divergence section
+
+When a multi-framework session was run and divergence was detected (see Step 6), include a divergence section in the output artefact:
+
+```
+## Divergence Record
+
+The following items ranked differently across frameworks:
+- [Item name]: WSJF rank [N], RICE rank [M]
+
+Why frameworks diverge:
+[Model-level explanation from Step 6 — e.g. "WSJF prioritises cost-of-delay; RICE weights confidence..."]
+
+Operator resolution: [chosen resolution — e.g. "accept WSJF order" / "manually reorder" / "use third framework"]
+```
+
+## Saving the Artefact
+
+Suggest the default save path:
+
+> `artefacts/prioritise-[YYYY-MM-DD]-[topic-slug].md`
+
+Accept any operator-provided alternative path. Do NOT save without confirming the path with the operator:
+
+> Shall I save to `artefacts/prioritise-[YYYY-MM-DD]-[topic-slug].md`, or would you like a different path?
+
+After the operator confirms the path, save the artefact and display the confirmed path:
+
+> Saved to `artefacts/prioritise-[YYYY-MM-DD]-[topic-slug].md`. The session is complete.
+
+Do not prompt for further actions within the session after the artefact is saved.
+
+## Available Frameworks
+
+The three supported frameworks are:
+
+- **WSJF** — Weighted Shortest Job First (WSJF): prioritises by cost-of-delay divided by job size. Best for roadmap sequencing under capacity constraints.
+- **RICE** — Reach, Impact, Confidence, Effort (RICE): prioritises by (Reach × Impact × Confidence) ÷ Effort. Best for product feature decisions with known user data.
+- **MoSCoW** — Must-have, Should-have, Could-have, Won't-have (MoSCoW): categorises items by delivery commitment tier. Best for scope negotiation and MVP definition.
+
+## Adding a New Framework (v2 Extension Point)
+
+To add a new scoring framework to `/prioritise` in a future version, follow these steps:
+
+1. **Add a description block** in the `## Available Frameworks` section above, naming the framework, its full name, its scoring dimensions, and the use case it is best suited for.
+
+2. **Add a scoring section** in Step 3 following the same structure as the existing WSJF, RICE, and MoSCoW blocks:
+   - Name the scoring dimensions
+   - Describe each dimension in plain language
+   - Provide the scoring scale (e.g. 1–10, or categorical)
+   - Specify the formula or aggregation rule
+
+3. **Extend the output format fields** in the `## Output Format` section above:
+   - Add a scores table block for the new framework in section (b)
+   - Add a rationale field pattern in section (c)
+
+4. **Example frameworks suitable for v2:** Kano model (Basic / Performance / Excitement), ICE scoring (Impact × Confidence × Ease).
+
+5. **Add an entry** in `.github/scripts/check-skill-contracts.js` `CONTRACTS[]` naming the new framework's section header as a required structural marker.
+
+## State update — mandatory final step
+
+After the prioritised artefact has been saved and the session is complete, no further pipeline state update is required within the session. The artefact on disk is the record of completion.
+
+If the operator wishes to record the prioritisation session outcome in the feature's pipeline state, they may update the relevant story's `verifyStatus` field to `"verified"` and note the artefact path in the story record.
+
