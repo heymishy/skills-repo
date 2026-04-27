@@ -27,18 +27,22 @@
     "observabilityGapsIdentified": 4,
     "status": "complete"
   },
-  "lastUpdated": "2026-04-27T08:52:00Z",
+  "lastUpdated": "2026-04-28T00:00:00Z",
   "currentPhase": "released",
-  "activeFeature": "2026-04-27-p1-hash-defect",
+  "activeFeature": "2026-04-27-prioritise-skill",
   "checkpoint": {
-    "writtenAt": "2026-04-27",
-    "contextAtWrite": "PR #187 (fix/issue-dispatch-body-encoding — mandatory --body-file two-step pattern) merged at 34614ff. Conflict resolved: workspace/learnings.md backtick-entry inserted before Assurance gate section; rebased onto master; CI passed (3/3 SUCCESS); squash merged. All open PRs now merged. Pipeline is clean. P1 story p1-hash-defect: stage=released, dodStatus=complete (prior session).",
-    "resumeInstruction": "All outstanding PRs merged. Pipeline is clean. NEXT PRIORITIES (by WSJF): (1) P6a — /prioritise multi-framework skill (WSJF, RICE, Kano, MoSCoW, ICE, Opportunity Scoring, CoD). WSJF=7.0. Unblocked. (2) P5 — in-flight learning capture skill, extends /checkpoint and /record-signal. WSJF=7.0. Unblocked. (3) Schema PR — add portfolioItems[] field to .github/pipeline-state.schema.json (ADR-003 requires schema-first) before writing WSJF scores to pipeline-state.json.",
+    "writtenAt": "2026-04-28",
+    "contextAtWrite": "PRs #195–#199 (feature/pr.1–pr.5) all merged to master. /prioritise SKILL.md complete: candidate intake, framework selection, conversational scoring (WSJF/RICE/MoSCoW), tie detection/divergence, workshopping mode, output format, rationale enforcement, artefact save, extension point. D19 learning (stacked PR rebase cascade friction) logged to workspace/learnings.md and committed on test/caa-ci-smoke-2 — needs cherry-pick to master. Pipeline-state updated: feature stage=released, all 5 stories prStatus=merged.",
+    "resumeInstruction": "1. Cherry-pick D19 learnings commit (5fcb0ca from test/caa-ci-smoke-2) to master. 2. Run /definition-of-done for each story pr.1–pr.5 against merged PRs #195–#199. 3. Record M1/M2 metric signals from first real /prioritise session use. 4. Next portfolio priority: check artefacts/2026-04-24-platform-onboarding-distribution/ discovery input (committed on test/caa-ci-smoke-2) — run /discovery if not yet done.",
     "pendingActions": [
-      "P6a — /prioritise multi-framework skill (WSJF, RICE, Kano, MoSCoW, ICE, Opportunity Scoring, CoD). WSJF=7.0. Unblocked. Start with /discovery.",
-      "P5 — in-flight learning capture skill, extends /checkpoint and /record-signal. WSJF=7.0. Unblocked.",
-      "Schema PR — add portfolioItems[] field to .github/pipeline-state.schema.json (ADR-003 requires schema-first) before writing WSJF scores to pipeline-state.json.",
-      "P2 — Phase 4 WS0 completion (WS0.1-WS0.10: distribution versioning + non-technical channel + ADR-013 combined-op interface + 7 CLI stubs). WSJF=1.8 but blocks P3 Phase 5."
+      "Cherry-pick D19 learning commit (5fcb0ca on test/caa-ci-smoke-2) to master so workspace/learnings.md is on the default branch.",
+      "Run /definition-of-done for pr.1 (AC1–AC5, AC7, NFR) against merged PR #195.",
+      "Run /definition-of-done for pr.2 (conversational scoring ACs) against merged PR #196.",
+      "Run /definition-of-done for pr.3 (tie detection ACs) against merged PR #197.",
+      "Run /definition-of-done for pr.4 (workshopping mode ACs) against merged PR #198.",
+      "Run /definition-of-done for pr.5 (output format, rationale, save, extension ACs) against merged PR #199.",
+      "Record M1/M2 metric signals after first real /prioritise session.",
+      "Platform onboarding/distribution feature: discovery input already committed — run /discovery to generate artefact."
     ]
   },
   "cycle": {
