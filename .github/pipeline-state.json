@@ -3138,7 +3138,7 @@
     {
       "slug": "2026-04-27-prioritise-skill",
       "name": "/prioritise — Multi-Framework Prioritisation Skill (P6a)",
-      "stage": "subagent-execution",
+      "stage": "released",
       "health": "green",
       "discoveryStatus": "approved",
       "track": "library",
@@ -3199,27 +3199,42 @@
         {
           "slug": "pr-e1",
           "name": "Operators and non-engineers can run structured prioritisation sessions and produce traceable ranked artefacts",
-          "status": "in-progress",
+          "status": "completed",
           "stories": [
             {
               "slug": "pr.1",
               "name": "Candidate intake and framework selection",
-              "stage": "subagent-execution",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-04-27-prioritise-skill/dor/pr.1-dor.md",
               "worktree": ".worktrees/pr.1",
               "branch": "feature/pr.1",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/195",
               "baselineFailures": 2,
               "baselineFailureNote": "Pre-existing p3.3 failures (workflow pinned ref / HTTPS) — acknowledged, unrelated to pr.1",
               "planArtefact": "artefacts/2026-04-27-prioritise-skill/plans/pr.1-plan.md",
               "tasks": [
-                { "id": "task-1", "name": "Write failing test script (tests/check-pr.1.js)", "tddState": "green", "file": "artefacts/2026-04-27-prioritise-skill/plans/pr.1-plan.md" },
-                { "id": "task-2", "name": "Create SKILL.md with intake and framework selection", "tddState": "green", "file": "artefacts/2026-04-27-prioritise-skill/plans/pr.1-plan.md" },
-                { "id": "task-3", "name": "Open draft PR", "tddState": "green", "file": "artefacts/2026-04-27-prioritise-skill/plans/pr.1-plan.md" }
+                {
+                  "id": "task-1",
+                  "name": "Write failing test script (tests/check-pr.1.js)",
+                  "tddState": "green",
+                  "file": "artefacts/2026-04-27-prioritise-skill/plans/pr.1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Create SKILL.md with intake and framework selection",
+                  "tddState": "green",
+                  "file": "artefacts/2026-04-27-prioritise-skill/plans/pr.1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Open draft PR",
+                  "tddState": "green",
+                  "file": "artefacts/2026-04-27-prioritise-skill/plans/pr.1-plan.md"
+                }
               ],
               "testPlan": {
                 "status": "written",
@@ -3235,7 +3250,7 @@
             {
               "slug": "pr.2",
               "name": "Conversational scoring: WSJF, RICE, and MoSCoW passes",
-              "stage": "subagent-execution",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
@@ -3250,22 +3265,30 @@
               "acVerified": 7,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/196",
               "tasks": [
-                { "id": "pr.2.t1", "name": "Write failing tests (RED)", "tddState": "green" },
-                { "id": "pr.2.t2", "name": "Extend SKILL.md scoring section (GREEN)", "tddState": "green" }
+                {
+                  "id": "pr.2.t1",
+                  "name": "Write failing tests (RED)",
+                  "tddState": "green"
+                },
+                {
+                  "id": "pr.2.t2",
+                  "name": "Extend SKILL.md scoring section (GREEN)",
+                  "tddState": "green"
+                }
               ]
             },
             {
               "slug": "pr.3",
               "name": "Multi-pass orchestration and divergence handling",
-              "stage": "subagent-execution",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-04-27-prioritise-skill/dor/pr.3-dor.md",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/197",
               "testPlan": {
                 "status": "written",
@@ -3278,14 +3301,22 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "tasks": [
-                { "id": "pr.3-t1", "name": "Write failing tests (check-pr.3.js)", "tddState": "green" },
-                { "id": "pr.3-t2", "name": "Extend SKILL.md — tie detection and divergence handling", "tddState": "green" }
+                {
+                  "id": "pr.3-t1",
+                  "name": "Write failing tests (check-pr.3.js)",
+                  "tddState": "green"
+                },
+                {
+                  "id": "pr.3-t2",
+                  "name": "Extend SKILL.md — tie detection and divergence handling",
+                  "tddState": "green"
+                }
               ]
             },
             {
               "slug": "pr.4",
               "name": "Socialisation and workshopping features",
-              "stage": "subagent-execution",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
@@ -3296,21 +3327,29 @@
                 "totalTests": 10,
                 "passing": 10
               },
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/198",
               "acTotal": 7,
               "acVerified": 7,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "tasks": [
-                { "id": "pr.4.t1", "name": "Write failing tests (check-pr.4.js)", "tddState": "green" },
-                { "id": "pr.4.t2", "name": "Extend SKILL.md with Step 7 (workshopping mode)", "tddState": "green" }
+                {
+                  "id": "pr.4.t1",
+                  "name": "Write failing tests (check-pr.4.js)",
+                  "tddState": "green"
+                },
+                {
+                  "id": "pr.4.t2",
+                  "name": "Extend SKILL.md with Step 7 (workshopping mode)",
+                  "tddState": "green"
+                }
               ]
             },
             {
               "slug": "pr.5",
               "name": "Output format, rationale enforcement, extension point, and artefact save",
-              "stage": "subagent-execution",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
@@ -3321,16 +3360,28 @@
                 "totalTests": 16,
                 "passing": 16
               },
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/199",
               "acTotal": 8,
               "acVerified": 8,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "tasks": [
-                { "id": "pr.5.t1", "name": "Write failing tests (check-pr.5.js)", "tddState": "green" },
-                { "id": "pr.5.t2", "name": "Extend SKILL.md with output format, save, extension point", "tddState": "green" },
-                { "id": "pr.5.t3", "name": "Add prioritise entry to CONTRACTS[]", "tddState": "green" }
+                {
+                  "id": "pr.5.t1",
+                  "name": "Write failing tests (check-pr.5.js)",
+                  "tddState": "green"
+                },
+                {
+                  "id": "pr.5.t2",
+                  "name": "Extend SKILL.md with output format, save, extension point",
+                  "tddState": "green"
+                },
+                {
+                  "id": "pr.5.t3",
+                  "name": "Add prioritise entry to CONTRACTS[]",
+                  "tddState": "green"
+                }
               ]
             }
           ]
