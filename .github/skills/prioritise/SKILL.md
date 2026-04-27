@@ -70,6 +70,21 @@ State the count and list them back to confirm before proceeding:
 
 Do not proceed to framework selection until the candidate list is confirmed.
 
+### Context-read before asking
+
+Before asking any clarifying questions, check accessible context for existing signals. Look for:
+
+- An active feature in `pipeline-state.json` with goals, audience, or timeframe fields set
+- A `portfolio-state.json` with candidate items or prioritisation history
+- A prior `/ideate` or `/discovery` artefact in the current session
+- Any operator-provided context in the current conversation
+
+If signals are found, surface them and confirm rather than asking cold:
+
+> "Based on [source], I can see [signal]. I'll suggest [framework] — does that match what you're trying to decide?"
+
+If no context is found, proceed with the clarifying questions below. Never ask for information already present in accessible context.
+
 ### Gathering missing context
 
 Ask for any missing context needed to suggest the right framework.
