@@ -125,6 +125,15 @@ assert(
   `Expected one of: ${ac5Limit.join(', ')}`
 );
 
+// AC7 — context-read section precedes clarifying questions
+const contextReadIdx = content.indexOf('Context-read before asking');
+const highestValueIdx = content.indexOf('highest-value questions');
+assert(
+  'AC7: context-read section must precede clarifying questions',
+  contextReadIdx !== -1 && highestValueIdx !== -1 && contextReadIdx < highestValueIdx,
+  '"Context-read before asking" section not found or does not appear before "highest-value questions"'
+);
+
 // AC6 — check-skill-contracts.js exits 0
 // Note: the 'prioritise' contract entry is added by pr.5; this test verifies the
 // partial file does not break any existing contracts.
