@@ -27,17 +27,19 @@
     "observabilityGapsIdentified": 4,
     "status": "complete"
   },
-  "lastUpdated": "2026-04-23T00:00:00Z",
-  "currentPhase": "definition-of-done",
-  "activeFeature": "2026-04-23-ci-artefact-attachment",
+  "lastUpdated": "2026-04-27T08:40:00Z",
+  "currentPhase": "released",
+  "activeFeature": "2026-04-27-p1-hash-defect",
   "checkpoint": {
-    "writtenAt": "2026-04-23",
-    "contextAtWrite": "caa.1/caa.2/caa.3 reimplementation complete. All 3 stories fully implemented via VS Code inner loop on branch feat/caa-reimplementation after original GitHub SWE agent PRs #186/#188/#189 merged empty (D18 pattern). PR #190 merged. Tests: caa.1=40/40, caa.2=26/26, caa.3=26/26. Feature stage advanced to definition-of-done. pipeline-state.json updated: dodStatus=complete, releaseReady=true, prUrl=PR#190 for all 3 stories.",
-    "resumeInstruction": "Feature 2026-04-23-ci-artefact-attachment is at definition-of-done stage. All 3 stories (caa.1/caa.2/caa.3) have dodStatus=complete, PR #190 merged. Pre-existing npm test failures remain: 2x p3.3 checks (workflow-yaml-uses-pinned-immutable-ref, download-uses-https-not-http) — not caused by CAA work. Next actions: (1) run /definition-of-done skill if formal DoD review wanted; (2) proceed to next queued feature or run /release for the CAA epic.",
+    "writtenAt": "2026-04-27",
+    "contextAtWrite": "P1 story p1-hash-defect COMPLETE. PR #194 merged (8584d53). DoD written and committed to master (1efc4ee). All 5 ACs satisfied, 16/16 tests green. C5 fidelity claim on CLI surface is now true. Feature 2026-04-27-p1-hash-defect: stage=released, dodStatus=complete. Next: PR #193 (CAA reimplementation, test/caa-ci-smoke-2) — review and merge. Then P6a + P5.",
+    "resumeInstruction": "P1 is fully done (DoD complete, merged, released). NEXT PRIORITY: merge PR #193 (CAA reimplementation at https://github.com/heymishy/skills-repo/pull/193 — check CI). Then P6a (/prioritise multi-framework skill, WSJF=7.0) and P5 (in-flight learning capture, WSJF=7.0).",
     "pendingActions": [
-      "Optional: run /definition-of-done skill for formal DoD review of caa.1/caa.2/caa.3",
-      "Optional: run /release to prepare release notes for the CI artefact attachment epic",
-      "Pre-existing npm test failures (p3.3): workflow-yaml-uses-pinned-immutable-ref and download-uses-https-not-http — separate story needed to resolve"
+      "PR #193 (test/caa-ci-smoke-2, CAA reimplementation: caa.1/caa.2/caa.3) — check CI status and merge.",
+      "Schema PR — add portfolioItems[] field to .github/pipeline-state.schema.json (ADR-003 requires schema-first) before writing WSJF scores to pipeline-state.json.",
+      "P6a — /prioritise multi-framework skill (WSJF, RICE, Kano, MoSCoW, ICE, Opportunity Scoring, CoD). WSJF=7.0. Unblocked.",
+      "P5 — in-flight learning capture, extends /checkpoint and /record-signal. WSJF=7.0. Unblocked.",
+      "P2 — Phase 4 WS0 completion (WS0.1-WS0.10: distribution versioning + non-technical channel + ADR-013 combined-op interface + 7 CLI stubs). WSJF=1.8 but blocks P3 Phase 5."
     ]
   },
   "cycle": {
