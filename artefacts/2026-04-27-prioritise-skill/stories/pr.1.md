@@ -38,7 +38,7 @@ So that **I enter the scoring phase with a clear, agreed plan rather than a blan
 
 **AC5:** Given the operator provides no context about goals or audience, when the skill reaches framework selection, then it asks at most two clarifying questions before making a suggestion — it does not loop indefinitely before proceeding.
 
-**AC6:** Given the SKILL.md file is authored for this story, when `node scripts/check-skill-contracts.js` is run, then it passes for the partial file (no contract violation for sections not yet written in later stories).
+**AC6:** Given the SKILL.md file is authored for this story, when `node .github/scripts/check-skill-contracts.js` is run, then it passes for the partial file (no contract violation for sections not yet written in later stories).
 
 ## Out of Scope
 
@@ -53,7 +53,7 @@ So that **I enter the scoring phase with a clear, agreed plan rather than a blan
 - **Security:** None — no credentials, tokens, or external data access.
 - **Accessibility:** Not applicable — this is instruction text, not a UI component.
 - **Audit:** None — operator-facing skill instruction; no system-level audit requirement.
-- **Skill contract:** The SKILL.md partial file must pass `check-skill-contracts.js` after this story is implemented.
+- **Skill contract:** The SKILL.md partial file must pass `node .github/scripts/check-skill-contracts.js` after this story is implemented.
 
 ## Complexity Rating
 

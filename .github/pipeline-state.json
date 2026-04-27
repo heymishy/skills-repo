@@ -3138,7 +3138,7 @@
     {
       "slug": "2026-04-27-prioritise-skill",
       "name": "/prioritise — Multi-Framework Prioritisation Skill (P6a)",
-      "stage": "definition",
+      "stage": "review",
       "health": "green",
       "discoveryStatus": "approved",
       "track": "library",
@@ -3204,32 +3204,37 @@
             {
               "slug": "pr.1",
               "name": "Candidate intake and framework selection",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed"
             },
             {
               "slug": "pr.2",
               "name": "Conversational scoring: WSJF, RICE, and MoSCoW passes",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed"
             },
             {
               "slug": "pr.3",
               "name": "Multi-pass orchestration and divergence handling",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed"
             },
             {
               "slug": "pr.4",
               "name": "Socialisation and workshopping features",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed"
             },
             {
               "slug": "pr.5",
               "name": "Output format, rationale enforcement, extension point, and artefact save",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed"
             }
           ]
         }

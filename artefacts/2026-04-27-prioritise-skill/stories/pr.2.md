@@ -55,7 +55,7 @@ So that **I complete a full scored pass without needing prior scoring expertise,
 - **Security:** None — no credentials, tokens, or external data access.
 - **Accessibility:** Not applicable — instruction text, not a UI component.
 - **Audit:** None — operator-facing skill instruction.
-- **Skill contract:** SKILL.md additions must pass `check-skill-contracts.js`.
+- **Skill contract:** SKILL.md additions must pass `node .github/scripts/check-skill-contracts.js`.
 
 ## Complexity Rating
 
