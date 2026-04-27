@@ -72,10 +72,10 @@ This initiative delivers a new library skill (product value) and simultaneously 
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1 — Session completion rate | TBD at /definition | Gap — awaiting story definition |
-| M2 — Rationale completeness | TBD at /definition | Gap — awaiting story definition |
-| M3 — Non-engineer unassisted completion | TBD at /definition | Gap — awaiting story definition |
-| MM1 — Cold-start replication | TBD at /definition | Gap — awaiting story definition |
+| M1 — Session completion rate | pr.2 (conversational scoring creates a completable session), pr.5 (artefact save = completion event) | ✅ Covered |
+| M2 — Rationale completeness | pr.2 (rationale elicitation during scoring), pr.5 (output format enforces rationale field) | ✅ Covered |
+| M3 — Non-engineer unassisted completion | pr.1 (framework introductions for non-engineers), pr.2 (guided scoring with plain-language suggestions), pr.4 (workshopping mode for mixed groups) | ✅ Covered |
+| MM1 — Cold-start replication | pr.1 (skill opening guidance), pr.5 (extension-point documentation makes skill self-contained) | ✅ Covered |
 
 ---
 
