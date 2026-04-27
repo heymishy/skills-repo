@@ -1,8 +1,8 @@
 # Discovery: /prioritise — Multi-Framework Prioritisation Skill
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-04-27
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Operator, 2026-04-27
 **Author:** Copilot (GitHub Copilot, Claude Sonnet 4.6) with operator
 
 ---
@@ -21,15 +21,13 @@ Two triggers converge. First, the operator just ran a manual WSJF prioritisation
 
 ## MVP Scope
 
-All 7 frameworks in v1:
+Three frameworks in v1 with a designed extension point:
 
-- **WSJF** (Weighted Shortest Job First — SAFe model: job size / cost-of-delay)
-- **RICE** (Reach × Impact × Confidence / Effort)
-- **Kano** (Must-be, Performance, Delighter classification)
-- **MoSCoW** (Must-have, Should-have, Could-have, Won't-have — PM/business interoperability)
-- **ICE** (Impact × Confidence × Ease)
-- **Opportunity Scoring** (Importance minus Satisfaction gap)
-- **Cost of Delay** (standalone — urgency profile, delay cost curves)
+- **WSJF** (Weighted Shortest Job First — SAFe model: cost-of-delay / job size) — demand proven: just run manually as the P6a sequencing session
+- **RICE** (Reach × Impact × Confidence / Effort) — PM ubiquity; speaks the language of the target bridgehead personas
+- **MoSCoW** (Must-have, Should-have, Could-have, Won't-have) — business/stakeholder interoperability; lowest barrier to entry for non-engineers
+
+Deferred to v2 (extension point in SKILL.md will document how to add): Kano, ICE, Opportunity Scoring, Cost of Delay (standalone). ICE overlaps with RICE sufficiently to cause confusion in v1. The remaining three require per-dimension explanation overhead that is not warranted without demonstrated demand.
 
 The skill must:
 - Accept candidate items from the operator (described in plain language) or optionally from `pipeline-state.json` candidate feature list
@@ -51,7 +49,7 @@ The skill must:
 
 ## Assumptions and Risks
 
-- **ASSUMPTION-01:** Operators will provide honest scoring inputs. The skill can suggest values but cannot validate them against external data — garbage-in, garbage-out on scores is a real risk, especially when a stakeholder wants a particular item to win.
+- **ASSUMPTION-01 (highest risk):** Operators will provide honest scoring inputs. The skill can suggest values but cannot validate them against external data — garbage-in, garbage-out on scores is the highest risk, especially when a stakeholder wants a particular item to win. A well-formatted artefact does not indicate a well-scored one. The benefit-metric session must surface a meta-metric around input quality (e.g. operator can state a rationale for at least one score per framework pass when prompted), not just ranked output production. S1 ("artefact they'd share with a stakeholder") is gameable by a well-formatted but poorly-scored run without this paired signal.
 - **ASSUMPTION-02:** The 7 frameworks listed cover the current user base's needs. Enterprise teams may use proprietary or hybrid frameworks not included here.
 - **ASSUMPTION-03:** A conversational scoring session (one dimension at a time, with suggested values) is acceptable UX for non-engineers. If PMs expect a spreadsheet-style input, the conversational format may feel unfamiliar initially.
 - **RISK-01:** The skill produces a confident-looking artefact. A low-quality input session (rushed scores, no rationale) will produce a well-formatted but unreliable output. The socialisation/workshopping features are the primary mitigation — guided group prompts reduce the likelihood of unconsidered scores getting through.
