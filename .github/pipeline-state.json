@@ -380,7 +380,7 @@
     {
       "slug": "2026-04-24-platform-onboarding-distribution",
       "name": "Platform onboarding, distribution, and brownfield adoption",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -405,7 +405,80 @@
         "WS0.5",
         "WS0.6"
       ],
-      "updatedAt": "2026-04-28"
+      "updatedAt": "2026-04-28",
+      "benefitMetricStatus": "active",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Time-to-first-skill-run",
+          "target": "Under 2 minutes from repo open to first /start output",
+          "baseline": "Not yet established — expected >15 minutes on current ONBOARDING.md flow",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Platform team support contacts per onboarding",
+          "target": "0 orientation contacts per onboarding event",
+          "baseline": ">0 per onboarding (every onboarding has required at least one exchange)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Non-engineering outer loop attribution rate",
+          "target": "At least 1 artefact with non-engineering approved-by within 60 days of DoD",
+          "baseline": "0% — no attribution fields exist, no non-engineering sign-off on any artefact",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m4",
+          "name": "Lockfile pin/verify round-trip integrity",
+          "target": "verify returns deterministic pass/fail within 5 seconds with no additional tooling",
+          "baseline": "0% — pin and verify are unimplemented stubs",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "mm1",
+          "name": "/start concierge hypothesis validation",
+          "target": "2 of 3 onboardings: consumer proceeds directly from /start to first skill run without re-reading ONBOARDING.md",
+          "baseline": "Hypothesis not yet validated — current onboarding is documentation-first",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "mm2",
+          "name": "H-GOV hard block hypothesis validation",
+          "target": "H-GOV fires at least once in CI and at least 1 team seeks resolution rather than bypass within 90 days",
+          "baseline": "H-GOV block does not exist — 0% non-engineering attribution rate",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "mm3",
+          "name": "Brownfield routing hypothesis validation",
+          "target": "/start correctly identifies and routes brownfield context on 2 of 2 observed sessions",
+          "baseline": "No brownfield routing exists — consumers are prompted to run /discovery from scratch",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     },
     {
       "slug": "2026-04-23-non-technical-channel",
