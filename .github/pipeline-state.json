@@ -64,7 +64,7 @@
     {
       "slug": "2026-04-28-inflight-learning-capture",
       "name": "In-Flight Learning Capture",
-      "stage": "definition-of-ready",
+      "stage": "subagent-execution",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -76,41 +76,237 @@
       "benefitMetricArtefact": "artefacts/2026-04-28-inflight-learning-capture/benefit-metric.md",
       "benefitMetricStatus": "active",
       "slicingStrategy": "walking-skeleton",
-      "relatedGaps": ["G12", "G5"],
-      "wsjfScore": 7.0,
+      "relatedGaps": [
+        "G12",
+        "G5"
+      ],
+      "wsjfScore": 7,
       "portfolioRef": "P5",
       "epics": [
         {
           "slug": "ilc-e1",
           "name": "Pipeline learning signal survives the full session lifecycle",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
-            { "id": "ilc.1", "name": "Define workspace/capture-log.md schema and /capture operator command", "stage": "definition-of-ready", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.1-review-1.md", "testPlan": { "status": "written", "totalTests": 12, "passing": 0 }, "acTotal": 6, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-28-inflight-learning-capture/dor/ilc.1-dor.md", "updatedAt": "2026-04-28" },
-            { "id": "ilc.2", "name": "Weave agent self-recording instruction into copilot-instructions.md and key SKILL.md files", "stage": "definition-of-ready", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.2-review-1.md", "testPlan": { "status": "written", "totalTests": 15, "passing": 0 }, "acTotal": 5, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-28-inflight-learning-capture/dor/ilc.2-dor.md", "updatedAt": "2026-04-28" },
-            { "id": "ilc.3", "name": "Update /checkpoint to bridge capture-log.md entries to workspace/learnings.md", "stage": "definition-of-ready", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.3-review-1.md", "testPlan": { "status": "written", "totalTests": 12, "passing": 0 }, "acTotal": 5, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-28-inflight-learning-capture/dor/ilc.3-dor.md", "updatedAt": "2026-04-28" }
+            {
+              "id": "ilc.1",
+              "name": "Define workspace/capture-log.md schema and /capture operator command",
+              "stage": "subagent-execution",
+              "health": "green",
+              "reviewStatus": "passed",
+              "reviewRun": 1,
+              "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.1-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 12,
+                "passing": 12
+              },
+              "acTotal": 6,
+              "acVerified": 6,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-04-28-inflight-learning-capture/dor/ilc.1-dor.md",
+              "prStatus": "draft",
+              "updatedAt": "2026-04-28",
+              "tasks": [
+                {
+                  "id": "ilc1-task-1",
+                  "name": "Write failing test (check-ilc1-capture-schema.js)",
+                  "tddState": "committed",
+                  "file": "tests/check-ilc1-capture-schema.js"
+                },
+                {
+                  "id": "ilc1-task-2",
+                  "name": "Add /capture instruction block to copilot-instructions.md",
+                  "tddState": "committed",
+                  "file": ".github/copilot-instructions.md"
+                },
+                {
+                  "id": "ilc1-task-3",
+                  "name": "Add workspace/capture-log.md to .gitignore",
+                  "tddState": "committed",
+                  "file": ".gitignore"
+                }
+              ],
+              "slug": "ilc.1"
+            },
+            {
+              "id": "ilc.2",
+              "name": "Weave agent self-recording instruction into copilot-instructions.md and key SKILL.md files",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "reviewRun": 1,
+              "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.2-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 15,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-04-28-inflight-learning-capture/dor/ilc.2-dor.md",
+              "updatedAt": "2026-04-28",
+              "slug": "ilc.2"
+            },
+            {
+              "id": "ilc.3",
+              "name": "Update /checkpoint to bridge capture-log.md entries to workspace/learnings.md",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "reviewRun": 1,
+              "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.3-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 12,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-04-28-inflight-learning-capture/dor/ilc.3-dor.md",
+              "updatedAt": "2026-04-28",
+              "slug": "ilc.3"
+            }
           ]
         }
       ],
       "guardrails": [
-        { "id": "MC-SEC-01", "category": "mandatory-constraint", "label": "No user-supplied content in innerHTML without sanitisation", "status": "not-assessed" },
-        { "id": "MC-SEC-02", "category": "mandatory-constraint", "label": "No credentials, tokens, or personal data in committed files", "status": "not-assessed" },
-        { "id": "MC-SEC-03", "category": "mandatory-constraint", "label": "Viz reads local JSON only — no external fetch calls", "status": "not-assessed" },
-        { "id": "MC-CORRECT-01", "category": "mandatory-constraint", "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)", "status": "not-assessed" },
-        { "id": "MC-CORRECT-02", "category": "mandatory-constraint", "label": "Fields written to pipeline-state.json must exist in schema", "status": "not-assessed" },
-        { "id": "MC-CORRECT-03", "category": "mandatory-constraint", "label": "Fields read by viz from pipeline-state.json must exist in schema", "status": "not-assessed" },
-        { "id": "MC-SELF-01", "category": "mandatory-constraint", "label": "dashboards/pipeline-viz.html renders without build step, server, or network", "status": "not-assessed" },
-        { "id": "MC-SELF-02", "category": "mandatory-constraint", "label": "No npm devDependencies in dashboards/pipeline-viz.html runtime", "status": "not-assessed" },
-        { "id": "MC-CONSIST-01", "category": "mandatory-constraint", "label": "Stage enum in schema updated when skill adds/removes stage", "status": "not-assessed" },
-        { "id": "MC-CONSIST-02", "category": "mandatory-constraint", "label": "Gate add/remove synced with SKILL.md criteria", "status": "not-assessed" },
-        { "id": "MC-A11Y-01", "category": "mandatory-constraint", "label": "Interactive elements keyboard-accessible", "status": "not-assessed" },
-        { "id": "MC-A11Y-02", "category": "mandatory-constraint", "label": "Colour not sole indicator of gate status (icons/labels present)", "status": "not-assessed" },
-        { "id": "ADR-011", "category": "adr", "label": "Artefact-first: new SKILL.md files, copilot-instructions behavioural changes require a story artefact before or alongside the commit", "status": "met", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-28" },
-        { "id": "ADR-004", "category": "adr", "label": "ADR-004: /checkpoint is defined in copilot-instructions.md — not a standalone SKILL.md", "status": "met", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-28" },
-        { "id": "NFR-ilc-durability", "category": "nfr", "label": "Append-only write — capture-log.md never truncated or overwritten", "status": "met", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-28" },
-        { "id": "NFR-ilc-portability", "category": "nfr", "label": "Plain markdown format — no parser or external dependency required", "status": "met", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-28" },
-        { "id": "NFR-ilc-no-deps", "category": "nfr", "label": "No new npm dependencies across all 3 ILC stories", "status": "met", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-28" },
-        { "id": "NFR-ilc-instruction-hygiene", "category": "nfr", "label": "Self-recording rule ≤60 words; SKILL.md callouts ≤30 words; checkpoint bridge ≤80 words", "status": "not-assessed", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-28" },
-        { "id": "NFR-ilc-non-blocking", "category": "nfr", "label": "Checkpoint bridge non-blocking when capture-log absent", "status": "not-assessed", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-28" }
+        {
+          "id": "MC-SEC-01",
+          "category": "mandatory-constraint",
+          "label": "No user-supplied content in innerHTML without sanitisation",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "No credentials, tokens, or personal data in committed files",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SEC-03",
+          "category": "mandatory-constraint",
+          "label": "Viz reads local JSON only — no external fetch calls",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CORRECT-01",
+          "category": "mandatory-constraint",
+          "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CORRECT-02",
+          "category": "mandatory-constraint",
+          "label": "Fields written to pipeline-state.json must exist in schema",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CORRECT-03",
+          "category": "mandatory-constraint",
+          "label": "Fields read by viz from pipeline-state.json must exist in schema",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SELF-01",
+          "category": "mandatory-constraint",
+          "label": "dashboards/pipeline-viz.html renders without build step, server, or network",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SELF-02",
+          "category": "mandatory-constraint",
+          "label": "No npm devDependencies in dashboards/pipeline-viz.html runtime",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CONSIST-01",
+          "category": "mandatory-constraint",
+          "label": "Stage enum in schema updated when skill adds/removes stage",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CONSIST-02",
+          "category": "mandatory-constraint",
+          "label": "Gate add/remove synced with SKILL.md criteria",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-A11Y-01",
+          "category": "mandatory-constraint",
+          "label": "Interactive elements keyboard-accessible",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-A11Y-02",
+          "category": "mandatory-constraint",
+          "label": "Colour not sole indicator of gate status (icons/labels present)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: new SKILL.md files, copilot-instructions behavioural changes require a story artefact before or alongside the commit",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-28"
+        },
+        {
+          "id": "ADR-004",
+          "category": "adr",
+          "label": "ADR-004: /checkpoint is defined in copilot-instructions.md — not a standalone SKILL.md",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-28"
+        },
+        {
+          "id": "NFR-ilc-durability",
+          "category": "nfr",
+          "label": "Append-only write — capture-log.md never truncated or overwritten",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-28"
+        },
+        {
+          "id": "NFR-ilc-portability",
+          "category": "nfr",
+          "label": "Plain markdown format — no parser or external dependency required",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-28"
+        },
+        {
+          "id": "NFR-ilc-no-deps",
+          "category": "nfr",
+          "label": "No new npm dependencies across all 3 ILC stories",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-28"
+        },
+        {
+          "id": "NFR-ilc-instruction-hygiene",
+          "category": "nfr",
+          "label": "Self-recording rule ≤60 words; SKILL.md callouts ≤30 words; checkpoint bridge ≤80 words",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-28"
+        },
+        {
+          "id": "NFR-ilc-non-blocking",
+          "category": "nfr",
+          "label": "Checkpoint bridge non-blocking when capture-log absent",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-28"
+        }
       ],
       "updatedAt": "2026-04-28T18:00:00Z"
     },
@@ -128,8 +324,20 @@
       "ideationPath": "artefacts/2026-04-23-non-technical-channel/research/ideation.md",
       "ideationSignal": "proceed",
       "refDocPath": "artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md",
-      "relatedGaps": ["G0a", "G0b", "G14", "G17"],
-      "relatedWorkstreams": ["WS0.1", "WS0.2", "WS0.3", "WS0.4", "WS0.5", "WS0.6"],
+      "relatedGaps": [
+        "G0a",
+        "G0b",
+        "G14",
+        "G17"
+      ],
+      "relatedWorkstreams": [
+        "WS0.1",
+        "WS0.2",
+        "WS0.3",
+        "WS0.4",
+        "WS0.5",
+        "WS0.6"
+      ],
       "updatedAt": "2026-04-24T00:00:00Z"
     },
     {
