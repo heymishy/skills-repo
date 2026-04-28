@@ -63,6 +63,7 @@ const CONTRACTS = [
       'meta-benefit situation',
       'artefacts/[feature]/benefit-metric.md',
       'Step 2 - Confirm the directional indicators',
+      'metric-owner-required',
     ],
   },
   {

@@ -236,15 +236,21 @@ explained as unknown.
 
 ## Completion output
 
+<!-- metric-owner-required -->
+
 > **Benefit metric artefact complete ✅**
 >
 > Metrics defined: [n product] [+ n meta if applicable]
 > Baselines established: [n of n / n TBD]
 >
 > Before proceeding to /definition:
-> Confirm these metrics and targets are agreed with relevant stakeholders -
-> these are the contract the pipeline is accountable to. Stories must trace
-> to these metrics, and /definition-of-done checks against them.
+> - Confirm that the **Metric owner** field is populated with a named person and role.
+>   For Tier 1 product metrics, this should be a non-engineering role.
+> - Confirm that the **Reviewers** field is populated with at least one reviewer.
+>   For Tier 1 product metrics, at least one reviewer from outside engineering is required.
+> - Confirm these metrics and targets are agreed with relevant stakeholders -
+>   these are the contract the pipeline is accountable to. Stories must trace
+>   to these metrics, and /definition-of-done checks against them.
 >
 > Ready to run /definition?
 > Reply: yes - or I need to confirm metrics first
