@@ -64,7 +64,7 @@
     {
       "slug": "2026-04-28-inflight-learning-capture",
       "name": "In-Flight Learning Capture",
-      "stage": "subagent-execution",
+      "stage": "definition-of-done",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -86,12 +86,12 @@
         {
           "slug": "ilc-e1",
           "name": "Pipeline learning signal survives the full session lifecycle",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "id": "ilc.1",
               "name": "Define workspace/capture-log.md schema and /capture operator command",
-              "stage": "subagent-execution",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "reviewRun": 1,
@@ -107,7 +107,10 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-04-28-inflight-learning-capture/dor/ilc.1-dor.md",
-              "prStatus": "draft",
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "dodArtefact": "artefacts/2026-04-28-inflight-learning-capture/dod/ilc.1-dod.md",
+              "releaseReady": true,
               "updatedAt": "2026-04-28",
               "tasks": [
                 {
@@ -134,29 +137,33 @@
             {
               "id": "ilc.2",
               "name": "Weave agent self-recording instruction into copilot-instructions.md and key SKILL.md files",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "reviewRun": 1,
               "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.2-review-1.md",
               "testPlan": {
                 "status": "written",
-                "totalTests": 15,
-                "passing": 0
+                "totalTests": 16,
+                "passing": 16
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-04-28-inflight-learning-capture/dor/ilc.2-dor.md",
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "dodArtefact": "artefacts/2026-04-28-inflight-learning-capture/dod/ilc.2-dod.md",
+              "releaseReady": true,
               "updatedAt": "2026-04-28",
               "slug": "ilc.2"
             },
             {
               "id": "ilc.3",
               "name": "Update /checkpoint to bridge capture-log.md entries to workspace/learnings.md",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "reviewRun": 1,
@@ -173,6 +180,9 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-04-28-inflight-learning-capture/dor/ilc.3-dor.md",
               "prStatus": "merged",
+              "dodStatus": "complete",
+              "dodArtefact": "artefacts/2026-04-28-inflight-learning-capture/dod/ilc.3-dod.md",
+              "releaseReady": true,
               "updatedAt": "2026-04-28",
               "slug": "ilc.3"
             }
@@ -296,17 +306,61 @@
           "id": "NFR-ilc-instruction-hygiene",
           "category": "nfr",
           "label": "Self-recording rule ≤60 words; SKILL.md callouts ≤30 words; checkpoint bridge ≤80 words",
-          "status": "not-assessed",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-04-28"
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-28",
+          "evidence": "self-recording-instruction-word-count passes; skill-reminder-word-count passes (all 8 callouts ≤30 words); checkpoint-bridge-word-count-nfr passes (76 words)"
         },
         {
           "id": "NFR-ilc-non-blocking",
           "category": "nfr",
           "label": "Checkpoint bridge non-blocking when capture-log absent",
-          "status": "not-assessed",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-04-28"
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-04-28",
+          "evidence": "checkpoint-non-blocking-no-capture-log passes; bridge instruction specifies skip-and-continue path"
+        }
+      ],
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Signal loss rate",
+          "contributingStories": ["ilc.1", "ilc.2", "ilc.3"],
+          "target": "0 loss events per month",
+          "baseline": "5 documented loss events April 2026",
+          "signal": "not-yet-measured",
+          "evidence": null,
+          "lastMeasured": null
+        },
+        {
+          "id": "M2",
+          "name": "In-session agent capture rate",
+          "contributingStories": ["ilc.2"],
+          "target": "≥80% of sessions contain ≥1 agent-auto entry within 5 sessions post-delivery",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "evidence": null,
+          "lastMeasured": null
+        },
+        {
+          "id": "MM1",
+          "name": "Agent vs operator capture ratio",
+          "contributingStories": ["ilc.2"],
+          "target": "≥80% agent-auto across first 10 sessions",
+          "baseline": "N/A — no prior captures",
+          "signal": "not-yet-measured",
+          "evidence": null,
+          "lastMeasured": null
+        },
+        {
+          "id": "MM2",
+          "name": "learnings.md growth rate after delivery",
+          "contributingStories": ["ilc.3"],
+          "target": "Growth in learnings.md entries attributable to in-session captures",
+          "baseline": "49 commits in April 2026 run",
+          "signal": "not-yet-measured",
+          "evidence": null,
+          "lastMeasured": null
         }
       ],
       "updatedAt": "2026-04-28T18:00:00Z"
