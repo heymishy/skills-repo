@@ -131,23 +131,34 @@ jobs:
       - name: Resolve active feature for artefact collection
         id: resolve_feature
         if: steps.ci_attach_cfg.outputs.ci_attachment == 'true'
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
         run: |
           OVERRIDE='${{ steps.ci_attach_cfg.outputs.feature_slug_override }}'
           if [ -n "${OVERRIDE}" ]; then
             echo "slug=${OVERRIDE}" >> "$GITHUB_OUTPUT"
+            echo "slug_source=override" >> "$GITHUB_OUTPUT"
             echo "[resolve_feature] Using explicit override: ${OVERRIDE}"
           else
-            FEATURE_SLUG=$(node -e "
-              const s = require('./.github/pipeline-state.json');
-              const DONE = new Set(['archived','definition-of-done','released']);
-              const inProgress = s.features.filter(f => !DONE.has(f.stage));
-              const pick = inProgress.length > 0
-                ? inProgress[inProgress.length - 1]
-                : s.features.filter(f => f.stage !== 'archived').slice(-1)[0];
-              process.stdout.write(pick ? pick.slug : '');
-            " 2>/dev/null || echo "")
-            echo "slug=${FEATURE_SLUG}" >> "$GITHUB_OUTPUT"
-            echo "[resolve_feature] Auto-resolved: ${FEATURE_SLUG}"
+            PR_SLUG=$(node scripts/extract-pr-slug.js 2>/dev/null || echo "")
+            if [ -n "${PR_SLUG}" ]; then
+              echo "slug=${PR_SLUG}" >> "$GITHUB_OUTPUT"
+              echo "slug_source=pr-body" >> "$GITHUB_OUTPUT"
+              echo "[resolve_feature] Extracted from PR body: ${PR_SLUG}"
+            else
+              FEATURE_SLUG=$(node -e "
+                const s = require('./.github/pipeline-state.json');
+                const DONE = new Set(['archived','definition-of-done','released']);
+                const inProgress = s.features.filter(f => !DONE.has(f.stage));
+                const pick = inProgress.length > 0
+                  ? inProgress[inProgress.length - 1]
+                  : s.features.filter(f => f.stage !== 'archived').slice(-1)[0];
+                process.stdout.write(pick ? pick.slug : '');
+              " 2>/dev/null || echo "")
+              echo "slug=${FEATURE_SLUG}" >> "$GITHUB_OUTPUT"
+              echo "slug_source=auto-resolved" >> "$GITHUB_OUTPUT"
+              echo "[resolve_feature] Auto-resolved: ${FEATURE_SLUG}"
+            fi
           fi
 
       - name: Collect governed artefacts
@@ -183,6 +194,9 @@ jobs:
               : context.sha;
             const shortSha = headSha.slice(0, 7);
             const slug = '${{ steps.resolve_feature.outputs.slug }}';
+            const slugSource = '${{ steps.resolve_feature.outputs.slug_source }}';
+            const { buildSlugSourceNote } = require('./scripts/extract-pr-slug.js');
+            const sourceNote = buildSlugSourceNote(slugSource || 'auto-resolved', slug);
 
             // ── Read trace verdict + hash from the assurance gate trace JSONL ──
             let verdict = 'unknown';
@@ -456,7 +470,7 @@ jobs:
               ``,
               `---`,
               ``,
-              `### 📋 What was delivered (${artefactFiles.length} artefacts)`,
+              `### 📋 What was delivered (${artefactFiles.length} artefacts)${sourceNote ? ` — ${sourceNote}` : ''}`,
               ``,
               `> These are the specification and verification documents for this feature, grouped by pipeline stage. Each link opens the **exact version of the document at commit \`${shortSha}\`**. Reading top-to-bottom traces the full delivery chain: from the original problem statement (Discovery) through to final verification (Definition of Done).`,
               ``,
