@@ -150,6 +150,25 @@ If you are picking up a feature after a break:
 2. Read the most recent artefact for the current stage before starting
 3. Do not assume you remember where you were — check the artefacts
 
+### `/capture` command
+
+Use `/capture [signal text]` to record a learning signal to `workspace/capture-log.md` (created if absent; appended if it exists — never truncated or overwritten).
+
+**Entry schema (5 required fields):**
+```
+- date: [ISO 8601, e.g. 2026-04-28]
+  session-phase: [current pipeline phase]
+  signal-type: [decision | learning | assumption-validated | assumption-invalidated | pattern | gap]
+  signal-text: [the signal — one or two sentences]
+  source: operator-manual
+```
+
+**Rules:**
+- If invoked without signal text, prompt the operator: "What signal do you want to capture?" — do not write a blank or empty entry.
+- Always append after existing entries; never truncate, overwrite, or delete prior content.
+- On new-session invocation, append after all existing entries — prior sessions are preserved.
+- `source` is always `operator-manual` for entries written via this command.
+
 ### During a session
 
 - Save artefact files as you go — do not leave outputs only in the chat window
