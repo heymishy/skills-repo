@@ -27,19 +27,20 @@
     "observabilityGapsIdentified": 4,
     "status": "complete"
   },
-  "lastUpdated": "2026-04-28T12:00:00Z",
-  "currentPhase": "released",
-  "activeFeature": "2026-04-27-prioritise-skill",
+  "lastUpdated": "2026-04-28T14:00:00Z",
+  "currentPhase": "review",
+  "activeFeature": "2026-04-28-inflight-learning-capture",
   "checkpoint": {
     "writtenAt": "2026-04-28",
-    "contextAtWrite": "/definition-of-done complete for all 5 stories (pr.1–pr.5). DoD artefacts written to artefacts/2026-04-27-prioritise-skill/dod/. Pipeline-state updated: dodStatus=complete, releaseReady=true, health=green on all 5 stories. Epic status corrected to 'complete' (was 'completed' — schema fix). Committed 263e7d2 and pushed to master. All metrics (M1/M2/M3/MM1) are not-yet-measured — first real session required.",
-    "resumeInstruction": "DoD is complete for the /prioritise feature. Next actions: (1) Run first real /prioritise session — operator must actually invoke the skill in a chat session with real candidate items. (2) After session: record M1 signal (artefact saved? yes/no) and M2 signal (rationale present in artefact? yes/no) using /record-signal or pipeline-state.json metrics[] update. (3) Platform onboarding/distribution feature (artefacts/2026-04-24-platform-onboarding-distribution/): check if discovery artefact exists; if not, run /discovery.",
+    "contextAtWrite": "/review complete for all 3 P5 stories (ilc.1, ilc.2, ilc.3). All 3 PASS — 0 HIGH across the set. ilc.1: 1 MEDIUM (gitignore AC gap — no AC verifies .gitignore entry for workspace/capture-log.md), 1 LOW (missing Complexity Rating + Scope stability). ilc.2: 0 MEDIUM, 3 LOW (AC4 testability, copilot-instructions.md target section ambiguity, missing Complexity Rating + Scope stability). ilc.3: 0 MEDIUM, 3 LOW (formatting artifact in User Story, missing Complexity Rating + Scope stability, AC1 session-boundary detection mechanism implicit). Review artefacts written to artefacts/2026-04-28-inflight-learning-capture/review/. Pipeline-state updated: all 3 stories stage=review, reviewStatus=passed. Feature stage advanced to review.",
+    "resumeInstruction": "P5 /review complete — all 3 stories PASSED. Next: run /test-plan for each story (ilc.1, ilc.2, ilc.3). Before /test-plan: address ilc.1 1-M1 finding (add AC6 for .gitignore entry OR log RISK-ACCEPT in /decisions). Add Complexity Rating + Scope stability fields to all 3 story artefacts (LOW finding). Fix stray ** in ilc.3 User Story. Then run /test-plan for ilc.1 first (ilc.2 and ilc.3 depend on schema it defines).",
     "pendingActions": [
-      "Item 3: Run first real /prioritise session with actual candidate items — operator invokes /prioritise in a chat session, completes scoring, saves artefact to disk.",
-      "After first session: Record M1 signal (session completion rate — did artefact get written?) in pipeline-state.json metrics[] for 2026-04-27-prioritise-skill.",
-      "After first session: Record M2 signal (rationale completeness — does artefact contain rationale sentences per framework?) in pipeline-state.json metrics[].",
-      "After first non-engineer session: Record M3 signal (non-engineer unassisted completion — did the skill's explanations suffice?).",
-      "Platform onboarding/distribution feature: check artefacts/2026-04-24-platform-onboarding-distribution/ for discovery artefact; run /discovery if not present."
+      "Resolve ilc.1 1-M1 (MEDIUM): add AC6 verifying workspace/capture-log.md is in .gitignore — or log RISK-ACCEPT via /decisions before /test-plan.",
+      "Add Complexity Rating + Scope stability fields to ilc.1, ilc.2, and ilc.3 story artefacts (LOW 1-L1 in ilc.1, 1-L3 in ilc.2, 1-L2 in ilc.3) — required before /definition-of-ready.",
+      "Fix stray ** formatting artifact in ilc.3 User Story 'I want' clause (LOW 1-L1).",
+      "Run /test-plan for ilc.1 (first — schema owner). Then ilc.2 and ilc.3.",
+      "After all 3 test plans complete: run /definition-of-ready for each story.",
+      "After P5 pipeline complete: start P11 (Bootstrap/Squad Onboarding) — reference doc at artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md."
     ]
   },
   "cycle": {
