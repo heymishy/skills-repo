@@ -128,7 +128,8 @@
                   "tddState": "committed",
                   "file": ".gitignore"
                 }
-              ]
+              ],
+              "slug": "ilc.1"
             },
             {
               "id": "ilc.2",
@@ -149,7 +150,8 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-04-28-inflight-learning-capture/dor/ilc.2-dor.md",
-              "updatedAt": "2026-04-28"
+              "updatedAt": "2026-04-28",
+              "slug": "ilc.2"
             },
             {
               "id": "ilc.3",
@@ -170,7 +172,8 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-04-28-inflight-learning-capture/dor/ilc.3-dor.md",
-              "updatedAt": "2026-04-28"
+              "updatedAt": "2026-04-28",
+              "slug": "ilc.3"
             }
           ]
         }
