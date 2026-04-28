@@ -1004,6 +1004,29 @@ git push --force-with-lease origin <branch-B>
 # Repeat for C, D, E with updated --onto targets
 
 # 3. After each rebase, verify commit count:
+
+---
+
+## artefacts/baseline/ — durable versioned reference corpus
+
+**Date:** 2026-04-28
+**Session phase:** pre-discovery exploration
+**Signal type:** pattern
+
+`artefacts/baseline/` is a durable, versioned reference corpus that always represents the current known implementation state of all systems in scope. It is structurally distinct from in-flight feature artefacts (`artefacts/[date]-[slug]/`).
+
+**Key design decisions:**
+
+- **Scope:** General — applies to all repo types (greenfield, brownfield, modernisation, framework evolution). Not limited to legacy modernisation.
+- **Greenfield state:** Empty. The folder either doesn't exist or contains a blank scaffold. No content is invented.
+- **Population:** Written by `/reverse-engineer` runs for legacy/existing systems; updated incrementally as implementation advances and DoD + release confirms new state. Outer loop writes freely; inner loop updates only on DoD + release confirmation.
+- **baselineRef granularity:** ISO-8601 timestamp (not just date) — multiple runs within the same day must produce distinct, distinguishable snapshots.
+- **Cross-repo:** Each framework repo maintains its own `artefacts/baseline/` as a local projection. Shared cross-repo knowledge lives in the EA registry. Two programmes sharing the same legacy system each have their own projection rather than a shared folder.
+- **Separation from `reference/`:** `artefacts/[slug]/reference/` stays feature-scoped raw input (scoping docs, stakeholder notes, source materials). `artefacts/baseline/` is extracted, structured, cross-feature truth — the spec-as-known.
+- **Drift detection:** Stories pin to a `baselineRef` timestamp so spec-drift is detectable when the legacy system changes and a new extraction run updates the baseline.
+
+**Why this matters:** Enables "spec as truth" operationally. A new story can say "implement the payment rules from the baseline" and `/definition` can load the business-rules files directly. When a legacy system releases a new version mid-programme, one `/reverse-engineer` run updates the baseline and the drift signal propagates to every open feature that referenced the old snapshot.
+
 #    git log --oneline origin/<upstream>..<branch> | wc -l
 #    should equal the number of commits this branch added (not cumulative)
 ```
