@@ -4146,7 +4146,10 @@
             "passing": 0,
             "artefact": "artefacts/2026-04-29-audit-story-dispatch-crosscheck/test-plans/asd.1-test-plan.md"
           },
-          "artefact": "artefacts/2026-04-29-audit-story-dispatch-crosscheck/stories/asd.1-audit-story-dispatch-crosscheck.md"
+          "artefact": "artefacts/2026-04-29-audit-story-dispatch-crosscheck/stories/asd.1-audit-story-dispatch-crosscheck.md",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/214",
+          "dispatchedAt": "2026-04-29T00:00:00Z",
+          "dispatchTarget": "github-agent"
         }
       ]
     }
