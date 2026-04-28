@@ -64,7 +64,7 @@
     {
       "slug": "2026-04-28-inflight-learning-capture",
       "name": "In-Flight Learning Capture",
-      "stage": "review",
+      "stage": "test-plan",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -85,9 +85,9 @@
           "name": "Pipeline learning signal survives the full session lifecycle",
           "status": "not-started",
           "stories": [
-            { "id": "ilc.1", "name": "Define workspace/capture-log.md schema and /capture operator command", "stage": "review", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.1-review-1.md" },
-            { "id": "ilc.2", "name": "Weave agent self-recording instruction into copilot-instructions.md and key SKILL.md files", "stage": "review", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.2-review-1.md" },
-            { "id": "ilc.3", "name": "Update /checkpoint to bridge capture-log.md entries to workspace/learnings.md", "stage": "review", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.3-review-1.md" }
+            { "id": "ilc.1", "name": "Define workspace/capture-log.md schema and /capture operator command", "stage": "test-plan", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.1-review-1.md", "testPlan": { "status": "written", "totalTests": 12, "passing": 0 }, "acTotal": 6, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false },
+            { "id": "ilc.2", "name": "Weave agent self-recording instruction into copilot-instructions.md and key SKILL.md files", "stage": "test-plan", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.2-review-1.md", "testPlan": { "status": "written", "totalTests": 15, "passing": 0 }, "acTotal": 5, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false },
+            { "id": "ilc.3", "name": "Update /checkpoint to bridge capture-log.md entries to workspace/learnings.md", "stage": "test-plan", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.3-review-1.md", "testPlan": { "status": "written", "totalTests": 12, "passing": 0 }, "acTotal": 5, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false }
           ]
         }
       ],

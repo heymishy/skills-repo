@@ -38,6 +38,8 @@ So that **the signal is appended to `workspace/capture-log.md` before context pr
 
 **AC5:** Given `workspace/capture-log.md` exists with entries from a previous session, When `/capture` is invoked in a new session, Then the new entry is appended after all existing entries; the file is never truncated or overwritten on new-session invocation.
 
+**AC6:** Given the story is implemented and delivered, When `workspace/capture-log.md` is created at runtime, Then the path `workspace/capture-log.md` is listed in the repository's `.gitignore` file (or an equivalent exclusion mechanism), ensuring the file is never accidentally committed.
+
 ## Out of Scope
 
 - Agent self-recording without operator prompting — that is ilc.2.
@@ -51,3 +53,8 @@ So that **the signal is appended to `workspace/capture-log.md` before context pr
 - **Durability:** Append-only write pattern. The file must not be truncated or overwritten by any operation in scope.
 - **Portability:** Plain markdown format — no dependencies on parsers, schema validators, or tools beyond reading the file as text.
 - **No external dependencies:** The `/capture` command implementation must not introduce new npm packages or external tools.
+
+## Complexity Rating
+
+**Rating:** 1 — Well understood, clear path. The schema is fully defined, the file operation is a plain markdown append, and the `/capture` command is a pure instruction-text addition to `copilot-instructions.md`.
+**Scope stability:** Stable

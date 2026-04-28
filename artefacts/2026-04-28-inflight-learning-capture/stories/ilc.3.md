@@ -7,7 +7,7 @@
 ## User Story
 
 As a **platform operator**,
-I want `/checkpoint` to read new entries from `workspace/capture-log.md` and surface them for promotion to `workspace/learnings.md`**,
+I want `/checkpoint` to read new entries from `workspace/capture-log.md` and surface them for promotion to `workspace/learnings.md`,
 So that **signals captured during the session are durably promoted before the session closes, completing the M1 (zero signal loss) and MM2 (learnings.md growth rate) feedback loop**.
 
 ## Benefit Linkage
@@ -50,3 +50,8 @@ So that **signals captured during the session are durably promoted before the se
 - **Non-blocking:** If `workspace/capture-log.md` does not exist, `/checkpoint` must complete normally — the bridge step is skipped with a note ("capture-log.md not found — skipping capture review"), not an error.
 - **Idempotent:** Running `/checkpoint` twice without new captures in between must not produce duplicate promotions or error states.
 - **Instruction conciseness:** The added checkpoint convention text must be ≤80 words to avoid bloating the checkpoint instruction block.
+
+## Complexity Rating
+
+**Rating:** 2 — Some ambiguity. The session-boundary detection mechanism (determining which entries are "new since last checkpoint") will be resolved at /implementation-plan but requires a judgment call on how to compare timestamps.
+**Scope stability:** Stable
