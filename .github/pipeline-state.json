@@ -4090,7 +4090,7 @@
     {
       "slug": "2026-04-29-audit-slug-resolution",
       "name": "Audit Record Slug Resolution Fix",
-      "stage": "definition-of-ready",
+      "stage": "done",
       "health": "green",
       "updatedAt": "2026-04-29T00:00:00Z",
       "stories": [
@@ -4098,14 +4098,14 @@
           "id": "sar.1",
           "slug": "sar.1",
           "name": "Fix audit record to resolve feature slug from PR body",
-          "stage": "definition-of-ready",
+          "stage": "done",
           "dorStatus": "signed-off",
           "health": "green",
           "reviewStatus": "short-track",
           "highFindings": 0,
-          "prStatus": "none",
+          "prStatus": "merged",
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "testPlan": {
             "status": "written",
             "totalTests": 8,
@@ -4116,7 +4116,9 @@
           "e2eToolingRequired": false,
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/211",
           "dispatchedAt": "2026-04-29T00:00:00Z",
-          "dispatchTarget": "github-agent"
+          "dispatchTarget": "github-agent",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/212",
+          "mergedAt": "2026-04-29T00:00:00Z"
         }
       ],
       "track": "library"
