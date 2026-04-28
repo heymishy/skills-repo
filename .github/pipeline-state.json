@@ -4090,7 +4090,7 @@
     {
       "slug": "2026-04-29-audit-slug-resolution",
       "name": "Audit Record Slug Resolution Fix",
-      "stage": "done",
+      "stage": "released",
       "health": "green",
       "updatedAt": "2026-04-29T00:00:00Z",
       "stories": [
@@ -4122,6 +4122,33 @@
         }
       ],
       "track": "library"
+    },
+    {
+      "slug": "2026-04-29-audit-story-dispatch-crosscheck",
+      "name": "Audit Gate Story Dispatch Cross-check",
+      "stage": "definition-of-ready",
+      "track": "library",
+      "health": "green",
+      "updatedAt": "2026-04-29T00:00:00Z",
+      "stories": [
+        {
+          "id": "asd.1",
+          "slug": "asd.1",
+          "title": "Audit gate story dispatch cross-check",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "reviewStatus": "short-track",
+          "prStatus": "none",
+          "acTotal": 6,
+          "acVerified": 0,
+          "testPlan": {
+            "totalTests": 9,
+            "passing": 0,
+            "artefact": "artefacts/2026-04-29-audit-story-dispatch-crosscheck/test-plans/asd.1-test-plan.md"
+          },
+          "artefact": "artefacts/2026-04-29-audit-story-dispatch-crosscheck/stories/asd.1-audit-story-dispatch-crosscheck.md"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
