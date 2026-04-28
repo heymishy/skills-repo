@@ -380,7 +380,7 @@
     {
       "slug": "2026-04-24-platform-onboarding-distribution",
       "name": "Platform onboarding, distribution, and brownfield adoption",
-      "stage": "definition",
+      "stage": "review",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -491,6 +491,8 @@
               "name": "Add attribution sections to /discovery template and SKILL.md",
               "stage": "definition",
               "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
               "prStatus": "none"
             },
             {
@@ -498,6 +500,8 @@
               "name": "Add attribution fields to /benefit-metric template and SKILL.md",
               "stage": "definition",
               "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
               "prStatus": "none"
             },
             {
@@ -505,6 +509,8 @@
               "name": "Implement H-GOV hard block in /definition-of-ready SKILL.md",
               "stage": "definition",
               "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
               "prStatus": "none"
             }
           ]
@@ -519,6 +525,8 @@
               "name": "Define lockfile schema and implement pin and verify in cli-adapter.js",
               "stage": "definition",
               "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
               "prStatus": "none"
             },
             {
@@ -526,6 +534,8 @@
               "name": "Implement init and fetch in cli-adapter.js",
               "stage": "definition",
               "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
               "prStatus": "none"
             },
             {
@@ -533,6 +543,8 @@
               "name": "Create /start SKILL.md — greenfield orientation",
               "stage": "definition",
               "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
               "prStatus": "none"
             },
             {
@@ -540,6 +552,8 @@
               "name": "Extend /start with brownfield context detection and Entry A/B/C routing",
               "stage": "definition",
               "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
               "prStatus": "none"
             }
           ]
