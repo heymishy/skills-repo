@@ -27,20 +27,19 @@
     "observabilityGapsIdentified": 4,
     "status": "complete"
   },
-  "lastUpdated": "2026-04-28T14:00:00Z",
-  "currentPhase": "review",
+  "lastUpdated": "2026-04-28T16:00:00Z",
+  "currentPhase": "test-plan",
   "activeFeature": "2026-04-28-inflight-learning-capture",
   "checkpoint": {
     "writtenAt": "2026-04-28",
-    "contextAtWrite": "/review complete for all 3 P5 stories (ilc.1, ilc.2, ilc.3). All 3 PASS — 0 HIGH across the set. ilc.1: 1 MEDIUM (gitignore AC gap — no AC verifies .gitignore entry for workspace/capture-log.md), 1 LOW (missing Complexity Rating + Scope stability). ilc.2: 0 MEDIUM, 3 LOW (AC4 testability, copilot-instructions.md target section ambiguity, missing Complexity Rating + Scope stability). ilc.3: 0 MEDIUM, 3 LOW (formatting artifact in User Story, missing Complexity Rating + Scope stability, AC1 session-boundary detection mechanism implicit). Review artefacts written to artefacts/2026-04-28-inflight-learning-capture/review/. Pipeline-state updated: all 3 stories stage=review, reviewStatus=passed. Feature stage advanced to review.",
-    "resumeInstruction": "P5 /review complete — all 3 stories PASSED. Next: run /test-plan for each story (ilc.1, ilc.2, ilc.3). Before /test-plan: address ilc.1 1-M1 finding (add AC6 for .gitignore entry OR log RISK-ACCEPT in /decisions). Add Complexity Rating + Scope stability fields to all 3 story artefacts (LOW finding). Fix stray ** in ilc.3 User Story. Then run /test-plan for ilc.1 first (ilc.2 and ilc.3 depend on schema it defines).",
+    "contextAtWrite": "/test-plan complete for all 3 P5 stories (ilc.1, ilc.2, ilc.3). Test plans and verification scripts written for all 3 stories. Story artefact fixes applied: AC6 added to ilc.1 (gitignore exclusion verification), Complexity Rating added to all 3, stray ** removed from ilc.3 User Story. ilc.1: 12 tests (6 ACs, 0 gaps). ilc.2: 15 tests (5 ACs, 1 manual gap for AC4 untestable-by-nature). ilc.3: 12 tests (5 ACs, 0 gaps). All artefacts committed to master. Pipeline-state updated: all 3 stories stage=test-plan, feature stage=test-plan.",
+    "resumeInstruction": "P5 /test-plan complete — all 3 stories. Next: run /definition-of-ready for each story (ilc.1, ilc.2, ilc.3 in order). Expected to pass all H hard blocks. Known LOW findings from review are all resolved. ilc.3 session-boundary mechanism to be specified at /implementation-plan (use state.json lastUpdated as boundary). After all 3 DoR sign-offs complete, dispatch to coding agent. After P5 complete, start P11 (Bootstrap/Squad Onboarding) — reference doc at artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md.",
     "pendingActions": [
-      "Resolve ilc.1 1-M1 (MEDIUM): add AC6 verifying workspace/capture-log.md is in .gitignore — or log RISK-ACCEPT via /decisions before /test-plan.",
-      "Add Complexity Rating + Scope stability fields to ilc.1, ilc.2, and ilc.3 story artefacts (LOW 1-L1 in ilc.1, 1-L3 in ilc.2, 1-L2 in ilc.3) — required before /definition-of-ready.",
-      "Fix stray ** formatting artifact in ilc.3 User Story 'I want' clause (LOW 1-L1).",
-      "Run /test-plan for ilc.1 (first — schema owner). Then ilc.2 and ilc.3.",
-      "After all 3 test plans complete: run /definition-of-ready for each story.",
-      "After P5 pipeline complete: start P11 (Bootstrap/Squad Onboarding) — reference doc at artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md."
+      "Run /definition-of-ready for ilc.1 (foundation story — schema owner). Check H1-H9, H-E2E, H-NFR all pass.",
+      "Run /definition-of-ready for ilc.2 (agent self-recording instruction layer). Check NFR wording precision (≤60 words in copilot-instructions.md, ≤30 words per SKILL.md callout, imperative language).",
+      "Run /definition-of-ready for ilc.3 (checkpoint bridge). Specify session-boundary mechanism (state.json lastUpdated) in DoR Coding Agent Instructions block.",
+      "After all 3 DoR sign-offs: dispatch stories to coding agent (ilc.1 → ilc.2 → ilc.3 order — ilc.2 and ilc.3 depend on schema from ilc.1).",
+      "After P5 pipeline complete: start P11 (Bootstrap/Squad Onboarding) — run /discovery using reference doc at artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md."
     ]
   },
   "cycle": {

@@ -51,3 +51,8 @@ So that **learning signals are captured before context pressure strikes, driving
 - **Instruction hygiene:** The added instruction text must be concise enough not to consume excessive context. Target: ≤60 words in `copilot-instructions.md` for the self-recording rule; ≤30 words per SKILL.md reminder callout.
 - **No new npm dependencies:** Instruction text only — no scripts, no tooling.
 - **Wording precision:** The instruction must use imperative language — "Write to `workspace/capture-log.md`" not "Consider writing" — to minimise model-variation under-firing.
+
+## Complexity Rating
+
+**Rating:** 2 — Some ambiguity. The instruction content is clear but the target section within `copilot-instructions.md` and the exact callout wording across 8 SKILL.md files requires judgment calls that will be resolved at /implementation-plan.
+**Scope stability:** Stable
