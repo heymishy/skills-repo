@@ -90,6 +90,37 @@
 
 [Time, regulatory, technical, team, dependencies]
 
+## Contributors
+
+<!--
+  List the people who contributed to this discovery artefact.
+  Include name and role (e.g. product manager, business analyst, engineer, domain expert).
+  Non-engineering contributors are expected — discovery is a cross-discipline activity.
+-->
+
+- [Name — Role]
+
+## Reviewers
+
+<!--
+  List the people who reviewed this discovery artefact before approval.
+  At least one reviewer should be a non-engineering stakeholder (product, business, or domain owner).
+  Non-engineering review is required for M3 (non-engineering outer loop attribution rate) measurement.
+-->
+
+- [Name — Role]
+
+## Approved By
+
+<!--
+  The person who formally approved this discovery artefact and authorised progression to /benefit-metric.
+  Must be a named individual — not a team or process step.
+  A non-engineering approver is required for Tier 1 metrics (M3 non-engineering outer loop attribution rate).
+  Leaving this field empty will result in a H-GOV hard block at Definition of Ready.
+-->
+
+[Name — Role — Date]
+
 ---
 
 **Next step:** Human review and approval → /benefit-metric
