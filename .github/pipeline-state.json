@@ -380,7 +380,7 @@
     {
       "slug": "2026-04-24-platform-onboarding-distribution",
       "name": "Platform onboarding, distribution, and brownfield adoption",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -489,7 +489,8 @@
             {
               "slug": "p11.1",
               "name": "Add attribution sections to /discovery template and SKILL.md",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -508,7 +509,8 @@
             {
               "slug": "p11.2",
               "name": "Add attribution fields to /benefit-metric template and SKILL.md",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -527,7 +529,8 @@
             {
               "slug": "p11.3",
               "name": "Implement H-GOV hard block in /definition-of-ready SKILL.md",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -553,7 +556,8 @@
             {
               "slug": "p11.4",
               "name": "Define lockfile schema and implement pin and verify in cli-adapter.js",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -572,7 +576,8 @@
             {
               "slug": "p11.5",
               "name": "Implement init and fetch in cli-adapter.js",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -591,7 +596,8 @@
             {
               "slug": "p11.6",
               "name": "Create /start SKILL.md — greenfield orientation",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -610,7 +616,8 @@
             {
               "slug": "p11.7",
               "name": "Extend /start with brownfield context detection and Entry A/B/C routing",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -634,25 +641,65 @@
           "id": "ADR-011",
           "category": "mandatory-constraint",
           "label": "Artefact-first: SKILL.md and src/ changes require story chain",
-          "status": "not-assessed"
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-28"
         },
         {
           "id": "ADR-004",
           "category": "mandatory-constraint",
           "label": "context.yml is the single config source of truth",
-          "status": "not-assessed"
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-28"
         },
         {
           "id": "ADR-003",
           "category": "mandatory-constraint",
           "label": "Schema-first: fields defined in schema before use",
-          "status": "not-assessed"
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-28"
         },
         {
           "id": "WS0.6-no-npm-deps",
           "category": "mandatory-constraint",
           "label": "No new npm dependencies in src/enforcement/cli-adapter.js",
-          "status": "not-assessed"
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-28"
+        },
+        {
+          "id": "NFR-p11.4-performance",
+          "category": "nfr",
+          "label": "pin/verify < 5s for 50 skills",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-28"
+        },
+        {
+          "id": "NFR-p11.4-security",
+          "category": "nfr",
+          "label": "No credentials in lockfile",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-28"
+        },
+        {
+          "id": "NFR-p11.5-performance",
+          "category": "nfr",
+          "label": "init() < 1s",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-28"
+        },
+        {
+          "id": "NFR-p11.5-security",
+          "category": "nfr",
+          "label": "Remote URL from context.yml only; no credentials written",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-04-28"
         }
       ]
     },
