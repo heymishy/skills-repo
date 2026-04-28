@@ -195,8 +195,22 @@ jobs:
             const shortSha = headSha.slice(0, 7);
             const slug = '${{ steps.resolve_feature.outputs.slug }}';
             const slugSource = '${{ steps.resolve_feature.outputs.slug_source }}';
-            const { buildSlugSourceNote } = require('./scripts/extract-pr-slug.js');
+            const { buildSlugSourceNote, extractStorySlug, buildDispatchNote } = require('./scripts/extract-pr-slug.js');
             const sourceNote = buildSlugSourceNote(slugSource || 'auto-resolved', slug);
+
+            // ── asd.1: Dispatch cross-check — look up the story referenced in the PR body ──
+            const prBody = (context.payload.pull_request && context.payload.pull_request.body) || '';
+            let crossCheckStoryId = '';
+            let crossCheckDispatchNote = '';
+            let crossCheckStoryFound = null;
+            try {
+              crossCheckStoryId = extractStorySlug(prBody, slug);
+              if (crossCheckStoryId) {
+                crossCheckStoryFound = pipelineStories.find(s => s.id === crossCheckStoryId) || null;
+                const status = !crossCheckStoryFound ? 'not-found' : crossCheckStoryFound.issueUrl ? 'verified' : 'no-dispatch';
+                crossCheckDispatchNote = buildDispatchNote(status, crossCheckStoryId, crossCheckStoryFound ? crossCheckStoryFound.issueUrl : undefined);
+              }
+            } catch (_) { /* fail-open: dispatch cross-check must not change gate verdict */ }
 
             // ── Read trace verdict + hash from the assurance gate trace JSONL ──
             let verdict = 'unknown';
@@ -426,6 +440,7 @@ jobs:
                   return `| \`${ac.id}\` | ${short} | ${statusIcon} |`;
                 }).join('\n');
                 const parts = [
+                  ...(crossCheckDispatchNote && story.id === crossCheckStoryId ? [`_${crossCheckDispatchNote}_`, ``] : []),
                   `**\`${story.id}\` — ${story.title || story.id}**${issueLink}${issueAcCheck}`,
                   ``,
                   `| AC | Description | Status |`,
@@ -438,6 +453,7 @@ jobs:
               acSection = [
                 `### ✅ Acceptance Criteria`,
                 ``,
+                ...(crossCheckDispatchNote && !crossCheckStoryFound ? [`> ${crossCheckDispatchNote}`, ``] : []),
                 `> ACs extracted from story artefacts. Status: ✅ = all verified at DoD or all tests passed this run. Issue links confirm ACs were published in the dispatch record.`,
                 ``,
                 acBlocks.join('\n\n---\n\n'),
