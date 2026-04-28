@@ -27,18 +27,20 @@
     "observabilityGapsIdentified": 4,
     "status": "complete"
   },
-  "lastUpdated": "2026-04-28T00:00:00Z",
-  "currentPhase": "definition-of-done",
-  "activeFeature": "2026-04-28-inflight-learning-capture",
+  "lastUpdated": "2026-04-28T12:00:00Z",
+  "currentPhase": "pre-discovery",
+  "activeFeature": "2026-04-24-platform-onboarding-distribution",
   "checkpoint": {
     "writtenAt": "2026-04-28",
-    "contextAtWrite": "Phase 5 (ilc) complete: all 3 stories DoD-complete (PRs #200 #201 #203 merged). Phase 4: all 27 stories advanced to definition-of-done. CAA: all 3 stories definition-of-done (PR #190). Pipeline is clean — no stories at trace or earlier stages with merged PRs outstanding.",
-    "resumeInstruction": "All housekeeping complete. Next: P11 discovery — Platform Onboarding, Distribution and Brownfield Adoption. Run /discovery using artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md as the primary input. Feature slug: 2026-04-24-platform-onboarding-distribution, currently stage: ideation. Initiative 3 (governance model prerequisite) must be scoped first as it is a prerequisite for Initiative 1 surface work.",
+    "contextAtWrite": "P11 test stubs committed to master (7cc32b3): check-p11-attribution.js (p11.1+p11.2), check-p11-lockfile.js (p11.4), check-p11-start.js (p11.6) — RED baseline established for GitHub agent. 4 P11 issues dispatched (#204 p11.1, #205 p11.2, #206 p11.4, #207 p11.6). artefacts/baseline/ concept explored and captured in workspace/capture-log.md. Next pipeline action: P11 /discovery.",
+    "resumeInstruction": "P11 test stubs are on master and 4 issues dispatched. Before starting /discovery: check dispatched PRs with 'gh pr view <N> --json changedFiles --jq .changedFiles' — result must be > 0 (empty PR = re-dispatch to VS Code). Then run /discovery for P11 using artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md. Feature slug: 2026-04-24-platform-onboarding-distribution. Also: artefacts/baseline/ concept is logged in workspace/capture-log.md — run /ideate with that signal when ready to explore further.",
     "pendingActions": [
+      "Monitor dispatched P11 agent PRs: run 'gh pr view <N> --json changedFiles --jq .changedFiles' for each of #204/#205/#206/#207 — result must be > 0. Zero = empty plan PR, close and re-dispatch to VS Code agent.",
       "Run /discovery for P11 — Platform Onboarding, Distribution and Brownfield Adoption — using reference doc at artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md",
       "After /discovery: run /benefit-metric to define measurable success criteria for the 3 initiatives",
-      "After /benefit-metric: run /definition for epics and stories (Initiative 3 first, then Initiative 1+2)",
-      "Optional: confirm whether non-technical-channel feature (2026-04-23) needs its own discovery run or feeds into P11 directly"
+      "After /benefit-metric: run /definition for epics and stories (Initiative 3 first — governance model prerequisite — then Initiative 1+2)",
+      "Optional: confirm whether non-technical-channel feature (2026-04-23) needs its own discovery run or feeds into P11 directly",
+      "IDEA (run /ideate when ready): artefacts/baseline/ concept — durable versioned reference corpus representing current known implementation state, distinct from in-flight feature artefacts. Key decisions captured in workspace/capture-log.md (2026-04-28). Run /ideate with this signal as input before starting a new discovery for the baseline feature."
     ]
   },
   "cycle": {
