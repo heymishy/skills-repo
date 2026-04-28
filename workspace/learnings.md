@@ -1635,3 +1635,25 @@ If `changedFiles: 0` → the PR is an empty plan. Do not merge. Assign the story
 - [x] issue-dispatch SKILL.md updated with post-dispatch monitoring section
 - [ ] Re-deliver caa.1, caa.2, caa.3 via VS Code agent — create DoD artefacts after re-delivery
 - [ ] Before next GitHub SWE agent dispatch: pre-commit failing test stubs to master first
+
+---
+
+## D20 — Assurance gate "ACs not found in issue" false positive for `--target vscode` dispatches
+
+**Date:** 2026-04-28
+**Observed at:** Issue #183 (caa.1 dispatch, `--target vscode`), flagged during ilc.1 PR #200 CI investigation
+**Severity:** LOW — informational warning only (⚠️ not ❌); no pipeline block; misleading annotation
+
+**What happened:** The `assurance-gate.yml` "Governed Delivery Audit Record" bot posted `⚠️ ACs not found in issue` on issue #183. The artefact `artefacts/2026-04-23-ci-artefact-attachment/stories/caa.1-collect-flag.md` DOES contain ACs. The issue body (a `--target vscode` minimal stub) does not include AC text inline.
+
+**Root cause:** The AC presence check in `assurance-gate.yml` (line ~400) scanned the GitHub issue body for `"Acceptance Criteria"` or `"AC1:"`. For `--target vscode` dispatches, the issue body is intentionally minimal — just a task description and artefact path. ACs are in the artefact file only, not duplicated in the issue body.
+
+The bot already parsed the artefact for ACs (`storyACs = parseACs(story.artefact)`) — `storyACs.length > 0` was true — but the fallback branch only showed the negative warning rather than reflecting that ACs were found in the artefact.
+
+**Fix applied (2026-04-28):** Updated the check in `assurance-gate.yml` to distinguish three states:
+- `ACs in issue ✅` — ACs duplicated in the issue body (github-agent dispatch)
+- `ACs in artefact ✅` — ACs found in the artefact file (vscode dispatch; `storyACs.length > 0`)
+- `⚠️ ACs not found in issue or artefact` — genuine absence
+
+**Prevention:** No change to dispatch process needed. The fix makes the distinction automatic. For `--target github-agent` dispatches, ACs should still be inlined in the issue body (gives the SWE agent full context). For `--target vscode`, the artefact reference is sufficient.
+
