@@ -397,7 +397,9 @@ jobs:
                     const hasACs = !!(issue.body && (
                       issue.body.includes('Acceptance Criteria') || issue.body.includes('AC1:')
                     ));
-                    issueAcCheck = hasACs ? ' · ACs in issue ✅' : ' · ⚠️ ACs not found in issue';
+                    issueAcCheck = hasACs ? ' · ACs in issue ✅' :
+                                   (storyACs.length > 0) ? ' · ACs in artefact ✅' :
+                                   ' · ⚠️ ACs not found in issue or artefact';
                   } catch (_) {}
                 }
                 const testLine = suiteResult
