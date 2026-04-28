@@ -417,7 +417,11 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p11.5", "p11.6", "p11.7"]
+          "contributingStories": [
+            "p11.5",
+            "p11.6",
+            "p11.7"
+          ]
         },
         {
           "id": "m2",
@@ -427,7 +431,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p11.6", "p11.7"]
+          "contributingStories": [
+            "p11.6",
+            "p11.7"
+          ]
         },
         {
           "id": "m3",
@@ -437,7 +444,11 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p11.1", "p11.2", "p11.3"]
+          "contributingStories": [
+            "p11.1",
+            "p11.2",
+            "p11.3"
+          ]
         },
         {
           "id": "m4",
@@ -447,7 +458,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p11.4"]
+          "contributingStories": [
+            "p11.4"
+          ]
         },
         {
           "id": "mm1",
@@ -457,7 +470,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p11.6"]
+          "contributingStories": [
+            "p11.6"
+          ]
         },
         {
           "id": "mm2",
@@ -467,7 +482,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p11.3"]
+          "contributingStories": [
+            "p11.3"
+          ]
         },
         {
           "id": "mm3",
@@ -477,7 +494,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["p11.7"]
+          "contributingStories": [
+            "p11.7"
+          ]
         }
       ],
       "epics": [
@@ -566,7 +585,7 @@
             {
               "slug": "p11.4",
               "name": "Define lockfile schema and implement pin and verify in cli-adapter.js",
-              "stage": "definition-of-ready",
+              "stage": "done",
               "dorStatus": "signed-off",
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/206",
               "dispatchedAt": "2026-04-28T00:00:00Z",
@@ -574,9 +593,9 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "prStatus": "none",
+              "prStatus": "merged",
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "testPlan": {
                 "status": "written",
                 "totalTests": 14,
@@ -584,7 +603,9 @@
                 "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.4-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/210",
+              "mergedAt": "2026-04-29T00:00:00Z"
             },
             {
               "slug": "p11.5",
@@ -4065,6 +4086,37 @@
         }
       ],
       "guardrails": []
+    },
+    {
+      "slug": "2026-04-29-audit-slug-resolution",
+      "name": "Audit Record Slug Resolution Fix",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "updatedAt": "2026-04-29T00:00:00Z",
+      "stories": [
+        {
+          "id": "sar.1",
+          "slug": "sar.1",
+          "name": "Fix audit record to resolve feature slug from PR body",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "health": "green",
+          "reviewStatus": "short-track",
+          "highFindings": 0,
+          "prStatus": "none",
+          "acTotal": 5,
+          "acVerified": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 0,
+            "artefact": "artefacts/2026-04-29-audit-slug-resolution/test-plans/sar.1-test-plan.md"
+          },
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
+        }
+      ],
+      "track": "library"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
