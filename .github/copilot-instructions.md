@@ -208,6 +208,9 @@ The entire `/checkpoint` write — from invocation to closing confirmation messa
 
 **State write safety:** When writing `workspace/state.json`, always write the complete JSON object (never a delta or append). If using a tool that does not guarantee atomic full-file replacement, write to a temp file first (`state.json.tmp`), verify the content is valid JSON, then rename over the target. A partial write, append, or non-truncating replace will produce a concatenated-JSON file that fails `check-workspace-state.js` with "Unexpected non-whitespace character after JSON".
 
+**Capture bridge (before state-write):**
+Check `workspace/capture-log.md`. If absent: skip with "capture-log.md not found — skipping capture review" and continue. Compare each entry's `date` against `lastUpdated` from the prior `workspace/state.json`. Report count of new entries; if zero: report "No new captures to promote." Show each new entry's `signal-type` and `signal-text`; ask which to promote (all / numbers / skip). Append promoted entries to `workspace/learnings.md` with `date` and `session-phase`. Skipping is non-blocking — proceed to state-write without modification.
+
 **After writing:**
 The closing confirmation message must include "Pipeline state updated ✅". A new session reading `workspace/state.json` will resume from the checkpoint without verbal priming.
 
