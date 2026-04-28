@@ -239,3 +239,61 @@ Require Phase 3 operational evidence before they can be made responsibly.
 *Note: Challenger model previously listed here. Moved to Phase 2 as composition of existing agents — no new infrastructure required.*
 
 - **ADR-TBD: Reusable CI workflow definitions** — platform publishes a reusable CI workflow (GitHub Actions reusable workflow or Bitbucket equivalent) that squad repos call rather than owning their own gate logic. A squad cannot modify the gate without modifying the platform repo — the gate itself is outside squad write access. This is a stronger structural control than hash verification alone. Decision depends on whether Ent CI infrastructure supports reusable workflow patterns and whether the security team accepts the platform repo as a trusted workflow source. If viable, this upgrades hash verification from an audit control to a genuine structural control. <!-- ADDED: 2026-04-09 -->
+
+---
+
+## ADR-016 — Skill lockfile path: `.github/skills/skill-lockfile.json` <!-- ADDED: 2026-04-28 -->
+
+**Status:** Accepted | **Date:** 2026-04-28 | **Required by:** p11.4 (lockfile-schema-pin-verify) before coding agent dispatch
+
+The skill integrity lockfile is stored at `.github/skills/skill-lockfile.json` — adjacent to the skill directories whose SKILL.md files it hashes.
+
+**Rationale:** Collocating the lockfile with the skill files it describes minimises lookup complexity for `verify()`. The `.github/` directory is already the canonical home for platform governance files. WS4.3 (Phase 5 hash verification workstream) reads this path; this establishes it as a committed integration contract. Path is not configurable — a fixed path is required for consistent CI verification.
+
+**Alternatives rejected:** `.github/skill-lockfile.json` (not collocated with skill directories; ambiguous scope), `workspace/skill-lockfile.json` (workspace/ is for session state, not governance artefacts; would be gitignored in consumer repos), root-level (noise in consumer repo root).
+
+**Implication:** Any consumer tooling, CI scripts, or future WS4.3 implementation that reads the lockfile must use this path. Changing the path requires a migration story and a decision to supersede this ADR.
+
+---
+
+## RISK-ACCEPT — P11 /definition-of-ready MEDIUM findings (2026-04-28) <!-- ADDED: 2026-04-28 -->
+
+**Status:** Accepted | **Date:** 2026-04-28 | **Session:** P11 DoR run
+
+The following MEDIUM review findings from the P11 review phase are accepted for the reasons stated. Each was surfaced as Warning W3 during /definition-of-ready and is logged here per /decisions requirements.
+
+**p11.1 (finding 1-M1):** AC3 embeds an implementation note ("If the approved-by-required marker is moved, update the contract check simultaneously") after the testable clause. The core testable condition is clear: npm test passes and the marker is present. Test plan is written against the clear intent. Risk of test ambiguity is low — the implementation note is advisory only. Accepted.
+
+**p11.2 (finding 1-M1):** AC4 embeds an implementation note after the testable clause ("If a new required marker is added to a skill, update check-skill-contracts.js simultaneously"). The testable condition (npm test passes, metric-owner-required marker present) is unambiguous. Implementation note is advisory. Accepted.
+
+**p11.4 (finding 1-M1):** AC5 uses a hypothetical future actor ("any future WS4.3 implementation will read the sha256 field"). The deliverable is the schema document containing the sha256 field — that field's presence is fully testable today. WS4.3 interoperability cannot be verified without WS4.3, which is a Phase 5 workstream. Risk: AC5 may not be fully end-to-end verifiable in this phase. Accepted — the schema field is the correct deliverable; interoperability testing is deferred to Phase 5.
+
+**p11.5 (finding 1-M1):** AC4 names the implementation mechanism (`child_process.execSync`). Naming the mechanism is acceptable here because fetch() is inherently a git command invocation — the mechanism is the point, not an incidental implementation detail. Test plan mocks execSync. Risk: if a future implementation uses a different subprocess mechanism, AC4 may need revision. Accepted for MVP scope.
+
+**p11.7 (finding 1-M1):** No explicit AC for the Entry C vs Entry A priority conflict (what happens when both DoD artefacts and in-flight stories are present simultaneously). Priority order (C > A > B — first match wins) is declared in Architecture Constraints and will be tested via a SKILL.md file content assertion (check-p11-start.js T11.7.10). Risk: the priority test is a content check rather than an observable-behaviour AC. Accepted — the priority constraint is clearly documented and testable as instruction text.
+
+---
+
+## RISK-ACCEPT — P11 delivery sequencing constraints acknowledged (2026-04-28) <!-- ADDED: 2026-04-28 -->
+
+**Status:** Accepted | **Date:** 2026-04-28 | **Session:** P11 DoR run
+
+The following delivery sequencing constraints have been noted at DoR sign-off. These are not hard DoR blocks — all stories have been signed off — but coding agent dispatch must respect the ordering below.
+
+**p11.3 (W2 + W5):** Scope stability is Unstable until the bounded attribution model ADR is written. The bounded attribution model decision (what constitutes a qualifying non-engineering role in the `## Approved By` section) has not yet been documented as an ADR in decisions.md. Dispatch of p11.3 to the coding agent must be deferred until: (1) p11.1 is DoD-complete, and (2) the bounded attribution model ADR is written. Operator action required: run /decisions to produce the bounded attribution model ADR before dispatching p11.3.
+
+**p11.5 (W5):** init() consumes the lockfile format and path established by p11.4. Dispatch of p11.5 must be deferred until p11.4 is DoD-complete.
+
+**p11.7 (W2 + W5):** p11.7 extends the `/start` SKILL.md created by p11.6. Dispatch of p11.7 must be deferred until p11.6 is DoD-complete. Scope stability is Unstable (brownfield detection signals may need tuning after first consumer observation).
+
+---
+
+## NOTE — Bounded attribution model decision required before p11.3 dispatch <!-- ADDED: 2026-04-28 -->
+
+**Status:** Open — operator action required before p11.3 coding agent dispatch
+
+The p11.3 story (H-GOV block in /definition-of-ready SKILL.md) requires a decision on what constitutes a "qualifying non-engineering role" in the `## Approved By` section of a discovery artefact. The ACs give examples (Product Manager, Business Analyst, Business Lead) but do not make these authoritative.
+
+**Decision required:** Artefact-level sign-off (any named non-engineering role per artefact is sufficient) vs a specific allowlist of role strings. The coding agent implementing H-GOV needs the authoritative role strings to implement role detection.
+
+**Action:** Run `/decisions` to produce a formal ADR covering this decision. When the ADR is written, update the p11.3 DoR dispatch gate status in `artefacts/2026-04-24-platform-onboarding-distribution/dor/p11.3-dor.md` from 🔴 Not cleared to 🟢 Cleared.
