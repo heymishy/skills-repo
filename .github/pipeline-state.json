@@ -405,7 +405,7 @@
         "WS0.5",
         "WS0.6"
       ],
-      "updatedAt": "2026-04-28",
+      "updatedAt": "2026-04-29T00:00:00Z",
       "benefitMetricStatus": "active",
       "slicingStrategy": "risk-first",
       "metrics": [
@@ -630,7 +630,7 @@
             {
               "slug": "p11.6",
               "name": "Create /start SKILL.md — greenfield orientation",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/207",
               "dispatchedAt": "2026-04-28T00:00:00Z",
@@ -638,7 +638,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "prStatus": "none",
+              "prStatus": "merged",
               "acTotal": 5,
               "acVerified": 0,
               "testPlan": {
