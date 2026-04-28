@@ -111,17 +111,15 @@ This initiative delivers user-facing value (Tier 1) AND validates three product 
 
 ## Metric Coverage Matrix
 
-<!-- Populated by /definition after stories are written. Every metric must have at least one contributing story. -->
-
-| Metric | Stories | Status |
-|--------|---------|--------|
-| M1 — Time-to-first-skill-run | TBD at /definition | not-yet-linked |
-| M2 — Support contacts per onboarding | TBD at /definition | not-yet-linked |
-| M3 — Non-engineering attribution rate | TBD at /definition | not-yet-linked |
-| M4 — Lockfile pin/verify round-trip | TBD at /definition | not-yet-linked |
-| MM1 — `/start` hypothesis | TBD at /definition | not-yet-linked |
-| MM2 — H-GOV block hypothesis | TBD at /definition | not-yet-linked |
-| MM3 — Brownfield routing hypothesis | TBD at /definition | not-yet-linked |
+| Metric | Contributing Stories | Status |
+|--------|---------------------|--------|
+| M1 — Time-to-first-skill-run | p11.5 (init/fetch enable the guided flow), p11.6 (/start greenfield orientation), p11.7 (/start brownfield routing) | linked |
+| M2 — Support contacts per onboarding | p11.6 (/start greenfield — zero-contact orientation), p11.7 (brownfield routing prevents misdirection contacts) | linked |
+| M3 — Non-engineering attribution rate | p11.1 (discovery attribution fields), p11.2 (benefit-metric attribution fields), p11.3 (H-GOV hard block enforcement) | linked |
+| M4 — Lockfile pin/verify round-trip | p11.4 (lockfile schema + pin/verify implementation) | linked |
+| MM1 — `/start` concierge hypothesis | p11.6 (/start SKILL.md — hypothesis becomes testable once skill exists) | linked |
+| MM2 — H-GOV hard block hypothesis | p11.3 (H-GOV hard block — hypothesis is testable once block exists) | linked |
+| MM3 — Brownfield routing hypothesis | p11.7 (/start brownfield routing — hypothesis is testable once routing exists) | linked |
 
 ---
 
