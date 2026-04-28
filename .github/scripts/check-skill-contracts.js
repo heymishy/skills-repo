@@ -406,6 +406,14 @@ const CONTRACTS = [
       'Unpushed commits detected',
     ],
   },
+  // ── Greenfield orientation ────────────────────────────────────────────────
+  {
+    skill: 'start',
+    file:  '.github/skills/start/SKILL.md',
+    required: [
+      'single-turn-constraint',
+    ],
+  },
   // ── Workflow navigator ────────────────────────────────────────────────────
   {
     skill: 'workflow',
