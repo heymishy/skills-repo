@@ -4126,7 +4126,7 @@
     {
       "slug": "2026-04-29-audit-story-dispatch-crosscheck",
       "name": "Audit Gate Story Dispatch Cross-check",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "track": "library",
       "health": "green",
       "updatedAt": "2026-04-29T00:00:00Z",
@@ -4135,15 +4135,15 @@
           "id": "asd.1",
           "slug": "asd.1",
           "title": "Audit gate story dispatch cross-check",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "reviewStatus": "short-track",
-          "prStatus": "none",
+          "prStatus": "merged",
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "testPlan": {
             "totalTests": 9,
-            "passing": 0,
+            "passing": 9,
             "artefact": "artefacts/2026-04-29-audit-story-dispatch-crosscheck/test-plans/asd.1-test-plan.md"
           },
           "artefact": "artefacts/2026-04-29-audit-story-dispatch-crosscheck/stories/asd.1-audit-story-dispatch-crosscheck.md",
