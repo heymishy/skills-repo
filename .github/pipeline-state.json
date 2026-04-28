@@ -156,22 +156,23 @@
             {
               "id": "ilc.3",
               "name": "Update /checkpoint to bridge capture-log.md entries to workspace/learnings.md",
-              "stage": "definition-of-ready",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "reviewRun": 1,
               "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.3-review-1.md",
               "testPlan": {
                 "status": "written",
-                "totalTests": 12,
-                "passing": 0
+                "totalTests": 13,
+                "passing": 13
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-04-28-inflight-learning-capture/dor/ilc.3-dor.md",
+              "prStatus": "draft",
               "updatedAt": "2026-04-28",
               "slug": "ilc.3"
             }
