@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Skill Lockfile",
+  "description": "Schema for .github/skills/skill-lockfile.json written by pin() and read by verify() in cli-adapter.js (ADR-016). WS4.3 hash verification reads the sha256 field from each skills entry.",
+  "type": "object",
+  "required": ["schemaVersion", "pinnedAt", "skills"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Semver schema version string (e.g. \"1.0.0\") — enables forward-compatible migration.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "pinnedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp at which pin() was last called."
+    },
+    "skills": {
+      "type": "array",
+      "description": "One entry per SKILL.md file found recursively under .github/skills/ at pin time.",
+      "items": {
+        "type": "object",
+        "required": ["skill", "path", "sha256"],
+        "additionalProperties": false,
+        "properties": {
+          "skill": {
+            "type": "string",
+            "description": "Name of the skill directory (parent directory of SKILL.md)."
+          },
+          "path": {
+            "type": "string",
+            "description": "Relative path from the repository root to the SKILL.md file."
+          },
+          "sha256": {
+            "type": "string",
+            "description": "SHA-256 hex digest of the SKILL.md file's UTF-8 byte content at pin time. Used by WS4.3 hash verification workstream.",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      }
+    }
+  }
+}

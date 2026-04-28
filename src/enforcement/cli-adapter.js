@@ -10,10 +10,53 @@
  *   C5    — advance calls verifyHash before envelope build; no bypass flag permitted
  *   ADR-002 — advance enforces allowedTransitions from workflow declaration
  *   ADR-004 — no hardcoded URLs or paths; config injected by caller
+ *   ADR-016 — lockfile path is always .github/skills/skill-lockfile.json
  *   MC-SEC-02 — no credentials in CLI output or trace artefacts
  */
 
 const fs     = require('fs');
+const path   = require('path');
+const crypto = require('crypto');
+
+// ── Lockfile helpers ──────────────────────────────────────────────────────────
+
+const LOCKFILE_REL  = path.join('.github', 'skills', 'skill-lockfile.json');
+const SKILLS_DIR_REL = path.join('.github', 'skills');
+
+/**
+ * Compute SHA-256 hex digest of a file's UTF-8 byte content.
+ * @param {string} filePath Absolute path to the file.
+ * @returns {string} 64-character lowercase hex digest.
+ */
+function computeFileSha256(filePath) {
+  const content = fs.readFileSync(filePath);
+  return crypto.createHash('sha256').update(content).digest('hex');
+}
+
+/**
+ * Recursively collect absolute paths of every SKILL.md file under dir.
+ * @param {string} dir Absolute path to the directory to walk.
+ * @returns {string[]} Sorted list of absolute file paths.
+ */
+function findSkillFiles(dir) {
+  const results = [];
+  let entries;
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch (_) {
+    return results;
+  }
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      const sub = findSkillFiles(fullPath);
+      results.push(...sub);
+    } else if (entry.name === 'SKILL.md') {
+      results.push(fullPath);
+    }
+  }
+  return results;
+}
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
@@ -45,17 +88,93 @@ function fetch(opts) {
 }
 
 /**
- * pin — update lockfile with current skill hashes (Mode 1 MVP stub)
+ * pin — walk .github/skills/ recursively, compute SHA-256 for every SKILL.md,
+ * and write the result to .github/skills/skill-lockfile.json (ADR-016).
+ *
+ * Lockfile schema:
+ *   { schemaVersion: "1.0.0", pinnedAt: "<ISO-8601>",
+ *     skills: [{ skill, path, sha256 }] }
+ *
+ * @param {string} rootDir Repository root (defaults to process.cwd()).
+ * @returns {{ status: 'ok', command: 'pin' }}
  */
-function pin(opts) {
+function pin(rootDir) {
+  const root      = rootDir || process.cwd();
+  const skillsDir = path.join(root, SKILLS_DIR_REL);
+  const lockPath  = path.join(root, LOCKFILE_REL);
+
+  const absFiles = findSkillFiles(skillsDir);
+  const skills   = absFiles.map(function(absPath) {
+    return {
+      skill:  path.basename(path.dirname(absPath)),
+      path:   path.relative(root, absPath),
+      sha256: computeFileSha256(absPath),
+    };
+  });
+
+  const lockfile = {
+    schemaVersion: '1.0.0',
+    pinnedAt:      new Date().toISOString(),
+    skills:        skills,
+  };
+
+  fs.writeFileSync(lockPath, JSON.stringify(lockfile, null, 2), 'utf8');
   return { status: 'ok', command: 'pin' };
 }
 
 /**
- * verify — re-check hashes against lockfile (Mode 1 MVP stub)
+ * verify — re-read .github/skills/skill-lockfile.json and confirm every
+ * SKILL.md still matches its stored SHA-256 (ADR-016).
+ *
+ * Returns:
+ *   { status: 'pass', drifted: [], checked: n }          — all hashes match
+ *   { status: 'fail', drifted: [{skill,path,expected,actual}], checked: n }
+ *   { status: 'fail', error: 'no lockfile', drifted: [] } — lockfile absent
+ *
+ * @param {string} rootDir Repository root (defaults to process.cwd()).
  */
-function verify(opts) {
-  return { status: 'ok', command: 'verify' };
+function verify(rootDir) {
+  const root     = rootDir || process.cwd();
+  const lockPath = path.join(root, LOCKFILE_REL);
+
+  if (!fs.existsSync(lockPath)) {
+    return { status: 'fail', error: 'no lockfile', drifted: [] };
+  }
+
+  let lockfile;
+  try {
+    lockfile = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+  } catch (_) {
+    return { status: 'fail', error: 'lockfile parse error', drifted: [] };
+  }
+
+  const skills  = lockfile.skills || [];
+  const drifted = [];
+
+  for (let i = 0; i < skills.length; i++) {
+    const entry   = skills[i];
+    const absPath = path.join(root, entry.path);
+    let actual;
+    try {
+      actual = computeFileSha256(absPath);
+    } catch (_) {
+      actual = null;
+    }
+    if (actual !== entry.sha256) {
+      drifted.push({
+        skill:    entry.skill,
+        path:     entry.path,
+        expected: entry.sha256,
+        actual:   actual,
+      });
+    }
+  }
+
+  return {
+    status:  drifted.length === 0 ? 'pass' : 'fail',
+    drifted: drifted,
+    checked: skills.length,
+  };
 }
 
 /**
