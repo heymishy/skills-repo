@@ -64,7 +64,7 @@
     {
       "slug": "2026-04-28-inflight-learning-capture",
       "name": "In-Flight Learning Capture",
-      "stage": "definition",
+      "stage": "review",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -85,9 +85,9 @@
           "name": "Pipeline learning signal survives the full session lifecycle",
           "status": "not-started",
           "stories": [
-            { "id": "ilc.1", "name": "Define workspace/capture-log.md schema and /capture operator command", "stage": "definition", "health": "green" },
-            { "id": "ilc.2", "name": "Weave agent self-recording instruction into copilot-instructions.md and key SKILL.md files", "stage": "definition", "health": "green" },
-            { "id": "ilc.3", "name": "Update /checkpoint to bridge capture-log.md entries to workspace/learnings.md", "stage": "definition", "health": "green" }
+            { "id": "ilc.1", "name": "Define workspace/capture-log.md schema and /capture operator command", "stage": "review", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.1-review-1.md" },
+            { "id": "ilc.2", "name": "Weave agent self-recording instruction into copilot-instructions.md and key SKILL.md files", "stage": "review", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.2-review-1.md" },
+            { "id": "ilc.3", "name": "Update /checkpoint to bridge capture-log.md entries to workspace/learnings.md", "stage": "review", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.3-review-1.md" }
           ]
         }
       ],
