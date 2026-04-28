@@ -27,19 +27,19 @@
     "observabilityGapsIdentified": 4,
     "status": "complete"
   },
-  "lastUpdated": "2026-04-28T16:00:00Z",
-  "currentPhase": "test-plan",
+  "lastUpdated": "2026-04-28T18:00:00Z",
+  "currentPhase": "definition-of-ready",
   "activeFeature": "2026-04-28-inflight-learning-capture",
   "checkpoint": {
     "writtenAt": "2026-04-28",
-    "contextAtWrite": "/test-plan complete for all 3 P5 stories (ilc.1, ilc.2, ilc.3). Test plans and verification scripts written for all 3 stories. Story artefact fixes applied: AC6 added to ilc.1 (gitignore exclusion verification), Complexity Rating added to all 3, stray ** removed from ilc.3 User Story. ilc.1: 12 tests (6 ACs, 0 gaps). ilc.2: 15 tests (5 ACs, 1 manual gap for AC4 untestable-by-nature). ilc.3: 12 tests (5 ACs, 0 gaps). All artefacts committed to master. Pipeline-state updated: all 3 stories stage=test-plan, feature stage=test-plan.",
-    "resumeInstruction": "P5 /test-plan complete — all 3 stories. Next: run /definition-of-ready for each story (ilc.1, ilc.2, ilc.3 in order). Expected to pass all H hard blocks. Known LOW findings from review are all resolved. ilc.3 session-boundary mechanism to be specified at /implementation-plan (use state.json lastUpdated as boundary). After all 3 DoR sign-offs complete, dispatch to coding agent. After P5 complete, start P11 (Bootstrap/Squad Onboarding) — reference doc at artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md.",
+    "contextAtWrite": "/definition-of-ready complete for all 3 P5 stories. All 3 PASS — 13/13 hard blocks each. W4 (verification script not independently reviewed) acknowledged by operator for all 3. DoR artefacts and contracts written. Pipeline-state updated: all 3 stories dorStatus=signed-off, stage=definition-of-ready. Feature stage advanced to definition-of-ready. Guardrails updated: ADR-011=met, ADR-004=met, NFR guardrails added.",
+    "resumeInstruction": "P5 /definition-of-ready complete — all 3 stories signed off. Next: inner coding loop. Order is fixed — ilc.1 must merge before ilc.2 or ilc.3 begin (ilc.1 defines workspace/capture-log.md schema). Steps per story: /branch-setup → /implementation-plan → /subagent-execution (or /tdd per task) → /verify-completion → /branch-complete (draft PR). After all 3 PRs merged: run /definition-of-done for each. After P5 complete: start P11 (Bootstrap/Squad Onboarding) — run /discovery using artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md.",
     "pendingActions": [
-      "Run /definition-of-ready for ilc.1 (foundation story — schema owner). Check H1-H9, H-E2E, H-NFR all pass.",
-      "Run /definition-of-ready for ilc.2 (agent self-recording instruction layer). Check NFR wording precision (≤60 words in copilot-instructions.md, ≤30 words per SKILL.md callout, imperative language).",
-      "Run /definition-of-ready for ilc.3 (checkpoint bridge). Specify session-boundary mechanism (state.json lastUpdated) in DoR Coding Agent Instructions block.",
-      "After all 3 DoR sign-offs: dispatch stories to coding agent (ilc.1 → ilc.2 → ilc.3 order — ilc.2 and ilc.3 depend on schema from ilc.1).",
-      "After P5 pipeline complete: start P11 (Bootstrap/Squad Onboarding) — run /discovery using reference doc at artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md."
+      "Run /branch-setup for ilc.1 (Define workspace/capture-log.md schema and /capture operator command) — touch points: copilot-instructions.md and .gitignore only.",
+      "Run /implementation-plan for ilc.1 using DoR artefact at artefacts/2026-04-28-inflight-learning-capture/dor/ilc.1-dor.md.",
+      "After ilc.1 PR merged: run /branch-setup for ilc.2 (Weave agent self-recording instruction) — touches copilot-instructions.md and 8 SKILL.md files.",
+      "ilc.3 (checkpoint bridge) can begin after ilc.1 merged — touch point is copilot-instructions.md only; session-boundary mechanism: use state.json lastUpdated from prior checkpoint as boundary.",
+      "After P5 complete (all 3 DoD signed off): run /discovery for P11 (Bootstrap/Squad Onboarding) using reference doc at artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md."
     ]
   },
   "cycle": {

@@ -64,7 +64,7 @@
     {
       "slug": "2026-04-28-inflight-learning-capture",
       "name": "In-Flight Learning Capture",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -85,9 +85,9 @@
           "name": "Pipeline learning signal survives the full session lifecycle",
           "status": "not-started",
           "stories": [
-            { "id": "ilc.1", "name": "Define workspace/capture-log.md schema and /capture operator command", "stage": "test-plan", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.1-review-1.md", "testPlan": { "status": "written", "totalTests": 12, "passing": 0 }, "acTotal": 6, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false },
-            { "id": "ilc.2", "name": "Weave agent self-recording instruction into copilot-instructions.md and key SKILL.md files", "stage": "test-plan", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.2-review-1.md", "testPlan": { "status": "written", "totalTests": 15, "passing": 0 }, "acTotal": 5, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false },
-            { "id": "ilc.3", "name": "Update /checkpoint to bridge capture-log.md entries to workspace/learnings.md", "stage": "test-plan", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.3-review-1.md", "testPlan": { "status": "written", "totalTests": 12, "passing": 0 }, "acTotal": 5, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false }
+            { "id": "ilc.1", "name": "Define workspace/capture-log.md schema and /capture operator command", "stage": "definition-of-ready", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.1-review-1.md", "testPlan": { "status": "written", "totalTests": 12, "passing": 0 }, "acTotal": 6, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-28-inflight-learning-capture/dor/ilc.1-dor.md", "updatedAt": "2026-04-28" },
+            { "id": "ilc.2", "name": "Weave agent self-recording instruction into copilot-instructions.md and key SKILL.md files", "stage": "definition-of-ready", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.2-review-1.md", "testPlan": { "status": "written", "totalTests": 15, "passing": 0 }, "acTotal": 5, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-28-inflight-learning-capture/dor/ilc.2-dor.md", "updatedAt": "2026-04-28" },
+            { "id": "ilc.3", "name": "Update /checkpoint to bridge capture-log.md entries to workspace/learnings.md", "stage": "definition-of-ready", "health": "green", "reviewStatus": "passed", "reviewRun": 1, "reviewArtefact": "artefacts/2026-04-28-inflight-learning-capture/review/ilc.3-review-1.md", "testPlan": { "status": "written", "totalTests": 12, "passing": 0 }, "acTotal": 5, "acVerified": 0, "hasLayoutDependentGaps": false, "e2eToolingRequired": false, "dorStatus": "signed-off", "dorArtefact": "artefacts/2026-04-28-inflight-learning-capture/dor/ilc.3-dor.md", "updatedAt": "2026-04-28" }
           ]
         }
       ],
@@ -104,9 +104,15 @@
         { "id": "MC-CONSIST-02", "category": "mandatory-constraint", "label": "Gate add/remove synced with SKILL.md criteria", "status": "not-assessed" },
         { "id": "MC-A11Y-01", "category": "mandatory-constraint", "label": "Interactive elements keyboard-accessible", "status": "not-assessed" },
         { "id": "MC-A11Y-02", "category": "mandatory-constraint", "label": "Colour not sole indicator of gate status (icons/labels present)", "status": "not-assessed" },
-        { "id": "ADR-011", "category": "adr", "label": "Artefact-first: new SKILL.md files, copilot-instructions behavioural changes require a story artefact before or alongside the commit", "status": "not-assessed" }
+        { "id": "ADR-011", "category": "adr", "label": "Artefact-first: new SKILL.md files, copilot-instructions behavioural changes require a story artefact before or alongside the commit", "status": "met", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-28" },
+        { "id": "ADR-004", "category": "adr", "label": "ADR-004: /checkpoint is defined in copilot-instructions.md — not a standalone SKILL.md", "status": "met", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-28" },
+        { "id": "NFR-ilc-durability", "category": "nfr", "label": "Append-only write — capture-log.md never truncated or overwritten", "status": "met", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-28" },
+        { "id": "NFR-ilc-portability", "category": "nfr", "label": "Plain markdown format — no parser or external dependency required", "status": "met", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-28" },
+        { "id": "NFR-ilc-no-deps", "category": "nfr", "label": "No new npm dependencies across all 3 ILC stories", "status": "met", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-28" },
+        { "id": "NFR-ilc-instruction-hygiene", "category": "nfr", "label": "Self-recording rule ≤60 words; SKILL.md callouts ≤30 words; checkpoint bridge ≤80 words", "status": "not-assessed", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-28" },
+        { "id": "NFR-ilc-non-blocking", "category": "nfr", "label": "Checkpoint bridge non-blocking when capture-log absent", "status": "not-assessed", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-28" }
       ],
-      "updatedAt": "2026-04-28T00:00:00Z"
+      "updatedAt": "2026-04-28T18:00:00Z"
     },
     {
       "slug": "2026-04-24-platform-onboarding-distribution",
