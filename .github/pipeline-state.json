@@ -380,7 +380,7 @@
     {
       "slug": "2026-04-24-platform-onboarding-distribution",
       "name": "Platform onboarding, distribution, and brownfield adoption",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -407,6 +407,7 @@
       ],
       "updatedAt": "2026-04-28",
       "benefitMetricStatus": "active",
+      "slicingStrategy": "risk-first",
       "metrics": [
         {
           "id": "m1",
@@ -416,7 +417,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["p11.5", "p11.6", "p11.7"]
         },
         {
           "id": "m2",
@@ -426,7 +427,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["p11.6", "p11.7"]
         },
         {
           "id": "m3",
@@ -436,7 +437,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["p11.1", "p11.2", "p11.3"]
         },
         {
           "id": "m4",
@@ -446,7 +447,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["p11.4"]
         },
         {
           "id": "mm1",
@@ -456,7 +457,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["p11.6"]
         },
         {
           "id": "mm2",
@@ -466,7 +467,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["p11.3"]
         },
         {
           "id": "mm3",
@@ -476,7 +477,98 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["p11.7"]
+        }
+      ],
+      "epics": [
+        {
+          "slug": "p11-governance-attribution",
+          "name": "Outer loop attribution model — governance prerequisite",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "p11.1",
+              "name": "Add attribution sections to /discovery template and SKILL.md",
+              "stage": "definition",
+              "health": "green",
+              "prStatus": "none"
+            },
+            {
+              "slug": "p11.2",
+              "name": "Add attribution fields to /benefit-metric template and SKILL.md",
+              "stage": "definition",
+              "health": "green",
+              "prStatus": "none"
+            },
+            {
+              "slug": "p11.3",
+              "name": "Implement H-GOV hard block in /definition-of-ready SKILL.md",
+              "stage": "definition",
+              "health": "green",
+              "prStatus": "none"
+            }
+          ]
+        },
+        {
+          "slug": "p11-onboarding-lockfile",
+          "name": "Seamless onboarding, lockfile integrity, and brownfield routing",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "p11.4",
+              "name": "Define lockfile schema and implement pin and verify in cli-adapter.js",
+              "stage": "definition",
+              "health": "green",
+              "prStatus": "none"
+            },
+            {
+              "slug": "p11.5",
+              "name": "Implement init and fetch in cli-adapter.js",
+              "stage": "definition",
+              "health": "green",
+              "prStatus": "none"
+            },
+            {
+              "slug": "p11.6",
+              "name": "Create /start SKILL.md — greenfield orientation",
+              "stage": "definition",
+              "health": "green",
+              "prStatus": "none"
+            },
+            {
+              "slug": "p11.7",
+              "name": "Extend /start with brownfield context detection and Entry A/B/C routing",
+              "stage": "definition",
+              "health": "green",
+              "prStatus": "none"
+            }
+          ]
+        }
+      ],
+      "guardrails": [
+        {
+          "id": "ADR-011",
+          "category": "mandatory-constraint",
+          "label": "Artefact-first: SKILL.md and src/ changes require story chain",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-004",
+          "category": "mandatory-constraint",
+          "label": "context.yml is the single config source of truth",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-003",
+          "category": "mandatory-constraint",
+          "label": "Schema-first: fields defined in schema before use",
+          "status": "not-assessed"
+        },
+        {
+          "id": "WS0.6-no-npm-deps",
+          "category": "mandatory-constraint",
+          "label": "No new npm dependencies in src/enforcement/cli-adapter.js",
+          "status": "not-assessed"
         }
       ]
     },
