@@ -134,7 +134,7 @@
             {
               "id": "ilc.2",
               "name": "Weave agent self-recording instruction into copilot-instructions.md and key SKILL.md files",
-              "stage": "definition-of-ready",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "reviewRun": 1,
@@ -151,7 +151,30 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-04-28-inflight-learning-capture/dor/ilc.2-dor.md",
               "updatedAt": "2026-04-28",
-              "slug": "ilc.2"
+              "slug": "ilc.2",
+              "prStatus": "draft",
+              "tasks": [
+                {
+                  "id": "ilc2-task-1",
+                  "name": "Write failing tests (check-ilc2-agent-selfrecord.js)",
+                  "tddState": "committed"
+                },
+                {
+                  "id": "ilc2-task-2",
+                  "name": "Add agent self-recording instruction to copilot-instructions.md",
+                  "tddState": "committed"
+                },
+                {
+                  "id": "ilc2-task-3",
+                  "name": "Add capture reminders to 8 SKILL.md files",
+                  "tddState": "committed"
+                },
+                {
+                  "id": "ilc2-task-4",
+                  "name": "Create checkpoint/SKILL.md with capture reminder",
+                  "tddState": "committed"
+                }
+              ]
             },
             {
               "id": "ilc.3",

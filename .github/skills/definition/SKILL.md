@@ -418,3 +418,5 @@ Update `.github/pipeline-state.json` in the **project repository** when all epic
 **Guardrails seeding:** After writing epics and stories, seed the feature-level `guardrails[]` array. Read `.github/architecture-guardrails.md` — if a `Guardrails Registry` block exists (fenced `yaml guardrails-registry` code block), parse the guardrail items. For each item, add `{ "id": "[id]", "category": "[category]", "label": "[label]", "status": "not-assessed" }` to `feature.guardrails[]`. This seeds the compliance matrix — evaluation skills (`/review`, `/definition-of-ready`, `/trace`) will update statuses later. If `architecture-guardrails.md` is not found, set `guardrails: []`.
 
 **Human review note:** If a human adds or modifies stories outside a skill session, run `/workflow` to reconcile — it will diff artefacts against the state file.
+
+> **Capture signal:** Write design decisions, scope constraints, or patterns surfaced here to `workspace/capture-log.md` (source: agent-auto).

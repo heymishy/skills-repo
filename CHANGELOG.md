@@ -8,6 +8,11 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- **P5 ilc.2 — agent self-recording instruction in `copilot-instructions.md` and 8 SKILL.md callouts (2026-04-28):** Added `**Agent self-recording.**` instruction block to `copilot-instructions.md` directing the agent to write to `workspace/capture-log.md` when a non-trivial event occurs (decision, validated/invalidated assumption, pattern, gap), using `source: agent-auto` and the 5-field schema from ilc.1. Added ≤30-word capture-reminder callouts to 8 SKILL.md files: `/checkpoint` (new SKILL.md created), `/definition`, `/review`, `/test-plan`, `/definition-of-ready`, `/tdd`, `/systematic-debugging`, `/implementation-review`. 16 governance tests added (`tests/check-ilc2-agent-selfrecord.js`).
+
+### Fixed
+
+
 - **P5 ilc.1 — `/capture` operator command and `workspace/capture-log.md` schema (2026-04-28):** Added `/capture [signal text]` command to `copilot-instructions.md` defining a 5-field capture schema (`date`, `session-phase`, `signal-type`, `signal-text`, `source`), 6 valid `signal-type` values (`decision`, `learning`, `assumption-validated`, `assumption-invalidated`, `pattern`, `gap`), blank-entry guard, append-only rule, and new-session behaviour. `source` for operator-invoked entries is `operator-manual`. Added `workspace/capture-log.md` to `.gitignore`. 12 governance tests added (`tests/check-ilc1-capture-schema.js`) covering all 6 ACs.
 
 ### Fixed

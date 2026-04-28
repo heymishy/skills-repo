@@ -266,3 +266,5 @@ Can't check all boxes? You skipped TDD. Start over.
 **Use during:** /subagent-execution (subagents follow TDD per task), and step-by-step execution of tasks from /implementation-plan
 **When stuck:** run /systematic-debugging
 **Before claiming done:** run /verify-completion
+
+> **Capture signal:** Write design insights or patterns surfaced during RED→GREEN to `workspace/capture-log.md` (source: agent-auto).
