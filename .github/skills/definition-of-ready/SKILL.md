@@ -300,3 +300,5 @@ Update `.github/pipeline-state.json` in the **project repository** after produci
 - **Schema-valid guardrail values only.** When writing `status`, use only: `met`, `not-met`, `na`, `excepted`, `not-assessed`. Do not use informal synonyms (`pass`, `fail`, `deferred`, `no-breach`, `not-applicable`, `has-finding`). When writing `category`, use only: `mandatory-constraint`, `adr`, `nfr`, `compliance-framework`, `pattern`, `anti-pattern`. Subcategories (`performance`, `security`, `audit`) must be written as `nfr`. These values are validated by `validate-trace.sh --ci` — invalid values cause hard CI failures on agent PRs.
 
 **Human sign-off note:** DoR requires explicit human sign-off. When a human confirms "Proceed", update `dorStatus: "signed-off"` in the state file if not already set, or run `/workflow` to reconcile.
+
+> **Capture signal:** Write ambiguities, blocker causes, or scope decisions to `workspace/capture-log.md` (source: agent-auto).
