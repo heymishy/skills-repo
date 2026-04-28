@@ -13,7 +13,10 @@
 
 **Discovery reference:** [Link to approved discovery artefact]
 **Date defined:** [YYYY-MM-DD]
-**Metric owner:** [Who is responsible for measuring and reporting]
+**Metric owner:** [Named person and role]
+<!-- Metric owner should be a non-engineering role for Tier 1 product metrics (e.g. Product Manager, Business Analyst, Delivery Lead). Engineering team members typically own Tier 2 meta-metrics. -->
+**Reviewers:** [Named reviewer(s)]
+<!-- Reviewers: at least one non-engineering reviewer is required for Tier 1 product metrics (e.g. sponsor, business owner, or product lead outside the engineering team). -->
 
 ---
 
