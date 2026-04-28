@@ -1,8 +1,8 @@
 # Discovery: Platform Onboarding, Distribution, and Brownfield Adoption
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-04-28
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Operator, 2026-04-28
 **Author:** Copilot (from reference synthesis — `artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md`)
 
 ---
@@ -15,7 +15,7 @@ Platform adoption across non-engineering disciplines is structurally blocked at 
 
 **Layer 2 — Governance dysfunction:** Even where environment access is solved, the outer loop can be executed entirely by a single engineer with no structural requirement for non-technical input. The `/discovery` and `/benefit-metric` templates have no required attribution fields. A discovery artefact with no named business stakeholder passes DoR sign-off today. This makes non-technical contribution advisory rather than authoritative — which is indistinguishable, from the outside, from a pipeline that does not require non-technical input at all. Senior stakeholders who resist formalising discovery governance (because the informal governance model currently protects their deniability) have no incentive to engage with a platform that does not force the question.
 
-**Layer 3 — No brownfield entry path:** Teams with existing codebases, partially-built features, or prior discovery processes have no explicit, low-overhead route into the pipeline. The only documented entry is `/bootstrap` which assumes a greenfield repository and no prior delivery context. Teams with working code, written stories, or shipped features face a "start from scratch" barrier that has no structured alternative.
+**Layer 3 — No brownfield entry path:** Teams with existing codebases, partially-built features, or prior discovery processes have no explicit, low-overhead route into the pipeline. The current documented entry (clone + `docs/ONBOARDING.md`) assumes a greenfield starting point. Teams with working code, written stories, or shipped features face a "start from scratch" barrier that has no structured alternative.
 
 The consequence of all three layers together: the platform's claim to cross-discipline governance is rhetorical. WS0 (the distribution and onboarding workstream) is the explicit entry condition for every Phase 5 workstream (WS1–WS7). Until it is delivered, Phase 5 is reachable only by the platform maintainer.
 
@@ -29,7 +29,7 @@ The consequence of all three layers together: the platform's claim to cross-disc
 
 **Platform consumers with existing codebases (brownfield teams):** Engineering teams or squads who have written code, produced discovery notes, or shipped features but have not yet adopted the pipeline. Blocked by Layer 3 — no entry path exists for their context. Initiative 2 addresses this through three entry patterns (A: story-level TDD entry; B: reverse-engineer → discovery; C: retrospective story for shipped code).
 
-**Platform maintainer:** Bears the cost of all three layers — every non-adoption is a manual support interaction. The concierge skill (`/where-am-i`) and one-command install path directly reduce this support surface.
+**Platform maintainer:** Bears the cost of all three layers — every non-adoption is a manual support interaction. The `/start` concierge skill and one-command install path directly reduce this support surface.
 
 ## Why Now
 
@@ -45,13 +45,15 @@ The consequence of all three layers together: the platform's claim to cross-disc
 
 The MVP for this feature is validated by three observable outcomes, each corresponding to an initiative:
 
-**MVP-1 (Initiative 1 — Seamless onboarding):** A new consumer can run `/bootstrap` and then `/where-am-i` in a fresh repository and receive a guided orientation — what the pipeline is, where they are in it, and exactly what their next step is — without contacting the platform team. The concierge skill detects entry context (new repo, existing artefacts, or brownfield codebase) and routes accordingly.
+**MVP-1 (Initiative 1 — Seamless onboarding):** A new consumer clones the repository, follows `docs/ONBOARDING.md`, and can run a single skill — `/start` — to receive a guided, conversational orientation in under two minutes: what the pipeline is, where they currently are in it, and exactly what their next action is, with no documentation reading beyond that point. No platform team contact required. The skill detects entry context (fresh repo with no artefacts, in-progress pipeline state, or brownfield codebase) and routes accordingly.
 
-Includes: the `/where-am-i` concierge skill SKILL.md; the real implementation of `init`, `fetch`, `pin`, and `verify` commands in `src/enforcement/cli-adapter.js` against a defined lockfile schema; the lockfile schema itself (forward-compatible with WS4 spec integrity).
+The name `/start` is intentional: it is the most intuitive first command for a consumer who has just cloned the repo and has no prior pipeline context. It replaces the current pattern of reading through `ONBOARDING.md` to determine what to do next.
+
+Includes: the `/start` concierge skill SKILL.md; the real implementation of `init`, `fetch`, `pin`, and `verify` commands in `src/enforcement/cli-adapter.js` against a defined lockfile schema; the lockfile schema itself (forward-compatible with WS4 spec integrity).
 
 **MVP-2 (Initiative 3 — Governance prerequisite):** An engineer-only discovery artefact fails DoR sign-off with a clear attribution gap message. Specifically: the `/discovery` template gains required `contributors`, `reviewers`, and `approved-by` sections; the `/benefit-metric` template gains required attribution for metric ownership and reviewer; the `/definition-of-ready` skill gains hard block H-GOV that checks `approved-by` is populated with at least one non-engineering role entry; a bounded attribution model decision is documented (artefact-level vs section-level sign-off).
 
-**MVP-3 (Initiative 2 — Brownfield entry, secondary):** The concierge skill (`/where-am-i`) detects brownfield context and routes to the correct entry pattern: Entry A (`/tdd [story-slug]` for teams with stories), Entry B (`/reverse-engineer` wrapper for teams with code but no artefacts), or Entry C (retrospective story template for shipped code). Each entry pattern is formally surfaced as a documented, guided onboarding path — not just a hidden capability.
+**MVP-3 (Initiative 2 — Brownfield entry, secondary):** The `/start` skill detects brownfield context and routes to the correct entry pattern: Entry A (`/tdd [story-slug]` for teams with stories), Entry B (`/reverse-engineer` wrapper for teams with code but no artefacts), or Entry C (retrospective story template for shipped code). Each entry pattern is formally surfaced as a documented, guided onboarding path — not just a hidden capability.
 
 MVP scope is bounded by the five open questions in section 6 of the reference document. Where an open question is unresolved, the story scopes to the decision, not the implementation of both options.
 
@@ -73,7 +75,7 @@ MVP scope is bounded by the five open questions in section 6 of the reference do
 
 **Assumptions:**
 
-- The `/where-am-i` concierge skill can be implemented entirely within the SKILL.md instruction set — it does not require a new CLI command or backend service. A conversational skill that reads `workspace/state.json` and `artefacts/` is sufficient for MVP-1.
+- The `/start` concierge skill can be implemented entirely within the SKILL.md instruction set — it does not require a new CLI command or backend service. A conversational skill that reads `workspace/state.json` and `artefacts/` is sufficient for MVP-1.
 - The lockfile schema can be defined in a way that is forward-compatible with WS4 (spec integrity / verbatim instruction assembly record). This requires reading the WS4 workstream description in `artefacts/phase5-6-roadmap.md` before finalising the schema. If WS4 has incompatible constraints, a spike is required before lockfile implementation.
 - Senior stakeholders will accept artefact-level sign-off (name on the whole document) as the minimum bounded attribution model, even if section-level attribution is preferable for SMEs. If neither model is acceptable to the target stakeholder population, WS0.7 surface investment is premature and this feature's scope must be revised.
 - The non-git consumer distribution model (WS0.4) does not have blocking ADO environment constraints that would change the lockfile or `init`/`fetch` design. If ADO consumers need a distribution mechanism that is not `sync-from-upstream.sh`, this is a scope addition.
@@ -88,11 +90,11 @@ MVP scope is bounded by the five open questions in section 6 of the reference do
 
 ## Directional Success Indicators
 
-- A new consumer completes onboarding (from `/bootstrap` to `/where-am-i` to first skill run) without a support interaction with the platform team. Target: zero platform team contacts per onboarding event.
+- A new consumer completes onboarding (clone repo → follow `ONBOARDING.md` → run `/start` → first skill run) in under two minutes without a support interaction with the platform team. Target: zero platform team contacts per onboarding event.
 - An engineer-only discovery artefact produces a visible DoR hard block at H-GOV. The block message names the missing attribution field and explains what is required to resolve it.
 - At least one non-engineering persona (BA, product manager, or business lead) is named in the `approved-by` field of a real discovery artefact produced by a cross-functional pair running the pipeline together.
 - A consumer who has run `pin` can run `verify` and receive a pass/fail result against their lockfile within a single terminal command. No filesystem inspection required.
-- The platform maintainer receives zero "what do I do next?" support questions from a new consumer who has run `/where-am-i` in their first session.
+- The platform maintainer receives zero "what do I do next?" support questions from a new consumer who has run `/start` in their first session.
 
 ## Constraints
 
@@ -100,7 +102,7 @@ MVP scope is bounded by the five open questions in section 6 of the reference do
 - No new npm dependencies in `src/enforcement/cli-adapter.js` or its lockfile implementation (Node.js built-ins only per ADR constraint pattern established in WS0.6).
 - Lockfile schema must be defined as a versioned document forward-compatible with WS4 (spec integrity). Read `artefacts/phase5-6-roadmap.md` WS4 description before finalising.
 - SKILL.md changes to `/discovery`, `/benefit-metric`, and `/definition-of-ready` must be delivered via PR with story artefact chain (artefact-first rule, `copilot-instructions.md`).
-- The `/where-am-i` concierge skill is a SKILL.md instruction set, not a CLI command or backend service. It reads `workspace/state.json` and `artefacts/` directory state.
+- The `/start` concierge skill is a SKILL.md instruction set, not a CLI command or backend service. It reads `workspace/state.json` and `artefacts/` directory state. The sub-2-minute target is a time constraint on the skill design: `/start` must produce an actionable next step within a single conversational turn, not a multi-step interview.
 
 **Process:**
 - Initiative 3 (governance model prerequisite) must be scoped and stories defined before Initiative 1 surface work begins. Initiative 3's output — redesigned attribution fields and H-GOV hard block — is an entry condition for Initiative 1 stories.
@@ -116,4 +118,4 @@ MVP scope is bounded by the five open questions in section 6 of the reference do
 
 ---
 
-**Next step:** Human review and approval → /benefit-metric
+**Next step:** Approved ✅ → /benefit-metric
