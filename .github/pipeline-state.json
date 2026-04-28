@@ -62,6 +62,23 @@
       "updatedAt": "2026-04-27"
     },
     {
+      "slug": "2026-04-28-inflight-learning-capture",
+      "name": "In-Flight Learning Capture",
+      "stage": "discovery",
+      "health": "green",
+      "track": "library",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discoveryStatus": "approved",
+      "discoveryArtefact": "artefacts/2026-04-28-inflight-learning-capture/discovery.md",
+      "relatedGaps": ["G12", "G5"],
+      "wsjfScore": 7.0,
+      "portfolioRef": "P5",
+      "updatedAt": "2026-04-28T00:00:00Z"
+    },
+    {
       "slug": "2026-04-24-platform-onboarding-distribution",
       "name": "Platform onboarding, distribution, and brownfield adoption",
       "stage": "ideation",
