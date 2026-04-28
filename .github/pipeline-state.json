@@ -387,7 +387,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "discoveryStatus": "in-progress",
+      "discoveryStatus": "approved",
       "ideationPath": "artefacts/2026-04-23-non-technical-channel/research/ideation.md",
       "ideationSignal": "proceed",
       "refDocPath": "artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md",
