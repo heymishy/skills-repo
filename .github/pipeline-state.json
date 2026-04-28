@@ -64,7 +64,7 @@
     {
       "slug": "2026-04-28-inflight-learning-capture",
       "name": "In-Flight Learning Capture",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -73,6 +73,8 @@
       "sensitiveDataCategories": [],
       "discoveryStatus": "approved",
       "discoveryArtefact": "artefacts/2026-04-28-inflight-learning-capture/discovery.md",
+      "benefitMetricArtefact": "artefacts/2026-04-28-inflight-learning-capture/benefit-metric.md",
+      "benefitMetricStatus": "active",
       "relatedGaps": ["G12", "G5"],
       "wsjfScore": 7.0,
       "portfolioRef": "P5",
