@@ -380,14 +380,14 @@
     {
       "slug": "2026-04-24-platform-onboarding-distribution",
       "name": "Platform onboarding, distribution, and brownfield adoption",
-      "stage": "ideation",
+      "stage": "discovery",
       "health": "green",
       "track": "library",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "discoveryStatus": "not-started",
+      "discoveryStatus": "in-progress",
       "ideationPath": "artefacts/2026-04-23-non-technical-channel/research/ideation.md",
       "ideationSignal": "proceed",
       "refDocPath": "artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md",
@@ -405,7 +405,7 @@
         "WS0.5",
         "WS0.6"
       ],
-      "updatedAt": "2026-04-24T00:00:00Z"
+      "updatedAt": "2026-04-28"
     },
     {
       "slug": "2026-04-23-non-technical-channel",
