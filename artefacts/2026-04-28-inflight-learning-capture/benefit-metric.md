@@ -74,10 +74,10 @@ This feature validates a hypothesis about instruction-based agent self-recording
 
 | Metric | Stories that trace to it |
 |--------|--------------------------|
-| M1 — Signal loss rate | TBD at /definition |
-| M2 — In-session agent capture rate | TBD at /definition |
-| MM1 — Agent vs operator capture ratio | TBD at /definition |
-| MM2 — Learnings.md growth rate | TBD at /definition |
+| M1 — Signal loss rate | ilc.1 (creates the durability layer), ilc.3 (bridges captures to learnings.md at session end) |
+| M2 — In-session agent capture rate | ilc.1 (defines the file + operator path), ilc.2 (wires the agent self-recording instruction) |
+| MM1 — Agent vs operator capture ratio | ilc.2 (drives agent-auto entries), ilc.1 (provides operator-manual path for denominator measurement) |
+| MM2 — Learnings.md growth rate | ilc.3 (bridges capture entries to learnings.md, increasing entries per session) |
 
 ---
 
