@@ -271,3 +271,5 @@ This skill does not advance the pipeline stage. It supports debugging within the
 After the bug is resolved:
 - Run `/verify-completion` — that skill handles the state write
 - If an architectural finding was logged in `/decisions`, that skill handles its own write
+
+> **Capture signal:** Write the root-cause finding or resolution pattern to `workspace/capture-log.md` (source: agent-auto).

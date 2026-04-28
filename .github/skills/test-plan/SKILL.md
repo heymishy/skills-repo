@@ -367,3 +367,5 @@ When the test plan is saved, for each story update `.github/pipeline-state.json`
 - Set `health: "green"`
 - Set `hasLayoutDependentGaps: true` if any AC was classified `CSS-layout-dependent`; `false` otherwise
 - Set `e2eToolingRequired: true` if any layout-dependent AC was assigned option 1 (E2E test); `false` otherwise
+
+> **Capture signal:** Write untestable-gap decisions or test-design choices to `workspace/capture-log.md` (source: agent-auto).

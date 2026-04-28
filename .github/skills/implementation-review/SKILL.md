@@ -118,3 +118,5 @@ Update `.github/pipeline-state.json` in the **project repository** after produci
 - Recompute the parent epic `status` from its stories: if every story in the epic is done (`dodStatus: "complete"`, `prStatus: "merged"`, or all tasks `tddState: "committed"`), set epic `status: "complete"`; if any story has an active inner loop stage, set `status: "in-progress"`; otherwise `"not-started"`
 
 **Human review note:** If a human performs a code review outside a skill session and resolves findings, update `health` and clear `blocker` manually in `pipeline-state.json`, or run `/workflow` to reconcile.
+
+> **Capture signal:** Write critical or important review findings to `workspace/capture-log.md` (source: agent-auto).

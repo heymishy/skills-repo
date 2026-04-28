@@ -295,3 +295,5 @@ After producing a review report, for each story reviewed update the story entry 
 The guardrails array is read by the pipeline visualiser Guardrails Compliance Matrix panel.
 
 **Human review note:** If a human resolves findings and re-approves stories outside a skill session, update `reviewStatus` and `highFindings` manually in `pipeline-state.json`, or run `/workflow` to reconcile.
+
+> **Capture signal:** Write HIGH/MEDIUM findings that reveal a gap or pattern to `workspace/capture-log.md` (source: agent-auto).

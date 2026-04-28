@@ -177,6 +177,8 @@ Use `/capture [signal text]` to record a learning signal to `workspace/capture-l
 - If you are unsure whether to proceed, run `/workflow` rather than guessing
 - **`/checkpoint` threshold: invoke at 55%** for any file-read-heavy phase (definition, review, test-plan, trace, inner loop implementation). The 75% guideline applies only to conversation-only phases. File reads fill the Tool Results context bucket faster than the Messages bucket — by the time the hover indicator shows 55–60%, the Tool Results bucket may be near threshold. Invoke `/checkpoint` before reaching the compaction threshold — not at it. The write must complete before compaction fires; invoke with enough context headroom to allow that.
 
+**Agent self-recording.** Write to `workspace/capture-log.md` when a non-trivial session event occurs — a decision, validated or invalidated assumption, discovered pattern, or identified gap. Use source: agent-auto with the 5-field schema from `/capture`. Append after existing entries; never truncate. Do not write for routine, well-understood steps.
+
 ### Ending a session
 
 Before closing a session, execute this sequence in order:
