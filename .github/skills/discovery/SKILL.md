@@ -276,6 +276,17 @@ If option 2:
 >
 > Reply: approved — [your name], [date]
 
+<!-- approved-by-required -->
+
+> **Attribution — required before marking Approved:**
+> Before setting Status to "Approved", populate the attribution sections in the discovery artefact:
+> - **## Contributors** — everyone who contributed to the discovery (name + role)
+> - **## Reviewers** — everyone who reviewed the artefact before approval (name + role)
+> - **## Approved By** — the named individual approving this discovery (name + role + date)
+>
+> A non-engineering approver is expected for M3 (non-engineering outer loop attribution rate) measurement.
+> Leaving the Approved By field empty will result in a H-GOV hard block at Definition of Ready.
+
 ---
 
 ## Quality checks before outputting

@@ -39,6 +39,7 @@ const CONTRACTS = [
       'artefacts/[feature-slug]/reference/',
       'mission.md',
       'reference-index.md',
+      'approved-by-required',
     ],
   },
   {
