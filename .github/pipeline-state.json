@@ -380,7 +380,7 @@
     {
       "slug": "2026-04-24-platform-onboarding-distribution",
       "name": "Platform onboarding, distribution, and brownfield adoption",
-      "stage": "review",
+      "stage": "test-plan",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -489,29 +489,59 @@
             {
               "slug": "p11.1",
               "name": "Add attribution sections to /discovery template and SKILL.md",
-              "stage": "definition",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "prStatus": "none"
+              "prStatus": "none",
+              "acTotal": 4,
+              "acVerified": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 0,
+                "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.1-test-plan.md"
+              },
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "p11.2",
               "name": "Add attribution fields to /benefit-metric template and SKILL.md",
-              "stage": "definition",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "prStatus": "none"
+              "prStatus": "none",
+              "acTotal": 4,
+              "acVerified": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 0,
+                "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.2-test-plan.md"
+              },
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "p11.3",
               "name": "Implement H-GOV hard block in /definition-of-ready SKILL.md",
-              "stage": "definition",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "prStatus": "none"
+              "prStatus": "none",
+              "acTotal": 5,
+              "acVerified": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 11,
+                "passing": 0,
+                "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.3-test-plan.md"
+              },
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         },
@@ -523,38 +553,78 @@
             {
               "slug": "p11.4",
               "name": "Define lockfile schema and implement pin and verify in cli-adapter.js",
-              "stage": "definition",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "prStatus": "none"
+              "prStatus": "none",
+              "acTotal": 6,
+              "acVerified": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 14,
+                "passing": 0,
+                "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.4-test-plan.md"
+              },
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "p11.5",
               "name": "Implement init and fetch in cli-adapter.js",
-              "stage": "definition",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "prStatus": "none"
+              "prStatus": "none",
+              "acTotal": 5,
+              "acVerified": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 12,
+                "passing": 0,
+                "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.5-test-plan.md"
+              },
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "p11.6",
               "name": "Create /start SKILL.md — greenfield orientation",
-              "stage": "definition",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "prStatus": "none"
+              "prStatus": "none",
+              "acTotal": 5,
+              "acVerified": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 13,
+                "passing": 0,
+                "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.6-test-plan.md"
+              },
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "p11.7",
               "name": "Extend /start with brownfield context detection and Entry A/B/C routing",
-              "stage": "definition",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "prStatus": "none"
+              "prStatus": "none",
+              "acTotal": 5,
+              "acVerified": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 10,
+                "passing": 0,
+                "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.7-test-plan.md"
+              },
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
