@@ -56,7 +56,9 @@
           "prUrl": "https://github.com/heymishy/skills-repo/pull/194",
           "dodStatus": "complete",
           "dispatchTarget": "vscode",
-          "dodArtefact": "artefacts/2026-04-27-p1-hash-defect/dod/p1-hash-defect-dod.md"
+          "dodArtefact": "artefacts/2026-04-27-p1-hash-defect/dod/p1-hash-defect-dod.md",
+          "stage": "definition-of-done",
+          "updatedAt": "2026-04-28"
         }
       ],
       "updatedAt": "2026-04-27"

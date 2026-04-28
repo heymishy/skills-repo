@@ -27,19 +27,18 @@
     "observabilityGapsIdentified": 4,
     "status": "complete"
   },
-  "lastUpdated": "2026-04-28T18:00:00Z",
-  "currentPhase": "definition-of-ready",
+  "lastUpdated": "2026-04-28T00:00:00Z",
+  "currentPhase": "definition-of-done",
   "activeFeature": "2026-04-28-inflight-learning-capture",
   "checkpoint": {
     "writtenAt": "2026-04-28",
-    "contextAtWrite": "/definition-of-ready complete for all 3 P5 stories. All 3 PASS — 13/13 hard blocks each. W4 (verification script not independently reviewed) acknowledged by operator for all 3. DoR artefacts and contracts written. Pipeline-state updated: all 3 stories dorStatus=signed-off, stage=definition-of-ready. Feature stage advanced to definition-of-ready. Guardrails updated: ADR-011=met, ADR-004=met, NFR guardrails added.",
-    "resumeInstruction": "P5 /definition-of-ready complete — all 3 stories signed off. Next: inner coding loop. Order is fixed — ilc.1 must merge before ilc.2 or ilc.3 begin (ilc.1 defines workspace/capture-log.md schema). Steps per story: /branch-setup → /implementation-plan → /subagent-execution (or /tdd per task) → /verify-completion → /branch-complete (draft PR). After all 3 PRs merged: run /definition-of-done for each. After P5 complete: start P11 (Bootstrap/Squad Onboarding) — run /discovery using artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md.",
+    "contextAtWrite": "Phase 5 (ilc) complete: all 3 stories DoD-complete (PRs #200 #201 #203 merged). Phase 4: all 27 stories advanced to definition-of-done. CAA: all 3 stories definition-of-done (PR #190). Pipeline is clean — no stories at trace or earlier stages with merged PRs outstanding.",
+    "resumeInstruction": "All housekeeping complete. Next: P11 discovery — Platform Onboarding, Distribution and Brownfield Adoption. Run /discovery using artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md as the primary input. Feature slug: 2026-04-24-platform-onboarding-distribution, currently stage: ideation. Initiative 3 (governance model prerequisite) must be scoped first as it is a prerequisite for Initiative 1 surface work.",
     "pendingActions": [
-      "Run /branch-setup for ilc.1 (Define workspace/capture-log.md schema and /capture operator command) — touch points: copilot-instructions.md and .gitignore only.",
-      "Run /implementation-plan for ilc.1 using DoR artefact at artefacts/2026-04-28-inflight-learning-capture/dor/ilc.1-dor.md.",
-      "After ilc.1 PR merged: run /branch-setup for ilc.2 (Weave agent self-recording instruction) — touches copilot-instructions.md and 8 SKILL.md files.",
-      "ilc.3 (checkpoint bridge) can begin after ilc.1 merged — touch point is copilot-instructions.md only; session-boundary mechanism: use state.json lastUpdated from prior checkpoint as boundary.",
-      "After P5 complete (all 3 DoD signed off): run /discovery for P11 (Bootstrap/Squad Onboarding) using reference doc at artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md."
+      "Run /discovery for P11 — Platform Onboarding, Distribution and Brownfield Adoption — using reference doc at artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md",
+      "After /discovery: run /benefit-metric to define measurable success criteria for the 3 initiatives",
+      "After /benefit-metric: run /definition for epics and stories (Initiative 3 first, then Initiative 1+2)",
+      "Optional: confirm whether non-technical-channel feature (2026-04-23) needs its own discovery run or feeds into P11 directly"
     ]
   },
   "cycle": {
