@@ -4113,7 +4113,10 @@
             "artefact": "artefacts/2026-04-29-audit-slug-resolution/test-plans/sar.1-test-plan.md"
           },
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/211",
+          "dispatchedAt": "2026-04-29T00:00:00Z",
+          "dispatchTarget": "github-agent"
         }
       ],
       "track": "library"
