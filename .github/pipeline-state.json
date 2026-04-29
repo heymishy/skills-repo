@@ -558,12 +558,12 @@
             {
               "slug": "p11.3",
               "name": "Implement H-GOV hard block in /definition-of-ready SKILL.md",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "prStatus": "none",
+              "prStatus": "merged",
               "acTotal": 5,
               "acVerified": 0,
               "testPlan": {
@@ -576,7 +576,10 @@
               "e2eToolingRequired": false,
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/219",
               "dispatchedAt": "2026-04-29T00:00:00Z",
-              "dispatchTarget": "github-agent"
+              "dispatchTarget": "github-agent",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "updatedAt": "2026-04-29"
             }
           ]
         },
@@ -613,12 +616,12 @@
             {
               "slug": "p11.5",
               "name": "Implement init and fetch in cli-adapter.js",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "prStatus": "none",
+              "prStatus": "merged",
               "acTotal": 5,
               "acVerified": 0,
               "testPlan": {
@@ -631,7 +634,10 @@
               "e2eToolingRequired": false,
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/216",
               "dispatchedAt": "2026-04-29T00:00:00Z",
-              "dispatchTarget": "github-agent"
+              "dispatchTarget": "github-agent",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "updatedAt": "2026-04-29"
             },
             {
               "slug": "p11.6",
