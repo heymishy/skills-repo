@@ -14,9 +14,10 @@
  *   MC-SEC-02 — no credentials in CLI output or trace artefacts
  */
 
-const fs     = require('fs');
-const path   = require('path');
-const crypto = require('crypto');
+const fs           = require('fs');
+const path         = require('path');
+const crypto       = require('crypto');
+const childProcess = require('child_process');
 
 // ── Lockfile helpers ──────────────────────────────────────────────────────────
 
@@ -58,6 +59,43 @@ function findSkillFiles(dir) {
   return results;
 }
 
+/**
+ * Read `skills_upstream.remote` from <rootDir>/.github/context.yml.
+ * Returns the remote URL string, or null if absent / set to null / blank.
+ * Uses only Node.js built-ins — no yaml library required.
+ *
+ * @param {string} rootDir
+ * @returns {string|null}
+ */
+function readRemoteFromContext(rootDir) {
+  const ctxPath = path.join(rootDir, '.github', 'context.yml');
+  if (!fs.existsSync(ctxPath)) return null;
+
+  const lines = fs.readFileSync(ctxPath, 'utf8').split('\n');
+  let inSkillsUpstream = false;
+
+  for (const line of lines) {
+    if (/^skills_upstream\s*:/.test(line)) {
+      inSkillsUpstream = true;
+      continue;
+    }
+    if (inSkillsUpstream) {
+      // A non-indented, non-empty, non-comment line ends the skills_upstream block
+      if (line.length > 0 && !line.trim().startsWith('#') && !/^\s/.test(line)) {
+        inSkillsUpstream = false;
+        continue;
+      }
+      const remoteMatch = line.match(/^\s+remote\s*:\s*(.*)/);
+      if (remoteMatch) {
+        const val = remoteMatch[1].trim();
+        if (val === '' || val === 'null' || val === '~') return null;
+        return val;
+      }
+    }
+  }
+  return null;
+}
+
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
 /**
@@ -74,17 +112,60 @@ function resolveTransition(declaration, current, next) {
 // ── Commands ──────────────────────────────────────────────────────────────────
 
 /**
- * init — install sidecar + lockfile (Mode 1 MVP stub)
+ * init — create .github/skills/ directory and write a stub lockfile if one
+ * does not already exist (ADR-016).
+ *
+ * @param {string} [rootDir] Repository root (defaults to process.cwd()).
+ * @returns {{ status: 'ok', command: 'init', created: boolean }}
  */
-function init(opts) {
-  return { status: 'ok', command: 'init' };
+function init(rootDir) {
+  const root      = rootDir || process.cwd();
+  const skillsDir = path.join(root, SKILLS_DIR_REL);
+  const lockPath  = path.join(root, LOCKFILE_REL);
+
+  fs.mkdirSync(skillsDir, { recursive: true });
+
+  if (fs.existsSync(lockPath)) {
+    return { status: 'ok', command: 'init', created: false };
+  }
+
+  const stub = {
+    schemaVersion: '1.0.0',
+    pinnedAt:      new Date().toISOString(),
+    skills:        [],
+  };
+  fs.writeFileSync(lockPath, JSON.stringify(stub, null, 2), 'utf8');
+  return { status: 'ok', command: 'init', created: true };
 }
 
 /**
- * fetch — retrieve upstream skill content (Mode 1 MVP stub)
+ * fetch — run `git fetch <remote>` where remote URL is read from
+ * .github/context.yml under skills_upstream.remote (ADR-004).
+ *
+ * If the remote is null, blank, or the key is absent, returns
+ * { status: 'not-configured', command: 'fetch' } without throwing.
+ *
+ * MC-SEC-02: no credentials written to disk.
+ *
+ * @param {string} [rootDir] Repository root (defaults to process.cwd()).
+ * @returns {{ status: 'ok'|'not-configured', command: 'fetch', remote?: string }}
  */
-function fetch(opts) {
-  return { status: 'ok', command: 'fetch' };
+function fetch(rootDir) {
+  const root   = rootDir || process.cwd();
+  const remote = readRemoteFromContext(root);
+
+  if (!remote) {
+    return { status: 'not-configured', command: 'fetch' };
+  }
+
+  // MC-SEC-02 / ADR-004: validate remote before shell interpolation.
+  // Allow only characters that appear in well-formed git remote URLs.
+  if (!/^[a-zA-Z0-9._/:@+\-]+$/.test(remote)) {
+    return { status: 'error', command: 'fetch', message: 'remote URL contains unsafe characters' };
+  }
+
+  childProcess.execSync('git fetch ' + remote, { cwd: root, stdio: 'pipe' });
+  return { status: 'ok', command: 'fetch', remote: remote };
 }
 
 /**
