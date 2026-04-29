@@ -4182,6 +4182,57 @@
           "dispatchTarget": "github-agent"
         }
       ]
+    },
+    {
+      "slug": "2026-04-30-reverse-engineer-reference-corpus",
+      "name": "Reverse-engineer reference corpus outputs and companion skill",
+      "stage": "definition",
+      "track": "library",
+      "health": "green",
+      "regulated": false,
+      "updatedAt": "2026-04-30T00:00:00Z",
+      "stories": [
+        {
+          "id": "rrc.1",
+          "slug": "rrc.1",
+          "title": "Add Output 9 — /discovery pre-population seed to /reverse-engineer",
+          "stage": "definition",
+          "dorStatus": "not-started",
+          "reviewStatus": "not-started",
+          "prStatus": "none",
+          "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/stories/rrc.1-discovery-seed-output.md"
+        },
+        {
+          "id": "rrc.2",
+          "slug": "rrc.2",
+          "title": "Add Output 10 — Constraint index to /reverse-engineer",
+          "stage": "definition",
+          "dorStatus": "not-started",
+          "reviewStatus": "not-started",
+          "prStatus": "none",
+          "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/stories/rrc.2-constraint-index-output.md"
+        },
+        {
+          "id": "rrc.3",
+          "slug": "rrc.3",
+          "title": "Integrate constraint-index.md reading into /discovery",
+          "stage": "definition",
+          "dorStatus": "not-started",
+          "reviewStatus": "not-started",
+          "prStatus": "none",
+          "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/stories/rrc.3-discovery-integration.md"
+        },
+        {
+          "id": "rrc.4",
+          "slug": "rrc.4",
+          "title": "Create /reference-corpus-update companion skill",
+          "stage": "definition",
+          "dorStatus": "not-started",
+          "reviewStatus": "not-started",
+          "prStatus": "none",
+          "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/stories/rrc.4-reference-corpus-update-skill.md"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
