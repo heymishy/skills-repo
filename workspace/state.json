@@ -27,20 +27,22 @@
                           "observabilityGapsIdentified":  4,
                           "status":  "complete"
                       },
-    "lastUpdated":  "2026-04-30T00:00:00Z",
-    "currentPhase":  "definition",
+    "lastUpdated":  "2026-04-30T12:00:00Z",
+    "currentPhase":  "review",
     "activeFeature":  "2026-04-30-reverse-engineer-reference-corpus",
     "checkpoint":  {
                        "writtenAt":  "2026-04-30",
-                       "contextAtWrite":  "/reverse-engineer v2 pushed (83f29c7). /workflow and /reverse-engineer SKILL.md updated with /modernisation-decompose nudges (5 targeted edits, contracts OK). rrc feature pipeline artefacts complete: discovery.md, benefit-metric.md, epics (rrc-epic-1, rrc-epic-2), stories (rrc.1-rrc.4). pipeline-state.json updated with rrc feature entry (4 stories, stage: definition). Schema valid: 0 errors.",
-                       "resumeInstruction":  "Feature 2026-04-30-reverse-engineer-reference-corpus is at definition stage with 4 stories (rrc.1-rrc.4). Next step: run /review across all 4 stories, then /test-plan per story, then /definition-of-ready per story. Stories rrc.1+rrc.2 can be reviewed in parallel (both modify /reverse-engineer SKILL.md, no format dependency). rrc.3 depends on rrc.1+rrc.2 format definitions. rrc.4 depends on rrc.2. Also: workspace/state.json checkpoint written; all artefacts committed to master.",
+                       "contextAtWrite":  "/review completed for all 4 rrc stories. rrc.1 PASS (3 LOW), rrc.2 PASS (1 MEDIUM — rule-id format, 2 LOW), rrc.3 FAIL (1 HIGH — dependency not AC-enforced), rrc.4 PASS (1 MEDIUM linked to 2-M1, 2 LOW). Review artefacts written to artefacts/2026-04-30-reverse-engineer-reference-corpus/review/. pipeline-state.json updated with reviewStatus per story.",
+                       "resumeInstruction":  "Feature 2026-04-30-reverse-engineer-reference-corpus is at review stage. rrc.1, rrc.2, rrc.4 passed /review. rrc.3 FAILED — HIGH finding 3-H1 (dependency on rrc.1+rrc.2 not AC-enforced) must be resolved. Fix: add H-DEP DoR hard block to rrc.3 story (or an enforcing AC). Also acknowledge MEDIUM finding 2-M1 (rule-id format unspecified in rrc.2) in /decisions — it blocks both rrc.2 and rrc.4 test plans. After fixing rrc.3 story and recording decisions, re-run /review for rrc.3, then run /test-plan for rrc.1, rrc.2, rrc.4 (rrc.3 after re-review passes).",
                        "pendingActions":  [
-                                              "Run /review for rrc.1 (Output 9 — discovery-seed.md in /reverse-engineer)",
-                                              "Run /review for rrc.2 (Output 10 — constraint-index.md in /reverse-engineer) — can be done in parallel with rrc.1 review",
-                                              "Run /review for rrc.3 (/discovery integration) — after rrc.1+rrc.2 review pass",
-                                              "Run /review for rrc.4 (/reference-corpus-update companion skill)",
-                                              "After /review: run /test-plan per story, then /definition-of-ready per story",
-                                              "NOTE: rrc.4 requires a PR (new SKILL.md); rrc.1+rrc.2+rrc.3 also require a PR (SKILL.md changes to existing files). All rrc stories must go through a feature branch + draft PR, not direct commit to master."
+                                              "FIX REQUIRED — rrc.3 story: add DoR hard block H-DEP 'rrc.1 and rrc.2 SKILL.md additions must be merged before rrc.3 is dispatched' to the Definition of Ready Pre-check section (finding 3-H1)",
+                                              "DECISION REQUIRED — rrc.2/rrc.4: record canonical rule-id format for constraint-index.md (finding 2-M1) in /decisions before test plan is written",
+                                              "Re-run /review for rrc.3 after story fix to close 3-H1",
+                                              "Run /test-plan for rrc.1 (after rrc.3 is fixed — or in parallel if rrc.3 fix is quick)",
+                                              "Run /test-plan for rrc.2 (after 2-M1 decision is recorded)",
+                                              "Run /test-plan for rrc.4 (after 2-M1 decision is recorded — 4-M1 resolved)",
+                                              "Run /test-plan for rrc.3 (after rrc.3 re-review passes)",
+                                              "Then: /definition-of-ready per story"
                                           ]
                    },
     "cycle":  {
