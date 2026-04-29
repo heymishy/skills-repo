@@ -117,8 +117,7 @@ Run `/workflow` to get a full pipeline status report and see exactly what to do 
 - Output the full orientation in **one turn** — do not conduct a multi-step interview before giving orientation
 - Read `workspace/state.json` and `product/mission.md` silently before producing output
 - If `.github/skills/` directory does not exist or contains no SKILL.md files, warn the operator: "Skills directory not found — this repository may not be fully set up. Run `/bootstrap` to initialise."
-- Do **not** include brownfield routing logic (Entry A/B/C) — that is added by p11.7
-- Do **not** read `pipeline-state.json` — orientation uses `workspace/state.json` and `product/mission.md` only
+- Do **not** read `pipeline-state.json` for orientation output — brownfield routing reads it only to detect in-flight stories
 
 ---
 
@@ -129,3 +128,44 @@ This skill does not modify pipeline state. It is a read-only orientation command
 No write to `.github/pipeline-state.json` is required.
 
 Confirm in your closing message: "Pipeline state updated ✅ (no write required — /start is read-only)."
+
+---
+
+## Brownfield signal routing
+
+<!-- brownfield-routing -->
+<!-- This section detects existing work in the repository and routes to the appropriate
+     skill. Check Entry C first (highest priority), then Entry A, then Entry B.
+     Priority order: Entry C > Entry A > Entry B. If none of the three signals are
+     detected, fall back to the greenfield path. -->
+
+Before presenting orientation, silently check the repository for brownfield signals **in priority order: Entry C > Entry A > Entry B**.
+
+### Entry C (highest priority) — DoD artefacts detected
+
+**Condition:** Files exist under `artefacts/` in any `dod/` subdirectory (e.g. `artefacts/*/dod/`).
+
+**Route to:** `.github/templates/retrospective-story.md` for retroactive chain writing.
+
+**Explain in one sentence why this routing applies:** State that DoD artefacts exist for delivered work that has no full pipeline chain, so the retrospective-story.md template is used to reconstruct the missing artefacts.
+
+### Entry A — In-flight stories detected
+
+**Condition:** `pipeline-state.json` is present AND contains a feature with `stage` set to `"branch-setup"`, `"implementation-plan"`, `"subagent-execution"`, `"implementation-review"`, `"verify-completion"`, or `"test-plan"`.
+
+**Route to:** `/tdd [story-slug]` to continue active implementation.
+
+**Explain in one sentence why this routing applies:** State that in-flight stories exist in `artefacts/` and are tracked in `pipeline-state.json`, so `/tdd` is used to resume the current implementation cycle.
+
+### Entry B (lowest priority) — Legacy codebase detected
+
+**Condition:** `src/` directory exists with `.js` files AND no `artefacts/*/stories/` directories exist AND no `artefacts/*/dod/` directories exist.
+
+**Route to:** `/reverse-engineer` for legacy codebase orientation.
+
+**Explain in one sentence why this routing applies:** State that `src/` contains JavaScript files with no pipeline artefacts, so `/reverse-engineer` is used to map the existing codebase before starting the delivery pipeline.
+
+### Fallback — No brownfield signals detected
+
+If none of the three signals are detected, no brownfield context exists. Fall back to the greenfield path (Path A — Greenfield) and proceed with normal orientation.
+
