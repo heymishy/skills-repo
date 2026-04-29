@@ -143,7 +143,7 @@ Before presenting orientation, silently check the repository for brownfield sign
 
 ### Entry C (highest priority) — DoD artefacts detected
 
-**Condition:** Files exist in `artefacts/[feature]/dod/` directory.
+**Condition:** Files exist under `artefacts/` in any `dod/` subdirectory (e.g. `artefacts/*/dod/`).
 
 **Route to:** `.github/templates/retrospective-story.md` for retroactive chain writing.
 
@@ -151,7 +151,7 @@ Before presenting orientation, silently check the repository for brownfield sign
 
 ### Entry A — In-flight stories detected
 
-**Condition:** `pipeline-state.json` is present AND contains a story with stage `"implementation"`, `"branch-setup"`, or `"test-plan"`.
+**Condition:** `pipeline-state.json` is present AND contains a feature with `stage` set to `"branch-setup"`, `"implementation-plan"`, `"subagent-execution"`, `"implementation-review"`, `"verify-completion"`, or `"test-plan"`.
 
 **Route to:** `/tdd [story-slug]` to continue active implementation.
 
@@ -159,7 +159,7 @@ Before presenting orientation, silently check the repository for brownfield sign
 
 ### Entry B (lowest priority) — Legacy codebase detected
 
-**Condition:** `src/` directory exists with `.js` files AND no `artefacts/[feature]/stories/` directory AND no `artefacts/[feature]/dod/` directory.
+**Condition:** `src/` directory exists with `.js` files AND no `artefacts/*/stories/` directories exist AND no `artefacts/*/dod/` directories exist.
 
 **Route to:** `/reverse-engineer` for legacy codebase orientation.
 
