@@ -99,5 +99,77 @@ assert(
   'T14 — check-skill-contracts.js validates start skill single-turn-constraint'
 );
 
-console.log(`\n[p11-start] Results: ${passed} passed, ${failed} failed`);
+console.log(`\n[p11-start] p11.6 Results: ${passed} passed, ${failed} failed`);
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// p11.7 — Brownfield signal routing extension
+// ═══════════════════════════════════════════════════════════════════════════════
+
+console.log('\n[p11-start] p11.7 — /start SKILL.md brownfield routing extension');
+
+// ── AC1: Entry A routing (in-flight stories → /tdd) ──────────────────────────
+assert(
+  /entry\s+[Aa]|in[- ]flight|story.*artefacts|artefacts.*stories/i.test(content) &&
+    (content.includes('/tdd') || content.includes('tdd')),
+  'T11.7.1 — SKILL.md Entry A: detects story files in artefacts/ and routes to /tdd'
+);
+assert(
+  /entry\s+[Aa].*explain|explain.*entry\s+[Aa]|one.{0,15}sentence.*tdd|tdd.*one.{0,15}sentence|why.*routing.*tdd|route.*tdd.*explain/is.test(content),
+  'T11.7.2 — SKILL.md Entry A block includes instruction for one-sentence routing explanation'
+);
+
+// ── AC2: Entry B routing (src/ with no pipeline state → /reverse-engineer) ──
+assert(
+  /entry\s+[Bb]|src\/.*\.js|src\s+directory/i.test(content) &&
+    (content.includes('/reverse-engineer') || content.includes('reverse-engineer')),
+  'T11.7.3 — SKILL.md Entry B: detects src/*.js + no stories/dod and routes to /reverse-engineer'
+);
+assert(
+  /entry\s+[Bb].*explain|explain.*entry\s+[Bb]|one.{0,15}sentence.*reverse|reverse.*one.{0,15}sentence|why.*routing.*reverse|route.*reverse.*explain/is.test(content),
+  'T11.7.4 — SKILL.md Entry B block includes instruction for one-sentence routing explanation'
+);
+
+// ── AC3: Entry C routing (DoD records → retrospective template) ───────────────
+assert(
+  /entry\s+[Cc]|dod\/|dod\s+artefact|definition.{0,10}done.*artefact/i.test(content) &&
+    content.includes('retrospective-story.md'),
+  'T11.7.5 — SKILL.md Entry C: detects dod/ records and routes to retrospective-story.md'
+);
+assert(
+  /entry\s+[Cc].*explain|explain.*entry\s+[Cc]|one.{0,15}sentence.*retrospective|retrospective.*one.{0,15}sentence|why.*routing.*retrospective|route.*retrospective.*explain/is.test(content),
+  'T11.7.6 — SKILL.md Entry C block includes instruction for one-sentence routing explanation'
+);
+
+// ── AC4: no-signal case routes to greenfield path ────────────────────────────
+assert(
+  /no.*signal|none.*signal|no brownfield|fallback.*greenfield|greenfield.*fallback|if none/i.test(content),
+  'T11.7.7 — SKILL.md defines fallback to greenfield path when no brownfield signals detected'
+);
+
+// ── Priority order: C > A > B must be stated explicitly ──────────────────────
+assert(
+  /entry\s+[Cc].*first|[Cc]\s*>\s*[Aa]|dod.*takes priority|dod.*first|check.*dod.*first|priority.*entry\s+[Cc]|entry\s+[Cc].*highest|first.{0,30}entry\s+[Cc]|highest.{0,30}priority.*[Cc]/i.test(content),
+  'T11.7.8 — SKILL.md explicitly states priority order C > A > B (or equivalent phrasing)'
+);
+
+// ── AC5: contract marker present; single-turn-constraint not removed ──────────
+assert(
+  content.includes('brownfield-routing'),
+  'T11.7.9 — SKILL.md contains <!-- brownfield-routing --> contract marker'
+);
+assert(
+  content.includes('single-turn-constraint'),
+  'T11.7.10 — SKILL.md still contains <!-- single-turn-constraint --> marker (not removed by p11.7)'
+);
+
+// ── AC5 integration: check-skill-contracts.js validates brownfield-routing ───
+assert(
+  contractsContent.includes('brownfield-routing'),
+  'T11.7.I1 — check-skill-contracts.js validates start skill brownfield-routing marker'
+);
+
+const p117passed = passed;
+const p117failed = failed;
+console.log(`\n[p11-start] p11.7 Results: ${p117passed - 14} passed, ${p117failed} failed`);
+console.log(`\n[p11-start] Total: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
