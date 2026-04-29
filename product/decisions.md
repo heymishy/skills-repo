@@ -297,3 +297,33 @@ The p11.3 story (H-GOV block in /definition-of-ready SKILL.md) requires a decisi
 **Decision required:** Artefact-level sign-off (any named non-engineering role per artefact is sufficient) vs a specific allowlist of role strings. The coding agent implementing H-GOV needs the authoritative role strings to implement role detection.
 
 **Action:** Run `/decisions` to produce a formal ADR covering this decision. When the ADR is written, update the p11.3 DoR dispatch gate status in `artefacts/2026-04-24-platform-onboarding-distribution/dor/p11.3-dor.md` from 🔴 Not cleared to 🟢 Cleared.
+
+---
+
+## ADR-017 — H-GOV attribution model: presence-only check, no role validation <!-- ADDED: 2026-04-29 -->
+
+**Status:** Accepted | **Date:** 2026-04-29 | **Required by:** p11.3 (H-GOV hard block in /definition-of-ready) before coding agent dispatch
+
+**Context:** The H-GOV hard block (p11.3) checks whether a discovery artefact has received sign-off from at least one person outside the engineering team. The `## Approved By` section of the discovery artefact is the attestation point (established by p11.1). A decision was needed on how strictly to validate entries in that section: require specific recognised role strings, require roles outside a known-engineering exclusion list, or accept any non-blank named entry regardless of role.
+
+**Options considered:**
+
+1. **Explicit allowlist** — only entries matching a fixed set of role strings (e.g. "Product Manager", "Business Analyst", "Business Lead", "Sponsor", "Domain Expert") pass H-GOV. Any entry not matching the list fails. Pro: precise governance signal. Con: high maintenance burden; brittle against role title variation across organisations (e.g. "Product Lead" vs "Product Manager"); creates false negatives for valid approvers with non-standard titles; requires ongoing ADR amendments as the organisation evolves.
+
+2. **Engineering exclusion list** — entries that match a known-engineering title pattern (e.g. "Engineer", "Developer", "Architect", "QA", "Tech Lead", "DevOps") fail H-GOV; anything else passes. Pro: blocks the obvious gaming vector (engineer self-approving). Con: still brittle against title variation; exclusion lists have edge cases (e.g. "Solutions Architect" is engineering, "Business Architect" may not be); adds complexity for marginal gain.
+
+3. **Presence-only check (chosen)** — H-GOV checks that `## Approved By` contains at least one non-blank named entry. No role string validation. Pass condition: section exists AND has ≥1 non-empty line. Fail conditions: section absent, section empty, section has only engineering-role entries are distinguished by AC3, AC2, and AC4 respectively via the text of the entries (not a role allowlist).
+
+**Decision:** Option 3 — presence-only check with no role-string validation. H-GOV PASS requires `## Approved By` to contain at least one non-blank line. The governance value is social accountability (a named person attested to the discovery outside the engineering team), not technical enforcement of a role taxonomy. Role governance is an organisational process concern, not a pipeline schema concern.
+
+**Primary reason:** Flexibility and maintainability. Role titles vary significantly across organisations and team structures. An allowlist or exclusion list would require ongoing maintenance and would produce false negatives for legitimate approvers. Presence-only is sufficient for the MVP governance signal — the act of a named stakeholder adding their name to the artefact is the attestation.
+
+**Authoritative implementation rule for p11.3:** H-GOV implementation must check: (1) does `## Approved By` section exist in the discovery artefact? (2) does it contain at least one non-blank line? If both conditions are true: PASS. AC4 ("engineer-only entries") is satisfied by the presence check alone — if a named person has approved, H-GOV passes regardless of their role title. The AC4 test verifies that H-GOV fires when the *section is absent or empty*, not that it can detect engineer vs non-engineer roles from a title string.
+
+**Consequences:**
+- Easier: H-GOV is implementable with a simple file read + section content check. No role list to maintain.
+- Harder/constrained: H-GOV cannot distinguish "signed off by a Product Manager" from "signed off by an Engineer who filled in their own name". This is a known limitation accepted for MVP.
+- Off the table (for p11.3): role-string validation, engineering exclusion logic, section-level attribution enforcement.
+- Post-MVP enhancement path: if stricter role validation is needed, a future story can add role detection on top of the presence check. That story would supersede this ADR with a new ADR documenting the authoritative role list.
+
+**Revisit trigger:** A future feature requires verifiable non-engineering approval (e.g. compliance requirement, audit finding, M3 baseline shows H-GOV is being gamed by engineers self-approving). At that point, revisit Option 1 or 2 with an explicit role taxonomy decision.
