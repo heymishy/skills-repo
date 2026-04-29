@@ -1,4 +1,4 @@
-﻿{
+{
     "phase2Summary":  {
                           "prsMerged":  [
                                             58,
@@ -27,19 +27,18 @@
                           "observabilityGapsIdentified":  4,
                           "status":  "complete"
                       },
-    "lastUpdated":  "2026-05-01T00:00:00Z",
-    "currentPhase":  "test-plan",
+    "lastUpdated":  "2026-05-01T12:00:00Z",
+    "currentPhase":  "definition-of-ready",
     "activeFeature":  "2026-04-30-reverse-engineer-reference-corpus",
     "checkpoint":  {
                        "writtenAt":  "2026-05-01",
-                       "contextAtWrite":  "/test-plan complete for all 4 rrc stories (rrc.1, rrc.2, rrc.3, rrc.4). Test plan artefacts, test scripts, and verification scripts written. package.json updated with 4 new test entries. pipeline-state.json updated with stage=test-plan + testPlan fields for all 4 stories.",
-                       "resumeInstruction":  "Feature 2026-04-30-reverse-engineer-reference-corpus is at test-plan stage. All 4 rrc stories (rrc.1\u2013rrc.4) have written test plans, failing test scripts, and verification scripts. Next step: run /definition-of-ready for each story (rrc.1, rrc.2, rrc.4 first; rrc.3 after rrc.1+rrc.2 are dispatched per H-DEP gate). Before DoR: all 4 test scripts should report failing tests (TDD discipline). Run: node tests/check-rrc1-discovery-seed.js; node tests/check-rrc2-constraint-index.js; node tests/check-rrc3-discovery-integration.js; node tests/check-rrc4-corpus-update-skill.js.",
+                       "contextAtWrite":  "/definition-of-ready complete for all 4 rrc stories. rrc.1, rrc.2, rrc.4 signed-off. rrc.3 DoR artefact produced but dorStatus=blocked (H-DEP: rrc.1 and rrc.2 must be merged first per DEC-002). DoR artefacts, contracts, NFR profile, and decisions.md (DEC-003) all written and committed.",
+                       "resumeInstruction":  "Feature 2026-04-30-reverse-engineer-reference-corpus is at definition-of-ready stage. rrc.1, rrc.2, rrc.4 are dorStatus=signed-off and ready for dispatch via /issue-dispatch. rrc.3 is dorStatus=blocked — do not dispatch until rrc.1 and rrc.2 PRs are merged (DEC-002 H-DEP gate). After rrc.1+rrc.2 PRs merge: update rrc.3 dor/rrc.3-dor.md to remove H-DEP FAIL row, set dorStatus=signed-off, then dispatch rrc.3.",
                        "pendingActions":  [
-                                              "Run /definition-of-ready for rrc.1",
-                                              "Run /definition-of-ready for rrc.2",
-                                              "Run /definition-of-ready for rrc.4",
-                                              "Run /definition-of-ready for rrc.3 (after rrc.1+rrc.2 are dispatched \u2014 H-DEP gate requires rrc.1 and rrc.2 merged first)",
-                                              "Verify all 4 test scripts fail before implementation (TDD discipline)"
+                                              "Dispatch rrc.1 via /issue-dispatch (dorStatus=signed-off, ready)",
+                                              "Dispatch rrc.2 via /issue-dispatch (dorStatus=signed-off, ready)",
+                                              "Dispatch rrc.4 via /issue-dispatch (dorStatus=signed-off, ready)",
+                                              "Do NOT dispatch rrc.3 \u2014 blocked until rrc.1 and rrc.2 PRs are merged (DEC-002 H-DEP gate: rrc.1 and rrc.2 must be merged so /reverse-engineer SKILL.md has Output 9 and Output 10 defined before /discovery integration is implemented)"
                                           ]
                    },
     "cycle":  {
