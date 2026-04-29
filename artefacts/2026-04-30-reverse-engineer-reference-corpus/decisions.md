@@ -48,3 +48,17 @@
 | **Alternatives considered** | (1) Add an enforcing AC instead of a DoR block — rejected; an AC inside the story doesn't prevent premature dispatch, it only fails after the agent has already started. A DoR hard block prevents dispatch. (2) Bundle rrc.1 + rrc.2 + rrc.3 into one story — rejected; the stories have different SKILL.md targets (/reverse-engineer vs /discovery), different test assertions, and independent DoD evidence. |
 | **Consequences** | rrc.1 and rrc.2 must be fully merged before rrc.3 enters /test-plan. The DoR for rrc.3 will fail H-DEP until both upstream PRs are merged. This is an intentional sequencing constraint, not a defect. |
 | **Revisit trigger** | N/A — this is a one-time sequencing decision. Once rrc.1 and rrc.2 are merged, the gate is cleared. |
+
+---
+
+### DEC-003 — RISK-ACCEPT: W4 verification scripts not domain-expert reviewed (rrc.1–rrc.4)
+
+| Field | Value |
+|-------|-------|
+| **Date** | 2026-04-30 |
+| **Category** | RISK-ACCEPT |
+| **Decided by** | Hamish (platform maintainer) — DoR W4 acknowledgement |
+| **Decision** | Accept W4 (verification script not reviewed by an independent domain expert) for all 4 rrc stories. Proceed to sign-off and dispatch without separate domain-expert review of the verification scripts. |
+| **Context** | W4 fires for all 4 rrc stories because no second domain expert is available to review the verification scripts. The risk is that a manual scenario may use imprecise wording and fail to catch an AC regression. |
+| **Risk mitigated by** | (1) All 4 stories are SKILL.md-only changes with no runtime code — the blast radius of a missed scenario is low. (2) The automated test scripts (check-rrc1 through check-rrc4) provide a complementary automated assertion layer. (3) The platform maintainer (Hamish) authored both the stories and the verification scripts and confirms alignment with AC intent. |
+| **Revisit trigger** | If a post-merge DoD check reveals a scenario was inadequate and an AC was not correctly verified, reopen the verification script and add a correcting scenario before the next DoR cycle on dependent stories. |
