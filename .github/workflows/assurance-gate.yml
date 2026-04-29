@@ -180,33 +180,32 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const fs   = require('fs');
-            const path = require('path');
+            const fs     = require('fs');
+            const path   = require('path');
             const crypto = require('crypto');
 
+            const { loadPipelineStories, classifyArtefact, parseACs, buildAuditComment } = require('./scripts/ci-audit-comment.js');
+            const { buildSlugSourceNote, extractStorySlug, buildDispatchNote } = require('./scripts/extract-pr-slug.js');
+
+            // ── Resolved metadata ──
             const artifactName = `governed-artefacts-${{ github.run_id }}`;
-            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${{ github.run_id }}`;
-            const repoUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}`;
+            const runUrl       = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${{ github.run_id }}`;
+            const repoUrl      = `https://github.com/${context.repo.owner}/${context.repo.repo}`;
             // For pull_request events context.sha is the ephemeral merge commit — use head SHA for real blob URLs
             const headSha = context.payload.pull_request
               ? context.payload.pull_request.head.sha
               : context.sha;
-            const shortSha = headSha.slice(0, 7);
-            const slug = '${{ steps.resolve_feature.outputs.slug }}';
+            const shortSha   = headSha.slice(0, 7);
+            const slug       = '${{ steps.resolve_feature.outputs.slug }}';
             const slugSource = '${{ steps.resolve_feature.outputs.slug_source }}';
-            const { buildSlugSourceNote, extractStorySlug, buildDispatchNote } = require('./scripts/extract-pr-slug.js');
             const sourceNote = buildSlugSourceNote(slugSource || 'auto-resolved', slug);
 
-            // ── Load pipeline-state stories for this feature ──
-            // Handles both flat (feat.stories[]) and epic-nested (feat.epics[].stories[]) layouts
+            // ── Load pipeline-state stories (flat + epic-nested) ──
             let pipelineStories = [];
             if (slug && fs.existsSync('.github/pipeline-state.json')) {
               try {
-                const st = JSON.parse(fs.readFileSync('.github/pipeline-state.json', 'utf8'));
-                const feat = st.features && st.features.find(f => f.slug === slug);
-                const flatStories = (feat && feat.stories) || [];
-                const epicStories = feat ? (feat.epics || []).flatMap(e => e.stories || []) : [];
-                pipelineStories = flatStories.concat(epicStories);
+                const stateObj = JSON.parse(fs.readFileSync('.github/pipeline-state.json', 'utf8'));
+                pipelineStories = loadPipelineStories(stateObj, slug);
               } catch (_) {}
             }
 
@@ -255,49 +254,7 @@ jobs:
               }
             }
 
-            // ── Inline classifyArtefact (mirrors scripts/trace-report.js) ──
-            function classifyArtefact(sourcePath) {
-              const normalized = sourcePath.replace(/\\/g, '/');
-              const parts = normalized.split('/');
-              const isTopLevel = parts.length === 3;
-              const subdir = isTopLevel ? null : parts[2];
-              const basename = normalized.split('/').pop().replace(/\.md$/, '');
-              const SUBDIR_TYPES = {
-                'epics': { type: 'Epic', order: 3 },
-                'stories': { type: 'Story', order: 4 },
-                'test-plans': { type: 'Test Plan', order: 5 },
-                'review': { type: 'Review', order: 6 },
-                'verification-scripts': { type: 'Verification Script', order: 7 },
-                'dor': { type: 'Definition of Ready', order: 8 },
-                'plans': { type: 'Implementation Plan', order: 9 },
-                'dod': { type: 'Definition of Done', order: 10 },
-                'reference': { type: 'Reference', order: 11 },
-                'trace': { type: 'Trace', order: 12 },
-              };
-              const TOPLEVEL_TYPES = {
-                'discovery': { type: 'Discovery', order: 1 },
-                'benefit-metric': { type: 'Benefit Metric', order: 2 },
-                'decisions': { type: 'Decisions', order: 13 },
-                'nfr-profile': { type: 'NFR Profile', order: 14 },
-              };
-              if (isTopLevel) {
-                const m = TOPLEVEL_TYPES[basename];
-                return { type: m ? m.type : 'Other', typeOrder: m ? m.order : 99, displayName: m ? m.type : basename };
-              }
-              const sm = SUBDIR_TYPES[subdir];
-              let displayName = basename
-                .replace(/-dor-contract$/, '')
-                .replace(/-test-plan$/, '')
-                .replace(/-dor$/, '')
-                .replace(/-dod$/, '')
-                .replace(/-review-\d+$/, '')
-                .replace(/-verification$/, '');
-              if (basename.endsWith('-dor-contract')) displayName += ' (Contract)';
-              displayName = displayName.replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim();
-              return { type: sm ? sm.type : 'Other', typeOrder: sm ? sm.order : 99, displayName };
-            }
-
-            // If manifest not available, fall back to walking artefacts dir directly (no hashes)
+            // ── Fallback: walk artefacts dir if manifest not available ──
             if (artefactFiles.length === 0 && slug && fs.existsSync(`artefacts/${slug}`)) {
               (function walk(dir) {
                 for (const entry of fs.readdirSync(dir).sort()) {
@@ -305,17 +262,10 @@ jobs:
                   if (fs.statSync(full).isDirectory()) { walk(full); return; }
                   if (!entry.endsWith('.md')) continue;
                   const relPath = full.replace(/\\/g, '/');
-                  const cls = classifyArtefact(relPath);
-                  artefactFiles.push({ sourcePath: relPath, sha256: null, ...cls });
+                  artefactFiles.push({ sourcePath: relPath, sha256: null, ...classifyArtefact(relPath) });
                 }
               })(`artefacts/${slug}`);
             }
-
-            // Enrich manifest entries that pre-date classification (no type field)
-            artefactFiles = artefactFiles.map(f => {
-              if (f.type) return f;
-              return { ...f, ...classifyArtefact(f.sourcePath) };
-            });
 
             // ── Source integrity: compare manifest hash to live source file ──
             function sourceIntegrity(sourcePath, manifestHash) {
@@ -327,6 +277,12 @@ jobs:
               } catch (_) { return '⚠ not found'; }
             }
 
+            // ── Enrich artefact files with classification and integrity status ──
+            artefactFiles = artefactFiles.map(f => {
+              const cls = f.type ? {} : classifyArtefact(f.sourcePath);
+              return { ...f, ...cls, integrityStatus: sourceIntegrity(f.sourcePath, f.sha256) };
+            });
+
             // ── Parse test results from CI run ──
             const testResultsByFile = {};
             if (fs.existsSync('.ci-test-results.txt')) {
@@ -336,190 +292,41 @@ jobs:
               });
             }
 
+            // ── Enrich governance inputs with file URLs ──
+            const enrichedGovInputs = governanceInputs.map(g => ({
+              ...g, fileUrl: `${repoUrl}/blob/${headSha}/${g.sourcePath}`,
+            }));
 
-            // ── Parse Acceptance Criteria from a story .md file ──
-            function parseACs(filePath) {
-              try {
-                const content = fs.readFileSync(filePath, 'utf8');
-                const idx = content.indexOf('## Acceptance Criteria');
-                if (idx === -1) return [];
-                const section = content.slice(idx);
-                const nextH2 = section.indexOf('\n## ', 3);
-                const acBlock = nextH2 > -1 ? section.slice(0, nextH2) : section;
-                const results = [];
-                const acRegex = /\*\*(AC\d+):\*\*\s*([\s\S]*?)(?=\*\*AC\d+:\*\*|$)/g;
-                let match;
-                while ((match = acRegex.exec(acBlock)) !== null) {
-                  results.push({ id: match[1], text: match[2].replace(/\s+/g, ' ').trim() });
-                }
-                return results;
-              } catch (_) { return []; }
-            }
-
-            // ── Build comment sections ──
-            const verdictIcon = verdict === 'pass' ? '✅' : verdict === 'unknown' ? '⏳' : '❌';
-
-            // Sort artefacts by typeOrder then displayName for a logical pipeline flow
-            const sorted = [...artefactFiles].sort((a, b) => {
-              const oa = a.typeOrder != null ? a.typeOrder : 99;
-              const ob = b.typeOrder != null ? b.typeOrder : 99;
-              if (oa !== ob) return oa - ob;
-              return (a.displayName || '').localeCompare(b.displayName || '');
-            });
-
-            // Group by type — each group gets a header row then its entries
-            const artefactRows = [];
-            let lastType = null;
-            for (const f of sorted) {
-              const typeName = f.type || '—';
-              if (typeName !== lastType) {
-                if (lastType !== null) artefactRows.push(`| | | | |`); // blank separator between groups
-                artefactRows.push(`| **${typeName}** | | | |`);
-                lastType = typeName;
+            // ── Enrich pipeline stories with parsed ACs and issue AC check ──
+            const storiesWithData = await Promise.all(pipelineStories.map(async story => {
+              let acs = [];
+              if (story.artefact) {
+                try { acs = parseACs(fs.readFileSync(story.artefact, 'utf8')); } catch (_) {}
               }
-              const fileUrl = `${repoUrl}/blob/${headSha}/${f.sourcePath}`;
-              const displayName = f.displayName || path.basename(f.sourcePath, '.md');
-              const hash = f.sha256 ? `\`${f.sha256.slice(0,12)}…\`` : '—';
-              const integ = sourceIntegrity(f.sourcePath, f.sha256);
-              artefactRows.push(`| | [${displayName}](${fileUrl}) | ${hash} | ${integ} |`);
-            }
-
-            // ── Build governance checks rows ──
-            const checkRows = checks.map(c => {
-              const icon = c.passed ? '✅' : '❌';
-              const note = (!c.passed && c.reason) ? c.reason : '';
-              return `| ${icon} | \`${c.name}\` | ${note} |`;
-            }).join('\n');
-
-            const govRows = governanceInputs.map(g => {
-              const fileUrl = `${repoUrl}/blob/${headSha}/${g.sourcePath}`;
-              const name = g.sourcePath.replace('.github/', '');
-              const hash = g.sha256 ? `\`${g.sha256.slice(0,12)}…\`` : '—';
-              return `| [${name}](${fileUrl}) | ${hash} |`;
-            }).join('\n');
-
-            // ── Build AC verification section ──
-            let acSection = '';
-            if (pipelineStories.length > 0) {
-              const acBlocks = [];
-              for (const story of pipelineStories) {
-                const storyACs = parseACs(story.artefact);
-                // caa.1 → caa1, caa.2 → caa2 etc (normalize ID to match test suite tag)
-                const suiteKey = (story.id || story.slug || '').replace(/\./g, '').replace(/-/g, '').toLowerCase();
-                const suiteResult = testResultsByFile[suiteKey];
-                const allVerified = story.acVerified != null && story.acTotal != null && story.acVerified === story.acTotal;
-                const statusIcon = (() => {
-                  if (allVerified) return '✅';
-                  if (suiteResult && suiteResult.failed === 0) return '✅';
-                  if (suiteResult && suiteResult.failed > 0) return '⚠️';
-                  return '—';
-                })();
-                let issueLink = '';
-                let issueAcCheck = '';
-                if (story.issueUrl) {
+              let issueAcCheck = '';
+              if (story.issueUrl) {
+                try {
                   const issueNum = parseInt(story.issueUrl.split('/').pop());
-                  issueLink = ` · [Issue #${issueNum}](${story.issueUrl})`;
-                  try {
-                    const { data: issue } = await github.rest.issues.get({
-                      owner: context.repo.owner,
-                      repo:  context.repo.repo,
-                      issue_number: issueNum,
-                    });
-                    const hasACs = !!(issue.body && (
-                      issue.body.includes('Acceptance Criteria') || issue.body.includes('AC1:')
-                    ));
-                    issueAcCheck = hasACs ? ' · ACs in issue ✅' :
-                                   (storyACs.length > 0) ? ' · ACs in artefact ✅' :
-                                   ' · ⚠️ ACs not found in issue or artefact';
-                  } catch (_) {}
-                }
-                const testLine = suiteResult
-                  ? `Tests (this run): **${suiteResult.passed} passed, ${suiteResult.failed} failed**`
-                  : (story.testPlan && story.testPlan.passing != null)
-                    ? `Tests (pipeline-state): **${story.testPlan.passing}/${story.testPlan.totalTests} passing**`
-                    : '';
-                const acRows = storyACs.map(ac => {
-                  const short = ac.text.length > 90 ? ac.text.slice(0, 90) + '…' : ac.text;
-                  return `| \`${ac.id}\` | ${short} | ${statusIcon} |`;
-                }).join('\n');
-                const parts = [
-                  ...(crossCheckDispatchNote && story.id === crossCheckStoryId ? [`_${crossCheckDispatchNote}_`, ``] : []),
-                  `**\`${story.id}\` — ${story.title || story.id}**${issueLink}${issueAcCheck}`,
-                  ``,
-                  `| AC | Description | Status |`,
-                  `|----|-------------|--------|`,
-                  acRows || `| _(no ACs extracted)_ | | — |`,
-                ];
-                if (testLine) parts.push(``, testLine);
-                acBlocks.push(parts.join('\n'));
+                  const { data: issue } = await github.rest.issues.get({
+                    owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNum,
+                  });
+                  const hasACs = !!(issue.body && (issue.body.includes('Acceptance Criteria') || issue.body.includes('AC1:')));
+                  issueAcCheck = hasACs ? ' · ACs in issue ✅'
+                    : (acs.length > 0) ? ' · ACs in artefact ✅'
+                    : ' · ⚠️ ACs not found in issue or artefact';
+                } catch (_) {}
               }
-              acSection = [
-                `### ✅ Acceptance Criteria`,
-                ``,
-                ...(crossCheckDispatchNote && !crossCheckStoryFound ? [`> ${crossCheckDispatchNote}`, ``] : []),
-                `> ACs extracted from story artefacts. Status: ✅ = all verified at DoD or all tests passed this run. Issue links confirm ACs were published in the dispatch record.`,
-                ``,
-                acBlocks.join('\n\n---\n\n'),
-                ``,
-              ].join('\n');
-            }
+              const suiteKey = (story.id || story.slug || '').replace(/\./g, '').replace(/-/g, '').toLowerCase();
+              return { ...story, acs, issueAcCheck, suiteResult: testResultsByFile[suiteKey] };
+            }));
 
-            const body = [
-              `## 🔐 Governed Delivery Audit Record`,
-              ``,
-              `> This record is auto-generated by the pipeline assurance gate. It ties together what was delivered, what rules governed it, and the independent verification result — in one tamper-evident snapshot.`,
-              ``,
-              `---`,
-              ``,
-              `### ${verdictIcon} Verification result: ${verdict.toUpperCase()}`,
-              ``,
-              `| Field | Value |`,
-              `|-------|-------|`,
-              `| **Gate verdict** | ${verdict} |`,
-              `| **Trace hash** | \`${traceHash}\` |`,
-              `| **Commit** | [\`${shortSha}\`](${repoUrl}/commit/${headSha}) |`,
-              `| **Run** | [${artifactName}](${runUrl}) |`,
-              ``,
-              checks.length > 0 ? `**Checks run (${checks.filter(c=>c.passed).length}/${checks.length} passed):**` : '',
-              checks.length > 0 ? `| | Check | Notes |` : '',
-              checks.length > 0 ? `|-|-------|-------|` : '',
-              checks.length > 0 ? checkRows : '',
-              ``,
-              `> **What is the trace hash?** It is a fingerprint of the full pipeline chain — every artefact, every gate check, and every governance input — at this exact commit. If any linked document had been different, the hash would be different. It cannot be forged after the fact.`,
-              ``,
-              `---`,
-              ``,
-              `### 📋 What was delivered (${artefactFiles.length} artefacts)${sourceNote ? ` — ${sourceNote}` : ''}`,
-              ``,
-              `> These are the specification and verification documents for this feature, grouped by pipeline stage. Each link opens the **exact version of the document at commit \`${shortSha}\`**. Reading top-to-bottom traces the full delivery chain: from the original problem statement (Discovery) through to final verification (Definition of Done).`,
-              ``,
-              `| Stage | Document | SHA-256 (first 12) | Source |`,
-              `|-------|----------|--------------------|----|`,
-              artefactRows.length > 0 ? artefactRows.join('\n') : `| _(none collected)_ | | — |`,
-              ``,
-              `---`,
-              ``,
-              `### 📚 What governed it (${governanceInputs.length} governance inputs)`,
-              ``,
-              `> These are the AI instruction sets, guardrails, and skill definitions that were **active and version-pinned during delivery**. They encode the quality standards, process rules, and architectural constraints the agent was required to follow. If these files had been different, the delivery would have been governed differently.`,
-              ``,
-              `| Governance input | SHA-256 (first 12 chars) |`,
-              `|------------------|--------------------------|`,
-              govRows || `| _(not captured — rerun with ci_attachment: true)_ | — |`,
-              ``,
-              `---`,
-              ``,
-              ...(acSection ? [acSection, `---`, ``] : []),
-              `### 🔍 How to verify this independently`,
-              ``,
-              `1. **Click any artefact link** — it opens the exact file version used, pinned to commit \`${shortSha}\``,
-              `2. **Verify a file hash**: \`sha256sum <file>\` or \`certutil -hashfile <file> SHA256\` — compare the first 12 characters to the table above`,
-              `3. **Verify the full chain**: \`node scripts/trace-report.js --feature ${slug || '<slug>'}\` — regenerates the trace from the same state`,
-              `4. **Download the full bundle** (includes \`manifest.json\` with complete hashes): [${artifactName}](${runUrl})`,
-              `5. **Cross-check with the gate verdict** above — the trace hash must match what appears in the Assurance Gate comment on this PR`,
-              ``,
-              `_Posted by the ci-artefact-attachment pipeline adapter (github-actions) · [View run](${runUrl})_`,
-            ].join('\n');
+            // ── Build comment body (pure — delegates to scripts/ci-audit-comment.js) ──
+            const body = buildAuditComment({
+              verdict, traceHash, shortSha, headSha, repoUrl, runUrl, artifactName,
+              slug, sourceNote, checks, artefactFiles, governanceInputs: enrichedGovInputs,
+              pipelineStories: storiesWithData,
+              crossCheckStoryId, crossCheckDispatchNote, crossCheckStoryFound,
+            });
 
             const { data: comments } = await github.rest.issues.listComments({
               owner:        context.repo.owner,
