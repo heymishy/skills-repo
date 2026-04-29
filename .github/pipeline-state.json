@@ -524,7 +524,7 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
-                "passing": 0,
+                "passing": 8,
                 "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.1-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
@@ -549,7 +549,7 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
-                "passing": 0,
+                "passing": 8,
                 "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.2-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
@@ -569,7 +569,7 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 11,
-                "passing": 0,
+                "passing": 11,
                 "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.3-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
@@ -605,7 +605,7 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 14,
-                "passing": 0,
+                "passing": 14,
                 "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.4-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
@@ -627,7 +627,7 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 12,
-                "passing": 0,
+                "passing": 12,
                 "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.5-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
@@ -656,7 +656,7 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
-                "passing": 0,
+                "passing": 13,
                 "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.6-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
