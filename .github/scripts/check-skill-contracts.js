@@ -112,6 +112,7 @@ const CONTRACTS = [
       'CONTRACT PROPOSAL \u2192 CONTRACT REVIEW \u2192 CHECKLIST \u2192 READY/BLOCKED',
       'dor-contract.md',
       'Hard blocks',
+      'h-gov-block',
     ],
   },
   // ── Inner coding loop ─────────────────────────────────────────────────────
