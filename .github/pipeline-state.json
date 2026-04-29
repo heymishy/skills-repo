@@ -493,7 +493,7 @@
           "baseline": "No brownfield routing exists — consumers are prompted to run /discovery from scratch",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "Routing logic deployed and verified — measurement requires real brownfield onboarding sessions.",
           "contributingStories": [
             "p11.7"
           ]
@@ -528,7 +528,10 @@
                 "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.1-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "updatedAt": "2026-04-29"
             },
             {
               "slug": "p11.2",
@@ -553,7 +556,10 @@
                 "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.2-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "updatedAt": "2026-04-29"
             },
             {
               "slug": "p11.3",
@@ -586,7 +592,7 @@
         {
           "slug": "p11-onboarding-lockfile",
           "name": "Seamless onboarding, lockfile integrity, and brownfield routing",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "p11.4",
@@ -611,7 +617,10 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "prUrl": "https://github.com/heymishy/skills-repo/pull/210",
-              "mergedAt": "2026-04-29T00:00:00Z"
+              "mergedAt": "2026-04-29T00:00:00Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "updatedAt": "2026-04-29"
             },
             {
               "slug": "p11.5",
@@ -660,30 +669,36 @@
                 "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.6-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "updatedAt": "2026-04-29"
             },
             {
               "slug": "p11.7",
               "name": "Extend /start with brownfield context detection and Entry A/B/C routing",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "prStatus": "none",
+              "prStatus": "merged",
               "acTotal": 5,
               "acVerified": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
-                "passing": 0,
+                "passing": 12,
                 "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.7-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/217",
               "dispatchedAt": "2026-04-29T00:00:00Z",
-              "dispatchTarget": "github-agent"
+              "dispatchTarget": "github-agent",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "updatedAt": "2026-04-29"
             }
           ]
         }
