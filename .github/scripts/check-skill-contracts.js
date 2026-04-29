@@ -413,6 +413,7 @@ const CONTRACTS = [
     file:  '.github/skills/start/SKILL.md',
     required: [
       'single-turn-constraint',
+      'brownfield-routing',
     ],
   },
   // ── Workflow navigator ────────────────────────────────────────────────────
