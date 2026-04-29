@@ -197,6 +197,16 @@ jobs:
             const { buildSlugSourceNote, extractStorySlug, buildDispatchNote } = require('./scripts/extract-pr-slug.js');
             const sourceNote = buildSlugSourceNote(slugSource || 'auto-resolved', slug);
 
+            // ── Load pipeline-state stories for this feature ──
+            let pipelineStories = [];
+            if (slug && fs.existsSync('.github/pipeline-state.json')) {
+              try {
+                const st = JSON.parse(fs.readFileSync('.github/pipeline-state.json', 'utf8'));
+                const feat = st.features && st.features.find(f => f.slug === slug);
+                pipelineStories = (feat && feat.stories) || [];
+              } catch (_) {}
+            }
+
             // ── asd.1: Dispatch cross-check — look up the story referenced in the PR body ──
             const prBody = (context.payload.pull_request && context.payload.pull_request.body) || '';
             let crossCheckStoryId = '';
@@ -323,15 +333,6 @@ jobs:
               });
             }
 
-            // ── Load pipeline-state stories for this feature ──
-            let pipelineStories = [];
-            if (slug && fs.existsSync('.github/pipeline-state.json')) {
-              try {
-                const st = JSON.parse(fs.readFileSync('.github/pipeline-state.json', 'utf8'));
-                const feat = st.features && st.features.find(f => f.slug === slug);
-                pipelineStories = (feat && feat.stories) || [];
-              } catch (_) {}
-            }
 
             // ── Parse Acceptance Criteria from a story .md file ──
             function parseACs(filePath) {
