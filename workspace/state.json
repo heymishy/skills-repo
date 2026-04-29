@@ -27,22 +27,19 @@
                           "observabilityGapsIdentified":  4,
                           "status":  "complete"
                       },
-    "lastUpdated":  "2026-04-30T12:00:00Z",
-    "currentPhase":  "review",
+    "lastUpdated":  "2026-05-01T00:00:00Z",
+    "currentPhase":  "test-plan",
     "activeFeature":  "2026-04-30-reverse-engineer-reference-corpus",
     "checkpoint":  {
-                       "writtenAt":  "2026-04-30",
-                       "contextAtWrite":  "/review completed for all 4 rrc stories. rrc.1 PASS (3 LOW), rrc.2 PASS (1 MEDIUM — rule-id format, 2 LOW), rrc.3 FAIL (1 HIGH — dependency not AC-enforced), rrc.4 PASS (1 MEDIUM linked to 2-M1, 2 LOW). Review artefacts written to artefacts/2026-04-30-reverse-engineer-reference-corpus/review/. pipeline-state.json updated with reviewStatus per story.",
-                       "resumeInstruction":  "Feature 2026-04-30-reverse-engineer-reference-corpus is at review stage. rrc.1, rrc.2, rrc.4 passed /review. rrc.3 FAILED — HIGH finding 3-H1 (dependency on rrc.1+rrc.2 not AC-enforced) must be resolved. Fix: add H-DEP DoR hard block to rrc.3 story (or an enforcing AC). Also acknowledge MEDIUM finding 2-M1 (rule-id format unspecified in rrc.2) in /decisions — it blocks both rrc.2 and rrc.4 test plans. After fixing rrc.3 story and recording decisions, re-run /review for rrc.3, then run /test-plan for rrc.1, rrc.2, rrc.4 (rrc.3 after re-review passes).",
+                       "writtenAt":  "2026-05-01",
+                       "contextAtWrite":  "/test-plan complete for all 4 rrc stories (rrc.1, rrc.2, rrc.3, rrc.4). Test plan artefacts, test scripts, and verification scripts written. package.json updated with 4 new test entries. pipeline-state.json updated with stage=test-plan + testPlan fields for all 4 stories.",
+                       "resumeInstruction":  "Feature 2026-04-30-reverse-engineer-reference-corpus is at test-plan stage. All 4 rrc stories (rrc.1\u2013rrc.4) have written test plans, failing test scripts, and verification scripts. Next step: run /definition-of-ready for each story (rrc.1, rrc.2, rrc.4 first; rrc.3 after rrc.1+rrc.2 are dispatched per H-DEP gate). Before DoR: all 4 test scripts should report failing tests (TDD discipline). Run: node tests/check-rrc1-discovery-seed.js; node tests/check-rrc2-constraint-index.js; node tests/check-rrc3-discovery-integration.js; node tests/check-rrc4-corpus-update-skill.js.",
                        "pendingActions":  [
-                                              "FIX REQUIRED — rrc.3 story: add DoR hard block H-DEP 'rrc.1 and rrc.2 SKILL.md additions must be merged before rrc.3 is dispatched' to the Definition of Ready Pre-check section (finding 3-H1)",
-                                              "DECISION REQUIRED — rrc.2/rrc.4: record canonical rule-id format for constraint-index.md (finding 2-M1) in /decisions before test plan is written",
-                                              "Re-run /review for rrc.3 after story fix to close 3-H1",
-                                              "Run /test-plan for rrc.1 (after rrc.3 is fixed — or in parallel if rrc.3 fix is quick)",
-                                              "Run /test-plan for rrc.2 (after 2-M1 decision is recorded)",
-                                              "Run /test-plan for rrc.4 (after 2-M1 decision is recorded — 4-M1 resolved)",
-                                              "Run /test-plan for rrc.3 (after rrc.3 re-review passes)",
-                                              "Then: /definition-of-ready per story"
+                                              "Run /definition-of-ready for rrc.1",
+                                              "Run /definition-of-ready for rrc.2",
+                                              "Run /definition-of-ready for rrc.4",
+                                              "Run /definition-of-ready for rrc.3 (after rrc.1+rrc.2 are dispatched \u2014 H-DEP gate requires rrc.1 and rrc.2 merged first)",
+                                              "Verify all 4 test scripts fail before implementation (TDD discipline)"
                                           ]
                    },
     "cycle":  {
