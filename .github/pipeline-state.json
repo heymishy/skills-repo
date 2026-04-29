@@ -4220,8 +4220,8 @@
           "title": "Integrate constraint-index.md reading into /discovery",
           "stage": "review",
           "dorStatus": "not-started",
-          "reviewStatus": "has-findings",
-          "reviewArtefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/review/rrc.3-review-1.md",
+          "reviewStatus": "passed",
+          "reviewArtefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/review/rrc.3-review-2.md",
           "prStatus": "none",
           "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/stories/rrc.3-discovery-integration.md"
         },

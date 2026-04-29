@@ -64,3 +64,7 @@ So that when I run `/discovery` for a feature touching a reverse-engineered syst
 - [ ] No dependency on an incomplete upstream story
 - [ ] NFRs identified (or explicitly "None")
 - [ ] Human oversight level confirmed from parent epic
+
+### Hard Blocks (DoR-enforced gates)
+
+**H-DEP (Upstream dependency gate):** rrc.1 and rrc.2 SKILL.md additions must both be merged to the implementation branch before rrc.3 is dispatched. The `discovery-seed.md` format (Output 9, defined by rrc.1) and the `constraint-index.md` format (Output 10, defined by rrc.2) must exist in the `/reverse-engineer` SKILL.md before the coding agent can implement the `/discovery` integration step. This story must not be signed off for dispatch until both upstream stories have a merged PR.
