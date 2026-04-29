@@ -2,11 +2,13 @@
 name: reverse-engineer
 description: >
   Extracts business rules, data contracts, interface behaviour, and hidden logic from legacy
-  codebases through structured six-layer analysis. Produces a reverse-engineering report
-  conforming to templates/reverse-engineering-report.md, and optionally a vendor Q&A tracker.
-  Use when someone says "reverse engineer this", "extract the rules", "document this legacy system",
-  "what does this code do", or "extract business logic from". Designed for modernisation
-  and replacement programmes. Works on any language.
+  codebases through structured six-layer analysis. Supports stack-specific reading plans
+  (Spring/Spring Boot Java, Struts 2, IBM ACE/IIB ESQL, COBOL), multi-pass corpus management
+  across sessions and sub-agents, and outcome-aware artefact emphasis (Enhancement reference,
+  Modernisation, or Both). Produces a reverse-engineering report conforming to
+  templates/reverse-engineering-report.md, and optionally a vendor Q&A tracker.
+  Use when someone says "reverse engineer this", "extract the rules", "document this legacy
+  system", "what does this code do", or "extract business logic from".
 triggers:
   - "reverse engineer this"
   - "extract the rules"
@@ -21,7 +23,20 @@ triggers:
 
 ## Entry condition check
 
-Establish before proceeding:
+Establish before proceeding. **Q0 must be answered before Q1--Q6. Do not begin extraction until Q0 is confirmed.**
+
+**Q0 -- Intended outcome (hard gate -- ask first)**
+> "What is the intended use of this extraction?
+>
+> A) **Enhancement reference** -- this system stays; the extraction feeds a new feature or change that must understand current behaviour without breaking it.
+>
+> B) **Modernisation** -- this system is being replaced or substantially rewritten; the extraction feeds /modernisation-decompose and a replacement programme.
+>
+> C) **Both** -- the extraction serves as reference for near-term changes while a longer-horizon modernisation is planned in parallel.
+>
+> Reply: A, B, or C -- this determines which outputs are produced and where emphasis goes."
+
+Then establish:
 
 1. **Codebase access** -- can the agent read the relevant files?
    If not: "Share the files, point me to the directory, or paste key modules."
@@ -35,6 +50,54 @@ Establish before proceeding:
 4. **Programme context** -- active programme with a known target, or exploratory?
 
 Ask only for what is missing. Do not ask all four at once.
+
+---
+
+## Pass planning and corpus management
+
+At the start of any extraction run, establish:
+
+**Pass type** -- one of:
+- `INITIAL` -- first pass on this system; no corpus exists yet
+- `EXTEND` -- corpus exists; this pass adds a new bounded context or module
+- `DEEPEN` -- corpus exists; re-reads a previously extracted area to resolve [UNCERTAIN] items
+- `VERIFY` -- corpus exists; adds [VERIFIED] ratings from new information (domain expert session, test suite read, counterparty confirmation)
+
+**Pass scope** -- record explicitly: which modules/bounded contexts are in scope; which layers are being run; what this pass is expected to establish that previous passes did not.
+
+**Corpus state** -- if EXTEND/DEEPEN/VERIFY: read `artefacts/[system-slug]/corpus-state.md` before starting and state current coverage and confidence profile.
+
+**At the end of every pass**, write `corpus-state.md` (create on INITIAL, update on subsequent passes):
+- Modules covered (list)
+- Module coverage % (modules read / total identified in Layer 1)
+- Rule count by confidence: [VERIFIED] / [PROBABLE] / [UNCERTAIN]
+- Rule count by disposition: PARITY REQUIRED / MIGRATION CANDIDATE / REVIEW / RETIRE (pending)
+- Interface count: obvious / hidden / [UNCERTAIN]
+- Layers completed per module
+- Unresolved [UNCERTAIN] items requiring human input (summarised)
+- Recommended next pass type and scope
+- `lastRunAt` timestamp
+
+[DESIGN DECISION: Four pass types chosen over freeform labelling to keep corpus-state.md machine-readable and to give the orchestrator a deterministic language for pass sequencing. Alternative: freeform text. Rejected because it prevents automated convergence checking.]
+
+---
+
+## Coordination model
+
+> "This skill can be run by a single operator across multiple sessions, or by an orchestrating agent coordinating parallel sub-agent passes on different bounded contexts. In either model:
+>
+> - Each pass reads `corpus-state.md` before starting
+> - Each pass writes `corpus-state.md` after completing
+> - Parallel passes on different modules do not conflict
+> - Parallel passes on the same module do conflict -- coordinate to avoid overwriting
+> - The orchestrating operator or agent is responsible for convergence assessment -- no individual pass declares the corpus complete"
+
+**If you are a sub-agent in an orchestrated extraction:**
+- Your scope is defined by the orchestrator -- read it from the pass instruction
+- Read `corpus-state.md` first; do not re-extract what is already [VERIFIED]
+- Write only your assigned module's contribution to `corpus-state.md` (merge, do not overwrite)
+- Flag cross-module dependencies you discover to the orchestrator -- do not follow them yourself unless instructed
+- Your completion statement is addressed to the orchestrator, not the end user
 
 ---
 
@@ -100,9 +163,61 @@ Produce from structure alone:
 - Interface map skeleton -- what external system names appear?
 - Prioritised module reading list for Layer 2
 
+**After completing the structural inventory, detect the tech stack and switch into the appropriate reading plan (see Stack-specific reading plans below). State which reading plan(s) are active before proceeding.**
+
 State the plan before proceeding:
-> "Structure scan complete. Prioritising [modules]. Estimated [n] rule categories.
-> Hidden interface scan will focus on [patterns]. Proceeding to Layer 2A."
+> "Structure scan complete. Stack detected: [Spring Boot Java / Struts 2 + ACE/IIB / COBOL / other]. Active reading plan(s): [list]. Prioritising [modules]. Estimated [n] rule categories. Hidden interface scan will focus on [patterns]. Proceeding to Layer 2A."
+
+---
+
+#### Stack-specific reading plans
+
+Apply when the stack is detected in Layer 1. Multiple plans may be active simultaneously (e.g. Struts 2 + ACE/IIB + COBOL).
+
+**Spring / Spring Boot Java**
+Scan and inventory:
+- `@Scheduled` methods -- batch rule locations
+- `@Aspect` classes -- cross-cutting rule locations (fee application, audit, limit enforcement)
+- `@ConditionalOnProperty` / `@Profile` annotations -- active feature flags that may encode business decisions
+- Custom `@Validator` / `ConstraintValidator` implementations -- field-level rules as annotations
+- `@Transactional` boundary map -- service methods that are atomic business units ("these three things either all happen or none do")
+- Spring XML configs (pre-Boot era) -- bean definitions may contain rule configuration
+- `application.yml` / `application.properties` sections -- fee tables, rate tables, limit matrices, routing priorities
+
+**Struts 2**
+Scan and inventory:
+- `struts.xml` -- namespace/action/result mappings encode workflow transition rules; interceptor stack definitions encode cross-cutting compliance rules
+- `*-validation.xml` files -- field-level validation rules per Action; business rules in XML that a code-only read misses entirely
+- Action class hierarchy -- identify shared base Action classes as high-density rule locations
+- Custom Interceptor implementations -- in banking/financial apps these are where authorisation, audit, and session rules live
+
+**IBM ACE / IIB** *(trigger: MQ connection factory references or queue name constants appear in Java or Struts layer)*
+
+> "[ESB DEPENDENCY DETECTED] Queue references found in Java/Struts layer. Rule logic for these interactions almost certainly lives in an IBM ACE or IIB message flow project, not in this codebase. The following queues were found: [list]. Extraction cannot be considered complete without reading the ACE project. Confidence ratings for these interfaces are capped at [UNCERTAIN] until ACE project is read."
+
+Produce as a sub-output -- **ESB reading plan** (`artefacts/[system-slug]/extracts/esb-reading-plan.md`):
+- Queue names found, classified as request/reply/error/DLQ where determinable
+- ACE/IIB project files to read: `.msgflow`, `.esql`, `.subflow`, project config files
+- ESQL priority targets: transformation logic files, routing condition files, error handling subflows
+
+**COBOL** *(trigger: `.cbl`/`.cob`/`.CBL` source files present, or MQ interactions suggest COBOL backends)*
+Scan and inventory:
+- `EVALUATE` statements -- densest rule locations; treat each `WHEN` clause as a candidate business rule
+- `PERFORM` paragraphs with business-domain names (`CALCULATE-INTEREST`, `APPLY-FEE`, `CHECK-LIMIT`) -- read fully
+- `COPY` member inventory -- list all `COPY` members; treat each as a potential shared rule library and interface contract
+- `FILE SECTION` definitions -- batch interface contracts; record field names, types, and positions as de-facto message format specification
+- `88`-level condition names -- named business states; extract as domain vocabulary and candidate rule triggers
+
+**Large test suites** *(trigger: test file count > ~200 files or > ~2,000 test methods)*
+Apply efficient reading strategy:
+- Priority scan: test class names containing `Rule`, `Policy`, `Limit`, `Fee`, `Eligibility`, `Threshold`, `Calculation`, `Validation`, `Restriction` -- read these first
+- Assertion extraction: `@Test` methods asserting specific values (`assertEquals(10000, result)`) are candidate rule verifications -- extract value and condition, uprate the corresponding Layer 2A rule to [VERIFIED] if found
+- Test gap map: for every PARITY REQUIRED rule from Layer 2A, note whether a corresponding test exists; untested rules are higher-risk even if the code is clear
+- Dead test scan: `@Ignore`, `@Disabled`, commented-out test methods -- add to dead/disabled rules appendix with "test disabled" flag
+
+[DESIGN DECISION: Large test suite threshold at ~200 files/~2,000 methods -- below which individual reading is feasible in one pass. Calibrate from first trial run. Alternative: no threshold. Rejected due to overhead for small suites.]
+
+*(Extension point for other stacks: add a reading plan block here following the same checklist format. Do not implement until the stack is confirmed as in-scope.)*
 
 ---
 
@@ -150,6 +265,11 @@ Look specifically for rules disguised as something else:
 - **Test files** -- test names and assertions are a partially verified rule catalogue.
   Where tests exist and pass, use them to validate extracted rules and uprate to [VERIFIED].
   Where a critical-looking rule has no tests, flag the gap explicitly.
+
+**Stack-specific Layer 2B additions:**
+- *Spring*: `@Aspect` advice methods (especially `@Around` and `@AfterThrowing` -- cross-cutting rule logic). `@EventListener` / `ApplicationListener` implementations -- asynchronous business rules triggered by domain events.
+- *Struts 2*: `*-validation.xml` files (read here if not inventoried in Layer 1). Interceptor `intercept()` method bodies.
+- *COBOL*: `EVALUATE` `WHEN OTHER` clauses -- default handling paths that often encode the most brittle rules.
 
 ---
 
@@ -297,6 +417,8 @@ Assign to every business rule and interface:
 
 ## SaaS platform fit assessment
 
+*Applies to Modernisation (B) and Both (C) outcomes only. Skip for Enhancement reference (A).*
+
 For each PARITY REQUIRED rule and critical interface, assess against the target platform:
 
 | Rating | Meaning | Requirement |
@@ -312,6 +434,27 @@ A confident NATIVE that turns out to be a GAP costs weeks. An honest UNKNOWN cos
 
 ---
 
+## Outcome-aware artefact emphasis
+
+**Enhancement reference (A):**
+- Emphasis on Layer 2B (hidden rules breakable by a change) and Layer 3 (interfaces affected by a change)
+- Parity test seeds scoped to the affected bounded context only
+- No vendor functional requirements, no SaaS fit assessment
+- Completion statement routes to: "Use as reference input for /discovery for [feature name]"
+- `corpus-state.md` records scope as `enhancement-reference`
+
+**Modernisation (B):**
+- Full six-layer extraction; all outputs produced; SaaS fit assessment mandatory
+- Completion statement routes to: "Run /modernisation-decompose once convergence criteria are met"
+
+**Both (C):**
+- Run as Modernisation but add `[CHANGE-RISK]` flag on rules and interfaces a near-term change is most likely to interact with
+- Completion statement produces two routing options:
+  - Immediate: "Use [CHANGE-RISK] flagged section as reference for /discovery for [near-term feature]"
+  - Deferred: "Run /modernisation-decompose once convergence criteria are met"
+
+---
+
 ## Outputs
 
 State which outputs you are producing before starting.
@@ -324,6 +467,8 @@ State which outputs you are producing before starting.
 | 4. Architecture interface map | If interfaces found | Architecture / EA team | `artefacts/[system-slug]/extracts/architecture-interface-map.md` |
 | 5. Compliance regulatory inventory | If regulatory rules found | Compliance / Legal | `artefacts/[system-slug]/extracts/regulatory-inventory.md` |
 | 6. Parity test seed catalogue | If PARITY REQUIRED rules exist | Test team lead | `artefacts/[system-slug]/extracts/parity-test-seeds.md` |
+| 7. ESB reading plan | If ACE/IIB dependency detected | Integration team | `artefacts/[system-slug]/extracts/esb-reading-plan.md` |
+| 8. Corpus state | Always (create on INITIAL, update on subsequent passes) | Orchestrator / next pass agent | `artefacts/[system-slug]/corpus-state.md` |
 
 **Vendor extracts (outputs 2, 3):** no internal confidence ratings, no code references,
 no regulatory detail. Written for a vendor solution architect.
@@ -336,9 +481,26 @@ Sourced only from PARITY REQUIRED rules rated [VERIFIED] or [PROBABLE].
 
 ---
 
+## Corpus convergence criterion
+
+The corpus is ready for /modernisation-decompose when ALL of the following hold:
+
+1. Layer 1 complete for the full system (full module inventory exists)
+2. Layer 2A + 2B complete for all in-scope modules (or explicitly deferred with reason)
+3. Layer 3 complete -- no [UNCERTAIN] interfaces whose counterparty is completely unknown (unknown format is acceptable; unknown existence is not)
+4. No ESB dependency flags outstanding (ACE project read, or explicitly deferred with RISK-ACCEPT)
+5. [VERIFIED]:[UNCERTAIN] ratio >= 2:1 across PARITY REQUIRED rules
+6. All [REGULATORY] items have at least a SUGGESTED regulatory basis
+
+If convergence is not met, the completion statement must say so explicitly and recommend the specific next pass type.
+
+[DESIGN DECISION: 2:1 ratio on PARITY REQUIRED rules is a calibration target for first two trials, not a validated gate. Treat as adjustable after real extraction runs. Do not enforce as a hard gate until calibrated.]
+
+---
+
 ## Completion statement
 
-> "Reverse engineering complete for [system name].
+> "Reverse engineering complete for [system name] -- Pass type: [INITIAL/EXTEND/DEEPEN/VERIFY].
 >
 > Extraction summary:
 > - [n] business rules -- [n] PARITY REQUIRED, [n] MIGRATION CANDIDATE, [n] REVIEW, [n] RETIRE (pending confirmation)
@@ -351,6 +513,9 @@ Sourced only from PARITY REQUIRED rules rated [VERIFIED] or [PROBABLE].
 > Confidence: [n] [VERIFIED], [n] [PROBABLE], [n] [UNCERTAIN]
 > [WARNING] [n] items require human verification before use as requirements.
 >
+> Corpus state: [convergence met / not yet met -- [n] criteria outstanding]
+> [If not met: "Recommended next pass: [EXTEND/DEEPEN/VERIFY] -- [specific scope]"]
+>
 > Outputs produced:
 > 1. Full report ? artefacts/[system-slug]/reverse-engineering-report.md
 > 2. Vendor functional requirements ? extracts/vendor-functional-requirements.md
@@ -358,15 +523,19 @@ Sourced only from PARITY REQUIRED rules rated [VERIFIED] or [PROBABLE].
 > 4. Architecture interface map ? extracts/architecture-interface-map.md
 > 5. Compliance regulatory inventory ? extracts/regulatory-inventory.md
 > 6. Parity test seed catalogue ? extracts/parity-test-seeds.md
+> 7. ESB reading plan ? extracts/esb-reading-plan.md [if produced]
+> 8. Corpus state ? artefacts/[system-slug]/corpus-state.md
 >
 > Recommended immediate actions:
-> 1. Send vendor Q&A tracker to [vendor] -- resolve [WARNING] UNKNOWN items before programme commitment
-> 2. Domain expert session on [UNCERTAIN] business rules -- confirm, correct, or retire
-> 3. Compliance review of regulatory inventory -- verify intent vs implementation for each item
-> 4. Architecture review of hidden interface findings -- [n] interfaces not previously registered
+> 1. [If ESB outstanding]: Read ACE/IIB project using ESB reading plan before committing confidence ratings on flagged interfaces
+> 2. Send vendor Q&A tracker to [vendor] -- resolve [WARNING] UNKNOWN items before programme commitment
+> 3. Domain expert session on [UNCERTAIN] business rules -- confirm, correct, or retire
+> 4. Compliance review of regulatory inventory -- verify intent vs implementation for each item
+> 5. Architecture review of hidden interface findings -- [n] interfaces not previously registered
 >
-> Run /discovery using the pre-populated input in Section 9 of the full report
-> once [UNCERTAIN] items have been reviewed and regulatory items verified."
+> [If outcome A]: Use as reference input for /discovery for [feature name].
+> [If outcome B]: Run /modernisation-decompose once convergence criteria are met.
+> [If outcome C -- immediate]: Use [CHANGE-RISK] flagged section as reference for /discovery for [near-term feature]. [Deferred]: Run /modernisation-decompose once convergence criteria are met."
 
 ---
 
@@ -397,6 +566,16 @@ Sourced only from PARITY REQUIRED rules rated [VERIFIED] or [PROBABLE].
 - Regulatory inventory uses intent vs implementation format throughout
 - Parity test seeds are in Given/When/Then -- not implementation descriptions
 
+**Corpus state**
+- `corpus-state.md` written or updated for this pass (INITIAL = create, others = update)
+- Pass type, scope, and `lastRunAt` recorded
+
+**Stack-specific**
+- If Spring detected: `@Aspect`, `@Scheduled`, `@Transactional` inventory produced
+- If Struts 2 detected: `struts.xml` and `*-validation.xml` reads included
+- If ACE/IIB detected: ESB dependency flag raised; ESB reading plan produced; affected interfaces capped at [UNCERTAIN]
+- If COBOL detected: `EVALUATE` and `PERFORM` paragraphs inventoried; `COPY` members listed
+
 ---
 
 ## What this skill does NOT do
@@ -408,6 +587,7 @@ Sourced only from PARITY REQUIRED rules rated [VERIFIED] or [PROBABLE].
 - Does not access production systems -- reads code and configuration files only
 - Does not guarantee extraction completeness -- states explicitly what was and was not read
 - Does not contact the vendor -- produces the Q&A tracker for your team to send
+- Does not declare corpus convergence -- the orchestrating operator or agent does; no individual pass claims the corpus is complete
 
 ---
 
