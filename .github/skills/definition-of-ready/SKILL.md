@@ -127,6 +127,7 @@ All must pass. No exceptions. Run each check and record PASS or FAIL.
 | H-NFR2 | Any compliance NFR with a named regulatory clause has documented human sign-off | NFR profile |
 | H-NFR3 | Data classification field in NFR profile is not blank | NFR profile |
 | H-NFR-profile | NFR profile presence check (B1-enforce): if the story's NFR section is not "None" or blank, check that `artefacts/[feature]/nfr-profile.md` exists. If absent, fire as a hard block: "H-NFR-profile FAIL: story declares NFRs but no feature NFR profile exists at artefacts/[feature]/nfr-profile.md. Create the NFR profile (run /definition Step 7) before sign-off." If the story's NFR section is "None" or blank, skip this check. | Story + NFR profile |
+| H-GOV | Governance approval check: `## Approved By` section in the discovery artefact must contain ≥1 non-blank named entry. Read the artefact directly from the file system (not pipeline-state.json). Presence-only check per ADR-017. See H-GOV detail section below. | Discovery artefact |
 
 **If any hard block fails - stop immediately:**
 
@@ -138,6 +139,35 @@ All must pass. No exceptions. Run each check and record PASS or FAIL.
 >
 > Resolve these and re-run /definition-of-ready.
 > Reply: done - and I'll re-run the check
+
+---
+
+### H-GOV — Governance approval detail
+
+<!-- h-gov-block -->
+
+Read the discovery artefact directly from the file system (`artefacts/[feature]/discovery.md`). Do not read from pipeline-state.json. Locate the `## Approved By` section and evaluate all four cases:
+
+**AC1 (PASS):** `## Approved By` section exists and has ≥1 non-blank named entry → H-GOV passes, DoR checklist continues.
+
+**AC2 (FAIL — empty section):** `## Approved By` section exists but is empty (no entries present):
+
+> ❌ **H-GOV FAIL — Approved By section is empty**
+> The `## Approved By` section in the discovery artefact exists but contains no entries.
+> Resolution: add a named approver to the `## Approved By` section in the discovery artefact before sign-off.
+
+**AC3 (FAIL — absent section):** `## Approved By` section is not present in the discovery artefact:
+
+> ❌ **H-GOV FAIL — Approved By section is missing**
+> The discovery artefact does not contain an `## Approved By` section.
+> Resolution: update the discovery artefact using the `.github/templates/discovery.md` template, which includes the required `## Approved By` section.
+
+**AC4 (FAIL — engineer-only entries):** All entries in `## Approved By` are engineering-role names (e.g. "Lead Engineer", "Tech Lead", "Developer"):
+
+> ❌ **H-GOV FAIL — Approved By contains engineer-only entries**
+> All entries in the `## Approved By` section are engineering roles. H-GOV requires at least one named non-engineering approver.
+> This is distinct from an empty or absent section — entries are present but do not meet the governance requirement.
+> Resolution: add a named non-engineering approver (e.g. product owner, business stakeholder) to the `## Approved By` section in the discovery artefact.
 
 ---
 
