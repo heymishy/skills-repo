@@ -1680,3 +1680,80 @@ The bot already parsed the artefact for ACs (`storyACs = parseACs(story.artefact
 
 **Prevention:** No change to dispatch process needed. The fix makes the distinction automatic. For `--target github-agent` dispatches, ACs should still be inlined in the issue body (gives the SWE agent full context). For `--target vscode`, the artefact reference is sufficient.
 
+---
+
+## D21 — `checkout@v4 ref: github.head_ref` means new master files are invisible on existing PR branches
+
+**Date:** 2026-04-29
+**Observed at:** PR #221 (`copilot/p117-extend-start-skill-md`) after extracting `scripts/ci-audit-comment.js` to master (`52c912e`)
+**Severity:** HIGH — broke CI with `Cannot find module` on every existing open PR until rebased
+
+**Root cause:** `assurance-gate.yml` uses `checkout@v4` with `ref: ${{ github.head_ref }}`. This checks out the PR branch code, NOT the merge commit. The workflow file itself always comes from the base branch (security model for `pull_request` events), but `require('./scripts/...')` resolves against the checked-out workspace — the PR branch — where the new file doesn't exist yet.
+
+When a new `scripts/` module is added to master and the workflow is updated to `require()` it, every open PR branch that predates that master commit will fail with `MODULE_NOT_FOUND` on its next CI run.
+
+**Fix applied:** Rebase the PR branch onto master (`git rebase origin/master; git push --force-with-lease`). This brings all new master files onto the branch, and CI passes.
+
+**Prevention:** When adding a new `require('./scripts/...')` to a workflow that uses `ref: github.head_ref`, immediately rebase all open PR branches. Do not wait for CI to surface it per-PR. Alternatively, consider whether the new module could be inlined or if the checkout strategy should be reconsidered.
+
+---
+
+## D22 — Epic-nested pipeline-state stories use `slug` key; flat Phase 3+ stories use `id` key — code must handle both
+
+**Date:** 2026-04-29
+**Observed at:** (a) `assurance-gate.yml` cross-check `pipelineStories.find(s => s.id === crossCheckStoryId)` returning null for all p11 stories; (b) pipeline-state update script using `allStories.find(s => s.id === 'p11.3')` returning undefined
+**Severity:** HIGH — caused "p11.7 not found in pipeline-state" in every PR #221 audit comment; caused pipeline-state update to throw `TypeError: Cannot set properties of undefined`
+
+**Root cause:** Schema note from user memory (`pipeline-state-schema-patterns.md`) documents this: Phase 1/2 stories nested under `epics[].stories[]` use `slug`; Phase 3+ flat `features[].stories[]` use `id`. Code that only checks one key silently fails for the other layout. The p11 feature uses epics (Phase 1/2 pattern), so all `.id` lookups returned undefined.
+
+**Fixes applied:**
+- `assurance-gate.yml` cross-check: `s.id === crossCheckStoryId` → `(s.id || s.slug) === crossCheckStoryId`
+- Pipeline-state update scripts: use `s.slug === 'p11.x'` for epic-nested features; for generic scripts, always use `s.id || s.slug`
+- `loadPipelineStories()` in `ci-audit-comment.js` already handled both layouts correctly — the bug was in the call sites
+
+**Prevention:** Any code that looks up a story by identifier must use `(s.id || s.slug)`. Add a shared `storyKey(s)` helper if this pattern appears in more than two places.
+
+---
+
+## D23 — Story AC extraction in audit comment required `story.artefact` field which is never written to pipeline-state
+
+**Date:** 2026-04-29
+**Observed at:** PR #221 audit comment showing "(no ACs extracted)" for all 7 p11 stories despite story `.md` files existing in `artefacts/<slug>/stories/`
+**Severity:** MEDIUM — audit comment was structurally correct but showed no AC content; masked whether ACs were actually deliverable
+
+**Root cause:** The enrichment block checked `if (story.artefact)` before calling `parseACs()`. Pipeline-state stories do not have an `artefact` field — they have `testPlan.artefact` (the test plan path). The story file path is derivable from the feature slug and story slug, but was never written to pipeline-state and never read from the stories directory as a fallback.
+
+**Fix applied:** Added fallback in `assurance-gate.yml`: if `story.artefact` is unset, scan `artefacts/<feature-slug>/stories/` for a file matching `<storySlug>-*.md` or `<storySlug>.md`. Uses `fs.readdirSync(...).find(f => f.startsWith(storySlug + '-'))`. Wrapped in the existing try/catch so it's fail-open.
+
+**Prevention:** When pipeline-state story objects are created, consider writing `artefact: "artefacts/<slug>/stories/<filename>.md"` alongside `testPlan.artefact`. Would eliminate the need for the directory-scan fallback. Until then, the fallback in the workflow is the safety net.
+
+---
+
+## D24 — `testPlan.passing` initialised to 0 at story creation and never updated; all stories show 0/N in audit comment
+
+**Date:** 2026-04-29
+**Observed at:** PR #221 audit comment — all 7 p11 stories showing "Tests (pipeline-state): 0/N passing" despite DoD artefacts confirming 100% pass rates
+**Severity:** LOW — cosmetic; does not affect gate verdict, but creates a misleading signal for reviewers
+
+**Root cause:** `testPlan.passing` is set to 0 when the story is first written to pipeline-state (at test-plan phase). It is only updated live during CI runs when `ci_attachment: true` (which captures test output to `.ci-test-results.txt`). For DoD stories without `ci_attachment` enabled, the field is never updated from the DoD run that confirms all tests pass. The DoD pipeline writes `dodStatus: complete` and `acVerified` but does not update `testPlan.passing`.
+
+**Fix applied:** Manual update to pipeline-state in the DoD commit: set `testPlan.passing = testPlan.totalTests` for all stories confirmed complete at DoD (p11.1–p11.6).
+
+**Prevention:** The DoD process (either the skill or the agent's DoD artefact write) should update `testPlan.passing` to the confirmed count when `dodStatus` is set to `complete`. Add to the DoD SKILL.md pipeline-state update section.
+
+---
+
+## D25 — Assurance gate defect accumulation: inline github-script JS blocks are untestable and accrue silent bugs
+
+**Date:** 2026-04-29
+**Observed at:** 4 separate bugs found in the `Post governed artefact chain comment` step across 2 sessions (D21–D24 above, plus the `MODULE_NOT_FOUND` extraction root cause, and earlier D20 false-positive bug)
+**Severity:** SYSTEMIC — each inline JS block in a GitHub Actions workflow is a black box: no unit tests, no local run, feedback loop is one CI run per attempt (~40–90 seconds)
+
+**Pattern observed:** Every time the inline `github-script` block is modified (extraction to module, new field lookups, new cross-check logic), a new bug is introduced that is only caught by a CI run. Fix → push → wait → find next bug → repeat. This session required 3 rebase+push+wait cycles just to fix 3 bugs that would have been caught instantly by a unit test.
+
+**Structural fix applied this session:** Extracted the pure business logic from the inline block into `scripts/ci-audit-comment.js` (module with 4 exports) and `tests/check-ci-audit-comment.js` (34 unit tests). The inline block now only handles I/O (filesystem reads, GitHub API calls) and delegates all logic to the module.
+
+**Remaining risk:** The I/O wiring in the inline block is still untested. Bugs in how data is assembled before being passed to `buildAuditComment()` (e.g. D22's `s.id` lookup, D23's `story.artefact` miss) require CI to surface.
+
+**Prevention:** Any new logic added to the inline `github-script` block should be extracted to the module immediately, with a unit test. The inline block should remain a thin I/O adapter. Target: zero untested logic paths in the `Post governed artefact chain comment` step.
+
