@@ -115,8 +115,9 @@ When a new request comes in, assess the complexity BEFORE presenting pipeline op
 > 5. Large initiative, programme, or migration (multi-team / multi-phase) — programme track
 > 6. Organisation-level application/interface registry query or update — EA registry
 > 7. Pipeline operating model, optimization, mapping, or scale design
+> 8. Legacy system reverse engineering or modernisation decomposition
 >
-> Reply: 1, 2, 3, 4, 5, 6, or 7
+> Reply: 1, 2, 3, 4, 5, 6, 7, or 8
 
 **If 1 — Standard pipeline:** route to /discovery unless a later stage is already active.
 
@@ -194,6 +195,21 @@ Before confirming short-track, verify it actually qualifies:
 >
 > Reply: 1, 2, 3, or 4
 
+**If 8 — Legacy system / modernisation route:**
+> **Legacy system route confirmed.**
+>
+> These two skills form a chain — run them in order:
+>
+> 1. **Extract first** — corpus does not exist yet → `/reverse-engineer`
+> 2. **Decompose** — corpus exists and convergence criteria are met → `/modernisation-decompose`
+> 3. **Both in sequence this session** — start `/reverse-engineer` now; `/modernisation-decompose` runs once convergence is reached
+>
+> Note: `/reverse-engineer` will ask Q0 (Enhancement / Modernisation / Both) before starting.
+> For modernisation work, answer B or C — this activates the outputs and convergence gate
+> that feed directly into `/modernisation-decompose`.
+>
+> Reply: 1, 2, or 3
+
 **If trigger is "daily report", "weekly report", "pipeline status report", "generate a report", or "show me the status report":**
 
 > **Status report route confirmed.**
@@ -263,6 +279,7 @@ Safe to run multiple times. Runs within Step 1 — does not advance the pipeline
 **Cross-cutting architecture support:**
 `/ea-registry` — organisation-level application/interface registry queries,
 contributions, audits, and dependency context feeds
+`/modernisation-decompose` — downstream of `/reverse-engineer`; maps extraction corpus to bounded contexts and candidate feature boundaries for a modernisation programme. Run after corpus convergence criteria are met (see `/reverse-engineer` completion statement for the 6-condition gate).
 
 **Programme track** (runs above the standard pipeline per workstream):
 

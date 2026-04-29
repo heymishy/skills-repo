@@ -36,6 +36,8 @@ Establish before proceeding. **Q0 must be answered before Q1--Q6. Do not begin e
 >
 > Reply: A, B, or C -- this determines which outputs are produced and where emphasis goes."
 
+> **[If outcome B or C confirmed]** Your downstream skill after this extraction is `/modernisation-decompose`. It reads the corpus produced here to map bounded contexts and candidate feature boundaries. Keep this in mind during extraction — recording module boundaries and inter-module dependencies in Layer 1 and Layer 3 will make the decompose step faster. Convergence criteria for handing off to `/modernisation-decompose` are defined at the end of this skill.
+
 Then establish:
 
 1. **Codebase access** -- can the agent read the relevant files?
@@ -493,6 +495,8 @@ The corpus is ready for /modernisation-decompose when ALL of the following hold:
 6. All [REGULATORY] items have at least a SUGGESTED regulatory basis
 
 If convergence is not met, the completion statement must say so explicitly and recommend the specific next pass type.
+
+> **[Outcomes B and C]** When ALL convergence criteria are met, the corpus is ready for `/modernisation-decompose`. Run it immediately — do not start writing stories or decomposing manually. `/modernisation-decompose` reads the corpus artefacts and Layer 1 module inventory and produces the candidate feature boundaries in a single structured pass.
 
 [DESIGN DECISION: 2:1 ratio on PARITY REQUIRED rules is a calibration target for first two trials, not a validated gate. Treat as adjustable after real extraction runs. Do not enforce as a hard gate until calibrated.]
 
