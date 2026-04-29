@@ -217,7 +217,7 @@ jobs:
             try {
               crossCheckStoryId = extractStorySlug(prBody, slug);
               if (crossCheckStoryId) {
-                crossCheckStoryFound = pipelineStories.find(s => s.id === crossCheckStoryId) || null;
+                crossCheckStoryFound = pipelineStories.find(s => (s.id || s.slug) === crossCheckStoryId) || null;
                 const status = !crossCheckStoryFound ? 'not-found' : crossCheckStoryFound.issueUrl ? 'verified' : 'no-dispatch';
                 crossCheckDispatchNote = buildDispatchNote(status, crossCheckStoryId, crossCheckStoryFound ? crossCheckStoryFound.issueUrl : undefined);
               }
@@ -300,8 +300,19 @@ jobs:
             // ── Enrich pipeline stories with parsed ACs and issue AC check ──
             const storiesWithData = await Promise.all(pipelineStories.map(async story => {
               let acs = [];
-              if (story.artefact) {
-                try { acs = parseACs(fs.readFileSync(story.artefact, 'utf8')); } catch (_) {}
+              let artPath = story.artefact;
+              if (!artPath && slug) {
+                const storiesDir = `artefacts/${slug}/stories`;
+                const storySlug = story.slug || story.id || '';
+                if (storySlug && fs.existsSync(storiesDir)) {
+                  const storyFile = fs.readdirSync(storiesDir).find(
+                    f => f.startsWith(storySlug + '-') || f === storySlug + '.md'
+                  );
+                  if (storyFile) artPath = `${storiesDir}/${storyFile}`;
+                }
+              }
+              if (artPath) {
+                try { acs = parseACs(fs.readFileSync(artPath, 'utf8')); } catch (_) {}
               }
               let issueAcCheck = '';
               if (story.issueUrl) {
