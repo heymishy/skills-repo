@@ -198,12 +198,15 @@ jobs:
             const sourceNote = buildSlugSourceNote(slugSource || 'auto-resolved', slug);
 
             // ── Load pipeline-state stories for this feature ──
+            // Handles both flat (feat.stories[]) and epic-nested (feat.epics[].stories[]) layouts
             let pipelineStories = [];
             if (slug && fs.existsSync('.github/pipeline-state.json')) {
               try {
                 const st = JSON.parse(fs.readFileSync('.github/pipeline-state.json', 'utf8'));
                 const feat = st.features && st.features.find(f => f.slug === slug);
-                pipelineStories = (feat && feat.stories) || [];
+                const flatStories = (feat && feat.stories) || [];
+                const epicStories = feat ? (feat.epics || []).flatMap(e => e.stories || []) : [];
+                pipelineStories = flatStories.concat(epicStories);
               } catch (_) {}
             }
 
