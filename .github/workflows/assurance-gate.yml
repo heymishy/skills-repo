@@ -130,7 +130,6 @@ jobs:
 
       - name: Resolve active feature for artefact collection
         id: resolve_feature
-        if: steps.ci_attach_cfg.outputs.ci_attachment == 'true'
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
@@ -176,7 +175,7 @@ jobs:
           retention-days: 7
 
       - name: Post governed artefact chain comment
-        if: always() && steps.ci_attach_cfg.outputs.ci_attachment == 'true'
+        if: always()
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
