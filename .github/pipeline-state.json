@@ -4350,34 +4350,49 @@
               "id": "i3.1",
               "slug": "i3.1",
               "name": "Attribution fields in /discovery SKILL.md output template",
-              "stage": "review",
+              "stage": "test-plan",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i3.1-attribution-fields-in-discovery-review-1.md",
-              "updatedAt": "2026-04-30T15:00:00Z"
+              "testPlan": { "status": "written", "totalTests": 12, "passing": 0, "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/test-plans/i3.1-attribution-fields-in-discovery-test-plan.md" },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "updatedAt": "2026-04-30T16:00:00Z"
             },
             {
               "id": "i3.2",
               "slug": "i3.2",
               "name": "Attribution acknowledgement in /benefit-metric SKILL.md",
-              "stage": "review",
+              "stage": "test-plan",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i3.2-attribution-fields-in-benefit-metric-review-1.md",
-              "updatedAt": "2026-04-30T15:00:00Z"
+              "testPlan": { "status": "written", "totalTests": 13, "passing": 0, "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/test-plans/i3.2-attribution-fields-in-benefit-metric-test-plan.md" },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "updatedAt": "2026-04-30T16:00:00Z"
             },
             {
               "id": "i3.3",
               "slug": "i3.3",
               "name": "H-GOV DoR hard block in /definition-of-ready SKILL.md",
-              "stage": "review",
+              "stage": "test-plan",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i3.3-h-gov-dor-hard-block-review-2.md",
-              "updatedAt": "2026-04-30T15:30:00Z"
+              "testPlan": { "status": "written", "totalTests": 19, "passing": 0, "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/test-plans/i3.3-h-gov-dor-hard-block-test-plan.md" },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "updatedAt": "2026-04-30T16:00:00Z"
             }
           ]
         }
