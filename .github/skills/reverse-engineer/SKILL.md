@@ -471,6 +471,22 @@ State which outputs you are producing before starting.
 | 6. Parity test seed catalogue | If PARITY REQUIRED rules exist | Test team lead | `artefacts/[system-slug]/extracts/parity-test-seeds.md` |
 | 7. ESB reading plan | If ACE/IIB dependency detected | Integration team | `artefacts/[system-slug]/extracts/esb-reading-plan.md` |
 | 8. Corpus state | Always (create on INITIAL, update on subsequent passes) | Orchestrator / next pass agent | `artefacts/[system-slug]/corpus-state.md` |
+| 9. Discovery seed | INITIAL or DEEPEN pass, when Q0 is not DEFER | Platform maintainer / /discovery operator | `artefacts/[system-slug]/discovery-seed.md` |
+
+### Output 9 — discovery-seed.md
+
+Produce at the end of any INITIAL or DEEPEN pass. **Not produced when Q0 outcome is DEFER.**
+
+Structured to mirror the `/discovery` template. Include four sections:
+
+| Section | Derived from |
+|---------|-------------|
+| System name | Target system identified in Q1 |
+| Problem framing | Known failure modes and REVIEW-disposition rules in the corpus |
+| Known constraints | All PARITY REQUIRED rules (use `L<layer>-<seq>` rule-id format, e.g. `L1-001`) |
+| Personas | User types identified during Layer 2 analysis |
+
+The seed is a draft discovery artefact — the /discovery operator refines it, not the agent.
 
 **Vendor extracts (outputs 2, 3):** no internal confidence ratings, no code references,
 no regulatory detail. Written for a vendor solution architect.
@@ -573,6 +589,9 @@ If convergence is not met, the completion statement must say so explicitly and r
 **Corpus state**
 - `corpus-state.md` written or updated for this pass (INITIAL = create, others = update)
 - Pass type, scope, and `lastRunAt` recorded
+
+**VERIFY pass**
+- If any PARITY REQUIRED rule was added, retired, or had its disposition changed since the last pass: update Output 9 (discovery-seed.md) to reflect the change.
 
 **Stack-specific**
 - If Spring detected: `@Aspect`, `@Scheduled`, `@Transactional` inventory produced
