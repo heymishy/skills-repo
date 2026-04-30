@@ -1772,3 +1772,38 @@ When a new `scripts/` module is added to master and the workflow is updated to `
 **Fix 2 (data):** Added governance check `scripts/check-pipeline-state-integrity.js` to `npm test` chain. C1 (warn): story has draft/open PR but passing=0. C2 (fail): passing > totalTests. C3 (fail): merged story with passing < totalTests. Catches stale counts before PR review.
 
 **Prevention (operator action):** When verifying a story (verify-completion or DoD), always update pipeline-state.json testPlan.passing to the confirmed count on master before or alongside opening/merging the PR. A passing count of 0 in a merged story is always wrong.
+
+---
+
+## D27 — Deferred scope leaves permanently failing governance checks: test suite noise accumulates silently
+
+**Date:** 2026-04-30
+**Observed at:** `tests/check-assurance-gate.js` — 2 tests (`workflow-yaml-uses-pinned-immutable-ref`, `download-uses-https-not-http`) failing on every run. Root cause: p3.3 (Gate structural independence) was partially implemented. AC4 landed (schema has `gateScriptRef` fields) but AC2 and the NFR for the `skills-framework-infra` infra repo were never built. The governance tests were written before the implementation was complete, then the story was silently deferred without marking the tests as pending.
+
+**Pattern:** When a story is deferred mid-implementation, its governance check tests keep running and keep failing. With no mechanism to mark them as "deferred/known-failing", they become permanent noise — every `npm test` run exits 1, making it impossible to distinguish real regressions from known-deferred failures. This degrades CI reliability: once the suite is "always red", new failures go unnoticed.
+
+**Fix required (not yet applied — needs story):** Add a `known-deferred-checks.json` list (similar to `artefact-coverage-exemptions.json`) that `check-assurance-gate.js` reads at startup. Entries in the list cause those test names to emit SKIP instead of FAIL, with a reason and linked story ID. This makes the deferred scope visible without poisoning the exit code.
+
+**Prevention (process rule):** When a story is deferred, mark its failing governance tests as pending in the same commit that records the deferral. Never leave the test suite permanently red from known-deferred scope. The commit message should include "chore: mark p3.X tests as deferred — [reason]". If the governance check file is in `tests/` or `scripts/`, open a micro-PR with that single change immediately on deferral — do not leave it for later.
+
+**Currently deferred tests (as of 2026-04-30):**
+- `workflow-yaml-uses-pinned-immutable-ref` — needs `skills-framework-infra` repo + workflow download step
+- `download-uses-https-not-http` — same dependency
+
+
+---
+
+## D27 â€” Deferred scope leaves permanently failing governance checks: test suite noise accumulates silently
+
+**Date:** 2026-04-30
+**Observed at:** `tests/check-assurance-gate.js` â€” 2 tests (`workflow-yaml-uses-pinned-immutable-ref`, `download-uses-https-not-http`) failing on every run. Root cause: p3.3 (Gate structural independence) was partially implemented. AC4 landed (schema has `gateScriptRef` fields) but AC2 and the NFR for the `skills-framework-infra` infra repo were never built. The governance tests were written before the implementation was complete, then the story was silently deferred without marking the tests as pending.
+
+**Pattern:** When a story is deferred mid-implementation, its governance check tests keep running and keep failing. With no mechanism to mark them as deferred/known-failing, they become permanent noise â€” every npm test run exits 1, making it impossible to distinguish real regressions from known-deferred failures. This degrades CI reliability: once the suite is 'always red', new failures go unnoticed.
+
+**Fix required (not yet applied â€” needs story per platform policy):** Add a `known-deferred-checks.json` list (similar to `artefact-coverage-exemptions.json`) that `check-assurance-gate.js` reads at startup. Entries in the list cause those test names to emit SKIP instead of FAIL, with a reason and linked story. This makes deferred scope visible without poisoning the exit code.
+
+**Prevention (process rule):** When a story is deferred, mark its failing governance tests as pending in the same commit. Never leave the test suite permanently red from known-deferred scope. If the check file is in `tests/` or `scripts/`, open a micro-PR with that single change immediately on deferral â€” do not leave it for later.
+
+**Currently deferred tests (as of 2026-04-30):**
+- `workflow-yaml-uses-pinned-immutable-ref` â€” needs `skills-framework-infra` repo + workflow download step (p3.3 AC2)
+- `download-uses-https-not-http` â€” same dependency (p3.3 NFR)

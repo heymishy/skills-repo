@@ -1,0 +1,23 @@
+{
+  "deferredChecks": [
+    {
+      "testName": "workflow-yaml-uses-pinned-immutable-ref",
+      "checkFile": "tests/check-assurance-gate.js",
+      "story": "p3.3-gate-structural-independence",
+      "ac": "AC2",
+      "reason": "p3.3 AC2 requires the workflow to download the gate script from a skills-framework-infra repository at a pinned immutable ref. The skills-framework-infra repository has not yet been created. This test will fail until that infrastructure exists.",
+      "deferredAt": "2026-04-30",
+      "unblockCondition": "Create skills-framework-infra repo, add gate scripts, update assurance-gate.yml to checkout from it at a pinned SHA or version tag."
+    },
+    {
+      "testName": "download-uses-https-not-http",
+      "checkFile": "tests/check-assurance-gate.js",
+      "story": "p3.3-gate-structural-independence",
+      "ac": "NFR",
+      "reason": "p3.3 NFR requires the workflow to reference the skills-framework-infra repository over HTTPS with no PAT. Same infrastructure dependency as AC2 — skills-framework-infra repo does not yet exist.",
+      "deferredAt": "2026-04-30",
+      "unblockCondition": "Same as workflow-yaml-uses-pinned-immutable-ref above."
+    }
+  ],
+  "_note": "This file records known-deferred governance check test names that should emit SKIP instead of FAIL once check-assurance-gate.js is updated to read this file (that code change requires a story per platform policy). Until then, this file serves as the authoritative record of which failures are known-deferred vs real regressions."
+}
