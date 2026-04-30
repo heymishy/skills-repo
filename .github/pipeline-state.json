@@ -4190,7 +4190,7 @@
       "track": "library",
       "health": "green",
       "regulated": false,
-      "updatedAt": "2026-04-30T14:30:00Z",
+      "updatedAt": "2026-04-30T07:30:00Z",
       "stories": [
         {
           "id": "rrc.1",
@@ -4207,7 +4207,7 @@
             "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/test-plans/rrc.1-test-plan.md",
             "testScript": "tests/check-rrc1-discovery-seed.js",
             "totalTests": 10,
-            "passing": 0
+            "passing": 10
           },
           "acTotal": 5,
           "acVerified": 0,
@@ -4234,7 +4234,7 @@
             "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/test-plans/rrc.2-test-plan.md",
             "testScript": "tests/check-rrc2-constraint-index.js",
             "totalTests": 13,
-            "passing": 0
+            "passing": 13
           },
           "acTotal": 5,
           "acVerified": 0,
@@ -4284,7 +4284,7 @@
             "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/test-plans/rrc.4-test-plan.md",
             "testScript": "tests/check-rrc4-corpus-update-skill.js",
             "totalTests": 14,
-            "passing": 0
+            "passing": 14
           },
           "acTotal": 6,
           "acVerified": 0,
