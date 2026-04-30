@@ -4340,7 +4340,53 @@
         }
       ],
       "stories": [],
-      "updatedAt": "2026-04-30T12:30:00Z"
+      "updatedAt": "2026-04-30T12:45:00Z",
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Non-engineering outer loop attribution rate",
+          "target": ">=50% of new discovery artefacts within 90 days carry at least one non-engineering contributor",
+          "baseline": "0% — all 11 prior features had engineer-only contributors",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [],
+          "initiative": "i3"
+        },
+        {
+          "id": "MM1",
+          "name": "H-GOV enforcement correctness",
+          "target": "100% of DoR runs on attribution-gap stories fail H-GOV with 3-part message; zero false positives",
+          "baseline": "Block does not exist — all DoR runs pass attribution check unconditionally",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [],
+          "initiative": "i3"
+        },
+        {
+          "id": "MM2",
+          "name": "Attribution field completeness rate",
+          "target": "100% of new discovery artefacts have all three attribution fields substantively populated",
+          "baseline": "0% — fields do not exist in current template",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [],
+          "initiative": "i3"
+        },
+        {
+          "id": "MM3",
+          "name": "Platform dogfood attribution demonstration",
+          "target": "I1 and I2 discovery artefacts have complete attribution with at least one non-engineering contributor each",
+          "baseline": "Not applicable — artefacts do not exist yet",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [],
+          "initiative": "i3"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
