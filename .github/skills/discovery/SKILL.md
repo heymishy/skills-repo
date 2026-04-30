@@ -125,6 +125,18 @@ The discovery session continues regardless of whether a registry entry exists.
 
 When `architecture.ea_registry_authoritative` is `false` or the key is absent from `context.yml`, behave as before: no blast-radius section is surfaced, no error is raised, and no EA registry query is attempted. The discovery session proceeds identically to pre-Phase-3 behaviour.
 
+**4. Reference corpus check (legacy system context):**
+
+If the discovery involves a system that has been reverse-engineered, check whether a reference corpus exists. If the system slug is not yet known at session start, ask the operator: "Which system does this feature touch? I need the system slug to locate any reference corpus."
+
+Check `artefacts/[system-slug]/reference/` for:
+- `discovery-seed.md` — if present, read it and pre-populate problem framing, known constraints, and personas in the draft discovery artefact
+- `constraint-index.md` — if present, populate the existing **Constraints** section with entries from it, prefixed with: `*Source: constraint-index.md ([extraction date])*`; insert within the existing section, do not create a new heading
+
+The operator may override, edit, or adjust any pre-populated content at any time — confirm corrections and proceed.
+
+If neither file exists, proceed with the standard discovery flow — no error, no warning.
+
 ---
 
 ## Purpose
