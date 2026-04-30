@@ -1,16 +1,26 @@
 {
-  "currentPhase": "discovery",
+  "currentPhase": "definition-of-ready",
   "activeFeature": "2026-04-30-governed-distribution-and-onboarding",
-  "lastUpdated": "2026-04-30T12:00:00Z",
+  "lastUpdated": "2026-04-30T17:00:00Z",
+  "cycle": {
+    "discovery": {
+      "completedAt": "2026-04-30T12:00:00Z",
+      "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/discovery.md",
+      "status": "approved"
+    }
+  },
   "checkpoint": {
     "writtenAt": "2026-04-30",
-    "contextAtWrite": "/discovery artefact written for governed-distribution-and-onboarding. Three initiatives in one discovery (I3 governance prerequisite, I1 onboarding+lockfile, I2 brownfield entry). Downstream artefacts will be distinctly separate per initiative. Discovery draft saved to artefacts/2026-04-30-governed-distribution-and-onboarding/discovery.md. Awaiting operator approval before /benefit-metric.",
-    "resumeInstruction": "Discovery draft is complete. Ask operator to review and approve artefacts/2026-04-30-governed-distribution-and-onboarding/discovery.md. Run /clarify if sharpening is needed. Once approved (Approved By field filled), run /benefit-metric — three separate benefit-metric artefacts, one per initiative (I3, I1, I2), in initiative order.",
+    "contextAtWrite": "/definition-of-ready complete for i3.1, i3.2, i3.3. All three stories signed-off. NFR profile created. DoR artefacts and contracts written for all three. pipeline-state.json updated (dorStatus: signed-off). Ready for /issue-dispatch to create GitHub issues for the coding agent.",
+    "resumeInstruction": "i3.1, i3.2, i3.3 are all DoR signed-off. Run /issue-dispatch for all three to create GitHub issues for the coding agent. Merge order constraint: i3.1 must merge before i3.3 is deployed (H-GOV checks the Approved By field i3.1 adds). After all I3 PRs merge, begin I1 (onboarding) outer loop. p3.3 check-assurance-gate.js failures are pre-existing, tracked in known-deferred-checks.json.",
     "pendingActions": [
-      "Operator review and approval of discovery.md — fill Approved By field with name + role + date",
-      "Run /clarify to sharpen artefact (recommended before approval)",
-      "After approval: run /benefit-metric — produce three separate artefacts (initiative-3-governance, initiative-1-onboarding, initiative-2-brownfield) in sequence order",
-      "Create story for check-assurance-gate.js deferred skip mechanism (reads known-deferred-checks.json) — tracked in known-deferred-checks.json, low priority backlog"
+      "Run /issue-dispatch for i3.1, i3.2, i3.3 to create GitHub dispatch issues for the coding agent",
+      "Oversight: Medium — share DoR artefacts with tech lead / platform team before assigning coding agent to each story",
+      "Coding agent for i3.1: edit .github/skills/discovery/SKILL.md only; open draft PR; never merge",
+      "Coding agent for i3.2: edit .github/skills/benefit-metric/SKILL.md only; open draft PR; never merge; merge after i3.1",
+      "Coding agent for i3.3: edit .github/skills/definition-of-ready/SKILL.md only; open draft PR; never merge; merge after i3.1",
+      "After all I3 PRs merged: begin I1 outer loop (benefit-metric already written) — run /definition for I1 onboarding stories",
+      "Create story for check-assurance-gate.js deferred skip mechanism (p3.3) — tracked in known-deferred-checks.json, low priority backlog"
     ]
   }
 }
