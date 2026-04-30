@@ -83,10 +83,10 @@ Initiative 3 is a governance tooling change — it modifies platform skill files
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1 — Non-engineering attribution rate | i3.1, i3.2, i3.3 | Pending — /definition not yet run |
-| MM1 — H-GOV enforcement correctness | i3.3 | Pending — /definition not yet run |
-| MM2 — Attribution field completeness rate | i3.1, i3.2 | Pending — /definition not yet run |
-| MM3 — Platform dogfood attribution | i3.1, i3.2 (I1 discovery as evidence) | Pending — /definition not yet run |
+| M1 — Non-engineering attribution rate | i3.1 (adds attribution fields that enable measurement), i3.2 (surfaces gaps at benefit-metric), i3.3 (enforces at DoR) | ✅ Covered |
+| MM1 — H-GOV enforcement correctness | i3.3 (adds H-GOV hard block to /definition-of-ready) | ✅ Covered |
+| MM2 — Attribution field completeness rate | i3.1 (adds Contributors/Reviewers/Approved By to /discovery template), i3.2 (acknowledgement step ensures benefit-metric artefacts note completeness) | ✅ Covered |
+| MM3 — Platform dogfood attribution | i3.1 + i3.2 together create the mechanism; evidence comes from the I1 discovery artefact (produced after i3.1 merges) | ✅ Covered — evidence deferred to I1 discovery approval |
 
 ---
 

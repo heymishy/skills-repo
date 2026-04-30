@@ -4301,7 +4301,7 @@
     {
       "slug": "2026-04-30-governed-distribution-and-onboarding",
       "name": "Governed distribution, onboarding, and brownfield adoption",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -4313,6 +4313,7 @@
       "ideationPath": "artefacts/2026-04-23-non-technical-channel/research/ideation.md",
       "ideationSignal": "proceed",
       "refDocPath": "artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md",
+      "slicingStrategy": "vertical-slice",
       "relatedGaps": [
         "G0a",
         "G0b",
@@ -4339,8 +4340,52 @@
           "prerequisite": "i1"
         }
       ],
-      "stories": [],
-      "updatedAt": "2026-04-30T13:30:00Z",
+      "epics": [
+        {
+          "slug": "i3-governance-epic",
+          "name": "Non-engineering attribution fields and DoR governance enforcement",
+          "status": "not-started",
+          "stories": [
+            {
+              "id": "i3.1",
+              "slug": "i3.1",
+              "name": "Attribution fields in /discovery SKILL.md output template",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "id": "i3.2",
+              "slug": "i3.2",
+              "name": "Attribution acknowledgement in /benefit-metric SKILL.md",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "id": "i3.3",
+              "slug": "i3.3",
+              "name": "H-GOV DoR hard block in /definition-of-ready SKILL.md",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        }
+      ],
+      "guardrails": [
+        { "id": "MC-SEC-01", "category": "mandatory-constraint", "label": "No user-supplied content in innerHTML without sanitisation", "status": "not-assessed" },
+        { "id": "MC-SEC-02", "category": "mandatory-constraint", "label": "No credentials, tokens, or personal data in committed files", "status": "not-assessed" },
+        { "id": "MC-SEC-03", "category": "mandatory-constraint", "label": "Viz reads local JSON only — no external fetch calls", "status": "not-assessed" },
+        { "id": "MC-CORRECT-01", "category": "mandatory-constraint", "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)", "status": "not-assessed" },
+        { "id": "MC-CORRECT-02", "category": "mandatory-constraint", "label": "Fields written to pipeline-state.json must exist in schema", "status": "not-assessed" },
+        { "id": "MC-CORRECT-03", "category": "mandatory-constraint", "label": "Fields read by viz from pipeline-state.json must exist in schema", "status": "not-assessed" },
+        { "id": "MC-SELF-01", "category": "mandatory-constraint", "label": "dashboards/pipeline-viz.html renders without build step, server, or network", "status": "not-assessed" },
+        { "id": "MC-SELF-02", "category": "mandatory-constraint", "label": "No npm devDependencies in dashboards/pipeline-viz.html runtime", "status": "not-assessed" },
+        { "id": "MC-CONSIST-01", "category": "mandatory-constraint", "label": "Stage enum in schema updated when skill adds/removes stage", "status": "not-assessed" },
+        { "id": "MC-CONSIST-02", "category": "mandatory-constraint", "label": "Gate add/remove synced with SKILL.md criteria", "status": "not-assessed" },
+        { "id": "MC-A11Y-01", "category": "mandatory-constraint", "label": "Interactive elements keyboard-accessible", "status": "not-assessed" },
+        { "id": "MC-A11Y-02", "category": "mandatory-constraint", "label": "Colour not sole indicator of gate status (icons/labels present)", "status": "not-assessed" },
+        { "id": "ADR-011", "category": "adr", "label": "Artefact-first: new SKILL.md files require story artefact before or alongside commit", "status": "not-assessed" }
+      ],
+      "updatedAt": "2026-04-30T14:00:00Z",
       "metrics": [
         {
           "id": "M1",
@@ -4350,7 +4395,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": [],
+          "contributingStories": ["i3.1", "i3.2", "i3.3"],
           "initiative": "i3"
         },
         {
@@ -4361,7 +4406,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": [],
+          "contributingStories": ["i3.3"],
           "initiative": "i3"
         },
         {
@@ -4372,7 +4417,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": [],
+          "contributingStories": ["i3.1", "i3.2"],
           "initiative": "i3"
         },
         {
@@ -4383,7 +4428,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": [],
+          "contributingStories": ["i3.1", "i3.2"],
           "initiative": "i3"
         },
         {
