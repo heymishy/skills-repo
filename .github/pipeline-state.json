@@ -4190,7 +4190,7 @@
       "track": "library",
       "health": "green",
       "regulated": false,
-      "updatedAt": "2026-05-01T00:00:00Z",
+      "updatedAt": "2026-04-30T12:00:00Z",
       "stories": [
         {
           "id": "rrc.1",
@@ -4213,7 +4213,10 @@
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/stories/rrc.1-discovery-seed-output.md"
+          "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/stories/rrc.1-discovery-seed-output.md",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/222",
+          "dispatchedAt": "2026-04-30T12:00:00Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "rrc.2",
@@ -4236,7 +4239,10 @@
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/stories/rrc.2-constraint-index-output.md"
+          "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/stories/rrc.2-constraint-index-output.md",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/223",
+          "dispatchedAt": "2026-04-30T12:00:00Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "rrc.3",
@@ -4282,7 +4288,10 @@
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/stories/rrc.4-reference-corpus-update-skill.md"
+          "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/stories/rrc.4-reference-corpus-update-skill.md",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/224",
+          "dispatchedAt": "2026-04-30T12:00:00Z",
+          "dispatchTarget": "vscode"
         }
       ]
     }
