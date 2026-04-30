@@ -1757,3 +1757,18 @@ When a new `scripts/` module is added to master and the workflow is updated to `
 
 **Prevention:** Any new logic added to the inline `github-script` block should be extracted to the module immediately, with a unit test. The inline block should remain a thin I/O adapter. Target: zero untested logic paths in the `Post governed artefact chain comment` step.
 
+
+---
+
+## D26 — testPlan.passing lag: merged stories with stale passing count produce misleading audit records
+
+**Date:** 2026-04-30
+**Observed at:** rrc.3 (PR #228) — audit comment displayed "0/9 passing" and "—" on every AC row. Root cause: pipeline-state.json had testPlan.passing: 0 for rrc.3 even though all 9 tests were passing locally.
+
+**Pattern:** When a story is created (at /test-plan or /definition-of-ready), testPlan.passing is initialised to 0. If it is not updated to the confirmed count before a PR is opened, the assurance gate audit comment falls back to this stale 0 — producing "0/N passing" and the "—" icon on every AC row.
+
+**Fix 1 (display):** Added `allPassingFallback` to `scripts/ci-audit-comment.js`: when `!suiteResult && testPlan.passing === testPlan.totalTests && totalTests > 0`, the AC row icon becomes ? instead of —. Commit 02a6ff7. Tests T23/T24 added.
+
+**Fix 2 (data):** Added governance check `scripts/check-pipeline-state-integrity.js` to `npm test` chain. C1 (warn): story has draft/open PR but passing=0. C2 (fail): passing > totalTests. C3 (fail): merged story with passing < totalTests. Catches stale counts before PR review.
+
+**Prevention (operator action):** When verifying a story (verify-completion or DoD), always update pipeline-state.json testPlan.passing to the confirmed count on master before or alongside opening/merging the PR. A passing count of 0 in a merged story is always wrong.

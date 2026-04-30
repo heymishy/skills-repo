@@ -688,7 +688,7 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
-                "passing": 12,
+                "passing": 10,
                 "artefact": "artefacts/2026-04-24-platform-onboarding-distribution/test-plans/p11.7-test-plan.md"
               },
               "hasLayoutDependentGaps": false,
@@ -890,7 +890,7 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 19,
-                "passing": 22
+                "passing": 19
               },
               "acTotal": 7,
               "acVerified": 7,
@@ -2081,7 +2081,7 @@
             "status": "all-passing",
             "testFile": "tests/check-p4-enf-second-line.js",
             "totalTests": 22,
-            "passing": 21
+            "passing": 22
           },
           "prStatus": "merged",
           "dodStatus": "complete",
@@ -2207,7 +2207,7 @@
             "status": "written",
             "testFile": "tests/check-p4-obs-status.js",
             "totalTests": 11,
-            "passing": 32
+            "passing": 11
           },
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/175",
@@ -2231,7 +2231,7 @@
             "status": "written",
             "testFile": "tests/check-p4-obs-archive.js",
             "totalTests": 12,
-            "passing": 24
+            "passing": 12
           },
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/176",
@@ -2258,7 +2258,7 @@
             "status": "written",
             "testFile": "tests/check-p4-obs-benefit.js",
             "totalTests": 12,
-            "passing": 27
+            "passing": 12
           },
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/177",
@@ -3953,7 +3953,7 @@
                 "status": "written",
                 "artefact": "artefacts/2026-04-27-prioritise-skill/test-plans/pr.1-test-plan.md",
                 "totalTests": 11,
-                "passing": 0
+                "passing": 11
               },
               "acTotal": 6,
               "acVerified": 0,
@@ -4139,7 +4139,7 @@
           "testPlan": {
             "status": "written",
             "totalTests": 8,
-            "passing": 0,
+            "passing": 8,
             "artefact": "artefacts/2026-04-29-audit-slug-resolution/test-plans/sar.1-test-plan.md"
           },
           "hasLayoutDependentGaps": false,
@@ -4311,5 +4311,6 @@
       }
     ],
     "lastUpdated": "2026-04-20"
-  }
+  },
+  "updatedAt": "2026-04-30T09:00:02.803Z"
 }
