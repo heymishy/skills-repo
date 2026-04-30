@@ -207,7 +207,7 @@
         {
           "id": "MC-SEC-03",
           "category": "mandatory-constraint",
-          "label": "Viz reads local JSON only — no external fetch calls",
+          "label": "Viz reads local JSON only â€” no external fetch calls",
           "status": "not-assessed"
         },
         {
@@ -275,7 +275,7 @@
         {
           "id": "ADR-004",
           "category": "adr",
-          "label": "ADR-004: /checkpoint is defined in copilot-instructions.md — not a standalone SKILL.md",
+          "label": "ADR-004: /checkpoint is defined in copilot-instructions.md â€” not a standalone SKILL.md",
           "status": "met",
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-04-28"
@@ -283,7 +283,7 @@
         {
           "id": "NFR-ilc-durability",
           "category": "nfr",
-          "label": "Append-only write — capture-log.md never truncated or overwritten",
+          "label": "Append-only write â€” capture-log.md never truncated or overwritten",
           "status": "met",
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-04-28"
@@ -291,7 +291,7 @@
         {
           "id": "NFR-ilc-portability",
           "category": "nfr",
-          "label": "Plain markdown format — no parser or external dependency required",
+          "label": "Plain markdown format â€” no parser or external dependency required",
           "status": "met",
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-04-28"
@@ -307,11 +307,11 @@
         {
           "id": "NFR-ilc-instruction-hygiene",
           "category": "nfr",
-          "label": "Self-recording rule ≤60 words; SKILL.md callouts ≤30 words; checkpoint bridge ≤80 words",
+          "label": "Self-recording rule â‰¤60 words; SKILL.md callouts â‰¤30 words; checkpoint bridge â‰¤80 words",
           "status": "met",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-04-28",
-          "evidence": "self-recording-instruction-word-count passes; skill-reminder-word-count passes (all 8 callouts ≤30 words); checkpoint-bridge-word-count-nfr passes (76 words)"
+          "evidence": "self-recording-instruction-word-count passes; skill-reminder-word-count passes (all 8 callouts â‰¤30 words); checkpoint-bridge-word-count-nfr passes (76 words)"
         },
         {
           "id": "NFR-ilc-non-blocking",
@@ -344,7 +344,7 @@
           "contributingStories": [
             "ilc.2"
           ],
-          "target": "≥80% of sessions contain ≥1 agent-auto entry within 5 sessions post-delivery",
+          "target": "â‰¥80% of sessions contain â‰¥1 agent-auto entry within 5 sessions post-delivery",
           "baseline": "0%",
           "signal": "not-yet-measured",
           "evidence": null,
@@ -356,8 +356,8 @@
           "contributingStories": [
             "ilc.2"
           ],
-          "target": "≥80% agent-auto across first 10 sessions",
-          "baseline": "N/A — no prior captures",
+          "target": "â‰¥80% agent-auto across first 10 sessions",
+          "baseline": "N/A â€” no prior captures",
           "signal": "not-yet-measured",
           "evidence": null,
           "lastMeasured": null
@@ -413,7 +413,7 @@
           "id": "m1",
           "name": "Time-to-first-skill-run",
           "target": "Under 2 minutes from repo open to first /start output",
-          "baseline": "Not yet established — expected >15 minutes on current ONBOARDING.md flow",
+          "baseline": "Not yet established â€” expected >15 minutes on current ONBOARDING.md flow",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -440,7 +440,7 @@
           "id": "m3",
           "name": "Non-engineering outer loop attribution rate",
           "target": "At least 1 artefact with non-engineering approved-by within 60 days of DoD",
-          "baseline": "0% — no attribution fields exist, no non-engineering sign-off on any artefact",
+          "baseline": "0% â€” no attribution fields exist, no non-engineering sign-off on any artefact",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -454,7 +454,7 @@
           "id": "m4",
           "name": "Lockfile pin/verify round-trip integrity",
           "target": "verify returns deterministic pass/fail within 5 seconds with no additional tooling",
-          "baseline": "0% — pin and verify are unimplemented stubs",
+          "baseline": "0% â€” pin and verify are unimplemented stubs",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -466,7 +466,7 @@
           "id": "mm1",
           "name": "/start concierge hypothesis validation",
           "target": "2 of 3 onboardings: consumer proceeds directly from /start to first skill run without re-reading ONBOARDING.md",
-          "baseline": "Hypothesis not yet validated — current onboarding is documentation-first",
+          "baseline": "Hypothesis not yet validated â€” current onboarding is documentation-first",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -478,7 +478,7 @@
           "id": "mm2",
           "name": "H-GOV hard block hypothesis validation",
           "target": "H-GOV fires at least once in CI and at least 1 team seeks resolution rather than bypass within 90 days",
-          "baseline": "H-GOV block does not exist — 0% non-engineering attribution rate",
+          "baseline": "H-GOV block does not exist â€” 0% non-engineering attribution rate",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -490,10 +490,10 @@
           "id": "mm3",
           "name": "Brownfield routing hypothesis validation",
           "target": "/start correctly identifies and routes brownfield context on 2 of 2 observed sessions",
-          "baseline": "No brownfield routing exists — consumers are prompted to run /discovery from scratch",
+          "baseline": "No brownfield routing exists â€” consumers are prompted to run /discovery from scratch",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "Routing logic deployed and verified — measurement requires real brownfield onboarding sessions.",
+          "evidence": "Routing logic deployed and verified â€” measurement requires real brownfield onboarding sessions.",
           "contributingStories": [
             "p11.7"
           ]
@@ -502,7 +502,7 @@
       "epics": [
         {
           "slug": "p11-governance-attribution",
-          "name": "Outer loop attribution model — governance prerequisite",
+          "name": "Outer loop attribution model â€” governance prerequisite",
           "status": "not-started",
           "stories": [
             {
@@ -650,7 +650,7 @@
             },
             {
               "slug": "p11.6",
-              "name": "Create /start SKILL.md — greenfield orientation",
+              "name": "Create /start SKILL.md â€” greenfield orientation",
               "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/207",
@@ -772,7 +772,7 @@
     },
     {
       "slug": "2026-04-23-non-technical-channel",
-      "name": "Non-Technical Channel — Framework Adoption Friction (Phase 5 WS0 / G0b)",
+      "name": "Non-Technical Channel â€” Framework Adoption Friction (Phase 5 WS0 / G0b)",
       "stage": "ideation",
       "health": "green",
       "track": "library",
@@ -787,7 +787,7 @@
     },
     {
       "slug": "2026-04-22-modernisation-decompose",
-      "name": "Modernisation Decompose — Bridging /reverse-engineer to the Delivery Pipeline",
+      "name": "Modernisation Decompose â€” Bridging /reverse-engineer to the Delivery Pipeline",
       "stage": "definition-of-done",
       "health": "green",
       "track": "library",
@@ -812,7 +812,7 @@
         {
           "id": "m1",
           "name": "Decomposition consistency",
-          "target": "≥80% agreement on feature count and rule assignment",
+          "target": "â‰¥80% agreement on feature count and rule assignment",
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
@@ -850,7 +850,7 @@
         {
           "id": "mm-a",
           "name": "First-run acceptance rate",
-          "target": "≥75% first-run acceptance",
+          "target": "â‰¥75% first-run acceptance",
           "baseline": "not measurable pre-skill",
           "signal": "not-yet-measured",
           "lastMeasured": null,
@@ -1009,7 +1009,7 @@
         {
           "id": "MC-SEC-03",
           "category": "mandatory-constraint",
-          "label": "Viz reads local JSON only — no external fetch calls",
+          "label": "Viz reads local JSON only â€” no external fetch calls",
           "status": "not-assessed"
         },
         {
@@ -1279,7 +1279,7 @@
         {
           "id": "NFR-security-corpus-state",
           "category": "nfr",
-          "label": "corpus-state.md records metrics only — no business rule text or customer data",
+          "label": "corpus-state.md records metrics only â€” no business rule text or customer data",
           "status": "met",
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-04-22T16:00:00Z"
@@ -1344,7 +1344,7 @@
     },
     {
       "slug": "2026-04-19-skills-platform-phase4",
-      "name": "Skills Platform Ã¢â‚¬â€ Phase 4: Distribution, Structural Enforcement, and Non-Technical Access",
+      "name": "Skills Platform ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Phase 4: Distribution, Structural Enforcement, and Non-Technical Access",
       "stage": "definition-of-done",
       "reviewStatus": "passed",
       "reviewHighFindings": 0,
@@ -1497,8 +1497,8 @@
       "metrics": [
         {
           "id": "m1",
-          "name": "Distribution sync Ã¢â‚¬â€ zero-commit install + sync success rate",
-          "baseline": "0% Ã¢â‚¬â€ no zero-commit sync mechanism exists today",
+          "name": "Distribution sync ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â zero-commit install + sync success rate",
+          "baseline": "0% ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no zero-commit sync mechanism exists today",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": "Zero-commit assertion mechanism verified by automated tests (check-p4-dist-no-commits.js). Real consumer end-to-end install not yet run by Craig or Thomas.",
@@ -1516,9 +1516,9 @@
         },
         {
           "id": "m2",
-          "name": "Consumer confidence Ã¢â‚¬â€ unassisted team member onboarding",
+          "name": "Consumer confidence ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â unassisted team member onboarding",
           "target": "At least 1 team member completes full outer loop (discovery through DoR) on a real story without platform team involvement",
-          "baseline": "0 Ã¢â‚¬â€ no unassisted onboarding achieved to date",
+          "baseline": "0 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no unassisted onboarding achieved to date",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": "Onboarding tooling (distribution modules, migration guide, Teams bot, status reports, archive toggle) all implemented. Real unassisted onboarding session not yet run.",
@@ -1541,7 +1541,7 @@
           "id": "m3",
           "name": "Teams bot C7 fidelity",
           "target": "0 C7 violations across a complete test session of one outer loop step",
-          "baseline": "not-applicable Ã¢â‚¬â€ no Teams bot exists today",
+          "baseline": "not-applicable ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no Teams bot exists today",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": "Spike D minimum validation signal met (3 consecutive C7-compliant turns, 0 violations). Full test session across complete outer loop step not yet run in live Teams environment.",
@@ -1558,7 +1558,7 @@
           "id": "mm-a",
           "name": "Meta: Scope fidelity (Sonnet vs Opus)",
           "target": "0 scope drift items in either run; delta between Sonnet and Opus counts",
-          "baseline": "Sonnet 4.6 run score Ã¢â‚¬â€ recorded at /definition close",
+          "baseline": "Sonnet 4.6 run score ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â recorded at /definition close",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": "Sonnet baseline run complete. record-benefit-comparison.js tooling now available for EXP-001 measurement. Opus comparison run not yet completed.",
@@ -1570,7 +1570,7 @@
           "id": "mm-b",
           "name": "Meta: Constraint capture (Sonnet vs Opus)",
           "target": "5/5 named constraints captured in story ACs without operator prompting",
-          "baseline": "Sonnet 4.6 run score Ã¢â‚¬â€ recorded at /definition close",
+          "baseline": "Sonnet 4.6 run score ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â recorded at /definition close",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": "Sonnet baseline run complete. Opus comparison run not yet completed.",
@@ -1581,8 +1581,8 @@
         {
           "id": "mm-c",
           "name": "Meta: AC completeness (Sonnet vs Opus)",
-          "target": "Ã¢â€°Â¥80% of ACs rated testable and specific",
-          "baseline": "Sonnet 4.6 run score Ã¢â‚¬â€ recorded at /definition close",
+          "target": "ÃƒÂ¢Ã¢â‚¬Â°Ã‚Â¥80% of ACs rated testable and specific",
+          "baseline": "Sonnet 4.6 run score ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â recorded at /definition close",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": "Sonnet baseline run complete. Opus comparison run not yet completed.",
@@ -1594,7 +1594,7 @@
           "id": "mm-d",
           "name": "Meta: Operator intervention rate (Sonnet vs Opus)",
           "target": "0 unprompted operator corrections; lower count in Opus run vs Sonnet run",
-          "baseline": "Sonnet 4.6 run count Ã¢â‚¬â€ recorded by heymishy during this session",
+          "baseline": "Sonnet 4.6 run count ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â recorded by heymishy during this session",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": "Sonnet baseline run complete. Opus comparison run not yet completed.",
@@ -2242,7 +2242,7 @@
           "releaseReady": true,
           "layoutGapsAtMerge": true,
           "layoutGapsRiskAccepted": true,
-          "blocker": "DoR contract referenced pipeline-viz.html but implementation correctly targets index.html Ã¢â‚¬â€ recorded as scope deviation in DoD; no AC gaps.",
+          "blocker": "DoR contract referenced pipeline-viz.html but implementation correctly targets index.html ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â recorded as scope deviation in DoD; no AC gaps.",
           "updatedAt": "2026-04-28"
         },
         {
@@ -2286,7 +2286,7 @@
     },
     {
       "slug": "2026-04-19-skills-platform-phase4-opus",
-      "name": "Skills Platform Ã¢â‚¬â€ Phase 4 (Opus 4.6 arm): Distribution, Structural Enforcement, and Non-Technical Access",
+      "name": "Skills Platform ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Phase 4 (Opus 4.6 arm): Distribution, Structural Enforcement, and Non-Technical Access",
       "stage": "review",
       "discoveryStatus": "approved",
       "health": "green",
@@ -2307,14 +2307,14 @@
       "epics": [
         {
           "id": "e1",
-          "name": "Governance extractability Ã¢â‚¬â€ enforcement selection",
+          "name": "Governance extractability ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â enforcement selection",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e1-governance-extractability-enforcement-selection.md",
           "storyCount": 5,
           "slug": "e1"
         },
         {
           "id": "e2",
-          "name": "Distribution Ã¢â‚¬â€ zero-commit install",
+          "name": "Distribution ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â zero-commit install",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e2-distribution-zero-commit-install.md",
           "storyCount": 7,
           "slug": "e2"
@@ -2328,7 +2328,7 @@
         },
         {
           "id": "e4",
-          "name": "Readable governance Ã¢â‚¬â€ second-line audit",
+          "name": "Readable governance ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â second-line audit",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e4-readable-governance-second-line-audit.md",
           "storyCount": 5,
           "slug": "e4"
@@ -2342,7 +2342,7 @@
         {
           "id": "ADR-004",
           "category": "adr",
-          "label": "context.yml is the single configuration source Ã¢â‚¬â€ no hardcoded values",
+          "label": "context.yml is the single configuration source ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no hardcoded values",
           "status": "not-assessed",
           "assessedBy": "/definition"
         },
@@ -2356,14 +2356,14 @@
         {
           "id": "C1",
           "category": "mandatory-constraint",
-          "label": "Non-fork update channel Ã¢â‚¬â€ consumers must not fork",
+          "label": "Non-fork update channel ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â consumers must not fork",
           "status": "not-assessed",
           "assessedBy": "/definition"
         },
         {
           "id": "C4",
           "category": "mandatory-constraint",
-          "label": "Human approval gate Ã¢â‚¬â€ no automated merge",
+          "label": "Human approval gate ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no automated merge",
           "status": "not-assessed",
           "assessedBy": "/definition"
         },
@@ -2422,9 +2422,9 @@
       "metrics": [
         {
           "id": "m1",
-          "name": "Distribution sync Ã¢â‚¬â€ zero-commit install + sync success rate",
-          "target": "100% zero-commit install + Ã¢â€°Â¥90% sync success",
-          "baseline": "0% Ã¢â‚¬â€ no mechanism exists",
+          "name": "Distribution sync ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â zero-commit install + sync success rate",
+          "target": "100% zero-commit install + ÃƒÂ¢Ã¢â‚¬Â°Ã‚Â¥90% sync success",
+          "baseline": "0% ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no mechanism exists",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -2441,9 +2441,9 @@
         },
         {
           "id": "m2",
-          "name": "Consumer confidence Ã¢â‚¬â€ unassisted team member onboarding",
-          "target": "Ã¢â€°Â¥1 team member completes full outer loop unassisted",
-          "baseline": "0 Ã¢â‚¬â€ no unassisted onboarding achieved",
+          "name": "Consumer confidence ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â unassisted team member onboarding",
+          "target": "ÃƒÂ¢Ã¢â‚¬Â°Ã‚Â¥1 team member completes full outer loop unassisted",
+          "baseline": "0 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no unassisted onboarding achieved",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -2463,9 +2463,9 @@
         },
         {
           "id": "m3",
-          "name": "Teams bot C7 fidelity Ã¢â‚¬â€ zero violations in test session",
+          "name": "Teams bot C7 fidelity ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â zero violations in test session",
           "target": "0 C7 violations across complete test session",
-          "baseline": "not-applicable Ã¢â‚¬â€ no Teams bot exists",
+          "baseline": "not-applicable ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no Teams bot exists",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -2505,7 +2505,7 @@
         {
           "id": "mm-c",
           "name": "Meta: AC completeness",
-          "target": "Ã¢â€°Â¥80% ACs testable and specific",
+          "target": "ÃƒÂ¢Ã¢â‚¬Â°Ã‚Â¥80% ACs testable and specific",
           "baseline": "Sonnet run score",
           "signal": "not-yet-measured",
           "lastMeasured": null,
@@ -2530,7 +2530,7 @@
     },
     {
       "slug": "2026-04-14-skills-platform-phase3",
-      "name": "Skills Platform Ã¢â‚¬â€ Phase 3: Governance Hardening, T3M1 Close, and Enterprise Scale",
+      "name": "Skills Platform ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Phase 3: Governance Hardening, T3M1 Close, and Enterprise Scale",
       "stage": "definition-of-done",
       "health": "green",
       "track": "library",
@@ -2551,7 +2551,7 @@
           "baseline": "3/8 at Phase 2 close",
           "signal": "at-risk",
           "lastMeasured": "2026-04-16",
-          "evidence": "Named independent reviewer on record: craigfo (PR #98, 2026-04-15). Full pipeline run completed autonomously. Formal MODEL-RISK.md 8/8 audit answers not yet documented Ã¢â‚¬â€ dependency for full on-track exists. Signal: partial Ã¢â‚¬â€ independent operator identified and pipeline-capable, formal audit artefact pending.",
+          "evidence": "Named independent reviewer on record: craigfo (PR #98, 2026-04-15). Full pipeline run completed autonomously. Formal MODEL-RISK.md 8/8 audit answers not yet documented ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â dependency for full on-track exists. Signal: partial ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â independent operator identified and pipeline-capable, formal audit artefact pending.",
           "contributingStories": [
             "p3.2a",
             "p3.2b"
@@ -2561,7 +2561,7 @@
           "id": "M2",
           "name": "Assurance gate substantive signal (completedAt duration)",
           "target": "All post-Phase-3 production traces show completedAt >50ms after startedAt",
-          "baseline": "1Ã¢â‚¬â€œ2ms (Phase 2 actuals, adversarial audit 2026-04-12)",
+          "baseline": "1ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“2ms (Phase 2 actuals, adversarial audit 2026-04-12)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -2586,7 +2586,7 @@
           "id": "M4",
           "name": "Enterprise approval channel end-to-end",
           "target": "At least one complete DoR sign-off via Teams or Jira adapter",
-          "baseline": "GitHub Issue adapter only Ã¢â‚¬â€ no enterprise channel exists",
+          "baseline": "GitHub Issue adapter only ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no enterprise channel exists",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -2608,8 +2608,8 @@
         },
         {
           "id": "MM1",
-          "name": "Estimation calibration continuity (Phase 3 E1Ã¢â€ â€™E3)",
-          "target": "Phase 3 E2 estimates within 25% of E3 actuals for Ã¢â€°Â¥70% of stories",
+          "name": "Estimation calibration continuity (Phase 3 E1ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢E3)",
+          "target": "Phase 3 E2 estimates within 25% of E3 actuals for ÃƒÂ¢Ã¢â‚¬Â°Ã‚Â¥70% of stories",
           "baseline": "Phase 2 E3 actuals in workspace/estimation-norms.md",
           "signal": "not-yet-measured",
           "lastMeasured": null,
@@ -2660,7 +2660,7 @@
           "baseline": "Phase 2: non-zero post-merge governance failures (establishing Phase 3 baseline from first PR)",
           "signal": "on-track",
           "lastMeasured": "2026-04-18",
-          "evidence": "PR #141 (8754323) merged p3.5, p3.6, p3.7, p3.8, p3.10, p3.11 Ã¢â‚¬â€ all tests green, zero npm test failures post-merge.",
+          "evidence": "PR #141 (8754323) merged p3.5, p3.6, p3.7, p3.8, p3.10, p3.11 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â all tests green, zero npm test failures post-merge.",
           "contributingStories": [
             "p3.1a",
             "p3.1b",
@@ -2675,10 +2675,10 @@
           "id": "CR1",
           "name": "T3M1 independent validation on record",
           "target": "8/8 MODEL-RISK.md audit questions answered by named independent reviewer with date and role on record",
-          "baseline": "Not on record Ã¢â‚¬â€ prerequisite: Priority 2 trace-field stories must be DoD-complete first",
+          "baseline": "Not on record ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â prerequisite: Priority 2 trace-field stories must be DoD-complete first",
           "signal": "at-risk",
           "lastMeasured": "2026-04-16",
-          "evidence": "Named independent reviewer on record: craigfo (PR #98, 2026-04-15). Full pipeline run completed autonomously. Formal MODEL-RISK.md 8/8 audit answers not yet documented Ã¢â‚¬â€ dependency for full on-track exists. Signal: partial Ã¢â‚¬â€ independent operator identified and pipeline-capable, formal audit artefact pending.",
+          "evidence": "Named independent reviewer on record: craigfo (PR #98, 2026-04-15). Full pipeline run completed autonomously. Formal MODEL-RISK.md 8/8 audit answers not yet documented ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â dependency for full on-track exists. Signal: partial ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â independent operator identified and pipeline-capable, formal audit artefact pending.",
           "contributingStories": [
             "p3.2a",
             "p3.2b",
@@ -2688,8 +2688,8 @@
         },
         {
           "id": "EC1",
-          "name": "Phase 3 exit criterion: artefact coverage score Ã¢â€°Â¥80%",
-          "target": "Post-pipeline CHANGELOG coverage score Ã¢â€°Â¥80% by Phase 3 close",
+          "name": "Phase 3 exit criterion: artefact coverage score ÃƒÂ¢Ã¢â‚¬Â°Ã‚Â¥80%",
+          "target": "Post-pipeline CHANGELOG coverage score ÃƒÂ¢Ã¢â‚¬Â°Ã‚Â¥80% by Phase 3 close",
           "baseline": "45% coverage at 2026-04-16 audit (9/20 post-pipeline item groups covered by a formal story)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
@@ -2704,7 +2704,7 @@
           "id": "CR2",
           "name": "Gate structural independence: agent cannot weaken its own gate",
           "target": "Gate scripts in separate repo, CI validates SHA-256 checksum before execution",
-          "baseline": "Gate scripts in delivery repo Ã¢â‚¬â€ agent has write access (structural gap confirmed Phase 2)",
+          "baseline": "Gate scripts in delivery repo ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â agent has write access (structural gap confirmed Phase 2)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -2808,7 +2808,7 @@
         {
           "id": "MC-SEC-03",
           "category": "mandatory-constraint",
-          "label": "Viz reads local JSON only Ã¢â‚¬â€ no external fetch calls",
+          "label": "Viz reads local JSON only ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no external fetch calls",
           "status": "na",
           "evidence": "No viz changes in any E1 story deliverables reviewed",
           "assessedBy": "/review",
@@ -2819,7 +2819,7 @@
           "category": "mandatory-constraint",
           "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)",
           "status": "met",
-          "evidence": "p3.1b Architecture Constraints cite ADR-002 Ã¢â‚¬â€ new gate checks must evaluate at least one evidence field per file, not merely assert file existence.",
+          "evidence": "p3.1b Architecture Constraints cite ADR-002 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â new gate checks must evaluate at least one evidence field per file, not merely assert file existence.",
           "assessedBy": "/review",
           "assessedAt": "2026-04-14"
         },
@@ -2828,7 +2828,7 @@
           "category": "mandatory-constraint",
           "label": "Fields written to pipeline-state.json must exist in schema",
           "status": "met",
-          "evidence": "p3.1b Architecture Constraints cite ADR-003 Ã¢â‚¬â€ any new gate output fields (e.g. checksRun, failedChecks) must be added to pipeline-state.schema.json in the same commit.",
+          "evidence": "p3.1b Architecture Constraints cite ADR-003 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â any new gate output fields (e.g. checksRun, failedChecks) must be added to pipeline-state.schema.json in the same commit.",
           "assessedBy": "/review",
           "assessedAt": "2026-04-14"
         },
@@ -2900,7 +2900,7 @@
           "category": "adr",
           "label": "Gates must use evidence fields, not stage-proxy",
           "status": "met",
-          "evidence": "p3.1b Architecture Constraints cite ADR-002 Ã¢â‚¬â€ assurance gate extension must evaluate at least one evidence field per file. Assessed in p3.1b-assurance-gate-substantive-checks-review-1.",
+          "evidence": "p3.1b Architecture Constraints cite ADR-002 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â assurance gate extension must evaluate at least one evidence field per file. Assessed in p3.1b-assurance-gate-substantive-checks-review-1.",
           "assessedBy": "/review",
           "assessedAt": "2026-04-14"
         },
@@ -2909,16 +2909,16 @@
           "category": "adr",
           "label": "Schema-first: fields defined before use",
           "status": "met",
-          "evidence": "p3.1b Architecture Constraints cite ADR-003 Ã¢â‚¬â€ new gate output fields added to pipeline-state.schema.json in same commit. Assessed in p3.1b-assurance-gate-substantive-checks-review-1.",
+          "evidence": "p3.1b Architecture Constraints cite ADR-003 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â new gate output fields added to pipeline-state.schema.json in same commit. Assessed in p3.1b-assurance-gate-substantive-checks-review-1.",
           "assessedBy": "/review",
           "assessedAt": "2026-04-14"
         },
         {
           "id": "ADR-008",
           "category": "adr",
-          "label": "DoR touch-point contract binding at pre-merge Ã¢â‚¬â€ no silent scope bundling",
+          "label": "DoR touch-point contract binding at pre-merge ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no silent scope bundling",
           "status": "met",
-          "evidence": "p3.1c Architecture Constraints cite ADR-008 Ã¢â‚¬â€ anti-overfitting gate change applies only to proposals evaluated after merge; retroactive re-evaluation explicitly excluded. Assessed in p3.1c-test-suite-integrity-review-1.",
+          "evidence": "p3.1c Architecture Constraints cite ADR-008 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â anti-overfitting gate change applies only to proposals evaluated after merge; retroactive re-evaluation explicitly excluded. Assessed in p3.1c-test-suite-integrity-review-1.",
           "assessedBy": "/review",
           "assessedAt": "2026-04-14"
         },
@@ -2953,7 +2953,7 @@
           "testPlanArtefact": "artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.3-gate-structural-independence-test-plan.md",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.3-gate-structural-independence-dor.md",
-          "signedOffBy": "Hamish Ã¢â‚¬â€ platform maintainer / operator",
+          "signedOffBy": "Hamish ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â platform maintainer / operator",
           "signedOffAt": "2026-04-18",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/163",
           "dispatchedAt": "2026-04-19T08:00:00Z",
@@ -2980,7 +2980,7 @@
           "testPlanArtefact": "artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.4-eval-anti-gaming-controls-test-plan.md",
           "dorStatus": "blocked",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.4-eval-anti-gaming-controls-dor.md",
-          "blocker": "p3.3 DoD-complete required Ã¢â‚¬â€ platform/suite.json host location established by p3.3",
+          "blocker": "p3.3 DoD-complete required ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â platform/suite.json host location established by p3.3",
           "health": "red",
           "updatedAt": "2026-04-18",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.4-eval-anti-gaming-controls-review-1.md",
@@ -3114,7 +3114,7 @@
           "testPlanArtefact": "artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.12-squad-contribution-flow-test-plan.md",
           "dorStatus": "blocked",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.12-squad-contribution-flow-dor.md",
-          "blocker": "p3.4 DoD-complete required Ã¢â‚¬â€ contribution guide references p3.4 anti-gaming requirements",
+          "blocker": "p3.4 DoD-complete required ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â contribution guide references p3.4 anti-gaming requirements",
           "health": "red",
           "updatedAt": "2026-04-18",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.12-squad-contribution-flow-review-1.md",
@@ -3134,7 +3134,7 @@
           "testPlanArtefact": "artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.13-compliance-monitoring-report-test-plan.md",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.13-compliance-monitoring-report-dor.md",
-          "signedOffBy": "Hamish Ã¢â‚¬â€ platform maintainer / operator",
+          "signedOffBy": "Hamish ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â platform maintainer / operator",
           "signedOffAt": "2026-04-18",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/164",
           "dispatchedAt": "2026-04-19T08:00:00Z",
@@ -3158,7 +3158,7 @@
     },
     {
       "slug": "2026-04-18-dashboard-v2",
-      "name": "Dashboard v2 Ã¢â‚¬â€ pipeline-state.json-driven portfolio visualiser",
+      "name": "Dashboard v2 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â pipeline-state.json-driven portfolio visualiser",
       "track": "short",
       "stage": "definition-of-done",
       "health": "amber",
@@ -3172,9 +3172,9 @@
       "metrics": [
         {
           "id": "M1",
-          "name": "Dashboard data fidelity Ã¢â‚¬â€ percentage of feature stages rendered correctly",
+          "name": "Dashboard data fidelity ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â percentage of feature stages rendered correctly",
           "target": "100% stage accuracy across all features present in pipeline-state.json",
-          "baseline": "0% Ã¢â‚¬â€ current index.html uses hardcoded mock data",
+          "baseline": "0% ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â current index.html uses hardcoded mock data",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -3184,9 +3184,9 @@
         },
         {
           "id": "MM1",
-          "name": "CI governance coverage Ã¢â‚¬â€ dashboards/*.js files included in npm test syntax check",
-          "target": "Boolean: true Ã¢â‚¬â€ check-dashboard-viz.js exists and passes in CI",
-          "baseline": "false Ã¢â‚¬â€ no CI coverage for dashboards/*.js",
+          "name": "CI governance coverage ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â dashboards/*.js files included in npm test syntax check",
+          "target": "Boolean: true ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â check-dashboard-viz.js exists and passes in CI",
+          "baseline": "false ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no CI coverage for dashboards/*.js",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -3196,9 +3196,9 @@
         },
         {
           "id": "MM2",
-          "name": "GitHub Pages deployment health Ã¢â‚¬â€ pages.yml workflow exists and deploys dashboards/ on push",
-          "target": "Boolean: true Ã¢â‚¬â€ pages.yml exists, passes CI check, and deploys to GitHub Pages",
-          "baseline": "false Ã¢â‚¬â€ pages.yml does not exist",
+          "name": "GitHub Pages deployment health ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â pages.yml workflow exists and deploys dashboards/ on push",
+          "target": "Boolean: true ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â pages.yml exists, passes CI check, and deploys to GitHub Pages",
+          "baseline": "false ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â pages.yml does not exist",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -3302,7 +3302,7 @@
     },
     {
       "slug": "2026-04-18-pipeline-state-archive",
-      "name": "Pipeline-state archive Ã¢â‚¬â€ reduce agent context load",
+      "name": "Pipeline-state archive ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â reduce agent context load",
       "track": "short",
       "stage": "definition-of-done",
       "health": "green",
@@ -3316,9 +3316,9 @@
       "metrics": [
         {
           "id": "M1",
-          "name": "Agent dispatch success rate Ã¢â‚¬â€ dispatched stories that produce non-empty PRs",
+          "name": "Agent dispatch success rate ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â dispatched stories that produce non-empty PRs",
           "target": ">0% GitHub agent dispatch success (currently 0% due to context budget exhaustion)",
-          "baseline": "0% Ã¢â‚¬â€ all GitHub agent dispatches (D7, D8) produced empty PRs",
+          "baseline": "0% ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â all GitHub agent dispatches (D7, D8) produced empty PRs",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -3341,7 +3341,7 @@
           "category": "adr",
           "label": "Single-file viz: merge logic inline in pipeline-viz.html",
           "status": "met",
-          "evidence": "No violations found Ã¢â‚¬â€ contract specifies inline merge, no build step",
+          "evidence": "No violations found ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â contract specifies inline merge, no build step",
           "assessedBy": "/review",
           "assessedAt": "2026-04-18T12:00:00Z"
         }
@@ -3382,7 +3382,7 @@
     },
     {
       "slug": "2026-04-18-auditor-trace-report",
-      "name": "Auditor Trace Report Ã¢â‚¬â€ CLI audit chain report generator",
+      "name": "Auditor Trace Report ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â CLI audit chain report generator",
       "stage": "definition-of-done",
       "health": "green",
       "track": "short",
@@ -3461,7 +3461,7 @@
     },
     {
       "slug": "2026-04-21-skill-routing-cli-tools",
-      "name": "Skill routing — integrate CLI observability tools into /workflow and /improve",
+      "name": "Skill routing â€” integrate CLI observability tools into /workflow and /improve",
       "track": "short",
       "stage": "definition-of-done",
       "health": "green",
@@ -3475,9 +3475,9 @@
       "metrics": [
         {
           "id": "M1",
-          "name": "CLI observability tool discovery rate — proportion of pipeline sessions where operator uses status report or benefit comparison tool",
+          "name": "CLI observability tool discovery rate â€” proportion of pipeline sessions where operator uses status report or benefit comparison tool",
           "target": "Both tools referenced by skills; operator directed to them through normal pipeline flow",
-          "baseline": "0% — neither tool is referenced by any skill today",
+          "baseline": "0% â€” neither tool is referenced by any skill today",
           "signal": "tooling-deployed",
           "lastMeasured": "2026-04-23",
           "evidence": "workflow SKILL.md and improve SKILL.md both merged (PR #182). Both CLI tools now routed via skill instructions. Operator measurement pending first real session.",
@@ -3490,7 +3490,7 @@
         {
           "id": "platform-change-policy",
           "category": "mandatory-constraint",
-          "label": "SKILL.md changes must go via PR — not committed directly to master",
+          "label": "SKILL.md changes must go via PR â€” not committed directly to master",
           "status": "met",
           "assessedBy": "DoR",
           "assessedAt": "2026-04-21"
@@ -3709,7 +3709,7 @@
         {
           "id": "MC-SEC-03",
           "category": "mandatory-constraint",
-          "label": "Viz reads local JSON only — no external fetch calls",
+          "label": "Viz reads local JSON only â€” no external fetch calls",
           "status": "na",
           "evidence": "Feature has no viz changes",
           "assessedBy": "/review",
@@ -3850,7 +3850,7 @@
     },
     {
       "slug": "2026-04-27-prioritise-skill",
-      "name": "/prioritise — Multi-Framework Prioritisation Skill (P6a)",
+      "name": "/prioritise â€” Multi-Framework Prioritisation Skill (P6a)",
       "stage": "released",
       "health": "green",
       "discoveryStatus": "approved",
@@ -3927,7 +3927,7 @@
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/195",
               "baselineFailures": 2,
-              "baselineFailureNote": "Pre-existing p3.3 failures (workflow pinned ref / HTTPS) — acknowledged, unrelated to pr.1",
+              "baselineFailureNote": "Pre-existing p3.3 failures (workflow pinned ref / HTTPS) â€” acknowledged, unrelated to pr.1",
               "planArtefact": "artefacts/2026-04-27-prioritise-skill/plans/pr.1-plan.md",
               "tasks": [
                 {
@@ -4027,7 +4027,7 @@
                 },
                 {
                   "id": "pr.3-t2",
-                  "name": "Extend SKILL.md — tie detection and divergence handling",
+                  "name": "Extend SKILL.md â€” tie detection and divergence handling",
                   "tddState": "green"
                 }
               ],
@@ -4195,7 +4195,7 @@
         {
           "id": "rrc.1",
           "slug": "rrc.1",
-          "title": "Add Output 9 — /discovery pre-population seed to /reverse-engineer",
+          "title": "Add Output 9 â€” /discovery pre-population seed to /reverse-engineer",
           "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
@@ -4222,7 +4222,7 @@
         {
           "id": "rrc.2",
           "slug": "rrc.2",
-          "title": "Add Output 10 — Constraint index to /reverse-engineer",
+          "title": "Add Output 10 â€” Constraint index to /reverse-engineer",
           "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
@@ -4344,7 +4344,7 @@
         {
           "slug": "i3-governance-epic",
           "name": "Non-engineering attribution fields and DoR governance enforcement",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "id": "i3.1",
@@ -4366,9 +4366,12 @@
               "prUrl": "https://github.com/heymishy/skills-repo/pull/232",
               "prStatus": "merged",
               "mergedAt": "2026-04-30T18:34:21Z",
+              "dodStatus": "complete",
+              "dodArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/dod/i3.1-attribution-fields-in-discovery-dod.md",
+              "releaseReady": true,
               "dispatchedAt": "2026-04-30T17:30:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-30T18:34:21Z"
+              "updatedAt": "2026-05-01T00:00:00Z"
             },
             {
               "id": "i3.2",
@@ -4390,9 +4393,12 @@
               "prUrl": "https://github.com/heymishy/skills-repo/pull/233",
               "prStatus": "merged",
               "mergedAt": "2026-04-30T18:37:24Z",
+              "dodStatus": "complete",
+              "dodArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/dod/i3.2-attribution-fields-in-benefit-metric-dod.md",
+              "releaseReady": true,
               "dispatchedAt": "2026-04-30T17:30:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-30T18:37:24Z"
+              "updatedAt": "2026-05-01T00:00:00Z"
             },
             {
               "id": "i3.3",
@@ -4414,41 +4420,143 @@
               "prUrl": "https://github.com/heymishy/skills-repo/pull/234",
               "prStatus": "merged",
               "mergedAt": "2026-04-30T18:39:18Z",
+              "dodStatus": "complete",
+              "dodArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/dod/i3.3-h-gov-dor-hard-block-dod.md",
+              "releaseReady": true,
               "dispatchedAt": "2026-04-30T17:30:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-30T18:39:18Z"
+              "updatedAt": "2026-05-01T00:00:00Z"
+            }
+          ]
+        },
+        {
+          "slug": "i1-orient-epic",
+          "name": "/orient concierge skill for pipeline orientation",
+          "status": "not-started",
+          "stories": [
+            {
+              "id": "i1.1",
+              "slug": "i1.1",
+              "name": "/orient concierge SKILL.md â€” read pipeline state and route operator to next skill",
+              "stage": "definition",
+              "dorStatus": "not-started",
+              "reviewStatus": "not-started",
+              "health": "green",
+              "testPlan": { "status": "not-started" },
+              "acTotal": 6,
+              "acVerified": 0,
+              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.1-orient-skill.md"
+            }
+          ]
+        },
+        {
+          "slug": "i1-lockfile-cli-epic",
+          "name": "One-command platform bootstrap with reproducible lockfile",
+          "status": "not-started",
+          "stories": [
+            {
+              "id": "i1.2",
+              "slug": "i1.2",
+              "name": "platform:init and platform:fetch CLI â€” one-command repo bootstrap",
+              "stage": "definition",
+              "dorStatus": "not-started",
+              "reviewStatus": "not-started",
+              "health": "green",
+              "testPlan": { "status": "not-started" },
+              "acTotal": 5,
+              "acVerified": 0,
+              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.2-platform-init-fetch.md"
+            },
+            {
+              "id": "i1.3",
+              "slug": "i1.3",
+              "name": "platform-lock.json schema + platform:pin + platform:verify â€” lockfile contract",
+              "stage": "definition",
+              "dorStatus": "not-started",
+              "reviewStatus": "not-started",
+              "health": "green",
+              "testPlan": { "status": "not-started" },
+              "acTotal": 5,
+              "acVerified": 0,
+              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.3-lockfile-pin-verify.md"
+            }
+          ]
+        },
+        {
+          "slug": "i2-brownfield-routing-epic",
+          "name": "Brownfield entry routing in /orient",
+          "status": "not-started",
+          "stories": [
+            {
+              "id": "i2.1",
+              "slug": "i2.1",
+              "name": "Entry A routing â€” detect stories without discovery, route to /tdd",
+              "stage": "definition",
+              "dorStatus": "not-started",
+              "reviewStatus": "not-started",
+              "health": "green",
+              "testPlan": { "status": "not-started" },
+              "acTotal": 3,
+              "acVerified": 0,
+              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.1-entry-a-story-first.md"
+            },
+            {
+              "id": "i2.2",
+              "slug": "i2.2",
+              "name": "Entry B routing â€” detect existing codebase, route to /reverse-engineer",
+              "stage": "definition",
+              "dorStatus": "not-started",
+              "reviewStatus": "not-started",
+              "health": "green",
+              "testPlan": { "status": "not-started" },
+              "acTotal": 3,
+              "acVerified": 0,
+              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.2-entry-b-code-first.md"
+            },
+            {
+              "id": "i2.3",
+              "slug": "i2.3",
+              "name": "Entry C routing â€” detect no-history repo, surface retrospective story path",
+              "stage": "definition",
+              "dorStatus": "not-started",
+              "reviewStatus": "not-started",
+              "health": "green",
+              "testPlan": { "status": "not-started" },
+              "acTotal": 3,
+              "acVerified": 0,
+              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.3-entry-c-no-history.md"
             }
           ]
         }
       ],
       "guardrails": [
-        { "id": "MC-SEC-01", "category": "mandatory-constraint", "label": "No user-supplied content in innerHTML without sanitisation", "status": "na", "evidence": "No HTML or UI code in I3 stories — SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "MC-SEC-01", "category": "mandatory-constraint", "label": "No user-supplied content in innerHTML without sanitisation", "status": "na", "evidence": "No HTML or UI code in I3 stories â€” SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
         { "id": "MC-SEC-02", "category": "mandatory-constraint", "label": "No credentials, tokens, or personal data in committed files", "status": "na", "evidence": "No credentials or personal data in SKILL.md instruction changes", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "MC-SEC-03", "category": "mandatory-constraint", "label": "Viz reads local JSON only — no external fetch calls", "status": "na", "evidence": "No viz or fetch code in I3 stories", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "MC-SEC-03", "category": "mandatory-constraint", "label": "Viz reads local JSON only â€” no external fetch calls", "status": "na", "evidence": "No viz or fetch code in I3 stories", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
         { "id": "MC-CORRECT-01", "category": "mandatory-constraint", "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)", "status": "na", "evidence": "No pipeline-state gate logic changes in I3 stories", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
         { "id": "MC-CORRECT-02", "category": "mandatory-constraint", "label": "Fields written to pipeline-state.json must exist in schema", "status": "na", "evidence": "No new pipeline-state.json fields written by I3 story implementations", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
         { "id": "MC-CORRECT-03", "category": "mandatory-constraint", "label": "Fields read by viz from pipeline-state.json must exist in schema", "status": "na", "evidence": "No new viz field reads in I3 stories", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
         { "id": "MC-SELF-01", "category": "mandatory-constraint", "label": "dashboards/pipeline-viz.html renders without build step, server, or network", "status": "na", "evidence": "No dashboard changes in I3 stories", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
         { "id": "MC-SELF-02", "category": "mandatory-constraint", "label": "No npm devDependencies in dashboards/pipeline-viz.html runtime", "status": "na", "evidence": "No dashboard changes in I3 stories", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "MC-CONSIST-01", "category": "mandatory-constraint", "label": "Stage enum in schema updated when skill adds/removes stage", "status": "met", "evidence": "No stage enum changes in i3.1/i3.2/i3.3 — SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "MC-CONSIST-02", "category": "mandatory-constraint", "label": "Gate add/remove synced with SKILL.md criteria", "status": "met", "evidence": "i3.3 AC6 explicitly requires H-GOV to appear with block ID, check description, pass condition, and fail message — sync is enforced by AC", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "MC-A11Y-01", "category": "mandatory-constraint", "label": "Interactive elements keyboard-accessible", "status": "na", "evidence": "No UI changes in I3 stories — SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "MC-A11Y-02", "category": "mandatory-constraint", "label": "Colour not sole indicator of gate status (icons/labels present)", "status": "na", "evidence": "No UI changes in I3 stories — SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "ADR-011", "category": "adr", "label": "Artefact-first: new SKILL.md files require story artefact before or alongside commit", "status": "met", "evidence": "All three I3 stories have story artefacts (i3.1, i3.2, i3.3); each explicitly states PR-required constraint — No violations found", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "NFR-I3-CONSISTENCY", "category": "nfr", "label": "Attribution section formatting follows existing Markdown conventions", "status": "not-assessed", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-30T17:00:00Z" },
-        { "id": "NFR-I3-READABILITY", "category": "nfr", "label": "Attribution field labels clear to non-technical operator without guidance", "status": "not-assessed", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-30T17:00:00Z" },
-        { "id": "NFR-I3-NON-INTERRUPTION", "category": "nfr", "label": "Clean attribution pass adds zero overhead in /benefit-metric", "status": "not-assessed", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-30T17:00:00Z" },
-        { "id": "NFR-I3-ACTIONABILITY-I3.2", "category": "nfr", "label": "Warning message names missing field and states remediation", "status": "not-assessed", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-30T17:00:00Z" },
-        { "id": "NFR-I3-ACTIONABILITY-I3.3", "category": "nfr", "label": "H-GOV fail message self-contained under 200 words", "status": "not-assessed", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-30T17:00:00Z" },
-        { "id": "NFR-I3-ZERO-FALSE-POSITIVES", "category": "nfr", "label": "Correctly attributed discovery never triggers H-GOV", "status": "not-assessed", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-30T17:00:00Z" }
+        { "id": "MC-CONSIST-01", "category": "mandatory-constraint", "label": "Stage enum in schema updated when skill adds/removes stage", "status": "met", "evidence": "No stage enum changes in i3.1/i3.2/i3.3 â€” SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "MC-CONSIST-02", "category": "mandatory-constraint", "label": "Gate add/remove synced with SKILL.md criteria", "status": "met", "evidence": "i3.3 AC6 explicitly requires H-GOV to appear with block ID, check description, pass condition, and fail message â€” sync is enforced by AC", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "MC-A11Y-01", "category": "mandatory-constraint", "label": "Interactive elements keyboard-accessible", "status": "na", "evidence": "No UI changes in I3 stories â€” SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "MC-A11Y-02", "category": "mandatory-constraint", "label": "Colour not sole indicator of gate status (icons/labels present)", "status": "na", "evidence": "No UI changes in I3 stories â€” SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "ADR-011", "category": "adr", "label": "Artefact-first: new SKILL.md files require story artefact before or alongside commit", "status": "met", "evidence": "All three I3 stories have story artefacts (i3.1, i3.2, i3.3); each explicitly states PR-required constraint â€” No violations found", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "NFR-I3-CONSISTENCY", "category": "nfr", "label": "Attribution section formatting follows existing Markdown conventions", "status": "met", "evidence": "i3.1 N1 test passes â€” ## heading level confirmed consistent with other SKILL.md top-level sections", "assessedBy": "/definition-of-done", "assessedAt": "2026-05-01T00:00:00Z" },
+        { "id": "NFR-I3-READABILITY", "category": "nfr", "label": "Attribution field labels clear to non-technical operator without guidance", "status": "met", "evidence": "i3.1 N2 test passes â€” all field labels include Name â€” Role â€” Date format hints; field names are plain English", "assessedBy": "/definition-of-done", "assessedAt": "2026-05-01T00:00:00Z" },
+        { "id": "NFR-I3-NON-INTERRUPTION", "category": "nfr", "label": "Clean attribution pass adds zero overhead in /benefit-metric", "status": "met", "evidence": "i3.2 U6 test passes â€” clean-pass path explicitly specified in SKILL.md; no interruption on substantively populated Approved By", "assessedBy": "/definition-of-done", "assessedAt": "2026-05-01T00:00:00Z" },
+        { "id": "NFR-I3-ACTIONABILITY-I3.2", "category": "nfr", "label": "Warning message names missing field and states remediation", "status": "met", "evidence": "i3.2 U3/U4/U5 tests pass â€” warning names Approved By field; provides two concrete actionable options; N1 confirms naming consistent with i3.1", "assessedBy": "/definition-of-done", "assessedAt": "2026-05-01T00:00:00Z" },
+        { "id": "NFR-I3-ACTIONABILITY-I3.3", "category": "nfr", "label": "H-GOV fail message self-contained under 200 words", "status": "met", "evidence": "i3.3 N2 test passes â€” word count ~158 in fail region (under 200-word limit); message is self-contained with field name, format, remediation, and artefact path", "assessedBy": "/definition-of-done", "assessedAt": "2026-05-01T00:00:00Z" },
+        { "id": "NFR-I3-ZERO-FALSE-POSITIVES", "category": "nfr", "label": "Correctly attributed discovery never triggers H-GOV", "status": "met", "evidence": "i3.3 U3 test passes â€” pass condition unambiguously specified: any substantive non-placeholder Approved By satisfies H-GOV", "assessedBy": "/definition-of-done", "assessedAt": "2026-05-01T00:00:00Z" }
       ],
-      "updatedAt": "2026-04-30T17:00:00Z",
+      "updatedAt": "2026-05-01T00:00:00Z",
       "metrics": [
         {
           "id": "M1",
           "name": "Non-engineering outer loop attribution rate",
           "target": ">=50% of new discovery artefacts within 90 days carry at least one non-engineering contributor",
-          "baseline": "0% — all 11 prior features had engineer-only contributors",
+          "baseline": "0% â€” all 11 prior features had engineer-only contributors",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -4459,7 +4567,7 @@
           "id": "MM1",
           "name": "H-GOV enforcement correctness",
           "target": "100% of DoR runs on attribution-gap stories fail H-GOV with 3-part message; zero false positives",
-          "baseline": "Block does not exist — all DoR runs pass attribution check unconditionally",
+          "baseline": "Block does not exist â€” all DoR runs pass attribution check unconditionally",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -4470,7 +4578,7 @@
           "id": "MM2",
           "name": "Attribution field completeness rate",
           "target": "100% of new discovery artefacts have all three attribution fields substantively populated",
-          "baseline": "0% — fields do not exist in current template",
+          "baseline": "0% â€” fields do not exist in current template",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -4481,7 +4589,7 @@
           "id": "MM3",
           "name": "Platform dogfood attribution demonstration",
           "target": "I1 and I2 discovery artefacts have complete attribution with at least one non-engineering contributor each",
-          "baseline": "Not applicable — artefacts do not exist yet",
+          "baseline": "Not applicable â€” artefacts do not exist yet",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -4492,11 +4600,11 @@
           "id": "I1-M1",
           "name": "Time-to-first-skill-run for new consumers",
           "target": "Under 2 minutes from platform:init to first skill invocation",
-          "baseline": "Not established — observed range 15–45 minutes based on existing adoption attempts requiring platform-team support",
+          "baseline": "Not established â€” observed range 15â€“45 minutes based on existing adoption attempts requiring platform-team support",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": [],
+          "contributingStories": ["i1.1"],
           "initiative": "i1"
         },
         {
@@ -4507,18 +4615,18 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": [],
+          "contributingStories": ["i1.1", "i1.2"],
           "initiative": "i1"
         },
         {
           "id": "I1-MM1",
           "name": "platform:verify SHA mismatch produces specific actionable error",
           "target": "100% of verify runs on drifted repos produce 3-part error (file name, expected SHA vs actual SHA, fix command); zero false positives",
-          "baseline": "Lockfile contract does not exist — skill drift is currently undetectable",
+          "baseline": "Lockfile contract does not exist â€” skill drift is currently undetectable",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": [],
+          "contributingStories": ["i1.3"],
           "initiative": "i1"
         },
         {
@@ -4529,7 +4637,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": [],
+          "contributingStories": ["i1.2", "i1.3"],
           "initiative": "i1"
         },
         {
@@ -4540,7 +4648,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": [],
+          "contributingStories": ["i1.1"],
           "initiative": "i1"
         },
         {
@@ -4551,7 +4659,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": [],
+          "contributingStories": ["i2.1", "i2.2", "i2.3"],
           "initiative": "i2"
         },
         {
@@ -4562,7 +4670,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": [],
+          "contributingStories": ["i2.1", "i2.2", "i2.3"],
           "initiative": "i2"
         },
         {
@@ -4573,18 +4681,18 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": [],
+          "contributingStories": ["i2.1", "i2.2", "i2.3"],
           "initiative": "i2"
         },
         {
           "id": "I2-MM2",
-          "name": "Assumption 2 validation — three patterns cover real brownfield distribution",
+          "name": "Assumption 2 validation â€” three patterns cover real brownfield distribution",
           "target": "100% of brownfield adoption attempts in 90 days covered by Entry A/B/C; no team requires a fourth pattern",
           "baseline": "Three patterns hypothesised from surveyed teams; no real brownfield adoption data exists",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": [],
+          "contributingStories": ["i2.1", "i2.2", "i2.3"],
           "initiative": "i2"
         }
       ]
