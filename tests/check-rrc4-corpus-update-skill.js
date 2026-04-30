@@ -261,7 +261,7 @@ console.log('\n[rrc.4] /reference-corpus-update SKILL.md\n');
 
 // ── Summary ───────────────────────────────────────────────────────────────────
 console.log('');
-console.log('check-rrc4-corpus-update-skill: ' + passed + ' passed, ' + failed + ' failed');
+console.log('[rrc4] Results: ' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) {
   console.error('FAILED:');
   failures.forEach(f => console.error('  - ' + f));

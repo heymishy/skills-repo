@@ -260,7 +260,7 @@ console.log('\n[rrc.2] /reverse-engineer Output 10 — constraint-index.md\n');
 
 // ── Summary ───────────────────────────────────────────────────────────────────
 console.log('');
-console.log('check-rrc2-constraint-index: ' + passed + ' passed, ' + failed + ' failed');
+console.log('[rrc2] Results: ' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) {
   console.error('FAILED:');
   failures.forEach(f => console.error('  - ' + f));

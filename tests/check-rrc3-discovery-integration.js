@@ -210,7 +210,7 @@ console.log('\n[rrc.3] /discovery reference corpus integration\n');
 
 // ── Summary ───────────────────────────────────────────────────────────────────
 console.log('');
-console.log('check-rrc3-discovery-integration: ' + passed + ' passed, ' + failed + ' failed');
+console.log('[rrc3] Results: ' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) {
   console.error('FAILED:');
   failures.forEach(f => console.error('  - ' + f));
