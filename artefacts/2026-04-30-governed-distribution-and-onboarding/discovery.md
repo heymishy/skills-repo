@@ -22,7 +22,7 @@ The skills platform cannot currently be adopted by cross-functional teams withou
 
 **Blocker 1 — No version pinning (Gap G0a / G14).** There is no lockfile, no `init`/`fetch`/`pin`/`verify` CLI contract, and no named release concept. A consuming squad running `/bootstrap` today pulls from HEAD with no reproducibility guarantee. If the platform team merges a breaking SKILL.md change, all consuming squads silently degrade at their next sync. This blocks regulated or enterprise adoption where reproducibility of the delivery process is a compliance requirement.
 
-**Blocker 2 — No non-git, non-technical entry path (Gap G0b).** The only supported onboarding path today requires VS Code, git, and familiarity with the pipeline phase sequence. A business analyst, delivery lead, or product manager who wants to run the outer loop cannot start without engineering assistance. The platform instructs but does not orient: there is no `/where-am-i` concierge that tells a first-time user what to do next given where they are. This does not mean "build a web UI" — it means the CLI and skill layer lack the orientation contract.
+**Blocker 2 — No non-git, non-technical entry path (Gap G0b).** The only supported onboarding path today requires VS Code, git, and familiarity with the pipeline phase sequence. A business analyst, delivery lead, or product manager who wants to run the outer loop cannot start without engineering assistance. The platform instructs but does not orient: there is no `/orient` concierge skill that tells a first-time user what to do next given where they are. This does not mean "build a web UI" — it means the CLI and skill layer lack the orientation contract.
 
 **Blocker 3 — No brownfield entry path (Gap G17).** Teams with existing codebases, existing stories, or live systems have no structured entry point. The pipeline assumes greenfield: run `/bootstrap`, start at `/discovery`. A team arriving with a repo full of code, partial documentation, or working software has no supported path to adopt the platform without abandoning their existing investment. This is the majority of real-world teams.
 
@@ -34,7 +34,7 @@ The skills platform cannot currently be adopted by cross-functional teams withou
 
 **Platform consumers — engineer adopters on brownfield codebases.** Engineers arriving with existing code and no artefacts. They want to adopt the platform's delivery model but have no supported path in. They hit the absence of brownfield entry (Gap G17) immediately.
 
-**Platform consumers — non-technical outer loop participants.** Business analysts, product managers, delivery analysts, SMEs who want to run or contribute to the outer loop but cannot do so without engineering assistance. They hit Gap G0b: no orientation skill, no non-git distribution model, no `/where-am-i` concierge.
+**Platform consumers — non-technical outer loop participants.** Business analysts, product managers, delivery analysts, SMEs who want to run or contribute to the outer loop but cannot do so without engineering assistance. They hit Gap G0b: no orientation skill, no non-git distribution model, no `/orient` concierge.
 
 **Platform consumers — tech leads on regulated or enterprise teams.** Tech leads who need reproducibility guarantees before adopting. They hit Gap G0a/G14: no lockfile, no version pinning, no release channel. They cannot commit to the platform if the version they test against and the version they run in production may silently diverge.
 
@@ -68,15 +68,15 @@ This discovery covers three initiatives in one artefact. Downstream artefacts ar
 - Observable MVP test: an engineer-only discovery artefact — one with no non-technical contributor listed — fails `H-GOV` at DoR with a message that names the gap.
 
 **Initiative 1 MVP (onboarding — after Initiative 3):**
-- `/where-am-i` concierge skill: reads current artefact state (or absence of artefacts) and tells the operator exactly which pipeline skill to run next and why.
+- `/orient` concierge skill: reads current artefact state (or absence of artefacts) and tells the operator exactly which pipeline skill to run next and why.
 - One-command install path: `npm run platform:init` (or equivalent) bootstraps the platform in a new repo without requiring the operator to navigate the pipeline manually.
 - Lockfile contract: `platform-lock.json` (or equivalent) records the pinned skill SHA, version, and fetch timestamp. `platform:verify` checks pinned SHA against installed files.
 - CLI stubs `init`, `fetch`, `pin`, `verify` are implemented (currently unimplemented stubs).
-- Observable MVP test: a consuming team runs `/bootstrap` then `/where-am-i` and knows exactly what to do next without contacting the platform team.
+- Observable MVP test: a consuming team runs `/bootstrap` then `/orient` and knows exactly what to do next without contacting the platform team.
 
 **Initiative 2 MVP (brownfield entry — after Initiative 1):**
-- Entry A (story-first): `/where-am-i` concierge detects existing stories with no discovery artefact and routes to `/tdd` as brownfield entry.
-- Entry B (code-first): `/where-am-i` detects existing codebase with no stories and routes to `/reverse-engineer → /discovery` as brownfield entry.
+- Entry A (story-first): `/orient` concierge detects existing stories with no discovery artefact and routes to `/tdd` as brownfield entry.
+- Entry B (code-first): `/orient` detects existing codebase with no stories and routes to `/reverse-engineer → /discovery` as brownfield entry.
 - Entry C (no-history): concierge surfaces the retrospective story path for teams with delivered code and no prior artefacts.
 - Observable MVP test: at least one non-engineering persona can be named as `contributors` in a real discovery artefact produced by a cross-functional pair running the platform together via the brownfield entry path.
 
@@ -106,7 +106,7 @@ This discovery covers three initiatives in one artefact. Downstream artefacts ar
 
 **Assumption 3 — The lockfile schema can be made forward-compatible with WS4 without a full WS4 design.** We are assuming the minimum lockfile fields (skill SHA, version, fetch timestamp, source URL) are stable enough to not require replacement when WS4 arrives. Risk: WS4 requires fields or constraints that conflict with the Initiative 1 schema. Mitigation: read `artefacts/phase5-6-roadmap.md` WS4 description before finalising lockfile schema; note incompatibilities as explicit constraints in Initiative 1 stories.
 
-**Assumption 4 — `/where-am-i` can be implemented as a skill without a new pipeline stage.** We are assuming the concierge skill can read artefact state (presence/absence of discovery.md, benefit-metric.md, pipeline-state.json entries) and route correctly without requiring a new `pre-discovery` pipeline stage. Risk: the routing logic is too complex for a skill and requires infrastructure. Mitigation: scope the skill as a read-only navigator that outputs a recommended next step; do not attempt to execute the step automatically.
+**Assumption 4 — `/orient` can be implemented as a skill without a new pipeline stage.** We are assuming the concierge skill can read artefact state (presence/absence of discovery.md, benefit-metric.md, pipeline-state.json entries) and route correctly without requiring a new `pre-discovery` pipeline stage. Risk: the routing logic is too complex for a skill and requires infrastructure. Mitigation: scope `/orient` as a read-only navigator that outputs a recommended next step; do not attempt to execute the step automatically.
 
 **Assumption 5 — H-GOV can be implemented as a hard block without schema changes.** The DoR hard block `H-GOV` checks for a non-empty `Approved By` field. We are assuming this check can be implemented as a text-presence test in the SKILL.md instruction set without requiring a machine-readable attribution schema. Risk: free-text attribution fields are too ambiguous to validate reliably. Mitigation: define a required format for the `Approved By` field in the template (Name — Role — Date) and validate all three sub-fields are present.
 
@@ -114,7 +114,7 @@ This discovery covers three initiatives in one artefact. Downstream artefacts ar
 
 ## Directional Success Indicators
 
-- A first-time consumer (no prior platform experience) runs `/bootstrap` and `/where-am-i` and reaches their first skill invocation without contacting the platform team. Time-to-first-skill-run target: under 2 minutes.
+- A first-time consumer (no prior platform experience) runs `/bootstrap` and `/orient` and reaches their first skill invocation without contacting the platform team. Time-to-first-skill-run target: under 2 minutes.
 - An engineer-only discovery artefact fails DoR with a specific `H-GOV` message naming the attribution gap. Zero ambiguity about what is missing or how to resolve it.
 - At least one non-engineering persona (BA, delivery lead, product manager) is named as a contributor in a real discovery artefact produced in production use — not in a test run.
 - The platform can be pinned to a named version. A `platform:verify` check confirms the installed skills match the locked SHA. A version mismatch produces a specific, actionable error.
@@ -125,9 +125,9 @@ This discovery covers three initiatives in one artefact. Downstream artefacts ar
 
 ## Constraints
 
-**Sequencing constraint (hard).** Initiative 3 (governance model prerequisite) must be fully delivered — its stories merged — before any Initiative 1 surface work (the `/where-am-i` skill, `platform:init` command) begins implementation. The reason: any surface work that recruits teams into the governance model before `H-GOV` exists will create adoption debt. The ordering is enforced at DoR: Initiative 1 stories must list Initiative 3 as a prerequisite dependency.
+**Sequencing constraint (hard).** Initiative 3 (governance model prerequisite) must be fully delivered — its stories merged — before any Initiative 1 surface work (the `/orient` skill, `platform:init` command) begins implementation. The reason: any surface work that recruits teams into the governance model before `H-GOV` exists will create adoption debt. The ordering is enforced at DoR: Initiative 1 stories must list Initiative 3 as a prerequisite dependency.
 
-**Platform change policy (hard).** SKILL.md changes (Initiative 3: `/discovery`, `/benefit-metric`, `/definition-of-ready` modifications; Initiative 1: new `/where-am-i` SKILL.md) must be merged via PR with platform team review. No direct commits to master for governed skill files. This is ADR-level policy and cannot be bypassed.
+**Platform change policy (hard).** SKILL.md changes (Initiative 3: `/discovery`, `/benefit-metric`, `/definition-of-ready` modifications; Initiative 1: new `/orient` SKILL.md) must be merged via PR with platform team review. No direct commits to master for governed skill files. This is ADR-level policy and cannot be bypassed.
 
 **Zero new npm dependencies (derived from p3.3 and ADR-009 precedent).** The CLI commands (`init`, `fetch`, `pin`, `verify`) and the lockfile implementation must use Node.js built-ins only. No new package.json runtime dependencies. YAML handling in workflows uses `yq` (already established by caa.2).
 
@@ -160,7 +160,7 @@ The three initiatives within this discovery are delivered in a fixed sequence. E
 | Order | Initiative | Prerequisite | Governing constraint |
 |-------|-----------|-------------|---------------------|
 | 1 | **Initiative 3** — Governance model prerequisite | None | Must land before I1 and I2 surface work |
-| 2 | **Initiative 1** — Seamless onboarding + lockfile | Initiative 3 complete | `/where-am-i` skill + `platform:init/fetch/pin/verify` CLI |
+| 2 | **Initiative 1** — Seamless onboarding + lockfile | Initiative 3 complete | `/orient` skill + `platform:init/fetch/pin/verify` CLI |
 | 3 | **Initiative 2** — Brownfield entry | Initiative 1 complete | Entry A/B/C concierge routing |
 
 **Artefact directory layout (proposed):**
@@ -180,7 +180,7 @@ artefacts/2026-04-30-governed-distribution-and-onboarding/
     i3.1-attribution-fields-in-discovery.md
     i3.2-attribution-fields-in-benefit-metric.md
     i3.3-h-gov-dor-hard-block.md
-    i1.1-where-am-i-concierge-skill.md
+    i1.1-orient-concierge-skill.md
     i1.2-platform-init-cli.md
     i1.3-lockfile-schema-and-pin-verify.md
     i2.1-brownfield-entry-a-story-first.md

@@ -94,6 +94,9 @@ Step  Skill                  Entry condition                     Exit condition
 `/systematic-debugging` — 4-phase root cause process when a task is stuck
 `/implementation-review` — spec + quality review between task batches
 
+**Onboarding and orientation support:**
+`/orient` — guided orientation concierge for new or returning consumers; reads current artefact state and tells the operator which skill to run next and why. Use when unsure where you are in the pipeline or which skill applies. Distinct from `/workflow` (diagnostic for experienced operators) and `/start` (greenfield session bootstrap).
+
 **Inner loop dispatch (step 6.9):**
 `/issue-dispatch` — creates GitHub issues for DoR-signed-off stories to trigger the GitHub Copilot coding agent; supports `--target vscode` (minimal stub, default) and `--target github-agent` (rich inlined body); updates `pipeline-state.json` with dispatch record
 

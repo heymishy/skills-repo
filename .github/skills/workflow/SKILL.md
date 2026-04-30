@@ -271,6 +271,9 @@ If no signals present, route directly to `/benefit-metric`.
 
 Safe to run multiple times. Runs within Step 1 — does not advance the pipeline stage on its own.
 
+**Onboarding and orientation support (available at any point):**
+`/orient` — guided orientation concierge for new or returning consumers. Reads current artefact and pipeline state, tells the operator exactly which skill to run next and why. Use when unsure where you are in the pipeline or which skill to invoke. Distinct from `/workflow` (diagnostic for operators who know the pipeline) and `/start` (session bootstrap for greenfield repos). Route here when an operator says "I don't know where to start", "what skill do I run", "I'm new to this", or "orient me".
+
 **Support skills available throughout the inner loop:**
 `/tdd` — RED-GREEN-REFACTOR enforcement per task
 `/systematic-debugging` — 4-phase root cause process when a task is stuck
