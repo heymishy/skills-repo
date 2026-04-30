@@ -235,6 +235,20 @@ Ask:
 
 ---
 
+## Step 1 — Establish attribution
+
+Before finalising the artefact, ask the operator for contributor details:
+
+> **Who contributed to this discovery?**
+> Provide contributor names and roles for the Attribution section.
+> Include anyone who shaped the problem statement, scoping, or success criteria.
+>
+> Reply: Name — Role (repeat for each contributor)
+
+Record the contributor names and roles provided for use in the Attribution section of the artefact.
+
+---
+
 ## Output artefact
 
 Conforms to `.github/templates/discovery.md`.
@@ -254,6 +268,19 @@ All subsequent artefacts for this feature will live in:
 `artefacts/[YYYY-MM-DD-feature-slug]/`
 
 Save to `artefacts/[YYYY-MM-DD-feature-slug]/discovery.md`.
+
+The discovery artefact must include the following Attribution section:
+
+## Attribution
+
+**Contributors** (one or more names and roles):
+- Name — Role — Date
+
+**Reviewers** (optional, one or more names and roles):
+- Name — Role — Date
+
+**Approved By** (Name — Role — Date, or Pending):
+- Pending
 
 ---
 
@@ -298,6 +325,7 @@ If option 2:
 >
 > A non-engineering approver is expected for M3 (non-engineering outer loop attribution rate) measurement.
 > Leaving the Approved By field empty will result in a H-GOV hard block at Definition of Ready.
+> If Approved By is Pending or empty, remind the operator to return and populate it before the DoR gate.
 
 ---
 
