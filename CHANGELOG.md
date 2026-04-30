@@ -8,6 +8,8 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- **`i3.3` — H-GOV hard block extended in `/definition-of-ready` (2026-04-30):** AC5 trigger-to-check path added: benefit-metric "Attribution incomplete" note triggers a live read of the discovery `Approved By` field; passes if corrected, fails if still empty. `Name — Role — Date` format requirement added. M1 metric signal instructions added (role-unverified and clearly-non-engineering cases). All 20 tests in `tests/check-i3.3-dor-h-gov.js` pass. All 11 `check-p11-hgov.js` tests continue to pass.
+
 - **`i3.2` — attribution check added to `/benefit-metric` SKILL.md (2026-04-30):** Step 1 of `/benefit-metric` now reads the `Approved By` field from the discovery artefact's Attribution section before asking any metric questions. Three paths: (a) populated field — silent pass, proceed; (b) empty/Pending/placeholder field — warning with option to pause or proceed with acknowledgement; (c) absent Attribution section — treated as equivalent to empty (same warning). Option (b) path includes `Attribution incomplete` note text in the produced benefit-metric artefact. All 13 tests in `tests/check-i3.2-benefit-metric-attribution.js` pass.
 
 - **`i3.1` — Attribution fields added to `/discovery` SKILL.md (2026-04-30):** `## Step 1 — Establish attribution` section added prompting for contributor names and roles before artefact finalisation. `## Attribution` template section added to the output artefact block with Contributors, Reviewers, and Approved By sub-fields using `Name — Role — Date` (em-dash) format. Approval gate reminder updated to be conditional on Approved By being Pending or empty. All 12 tests in `tests/check-i3.1-discovery-attribution.js` pass.
