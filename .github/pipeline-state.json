@@ -4340,7 +4340,7 @@
         }
       ],
       "stories": [],
-      "updatedAt": "2026-04-30T12:45:00Z",
+      "updatedAt": "2026-04-30T13:30:00Z",
       "metrics": [
         {
           "id": "M1",
@@ -4385,6 +4385,105 @@
           "evidence": null,
           "contributingStories": [],
           "initiative": "i3"
+        },
+        {
+          "id": "I1-M1",
+          "name": "Time-to-first-skill-run for new consumers",
+          "target": "Under 2 minutes from platform:init to first skill invocation",
+          "baseline": "Not established — observed range 15–45 minutes based on existing adoption attempts requiring platform-team support",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [],
+          "initiative": "i1"
+        },
+        {
+          "id": "I1-M2",
+          "name": "Zero orientation contacts from teams that ran platform:init",
+          "target": "Zero orientation contacts from platform:init users in any 30-day window, 90 days after I1 merge",
+          "baseline": "All prior onboarding has required direct engineering support",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [],
+          "initiative": "i1"
+        },
+        {
+          "id": "I1-MM1",
+          "name": "platform:verify SHA mismatch produces specific actionable error",
+          "target": "100% of verify runs on drifted repos produce 3-part error (file name, expected SHA vs actual SHA, fix command); zero false positives",
+          "baseline": "Lockfile contract does not exist — skill drift is currently undetectable",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [],
+          "initiative": "i1"
+        },
+        {
+          "id": "I1-MM2",
+          "name": "CLI commands init/fetch/pin/verify implemented with zero new npm dependencies",
+          "target": "All four CLI commands complete primary success path; zero new runtime npm dependencies added",
+          "baseline": "Commands exist as unimplemented stubs; lockfile schema does not exist",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [],
+          "initiative": "i1"
+        },
+        {
+          "id": "I1-MM3",
+          "name": "/orient routing covers all supported pipeline entry states",
+          "target": "100% correct routing for all 6 pipeline entry states; zero ambiguous or empty routing recommendations",
+          "baseline": "No /orient skill exists",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [],
+          "initiative": "i1"
+        },
+        {
+          "id": "I2-M1",
+          "name": "Brownfield team reaches supported entry path in one /orient interaction",
+          "target": "At least one brownfield team completes a real delivery cycle via Entry A/B/C without platform-team support",
+          "baseline": "Zero brownfield adoptions completed; no supported entry path exists",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [],
+          "initiative": "i2"
+        },
+        {
+          "id": "I2-M2",
+          "name": "Non-engineering contributor named in real brownfield discovery artefact",
+          "target": "At least one brownfield discovery artefact with a non-engineering named contributor within 90 days of I2 merge",
+          "baseline": "0 brownfield artefacts exist; all prior artefacts are engineer-only",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [],
+          "initiative": "i2"
+        },
+        {
+          "id": "I2-MM1",
+          "name": "Entry A/B/C routing correctness across all three brownfield patterns",
+          "target": "100% correct routing for Entry A, B, and C; zero misroutes",
+          "baseline": "No brownfield detection exists in any skill",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [],
+          "initiative": "i2"
+        },
+        {
+          "id": "I2-MM2",
+          "name": "Assumption 2 validation — three patterns cover real brownfield distribution",
+          "target": "100% of brownfield adoption attempts in 90 days covered by Entry A/B/C; no team requires a fourth pattern",
+          "baseline": "Three patterns hypothesised from surveyed teams; no real brownfield adoption data exists",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [],
+          "initiative": "i2"
         }
       ]
     }
