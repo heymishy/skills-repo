@@ -380,7 +380,7 @@
     {
       "slug": "2026-04-24-platform-onboarding-distribution",
       "name": "Platform onboarding, distribution, and brownfield adoption",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -405,7 +405,7 @@
         "WS0.5",
         "WS0.6"
       ],
-      "updatedAt": "2026-04-29T00:00:00Z",
+      "updatedAt": "2026-04-30T00:00:00Z",
       "benefitMetricStatus": "active",
       "slicingStrategy": "risk-first",
       "metrics": [
@@ -4186,11 +4186,11 @@
     {
       "slug": "2026-04-30-reverse-engineer-reference-corpus",
       "name": "Reverse-engineer reference corpus outputs and companion skill",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "track": "library",
       "health": "green",
       "regulated": false,
-      "updatedAt": "2026-04-30T08:56:49.627Z",
+      "updatedAt": "2026-04-30T00:00:00Z",
       "stories": [
         {
           "id": "rrc.1",
