@@ -4350,7 +4350,7 @@
               "id": "i3.1",
               "slug": "i3.1",
               "name": "Attribution fields in /discovery SKILL.md output template",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/dor/i3.1-attribution-fields-in-discovery-dor.md",
               "reviewStatus": "passed",
@@ -4363,15 +4363,18 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/229",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/232",
+              "prStatus": "merged",
+              "mergedAt": "2026-04-30T18:34:21Z",
               "dispatchedAt": "2026-04-30T17:30:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-30T17:30:00Z"
+              "updatedAt": "2026-04-30T18:34:21Z"
             },
             {
               "id": "i3.2",
               "slug": "i3.2",
               "name": "Attribution acknowledgement in /benefit-metric SKILL.md",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/dor/i3.2-attribution-fields-in-benefit-metric-dor.md",
               "reviewStatus": "passed",
@@ -4384,15 +4387,18 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/230",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/233",
+              "prStatus": "merged",
+              "mergedAt": "2026-04-30T18:37:24Z",
               "dispatchedAt": "2026-04-30T17:30:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-30T17:30:00Z"
+              "updatedAt": "2026-04-30T18:37:24Z"
             },
             {
               "id": "i3.3",
               "slug": "i3.3",
               "name": "H-GOV DoR hard block in /definition-of-ready SKILL.md",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/dor/i3.3-h-gov-dor-hard-block-dor.md",
               "reviewStatus": "passed",
@@ -4405,9 +4411,12 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/231",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/234",
+              "prStatus": "merged",
+              "mergedAt": "2026-04-30T18:39:18Z",
               "dispatchedAt": "2026-04-30T17:30:00Z",
               "dispatchTarget": "github-agent",
-              "updatedAt": "2026-04-30T17:30:00Z"
+              "updatedAt": "2026-04-30T18:39:18Z"
             }
           ]
         }
