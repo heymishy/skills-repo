@@ -291,6 +291,46 @@ const SAMPLE_DATA = {
   assert(body.includes('Issue #99'),         `T22b: issue number in AC section`);
 }
 
+// T23: testPlan passing fallback — all passing → ✅ status icon on AC rows
+{
+  const data = {
+    ...SAMPLE_DATA,
+    pipelineStories: [{
+      id:       's1.1',
+      title:    'Fallback story',
+      acs:      [{ id: 'AC1', text: 'Criterion one.' }, { id: 'AC2', text: 'Criterion two.' }],
+      issueUrl: null,
+      issueAcCheck: '',
+      suiteResult: null,
+      testPlan: { totalTests: 5, passing: 5 },
+    }],
+  };
+  const body = buildAuditComment(data);
+  // AC rows should contain ✅ (U+2705) not — (U+2014)
+  assert(body.includes('\u2705'), `T23: all-passing testPlan fallback yields ✅ icon`);
+  const acRowMatch = body.match(/\| `AC1` \|[^|]+\| ([^|]+) \|/);
+  assert(acRowMatch && acRowMatch[1].includes('\u2705'), `T23b: AC row status is ✅`);
+}
+
+// T24: testPlan passing fallback — not all passing → — status icon
+{
+  const data = {
+    ...SAMPLE_DATA,
+    pipelineStories: [{
+      id:       's1.1',
+      title:    'Partial story',
+      acs:      [{ id: 'AC1', text: 'Criterion one.' }],
+      issueUrl: null,
+      issueAcCheck: '',
+      suiteResult: null,
+      testPlan: { totalTests: 5, passing: 3 },
+    }],
+  };
+  const body = buildAuditComment(data);
+  const acRowMatch = body.match(/\| `AC1` \|[^|]+\| ([^|]+) \|/);
+  assert(acRowMatch && acRowMatch[1].includes('\u2014'), `T24: partial testPlan fallback yields — icon`);
+}
+
 // ── Summary ───────────────────────────────────────────────────────────────────
 
 console.log(`\nci-audit-comment: ${passed} passed, ${failed} failed`);

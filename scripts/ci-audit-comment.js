@@ -200,10 +200,14 @@ function buildAuditComment(data) {
       const acs        = story.acs || [];
       const suiteResult = story.suiteResult;
       const allVerified = story.acVerified != null && story.acTotal != null && story.acVerified === story.acTotal;
+      const allPassingFallback = !suiteResult && story.testPlan &&
+        story.testPlan.totalTests > 0 &&
+        story.testPlan.passing === story.testPlan.totalTests;
       const statusIcon  = (() => {
         if (allVerified) return '\u2705';
         if (suiteResult && suiteResult.failed === 0) return '\u2705';
         if (suiteResult && suiteResult.failed > 0)  return '\u26a0\ufe0f';
+        if (allPassingFallback) return '\u2705';
         return '\u2014';
       })();
       const storyId     = story.id || story.slug || '';
