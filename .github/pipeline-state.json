@@ -4190,7 +4190,7 @@
       "track": "library",
       "health": "green",
       "regulated": false,
-      "updatedAt": "2026-04-30T07:30:00Z",
+      "updatedAt": "2026-04-30T07:24:47.594Z",
       "stories": [
         {
           "id": "rrc.1",
@@ -4223,11 +4223,11 @@
           "id": "rrc.2",
           "slug": "rrc.2",
           "title": "Add Output 10 — Constraint index to /reverse-engineer",
-          "stage": "subagent-execution",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "reviewArtefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/review/rrc.2-review-1.md",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/226",
           "testPlan": {
             "status": "written",
@@ -4251,7 +4251,7 @@
           "slug": "rrc.3",
           "title": "Integrate constraint-index.md reading into /discovery",
           "stage": "definition-of-ready",
-          "dorStatus": "blocked",
+          "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "reviewArtefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/review/rrc.3-review-2.md",
           "prStatus": "none",
