@@ -282,7 +282,7 @@ console.log('\n[rrc.1] /reverse-engineer Output 9 — discovery-seed.md\n');
 
 // ── Summary ───────────────────────────────────────────────────────────────────
 console.log('');
-console.log('check-rrc1-discovery-seed: ' + passed + ' passed, ' + failed + ' failed');
+console.log('[rrc1] Results: ' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) {
   console.error('FAILED:');
   failures.forEach(f => console.error('  - ' + f));
