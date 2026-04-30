@@ -4190,7 +4190,7 @@
       "track": "library",
       "health": "green",
       "regulated": false,
-      "updatedAt": "2026-04-30T08:36:42.774Z",
+      "updatedAt": "2026-04-30T08:56:49.627Z",
       "stories": [
         {
           "id": "rrc.1",
@@ -4250,11 +4250,11 @@
           "id": "rrc.3",
           "slug": "rrc.3",
           "title": "Integrate constraint-index.md reading into /discovery",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "reviewArtefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/review/rrc.3-review-2.md",
-          "prStatus": "none",
+          "prStatus": "merged",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/test-plans/rrc.3-test-plan.md",
