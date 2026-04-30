@@ -4350,7 +4350,9 @@
               "id": "i3.1",
               "slug": "i3.1",
               "name": "Attribution fields in /discovery SKILL.md output template",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/dor/i3.1-attribution-fields-in-discovery-dor.md",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -4360,13 +4362,15 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "updatedAt": "2026-04-30T16:00:00Z"
+              "updatedAt": "2026-04-30T17:00:00Z"
             },
             {
               "id": "i3.2",
               "slug": "i3.2",
               "name": "Attribution acknowledgement in /benefit-metric SKILL.md",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/dor/i3.2-attribution-fields-in-benefit-metric-dor.md",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -4376,13 +4380,15 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "updatedAt": "2026-04-30T16:00:00Z"
+              "updatedAt": "2026-04-30T17:00:00Z"
             },
             {
               "id": "i3.3",
               "slug": "i3.3",
               "name": "H-GOV DoR hard block in /definition-of-ready SKILL.md",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/dor/i3.3-h-gov-dor-hard-block-dor.md",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -4392,7 +4398,7 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "updatedAt": "2026-04-30T16:00:00Z"
+              "updatedAt": "2026-04-30T17:00:00Z"
             }
           ]
         }
@@ -4410,9 +4416,15 @@
         { "id": "MC-CONSIST-02", "category": "mandatory-constraint", "label": "Gate add/remove synced with SKILL.md criteria", "status": "met", "evidence": "i3.3 AC6 explicitly requires H-GOV to appear with block ID, check description, pass condition, and fail message — sync is enforced by AC", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
         { "id": "MC-A11Y-01", "category": "mandatory-constraint", "label": "Interactive elements keyboard-accessible", "status": "na", "evidence": "No UI changes in I3 stories — SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
         { "id": "MC-A11Y-02", "category": "mandatory-constraint", "label": "Colour not sole indicator of gate status (icons/labels present)", "status": "na", "evidence": "No UI changes in I3 stories — SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "ADR-011", "category": "adr", "label": "Artefact-first: new SKILL.md files require story artefact before or alongside commit", "status": "met", "evidence": "All three I3 stories have story artefacts (i3.1, i3.2, i3.3); each explicitly states PR-required constraint — No violations found", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" }
+        { "id": "ADR-011", "category": "adr", "label": "Artefact-first: new SKILL.md files require story artefact before or alongside commit", "status": "met", "evidence": "All three I3 stories have story artefacts (i3.1, i3.2, i3.3); each explicitly states PR-required constraint — No violations found", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "NFR-I3-CONSISTENCY", "category": "nfr", "label": "Attribution section formatting follows existing Markdown conventions", "status": "not-assessed", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-30T17:00:00Z" },
+        { "id": "NFR-I3-READABILITY", "category": "nfr", "label": "Attribution field labels clear to non-technical operator without guidance", "status": "not-assessed", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-30T17:00:00Z" },
+        { "id": "NFR-I3-NON-INTERRUPTION", "category": "nfr", "label": "Clean attribution pass adds zero overhead in /benefit-metric", "status": "not-assessed", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-30T17:00:00Z" },
+        { "id": "NFR-I3-ACTIONABILITY-I3.2", "category": "nfr", "label": "Warning message names missing field and states remediation", "status": "not-assessed", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-30T17:00:00Z" },
+        { "id": "NFR-I3-ACTIONABILITY-I3.3", "category": "nfr", "label": "H-GOV fail message self-contained under 200 words", "status": "not-assessed", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-30T17:00:00Z" },
+        { "id": "NFR-I3-ZERO-FALSE-POSITIVES", "category": "nfr", "label": "Correctly attributed discovery never triggers H-GOV", "status": "not-assessed", "assessedBy": "/definition-of-ready", "assessedAt": "2026-04-30T17:00:00Z" }
       ],
-      "updatedAt": "2026-04-30T15:00:00Z",
+      "updatedAt": "2026-04-30T17:00:00Z",
       "metrics": [
         {
           "id": "M1",
