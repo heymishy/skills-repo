@@ -4375,9 +4375,9 @@
               "stage": "review",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "health": "amber",
-              "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i3.3-h-gov-dor-hard-block-review-1.md",
-              "updatedAt": "2026-04-30T15:00:00Z"
+              "health": "green",
+              "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i3.3-h-gov-dor-hard-block-review-2.md",
+              "updatedAt": "2026-04-30T15:30:00Z"
             }
           ]
         }
