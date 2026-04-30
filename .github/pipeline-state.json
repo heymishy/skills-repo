@@ -4301,14 +4301,14 @@
     {
       "slug": "2026-04-30-governed-distribution-and-onboarding",
       "name": "Governed distribution, onboarding, and brownfield adoption",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "track": "library",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "discoveryStatus": "draft",
+      "discoveryStatus": "approved",
       "discoveryArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/discovery.md",
       "ideationPath": "artefacts/2026-04-23-non-technical-channel/research/ideation.md",
       "ideationSignal": "proceed",
@@ -4340,7 +4340,7 @@
         }
       ],
       "stories": [],
-      "updatedAt": "2026-04-30T00:00:00Z"
+      "updatedAt": "2026-04-30T12:30:00Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

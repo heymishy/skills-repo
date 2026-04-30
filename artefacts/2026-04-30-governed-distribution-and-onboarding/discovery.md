@@ -9,9 +9,9 @@
   its stories must be delivered before any Initiative 1 surface work begins.
 -->
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-04-30
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Hamish — Platform Maintainer — 2026-04-30
 **Author:** Copilot / platform maintainer
 
 ---
@@ -149,7 +149,7 @@ This discovery covers three initiatives in one artefact. Downstream artefacts ar
 
 ## Approved By
 
-[Name — Role — Date — to be filled after human review]
+Hamish — Platform Maintainer — 2026-04-30
 
 ---
 
