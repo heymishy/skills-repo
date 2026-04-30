@@ -4190,7 +4190,7 @@
       "track": "library",
       "health": "green",
       "regulated": false,
-      "updatedAt": "2026-04-30T07:24:47.594Z",
+      "updatedAt": "2026-04-30T08:36:42.774Z",
       "stories": [
         {
           "id": "rrc.1",
@@ -4260,7 +4260,7 @@
             "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/test-plans/rrc.3-test-plan.md",
             "testScript": "tests/check-rrc3-discovery-integration.js",
             "totalTests": 9,
-            "passing": 0
+            "passing": 9
           },
           "acTotal": 5,
           "acVerified": 0,
