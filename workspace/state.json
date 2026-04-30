@@ -1,14 +1,16 @@
 {
-  "currentPhase": "idle",
-  "activeFeature": null,
-  "lastUpdated": "2026-04-30T00:00:00Z",
+  "currentPhase": "discovery",
+  "activeFeature": "2026-04-30-governed-distribution-and-onboarding",
+  "lastUpdated": "2026-04-30T12:00:00Z",
   "checkpoint": {
     "writtenAt": "2026-04-30",
-    "contextAtWrite": "All active features complete. rrc (4/4 merged) and p11 (7/7 merged) stages corrected to definition-of-done. All stale local branches and worktrees cleaned up. Only master branch remains. npm test exits 1 only for 2 known-deferred p3.3 tests (recorded in known-deferred-checks.json). Pipeline is green/idle.",
-    "resumeInstruction": "Pipeline is idle — all features complete. Start a new /discovery. The reference document at artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md describes the next initiative scope (3 brownfield/onboarding initiatives not yet fully discovered). Alternatively run /workflow to see if anything else is queued.",
+    "contextAtWrite": "/discovery artefact written for governed-distribution-and-onboarding. Three initiatives in one discovery (I3 governance prerequisite, I1 onboarding+lockfile, I2 brownfield entry). Downstream artefacts will be distinctly separate per initiative. Discovery draft saved to artefacts/2026-04-30-governed-distribution-and-onboarding/discovery.md. Awaiting operator approval before /benefit-metric.",
+    "resumeInstruction": "Discovery draft is complete. Ask operator to review and approve artefacts/2026-04-30-governed-distribution-and-onboarding/discovery.md. Run /clarify if sharpening is needed. Once approved (Approved By field filled), run /benefit-metric — three separate benefit-metric artefacts, one per initiative (I3, I1, I2), in initiative order.",
     "pendingActions": [
-      "Start /discovery for the next initiative — reference input at artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md",
-      "Create a story for p3.3 deferred test failures (skills-framework-infra infra separation) when prioritised — currently tracked in known-deferred-checks.json"
+      "Operator review and approval of discovery.md — fill Approved By field with name + role + date",
+      "Run /clarify to sharpen artefact (recommended before approval)",
+      "After approval: run /benefit-metric — produce three separate artefacts (initiative-3-governance, initiative-1-onboarding, initiative-2-brownfield) in sequence order",
+      "Create story for check-assurance-gate.js deferred skip mechanism (reads known-deferred-checks.json) — tracked in known-deferred-checks.json, low priority backlog"
     ]
   }
 }
