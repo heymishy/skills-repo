@@ -169,6 +169,15 @@ Read the discovery artefact directly from the file system (`artefacts/[feature]/
 > This is distinct from an empty or absent section — entries are present but do not meet the governance requirement.
 > Resolution: add a named non-engineering approver (e.g. product owner, business stakeholder) to the `## Approved By` section in the discovery artefact.
 
+**AC5 — Trigger-to-check (benefit-metric "Attribution incomplete" note):**
+If the benefit-metric artefact contains an "Attribution incomplete" note, this is a trigger-to-check signal only — not an automatic block. H-GOV performs a live read of the discovery artefact's `Approved By` field.
+- If the live read finds `Approved By` is now corrected and substantively populated: H-GOV passes (the stale benefit-metric note does not permanently block this story). The required format is: `Name — Role — Date`
+- If the live read finds `Approved By` is still empty or Pending: H-GOV fails with the standard fail message above.
+
+**M1 metric signal:**
+- When Approved By has text but the role is not clearly non-engineering: H-GOV passes — record M1 signal (role unverified for independent sign-off quality).
+- When the approver title clearly identifies them as non-engineering (PM, product owner, business stakeholder): record positive M1 signal.
+
 ---
 
 ## Warnings - W1 to W5
