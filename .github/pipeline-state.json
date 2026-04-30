@@ -4350,42 +4350,54 @@
               "id": "i3.1",
               "slug": "i3.1",
               "name": "Attribution fields in /discovery SKILL.md output template",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i3.1-attribution-fields-in-discovery-review-1.md",
+              "updatedAt": "2026-04-30T15:00:00Z"
             },
             {
               "id": "i3.2",
               "slug": "i3.2",
               "name": "Attribution acknowledgement in /benefit-metric SKILL.md",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i3.2-attribution-fields-in-benefit-metric-review-1.md",
+              "updatedAt": "2026-04-30T15:00:00Z"
             },
             {
               "id": "i3.3",
               "slug": "i3.3",
               "name": "H-GOV DoR hard block in /definition-of-ready SKILL.md",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "amber",
+              "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i3.3-h-gov-dor-hard-block-review-1.md",
+              "updatedAt": "2026-04-30T15:00:00Z"
             }
           ]
         }
       ],
       "guardrails": [
-        { "id": "MC-SEC-01", "category": "mandatory-constraint", "label": "No user-supplied content in innerHTML without sanitisation", "status": "not-assessed" },
-        { "id": "MC-SEC-02", "category": "mandatory-constraint", "label": "No credentials, tokens, or personal data in committed files", "status": "not-assessed" },
-        { "id": "MC-SEC-03", "category": "mandatory-constraint", "label": "Viz reads local JSON only — no external fetch calls", "status": "not-assessed" },
-        { "id": "MC-CORRECT-01", "category": "mandatory-constraint", "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)", "status": "not-assessed" },
-        { "id": "MC-CORRECT-02", "category": "mandatory-constraint", "label": "Fields written to pipeline-state.json must exist in schema", "status": "not-assessed" },
-        { "id": "MC-CORRECT-03", "category": "mandatory-constraint", "label": "Fields read by viz from pipeline-state.json must exist in schema", "status": "not-assessed" },
-        { "id": "MC-SELF-01", "category": "mandatory-constraint", "label": "dashboards/pipeline-viz.html renders without build step, server, or network", "status": "not-assessed" },
-        { "id": "MC-SELF-02", "category": "mandatory-constraint", "label": "No npm devDependencies in dashboards/pipeline-viz.html runtime", "status": "not-assessed" },
-        { "id": "MC-CONSIST-01", "category": "mandatory-constraint", "label": "Stage enum in schema updated when skill adds/removes stage", "status": "not-assessed" },
-        { "id": "MC-CONSIST-02", "category": "mandatory-constraint", "label": "Gate add/remove synced with SKILL.md criteria", "status": "not-assessed" },
-        { "id": "MC-A11Y-01", "category": "mandatory-constraint", "label": "Interactive elements keyboard-accessible", "status": "not-assessed" },
-        { "id": "MC-A11Y-02", "category": "mandatory-constraint", "label": "Colour not sole indicator of gate status (icons/labels present)", "status": "not-assessed" },
-        { "id": "ADR-011", "category": "adr", "label": "Artefact-first: new SKILL.md files require story artefact before or alongside commit", "status": "not-assessed" }
+        { "id": "MC-SEC-01", "category": "mandatory-constraint", "label": "No user-supplied content in innerHTML without sanitisation", "status": "na", "evidence": "No HTML or UI code in I3 stories — SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "MC-SEC-02", "category": "mandatory-constraint", "label": "No credentials, tokens, or personal data in committed files", "status": "na", "evidence": "No credentials or personal data in SKILL.md instruction changes", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "MC-SEC-03", "category": "mandatory-constraint", "label": "Viz reads local JSON only — no external fetch calls", "status": "na", "evidence": "No viz or fetch code in I3 stories", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "MC-CORRECT-01", "category": "mandatory-constraint", "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)", "status": "na", "evidence": "No pipeline-state gate logic changes in I3 stories", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "MC-CORRECT-02", "category": "mandatory-constraint", "label": "Fields written to pipeline-state.json must exist in schema", "status": "na", "evidence": "No new pipeline-state.json fields written by I3 story implementations", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "MC-CORRECT-03", "category": "mandatory-constraint", "label": "Fields read by viz from pipeline-state.json must exist in schema", "status": "na", "evidence": "No new viz field reads in I3 stories", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "MC-SELF-01", "category": "mandatory-constraint", "label": "dashboards/pipeline-viz.html renders without build step, server, or network", "status": "na", "evidence": "No dashboard changes in I3 stories", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "MC-SELF-02", "category": "mandatory-constraint", "label": "No npm devDependencies in dashboards/pipeline-viz.html runtime", "status": "na", "evidence": "No dashboard changes in I3 stories", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "MC-CONSIST-01", "category": "mandatory-constraint", "label": "Stage enum in schema updated when skill adds/removes stage", "status": "met", "evidence": "No stage enum changes in i3.1/i3.2/i3.3 — SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "MC-CONSIST-02", "category": "mandatory-constraint", "label": "Gate add/remove synced with SKILL.md criteria", "status": "met", "evidence": "i3.3 AC6 explicitly requires H-GOV to appear with block ID, check description, pass condition, and fail message — sync is enforced by AC", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "MC-A11Y-01", "category": "mandatory-constraint", "label": "Interactive elements keyboard-accessible", "status": "na", "evidence": "No UI changes in I3 stories — SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "MC-A11Y-02", "category": "mandatory-constraint", "label": "Colour not sole indicator of gate status (icons/labels present)", "status": "na", "evidence": "No UI changes in I3 stories — SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
+        { "id": "ADR-011", "category": "adr", "label": "Artefact-first: new SKILL.md files require story artefact before or alongside commit", "status": "met", "evidence": "All three I3 stories have story artefacts (i3.1, i3.2, i3.3); each explicitly states PR-required constraint — No violations found", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" }
       ],
-      "updatedAt": "2026-04-30T14:00:00Z",
+      "updatedAt": "2026-04-30T15:00:00Z",
       "metrics": [
         {
           "id": "M1",
