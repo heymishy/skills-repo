@@ -452,6 +452,17 @@ const CONTRACTS = [
       '## State update',
     ],
   },
+  {
+    skill: 'reference-corpus-update',
+    file:  '.github/skills/reference-corpus-update/SKILL.md',
+    required: [
+      'DEEPEN',
+      'corpus-state.md',
+      'lastRunAt',
+      'changeNote',
+      'No corpus rules affected',
+    ],
+  },
 ];
 
 // ── invariants applied to every SKILL.md ──────────────────────────────────────
