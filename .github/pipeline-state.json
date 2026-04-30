@@ -4362,7 +4362,10 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "updatedAt": "2026-04-30T17:00:00Z"
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/229",
+              "dispatchedAt": "2026-04-30T17:30:00Z",
+              "dispatchTarget": "github-agent",
+              "updatedAt": "2026-04-30T17:30:00Z"
             },
             {
               "id": "i3.2",
@@ -4380,7 +4383,10 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "updatedAt": "2026-04-30T17:00:00Z"
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/230",
+              "dispatchedAt": "2026-04-30T17:30:00Z",
+              "dispatchTarget": "github-agent",
+              "updatedAt": "2026-04-30T17:30:00Z"
             },
             {
               "id": "i3.3",
@@ -4398,7 +4404,10 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "updatedAt": "2026-04-30T17:00:00Z"
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/231",
+              "dispatchedAt": "2026-04-30T17:30:00Z",
+              "dispatchTarget": "github-agent",
+              "updatedAt": "2026-04-30T17:30:00Z"
             }
           ]
         }
