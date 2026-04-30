@@ -8,6 +8,8 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- **`rrc.2` — Output 10 (`constraint-index.md`) added to `/reverse-engineer` (2026-04-30):** Output 10 row added to outputs table; compact format section added (`rule-id|source-file|confidence|disposition|summary`, rule-id format `L<layer>-<seq>`, `[CHANGE-RISK]` appended to summary when flagged); VERIFY pass quality check instructs updating `constraint-index.md` when rule dispositions change; Output 10 gated — not produced when Q0 outcome is DEFER. SKILL.md 630 lines (≤650 NFR). `check-skill-contracts.js`: 40 skills, 170 contracts OK.
+
 - **`rrc.1` — Output 9 (`discovery-seed.md`) added to `/reverse-engineer` (2026-04-30):** Output 9 row added to outputs table; `### Output 9 — discovery-seed.md` format section added with 4 sections (system name, problem framing, known constraints, personas), mirroring the `/discovery` template; VERIFY pass quality check instructs updating `discovery-seed.md` when any PARITY REQUIRED rule changes; Output 9 gated — not produced when Q0 outcome is DEFER. SKILL.md 626 lines (≤650 NFR). `check-skill-contracts.js`: 40 skills, 170 contracts OK.
 
 
