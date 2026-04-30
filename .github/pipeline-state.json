@@ -4297,6 +4297,50 @@
           "dispatchTarget": "vscode"
         }
       ]
+    },
+    {
+      "slug": "2026-04-30-governed-distribution-and-onboarding",
+      "name": "Governed distribution, onboarding, and brownfield adoption",
+      "stage": "discovery",
+      "health": "green",
+      "track": "library",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discoveryStatus": "draft",
+      "discoveryArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/discovery.md",
+      "ideationPath": "artefacts/2026-04-23-non-technical-channel/research/ideation.md",
+      "ideationSignal": "proceed",
+      "refDocPath": "artefacts/2026-04-24-platform-onboarding-distribution/reference/ref-onboarding-distribution-discovery-input.md",
+      "relatedGaps": [
+        "G0a",
+        "G0b",
+        "G14",
+        "G17"
+      ],
+      "initiatives": [
+        {
+          "id": "i3",
+          "name": "Governance model prerequisite",
+          "sequenceOrder": 1,
+          "prerequisite": null
+        },
+        {
+          "id": "i1",
+          "name": "Seamless onboarding and lockfile",
+          "sequenceOrder": 2,
+          "prerequisite": "i3"
+        },
+        {
+          "id": "i2",
+          "name": "Brownfield entry",
+          "sequenceOrder": 3,
+          "prerequisite": "i1"
+        }
+      ],
+      "stories": [],
+      "updatedAt": "2026-04-30T00:00:00Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
