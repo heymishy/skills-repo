@@ -1,4 +1,5 @@
 ﻿---
+# Attribution check — read Approved By field before asking metric questions (Step 1)
 name: benefit-metric
 description: >
   Defines measurable outcomes for an approved discovery artefact. Produces a
@@ -49,7 +50,21 @@ If not met (entry condition):
 
 ---
 
-## Step 1 Meta-benefit check
+## Step 1 — Attribution check
+
+Read the `Approved By` field from the linked discovery artefact's Attribution section before asking any metric questions.
+
+- If `Approved By` is populated with a substantive value (not empty, not Pending, not a placeholder): silent pass — proceed to metric questions.
+- If `Approved By` is empty, Pending, or a placeholder — OR if the discovery artefact has no Attribution section (absent attribution section — treat as equivalent to empty, likely a pre-i3.1 artefact):
+
+  **Warning:** The discovery artefact's `Approved By` field is empty or absent. Choose:
+  - **(a) Pause** — stop here and ask the operator to return to the discovery artefact to populate `Approved By` before continuing. Do not proceed with benefit-metric until the field is substantively populated.
+  - **(b) Proceed with acknowledgement** — continue, and include the following note in the produced benefit-metric artefact:
+    > Attribution incomplete — Approved By was empty at benefit-metric time. Revisit before DoR.
+
+---
+
+## Step 2 Meta-benefit check
 
 **Before the meta-benefit check, read product context if available:**
 
