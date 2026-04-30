@@ -472,7 +472,10 @@ State which outputs you are producing before starting.
 | 7. ESB reading plan | If ACE/IIB dependency detected | Integration team | `artefacts/[system-slug]/extracts/esb-reading-plan.md` |
 | 8. Corpus state | Always (create on INITIAL, update on subsequent passes) | Orchestrator / next pass agent | `artefacts/[system-slug]/corpus-state.md` |
 | 9. Discovery seed | INITIAL or DEEPEN pass, when Q0 is not DEFER | Platform maintainer / /discovery operator | `artefacts/[system-slug]/discovery-seed.md` |
+| 10. Constraint index | INITIAL or DEEPEN pass, when Q0 is not DEFER | Tech lead / delivery operator | `artefacts/[system-slug]/constraint-index.md` |
 
+### Output 10 — constraint-index.md
+rule-id|source-file|confidence|disposition|summary L<layer>[CHANGE-RISK]
 ### Output 9 — discovery-seed.md
 
 Produce at the end of any INITIAL or DEEPEN pass. **Not produced when Q0 outcome is DEFER.**
@@ -592,6 +595,7 @@ If convergence is not met, the completion statement must say so explicitly and r
 
 **VERIFY pass**
 - If any PARITY REQUIRED rule was added, retired, or had its disposition changed since the last pass: update Output 9 (discovery-seed.md) to reflect the change.
+- After a VERIFY pass: update constraint-index.md to reflect any rules whose disposition changed or were retired.
 
 **Stack-specific**
 - If Spring detected: `@Aspect`, `@Scheduled`, `@Transactional` inventory produced
