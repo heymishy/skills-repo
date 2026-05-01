@@ -20,7 +20,7 @@ So that skills and tooling read consistent, well-shaped state and mismatches bet
 - ADR-003 (schema-first): any new state file with downstream readers must have a schema defined before or alongside first use. `workspace/state.json` has been in use without a schema since Phase 1. This story retroactively satisfies ADR-003 for it.
 - ADR-004 (`context.yml` single config source): state files are not config — this story must not move any config values from `context.yml` to `workspace/state.json`.
 - The schema must be a JSON Schema Draft 7 document (consistent with `pipeline-state.schema.json`).
-- No new npm dependencies — schema validation uses the existing `jsonschema` Python call pattern or a Node.js built-in equivalent already in use.
+- No new npm dependencies — validation in tests uses Node.js built-ins only: parse the JSON with `JSON.parse`, assert required keys exist with standard object checks. No JSON Schema library (ajv, jsonschema) is required for the 3-field structural check this story needs.
 
 ## Dependencies
 
@@ -54,12 +54,24 @@ Given `workspace/state.schema.json` exists,
 When a skill writes `workspace/state.json`,
 Then the `/checkpoint` SKILL.md references the schema path and instructs the operator/agent to validate with the standard command before committing.
 
+**AC6 — Schema tolerates additional properties**
+Given `workspace/state.schema.json` is applied to a `workspace/state.json` that contains fields beyond the required set (e.g. `activeFeature`, `cycles`, `pendingActions` at top level),
+When validation runs,
+Then validation passes — additional properties beyond the declared required set must not cause a failure.
+
+## Complexity Rating
+
+**Complexity:** 2 — implementation is well-understood (write a schema file, update a SKILL.md, write two ADR entries), but dual-path validation (Python trace vs Node test) requires careful coordination.
+**Scope stability:** Stable — deliverables are clearly bounded; no external dependencies or team handoffs.
+
 ## Non-Functional Requirements
 
-- **NFR-SFA1-COMPATIBILITY:** The schema must not reject any `workspace/state.json` files produced by the current codebase. Any existing checkpoints committed to the repo must pass validation after this story ships.
+- **NFR-SFA1-COMPATIBILITY:** The schema must not reject any `workspace/state.json` files produced by the current codebase. Any existing checkpoints committed to the repo must pass validation after this story ships. Use `additionalProperties: true` (or omit the constraint) so extra fields from future skills do not break validation.
 - **NFR-SFA1-LIGHTWEIGHT:** The schema must cover only the required structural contract. It must not enumerate all valid values for `currentPhase` (those are an operational concern, not a schema concern) — use `"type": "string"` not an enum for phase names.
 
 ## Test Plan Hints (for /test-plan)
+
+Validation approach: the test file must use Node.js built-ins only (no ajv, no jsonschema Python call). The check is minimal: parse the JSON, assert the required keys exist at the correct path, assert the schema file itself is valid JSON. No full JSON Schema library needed.
 
 Suggested test IDs:
 - `workspace-state-schema-file-exists`
@@ -69,6 +81,7 @@ Suggested test IDs:
 - `workspace-state-schema-requires-checkpoint`
 - `workspace-state-schema-rejects-missing-required-field`
 - `workspace-state-schema-accepts-current-state-json`
+- `workspace-state-schema-accepts-extra-properties`
 - `architecture-guardrails-contains-adr-016`
 - `adr-016-names-pipeline-state-as-delivery-evidence`
 - `adr-016-names-workspace-state-as-session-state`
