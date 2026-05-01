@@ -8,6 +8,11 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- **`i2.1` — Entry A routing for brownfield engineer with existing story artefacts (2026-05-02):** New routing state in `.github/skills/orient/SKILL.md`. Entry A fires when story artefacts exist under `artefacts/[feature]/stories/` and no `discovery.md` is present. Routes to `/discovery` with instruction to use existing stories as input scope; names `/tdd` as inner loop entry point with explicit no-re-derivation note. Detection signal transparency: output names what was found. Classification presented as confirmatory ("This looks like Entry A"). 9/9 tests pass.
+
+
+
+
 - **`i1.2` — `platform:init` and `platform:fetch` CLI commands (2026-05-02):** New scripts `scripts/platform-init.js` and `scripts/platform-fetch.js` implementing one-command platform bootstrap. `platform:init` copies `.github/skills/`, `.github/templates/`, `scripts/` to a target repo and creates `.github/copilot-instructions.md`; skips existing files by default, `--force` overwrites; outputs install summary. `platform:fetch` fetches latest skill files from the platform source and records a timestamp in `workspace/platform-fetch-log.json`. Both use Node.js built-ins only — zero new runtime npm dependencies. `package.json` entries `platform:init` and `platform:fetch` added. 18/20 tests pass; 2 remaining tests (`platform-init-reports-skipped-files`, `platform-init-force-flag-overwrites-existing`) depend on `orient/SKILL.md` from i1.1 being on master first.
 
 
