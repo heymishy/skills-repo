@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1",
   "updated": "2026-04-23T00:00:00Z",
   "programmes": [],
@@ -4572,10 +4572,10 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 24,
-                "passing": 0
+                "passing": 24
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.3-lockfile-pin-verify.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i1.3-lockfile-pin-verify-review-1.md",
               "highFindings": 0,
@@ -4584,7 +4584,9 @@
               "e2eToolingRequired": false,
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/237",
               "dispatchedAt": "2026-05-01T00:00:00Z",
-              "dispatchTarget": "vscode"
+              "dispatchTarget": "vscode",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/245"
             }
           ]
         },
@@ -4604,10 +4606,10 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
-                "passing": 0
+                "passing": 9
               },
               "acTotal": 2,
-              "acVerified": 0,
+              "acVerified": 2,
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.1-entry-a-story-first.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i2.1-entry-a-story-first-review-1.md",
               "highFindings": 0,
@@ -4616,7 +4618,9 @@
               "e2eToolingRequired": false,
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/238",
               "dispatchedAt": "2026-05-01T00:00:00Z",
-              "dispatchTarget": "vscode"
+              "dispatchTarget": "vscode",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/243"
             },
             {
               "id": "i2.2",
@@ -4629,10 +4633,10 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
-                "passing": 0
+                "passing": 9
               },
               "acTotal": 3,
-              "acVerified": 0,
+              "acVerified": 3,
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.2-entry-b-code-first.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i2.2-entry-b-code-first-review-1.md",
               "highFindings": 0,
@@ -4641,7 +4645,9 @@
               "e2eToolingRequired": false,
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/239",
               "dispatchedAt": "2026-05-01T00:00:00Z",
-              "dispatchTarget": "vscode"
+              "dispatchTarget": "vscode",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/244"
             },
             {
               "id": "i2.3",
@@ -4654,10 +4660,10 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
-                "passing": 0
+                "passing": 10
               },
               "acTotal": 3,
-              "acVerified": 0,
+              "acVerified": 3,
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.3-entry-c-no-history.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i2.3-entry-c-no-history-review-1.md",
               "highFindings": 0,
@@ -4666,7 +4672,9 @@
               "e2eToolingRequired": false,
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/240",
               "dispatchedAt": "2026-05-01T00:00:00Z",
-              "dispatchTarget": "vscode"
+              "dispatchTarget": "vscode",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/246"
             }
           ]
         }
