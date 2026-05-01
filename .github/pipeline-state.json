@@ -4584,10 +4584,10 @@
               "id": "i2.1",
               "slug": "i2.1",
               "name": "Entry A routing â€” detect stories without discovery, route to /tdd",
-              "stage": "test-plan",
-              "dorStatus": "blocked",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
               "reviewStatus": "passed",
-              "health": "red",
+              "health": "green",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -4600,8 +4600,7 @@
               "highFindings": 0,
               "updatedAt": "2026-05-01T07:11:17.391Z",
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false,
-              "blocker": "H2: 2 ACs present, minimum 3 required in Given/When/Then format. AC2 also lacks an explicit When clause. Add a third well-formed AC and repair AC2 before re-running DoR."
+              "e2eToolingRequired": false
             },
             {
               "id": "i2.2",
