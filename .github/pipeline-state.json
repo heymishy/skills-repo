@@ -4190,7 +4190,7 @@
       "track": "library",
       "health": "green",
       "regulated": false,
-      "updatedAt": "2026-04-30T00:00:00Z",
+      "updatedAt": "2026-05-01T00:00:00Z",
       "stories": [
         {
           "id": "rrc.1",
@@ -4210,14 +4210,18 @@
             "passing": 10
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/stories/rrc.1-discovery-seed-output.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/222",
           "dispatchedAt": "2026-04-30T12:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "mergedAt": "2026-04-30T06:32:25Z",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/dod/rrc.1-discovery-seed-dod.md",
+          "releaseReady": true
         },
         {
           "id": "rrc.2",
@@ -4237,14 +4241,18 @@
             "passing": 13
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/stories/rrc.2-constraint-index-output.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/223",
           "dispatchedAt": "2026-04-30T12:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "mergedAt": "2026-04-30T07:24:31Z",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/dod/rrc.2-constraint-index-dod.md",
+          "releaseReady": true
         },
         {
           "id": "rrc.3",
@@ -4263,11 +4271,16 @@
             "passing": 9
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/stories/rrc.3-discovery-integration.md"
+          "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/stories/rrc.3-discovery-integration.md",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/228",
+          "mergedAt": "2026-04-30T08:54:24Z",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/dod/rrc.3-discovery-integration-dod.md",
+          "releaseReady": true
         },
         {
           "id": "rrc.4",
@@ -4287,14 +4300,52 @@
             "passing": 14
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "artefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/stories/rrc.4-reference-corpus-update-skill.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/224",
           "dispatchedAt": "2026-04-30T12:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "mergedAt": "2026-04-30T06:04:24Z",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-04-30-reverse-engineer-reference-corpus/dod/rrc.4-corpus-update-skill-dod.md",
+          "releaseReady": true
+        }
+      ],
+      "metrics": [
+        {
+          "id": "MM1",
+          "name": "Discovery pre-population time saved",
+          "signal": "not-yet-measured",
+          "evidence": null,
+          "lastMeasured": null,
+          "contributingStories": [
+            "rrc.1",
+            "rrc.3"
+          ]
+        },
+        {
+          "id": "MM2",
+          "name": "Constraint index coverage in story DoR artefacts",
+          "signal": "not-yet-measured",
+          "evidence": null,
+          "lastMeasured": null,
+          "contributingStories": [
+            "rrc.2",
+            "rrc.3"
+          ]
+        },
+        {
+          "id": "MM3",
+          "name": "Reference corpus continuity across delivery cycles",
+          "signal": "not-yet-measured",
+          "evidence": null,
+          "lastMeasured": null,
+          "contributingStories": [
+            "rrc.4"
+          ]
         }
       ]
     },
@@ -4357,7 +4408,12 @@
               "highFindings": 0,
               "health": "green",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i3.1-attribution-fields-in-discovery-review-1.md",
-              "testPlan": { "status": "written", "totalTests": 12, "passing": 12, "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/test-plans/i3.1-attribution-fields-in-discovery-test-plan.md" },
+              "testPlan": {
+                "status": "written",
+                "totalTests": 12,
+                "passing": 12,
+                "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/test-plans/i3.1-attribution-fields-in-discovery-test-plan.md"
+              },
               "acTotal": 5,
               "acVerified": 5,
               "hasLayoutDependentGaps": false,
@@ -4384,7 +4440,12 @@
               "highFindings": 0,
               "health": "green",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i3.2-attribution-fields-in-benefit-metric-review-1.md",
-              "testPlan": { "status": "written", "totalTests": 13, "passing": 13, "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/test-plans/i3.2-attribution-fields-in-benefit-metric-test-plan.md" },
+              "testPlan": {
+                "status": "written",
+                "totalTests": 13,
+                "passing": 13,
+                "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/test-plans/i3.2-attribution-fields-in-benefit-metric-test-plan.md"
+              },
               "acTotal": 5,
               "acVerified": 5,
               "hasLayoutDependentGaps": false,
@@ -4411,7 +4472,12 @@
               "highFindings": 0,
               "health": "green",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i3.3-h-gov-dor-hard-block-review-2.md",
-              "testPlan": { "status": "written", "totalTests": 20, "passing": 20, "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/test-plans/i3.3-h-gov-dor-hard-block-test-plan.md" },
+              "testPlan": {
+                "status": "written",
+                "totalTests": 20,
+                "passing": 20,
+                "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/test-plans/i3.3-h-gov-dor-hard-block-test-plan.md"
+              },
               "acTotal": 6,
               "acVerified": 6,
               "hasLayoutDependentGaps": false,
@@ -4442,7 +4508,9 @@
               "dorStatus": "not-started",
               "reviewStatus": "not-started",
               "health": "green",
-              "testPlan": { "status": "not-started" },
+              "testPlan": {
+                "status": "not-started"
+              },
               "acTotal": 6,
               "acVerified": 0,
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.1-orient-skill.md"
@@ -4462,7 +4530,9 @@
               "dorStatus": "not-started",
               "reviewStatus": "not-started",
               "health": "green",
-              "testPlan": { "status": "not-started" },
+              "testPlan": {
+                "status": "not-started"
+              },
               "acTotal": 5,
               "acVerified": 0,
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.2-platform-init-fetch.md"
@@ -4475,7 +4545,9 @@
               "dorStatus": "not-started",
               "reviewStatus": "not-started",
               "health": "green",
-              "testPlan": { "status": "not-started" },
+              "testPlan": {
+                "status": "not-started"
+              },
               "acTotal": 5,
               "acVerified": 0,
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.3-lockfile-pin-verify.md"
@@ -4495,7 +4567,9 @@
               "dorStatus": "not-started",
               "reviewStatus": "not-started",
               "health": "green",
-              "testPlan": { "status": "not-started" },
+              "testPlan": {
+                "status": "not-started"
+              },
               "acTotal": 3,
               "acVerified": 0,
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.1-entry-a-story-first.md"
@@ -4508,7 +4582,9 @@
               "dorStatus": "not-started",
               "reviewStatus": "not-started",
               "health": "green",
-              "testPlan": { "status": "not-started" },
+              "testPlan": {
+                "status": "not-started"
+              },
               "acTotal": 3,
               "acVerified": 0,
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.2-entry-b-code-first.md"
@@ -4521,7 +4597,9 @@
               "dorStatus": "not-started",
               "reviewStatus": "not-started",
               "health": "green",
-              "testPlan": { "status": "not-started" },
+              "testPlan": {
+                "status": "not-started"
+              },
               "acTotal": 3,
               "acVerified": 0,
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.3-entry-c-no-history.md"
@@ -4530,25 +4608,177 @@
         }
       ],
       "guardrails": [
-        { "id": "MC-SEC-01", "category": "mandatory-constraint", "label": "No user-supplied content in innerHTML without sanitisation", "status": "na", "evidence": "No HTML or UI code in I3 stories â€” SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "MC-SEC-02", "category": "mandatory-constraint", "label": "No credentials, tokens, or personal data in committed files", "status": "na", "evidence": "No credentials or personal data in SKILL.md instruction changes", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "MC-SEC-03", "category": "mandatory-constraint", "label": "Viz reads local JSON only â€” no external fetch calls", "status": "na", "evidence": "No viz or fetch code in I3 stories", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "MC-CORRECT-01", "category": "mandatory-constraint", "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)", "status": "na", "evidence": "No pipeline-state gate logic changes in I3 stories", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "MC-CORRECT-02", "category": "mandatory-constraint", "label": "Fields written to pipeline-state.json must exist in schema", "status": "na", "evidence": "No new pipeline-state.json fields written by I3 story implementations", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "MC-CORRECT-03", "category": "mandatory-constraint", "label": "Fields read by viz from pipeline-state.json must exist in schema", "status": "na", "evidence": "No new viz field reads in I3 stories", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "MC-SELF-01", "category": "mandatory-constraint", "label": "dashboards/pipeline-viz.html renders without build step, server, or network", "status": "na", "evidence": "No dashboard changes in I3 stories", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "MC-SELF-02", "category": "mandatory-constraint", "label": "No npm devDependencies in dashboards/pipeline-viz.html runtime", "status": "na", "evidence": "No dashboard changes in I3 stories", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "MC-CONSIST-01", "category": "mandatory-constraint", "label": "Stage enum in schema updated when skill adds/removes stage", "status": "met", "evidence": "No stage enum changes in i3.1/i3.2/i3.3 â€” SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "MC-CONSIST-02", "category": "mandatory-constraint", "label": "Gate add/remove synced with SKILL.md criteria", "status": "met", "evidence": "i3.3 AC6 explicitly requires H-GOV to appear with block ID, check description, pass condition, and fail message â€” sync is enforced by AC", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "MC-A11Y-01", "category": "mandatory-constraint", "label": "Interactive elements keyboard-accessible", "status": "na", "evidence": "No UI changes in I3 stories â€” SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "MC-A11Y-02", "category": "mandatory-constraint", "label": "Colour not sole indicator of gate status (icons/labels present)", "status": "na", "evidence": "No UI changes in I3 stories â€” SKILL.md instruction changes only", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "ADR-011", "category": "adr", "label": "Artefact-first: new SKILL.md files require story artefact before or alongside commit", "status": "met", "evidence": "All three I3 stories have story artefacts (i3.1, i3.2, i3.3); each explicitly states PR-required constraint â€” No violations found", "assessedBy": "/review", "assessedAt": "2026-04-30T15:00:00Z" },
-        { "id": "NFR-I3-CONSISTENCY", "category": "nfr", "label": "Attribution section formatting follows existing Markdown conventions", "status": "met", "evidence": "i3.1 N1 test passes â€” ## heading level confirmed consistent with other SKILL.md top-level sections", "assessedBy": "/definition-of-done", "assessedAt": "2026-05-01T00:00:00Z" },
-        { "id": "NFR-I3-READABILITY", "category": "nfr", "label": "Attribution field labels clear to non-technical operator without guidance", "status": "met", "evidence": "i3.1 N2 test passes â€” all field labels include Name â€” Role â€” Date format hints; field names are plain English", "assessedBy": "/definition-of-done", "assessedAt": "2026-05-01T00:00:00Z" },
-        { "id": "NFR-I3-NON-INTERRUPTION", "category": "nfr", "label": "Clean attribution pass adds zero overhead in /benefit-metric", "status": "met", "evidence": "i3.2 U6 test passes â€” clean-pass path explicitly specified in SKILL.md; no interruption on substantively populated Approved By", "assessedBy": "/definition-of-done", "assessedAt": "2026-05-01T00:00:00Z" },
-        { "id": "NFR-I3-ACTIONABILITY-I3.2", "category": "nfr", "label": "Warning message names missing field and states remediation", "status": "met", "evidence": "i3.2 U3/U4/U5 tests pass â€” warning names Approved By field; provides two concrete actionable options; N1 confirms naming consistent with i3.1", "assessedBy": "/definition-of-done", "assessedAt": "2026-05-01T00:00:00Z" },
-        { "id": "NFR-I3-ACTIONABILITY-I3.3", "category": "nfr", "label": "H-GOV fail message self-contained under 200 words", "status": "met", "evidence": "i3.3 N2 test passes â€” word count ~158 in fail region (under 200-word limit); message is self-contained with field name, format, remediation, and artefact path", "assessedBy": "/definition-of-done", "assessedAt": "2026-05-01T00:00:00Z" },
-        { "id": "NFR-I3-ZERO-FALSE-POSITIVES", "category": "nfr", "label": "Correctly attributed discovery never triggers H-GOV", "status": "met", "evidence": "i3.3 U3 test passes â€” pass condition unambiguously specified: any substantive non-placeholder Approved By satisfies H-GOV", "assessedBy": "/definition-of-done", "assessedAt": "2026-05-01T00:00:00Z" }
+        {
+          "id": "MC-SEC-01",
+          "category": "mandatory-constraint",
+          "label": "No user-supplied content in innerHTML without sanitisation",
+          "status": "na",
+          "evidence": "No HTML or UI code in I3 stories â€” SKILL.md instruction changes only",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-30T15:00:00Z"
+        },
+        {
+          "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "No credentials, tokens, or personal data in committed files",
+          "status": "na",
+          "evidence": "No credentials or personal data in SKILL.md instruction changes",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-30T15:00:00Z"
+        },
+        {
+          "id": "MC-SEC-03",
+          "category": "mandatory-constraint",
+          "label": "Viz reads local JSON only â€” no external fetch calls",
+          "status": "na",
+          "evidence": "No viz or fetch code in I3 stories",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-30T15:00:00Z"
+        },
+        {
+          "id": "MC-CORRECT-01",
+          "category": "mandatory-constraint",
+          "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)",
+          "status": "na",
+          "evidence": "No pipeline-state gate logic changes in I3 stories",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-30T15:00:00Z"
+        },
+        {
+          "id": "MC-CORRECT-02",
+          "category": "mandatory-constraint",
+          "label": "Fields written to pipeline-state.json must exist in schema",
+          "status": "na",
+          "evidence": "No new pipeline-state.json fields written by I3 story implementations",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-30T15:00:00Z"
+        },
+        {
+          "id": "MC-CORRECT-03",
+          "category": "mandatory-constraint",
+          "label": "Fields read by viz from pipeline-state.json must exist in schema",
+          "status": "na",
+          "evidence": "No new viz field reads in I3 stories",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-30T15:00:00Z"
+        },
+        {
+          "id": "MC-SELF-01",
+          "category": "mandatory-constraint",
+          "label": "dashboards/pipeline-viz.html renders without build step, server, or network",
+          "status": "na",
+          "evidence": "No dashboard changes in I3 stories",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-30T15:00:00Z"
+        },
+        {
+          "id": "MC-SELF-02",
+          "category": "mandatory-constraint",
+          "label": "No npm devDependencies in dashboards/pipeline-viz.html runtime",
+          "status": "na",
+          "evidence": "No dashboard changes in I3 stories",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-30T15:00:00Z"
+        },
+        {
+          "id": "MC-CONSIST-01",
+          "category": "mandatory-constraint",
+          "label": "Stage enum in schema updated when skill adds/removes stage",
+          "status": "met",
+          "evidence": "No stage enum changes in i3.1/i3.2/i3.3 â€” SKILL.md instruction changes only",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-30T15:00:00Z"
+        },
+        {
+          "id": "MC-CONSIST-02",
+          "category": "mandatory-constraint",
+          "label": "Gate add/remove synced with SKILL.md criteria",
+          "status": "met",
+          "evidence": "i3.3 AC6 explicitly requires H-GOV to appear with block ID, check description, pass condition, and fail message â€” sync is enforced by AC",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-30T15:00:00Z"
+        },
+        {
+          "id": "MC-A11Y-01",
+          "category": "mandatory-constraint",
+          "label": "Interactive elements keyboard-accessible",
+          "status": "na",
+          "evidence": "No UI changes in I3 stories â€” SKILL.md instruction changes only",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-30T15:00:00Z"
+        },
+        {
+          "id": "MC-A11Y-02",
+          "category": "mandatory-constraint",
+          "label": "Colour not sole indicator of gate status (icons/labels present)",
+          "status": "na",
+          "evidence": "No UI changes in I3 stories â€” SKILL.md instruction changes only",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-30T15:00:00Z"
+        },
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: new SKILL.md files require story artefact before or alongside commit",
+          "status": "met",
+          "evidence": "All three I3 stories have story artefacts (i3.1, i3.2, i3.3); each explicitly states PR-required constraint â€” No violations found",
+          "assessedBy": "/review",
+          "assessedAt": "2026-04-30T15:00:00Z"
+        },
+        {
+          "id": "NFR-I3-CONSISTENCY",
+          "category": "nfr",
+          "label": "Attribution section formatting follows existing Markdown conventions",
+          "status": "met",
+          "evidence": "i3.1 N1 test passes â€” ## heading level confirmed consistent with other SKILL.md top-level sections",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-01T00:00:00Z"
+        },
+        {
+          "id": "NFR-I3-READABILITY",
+          "category": "nfr",
+          "label": "Attribution field labels clear to non-technical operator without guidance",
+          "status": "met",
+          "evidence": "i3.1 N2 test passes â€” all field labels include Name â€” Role â€” Date format hints; field names are plain English",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-01T00:00:00Z"
+        },
+        {
+          "id": "NFR-I3-NON-INTERRUPTION",
+          "category": "nfr",
+          "label": "Clean attribution pass adds zero overhead in /benefit-metric",
+          "status": "met",
+          "evidence": "i3.2 U6 test passes â€” clean-pass path explicitly specified in SKILL.md; no interruption on substantively populated Approved By",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-01T00:00:00Z"
+        },
+        {
+          "id": "NFR-I3-ACTIONABILITY-I3.2",
+          "category": "nfr",
+          "label": "Warning message names missing field and states remediation",
+          "status": "met",
+          "evidence": "i3.2 U3/U4/U5 tests pass â€” warning names Approved By field; provides two concrete actionable options; N1 confirms naming consistent with i3.1",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-01T00:00:00Z"
+        },
+        {
+          "id": "NFR-I3-ACTIONABILITY-I3.3",
+          "category": "nfr",
+          "label": "H-GOV fail message self-contained under 200 words",
+          "status": "met",
+          "evidence": "i3.3 N2 test passes â€” word count ~158 in fail region (under 200-word limit); message is self-contained with field name, format, remediation, and artefact path",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-01T00:00:00Z"
+        },
+        {
+          "id": "NFR-I3-ZERO-FALSE-POSITIVES",
+          "category": "nfr",
+          "label": "Correctly attributed discovery never triggers H-GOV",
+          "status": "met",
+          "evidence": "i3.3 U3 test passes â€” pass condition unambiguously specified: any substantive non-placeholder Approved By satisfies H-GOV",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-01T00:00:00Z"
+        }
       ],
       "updatedAt": "2026-05-01T00:00:00Z",
       "metrics": [
@@ -4560,7 +4790,11 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["i3.1", "i3.2", "i3.3"],
+          "contributingStories": [
+            "i3.1",
+            "i3.2",
+            "i3.3"
+          ],
           "initiative": "i3"
         },
         {
@@ -4571,7 +4805,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["i3.3"],
+          "contributingStories": [
+            "i3.3"
+          ],
           "initiative": "i3"
         },
         {
@@ -4582,7 +4818,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["i3.1", "i3.2"],
+          "contributingStories": [
+            "i3.1",
+            "i3.2"
+          ],
           "initiative": "i3"
         },
         {
@@ -4593,7 +4832,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["i3.1", "i3.2"],
+          "contributingStories": [
+            "i3.1",
+            "i3.2"
+          ],
           "initiative": "i3"
         },
         {
@@ -4604,7 +4846,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["i1.1"],
+          "contributingStories": [
+            "i1.1"
+          ],
           "initiative": "i1"
         },
         {
@@ -4615,7 +4859,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["i1.1", "i1.2"],
+          "contributingStories": [
+            "i1.1",
+            "i1.2"
+          ],
           "initiative": "i1"
         },
         {
@@ -4626,7 +4873,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["i1.3"],
+          "contributingStories": [
+            "i1.3"
+          ],
           "initiative": "i1"
         },
         {
@@ -4637,7 +4886,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["i1.2", "i1.3"],
+          "contributingStories": [
+            "i1.2",
+            "i1.3"
+          ],
           "initiative": "i1"
         },
         {
@@ -4648,7 +4900,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["i1.1"],
+          "contributingStories": [
+            "i1.1"
+          ],
           "initiative": "i1"
         },
         {
@@ -4659,7 +4913,11 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["i2.1", "i2.2", "i2.3"],
+          "contributingStories": [
+            "i2.1",
+            "i2.2",
+            "i2.3"
+          ],
           "initiative": "i2"
         },
         {
@@ -4670,7 +4928,11 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["i2.1", "i2.2", "i2.3"],
+          "contributingStories": [
+            "i2.1",
+            "i2.2",
+            "i2.3"
+          ],
           "initiative": "i2"
         },
         {
@@ -4681,7 +4943,11 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["i2.1", "i2.2", "i2.3"],
+          "contributingStories": [
+            "i2.1",
+            "i2.2",
+            "i2.3"
+          ],
           "initiative": "i2"
         },
         {
@@ -4692,7 +4958,11 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["i2.1", "i2.2", "i2.3"],
+          "contributingStories": [
+            "i2.1",
+            "i2.2",
+            "i2.3"
+          ],
           "initiative": "i2"
         }
       ]
