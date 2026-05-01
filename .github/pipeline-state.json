@@ -5080,7 +5080,7 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
-          "stage": "definition-of-ready",
+          "stage": "implementation-plan",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-05-02-state-file-authority-model/dor/sfa.1-dor.md",
           "prStatus": "none",
@@ -5088,16 +5088,48 @@
           "testPlan": {
             "artefact": "artefacts/2026-05-02-state-file-authority-model/test-plans/sfa.1-test-plan.md",
             "status": "written",
-            "totalTests": 16,
-            "passing": 0
+            "totalTests": 17,
+            "passing": 17
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Create failing test file (RED)",
+              "tddState": "committed",
+              "file": "artefacts/2026-05-02-state-file-authority-model/plans/sfa.1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Create workspace/state.schema.json",
+              "tddState": "committed",
+              "file": "artefacts/2026-05-02-state-file-authority-model/plans/sfa.1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Append ADR-016 and ADR-017 to architecture-guardrails.md",
+              "tddState": "committed",
+              "file": "artefacts/2026-05-02-state-file-authority-model/plans/sfa.1-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Update /checkpoint SKILL.md to reference schema path",
+              "tddState": "committed",
+              "file": "artefacts/2026-05-02-state-file-authority-model/plans/sfa.1-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Update package.json script entries",
+              "tddState": "committed",
+              "file": "artefacts/2026-05-02-state-file-authority-model/plans/sfa.1-plan.md"
+            }
+          ]
         }
       ],
-      "stage": "definition-of-ready",
+      "stage": "implementation-plan",
       "updatedAt": "2026-05-02"
     }
   ],

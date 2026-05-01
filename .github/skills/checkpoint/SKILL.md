@@ -33,6 +33,8 @@ Write pipeline state to `workspace/state.json` at mid-session (55% context budge
 
 Always write the complete JSON object (never a delta or append). Write to a temp file first (`state.json.tmp`), verify valid JSON, then rename over the target. A partial write or append produces a concatenated-JSON file that fails `check-workspace-state.js`.
 
+**Schema validation:** `workspace/state.json` is governed by `workspace/state.schema.json`. After writing, confirm the three required fields are present: `currentPhase` (string), `lastUpdated` (ISO 8601 string), `checkpoint` (object). No library needed — check structurally: `node -e "const s=JSON.parse(require('fs').readFileSync('workspace/state.json','utf8')); ['currentPhase','lastUpdated','checkpoint'].forEach(f=>{if(!s[f])throw new Error('missing '+f)}); console.log('state.json valid')"`.
+
 ## State update — mandatory final step
 
 The checkpoint is only complete when `workspace/state.json` has been written and verified. Confirm in the closing message: "Pipeline state updated ✅".

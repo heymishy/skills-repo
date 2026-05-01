@@ -932,4 +932,82 @@ This repository is operated by a single engineer. The following posture applies 
   category: adr
   label: "Two-tier artefact scope model: system corpus vs feature delivery — /modernisation-decompose is the canonical bridge; ad-hoc cross-scope sharing not permitted"
   section: Active ADRs
+
+- id: ADR-016
+  category: adr
+  label: "Two-file state authority model: pipeline-state.json is delivery evidence (viz source of truth); workspace/state.json is operator session state — skills must not conflate the two"
+  section: Active ADRs
+
+- id: ADR-017
+  category: adr
+  label: "Story nesting dual-structure: all new features use flat features[].stories[]; Phase 1/2 epics-nested shape is legacy and not migrated"
+  section: Active ADRs
 ```
+
+
+---
+
+### ADR-016: Two-file state authority model
+
+**Status:** Active
+**Date:** 2026-05-02
+**Story:** sfa.1 — Add workspace/state.schema.json and document state file authority model
+
+#### Context
+
+The pipeline uses two distinct state files that serve fundamentally different purposes and audiences. Without a documented authority model, contributors make inconsistent choices about which file to write to, which file to read from, and which file the dashboard/viz can trust as a source of truth.
+
+#### Decision
+
+The two state files have a fixed, non-overlapping authority:
+
+**`pipeline-state.json`** — **delivery evidence**
+- Schema-governed (`.github/pipeline-state.schema.json`)
+- Written by pipeline skills at phase boundaries (review, test-plan, definition-of-ready, definition-of-done, etc.)
+- Read by the dashboard/viz (`dashboards/pipeline-viz.html`, `dashboards/pipeline.html`) as the authoritative source for all feature and story health data
+- Also read by CI governance checks (`scripts/check-pipeline-state-integrity.js`, `bash scripts/validate-trace.sh`)
+- Contains: features, epics, stories, metrics, dispatch records, guardrails
+- **The viz reads only `pipeline-state.json` for delivery state** — it does not read `workspace/state.json`
+
+**`workspace/state.json`** — **operator session state**
+- Schema-governed (`workspace/state.schema.json`) from sfa.1 onwards
+- Written only by `/checkpoint` and operator-facing pipeline skills (e.g. the coding agent at session end)
+- Not read by the viz or CI governance checks
+- Contains: current phase, last updated timestamp, checkpoint block (resumeInstruction, contextAtWrite, pendingActions)
+- Purpose: allow the next session to resume without verbal priming
+
+#### Consequences
+
+- Skills that need to update delivery evidence write to `pipeline-state.json` and validate against the schema
+- Skills that need to save session context write to `workspace/state.json` and validate against `workspace/state.schema.json`
+- The viz never reads `workspace/state.json` — any operator notes placed there are invisible to the dashboard
+- Any new field on either file that has downstream readers must be added to the corresponding schema first (ADR-003)
+
+---
+
+### ADR-017: Story nesting dual-structure in pipeline-state.json
+
+**Status:** Active
+**Date:** 2026-05-02
+**Story:** sfa.1 — Add workspace/state.schema.json and document state file authority model
+
+#### Context
+
+`pipeline-state.json` contains stories in two shapes:
+1. **Phase 1/2 (legacy nested):** `features[].epics[].stories[]` — stories nested inside epics
+2. **Phase 3+ (flat):** `features[].stories[]` — stories directly on the feature, no epic nesting
+
+This dual-structure emerged organically. Scripts that traverse stories must handle both shapes. Without documentation, new contributors write code that handles only one shape and silently skips the other.
+
+#### Decision
+
+- **All new features use the flat `features[].stories[]` structure.** New stories are added directly to the feature's `stories` array. No new epic nesting is introduced.
+- **Existing Phase 1/2 nested stories are not migrated.** The cost of migrating ~20 legacy stories (updating scripts, re-running tests, risk of schema breakage) outweighs the benefit. The legacy nested shape persists as-is.
+- **Scripts that traverse stories must handle both shapes.** The canonical pattern is: check `feature.stories` first (flat); then check `feature.epics[].stories` (legacy nested). Any script that reads only one shape is a bug.
+- **The `id` field (Phase 3+) vs `slug` field (Phase 1/2) difference is documented in the same codebase note** — scripts must check `story.id || story.slug` when resolving story identity.
+
+#### Consequences
+
+- New pipeline skill runs produce flat stories — no epic nesting
+- All `validate-trace.sh` story resolution and all governance check scripts must use the dual-path pattern
+- When a new story is added to a Phase 1/2 feature as part of a bugfix or retrospective story, it should still be added flat (as a top-level `stories` entry on the feature) rather than nested inside an existing epic
