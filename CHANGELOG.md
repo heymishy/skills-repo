@@ -8,6 +8,8 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- **`/improve` — standards extraction from `2026-04-30-governed-distribution-and-onboarding` (2026-05-02):** 5 learnings written to permanent knowledge base: SKILL.md content test window anchoring rule (QA), IDE-dependent AC gap handling pattern (QA), npm run entry is part of story contract (SE), three-part CLI divergence error pattern (SE), routing priority chain must be explicit + tested (architecture guardrails Approved Patterns). Story `sfa.1` scoped for state file authority model (ADR-016/ADR-017 + `workspace/state.schema.json`).
+
 - **`i2.3` — orient Entry C: `retrospective-story.md` reference moved earlier in section (2026-05-02 DoD fix):** In `.github/skills/orient/SKILL.md` Entry C confirmation block, added explicit mention of `.github/templates/retrospective-story.md` template so the reference appears within the test helper's 3000-char window from the first "Entry C" occurrence. Additive only — adoption path steps unchanged. Resolves `orient-entry-c-surfaces-retrospective-story-template` test gap from DoD assessment.
 
 - **`i1.2`/`i1.3` — `package.json` platform script entries added (2026-05-02 DoD fix):** Added `platform:init`, `platform:fetch`, `platform:pin`, `platform:verify` npm script entries pointing to the existing `scripts/platform-*.js` files. These entries were missing from PR #242 and PR #245 though the underlying scripts were fully functional. Resolves `package-json-has-platform-*-entry` test failures from DoD assessment.
