@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["currentPhase", "lastUpdated", "checkpoint"],
+  "properties": {
+    "currentPhase": {
+      "type": "string"
+    },
+    "lastUpdated": {
+      "type": "string"
+    },
+    "checkpoint": {
+      "type": "object"
+    }
+  }
+}
