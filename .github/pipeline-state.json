@@ -4520,7 +4520,10 @@
               "highFindings": 0,
               "updatedAt": "2026-05-01T07:11:17.391Z",
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/235",
+              "dispatchedAt": "2026-05-01T00:00:00Z",
+              "dispatchTarget": "vscode"
             }
           ]
         },
@@ -4549,7 +4552,10 @@
               "highFindings": 0,
               "updatedAt": "2026-05-01T07:11:17.391Z",
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/236",
+              "dispatchedAt": "2026-05-01T00:00:00Z",
+              "dispatchTarget": "vscode"
             },
             {
               "id": "i1.3",
@@ -4571,7 +4577,10 @@
               "highFindings": 0,
               "updatedAt": "2026-05-01T07:11:17.391Z",
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/237",
+              "dispatchedAt": "2026-05-01T00:00:00Z",
+              "dispatchTarget": "vscode"
             }
           ]
         },
@@ -4600,7 +4609,10 @@
               "highFindings": 0,
               "updatedAt": "2026-05-01T07:11:17.391Z",
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/238",
+              "dispatchedAt": "2026-05-01T00:00:00Z",
+              "dispatchTarget": "vscode"
             },
             {
               "id": "i2.2",
@@ -4622,7 +4634,10 @@
               "highFindings": 0,
               "updatedAt": "2026-05-01T07:11:17.391Z",
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/239",
+              "dispatchedAt": "2026-05-01T00:00:00Z",
+              "dispatchTarget": "vscode"
             },
             {
               "id": "i2.3",
@@ -4644,7 +4659,10 @@
               "highFindings": 0,
               "updatedAt": "2026-05-01T07:11:17.391Z",
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/240",
+              "dispatchedAt": "2026-05-01T00:00:00Z",
+              "dispatchTarget": "vscode"
             }
           ]
         }
