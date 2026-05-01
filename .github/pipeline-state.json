@@ -5083,7 +5083,7 @@
           "stage": "implementation-plan",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-05-02-state-file-authority-model/dor/sfa.1-dor.md",
-          "prStatus": "none",
+          "prStatus": "draft",
           "updatedAt": "2026-05-02",
           "testPlan": {
             "artefact": "artefacts/2026-05-02-state-file-authority-model/test-plans/sfa.1-test-plan.md",
@@ -5129,7 +5129,7 @@
           ]
         }
       ],
-      "stage": "implementation-plan",
+      "stage": "branch-complete",
       "updatedAt": "2026-05-02"
     }
   ],

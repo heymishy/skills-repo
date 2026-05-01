@@ -1,11 +1,11 @@
 {
-  "currentPhase": "definition-of-ready",
+  "currentPhase": "branch-complete",
   "activeFeature": "2026-05-02-state-file-authority-model",
-  "lastUpdated": "2026-05-02T19:00:00Z",
+  "lastUpdated": "2026-05-02T20:00:00Z",
   "checkpoint": {
     "writtenAt": "2026-05-02",
-    "contextAtWrite": "sfa.1 (state file authority model) completed full pipeline from review through DoR. Review: PASS, 0 HIGH, 2 MEDIUM (both resolved), 2 LOW. Test plan: 16 tests, 6 ACs. Discovery stub and NFR profile created. DoR: 16/16 hard blocks passed. All artefacts committed and pushed at fbbb503.",
-    "resumeInstruction": "Story sfa.1 is DoR-signed-off. Next step: /branch-setup → /implementation-plan → coding agent. Story artefact: artefacts/2026-05-02-state-file-authority-model/stories/sfa.1-state-file-schema-and-adr.md. DoR: artefacts/2026-05-02-state-file-authority-model/dor/sfa.1-dor.md. Test file to create: tests/check-sfa1-state-schema.js.",
+    "contextAtWrite": "sfa.1 fully implemented on feature/sfa.1. TDD complete: 17/17 tests passing, 6/6 ACs verified. workspace/state.schema.json created. ADR-016 and ADR-017 appended to architecture-guardrails.md. /checkpoint SKILL.md updated with schema reference. package.json updated. Draft PR #247 opened at https://github.com/heymishy/skills-repo/pull/247. No net-new npm test failures (only pre-existing 3 workspace-state failures).",
+    "resumeInstruction": "sfa.1 is at branch-complete. Draft PR #247 is open. Next step: /verify-completion to confirm all ACs against the PR, then /branch-complete (PR is already open) → /definition-of-done after merge. Check: node tests/check-sfa1-state-schema.js in .worktrees/sfa.1 should show 17 passed, 0 failed.",
     "pendingActions": []
   }
 }
