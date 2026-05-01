@@ -8,6 +8,8 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- **`sfa.1` — `workspace/state.schema.json` and authority model ADR-016/ADR-017 (2026-05-02):** Added `workspace/state.schema.json` (JSON Schema Draft 7, requires `currentPhase`/`lastUpdated`/`checkpoint`, extra properties allowed). Documented ADR-016 (pipeline-state.json = delivery evidence; workspace/state.json = session state; viz reads pipeline-state.json only) and ADR-017 (flat `features[].stories[]` for Phase 3+; Phase 1/2 nested shape legacy, not migrated) in `.github/architecture-guardrails.md`. Updated `/checkpoint` SKILL.md to reference `workspace/state.schema.json`. 17/17 tests passing.
+
 - **`/improve` — standards extraction from `2026-04-30-governed-distribution-and-onboarding` (2026-05-02):** 5 learnings written to permanent knowledge base: SKILL.md content test window anchoring rule (QA), IDE-dependent AC gap handling pattern (QA), npm run entry is part of story contract (SE), three-part CLI divergence error pattern (SE), routing priority chain must be explicit + tested (architecture guardrails Approved Patterns). Story `sfa.1` scoped for state file authority model (ADR-016/ADR-017 + `workspace/state.schema.json`).
 
 - **`i2.3` — orient Entry C: `retrospective-story.md` reference moved earlier in section (2026-05-02 DoD fix):** In `.github/skills/orient/SKILL.md` Entry C confirmation block, added explicit mention of `.github/templates/retrospective-story.md` template so the reference appears within the test helper's 3000-char window from the first "Entry C" occurrence. Additive only — adoption path steps unchanged. Resolves `orient-entry-c-surfaces-retrospective-story-template` test gap from DoD assessment.
