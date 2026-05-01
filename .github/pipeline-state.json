@@ -5066,7 +5066,7 @@
     {
       "slug": "2026-05-02-state-file-authority-model",
       "name": "State File Authority Model",
-      "stage": "test-plan",
+      "stage": "definition-of-done",
       "health": "green",
       "regulated": false,
       "complianceProfile": "standard",
@@ -5080,10 +5080,10 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
-          "stage": "implementation-plan",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-05-02-state-file-authority-model/dor/sfa.1-dor.md",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "updatedAt": "2026-05-02",
           "testPlan": {
             "artefact": "artefacts/2026-05-02-state-file-authority-model/test-plans/sfa.1-test-plan.md",
@@ -5126,10 +5126,12 @@
               "tddState": "committed",
               "file": "artefacts/2026-05-02-state-file-authority-model/plans/sfa.1-plan.md"
             }
-          ]
+          ],
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-05-02-state-file-authority-model/dod/sfa.1-dod.md",
+          "releaseReady": true
         }
       ],
-      "stage": "branch-complete",
       "updatedAt": "2026-05-02"
     }
   ],
