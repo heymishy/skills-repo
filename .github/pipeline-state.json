@@ -4565,7 +4565,7 @@
               "id": "i1.3",
               "slug": "i1.3",
               "name": "platform-lock.json schema + platform:pin + platform:verify â€” lockfile contract",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "dorStatus": "signed-off",
               "reviewStatus": "passed",
               "health": "green",
