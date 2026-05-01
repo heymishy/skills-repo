@@ -5062,6 +5062,43 @@
           "initiative": "i2"
         }
       ]
+    },
+    {
+      "slug": "2026-05-02-state-file-authority-model",
+      "name": "State File Authority Model",
+      "stage": "test-plan",
+      "health": "green",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "track": "short",
+      "stories": [
+        {
+          "id": "sfa.1",
+          "name": "Add workspace/state.schema.json and document state file authority model as ADR-016/ADR-017",
+          "artefact": "artefacts/2026-05-02-state-file-authority-model/stories/sfa.1-state-file-schema-and-adr.md",
+          "complexity": 2,
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-05-02-state-file-authority-model/dor/sfa.1-dor.md",
+          "prStatus": "none",
+          "updatedAt": "2026-05-02",
+          "testPlan": {
+            "artefact": "artefacts/2026-05-02-state-file-authority-model/test-plans/sfa.1-test-plan.md",
+            "status": "written",
+            "totalTests": 16,
+            "passing": 0
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
+        }
+      ],
+      "stage": "definition-of-ready",
+      "updatedAt": "2026-05-02"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
