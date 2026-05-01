@@ -4538,17 +4538,19 @@
               "id": "i1.2",
               "slug": "i1.2",
               "name": "platform:init and platform:fetch CLI â€” one-command repo bootstrap",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "dorStatus": "signed-off",
               "reviewStatus": "passed",
               "health": "green",
               "testPlan": {
                 "status": "written",
                 "totalTests": 18,
-                "passing": 0
+                "passing": 18
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/242",
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.2-platform-init-fetch.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i1.2-platform-init-fetch-review-1.md",
               "highFindings": 0,
