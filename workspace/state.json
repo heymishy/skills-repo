@@ -1,11 +1,11 @@
 {
-  "currentPhase": "definition-of-done",
-  "activeFeature": "2026-04-30-governed-distribution-and-onboarding",
-  "lastUpdated": "2026-05-02T12:00:00Z",
+  "currentPhase": "definition-of-ready",
+  "activeFeature": "2026-05-02-state-file-authority-model",
+  "lastUpdated": "2026-05-02T19:00:00Z",
   "checkpoint": {
     "writtenAt": "2026-05-02",
-    "contextAtWrite": "All 9 stories merged (i1.1-i3.3). DoD complete for all 9 stories. 6 DoD artefacts written for i1.1-i2.3. Test gaps fixed: package.json platform:* entries added, orient SKILL.md retrospective-story.md reference moved earlier in Entry C section. pipeline-state.json updated (dodStatus: complete for all 6 stories, epic statuses set to complete). Pushed at eb65dac.",
-    "resumeInstruction": "Feature 2026-04-30-governed-distribution-and-onboarding is fully DoD-complete. All 9 stories (i1.1-i3.3) merged, all 9 DoD artefacts written, pipeline-state.json updated. Next: run /improve to extract learnings, or run /workflow to find next feature.",
+    "contextAtWrite": "sfa.1 (state file authority model) completed full pipeline from review through DoR. Review: PASS, 0 HIGH, 2 MEDIUM (both resolved), 2 LOW. Test plan: 16 tests, 6 ACs. Discovery stub and NFR profile created. DoR: 16/16 hard blocks passed. All artefacts committed and pushed at fbbb503.",
+    "resumeInstruction": "Story sfa.1 is DoR-signed-off. Next step: /branch-setup → /implementation-plan → coding agent. Story artefact: artefacts/2026-05-02-state-file-authority-model/stories/sfa.1-state-file-schema-and-adr.md. DoR: artefacts/2026-05-02-state-file-authority-model/dor/sfa.1-dor.md. Test file to create: tests/check-sfa1-state-schema.js.",
     "pendingActions": []
   }
 }
