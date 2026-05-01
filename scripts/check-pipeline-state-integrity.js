@@ -19,7 +19,10 @@
  * C3  Merged story with passing < totalTests — story is merged but passing count
  *     was never updated to reflect actual test results.
  *
- * Severity: C1 is WARN (non-fatal — tests may still be in progress).
+ * Severity: C1 is FAIL — prStatus=draft/open with testPlan.passing=0 means the
+ *            audit comment will show 0/N passing for every story. Fix by updating
+ *            testPlan.passing to the confirmed count in the branch-complete
+ *            pipeline-state commit before the PR CI run completes.
  *            C2, C3 are FAIL (data corruption — always wrong).
  *
  * Run:  node scripts/check-pipeline-state-integrity.js
@@ -81,10 +84,10 @@ function checkStory(featureSlug, story) {
   const total   = Number(tp.totalTests);
   const passing = Number(tp.passing);
 
-  // C1: open/draft PR but passing is 0
+  // C1: open/draft PR but passing is 0 — FAIL (produces misleading audit comments)
   if ((prStatus === 'draft' || prStatus === 'open') && passing === 0) {
     findings.push({
-      level: 'warn',
+      level: 'fail',
       code:  'C1',
       message: `${featureSlug} / ${id}: prStatus="${prStatus}" but testPlan.passing=0 (totalTests=${total}). ` +
                `Update testPlan.passing to the confirmed count before the PR is reviewed.`,
@@ -148,13 +151,13 @@ selfAssert(checkStory('f', { id: 's1', prStatus: 'open', testPlan: { totalTests:
 // C1: draft PR with passing=0
 {
   const f = checkStory('f', { id: 's1', prStatus: 'draft', testPlan: { totalTests: 5, passing: 0 } });
-  selfAssert(f.length === 1 && f[0].code === 'C1', 'C1: draft PR + passing=0 → warn');
+  selfAssert(f.length === 1 && f[0].code === 'C1', 'C1: draft PR + passing=0 → fail');
 }
 
 // C1: open PR with passing=0
 {
   const f = checkStory('f', { id: 's1', prStatus: 'open', testPlan: { totalTests: 5, passing: 0 } });
-  selfAssert(f.length === 1 && f[0].code === 'C1', 'C1: open PR + passing=0 → warn');
+  selfAssert(f.length === 1 && f[0].code === 'C1', 'C1: open PR + passing=0 → fail');
 }
 
 // C1: none prStatus with passing=0 → no C1
@@ -193,11 +196,11 @@ selfAssert(checkStory('f', { id: 's1', prStatus: 'open', testPlan: { totalTests:
   selfAssert(f.every(x => x.code !== 'C3'), 'C3: merged + all passing → no C3');
 }
 
-// C1 level is warn, C2 is fail
+// C1 level is fail, C2 is fail
 {
   const c1 = checkStory('f', { id: 's1', prStatus: 'draft', testPlan: { totalTests: 5, passing: 0 } });
   const c2 = checkStory('f', { id: 's1', prStatus: 'merged', testPlan: { totalTests: 5, passing: 9 } });
-  selfAssert(c1[0].level === 'warn', 'C1 level is warn');
+  selfAssert(c1[0].level === 'fail', 'C1 level is fail');
   selfAssert(c2.some(x => x.level === 'fail'), 'C2 level is fail');
 }
 
@@ -245,5 +248,5 @@ if (fails.length > 0) {
 }
 
 const totalStories = allStories.length;
-process.stdout.write(`[pipeline-state-integrity] ${totalStories} stories checked — ${warns.length} warn, 0 fail ✓\n`);
+process.stdout.write(`[pipeline-state-integrity] ${totalStories} stories checked — 0 fail ✓\n`);
 process.exit(0);

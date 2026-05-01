@@ -261,10 +261,12 @@ git worktree remove [worktree-path]
 
 Update `.github/pipeline-state.json` in the **project repository** after the chosen option is executed:
 
-- **Draft PR opened:** set story `stage: "branch-complete"`, `prStatus: "draft"`, `prUrl: "[url]"`, `health: "green"`, `updatedAt: [now]`
-- **PR opened (ready for review):** set `prStatus: "open"`, `prUrl: "[url]"`
-- **Merged locally:** set `stage: "branch-complete"`, `prStatus: "merged"`, `health: "green"`
+- **Draft PR opened:** set story `stage: "branch-complete"`, `prStatus: "draft"`, `prUrl: "[url]"`, `health: "green"`, `testPlan.passing: [confirmed passing count from verify-completion]`, `acVerified: [confirmed AC count]`, `updatedAt: [now]`
+- **PR opened (ready for review):** set `prStatus: "open"`, `prUrl: "[url]"`, `testPlan.passing: [confirmed passing count]`, `acVerified: [confirmed AC count]`
+- **Merged locally:** set `stage: "branch-complete"`, `prStatus: "merged"`, `health: "green"`, `testPlan.passing: [confirmed passing count]`, `acVerified: [confirmed AC count]`
 - **Branch kept / discarded:** set `stage: "verify-completion"` (no PR yet)
+
+> **Why testPlan.passing matters:** The CI audit comment reads this value directly from pipeline-state.json on the PR branch HEAD. If it is 0 while `prStatus` is `draft` or `open`, every story in the audit record shows `0/N passing` regardless of actual test results. Set it to the confirmed count from /verify-completion before or immediately after opening the PR.
 
 **Parent propagation (apply to every inner loop state write):**
 - Always update the feature-level `updatedAt: [now]` — the visualiser staleness timer reads this field; if only the story `updatedAt` is written the feature card shows "STALE PROC"
