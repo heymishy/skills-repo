@@ -4504,8 +4504,8 @@
               "id": "i1.1",
               "slug": "i1.1",
               "name": "/orient concierge SKILL.md â€” read pipeline state and route operator to next skill",
-              "stage": "test-plan",
-              "dorStatus": "not-started",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
               "reviewStatus": "passed",
               "health": "green",
               "testPlan": {
@@ -4518,7 +4518,7 @@
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.1-orient-skill.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i1.1-orient-skill-review-1.md",
               "highFindings": 0,
-              "updatedAt": "2026-05-01T06:38:29.910Z",
+              "updatedAt": "2026-05-01T07:11:17.391Z",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false
             }
@@ -4533,8 +4533,8 @@
               "id": "i1.2",
               "slug": "i1.2",
               "name": "platform:init and platform:fetch CLI â€” one-command repo bootstrap",
-              "stage": "test-plan",
-              "dorStatus": "not-started",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
               "reviewStatus": "passed",
               "health": "green",
               "testPlan": {
@@ -4547,7 +4547,7 @@
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.2-platform-init-fetch.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i1.2-platform-init-fetch-review-1.md",
               "highFindings": 0,
-              "updatedAt": "2026-05-01T06:38:29.910Z",
+              "updatedAt": "2026-05-01T07:11:17.391Z",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false
             },
@@ -4555,8 +4555,8 @@
               "id": "i1.3",
               "slug": "i1.3",
               "name": "platform-lock.json schema + platform:pin + platform:verify â€” lockfile contract",
-              "stage": "test-plan",
-              "dorStatus": "not-started",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
               "reviewStatus": "passed",
               "health": "green",
               "testPlan": {
@@ -4569,7 +4569,7 @@
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.3-lockfile-pin-verify.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i1.3-lockfile-pin-verify-review-1.md",
               "highFindings": 0,
-              "updatedAt": "2026-05-01T06:38:29.910Z",
+              "updatedAt": "2026-05-01T07:11:17.391Z",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false
             }
@@ -4585,9 +4585,9 @@
               "slug": "i2.1",
               "name": "Entry A routing â€” detect stories without discovery, route to /tdd",
               "stage": "test-plan",
-              "dorStatus": "not-started",
+              "dorStatus": "blocked",
               "reviewStatus": "passed",
-              "health": "green",
+              "health": "red",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -4598,16 +4598,17 @@
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.1-entry-a-story-first.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i2.1-entry-a-story-first-review-1.md",
               "highFindings": 0,
-              "updatedAt": "2026-05-01T06:38:29.910Z",
+              "updatedAt": "2026-05-01T07:11:17.391Z",
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "blocker": "H2: 2 ACs present, minimum 3 required in Given/When/Then format. AC2 also lacks an explicit When clause. Add a third well-formed AC and repair AC2 before re-running DoR."
             },
             {
               "id": "i2.2",
               "slug": "i2.2",
               "name": "Entry B routing â€” detect existing codebase, route to /reverse-engineer",
-              "stage": "test-plan",
-              "dorStatus": "not-started",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
               "reviewStatus": "passed",
               "health": "green",
               "testPlan": {
@@ -4620,7 +4621,7 @@
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.2-entry-b-code-first.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i2.2-entry-b-code-first-review-1.md",
               "highFindings": 0,
-              "updatedAt": "2026-05-01T06:38:29.910Z",
+              "updatedAt": "2026-05-01T07:11:17.391Z",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false
             },
@@ -4628,8 +4629,8 @@
               "id": "i2.3",
               "slug": "i2.3",
               "name": "Entry C routing â€” detect no-history repo, surface retrospective story path",
-              "stage": "test-plan",
-              "dorStatus": "not-started",
+              "stage": "definition-of-ready",
+              "dorStatus": "signed-off",
               "reviewStatus": "passed",
               "health": "green",
               "testPlan": {
@@ -4642,7 +4643,7 @@
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.3-entry-c-no-history.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i2.3-entry-c-no-history-review-1.md",
               "highFindings": 0,
-              "updatedAt": "2026-05-01T06:38:29.910Z",
+              "updatedAt": "2026-05-01T07:11:17.391Z",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false
             }
