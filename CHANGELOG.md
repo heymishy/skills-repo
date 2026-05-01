@@ -8,6 +8,12 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- **`i1.3` — `platform:pin` and `platform:verify` lockfile CLI commands (2026-05-02):** Two new scripts added — `scripts/platform-pin.js` creates/updates `platform-lock.json` (schema v1: version, pinnedAt ISO-8601, platform git SHA, SHA-256 hash per skill file with forward-slash keys) and `scripts/platform-verify.js` exits 0 when all files match or exits non-zero with a three-part actionable error (file path + expected vs actual SHA + fix command). Two new `package.json` entries: `platform:pin` and `platform:verify`. All 24 tests in `tests/check-i1.3-lockfile-pin-verify.js` pass.
+
+
+
+
+
 - **`i2.1` — Entry A routing for brownfield engineer with existing story artefacts (2026-05-02):** New routing state in `.github/skills/orient/SKILL.md`. Entry A fires when story artefacts exist under `artefacts/[feature]/stories/` and no `discovery.md` is present. Routes to `/discovery` with instruction to use existing stories as input scope; names `/tdd` as inner loop entry point with explicit no-re-derivation note. Detection signal transparency: output names what was found. Classification presented as confirmatory ("This looks like Entry A"). 9/9 tests pass.
 
 
