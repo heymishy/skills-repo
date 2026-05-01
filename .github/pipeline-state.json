@@ -4352,7 +4352,7 @@
     {
       "slug": "2026-04-30-governed-distribution-and-onboarding",
       "name": "Governed distribution, onboarding, and brownfield adoption",
-      "stage": "definition",
+      "stage": "definition-of-done",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -4498,74 +4498,82 @@
         {
           "slug": "i1-orient-epic",
           "name": "/orient concierge skill for pipeline orientation",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "id": "i1.1",
               "slug": "i1.1",
               "name": "/orient concierge SKILL.md â€” read pipeline state and route operator to next skill",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "reviewStatus": "passed",
               "health": "green",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/241",
               "testPlan": {
                 "status": "written",
-                "totalTests": 19,
-                "passing": 19
+                "totalTests": 29,
+                "passing": 29
               },
               "acTotal": 8,
               "acVerified": 8,
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.1-orient-skill.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i1.1-orient-skill-review-1.md",
               "highFindings": 0,
-              "updatedAt": "2026-05-01T07:11:17.391Z",
+              "updatedAt": "2026-05-02T12:00:00Z",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "issueUrl": "https://github.com/heymishy/skills-repo/issues/235",
+              "issueUrl": "https://github.com/heymishy/skills-repo/pull/241",
               "dispatchedAt": "2026-05-01T00:00:00Z",
-              "dispatchTarget": "vscode"
+              "dispatchTarget": "vscode",
+              "dodStatus": "complete",
+              "dodArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/dod/i1.1-orient-skill-dod.md",
+              "dodOutcome": "complete",
+              "releaseReady": true
             }
           ]
         },
         {
           "slug": "i1-lockfile-cli-epic",
           "name": "One-command platform bootstrap with reproducible lockfile",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "id": "i1.2",
               "slug": "i1.2",
               "name": "platform:init and platform:fetch CLI â€” one-command repo bootstrap",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "reviewStatus": "passed",
               "health": "green",
               "testPlan": {
                 "status": "written",
-                "totalTests": 18,
-                "passing": 18
+                "totalTests": 20,
+                "passing": 20
               },
               "acTotal": 5,
               "acVerified": 5,
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/242",
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.2-platform-init-fetch.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i1.2-platform-init-fetch-review-1.md",
               "highFindings": 0,
-              "updatedAt": "2026-05-01T07:11:17.391Z",
+              "updatedAt": "2026-05-02T12:00:00Z",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "issueUrl": "https://github.com/heymishy/skills-repo/issues/236",
+              "issueUrl": "https://github.com/heymishy/skills-repo/pull/242",
               "dispatchedAt": "2026-05-01T00:00:00Z",
-              "dispatchTarget": "vscode"
+              "dispatchTarget": "vscode",
+              "dodStatus": "complete",
+              "dodArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/dod/i1.2-platform-init-fetch-dod.md",
+              "dodOutcome": "complete-with-deviations",
+              "releaseReady": true
             },
             {
               "id": "i1.3",
               "slug": "i1.3",
               "name": "platform-lock.json schema + platform:pin + platform:verify â€” lockfile contract",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "reviewStatus": "passed",
               "health": "green",
@@ -4579,27 +4587,31 @@
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.3-lockfile-pin-verify.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i1.3-lockfile-pin-verify-review-1.md",
               "highFindings": 0,
-              "updatedAt": "2026-05-01T07:11:17.391Z",
+              "updatedAt": "2026-05-02T12:00:00Z",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "issueUrl": "https://github.com/heymishy/skills-repo/issues/237",
+              "issueUrl": "https://github.com/heymishy/skills-repo/pull/245",
               "dispatchedAt": "2026-05-01T00:00:00Z",
               "dispatchTarget": "vscode",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/245"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/245",
+              "dodStatus": "complete",
+              "dodArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/dod/i1.3-lockfile-pin-verify-dod.md",
+              "dodOutcome": "complete-with-deviations",
+              "releaseReady": true
             }
           ]
         },
         {
           "slug": "i2-brownfield-routing-epic",
           "name": "Brownfield entry routing in /orient",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "id": "i2.1",
               "slug": "i2.1",
               "name": "Entry A routing â€” detect stories without discovery, route to /tdd",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "reviewStatus": "passed",
               "health": "green",
@@ -4613,20 +4625,24 @@
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.1-entry-a-story-first.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i2.1-entry-a-story-first-review-1.md",
               "highFindings": 0,
-              "updatedAt": "2026-05-01T07:11:17.391Z",
+              "updatedAt": "2026-05-02T12:00:00Z",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "issueUrl": "https://github.com/heymishy/skills-repo/issues/238",
+              "issueUrl": "https://github.com/heymishy/skills-repo/pull/243",
               "dispatchedAt": "2026-05-01T00:00:00Z",
               "dispatchTarget": "vscode",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/243"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/243",
+              "dodStatus": "complete",
+              "dodArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/dod/i2.1-entry-a-story-first-dod.md",
+              "dodOutcome": "complete",
+              "releaseReady": true
             },
             {
               "id": "i2.2",
               "slug": "i2.2",
               "name": "Entry B routing â€” detect existing codebase, route to /reverse-engineer",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "reviewStatus": "passed",
               "health": "green",
@@ -4640,20 +4656,24 @@
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.2-entry-b-code-first.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i2.2-entry-b-code-first-review-1.md",
               "highFindings": 0,
-              "updatedAt": "2026-05-01T07:11:17.391Z",
+              "updatedAt": "2026-05-02T12:00:00Z",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "issueUrl": "https://github.com/heymishy/skills-repo/issues/239",
+              "issueUrl": "https://github.com/heymishy/skills-repo/pull/244",
               "dispatchedAt": "2026-05-01T00:00:00Z",
               "dispatchTarget": "vscode",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/244"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/244",
+              "dodStatus": "complete",
+              "dodArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/dod/i2.2-entry-b-code-first-dod.md",
+              "dodOutcome": "complete",
+              "releaseReady": true
             },
             {
               "id": "i2.3",
               "slug": "i2.3",
               "name": "Entry C routing â€” detect no-history repo, surface retrospective story path",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "dorStatus": "signed-off",
               "reviewStatus": "passed",
               "health": "green",
@@ -4667,14 +4687,18 @@
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.3-entry-c-no-history.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i2.3-entry-c-no-history-review-1.md",
               "highFindings": 0,
-              "updatedAt": "2026-05-01T07:11:17.391Z",
+              "updatedAt": "2026-05-02T12:00:00Z",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "issueUrl": "https://github.com/heymishy/skills-repo/issues/240",
+              "issueUrl": "https://github.com/heymishy/skills-repo/pull/246",
               "dispatchedAt": "2026-05-01T00:00:00Z",
               "dispatchTarget": "vscode",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/246"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/246",
+              "dodStatus": "complete",
+              "dodArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/dod/i2.3-entry-c-no-history-dod.md",
+              "dodOutcome": "complete-with-deviations",
+              "releaseReady": true
             }
           ]
         }
@@ -4852,7 +4876,7 @@
           "assessedAt": "2026-05-01T00:00:00Z"
         }
       ],
-      "updatedAt": "2026-05-01T00:00:00Z",
+      "updatedAt": "2026-05-02T12:00:00Z",
       "metrics": [
         {
           "id": "M1",
