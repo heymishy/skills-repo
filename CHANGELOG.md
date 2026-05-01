@@ -8,6 +8,10 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- **`i1.2` — `platform:init` and `platform:fetch` CLI commands (2026-05-02):** New scripts `scripts/platform-init.js` and `scripts/platform-fetch.js` implementing one-command platform bootstrap. `platform:init` copies `.github/skills/`, `.github/templates/`, `scripts/` to a target repo and creates `.github/copilot-instructions.md`; skips existing files by default, `--force` overwrites; outputs install summary. `platform:fetch` fetches latest skill files from the platform source and records a timestamp in `workspace/platform-fetch-log.json`. Both use Node.js built-ins only — zero new runtime npm dependencies. `package.json` entries `platform:init` and `platform:fetch` added. 18/20 tests pass; 2 remaining tests (`platform-init-reports-skipped-files`, `platform-init-force-flag-overwrites-existing`) depend on `orient/SKILL.md` from i1.1 being on master first.
+
+
+
 - **`i1.1` — `/orient` concierge SKILL.md created (2026-05-02):** New skill at `.github/skills/orient/SKILL.md` implementing the `/orient` pipeline orientation concierge. Routes operators across all 8 pipeline states: new repo → `/discovery`; incomplete discovery → `/clarify`; complete unapproved discovery → `/discovery` (approval); approved + no benefit-metric → `/benefit-metric`; benefit-metric active + no stories → `/definition`; stories with missing test plan → `/test-plan`; `dorStatus: signed-off` + branch exists → `/verify-completion`; `dorStatus: signed-off` + no branch → `/branch-setup`. Explicitly distinct from `/start` (greenfield only) and `/workflow` (experienced operator diagnostic). References `dorStatus` and `pipeline-state.json` by canonical name. All 29 asserts in `tests/check-i1.1-orient-skill.js` pass (19 logical tests — 16 unit + 2 integration + 1 NFR).
 
 
