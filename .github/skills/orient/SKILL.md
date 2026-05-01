@@ -1,4 +1,4 @@
----
+﻿---
 name: orient
 description: >
   Guided orientation concierge for new or returning consumers, including non-technical
@@ -18,13 +18,13 @@ triggers:
   - "guide me"
 ---
 
-# Orient Skill — Pipeline Orientation Concierge
+# Orient Skill ÔÇö Pipeline Orientation Concierge
 
 ## Purpose
 
 `/orient` reads the current repository's artefact state and routes the operator to the correct next skill. It is the first command any new or returning consumer should run when they are unsure where they are in the pipeline.
 
-**Distinct from `/start`:** `/start` is for greenfield, brand-new repositories only — a single-use bootstrap. Use `/orient` when a repo already has some history or artefacts.
+**Distinct from `/start`:** `/start` is for greenfield, brand-new repositories only ÔÇö a single-use bootstrap. Use `/orient` when a repo already has some history or artefacts.
 
 **Distinct from `/workflow`:** `/workflow` is a diagnostic tool for experienced operators who understand the pipeline and want to inspect why something is stuck. Use `/orient` when you just want to be told what to do next.
 
@@ -50,7 +50,7 @@ Before routing, silently read:
    - The `dorStatus` field on any story (value: `signed-off` = ready for implementation)
 4. Check whether a worktree or branch named `feature/[story-slug]` exists (branch detection: run `git branch --list feature/*` or check `.worktrees/` directory).
 
-Produce a single structured output: **Current state → Next skill → One-sentence rationale → Exact command**.
+Produce a single structured output: **Current state ÔåÆ Next skill ÔåÆ One-sentence rationale ÔåÆ Exact command**.
 
 ---
 
@@ -60,12 +60,38 @@ Work through these states **in order**. Stop at the first match.
 
 ---
 
-### State 1 — New repository (AC1)
+## Entry A ÔÇö Brownfield: Existing story artefacts, no discovery
+
+**Detection condition:** Story artefacts matching `[story-id]-*.md` are present under `artefacts/[feature]/stories/` ÔÇö **AND** no `discovery.md` file exists anywhere under `artefacts/` (presence of `discovery.md`, even if unapproved or incomplete, disqualifies Entry A ÔÇö standard discovery-in-progress routing takes precedence).
+
+**Detection signal (name what you found):**
+Before routing, state what was found ÔÇö for example:
+> "Found: story artefacts under `artefacts/[feature]/stories/` (e.g. `s1.1-feature-name.md`); no `discovery.md` found. This looks like **Entry A ÔÇö story-first brownfield**."
+
+Use confirmatory language. Present the classification as something to confirm, not an assertion: say "This looks like Entry A" not "This is Entry A". Invite the operator to correct the classification if it does not match their situation.
+
+**Routing output:**
+
+> **Current state:** Entry A ÔÇö story-first brownfield. Story artefacts detected; no discovery artefact found.
+>
+> **What this means:** Your repository has existing story artefacts that were written outside the governed pipeline. These stories can be adopted ÔÇö you do not need to re-derive or discard them. A discovery artefact is needed to provide the business context and approval anchor; your existing story artefacts become its input scope.
+>
+> **Inner loop entry point:** `/tdd` ÔÇö your existing story artefacts can be attached directly to a TDD cycle without re-deriving them from scratch.
+>
+> **Outer loop anchor:** `/discovery` ÔÇö run `/discovery` to create a lightweight discovery that captures the intent behind your existing stories. Reference your existing story artefacts as the scope input.
+>
+> **Next skill:** `/discovery`
+>
+> **Run:** `/discovery` (reference existing stories as input scope)
+
+---
+
+### State 1 ÔÇö New repository (AC1)
 
 **Condition:** `artefacts/` does not exist or is empty, AND `pipeline-state.json` does not exist.
 
 **Output:**
-> **Current state:** No artefacts found — this is a new repository (or a clean slate).
+> **Current state:** No artefacts found ÔÇö this is a new repository (or a clean slate).
 >
 > **Next skill:** `/discovery`
 >
@@ -75,12 +101,12 @@ Work through these states **in order**. Stop at the first match.
 
 ---
 
-### State 2 — Incomplete discovery exists (AC2a)
+### State 2 ÔÇö Incomplete discovery exists (AC2a)
 
 **Condition:** A `discovery.md` file exists under `artefacts/` but contains `[FILL IN]` markers or is missing required sections (Problem Statement, Personas, Out of Scope, or Approved By).
 
 **Output:**
-> **Current state:** Discovery artefact found but incomplete — [name the specific gap, e.g. "the Problem Statement section contains a `[FILL IN]` placeholder" or "the Personas section is missing"].
+> **Current state:** Discovery artefact found but incomplete ÔÇö [name the specific gap, e.g. "the Problem Statement section contains a `[FILL IN]` placeholder" or "the Personas section is missing"].
 >
 > **Next skill:** `/clarify`
 >
@@ -88,16 +114,16 @@ Work through these states **in order**. Stop at the first match.
 >
 > **Run:** `/clarify`
 
-**Important:** Name the specific incompleteness — do not produce a generic message. Identify which section is incomplete or which specific gap exists.
+**Important:** Name the specific incompleteness ÔÇö do not produce a generic message. Identify which section is incomplete or which specific gap exists.
 
 ---
 
-### State 3 — Complete but unapproved discovery (AC2b)
+### State 3 ÔÇö Complete but unapproved discovery (AC2b)
 
 **Condition:** A `discovery.md` file exists with all required sections populated and no `[FILL IN]` markers, but the `Status` field is not `Approved`.
 
 **Output:**
-> **Current state:** Discovery artefact exists and appears complete — approval is the remaining step.
+> **Current state:** Discovery artefact exists and appears complete ÔÇö approval is the remaining step.
 >
 > **Next skill:** `/discovery`
 >
@@ -105,16 +131,16 @@ Work through these states **in order**. Stop at the first match.
 >
 > **Run:** `/discovery`
 
-**Important:** Do NOT route to `/clarify` — the discovery is complete; it just needs approval.
+**Important:** Do NOT route to `/clarify` ÔÇö the discovery is complete; it just needs approval.
 
 ---
 
-### State 4 — Discovery approved, no benefit-metric (AC3)
+### State 4 ÔÇö Discovery approved, no benefit-metric (AC3)
 
 **Condition:** Discovery `Status: Approved` is present, but no `benefit-metric.md` artefact exists under `artefacts/[feature]/`.
 
 **Output:**
-> **Current state:** Discovery approved — benefit metrics not yet defined.
+> **Current state:** Discovery approved ÔÇö benefit metrics not yet defined.
 >
 > **Next skill:** `/benefit-metric`
 >
@@ -124,12 +150,12 @@ Work through these states **in order**. Stop at the first match.
 
 ---
 
-### State 5 — Benefit-metric active, no stories (AC4)
+### State 5 ÔÇö Benefit-metric active, no stories (AC4)
 
 **Condition:** A benefit-metric artefact exists and is active, but no story artefacts exist under `artefacts/[feature]/stories/`.
 
 **Output:**
-> **Current state:** Benefit metrics defined — no stories written yet.
+> **Current state:** Benefit metrics defined ÔÇö no stories written yet.
 >
 > **Next skill:** `/definition`
 >
@@ -139,12 +165,12 @@ Work through these states **in order**. Stop at the first match.
 
 ---
 
-### State 6 — Stories exist, missing test plan (AC5)
+### State 6 ÔÇö Stories exist, missing test plan (AC5)
 
 **Condition:** Story artefacts exist under `artefacts/[feature]/stories/`, but one or more stories do not have a corresponding test plan under `artefacts/[feature]/test-plans/`.
 
 **Output:**
-> **Current state:** Stories exist — [name the specific story without a test plan, e.g. "story `i1.1-orient-skill`"] is missing a test plan.
+> **Current state:** Stories exist ÔÇö [name the specific story without a test plan, e.g. "story `i1.1-orient-skill`"] is missing a test plan.
 >
 > **Next skill:** `/test-plan`
 >
@@ -156,12 +182,12 @@ Work through these states **in order**. Stop at the first match.
 
 ---
 
-### State 7 — DoR signed-off, branch exists (AC6a)
+### State 7 ÔÇö DoR signed-off, branch exists (AC6a)
 
 **Condition:** `pipeline-state.json` contains a story with `dorStatus: signed-off` and no merged PR, AND a branch or worktree named `feature/[story-slug]` exists (check `git branch --list feature/*` or look in `.worktrees/`).
 
 **Output:**
-> **Current state:** Story `[story-slug]` is DoR signed-off and a branch `feature/[story-slug]` exists — implementation is in progress.
+> **Current state:** Story `[story-slug]` is DoR signed-off and a branch `feature/[story-slug]` exists ÔÇö implementation is in progress.
 >
 > **Next skill:** `/verify-completion`
 >
@@ -171,12 +197,12 @@ Work through these states **in order**. Stop at the first match.
 
 ---
 
-### State 8 — DoR signed-off, no branch (AC6b)
+### State 8 ÔÇö DoR signed-off, no branch (AC6b)
 
 **Condition:** `pipeline-state.json` contains a story with `dorStatus: signed-off` and no merged PR, AND no branch or worktree for that story is found.
 
 **Output:**
-> **Current state:** Story `[story-slug]` is DoR signed-off — no implementation branch found.
+> **Current state:** Story `[story-slug]` is DoR signed-off ÔÇö no implementation branch found.
 >
 > **Next skill:** `/branch-setup`
 >
@@ -211,4 +237,4 @@ Every `/orient` response must include all four parts:
 3. **Why:** One sentence explaining what that skill does and why it is the right next step.
 4. **Run:** The exact command string to invoke.
 
-Do not produce vague responses. Every pipeline state has an explicit routing rule above — use them.
+Do not produce vague responses. Every pipeline state has an explicit routing rule above ÔÇö use them.
