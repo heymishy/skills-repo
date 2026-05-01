@@ -121,6 +121,36 @@ Use confirmatory language. Present the classification as something to confirm, n
 ---
 
 
+## Entry C ÔÇö Brownfield: No-history or ops-only repo (no pipeline artefacts, no application logic)
+
+**Detection signal:** Repository has git history, configuration files, or ops/infrastructure files (`.github/`, `Dockerfile`, CI configs, `scripts/`, `docs/`) but no application logic files triggering Entry B (no `src/`, `app/`, or `lib/` with code files) and no pipeline artefacts (no `artefacts/` directory or empty). Entry B is not applicable because no application logic files were found under `src/`, `app/`, or `lib/`. Greenfield (new empty repo with no commits or history) is handled earlier in the routing chain before Entry C is reached.
+
+> **This looks like Entry C** ÔÇö a no-history brownfield repo: the project exists and has been operated, but no delivery pipeline artefacts or application logic exist to route through Entry A or Entry B.
+
+**Why Entry C (not Entry B):** No application logic files found under `src/`, `app/`, or `lib/`. Entry B requires code to reverse-engineer. Entry C covers the case where only ops/config/history signals are present.
+
+**Priority in the routing chain:** Entry A (story artefacts) ÔåÆ Entry B (application code) ÔåÆ Entry C (brownfield fallback). A truly empty new repo never reaches Entry C ÔÇö it routes through the greenfield States 1ÔÇô8 detected earlier in this skill.
+
+**Adoption path ÔÇö retrospective discovery:**
+The right first step is a retrospective `/discovery` run to document what was built, why, and for whom. This is not a greenfield discovery ÔÇö it is retrospective discovery of existing work.
+
+1. Use the `.github/templates/retrospective-story.md` template to create retroactive story artefacts for any work already delivered.
+2. Run `/discovery` with a retrospective framing ÔÇö describe the system as it exists today, not as a future vision.
+3. Follow the standard pipeline from `/discovery` forward: `/benefit-metric` ÔåÆ `/definition` ÔåÆ test plan ÔåÆ DoR.
+
+**Detection signals found:** Git history or ops/configuration files present; no `artefacts/` pipeline artefacts; no application logic in `src/`, `app/`, or `lib/`.
+
+**Confirmatory language:** This looks like Entry C ÔÇö no-history brownfield.
+
+**Next skill:** `/discovery` (retrospective)
+
+> **Run:** `/discovery`
+> Note: This is a retrospective discovery session. Describe the system as it exists, reference the `retrospective-story.md` template for any completed work, and anchor on what value has already been delivered.
+
+---
+
+
+
 ### State 1 ÔÇö New repository (AC1)
 
 **Condition:** `artefacts/` does not exist or is empty, AND `pipeline-state.json` does not exist.
