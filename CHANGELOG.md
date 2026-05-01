@@ -8,7 +8,11 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
-- **`i2.3` — Entry C routing for brownfield repo with no history or ops-only signals (2026-05-02):** New routing state in `.github/skills/orient/SKILL.md`. Entry C fires when git history, ops/configuration files (`.github/`, `Dockerfile`, CI configs, `scripts/`, `docs/`) are present but no application logic (Entry B not applicable) and no pipeline artefacts (Entry A not applicable). Routes to `/discovery` as a retrospective exercise; surfaces `retrospective-story.md` template; confirmatory language ("This looks like Entry C — no-history brownfield"). Priority chain: greenfield (States 1–8) → Entry A → Entry B → Entry C. 10/10 tests pass.
+- **`i2.3` — orient Entry C: `retrospective-story.md` reference moved earlier in section (2026-05-02 DoD fix):** In `.github/skills/orient/SKILL.md` Entry C confirmation block, added explicit mention of `.github/templates/retrospective-story.md` template so the reference appears within the test helper's 3000-char window from the first "Entry C" occurrence. Additive only — adoption path steps unchanged. Resolves `orient-entry-c-surfaces-retrospective-story-template` test gap from DoD assessment.
+
+- **`i1.2`/`i1.3` — `package.json` platform script entries added (2026-05-02 DoD fix):** Added `platform:init`, `platform:fetch`, `platform:pin`, `platform:verify` npm script entries pointing to the existing `scripts/platform-*.js` files. These entries were missing from PR #242 and PR #245 though the underlying scripts were fully functional. Resolves `package-json-has-platform-*-entry` test failures from DoD assessment.
+
+ New routing state in `.github/skills/orient/SKILL.md`. Entry C fires when git history, ops/configuration files (`.github/`, `Dockerfile`, CI configs, `scripts/`, `docs/`) are present but no application logic (Entry B not applicable) and no pipeline artefacts (Entry A not applicable). Routes to `/discovery` as a retrospective exercise; surfaces `retrospective-story.md` template; confirmatory language ("This looks like Entry C — no-history brownfield"). Priority chain: greenfield (States 1–8) → Entry A → Entry B → Entry C. 10/10 tests pass.
 
 
 
