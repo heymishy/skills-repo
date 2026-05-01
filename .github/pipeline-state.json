@@ -4506,14 +4506,16 @@
               "name": "/orient concierge SKILL.md â€” read pipeline state and route operator to next skill",
               "stage": "definition",
               "dorStatus": "not-started",
-              "reviewStatus": "not-started",
+              "reviewStatus": "passed",
               "health": "green",
               "testPlan": {
                 "status": "not-started"
               },
               "acTotal": 6,
               "acVerified": 0,
-              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.1-orient-skill.md"
+              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.1-orient-skill.md",
+              "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i1.1-orient-skill-review-1.md",
+              "highFindings": 0
             }
           ]
         },
@@ -4528,14 +4530,16 @@
               "name": "platform:init and platform:fetch CLI â€” one-command repo bootstrap",
               "stage": "definition",
               "dorStatus": "not-started",
-              "reviewStatus": "not-started",
+              "reviewStatus": "passed",
               "health": "green",
               "testPlan": {
                 "status": "not-started"
               },
               "acTotal": 5,
               "acVerified": 0,
-              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.2-platform-init-fetch.md"
+              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.2-platform-init-fetch.md",
+              "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i1.2-platform-init-fetch-review-1.md",
+              "highFindings": 0
             },
             {
               "id": "i1.3",
@@ -4543,14 +4547,16 @@
               "name": "platform-lock.json schema + platform:pin + platform:verify â€” lockfile contract",
               "stage": "definition",
               "dorStatus": "not-started",
-              "reviewStatus": "not-started",
+              "reviewStatus": "passed",
               "health": "green",
               "testPlan": {
                 "status": "not-started"
               },
               "acTotal": 5,
               "acVerified": 0,
-              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.3-lockfile-pin-verify.md"
+              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.3-lockfile-pin-verify.md",
+              "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i1.3-lockfile-pin-verify-review-1.md",
+              "highFindings": 0
             }
           ]
         },
@@ -4565,14 +4571,16 @@
               "name": "Entry A routing â€” detect stories without discovery, route to /tdd",
               "stage": "definition",
               "dorStatus": "not-started",
-              "reviewStatus": "not-started",
+              "reviewStatus": "passed",
               "health": "green",
               "testPlan": {
                 "status": "not-started"
               },
               "acTotal": 3,
               "acVerified": 0,
-              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.1-entry-a-story-first.md"
+              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.1-entry-a-story-first.md",
+              "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i2.1-entry-a-story-first-review-1.md",
+              "highFindings": 0
             },
             {
               "id": "i2.2",
@@ -4580,14 +4588,16 @@
               "name": "Entry B routing â€” detect existing codebase, route to /reverse-engineer",
               "stage": "definition",
               "dorStatus": "not-started",
-              "reviewStatus": "not-started",
+              "reviewStatus": "passed",
               "health": "green",
               "testPlan": {
                 "status": "not-started"
               },
               "acTotal": 3,
               "acVerified": 0,
-              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.2-entry-b-code-first.md"
+              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.2-entry-b-code-first.md",
+              "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i2.2-entry-b-code-first-review-1.md",
+              "highFindings": 0
             },
             {
               "id": "i2.3",
@@ -4595,14 +4605,16 @@
               "name": "Entry C routing â€” detect no-history repo, surface retrospective story path",
               "stage": "definition",
               "dorStatus": "not-started",
-              "reviewStatus": "not-started",
+              "reviewStatus": "passed",
               "health": "green",
               "testPlan": {
                 "status": "not-started"
               },
               "acTotal": 3,
               "acVerified": 0,
-              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.3-entry-c-no-history.md"
+              "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i2.3-entry-c-no-history.md",
+              "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i2.3-entry-c-no-history-review-1.md",
+              "highFindings": 0
             }
           ]
         }
