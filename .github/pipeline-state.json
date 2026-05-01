@@ -4511,7 +4511,7 @@
               "testPlan": {
                 "status": "not-started"
               },
-              "acTotal": 6,
+              "acTotal": 8,
               "acVerified": 0,
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.1-orient-skill.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i1.1-orient-skill-review-1.md",
