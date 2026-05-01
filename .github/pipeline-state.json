@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "1",
   "updated": "2026-04-23T00:00:00Z",
   "programmes": [],
@@ -4504,17 +4504,19 @@
               "id": "i1.1",
               "slug": "i1.1",
               "name": "/orient concierge SKILL.md â€” read pipeline state and route operator to next skill",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "dorStatus": "signed-off",
               "reviewStatus": "passed",
               "health": "green",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/241",
               "testPlan": {
                 "status": "written",
                 "totalTests": 19,
-                "passing": 0
+                "passing": 19
               },
               "acTotal": 8,
-              "acVerified": 0,
+              "acVerified": 8,
               "artefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/stories/i1.1-orient-skill.md",
               "reviewArtefact": "artefacts/2026-04-30-governed-distribution-and-onboarding/review/i1.1-orient-skill-review-1.md",
               "highFindings": 0,
