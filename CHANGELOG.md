@@ -8,6 +8,13 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- **`i2.3` — Entry C routing for brownfield repo with no history or ops-only signals (2026-05-02):** New routing state in `.github/skills/orient/SKILL.md`. Entry C fires when git history, ops/configuration files (`.github/`, `Dockerfile`, CI configs, `scripts/`, `docs/`) are present but no application logic (Entry B not applicable) and no pipeline artefacts (Entry A not applicable). Routes to `/discovery` as a retrospective exercise; surfaces `retrospective-story.md` template; confirmatory language ("This looks like Entry C — no-history brownfield"). Priority chain: greenfield (States 1–8) → Entry A → Entry B → Entry C. 10/10 tests pass.
+
+
+
+
+
+
 - **`i2.2` — Entry B routing for brownfield engineer with existing code (2026-05-02):** New routing state in `.github/skills/orient/SKILL.md`. Entry B fires when application logic files (`.js`, `.ts`, `.py`, `.java`, `.rb`, `.go`, `.cs`, `.cpp`, `.rs`, `.swift`, `.kt`) exist under `src/`, `app/`, or `lib/` and no `artefacts/` directory is present or it is empty. Priority rule: Entry A (story artefacts present) takes precedence. Config-only repos (`.yml`, `.json`, Dockerfile) do not trigger Entry B. Routes to `/reverse-engineer` with full suggested path (`/reverse-engineer` → `/discovery` → `/benefit-metric` → `/definition`). Detection signal transparency and confirmatory language ("This looks like Entry B"). 9/9 tests pass.
 
 
