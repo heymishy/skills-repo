@@ -8,6 +8,13 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- **`i2.2` — Entry B routing for brownfield engineer with existing code (2026-05-02):** New routing state in `.github/skills/orient/SKILL.md`. Entry B fires when application logic files (`.js`, `.ts`, `.py`, `.java`, `.rb`, `.go`, `.cs`, `.cpp`, `.rs`, `.swift`, `.kt`) exist under `src/`, `app/`, or `lib/` and no `artefacts/` directory is present or it is empty. Priority rule: Entry A (story artefacts present) takes precedence. Config-only repos (`.yml`, `.json`, Dockerfile) do not trigger Entry B. Routes to `/reverse-engineer` with full suggested path (`/reverse-engineer` → `/discovery` → `/benefit-metric` → `/definition`). Detection signal transparency and confirmatory language ("This looks like Entry B"). 9/9 tests pass.
+
+
+
+
+
+
 - **`i1.3` — `platform:pin` and `platform:verify` lockfile CLI commands (2026-05-02):** Two new scripts added — `scripts/platform-pin.js` creates/updates `platform-lock.json` (schema v1: version, pinnedAt ISO-8601, platform git SHA, SHA-256 hash per skill file with forward-slash keys) and `scripts/platform-verify.js` exits 0 when all files match or exits non-zero with a three-part actionable error (file path + expected vs actual SHA + fix command). Two new `package.json` entries: `platform:pin` and `platform:verify`. All 24 tests in `tests/check-i1.3-lockfile-pin-verify.js` pass.
 
 

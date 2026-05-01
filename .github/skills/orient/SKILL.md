@@ -86,6 +86,41 @@ Use confirmatory language. Present the classification as something to confirm, n
 
 ---
 
+## Entry B ÔÇö Brownfield: Existing application code, no pipeline artefacts
+
+**Summary path:** `/reverse-engineer` ÔåÆ `/discovery` ÔåÆ `/benefit-metric` ÔåÆ `/definition`
+
+**Detection condition:** Application logic files (`.js`, `.ts`, `.py`, `.java`, `.rb`, `.go`, `.cs`, `.cpp`, `.rs`, `.swift`, `.kt`) are present under `src/`, `app/`, or `lib/` directories ÔÇö **AND** no `artefacts/` folder exists or it is empty (contains no `.md` files).
+
+**Priority rule:** Entry A takes precedence ÔÇö if story artefacts are present under `artefacts/[feature]/stories/`, Entry A routing applies, not Entry B. Entry B requires the complete absence of any pipeline artefacts (no story artefacts, no discovery, no artefacts directory with content).
+
+**Boundary:** Repositories containing only configuration or infrastructure files (`.yml`, `.json`, `Dockerfile`, `.tf`, Makefile, `k8s/`, `terraform/`) do **not** trigger Entry B ÔÇö these are config-only repos and fall through to Entry C (no pipeline history). Entry B requires genuine application logic files with one of the listed extensions in a recognised source directory.
+
+**Detection signal (name what you found):**
+Before routing, state what was found ÔÇö for example:
+> "Found: `src/` directory with application logic files (e.g. `.ts`, `.py`); no `artefacts/` directory. This looks like **Entry B ÔÇö code-first brownfield**."
+
+Use confirmatory language. Present the classification as something to confirm, not an assertion: say "This looks like Entry B" not "This is Entry B". Invite the operator to correct the classification if it does not match their situation.
+
+**Routing output:**
+
+> **Current state:** Entry B ÔÇö code-first brownfield. Application code detected; no pipeline artefacts found.
+>
+> **What this means:** Your repository has existing application code but no governed delivery artefacts. Before continuing with the pipeline, extract the existing system's business rules and design using `/reverse-engineer`. This builds the artefact foundation that makes `/discovery` meaningful and grounded in the actual system behaviour.
+>
+> **Suggested path:**
+> 1. `/reverse-engineer` ÔÇö extract business rules, data contracts, and interface behaviour from the existing codebase
+> 2. `/discovery` ÔÇö structure the extracted knowledge into a discovery artefact
+> 3. `/benefit-metric` ÔÇö define measurable targets for the feature or migration
+> 4. `/definition` ÔÇö break the discovery into stories ready for delivery
+>
+> **Next skill:** `/reverse-engineer`
+>
+> **Run:** `/reverse-engineer`
+
+---
+
+
 ### State 1 ÔÇö New repository (AC1)
 
 **Condition:** `artefacts/` does not exist or is empty, AND `pipeline-state.json` does not exist.
