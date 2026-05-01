@@ -4647,7 +4647,7 @@
               "id": "i2.3",
               "slug": "i2.3",
               "name": "Entry C routing â€” detect no-history repo, surface retrospective story path",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "dorStatus": "signed-off",
               "reviewStatus": "passed",
               "health": "green",
