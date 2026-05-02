@@ -1,0 +1,21 @@
+{
+  "content": {
+    "name": "discovery.md",
+    "path": "artefacts/2026-01-01-example-feature/discovery.md",
+    "sha": "def789abc012"
+  },
+  "commit": {
+    "sha": "commit-sha-abc123",
+    "message": "sign-off: artefacts/2026-01-01-example-feature/discovery.md approved by Test Stakeholder",
+    "author": {
+      "name": "Test Stakeholder",
+      "email": "stakeholder@example.com",
+      "date": "2026-05-02T10:00:00Z"
+    },
+    "committer": {
+      "name": "Test Stakeholder",
+      "email": "stakeholder@example.com",
+      "date": "2026-05-02T10:00:00Z"
+    }
+  }
+}
