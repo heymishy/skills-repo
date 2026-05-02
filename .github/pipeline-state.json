@@ -5138,7 +5138,7 @@
       "slug": "2026-05-02-web-ui-copilot-execution-layer",
       "name": "Web UI + Copilot Execution Layer — Non-Technical Outer Loop Surface",
       "track": "standard",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "regulated": false,
       "complianceProfile": "standard",
@@ -5146,6 +5146,8 @@
       "sensitiveDataCategories": [],
       "discoveryStatus": "approved",
       "discoveryArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/discovery.md",
+      "benefitMetricStatus": "active",
+      "benefitMetricArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/benefit-metric.md",
       "updatedAt": "2026-05-02",
       "stories": []
     }
