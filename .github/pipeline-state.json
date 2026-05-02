@@ -5133,6 +5133,21 @@
         }
       ],
       "updatedAt": "2026-05-02"
+    },
+    {
+      "slug": "2026-05-02-web-ui-copilot-execution-layer",
+      "name": "Web UI + Copilot Execution Layer — Non-Technical Outer Loop Surface",
+      "track": "standard",
+      "stage": "discovery",
+      "health": "green",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discoveryStatus": "draft",
+      "discoveryArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/discovery.md",
+      "updatedAt": "2026-05-02",
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
