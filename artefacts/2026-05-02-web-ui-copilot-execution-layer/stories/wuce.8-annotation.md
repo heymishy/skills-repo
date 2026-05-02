@@ -28,7 +28,7 @@ So that my input is captured alongside the artefact in the repository under my i
 
 ## Acceptance Criteria
 
-**AC1:** Given an authenticated user is viewing a pipeline artefact, When they hover over or click a section heading, Then an "Add annotation" affordance appears allowing them to type a comment of up to 2000 characters and submit it.
+**AC1:** Given an authenticated user is viewing a pipeline artefact, When they activate the annotation control for a section heading (via mouse hover, keyboard focus, or click), Then an "Add annotation" affordance appears allowing them to type a comment of up to 2000 characters and submit it.
 
 **AC2:** Given a user submits an annotation on a section, When the commit succeeds, Then the annotation is appended to the artefact file in a structured `## Annotations` section with the user's GitHub display name, the target section heading, the annotation text, and an ISO 8601 timestamp — committed under the user's identity.
 
@@ -37,6 +37,8 @@ So that my input is captured alongside the artefact in the repository under my i
 **AC4:** Given a user attempts to submit an annotation containing HTML script tags, When the server validates the input, Then the script tags are stripped and the sanitised text (if any remains) is committed — no raw HTML is persisted in the artefact.
 
 **AC5:** Given a user submits an annotation exceeding 2000 characters, When the server receives the request, Then it rejects the request with a 400 error and an appropriate message — no partial annotation is committed.
+
+**AC6:** Given the GitHub Contents API returns a 409 conflict error (the artefact file was updated since the page loaded), When the annotation commit fails, Then the server fetches the current file SHA, retries the write once, and returns a conflict error to the client if the retry also fails — the user is shown a clear message to reload the artefact and retry, and no annotation data is silently lost or partially committed.
 
 ## Out of Scope
 
