@@ -1,11 +1,25 @@
 {
-  "currentPhase": "branch-complete",
-  "activeFeature": "2026-05-02-state-file-authority-model",
-  "lastUpdated": "2026-05-02T20:00:00Z",
+  "currentPhase": "discovery",
+  "activeFeature": "2026-05-02-web-ui-copilot-execution-layer",
+  "lastUpdated": "2026-05-02T20:30:00Z",
+  "estimate": {
+    "e1": {
+      "date": "2026-05-02",
+      "expectedCalendarDays": 1,
+      "engagementFraction": 0.50,
+      "outerLoopFocusH": 1,
+      "innerLoopHuman": 0,
+      "expectedStoryCount": 20,
+      "confidence": "low",
+      "assumptions": "Phase 1 and Phase 2 combined rough count. Spike required before Phase 2 stories can be scoped — story count may reduce if spike produces REDESIGN. Gauge captured at month start (Pro+ counter reset May 1).",
+      "gaugeAtStart": 2.5,
+      "premiumRequestsForecast": null
+    }
+  },
   "checkpoint": {
     "writtenAt": "2026-05-02",
-    "contextAtWrite": "sfa.1 fully implemented on feature/sfa.1. TDD complete: 17/17 tests passing, 6/6 ACs verified. workspace/state.schema.json created. ADR-016 and ADR-017 appended to architecture-guardrails.md. /checkpoint SKILL.md updated with schema reference. package.json updated. Draft PR #247 opened at https://github.com/heymishy/skills-repo/pull/247. No net-new npm test failures (only pre-existing 3 workspace-state failures).",
-    "resumeInstruction": "sfa.1 is at branch-complete. Draft PR #247 is open. Next step: /verify-completion to confirm all ACs against the PR, then /branch-complete (PR is already open) → /definition-of-done after merge. Check: node tests/check-sfa1-state-schema.js in .worktrees/sfa.1 should show 17 passed, 0 failed.",
+    "contextAtWrite": "Discovery approved for 2026-05-02-web-ui-copilot-execution-layer (Web UI + Copilot Execution Layer). All 8 sections confirmed by Hamish King and Jenni Ralph. E1 estimate recorded. Previous active feature sfa.1 DoD-complete (PR #247 merged). Next: /benefit-metric for new feature.",
+    "resumeInstruction": "Active feature: 2026-05-02-web-ui-copilot-execution-layer. Discovery is approved. Run /benefit-metric next to define measurement framework. Artefact at artefacts/2026-05-02-web-ui-copilot-execution-layer/discovery.md. Note: Copilot CLI server-side non-interactive invocation is HIGH-RISK assumption — spike before Phase 2 stories.",
     "pendingActions": []
   }
 }

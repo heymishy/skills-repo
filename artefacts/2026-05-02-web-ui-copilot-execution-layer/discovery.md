@@ -1,8 +1,8 @@
 # Discovery: Web UI + Copilot Execution Layer — Non-Technical Outer Loop Surface
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-05-02
-**Approved by:** Pending
+**Approved by:** Hamish King, Jenni Ralph — 2026-05-02
 **Author:** Copilot / Hamish King
 
 ---
@@ -102,4 +102,5 @@ The execution model treats SKILL.md files as the portable instruction set — th
 - Pending
 
 **Approved By:**
-- Pending
+- Hamish King — Chief Product Guru — 2026-05-02
+- Jenni Ralph — Chief Product Guru — 2026-05-02

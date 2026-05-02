@@ -5144,7 +5144,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "discoveryStatus": "draft",
+      "discoveryStatus": "approved",
       "discoveryArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/discovery.md",
       "updatedAt": "2026-05-02",
       "stories": []
