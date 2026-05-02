@@ -5195,10 +5195,19 @@
           "name": "GitHub OAuth flow and authenticated session",
           "epic": "wuce-e1",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.1-github-oauth-flow.md",
+          "stage": "test-plan",
           "prStatus": "none",
           "dorStatus": "not-started",
           "reviewStatus": "passed",
           "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.1-github-oauth-flow-test-plan.md",
+            "totalTests": 18,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
           "health": "green"
         },
         {
@@ -5207,10 +5216,19 @@
           "name": "Read and render a single pipeline artefact in plain prose",
           "epic": "wuce-e1",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.2-read-render-artefact.md",
+          "stage": "test-plan",
           "prStatus": "none",
           "dorStatus": "not-started",
           "reviewStatus": "passed",
           "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.2-read-render-artefact-test-plan.md",
+            "totalTests": 18,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
           "health": "green"
         },
         {
@@ -5219,10 +5237,19 @@
           "name": "Submit attributed sign-off via GitHub Contents API",
           "epic": "wuce-e1",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.3-attributed-signoff.md",
+          "stage": "test-plan",
           "prStatus": "none",
           "dorStatus": "not-started",
           "reviewStatus": "passed",
           "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.3-attributed-signoff-test-plan.md",
+            "totalTests": 17,
+            "passing": 0
+          },
+          "acTotal": 6,
+          "acVerified": 0,
           "health": "green"
         },
         {
@@ -5231,10 +5258,19 @@
           "name": "Self-hosted deployment support (Docker + environment-variable config injection)",
           "epic": "wuce-e1",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.4-docker-deployment.md",
+          "stage": "test-plan",
           "prStatus": "none",
           "dorStatus": "not-started",
           "reviewStatus": "passed",
           "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.4-docker-deployment-test-plan.md",
+            "totalTests": 8,
+            "passing": 0
+          },
+          "acTotal": 6,
+          "acVerified": 0,
           "health": "green"
         },
         {
