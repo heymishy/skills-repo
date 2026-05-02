@@ -5279,10 +5279,19 @@
           "name": "Personalised action queue — pending sign-offs and annotation requests",
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.5-action-queue.md",
+          "stage": "test-plan",
           "prStatus": "none",
           "dorStatus": "not-started",
           "reviewStatus": "passed",
           "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.5-action-queue-test-plan.md",
+            "totalTests": 18,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
           "health": "amber"
         },
         {
@@ -5291,10 +5300,19 @@
           "name": "Multi-feature navigation and artefact browser",
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.6-feature-navigation.md",
+          "stage": "test-plan",
           "prStatus": "none",
           "dorStatus": "not-started",
           "reviewStatus": "passed",
           "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.6-feature-navigation-test-plan.md",
+            "totalTests": 19,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
           "health": "amber"
         },
         {
@@ -5303,10 +5321,19 @@
           "name": "Programme manager pipeline status view",
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.7-programme-status-view.md",
+          "stage": "test-plan",
           "prStatus": "none",
           "dorStatus": "not-started",
           "reviewStatus": "passed",
           "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.7-programme-status-view-test-plan.md",
+            "totalTests": 21,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
           "health": "amber"
         },
         {
@@ -5315,10 +5342,19 @@
           "name": "Annotation and comment on artefact sections",
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.8-annotation.md",
+          "stage": "test-plan",
           "prStatus": "none",
           "dorStatus": "not-started",
           "reviewStatus": "passed",
           "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.8-annotation-test-plan.md",
+            "totalTests": 22,
+            "passing": 0
+          },
+          "acTotal": 6,
+          "acVerified": 0,
           "health": "amber"
         },
         {
