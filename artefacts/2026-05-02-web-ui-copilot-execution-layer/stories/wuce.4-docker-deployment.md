@@ -40,6 +40,10 @@ So that the application can be deployed to any container platform (on-premises, 
 
 **AC5:** Given the container is running, When `docker exec <container> whoami` is executed, Then the result is not `root` — the application runs as a dedicated non-root user.
 
+**AC6:** Given the Dockerfile uses a multi-stage build, When the final image is produced, Then the final stage contains only production runtime dependencies — no dev dependencies, build tools, or source files not required at runtime — and the final image size is documented in the build output.
+
+**AC7 (deployment guidance):** Given the application is deployed to a container platform that supports replica configuration, When the deployment manifest is provided, Then it specifies a minimum replica count of 1 (no scale-to-zero) to prevent cold starts from affecting authenticated users, with a note that this is a recommended default which operators may override based on cost/availability trade-off.
+
 ## Out of Scope
 
 - Kubernetes Helm chart, Terraform module, or cloud-provider-specific deployment templates — acceptable as post-launch additions; Docker + docker-compose is the scope of this story

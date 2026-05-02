@@ -5196,7 +5196,10 @@
           "epic": "wuce-e1",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.1-github-oauth-flow.md",
           "prStatus": "none",
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "amber"
         },
         {
           "id": "wuce.2",
@@ -5205,7 +5208,10 @@
           "epic": "wuce-e1",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.2-read-render-artefact.md",
           "prStatus": "none",
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green"
         },
         {
           "id": "wuce.3",
@@ -5214,7 +5220,10 @@
           "epic": "wuce-e1",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.3-attributed-signoff.md",
           "prStatus": "none",
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green"
         },
         {
           "id": "wuce.4",
@@ -5223,7 +5232,10 @@
           "epic": "wuce-e1",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.4-docker-deployment.md",
           "prStatus": "none",
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "amber"
         },
         {
           "id": "wuce.5",

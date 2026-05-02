@@ -19,7 +19,7 @@
 | Server-side input validation | wuce.3, wuce.8, wuce.13, wuce.15 | All form inputs, artefact paths, skill names, and annotation content validated server-side before any write or subprocess spawn |
 | Path traversal mitigation | wuce.3, wuce.8, wuce.13, wuce.15 | Artefact paths validated against allowlist patterns before any GitHub Contents API call |
 | Command injection mitigation | wuce.9, wuce.11, wuce.13 | Skill names validated against discovered allowlist only. No shell=true subprocess spawning. User prompt content sanitised before CLI assembly |
-| Session isolation (Phase 2) | wuce.10, wuce.16 | Per-user `COPILOT_HOME` paths isolated and cleaned up post-session. Session state bound to authenticated user identity |
+| Session isolation (Phase 2) | wuce.10, wuce.16 | Per-user `COPILOT_HOME` paths isolated and cleaned up post-session. Session state bound to authenticated user identity. Abandoned sessions (no activity for >30 minutes) must be garbage collected on a scheduled basis. Container restart must clean up all session directories from the previous instance lifecycle — no carry-over of prior-lifecycle `COPILOT_HOME` directories. |
 | HTML sanitisation (XSS) | wuce.2, wuce.14 | All markdown-to-HTML conversion sanitised server-side before browser rendering. No raw innerHTML from untrusted content |
 | Secrets out of logs | wuce.1, wuce.9, wuce.12 | OAuth tokens, session secrets, and `COPILOT_PROVIDER_API_KEY` must not appear in any log line |
 | Container non-root | wuce.4 | Dockerfile must use a dedicated non-root user |
@@ -34,6 +34,14 @@ All browser-rendered views must meet **WCAG 2.1 AA** unless a story explicitly n
 - Multi-step forms announce progress to screen readers (wuce.13, wuce.16)
 - Live regions (`aria-live="polite"`) for incrementally updating content (wuce.14)
 - Keyboard-accessible modals with focus trapping (wuce.3, wuce.8, wuce.15)
+
+### Plain language (non-technical surfaces)
+
+All user-facing labels, button text, status messages, error messages, and form prompts in the web UI use plain language. Engineering vocabulary (`pipeline stage`, `skill`, `artefact`, `DoR`, `SKILL.md`) is not permitted in browser-rendered content. Acceptable in server logs, developer documentation, and API response field names only.
+
+**Applies to:** wuce.2, wuce.3, wuce.5, wuce.6, wuce.7, wuce.8, wuce.13, wuce.14, wuce.15, wuce.16
+
+---
 
 ### Audit logging
 
