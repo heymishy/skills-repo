@@ -21,6 +21,7 @@ So that I don't lose my work if I'm interrupted mid-session — and I'm not forc
 - Mandatory security constraint: session state must not include the user's OAuth token — the token is held in the HTTP session cookie (set in wuce.1) and retrieved from there when the session is resumed
 - ACP server is public preview — v1 session persistence uses server-side storage (file system or in-memory store keyed by session ID); ACP multi-turn session state (`newSession()` / `prompt(sessionId)`) is the preferred path once ACP reaches GA: "Reinstate/remove preview caveat when ACP reaches GA"
 - ADR-009: session state storage and session lifecycle management are the responsibility of the session module (wuce.10) — not the web route handler
+- Storage layer distinction: `COPILOT_HOME` is ephemeral — it is the CLI subprocess working directory, created per execution and deleted when the subprocess exits (per wuce.10 AC3). Application-layer session state (conversation history, partial artefact draft content, current question index, user-to-session binding) is persisted to a named durable server-side store separate from `COPILOT_HOME`. The 24-hour retention window (AC1, AC4) applies to the durable store only — `COPILOT_HOME` is cleaned up independently on subprocess exit regardless of whether the session is still active. v1 durable store: file system under a server-managed `sessions/` directory (or in-memory with acknowledged restart-loss); ACP multi-turn state is the preferred path once GA.
 
 ## Dependencies
 
