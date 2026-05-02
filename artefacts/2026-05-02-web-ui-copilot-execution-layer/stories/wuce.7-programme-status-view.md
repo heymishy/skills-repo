@@ -36,7 +36,7 @@ So that I can report on delivery progress to a steering committee directly from 
 
 **AC4:** Given a programme manager views the status board and clicks "Export as Markdown", When the download is generated, Then a `.md` file is produced with a pipeline status summary table that can be pasted directly into a steering committee report.
 
-**AC5:** Given a feature has all stories with `prStatus: "merged"` and a `dodStatus: "complete"` entry, When the status board renders, Then the feature is shown in a "Done" group, visually separated from in-progress features.
+**AC5:** Given a feature has all stories with `prStatus: "merged"` and all stories with `traceStatus: "passed"`, When the status board renders, Then the feature is shown in a "Done" group, visually separated from in-progress features. The "Done" condition is derived entirely from these two existing `pipeline-state.json` fields — no new fields are introduced.
 
 ## Out of Scope
 

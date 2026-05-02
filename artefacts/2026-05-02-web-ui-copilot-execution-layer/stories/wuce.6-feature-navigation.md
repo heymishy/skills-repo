@@ -30,7 +30,7 @@ So that I can get a complete picture of the pipeline without asking an engineer 
 
 **AC1:** Given an authenticated user navigates to `/features`, When the page loads, Then they see a list of all features in the configured repositories, each showing: feature slug, current pipeline stage, last-updated date, and a link to the artefact index for that feature.
 
-**AC2:** Given an authenticated user clicks on a feature, When the feature artefact index loads, Then they see a list of all available artefacts for that feature (discovery, benefit-metric, stories, test-plans, dor) with the artefact type, creation date, and a link to view each one.
+**AC2:** Given an authenticated user clicks on a feature, When the feature artefact index loads, Then they see a list of all available artefacts for that feature — displayed using plain-language labels: discovery artefacts as "Discovery", benefit-metric artefacts as "Benefit Metric", story artefacts as "Stories", test-plan artefacts as "Test Plan", and definition-of-ready artefacts as "Ready Check" — with the creation date and a link to view each one. Internal artefact type identifiers (e.g. `dor`, `benefit-metric`) must not appear as browser-rendered text.
 
 **AC3:** Given a feature has artefacts in multiple pipeline stages, When the feature index is displayed, Then artefacts are grouped by stage (Discovery, Definition, Test Plan, DoR) with the stage label visible.
 

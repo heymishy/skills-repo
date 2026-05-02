@@ -20,6 +20,7 @@ So that I never miss a pending governance action and I don't need an engineer to
 - ADR-012: the query that resolves pending actions must use the SCM adapter pattern — `getPendingActions(userIdentity, token)` — not inline GitHub API calls
 - Mandatory security constraint: the action queue must only show artefacts in repositories the authenticated user has read access to — the server must validate repository access via the GitHub API before including items in the queue; never trust client-supplied repo lists
 - ADR-004: the list of repositories to surface in the action queue must be read from `context.yml` or a configurable env var — not hardcoded
+- Pending detection mechanism: `getPendingActions` derives pending sign-off state by checking for the absence of an `## Approved by` section in the artefact markdown — no new `pipeline-state.json` fields are introduced to track sign-off pending state
 
 ## Dependencies
 
