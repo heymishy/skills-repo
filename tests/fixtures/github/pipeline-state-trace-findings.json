@@ -1,0 +1,10 @@
+{
+  "slug": "2026-05-02-trace-findings-feature",
+  "stage": "definition-of-done",
+  "updatedAt": "2026-05-02T10:00:00Z",
+  "lastActivityDate": "2026-05-02T10:00:00Z",
+  "stories": [
+    { "id": "tff.1", "prStatus": "merged", "dorStatus": "signed-off", "traceStatus": "has-findings" },
+    { "id": "tff.2", "prStatus": "open",   "dorStatus": "signed-off", "traceStatus": "not-run" }
+  ]
+}
