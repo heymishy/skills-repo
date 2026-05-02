@@ -1,0 +1,22 @@
+{
+  "sessionId": "a3f7c2d1e4b5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3",
+  "userId": "test-stakeholder",
+  "skillName": "discovery",
+  "createdAt": "2026-05-02T09:00:00.000Z",
+  "updatedAt": "2026-05-02T09:15:00.000Z",
+  "expiresAt": "2026-05-03T09:00:00.000Z",
+  "questionIndex": 2,
+  "answers": [
+    {
+      "questionId": "q1",
+      "text": "We want to automate our software delivery pipeline using AI agents."
+    },
+    {
+      "questionId": "q2",
+      "text": "The target users are non-technical stakeholders — product owners, BAs, business leads."
+    }
+  ],
+  "partialArtefact": "## Discovery: AI-Driven Pipeline Automation\n\n**Problem statement:** The team spends significant manual effort coordinating delivery pipeline steps.",
+  "complete": false,
+  "copilotHomeDeleted": false
+}
