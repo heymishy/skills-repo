@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "3000:3000"
+    environment:
+      # Required — GitHub OAuth App credentials (never hardcode values here)
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      - GITHUB_CALLBACK_URL=${GITHUB_CALLBACK_URL:-http://localhost:3000/auth/github/callback}
+      # Required — session encryption key (minimum 32 chars)
+      - SESSION_SECRET=${SESSION_SECRET}
+      # Optional — GitHub Enterprise Server base URL (ADR-012)
+      # Leave unset to use github.com. Set to override for GHE:
+      # GITHUB_API_BASE_URL=https://ghe.your-org.com
+      - GITHUB_API_BASE_URL=${GITHUB_API_BASE_URL:-}
+      # Optional — repository context for artefact fetching
+      - GITHUB_REPO_OWNER=${GITHUB_REPO_OWNER:-}
+      - GITHUB_REPO_NAME=${GITHUB_REPO_NAME:-}
+      # Runtime mode
+      - NODE_ENV=${NODE_ENV:-production}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+    # Run as non-root — enforced by Dockerfile USER directive
+    # No secrets in build args or image layers (AC4)
