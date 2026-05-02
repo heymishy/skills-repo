@@ -13,6 +13,7 @@ const { handleArtefactRoute }                                        = require('
 const { handleSignOff, handleArtefactRead }                             = require('./routes/sign-off');
 const { healthCheckHandler }                                         = require('./routes/health');
 const { validateRequiredEnvVars }                                    = require('./config/validate-env');
+const { handleGetActions }                                           = require('./routes/dashboard');
 
 const PORT = process.env.PORT || 3000;
 
@@ -48,12 +49,17 @@ async function router(req, res) {
   } else if (pathname === '/auth/logout' && req.method === 'GET') {
     await handleLogout(req, res);
 
+<<<<<<< HEAD
   } else if (pathname === '/sign-off' && req.method === 'POST') {
     authGuard(req, res, () => handleSignOff(req, res));
 
   } else if (/^\/artefact\/[^/]+\/discovery$/.test(pathname) && req.method === 'GET') {
     const slug = pathname.split('/')[2];
     authGuard(req, res, () => handleArtefactRead(req, res, slug));
+=======
+  } else if (pathname === '/api/actions' && req.method === 'GET') {
+    await handleGetActions(req, res);
+>>>>>>> feat: wuce.5 — personalised action queue and pipeline state mutation
 
   } else if (pathname === '/dashboard') {
     authGuard(req, res, () => {
