@@ -5195,9 +5195,9 @@
           "name": "GitHub OAuth flow and authenticated session",
           "epic": "wuce-e1",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.1-github-oauth-flow.md",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -5216,9 +5216,9 @@
           "name": "Read and render a single pipeline artefact in plain prose",
           "epic": "wuce-e1",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.2-read-render-artefact.md",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -5237,9 +5237,9 @@
           "name": "Submit attributed sign-off via GitHub Contents API",
           "epic": "wuce-e1",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.3-attributed-signoff.md",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -5258,9 +5258,9 @@
           "name": "Self-hosted deployment support (Docker + environment-variable config injection)",
           "epic": "wuce-e1",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.4-docker-deployment.md",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -5279,9 +5279,9 @@
           "name": "Personalised action queue — pending sign-offs and annotation requests",
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.5-action-queue.md",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -5292,7 +5292,7 @@
           },
           "acTotal": 5,
           "acVerified": 0,
-          "health": "amber"
+          "health": "green"
         },
         {
           "id": "wuce.6",
@@ -5300,9 +5300,9 @@
           "name": "Multi-feature navigation and artefact browser",
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.6-feature-navigation.md",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -5313,7 +5313,7 @@
           },
           "acTotal": 5,
           "acVerified": 0,
-          "health": "amber"
+          "health": "green"
         },
         {
           "id": "wuce.7",
@@ -5321,9 +5321,9 @@
           "name": "Programme manager pipeline status view",
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.7-programme-status-view.md",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -5334,7 +5334,7 @@
           },
           "acTotal": 5,
           "acVerified": 0,
-          "health": "amber"
+          "health": "green"
         },
         {
           "id": "wuce.8",
@@ -5342,9 +5342,9 @@
           "name": "Annotation and comment on artefact sections",
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.8-annotation.md",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -5355,7 +5355,7 @@
           },
           "acTotal": 6,
           "acVerified": 0,
-          "health": "amber"
+          "health": "green"
         },
         {
           "id": "wuce.9",
@@ -5363,9 +5363,9 @@
           "name": "CLI subprocess invocation with JSONL output capture",
           "epic": "wuce-e3",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.9-cli-subprocess-invocation.md",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -5376,7 +5376,7 @@
           },
           "acTotal": 5,
           "acVerified": 0,
-          "health": "amber"
+          "health": "green"
         },
         {
           "id": "wuce.10",
@@ -5384,9 +5384,9 @@
           "name": "Per-user session isolation via COPILOT_HOME",
           "epic": "wuce-e3",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.10-session-isolation.md",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -5405,9 +5405,9 @@
           "name": "SKILL.md discovery and skill routing",
           "epic": "wuce-e3",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.11-skill-discovery.md",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -5418,7 +5418,7 @@
           },
           "acTotal": 5,
           "acVerified": 0,
-          "health": "amber"
+          "health": "green"
         },
         {
           "id": "wuce.12",
@@ -5426,9 +5426,9 @@
           "name": "BYOK and self-hosted provider configuration",
           "epic": "wuce-e3",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.12-byok-config.md",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -5448,10 +5448,10 @@
           "epic": "wuce-e4",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.13-skill-launcher.md",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.13-skill-launcher-test-plan.md",
@@ -5469,10 +5469,10 @@
           "epic": "wuce-e4",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.14-artefact-preview.md",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.14-artefact-preview-test-plan.md",
@@ -5490,10 +5490,10 @@
           "epic": "wuce-e4",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.15-artefact-writeback.md",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.15-artefact-writeback-test-plan.md",
@@ -5511,10 +5511,10 @@
           "epic": "wuce-e4",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.16-session-persistence.md",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.16-session-persistence-test-plan.md",
