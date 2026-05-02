@@ -9,6 +9,7 @@ const { URL } = require('url');
 
 const { sessionMiddleware }                                          = require('./middleware/session');
 const { handleAuthGithub, handleAuthCallback, handleLogout, authGuard } = require('./routes/auth');
+const { handleArtefactRoute }                                        = require('./routes/artefact');
 
 const PORT = process.env.PORT || 3000;
 
@@ -49,6 +50,12 @@ async function router(req, res) {
       res.writeHead(200, { 'Content-Type': 'text/html' });
       res.end('<html><body><h1>Dashboard</h1></body></html>');
     });
+
+  } else if (pathname.match(/^\/artefact\/[^/]+\/[^/]+$/) && req.method === 'GET') {
+    const parts        = pathname.split('/').filter(Boolean);
+    const slug         = parts[1];
+    const artefactType = parts[2];
+    await handleArtefactRoute(req, res, slug, artefactType);
 
   } else if (pathname === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
