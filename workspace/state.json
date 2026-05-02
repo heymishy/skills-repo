@@ -1,7 +1,14 @@
 {
-  "currentPhase": "benefit-metric",
+  "currentPhase": "definition",
   "activeFeature": "2026-05-02-web-ui-copilot-execution-layer",
-  "lastUpdated": "2026-05-02T22:00:00Z",
+  "lastUpdated": "2026-05-02T23:30:00Z",
+  "cycle": {
+    "discovery": {
+      "status": "completed",
+      "completedAt": "2026-05-02",
+      "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/discovery.md"
+    }
+  },
   "estimate": {
     "e1": {
       "date": "2026-05-02",
@@ -14,6 +21,12 @@
       "assumptions": "Phase 1 and Phase 2 combined rough count. Spike required before Phase 2 stories can be scoped — story count may reduce if spike produces REDESIGN. Gauge captured at month start (Pro+ counter reset May 1).",
       "gaugeAtStart": 2.5,
       "premiumRequestsForecast": null
+    },
+    "e2": {
+      "date": "2026-05-02",
+      "actualStoryCount": 16,
+      "epics": 4,
+      "notes": "16 stories across 4 epics. 14 MVP scope items covered. 2 additional stories (wuce.7 programme status view, wuce.8 annotation) traceable to P3/P4 metrics — not scope creep. Phase 1 = 8 stories (E1+E2), Phase 2 = 8 stories (E3+E4)."
     }
   },
   "spike": {
@@ -27,10 +40,25 @@
     "outcomeArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/spikes/spike-copilot-cli-noninteractive-outcome.md",
     "unblockedStage": "definition (Phase 2 skill execution epic + M1 metric)"
   },
+  "definition": {
+    "status": "complete",
+    "commitHash": "06ac73c",
+    "epicsArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/epics/",
+    "storiesArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/",
+    "nfrProfileArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/nfr-profile.md",
+    "scopeAccumulatorVerdict": "No scope drift detected. All 14 MVP items covered. 16 stories across 4 epics.",
+    "slicingStrategy": "Walking skeleton first (E1), then user journey by phase (E2 Phase 1 full surface, E3 Phase 2 backend engine, E4 Phase 2 browser UI)"
+  },
   "checkpoint": {
     "writtenAt": "2026-05-02",
-    "contextAtWrite": "Spike PROCEED verdict recorded for 2026-05-02-web-ui-copilot-execution-layer. Copilot CLI programmatic invocation confirmed viable via 6-step thorough investigation of GitHub official docs. All 4 done conditions met: (a) -p flag non-interactive, (b) COPILOT_GITHUB_TOKEN headless auth, (c) ACP server multi-turn, (d) BYOK + COPILOT_OFFLINE self-hosting. Spike artefacts committed. Decisions.md ADR-001 written. pipeline-state.json spike entry added (schema valid, 0 errors).",
-    "resumeInstruction": "Active feature: 2026-05-02-web-ui-copilot-execution-layer. Spike is PROCEED — Phase 2 stories are unblocked. Both Phase 1 (OAuth read+sign-off) and Phase 2 (skill execution) stories can now be written. Run /definition next. Spike outcome: artefacts/2026-05-02-web-ui-copilot-execution-layer/spikes/spike-copilot-cli-noninteractive-outcome.md. Key conditions: (1) Copilot licence required per execution user for Path A; (2) ACP server is public preview — use -p subprocess as primary. M1 metric verdict = PROCEED recorded.",
-    "pendingActions": []
+    "contextAtWrite": "/definition complete for 2026-05-02-web-ui-copilot-execution-layer. 4 epics (wuce-e1 through wuce-e4) and 16 stories (wuce.1–wuce.16) written and committed (06ac73c). Benefit coverage matrix updated in benefit-metric.md. NFR profile created (nfr-profile.md). Scope accumulator confirmed no drift. pipeline-state.json updated: stage=definition, epics + stories arrays populated, schema valid 0 errors. All hooks passed on commit.",
+    "resumeInstruction": "Active feature: 2026-05-02-web-ui-copilot-execution-layer. /definition is complete (commit 06ac73c). Next step: run /review on each story (or batch). Review order suggestion: E1 walking skeleton stories first (wuce.1–wuce.4) — these are the highest-stakes auth and write stories. After review passes with no HIGH findings per story, proceed to /test-plan then /definition-of-ready. Start with wuce.1 (GitHub OAuth flow) as it is the foundational pre-condition for all other Phase 1 stories.",
+    "pendingActions": [
+      "Run /review on wuce.1–wuce.4 (E1 walking skeleton) — highest-stakes auth + Contents API write stories",
+      "Run /review on wuce.5–wuce.8 (E2 Phase 1 full surface)",
+      "Run /review on wuce.9–wuce.12 (E3 Phase 2 engine — shell injection + session isolation risk)",
+      "Run /review on wuce.13–wuce.16 (E4 Phase 2 UI — prompt injection + ACP preview caveat)",
+      "After review passes per story: /test-plan → /definition-of-ready → coding agent dispatch"
+    ]
   }
 }
