@@ -1,0 +1,10 @@
+{
+  "slug": "2026-05-01-done-feature",
+  "stage": "done",
+  "updatedAt": "2026-05-01T10:00:00Z",
+  "lastActivityDate": "2026-05-01T10:00:00Z",
+  "stories": [
+    { "id": "df.1", "prStatus": "merged", "dorStatus": "signed-off", "traceStatus": "passed" },
+    { "id": "df.2", "prStatus": "merged", "dorStatus": "signed-off", "traceStatus": "passed" }
+  ]
+}
