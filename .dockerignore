@@ -1,0 +1,50 @@
+# .dockerignore — exclude files that should not be in the Docker image
+
+# Node modules — reinstalled during docker build
+node_modules/
+
+# Environment files — secrets must never be baked into image layers (AC4)
+.env
+.env.*
+!.env.example
+
+# Test files — not required at runtime (AC6: production-only final image)
+tests/
+
+# Git history — not required at runtime
+.git/
+.gitignore
+
+# Worktrees — local development artefacts
+.worktrees/
+
+# Pipeline artefacts — not required at runtime
+artefacts/
+
+# Development logs
+*.log
+npm-debug.log*
+
+# IDE and OS files
+.vscode/
+.DS_Store
+Thumbs.db
+
+# CI configuration — not required at runtime
+.github/
+
+# Documentation — not required at runtime
+docs/
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+
+# Scripts — governance scripts only needed for CI
+scripts/
+.github/scripts/
+
+# Dashboard HTML — not part of the web-ui application
+dashboards/
+
+# Coverage and test outputs
+coverage/
