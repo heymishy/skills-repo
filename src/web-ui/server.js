@@ -16,6 +16,7 @@ const { validateRequiredEnvVars }                                    = require('
 const { handleGetActions }                                           = require('./routes/dashboard');
 const { handleGetFeatures, handleGetFeatureArtefacts }               = require('./routes/features');
 const { handleGetStatus, handleGetStatusExport }                     = require('./routes/status');
+const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 
 const PORT = process.env.PORT || 3000;
 
@@ -91,6 +92,11 @@ async function router(req, res) {
     const featureSlug = pathname.slice('/features/'.length);
     authGuard(req, res, async () => {
       await handleGetFeatureArtefacts(req, res, featureSlug);
+    });
+
+  } else if (pathname.startsWith('/api/artefacts/') && pathname.endsWith('/annotations') && req.method === 'POST') {
+    authGuard(req, res, async () => {
+      await handlePostAnnotation(req, res);
     });
 
   } else {

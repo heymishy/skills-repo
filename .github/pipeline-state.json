@@ -5364,7 +5364,7 @@
           "name": "Annotation and comment on artefact sections",
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.8-annotation.md",
-          "stage": "definition-of-ready",
+          "stage": "subagent-execution",
           "prStatus": "none",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
@@ -5373,7 +5373,7 @@
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.8-annotation-test-plan.md",
             "totalTests": 22,
-            "passing": 0
+            "passing": 24
           },
           "acTotal": 6,
           "acVerified": 0,
