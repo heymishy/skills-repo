@@ -36,7 +36,7 @@ So that the guided skill launcher (Epic 4) only presents skills that are actuall
 
 **AC4:** Given the skills directory does not exist or is empty, When `listAvailableSkills(repoPath)` is called, Then it returns an empty array and logs a warning — it does not throw or crash the server.
 
-**AC5:** Given a skill name is passed to the subprocess executor (wuce.9) that does not appear in the list returned by `listAvailableSkills`, When the executor validates the name, Then it rejects the request before spawning any subprocess — the allowlist gate is enforced.
+**AC5:** Given `COPILOT_SKILLS_DIRS` points to `.github/skills/` containing `discovery/SKILL.md` and `ideate/SKILL.md`, When `listAvailableSkills(repoPath)` is called, Then the returned array contains entries for `discovery` and `ideate` and does not contain any entry whose path resolves outside the configured skills directory — confirming the returned list is the complete and bounded allowlist for subprocess invocation.
 
 ## Out of Scope
 
