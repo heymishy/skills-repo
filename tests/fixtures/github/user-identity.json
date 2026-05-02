@@ -1,0 +1,7 @@
+{
+  "login": "test-stakeholder",
+  "id": 99001,
+  "name": "Test Stakeholder",
+  "email": "stakeholder@example.com",
+  "avatar_url": "https://avatars.githubusercontent.com/u/99001"
+}
