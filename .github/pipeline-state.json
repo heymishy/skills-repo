@@ -5244,7 +5244,10 @@
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.5-action-queue.md",
           "prStatus": "none",
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "amber"
         },
         {
           "id": "wuce.6",
@@ -5253,7 +5256,10 @@
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.6-feature-navigation.md",
           "prStatus": "none",
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "amber"
         },
         {
           "id": "wuce.7",
@@ -5262,7 +5268,10 @@
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.7-programme-status-view.md",
           "prStatus": "none",
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "amber"
         },
         {
           "id": "wuce.8",
@@ -5271,7 +5280,10 @@
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.8-annotation.md",
           "prStatus": "none",
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "amber"
         },
         {
           "id": "wuce.9",
