@@ -42,7 +42,7 @@ So that the application can be deployed to any container platform (on-premises, 
 
 **AC6:** Given the Dockerfile uses a multi-stage build, When the final image is produced, Then the final stage contains only production runtime dependencies — no dev dependencies, build tools, or source files not required at runtime — and the final image size is documented in the build output.
 
-**AC7 (deployment guidance):** Given the application is deployed to a container platform that supports replica configuration, When the deployment manifest is provided, Then it specifies a minimum replica count of 1 (no scale-to-zero) to prevent cold starts from affecting authenticated users, with a note that this is a recommended default which operators may override based on cost/availability trade-off.
+
 
 ## Out of Scope
 
@@ -55,6 +55,7 @@ So that the application can be deployed to any container platform (on-premises, 
 
 - **Security:** Container does not run as root. No secrets in image layers. All config via env vars only.
 - **Performance:** Container cold start to health-check 200 in under 10 seconds on standard hardware.
+- **Container orchestration readiness:** The Docker image must expose a `/health` endpoint suitable for use with any container orchestration platform's health check configuration (liveness/readiness probes, load balancer checks). This is a quality constraint on the image — platform-specific replica and scaling configuration is out of scope for this story.
 - **Accessibility:** Not applicable (deployment infrastructure story).
 - **Audit:** Container startup logs include application version, configured GitHub hostname, and whether Enterprise Server mode is active (no secret values logged).
 
