@@ -1,0 +1,7 @@
+[
+  { "name": "discovery.md", "type": "file", "path": "artefacts/2026-05-02-test-feature/discovery.md", "sha": "abc001" },
+  { "name": "benefit-metric.md", "type": "file", "path": "artefacts/2026-05-02-test-feature/benefit-metric.md", "sha": "abc002" },
+  { "name": "wuce.1-story.md", "type": "file", "path": "artefacts/2026-05-02-test-feature/stories/wuce.1-story.md", "sha": "abc003" },
+  { "name": "wuce.1-test-plan.md", "type": "file", "path": "artefacts/2026-05-02-test-feature/test-plans/wuce.1-test-plan.md", "sha": "abc004" },
+  { "name": "wuce.1-dor.md", "type": "file", "path": "artefacts/2026-05-02-test-feature/dor/wuce.1-dor.md", "sha": "abc005" }
+]

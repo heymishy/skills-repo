@@ -8,6 +8,11 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- **`wuce.6` — Multi-feature navigation and artefact browser (2026-05-03):** `GET /features` lists all features in configured repositories (slug, stage, lastUpdated, artefactIndexUrl). `GET /features/:slug` returns artefact index with plain-language type labels — "dor" → "Ready Check", "benefit-metric" → "Benefit Metric", "story" → "Stories", "test-plan" → "Test Plan", "discovery" → "Discovery". Artefacts grouped by stage. No-artefacts-directory repos return `{ message: "No artefacts found" }` (not an error). Server-side `validateRepositoryAccess` called per repo before any data is returned. Audit log records userId, featureCount, timestamp; no token values logged. New files: `src/web-ui/utils/plain-language-labels.js`, `src/web-ui/adapters/feature-list.js`, `src/web-ui/adapters/artefact-list.js`, `src/web-ui/routes/features.js`. `server.js` extended with `/features` and `/features/:slug` routes. New fixtures: `pipeline-state-feature.json`, `contents-api-artefact-list.json`, `contents-api-empty-artefacts.json`. 70/70 tests passing (`tests/check-wuce6-feature-navigation.js`). ADR-012 (listFeatures/listArtefacts adapters), ADR-004 (WUCE_REPOSITORIES env config).
+
+
+
+
 - **`wuce.5` — Personalised action queue — pending sign-offs and annotation requests (2026-05-03):** Action queue backend for the web-ui layer. `src/web-ui/adapters/action-queue.js` (ADR-012 adapter): `hasPendingSignOff` (detects absence of `## Approved by` section), `getPendingActions(userIdentity, token)` (validates repo access per ADR-009/Security NFR before surfacing items), `renderActionQueue` (accessible HTML with descriptive link text). `src/web-ui/config/repo-list.js` reads `WUCE_REPOSITORIES` env var (ADR-004). `src/web-ui/routes/dashboard.js`: `GET /api/actions` handler — 401 JSON for unauthenticated callers, audit logs userId + itemCount (never token). Repos with expired/inaccessible tokens silently omitted; banner message surfaced to caller. E2 canonical fixtures committed to `tests/fixtures/markdown/` and `tests/fixtures/github/` for reuse by wuce.6/7/8. 46/46 tests passing (`tests/check-wuce5-action-queue.js`).
 
 
