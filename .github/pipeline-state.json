@@ -5269,7 +5269,7 @@
           "epic": "wuce-e1",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.4-docker-deployment.md",
           "stage": "definition-of-ready",
-          "prStatus": "none",
+          "prStatus": "draft",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
