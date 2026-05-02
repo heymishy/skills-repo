@@ -14,6 +14,7 @@ const { handleSignOff, handleArtefactRead }                             = requir
 const { healthCheckHandler }                                         = require('./routes/health');
 const { validateRequiredEnvVars }                                    = require('./config/validate-env');
 const { handleGetActions }                                           = require('./routes/dashboard');
+const { handleGetFeatures, handleGetFeatureArtefacts }               = require('./routes/features');
 
 const PORT = process.env.PORT || 3000;
 
@@ -75,6 +76,17 @@ async function router(req, res) {
 
   } else if (pathname === '/health') {
     healthCheckHandler(req, res);
+
+  } else if (pathname === '/features' && req.method === 'GET') {
+    authGuard(req, res, async () => {
+      await handleGetFeatures(req, res);
+    });
+
+  } else if (pathname.startsWith('/features/') && req.method === 'GET') {
+    const featureSlug = pathname.slice('/features/'.length);
+    authGuard(req, res, async () => {
+      await handleGetFeatureArtefacts(req, res, featureSlug);
+    });
 
   } else {
     // Sign-in page (unauthenticated root)
