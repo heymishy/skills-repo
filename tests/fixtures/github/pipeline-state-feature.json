@@ -1,0 +1,10 @@
+{
+  "slug": "2026-05-02-test-feature",
+  "name": "Test Feature",
+  "stage": "test-plan",
+  "updatedAt": "2026-05-01T10:00:00Z",
+  "stories": [
+    { "id": "tf.1", "prStatus": "none", "dorStatus": "signed-off", "traceStatus": "passed" },
+    { "id": "tf.2", "prStatus": "none", "dorStatus": "not-started", "traceStatus": "not-run" }
+  ]
+}
