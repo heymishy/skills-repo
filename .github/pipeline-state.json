@@ -5292,7 +5292,10 @@
           "epic": "wuce-e3",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.9-cli-subprocess-invocation.md",
           "prStatus": "none",
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "amber"
         },
         {
           "id": "wuce.10",
@@ -5301,7 +5304,10 @@
           "epic": "wuce-e3",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.10-session-isolation.md",
           "prStatus": "none",
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green"
         },
         {
           "id": "wuce.11",
@@ -5310,7 +5316,10 @@
           "epic": "wuce-e3",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.11-skill-discovery.md",
           "prStatus": "none",
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "amber"
         },
         {
           "id": "wuce.12",
@@ -5319,7 +5328,10 @@
           "epic": "wuce-e3",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.12-byok-config.md",
           "prStatus": "none",
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green"
         },
         {
           "id": "wuce.13",
