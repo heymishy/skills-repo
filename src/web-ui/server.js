@@ -15,6 +15,7 @@ const { healthCheckHandler }                                         = require('
 const { validateRequiredEnvVars }                                    = require('./config/validate-env');
 const { handleGetActions }                                           = require('./routes/dashboard');
 const { handleGetFeatures, handleGetFeatureArtefacts }               = require('./routes/features');
+const { handleGetStatus, handleGetStatusExport }                     = require('./routes/status');
 
 const PORT = process.env.PORT || 3000;
 
@@ -58,9 +59,18 @@ async function router(req, res) {
     const slug = pathname.split('/')[2];
     authGuard(req, res, () => handleArtefactRead(req, res, slug));
 =======
+<<<<<<< HEAD
   } else if (pathname === '/api/actions' && req.method === 'GET') {
     await handleGetActions(req, res);
 >>>>>>> feat: wuce.5 — personalised action queue and pipeline state mutation
+=======
+  } else if (pathname === '/status/export' && req.method === 'GET') {
+    await handleGetStatusExport(req, res);
+
+  } else if (pathname === '/status' && req.method === 'GET') {
+    await handleGetStatus(req, res);
+>>>>>>> feat: wuce.7 -- Programme manager pipeline status view
+>>>>>>> feat: wuce.7 -- Programme manager pipeline status view
 
   } else if (pathname === '/dashboard') {
     authGuard(req, res, () => {
