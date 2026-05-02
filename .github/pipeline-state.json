@@ -5363,10 +5363,19 @@
           "name": "CLI subprocess invocation with JSONL output capture",
           "epic": "wuce-e3",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.9-cli-subprocess-invocation.md",
+          "stage": "test-plan",
           "prStatus": "none",
           "dorStatus": "not-started",
           "reviewStatus": "passed",
           "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.9-cli-subprocess-invocation-test-plan.md",
+            "totalTests": 23,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
           "health": "amber"
         },
         {
@@ -5375,10 +5384,19 @@
           "name": "Per-user session isolation via COPILOT_HOME",
           "epic": "wuce-e3",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.10-session-isolation.md",
+          "stage": "test-plan",
           "prStatus": "none",
           "dorStatus": "not-started",
           "reviewStatus": "passed",
           "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.10-session-isolation-test-plan.md",
+            "totalTests": 17,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
           "health": "green"
         },
         {
@@ -5387,10 +5405,19 @@
           "name": "SKILL.md discovery and skill routing",
           "epic": "wuce-e3",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.11-skill-discovery.md",
+          "stage": "test-plan",
           "prStatus": "none",
           "dorStatus": "not-started",
           "reviewStatus": "passed",
           "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.11-skill-discovery-test-plan.md",
+            "totalTests": 18,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
           "health": "amber"
         },
         {
@@ -5399,10 +5426,19 @@
           "name": "BYOK and self-hosted provider configuration",
           "epic": "wuce-e3",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.12-byok-config.md",
+          "stage": "test-plan",
           "prStatus": "none",
           "dorStatus": "not-started",
           "reviewStatus": "passed",
           "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.12-byok-config-test-plan.md",
+            "totalTests": 17,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
           "health": "green"
         },
         {
