@@ -2,7 +2,7 @@
 
 // server.js — Node.js HTTP server entry point for web-ui
 // Uses built-in http module — zero external npm dependencies.
-// Session middleware, auth routes, and authGuard mounted here.
+// Session middleware, auth routes, health handler, and authGuard mounted here.
 
 const http = require('http');
 const { URL } = require('url');
@@ -11,6 +11,8 @@ const { sessionMiddleware }                                          = require('
 const { handleAuthGithub, handleAuthCallback, handleLogout, authGuard } = require('./routes/auth');
 const { handleArtefactRoute }                                        = require('./routes/artefact');
 const { handleSignOff, handleArtefactRead }                             = require('./routes/sign-off');
+const { healthCheckHandler }                                         = require('./routes/health');
+const { validateRequiredEnvVars }                                    = require('./config/validate-env');
 
 const PORT = process.env.PORT || 3000;
 
@@ -66,8 +68,7 @@ async function router(req, res) {
     await handleArtefactRoute(req, res, slug, artefactType);
 
   } else if (pathname === '/health') {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ status: 'ok' }));
+    healthCheckHandler(req, res);
 
   } else {
     // Sign-in page (unauthenticated root)
@@ -87,9 +88,17 @@ function createApp() {
 }
 
 if (require.main === module) {
+  try {
+    validateRequiredEnvVars();
+  } catch (err) {
+    console.error('[startup] ' + err.message);
+    process.exit(1);
+  }
   const server = createApp();
   server.listen(PORT, () => {
+    const gheMode = !!process.env.GITHUB_API_BASE_URL;
     console.log(`Web UI server listening on port ${PORT}`);
+    console.log(`GitHub hostname: ${process.env.GITHUB_API_BASE_URL || 'github.com'} (Enterprise mode: ${gheMode})`);
   });
 }
 
