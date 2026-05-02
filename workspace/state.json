@@ -1,7 +1,7 @@
 {
-  "currentPhase": "discovery",
+  "currentPhase": "benefit-metric",
   "activeFeature": "2026-05-02-web-ui-copilot-execution-layer",
-  "lastUpdated": "2026-05-02T20:30:00Z",
+  "lastUpdated": "2026-05-02T22:00:00Z",
   "estimate": {
     "e1": {
       "date": "2026-05-02",
@@ -16,10 +16,21 @@
       "premiumRequestsForecast": null
     }
   },
+  "spike": {
+    "id": "spike-copilot-cli-noninteractive",
+    "question": "Can the GitHub Copilot CLI or Copilot API be invoked non-interactively server-side with an assembled SKILL.md prompt and return structured, parseable output — enabling Phase 2 skill execution from a web backend?",
+    "verdict": "PROCEED",
+    "verdictAt": "2026-05-02",
+    "stepsCompleted": 6,
+    "scope": "thorough",
+    "briefArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/spikes/spike-copilot-cli-noninteractive-brief.md",
+    "outcomeArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/spikes/spike-copilot-cli-noninteractive-outcome.md",
+    "unblockedStage": "definition (Phase 2 skill execution epic + M1 metric)"
+  },
   "checkpoint": {
     "writtenAt": "2026-05-02",
-    "contextAtWrite": "Discovery approved for 2026-05-02-web-ui-copilot-execution-layer (Web UI + Copilot Execution Layer). All 8 sections confirmed by Hamish King and Jenni Ralph. E1 estimate recorded. Previous active feature sfa.1 DoD-complete (PR #247 merged). Next: /benefit-metric for new feature.",
-    "resumeInstruction": "Active feature: 2026-05-02-web-ui-copilot-execution-layer. Discovery is approved. Run /benefit-metric next to define measurement framework. Artefact at artefacts/2026-05-02-web-ui-copilot-execution-layer/discovery.md. Note: Copilot CLI server-side non-interactive invocation is HIGH-RISK assumption — spike before Phase 2 stories.",
+    "contextAtWrite": "Spike PROCEED verdict recorded for 2026-05-02-web-ui-copilot-execution-layer. Copilot CLI programmatic invocation confirmed viable via 6-step thorough investigation of GitHub official docs. All 4 done conditions met: (a) -p flag non-interactive, (b) COPILOT_GITHUB_TOKEN headless auth, (c) ACP server multi-turn, (d) BYOK + COPILOT_OFFLINE self-hosting. Spike artefacts committed. Decisions.md ADR-001 written. pipeline-state.json spike entry added (schema valid, 0 errors).",
+    "resumeInstruction": "Active feature: 2026-05-02-web-ui-copilot-execution-layer. Spike is PROCEED — Phase 2 stories are unblocked. Both Phase 1 (OAuth read+sign-off) and Phase 2 (skill execution) stories can now be written. Run /definition next. Spike outcome: artefacts/2026-05-02-web-ui-copilot-execution-layer/spikes/spike-copilot-cli-noninteractive-outcome.md. Key conditions: (1) Copilot licence required per execution user for Path A; (2) ACP server is public preview — use -p subprocess as primary. M1 metric verdict = PROCEED recorded.",
     "pendingActions": []
   }
 }

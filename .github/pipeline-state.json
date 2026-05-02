@@ -5148,6 +5148,15 @@
       "discoveryArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/discovery.md",
       "benefitMetricStatus": "active",
       "benefitMetricArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/benefit-metric.md",
+      "spikes": [
+        {
+          "id": "spike-copilot-cli-noninteractive",
+          "storySlug": "wuce-spike-copilot-cli",
+          "verdict": "PROCEED",
+          "outputArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/spikes/spike-copilot-cli-noninteractive-outcome.md",
+          "verdictAt": "2026-05-02T00:00:00Z"
+        }
+      ],
       "updatedAt": "2026-05-02",
       "stories": []
     }
