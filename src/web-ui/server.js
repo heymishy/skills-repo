@@ -51,26 +51,21 @@ async function router(req, res) {
   } else if (pathname === '/auth/logout' && req.method === 'GET') {
     await handleLogout(req, res);
 
-<<<<<<< HEAD
   } else if (pathname === '/sign-off' && req.method === 'POST') {
     authGuard(req, res, () => handleSignOff(req, res));
 
   } else if (/^\/artefact\/[^/]+\/discovery$/.test(pathname) && req.method === 'GET') {
     const slug = pathname.split('/')[2];
     authGuard(req, res, () => handleArtefactRead(req, res, slug));
-=======
-<<<<<<< HEAD
+
   } else if (pathname === '/api/actions' && req.method === 'GET') {
     await handleGetActions(req, res);
->>>>>>> feat: wuce.5 — personalised action queue and pipeline state mutation
-=======
+
   } else if (pathname === '/status/export' && req.method === 'GET') {
     await handleGetStatusExport(req, res);
 
   } else if (pathname === '/status' && req.method === 'GET') {
     await handleGetStatus(req, res);
->>>>>>> feat: wuce.7 -- Programme manager pipeline status view
->>>>>>> feat: wuce.7 -- Programme manager pipeline status view
 
   } else if (pathname === '/dashboard') {
     authGuard(req, res, () => {
