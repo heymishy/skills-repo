@@ -10,6 +10,7 @@ const { URL } = require('url');
 const { sessionMiddleware }                                          = require('./middleware/session');
 const { handleAuthGithub, handleAuthCallback, handleLogout, authGuard } = require('./routes/auth');
 const { handleArtefactRoute }                                        = require('./routes/artefact');
+const { handleSignOff, handleArtefactRead }                             = require('./routes/sign-off');
 
 const PORT = process.env.PORT || 3000;
 
@@ -44,6 +45,13 @@ async function router(req, res) {
 
   } else if (pathname === '/auth/logout' && req.method === 'GET') {
     await handleLogout(req, res);
+
+  } else if (pathname === '/sign-off' && req.method === 'POST') {
+    authGuard(req, res, () => handleSignOff(req, res));
+
+  } else if (/^\/artefact\/[^/]+\/discovery$/.test(pathname) && req.method === 'GET') {
+    const slug = pathname.split('/')[2];
+    authGuard(req, res, () => handleArtefactRead(req, res, slug));
 
   } else if (pathname === '/dashboard') {
     authGuard(req, res, () => {
