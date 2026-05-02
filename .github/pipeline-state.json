@@ -5138,7 +5138,7 @@
       "slug": "2026-05-02-web-ui-copilot-execution-layer",
       "name": "Web UI + Copilot Execution Layer — Non-Technical Outer Loop Surface",
       "track": "standard",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "regulated": false,
       "complianceProfile": "standard",
@@ -5157,8 +5157,183 @@
           "verdictAt": "2026-05-02T00:00:00Z"
         }
       ],
+      "epics": [
+        {
+          "id": "wuce-e1",
+          "slug": "wuce-e1-walking-skeleton",
+          "name": "Walking skeleton — authenticate, read one artefact, write one sign-off",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/epics/wuce-e1-walking-skeleton.md",
+          "stories": []
+        },
+        {
+          "id": "wuce-e2",
+          "slug": "wuce-e2-phase1-full-surface",
+          "name": "Phase 1 — Full read and action surface",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/epics/wuce-e2-phase1-full-surface.md",
+          "stories": []
+        },
+        {
+          "id": "wuce-e3",
+          "slug": "wuce-e3-phase2-execution-engine",
+          "name": "Phase 2 — Copilot CLI execution engine (backend)",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/epics/wuce-e3-phase2-execution-engine.md",
+          "stories": []
+        },
+        {
+          "id": "wuce-e4",
+          "slug": "wuce-e4-phase2-guided-ui",
+          "name": "Phase 2 — Guided skill UI (browser conversation layer)",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/epics/wuce-e4-phase2-guided-ui.md",
+          "stories": []
+        }
+      ],
       "updatedAt": "2026-05-02",
-      "stories": []
+      "stories": [
+        {
+          "id": "wuce.1",
+          "slug": "wuce.1-github-oauth-flow",
+          "name": "GitHub OAuth flow and authenticated session",
+          "epic": "wuce-e1",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.1-github-oauth-flow.md",
+          "prStatus": "none",
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wuce.2",
+          "slug": "wuce.2-read-render-artefact",
+          "name": "Read and render a single pipeline artefact in plain prose",
+          "epic": "wuce-e1",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.2-read-render-artefact.md",
+          "prStatus": "none",
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wuce.3",
+          "slug": "wuce.3-attributed-signoff",
+          "name": "Submit attributed sign-off via GitHub Contents API",
+          "epic": "wuce-e1",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.3-attributed-signoff.md",
+          "prStatus": "none",
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wuce.4",
+          "slug": "wuce.4-docker-deployment",
+          "name": "Self-hosted deployment support (Docker + environment-variable config injection)",
+          "epic": "wuce-e1",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.4-docker-deployment.md",
+          "prStatus": "none",
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wuce.5",
+          "slug": "wuce.5-action-queue",
+          "name": "Personalised action queue — pending sign-offs and annotation requests",
+          "epic": "wuce-e2",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.5-action-queue.md",
+          "prStatus": "none",
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wuce.6",
+          "slug": "wuce.6-feature-navigation",
+          "name": "Multi-feature navigation and artefact browser",
+          "epic": "wuce-e2",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.6-feature-navigation.md",
+          "prStatus": "none",
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wuce.7",
+          "slug": "wuce.7-programme-status-view",
+          "name": "Programme manager pipeline status view",
+          "epic": "wuce-e2",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.7-programme-status-view.md",
+          "prStatus": "none",
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wuce.8",
+          "slug": "wuce.8-annotation",
+          "name": "Annotation and comment on artefact sections",
+          "epic": "wuce-e2",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.8-annotation.md",
+          "prStatus": "none",
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wuce.9",
+          "slug": "wuce.9-cli-subprocess-invocation",
+          "name": "CLI subprocess invocation with JSONL output capture",
+          "epic": "wuce-e3",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.9-cli-subprocess-invocation.md",
+          "prStatus": "none",
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wuce.10",
+          "slug": "wuce.10-session-isolation",
+          "name": "Per-user session isolation via COPILOT_HOME",
+          "epic": "wuce-e3",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.10-session-isolation.md",
+          "prStatus": "none",
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wuce.11",
+          "slug": "wuce.11-skill-discovery",
+          "name": "SKILL.md discovery and skill routing",
+          "epic": "wuce-e3",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.11-skill-discovery.md",
+          "prStatus": "none",
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wuce.12",
+          "slug": "wuce.12-byok-config",
+          "name": "BYOK and self-hosted provider configuration",
+          "epic": "wuce-e3",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.12-byok-config.md",
+          "prStatus": "none",
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wuce.13",
+          "slug": "wuce.13-skill-launcher",
+          "name": "Skill launcher and guided question flow (step-by-step form UI)",
+          "epic": "wuce-e4",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.13-skill-launcher.md",
+          "prStatus": "none",
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wuce.14",
+          "slug": "wuce.14-artefact-preview",
+          "name": "Incremental artefact preview as skill session progresses",
+          "epic": "wuce-e4",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.14-artefact-preview.md",
+          "prStatus": "none",
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wuce.15",
+          "slug": "wuce.15-artefact-writeback",
+          "name": "Artefact write-back with attribution (commit to repository under user identity)",
+          "epic": "wuce-e4",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.15-artefact-writeback.md",
+          "prStatus": "none",
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wuce.16",
+          "slug": "wuce.16-session-persistence",
+          "name": "Multi-turn session persistence (resume an in-progress skill session)",
+          "epic": "wuce-e4",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.16-session-persistence.md",
+          "prStatus": "none",
+          "dorStatus": "not-started"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

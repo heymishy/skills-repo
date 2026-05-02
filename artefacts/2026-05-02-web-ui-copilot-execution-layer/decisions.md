@@ -40,6 +40,15 @@
 ---
 
 ---
+**2026-05-02 | ARCH | phase-1**
+**Decision:** Phase 1 write-back (sign-off, annotations) uses the authenticated user's GitHub OAuth token with `repo:write` scope via the GitHub Contents API directly — not via the Copilot CLI.
+**Alternatives considered:** Service account token with delegated write access — rejected because it breaks identity attribution (commits would show a bot, not the approver). Copilot CLI as write agent — not applicable; Phase 1 has no skill execution requirement and routing a structured API call through the CLI adds unnecessary complexity and a Copilot licence dependency where none is needed.
+**Rationale:** Phase 1 has no skill execution requirement. The write is a structured pipeline-state update or artefact append, not a model-mediated action. Using the user's token directly (not a service account) satisfies the identity attribution non-negotiable from discovery. The OAuth App must request both `repo` (read + write) scope at authorisation time; the write path is only exercised for sign-off and annotation actions. ADR-009 applies: read and write are separate permission concerns handled by the same OAuth token with appropriate scope grants — the handlers must remain separately structured.
+**Made by:** Hamish King (sponsor) — confirmed at /definition
+**Revisit trigger:** If GitHub's fine-grained PAT model changes the `repo:write` scope requirements for Contents API calls.
+---
+
+---
 
 ## Architecture Decision Records
 

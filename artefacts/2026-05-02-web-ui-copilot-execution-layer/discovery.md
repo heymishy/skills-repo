@@ -47,7 +47,7 @@ The execution model treats SKILL.md files as the portable instruction set — th
 
 1. **Real-time collaborative canvas (simultaneous multi-user editing)** — Figma-style co-authoring of the same artefact in real time is deferred; review-and-execute-per-session is sufficient for Phase 1 and 2 and avoids a significant real-time infrastructure investment before adoption is validated
 2. **Replacing the VS Code / CLI path for engineers** — the web UI is an additional surface, not a migration; engineers keep their existing workflow unchanged
-3. **Non-GitHub source control (Azure DevOps, GitLab, Bitbucket)** — this MVP is scoped to GitHub-hosted repos; other SCM platforms are a future phase
+3. **Non-GitHub source control (Azure DevOps, GitLab, Bitbucket)** — this MVP is scoped to GitHub-hosted repos; other SCM platforms are a future phase. Named pattern: a common enterprise setup (GitHub for identity via SSO/SAML, Bitbucket for code) is a concrete example of this deferral — GitHub OAuth grants identity but not Bitbucket repository access; delivering that path requires a separate Bitbucket OAuth flow or a platform-level SCM abstraction adapter, neither of which is in Phase 1. These are two separate auth concerns and must not be conflated with the GitHub OAuth assumption.
 4. **Artefact schema or pipeline-state.json structural changes driven by this initiative** — the web UI renders and writes existing artefact formats; it does not change the artefact schema, template structure, or pipeline-state.json fields
 5. **Teams / Slack bot integration** — a separate surface adapter (WS0.4 in the Phase 5 roadmap); different phase, different delivery track
 
@@ -56,7 +56,7 @@ The execution model treats SKILL.md files as the portable instruction set — th
 ## Assumptions and Risks
 
 **High-risk — test or spike before committing:**
-- GitHub OAuth + enterprise SSO/SAML is sufficient for identity in Phase 1; no additional enterprise identity provider (Okta, AAD direct) integration is required in this MVP
+- GitHub OAuth + enterprise SSO/SAML is sufficient for identity in Phase 1 **for GitHub-hosted repos** — this assumption is scoped to organisations where both identity (SSO/SAML) and the artefact repository are on GitHub; no additional enterprise identity provider (Okta, AAD direct) integration is required in this MVP. Important nuance: some enterprise deployments authenticate via GitHub but host code in a separate SCM (e.g. GitHub for identity, Bitbucket for code). GitHub OAuth does not confer Bitbucket write access — these are two separate auth concerns. The Bitbucket path is explicitly deferred (see Out of Scope item 3); delivering it requires a Bitbucket OAuth flow or a neutral SCM abstraction layer. Phase 1 must not be designed as though GitHub identity and GitHub repo access are the only concerns.
 - The GitHub Copilot CLI or Copilot API can be invoked non-interactively server-side with an assembled SKILL.md prompt and return structured, parseable output — this is not yet a publicly documented supported use case and requires a spike before Phase 2 is scoped
 - Multi-turn skill sessions (e.g. /discovery asks 8–12 questions across separate user turns) can be maintained as persistent server-side session state without prohibitive infrastructure cost or complexity
 - Commit attribution via user-scoped GitHub OAuth token (GitHub Contents API create-or-update-file-contents) is acceptable to enterprise governance teams as the canonical sign-off record; some enterprises may require a separate audit trail outside git
@@ -79,6 +79,11 @@ The execution model treats SKILL.md files as the portable instruction set — th
 - Non-technical stakeholders (BAs, POs, business leads, SMEs) appear by name in the Attribution section of discovery artefacts — not "engineering team" or "TBD"
 - Programme managers can answer "what phase is feature X in and what is currently blocking it?" from the web UI without querying an engineer
 - The outer loop cycle time shortens because review and sign-off no longer wait for a meeting to be scheduled — the action queue tells each stakeholder exactly what needs their attention
+
+**Outcome-level indicators (what changes as a result of the above being in the governance record):**
+- A scope dispute is resolved by pointing to the governance record — the discovery artefact, sign-off attribution, and decisions log — without scheduling a meeting or involving an engineer to reconstruct what was agreed; the record speaks for itself
+- An audit request (internal, regulatory, or steering committee) is answered directly from the artefact chain — discovery, benefit-metric, story, DoR, DoD — without engineering involvement in assembling the evidence package
+- A business lead or P&L owner reports to a steering committee what is committed, what is deferred, and the recorded rationale — sourced from the web UI, not reconstructed from email threads with engineering managers
 
 ---
 

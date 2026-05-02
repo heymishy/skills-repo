@@ -120,13 +120,13 @@ This initiative delivers user value (Phase 1: read + sign-off surface; Phase 2: 
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| P1 — Non-engineer sign-off rate | TBD at /definition | Gap — pending stories |
-| P2 — Unassisted /discovery completion rate | TBD at /definition | Gap — pending stories |
-| P3 — Non-technical attribution rate | TBD at /definition | Gap — pending stories |
-| P4 — Status self-service rate | TBD at /definition | Gap — pending stories |
-| P5 — Sign-off wait time | TBD at /definition | Gap — pending stories |
-| M1 — CLI/API feasibility | Spike story (pre-Phase 2) | Gap — pending spike story |
-| M2 — Stakeholder activation rate | TBD at /definition | Gap — pending stories |
+| P1 — Non-engineer sign-off rate | wuce.3 (attributed sign-off — primary), wuce.5 (action queue surfaces pending sign-offs) | Covered — wuce.3 is the direct delivery mechanism |
+| P2 — Unassisted /discovery completion rate | wuce.13 (skill launcher + question flow), wuce.14 (artefact preview), wuce.15 (write-back), wuce.16 (session persistence) | Covered — full Phase 2 user journey across Epic 4 |
+| P3 — Non-technical attribution rate | wuce.3 (Phase 1 sign-off attribution), wuce.8 (annotation attribution), wuce.15 (Phase 2 artefact write-back attribution) | Covered across Phase 1 and Phase 2 |
+| P4 — Status self-service rate | wuce.2 (single artefact read — pre-condition), wuce.6 (multi-feature navigation), wuce.7 (programme status view — primary) | Covered — wuce.7 is the direct delivery mechanism |
+| P5 — Sign-off wait time | wuce.5 (action queue makes pending sign-offs visible at login), wuce.3 (removes engineer routing step) | Covered — wuce.5 addresses the primary wait-time driver (lack of visibility) |
+| M1 — CLI/API feasibility | Spike verdict: PROCEED (committed 012f38f); wuce.9 (subprocess invocation), wuce.10 (session isolation), wuce.11 (skill discovery), wuce.12 (BYOK config) | Covered — spike PROCEED + Epic 3 engine stories are the realisation |
+| M2 — Stakeholder activation rate | wuce.1 (OAuth, zero-install barrier removal), wuce.4 (Docker self-hosted deployment), wuce.2 (artefact read — first activating action) | Covered — wuce.1 + wuce.4 address the activation pre-conditions |
 
 ---
 
