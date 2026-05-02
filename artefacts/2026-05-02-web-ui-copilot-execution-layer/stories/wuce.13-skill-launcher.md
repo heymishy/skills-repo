@@ -21,6 +21,7 @@ So that I can initiate a governed pipeline artefact without opening VS Code, a t
 - Mandatory security constraint: skill name submitted from the browser must be validated against the discovered skill list (wuce.11) on the server before any execution begins — client-supplied skill names are not trusted
 - Mandatory security constraint: all question responses submitted from the browser must be sanitised server-side before being assembled into the CLI prompt — prompt injection via form field content must be mitigated (maximum field length enforced, disallowed prompt metacharacters stripped)
 - ACP server is public preview — the primary path is the `-p` subprocess (wuce.9); any ACP-dependent behaviour in this story must be noted: "Reinstate/remove preview caveat when ACP reaches GA"
+- The skill launcher reads question blocks directly from SKILL.md content via a `SkillContentAdapter` module scoped to this story. The adapter is given the SKILL.md file path (resolved by wuce.11's `listAvailableSkills` output), parses the file body, extracts numbered question steps (lines beginning with a question prompt pattern), and returns them as an ordered sequence. This adapter is independent of wuce.11's skill discovery output — wuce.11 provides the skill name and path; this adapter reads the content at that path. The `SkillContentAdapter` is not exposed as a shared module in this story — generalisation is deferred to a post-MVP platform decision.
 
 ## Dependencies
 

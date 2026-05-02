@@ -5341,9 +5341,9 @@
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.13-skill-launcher.md",
           "prStatus": "none",
           "dorStatus": "not-started",
-          "reviewStatus": "failed",
-          "highFindings": 1,
-          "health": "red"
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green"
         },
         {
           "id": "wuce.14",
@@ -5379,7 +5379,7 @@
           "dorStatus": "not-started",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "health": "amber"
+          "health": "green"
         }
       ]
     }
