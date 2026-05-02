@@ -17,7 +17,7 @@ So that I can access the pipeline web UI without any additional account creation
 
 ## Architecture Constraints
 
-- ADR-004: OAuth App client ID and callback URL must be read from `context.yml` — never hardcoded in application code
+- ADR-004: OAuth client ID, client secret, and callback URL must be read from environment variables at runtime (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_CALLBACK_URL`) — never from `context.yml`, never hardcoded in application code
 - ADR-012: Auth layer must be implemented as a standalone adapter module (not inlined in route handlers) to allow future support for non-GitHub identity providers without rewriting auth logic
 - Mandatory security constraint: OAuth state parameter (CSRF protection) is mandatory — do not implement the OAuth flow without it
 - Mandatory security constraint: access tokens must be stored server-side in the session store, never in browser localStorage or cookies accessible to JavaScript

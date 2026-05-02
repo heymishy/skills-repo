@@ -5199,7 +5199,7 @@
           "dorStatus": "not-started",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "health": "amber"
+          "health": "green"
         },
         {
           "id": "wuce.2",
@@ -5235,7 +5235,7 @@
           "dorStatus": "not-started",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "health": "amber"
+          "health": "green"
         },
         {
           "id": "wuce.5",
