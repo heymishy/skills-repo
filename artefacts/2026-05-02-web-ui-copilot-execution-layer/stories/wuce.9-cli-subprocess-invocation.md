@@ -30,9 +30,9 @@ So that skill execution can be triggered programmatically from the web backend w
 
 ## Acceptance Criteria
 
-**AC1:** Given a valid Copilot CLI binary is installed and `COPILOT_GITHUB_TOKEN` is set for a user with a Copilot subscription, When `executeSkill("discovery", "<assembled prompt>", token, homeDir)` is called, Then the subprocess is spawned with flags `--output-format=json --silent --no-ask-user --allow-all -p "<prompt>"`, the `COPILOT_GITHUB_TOKEN` env var is set in the subprocess environment, `COPILOT_HOME` is set to `homeDir`, and the function returns the parsed JSONL output as a structured object.
+**AC1:** Given a valid Copilot CLI binary is installed and `COPILOT_GITHUB_TOKEN` is set for a user with a Copilot subscription, When `executeSkill("discovery", "<assembled prompt>", token, homeDir)` is called, Then the subprocess is spawned with flags `--output-format=json --silent --no-ask-user --allow-all -p "<prompt>"` (note: `--output-format=json` produces JSONL output — one JSON object per newline, not a single JSON document), the `COPILOT_GITHUB_TOKEN` env var is set in the subprocess environment, `COPILOT_HOME` is set to `homeDir`, and the function returns the parsed output as a structured object.
 
-**AC2:** Given the CLI subprocess produces valid JSONL output, When the output is captured, Then each line is parsed as a separate JSON object and the final parsed result (skill artefact content) is returned — not the raw JSONL string.
+**AC2:** Given the CLI subprocess produces JSONL output (one JSON object per newline), When the output is captured, Then each line is parsed individually as a separate JSON object (`stdout.split('\n').filter(Boolean).map(JSON.parse)`) and the final parsed result (skill artefact content) is returned — not the raw JSONL string and not a single `JSON.parse(stdout)` call.
 
 **AC3:** Given the subprocess execution exceeds the configured timeout (default 300 seconds), When the timeout fires, Then the subprocess is killed (SIGTERM, then SIGKILL after 5 seconds), the function rejects with a `TIMEOUT` error code, and no partial output is returned.
 
