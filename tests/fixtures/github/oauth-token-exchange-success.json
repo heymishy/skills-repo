@@ -1,0 +1,5 @@
+{
+  "access_token": "gho_test_fixture_token_wuce1",
+  "token_type": "bearer",
+  "scope": "repo,read:user"
+}
