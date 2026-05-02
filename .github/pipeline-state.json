@@ -5292,8 +5292,8 @@
           "name": "Personalised action queue — pending sign-offs and annotation requests",
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.5-action-queue.md",
-          "stage": "definition-of-ready",
-          "prStatus": "none",
+          "stage": "implementation",
+          "prStatus": "draft",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -5301,10 +5301,10 @@
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.5-action-queue-test-plan.md",
             "totalTests": 18,
-            "passing": 0
+            "passing": 18
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "health": "green",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/252",
           "dispatchedAt": "2026-05-02T00:00:00Z",
