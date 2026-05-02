@@ -92,3 +92,12 @@ For self-hosted deployments where routing through GitHub Copilot is not acceptab
 - ACP server is in public preview — use the stable `-p` subprocess path as primary, ACP as preferred option once it reaches GA.
 - Per-user `COPILOT_HOME` isolation is a security requirement for multi-tenant deployment. Must be implemented before Phase 2 goes to production.
 - OAuth token lifecycle (expiry, refresh) is not covered by the spike — must be addressed in Phase 2 stories.
+
+---
+**2026-05-02 | ARCH | scale**
+**Decision:** Phase 2 service account pool required for production at >25 concurrent sessions. Single service account is acceptable for pilot (≤10 concurrent sessions). Service account pool (wuce.17 candidate) deferred to post-pilot based on observed concurrency from P2 metric. Concurrency cap: 20 concurrent Phase 2 sessions per Container Apps instance. Queue model for overflow. Revisit trigger: P2 metric (concurrent session count) observed at 30 days post Phase 2 launch.
+**Alternatives considered:** Immediate multi-account pool implementation — deferred as premature optimisation given P2 baseline is unknown; in-process concurrency limiter without queue — rejected as it would drop requests silently rather than hold them.
+**Rationale:** Pilot phase (≤10 concurrent sessions) does not justify the operational cost of a service account pool. The P2 metric provides the empirical signal needed to right-size the pool. The 20-session cap with a queue model ensures graceful degradation rather than hard failure if the cap is reached during the pilot. wuce.17 is the natural candidate story if the 30-day P2 observation confirms the need.
+**Made by:** Hamish King (sponsor)
+**Revisit trigger:** P2 concurrent session count observed at 30 days post Phase 2 launch.
+---
