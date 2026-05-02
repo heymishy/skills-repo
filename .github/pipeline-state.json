@@ -5187,7 +5187,7 @@
           "stories": []
         }
       ],
-      "updatedAt": "2026-05-02",
+      "updatedAt": "2026-05-03",
       "stories": [
         {
           "id": "wuce.1",
@@ -5195,8 +5195,8 @@
           "name": "GitHub OAuth flow and authenticated session",
           "epic": "wuce-e1",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.1-github-oauth-flow.md",
-          "stage": "definition-of-ready",
-          "prStatus": "draft",
+          "stage": "definition-of-done",
+          "prStatus": "merged",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
