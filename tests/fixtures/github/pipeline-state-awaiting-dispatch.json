@@ -1,0 +1,9 @@
+{
+  "slug": "2026-05-02-awaiting-dispatch-feature",
+  "stage": "definition-of-ready",
+  "updatedAt": "2026-05-02T10:00:00Z",
+  "lastActivityDate": "2026-05-02T10:00:00Z",
+  "stories": [
+    { "id": "ad.1", "prStatus": "none", "dorStatus": "signed-off", "traceStatus": "not-run" }
+  ]
+}
