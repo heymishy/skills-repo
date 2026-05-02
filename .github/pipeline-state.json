@@ -5340,7 +5340,10 @@
           "epic": "wuce-e4",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.13-skill-launcher.md",
           "prStatus": "none",
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "failed",
+          "highFindings": 1,
+          "health": "red"
         },
         {
           "id": "wuce.14",
@@ -5349,7 +5352,10 @@
           "epic": "wuce-e4",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.14-artefact-preview.md",
           "prStatus": "none",
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green"
         },
         {
           "id": "wuce.15",
@@ -5358,7 +5364,10 @@
           "epic": "wuce-e4",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.15-artefact-writeback.md",
           "prStatus": "none",
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green"
         },
         {
           "id": "wuce.16",
@@ -5367,7 +5376,10 @@
           "epic": "wuce-e4",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.16-session-persistence.md",
           "prStatus": "none",
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "amber"
         }
       ]
     }
