@@ -1,0 +1,10 @@
+{
+  "type": "file",
+  "name": "discovery.md",
+  "path": "artefacts/2026-01-01-example-feature/discovery.md",
+  "sha": "abc123def456",
+  "size": 358,
+  "content": "IyMgRGlzY292ZXJ5OiBFeGFtcGxlIEZlYXR1cmUNCg0KKipTdGF0dXM6KiogQXBwcm92ZWQNCioqQXBwcm92ZWQgYnk6KiogVGVzdCBTdGFrZWhvbGRlcg0KKipDcmVhdGVkOioqIDIwMjYtMDEtMTUNCg0KIyMgU3VtbWFyeQ0KDQpUaGlzIGlzIHNhbXBsZSBkaXNjb3ZlcnkgY29udGVudCBmb3IgdGVzdGluZy4NCg0KIyMgS2V5IFBvaW50cw0KDQotIEZpcnN0IGtleSBwb2ludA0KLSBTZWNvbmQga2V5IHBvaW50DQoNCiMjIENvbnN0cmFpbnRzDQoNCnwgQ29uc3RyYWludCB8IEltcGFjdCB8DQp8LS0tLS0tLS0tLS0tfC0tLS0tLS0tfA0KfCBObyBleHRlcm5hbCBDRE4gfCBNZWRpdW0gfA0KfCBPQXV0aCBvbmx5IHwgTG93IHwNCg==",
+  "encoding": "base64",
+  "download_url": "https://raw.githubusercontent.com/example/repo/main/artefacts/2026-01-01-example-feature/discovery.md"
+}
