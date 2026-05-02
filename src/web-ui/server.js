@@ -17,6 +17,7 @@ const { handleGetActions }                                           = require('
 const { handleGetFeatures, handleGetFeatureArtefacts }               = require('./routes/features');
 const { handleGetStatus, handleGetStatusExport }                     = require('./routes/status');
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
+const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
 
 const PORT = process.env.PORT || 3000;
 
@@ -98,6 +99,11 @@ async function router(req, res) {
     authGuard(req, res, async () => {
       await handlePostAnnotation(req, res);
     });
+
+  } else if (pathname.match(/^\/api\/skills\/[^/]+\/execute$/) && req.method === 'POST') {
+    const skillNameParam = pathname.split('/')[3];
+    req.params = { name: skillNameParam };
+    await handleExecuteSkill(req, res);
 
   } else {
     // Sign-in page (unauthenticated root)
