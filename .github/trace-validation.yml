@@ -69,7 +69,7 @@ reference_dirs:
   - 2026-04-19-skills-platform-phase4-opus
   - 2026-04-26-portfolio-sequencing
   - docs-only
-    - 2026-05-03-pipeline-state-write-safety
+  - 2026-05-03-pipeline-state-write-safety
 tracks_without_discovery:
   - short
   - defect
