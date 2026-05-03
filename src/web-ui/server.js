@@ -13,7 +13,7 @@ const { handleArtefactRoute }                                        = require('
 const { handleSignOff, handleArtefactRead }                             = require('./routes/sign-off');
 const { healthCheckHandler }                                         = require('./routes/health');
 const { validateRequiredEnvVars }                                    = require('./config/validate-env');
-const { handleGetActions, handleDashboard }                          = require('./routes/dashboard');
+const { handleGetActions, handleDashboard, handleGetActionsHtml }                          = require('./routes/dashboard');
 const { handleGetFeatures, handleGetFeatureArtefacts }               = require('./routes/features');
 const { handleGetStatus, handleGetStatusExport }                     = require('./routes/status');
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
@@ -163,6 +163,11 @@ async function router(req, res) {
 
   } else if (pathname === '/status' && req.method === 'GET') {
     await handleGetStatus(req, res);
+
+  } else if (pathname === '/actions' && req.method === 'GET') {
+    authGuard(req, res, async () => {
+      await handleGetActionsHtml(req, res);
+    });
 
   } else if (pathname === '/dashboard') {
     handleDashboard(req, res);
