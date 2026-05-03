@@ -5460,23 +5460,24 @@
           "name": "BYOK and self-hosted provider configuration",
           "epic": "wuce-e3",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.12-byok-config.md",
-          "stage": "implementation",
+          "stage": "subagent-execution",
           "prStatus": "draft",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "all-passing",
+            "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.12-byok-config-test-plan.md",
             "totalTests": 17,
-            "passing": 17
+            "passing": 0
           },
           "acTotal": 5,
-          "acVerified": 5,
+          "acVerified": 0,
           "health": "green",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/259",
           "dispatchedAt": "2026-05-02T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "updatedAt": "2026-05-03"
         },
         {
           "id": "wuce.13",
@@ -5488,7 +5489,7 @@
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "definition-of-ready",
+          "stage": "subagent-execution",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.13-skill-launcher-test-plan.md",
@@ -5498,9 +5499,10 @@
           "acTotal": 5,
           "acVerified": 0,
           "health": "green",
-          "issueUrl": "https://github.com/heymishy/skills-repo/issues/260",
-          "dispatchedAt": "2026-05-02T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/276",
+          "dispatchedAt": "2026-05-03",
+          "dispatchTarget": "vscode",
+          "updatedAt": "2026-05-03"
         },
         {
           "id": "wuce.14",
@@ -5512,7 +5514,7 @@
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "definition-of-ready",
+          "stage": "subagent-execution",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.14-artefact-preview-test-plan.md",
@@ -5522,9 +5524,10 @@
           "acTotal": 5,
           "acVerified": 0,
           "health": "green",
-          "issueUrl": "https://github.com/heymishy/skills-repo/issues/261",
-          "dispatchedAt": "2026-05-02T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/277",
+          "dispatchedAt": "2026-05-03",
+          "dispatchTarget": "vscode",
+          "updatedAt": "2026-05-03"
         },
         {
           "id": "wuce.15",
@@ -5536,7 +5539,7 @@
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "definition-of-ready",
+          "stage": "subagent-execution",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.15-artefact-writeback-test-plan.md",
@@ -5546,9 +5549,10 @@
           "acTotal": 5,
           "acVerified": 0,
           "health": "green",
-          "issueUrl": "https://github.com/heymishy/skills-repo/issues/262",
-          "dispatchedAt": "2026-05-02T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/278",
+          "dispatchedAt": "2026-05-03",
+          "dispatchTarget": "vscode",
+          "updatedAt": "2026-05-03"
         },
         {
           "id": "wuce.16",
@@ -5560,7 +5564,7 @@
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "definition-of-ready",
+          "stage": "subagent-execution",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.16-session-persistence-test-plan.md",
@@ -5570,9 +5574,10 @@
           "acTotal": 5,
           "acVerified": 0,
           "health": "green",
-          "issueUrl": "https://github.com/heymishy/skills-repo/issues/263",
-          "dispatchedAt": "2026-05-02T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/279",
+          "dispatchedAt": "2026-05-03",
+          "dispatchTarget": "vscode",
+          "updatedAt": "2026-05-03"
         }
       ]
     }
