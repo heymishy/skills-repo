@@ -1,8 +1,8 @@
 # Artefact Index — Web UI Copilot Execution Layer (WUCE)
 
 **Feature slug:** `2026-05-02-web-ui-copilot-execution-layer`
-**Status:** DoD-complete — 85/88 ACs passed (3 deviations accepted), all 17 stories merged
-**Delivery period:** 2026-05-02 → 2026-05-07
+**Status:** In delivery — wuce.1–17 DoD-complete (85/88 ACs); wuce.18–25 DoR-ready (HTML frontend layer, 8 stories pending implementation)
+**Delivery period:** 2026-05-02 → ongoing
 **Porting note:** This file is the single entry point for reading or porting the full artefact chain to another framework. Read this first, then follow the links to individual files as needed.
 
 ---
@@ -27,6 +27,8 @@
 | [wuce-e2](epics/wuce-e2-phase1-full-surface.md) | Phase 1 full surface | wuce.5–8 |
 | [wuce-e3](epics/wuce-e3-phase2-execution-engine.md) | Phase 2 execution engine | wuce.9–12 |
 | [wuce-e4](epics/wuce-e4-phase2-guided-ui.md) | Phase 2 guided UI | wuce.13–17 |
+| [wuce-e5](epics/wuce-e5-html-shell-core-views.md) | HTML shell and core views | wuce.18–22 |
+| [wuce-e6](epics/wuce-e6-skill-launcher-html-form.md) | Skill launcher HTML form | wuce.23–25 |
 
 ---
 
@@ -80,6 +82,24 @@ Each row links: story → test plan → review → DoR → DoR contract → impl
 | wuce.16 | Session persistence | [story](stories/wuce.16-session-persistence.md) | [test plan](test-plans/wuce.16-session-persistence-test-plan.md) | [review](review/wuce.16-session-persistence-review-2.md) | [dor](dor/wuce.16-session-persistence-dor.md) | [contract](dor/wuce.16-session-persistence-dor-contract.md) | [plan](plans/wuce.16-session-persistence-plan.md) | [verification](verification-scripts/wuce.16-session-persistence-verification.md) |
 | wuce.17 | Playwright E2E test infrastructure | [story](stories/wuce.17-playwright-e2e-infrastructure.md) | [test plan](test-plans/wuce.17-playwright-e2e-infrastructure-test-plan.md) | [review](review/wuce.17-playwright-e2e-infrastructure-review-1.md) | [dor](dor/wuce.17-playwright-e2e-infrastructure-dor.md) | [contract](dor/wuce.17-playwright-e2e-infrastructure-dor-contract.md) | — | [verification](verification-scripts/wuce.17-playwright-e2e-infrastructure-verification.md) |
 
+### E5 — HTML shell and core views (wuce.18–22)
+
+| ID | Title | Story | Test plan | Review | DoR | Contract | Verification |
+|----|-------|-------|-----------|--------|-----|----------|--------------|
+| wuce.18 | HTML shell and navigation | [story](stories/wuce.18-html-shell-navigation.md) | [test plan](test-plans/wuce.18-html-shell-navigation-test-plan.md) | [review](review/wuce.18-html-shell-navigation-review-1.md) | [dor](dor/wuce.18-html-shell-navigation-dor.md) | [contract](dor/wuce.18-html-shell-navigation-dor-contract.md) | [verification](verification-scripts/wuce.18-html-shell-navigation-verification.md) |
+| wuce.19 | Feature list HTML view | [story](stories/wuce.19-feature-list-html-view.md) | [test plan](test-plans/wuce.19-feature-list-html-view-test-plan.md) | [review](review/wuce.19-feature-list-html-view-review-1.md) | [dor](dor/wuce.19-feature-list-html-view-dor.md) | [contract](dor/wuce.19-feature-list-html-view-dor-contract.md) | [verification](verification-scripts/wuce.19-feature-list-html-view-verification.md) |
+| wuce.20 | Feature artefact index HTML view | [story](stories/wuce.20-artefact-index-html-view.md) | [test plan](test-plans/wuce.20-artefact-index-html-view-test-plan.md) | [review](review/wuce.20-artefact-index-html-view-review-1.md) | [dor](dor/wuce.20-artefact-index-html-view-dor.md) | [contract](dor/wuce.20-artefact-index-html-view-dor-contract.md) | [verification](verification-scripts/wuce.20-artefact-index-html-view-verification.md) |
+| wuce.21 | Action queue HTML view | [story](stories/wuce.21-action-queue-html-view.md) | [test plan](test-plans/wuce.21-action-queue-html-view-test-plan.md) | [review](review/wuce.21-action-queue-html-view-review-1.md) | [dor](dor/wuce.21-action-queue-html-view-dor.md) | [contract](dor/wuce.21-action-queue-html-view-dor-contract.md) | [verification](verification-scripts/wuce.21-action-queue-html-view-verification.md) |
+| wuce.22 | Status board HTML view | [story](stories/wuce.22-status-board-html-view.md) | [test plan](test-plans/wuce.22-status-board-html-view-test-plan.md) | [review](review/wuce.22-status-board-html-view-review-1.md) | [dor](dor/wuce.22-status-board-html-view-dor.md) | [contract](dor/wuce.22-status-board-html-view-dor-contract.md) | [verification](verification-scripts/wuce.22-status-board-html-view-verification.md) |
+
+### E6 — Skill launcher HTML form (wuce.23–25)
+
+| ID | Title | Story | Test plan | Review | DoR | Contract | Verification |
+|----|-------|-------|-----------|--------|-----|----------|--------------|
+| wuce.23 | Skill launcher landing and session start | [story](stories/wuce.23-skill-launcher-landing.md) | [test plan](test-plans/wuce.23-skill-launcher-landing-test-plan.md) | [review](review/wuce.23-skill-launcher-landing-review-1.md) | [dor](dor/wuce.23-skill-launcher-landing-dor.md) | [contract](dor/wuce.23-skill-launcher-landing-dor-contract.md) | [verification](verification-scripts/wuce.23-skill-launcher-landing-verification.md) |
+| wuce.24 | Guided question form | [story](stories/wuce.24-guided-question-form.md) | [test plan](test-plans/wuce.24-guided-question-form-test-plan.md) | [review](review/wuce.24-guided-question-form-review-1.md) | [dor](dor/wuce.24-guided-question-form-dor.md) | [contract](dor/wuce.24-guided-question-form-dor-contract.md) | [verification](verification-scripts/wuce.24-guided-question-form-verification.md) |
+| wuce.25 | Session commit and result view | [story](stories/wuce.25-session-commit-result.md) | [test plan](test-plans/wuce.25-session-commit-result-test-plan.md) | [review](review/wuce.25-session-commit-result-review-1.md) | [dor](dor/wuce.25-session-commit-result-dor.md) | [contract](dor/wuce.25-session-commit-result-dor-contract.md) | [verification](verification-scripts/wuce.25-session-commit-result-verification.md) |
+
 ---
 
 ## Key implementation files (src/)
@@ -102,6 +122,9 @@ Each row links: story → test plan → review → DoR → DoR contract → impl
 | `src/web-ui/utils/status-board.js` | Status board derivation logic |
 | `src/web-ui/utils/annotation-utils.js` | Annotation sanitisation, build, parse |
 | `src/web-ui/config/validate-env.js` | Startup env validation (fails fast) |
+| `src/web-ui/utils/html-shell.js` | `renderShell({title, bodyContent, user})` + `escHtml()` — canonical XSS function (wuce.18) |
+| `src/web-ui/utils/artefact-labels.js` | Static map: internal type id → human-readable label (wuce.20) |
+| `src/web-ui/routes/skills.js` | GET /skills, POST session start, GET question, POST answer, GET commit-preview, POST commit, GET result (wuce.23–25) |
 
 ## Key test files
 
@@ -117,6 +140,15 @@ Each row links: story → test plan → review → DoR → DoR contract → impl
 | `tests/check-wuce8-annotation.js` | wuce.8 | 24 |
 | `tests/check-wuce17-e2e-infra.js` | wuce.17 | 22 |
 | `tests/e2e/smoke.spec.js` | wuce.17 | 2 passing, 20 skipped stubs |
+| `tests/check-wuce18-html-shell.js` | wuce.18 | TBD (DoR-ready, not yet implemented) |
+| `tests/check-wuce19-feature-list-html.js` | wuce.19 | TBD |
+| `tests/check-wuce20-artefact-index-html.js` | wuce.20 | TBD |
+| `tests/check-wuce21-action-queue-html.js` | wuce.21 | TBD |
+| `tests/check-wuce22-status-board-html.js` | wuce.22 | TBD |
+| `tests/check-wuce23-skill-launcher-landing.js` | wuce.23 | TBD |
+| `tests/check-wuce24-guided-question-form.js` | wuce.24 | TBD |
+| `tests/check-wuce25-session-commit-result.js` | wuce.25 | TBD |
+| `tests/e2e/wuce18-keyboard-nav.spec.ts` | wuce.18 AC5 | Playwright — keyboard focus styling (layout-dependent) |
 
 ---
 
@@ -136,4 +168,4 @@ All ADRs are in `.github/architecture-guardrails.md`.
 ## Cross-references
 
 - **Pipeline-state write safety fix** (concurrent inner-loop fan-out overwrite): `artefacts/2026-05-03-pipeline-state-write-safety/fix-note.md` — triggered by wuce.2–8 and wuce.12 showing stale `prStatus: none` after merge
-- **Next slice** (HTML frontend layer): stories wuce.18+ under this same feature folder, to be defined via `/definition`
+- **HTML frontend layer (E5/E6)**: wuce.18–25 DoR-ready as of 2026-05-03 — awaiting implementation dispatch. E5 (wuce.18–22) covers renderShell, HTML views for features/actions/status. E6 (wuce.23–25) covers skill launcher form, question-loop, commit preview and result page.
