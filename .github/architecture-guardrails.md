@@ -156,6 +156,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 | ADR-013 | Active | Phase 4 enforcement architecture: shared 3-operation governance package (`resolveAndVerifySkill`, `evaluateGateAndAdvance`, `writeVerifiedTrace`) is the contract all surface adapters call — no surface adapter reimplements governance logic independently | All Phase 4 enforcement adapters (p4-enf-mcp, p4-enf-cli, and any future surface adapter); E3 implementation stories |
 | ADR-phase4-enforcement | Active | Mechanism selection: which enforcement mechanism (MCP, CLI, or deferred) applies to each Phase 4 surface class | E3 enforcement stories (p4-enf-package, p4-enf-mcp, p4-enf-cli, p4-enf-schema); all surface adapters |
 | ADR-015 | Active | Two-tier artefact scope model: system corpus vs feature delivery — `/modernisation-decompose` is the canonical bridge mechanism; ad-hoc cross-scope artefact sharing is not permitted | All contributors working on modernisation programmes; /modernisation-decompose skill invocations |
+| ADR-018 | Active | Playwright is the E2E testing framework; specs in `tests/e2e/`; devDependency only; unit test chain (`npm test`) must not invoke Playwright; auth bypass is test-fixture-layer only (`NODE_ENV=test` guard) | All browser-facing feature stories; wuce E3/E4 subagents; DoR H-E2E gate check |
 
 ---
 
@@ -942,6 +943,11 @@ This repository is operated by a single engineer. The following posture applies 
   category: adr
   label: "Story nesting dual-structure: all new features use flat features[].stories[]; Phase 1/2 epics-nested shape is legacy and not migrated"
   section: Active ADRs
+
+- id: ADR-018
+  category: adr
+  label: "Playwright is the E2E testing framework; specs in tests/e2e/; devDependency only; unit test chain (npm test) must not invoke Playwright; auth bypass is test-fixture-layer only (NODE_ENV=test guard)"
+  section: Active ADRs
 ```
 
 
@@ -1011,3 +1017,38 @@ This dual-structure emerged organically. Scripts that traverse stories must hand
 - New pipeline skill runs produce flat stories — no epic nesting
 - All `validate-trace.sh` story resolution and all governance check scripts must use the dual-path pattern
 - When a new story is added to a Phase 1/2 feature as part of a bugfix or retrospective story, it should still be added flat (as a top-level `stories` entry on the feature) rather than nested inside an existing epic
+
+---
+
+### ADR-018: Playwright is the E2E testing framework — tests/e2e/ only, devDependency, unit chain isolated
+
+**Status:** Active
+**Date:** 2026-05-06
+**Story:** wuce.17 — Playwright E2E test infrastructure
+
+#### Context
+
+The wuce feature has a browser execution layer (wuce.13–16) where important AC assertions — particularly rendering of markdown content, ARIA attribute transitions, OAuth redirect handling, and session restore after tab close — cannot be reliably verified by the Node.js unit test suite (jsdom). These scenarios require a real browser HTTP response cycle. Human "smoke test" steps in verification scripts cover these scenarios manually, but manual smoke tests are not deterministic CI signals and require operator time at every merge.
+
+A browser E2E framework is needed. The decision is: which one, and what structural rules govern its use.
+
+#### Decision
+
+1. **Playwright** is the E2E testing framework for this repo. No other browser E2E framework (`cypress`, `puppeteer`, `selenium`) is introduced — a single framework reduces dependency and cognitive surface.
+2. **All E2E spec files live under `tests/e2e/`**. No spec files outside this directory. New stories that introduce browser-facing ACs must add or extend a spec file in `tests/e2e/`.
+3. **Playwright is a devDependency only.** It is never added to `dependencies`. The Playwright browser binary is installed separately (e.g. `npx playwright install chromium` or via CI `npx playwright install --with-deps chromium`).
+4. **`npm test` (the unit test chain) must not invoke Playwright.** The E2E runner is always invoked separately: `npm run test:e2e`. Any contributor can run unit tests without Playwright installed.
+5. **Auth bypass is fixture-layer only.** If a story's E2E tests require an authenticated user, the auth bypass must be implemented as a Playwright `test.extend` fixture, not as a server-side middleware flag. The fixture must guard bypass activation with `if (process.env.NODE_ENV !== 'test') throw new Error(...)`. This ensures the bypass cannot be activated by configuration error in production.
+6. **DoR H-E2E gate is satisfied** by the existence of `playwright.config.js` at the repo root — once wuce.17 is merged, the H-E2E hard block auto-passes for any story with CSS-layout-dependent ACs.
+
+#### Consequences
+
+**Positive:**
+- Manual "human smoke test" steps in verification scripts can progressively migrate to deterministic Playwright assertions
+- E3/E4 subagents have a working test infrastructure and can add E2E tests without bootstrapping overhead
+- The DoR H-E2E hard block unblocks for all future wuce stories with browser-facing ACs
+
+**Constraints introduced:**
+- Any PR that adds browser-facing ACs to a new story must also add or extend a `tests/e2e/` spec file as part of the story's DoR contract
+- CI must run `npm run test:e2e` separately from `npm test`; E2E failures may be non-fatal in v1 (gated by `audit.e2e_tests: true` in `context.yml`) but must be visible in the PR status panel
+- Contributors installing a new browser E2E framework alongside Playwright must first raise an ADR — adding a second framework requires a decision record and approval
