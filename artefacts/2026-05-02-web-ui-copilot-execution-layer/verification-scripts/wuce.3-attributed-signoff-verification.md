@@ -30,10 +30,19 @@ node tests/check-wuce3-attributed-signoff.js
 **Expected:** All tests pass; payload contains `## Approved by` section with name and ISO timestamp.
 
 **Manual confirmation:**
-1. Sign in; navigate to a discovery artefact without a sign-off section
-2. Click "Sign off this artefact" and confirm the dialog
-3. Navigate to the repository in GitHub and confirm the commit appears with your GitHub identity as author/committer
-4. Confirm the commit message contains the user's display name and a reference to the artefact
+> **Note:** The sign-off UI button is not yet built (later story). Manual confirmation uses `curl` against the live API. You need a valid session cookie from the running app — sign in at `http://localhost:3000`, then copy the `session` cookie value from DevTools → Application → Cookies.
+
+1. Sign in at `http://localhost:3000`; copy the `session` cookie value from DevTools
+2. POST to the sign-off endpoint with a real artefact path:
+   ```bash
+   curl -s -X POST http://localhost:3000/sign-off \
+     -H "Content-Type: application/json" \
+     -H "Cookie: session=<your-session-cookie>" \
+     -d '{"artefactPath": "artefacts/2026-05-02-web-ui-copilot-execution-layer/discovery.md"}' \
+     | python -m json.tool
+   ```
+3. Confirm response is `{"success": true, ...}`
+4. Navigate to the repository in GitHub → `artefacts/2026-05-02-web-ui-copilot-execution-layer/discovery.md` → confirm a commit appears with your GitHub identity as author/committer and a `## Approved by` section at the end of the file
 
 **Pass condition:** Commit visible in GitHub with correct author identity; `## Approved by` section in committed file. ✅ / ❌
 
@@ -48,9 +57,13 @@ node tests/check-wuce3-attributed-signoff.js
 ```
 
 **Manual confirmation (state-dependent gap):**
-1. Complete the sign-off flow from AC1 manual step
-2. Refresh the artefact view page
-3. Confirm `## Approved by` section is visible with the user's display name and sign-off timestamp
+1. Complete the sign-off curl from AC1 manual step
+2. Fetch the artefact content directly:
+   ```bash
+   curl -s http://localhost:3000/artefact/2026-05-02-web-ui-copilot-execution-layer/discovery \
+     -H "Cookie: session=<your-session-cookie>"
+   ```
+3. Confirm the response body contains `## Approved by` with your display name and an ISO 8601 timestamp
 
 **Pass condition:** Section visible with correct name and ISO 8601 timestamp after page refresh. ✅ / ❌
 
@@ -65,8 +78,9 @@ node tests/check-wuce3-attributed-signoff.js
 ```
 
 **Manual confirmation:**
-1. Complete sign-off from a test account (e.g. `test-stakeholder` GitHub account)
-2. Open the commit in GitHub → confirm "Authored by test-stakeholder" and "Committed by test-stakeholder"
+> Requires a second GitHub account or re-running after the AC1 sign-off has been reverted on GitHub.
+1. Open the commits page for `artefacts/2026-05-02-web-ui-copilot-execution-layer/discovery.md` in GitHub after the AC1 curl
+2. Confirm the commit shows your GitHub username as both author and committer
 3. Confirm no `github-actions[bot]` or service account identity appears
 
 **Pass condition:** Both author and committer show the authenticated user's identity. ✅ / ❌
@@ -102,11 +116,9 @@ node tests/check-wuce3-attributed-signoff.js
 **Expected:** All tests pass; 409 returned with reload instruction.
 
 **Manual confirmation:**
-1. Open the artefact page in two browser tabs simultaneously
-2. Sign off in tab 1 — succeeds
-3. Sign off in tab 2 (using stale SHA) — should fail with conflict
-4. Confirm the "Artefact was updated — please reload" message appears in tab 2
-5. Confirm tab 2 automatically reloads to show the latest artefact version
+> **Note:** AC5 and AC6 require state from prior steps. AC5 needs two sign-off attempts with the same SHA (conflict); AC6 needs the file already signed off. These are exercised fully by the automated tests — manual confirmation is optional.
+1. To confirm AC5 manually: attempt the AC1 curl a second time without reverting the file — the SHA will be stale, triggering a 409 with `"Artefact was updated — please reload"`
+2. Confirm the 409 response body contains that message
 
 **Pass condition:** Conflict error message shown; page reloads to latest version. ✅ / ❌
 

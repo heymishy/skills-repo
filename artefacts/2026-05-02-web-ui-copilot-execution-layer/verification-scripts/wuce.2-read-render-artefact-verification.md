@@ -10,16 +10,32 @@
 ## Pre-verification checks
 
 ```bash
-# 1. Tests pass
+# 1. Required env vars are set — the server cannot fetch artefacts without these
+#    If any are blank, add them to .env and restart the server before continuing
+Get-Content .env | Select-String "GITHUB_REPO_OWNER|GITHUB_REPO_NAME|GITHUB_REPO="
+# Expected: three non-empty lines, e.g.
+#   GITHUB_REPO_OWNER=heymishy
+#   GITHUB_REPO_NAME=skills-repo
+#   GITHUB_REPO=heymishy/skills-repo
+
+# 2. Tests pass
 node tests/check-wuce2-read-render-artefact.js
 # Expected: 0 failures
 
-# 2. Fixture files exist
+# 3. Fixture files exist
 ls tests/fixtures/github/contents-api-discovery-md.json
 ls tests/fixtures/github/contents-api-not-found.json
 ls tests/fixtures/github/contents-api-rate-limit.json
 ls tests/fixtures/markdown/discovery-sample.md
 ```
+
+> **If step 1 shows blank values:** open `.env`, add the three lines below, then restart the server.
+> ```
+> GITHUB_REPO_OWNER=heymishy
+> GITHUB_REPO_NAME=skills-repo
+> GITHUB_REPO=heymishy/skills-repo
+> ```
+> Without these, every artefact URL returns `{"error":"Artefact not found"}` regardless of slug.
 
 ---
 
@@ -35,7 +51,7 @@ node tests/check-wuce2-read-render-artefact.js
 
 **Manual confirmation:**
 1. Start app locally with test credentials; sign in
-2. Navigate to `/artefact/[valid-feature-slug]/discovery`
+2. Navigate to `http://localhost:3000/artefact/2026-05-02-web-ui-copilot-execution-layer/discovery`
 3. Confirm page renders heading hierarchy, paragraphs, and lists — no raw `##`, `**`, or `_` syntax visible
 4. View page source — confirm HTML `<h2>`, `<p>` elements present
 
@@ -54,7 +70,7 @@ node tests/check-wuce2-read-render-artefact.js
 **Expected:** Both table tests pass; output contains `<th>` elements.
 
 **Manual confirmation (layout-dependent gap):**
-1. Navigate to an artefact containing a markdown table (use `discovery-sample.md` content if needed)
+1. Navigate to `http://localhost:3000/artefact/2026-05-02-web-ui-copilot-execution-layer/discovery` (this artefact contains a markdown table)
 2. Confirm the table is rendered with visible borders (not pipe-delimited text)
 3. Confirm column headers are bold/styled (`Constraint`, `Impact`)
 4. Confirm table is not styled as a code block
@@ -93,9 +109,9 @@ node tests/check-wuce2-read-render-artefact.js
 **Expected:** All tests pass; route returns human-readable string; logger receives technical detail.
 
 **Manual confirmation:**
-1. Simulate a rate-limit scenario by temporarily setting an invalid access token; navigate to any artefact URL
+1. In your browser, open DevTools → Application → Cookies → `localhost:3000` → edit the `session` cookie value to any random string (e.g. `invalidtoken`), then navigate to `http://localhost:3000/artefact/2026-05-02-web-ui-copilot-execution-layer/discovery`
 2. Confirm the page shows "Unable to load artefact — please try again" (or similar)
-3. Confirm no GitHub API message (e.g. "API rate limit exceeded") is visible in the browser page
+3. Restore your session by signing out and signing back in
 
 **Pass condition:** Human-readable message in UI; GitHub error detail not visible. ✅ / ❌
 

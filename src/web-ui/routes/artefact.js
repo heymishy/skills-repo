@@ -52,17 +52,17 @@ async function handleArtefactRoute(req, res, slug, artefactType) {
       timestamp:    new Date().toISOString()
     });
 
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end(`<html><body>${html}</body></html>`);
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(`<html><head><meta charset="utf-8"></head><body>${html}</body></html>`);
 
   } catch (err) {
     if (err.name === 'ArtefactNotFoundError') {
-      res.writeHead(404, { 'Content-Type': 'text/html' });
+      res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
       res.end('<html><body><p>artefact not found</p></body></html>');
     } else {
       // ArtefactFetchError or unexpected error — log technical detail, surface human message
       _logger.warn('artefact_fetch_error', { error: err.cause || err.message });
-      res.writeHead(503, { 'Content-Type': 'text/html' });
+      res.writeHead(503, { 'Content-Type': 'text/html; charset=utf-8' });
       res.end('<html><body><p>Unable to load artefact \u2014 please try again</p></body></html>');
     }
   }

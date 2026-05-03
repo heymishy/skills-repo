@@ -22,6 +22,48 @@ const { handleGetSkills, handlePostSession, handlePostAnswer }       = require('
 
 const PORT = process.env.PORT || 3000;
 
+// ── Test-mode infrastructure (NODE_ENV=test only) ─────────────────────────
+// Pre-seed a well-known test session and override the artefact fetcher with
+// fixture files so E2E tests can authenticate and render artefacts without
+// hitting the real GitHub API.
+//
+// E2E_SESSION_ID is a 64-char hex string that Playwright's auth fixture
+// injects as the `session_id` cookie.  The session has an accessToken so
+// the authGuard passes on every protected route.
+//
+// SECURITY: The seeded token ('e2e-test-access-token') is not a real GitHub
+// credential.  The test fetcher is never active outside NODE_ENV=test.
+if (process.env.NODE_ENV === 'test') {
+  const { seedTestSession }          = require('./middleware/session');
+  const { setFetcher }               = require('./routes/artefact');
+  const { ArtefactNotFoundError }    = require('./adapters/artefact-fetcher');
+  const _fs   = require('fs');
+  const _path = require('path');
+
+  // Well-known session ID shared between server and auth fixture.
+  const E2E_SESSION_ID = 'e2e' + '0'.repeat(60) + '1';
+  seedTestSession(E2E_SESSION_ID, {
+    accessToken: 'e2e-test-access-token',
+    userId:      9999,
+    login:       'e2e-tester',
+  });
+
+  // Fixture fetcher: serves <type>-sample.md for the canonical test slug;
+  // throws ArtefactNotFoundError for any other slug (exercises the 404 path).
+  const FIXTURE_DIR  = _path.join(__dirname, '../../tests/fixtures/markdown');
+  const TEST_SLUG    = '2026-05-02-web-ui-copilot-execution-layer';
+  setFetcher(function e2eTestFetcher(slug, artefactType) {
+    if (slug !== TEST_SLUG) {
+      return Promise.reject(new ArtefactNotFoundError(slug, artefactType));
+    }
+    const fixturePath = _path.join(FIXTURE_DIR, artefactType + '-sample.md');
+    if (!_fs.existsSync(fixturePath)) {
+      return Promise.reject(new ArtefactNotFoundError(slug, artefactType));
+    }
+    return Promise.resolve(_fs.readFileSync(fixturePath, 'utf8'));
+  });
+}
+
 /** Parse query parameters from a URL into a plain object. */
 function parseQuery(searchParams) {
   const result = {};
@@ -42,6 +84,26 @@ async function router(req, res) {
 
   req.query = parseQuery(parsed.searchParams);
 
+  // ── Test-mode session-seed endpoint (NODE_ENV=test only) ─────────────────
+  // Must be handled BEFORE sessionMiddleware to avoid a double Set-Cookie.
+  // Playwright's withAuth fixture calls this to re-seed the test session
+  // (handles cases where a prior test consumed/mutated it, e.g. via logout).
+  if (pathname === '/test/session' && req.method === 'GET' && process.env.NODE_ENV === 'test') {
+    const { seedTestSession } = require('./middleware/session');
+    const E2E_SESSION_ID = 'e2e' + '0'.repeat(60) + '1';
+    seedTestSession(E2E_SESSION_ID, {
+      accessToken: 'e2e-test-access-token',
+      userId:      9999,
+      login:       'e2e-tester',
+    });
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Set-Cookie':   `session_id=${E2E_SESSION_ID}; HttpOnly; SameSite=Strict; Path=/`,
+    });
+    res.end(JSON.stringify({ sessionId: E2E_SESSION_ID, login: 'e2e-tester' }));
+    return;
+  }
+
   // Attach session before routing
   sessionMiddleware(req, res);
 
@@ -56,10 +118,6 @@ async function router(req, res) {
 
   } else if (pathname === '/sign-off' && req.method === 'POST') {
     authGuard(req, res, () => handleSignOff(req, res));
-
-  } else if (/^\/artefact\/[^/]+\/discovery$/.test(pathname) && req.method === 'GET') {
-    const slug = pathname.split('/')[2];
-    authGuard(req, res, () => handleArtefactRead(req, res, slug));
 
   } else if (pathname === '/api/actions' && req.method === 'GET') {
     await handleGetActions(req, res);
