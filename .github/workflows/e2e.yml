@@ -1,0 +1,85 @@
+name: E2E Tests (Playwright)
+
+# Opt-in E2E gate — enabled by audit.e2e_tests: true in .github/context.yml
+# Non-fatal: E2E pass/fail is visible in PR status but does not block merge.
+# ADR-009: permissions limited to contents: read — no write access.
+# ADR-018: Playwright is the E2E framework for the wuce feature.
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  e2e:
+    name: Playwright E2E smoke tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 1
+
+      - name: Check opt-in flag (audit.e2e_tests in context.yml)
+        id: e2e-config
+        run: |
+          # Read audit.e2e_tests from context.yml — same pattern as audit.ci_attachment (caa.3)
+          E2E_ENABLED="false"
+          if [ -f ".github/context.yml" ]; then
+            if command -v yq >/dev/null 2>&1; then
+              E2E_ENABLED=$(yq e '.audit.e2e_tests // false' .github/context.yml)
+            else
+              # Fallback: grep for the flag without yq
+              if grep -q 'e2e_tests: true' .github/context.yml; then
+                E2E_ENABLED="true"
+              fi
+            fi
+          fi
+          echo "e2e_enabled=${E2E_ENABLED}" >> "$GITHUB_OUTPUT"
+          echo "E2E opt-in flag: ${E2E_ENABLED}"
+
+      - name: Set up Node.js
+        if: steps.e2e-config.outputs.e2e_enabled == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        if: steps.e2e-config.outputs.e2e_enabled == 'true'
+        run: npm ci
+
+      - name: Install Playwright browsers (Chromium only)
+        if: steps.e2e-config.outputs.e2e_enabled == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        if: steps.e2e-config.outputs.e2e_enabled == 'true'
+        continue-on-error: true
+        id: e2e-run
+        run: npm run test:e2e
+        env:
+          CI: 'true'
+          NODE_ENV: test
+          # Test-only credentials — not real OAuth credentials
+          GITHUB_CLIENT_ID: ${{ secrets.GITHUB_CLIENT_ID || 'e2e-test-client-id' }}
+          GITHUB_CLIENT_SECRET: ${{ secrets.GITHUB_CLIENT_SECRET || 'e2e-test-client-secret' }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET || 'e2e-test-session-secret-minimum32chars' }}
+
+      - name: Upload Playwright traces and screenshots on failure
+        if: steps.e2e-config.outputs.e2e_enabled == 'true' && steps.e2e-run.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces-${{ github.run_id }}
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: E2E skipped (opt-in flag not set)
+        if: steps.e2e-config.outputs.e2e_enabled != 'true'
+        run: echo "E2E tests skipped — set audit.e2e_tests: true in .github/context.yml to enable"
