@@ -89,6 +89,8 @@ If a violation is found:
 
 ## Step 4 - Test plan coverage
 
+Before running any verification commands, read `.github/context.yml` and check the `tools` block for the configured test runner. Use that runner in all test commands — never assume `npx jest` or any other framework.
+
 Confirm the tests from the test plan were implemented and are passing in CI.
 
 **Coverage gap audit:** If the test plan contains any `CSS-layout-dependent` gaps:

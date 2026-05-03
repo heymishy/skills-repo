@@ -10,7 +10,7 @@
 ## Pre-verification checks
 
 ```bash
-npx jest tests/wuce.3 --ci
+node tests/check-wuce3-attributed-signoff.js
 ls tests/fixtures/github/contents-api-write-success.json
 ls tests/fixtures/github/contents-api-conflict.json
 ls tests/fixtures/markdown/discovery-unsigned.md
@@ -21,10 +21,10 @@ ls tests/fixtures/markdown/discovery-signed.md
 
 ## AC1 — Sign-off on unsigned artefact → Contents API commit with ## Approved by section
 
-**Automated evidence (Jest):** T1.1, T1.2, T1.3, IT1
+**Automated evidence:** T1.1, T1.2, T1.3, IT1
 
 ```bash
-npx jest tests/wuce.3 --ci --testNamePattern="AC1|buildSignOffPayload|commitSignOff|POST /sign-off.*200"
+node tests/check-wuce3-attributed-signoff.js
 ```
 
 **Expected:** All tests pass; payload contains `## Approved by` section with name and ISO timestamp.
@@ -41,10 +41,10 @@ npx jest tests/wuce.3 --ci --testNamePattern="AC1|buildSignOffPayload|commitSign
 
 ## AC2 — Post sign-off refresh shows ## Approved by with name and timestamp
 
-**Automated evidence (Jest):** IT2
+**Automated evidence:** IT2
 
 ```bash
-npx jest tests/wuce.3 --ci --testNamePattern="AC2|after sign-off|Approved by.*section"
+node tests/check-wuce3-attributed-signoff.js
 ```
 
 **Manual confirmation (state-dependent gap):**
@@ -58,10 +58,10 @@ npx jest tests/wuce.3 --ci --testNamePattern="AC2|after sign-off|Approved by.*se
 
 ## AC3 — Git commit author/committer is authenticated user's identity
 
-**Automated evidence (Jest):** T3.1, IT1 (via mock capture)
+**Automated evidence:** T3.1, IT1 (via mock capture)
 
 ```bash
-npx jest tests/wuce.3 --ci --testNamePattern="AC3|author.*identity|committer.*identity|service account"
+node tests/check-wuce3-attributed-signoff.js
 ```
 
 **Manual confirmation:**
@@ -75,10 +75,10 @@ npx jest tests/wuce.3 --ci --testNamePattern="AC3|author.*identity|committer.*id
 
 ## AC4 — Path traversal → 400, no Contents API call
 
-**Automated evidence (Jest):** T4.1, T4.2, IT3
+**Automated evidence:** T4.1, T4.2, IT3
 
 ```bash
-npx jest tests/wuce.3 --ci --testNamePattern="AC4|path traversal|validateArtefactPath|400"
+node tests/check-wuce3-attributed-signoff.js
 ```
 
 **Expected:** All tests pass; 400 returned; mock Contents API not called.
@@ -93,10 +93,10 @@ npx jest tests/wuce.3 --ci --testNamePattern="AC4|path traversal|validateArtefac
 
 ## AC5 — Conflict → "Artefact was updated" message
 
-**Automated evidence (Jest):** T5.1, IT4
+**Automated evidence:** T5.1, IT4
 
 ```bash
-npx jest tests/wuce.3 --ci --testNamePattern="AC5|SignOffConflictError|409|Artefact was updated"
+node tests/check-wuce3-attributed-signoff.js
 ```
 
 **Expected:** All tests pass; 409 returned with reload instruction.
@@ -114,10 +114,10 @@ npx jest tests/wuce.3 --ci --testNamePattern="AC5|SignOffConflictError|409|Artef
 
 ## AC6 — Already signed off → message + button disabled
 
-**Automated evidence (Jest):** T6.1, T6.2, IT5
+**Automated evidence:** T6.1, T6.2, IT5
 
 ```bash
-npx jest tests/wuce.3 --ci --testNamePattern="AC6|detectExistingSignOff|already signed|disabled"
+node tests/check-wuce3-attributed-signoff.js
 ```
 
 **Expected:** All tests pass; 409 returned; Contents API PUT not called.
@@ -137,7 +137,7 @@ npx jest tests/wuce.3 --ci --testNamePattern="AC6|detectExistingSignOff|already 
 ### Security — Rate limiting
 
 ```bash
-npx jest tests/wuce.3 --ci --testNamePattern="NFR1|rate.limit|429"
+node tests/check-wuce3-attributed-signoff.js
 ```
 
 **Expected:** 11th request returns 429.
@@ -145,13 +145,13 @@ npx jest tests/wuce.3 --ci --testNamePattern="NFR1|rate.limit|429"
 ### Audit — Sign-off event logged
 
 ```bash
-npx jest tests/wuce.3 --ci --testNamePattern="NFR2|audit|signoff_submitted"
+node tests/check-wuce3-attributed-signoff.js
 ```
 
 ### Security — No server write token
 
 ```bash
-npx jest tests/wuce.3 --ci --testNamePattern="NFR3|server.*token|env.*token|PERSONAL_ACCESS_TOKEN"
+node tests/check-wuce3-attributed-signoff.js
 ```
 
 **Expected:** All NFR tests pass.
@@ -161,16 +161,16 @@ npx jest tests/wuce.3 --ci --testNamePattern="NFR3|server.*token|env.*token|PERS
 ## Full suite run
 
 ```bash
-npx jest tests/wuce.3 --ci --coverage
+node tests/check-wuce3-attributed-signoff.js
 ```
 
-**Expected:** 0 failures; `commitSignOff` adapter and sign-off route handler coverage ≥ 80%.
+**Expected:** 0 failures.
 
 ---
 
 ## Completion criteria
 
-- [ ] All Jest tests pass with 0 failures
+- [ ] All tests pass with 0 failures (`node tests/check-wuce3-attributed-signoff.js`)
 - [ ] Fixture files committed (`contents-api-write-success.json`, `contents-api-conflict.json`, `discovery-unsigned.md`, `discovery-signed.md`)
 - [ ] AC1 manual confirmation: commit appears in GitHub with user's identity
 - [ ] AC2 manual confirmation: ## Approved by section visible after refresh

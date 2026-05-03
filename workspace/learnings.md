@@ -1760,14 +1760,14 @@ When a new `scripts/` module is added to master and the workflow is updated to `
 
 ---
 
-## D26 — testPlan.passing lag: merged stories with stale passing count produce misleading audit records
+## D26 ï¿½ testPlan.passing lag: merged stories with stale passing count produce misleading audit records
 
 **Date:** 2026-04-30
-**Observed at:** rrc.3 (PR #228) — audit comment displayed "0/9 passing" and "—" on every AC row. Root cause: pipeline-state.json had testPlan.passing: 0 for rrc.3 even though all 9 tests were passing locally.
+**Observed at:** rrc.3 (PR #228) ï¿½ audit comment displayed "0/9 passing" and "ï¿½" on every AC row. Root cause: pipeline-state.json had testPlan.passing: 0 for rrc.3 even though all 9 tests were passing locally.
 
-**Pattern:** When a story is created (at /test-plan or /definition-of-ready), testPlan.passing is initialised to 0. If it is not updated to the confirmed count before a PR is opened, the assurance gate audit comment falls back to this stale 0 — producing "0/N passing" and the "—" icon on every AC row.
+**Pattern:** When a story is created (at /test-plan or /definition-of-ready), testPlan.passing is initialised to 0. If it is not updated to the confirmed count before a PR is opened, the assurance gate audit comment falls back to this stale 0 ï¿½ producing "0/N passing" and the "ï¿½" icon on every AC row.
 
-**Fix 1 (display):** Added `allPassingFallback` to `scripts/ci-audit-comment.js`: when `!suiteResult && testPlan.passing === testPlan.totalTests && totalTests > 0`, the AC row icon becomes ? instead of —. Commit 02a6ff7. Tests T23/T24 added.
+**Fix 1 (display):** Added `allPassingFallback` to `scripts/ci-audit-comment.js`: when `!suiteResult && testPlan.passing === testPlan.totalTests && totalTests > 0`, the AC row icon becomes ? instead of ï¿½. Commit 02a6ff7. Tests T23/T24 added.
 
 **Fix 2 (data):** Added governance check `scripts/check-pipeline-state-integrity.js` to `npm test` chain. C1 (warn): story has draft/open PR but passing=0. C2 (fail): passing > totalTests. C3 (fail): merged story with passing < totalTests. Catches stale counts before PR review.
 
@@ -1775,20 +1775,20 @@ When a new `scripts/` module is added to master and the workflow is updated to `
 
 ---
 
-## D27 — Deferred scope leaves permanently failing governance checks: test suite noise accumulates silently
+## D27 ï¿½ Deferred scope leaves permanently failing governance checks: test suite noise accumulates silently
 
 **Date:** 2026-04-30
-**Observed at:** `tests/check-assurance-gate.js` — 2 tests (`workflow-yaml-uses-pinned-immutable-ref`, `download-uses-https-not-http`) failing on every run. Root cause: p3.3 (Gate structural independence) was partially implemented. AC4 landed (schema has `gateScriptRef` fields) but AC2 and the NFR for the `skills-framework-infra` infra repo were never built. The governance tests were written before the implementation was complete, then the story was silently deferred without marking the tests as pending.
+**Observed at:** `tests/check-assurance-gate.js` ï¿½ 2 tests (`workflow-yaml-uses-pinned-immutable-ref`, `download-uses-https-not-http`) failing on every run. Root cause: p3.3 (Gate structural independence) was partially implemented. AC4 landed (schema has `gateScriptRef` fields) but AC2 and the NFR for the `skills-framework-infra` infra repo were never built. The governance tests were written before the implementation was complete, then the story was silently deferred without marking the tests as pending.
 
-**Pattern:** When a story is deferred mid-implementation, its governance check tests keep running and keep failing. With no mechanism to mark them as "deferred/known-failing", they become permanent noise — every `npm test` run exits 1, making it impossible to distinguish real regressions from known-deferred failures. This degrades CI reliability: once the suite is "always red", new failures go unnoticed.
+**Pattern:** When a story is deferred mid-implementation, its governance check tests keep running and keep failing. With no mechanism to mark them as "deferred/known-failing", they become permanent noise ï¿½ every `npm test` run exits 1, making it impossible to distinguish real regressions from known-deferred failures. This degrades CI reliability: once the suite is "always red", new failures go unnoticed.
 
-**Fix required (not yet applied — needs story):** Add a `known-deferred-checks.json` list (similar to `artefact-coverage-exemptions.json`) that `check-assurance-gate.js` reads at startup. Entries in the list cause those test names to emit SKIP instead of FAIL, with a reason and linked story ID. This makes the deferred scope visible without poisoning the exit code.
+**Fix required (not yet applied ï¿½ needs story):** Add a `known-deferred-checks.json` list (similar to `artefact-coverage-exemptions.json`) that `check-assurance-gate.js` reads at startup. Entries in the list cause those test names to emit SKIP instead of FAIL, with a reason and linked story ID. This makes the deferred scope visible without poisoning the exit code.
 
-**Prevention (process rule):** When a story is deferred, mark its failing governance tests as pending in the same commit that records the deferral. Never leave the test suite permanently red from known-deferred scope. The commit message should include "chore: mark p3.X tests as deferred — [reason]". If the governance check file is in `tests/` or `scripts/`, open a micro-PR with that single change immediately on deferral — do not leave it for later.
+**Prevention (process rule):** When a story is deferred, mark its failing governance tests as pending in the same commit that records the deferral. Never leave the test suite permanently red from known-deferred scope. The commit message should include "chore: mark p3.X tests as deferred ï¿½ [reason]". If the governance check file is in `tests/` or `scripts/`, open a micro-PR with that single change immediately on deferral ï¿½ do not leave it for later.
 
 **Currently deferred tests (as of 2026-04-30):**
-- `workflow-yaml-uses-pinned-immutable-ref` — needs `skills-framework-infra` repo + workflow download step
-- `download-uses-https-not-http` — same dependency
+- `workflow-yaml-uses-pinned-immutable-ref` ï¿½ needs `skills-framework-infra` repo + workflow download step
+- `download-uses-https-not-http` ï¿½ same dependency
 
 
 ---

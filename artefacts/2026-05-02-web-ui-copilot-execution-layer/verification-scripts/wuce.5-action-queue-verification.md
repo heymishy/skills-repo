@@ -6,41 +6,17 @@
 
 ---
 
-## Step 1 — Run Jest test suite
+## Step 1 — Run test suite
 
 ```bash
 cd <repo-root>
-npx jest tests/check-wuce5-action-queue.js --verbose
+node tests/check-wuce5-action-queue.js
 ```
 
 **Expected output:**
 ```
-PASS tests/check-wuce5-action-queue.js
-  hasPendingSignOff
-    ✓ T1.1 — pending: returns true when ## Approved by is absent
-    ✓ T1.2 — signed: returns false when ## Approved by is present
-    ✓ T1.3 — edge: returns false for empty string
-    ✓ T1.4 — case sensitivity: only matches exact ## Approved by heading
-  getPendingActions
-    ✓ T2.1 — returns pending items with required fields
-    ✓ T2.2 — returns empty array when no artefact is pending
-    ✓ T2.3 — includes only artefacts user has read access to
-    ✓ T2.4 — repo access throws → treated as access failure, not exception propagation
-  renderActionQueue (DOM-state)
-    ✓ T3.1 — renders pending items with AC1 fields
-    ✓ T3.2 — renders empty state with AC2 message
-    ✓ T3.3 — renders banner when bannerMessage is set
-    ✓ T3.4 — list items have descriptive link text
-  GET /api/actions
-    ✓ IT1 — returns pending items for authenticated user
-    ✓ IT2 — returns empty state with correct response shape
-    ✓ IT3 — repo returning 404 → omits items, sets banner
-    ✓ IT4 — requires authentication
-  NFR
-    ✓ NFR1 — audit log entry on action queue load
-    ✓ NFR2 — repository access validated server-side
-
-Tests: 18 passed, 18 total
+Tests: 46 | Passed: 46 | Failed: 0
+[check-wuce5] PASS — all 46 tests passing ✓
 ```
 
 **Fail condition:** any test fails → do not proceed; fix before verification.
