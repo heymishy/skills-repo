@@ -5485,16 +5485,17 @@
           "name": "Skill launcher and guided question flow (step-by-step form UI)",
           "epic": "wuce-e4",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.13-skill-launcher.md",
-          "prStatus": "none",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/280",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "subagent-execution",
+          "stage": "verify-completion",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.13-skill-launcher-test-plan.md",
             "totalTests": 22,
-            "passing": 0
+            "passing": 25
           },
           "acTotal": 5,
           "acVerified": 0,
@@ -5502,7 +5503,14 @@
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/276",
           "dispatchedAt": "2026-05-03",
           "dispatchTarget": "vscode",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-03",
+          "tasks": [
+            { "id": 1, "name": "Create src/skill-content-adapter.js", "tddState": "committed", "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.13-skill-launcher-plan.md" },
+            { "id": 2, "name": "Create src/answer-sanitiser.js", "tddState": "committed", "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.13-skill-launcher-plan.md" },
+            { "id": 3, "name": "Create src/adapters/copilot-licence.js", "tddState": "committed", "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.13-skill-launcher-plan.md" },
+            { "id": 4, "name": "Create src/web-ui/routes/skills.js", "tddState": "committed", "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.13-skill-launcher-plan.md" },
+            { "id": 5, "name": "Mount router in src/web-ui/server.js", "tddState": "committed", "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.13-skill-launcher-plan.md" }
+          ]
         },
         {
           "id": "wuce.14",
@@ -5510,16 +5518,17 @@
           "name": "Incremental artefact preview as skill session progresses",
           "epic": "wuce-e4",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.14-artefact-preview.md",
-          "prStatus": "none",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/281",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "subagent-execution",
+          "stage": "verify-completion",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.14-artefact-preview-test-plan.md",
             "totalTests": 18,
-            "passing": 0
+            "passing": 21
           },
           "acTotal": 5,
           "acVerified": 0,
@@ -5527,7 +5536,14 @@
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/277",
           "dispatchedAt": "2026-05-03",
           "dispatchTarget": "vscode",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-03",
+          "tasks": [
+            { "id": 1, "name": "Create src/artefact-extractor.js", "tddState": "committed", "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.14-artefact-preview-plan.md" },
+            { "id": 2, "name": "Create src/artefact-sanitiser.js", "tddState": "committed", "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.14-artefact-preview-plan.md" },
+            { "id": 3, "name": "Create src/preview-renderer.js", "tddState": "committed", "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.14-artefact-preview-plan.md" },
+            { "id": 4, "name": "Add GET /api/skills/:name/sessions/:id/state route", "tddState": "committed", "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.14-artefact-preview-plan.md" },
+            { "id": 5, "name": "Install jsdom + complete test stubs", "tddState": "committed", "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.14-artefact-preview-plan.md" }
+          ]
         },
         {
           "id": "wuce.15",
@@ -5535,16 +5551,17 @@
           "name": "Artefact write-back with attribution (commit to repository under user identity)",
           "epic": "wuce-e4",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.15-artefact-writeback.md",
-          "prStatus": "none",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/282",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "subagent-execution",
+          "stage": "verify-completion",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.15-artefact-writeback-test-plan.md",
             "totalTests": 18,
-            "passing": 0
+            "passing": 20
           },
           "acTotal": 5,
           "acVerified": 0,
@@ -5552,7 +5569,12 @@
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/278",
           "dispatchedAt": "2026-05-03",
           "dispatchTarget": "vscode",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-03",
+          "tasks": [
+            { "id": 1, "name": "Create src/artefact-path-validator.js", "tddState": "committed", "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.15-artefact-writeback-plan.md" },
+            { "id": 2, "name": "Create src/scm-adapter.js (wraps wuce.3)", "tddState": "committed", "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.15-artefact-writeback-plan.md" },
+            { "id": 3, "name": "Add commit route + complete test stubs", "tddState": "committed", "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.15-artefact-writeback-plan.md" }
+          ]
         },
         {
           "id": "wuce.16",
@@ -5560,16 +5582,17 @@
           "name": "Multi-turn session persistence (resume an in-progress skill session)",
           "epic": "wuce-e4",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.16-session-persistence.md",
-          "prStatus": "none",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/283",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "subagent-execution",
+          "stage": "verify-completion",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.16-session-persistence-test-plan.md",
             "totalTests": 22,
-            "passing": 0
+            "passing": 25
           },
           "acTotal": 5,
           "acVerified": 0,
@@ -5577,7 +5600,11 @@
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/279",
           "dispatchedAt": "2026-05-03",
           "dispatchTarget": "vscode",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-03",
+          "tasks": [
+            { "id": 1, "name": "Create src/session-store.js (16-M1 fix)", "tddState": "committed", "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.16-session-persistence-plan.md" },
+            { "id": 2, "name": "Add resume route + complete test stubs", "tddState": "committed", "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.16-session-persistence-plan.md" }
+          ]
         }
       ]
     }
@@ -5595,5 +5622,5 @@
     ],
     "lastUpdated": "2026-04-20"
   },
-  "updatedAt": "2026-04-30T09:00:02.803Z"
+  "updatedAt": "2026-05-03T00:00:00.000Z"
 }
