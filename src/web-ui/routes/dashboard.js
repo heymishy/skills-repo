@@ -1,10 +1,13 @@
 'use strict';
 
-// dashboard.js — action queue route handler (ADR-012: adapter pattern)
+// dashboard.js — action queue route handler (ADR-012: adapter pattern) +
+//                dashboard HTML route handler (wuce.18, ADR-009)
 // GET /api/actions — returns personalised action queue for authenticated user.
+// GET /dashboard   — renders HTML shell with navigation for authenticated user.
 // Server-side repository access validation enforced via getPendingActions adapter.
 
 const { getPendingActions: defaultGetPendingActions } = require('../adapters/action-queue');
+const { renderShell, escHtml }                        = require('../utils/html-shell');
 
 // Audit logger — replaced via setLogger() in tests and production bootstrap
 let _logger = {
@@ -62,8 +65,47 @@ async function handleGetActions(req, res) {
   res.end(JSON.stringify(result));
 }
 
+/**
+ * GET /dashboard — render the HTML shell dashboard for authenticated users.
+ * Performs its own auth check and redirects to /auth/github when unauthenticated
+ * (AC2: 302 → /auth/github). Renders renderShell with user login in header (AC1, AC3).
+ * Writes audit log on every authenticated request.
+ *
+ * @param {object} req
+ * @param {object} res
+ */
+function handleDashboard(req, res) {
+  // Auth check — redirect to /auth/github if no session token (AC2)
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+
+  const userId = req.session.userId;
+  const login  = req.session.login || '';
+
+  // Audit log (per Coding Agent Instructions requirement)
+  _logger.info('dashboard_accessed', {
+    userId,
+    route:     '/dashboard',
+    timestamp: new Date().toISOString()
+  });
+
+  const bodyContent = `<h1>Dashboard</h1>`;
+  const html = renderShell({
+    title:       'Dashboard',
+    bodyContent,
+    user:        { login }
+  });
+
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
 module.exports = {
   handleGetActions,
+  handleDashboard,
   setLogger,
   setGetPendingActions
 };
