@@ -5394,7 +5394,7 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "verified",
+            "status": "all-passing",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.9-cli-subprocess-invocation-test-plan.md",
             "totalTests": 23,
             "passing": 23
@@ -5418,7 +5418,7 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "verified",
+            "status": "all-passing",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.10-session-isolation-test-plan.md",
             "totalTests": 17,
             "passing": 17
@@ -5442,7 +5442,7 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "verified",
+            "status": "all-passing",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.11-skill-discovery-test-plan.md",
             "totalTests": 18,
             "passing": 18
