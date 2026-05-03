@@ -411,4 +411,138 @@ async function handleResumeSession(req, res) {
   }
 }
 
-module.exports = { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, setLogger, NO_LICENCE_MSG };
+// ---------------------------------------------------------------------------
+// HTML route handlers — wuce.23 skill launcher landing
+// ---------------------------------------------------------------------------
+
+const { renderShell, escHtml }   = require('../utils/html-shell');
+const skillsAdapter              = require('../adapters/skills');
+
+// Injectable adapters for testing — default to production adapter functions.
+let _listSkills    = skillsAdapter.listSkills;
+let _createSession = skillsAdapter.createSession;
+
+// Audit logger for HTML skill routes — injectable via setSkillsAuditLogger().
+let _htmlAuditLogger = function(data) {
+  process.stdout.write('[skills-html] audit ' + JSON.stringify(data) + '\n');
+};
+
+/**
+ * Replace the listSkills adapter (for testing).
+ * @param {function(string): Promise<Array<{name:string,description:string}>>} fn
+ */
+function setListSkills(fn) { _listSkills = fn; }
+
+/**
+ * Replace the createSession adapter (for testing).
+ * @param {function(string, string): Promise<{id:string}>} fn
+ */
+function setCreateSession(fn) { _createSession = fn; }
+
+/**
+ * Replace the HTML audit logger (for testing).
+ * @param {function(object): void} fn
+ */
+function setSkillsAuditLogger(fn) { _htmlAuditLogger = fn; }
+
+/**
+ * Render the skills list HTML using renderShell.
+ * @param {Array<{name:string,description:string}>} skills
+ * @param {object} user
+ * @returns {string}
+ */
+function _renderSkillsList(skills, user) {
+  const rows = skills.map(function(skill) {
+    const safeName = escHtml(skill.name || '');
+    const safeDesc = escHtml(skill.description || '');
+    return [
+      '<article>',
+      '<h2>' + safeName + '</h2>',
+      '<p>' + safeDesc + '</p>',
+      '<form method="POST" action="/api/skills/' + safeName + '/sessions">',
+      '<button type="submit">Start</button>',
+      '</form>',
+      '</article>'
+    ].join('\n');
+  }).join('\n');
+
+  return renderShell({ title: 'Run a Skill', bodyContent: rows, user: user });
+}
+
+/**
+ * GET /skills
+ * HTML skill launcher landing page.
+ * Unauthenticated → 302 /auth/github.
+ * AC1, AC2, AC5, AC6 (wuce.23)
+ */
+async function handleGetSkillsHtml(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  try {
+    const token  = req.session.accessToken;
+    const user   = { login: req.session.login || '' };
+    const skills = await _listSkills(token);
+
+    _htmlAuditLogger({
+      userId:    req.session.userId,
+      route:     '/skills',
+      timestamp: new Date().toISOString()
+    });
+
+    const html = _renderSkillsList(skills, user);
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+  } catch (err) {
+    _logger.error('handleGetSkillsHtml: ' + err.message);
+    const html = renderShell({
+      title:       'Error',
+      bodyContent: '<p>An error occurred loading skills.</p>',
+      user:        { login: (req.session && req.session.login) || '' }
+    });
+    res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+  }
+}
+
+/**
+ * POST /api/skills/:name/sessions (HTML form submission)
+ * Creates a session via the skills adapter and redirects 303 to the session URL.
+ * Unauthenticated → 302 /auth/github.
+ * Adapter error → HTML error page via renderShell.
+ * AC3, AC4, AC5 (wuce.23)
+ */
+async function handlePostSkillSessionHtml(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  const skillName = (req.params && req.params.name) || '';
+  try {
+    const token   = req.session.accessToken;
+    const session = await _createSession(skillName, token);
+    const id      = session && session.id;
+    res.writeHead(303, { Location: '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(id) });
+    res.end();
+  } catch (err) {
+    _logger.error('handlePostSkillSessionHtml: ' + err.message);
+    const html = renderShell({
+      title:       'Error',
+      bodyContent: '<p>Could not start skill session: ' + escHtml(err.message) + '</p>',
+      user:        { login: (req.session && req.session.login) || '' }
+    });
+    res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+  }
+}
+
+module.exports = {
+  handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState,
+  handleCommitArtefact, handleResumeSession, setLogger, NO_LICENCE_MSG,
+  // wuce.23 HTML handlers
+  handleGetSkillsHtml, handlePostSkillSessionHtml,
+  setListSkills, setCreateSession, setSkillsAuditLogger
+};
