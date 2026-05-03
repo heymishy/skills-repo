@@ -35,6 +35,8 @@ function validateArtefactPath(artefactPath) {
   if (/^[A-Za-z]:/.test(artefactPath)) return false;
   // Reject null bytes
   if (artefactPath.includes('\0')) return false;
+  // Must be within the artefacts/ directory — rejects workspace/, src/, etc.
+  if (!artefactPath.startsWith('artefacts/')) return false;
   return true;
 }
 
