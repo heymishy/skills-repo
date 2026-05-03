@@ -5788,7 +5788,7 @@
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "definition-of-ready",
+          "stage": "dispatched",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.18-html-shell-navigation-test-plan.md",
@@ -5802,7 +5802,10 @@
           "health": "green",
           "dorArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.18-html-shell-navigation-dor.md",
           "dorContractArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.18-html-shell-navigation-dor-contract.md",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-04",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/285",
+          "dispatchedAt": "2026-05-04T00:00:00Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "wuce.19",
@@ -5814,7 +5817,7 @@
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "definition-of-ready",
+          "stage": "dispatched",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.19-feature-list-html-view-test-plan.md",
@@ -5828,7 +5831,10 @@
           "health": "green",
           "dorArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.19-feature-list-html-view-dor.md",
           "dorContractArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.19-feature-list-html-view-dor-contract.md",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-04",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/286",
+          "dispatchedAt": "2026-05-04T00:00:00Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "wuce.20",
@@ -5840,7 +5846,7 @@
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "definition-of-ready",
+          "stage": "dispatched",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.20-artefact-index-html-view-test-plan.md",
@@ -5854,7 +5860,10 @@
           "health": "green",
           "dorArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.20-artefact-index-html-view-dor.md",
           "dorContractArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.20-artefact-index-html-view-dor-contract.md",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-04",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/287",
+          "dispatchedAt": "2026-05-04T00:00:00Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "wuce.21",
@@ -5866,7 +5875,7 @@
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "definition-of-ready",
+          "stage": "dispatched",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.21-action-queue-html-view-test-plan.md",
@@ -5880,7 +5889,10 @@
           "health": "green",
           "dorArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.21-action-queue-html-view-dor.md",
           "dorContractArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.21-action-queue-html-view-dor-contract.md",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-04",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/288",
+          "dispatchedAt": "2026-05-04T00:00:00Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "wuce.22",
@@ -5892,7 +5904,7 @@
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "definition-of-ready",
+          "stage": "dispatched",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.22-status-board-html-view-test-plan.md",
@@ -5906,7 +5918,10 @@
           "health": "green",
           "dorArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.22-status-board-html-view-dor.md",
           "dorContractArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.22-status-board-html-view-dor-contract.md",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-04",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/289",
+          "dispatchedAt": "2026-05-04T00:00:00Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "wuce.23",
@@ -5918,7 +5933,7 @@
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "definition-of-ready",
+          "stage": "dispatched",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.23-skill-launcher-landing-test-plan.md",
@@ -5932,7 +5947,10 @@
           "health": "green",
           "dorArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.23-skill-launcher-landing-dor.md",
           "dorContractArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.23-skill-launcher-landing-dor-contract.md",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-04",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/290",
+          "dispatchedAt": "2026-05-04T00:00:00Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "wuce.24",
@@ -5944,7 +5962,7 @@
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "definition-of-ready",
+          "stage": "dispatched",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.24-guided-question-form-test-plan.md",
@@ -5958,7 +5976,10 @@
           "health": "green",
           "dorArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.24-guided-question-form-dor.md",
           "dorContractArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.24-guided-question-form-dor-contract.md",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-04",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/291",
+          "dispatchedAt": "2026-05-04T00:00:00Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "wuce.25",
@@ -5970,7 +5991,7 @@
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "definition-of-ready",
+          "stage": "dispatched",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.25-session-commit-result-test-plan.md",
@@ -5984,7 +6005,10 @@
           "health": "green",
           "dorArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.25-session-commit-result-dor.md",
           "dorContractArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.25-session-commit-result-dor-contract.md",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-04",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/292",
+          "dispatchedAt": "2026-05-04T00:00:00Z",
+          "dispatchTarget": "vscode"
         }
       ],
       "metrics": [
