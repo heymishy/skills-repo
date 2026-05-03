@@ -25,6 +25,11 @@ module.exports = {
       GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || 'e2e-test-client-secret',
       SESSION_SECRET: process.env.SESSION_SECRET || 'e2e-test-session-secret-minimum32chars',
       PORT: '3000',
+      // Repository context — used by sign-off and artefact-fetch routes;
+      // overridden in test mode by the fixture fetcher in server.js
+      GITHUB_REPO_OWNER: process.env.GITHUB_REPO_OWNER || 'heymishy',
+      GITHUB_REPO_NAME:  process.env.GITHUB_REPO_NAME  || 'skills-repo',
+      GITHUB_REPO:       process.env.GITHUB_REPO       || 'heymishy/skills-repo',
     },
   },
 };

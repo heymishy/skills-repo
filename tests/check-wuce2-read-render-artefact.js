@@ -266,7 +266,7 @@ test('IT1 GET /artefact/:slug/discovery returns 200 with rendered HTML for valid
   setFetcher(fetchArtefact);
 
   assert(res.statusCode === 200, 'IT1: status is 200');
-  assert(res.headers['Content-Type'] === 'text/html', 'IT1: Content-Type is text/html');
+  assert(res.headers['Content-Type'] === 'text/html; charset=utf-8', 'IT1: Content-Type is text/html; charset=utf-8');
   assert(res.body.includes('<h2>'), 'IT1: body contains <h2> elements');
   assert(!res.body.includes('## '), 'IT1: body does not contain raw markdown heading syntax');
   assert(!res.body.includes('**'), 'IT1: body does not contain raw markdown bold syntax');

@@ -92,10 +92,28 @@ function sessionMiddleware(req, res) {
   }
 }
 
+/**
+ * Seed a test session with a known ID and data (NODE_ENV=test only).
+ * Used by the E2E test infrastructure so Playwright tests can inject an
+ * authenticated session without completing the real GitHub OAuth flow.
+ *
+ * Security: throws if called outside NODE_ENV=test.
+ *
+ * @param {string} id   - hex session ID (must match /^[a-f0-9]+$/)
+ * @param {object} data - session data (e.g. { accessToken, userId, login })
+ */
+function seedTestSession(id, data) {
+  if (process.env.NODE_ENV !== 'test') {
+    throw new Error('seedTestSession is only available in NODE_ENV=test');
+  }
+  _sessions.set(id, Object.assign({}, data));
+}
+
 module.exports = {
   SESSION_COOKIE_CONFIG,
   sessionMiddleware,
   createSession,
   getSession,
-  destroySession
+  destroySession,
+  seedTestSession
 };
