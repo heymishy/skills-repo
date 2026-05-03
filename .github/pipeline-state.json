@@ -5687,22 +5687,22 @@
           "name": "Playwright E2E test infrastructure",
           "epic": "wuce-e4",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.17-playwright-e2e-infrastructure.md",
-          "prStatus": "draft",
-          "prUrl": null,
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/284",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.17-playwright-e2e-infrastructure-test-plan.md",
-            "totalTests": 18,
+            "totalTests": 22,
             "passing": 22
           },
           "acTotal": 5,
           "acVerified": 5,
           "health": "green",
-          "updatedAt": "2026-05-07",
+          "updatedAt": "2026-05-06",
           "tasks": [
             {
               "id": 1,
@@ -5716,7 +5716,7 @@
             },
             {
               "id": 3,
-              "name": "Add @playwright/test devDependency, npm scripts, .github/workflows/e2e.yml, ADR-014",
+              "name": "Add @playwright/test devDependency, npm scripts, .github/workflows/e2e.yml, ADR-018",
               "tddState": "green"
             }
           ]
