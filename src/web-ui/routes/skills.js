@@ -539,10 +539,188 @@ async function handlePostSkillSessionHtml(req, res) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// HTML route handlers — wuce.24 guided question form
+// ---------------------------------------------------------------------------
+
+// wuce.24 injectable adapters
+let _getNextQuestion    = skillsAdapter.getNextQuestion;
+let _submitAnswer       = skillsAdapter.submitAnswer;
+
+// Audit logger for question route — injectable via setQuestionAuditLogger().
+let _questionAuditLogger = function(data) {
+  process.stdout.write('[skills-html] question-audit ' + JSON.stringify(data) + '\n');
+};
+
+/**
+ * Replace the getNextQuestion adapter (for testing).
+ * @param {function(string, string, string): Promise<object|null>} fn
+ */
+function setGetNextQuestion(fn) { _getNextQuestion = fn; }
+
+/**
+ * Replace the submitAnswer adapter (for testing).
+ * @param {function(string, string, string, string): Promise<{nextUrl:string}>} fn
+ */
+function setSubmitAnswer(fn) { _submitAnswer = fn; }
+
+/**
+ * Replace the question audit logger (for testing).
+ * @param {function(object): void} fn
+ */
+function setQuestionAuditLogger(fn) { _questionAuditLogger = fn; }
+
+/**
+ * Read the raw body string from a request.
+ * @param {object} req
+ * @returns {Promise<string>}
+ */
+function _readRawBody(req) {
+  return new Promise(function(resolve) {
+    var raw = '';
+    req.on('data', function(chunk) { raw += String(chunk); });
+    req.on('end', function() { resolve(raw); });
+    req.on('error', function() { resolve(''); });
+  });
+}
+
+/**
+ * Parse a URL-encoded form body string into a plain object.
+ * @param {string} raw
+ * @returns {object}
+ */
+function _parseFormBody(raw) {
+  const params = {};
+  if (!raw) { return params; }
+  raw.split('&').forEach(function(pair) {
+    var eq = pair.indexOf('=');
+    if (eq === -1) { return; }
+    var k = pair.slice(0, eq);
+    var v = pair.slice(eq + 1);
+    try {
+      params[decodeURIComponent(k.replace(/\+/g, ' '))] = decodeURIComponent(v.replace(/\+/g, ' '));
+    } catch (_) {
+      params[k] = v;
+    }
+  });
+  return params;
+}
+
+/**
+ * GET /skills/:name/sessions/:id/next
+ * Renders the question form for the current step of a skill session.
+ * Unauthenticated → 302 /auth/github.
+ * Unknown session (adapter throws 404) → 404 HTML error page via renderShell.
+ * AC1–AC7 (wuce.24)
+ */
+async function handleGetQuestionHtml(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  const skillName = (req.params && req.params.name) || '';
+  const sessionId = (req.params && req.params.id)   || '';
+  const token     = req.session.accessToken;
+  const user      = { login: req.session.login || '' };
+
+  let result;
+  try {
+    result = await _getNextQuestion(skillName, sessionId, token);
+  } catch (err) {
+    const status = err.status || 500;
+    const html = renderShell({
+      title:       status === 404 ? 'Session not found' : 'Error',
+      bodyContent: '<p>' + escHtml(err.message || 'An error occurred') + '</p>',
+      user
+    });
+    res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+    return;
+  }
+
+  // Terminal state — no more questions
+  if (!result) {
+    res.writeHead(303, { Location: '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/commit-preview' });
+    res.end();
+    return;
+  }
+
+  _questionAuditLogger({
+    userId:    req.session.userId,
+    route:     '/skills/:name/sessions/:id/next',
+    skillName: skillName,
+    sessionId: sessionId,
+    timestamp: new Date().toISOString()
+  });
+
+  const questionText = result.question || '';
+  const qi           = result.questionIndex || 1;
+  const tq           = result.totalQuestions || 1;
+
+  const bodyContent = [
+    '<p>Question ' + qi + ' of ' + tq + '</p>',
+    '<form method="POST" action="/api/skills/' + escHtml(skillName) + '/sessions/' + escHtml(sessionId) + '/answer">',
+    '<label for="answer">' + escHtml(questionText) + '</label>',
+    '<textarea name="answer" id="answer"></textarea>',
+    '<button type="submit">Submit answer</button>',
+    '</form>'
+  ].join('\n');
+
+  const html = renderShell({ title: 'Question ' + qi + ' of ' + tq, bodyContent: bodyContent, user: user });
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
+/**
+ * POST /api/skills/:name/sessions/:id/answer
+ * Submits an answer and redirects 303 to the URL returned by the adapter.
+ * Unauthenticated → 302 /auth/github.
+ * Unknown session (adapter throws) → HTML error page via renderShell.
+ * AC3, AC4, AC5 (wuce.24)
+ */
+async function handlePostAnswerHtml(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  const skillName = (req.params && req.params.name) || '';
+  const sessionId = (req.params && req.params.id)   || '';
+  const token     = req.session.accessToken;
+  const user      = { login: req.session.login || '' };
+
+  var rawBody = '';
+  try { rawBody = await _readRawBody(req); } catch (_) { rawBody = ''; }
+  const formBody = _parseFormBody(rawBody);
+  const answer   = formBody.answer || '';
+
+  let result;
+  try {
+    result = await _submitAnswer(skillName, sessionId, answer, token);
+  } catch (err) {
+    const status = err.status || 500;
+    const html = renderShell({
+      title:       'Error',
+      bodyContent: '<p>' + escHtml(err.message || 'An error occurred') + '</p>',
+      user
+    });
+    res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+    return;
+  }
+
+  res.writeHead(303, { Location: result.nextUrl });
+  res.end();
+}
+
 module.exports = {
   handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState,
   handleCommitArtefact, handleResumeSession, setLogger, NO_LICENCE_MSG,
   // wuce.23 HTML handlers
   handleGetSkillsHtml, handlePostSkillSessionHtml,
-  setListSkills, setCreateSession, setSkillsAuditLogger
+  setListSkills, setCreateSession, setSkillsAuditLogger,
+  // wuce.24 HTML handlers
+  handleGetQuestionHtml, handlePostAnswerHtml,
+  setGetNextQuestion, setSubmitAnswer, setQuestionAuditLogger
 };
