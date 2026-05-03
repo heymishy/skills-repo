@@ -103,9 +103,77 @@ function handleDashboard(req, res) {
   res.end(html);
 }
 
+/**
+ * GET /actions — render the HTML action queue view for authenticated users.
+ * Returns the pending action queue as a complete HTML page via renderShell.
+ * GET /api/actions (JSON) remains unchanged — this handler is separate (ADR-009).
+ *
+ * @param {object} req
+ * @param {object} res
+ */
+async function handleGetActionsHtml(req, res) {
+  // Auth check — redirect to /auth/github for HTML consumers (AC5)
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+
+  const userId = req.session.userId;
+  const login  = req.session.login || '';
+
+  // Audit log (AC NFR audit)
+  _logger.info('actions_view_accessed', {
+    userId,
+    route:     '/actions',
+    timestamp: new Date().toISOString()
+  });
+
+  const userIdentity = { id: userId, login };
+  const token        = req.session.accessToken;
+
+  let result;
+  try {
+    result = await _getPendingActions(userIdentity, token);
+  } catch (err) {
+    _logger.warn('action_queue_error', { userId, reason: err.message });
+    res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Actions', bodyContent: '<p>Error loading actions.</p>', user: { login } }));
+    return;
+  }
+
+  // Support both { items, bannerMessage } shape and flat array
+  const items = Array.isArray(result) ? result : (result.items || []);
+
+  let bodyContent;
+  if (items.length === 0) {
+    bodyContent = '<h1>Actions</h1><p class="no-pending-actions">No pending actions — you\'re up to date</p>';
+  } else {
+    const listItems = items.map(item => {
+      const safeTitle      = escHtml(item.title      || '');
+      const safeFeature    = escHtml(item.feature    || '');
+      const safeActionType = escHtml(item.actionType || '');
+      const safeHref       = escHtml('/artefact/' + (item.artefactPath || ''));
+      return [
+        '<li class="action-item">',
+        `<a href="${safeHref}" class="action-link">View ${safeTitle}</a>`,
+        `<span class="action-feature">${safeFeature}</span>`,
+        `<span class="action-type">${safeActionType}</span>`,
+        '</li>'
+      ].join('');
+    }).join('\n');
+    bodyContent = `<h1>Actions</h1>\n<ul class="action-list">\n${listItems}\n</ul>`;
+  }
+
+  const html = renderShell({ title: 'Actions', bodyContent, user: { login } });
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
 module.exports = {
   handleGetActions,
   handleDashboard,
+  handleGetActionsHtml,
   setLogger,
   setGetPendingActions
 };
