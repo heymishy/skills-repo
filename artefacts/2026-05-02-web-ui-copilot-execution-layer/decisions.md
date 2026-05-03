@@ -101,3 +101,14 @@ For self-hosted deployments where routing through GitHub Copilot is not acceptab
 **Made by:** Hamish King (sponsor)
 **Revisit trigger:** P2 concurrent session count observed at 30 days post Phase 2 launch.
 ---
+
+---
+**2026-05-04 | SCOPE | wuce.18-post-merge**
+**Decision:** wuce.18 (HTML shell and navigation) implementation extended scope beyond DoR contract to include `src/web-ui/routes/dashboard.js` and wiring in `src/web-ui/server.js`. The DoR contract (`wuce.18-html-shell-navigation-dor-contract.md`) explicitly listed these files as out of scope ("MUST NOT be touched"). The Coding Agent Instructions block in the same DoR artefact, and the story ACs (AC1: GET /dashboard returns HTML+nav; AC2: unauthenticated → 302) and test plan (T9–T18) all required a working HTTP route to satisfy the tests. Coding agent followed the Coding Agent Instructions block as the authoritative specification — this is correct per agent-orientation.instructions.md. The contradiction between the contract and the Coding Agent Instructions block is a DoR authoring defect: the contract was written to a narrower scope than the ACs and tests implied.
+**Impact on wuce.19–25:** `src/web-ui/routes/dashboard.js` and the `/dashboard` route now exist on master as a result of wuce.18. Wave B stories (wuce.19–22) must import `renderShell()` from `src/web-ui/utils/html-shell.js` (per their DoR contracts) and must not re-implement or duplicate it. `escHtml()` canonical location is `src/web-ui/utils/html-shell.js` — all subsequent stories that need HTML escaping must import from there.
+**Alternatives considered:** Splitting the PR to land only html-shell.js first — rejected because all 18 tests in the test plan require the full integration (including route tests T9–T18) to pass, and splitting would leave the test suite permanently red until a follow-up story.
+**Rationale:** Coding Agent Instructions block takes precedence over the contract when the two conflict, because the instructions are derived from the ACs and test plan — the source of truth for what "done" means. The contract scope was too narrow.
+**Preventive measure for wuce.19–25:** DoR contracts for Wave B/C stories should be verified to match their Coding Agent Instructions blocks before dispatch. Contracts that say "MUST NOT touch server.js" when the ACs require a new route will cause the same conflict.
+**Made by:** Agent (automated — post-merge observation, flagged in PR #293 oversight comment)
+**Revisit trigger:** If a Wave B/C DoR contract also contradicts its Coding Agent Instructions block — surface before implementing, not after.
+---
