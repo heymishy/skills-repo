@@ -167,6 +167,29 @@ The visualiser shows tasks as soon as the plan is saved; if you skip this write,
 
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
+**Pipeline-state write safety — fetch from master before every write:**
+
+Fan-out concurrent worktrees each hold a stale copy of `pipeline-state.json` from branch-creation time. Writing to that stale copy silently overwrites every other story's updates that merged while this branch was open. Always fetch from `origin/master` immediately before writing — never from the worktree's disk copy.
+
+```js
+const { execSync } = require('child_process');
+execSync('git fetch origin master');
+const masterSha = execSync('git rev-parse origin/master').toString().trim();
+const s = JSON.parse(execSync('git show origin/master:.github/pipeline-state.json').toString());
+console.log(`[pipeline-state] read from master @ ${masterSha}`);
+// --- apply only this story's fields to s ---
+require('fs').writeFileSync('.github/pipeline-state.json', JSON.stringify(s, null, 2) + '\n', 'utf8');
+```
+
+**Rule (five steps, no exceptions):**
+1. `git fetch origin master` — sync remote refs first
+2. Read from `git show origin/master:.github/pipeline-state.json` — not from the worktree file
+3. Log the SHA — one-line audit trail enabling post-hoc reconstruction of any merge inconsistency
+4. Apply only this story's fields to the fetched state
+5. Write back — the worktree file is now current-master + this story's update
+
+This applies even when the worktree copy appears current — always fetch immediately before the write, not at branch-creation time.
+
 Update `.github/pipeline-state.json` in the **project repository** when the implementation plan is saved:
 
 - Set the story `stage: "implementation-plan"`, `health: "green"`, `updatedAt: [now]`
