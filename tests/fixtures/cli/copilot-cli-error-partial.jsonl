@@ -1,0 +1,5 @@
+{"type":"skill_start","skillName":"discovery","timestamp":"2026-05-02T10:05:00Z"}
+{"type":"question","skillName":"discovery","id":"q1","text":"What is the core problem?"}
+{"type":"progress","skillName":"discovery","message":"Processing..."}
+{invalid json line - simulates truncated buffer flush mid-stream
+{"type":"error","skillName":"discovery","message":"Token validation failed","code":"AUTH_ERROR"}

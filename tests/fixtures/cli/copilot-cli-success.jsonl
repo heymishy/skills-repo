@@ -1,0 +1,6 @@
+{"type":"skill_start","skillName":"discovery","timestamp":"2026-05-02T10:00:00Z"}
+{"type":"question","skillName":"discovery","id":"q1","text":"What is the core problem or opportunity you want to explore?"}
+{"type":"answer","skillName":"discovery","questionId":"q1","text":"We want to automate our software delivery pipeline using AI agents."}
+{"type":"progress","skillName":"discovery","message":"Assembling discovery artefact..."}
+{"type":"artefact","skillName":"discovery","phase":"complete","content":"## Discovery: AI-Driven Pipeline Automation\n\n**Problem statement:** The team spends significant manual effort coordinating delivery pipeline steps.\n\n## Proposed solution\n\nAn AI agent layer that executes pipeline skills on demand.\n\n## Out of scope\n\nPost-MVP: multi-team rollout."}
+{"type":"skill_complete","skillName":"discovery","exitCode":0,"duration":12450}
