@@ -46,7 +46,7 @@ function makeRes() {
   return res;
 }
 
-const _repoPath = process.env.COPILOT_REPO_PATH || path.resolve(__dirname, '../../..');
+const _repoPath = process.env.COPILOT_REPO_PATH || path.resolve(__dirname, '..');
 const _allSkills = listAvailableSkills(_repoPath);
 const _validSkillName = _allSkills.length > 0 ? _allSkills[0].name : 'discovery';
 

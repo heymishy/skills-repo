@@ -18,11 +18,15 @@
 const path = require('path');
 const fs   = require('fs');
 
+const sessionStore = require('../../session-store');
+
 const { listAvailableSkills, validateSkillName } = require('../../adapters/skill-discovery');
 const { extractQuestions }  = require('../../skill-content-adapter');
 const { sanitiseAnswer }    = require('../../answer-sanitiser');
 const { validateLicence }   = require('../../adapters/copilot-licence');
 const sessionManager        = require('../../modules/session-manager');
+const { validateArtefactPath } = require('../../artefact-path-validator');
+const { commitArtefact }       = require('../../scm-adapter');
 
 const MAX_ANSWER_LENGTH = 1000;
 
@@ -50,7 +54,7 @@ function setLogger(logger) { _logger = logger; }
 
 /** Resolve the repository root used by listAvailableSkills. */
 function _getRepoPath() {
-  return process.env.COPILOT_REPO_PATH || path.resolve(__dirname, '../../../../..');
+  return process.env.COPILOT_REPO_PATH || path.resolve(__dirname, '../../..');
 }
 
 /**
@@ -202,7 +206,8 @@ async function handlePostSession(req, res) {
       skillName:   name,
       sessionPath: sessionPath,
       questions:   questions,
-      answers:     []
+      answers:     [],
+      userId:      userId
     });
 
     // Do NOT include raw SKILL.md content or CLI flags in the response (AC / T3.4).
@@ -265,4 +270,145 @@ async function handlePostAnswer(req, res) {
   }
 }
 
-module.exports = { handleGetSkills, handlePostSession, handlePostAnswer, setLogger };
+/**
+ * GET /api/skills/:name/sessions/:id/state
+ * Returns current session state: status, currentQuestion, partialArtefact.
+ * Requires: authenticated + session ownership.
+ */
+async function handleGetSessionState(req, res) {
+  if (!_checkAuth(req, res)) { return; }
+  try {
+    var id      = req.params && req.params.id;
+    var session = _sessionStore.get(id);
+    if (!session) {
+      _json(res, 404, { error: 'SESSION_NOT_FOUND' });
+      return;
+    }
+    var reqUserId = req.session && req.session.userId;
+    if (session.userId !== reqUserId) {
+      _json(res, 403, { error: 'SESSION_FORBIDDEN' });
+      return;
+    }
+    var answerCount      = session.answers ? session.answers.length : 0;
+    var currentQuestion  = session.questions && session.questions[answerCount] || null;
+    var status           = answerCount >= (session.questions ? session.questions.length : 0) ? 'complete' : 'active';
+    _json(res, 200, {
+      status:           status,
+      currentQuestion:  currentQuestion,
+      partialArtefact:  session.partialArtefact || null
+    });
+  } catch (err) {
+    _logger.error('handleGetSessionState: ' + err.message);
+    _json(res, 500, { error: 'Internal error' });
+  }
+}
+
+/**
+ * POST /api/skills/:name/sessions/:id/commit
+ * Commits the completed session artefact to the repository.
+ * Returns 201 { sha, htmlUrl } on success.
+ * Returns 400 SESSION_NOT_COMPLETE if session not yet complete.
+ * Returns 403 if session belongs to different user.
+ * Returns 401 if not authenticated.
+ * Returns 409 ARTEFACT_CONFLICT with message from AC4.
+ */
+async function handleCommitArtefact(req, res) {
+  if (!_checkAuth(req, res)) { return; }
+  try {
+    var id      = req.params && req.params.id;
+    var session = _sessionStore.get(id);
+    if (!session) {
+      _json(res, 404, { error: 'SESSION_NOT_FOUND' });
+      return;
+    }
+    var reqUserId = req.session && req.session.userId;
+    if (session.userId !== reqUserId) {
+      _json(res, 403, { error: 'SESSION_FORBIDDEN' });
+      return;
+    }
+    // Check session is complete (all questions answered)
+    var isComplete = session.questions && session.answers &&
+      session.answers.length >= session.questions.length;
+    if (!isComplete) {
+      _json(res, 400, { error: 'SESSION_NOT_COMPLETE' });
+      return;
+    }
+    // Derive artefact path from session (not from client body — server-derived)
+    var skillName    = session.skillName;
+    var today        = new Date().toISOString().slice(0, 10);
+    var artefactPath = 'artefacts/' + today + '-' + skillName + '/session-' + id + '-output.md';
+    // Build content from answers
+    var content = '# ' + skillName + ' session output\n\n' +
+      session.answers.map(function(a, i) {
+        return '## Q' + (i + 1) + '\n\n' + (a.answer || a) + '\n';
+      }).join('\n');
+    var commitMessage = 'artefact: commit /' + skillName + ' session output [' + id + ']';
+    var token    = req.session.accessToken;
+    var identity = { name: reqUserId || 'anonymous', email: (reqUserId || 'anonymous') + '@users.noreply.github.com' };
+
+    try {
+      var result = await commitArtefact(artefactPath, content, commitMessage, token, identity);
+      _logger.info('artefact_committed', { sessionId: id, artefactPath: artefactPath });
+      _json(res, 201, { sha: result.sha, htmlUrl: result.htmlUrl });
+    } catch (commitErr) {
+      if (commitErr.status === 409) {
+        _json(res, 409, {
+          error:               'ARTEFACT_CONFLICT',
+          message:             'Artefact has already been committed. To overwrite, load the current version first.',
+          existingArtefactUrl: commitErr.htmlUrl || null
+        });
+        return;
+      }
+      throw commitErr;
+    }
+  } catch (err) {
+    _logger.error('handleCommitArtefact: ' + err.message);
+    _json(res, 500, { error: 'Internal error' });
+  }
+}
+
+/**
+ * GET /api/skills/:name/sessions/:id/resume
+ * Returns durable session state for resuming a session.
+ * Returns 410 Gone when session is expired (SESSION_EXPIRED).
+ * Returns 403 when session belongs to different user.
+ * Returns 404 when session not found.
+ */
+async function handleResumeSession(req, res) {
+  if (!_checkAuth(req, res)) { return; }
+  try {
+    var id      = req.params && req.params.id;
+    var userId  = req.session && req.session.userId;
+    var session;
+    try {
+      session = await sessionStore.getDurableSession(id, userId);
+    } catch (err) {
+      if (err.code === 'SESSION_NOT_FOUND') {
+        _json(res, 404, { error: 'SESSION_NOT_FOUND' });
+        return;
+      }
+      if (err.code === 'SESSION_FORBIDDEN') {
+        _json(res, 403, { error: 'SESSION_FORBIDDEN' });
+        return;
+      }
+      if (err.code === 'SESSION_EXPIRED') {
+        _json(res, 410, { error: 'SESSION_EXPIRED', message: 'Session expired' });
+        return;
+      }
+      throw err;
+    }
+    _json(res, 200, {
+      sessionId:       session.sessionId,
+      skillName:       session.skillName,
+      questionIndex:   session.questionIndex,
+      answers:         session.answers,
+      partialArtefact: session.partialArtefact,
+      complete:        session.complete
+    });
+  } catch (err) {
+    _logger.error('handleResumeSession: ' + err.message);
+    _json(res, 500, { error: 'Internal error' });
+  }
+}
+
+module.exports = { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, setLogger, NO_LICENCE_MSG };
