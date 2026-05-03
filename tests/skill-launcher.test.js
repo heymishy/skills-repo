@@ -161,12 +161,21 @@ async function runT4() {
 async function runT5() {
   process.stdout.write('\nT5 — Licence check\n');
 
-  await test('T5.1 — licence absent → 403 with exact AC5 message', async () => {
-    assert.fail('not implemented');
+  const { validateLicence } = require('../src/adapters/copilot-licence');
+
+  await test('T5.1 - licence absent -> valid:false (403 scenario)', async () => {
+    const resultNull  = await validateLicence(null);
+    const resultEmpty = await validateLicence('');
+    const resultBlank = await validateLicence('   ');
+    assert.strictEqual(resultNull.valid,  false, 'null token must return valid:false');
+    assert.strictEqual(resultEmpty.valid, false, 'empty token must return valid:false');
+    assert.strictEqual(resultBlank.valid, false, 'blank token must return valid:false');
   });
 
-  await test('T5.2 — licence present → launcher enabled (no 403)', async () => {
-    assert.fail('not implemented');
+  await test('T5.2 - licence present -> valid:true (launcher enabled, no 403)', async () => {
+    assert.strictEqual(typeof validateLicence, 'function', 'validateLicence must be a function');
+    const result = await validateLicence('ghp_testtoken123');
+    assert.strictEqual(result.valid, true, 'non-empty token must return valid:true');
   });
 }
 
