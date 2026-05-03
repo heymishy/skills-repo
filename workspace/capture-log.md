@@ -38,3 +38,21 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: "PR Governed Delivery Audit Record shows all feature stories' ACs (not just the story under review) because the issue-dispatch template renders the full feature audit view. This is noisy for reviewers who only care about the current story's ACs. UX improvement: scope the audit record to the specific story being reviewed, or add a collapsible section for the full feature view. Not blocking merge — candidate improvement story for a future wave."
   source: agent-auto
+
+- date: 2026-05-03
+  session-phase: inner-loop wave 3 post-merge / wave 4 dispatch
+  signal-type: pattern
+  signal-text: "package.json conflict markers survive silently when the resolution one-liner is chained after Set-Location in PowerShell — node exits 0 without writing. All CI gates then crash with SyntaxError. Fix: always run the one-liner as a standalone terminal call, then immediately confirm with node -e 'require(./package.json)'. This is now D28."
+  source: agent-auto
+
+- date: 2026-05-03
+  session-phase: inner-loop wave 3 post-merge / wave 4 dispatch
+  signal-type: pattern
+  signal-text: "testPlan.status: 'verified' is not in the pipeline-state schema enum. Valid value is 'all-passing'. This caused schema_valid: FAILED on Trace Validation for all 4 Wave 3 stories. Prevention: run full schema scan locally before every pipeline-state commit. This is now D29."
+  source: agent-auto
+
+- date: 2026-05-03
+  session-phase: inner-loop wave 3 post-merge / wave 4 dispatch
+  signal-type: pattern
+  signal-text: "pipeline-state.json rebase conflicts follow the same pattern as package.json cascading conflicts (D17/D30): multiple PR merges advance origin/master while local commits accumulate. Resolution one-liner: take origin/master as base, Object.assign only the changed story indices from REBASE_HEAD. Prevention: push pipeline-state commits immediately, never accumulate."
+  source: agent-auto

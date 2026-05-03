@@ -1807,3 +1807,53 @@ When a new `scripts/` module is added to master and the workflow is updated to `
 **Currently deferred tests (as of 2026-04-30):**
 - `workflow-yaml-uses-pinned-immutable-ref` — needs `skills-framework-infra` repo + workflow download step (p3.3 AC2)
 - `download-uses-https-not-http` — same dependency (p3.3 NFR)
+
+---
+
+## D28 — `package.json` conflict markers survive rebase when the one-liner resolution is run in multi-statement PowerShell
+
+**Date:** 2026-05-03
+**Observed at:** PR #275 (`feat/wuce.12-byok-config`) — all 3 CI gates (Assurance Gate, Watermark Gate, Trace Validation) failed. Root cause: `package.json` on the branch still contained raw `<<<<<<< HEAD` / `=======` / `>>>>>>>` conflict markers, causing `SyntaxError: Expected double-quoted property name in JSON at position 362` when any Node-based gate tried to `require('./package.json')`. This crashes every Node process before any gate logic runs.
+
+**Why the standard one-liner failed:** The one-liner (`node -e "const fs=require('fs'),...; fs.writeFileSync('package.json',...)"`) was sent in a chained PowerShell command using `;` after a `Set-Location`. PowerShell silently truncated or mangled the command body, causing the node process to exit 0 without writing anything. No error was emitted — the conflict markers remained.
+
+**Detection:** `node -e "require('./package.json'); console.log('valid')"` → immediate diagnosis. Always run this immediately after any rebase that touches `package.json`.
+
+**Fix:** Run the one-liner as a standalone command in a fresh terminal invocation, not chained after `Set-Location`. Confirm with `node -e "require('./package.json'); console.log('valid JSON')"` before staging.
+
+**Prevention rule:** After every rebase on a branch that adds to the test chain: (1) run `node -e "require('./package.json')"` before staging, (2) if it fails, run the one-liner as a SEPARATE terminal call (not chained with `;`), (3) confirm valid before proceeding.
+
+---
+
+## D29 — `testPlan.status: 'verified'` is not in the schema enum; `'all-passing'` is the correct value
+
+**Date:** 2026-05-03
+**Observed at:** PR #275 Trace Validation `schema_valid: FAILED`. All 4 wuce.9/10/11/12 stories had `testPlan.status: 'verified'` — set by the pipeline-state update commit at the end of each Wave 3 inner loop run. The schema enum for `testPlan.status` is `['not-started', 'written', 'all-passing']`. `'verified'` is not valid.
+
+**Why it happened:** The pipeline-state update pattern writes `testPlan.status` after confirming tests pass, and the natural English word "verified" was used instead of the schema-defined value `'all-passing'`. No local check catches this — `npm test` does not run `jsonschema.validate`.
+
+**Fix:** Always use `'all-passing'` (not `'verified'`, `'passed'`, `'done'`). Run the full schema scan locally before pushing any pipeline-state update: `python -c "import json,jsonschema; v=jsonschema.Draft7Validator(json.load(open('.github/pipeline-state.schema.json',encoding='utf-8'))); errs=list(v.iter_errors(json.load(open('.github/pipeline-state.json',encoding='utf-8')))); print(len(errs),'errors'); [print(list(e.absolute_path),'|',e.message[:100]) for e in errs]"`
+
+**Prevention rule:** After every pipeline-state write session, run the schema scan before committing. `testPlan.status` valid values: `not-started | written | all-passing`. Never use synonyms.
+
+---
+
+## D30 — Rebase conflict on `pipeline-state.json` when master advances from PR merges during a session
+
+**Date:** 2026-05-03
+**Observed at:** Push of Wave 4 dispatch commits — `pipeline-state.json` rebase conflict because PR merges (wuce.9/10/11/12) had advanced origin/master while local commits were pending.
+
+**Pattern:** This is the same structural property as D17 (package.json cascading conflicts) but for `pipeline-state.json`. When multiple PRs merge to master while a local commit session is in progress, any local commit touching `pipeline-state.json` will conflict on the next `git rebase origin/master`.
+
+**Resolution one-liner (always safe):** Take `origin/master` as the base; extract only the specific story entries changed on the branch from `REBASE_HEAD`; apply them via `Object.assign`:
+```js
+const pkg = JSON.parse(execSync('git show origin/master:.github/pipeline-state.json').toString());
+const b   = JSON.parse(execSync('git show REBASE_HEAD:.github/pipeline-state.json').toString());
+const f   = pkg.features.find(f => f.slug === '<feature-slug>');
+const fb  = b.features.find(f => f.slug === '<feature-slug>');
+[<story indices>].forEach(i => { Object.assign(f.stories[i], fb.stories[i]); });
+fs.writeFileSync('.github/pipeline-state.json', JSON.stringify(pkg,null,2)+'\n', 'utf8');
+```
+Then `git add .github/pipeline-state.json ; git rebase --continue`.
+
+**Prevention:** Push pipeline-state commits to origin immediately after writing — do not accumulate multiple local pipeline-state commits before pushing.
