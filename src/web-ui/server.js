@@ -18,7 +18,7 @@ const { handleGetFeatures, handleGetFeatureArtefacts }               = require('
 const { handleGetStatus, handleGetStatusExport }                     = require('./routes/status');
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
-const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml } = require('./routes/skills');          // wuce.13 / wuce.23 / wuce.24
+const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25
 const { setLogger }                                                  = require('./routes/auth');
 const { setFetchPipelineState }                                      = require('./adapters/feature-list');
 
@@ -207,6 +207,16 @@ async function router(req, res) {
       await handleGetSkillsHtml(req, res);
     });
 
+  } else if (pathname.match(/^\/skills\/[^/]+\/sessions\/[^/]+\/commit-preview$/) && req.method === 'GET') {
+    const parts = pathname.split('/');
+    req.params = { name: parts[2], id: parts[4] };
+    authGuard(req, res, async () => { await handleGetCommitPreviewHtml(req, res); });
+
+  } else if (pathname.match(/^\/skills\/[^/]+\/sessions\/[^/]+\/result$/) && req.method === 'GET') {
+    const parts = pathname.split('/');
+    req.params = { name: parts[2], id: parts[4] };
+    authGuard(req, res, async () => { await handleGetResultHtml(req, res); });
+
   } else if (pathname.match(/^\/skills\/[^/]+\/sessions\/[^/]+\/next$/) && req.method === 'GET') {
     const parts = pathname.split('/');
     req.params = { name: parts[2], id: parts[4] };
@@ -242,7 +252,12 @@ async function router(req, res) {
   } else if (pathname.match(/^\/api\/skills\/[^/]+\/sessions\/[^/]+\/commit$/) && req.method === 'POST') {
     const parts = pathname.split('/');
     req.params = { name: parts[3], id: parts[5] };
-    await handleCommitArtefact(req, res);
+    const ct = (req.headers['content-type'] || '');
+    if (ct.includes('application/x-www-form-urlencoded')) {
+      authGuard(req, res, async () => { await handlePostCommitHtml(req, res); });
+    } else {
+      await handleCommitArtefact(req, res);
+    }
 
   } else if (pathname.match(/^\/api\/skills\/[^/]+\/sessions\/[^/]+\/resume$/) && req.method === 'GET') {
     const parts = pathname.split('/');
