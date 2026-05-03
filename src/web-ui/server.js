@@ -20,14 +20,43 @@ const { handlePostAnnotation }                                       = require('
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
 const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession } = require('./routes/skills');          // wuce.13
 const { setLogger }                                                  = require('./routes/auth');
+const { setFetchPipelineState }                                      = require('./adapters/feature-list');
 
 const PORT = process.env.PORT || 3000;
+const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
 
 // Wire up console logger for auth events (login, logout, state_mismatch)
 setLogger({
   info: (event, data) => console.log(`[auth] ${event}`, JSON.stringify(data)),
   warn: (event, data) => console.warn(`[auth] ${event}`, JSON.stringify(data))
 });
+
+// Wire real GitHub pipeline-state fetcher for production (non-test) mode.
+// Fetches .github/pipeline-state.json from the given owner/repo using the user's token.
+if (process.env.NODE_ENV !== 'test') {
+  setFetchPipelineState(async (owner, repo, token) => {
+    const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/.github/pipeline-state.json`;
+    let response;
+    try {
+      response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept':        'application/vnd.github.v3+json'
+        }
+      });
+    } catch (err) {
+      console.error('[feature-list] network error fetching pipeline-state', err.message);
+      return null;
+    }
+    if (!response.ok) {
+      console.warn('[feature-list] pipeline-state fetch failed', response.status, owner, repo);
+      return null;
+    }
+    const data = await response.json();
+    const decoded = Buffer.from(data.content.replace(/\n/g, ''), 'base64').toString('utf8');
+    return JSON.parse(decoded);
+  });
+}
 
 // ── Test-mode infrastructure (NODE_ENV=test only) ─────────────────────────
 // Pre-seed a well-known test session and override the artefact fetcher with
