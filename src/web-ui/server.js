@@ -18,7 +18,7 @@ const { handleGetFeatures, handleGetFeatureArtefacts }               = require('
 const { handleGetStatus, handleGetStatusExport }                     = require('./routes/status');
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
-const { handleGetSkills, handlePostSession, handlePostAnswer }       = require('./routes/skills');          // wuce.13
+const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession } = require('./routes/skills');          // wuce.13
 
 const PORT = process.env.PORT || 3000;
 
@@ -176,6 +176,21 @@ async function router(req, res) {
     const parts = pathname.split('/');
     req.params = { name: parts[3], id: parts[5] };
     await handlePostAnswer(req, res);
+
+  } else if (pathname.match(/^\/api\/skills\/[^/]+\/sessions\/[^/]+\/state$/) && req.method === 'GET') {
+    const parts = pathname.split('/');
+    req.params = { name: parts[3], id: parts[5] };
+    await handleGetSessionState(req, res);
+
+  } else if (pathname.match(/^\/api\/skills\/[^/]+\/sessions\/[^/]+\/commit$/) && req.method === 'POST') {
+    const parts = pathname.split('/');
+    req.params = { name: parts[3], id: parts[5] };
+    await handleCommitArtefact(req, res);
+
+  } else if (pathname.match(/^\/api\/skills\/[^/]+\/sessions\/[^/]+\/resume$/) && req.method === 'GET') {
+    const parts = pathname.split('/');
+    req.params = { name: parts[3], id: parts[5] };
+    await handleResumeSession(req, res);
 
   } else {
     // Sign-in page (unauthenticated root)

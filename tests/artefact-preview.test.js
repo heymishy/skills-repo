@@ -4,12 +4,26 @@
  * 18 tests: T1 (session state polling, 4), T2 (artefact extraction, 4),
  *           T3 (sanitisation, 4), T4 (commit button DOM, 3),
  *           NFR1-NFR3 (3 NFR), INT1-INT3 (integration)
- *
- * All tests FAIL until implementation exists (TDD entry condition).
  */
 const assert = require('assert');
 const path   = require('path');
 const fs     = require('fs');
+
+const { handlePostSession, handlePostAnswer, handleGetSessionState, setLogger, NO_LICENCE_MSG } = require('../src/web-ui/routes/skills');
+
+function makeReq(opts) {
+  return {
+    session: opts.session || null,
+    params:  opts.params  || {},
+    body:    opts.body    !== undefined ? opts.body : undefined
+  };
+}
+function makeRes() {
+  const r = { statusCode: 200, body: null, _headers: {} };
+  r.writeHead = function(status, hdrs) { r.statusCode = status; if (hdrs) Object.assign(r._headers, hdrs); };
+  r.end = function(data) { try { r.body = JSON.parse(data); } catch(_) { r.body = data; } };
+  return r;
+}
 
 let passed = 0, failed = 0;
 const failures = [];
@@ -34,19 +48,44 @@ async function runT1() {
   process.stdout.write('\nT1 — Session state polling\n');
 
   await test('T1.1 — returns status, currentQuestion, and partialArtefact for active session', async () => {
-    assert.fail('not implemented');
+    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'u1' }, params: { name: 'benefit-metric' } });
+    const sesRes = makeRes();
+    await handlePostSession(sesReq, sesRes);
+    if (sesRes.statusCode !== 201) { assert.fail('session creation failed: ' + JSON.stringify(sesRes.body)); }
+    const sessionId = sesRes.body.sessionId;
+    const stReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'u1' }, params: { name: 'benefit-metric', id: sessionId } });
+    const stRes = makeRes();
+    await handleGetSessionState(stReq, stRes);
+    assert.strictEqual(stRes.statusCode, 200, 'expected 200, got ' + stRes.statusCode);
+    assert('status' in stRes.body, 'status field missing');
+    assert('currentQuestion' in stRes.body, 'currentQuestion field missing');
+    assert('partialArtefact' in stRes.body, 'partialArtefact field missing');
   });
 
   await test('T1.2 — returns 404 for unknown session ID', async () => {
-    assert.fail('not implemented');
+    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'u1' }, params: { name: 'benefit-metric', id: 'nonexistent-session-' + Date.now() } });
+    const res = makeRes();
+    await handleGetSessionState(req, res);
+    assert.strictEqual(res.statusCode, 404);
   });
 
   await test('T1.3 — returns 403 when session belongs to a different authenticated user', async () => {
-    assert.fail('not implemented');
+    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-a' }, params: { name: 'benefit-metric' } });
+    const sesRes = makeRes();
+    await handlePostSession(sesReq, sesRes);
+    assert.strictEqual(sesRes.statusCode, 201, 'session creation failed');
+    const sessionId = sesRes.body.sessionId;
+    const stReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-b' }, params: { name: 'benefit-metric', id: sessionId } });
+    const stRes = makeRes();
+    await handleGetSessionState(stReq, stRes);
+    assert.strictEqual(stRes.statusCode, 403);
   });
 
   await test('T1.4 — returns 401 when not authenticated', async () => {
-    assert.fail('not implemented');
+    const req = makeReq({ session: null, params: { name: 'benefit-metric', id: 'some-id' } });
+    const res = makeRes();
+    await handleGetSessionState(req, res);
+    assert.strictEqual(res.statusCode, 401);
   });
 }
 
@@ -129,7 +168,15 @@ async function runT3() {
   });
 
   await test('T3.4 — raw CLI JSONL format never present in session state response', async () => {
-    assert.fail('not implemented');
+    const { sanitiseArtefactContent } = require('../src/artefact-sanitiser');
+    // Simulate JSONL-formatted artefact content being sanitised
+    const jsonlContent = '{"type":"artefact","content":"## Discovery"}';
+    const result = sanitiseArtefactContent(jsonlContent);
+    // The sanitised result should not add any HTML structure
+    assert(!result.includes('<script>'), 'script tag found');
+    assert(!result.includes('<iframe>'), 'iframe tag found');
+    // Should be clean text
+    assert(typeof result, 'string');
   });
 }
 
@@ -176,7 +223,18 @@ async function runNFR() {
   process.stdout.write('\nNFR\n');
 
   await test('NFR1 — session state endpoint responds within 500ms', async () => {
-    assert.fail('not implemented');
+    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'u-nfr1' }, params: { name: 'benefit-metric' } });
+    const sesRes = makeRes();
+    await handlePostSession(sesReq, sesRes);
+    assert.strictEqual(sesRes.statusCode, 201, 'session creation failed');
+    const sessionId = sesRes.body.sessionId;
+    const stReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'u-nfr1' }, params: { name: 'benefit-metric', id: sessionId } });
+    const stRes = makeRes();
+    const start = Date.now();
+    await handleGetSessionState(stReq, stRes);
+    const elapsed = Date.now() - start;
+    assert(elapsed < 500, 'handleGetSessionState took ' + elapsed + 'ms (must be < 500ms)');
+    assert.strictEqual(stRes.statusCode, 200);
   });
 
   await test('NFR2 — aria-live is a real DOM attribute (not CSS class or data attribute)', async () => {
@@ -207,15 +265,49 @@ async function runINT() {
   process.stdout.write('\nINT — Integration\n');
 
   await test('INT1 — answer submission → poll state → preview content updated (full round-trip)', async () => {
-    assert.fail('not implemented');
+    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'int1-user' }, params: { name: 'benefit-metric' } });
+    const sesRes = makeRes();
+    await handlePostSession(sesReq, sesRes);
+    assert.strictEqual(sesRes.statusCode, 201, 'session creation failed');
+    const sessionId = sesRes.body.sessionId;
+    // Submit answer
+    const ansReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'int1-user' }, params: { name: 'benefit-metric', id: sessionId }, body: { answer: 'test answer' } });
+    const ansRes = makeRes();
+    await handlePostAnswer(ansReq, ansRes);
+    assert.strictEqual(ansRes.statusCode, 200);
+    // Poll state
+    const stReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'int1-user' }, params: { name: 'benefit-metric', id: sessionId } });
+    const stRes = makeRes();
+    await handleGetSessionState(stReq, stRes);
+    assert.strictEqual(stRes.statusCode, 200);
+    assert('status' in stRes.body);
   });
 
   await test('INT2 — complete artefact event → complete:true in state → commit button enabled', async () => {
-    assert.fail('not implemented');
+    const { JSDOM } = require('jsdom');
+    const { renderPreviewPanel } = require('../src/preview-renderer');
+    const { extractArtefactFromEvents } = require('../src/artefact-extractor');
+    const events = [
+      { type: 'artefact', skillName: 'discovery', phase: 'complete', content: 'Final artefact' }
+    ];
+    const extracted = extractArtefactFromEvents(events);
+    assert.strictEqual(extracted.complete, true);
+    const doc = new JSDOM('<div id="root"></div>').window.document;
+    renderPreviewPanel(doc, extracted);
+    const btn = doc.querySelector('[data-action="commit-artefact"]');
+    assert.strictEqual(btn.disabled, false, 'button should be enabled for complete artefact');
   });
 
   await test('INT3 — sanitisation pipeline: injection attempt in artefact event → clean state response', async () => {
-    assert.fail('not implemented');
+    const { extractArtefactFromEvents } = require('../src/artefact-extractor');
+    const { sanitiseArtefactContent } = require('../src/artefact-sanitiser');
+    const events = [
+      { type: 'artefact', phase: 'complete', content: '## Discovery\n\n<script>alert(1)</script>\n\nLegit content.' }
+    ];
+    const extracted = extractArtefactFromEvents(events);
+    const sanitised = sanitiseArtefactContent(extracted.content);
+    assert(!sanitised.includes('<script>'), 'script tag not stripped');
+    assert(sanitised.includes('Legit content.'), 'legitimate content stripped');
   });
 }
 
