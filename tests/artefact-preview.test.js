@@ -33,20 +33,66 @@ async function test(name, fn) {
 async function runT1() {
   process.stdout.write('\nT1 — Session state polling\n');
 
+  const { handleGetSessionState, sessionStore } = require('../src/web-ui/routes/skill-state');
+
+  function makeReq(overrides) {
+    return Object.assign({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: {}, body: {} }, overrides);
+  }
+  function makeRes() {
+    const res = { statusCode: 200, headers: {}, body: null };
+    res.writeHead = function(code, hdrs) { res.statusCode = code; Object.assign(res.headers, hdrs || {}); };
+    res.end = function(data) { try { res.body = JSON.parse(data); } catch(_) { res.body = data; } };
+    return res;
+  }
+
   await test('T1.1 — returns status, currentQuestion, and partialArtefact for active session', async () => {
-    assert.fail('not implemented');
+    const sid = 'test-t1-1';
+    sessionStore.set(sid, {
+      userId: 'user-1',
+      skillName: 'discovery',
+      status: 'running',
+      currentQuestion: 'What problem are you solving?',
+      events: [{ type: 'artefact', phase: 'partial', content: 'Partial discovery...' }]
+    });
+    const req = makeReq({ params: { id: sid } });
+    const res = makeRes();
+    handleGetSessionState(req, res);
+    assert.strictEqual(res.statusCode, 200);
+    assert(res.body.status, 'no status in response');
+    assert('currentQuestion' in res.body, 'no currentQuestion in response');
+    assert('partialArtefact' in res.body, 'no partialArtefact in response');
+    sessionStore.delete(sid);
   });
 
   await test('T1.2 — returns 404 for unknown session ID', async () => {
-    assert.fail('not implemented');
+    const req = makeReq({ params: { id: 'nonexistent-session-xyz' } });
+    const res = makeRes();
+    handleGetSessionState(req, res);
+    assert.strictEqual(res.statusCode, 404);
   });
 
   await test('T1.3 — returns 403 when session belongs to a different authenticated user', async () => {
-    assert.fail('not implemented');
+    const sid = 'test-t1-3';
+    sessionStore.set(sid, {
+      userId: 'other-user',
+      skillName: 'discovery',
+      status: 'running',
+      currentQuestion: null,
+      events: []
+    });
+    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { id: sid } });
+    const res = makeRes();
+    handleGetSessionState(req, res);
+    assert.strictEqual(res.statusCode, 403);
+    assert.strictEqual(res.body.error, 'SESSION_FORBIDDEN');
+    sessionStore.delete(sid);
   });
 
   await test('T1.4 — returns 401 when not authenticated', async () => {
-    assert.fail('not implemented');
+    const req = makeReq({ session: {}, params: { id: 'any-session' } });
+    const res = makeRes();
+    handleGetSessionState(req, res);
+    assert.strictEqual(res.statusCode, 401);
   });
 }
 
@@ -129,7 +175,26 @@ async function runT3() {
   });
 
   await test('T3.4 — raw CLI JSONL format never present in session state response', async () => {
-    assert.fail('not implemented');
+    const { handleGetSessionState, sessionStore } = require('../src/web-ui/routes/skill-state');
+    const sid = 'test-t3-4';
+    sessionStore.set(sid, {
+      userId: 'user-1',
+      skillName: 'discovery',
+      status: 'running',
+      currentQuestion: null,
+      events: [{ type: 'artefact', phase: 'partial', content: 'Safe content' }]
+    });
+    const req = { session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { id: sid }, body: {} };
+    const res = { statusCode: 200, headers: {}, body: null };
+    res.writeHead = function(code, hdrs) { res.statusCode = code; Object.assign(res.headers, hdrs || {}); };
+    res.end = function(data) { try { res.body = JSON.parse(data); } catch(_) { res.body = data; } };
+    handleGetSessionState(req, res);
+    const bodyStr = JSON.stringify(res.body);
+    // Raw JSONL fields (type, phase as event keys) must not appear as raw event objects
+    assert(!Array.isArray(res.body), 'response body should not be an array of events');
+    assert(!bodyStr.includes('"events"'), 'raw events array in response');
+    assert(res.body.partialArtefact !== undefined, 'partialArtefact not in response');
+    sessionStore.delete(sid);
   });
 }
 
@@ -176,7 +241,22 @@ async function runNFR() {
   process.stdout.write('\nNFR\n');
 
   await test('NFR1 — session state endpoint responds within 500ms', async () => {
-    assert.fail('not implemented');
+    const { handleGetSessionState, sessionStore } = require('../src/web-ui/routes/skill-state');
+    const sid = 'test-nfr1';
+    sessionStore.set(sid, {
+      userId: 'user-1', skillName: 'discovery', status: 'running', currentQuestion: null,
+      events: [{ type: 'artefact', phase: 'partial', content: 'Content' }]
+    });
+    const req = { session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { id: sid }, body: {} };
+    const res = { statusCode: 200, headers: {}, body: null };
+    res.writeHead = function(code, hdrs) { res.statusCode = code; Object.assign(res.headers, hdrs || {}); };
+    res.end = function(data) { try { res.body = JSON.parse(data); } catch(_) { res.body = data; } };
+    const start = Date.now();
+    handleGetSessionState(req, res);
+    const elapsed = Date.now() - start;
+    assert(elapsed < 500, 'Response took ' + elapsed + 'ms (>500ms)');
+    assert.strictEqual(res.statusCode, 200);
+    sessionStore.delete(sid);
   });
 
   await test('NFR2 — aria-live is a real DOM attribute (not CSS class or data attribute)', async () => {
@@ -207,15 +287,61 @@ async function runINT() {
   process.stdout.write('\nINT — Integration\n');
 
   await test('INT1 — answer submission → poll state → preview content updated (full round-trip)', async () => {
-    assert.fail('not implemented');
+    const { handleGetSessionState, sessionStore } = require('../src/web-ui/routes/skill-state');
+    const { extractArtefactFromEvents } = require('../src/artefact-extractor');
+    const sid = 'test-int1';
+    // Initial state — no artefact yet
+    sessionStore.set(sid, {
+      userId: 'user-1', skillName: 'discovery', status: 'waiting_for_input',
+      currentQuestion: 'What problem are you solving?', events: []
+    });
+    const makeReq2 = () => ({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { id: sid }, body: {} });
+    const makeRes2 = () => {
+      const r = { statusCode: 200, headers: {}, body: null };
+      r.writeHead = function(code, hdrs) { r.statusCode = code; Object.assign(r.headers, hdrs || {}); };
+      r.end = function(data) { try { r.body = JSON.parse(data); } catch(_) { r.body = data; } };
+      return r;
+    };
+    const res1 = makeRes2(); handleGetSessionState(makeReq2(), res1);
+    assert.strictEqual(res1.statusCode, 200);
+    assert.strictEqual(res1.body.partialArtefact, null, 'no artefact before answer');
+    // Simulate answer arriving and partial artefact event
+    const entry = sessionStore.get(sid);
+    entry.events.push({ type: 'artefact', phase: 'partial', content: 'Partial discovery...' });
+    entry.status = 'running'; entry.currentQuestion = null;
+    const res2 = makeRes2(); handleGetSessionState(makeReq2(), res2);
+    assert.strictEqual(res2.statusCode, 200);
+    assert(res2.body.partialArtefact, 'artefact content should be present after answer');
+    sessionStore.delete(sid);
   });
 
   await test('INT2 — complete artefact event → complete:true in state → commit button enabled', async () => {
-    assert.fail('not implemented');
+    const { extractArtefactFromEvents } = require('../src/artefact-extractor');
+    const { JSDOM } = require('jsdom');
+    const { renderPreviewPanel } = require('../src/preview-renderer');
+    const events = [{ type: 'artefact', phase: 'complete', content: 'Final artefact' }];
+    const { content, complete } = extractArtefactFromEvents(events);
+    assert.strictEqual(complete, true, 'complete should be true');
+    const doc = new JSDOM('<div id="root"></div>').window.document;
+    renderPreviewPanel(doc, { content, complete });
+    const btn = doc.querySelector('[data-action="commit-artefact"]');
+    assert(btn !== null, 'commit button not rendered');
+    assert.strictEqual(btn.disabled, false, 'commit button should be enabled for complete artefact');
   });
 
   await test('INT3 — sanitisation pipeline: injection attempt in artefact event → clean state response', async () => {
-    assert.fail('not implemented');
+    const { extractArtefactFromEvents } = require('../src/artefact-extractor');
+    const { sanitiseArtefactContent }   = require('../src/artefact-sanitiser');
+    const events = [{
+      type: 'artefact', phase: 'complete',
+      content: 'Clean content<script>alert("xss")</script> more text'
+    }];
+    const { content, complete } = extractArtefactFromEvents(events);
+    assert(content, 'content should be extracted');
+    const clean = sanitiseArtefactContent(content);
+    assert(!clean.includes('<script>'), '<script> injection not sanitised');
+    assert(clean.includes('Clean content'), 'legitimate content was removed');
+    assert.strictEqual(complete, true, 'should be marked complete');
   });
 }
 
