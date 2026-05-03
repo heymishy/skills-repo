@@ -5968,11 +5968,11 @@
           "name": "Guided question form",
           "epic": "wuce-e6",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.24-guided-question-form.md",
-          "prStatus": "none",
+          "prStatus": "draft",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "dispatched",
+          "stage": "pr-review",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.24-guided-question-form-test-plan.md",
@@ -5989,7 +5989,9 @@
           "updatedAt": "2026-05-04",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/291",
           "dispatchedAt": "2026-05-04T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/299",
+          "prNumber": 299
         },
         {
           "id": "wuce.25",
