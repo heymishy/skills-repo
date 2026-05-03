@@ -1,7 +1,7 @@
 'use strict';
 
 // features.js — route handlers for feature navigation (AC1–AC5)
-// GET /features       → feature list
+// GET /features       → feature list (JSON or HTML via content-type negotiation)
 // GET /features/:slug → artefact index for a feature
 
 const {
@@ -12,6 +12,8 @@ const {
 const {
   listArtefacts
 } = require('../adapters/artefact-list');
+
+const { renderShell, escHtml } = require('../utils/html-shell');
 
 // Audit logger — replaced via setAuditLogger() in tests
 let _logger = {
@@ -63,38 +65,49 @@ function renderArtefactItem(artefact) {
     `</li>`;
 }
 
-/** Minimal HTML escaping to prevent XSS. */
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
 /**
  * GET /features — return feature list for configured repositories.
- * Requires authentication (authGuard applied in server.js).
+ * Content-type negotiation: Accept: text/html → HTML shell; otherwise → JSON.
+ * Requires authentication — unauthenticated requests redirect to /auth/github.
  */
 async function handleGetFeatures(req, res) {
-  const token = req.session && req.session.accessToken;
+  const token  = req.session && req.session.accessToken;
   const userId = req.session && req.session.userId;
+  const login  = req.session && req.session.login;
 
   if (!token) {
-    res.writeHead(401, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Unauthorized' }));
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
     return;
   }
 
   const features = await listFeatures(token);
+  const accept   = (req.headers && req.headers['accept']) || '';
 
-  // Audit log: userId, featureCount, timestamp — no token (NFR1)
+  // Audit log: userId, route, featureCount, timestamp — no token (NFR1)
   _logger.info('feature_list_accessed', {
     userId,
+    route:        '/features',
     featureCount: features.length,
     timestamp:    new Date().toISOString()
   });
 
+  if (accept.includes('text/html')) {
+    // HTML path: wrap feature list in renderShell
+    let bodyContent;
+    if (features.length === 0) {
+      // AC3: zero features — empty-state message, no empty <ul>
+      bodyContent = '<p class="no-features">No features found</p>';
+    } else {
+      bodyContent = renderFeatureList(features);
+    }
+    const html = renderShell({ title: 'Features', bodyContent, user: { login } });
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+    return;
+  }
+
+  // JSON path: backward-compatible, shape unchanged
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(features));
 }
