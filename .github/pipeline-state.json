@@ -5466,7 +5466,7 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "verified",
+            "status": "all-passing",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.12-byok-config-test-plan.md",
             "totalTests": 17,
             "passing": 17
