@@ -13,7 +13,7 @@ const { handleArtefactRoute }                                        = require('
 const { handleSignOff, handleArtefactRead }                             = require('./routes/sign-off');
 const { healthCheckHandler }                                         = require('./routes/health');
 const { validateRequiredEnvVars }                                    = require('./config/validate-env');
-const { handleGetActions }                                           = require('./routes/dashboard');
+const { handleGetActions, handleDashboard }                          = require('./routes/dashboard');
 const { handleGetFeatures, handleGetFeatureArtefacts }               = require('./routes/features');
 const { handleGetStatus, handleGetStatusExport }                     = require('./routes/status');
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
@@ -165,10 +165,7 @@ async function router(req, res) {
     await handleGetStatus(req, res);
 
   } else if (pathname === '/dashboard') {
-    authGuard(req, res, () => {
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end('<html><body><h1>Dashboard</h1></body></html>');
-    });
+    handleDashboard(req, res);
 
   } else if (pathname.match(/^\/artefact\/[^/]+\/[^/]+$/) && req.method === 'GET') {
     const parts        = pathname.split('/').filter(Boolean);
