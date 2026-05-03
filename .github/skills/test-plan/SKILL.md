@@ -51,7 +51,7 @@ State what was found before asking anything:
 ---
 
 ## Step 2 â€” Confirm test context
-
+> **Before presenting the options below, read `package.json` from the project repo and inspect the `scripts` block to confirm the actual test runner configured for this repo. Do not assume `npx jest`, `pytest`, or any other framework — read the actual command used in `npm test` (or the equivalent entry point). If the test runner cannot be determined from `package.json`, ask the operator directly. Record the confirmed test runner and use it in ALL verification commands written in Output 2.**
 > **What environment and framework applies?**
 >
 > 1. Use what's configured for this repo (standard — no need to ask)
@@ -342,6 +342,18 @@ Write it so it works equally well for all three without modification:
 - Expected outcomes quote exact messages and describe exact contents
 - Reset instructions present if scenarios share state
 - Setup section clear enough for someone unfamiliar with the system
+- All verification commands use the test runner confirmed from reading `package.json` scripts — never an assumed framework (do not write `npx jest` without first verifying it is the configured runner)
+- If any manual confirmation step requires starting a local server that reads environment variables, include the shell command to load them **before** the start command. If the server does not auto-load `.env` (no dotenv), include both a PowerShell and a bash variant. Example pattern:
+  ```powershell
+  # PowerShell — load .env then start server
+  Get-Content .env | Where-Object { $_ -notmatch '^#' -and $_ -ne '' } | ForEach-Object { $k,$v = $_ -split '=',2; Set-Item "env:$k" $v }
+  node src/web-ui/server.js
+  ```
+  ```bash
+  # bash/zsh
+  export $(grep -v '^#' .env | xargs) && node src/web-ui/server.js
+  ```
+  Never write just `node server.js` without first checking how the server loads its env config.
 
 ---
 

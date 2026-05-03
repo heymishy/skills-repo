@@ -3,3 +3,6 @@ trace-validation-report.json
 .worktrees/
 .ci-artefact-staging/
 workspace/capture-log.md
+
+# Local dev secrets
+.env

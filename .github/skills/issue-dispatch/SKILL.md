@@ -138,6 +138,7 @@ One item per line: "- CREATE: path/to/file" or "- MODIFY: path/to/file".]
 
 - Read the Coding Agent Instructions block in the DoR artefact before writing any code.
 - Verify the baseline passes before making any changes: `npm test` and `bash scripts/validate-trace.sh --ci`
+- **Test runner:** Before including any test commands in the issue body, read `.github/context.yml` and check the `tools` block for the configured test runner. Use that runner (e.g. `node tests/check-*.js`) in all verification commands — never assume `npx jest` or any other framework.
 - Open PRs as drafts only. Never mark ready for review. Never merge.
 - If any blocker is not resolvable from the artefact files: leave a PR comment describing the blocker and stop. Do not improvise a workaround.
 - Do not modify any file under `artefacts/`. These are read-only pipeline inputs.

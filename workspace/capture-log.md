@@ -33,3 +33,8 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: "Deferred scope leaves permanently failing governance checks. p3.3 (Gate structural independence) was partially implemented — AC2 and NFR depend on a skills-framework-infra repo that was never created. Two tests have been failing on every npm test run for multiple sessions. No mechanism exists to mark tests as known-deferred/SKIP without modifying check-assurance-gate.js (governed, needs story). Created known-deferred-checks.json as the data record; code change (read file + emit SKIP) requires a story. Prevention process rule: mark failing tests as pending in the same commit that records a deferral."
   source: agent-auto
+- date: 2026-05-03
+  session-phase: inner-loop wave 3 (wuce.9-12)
+  signal-type: gap
+  signal-text: "PR Governed Delivery Audit Record shows all feature stories' ACs (not just the story under review) because the issue-dispatch template renders the full feature audit view. This is noisy for reviewers who only care about the current story's ACs. UX improvement: scope the audit record to the specific story being reviewed, or add a collapsible section for the full feature view. Not blocking merge — candidate improvement story for a future wave."
+  source: agent-auto

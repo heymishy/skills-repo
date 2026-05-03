@@ -6,38 +6,17 @@
 
 ---
 
-## Step 1 — Run Jest test suite
+## Step 1 — Run test suite
 
 ```bash
 cd <repo-root>
-npx jest tests/check-wuce6-feature-navigation.js --verbose
+node tests/check-wuce6-feature-navigation.js
 ```
 
 **Expected output:**
 ```
-PASS tests/check-wuce6-feature-navigation.js
-  labelArtefactType
-    ✓ T1.1 — "dor" → "Ready Check"
-    ✓ T1.2 — "benefit-metric" → "Benefit Metric"
-    ✓ T1.3 — "discovery" → "Discovery"
-    ✓ T1.4 — "test-plan" → "Test Plan"
-    ✓ T1.5 — "story" → "Stories"
-    ✓ T1.6 — unknown type returns non-empty fallback (no throw)
-  groupArtefactsByStage
-    ✓ T2.1 — groups artefacts by stage with correct keys
-    ✓ T2.2 — no internal type identifier appears as a group key
-    ✓ T2.3 — empty array returns empty groups without throwing
-  listFeatures adapter
-    ✓ T3.1 — returns feature list with required fields
-    ✓ T3.2 — validates read access before listing features
-  listArtefacts adapter
-    ✓ T4.1 — returns artefacts with display-label type field
-    ✓ T4.2 — each artefact includes a viewUrl pointing to artefact view
-  renderFeatureList (DOM-state)
-    ✓ T5.1 — renders feature slug, stage, last-updated, and artefact index link
-    ✓ T5.2 — artefact index renders plain-language labels, not internal types
-  GET /features
-    ✓ IT1 — returns feature list with correct shape
+wuce.6 feature-navigation: 70 passed, 0 failed
+```
     ✓ IT2 — GET /features/:slug returns artefact index with display labels
     ✓ IT3 — repo with no artefacts directory → "No artefacts found"
     ✓ IT4 — requires authentication

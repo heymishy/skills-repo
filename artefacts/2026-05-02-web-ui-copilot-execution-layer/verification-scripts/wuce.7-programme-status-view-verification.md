@@ -6,47 +6,16 @@
 
 ---
 
-## Step 1 — Run Jest test suite
+## Step 1 — Run test suite
 
 ```bash
 cd <repo-root>
-npx jest tests/check-wuce7-programme-status.js --verbose
+node tests/check-wuce7-programme-status-view.js
 ```
 
 **Expected output:**
 ```
-PASS tests/check-wuce7-programme-status.js
-  getPipelineStatus adapter
-    ✓ T1.1 — returns correct fields from pipeline-state.json
-    ✓ T1.2 — adapter validates repository read access
-  deriveBlockerIndicator
-    ✓ T2.1 — returns "Trace findings" for traceStatus: "has-findings"
-    ✓ T2.2 — returns null for traceStatus: "passed"
-    ✓ T2.3 — does not throw for feature with no traceStatus field
-  deriveFeatureStatusLabel
-    ✓ T3.1 — returns "Awaiting implementation dispatch" for dorStatus signed-off + prStatus none
-    ✓ T3.2 — returns non-empty string for other state combinations
-  isFeatureDone
-    ✓ T4.1 — returns true when all stories prStatus merged AND traceStatus passed
-    ✓ T4.2 — returns false when any story has prStatus !== merged
-    ✓ T4.3 — returns false when any story has traceStatus !== passed
-    ✓ T4.4 — returns false for feature with no stories
-  exportStatusAsMarkdown
-    ✓ T5.1 — returns string containing a markdown table header
-    ✓ T5.2 — includes feature name and stage in the output
-    ✓ T5.3 — handles empty features array without throwing
-  renderStatusBoard (DOM-state)
-    ✓ T6.1 — row with has-findings contains amber indicator AND text label
-    ✓ T6.2 — done features are in a visually separated "Done" group
-  GET /status
-    ✓ IT1 — returns portfolio status board data
-    ✓ IT2 — GET /status/export returns markdown-formatted status table
-    ✓ IT3 — requires authentication
-  NFR
-    ✓ NFR1 — audit log on status board access
-    ✓ NFR2 — colour not sole status indicator
-
-Tests: 21 passed, 21 total
+[wuce7-programme-status-view] 49 passed, 0 failed
 ```
 
 **Fail condition:** any test fails → fix before proceeding.

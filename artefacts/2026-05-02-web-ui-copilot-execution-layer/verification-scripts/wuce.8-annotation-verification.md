@@ -6,38 +6,17 @@
 
 ---
 
-## Step 1 — Run Jest test suite
+## Step 1 — Run test suite
 
 ```bash
 cd <repo-root>
-npx jest tests/check-wuce8-annotation.js --verbose
+node tests/check-wuce8-annotation.js
 ```
 
 **Expected output:**
 ```
-PASS tests/check-wuce8-annotation.js
-  sanitiseAnnotationContent
-    ✓ T1.1 — strips <script> tags
-    ✓ T1.2 — strips arbitrary HTML tags
-    ✓ T1.3 — preserves plain text unchanged
-    ✓ T1.4 — handles empty string without throwing
-  validateAnnotationLength
-    ✓ T2.1 — returns false for content exceeding 2000 characters
-    ✓ T2.2 — returns true for exactly 2000 characters
-    ✓ T2.3 — returns true for content under 2000 characters
-  buildAnnotationBlock
-    ✓ T3.1 — produces correctly structured block with all required fields
-    ✓ T3.2 — timestamp is ISO 8601 format
-    ✓ T3.3 — appends to existing ## Annotations section without creating a second one
-  parseExistingAnnotations
-    ✓ T4.1 — extracts annotations from artefact with ## Annotations section
-    ✓ T4.2 — returns empty array when no ## Annotations section exists
-    ✓ T4.3 — handles artefact with empty ## Annotations section
-  renderAnnotations (DOM-state)
-    ✓ T5.1 — annotation affordance present per section heading (keyboard focus)
-    ✓ T5.2 — existing annotations rendered below their section
-    ✓ T5.3 — artefact with no annotations renders cleanly
-  POST /api/artefacts/:path/annotations
+[check-wuce8-annotation] Results: 24 passed, 0 failed
+```
     ✓ IT1 — valid payload → annotation committed under user identity
     ✓ IT2 — script content → sanitised content committed
     ✓ IT3 — >2000 characters → 400 rejection

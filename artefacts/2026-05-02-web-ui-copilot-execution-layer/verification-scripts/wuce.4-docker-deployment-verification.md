@@ -10,8 +10,8 @@
 ## Pre-verification checks
 
 ```bash
-# 1. Jest unit + integration tests pass
-npx jest tests/wuce.4 --ci
+# 1. Unit + integration tests pass
+node tests/check-wuce4-docker-deployment.js
 # Expected: 0 failures
 
 # 2. Docker is available
@@ -24,10 +24,10 @@ docker compose version
 
 ## AC1 — docker compose up → app starts, /health returns 200
 
-**Automated evidence (Jest):** T1.1, IT1, NFR1
+**Automated evidence:** T1.1, IT1, NFR1
 
 ```bash
-npx jest tests/wuce.4 --ci --testNamePattern="AC1|healthCheckHandler|GET /health"
+node tests/check-wuce4-docker-deployment.js
 ```
 
 **Expected:** All tests pass; `/health` returns 200 `{"status":"ok"}`.
@@ -58,10 +58,10 @@ docker compose down
 
 ## AC2 — Missing required env var → startup error naming variable + non-zero exit
 
-**Automated evidence (Jest):** T2.1, T2.2, NFR2
+**Automated evidence:** T2.1, T2.2, NFR2
 
 ```bash
-npx jest tests/wuce.4 --ci --testNamePattern="AC2|validateRequiredEnvVars|missing.*env|GITHUB_CLIENT"
+node tests/check-wuce4-docker-deployment.js
 ```
 
 **Expected:** Both validation tests pass; error message contains variable name.
@@ -87,10 +87,10 @@ echo "Last exit code: $?"
 
 ## AC3 — GITHUB_API_BASE_URL → OAuth and Contents API calls routed to configured URL
 
-**Automated evidence (Jest):** T3.1, T3.2
+**Automated evidence:** T3.1, T3.2
 
 ```bash
-npx jest tests/wuce.4 --ci --testNamePattern="AC3|GITHUB_API_BASE_URL|ghe|enterprise.*url"
+node tests/check-wuce4-docker-deployment.js
 ```
 
 **Expected:** Both adapter URL tests pass; no `github.com` in URLs when `GITHUB_API_BASE_URL` is set.
@@ -211,7 +211,7 @@ time (docker compose up -d && sleep 2 && until curl -s http://localhost:3000/hea
 ### /health suitable for orchestration probes (no auth required)
 
 ```bash
-npx jest tests/wuce.4 --ci --testNamePattern="NFR1|/health.*no.*auth|unauthenticated.*health"
+node tests/check-wuce4-docker-deployment.js
 ```
 
 **Expected:** Test passes confirming `/health` does not redirect unauthenticated requests.
@@ -219,7 +219,7 @@ npx jest tests/wuce.4 --ci --testNamePattern="NFR1|/health.*no.*auth|unauthentic
 ### All missing env vars reported in one error
 
 ```bash
-npx jest tests/wuce.4 --ci --testNamePattern="NFR2|all missing|multiple.*missing"
+node tests/check-wuce4-docker-deployment.js
 ```
 
 ---
@@ -227,16 +227,16 @@ npx jest tests/wuce.4 --ci --testNamePattern="NFR2|all missing|multiple.*missing
 ## Full suite run
 
 ```bash
-npx jest tests/wuce.4 --ci --coverage
+node tests/check-wuce4-docker-deployment.js
 ```
 
-**Expected:** 0 failures; health handler and startup validation coverage ≥ 80%.
+**Expected:** 0 failures.
 
 ---
 
 ## Completion criteria
 
-- [ ] All Jest tests pass with 0 failures (T1.1, T2.1, T2.2, T3.1, T3.2, IT1, NFR1, NFR2)
+- [ ] All tests pass with 0 failures (`node tests/check-wuce4-docker-deployment.js`)
 - [ ] AC1 manual: `docker compose up` → `/health` returns 200 within 10 seconds
 - [ ] AC2 manual: missing env var → log names the variable; container exits non-zero
 - [ ] AC3 manual: `GITHUB_API_BASE_URL` → OAuth redirect goes to configured host, not github.com

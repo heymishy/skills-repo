@@ -10,8 +10,8 @@
 ## Pre-verification checks
 
 ```bash
-# 1. Jest tests pass
-npx jest tests/wuce.2 --ci
+# 1. Tests pass
+node tests/check-wuce2-read-render-artefact.js
 # Expected: 0 failures
 
 # 2. Fixture files exist
@@ -28,7 +28,7 @@ ls tests/fixtures/markdown/discovery-sample.md
 **Automated evidence (Jest):** T1.1, T1.2, T1.3, IT1
 
 ```bash
-npx jest tests/wuce.2 --ci --testNamePattern="AC1|fetchArtefact|renderArtefactToHTML|GET /artefact"
+node tests/check-wuce2-read-render-artefact.js
 ```
 
 **Expected:** All named tests pass.
@@ -48,7 +48,7 @@ npx jest tests/wuce.2 --ci --testNamePattern="AC1|fetchArtefact|renderArtefactTo
 **Automated evidence (Jest):** T2.1, T2.2
 
 ```bash
-npx jest tests/wuce.2 --ci --testNamePattern="AC2|table|<th>|<table>"
+node tests/check-wuce2-read-render-artefact.js
 ```
 
 **Expected:** Both table tests pass; output contains `<th>` elements.
@@ -68,7 +68,7 @@ npx jest tests/wuce.2 --ci --testNamePattern="AC2|table|<th>|<table>"
 **Automated evidence (Jest):** T3.1, T3.2, IT2
 
 ```bash
-npx jest tests/wuce.2 --ci --testNamePattern="AC3|ArtefactNotFoundError|not found"
+node tests/check-wuce2-read-render-artefact.js
 ```
 
 **Expected:** All tests pass; 404 response with human-readable message; no raw GitHub JSON in response.
@@ -87,7 +87,7 @@ npx jest tests/wuce.2 --ci --testNamePattern="AC3|ArtefactNotFoundError|not foun
 **Automated evidence (Jest):** T4.1, T4.2, T4.3, IT3
 
 ```bash
-npx jest tests/wuce.2 --ci --testNamePattern="AC4|ArtefactFetchError|rate.limit|network error|Unable to load"
+node tests/check-wuce2-read-render-artefact.js
 ```
 
 **Expected:** All tests pass; route returns human-readable string; logger receives technical detail.
@@ -106,7 +106,7 @@ npx jest tests/wuce.2 --ci --testNamePattern="AC4|ArtefactFetchError|rate.limit|
 **Automated evidence (Jest):** T5.1, T5.2
 
 ```bash
-npx jest tests/wuce.2 --ci --testNamePattern="AC5|extractMetadata|metadata.*bar|metadata.*before"
+node tests/check-wuce2-read-render-artefact.js
 ```
 
 **Expected:** Both tests pass; `extractMetadata` returns correct fields; metadata `<div>` precedes prose `<article>` in DOM.
@@ -125,7 +125,7 @@ npx jest tests/wuce.2 --ci --testNamePattern="AC5|extractMetadata|metadata.*bar|
 ### Security — XSS prevention
 
 ```bash
-npx jest tests/wuce.2 --ci --testNamePattern="NFR1|NFR2|script|iframe|XSS"
+node tests/check-wuce2-read-render-artefact.js
 ```
 
 **Expected:** Both sanitisation tests pass.
@@ -133,7 +133,7 @@ npx jest tests/wuce.2 --ci --testNamePattern="NFR1|NFR2|script|iframe|XSS"
 ### Audit — artefact read logged
 
 ```bash
-npx jest tests/wuce.2 --ci --testNamePattern="NFR3|audit|artefact_read"
+node tests/check-wuce2-read-render-artefact.js
 ```
 
 **Expected:** Logger called with correct fields; no access token in log entry.
@@ -143,16 +143,16 @@ npx jest tests/wuce.2 --ci --testNamePattern="NFR3|audit|artefact_read"
 ## Full suite run
 
 ```bash
-npx jest tests/wuce.2 --ci --coverage
+node tests/check-wuce2-read-render-artefact.js
 ```
 
-**Expected:** 0 failures; `fetchArtefact` adapter and artefact route handler coverage ≥ 80%.
+**Expected:** 0 failures.
 
 ---
 
 ## Completion criteria
 
-- [ ] All Jest tests pass with 0 failures
+- [ ] All tests pass with 0 failures (`node tests/check-wuce2-read-render-artefact.js`)
 - [ ] Fixture files committed (`contents-api-discovery-md.json`, `contents-api-not-found.json`, `contents-api-rate-limit.json`, `discovery-sample.md`)
 - [ ] AC2 manual visual confirmation of table rendering completed
 - [ ] AC5 manual visual confirmation of metadata bar position completed
