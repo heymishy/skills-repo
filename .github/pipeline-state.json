@@ -5220,8 +5220,8 @@
           "name": "Read and render a single pipeline artefact in plain prose",
           "epic": "wuce-e1",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.2-read-render-artefact.md",
-          "stage": "definition-of-ready",
-          "prStatus": "none",
+          "stage": "definition-of-done",
+          "prStatus": "merged",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -5236,7 +5236,9 @@
           "health": "green",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/249",
           "dispatchedAt": "2026-05-02T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/265",
+          "updatedAt": "2026-05-03"
         },
         {
           "id": "wuce.3",
@@ -5244,8 +5246,8 @@
           "name": "Submit attributed sign-off via GitHub Contents API",
           "epic": "wuce-e1",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.3-attributed-signoff.md",
-          "stage": "definition-of-ready",
-          "prStatus": "none",
+          "stage": "definition-of-done",
+          "prStatus": "merged",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -5260,7 +5262,9 @@
           "health": "green",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/251",
           "dispatchedAt": "2026-05-02T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/267",
+          "updatedAt": "2026-05-03"
         },
         {
           "id": "wuce.4",
@@ -5268,8 +5272,8 @@
           "name": "Self-hosted deployment support (Docker + environment-variable config injection)",
           "epic": "wuce-e1",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.4-docker-deployment.md",
-          "stage": "definition-of-ready",
-          "prStatus": "draft",
+          "stage": "definition-of-done",
+          "prStatus": "merged",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -5284,7 +5288,9 @@
           "health": "green",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/250",
           "dispatchedAt": "2026-05-02T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/266",
+          "updatedAt": "2026-05-03"
         },
         {
           "id": "wuce.5",
@@ -5292,8 +5298,8 @@
           "name": "Personalised action queue — pending sign-offs and annotation requests",
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.5-action-queue.md",
-          "stage": "implementation",
-          "prStatus": "draft",
+          "stage": "definition-of-done",
+          "prStatus": "merged",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -5308,7 +5314,9 @@
           "health": "green",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/252",
           "dispatchedAt": "2026-05-02T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/268",
+          "updatedAt": "2026-05-03"
         },
         {
           "id": "wuce.6",
@@ -5316,8 +5324,8 @@
           "name": "Multi-feature navigation and artefact browser",
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.6-feature-navigation.md",
-          "stage": "definition-of-ready",
-          "prStatus": "none",
+          "stage": "definition-of-done",
+          "prStatus": "merged",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -5332,7 +5340,9 @@
           "health": "green",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/253",
           "dispatchedAt": "2026-05-02T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/269",
+          "updatedAt": "2026-05-03"
         },
         {
           "id": "wuce.7",
@@ -5340,8 +5350,8 @@
           "name": "Programme manager pipeline status view",
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.7-programme-status-view.md",
-          "stage": "definition-of-ready",
-          "prStatus": "none",
+          "stage": "definition-of-done",
+          "prStatus": "merged",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -5356,7 +5366,9 @@
           "health": "green",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/254",
           "dispatchedAt": "2026-05-02T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/270",
+          "updatedAt": "2026-05-03"
         },
         {
           "id": "wuce.8",
@@ -5364,8 +5376,8 @@
           "name": "Annotation and comment on artefact sections",
           "epic": "wuce-e2",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.8-annotation.md",
-          "stage": "subagent-execution",
-          "prStatus": "none",
+          "stage": "definition-of-done",
+          "prStatus": "merged",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -5380,7 +5392,9 @@
           "health": "green",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/255",
           "dispatchedAt": "2026-05-02T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/271",
+          "updatedAt": "2026-05-03"
         },
         {
           "id": "wuce.9",
@@ -5460,8 +5474,8 @@
           "name": "BYOK and self-hosted provider configuration",
           "epic": "wuce-e3",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.12-byok-config.md",
-          "stage": "subagent-execution",
-          "prStatus": "draft",
+          "stage": "definition-of-done",
+          "prStatus": "merged",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -5477,7 +5491,8 @@
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/259",
           "dispatchedAt": "2026-05-02T00:00:00Z",
           "dispatchTarget": "vscode",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-03",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/275"
         },
         {
           "id": "wuce.13",
