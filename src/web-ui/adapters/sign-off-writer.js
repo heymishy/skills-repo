@@ -99,15 +99,17 @@ async function commitSignOff(artefactPath, signOffPayload, token) {
   }
   const user = await userRes.json();
 
-  const approverName = signOffPayload.approverName || user.name;
+  const approverName = signOffPayload.approverName || user.name || user.login;
   const fileContent  = Buffer.from(signOffPayload.content, 'utf8').toString('base64');
+  const authorName   = user.name || user.login;
+  const authorEmail  = user.email || (user.login + '@users.noreply.github.com');
 
   const body = JSON.stringify({
     message:   'sign-off: ' + artefactPath + ' approved by ' + approverName,
     content:   fileContent,
     sha:       signOffPayload.sha,
-    author:    { name: user.name, email: user.email },
-    committer: { name: user.name, email: user.email }
+    author:    { name: authorName, email: authorEmail },
+    committer: { name: authorName, email: authorEmail }
   });
 
   const putUrl = apiBase + '/repos/' + owner + '/' + repo + '/contents/' + artefactPath;
