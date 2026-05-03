@@ -31,7 +31,7 @@ function setLogger(logger) { _logger = logger; }
  */
 function createSession(userId) {
   var sessionBase = getSessionBase();
-  var userHash = crypto.createHash('sha256').update(userId).digest('hex');
+  var userHash = crypto.createHash('sha256').update(String(userId)).digest('hex');
   var sessionId = randomUUID();
   var sessionPath = path.join(sessionBase, userHash, sessionId);
   fs.mkdirSync(sessionPath, { recursive: true });

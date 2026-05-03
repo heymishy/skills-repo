@@ -51,17 +51,29 @@ const withAuth = base.extend({
       );
     }
 
-    // Create a fresh browser context with base URL so relative paths work.
+    // Create a fresh browser context. Base URL makes relative paths work.
     const context = await browser.newContext({
       baseURL: process.env.E2E_BASE_URL || 'http://localhost:3000',
     });
 
-    // Re-seed the server-side test session (handles post-logout state from
-    // earlier tests sharing the same server process).
+    // Re-seed the server-side test session. The server seeds the session at
+    // startup (NODE_ENV=test), but this call handles the post-logout case.
     await context.request.get('/test/session');
 
-    // Inject the matching session cookie into the browser context.
-    // The cookie name 'session_id' matches src/web-ui/middleware/session.js.
+    // Inject the session cookie two ways so it is reliably sent on BOTH
+    // browser-based page navigation (page.goto) and programmatic API calls
+    // (page.request.*):
+    //
+    // 1. context.addCookies — adds to the browser's cookie store (used by
+    //    page.goto and Playwright browser navigation).
+    //
+    // 2. context.setExtraHTTPHeaders — adds a Cookie header to every request
+    //    that originates from this context, including context.request API
+    //    calls that may have a separate cookie jar from the browser.
+    //
+    // sameSite is intentionally omitted from addCookies so Playwright uses
+    // the implicit default (Lax / None) which allows the cookie to be sent
+    // on first navigation and on API requests with no prior same-site context.
     await context.addCookies([
       {
         name:     'session_id',
@@ -69,15 +81,20 @@ const withAuth = base.extend({
         domain:   'localhost',
         path:     '/',
         httpOnly: true,
-        secure:   false, // HTTP in test mode
+        secure:   false,
       },
     ]);
+
+    await context.setExtraHTTPHeaders({
+      'Cookie': `session_id=${E2E_SESSION_ID}`,
+    });
 
     const page = await context.newPage();
     await use(page);
     await context.close();
   },
 
-});
+}
+);
 
 module.exports = { withAuth, E2E_SESSION_ID };
