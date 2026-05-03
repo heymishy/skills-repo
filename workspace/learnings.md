@@ -1857,3 +1857,26 @@ fs.writeFileSync('.github/pipeline-state.json', JSON.stringify(pkg,null,2)+'\n',
 Then `git add .github/pipeline-state.json ; git rebase --continue`.
 
 **Prevention:** Push pipeline-state commits to origin immediately after writing — do not accumulate multiple local pipeline-state commits before pushing.
+
+## D31 — `Tests (pipeline-state): 0/N passing` in CI comment is a double-failure: stale fallback + no live match
+
+**Date:** 2026-05-03
+**Observed at:** PR #281 (wuce.14) — CI comment showed "Tests (pipeline-state): 0/18 passing" despite 21 tests passing on master.
+
+**Root cause (two compounding problems):**
+
+1. **Live result matching fails for most test scripts.** The CI comment has two test display paths: "Tests (this run)" (live, from `.ci-test-results.txt`) or "Tests (pipeline-state)" (fallback, from `pipeline-state.json`). The live path requires scripts to emit `[suiteKey] Results: X passed, Y failed`. Only ~8 scripts do (caa1-3, rrc1-4, sro1). All `check-wuceN.js` files emit `[check-wuceN] PASS — all X tests passing ✓` (wrong format). All `.test.js` files emit bare `Results: X passed, Y failed` with no key prefix. Neither matches the regex `/\[(\w+)\]\s+Results:\s*(\d+)\s+passed/`. So `suiteResult` is always `null` for wuce stories — they always fall back to pipeline-state.
+
+2. **Agents don't reliably update `pipeline-state.passing` on the PR branch.** The dispatch sets `passing: 0`. The coding agent implements tests (21 pass) but leaves `passing: 0` in pipeline-state.json on the branch. We then manually correct master post-merge. Result: PR branch has `passing: 0`, master has `passing: 21`, CI reads from the PR branch → shows "0/18 passing".
+
+**The wuce.17 variant:** Agent DID update `passing` on the branch (to 22) but `totalTests` was wrong (said 18 in test plan, agent wrote 22 tests). This produced "22/18 passing" — inconsistent but at least shows activity.
+
+**The fix (two-layer):**
+
+- **Layer 1 (short-term, applied 2026-05-03):** In `ci-audit-comment.js`, suppress the pipeline-state fallback when `passing === 0` — show `—` instead of "0/N passing". This stops the misleading "0/N" display. Stories with `passing > 0` still show the stale count (acknowledged imprecision but not actively misleading).
+
+- **Layer 2 (structural, not yet applied):** Standardise all `check-*.js` and `*.test.js` files to emit `[suiteKey] Results: X passed, Y failed`. suiteKey = `(story.id).replace(/\./g,'').replace(/-/g,'').toLowerCase()` (e.g. wuce.14 → `wuce14`). This makes the live "Tests (this run)" path reliable and eliminates the need for the pipeline-state fallback on active PRs entirely.
+
+**Impact of Layer 2:** ~100+ test files would need a one-line output change at the end. Can be done in a single scripted pass.
+
+**Key principle:** Pipeline-state `passing` is a post-merge bookkeeping field, not a live CI signal. The CI comment should never use it as a live indicator — that's what `.ci-test-results.txt` is for.

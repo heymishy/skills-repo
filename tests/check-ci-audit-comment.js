@@ -331,6 +331,24 @@ const SAMPLE_DATA = {
   assert(acRowMatch && acRowMatch[1].includes('\u2014'), `T24: partial testPlan fallback yields — icon`);
 }
 
+// T25: testPlan passing = 0 → no test line emitted (D31 fix: suppress misleading "0/N passing")
+{
+  const data = {
+    ...SAMPLE_DATA,
+    pipelineStories: [{
+      id:       's1.1',
+      title:    'Unverified story',
+      acs:      [{ id: 'AC1', text: 'Criterion one.' }],
+      issueUrl: null,
+      issueAcCheck: '',
+      suiteResult: null,
+      testPlan: { totalTests: 18, passing: 0 },
+    }],
+  };
+  const body = buildAuditComment(data);
+  assert(!body.includes('Tests (pipeline-state): **0/'), `T25: passing=0 suppresses misleading 0/N test line`);
+}
+
 // ── Summary ───────────────────────────────────────────────────────────────────
 
 console.log(`\nci-audit-comment: ${passed} passed, ${failed} failed`);
