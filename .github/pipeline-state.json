@@ -5937,19 +5937,19 @@
           "name": "Skill launcher landing",
           "epic": "wuce-e6",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.23-skill-launcher-landing.md",
-          "prStatus": "none",
+          "prStatus": "merged",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "dispatched",
+          "stage": "definition-of-done",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.23-skill-launcher-landing-test-plan.md",
             "totalTests": 16,
-            "passing": 0
+            "passing": 16
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "health": "green",
@@ -5958,7 +5958,9 @@
           "updatedAt": "2026-05-04",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/290",
           "dispatchedAt": "2026-05-04T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/298",
+          "prNumber": 298
         },
         {
           "id": "wuce.24",
