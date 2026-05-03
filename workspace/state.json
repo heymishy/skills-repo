@@ -1,7 +1,14 @@
 {
-  "currentPhase": "discovery",
-  "activeFeature": "2026-05-03-web-ui-html-frontend",
-  "lastUpdated": "2026-05-03T18:00:00Z",
+  "currentPhase": "inner-loop",
+  "activeFeature": "2026-05-02-web-ui-copilot-execution-layer",
+  "lastUpdated": "2026-05-04T09:00:00Z",
+  "cycle": {
+    "discovery": {
+      "status": "complete",
+      "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/discovery.md",
+      "completedAt": "2026-05-02"
+    }
+  },
   "previousFeature": {
     "slug": "2026-05-02-web-ui-copilot-execution-layer",
     "status": "definition-of-done-complete",
