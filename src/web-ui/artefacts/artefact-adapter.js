@@ -49,4 +49,51 @@ async function fetchArtefact(featureSlug, artefactType, token) {
   return response.text();
 }
 
-module.exports = { fetchArtefact, buildApiBase };
+/**
+ * Commit a pipeline artefact to the GitHub Contents API (create new file).
+ * Uses GITHUB_API_BASE_URL for GHE support (ADR-012).
+ * @param {object} opts
+ * @param {string} opts.path          - repo-relative path, e.g. 'artefacts/slug/file.md'
+ * @param {string} opts.content       - raw file content (will be base64-encoded)
+ * @param {string} opts.accessToken   - OAuth access token
+ * @param {string} opts.commitMessage - commit message string
+ * @param {object} [opts.author]      - { name, email }
+ * @param {object} [opts.committer]   - { name, email }
+ * @returns {Promise<{content: object, commit: object}>} GitHub API response
+ */
+async function commitArtefact({ path: filePath, content, accessToken, commitMessage, author, committer }) {
+  const base  = buildApiBase();
+  const owner = process.env.GITHUB_REPO_OWNER || 'org';
+  const repo  = process.env.GITHUB_REPO_NAME  || 'repo';
+  const url   = `${base}/repos/${owner}/${repo}/contents/${filePath}`;
+
+  const encodedContent = Buffer.from(content).toString('base64');
+  const body = { message: commitMessage, content: encodedContent };
+  if (author)    body.author    = author;
+  if (committer) body.committer = committer;
+
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `token ${accessToken}`,
+      'Content-Type':  'application/json',
+      'Accept':        'application/vnd.github.v3+json',
+      'User-Agent':    'skills-pipeline-web-ui'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (response.status === 409) {
+    const err = new Error('409: Conflict');
+    err.status = 409;
+    throw err;
+  }
+
+  if (!response.ok) {
+    throw new Error(`GitHub API returned ${response.status} for ${filePath}`);
+  }
+
+  return response.json();
+}
+
+module.exports = { fetchArtefact, commitArtefact, buildApiBase };
