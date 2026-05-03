@@ -217,7 +217,7 @@ function buildAuditComment(data) {
       const issueAcCheck = story.issueAcCheck || '';
       const testLine     = suiteResult
         ? `Tests (this run): **${suiteResult.passed} passed, ${suiteResult.failed} failed**`
-        : (story.testPlan && story.testPlan.passing != null)
+        : (story.testPlan && story.testPlan.passing != null && story.testPlan.passing > 0)
           ? `Tests (pipeline-state): **${story.testPlan.passing}/${story.testPlan.totalTests} passing**`
           : '';
       const acRows = acs.map(ac => {
