@@ -19,8 +19,15 @@ const { handleGetStatus, handleGetStatusExport }                     = require('
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
 const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession } = require('./routes/skills');          // wuce.13
+const { setLogger }                                                  = require('./routes/auth');
 
 const PORT = process.env.PORT || 3000;
+
+// Wire up console logger for auth events (login, logout, state_mismatch)
+setLogger({
+  info: (event, data) => console.log(`[auth] ${event}`, JSON.stringify(data)),
+  warn: (event, data) => console.warn(`[auth] ${event}`, JSON.stringify(data))
+});
 
 // ── Test-mode infrastructure (NODE_ENV=test only) ─────────────────────────
 // Pre-seed a well-known test session and override the artefact fetcher with
@@ -192,6 +199,15 @@ async function router(req, res) {
     req.params = { name: parts[3], id: parts[5] };
     await handleResumeSession(req, res);
 
+  } else if (pathname === '/api/me' && req.method === 'GET') {
+    const authenticated = !!(req.session && req.session.accessToken);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      authenticated,
+      login: authenticated ? (req.session.login || null) : null,
+      sessionId: req.sessionId
+    }));
+
   } else {
     // Sign-in page (unauthenticated root)
     res.writeHead(200, { 'Content-Type': 'text/html' });
@@ -203,6 +219,7 @@ async function router(req, res) {
 function createApp() {
   return http.createServer((req, res) => {
     router(req, res).catch((err) => {
+      console.error('[router error]', err.message, err.stack);
       res.writeHead(500, { 'Content-Type': 'text/plain' });
       res.end('Internal Server Error');
     });

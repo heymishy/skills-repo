@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "start": "node --env-file=.env src/web-ui/server.js",
     "platform:init": "node scripts/platform-init.js",
     "platform:fetch": "node scripts/platform-fetch.js",
     "platform:pin": "node scripts/platform-pin.js",
