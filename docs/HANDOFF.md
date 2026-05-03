@@ -85,6 +85,8 @@ Four product-context files were updated to reflect Phase 4 delivery actuals and 
 
 ### Delivered since 2026-05-06
 
+- **WUCE feature artefact index (2026-05-03):** `artefacts/2026-05-02-web-ui-copilot-execution-layer/artefact-index.md` — single-file entry point listing all 120+ artefacts, stories, implementation files, test files, and ADRs for the full WUCE feature. Use this as the starting point when porting to another framework, resuming in a new session, or briefing a new agent.
+
 - **Pipeline-state write safety — read-from-master-before-write (2026-05-03):** Three inner-loop SKILL.md files updated: `/subagent-execution`, `/branch-complete`, `/implementation-plan`. Each skill's "State update — mandatory final step" section now begins with a canonical safety rule block requiring agents to `git fetch origin master`, read from `git show origin/master:.github/pipeline-state.json`, log the master SHA (`[pipeline-state] read from master @ <sha>`), apply only this story's fields to the fetched state, and write back. Inline callouts added at Step 1 and Step 2d in `/subagent-execution`. Fixes the structural fan-out overwrite problem that caused wuce.2–8 and wuce.12 to show stale state after their PRs merged. Root cause analysis and porting notes at `artefacts/2026-05-03-pipeline-state-write-safety/fix-note.md`.
 
 ### Pending items as of 2026-05-06
