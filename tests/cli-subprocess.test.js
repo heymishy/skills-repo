@@ -185,10 +185,10 @@ const errorFixture   = fs.readFileSync(errorFixturePath,   'utf8');
       return proc;
     };
     const p = executeSkill('discovery', 'p', 'tok', '/h', { timeoutMs: 50, cliPath: 'fake-copilot' });
+    p.catch(function() {}); // suppress unhandled rejection — must be before await
     await new Promise(function(resolve) { setTimeout(resolve, 200); });
     _spawnImpl = null;
     assert.strictEqual(killSignal, 'SIGTERM', 'SIGTERM should be sent on timeout');
-    p.catch(function() {}); // suppress unhandled rejection
   });
 
   await test('T3.2 — SIGKILL sent after SIGTERM if process still running', async () => {
@@ -198,10 +198,10 @@ const errorFixture   = fs.readFileSync(errorFixturePath,   'utf8');
       return proc;
     };
     const p = executeSkill('discovery', 'p', 'tok', '/h', { timeoutMs: 20, cliPath: 'fake-copilot' });
+    p.catch(function() {}); // suppress unhandled rejection — must be before await
     await new Promise(function(resolve) { setTimeout(resolve, 100); });
     _spawnImpl = null;
     assert.ok(signals.includes('SIGTERM'), 'SIGTERM should be in signals');
-    p.catch(function() {}); // suppress unhandled rejection
   });
 
   await test('T3.3 — rejection error has code: TIMEOUT', async () => {
