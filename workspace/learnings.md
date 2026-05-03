@@ -1880,3 +1880,77 @@ Then `git add .github/pipeline-state.json ; git rebase --continue`.
 **Impact of Layer 2:** ~100+ test files would need a one-line output change at the end. Can be done in a single scripted pass.
 
 **Key principle:** Pipeline-state `passing` is a post-merge bookkeeping field, not a live CI signal. The CI comment should never use it as a live indicator — that's what `.ci-test-results.txt` is for.
+
+---
+
+## D32 — E2E auth fixture dual-injection pattern for cookie + header auth bypass
+
+**Date:** 2026-05-03
+**Observed at:** wuce.1–17 Playwright E2E suite — `withAuth` fixture needed to work for both page navigation (cookie-based auth) and `page.request` API calls (header-based auth). Single-injection (cookie only) worked for UI but caused 401s on API calls within the same test.
+
+**Pattern:** Playwright's `context.addCookies()` sets cookies for the browser context. `context.setExtraHTTPHeaders()` sets a Bearer token header for all requests from that context. For a server that accepts EITHER a session cookie or a `X-Test-Token` header (test-mode auth bypass), both must be injected:
+```js
+await context.addCookies([{ name: 'connect.sid', value: encodeURIComponent('s:test-session-id.sig'), domain: 'localhost', path: '/' }]);
+await context.setExtraHTTPHeaders({ 'X-Test-Token': 'test-access-token' });
+```
+**Why it matters:** If `page.request.get('/api/...')` bypasses cookies (as it can in some Playwright versions), the header fallback ensures the test doesn't flake.
+
+**Prevention rule:** In any E2E suite with both navigation tests and API call tests, inject both cookie and header in the `withAuth` fixture. Do not assume cookie-only works for `page.request`.
+
+---
+
+## D33 — `maxRedirects: 0` required for testing authGuard 302 redirects
+
+**Date:** 2026-05-03
+**Observed at:** wuce.1 E2E — testing that unauthenticated access to `/dashboard` redirects to `/`. Playwright's `page.goto()` follows redirects by default; `page.request.get()` also follows by default.
+
+**Pattern:** To assert a 302 is returned (not the redirect destination), use `page.request.get(url, { maxRedirects: 0 })`. This prevents Playwright from following the redirect and allows asserting `response.status() === 302` and `response.headers()['location']`.
+
+**Why it matters:** Following the redirect means the test only verifies the final destination renders, not that the redirect occurred. Both assertions are valuable; the redirect assertion is the more precise one for authGuard.
+
+**Prevention rule:** When writing an E2E test for a middleware redirect (authGuard, rate-limit, etc.), use `maxRedirects: 0` to assert the redirect response directly.
+
+---
+
+## D34 — `req.session.accessToken` vs `req.session.token` naming discipline
+
+**Date:** 2026-05-03
+**Observed at:** `src/web-ui/routes/status.js` — route read `req.session.token` but OAuth callback writes `req.session.accessToken`. The mismatch caused 401s on `/api/status` even for authenticated users.
+
+**Why it happened:** Two different implementations of the session-writing pattern — the OAuth callback (wuce.1) explicitly chose `accessToken` for clarity. A later route (wuce.7, status view) referenced `token` by inference without checking the actual session field name.
+
+**Fix (commit 28c419f):** Changed `req.session.token` → `req.session.accessToken` in status.js.
+
+**Prevention rule:** The canonical field name is `req.session.accessToken`. All routes that read the token from session MUST use `req.session.accessToken`. A simple grep check at DoR: `grep -rn "req\.session\.token" src/web-ui/` should return zero results.
+
+---
+
+## D35 — Agent-wave delivery at feature scale (17 stories, 4 waves)
+
+**Date:** 2026-05-03
+**Observed at:** WUCE feature (wuce.1–17) — 17 stories dispatched in 4 waves via VS Code subagent-execution skill.
+
+**Pattern that worked:**
+- Wave 1 (wuce.1–4): Core OAuth, artefact read/render, sign-off, Docker — independent, delivered sequentially
+- Wave 2 (wuce.5–8): UI surface stories — independent within wave, delivered in parallel where possible
+- Wave 3 (wuce.9–12): Execution engine stories (CLI subprocess, session isolation, skill discovery, BYOK) — tightly coupled; dispatched sequentially after shared interfaces agreed
+- Wave 4 (wuce.13–17): Higher-level integration (skill launcher, artefact preview/writeback, session persistence, E2E infra) — delivered sequentially
+
+**Key insight:** Wave 3 stories (wuce.9–12) are the most coupled. Dispatching them in parallel caused merge conflicts on `src/web-ui/routes/skills.js`. Lesson: when stories share the same output file, dispatch sequentially not in parallel.
+
+**Operator effort was minimal** during Wave 3 and 4 — the subagent handled the full TDD cycle. Outer-loop focus was concentrated in Wave 1 (OAuth flow design) and DoD writing.
+
+**Prevention rule:** For waves with stories sharing output files, use sequential dispatch. Use `plans/` artefacts to identify shared file touchpoints before dispatching.
+
+---
+
+## D36 — DoD at feature scale: consolidated artefact vs per-story artefacts
+
+**Date:** 2026-05-03
+**Observed at:** WUCE feature — 17 stories, each with 5–6 ACs. Per-story DoD artefacts would produce 17 near-identical files with ~5 rows each.
+
+**Decision:** Produce a single consolidated `feature-dod.md` covering all 17 stories in a summary table, with detail sections for representative/complex stories (wuce.1, wuce.3, wuce.9, wuce.13). This is faster to write, easier to review, and captures the cross-story patterns (NFRs, metrics) in one place without repetition.
+
+**When per-story artefacts make sense:** When stories were delivered across multiple sessions, when each story has significant deviations or blockers, or when the team needs audit-grade traceability per story (regulated environments). For a cohesive feature delivered in one sprint, consolidated is correct.
+
+**Prevention rule:** Use consolidated DoD when: (a) all stories were delivered in one sprint by the same operator/agent, (b) fewer than 3 stories have significant deviations, and (c) NFRs and metrics are cross-cutting. Use per-story DoD when any of those conditions don't hold.

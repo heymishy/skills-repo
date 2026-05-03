@@ -5138,7 +5138,7 @@
       "slug": "2026-05-02-web-ui-copilot-execution-layer",
       "name": "Web UI + Copilot Execution Layer — Non-Technical Outer Loop Surface",
       "track": "standard",
-      "stage": "definition",
+      "stage": "definition-of-done",
       "health": "green",
       "regulated": false,
       "complianceProfile": "standard",
@@ -5163,28 +5163,32 @@
           "slug": "wuce-e1-walking-skeleton",
           "name": "Walking skeleton — authenticate, read one artefact, write one sign-off",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/epics/wuce-e1-walking-skeleton.md",
-          "stories": []
+          "stories": [],
+          "status": "complete"
         },
         {
           "id": "wuce-e2",
           "slug": "wuce-e2-phase1-full-surface",
           "name": "Phase 1 — Full read and action surface",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/epics/wuce-e2-phase1-full-surface.md",
-          "stories": []
+          "stories": [],
+          "status": "complete"
         },
         {
           "id": "wuce-e3",
           "slug": "wuce-e3-phase2-execution-engine",
           "name": "Phase 2 — Copilot CLI execution engine (backend)",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/epics/wuce-e3-phase2-execution-engine.md",
-          "stories": []
+          "stories": [],
+          "status": "complete"
         },
         {
           "id": "wuce-e4",
           "slug": "wuce-e4-phase2-guided-ui",
           "name": "Phase 2 — Guided skill UI (browser conversation layer)",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/epics/wuce-e4-phase2-guided-ui.md",
-          "stories": []
+          "stories": [],
+          "status": "complete"
         }
       ],
       "updatedAt": "2026-05-03",
@@ -5212,7 +5216,10 @@
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/248",
           "dispatchedAt": "2026-05-02T00:00:00Z",
           "dispatchTarget": "vscode",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/264"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/264",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "updatedAt": "2026-05-03"
         },
         {
           "id": "wuce.2",
@@ -5238,7 +5245,9 @@
           "dispatchedAt": "2026-05-02T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/265",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-03",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "wuce.3",
@@ -5264,7 +5273,9 @@
           "dispatchedAt": "2026-05-02T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/267",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-03",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "wuce.4",
@@ -5290,7 +5301,9 @@
           "dispatchedAt": "2026-05-02T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/266",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-03",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "wuce.5",
@@ -5316,7 +5329,9 @@
           "dispatchedAt": "2026-05-02T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/268",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-03",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "wuce.6",
@@ -5342,7 +5357,9 @@
           "dispatchedAt": "2026-05-02T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/269",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-03",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "wuce.7",
@@ -5368,7 +5385,9 @@
           "dispatchedAt": "2026-05-02T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/270",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-03",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "wuce.8",
@@ -5394,7 +5413,9 @@
           "dispatchedAt": "2026-05-02T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/271",
-          "updatedAt": "2026-05-03"
+          "updatedAt": "2026-05-03",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "wuce.9",
@@ -5418,7 +5439,10 @@
           "health": "green",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/256",
           "dispatchedAt": "2026-05-02T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "updatedAt": "2026-05-03"
         },
         {
           "id": "wuce.10",
@@ -5442,7 +5466,10 @@
           "health": "green",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/257",
           "dispatchedAt": "2026-05-02T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "updatedAt": "2026-05-03"
         },
         {
           "id": "wuce.11",
@@ -5466,7 +5493,10 @@
           "health": "green",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/258",
           "dispatchedAt": "2026-05-02T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "updatedAt": "2026-05-03"
         },
         {
           "id": "wuce.12",
@@ -5492,7 +5522,9 @@
           "dispatchedAt": "2026-05-02T00:00:00Z",
           "dispatchTarget": "vscode",
           "updatedAt": "2026-05-03",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/275"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/275",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "wuce.13",
@@ -5550,7 +5582,9 @@
               "tddState": "committed",
               "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.13-skill-launcher-plan.md"
             }
-          ]
+          ],
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "wuce.14",
@@ -5608,7 +5642,9 @@
               "tddState": "committed",
               "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.14-artefact-preview-plan.md"
             }
-          ]
+          ],
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "wuce.15",
@@ -5654,7 +5690,9 @@
               "tddState": "committed",
               "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.15-artefact-writeback-plan.md"
             }
-          ]
+          ],
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "wuce.16",
@@ -5694,7 +5732,9 @@
               "tddState": "committed",
               "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.16-session-persistence-plan.md"
             }
-          ]
+          ],
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "wuce.17",
@@ -5717,7 +5757,7 @@
           "acTotal": 5,
           "acVerified": 5,
           "health": "green",
-          "updatedAt": "2026-05-06",
+          "updatedAt": "2026-05-03",
           "tasks": [
             {
               "id": 1,
@@ -5734,9 +5774,145 @@
               "name": "Add @playwright/test devDependency, npm scripts, .github/workflows/e2e.yml, ADR-018",
               "tddState": "green"
             }
+          ],
+          "dodStatus": "complete",
+          "releaseReady": true
+        }
+      ],
+      "metrics": [
+        {
+          "id": "P1",
+          "name": "Non-engineer sign-off rate",
+          "signal": "not-yet-measured",
+          "evidence": null,
+          "lastMeasured": null,
+          "contributingStories": [
+            "wuce.3",
+            "wuce.5"
+          ]
+        },
+        {
+          "id": "P2",
+          "name": "Unassisted /discovery completion rate",
+          "signal": "not-yet-measured",
+          "evidence": null,
+          "lastMeasured": null,
+          "contributingStories": [
+            "wuce.13",
+            "wuce.14",
+            "wuce.15",
+            "wuce.16"
+          ]
+        },
+        {
+          "id": "P3",
+          "name": "Non-technical attribution rate",
+          "signal": "not-yet-measured",
+          "evidence": null,
+          "lastMeasured": null,
+          "contributingStories": [
+            "wuce.3",
+            "wuce.8",
+            "wuce.15"
+          ]
+        },
+        {
+          "id": "P4",
+          "name": "Status self-service rate",
+          "signal": "not-yet-measured",
+          "evidence": null,
+          "lastMeasured": null,
+          "contributingStories": [
+            "wuce.2",
+            "wuce.6",
+            "wuce.7"
+          ]
+        },
+        {
+          "id": "P5",
+          "name": "Sign-off wait time",
+          "signal": "not-yet-measured",
+          "evidence": null,
+          "lastMeasured": null,
+          "contributingStories": [
+            "wuce.5",
+            "wuce.3"
+          ]
+        },
+        {
+          "id": "M1",
+          "name": "Copilot CLI/API non-interactive feasibility",
+          "signal": "on-track",
+          "evidence": "Spike verdict: PROCEED. wuce.9-12 delivered working subprocess execution, session isolation, skill discovery, BYOK. 23+17+18+17=75 unit tests pass.",
+          "lastMeasured": "2026-05-03",
+          "contributingStories": [
+            "wuce.9",
+            "wuce.10",
+            "wuce.11",
+            "wuce.12"
+          ]
+        },
+        {
+          "id": "M2",
+          "name": "Phase 1 stakeholder activation rate",
+          "signal": "not-yet-measured",
+          "evidence": null,
+          "lastMeasured": null,
+          "contributingStories": [
+            "wuce.1",
+            "wuce.4",
+            "wuce.2"
           ]
         }
-      ]
+      ],
+      "guardrails": [
+        {
+          "id": "NFR-SEC-01",
+          "label": "Tokens server-side only — HttpOnly cookie",
+          "category": "nfr",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-03",
+          "evidence": "session.accessToken never sent to browser; code review confirmed"
+        },
+        {
+          "id": "NFR-SEC-02",
+          "label": "Path traversal mitigation",
+          "category": "nfr",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-03",
+          "evidence": "E2E: 4 traversal tests pass; unit: NFR2 test passes for skill-discovery"
+        },
+        {
+          "id": "NFR-SEC-03",
+          "label": "Command injection mitigation",
+          "category": "nfr",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-03",
+          "evidence": "Skill names validated against allowlist; no shell:true subprocess"
+        },
+        {
+          "id": "NFR-SEC-04",
+          "label": "HTML sanitisation (XSS)",
+          "category": "nfr",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-03",
+          "evidence": "marked + DOMPurify pipeline in wuce.2/wuce.14; code review confirmed"
+        },
+        {
+          "id": "NFR-SEC-05",
+          "label": "Secrets out of logs",
+          "category": "nfr",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-03",
+          "evidence": "Token/API-key log filtering in wuce.9/wuce.12; unit test confirms"
+        }
+      ],
+      "dodArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dod/feature-dod.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

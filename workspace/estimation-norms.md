@@ -66,3 +66,34 @@
   outerLoopCharacter: "genuinely-novel-decisions"
   note: "E2 severely underestimated (8x off). Two compounding causes: (1) Volume and complexity — 24 stories (9 at complexity-3) across discovery→benefit-metric→definition→review→test-plan→24×DoR requires substantial operator focus regardless of inner-loop autonomy. Key calibration: for complexity-heavy features (majority complexity-2/3), outer loop floor is ~0.25h/story. The complexity-weighted E2 formula needs a minimum floor: outerLoopFocusH = max(storyCount × 0.25, derivedEstimate). (2) Outer loop character — this run required genuine decision-making, not artefact validation. The 5-spike programme (E1) forced the operator to review feasibility options, weigh trade-offs, and in several cases query a second model for validation before committing to a mechanism. This is qualitatively different from the typical outer loop pattern (Phases 1–3) where the agent proposes artefacts and the operator validates/approves them. When the operator is the primary decision-maker — evaluating novel mechanisms, adjudicating spike verdicts, resolving architectural trade-offs — focus time per story is structurally higher regardless of story count. Calibration rule: features with ≥1 spike epic (E1-type) or novel surface mechanism should add +0.5h flat to E2 outer loop estimate to account for genuine decision time. E2 engagementFraction (0.5) also overestimated — parse-session-timing.js shows actual 15.2% across full session span (heavy agent wait time between spike runs). Inner loop human revised downward from E2 forecast 3h to actual 1h — dispatch and merge only."
 ```
+
+---
+
+## E3 actuals � 2026-05-02-web-ui-copilot-execution-layer (WUCE)
+
+```yaml
+featureSlug: "2026-05-02-web-ui-copilot-execution-layer"
+featureTitle: "Web UI + Copilot Execution Layer"
+date: "2026-05-03"
+phase: "E3"
+calendarDays: 1
+wallClockH: 22.5
+outerLoopFocusH: 5.6
+engagementFraction: 0.25
+storyCount: 17
+focusHPerStory: 0.33
+deliveryModel: "agent-wave (4 waves, VS Code subagent-execution)"
+e1estimate: null
+e2estimate: null
+e1delta: null
+e2delta: null
+acCount: 88
+acsAutomated: 82
+acsManualVerification: 6
+testMethod: "Playwright E2E (41 pass / 21 skip) + Node unit tests (75 pass in wuce.9-12)"
+sessionId: "568d554a"
+premiumRequestsForecast: null
+premiumRequestsActual: null
+outerLoopCharacter: "agent-heavy-wave-delivery"
+note: "null-path � no E1/E2 recorded; seeds normalisation table only. 25% engagement fraction reflects highly agent-heavy delivery: 4 dispatch waves, full TDD inner loop per story, operator focus concentrated in Wave 1 (OAuth design) and DoD writing. 0.33h focus/story is a floor calibration point for agent-wave features. For comparison: Phase 4 (p4) was 0.89h focus/story for complexity-heavy genuinely-novel stories. WUCE was simpler ACs, well-understood surface patterns, agent did full TDD � hence 0.33 is plausible. Calibration rule proposed: agent-wave delivery with pre-existing surface patterns ? 0.3-0.4h/story outer loop. Novel surface with operator design decisions ? 0.7-1.0h/story."
+```
