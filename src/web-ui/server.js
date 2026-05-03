@@ -18,7 +18,7 @@ const { handleGetFeatures, handleGetFeatureArtefacts }               = require('
 const { handleGetStatus, handleGetStatusExport }                     = require('./routes/status');
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
-const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml } = require('./routes/skills');          // wuce.13 / wuce.23
+const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml } = require('./routes/skills');          // wuce.13 / wuce.23 / wuce.24
 const { setLogger }                                                  = require('./routes/auth');
 const { setFetchPipelineState }                                      = require('./adapters/feature-list');
 
@@ -205,6 +205,20 @@ async function router(req, res) {
   } else if (pathname === '/skills' && req.method === 'GET') {
     authGuard(req, res, async () => {
       await handleGetSkillsHtml(req, res);
+    });
+
+  } else if (pathname.match(/^\/skills\/[^/]+\/sessions\/[^/]+\/next$/) && req.method === 'GET') {
+    const parts = pathname.split('/');
+    req.params = { name: parts[2], id: parts[4] };
+    authGuard(req, res, async () => {
+      await handleGetQuestionHtml(req, res);
+    });
+
+  } else if (pathname.match(/^\/api\/skills\/[^/]+\/sessions\/[^/]+\/answer$/) && req.method === 'POST') {
+    const parts = pathname.split('/');
+    req.params = { name: parts[3], id: parts[5] };
+    authGuard(req, res, async () => {
+      await handlePostAnswerHtml(req, res);
     });
 
   } else if (pathname === '/api/skills' && req.method === 'GET') {
