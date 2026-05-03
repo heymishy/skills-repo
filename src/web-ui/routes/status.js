@@ -38,7 +38,7 @@ async function handleGetStatus(req, res) {
     return;
   }
 
-  const token = (req.session && req.session.token) || null;
+  const token = (req.session && req.session.accessToken) || null;
 
   let features = [];
   try {
@@ -86,7 +86,7 @@ async function handleGetStatusExport(req, res) {
     return;
   }
 
-  const token = (req.session && req.session.token) || null;
+  const token = (req.session && req.session.accessToken) || null;
 
   let features = [];
   try {
