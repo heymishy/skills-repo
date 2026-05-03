@@ -415,3 +415,50 @@ The following Phase 5 primitives will be added to this section on delivery:
 - **Capability manifest in SKILL.md (WS2.1)** — declared required capabilities per skill; validated at invocation time against permission tier.
 - **Consumer lockfile (WS0.1)** — per-release lockfile with per-skill hash pinning; read by `resolveAndVerifySkill` as the authoritative hash source at invocation time.
 - **`oversightLevel` formal schema field (WS2 prerequisite)** — promoted from informal convention to declared field in `pipeline-state.schema.json`.
+
+---
+
+## E2E test infrastructure (wuce.17) <!-- ADDED: 2026-05-06 -->
+
+The web UI feature (wuce) introduces a Playwright-based E2E test layer as a complement to the existing Node.js unit suite. This section documents the stack additions and the structural rules that govern E2E testing (ADR-018).
+
+### E2E testing stack
+
+| Layer | Tool | Scope |
+|-------|------|-------|
+| Unit + integration | Node.js `assert` / custom `async test()` helper | Backend logic, route handlers, adapters |
+| E2E (browser) | Playwright `@playwright/test` (devDependency) | Full browser HTTP+DOM; verification of rendering, routing, and session lifecycle |
+
+### File structure
+
+```
+playwright.config.js              # Runner config at repo root — testDir: 'tests/e2e'
+tests/e2e/
+├── fixtures/
+│   └── auth.js                   # Auth bypass fixture (test.extend; NODE_ENV=test guard)
+├── smoke.spec.js                 # Infrastructure smoke tests (2 tests)
+├── skill-launcher.spec.js        # wuce.13 E2E specs (stubs → filled by E3/E4 subagents)
+├── artefact-preview.spec.js      # wuce.14 E2E specs (stubs → filled by E3/E4 subagents)
+├── artefact-writeback.spec.js    # wuce.15 E2E specs (stubs → filled by E3/E4 subagents)
+└── session-persistence.spec.js   # wuce.16 E2E specs (stubs → filled by E3/E4 subagents)
+```
+
+### npm scripts
+
+| Script | Purpose |
+|--------|---------|
+| `npm run test:e2e` | Run full E2E suite (Playwright, headless Chromium) |
+| `npm run test:e2e:ui` | Open Playwright UI mode for local debugging |
+| `npm test` | Unit + integration chain only — never includes Playwright |
+
+### Auth bypass pattern
+
+The auth bypass for E2E tests is a Playwright `test.extend` fixture in `tests/e2e/fixtures/auth.js`. It injects a synthetic session cookie (`{ userId: 'e2e-test-user', login: 'e2e-tester' }`) into each test request before `page.goto()`. The bypass is guarded by `NODE_ENV=test` and cannot be activated by configuration error in production environments. It does not modify any `src/` production files.
+
+### CI integration
+
+E2E tests run via `.github/workflows/e2e.yml` on pull_request events. The gate is opt-in (`audit.e2e_tests: true` in `context.yml`) and non-fatal (`continue-on-error: true`) in v1 — failures appear as a visible PR status signal but do not block merge. Playwright traces and screenshots on failure are uploaded via `actions/upload-artifact` with 7-day retention.
+
+### Governing decision
+
+ADR-018 (`.github/architecture-guardrails.md`): Playwright is the sole E2E framework. All browser-facing AC verification must be in `tests/e2e/`. The unit chain is immutable.

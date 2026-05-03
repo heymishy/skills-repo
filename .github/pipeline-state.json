@@ -5605,6 +5605,34 @@
             { "id": 1, "name": "Create src/session-store.js (16-M1 fix)", "tddState": "committed", "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.16-session-persistence-plan.md" },
             { "id": 2, "name": "Add resume route + complete test stubs", "tddState": "committed", "file": "artefacts/2026-05-02-web-ui-copilot-execution-layer/plans/wuce.16-session-persistence-plan.md" }
           ]
+        },
+        {
+          "id": "wuce.17",
+          "slug": "wuce.17-playwright-e2e-infrastructure",
+          "name": "Playwright E2E test infrastructure",
+          "epic": "wuce-e4",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.17-playwright-e2e-infrastructure.md",
+          "prStatus": "none",
+          "prUrl": null,
+          "dorStatus": "signed-off",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "stage": "subagent-execution",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.17-playwright-e2e-infrastructure-test-plan.md",
+            "totalTests": 18,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "health": "green",
+          "updatedAt": "2026-05-06",
+          "tasks": [
+            { "id": 1, "name": "Create playwright.config.js, tests/e2e/fixtures/auth.js, tests/e2e/smoke.spec.js", "tddState": "not-started" },
+            { "id": 2, "name": "Create placeholder spec files (wuce.13-16), tests/check-wuce17-e2e-infra.js", "tddState": "not-started" },
+            { "id": 3, "name": "Add @playwright/test devDependency, npm scripts, .github/workflows/e2e.yml, ADR-014", "tddState": "not-started" }
+          ]
         }
       ]
     }

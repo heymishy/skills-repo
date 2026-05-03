@@ -30,6 +30,7 @@ A non-technical stakeholder can initiate a pipeline skill (starting with `/disco
 - [ ] wuce.14 — Incremental artefact preview (builds in browser as questions are answered)
 - [ ] wuce.15 — Artefact write-back with attribution (commit to repo under user identity)
 - [ ] wuce.16 — Multi-turn session persistence (resume an in-progress skill session)
+- [ ] wuce.17 — Playwright E2E test infrastructure (config, auth bypass fixture, CI gate, per-story spec skeletons)
 
 ## Human Oversight Level
 

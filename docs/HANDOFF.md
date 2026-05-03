@@ -78,6 +78,20 @@ Four product-context files were updated to reflect Phase 4 delivery actuals and 
 
 - **src.1 SKILL.md additions** — `workflow/SKILL.md` (generate-status-report.js callout at session start) and `improve/SKILL.md` (record-benefit-comparison.js Benefit Measurement callout). Draft PR #178 open — awaiting review and merge. Platform change policy prohibits direct commit to master for SKILL.md files.
 
+### Delivered since 2026-04-29
+
+- **wuce.17 — Playwright E2E test infrastructure artefact chain (2026-05-06):** Full pipeline artefact chain created and DoR signed off. Story artefact (5 ACs), review pass (0 HIGH/MEDIUM, 3 LOW), test plan (18 tests across T1–T6), verification script, DoR + DoR contract, epic update (wuce-e4), and pipeline-state.json entry written. ADR-018 recorded in `.github/architecture-guardrails.md`: Playwright as sole E2E framework, `tests/e2e/` directory, `devDependency` only, `npm test` chain isolation, `NODE_ENV=test` auth bypass fixture constraint. `product/tech-stack.md` updated with full E2E infrastructure section. Story is DoR-signed and ready for subagent execution (stage: `subagent-execution`). The coding agent must create: `playwright.config.js`, `tests/e2e/fixtures/auth.js`, `tests/e2e/smoke.spec.js`, 4 placeholder spec files (wuce.13–16), `tests/check-wuce17-e2e-infra.js`, and `.github/workflows/e2e.yml`; and extend `package.json` (add `test:e2e` scripts + `@playwright/test` devDependency) and `.github/architecture-guardrails.md` (add ADR-018). Verification: `node tests/check-wuce17-e2e-infra.js` AND `NODE_ENV=test npm run test:e2e`.
+
+### Pending items as of 2026-05-06
+
+- **wuce.13–16 Wave 4 PRs** — Draft PRs #280 (wuce.13 skill launcher), #281 (wuce.14 artefact preview), #282 (wuce.15 artefact writeback), #283 (wuce.16 session persistence) open and awaiting CI pass + merge. These PRs implement the browser-facing features that wuce.17 E2E specs will cover.
+
+- **wuce.17 — Playwright E2E infrastructure implementation** — DoR signed off 2026-05-06. Ready for VS Code subagent execution. Artefact chain at `artefacts/2026-05-02-web-ui-copilot-execution-layer/`. Two-command verification: `node tests/check-wuce17-e2e-infra.js` AND `NODE_ENV=test npm run test:e2e`. Open PR as draft only. Do NOT modify `src/` files or existing unit test files.
+
+- **src.1 — skill-routing-cli-integration implementation** — Draft PR #182 awaiting CI pass and merge (pre-existing assurance-gate failures unrelated to this story).
+
+- **src.1 SKILL.md additions** — Draft PR #178 open; awaiting review and merge.
+
 ---
 
 ## 1. What Was Delivered
