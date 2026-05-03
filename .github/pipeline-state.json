@@ -5968,19 +5968,19 @@
           "name": "Guided question form",
           "epic": "wuce-e6",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.24-guided-question-form.md",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "pr-review",
+          "stage": "definition-of-done",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.24-guided-question-form-test-plan.md",
             "totalTests": 18,
-            "passing": 0
+            "passing": 43
           },
           "acTotal": 7,
-          "acVerified": 0,
+          "acVerified": 7,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "health": "green",
