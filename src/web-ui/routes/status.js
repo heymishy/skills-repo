@@ -7,8 +7,10 @@
 // Audit: status board access logged with userId, featureCount, timestamp.
 
 const { getPipelineStatus, setFetcher } = require('../adapters/pipeline-status');
-const { deriveBlockerIndicator, deriveFeatureStatusLabel } = require('../utils/status-board');
+const statusBoardModule = require('../utils/status-board');
+const { deriveBlockerIndicator, deriveFeatureStatusLabel } = statusBoardModule;
 const { exportStatusAsMarkdown } = require('../utils/status-export');
+const { renderShell } = require('../utils/html-shell');
 
 // Audit logger — replaced via setLogger() in tests and production bootstrap
 let _logger = {
@@ -25,20 +27,31 @@ function setLogger(logger) {
 }
 
 /**
- * GET /status — returns portfolio status board data as JSON array.
- * Requires authenticated session (401 otherwise).
- * Logs access with userId and featureCount.
+ * GET /status — returns portfolio status board as JSON (or HTML when Accept: text/html).
+ * Requires authenticated session.
+ * Unauthenticated HTML requests redirect to /auth/github (302).
+ * Unauthenticated JSON/other requests return 401.
+ * Logs access with userId, route, featureCount, timestamp.
  * @param {object} req
  * @param {object} res
  */
 async function handleGetStatus(req, res) {
+  const accept = (req.headers && req.headers.accept) || '';
+  const wantsHtml = accept.includes('text/html');
+
   if (!req.session || !req.session.userId) {
-    res.writeHead(401, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Unauthorized' }));
+    if (wantsHtml) {
+      res.writeHead(302, { 'Location': '/auth/github' });
+      res.end();
+    } else {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Unauthorized' }));
+    }
     return;
   }
 
   const token = (req.session && req.session.accessToken) || null;
+  const login = (req.session && req.session.login) || '';
 
   let features = [];
   try {
@@ -46,11 +59,31 @@ async function handleGetStatus(req, res) {
     features = Array.isArray(result) ? result : (result ? [result] : []);
   } catch (err) {
     if (err.message === 'Access denied') {
-      res.writeHead(401, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Unauthorized' }));
+      if (wantsHtml) {
+        res.writeHead(302, { 'Location': '/auth/github' });
+        res.end();
+      } else {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Unauthorized' }));
+      }
       return;
     }
     features = [];
+  }
+
+  _logger.info('status_board_access', {
+    userId:       req.session.userId,
+    route:        '/status',
+    featureCount: features.length,
+    timestamp:    new Date().toISOString()
+  });
+
+  if (wantsHtml) {
+    const boardHtml = statusBoardModule.renderStatusBoard(features);
+    const html = renderShell({ title: 'Pipeline Status', bodyContent: boardHtml, user: { login } });
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+    return;
   }
 
   const featureStatuses = features.map(f => ({
@@ -61,12 +94,6 @@ async function handleGetStatus(req, res) {
     statusLabel:      deriveFeatureStatusLabel(f.stories || []),
     stories:          f.stories || []
   }));
-
-  _logger.info('status_board_access', {
-    userId:       req.session.userId,
-    featureCount: featureStatuses.length,
-    timestamp:    new Date().toISOString()
-  });
 
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(featureStatuses));
