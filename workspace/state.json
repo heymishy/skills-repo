@@ -1,109 +1,22 @@
 {
-  "currentPhase": "definition-of-done",
-  "activeFeature": "2026-05-02-web-ui-copilot-execution-layer",
-  "lastUpdated": "2026-05-03T08:00:00Z",
-  "cycle": {
-    "discovery": {
-      "status": "completed",
-      "completedAt": "2026-05-02",
-      "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/discovery.md"
-    },
-    "benefit-metric": {
-      "status": "completed",
-      "completedAt": "2026-05-02",
-      "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/benefit-metric.md"
-    },
-    "definition": {
-      "status": "complete",
-      "commitHash": "06ac73c",
-      "epicsArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/epics/",
-      "storiesArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/"
-    },
-    "inner-loop": {
-      "wave1": {
-        "status": "merged",
-        "stories": [
-          "wuce.1"
-        ],
-        "prs": [
-          "#259"
-        ],
-        "mergedAt": "2026-05-02"
-      },
-      "wave2": {
-        "status": "merged",
-        "stories": [
-          "wuce.2",
-          "wuce.3"
-        ],
-        "prs": [
-          "#260",
-          "#261"
-        ],
-        "mergedAt": "2026-05-02"
-      },
-      "wave3a": {
-        "status": "merged",
-        "stories": [
-          "wuce.5",
-          "wuce.6",
-          "wuce.7",
-          "wuce.8"
-        ],
-        "prs": [
-          "#262",
-          "#263",
-          "#264",
-          "#265"
-        ],
-        "mergedAt": "2026-05-02"
-      },
-      "wave3b": {
-        "status": "merged",
-        "stories": [
-          "wuce.9",
-          "wuce.10",
-          "wuce.11",
-          "wuce.12"
-        ],
-        "prs": [
-          "#270",
-          "#271",
-          "#272",
-          "#273",
-          "#275"
-        ],
-        "mergedAt": "2026-05-03"
-      },
-      "wave4": {
-        "status": "merged",
-        "stories": [
-          "wuce.13",
-          "wuce.14",
-          "wuce.15",
-          "wuce.16"
-        ],
-        "dispatchedAt": "2026-05-03",
-        "mergedAt": "2026-05-03"
-      }
-    },
-    "definition-of-done": {
-      "status": "complete",
-      "completedAt": "2026-05-03",
-      "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dod/feature-dod.md",
-      "outcome": "COMPLETE WITH DEVIATIONS",
-      "acsCovered": "82/88",
-      "deviations": "wuce.3/8/14/15/16: 6 ACs require real GitHub API — manual verification scripts provided; CSS-layout ACs deferred to post-deploy smoke test"
-    }
+  "currentPhase": "discovery",
+  "activeFeature": "2026-05-03-web-ui-html-frontend",
+  "lastUpdated": "2026-05-03T18:00:00Z",
+  "previousFeature": {
+    "slug": "2026-05-02-web-ui-copilot-execution-layer",
+    "status": "definition-of-done-complete",
+    "dodArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dod/feature-dod.md",
+    "notes": "All 17 stories merged. wuce.3 6/6 ACs verified live 2026-05-03 (commit SHA 82d866c). wuce.15 write mechanism proven via wuce.3. 85/88 ACs closed. 3 CSS-layout ACs (wuce.14) deferred to post-deploy visual regression. Production fixes committed: SameSite=Lax, null-email fallback, setFetchPipelineState wired."
   },
   "checkpoint": {
     "writtenAt": "2026-05-03",
-    "contextAtWrite": "Feature 2026-05-02-web-ui-copilot-execution-layer DoD complete. 17 stories merged, 82/88 ACs covered by automated tests, 6 ACs deferred to manual verification scripts. E3 actuals recorded: 5.6h focus / 22.5h wall-clock (25% engagement, agent-heavy delivery). DoD artefact written, pipeline-state updated (dodStatus, metrics, guardrails), learnings D32-D36 written.",
-    "resumeInstruction": "Feature wuce is complete (definition-of-done). DoD artefact at artefacts/2026-05-02-web-ui-copilot-execution-layer/dod/feature-dod.md. E3 actuals in state.json and estimation-norms.md. Next: manual verification scripts for wuce.3/8/14/15/16 ACs requiring real GitHub token (post-deployment); onboard first stakeholder cohort to start P1/M2 measurement clock.",
+    "contextAtWrite": "WUCE feature fully closed. Manual verification complete for wuce.3 (all 6 ACs live) and wuce.15 mechanism (proven via shared commitArtefact path). DoD updated to 85/88. Server.js production wiring fix committed (setFetchPipelineState, SameSite=Lax, null-email fallback, /api/me endpoint, start script). WUCE_REPOSITORIES env var added. Bitbucket portability path documented in DoD. Next feature: HTML frontend layer over the existing JSON API backend.",
+    "resumeInstruction": "Previous feature (wuce) is fully closed at 85/88 ACs. All code committed to master (latest: 979a998). Start a new /discovery for the HTML frontend layer: browser-renderable pages over the existing JSON API endpoints (/features, /artefact, /status, /api/actions, /api/skills/*). The backend engine is complete — the gap is HTML views, a navigation shell, and the guided skill question-flow form.",
     "pendingActions": [
-      "Deploy to staging + run manual verification scripts: artefacts/2026-05-02-web-ui-copilot-execution-layer/verification-scripts/ for wuce.3/8/14/15/16",
-      "Onboard first stakeholder cohort — start P1 (non-engineer sign-off rate) and M2 (activation rate) measurement clock",
-      "Layer 2 test output standardisation (D31) — scripted pass to emit [suiteKey] Results format from all check-*.js and *.test.js files"
+      "Run /discovery for new feature: HTML frontend layer — feature list page, artefact reader page, skill launcher form, dashboard/action queue page",
+      "Deploy wuce to staging + run remaining manual verification scripts (wuce.8 annotation AC1-AC3, wuce.16 session-persistence AC1-AC4)",
+      "Onboard first stakeholder cohort to start P1/M2 measurement clock",
+      "Layer 2 test output standardisation (D31) — scripted pass across all check-*.js and *.test.js files"
     ]
   },
   "estimate": {
