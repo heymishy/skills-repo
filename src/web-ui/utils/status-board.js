@@ -53,10 +53,37 @@ function isFeatureDone(feature) {
   return stories.every(s => s && s.prStatus === 'merged' && s.traceStatus === 'passed');
 }
 
+// Health indicator map — wuce.22 AC3: colour class + text label, never colour alone
+const HEALTH_MAP = {
+  'blocked':     ['health-blocked',     'Blocked'],
+  'red':         ['health-blocked',     'Blocked'],
+  'at-risk':     ['health-at-risk',     'At risk'],
+  'amber':       ['health-at-risk',     'At risk'],
+  'on-track':    ['health-on-track',    'On track'],
+  'green':       ['health-on-track',    'On track'],
+  'in-progress': ['health-in-progress', 'In progress']
+};
+
+/**
+ * Render a health indicator span with both a CSS colour class and a text label.
+ * Returns empty string when health is absent or unrecognised.
+ * @param {string|undefined} health
+ * @returns {string}
+ */
+function renderHealthSpan(health) {
+  if (!health) return '';
+  const entry = HEALTH_MAP[health];
+  if (!entry) return '';
+  const [cls, label] = entry;
+  return `<span class="indicator ${cls}">${label}</span>`;
+}
+
 /**
  * Render the portfolio status board as an HTML string.
  * Done features appear in a separate <section class="done-section"> element (AC5).
  * Amber indicator uses BOTH a CSS class AND a text label — colour not sole indicator (AC2, NFR).
+ * Health indicators (AC3 wuce.22): if feature has `health` field, a colour-class + text label
+ * span is rendered in the status cell. If feature has `blockers` array, items are listed.
  * @param {Array} features
  * @returns {string}
  */
@@ -76,16 +103,22 @@ function renderStatusBoard(features) {
   for (const f of inProgress) {
     const blocker = deriveBlockerIndicator(f);
     const lastActivity = f.lastActivityDate || f.updatedAt || '';
+    // Health indicator (wuce.22 AC3) — rendered when feature has a health field
+    const healthSpan = renderHealthSpan(f.health);
+    // Blockers list — rendered when feature has a non-empty blockers array (wuce.22)
+    const blockerItems = (Array.isArray(f.blockers) && f.blockers.length > 0)
+      ? '<ul class="blockers">' + f.blockers.map(b => `<li>${escapeHtml(b)}</li>`).join('') + '</ul>'
+      : '';
     html += '<tr>';
     html += `<td>${escapeHtml(f.slug || '')}</td>`;
     html += `<td>${escapeHtml(f.stage || '')}</td>`;
     html += `<td>${escapeHtml(lastActivity)}</td>`;
     if (blocker) {
       // amber-indicator class + text label: colour NOT the sole indicator (WCAG AC2/NFR)
-      html += `<td><span class="indicator amber-indicator">${escapeHtml(blocker)}</span></td>`;
+      html += `<td>${healthSpan}<span class="indicator amber-indicator">${escapeHtml(blocker)}</span>${blockerItems}</td>`;
     } else {
       const label = deriveFeatureStatusLabel(f.stories || []);
-      html += `<td><span class="indicator">${escapeHtml(label)}</span></td>`;
+      html += `<td>${healthSpan}<span class="indicator">${escapeHtml(label)}</span>${blockerItems}</td>`;
     }
     html += '</tr>';
   }
