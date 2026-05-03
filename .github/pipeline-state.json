@@ -5813,11 +5813,11 @@
           "name": "Feature list HTML view",
           "epic": "wuce-e5",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.19-feature-list-html-view.md",
-          "prStatus": "none",
+          "prStatus": "draft",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "dispatched",
+          "stage": "pr-review",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.19-feature-list-html-view-test-plan.md",
@@ -5834,7 +5834,9 @@
           "updatedAt": "2026-05-04",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/286",
           "dispatchedAt": "2026-05-04T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/294",
+          "prNumber": 294
         },
         {
           "id": "wuce.20",
@@ -5842,11 +5844,11 @@
           "name": "Feature artefact index HTML view",
           "epic": "wuce-e5",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.20-artefact-index-html-view.md",
-          "prStatus": "none",
+          "prStatus": "draft",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "dispatched",
+          "stage": "pr-review",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.20-artefact-index-html-view-test-plan.md",
@@ -5863,7 +5865,9 @@
           "updatedAt": "2026-05-04",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/287",
           "dispatchedAt": "2026-05-04T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/295",
+          "prNumber": 295
         },
         {
           "id": "wuce.21",
@@ -5871,11 +5875,11 @@
           "name": "Action queue HTML view",
           "epic": "wuce-e5",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.21-action-queue-html-view.md",
-          "prStatus": "none",
+          "prStatus": "draft",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "dispatched",
+          "stage": "pr-review",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.21-action-queue-html-view-test-plan.md",
@@ -5892,7 +5896,9 @@
           "updatedAt": "2026-05-04",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/288",
           "dispatchedAt": "2026-05-04T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/296",
+          "prNumber": 296
         },
         {
           "id": "wuce.22",
@@ -5900,11 +5906,11 @@
           "name": "Status board HTML view",
           "epic": "wuce-e5",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.22-status-board-html-view.md",
-          "prStatus": "none",
+          "prStatus": "draft",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "dispatched",
+          "stage": "pr-review",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.22-status-board-html-view-test-plan.md",
@@ -5921,7 +5927,9 @@
           "updatedAt": "2026-05-04",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/289",
           "dispatchedAt": "2026-05-04T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/297",
+          "prNumber": 297
         },
         {
           "id": "wuce.23",
