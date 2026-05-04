@@ -901,6 +901,99 @@ async function handleGetResultHtml(req, res) {
   res.end(html);
 }
 
+// ---------------------------------------------------------------------------
+// HTML-flow session helpers — used by server.js to wire the injectable adapters
+// so the form-based skill flow shares _sessionStore with the JSON API flow.
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a session in _sessionStore for the HTML form flow.
+ * Extracts questions from the skill's SKILL.md so that htmlGetNextQuestion works.
+ * @param {string} skillName
+ * @param {string} sessionPath  — absolute path returned by sessionManager.createSession
+ * @returns {void}
+ */
+function registerHtmlSession(sessionId, sessionPath, skillName) {
+  var questions = _getQuestionsForSkill(skillName);
+  _sessionStore.set(sessionId, {
+    skillName:   skillName,
+    sessionPath: sessionPath,
+    questions:   questions,
+    answers:     [],
+    userId:      null   // HTML sessions: auth guard at route level is the security boundary
+  });
+}
+
+/**
+ * Return the next question for an HTML-flow session, or null when all answered.
+ * @param {string} skillName
+ * @param {string} sessionId
+ * @returns {{question:string, questionIndex:number, totalQuestions:number}|null}
+ */
+function htmlGetNextQuestion(skillName, sessionId) {
+  var session = _sessionStore.get(sessionId);
+  if (!session) { return null; }
+  var idx = session.answers.length;
+  if (idx >= session.questions.length) { return null; }
+  return {
+    question:       session.questions[idx],
+    questionIndex:  idx + 1,
+    totalQuestions: session.questions.length
+  };
+}
+
+/**
+ * Record a sanitised answer for an HTML-flow session.
+ * Returns the next URL (either the next question or commit-preview).
+ * @param {string} skillName
+ * @param {string} sessionId
+ * @param {string} rawAnswer
+ * @returns {{nextUrl:string}|null}  null when session not found
+ */
+function htmlRecordAnswer(skillName, sessionId, rawAnswer) {
+  var session = _sessionStore.get(sessionId);
+  if (!session) { return null; }
+  session.answers.push(sanitiseAnswer(rawAnswer));
+  var done = session.answers.length >= session.questions.length;
+  var nextUrl = done
+    ? '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/commit-preview'
+    : '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/next';
+  return { nextUrl: nextUrl };
+}
+
+/**
+ * Build the artefact content + path from a completed HTML-flow session.
+ * @param {string} skillName
+ * @param {string} sessionId
+ * @returns {{artefactContent:string, artefactPath:string}}
+ */
+function htmlGetPreview(skillName, sessionId) {
+  var session = _sessionStore.get(sessionId);
+  if (!session) { return { artefactContent: '', artefactPath: '' }; }
+  var today = new Date().toISOString().slice(0, 10);
+  var artefactPath = 'artefacts/' + today + '-' + skillName + '/session-' + sessionId + '-output.md';
+  var content = '# ' + skillName + ' session output\n\n' +
+    session.questions.map(function(q, i) {
+      return '## Q' + (i + 1) + ': ' + q + '\n\n' + (session.answers[i] || '') + '\n';
+    }).join('\n');
+  return { artefactContent: content, artefactPath: artefactPath };
+}
+
+/**
+ * Commit the artefact for an HTML-flow session to GitHub.
+ * @param {string} skillName
+ * @param {string} sessionId
+ * @param {string} token  — GitHub access token
+ * @param {{login:string, email:string}} identity
+ * @returns {Promise<{artefactPath:string}>}
+ */
+async function htmlCommitSession(skillName, sessionId, token, identity) {
+  var preview = htmlGetPreview(skillName, sessionId);
+  var commitMsg = 'feat: add ' + skillName + ' session artefact';
+  await commitArtefact(preview.artefactPath, preview.artefactContent, commitMsg, token, identity);
+  return { artefactPath: preview.artefactPath };
+}
+
 module.exports = {
   handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState,
   handleCommitArtefact, handleResumeSession, setLogger, NO_LICENCE_MSG,
@@ -912,5 +1005,7 @@ module.exports = {
   setGetNextQuestion, setSubmitAnswer, setQuestionAuditLogger,
   // wuce.25 HTML handlers
   handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml,
-  setGetCommitPreview, setCommitSession, setGetCommitResult, setCommitAuditLogger
+  setGetCommitPreview, setCommitSession, setGetCommitResult, setCommitAuditLogger,
+  // HTML-flow session helpers (wired via server.js injectable adapters)
+  registerHtmlSession, htmlGetNextQuestion, htmlRecordAnswer, htmlGetPreview, htmlCommitSession
 };
