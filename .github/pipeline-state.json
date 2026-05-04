@@ -6254,6 +6254,18 @@
       "releaseReady": true,
       "layoutGapsAtMerge": true,
       "layoutGapsRiskAccepted": true
+    },
+    {
+      "slug": "2026-05-05-web-ui-dynamic-skill-questions",
+      "name": "Web UI Dynamic Skill Questions",
+      "phase": "discovery",
+      "discoveryStatus": "draft",
+      "discoveryArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/discovery.md",
+      "benefitMetricStatus": "not-started",
+      "stories": [],
+      "track": "standard",
+      "stage": "discovery",
+      "health": "green"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
