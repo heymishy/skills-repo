@@ -82,11 +82,11 @@ This initiative validates two things simultaneously: user outcome (operators com
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| P1 — Skill session completion rate | TBD — populated by /definition | Gap — awaiting definition |
-| P2 — Web UI share of outer loop artefacts | TBD — populated by /definition | Gap — awaiting definition |
-| M1 — Fallback invisibility rate | TBD — populated by /definition | Gap — awaiting definition |
-| M2 — Model question adaptation rate | TBD — populated by /definition | Gap — awaiting definition |
-| M3 — Context surfacing rate | TBD — populated by /definition | Gap — awaiting definition |
+| P1 — Skill session completion rate | dsq.2 (section confirmation loop), dsq.3 (post-session /clarify gate) | Covered — 2 stories |
+| P2 — Web UI share of outer loop artefacts | dsq.4 (section-by-section artefact assembly) | Covered — 1 story |
+| M1 — Fallback invisibility rate | dsq.1 (dynamic next-question — implements silent fallback) | Covered — 1 story |
+| M2 — Model question adaptation rate | dsq.1 (dynamic next-question — direct delivery mechanism) | Covered — 1 story |
+| M3 — Context surfacing rate | dsq.4 (section artefact assembly — template-grounded context for downstream model calls) | Covered — 1 story |
 
 ---
 
