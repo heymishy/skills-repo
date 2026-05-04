@@ -168,7 +168,7 @@ async function run() {
     const res = mockRes();
     await handlePostSkillSessionHtml(req, res);
     eq(res.statusCode, 303, 'T7: status 303');
-    eq(res.headers['location'], '/skills/discovery/sessions/sess-abc123', 'T10: Location header correct');
+    eq(res.headers['location'], '/skills/discovery/sessions/sess-abc123/next', 'T10: Location header correct');
   }
 
   // ── T8: POST adapter error → HTML error page (renderShell) ─────────────────
