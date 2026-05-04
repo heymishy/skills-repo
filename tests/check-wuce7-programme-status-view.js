@@ -121,7 +121,7 @@ async function runTests() {
 
   console.log('\nIT1-IT3 -- Integration tests');
   { setFetcher(()=>[featureFixture]); setAccessValidator(null);
-    const req=makeMockReq({session:{userId:'u1',token:'valid-token'}}); const res=makeMockRes();
+    const req=makeMockReq({session:{userId:'u1',accessToken:'valid-token'}}); const res=makeMockRes();
     await handleGetStatus(req,res);
     assert(res._statusCode===200,'IT1a GET /status -> 200');
     const body=JSON.parse(res._body);
@@ -132,7 +132,7 @@ async function runTests() {
     assert(body[0].lastActivityDate!==undefined,'IT1f has lastActivityDate');
     assert('blockerLabel' in body[0],'IT1g has blockerLabel'); }
   { setFetcher(()=>[featureFixture]); setAccessValidator(null);
-    const req=makeMockReq({session:{userId:'u1',token:'valid-token'}}); const res=makeMockRes();
+    const req=makeMockReq({session:{userId:'u1',accessToken:'valid-token'}}); const res=makeMockRes();
     await handleGetStatusExport(req,res);
     assert(res._statusCode===200,'IT2a GET /status/export -> 200');
     assert((res._headers['Content-Type']||'').includes('text/markdown')||(res._headers['Content-Type']||'').includes('text/plain'),'IT2b Content-Type markdown/plain');
@@ -145,7 +145,7 @@ async function runTests() {
   { setFetcher(()=>[featureFixture]); setAccessValidator(null);
     let auditCalled=false, auditPayload=null;
     setLogger({info:(e,d)=>{ if(e==='status_board_access'){auditCalled=true;auditPayload=d;} },warn:()=>{}});
-    const req=makeMockReq({session:{userId:'u42',token:'valid-token'}}); const res=makeMockRes();
+    const req=makeMockReq({session:{userId:'u42',accessToken:'valid-token'}}); const res=makeMockRes();
     await handleGetStatus(req,res);
     assert(auditCalled,'NFR1a audit log called');
     assert(auditPayload&&auditPayload.userId==='u42','NFR1b userId in audit log');
