@@ -1954,3 +1954,30 @@ await context.setExtraHTTPHeaders({ 'X-Test-Token': 'test-access-token' });
 **When per-story artefacts make sense:** When stories were delivered across multiple sessions, when each story has significant deviations or blockers, or when the team needs audit-grade traceability per story (regulated environments). For a cohesive feature delivered in one sprint, consolidated is correct.
 
 **Prevention rule:** Use consolidated DoD when: (a) all stories were delivered in one sprint by the same operator/agent, (b) fewer than 3 stories have significant deviations, and (c) NFRs and metrics are cross-cutting. Use per-story DoD when any of those conditions don't hold.
+
+---
+
+## D37 — Injectable adapter stubs are silent production gaps unless explicitly wired
+
+**Date:** 2026-05-04
+**Observed at:** WUCE feature — stories wuce.23 (skill launcher), wuce.24 (question flow), wuce.25 (commit result).
+
+**What happened:** Each story followed the injectable adapter pattern (ADR-009) correctly: handlers used `let _x = adapter.x` defaults, tests injected test doubles, all unit tests passed. However, the production wiring in `server.js` only wired `listSkills` and `createSession`. Four adapters — `getNextQuestion`, `submitAnswer`, `getCommitPreview`, `commitSession` — remained as silent stubs (returning `null`, `''`, or empty objects). The full flow appeared to work (no errors, no 500s) but skipped all questions and showed an empty artefact path on commit-preview. The bug only surfaced during real browser testing.
+
+**Root causes (three layered):**
+
+1. **Stub defaults return safe-looking values, not errors.** `getNextQuestion` returned `null` which the handler interpreted as "no more questions" — a valid terminal state. The flow silently completed. A stub that throws `new Error('Adapter not wired: getNextQuestion')` would have crashed on first request.
+
+2. **Production wiring was not an explicit AC in any story.** Each story scoped the handler + the injectable setter. "Wire this in server.js with a real implementation" was assumed to be implicit. It wasn't — it fell between the stories.
+
+3. **No smoke test covered the full wired path.** Unit tests mock the adapters. The Playwright local spec was the first test to exercise the real server with real adapters — added only after bugs were observed in the browser.
+
+**Prevention — three levers:**
+
+1. **Stubs MUST throw, not return empty.** Any default implementation in an adapter module must be: `throw new Error('Adapter not wired: <name>. Call set<Name>() with a real implementation before use.')`. Silent stubs hide misconfiguration. A throwing stub surfaces it on the first request in development.
+
+2. **DoR gate for adapter stories:** When a story introduces one or more injectable adapters via `setX()`, the DoR must include an explicit AC: "the adapter is wired to a real production implementation in server.js (or equivalent wiring module), and that wiring is covered by a test or smoke check." The `/definition-of-ready` SKILL.md prompt should ask: "Does this story introduce injectable adapters? If yes, list each one and confirm its production wiring is in scope."
+
+3. **Implementation plan must list server.js wiring as an explicit task.** For every `setX()` introduced by a story, the `/implementation-plan` output must include a task: "Wire `X` in server.js with real implementation — not a stub." This is distinct from the handler task.
+
+**Prevention rule:** Injectable adapters with stub defaults are invisible production gaps. Stubs must throw. Production wiring must be an explicit AC. The implementation plan must name the wiring task separately from the handler task.

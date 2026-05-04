@@ -657,12 +657,26 @@ async function handleGetQuestionHtml(req, res) {
   const questionText = result.question || '';
   const qi           = result.questionIndex || 1;
   const tq           = result.totalQuestions || 1;
+  const priorQA      = result.priorQA || [];
+
+  // Render prior Q&A as a conversation transcript above the current question
+  const priorHtml = priorQA.length > 0
+    ? '<section class="prior-qa">' +
+      priorQA.map(function(pair, i) {
+        return '<div class="qa-pair">' +
+          '<p class="qa-question"><strong>Q' + (i + 1) + ':</strong> ' + escHtml(pair.question) + '</p>' +
+          '<p class="qa-answer"><strong>Your answer:</strong> ' + escHtml(pair.answer) + '</p>' +
+          '</div>';
+      }).join('\n') +
+      '</section><hr>\n'
+    : '';
 
   const bodyContent = [
-    '<p>Question ' + qi + ' of ' + tq + '</p>',
+    priorHtml,
+    '<p class="question-progress">Question ' + qi + ' of ' + tq + '</p>',
     '<form method="POST" action="/api/skills/' + escHtml(skillName) + '/sessions/' + escHtml(sessionId) + '/answer">',
-    '<label for="answer">' + escHtml(questionText) + '</label>',
-    '<textarea name="answer" id="answer"></textarea>',
+    '<label for="answer"><strong>' + escHtml(questionText) + '</strong></label>',
+    '<textarea name="answer" id="answer" rows="4" style="width:100%;margin-top:0.5em"></textarea>',
     '<button type="submit">Submit answer</button>',
     '</form>'
   ].join('\n');
@@ -935,10 +949,14 @@ function htmlGetNextQuestion(skillName, sessionId) {
   if (!session) { return null; }
   var idx = session.answers.length;
   if (idx >= session.questions.length) { return null; }
+  var priorQA = session.questions.slice(0, idx).map(function(q, i) {
+    return { question: q.text || String(q), answer: session.answers[i] || '' };
+  });
   return {
-    question:       session.questions[idx],
+    question:       (session.questions[idx].text || String(session.questions[idx])),
     questionIndex:  idx + 1,
-    totalQuestions: session.questions.length
+    totalQuestions: session.questions.length,
+    priorQA:        priorQA
   };
 }
 
@@ -974,7 +992,8 @@ function htmlGetPreview(skillName, sessionId) {
   var artefactPath = 'artefacts/' + today + '-' + skillName + '/session-' + sessionId + '-output.md';
   var content = '# ' + skillName + ' session output\n\n' +
     session.questions.map(function(q, i) {
-      return '## Q' + (i + 1) + ': ' + q + '\n\n' + (session.answers[i] || '') + '\n';
+      var qText = q.text || String(q);
+      return '## Q' + (i + 1) + ': ' + qText + '\n\n' + (session.answers[i] || '') + '\n';
     }).join('\n');
   return { artefactContent: content, artefactPath: artefactPath };
 }

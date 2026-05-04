@@ -56,3 +56,8 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: pattern
   signal-text: "pipeline-state.json rebase conflicts follow the same pattern as package.json cascading conflicts (D17/D30): multiple PR merges advance origin/master while local commits accumulate. Resolution one-liner: take origin/master as base, Object.assign only the changed story indices from REBASE_HEAD. Prevention: push pipeline-state commits immediately, never accumulate."
   source: agent-auto
+- date: 2026-05-04
+  session-phase: inner-loop wuce post-delivery bug triage
+  signal-type: pattern
+  signal-text: "Injectable adapter stubs that return null/empty silently mask production misconfiguration across wuce.23-25. Four adapters (getNextQuestion, submitAnswer, getCommitPreview, commitSession) were never wired in server.js; unit tests passed because they injected test doubles. The fix is threefold: stubs must throw not return empty, DoR must have explicit AC for production wiring, and implementation-plan must name the wiring task separately. This is now D37."
+  source: agent-auto
