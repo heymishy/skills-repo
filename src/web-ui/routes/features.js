@@ -82,14 +82,21 @@ async function handleGetFeatures(req, res) {
   const userId = req.session && req.session.userId;
   const login  = req.session && req.session.login;
 
+  const accept  = (req.headers && req.headers['accept']) || '';
+  const wantsHtml = accept.includes('text/html');
+
   if (!token) {
-    res.writeHead(401, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
+    if (wantsHtml) {
+      res.writeHead(302, { Location: '/auth/github' });
+      res.end();
+    } else {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
+    }
     return;
   }
 
   const features = await listFeatures(token);
-  const accept   = (req.headers && req.headers['accept']) || '';
 
   // Audit log: userId, route, featureCount, timestamp — no token (NFR1)
   _logger.info('feature_list_accessed', {
@@ -147,15 +154,21 @@ function renderArtefactIndexHtml(artefacts, featureSlug) {
  * wuce.20: content-type negotiation:
  *   Accept: text/html → renderShell wrapping artefact list HTML
  *   Accept: application/json or absent → JSON unchanged (backward-compatible)
- * authGuard: unauthenticated → 401 NOT_AUTHENTICATED
+ * authGuard: unauthenticated html → 302 /auth/github; API → 401 NOT_AUTHENTICATED
  */
 async function handleGetFeatureArtefacts(req, res, featureSlug) {
   const token  = req.session && req.session.accessToken;
   const userId = req.session && req.session.userId;
 
   if (!token) {
-    res.writeHead(401, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
+    const artefactAccept = (req.headers && req.headers['accept']) || '';
+    if (artefactAccept.includes('text/html')) {
+      res.writeHead(302, { Location: '/auth/github' });
+      res.end();
+    } else {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
+    }
     return;
   }
 

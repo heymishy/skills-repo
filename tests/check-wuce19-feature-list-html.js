@@ -236,13 +236,12 @@ function mockRes() {
   // ───────────────────────────────────────────────────────────────────────────
   // T11 — GET /features unauthenticated Accept: application/json → 302
   // ───────────────────────────────────────────────────────────────────────────
-  console.log('\nT11 — GET /features unauthenticated Accept: application/json → 302');
+  console.log('\nT11 \u2014 GET /features unauthenticated Accept: application/json \u2192 401');
   {
     const req = mockReq({ session: {}, headers: { accept: 'application/json' } });
     const res = mockRes();
     await handleGetFeatures(req, res);
-    eq(res.statusCode, 302, 'T11: status 302');
-    eq(res.headers['Location'], '/auth/github', 'T11: Location /auth/github');
+    eq(res.statusCode, 401, 'T11: status 401 for API caller');
   }
 
   // ───────────────────────────────────────────────────────────────────────────

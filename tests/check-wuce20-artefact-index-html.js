@@ -257,7 +257,7 @@ console.log('\nT11 — zero artefacts → empty-state message, no <ul>');
 // ─────────────────────────────────────────────────────────────────────────────
 // T12 — Integration: GET /features/:slug unauthenticated → 302
 // ─────────────────────────────────────────────────────────────────────────────
-console.log('\nT12 — unauthenticated → 302 redirect to /auth/github');
+console.log('\nT12 \u2014 unauthenticated (browser) \u2192 302 redirect to /auth/github');
 {
   const req = mockReq({ session: {} });
   const res = mockRes();
