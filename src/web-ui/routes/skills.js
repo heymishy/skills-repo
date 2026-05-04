@@ -714,6 +714,193 @@ async function handlePostAnswerHtml(req, res) {
   res.end();
 }
 
+// ---------------------------------------------------------------------------
+// HTML route handlers — wuce.25 session commit result
+// ---------------------------------------------------------------------------
+
+// wuce.25 injectable adapters
+let _getCommitPreview = skillsAdapter.getCommitPreview;
+let _commitSession    = skillsAdapter.commitSession;
+let _getCommitResult  = skillsAdapter.getCommitResult;
+
+// Audit logger for commit route — injectable via setCommitAuditLogger().
+let _commitAuditLogger = function(data) {
+  process.stdout.write('[skills-html] commit-audit ' + JSON.stringify(data) + '\n');
+};
+
+/**
+ * Replace the getCommitPreview adapter (for testing).
+ * @param {function(string, string, string): Promise<object>} fn
+ */
+function setGetCommitPreview(fn) { _getCommitPreview = fn; }
+
+/**
+ * Replace the commitSession adapter (for testing).
+ * @param {function(string, string, string): Promise<object>} fn
+ */
+function setCommitSession(fn) { _commitSession = fn; }
+
+/**
+ * Replace the getCommitResult adapter (for testing).
+ * @param {function(string, string, string): Promise<object>} fn
+ */
+function setGetCommitResult(fn) { _getCommitResult = fn; }
+
+/**
+ * Replace the commit audit logger (for testing).
+ * @param {function(object): void} fn
+ */
+function setCommitAuditLogger(fn) { _commitAuditLogger = fn; }
+
+/**
+ * GET /skills/:name/sessions/:id/commit-preview
+ * Renders the artefact preview page with a commit form.
+ * Unauthenticated → 302 /auth/github.
+ * Unknown session (adapter throws) → HTML error page.
+ * AC1, AC2, AC3 (wuce.25)
+ */
+async function handleGetCommitPreviewHtml(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  const skillName = (req.params && req.params.name) || '';
+  const sessionId = (req.params && req.params.id)   || '';
+  const token     = req.session.accessToken;
+  const user      = { login: req.session.login || '' };
+
+  let preview;
+  try {
+    preview = await _getCommitPreview(skillName, sessionId, token);
+  } catch (err) {
+    const status = err.status || 500;
+    const html = renderShell({
+      title:       'Error',
+      bodyContent: '<p>' + escHtml(err.message || 'An error occurred') + '</p>',
+      user
+    });
+    res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+    return;
+  }
+
+  const safeContent = escHtml(preview.artefactContent || '');
+  const safePath    = escHtml(preview.artefactPath    || '');
+
+  const bodyContent = [
+    '<p>Review the generated artefact below, then commit to save it.</p>',
+    '<p><strong>Artefact path:</strong> ' + safePath + '</p>',
+    '<pre role="region" aria-label="Artefact preview">' + safeContent + '</pre>',
+    '<form method="POST" action="/api/skills/' + escHtml(skillName) + '/sessions/' + escHtml(sessionId) + '/commit">',
+    '<button type="submit">Commit artefact</button>',
+    '</form>'
+  ].join('\n');
+
+  const html = renderShell({ title: 'Commit preview', bodyContent: bodyContent, user: user });
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
+/**
+ * POST /api/skills/:name/sessions/:id/commit
+ * Commits the session artefact. Redirects 303 to the result page on success.
+ * Double-commit (409) → 409 HTML page via renderShell.
+ * Unauthenticated → 302 /auth/github.
+ * Unknown session → HTML error page.
+ * AC4, AC5, AC6, AC7 (wuce.25)
+ */
+async function handlePostCommitHtml(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  const skillName = (req.params && req.params.name) || '';
+  const sessionId = (req.params && req.params.id)   || '';
+  const token     = req.session.accessToken;
+  const user      = { login: req.session.login || '' };
+
+  let result;
+  try {
+    result = await _commitSession(skillName, sessionId, token);
+  } catch (err) {
+    const status = err.status || 500;
+    const msg = (status === 409)
+      ? 'This session has already been committed. The artefact has already been saved.'
+      : escHtml(err.message || 'An error occurred');
+    const html = renderShell({
+      title:       (status === 409) ? 'Already committed' : 'Error',
+      bodyContent: '<p>' + msg + '</p>',
+      user
+    });
+    res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+    return;
+  }
+
+  _commitAuditLogger({
+    userId:       req.session.userId,
+    route:        '/api/skills/' + skillName + '/sessions/' + sessionId + '/commit',
+    skillName:    skillName,
+    sessionId:    sessionId,
+    artefactPath: result.artefactPath,
+    timestamp:    new Date().toISOString()
+  });
+
+  res.writeHead(303, { Location: '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/result' });
+  res.end();
+}
+
+/**
+ * GET /skills/:name/sessions/:id/result
+ * Renders the commit result page with success message, artefact path, and links.
+ * Unauthenticated → 302 /auth/github.
+ * Unknown session (adapter throws) → HTML error page.
+ * AC6 (wuce.25)
+ */
+async function handleGetResultHtml(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  const skillName = (req.params && req.params.name) || '';
+  const sessionId = (req.params && req.params.id)   || '';
+  const token     = req.session.accessToken;
+  const user      = { login: req.session.login || '' };
+
+  let result;
+  try {
+    result = await _getCommitResult(skillName, sessionId, token);
+  } catch (err) {
+    const status = err.status || 500;
+    const html = renderShell({
+      title:       'Error',
+      bodyContent: '<p>' + escHtml(err.message || 'An error occurred') + '</p>',
+      user
+    });
+    res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+    return;
+  }
+
+  const safePath        = escHtml(result.artefactPath || '');
+  const safeSlug        = escHtml(result.featureSlug  || '');
+  const safeType        = escHtml(result.artefactType || '');
+
+  const bodyContent = [
+    '<p>Artefact successfully committed.</p>',
+    '<p><strong>Artefact path:</strong> ' + safePath + '</p>',
+    '<p><a href="/artefact/' + safeSlug + '/' + safeType + '">View artefact</a></p>',
+    '<p><a href="/features">Back to features</a></p>'
+  ].join('\n');
+
+  const html = renderShell({ title: 'Commit complete', bodyContent: bodyContent, user: user });
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
 module.exports = {
   handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState,
   handleCommitArtefact, handleResumeSession, setLogger, NO_LICENCE_MSG,
@@ -722,5 +909,8 @@ module.exports = {
   setListSkills, setCreateSession, setSkillsAuditLogger,
   // wuce.24 HTML handlers
   handleGetQuestionHtml, handlePostAnswerHtml,
-  setGetNextQuestion, setSubmitAnswer, setQuestionAuditLogger
+  setGetNextQuestion, setSubmitAnswer, setQuestionAuditLogger,
+  // wuce.25 HTML handlers
+  handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml,
+  setGetCommitPreview, setCommitSession, setGetCommitResult, setCommitAuditLogger
 };
