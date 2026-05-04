@@ -26,6 +26,7 @@ All tests inject synthetic section data via `makeSession` overrides into the `_s
 | AC6 | Default stub throws exact required message | T3.6 | Unit | ❌ fail before impl |
 | AC7 | Skill with no H2 sections → no confirmation step | T3.7 | Unit | ❌ fail before impl |
 | AC8 | All prior tests pass (regression) | T3.8 | Regression | ❌ fail before impl |
+| AC9 | `server.js` wires `setSectionDraftExecutorAdapter` | T3.10 | Integration | ❌ fail before impl |
 
 Additional coverage:
 | T3.9 | `setSectionDraftExecutorAdapter` exported from routes | Smoke | ❌ fail before impl |
@@ -131,6 +132,14 @@ Additional coverage:
 
 ---
 
+### T3.10 — AC9: `server.js` wires `setSectionDraftExecutorAdapter`
+
+**Given** `src/web-ui/server.js` is read as a text file
+**When** the source is inspected
+**Then** the text contains `setSectionDraftExecutorAdapter`, confirming the production wiring call is present
+
+---
+
 ## NFR tests
 
 No separate NFR test entry. T3.5 implicitly tests the error-resilience NFR (silent fallback for API failure).
@@ -143,4 +152,4 @@ No separate NFR test entry. T3.5 implicitly tests the error-resilience NFR (sile
 node tests/check-dsq2-section-confirmation-loop.js
 ```
 
-All tests must FAIL before implementation. All must PASS after implementation.
+All 10 tests must FAIL before implementation. All must PASS after implementation.

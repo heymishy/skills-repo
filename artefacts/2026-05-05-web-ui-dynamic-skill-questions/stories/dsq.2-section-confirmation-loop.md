@@ -49,6 +49,8 @@ So that **I can review and correct the model's synthesis of my answers before th
 
 **AC8:** Given all tests passing before this story (including dsq.1's tests), when this story's implementation is merged, then all prior tests continue to pass with no regressions.
 
+**AC9:** Given a new injectable adapter `setSectionDraftExecutorAdapter(fn)` is exported from `src/web-ui/routes/skills.js`, when the adapter is wired in `src/web-ui/server.js` to `skillsAdapter.sectionDraftExecutor`, then a test confirms the wiring is present and the default stub is not in use in production.
+
 ## Out of Scope
 
 - Showing a section draft for the final section of a skill session — that is handled by dsq.3 (post-session /clarify gate); this story only shows confirmation between sections

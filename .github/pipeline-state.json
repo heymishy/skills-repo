@@ -6268,7 +6268,8 @@
           "name": "Dynamic next-question generation",
           "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/stories/dsq.1-dynamic-next-question.md",
           "reviewStatus": "passed",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.1-dynamic-next-question-dor.md",
           "prStatus": "none",
           "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.1-review-1.md",
           "testPlan": {
@@ -6279,7 +6280,9 @@
           },
           "acTotal": 7,
           "acVerified": 0,
-          "stage": "test-plan"
+          "stage": "definition-of-ready",
+          "health": "green",
+          "updatedAt": "2026-05-05T00:00:00.000Z"
         },
         {
           "id": "dsq.1.5",
@@ -6287,7 +6290,8 @@
           "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/stories/dsq.1.5-section-aware-extraction.md",
           "complexity": 1,
           "reviewStatus": "passed",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.1.5-section-aware-extraction-dor.md",
           "prStatus": "none",
           "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.1.5-review-1.md",
           "testPlan": {
@@ -6298,32 +6302,38 @@
           },
           "acTotal": 5,
           "acVerified": 0,
-          "stage": "test-plan"
+          "stage": "definition-of-ready",
+          "health": "green",
+          "updatedAt": "2026-05-05T00:00:00.000Z"
         },
         {
           "id": "dsq.2",
           "name": "Section confirmation loop",
           "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/stories/dsq.2-section-confirmation-loop.md",
           "reviewStatus": "passed",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.2-section-confirmation-loop-dor.md",
           "prStatus": "none",
           "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.2-review-2.md",
           "testPlan": {
             "status": "written",
-            "totalTests": 9,
+            "totalTests": 10,
             "passing": 0,
             "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/test-plans/dsq.2-section-confirmation-loop-test-plan.md"
           },
-          "acTotal": 8,
+          "acTotal": 9,
           "acVerified": 0,
-          "stage": "test-plan"
+          "stage": "definition-of-ready",
+          "health": "green",
+          "updatedAt": "2026-05-05T00:00:00.000Z"
         },
         {
           "id": "dsq.3",
           "name": "Post-session clarify gate",
           "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/stories/dsq.3-post-session-clarify-gate.md",
           "reviewStatus": "passed",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.3-post-session-clarify-gate-dor.md",
           "prStatus": "none",
           "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.3-review-1.md",
           "testPlan": {
@@ -6334,14 +6344,17 @@
           },
           "acTotal": 6,
           "acVerified": 0,
-          "stage": "test-plan"
+          "stage": "definition-of-ready",
+          "health": "green",
+          "updatedAt": "2026-05-05T00:00:00.000Z"
         },
         {
           "id": "dsq.4",
           "name": "Section-by-section artefact assembly",
           "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/stories/dsq.4-section-artefact-assembly.md",
           "reviewStatus": "passed",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.4-section-artefact-assembly-dor.md",
           "prStatus": "none",
           "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.4-review-1.md",
           "testPlan": {
@@ -6352,11 +6365,13 @@
           },
           "acTotal": 6,
           "acVerified": 0,
-          "stage": "test-plan"
+          "stage": "definition-of-ready",
+          "health": "green",
+          "updatedAt": "2026-05-05T00:00:00.000Z"
         }
       ],
       "track": "standard",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
       "benefitMetricArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/benefit-metric.md",
       "epics": [
