@@ -105,11 +105,13 @@ test('self-recording-imperative-wording — instruction uses imperative language
 
 test('self-recording-no-new-npm-dependencies — package.json has no new dependencies', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'package.json'), 'utf8'));
-  // Neither dependencies nor devDependencies should exist (baseline: this repo has none)
+  // ILC (self-recording) must not add new npm dependencies.
+  // Pre-existing devDeps added by the wuce feature (ADR-018) are permitted.
+  const PERMITTED_DEV_DEPS = new Set(['@playwright/test', 'jsdom']);
   const depCount = Object.keys(pkg.dependencies || {}).length;
-  const devDepCount = Object.keys(pkg.devDependencies || {}).length;
+  const unknownDevDeps = Object.keys(pkg.devDependencies || {}).filter(k => !PERMITTED_DEV_DEPS.has(k));
   assert.strictEqual(depCount, 0, `Expected 0 dependencies, found ${depCount}`);
-  assert.strictEqual(devDepCount, 0, `Expected 0 devDependencies, found ${devDepCount}`);
+  assert.deepStrictEqual(unknownDevDeps, [], `Unexpected devDependencies added: [${unknownDevDeps.join(', ')}]`);
 });
 
 // ─── SKILL.md reminder tests ─────────────────────────────────────────────────
