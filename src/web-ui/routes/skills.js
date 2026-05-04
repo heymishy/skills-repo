@@ -731,14 +731,14 @@ async function handleGetQuestionHtml(req, res) {
     : '';
 
   const bodyContent = [
-    modelResponseHtml,
-    priorHtml,
     '<p class="question-progress">Question ' + qi + ' of ' + tq + '</p>',
     '<form method="POST" action="/api/skills/' + escHtml(skillName) + '/sessions/' + escHtml(sessionId) + '/answer">',
     '<label for="answer"><strong>' + escHtml(questionText) + '</strong></label>',
     '<textarea name="answer" id="answer" rows="4" style="width:100%;margin-top:0.5em"></textarea>',
     '<button type="submit">Submit answer</button>',
-    '</form>'
+    '</form>',
+    modelResponseHtml ? '<hr>' + modelResponseHtml : '',
+    priorHtml
   ].join('\n');
 
   const html = renderShell({ title: 'Question ' + qi + ' of ' + tq, bodyContent: bodyContent, user: user });
@@ -1010,13 +1010,55 @@ function registerHtmlSession(sessionId, sessionPath, skillName) {
       skillContent = fs.readFileSync(mdPath, 'utf8');
     }
   }
+  // Augment skillContent with product context files so the model has the same
+  // grounding that VS Code Copilot gets when it reads product/ before a session.
+  var productContext = '';
+  var PRODUCT_FILES = [
+    { name: 'mission.md',      label: 'PRODUCT MISSION' },
+    { name: 'tech-stack.md',   label: 'TECH STACK' },
+    { name: 'constraints.md',  label: 'CONSTRAINTS' },
+    { name: 'roadmap.md',      label: 'PRODUCT ROADMAP' }
+  ];
+  PRODUCT_FILES.forEach(function(pf) {
+    var pfPath = path.join(repoPath, 'product', pf.name);
+    if (fs.existsSync(pfPath)) {
+      productContext += '\n\n--- ' + pf.label + ' ---\n' + fs.readFileSync(pfPath, 'utf8');
+    }
+  });
+
+  // Also load reference materials from artefacts/[feature-slug]/reference/ if
+  // a session path is provided and a reference folder can be derived from it.
+  var referenceContext = '';
+  if (sessionPath) {
+    // Derive the artefacts root and look for reference/ sibling to the session
+    var artefactsRoot = path.join(repoPath, 'artefacts');
+    // sessionPath is typically <artefactsRoot>/<feature-slug>/sessions/<id>
+    // Walk up to find a reference/ folder inside any feature folder
+    var sessionDir = path.dirname(sessionPath);
+    var featureDir = path.dirname(sessionDir);
+    if (featureDir.startsWith(artefactsRoot)) {
+      var refDir = path.join(featureDir, 'reference');
+      if (fs.existsSync(refDir)) {
+        var refFiles = fs.readdirSync(refDir).filter(function(f) { return f.endsWith('.md'); });
+        refFiles.forEach(function(rf) {
+          var rfContent = fs.readFileSync(path.join(refDir, rf), 'utf8');
+          referenceContext += '\n\n--- REFERENCE: ' + rf + ' ---\n' + rfContent;
+        });
+      }
+    }
+  }
+
+  var fullSkillContent = skillContent +
+    (productContext ? '\n\n=== PRODUCT CONTEXT ===\n' + productContext : '') +
+    (referenceContext ? '\n\n=== REFERENCE MATERIALS ===\n' + referenceContext : '');
+
   _sessionStore.set(sessionId, {
     skillName:      skillName,
     sessionPath:    sessionPath,
     questions:      questions,
     answers:        [],
     modelResponses: [],
-    skillContent:   skillContent,
+    skillContent:   fullSkillContent,
     userId:         null   // HTML sessions: auth guard at route level is the security boundary
   });
 }
