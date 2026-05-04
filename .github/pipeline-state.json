@@ -6107,6 +6107,9 @@
           "health": "green",
           "dorArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.26-per-answer-model-response-dor.md",
           "dorContractArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.26-per-answer-model-response-dor-contract.md",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/301",
+          "dispatchedAt": "2026-05-04T00:00:00Z",
+          "dispatchTarget": "vscode",
           "updatedAt": "2026-05-04"
         }
       ],
