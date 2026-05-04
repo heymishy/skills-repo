@@ -1046,6 +1046,8 @@ async function htmlRecordAnswer(skillName, sessionId, rawAnswer, token) {
       token || ''
     );
   } catch (_err) {
+    // Log error message only — never log the token
+    _logger.warn('skillTurnExecutor error (AC2 null path): ' + (_err && _err.message ? _err.message : 'unknown'));
     modelResponse = null;
   }
   if (!session.modelResponses) { session.modelResponses = []; }
