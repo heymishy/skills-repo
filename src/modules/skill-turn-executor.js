@@ -12,7 +12,7 @@
 
 const https = require('https');
 
-const DEFAULT_MODEL     = 'claude-sonnet-4-6';
+const DEFAULT_MODEL     = 'gpt-4o';
 const DEFAULT_MAX_TOKENS = 300;
 const DEFAULT_TIMEOUT_MS = 30000;
 
@@ -65,6 +65,11 @@ function skillTurnExecutor(skillContent, priorQA, currentAnswer, token) {
       let raw = '';
       res.on('data', function(chunk) { raw += chunk; });
       res.on('end', function() {
+        if (res.statusCode !== 200) {
+          const preview = raw.slice(0, 300).replace(/[\r\n]+/g, ' ');
+          reject(new Error('Copilot API HTTP ' + res.statusCode + ': ' + preview));
+          return;
+        }
         try {
           const parsed = JSON.parse(raw);
           const content = parsed &&
@@ -75,10 +80,10 @@ function skillTurnExecutor(skillContent, priorQA, currentAnswer, token) {
           if (typeof content === 'string') {
             resolve(content);
           } else {
-            reject(new Error('Unexpected response format from Copilot API'));
+            reject(new Error('Unexpected response format: ' + raw.slice(0, 200)));
           }
         } catch (_parseErr) {
-          reject(new Error('Failed to parse Copilot API response'));
+          reject(new Error('Failed to parse Copilot API response: ' + raw.slice(0, 200)));
         }
       });
     });
