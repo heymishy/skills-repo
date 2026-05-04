@@ -83,8 +83,8 @@ async function handleGetFeatures(req, res) {
   const login  = req.session && req.session.login;
 
   if (!token) {
-    res.writeHead(302, { Location: '/auth/github' });
-    res.end();
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
     return;
   }
 
@@ -147,15 +147,15 @@ function renderArtefactIndexHtml(artefacts, featureSlug) {
  * wuce.20: content-type negotiation:
  *   Accept: text/html → renderShell wrapping artefact list HTML
  *   Accept: application/json or absent → JSON unchanged (backward-compatible)
- * authGuard: unauthenticated → 302 /auth/github
+ * authGuard: unauthenticated → 401 NOT_AUTHENTICATED
  */
 async function handleGetFeatureArtefacts(req, res, featureSlug) {
   const token  = req.session && req.session.accessToken;
   const userId = req.session && req.session.userId;
 
   if (!token) {
-    res.writeHead(302, { Location: '/auth/github' });
-    res.end();
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
     return;
   }
 
