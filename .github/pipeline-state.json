@@ -6282,7 +6282,10 @@
           "acVerified": 0,
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-05-05T00:00:00.000Z"
+          "updatedAt": "2026-05-05T00:00:00.000Z",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/304",
+          "dispatchedAt": "2026-05-05T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "dsq.1.5",
@@ -6304,7 +6307,10 @@
           "acVerified": 0,
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-05-05T00:00:00.000Z"
+          "updatedAt": "2026-05-05T00:00:00.000Z",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/303",
+          "dispatchedAt": "2026-05-05T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "dsq.2",
@@ -6325,7 +6331,10 @@
           "acVerified": 0,
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-05-05T00:00:00.000Z"
+          "updatedAt": "2026-05-05T00:00:00.000Z",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/305",
+          "dispatchedAt": "2026-05-05T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "dsq.3",
@@ -6346,7 +6355,10 @@
           "acVerified": 0,
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-05-05T00:00:00.000Z"
+          "updatedAt": "2026-05-05T00:00:00.000Z",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/306",
+          "dispatchedAt": "2026-05-05T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "dsq.4",
@@ -6367,7 +6379,10 @@
           "acVerified": 0,
           "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-05-05T00:00:00.000Z"
+          "updatedAt": "2026-05-05T00:00:00.000Z",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/307",
+          "dispatchedAt": "2026-05-05T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         }
       ],
       "track": "standard",
