@@ -6273,13 +6273,23 @@
           "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.1-review-1.md"
         },
         {
+          "id": "dsq.1.5",
+          "title": "Section-aware question extraction",
+          "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/stories/dsq.1.5-section-aware-extraction.md",
+          "complexity": 1,
+          "reviewStatus": "passed",
+          "dorStatus": "not-started",
+          "prStatus": "none",
+          "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.1.5-review-1.md"
+        },
+        {
           "id": "dsq.2",
           "name": "Section confirmation loop",
           "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/stories/dsq.2-section-confirmation-loop.md",
-          "reviewStatus": "failed",
+          "reviewStatus": "passed",
           "dorStatus": "not-started",
           "prStatus": "none",
-          "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.2-review-1.md"
+          "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.2-review-2.md"
         },
         {
           "id": "dsq.3",
