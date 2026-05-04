@@ -6262,11 +6262,51 @@
       "discoveryStatus": "approved",
       "discoveryArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/discovery.md",
       "benefitMetricStatus": "active",
-      "stories": [],
+      "stories": [
+        {
+          "id": "dsq.1",
+          "name": "Dynamic next-question generation",
+          "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/stories/dsq.1-dynamic-next-question.md",
+          "reviewStatus": "not-started",
+          "dorStatus": "not-started",
+          "prStatus": "none"
+        },
+        {
+          "id": "dsq.2",
+          "name": "Section confirmation loop",
+          "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/stories/dsq.2-section-confirmation-loop.md",
+          "reviewStatus": "not-started",
+          "dorStatus": "not-started",
+          "prStatus": "none"
+        },
+        {
+          "id": "dsq.3",
+          "name": "Post-session clarify gate",
+          "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/stories/dsq.3-post-session-clarify-gate.md",
+          "reviewStatus": "not-started",
+          "dorStatus": "not-started",
+          "prStatus": "none"
+        },
+        {
+          "id": "dsq.4",
+          "name": "Section-by-section artefact assembly",
+          "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/stories/dsq.4-section-artefact-assembly.md",
+          "reviewStatus": "not-started",
+          "dorStatus": "not-started",
+          "prStatus": "none"
+        }
+      ],
       "track": "standard",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
-      "benefitMetricArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/benefit-metric.md"
+      "benefitMetricArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/benefit-metric.md",
+      "epics": [
+        {
+          "slug": "dsq-epic-1",
+          "name": "Adaptive web UI skill conversation",
+          "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/epics/dsq-epic-1.md"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
