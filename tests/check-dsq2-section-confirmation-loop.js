@@ -383,10 +383,26 @@ queue.push(function runT3_8() {
   });
 });
 
+// ── T3.10 — AC9: setSectionDraftExecutorAdapter wired in server.js ───────────
+
+queue.push(function runT3_10() {
+  console.log('\n── T3.10 — AC9: server.js wires setSectionDraftExecutorAdapter');
+  return test('T3.10 (AC9): src/web-ui/server.js wires setSectionDraftExecutorAdapter to skillsAdapter.sectionDraftExecutor', function() {
+    const fs = require('fs');
+    const path = require('path');
+    const serverPath = path.resolve(__dirname, '../src/web-ui/server.js');
+    const serverSrc = fs.readFileSync(serverPath, 'utf8');
+    assert.ok(
+      serverSrc.includes('setSectionDraftExecutorAdapter'),
+      'server.js must call setSectionDraftExecutorAdapter() to wire the production adapter'
+    );
+  });
+});
+
 // ── Run queue ────────────────────────────────────────────────────────────────
 
 (async function runAll() {
-  console.log('check-dsq2-section-confirmation-loop.js — 9 tests\n');
+  console.log('check-dsq2-section-confirmation-loop.js — 10 tests\n');
   for (const fn of queue) {
     await fn();
   }
