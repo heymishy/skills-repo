@@ -54,8 +54,8 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   skillsAdapter.setGetNextQuestion(async function(skillName, sessionId, _token) {
     return htmlGetNextQuestion(skillName, sessionId);
   });
-  skillsAdapter.setSubmitAnswer(async function(skillName, sessionId, answer, _token) {
-    return htmlRecordAnswer(skillName, sessionId, answer) || { nextUrl: '/skills/' + encodeURIComponent(skillName) };
+  skillsAdapter.setSubmitAnswer(async function(skillName, sessionId, answer, token) {
+    return htmlRecordAnswer(skillName, sessionId, answer, token) || { nextUrl: '/skills/' + encodeURIComponent(skillName) };
   });
   skillsAdapter.setGetCommitPreview(async function(skillName, sessionId, _token) {
     return htmlGetPreview(skillName, sessionId);
