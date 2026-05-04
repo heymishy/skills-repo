@@ -2,6 +2,7 @@
 
 **Document type:** Enterprise handoff bundle
 **Prepared:** 2026-04-12
+**Updated:** 2026-05-04 — wuce.26 artefact chain: per-answer model response in skill HTML flow. New injectable module `src/modules/skill-turn-executor.js` (Copilot chat completions, Bearer token, 300-token cap). Short-track pipeline complete: story + test plan (14 tests) + verification script + DoR signed off (17/17 hard blocks, High oversight). Coding agent ready for dispatch. See Section 9 pending items.
 **Updated:** 2026-05-03 — Pipeline-state write safety fix: read-from-master-before-write rule enforced in `/subagent-execution`, `/branch-complete`, and `/implementation-plan`. Fixes the structural fan-out overwrite problem that caused 8 wuce stories to show stale `prStatus: none` after their PRs had merged. Root cause: concurrent worktrees write from stale T0 copy of pipeline-state.json rather than current master. Fix: mandatory `git fetch origin master` + `git show origin/master:.github/pipeline-state.json` + SHA log before every write. Porting note in `artefacts/2026-05-03-pipeline-state-write-safety/fix-note.md`.
 **Updated:** 2026-04-29 — `/reverse-engineer` SKILL.md evolution v2: Q0 outcome gate, stack-specific reading plans (Spring/Struts 2/ACE-IIB/COBOL/large-test-suites), multi-pass corpus management with corpus-state.md protocol, sub-agent coordination model, ESB dependency detection + reading plan sub-output, corpus convergence criterion (6 conditions, 2:1 VERIFIED:UNCERTAIN), Outputs +7 (ESB reading plan) +8 (corpus-state.md), outcome-aware artefact emphasis section, updated completion statement. CHANGELOG.md and HANDOFF.md updated.
 **Updated:** 2026-04-23 — validate-trace.sh improvements: track-aware `check_discovery_exists` (auto-exempts `short`/`defect`/`library`/`spike` tracks from discovery gate); `check_schema_valid` now surfaces all violations inline via `Draft7Validator.iter_errors()`. No artefact chain — committed directly as a governance fix (improvement to existing script, not a new governed artefact type). See Section 8 pending items.
@@ -10,7 +11,51 @@
 **Updated:** 2026-04-21 (2) — Phase 5/6 roadmap published; product/ docs updated with Phase 4 actual delivery scope, enforcement architecture, competitive positioning, and G19 intentional gap note. See Section 8.
 **Updated:** 2026-04-21 (1) — Phase 4 fully DoD-complete — all 27 stories including E5 Platform Observability & Measurement. PRs #176 and #177 merged and traced. See Sections 6.8–6.15 and Phase 4 story tables.
 **Prepared by:** Platform maintainer (Hamish)
-**Status:** Phases 1–4 DoD-complete. Phase 5 (WS0–WS7) and Phase 6 (WS8–WS11) roadmapped. src.1 implementation draft PR #182 pending CI pass + merge. src.1 SKILL.md-only additions pending draft PR #178.
+**Status:** Phases 1–4 DoD-complete. Phase 5 (WS0–WS7) and Phase 6 (WS8–WS11) roadmapped. wuce.26 DoR signed off — coding agent ready for dispatch. src.1 implementation draft PR #182 pending CI pass + merge. src.1 SKILL.md-only additions pending draft PR #178.
+
+---
+
+## 9. wuce.26 — Per-answer model response (2026-05-04)
+
+### What was added
+
+**Story wuce.26** extends the skill HTML form flow (E6) so that the operator sees a brief Copilot model response after each answer they submit. The session currently shows prior Q&A context between questions (added in the preceding bug-fix commit); this story adds live AI-generated feedback to make the session conversational.
+
+**New module to implement:** `src/modules/skill-turn-executor.js`
+- Calls `POST https://api.githubcopilot.com/chat/completions` using Node built-in `https`
+- Authorization: `Bearer req.session.accessToken` (canonical token field — never `req.session.token`)
+- System prompt = SKILL.md content for the active skill
+- Messages = conversation history as alternating user/assistant pairs, plus current answer as final user message
+- `max_tokens: 300` (or `WUCE_TURN_MODEL_MAX_TOKENS` env var)
+- Timeout: 30 seconds; on timeout/error, null is stored for that turn (graceful degradation)
+
+**Files modified by the coding agent:**
+- `src/web-ui/adapters/skills.js` — new `_skillTurnExecutor` adapter (stub throws per D37)
+- `src/web-ui/routes/skills.js` — `htmlRecordAnswer` made async; `modelResponses[]` added to `_sessionStore`; model response rendered in `handleGetQuestionHtml`; model responses included in `htmlGetPreview`
+- `src/web-ui/server.js` — production wiring of `setSkillTurnExecutor(realExecutor)`
+
+**Tests to implement:** `tests/check-wuce26-per-answer-model-response.js` — 14 tests (all must fail before implementation, all must pass after).
+
+### Artefact locations
+
+| Artefact | Path |
+|----------|------|
+| Story | `artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.26-per-answer-model-response.md` |
+| Test plan | `artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.26-per-answer-model-response-test-plan.md` |
+| Verification script | `artefacts/2026-05-02-web-ui-copilot-execution-layer/verification-scripts/wuce.26-per-answer-model-response-verification.md` |
+| DoR | `artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.26-per-answer-model-response-dor.md` |
+| DoR contract | `artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.26-per-answer-model-response-dor-contract.md` |
+
+### Pending next actions
+
+1. Run `/branch-setup` for wuce.26 to create isolated worktree
+2. Run `/implementation-plan` from the DoR artefact (note the three separate tasks: handler, executor module, production wiring)
+3. Run `/subagent-execution` or `/tdd` task-by-task — write failing tests first
+4. Run `/verify-completion` once all 14 tests pass
+5. Run `/branch-complete` to open draft PR
+6. After merge: run `/definition-of-done`
+
+Alternatively, dispatch the GitHub Copilot coding agent directly via `/issue-dispatch`.
 
 ---
 
