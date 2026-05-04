@@ -63,6 +63,11 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   skillsAdapter.setCommitSession(async function(skillName, sessionId, token) {
     return htmlCommitSession(skillName, sessionId, token, { login: '', email: 'web-ui@localhost' });
   });
+
+  // wuce.26 — wire real Copilot API executor for per-answer model responses
+  const { skillTurnExecutor: realSkillTurnExecutor } = require('../modules/skill-turn-executor');
+  const { setSkillTurnExecutorAdapter } = require('./routes/skills');
+  setSkillTurnExecutorAdapter(realSkillTurnExecutor);
 }
 
 // Wire real GitHub pipeline-state fetcher for production (non-test) mode.

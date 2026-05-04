@@ -178,9 +178,33 @@ async function getCommitResult(skillName, sessionId, token) {
   return _getCommitResult(skillName, sessionId, token);
 }
 
+/** @type {function(string, Array, string, string): Promise<string>} */
+let _skillTurnExecutor = function defaultSkillTurnExecutor() {
+  throw new Error('Adapter not wired: skillTurnExecutor. Call setSkillTurnExecutor() with a real implementation before use.');
+};
+
+/**
+ * Replace the skillTurnExecutor implementation (for testing or production wiring).
+ * @param {function(string, Array, string, string): Promise<string>} fn
+ */
+function setSkillTurnExecutor(fn) { _skillTurnExecutor = fn; }
+
+/**
+ * Execute a skill turn: send skill content + prior Q&A + current answer to Copilot.
+ * @param {string} skillContent  — full SKILL.md content as system prompt
+ * @param {Array}  priorQA       — prior Q&A pairs
+ * @param {string} currentAnswer — the user's current answer
+ * @param {string} token         — GitHub access token
+ * @returns {Promise<string>} model response text
+ */
+function skillTurnExecutor(skillContent, priorQA, currentAnswer, token) {
+  return _skillTurnExecutor(skillContent, priorQA, currentAnswer, token);
+}
+
 module.exports = {
   listSkills, createSession, setListSkills, setCreateSession,
   getNextQuestion, submitAnswer, setGetNextQuestion, setSubmitAnswer,
   getCommitPreview, commitSession, getCommitResult,
-  setGetCommitPreview, setCommitSession, setGetCommitResult
+  setGetCommitPreview, setCommitSession, setGetCommitResult,
+  skillTurnExecutor, setSkillTurnExecutor
 };
