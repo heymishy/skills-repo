@@ -47,7 +47,7 @@ nav { background: #222; padding: 0.5rem 1rem; }
 nav a { color: #fff; text-decoration: none; margin-right: 1.25rem; }
 nav a:hover { text-decoration: underline; }
 nav a:focus-visible { outline: 2px solid #005fcc; outline-offset: 2px; }
-main { padding: 1rem; }
+main { padding: 1rem; max-width: 860px; }
 </style>
 </head>
 <body>
