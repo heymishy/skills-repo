@@ -418,6 +418,56 @@ async function handleResumeSession(req, res) {
 const { renderShell, escHtml }   = require('../utils/html-shell');
 const skillsAdapter              = require('../adapters/skills');
 
+/**
+ * Minimal markdown-to-HTML converter for model response rendering (wuce.26).
+ * Handles headings, bold, italic, inline code, fenced code blocks, lists, and HRs.
+ * All text content is HTML-escaped before conversion to prevent XSS from model output.
+ * No external dependencies.
+ * @param {string} md
+ * @returns {string} safe HTML
+ */
+function simpleMarkdownToHtml(md) {
+  var lines = String(md).split('\n');
+  var out = [];
+  var inCode = false;
+  var inList = false;
+  var listTag = 'ul';
+
+  function inlineMarkdown(text) {
+    var s = escHtml(text);
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+    return s;
+  }
+  function closeList() {
+    if (inList) { out.push('</' + listTag + '>'); inList = false; }
+  }
+
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    if (/^```/.test(line.trim())) {
+      if (inCode) { out.push('</code></pre>'); inCode = false; }
+      else { closeList(); out.push('<pre><code>'); inCode = true; }
+      continue;
+    }
+    if (inCode) { out.push(escHtml(line)); continue; }
+    if (inList && !/^[-*+\d]\s/.test(line) && line.trim() !== '') { closeList(); }
+    if (/^---+\s*$/.test(line.trim())) { closeList(); out.push('<hr>'); continue; }
+    var hm = line.match(/^(#{1,3})\s+(.+)/);
+    if (hm) { closeList(); var lvl = hm[1].length; out.push('<h' + lvl + '>' + inlineMarkdown(hm[2]) + '</h' + lvl + '>'); continue; }
+    var ulm = line.match(/^[-*+]\s+(.*)/);
+    if (ulm) { if (!inList) { out.push('<ul>'); inList = true; listTag = 'ul'; } out.push('<li>' + inlineMarkdown(ulm[1]) + '</li>'); continue; }
+    var olm = line.match(/^\d+\.\s+(.*)/);
+    if (olm) { if (!inList) { out.push('<ol>'); inList = true; listTag = 'ol'; } out.push('<li>' + inlineMarkdown(olm[1]) + '</li>'); continue; }
+    if (line.trim() === '') { out.push(''); continue; }
+    out.push('<p>' + inlineMarkdown(line) + '</p>');
+  }
+  if (inList) out.push('</' + listTag + '>');
+  if (inCode) out.push('</code></pre>');
+  return out.join('\n');
+}
+
 // Injectable adapters for testing — default to production adapter functions.
 let _listSkills    = skillsAdapter.listSkills;
 let _createSession = skillsAdapter.createSession;
@@ -663,10 +713,10 @@ async function handleGetQuestionHtml(req, res) {
   const lastModelResponse = priorQA.length > 0 ? priorQA[priorQA.length - 1].modelResponse : null;
 
   const modelResponseHtml = (lastModelResponse != null)
-    ? '<section class="model-response">' +
-      '<p><strong>Copilot insight on your last answer:</strong></p>' +
-      '<p>' + escHtml(lastModelResponse) + '</p>' +
-      '</section><hr>\n'
+    ? '<section class="model-response" style="background:#f0f6ff;border-left:4px solid #005fcc;border-radius:0 4px 4px 0;padding:0.75rem 1rem;margin-bottom:1.25rem">' +
+      '<p style="margin:0 0 0.5rem;font-size:0.85rem;color:#005fcc"><strong>Copilot insight on your last answer:</strong></p>' +
+      '<div style="font-size:0.95rem">' + simpleMarkdownToHtml(lastModelResponse) + '</div>' +
+      '</section>\n'
     : '';
 
   const priorHtml = priorQA.length > 0
