@@ -140,7 +140,11 @@ function renderArtefactIndexHtml(artefacts, featureSlug) {
   }
   const items = artefacts.map((a) => {
     const label   = getLabel(a.type || '');
-    const viewUrl = `/artefact/${featureSlug}/${a.type || ''}`;
+    // Derive URL slug from the actual filename (e.g. "discovery.md" → "discovery")
+    // rather than the plain-language label (e.g. "Discovery") so the artefact-fetcher
+    // can reconstruct the correct path on the GitHub Contents API.
+    const fileSlug = (a.path || '').split('/').pop().replace(/\.md$/, '') || (a.type || '');
+    const viewUrl = `/artefact/${featureSlug}/${fileSlug}`;
     const base    = renderArtefactItem({ type: label, name: a.path || '', viewUrl });
     // Insert creation date before closing </li>
     const date    = shellEscHtml(a.createdAt || '');
