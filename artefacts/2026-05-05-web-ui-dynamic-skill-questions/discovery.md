@@ -1,8 +1,8 @@
 # Discovery: Web UI Dynamic Skill Questions
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-05-05
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Hamish King — 2026-05-05
 **Author:** Copilot
 
 ---
@@ -67,15 +67,16 @@ Additional stories within this initiative (not excluded from scope):
 
 ## Contributors
 
-- [Name — Role]
+- Hamish King — Platform / Framework Owner
+- Jenni Ralph — Product Guru
 
 ## Reviewers
 
-- [Name — Role]
+- Jenni Ralph — Product Guru
 
 ## Approved By
 
-[Name — Role — Date]
+Hamish King — Platform / Framework Owner — 2026-05-05
 
 ---
 
