@@ -21,6 +21,7 @@ const { handleExecuteSkill }                                         = require('
 const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25
 const { setLogger }                                                  = require('./routes/auth');
 const { setFetchPipelineState }                                      = require('./adapters/feature-list');
+const { setFetchArtefactDirectory }                                  = require('./adapters/artefact-list');
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -34,6 +35,28 @@ setLogger({
 // Wire real GitHub pipeline-state fetcher for production (non-test) mode.
 // Fetches .github/pipeline-state.json from the given owner/repo using the user's token.
 if (process.env.NODE_ENV !== 'test') {
+  // Wire real GitHub Contents API for listing artefacts in a feature directory.
+  setFetchArtefactDirectory(async (owner, repo, featureSlug, token) => {
+    const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/artefacts/${featureSlug}`;
+    let response;
+    try {
+      response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept':        'application/vnd.github.v3+json'
+        }
+      });
+    } catch (err) {
+      console.error('[artefact-list] network error fetching artefact directory', err.message);
+      return null;
+    }
+    if (!response.ok) {
+      console.warn('[artefact-list] artefact directory fetch failed', response.status, owner, repo, featureSlug);
+      return null;
+    }
+    return response.json();
+  });
+
   setFetchPipelineState(async (owner, repo, token) => {
     const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/.github/pipeline-state.json`;
     let response;
