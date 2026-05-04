@@ -5825,7 +5825,9 @@
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.19-feature-list-html-view-test-plan.md",
             "totalTests": 16,
-            "passing": 36
+            "passing": 36,
+            "e2eSpecFile": "tests/e2e/wuce19-feature-list-html.spec.js",
+            "e2ePassing": 5
           },
           "acTotal": 5,
           "acVerified": 5,
@@ -5857,7 +5859,9 @@
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.20-artefact-index-html-view-test-plan.md",
             "totalTests": 17,
-            "passing": 40
+            "passing": 40,
+            "e2eSpecFile": "tests/e2e/wuce20-artefact-index-html.spec.js",
+            "e2ePassing": 5
           },
           "acTotal": 6,
           "acVerified": 5,
@@ -5889,7 +5893,9 @@
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.21-action-queue-html-view-test-plan.md",
             "totalTests": 16,
-            "passing": 37
+            "passing": 37,
+            "e2eSpecFile": "tests/e2e/wuce21-action-queue-html.spec.js",
+            "e2ePassing": 5
           },
           "acTotal": 6,
           "acVerified": 5,
@@ -5921,7 +5927,9 @@
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.22-status-board-html-view-test-plan.md",
             "totalTests": 16,
-            "passing": 34
+            "passing": 34,
+            "e2eSpecFile": "tests/e2e/wuce22-status-board-html.spec.js",
+            "e2ePassing": 5
           },
           "acTotal": 6,
           "acVerified": 5,
@@ -5953,7 +5961,9 @@
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.23-skill-launcher-landing-test-plan.md",
             "totalTests": 16,
-            "passing": 35
+            "passing": 35,
+            "e2eSpecFile": "tests/e2e/wuce23-skill-launcher-landing.spec.js",
+            "e2ePassing": 5
           },
           "acTotal": 6,
           "acVerified": 6,
@@ -5985,7 +5995,9 @@
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.24-guided-question-form-test-plan.md",
             "totalTests": 18,
-            "passing": 43
+            "passing": 43,
+            "e2eSpecFile": "tests/e2e/wuce24-guided-question-form.spec.js",
+            "e2ePassing": 4
           },
           "acTotal": 7,
           "acVerified": 7,
@@ -6017,7 +6029,9 @@
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.25-session-commit-result-test-plan.md",
             "totalTests": 20,
-            "passing": 52
+            "passing": 52,
+            "e2eSpecFile": "tests/e2e/wuce25-session-commit-result.spec.js",
+            "e2ePassing": 8
           },
           "acTotal": 7,
           "acVerified": 7,
