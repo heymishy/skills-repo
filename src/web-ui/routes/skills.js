@@ -525,7 +525,7 @@ async function handlePostSkillSessionHtml(req, res) {
     const token   = req.session.accessToken;
     const session = await _createSession(skillName, token);
     const id      = session && session.id;
-    res.writeHead(303, { Location: '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(id) });
+    res.writeHead(303, { Location: '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(id) + '/next' });
     res.end();
   } catch (err) {
     _logger.error('handlePostSkillSessionHtml: ' + err.message);
