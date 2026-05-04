@@ -6267,37 +6267,41 @@
           "id": "dsq.1",
           "name": "Dynamic next-question generation",
           "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/stories/dsq.1-dynamic-next-question.md",
-          "reviewStatus": "not-started",
+          "reviewStatus": "passed",
           "dorStatus": "not-started",
-          "prStatus": "none"
+          "prStatus": "none",
+          "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.1-review-1.md"
         },
         {
           "id": "dsq.2",
           "name": "Section confirmation loop",
           "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/stories/dsq.2-section-confirmation-loop.md",
-          "reviewStatus": "not-started",
+          "reviewStatus": "failed",
           "dorStatus": "not-started",
-          "prStatus": "none"
+          "prStatus": "none",
+          "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.2-review-1.md"
         },
         {
           "id": "dsq.3",
           "name": "Post-session clarify gate",
           "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/stories/dsq.3-post-session-clarify-gate.md",
-          "reviewStatus": "not-started",
+          "reviewStatus": "passed",
           "dorStatus": "not-started",
-          "prStatus": "none"
+          "prStatus": "none",
+          "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.3-review-1.md"
         },
         {
           "id": "dsq.4",
           "name": "Section-by-section artefact assembly",
           "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/stories/dsq.4-section-artefact-assembly.md",
-          "reviewStatus": "not-started",
+          "reviewStatus": "passed",
           "dorStatus": "not-started",
-          "prStatus": "none"
+          "prStatus": "none",
+          "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.4-review-1.md"
         }
       ],
       "track": "standard",
-      "stage": "definition",
+      "stage": "review",
       "health": "green",
       "benefitMetricArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/benefit-metric.md",
       "epics": [
