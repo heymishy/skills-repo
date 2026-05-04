@@ -146,7 +146,7 @@ Run `npm test` before making any changes. All 52 existing tests must pass. Your 
 - `skill-turn-executor.js` uses Node's built-in `https` module only — no new npm dependencies
 - System prompt = SKILL.md content. Message array: `[{ role: 'system', content: skillContent }, ...priorQA.flatMap(qa => [{role:'user', content: qa.question + '\n\nAnswer: ' + qa.answer}, {role:'assistant', content: qa.modelResponse || ''}]), { role: 'user', content: currentAnswer }]`
 - `max_tokens: parseInt(process.env.WUCE_TURN_MODEL_MAX_TOKENS || '300', 10)`
-- Model: `process.env.WUCE_TURN_MODEL || 'gpt-4o'`
+- Model: `process.env.WUCE_TURN_MODEL || 'claude-sonnet-4-6'`
 - Request timeout: 30000ms; on timeout, reject with an Error so AC2 graceful path applies
 - Model response content MUST be HTML-escaped before rendering in `handleGetQuestionHtml`
 - Access token MUST NOT appear in any log output or error message
