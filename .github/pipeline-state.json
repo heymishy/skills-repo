@@ -6261,11 +6261,12 @@
       "phase": "discovery",
       "discoveryStatus": "approved",
       "discoveryArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/discovery.md",
-      "benefitMetricStatus": "not-started",
+      "benefitMetricStatus": "active",
       "stories": [],
       "track": "standard",
-      "stage": "discovery",
-      "health": "green"
+      "stage": "benefit-metric",
+      "health": "green",
+      "benefitMetricArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/benefit-metric.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
