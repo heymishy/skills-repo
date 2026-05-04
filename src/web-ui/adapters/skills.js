@@ -25,19 +25,14 @@ let _createSession = async function defaultCreateSession(skillName, token) {
 
 /** @type {function(string, string, string): Promise<{question:string, questionIndex:number, totalQuestions:number}|null>} */
 let _getNextQuestion = async function defaultGetNextQuestion(skillName, sessionId, token) {
-  void skillName;
-  void sessionId;
-  void token;
-  return null;
+  void skillName; void sessionId; void token;
+  throw new Error('Adapter not wired: getNextQuestion. Call setGetNextQuestion() with a real implementation before use.');
 };
 
 /** @type {function(string, string, string, string): Promise<{nextUrl:string}>} */
 let _submitAnswer = async function defaultSubmitAnswer(skillName, sessionId, answer, token) {
-  void skillName;
-  void sessionId;
-  void answer;
-  void token;
-  return { nextUrl: '' };
+  void skillName; void sessionId; void answer; void token;
+  throw new Error('Adapter not wired: submitAnswer. Call setSubmitAnswer() with a real implementation before use.');
 };
 
 /**
@@ -117,19 +112,19 @@ async function submitAnswer(skillName, sessionId, answer, token) {
 /** @type {function(string, string, string): Promise<{artefactContent:string, artefactPath:string, featureSlug:string, artefactType:string}>} */
 let _getCommitPreview = async function defaultGetCommitPreview(skillName, sessionId, token) {
   void skillName; void sessionId; void token;
-  return { artefactContent: '', artefactPath: '', featureSlug: '', artefactType: '' };
+  throw new Error('Adapter not wired: getCommitPreview. Call setGetCommitPreview() with a real implementation before use.');
 };
 
 /** @type {function(string, string, string): Promise<{artefactPath:string, featureSlug:string, artefactType:string}>} */
 let _commitSession = async function defaultCommitSession(skillName, sessionId, token) {
   void skillName; void sessionId; void token;
-  return { artefactPath: '', featureSlug: '', artefactType: '' };
+  throw new Error('Adapter not wired: commitSession. Call setCommitSession() with a real implementation before use.');
 };
 
 /** @type {function(string, string, string): Promise<{artefactPath:string, featureSlug:string, artefactType:string}>} */
 let _getCommitResult = async function defaultGetCommitResult(skillName, sessionId, token) {
   void skillName; void sessionId; void token;
-  return { artefactPath: '', featureSlug: '', artefactType: '' };
+  throw new Error('Adapter not wired: getCommitResult. Call setGetCommitResult() with a real implementation before use.');
 };
 
 /**
