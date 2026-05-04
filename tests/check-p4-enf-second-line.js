@@ -131,8 +131,12 @@ console.log('\n[p4-enf-second-line] T6 — validate-trace.sh accepts trace witho
     }
     fs.rmSync(tmpDir, { recursive: true, force: true });
 
-    if (exitCode === -1) {
-      // bash not available (Windows without WSL) — skip gracefully
+    // Skip if bash is unavailable (exitCode -1 = spawn error) or WSL is present
+    // but non-functional (WSL reports CreateProcessEntryCommon / execvpe failures
+    // with exit code 1 rather than -1, so check stderr for WSL error markers).
+    const wslStartupError = /WSL.*ERROR|CreateProcessEntryCommon|execvpe.*bash/i.test(stderr);
+    if (exitCode === -1 || wslStartupError) {
+      // bash not available (Windows without WSL, or WSL present but non-functional) — skip gracefully
       console.log('  - T6: skipped (bash not available on this platform — validate manually)');
       passed++;
     } else {

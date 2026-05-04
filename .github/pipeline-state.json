@@ -321,6 +321,13 @@
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-04-28",
           "evidence": "checkpoint-non-blocking-no-capture-log passes; bridge instruction specifies skip-and-continue path"
+        },
+        {
+          "id": "ADR-phase4-enforcement",
+          "category": "adr",
+          "label": "Mechanism selection: which enforcement mechanism applies to each surface class",
+          "file": ".github/architecture-guardrails.md",
+          "status": "active"
         }
       ],
       "metrics": [
@@ -1154,7 +1161,8 @@
           "id": "ADR-phase4-enforcement",
           "category": "adr",
           "label": "Mechanism selection: which enforcement mechanism applies to each surface class",
-          "status": "not-assessed"
+          "status": "active",
+          "file": ".github/architecture-guardrails.md"
         },
         {
           "id": "PAT-01",

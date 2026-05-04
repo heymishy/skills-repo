@@ -99,6 +99,30 @@
     {
       "slug": "token-optimization",
       "reason": "Token-optimization skill added out-of-band as a model routing and token policy skill. No formal story chain. Retroactive story pending."
+    },
+    {
+      "slug": "checkpoint",
+      "reason": "Checkpoint skill defined in copilot-instructions.md (not as a standalone SKILL.md file per ADR-004). No individual DoR artefact file bears the 'checkpoint' slug. Covered by the pipeline instruction set."
+    },
+    {
+      "slug": "modernisation-decompose",
+      "reason": "Modernisation-decompose skill is fully covered by artefacts under artefacts/2026-04-22-modernisation-decompose/ but no individual file bears the 'modernisation-decompose' slug — folder uses a date prefix and files use short md-N slugs. Slug mismatch only."
+    },
+    {
+      "slug": "prioritise",
+      "reason": "Prioritise skill added out-of-band as a structured prioritisation support skill. No formal story chain. Retroactive story pending."
+    },
+    {
+      "slug": "modules",
+      "reason": "src/modules directory is infrastructure shared across multiple Phase 1/2 stories. No individual DoR artefact uses the 'modules' slug. Covered by Phase 1/2 pipeline scope."
+    },
+    {
+      "slug": "utils",
+      "reason": "src/utils utility module is infrastructure shared across multiple stories. No individual DoR artefact uses the 'utils' slug. Covered by Phase 1/2 pipeline scope."
+    },
+    {
+      "slug": "web-ui",
+      "reason": "src/web-ui module is fully covered by artefacts under artefacts/2026-05-02-web-ui-copilot-execution-layer/ but no individual file bears the 'web-ui' slug — artefacts use wuce.N story slugs. Slug mismatch only."
     }
   ]
 }

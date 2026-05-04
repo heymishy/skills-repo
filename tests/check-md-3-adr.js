@@ -91,27 +91,33 @@ assert(
 );
 
 // ── T4: Integration — npm test passes ────────────────────────────────────────
-// Known pre-existing failure: check-p4-enf-second-line.js T6 (validate-trace.sh / executorIdentity /
-// WSL bash unavailable on Windows). This failure exists on master and all feature branches.
+// Note: T4 is skipped when invoked from within npm test itself to prevent infinite
+// recursion (npm test → check-md-3-adr.js → npm test → ...).
 console.log('\n[md-3-adr] T4: Integration \u2014 npm test passes after file update');
 
-// These patterns match the known pre-existing failure only.
-const KNOWN_FAILURE_PATTERNS = ['executorIdentity', 'validate-trace.sh', 'WSL', '/bin/bash'];
+if (process.env.npm_lifecycle_event === 'test') {
+  // Running inside npm test chain — skip the recursive npm test call
+  console.log('  - T4.1: skipped (running inside npm test chain — validated by the outer npm test run)');
+  passed++;
+} else {
+  // These patterns match the known pre-existing failure only.
+  const KNOWN_FAILURE_PATTERNS = ['executorIdentity', 'validate-trace.sh', 'WSL', '/bin/bash'];
 
-try {
-  execSync('npm test', { cwd: ROOT, stdio: 'pipe' });
-  assert('T4.1 \u2014 npm test exits 0 (no regressions introduced)', true);
-} catch (e) {
-  const combined = (e.stdout ? e.stdout.toString() : '') + (e.stderr ? e.stderr.toString() : '');
-  const failLines = combined.split('\n').filter(l => l.includes('\u2717') || l.includes('FAIL'));
-  const newFailures = failLines.filter(
-    l => !KNOWN_FAILURE_PATTERNS.some(pat => l.includes(pat)),
-  );
-  assert(
-    'T4.1 \u2014 npm test exits 0 (no regressions introduced)',
-    newFailures.length === 0,
-    newFailures.length > 0 ? `New failures: ${newFailures.slice(0, 3).join('; ')}` : undefined,
-  );
+  try {
+    execSync('npm test', { cwd: ROOT, stdio: 'pipe' });
+    assert('T4.1 \u2014 npm test exits 0 (no regressions introduced)', true);
+  } catch (e) {
+    const combined = (e.stdout ? e.stdout.toString() : '') + (e.stderr ? e.stderr.toString() : '');
+    const failLines = combined.split('\n').filter(l => l.includes('\u2717') || l.includes('FAIL'));
+    const newFailures = failLines.filter(
+      l => !KNOWN_FAILURE_PATTERNS.some(pat => l.includes(pat)),
+    );
+    assert(
+      'T4.1 \u2014 npm test exits 0 (no regressions introduced)',
+      newFailures.length === 0,
+      newFailures.length > 0 ? `New failures: ${newFailures.slice(0, 3).join('; ')}` : undefined,
+    );
+  }
 }
 
 // ── Results ───────────────────────────────────────────────────────────────────
