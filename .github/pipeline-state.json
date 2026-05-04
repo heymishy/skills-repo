@@ -5223,7 +5223,7 @@
             "wuce.25",
             "wuce.26"
           ],
-          "status": "in-progress"
+          "status": "complete"
         }
       ],
       "updatedAt": "2026-05-04",
@@ -6111,6 +6111,8 @@
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/301",
           "dispatchedAt": "2026-05-04T00:00:00Z",
           "dispatchTarget": "vscode",
+          "dodStatus": "complete",
+          "releaseReady": true,
           "updatedAt": "2026-05-04"
         }
       ],
