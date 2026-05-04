@@ -5784,19 +5784,19 @@
           "name": "HTML shell navigation and shared layout",
           "epic": "wuce-e5",
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.18-html-shell-navigation.md",
-          "prStatus": "none",
+          "prStatus": "merged",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "stage": "dispatched",
+          "stage": "definition-of-done",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.18-html-shell-navigation-test-plan.md",
             "totalTests": 20,
-            "passing": 0
+            "passing": 47
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": true,
           "e2eToolingRequired": true,
           "health": "green",
@@ -5805,7 +5805,9 @@
           "updatedAt": "2026-05-04",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/285",
           "dispatchedAt": "2026-05-04T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prNumber": 293,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/293"
         },
         {
           "id": "wuce.19",
