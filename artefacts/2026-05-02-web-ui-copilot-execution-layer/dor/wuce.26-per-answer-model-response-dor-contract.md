@@ -86,5 +86,5 @@ function skillTurnExecutor(...args) { return _skillTurnExecutor(...args); }
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `WUCE_TURN_MODEL` | `'gpt-4o'` | Model identifier for Copilot chat completions |
+| `WUCE_TURN_MODEL` | `'claude-sonnet-4-6'` | Model identifier for Copilot chat completions |
 | `WUCE_TURN_MODEL_MAX_TOKENS` | `'300'` | Max tokens for turn response |

@@ -26,7 +26,7 @@ So that the skill session feels like a guided conversation rather than a static 
 - If `_skillTurnExecutor` throws (network error, 4xx/5xx from API), the answer is still recorded, `modelResponses[i]` is set to `null`, and the redirect proceeds normally. The next question page renders without a model response for that turn — graceful degradation, not an error page.
 - The stub default for `_skillTurnExecutor` MUST throw (`'Adapter not wired: skillTurnExecutor'`) per D37/ADR-009.
 - The Copilot chat completions endpoint requires a `User-Agent` header and `Authorization: Bearer <token>`. The system prompt is the SKILL.md content. Each prior Q&A pair becomes an alternating `user`/`assistant` message pair in the messages array. The current answer is the final `user` message.
-- `max_tokens` is capped at 300 for turn responses to keep latency and cost bounded. The model is `gpt-4o` (or the value of `process.env.WUCE_TURN_MODEL || 'gpt-4o'`).
+- `max_tokens` is capped at 300 for turn responses to keep latency and cost bounded. The model is `claude-sonnet-4-6` (or the value of `process.env.WUCE_TURN_MODEL || 'claude-sonnet-4-6'`).
 - ADR-018: Playwright E2E tests are excluded from `npm test`. Per-answer API calls are NOT made in E2E tests — the Playwright spec stubs `_skillTurnExecutor` via `WIRE_SKILL_ADAPTERS=true` with an in-process fake.
 
 ## Dependencies
