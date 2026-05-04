@@ -5191,7 +5191,7 @@
           "status": "complete"
         }
       ],
-      "updatedAt": "2026-05-03",
+      "updatedAt": "2026-05-04",
       "stories": [
         {
           "id": "wuce.1",
@@ -5807,7 +5807,8 @@
           "dispatchedAt": "2026-05-04T00:00:00Z",
           "dispatchTarget": "vscode",
           "prNumber": 293,
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/293"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/293",
+          "dodStatus": "complete"
         },
         {
           "id": "wuce.19",
@@ -5824,10 +5825,10 @@
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.19-feature-list-html-view-test-plan.md",
             "totalTests": 16,
-            "passing": 0
+            "passing": 36
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "health": "green",
@@ -5838,7 +5839,8 @@
           "dispatchedAt": "2026-05-04T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/294",
-          "prNumber": 294
+          "prNumber": 294,
+          "dodStatus": "complete"
         },
         {
           "id": "wuce.20",
@@ -5855,10 +5857,10 @@
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.20-artefact-index-html-view-test-plan.md",
             "totalTests": 17,
-            "passing": 0
+            "passing": 40
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "health": "green",
@@ -5869,7 +5871,8 @@
           "dispatchedAt": "2026-05-04T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/295",
-          "prNumber": 295
+          "prNumber": 295,
+          "dodStatus": "complete"
         },
         {
           "id": "wuce.21",
@@ -5886,10 +5889,10 @@
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.21-action-queue-html-view-test-plan.md",
             "totalTests": 16,
-            "passing": 0
+            "passing": 37
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "health": "green",
@@ -5900,7 +5903,8 @@
           "dispatchedAt": "2026-05-04T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/296",
-          "prNumber": 296
+          "prNumber": 296,
+          "dodStatus": "complete"
         },
         {
           "id": "wuce.22",
@@ -5917,10 +5921,10 @@
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.22-status-board-html-view-test-plan.md",
             "totalTests": 16,
-            "passing": 0
+            "passing": 34
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "health": "green",
@@ -5931,7 +5935,8 @@
           "dispatchedAt": "2026-05-04T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/297",
-          "prNumber": 297
+          "prNumber": 297,
+          "dodStatus": "complete"
         },
         {
           "id": "wuce.23",
@@ -5948,7 +5953,7 @@
             "status": "written",
             "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.23-skill-launcher-landing-test-plan.md",
             "totalTests": 16,
-            "passing": 16
+            "passing": 35
           },
           "acTotal": 6,
           "acVerified": 6,
@@ -5962,7 +5967,8 @@
           "dispatchedAt": "2026-05-04T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/298",
-          "prNumber": 298
+          "prNumber": 298,
+          "dodStatus": "complete"
         },
         {
           "id": "wuce.24",
@@ -5993,7 +5999,8 @@
           "dispatchedAt": "2026-05-04T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/299",
-          "prNumber": 299
+          "prNumber": 299,
+          "dodStatus": "complete"
         },
         {
           "id": "wuce.25",
@@ -6024,7 +6031,8 @@
           "dispatchedAt": "2026-05-04T00:00:00Z",
           "dispatchTarget": "vscode",
           "prNumber": 300,
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/300"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/300",
+          "dodStatus": "complete"
         }
       ],
       "metrics": [
@@ -6032,7 +6040,7 @@
           "id": "P1",
           "name": "Non-engineer sign-off rate",
           "signal": "not-yet-measured",
-          "evidence": null,
+          "evidence": "Feature not yet deployed to production. Measurement clock starts at first real-user deployment.",
           "lastMeasured": null,
           "contributingStories": [
             "wuce.3",
@@ -6043,7 +6051,7 @@
           "id": "P2",
           "name": "Unassisted /discovery completion rate",
           "signal": "not-yet-measured",
-          "evidence": null,
+          "evidence": "Feature not yet deployed to production. Measurement clock starts at first real-user deployment.",
           "lastMeasured": null,
           "contributingStories": [
             "wuce.13",
@@ -6056,7 +6064,7 @@
           "id": "P3",
           "name": "Non-technical attribution rate",
           "signal": "not-yet-measured",
-          "evidence": null,
+          "evidence": "Feature not yet deployed to production. Measurement clock starts at first real-user deployment.",
           "lastMeasured": null,
           "contributingStories": [
             "wuce.3",
@@ -6068,7 +6076,7 @@
           "id": "P4",
           "name": "Status self-service rate",
           "signal": "not-yet-measured",
-          "evidence": null,
+          "evidence": "Feature not yet deployed to production. Measurement clock starts at first real-user deployment.",
           "lastMeasured": null,
           "contributingStories": [
             "wuce.2",
@@ -6080,7 +6088,7 @@
           "id": "P5",
           "name": "Sign-off wait time",
           "signal": "not-yet-measured",
-          "evidence": null,
+          "evidence": "Feature not yet deployed to production. Measurement clock starts at first real-user deployment.",
           "lastMeasured": null,
           "contributingStories": [
             "wuce.5",
@@ -6104,7 +6112,7 @@
           "id": "M2",
           "name": "Phase 1 stakeholder activation rate",
           "signal": "not-yet-measured",
-          "evidence": null,
+          "evidence": "Feature not yet deployed to production. Measurement clock starts at first real-user deployment.",
           "lastMeasured": null,
           "contributingStories": [
             "wuce.1",
@@ -6160,7 +6168,11 @@
           "evidence": "Token/API-key log filtering in wuce.9/wuce.12; unit test confirms"
         }
       ],
-      "dodArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dod/feature-dod.md"
+      "dodArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dod/feature-dod.md",
+      "dodStatus": "complete",
+      "releaseReady": true,
+      "layoutGapsAtMerge": true,
+      "layoutGapsRiskAccepted": true
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
