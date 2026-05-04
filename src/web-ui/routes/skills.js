@@ -660,6 +660,15 @@ async function handleGetQuestionHtml(req, res) {
   const priorQA      = result.priorQA || [];
 
   // Render prior Q&A as a conversation transcript above the current question
+  const lastModelResponse = priorQA.length > 0 ? priorQA[priorQA.length - 1].modelResponse : null;
+
+  const modelResponseHtml = (lastModelResponse != null)
+    ? '<section class="model-response">' +
+      '<p><strong>Copilot insight on your last answer:</strong></p>' +
+      '<p>' + escHtml(lastModelResponse) + '</p>' +
+      '</section><hr>\n'
+    : '';
+
   const priorHtml = priorQA.length > 0
     ? '<section class="prior-qa">' +
       priorQA.map(function(pair, i) {
@@ -672,6 +681,7 @@ async function handleGetQuestionHtml(req, res) {
     : '';
 
   const bodyContent = [
+    modelResponseHtml,
     priorHtml,
     '<p class="question-progress">Question ' + qi + ' of ' + tq + '</p>',
     '<form method="POST" action="/api/skills/' + escHtml(skillName) + '/sessions/' + escHtml(sessionId) + '/answer">',
@@ -736,6 +746,15 @@ async function handlePostAnswerHtml(req, res) {
 let _getCommitPreview = skillsAdapter.getCommitPreview;
 let _commitSession    = skillsAdapter.commitSession;
 let _getCommitResult  = skillsAdapter.getCommitResult;
+
+// wuce.26 — injectable skill-turn executor (calls Copilot API per answer)
+let _skillTurnExecutor = skillsAdapter.skillTurnExecutor;
+
+/**
+ * Replace the skillTurnExecutor adapter (for testing).
+ * @param {function(string, Array, string, string): Promise<string>} fn
+ */
+function setSkillTurnExecutorAdapter(fn) { _skillTurnExecutor = fn; }
 
 // Audit logger for commit route — injectable via setCommitAuditLogger().
 let _commitAuditLogger = function(data) {
@@ -929,13 +948,36 @@ async function handleGetResultHtml(req, res) {
  */
 function registerHtmlSession(sessionId, sessionPath, skillName) {
   var questions = _getQuestionsForSkill(skillName);
+  // Load SKILL.md content for use as system prompt in per-answer model calls (wuce.26)
+  var repoPath    = _getRepoPath();
+  var skills      = listAvailableSkills(repoPath);
+  var skill       = skills.find(function(s) { return s.name === skillName; });
+  var skillContent = '';
+  if (skill && skill.path) {
+    var relPath = path.isAbsolute(skill.path) ? skill.path : path.join(repoPath, skill.path);
+    var mdPath  = path.join(relPath, 'SKILL.md');
+    if (fs.existsSync(mdPath)) {
+      skillContent = fs.readFileSync(mdPath, 'utf8');
+    }
+  }
   _sessionStore.set(sessionId, {
-    skillName:   skillName,
-    sessionPath: sessionPath,
-    questions:   questions,
-    answers:     [],
-    userId:      null   // HTML sessions: auth guard at route level is the security boundary
+    skillName:      skillName,
+    sessionPath:    sessionPath,
+    questions:      questions,
+    answers:        [],
+    modelResponses: [],
+    skillContent:   skillContent,
+    userId:         null   // HTML sessions: auth guard at route level is the security boundary
   });
+}
+
+/**
+ * Expose a session entry for test inspection.
+ * @param {string} sessionId
+ * @returns {object|undefined}
+ */
+function _getHtmlSession(sessionId) {
+  return _sessionStore.get(sessionId);
 }
 
 /**
@@ -950,7 +992,13 @@ function htmlGetNextQuestion(skillName, sessionId) {
   var idx = session.answers.length;
   if (idx >= session.questions.length) { return null; }
   var priorQA = session.questions.slice(0, idx).map(function(q, i) {
-    return { question: q.text || String(q), answer: session.answers[i] || '' };
+    return {
+      question:      q.text || String(q),
+      answer:        session.answers[i] || '',
+      modelResponse: (session.modelResponses && session.modelResponses[i] !== undefined)
+        ? session.modelResponses[i]
+        : null
+    };
   });
   return {
     question:       (session.questions[idx].text || String(session.questions[idx])),
@@ -962,16 +1010,47 @@ function htmlGetNextQuestion(skillName, sessionId) {
 
 /**
  * Record a sanitised answer for an HTML-flow session.
+ * Calls the skill-turn executor to generate a model response for the answer.
  * Returns the next URL (either the next question or commit-preview).
  * @param {string} skillName
  * @param {string} sessionId
  * @param {string} rawAnswer
- * @returns {{nextUrl:string}|null}  null when session not found
+ * @param {string} [token]  — GitHub access token (required for executor call)
+ * @returns {Promise<{nextUrl:string}|null>}  null when session not found
  */
-function htmlRecordAnswer(skillName, sessionId, rawAnswer) {
+async function htmlRecordAnswer(skillName, sessionId, rawAnswer, token) {
   var session = _sessionStore.get(sessionId);
   if (!session) { return null; }
+
+  var answerIndex = session.answers.length;
   session.answers.push(sanitiseAnswer(rawAnswer));
+
+  // Build priorQA for context (all answers before the current one)
+  var priorQA = session.questions.slice(0, answerIndex).map(function(q, i) {
+    return {
+      question:      q.text || String(q),
+      answer:        session.answers[i] || '',
+      modelResponse: (session.modelResponses && session.modelResponses[i] !== undefined)
+        ? session.modelResponses[i]
+        : null
+    };
+  });
+
+  // Call the skill-turn executor; on any error, record null (AC2)
+  var modelResponse = null;
+  try {
+    modelResponse = await _skillTurnExecutor(
+      session.skillContent || '',
+      priorQA,
+      session.answers[answerIndex],
+      token || ''
+    );
+  } catch (_err) {
+    modelResponse = null;
+  }
+  if (!session.modelResponses) { session.modelResponses = []; }
+  session.modelResponses[answerIndex] = modelResponse;
+
   var done = session.answers.length >= session.questions.length;
   var nextUrl = done
     ? '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/commit-preview'
@@ -992,8 +1071,13 @@ function htmlGetPreview(skillName, sessionId) {
   var artefactPath = 'artefacts/' + today + '-' + skillName + '/session-' + sessionId + '-output.md';
   var content = '# ' + skillName + ' session output\n\n' +
     session.questions.map(function(q, i) {
-      var qText = q.text || String(q);
-      return '## Q' + (i + 1) + ': ' + qText + '\n\n' + (session.answers[i] || '') + '\n';
+      var qText  = q.text || String(q);
+      var answer = session.answers[i] || '';
+      var mr     = session.modelResponses && session.modelResponses[i];
+      var modelSection = (mr != null)
+        ? '\n\n**Model response:**\n\n' + mr
+        : '';
+      return '## Q' + (i + 1) + ': ' + qText + '\n\n' + answer + modelSection + '\n';
     }).join('\n');
   return { artefactContent: content, artefactPath: artefactPath };
 }
@@ -1026,5 +1110,7 @@ module.exports = {
   handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml,
   setGetCommitPreview, setCommitSession, setGetCommitResult, setCommitAuditLogger,
   // HTML-flow session helpers (wired via server.js injectable adapters)
-  registerHtmlSession, htmlGetNextQuestion, htmlRecordAnswer, htmlGetPreview, htmlCommitSession
+  registerHtmlSession, htmlGetNextQuestion, htmlRecordAnswer, htmlGetPreview, htmlCommitSession,
+  // wuce.26 — test helpers + skill-turn executor adapter setter
+  _getHtmlSession, setSkillTurnExecutorAdapter
 };
