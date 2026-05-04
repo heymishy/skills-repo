@@ -5197,6 +5197,32 @@
           "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/epics/wuce-e4-phase2-guided-ui.md",
           "stories": [],
           "status": "complete"
+        },
+        {
+          "id": "wuce-e5",
+          "slug": "wuce-e5-html-shell-core-views",
+          "name": "HTML shell and core Phase 1 views",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/epics/wuce-e5-html-shell-core-views.md",
+          "stories": [
+            "wuce.18",
+            "wuce.19",
+            "wuce.20",
+            "wuce.21",
+            "wuce.22"
+          ],
+          "status": "complete"
+        },
+        {
+          "id": "wuce-e6",
+          "slug": "wuce-e6-skill-launcher-html-form",
+          "name": "Skill launcher HTML form",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/epics/wuce-e6-skill-launcher-html-form.md",
+          "stories": [
+            "wuce.23",
+            "wuce.24",
+            "wuce.25"
+          ],
+          "status": "complete"
         }
       ],
       "updatedAt": "2026-05-04",
