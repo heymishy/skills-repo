@@ -5220,9 +5220,10 @@
           "stories": [
             "wuce.23",
             "wuce.24",
-            "wuce.25"
+            "wuce.25",
+            "wuce.26"
           ],
-          "status": "complete"
+          "status": "in-progress"
         }
       ],
       "updatedAt": "2026-05-04",
@@ -6081,6 +6082,32 @@
           "prNumber": 300,
           "prUrl": "https://github.com/heymishy/skills-repo/pull/300",
           "dodStatus": "complete"
+        },
+        {
+          "id": "wuce.26",
+          "slug": "wuce.26-per-answer-model-response",
+          "name": "Per-answer model response in skill HTML flow",
+          "epic": "wuce-e6",
+          "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/stories/wuce.26-per-answer-model-response.md",
+          "prStatus": "none",
+          "dorStatus": "signed-off",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "stage": "definition-of-ready",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/test-plans/wuce.26-per-answer-model-response-test-plan.md",
+            "totalTests": 14,
+            "passing": 0
+          },
+          "acTotal": 7,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "health": "green",
+          "dorArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.26-per-answer-model-response-dor.md",
+          "dorContractArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dor/wuce.26-per-answer-model-response-dor-contract.md",
+          "updatedAt": "2026-05-04"
         }
       ],
       "metrics": [
