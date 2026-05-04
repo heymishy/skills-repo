@@ -22,6 +22,10 @@ const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionSt
 const { setLogger }                                                  = require('./routes/auth');
 const { setFetchPipelineState }                                      = require('./adapters/feature-list');
 const { setFetchArtefactDirectory }                                  = require('./adapters/artefact-list');
+const skillsAdapter                                                  = require('./adapters/skills');          // wuce.23 HTML form wiring
+const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
+const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
+const _path                                                          = require('path');                       // wuce.23 session ID extraction
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -31,6 +35,22 @@ setLogger({
   info: (event, data) => console.log(`[auth] ${event}`, JSON.stringify(data)),
   warn: (event, data) => console.warn(`[auth] ${event}`, JSON.stringify(data))
 });
+
+// Wire skill list + session creation — active in production AND when
+// WIRE_SKILL_ADAPTERS=true (used by playwright.local.config.js to test adapter
+// wiring while keeping NODE_ENV=test for session seeding).
+// Both operations are filesystem-only and require no GitHub token.
+if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true') {
+  const _repoRoot = process.env.COPILOT_REPO_PATH || _path.resolve(__dirname, '../..');
+  skillsAdapter.setListSkills(async function(_token) {
+    return listAvailableSkills(_repoRoot);
+  });
+  skillsAdapter.setCreateSession(async function(skillName, _token) {
+    const sessionPath = sessionManager.createSession('server-' + skillName);
+    const id = _path.basename(sessionPath);
+    return { id };
+  });
+}
 
 // Wire real GitHub pipeline-state fetcher for production (non-test) mode.
 // Fetches .github/pipeline-state.json from the given owner/repo using the user's token.
@@ -260,7 +280,12 @@ async function router(req, res) {
   } else if (pathname.match(/^\/api\/skills\/[^/]+\/sessions$/) && req.method === 'POST') {
     const skillNameParam = pathname.split('/')[3];
     req.params = { name: skillNameParam };
-    await handlePostSession(req, res);
+    const ct = (req.headers['content-type'] || '');
+    if (ct.includes('application/x-www-form-urlencoded')) {
+      authGuard(req, res, async () => { await handlePostSkillSessionHtml(req, res); });
+    } else {
+      await handlePostSession(req, res);
+    }
 
   } else if (pathname.match(/^\/api\/skills\/[^/]+\/sessions\/[^/]+\/answers$/) && req.method === 'POST') {
     const parts = pathname.split('/');

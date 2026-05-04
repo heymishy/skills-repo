@@ -8,3 +8,7 @@ test-results/
 
 # Local dev secrets
 .env
+
+# Local-only test files (may reference env credentials; never commit)
+playwright.local.config.js
+tests/e2e/local/
