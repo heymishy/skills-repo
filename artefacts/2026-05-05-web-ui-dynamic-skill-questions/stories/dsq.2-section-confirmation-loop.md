@@ -19,7 +19,7 @@ So that **I can review and correct the model's synthesis of my answers before th
 
 ## Architecture Constraints
 
-- **Section boundary detection:** Sections are derived from SKILL.md H2 headings (`## heading`). The existing `extractQuestions` function returns questions grouped under their parent heading. Section boundaries are already implicit in the question extraction structure; this story makes them explicit.
+- **Section boundary detection:** Sections are derived from SKILL.md H2 headings (`## heading`). The `session.sections` array (type `Array<{ heading: string, questions: Array<{id, text}> }>`) is populated by `registerHtmlSession` via `extractSections()` introduced in dsq.1.5. This story reads `session.sections` to detect when the operator has answered the last question in the current section. `extractSections` must be DoD-complete before this story can be implemented.
 - **D37 / injectable adapter rule (ADR-009):** The section-draft model call must use a new injectable adapter `_sectionDraftExecutor` following the same throw-on-default pattern as `_skillTurnExecutor` and `_nextQuestionExecutor` (from dsq.1).
 - **No new npm dependencies** — Node built-ins only.
 - **No Express** — raw `http.createServer` only.
@@ -27,8 +27,9 @@ So that **I can review and correct the model's synthesis of my answers before th
 
 ## Dependencies
 
-- **Upstream:** dsq.1 must be DoD-complete — this story reads `session.dynamicQuestions` and the updated `_sessionStore` entry shape introduced in dsq.1.
-- **Downstream:** dsq.4 (section-by-section artefact assembly) builds on the section structure introduced here.
+- **Upstream (hard):** dsq.1.5 must be DoD-complete — this story reads `session.sections` (`Array<{ heading, questions[] }>`) populated by `extractSections()` introduced in dsq.1.5. Without this structure, section boundary detection is not possible.
+- **Upstream (hard):** dsq.1 must be DoD-complete — this story reads `session.dynamicQuestions` and the updated `_sessionStore` entry shape introduced in dsq.1.
+- **Downstream:** dsq.4 (section-by-section artefact assembly) builds on the section structure and `session.sectionDrafts` introduced here.
 
 ## Acceptance Criteria
 
