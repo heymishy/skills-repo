@@ -1,47 +1,53 @@
 {
-  "currentPhase": "inner-loop",
-  "activeFeature": "2026-05-02-web-ui-copilot-execution-layer",
-  "lastUpdated": "2026-05-04T09:00:00Z",
+  "currentPhase": "definition-of-ready",
+  "activeFeature": "2026-05-05-web-ui-dynamic-skill-questions",
+  "lastUpdated": "2026-05-05T00:00:00.000Z",
   "cycle": {
     "discovery": {
       "status": "complete",
-      "artefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/discovery.md",
-      "completedAt": "2026-05-02"
+      "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/discovery.md"
+    },
+    "benefit-metric": {
+      "status": "active",
+      "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/benefit-metric.md"
+    },
+    "definition": {
+      "status": "complete",
+      "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/epics/dsq-epic-1.md"
+    },
+    "review": {
+      "status": "complete"
+    },
+    "test-plan": {
+      "status": "complete",
+      "commitSha": "d690543"
+    },
+    "definition-of-ready": {
+      "status": "complete",
+      "commitSha": "05cc897",
+      "artefacts": [
+        "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.1.5-section-aware-extraction-dor.md",
+        "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.1-dynamic-next-question-dor.md",
+        "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.2-section-confirmation-loop-dor.md",
+        "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.3-post-session-clarify-gate-dor.md",
+        "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.4-section-artefact-assembly-dor.md"
+      ]
     }
   },
   "previousFeature": {
     "slug": "2026-05-02-web-ui-copilot-execution-layer",
     "status": "definition-of-done-complete",
     "dodArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dod/feature-dod.md",
-    "notes": "All 17 stories merged. wuce.3 6/6 ACs verified live 2026-05-03 (commit SHA 82d866c). wuce.15 write mechanism proven via wuce.3. 85/88 ACs closed. 3 CSS-layout ACs (wuce.14) deferred to post-deploy visual regression. Production fixes committed: SameSite=Lax, null-email fallback, setFetchPipelineState wired."
+    "notes": "All 17 stories merged. wuce.3 6/6 ACs verified live 2026-05-03 (commit SHA 82d866c). 85/88 ACs closed. 3 CSS-layout ACs deferred. Production fixes committed: SameSite=Lax, null-email fallback, setFetchPipelineState wired."
   },
   "checkpoint": {
-    "writtenAt": "2026-05-03",
-    "contextAtWrite": "WUCE feature fully closed. Manual verification complete for wuce.3 (all 6 ACs live) and wuce.15 mechanism (proven via shared commitArtefact path). DoD updated to 85/88. Server.js production wiring fix committed (setFetchPipelineState, SameSite=Lax, null-email fallback, /api/me endpoint, start script). WUCE_REPOSITORIES env var added. Bitbucket portability path documented in DoD. Next feature: HTML frontend layer over the existing JSON API backend.",
-    "resumeInstruction": "Previous feature (wuce) is fully closed at 85/88 ACs. All code committed to master (latest: 979a998). Start a new /discovery for the HTML frontend layer: browser-renderable pages over the existing JSON API endpoints (/features, /artefact, /status, /api/actions, /api/skills/*). The backend engine is complete — the gap is HTML views, a navigation shell, and the guided skill question-flow form.",
+    "writtenAt": "2026-05-05",
+    "contextAtWrite": "All 5 dsq stories (dsq.1.5, dsq.1, dsq.2, dsq.3, dsq.4) signed off at DoR. 10 DoR artefacts committed in 05cc897. nfr-profile.md created. dsq.2 AC9 and T3.10 added to enforce server.js wiring. All story tests are failing (RED state, correct). Schema: 0 errors. Governance: 70/70 pass. spc5 T7 failure is pre-existing (unrelated to dsq changes).",
+    "resumeInstruction": "DoR is complete for all 5 dsq stories. Begin inner loop with /branch-setup for dsq.1.5 (Section-aware question extraction) — it has no upstream story deps. After dsq.1.5 merges, run /branch-setup for dsq.1. Dependency order: dsq.1.5 first, then dsq.1, then dsq.2/dsq.3/dsq.4. Read DoR artefacts in artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/ before writing any code.",
     "pendingActions": [
-      "Run /discovery for new feature: HTML frontend layer — feature list page, artefact reader page, skill launcher form, dashboard/action queue page",
-      "Deploy wuce to staging + run remaining manual verification scripts (wuce.8 annotation AC1-AC3, wuce.16 session-persistence AC1-AC4)",
-      "Onboard first stakeholder cohort to start P1/M2 measurement clock",
-      "Layer 2 test output standardisation (D31) — scripted pass across all check-*.js and *.test.js files"
+      "/branch-setup for dsq.1.5 (artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.1.5-section-aware-extraction-dor.md) — first story, no upstream deps",
+      "/branch-setup for dsq.1 (artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.1-dynamic-next-question-dor.md) — can run in parallel or after dsq.1.5 merges",
+      "spc5 T7 pre-existing failure: check-capture-completeness.js does not exit 0 when instrumentation.enabled=false — fix scripts/check-capture-completeness.js (separate issue, out of scope for dsq)"
     ]
-  },
-  "estimate": {
-    "phase": "E3",
-    "baseline": null,
-    "actuals": {
-      "featureSlug": "2026-05-02-web-ui-copilot-execution-layer",
-      "calendarDays": 1,
-      "wallClockH": 22.5,
-      "sessionId": "568d554a",
-      "engagementFraction": 0.25,
-      "outerLoopFocusH": 5.6,
-      "storyCount": 17,
-      "focusHPerStory": 0.33,
-      "deliveryModel": "agent-wave (4 waves, VS Code subagent-execution)",
-      "note": "null-path — no E1/E2 prior estimate recorded; seeds normalisation table only. Agent-heavy delivery model inflates wall-clock vs focus ratio vs solo delivery."
-    },
-    "delta": null,
-    "recordedAt": "2026-05-03T08:00:00Z"
   }
 }
