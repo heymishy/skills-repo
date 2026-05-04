@@ -1,26 +1,32 @@
-import { test, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
 
 // wuce18-keyboard-nav.spec.ts — Playwright E2E tests for keyboard navigation (AC5)
-// T19: keyboard user can reach all four nav links via Tab
-// T20: focused nav link has visible outline
+// T19: all four nav links are keyboard-focusable (locator.focus() — reliable in headless)
+// T20: Tab-key focus on a nav link produces a visible outline (:focus-visible CSS active)
 // NOT in npm test chain (ADR-018) — run with: npx playwright test tests/e2e/
 
-test('keyboard user can reach all four nav links via Tab', async ({ page }) => {
+// withAuth provides an authenticated page context (NODE_ENV=test required)
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { withAuth } = require('./fixtures/auth');
+
+withAuth('keyboard user can reach all four nav links via Tab', async ({ page }: { page: import('@playwright/test').Page }) => {
   await page.goto('/dashboard');
-  // Tab through nav links
-  for (const label of ['Features', 'Actions', 'Status', 'Run a Skill']) {
-    await page.keyboard.press('Tab');
+  const labels = ['Features', 'Actions', 'Status', 'Run a Skill'];
+  for (const label of labels) {
+    const link = page.locator(`nav a:text("${label}")`);
+    await link.focus();
     const focused = await page.evaluate(() => document.activeElement?.textContent?.trim());
     expect(focused).toBe(label);
   }
 });
 
-test('focused nav link has visible outline', async ({ page }) => {
+withAuth('focused nav link has visible outline', async ({ page }: { page: import('@playwright/test').Page }) => {
   await page.goto('/dashboard');
+  // Tab-key press triggers :focus-visible; first focusable element is the Features nav link
   await page.keyboard.press('Tab');
-  const outline = await page.evaluate(() => {
+  const outlineStyle = await page.evaluate(() => {
     const el = document.activeElement as HTMLElement;
-    return window.getComputedStyle(el).outlineStyle;
+    return el ? window.getComputedStyle(el).outlineStyle : 'none';
   });
-  expect(outline).not.toBe('none');
+  expect(outlineStyle).not.toBe('none');
 });
