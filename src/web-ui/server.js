@@ -18,7 +18,7 @@ const { handleGetFeatures, handleGetFeatureArtefacts }               = require('
 const { handleGetStatus, handleGetStatusExport }                     = require('./routes/status');
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
-const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25
+const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlRecordAnswer, htmlGetPreview, htmlCommitSession } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25
 const { setLogger }                                                  = require('./routes/auth');
 const { setFetchPipelineState }                                      = require('./adapters/feature-list');
 const { setFetchArtefactDirectory }                                  = require('./adapters/artefact-list');
@@ -46,9 +46,22 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     return listAvailableSkills(_repoRoot);
   });
   skillsAdapter.setCreateSession(async function(skillName, _token) {
-    const sessionPath = sessionManager.createSession('server-' + skillName);
+    const sessionPath = sessionManager.createSession('html-' + skillName);
     const id = _path.basename(sessionPath);
+    registerHtmlSession(id, sessionPath, skillName);
     return { id };
+  });
+  skillsAdapter.setGetNextQuestion(async function(skillName, sessionId, _token) {
+    return htmlGetNextQuestion(skillName, sessionId);
+  });
+  skillsAdapter.setSubmitAnswer(async function(skillName, sessionId, answer, _token) {
+    return htmlRecordAnswer(skillName, sessionId, answer) || { nextUrl: '/skills/' + encodeURIComponent(skillName) };
+  });
+  skillsAdapter.setGetCommitPreview(async function(skillName, sessionId, _token) {
+    return htmlGetPreview(skillName, sessionId);
+  });
+  skillsAdapter.setCommitSession(async function(skillName, sessionId, token) {
+    return htmlCommitSession(skillName, sessionId, token, { login: '', email: 'web-ui@localhost' });
   });
 }
 
