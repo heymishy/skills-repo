@@ -1086,13 +1086,31 @@ async function htmlRecordAnswer(skillName, sessionId, rawAnswer, token) {
     };
   });
 
+  // Build role-framed system prompt: prepend coaching instructions so the model
+  // knows to comment on answers rather than execute the full skill.
+  var EXECUTOR_ROLE_FRAMING =
+    'You are a reflective coaching assistant embedded in a structured skill session.\n' +
+    'After each answer the operator submits, respond with 2–4 sentences that:\n' +
+    '- Acknowledge the operator\'s specific answer\n' +
+    '- Surface any relevant context, nuance, or consideration from the skill instructions below\n' +
+    '- Help frame what comes next in the session\n\n' +
+    'Be direct and practical. Never repeat the question back verbatim. Do not describe yourself or your role.\n\n' +
+    '--- SKILL INSTRUCTIONS ---\n\n';
+
+  // Include the question that was just answered so the model has full context.
+  var _currentQ = session.questions[answerIndex];
+  var _currentQText = _currentQ ? (_currentQ.text || String(_currentQ)) : '';
+  var _answerWithContext = _currentQText
+    ? 'Q: ' + _currentQText + '\n\nA: ' + session.answers[answerIndex]
+    : session.answers[answerIndex];
+
   // Call the skill-turn executor; on any error, record null (AC2)
   var modelResponse = null;
   try {
     modelResponse = await _skillTurnExecutor(
-      session.skillContent || '',
+      EXECUTOR_ROLE_FRAMING + (session.skillContent || ''),
       priorQA,
-      session.answers[answerIndex],
+      _answerWithContext,
       token || ''
     );
   } catch (_err) {
