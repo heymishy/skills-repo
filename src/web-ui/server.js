@@ -134,7 +134,7 @@ async function router(req, res) {
     });
     // No Set-Cookie returned — the fixture injects the cookie via storageState.
     // Returning Set-Cookie (SameSite=Strict) would overwrite the fixture's
-    // SameSite=Lax cookie and break first-navigation auth in tests.
+    // SameSite=Strict cookie and break first-navigation auth in tests.
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ sessionId: E2E_SESSION_ID, login: 'e2e-tester' }));
     return;

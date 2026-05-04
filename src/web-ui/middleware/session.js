@@ -16,7 +16,7 @@ const _sessions = new Map();
 const SESSION_COOKIE_CONFIG = {
   httpOnly: true,
   secure:   true,
-  sameSite: 'lax',
+  sameSite: 'strict',
   path:     '/'
 };
 
@@ -25,7 +25,7 @@ function _buildCookieHeader(sessionId) {
   const parts = [
     `session_id=${sessionId}`,
     'HttpOnly',
-    'SameSite=Lax',
+    'SameSite=Strict',
     'Path=/'
   ];
   // Enforce Secure flag in production; allow HTTP in development for local testing
