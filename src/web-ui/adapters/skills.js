@@ -114,7 +114,78 @@ async function submitAnswer(skillName, sessionId, answer, token) {
   return _submitAnswer(skillName, sessionId, answer, token);
 }
 
+/** @type {function(string, string, string): Promise<{artefactContent:string, artefactPath:string, featureSlug:string, artefactType:string}>} */
+let _getCommitPreview = async function defaultGetCommitPreview(skillName, sessionId, token) {
+  void skillName; void sessionId; void token;
+  return { artefactContent: '', artefactPath: '', featureSlug: '', artefactType: '' };
+};
+
+/** @type {function(string, string, string): Promise<{artefactPath:string, featureSlug:string, artefactType:string}>} */
+let _commitSession = async function defaultCommitSession(skillName, sessionId, token) {
+  void skillName; void sessionId; void token;
+  return { artefactPath: '', featureSlug: '', artefactType: '' };
+};
+
+/** @type {function(string, string, string): Promise<{artefactPath:string, featureSlug:string, artefactType:string}>} */
+let _getCommitResult = async function defaultGetCommitResult(skillName, sessionId, token) {
+  void skillName; void sessionId; void token;
+  return { artefactPath: '', featureSlug: '', artefactType: '' };
+};
+
+/**
+ * Replace the getCommitPreview implementation (for testing).
+ * @param {function(string, string, string): Promise<object>} fn
+ */
+function setGetCommitPreview(fn) { _getCommitPreview = fn; }
+
+/**
+ * Replace the commitSession implementation (for testing).
+ * @param {function(string, string, string): Promise<object>} fn
+ */
+function setCommitSession(fn) { _commitSession = fn; }
+
+/**
+ * Replace the getCommitResult implementation (for testing).
+ * @param {function(string, string, string): Promise<object>} fn
+ */
+function setGetCommitResult(fn) { _getCommitResult = fn; }
+
+/**
+ * Get the commit preview for a skill session (artefact content + metadata).
+ * @param {string} skillName
+ * @param {string} sessionId
+ * @param {string} token — GitHub access token
+ * @returns {Promise<{artefactContent:string, artefactPath:string, featureSlug:string, artefactType:string}>}
+ */
+async function getCommitPreview(skillName, sessionId, token) {
+  return _getCommitPreview(skillName, sessionId, token);
+}
+
+/**
+ * Commit the completed skill session artefact.
+ * @param {string} skillName
+ * @param {string} sessionId
+ * @param {string} token — GitHub access token
+ * @returns {Promise<{artefactPath:string, featureSlug:string, artefactType:string}>}
+ */
+async function commitSession(skillName, sessionId, token) {
+  return _commitSession(skillName, sessionId, token);
+}
+
+/**
+ * Get the result of a committed skill session.
+ * @param {string} skillName
+ * @param {string} sessionId
+ * @param {string} token — GitHub access token
+ * @returns {Promise<{artefactPath:string, featureSlug:string, artefactType:string}>}
+ */
+async function getCommitResult(skillName, sessionId, token) {
+  return _getCommitResult(skillName, sessionId, token);
+}
+
 module.exports = {
   listSkills, createSession, setListSkills, setCreateSession,
-  getNextQuestion, submitAnswer, setGetNextQuestion, setSubmitAnswer
+  getNextQuestion, submitAnswer, setGetNextQuestion, setSubmitAnswer,
+  getCommitPreview, commitSession, getCommitResult,
+  setGetCommitPreview, setCommitSession, setGetCommitResult
 };
