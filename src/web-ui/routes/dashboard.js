@@ -8,6 +8,7 @@
 
 const { getPendingActions: defaultGetPendingActions } = require('../adapters/action-queue');
 const { renderShell, escHtml }                        = require('../utils/html-shell');
+const { renderActions }                               = require('../views/actions-view');
 
 // Audit logger — replaced via setLogger() in tests and production bootstrap
 let _logger = {
@@ -96,7 +97,8 @@ function handleDashboard(req, res) {
   const html = renderShell({
     title:       'Dashboard',
     bodyContent,
-    user:        { login }
+    user:        { login },
+    active:      'dashboard'
   });
 
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -145,27 +147,9 @@ async function handleGetActionsHtml(req, res) {
   // Support both { items, bannerMessage } shape and flat array
   const items = Array.isArray(result) ? result : (result.items || []);
 
-  let bodyContent;
-  if (items.length === 0) {
-    bodyContent = '<h1>Actions</h1><p class="no-pending-actions">No pending actions — you\'re up to date</p>';
-  } else {
-    const listItems = items.map(item => {
-      const safeTitle      = escHtml(item.title      || '');
-      const safeFeature    = escHtml(item.feature    || '');
-      const safeActionType = escHtml(item.actionType || '');
-      const safeHref       = escHtml('/artefact/' + (item.artefactPath || ''));
-      return [
-        '<li class="action-item">',
-        `<a href="${safeHref}" class="action-link">View ${safeTitle}</a>`,
-        `<span class="action-feature">${safeFeature}</span>`,
-        `<span class="action-type">${safeActionType}</span>`,
-        '</li>'
-      ].join('');
-    }).join('\n');
-    bodyContent = `<h1>Actions</h1>\n<ul class="action-list">\n${listItems}\n</ul>`;
-  }
+  const bodyContent = renderActions({ items });
 
-  const html = renderShell({ title: 'Actions', bodyContent, user: { login } });
+  const html = renderShell({ title: 'Actions', bodyContent, user: { login }, active: 'actions' });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
