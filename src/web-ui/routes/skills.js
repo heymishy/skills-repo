@@ -1291,9 +1291,29 @@ async function htmlRecordAnswer(skillName, sessionId, rawAnswer, token) {
 
   var done = session.answers.length >= session.questions.length;
   var nextUrl = done
-    ? '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/commit-preview'
+    ? '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/complete'
     : '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/next';
   return { nextUrl: nextUrl };
+}
+
+/**
+ * Render the "Draft complete" interstitial page that surfaces /clarify before committing.
+ * dsq.3 — AC2/AC3/AC4/AC5
+ * @param {string} skillName
+ * @param {string} sessionId
+ * @returns {string} HTML
+ */
+function htmlGetCompletePage(skillName, sessionId) {
+  var session = _sessionStore.get(sessionId);
+  var questionCount = session ? (session.questions ? session.questions.length : 0) : 0;
+  var commitPreviewUrl = '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/commit-preview';
+  var bodyContent =
+    '<h2>Draft complete</h2>' +
+    '<p>Skill: <strong>' + escHtml(skillName) + '</strong></p>' +
+    '<p>' + questionCount + ' question' + (questionCount !== 1 ? 's' : '') + ' answered.</p>' +
+    '<p><a href="' + escHtml(commitPreviewUrl) + '">Commit artefact</a></p>' +
+    '<p style="margin-top:1rem"><a href="/skills/clarify">Run /clarify first</a></p>';
+  return renderShell({ title: 'Draft complete', bodyContent: bodyContent, user: { login: '' } });
 }
 
 /**
@@ -1354,5 +1374,7 @@ module.exports = {
   // dsq.1 — next-question executor adapter setter
   setNextQuestionExecutorAdapter,
   // dsq.2 — section-draft executor adapter setter
-  setSectionDraftExecutorAdapter
+  setSectionDraftExecutorAdapter,
+  // dsq.3 — complete page
+  htmlGetCompletePage
 };
