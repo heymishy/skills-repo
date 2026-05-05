@@ -1069,7 +1069,13 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot) {
     '',
     'You are running as a web UI assistant for a structured skill session.',
     'Read the SKILL.md instructions above and follow them to run the session.',
-    'Ask one question at a time. Wait for the operator\'s answer before proceeding.',
+    '',
+    'OPENING TURN: When the session begins, greet the operator with one short welcoming sentence and ask exactly ONE opening question. Do not list multiple questions. Do not number questions. Do not use headers or bullet lists in your opening.',
+    '',
+    'ONE QUESTION AT A TIME: Ask one question at a time. Wait for the answer before asking the next.',
+    '',
+    'RICH INPUT HANDLING: When the operator\'s answer covers multiple structured questions at once (problem, audience, current pain, consequences), acknowledge what they provided by briefly summarising it back, then identify the FIRST open question not yet addressed and ask only that. Do NOT re-ask about anything they have already described. Do NOT ask them to "expand", "clarify", or "explain in more detail" something they have already explained. Never ask someone to repeat themselves.',
+    '',
     'When you have gathered all required information, output the complete artefact using these exact markers:',
     '',
     '---ARTEFACT-START---',
@@ -1284,7 +1290,7 @@ async function handleGetChatHtml(req, res) {
       initResponse = await _skillTurnExecutor(
         session.systemPrompt,
         [],
-        'Begin the session.',
+        'Begin the session. Greet the operator with one short welcoming sentence and ask your single opening question only. Do not list multiple questions.',
         req.session.accessToken
       );
     } catch (err) {
