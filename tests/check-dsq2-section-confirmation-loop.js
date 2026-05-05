@@ -1,10 +1,10 @@
-'use strict';
+﻿'use strict';
 /**
  * check-dsq2-section-confirmation-loop.js
  *
- * TDD tests for dsq.2 — Section confirmation loop.
- * All 9 tests FAIL before implementation.
- * All 9 tests PASS after full implementation.
+ * Tests for dsq.2 — Section confirmation loop (model-first architecture).
+ * Rewritten for mfc.1: tests verify session.turns accumulation, executor
+ * call counts, and no-op behaviour of setSectionDraftExecutorAdapter.
  *
  * Run: node tests/check-dsq2-section-confirmation-loop.js
  */
@@ -48,371 +48,179 @@ function freshRequire(modulePath) {
   return require(resolved);
 }
 
-/**
- * Make a session with synthetic sections already set.
- * routes.registerHtmlSession populates from real disk skill (discovery).
- * We then override sections + questions for deterministic section-boundary tests.
- */
-function makeSession(routes, skillName, overrides) {
-  const sid = 'test-dsq2-' + Math.random().toString(36).slice(2);
-  routes.registerHtmlSession(sid, '/tmp/s-' + sid, skillName || 'discovery');
-  if (overrides) {
-    const sess = routes._getHtmlSession(sid);
-    Object.assign(sess, overrides);
-  }
-  return sid;
-}
-
-/**
- * Build synthetic two-section data.
- * Section 0: Q1, Q2 (flat questions: q1, q2)
- * Section 1: Q3, Q4 (flat questions: q3, q4)
- */
-function twoSectionData() {
-  const q1 = { id: 'q1', text: 'What is your background? Please describe fully.' };
-  const q2 = { id: 'q2', text: 'What problem are you solving? Explain the core issue.' };
-  const q3 = { id: 'q3', text: 'What are your primary constraints? List the top three.' };
-  const q4 = { id: 'q4', text: 'Who are the key stakeholders involved in this project?' };
-  return {
-    questions: [q1, q2, q3, q4],
-    sections: [
-      { heading: 'Background', questions: [q1, q2] },
-      { heading: 'Constraints', questions: [q3, q4] }
-    ]
-  };
-}
-
 const ROUTES_PATH   = path.resolve(__dirname, '../src/web-ui/routes/skills.js');
 const ADAPTERS_PATH = path.resolve(__dirname, '../src/web-ui/adapters/skills.js');
 
 const queue = [];
 
-// ── T3.9 — Smoke: setSectionDraftExecutorAdapter exported ────────────────────
-
+// T3.9 — Smoke: setSectionDraftExecutorAdapter exported
 queue.push(function runT3_9() {
-  console.log('\n── T3.9 — Smoke: setSectionDraftExecutorAdapter exported from routes');
+  console.log('\n-- T3.9 -- Smoke: setSectionDraftExecutorAdapter exported from routes');
   return test('T3.9 (smoke): routes exports setSectionDraftExecutorAdapter as a function', function() {
     const routes = freshRequire(ROUTES_PATH);
-    assert.strictEqual(
-      typeof routes.setSectionDraftExecutorAdapter,
-      'function',
-      'setSectionDraftExecutorAdapter must be exported and be a function'
-    );
+    assert.strictEqual(typeof routes.setSectionDraftExecutorAdapter, 'function',
+      'setSectionDraftExecutorAdapter must be exported and be a function');
   });
 });
 
-// ── T3.1 — AC1: Last Q of section triggers _sectionDraftExecutor ─────────────
-
-queue.push(function runT3_1() {
-  console.log('\n── T3.1 — AC1: Last answer of a section triggers _sectionDraftExecutor');
-  return test('T3.1 (AC1): _sectionDraftExecutor called with heading, Q&A pairs, and instruction at section end', async function() {
-    const routes = freshRequire(ROUTES_PATH);
-
-    routes.setSkillTurnExecutorAdapter(async function() { return 'turn insight'; });
-    routes.setNextQuestionExecutorAdapter(async function() { return 'dynamic next Q'; });
-
-    let draftCallCount = 0;
-    let capturedHeading = '';
-    let capturedQaPairs = null;
-    let capturedInstruction = '';
-
-    routes.setSectionDraftExecutorAdapter(async function(heading, qaPairs, instruction, token) {
-      draftCallCount++;
-      capturedHeading = heading;
-      capturedQaPairs = qaPairs;
-      capturedInstruction = instruction;
-      return 'Draft of Background section.';
-    });
-
-    const data = twoSectionData();
-    // Inject a session already at the last Q of section 0: 1 answer recorded, need Q2 (index 1)
-    const sid = makeSession(routes, 'discovery', Object.assign({}, data, {
-      answers: ['My background is product management.']
-    }));
-
-    // Answer Q2 (last question of section 0)
-    await routes.htmlRecordAnswer('discovery', sid, 'I am solving prioritisation problems.');
-
-    assert.strictEqual(draftCallCount, 1, '_sectionDraftExecutor must be called exactly once');
-    assert.strictEqual(capturedHeading, 'Background', 'heading argument must be "Background"');
-    assert.ok(Array.isArray(capturedQaPairs) && capturedQaPairs.length === 2,
-      'qaPairs must be an array of 2 entries (both Q&A pairs in section 0)');
-    const expectedInstruction = 'Synthesise the operator\'s answers into a concise draft of the Background section for the artefact.';
-    assert.strictEqual(capturedInstruction, expectedInstruction,
-      'instruction argument must be the exact synthesis instruction with section heading');
-  });
-});
-
-// ── T3.2 — AC2: Successful draft → pending confirmation in session ─────────────
-
-queue.push(function runT3_2() {
-  console.log('\n── T3.2 — AC2: successful draft response → session has pending confirmation state');
-  return test('T3.2 (AC2): after section-end answer, session.pendingConfirmation is truthy and draft stored', async function() {
-    const routes = freshRequire(ROUTES_PATH);
-
-    routes.setSkillTurnExecutorAdapter(async function() { return 'turn insight'; });
-    routes.setNextQuestionExecutorAdapter(async function() { return 'dynamic next Q'; });
-    routes.setSectionDraftExecutorAdapter(async function() { return 'Draft of Background section.'; });
-
-    const data = twoSectionData();
-    const sid = makeSession(routes, 'discovery', Object.assign({}, data, {
-      answers: ['First answer']
-    }));
-
-    const result = await routes.htmlRecordAnswer('discovery', sid, 'Second answer — last in section 0.');
-    const sess = routes._getHtmlSession(sid);
-
-    assert.ok(
-      sess.pendingConfirmation === true || (sess.pendingSectionDraft && sess.pendingSectionDraft.length > 0),
-      'session must have pendingConfirmation=true or pendingSectionDraft set after section-end draft'
-    );
-    // The result should signal that confirmation is needed (not a plain nextQuestion URL)
-    assert.ok(
-      result && (result.pendingDraft || result.draftText || result.confirmRequired || result.nextUrl),
-      'htmlRecordAnswer result must signal confirmation needed or include a draftText field'
-    );
-  });
-});
-
-// ── T3.3 — AC3: "Confirm" → sectionDrafts[i] set, session advances ───────────
-
-queue.push(function runT3_3() {
-  console.log('\n── T3.3 — AC3: "confirm" answer → sectionDrafts[0] = draft, session advances');
-  return test('T3.3 (AC3): answer="confirm" stores draft in sectionDrafts[0] and clears pendingConfirmation', async function() {
-    const routes = freshRequire(ROUTES_PATH);
-
-    routes.setSkillTurnExecutorAdapter(async function() { return 'turn insight'; });
-    routes.setNextQuestionExecutorAdapter(async function() { return 'dynamic next Q'; });
-    routes.setSectionDraftExecutorAdapter(async function() { return 'Draft of Background section.'; });
-
-    const data = twoSectionData();
-    // Set up a session already in pending confirmation state
-    const sid = makeSession(routes, 'discovery', Object.assign({}, data, {
-      answers:            ['First answer', 'Second answer'],
-      pendingConfirmation: true,
-      pendingSectionDraft: 'Draft of Background section.',
-      currentSectionIndex: 0
-    }));
-
-    await routes.htmlRecordAnswer('discovery', sid, 'confirm');
-    const sess = routes._getHtmlSession(sid);
-
-    assert.ok(Array.isArray(sess.sectionDrafts), 'session.sectionDrafts must be an array');
-    assert.strictEqual(sess.sectionDrafts[0], 'Draft of Background section.',
-      'sectionDrafts[0] must equal the confirmed draft text');
-    assert.ok(!sess.pendingConfirmation, 'pendingConfirmation must be falsy after confirmation');
-  });
-});
-
-// ── T3.4 — AC4: "Edit" → sectionDrafts[i] = operator text, advance ───────────
-
-queue.push(function runT3_4() {
-  console.log('\n── T3.4 — AC4: "edit:" prefix answer → sectionDrafts[0] = operator text');
-  return test('T3.4 (AC4): answer starting with "edit:" stores operator text in sectionDrafts[0]', async function() {
-    const routes = freshRequire(ROUTES_PATH);
-
-    routes.setSkillTurnExecutorAdapter(async function() { return 'turn insight'; });
-    routes.setNextQuestionExecutorAdapter(async function() { return 'dynamic next Q'; });
-    routes.setSectionDraftExecutorAdapter(async function() { return 'Model draft.'; });
-
-    const data = twoSectionData();
-    const sid = makeSession(routes, 'discovery', Object.assign({}, data, {
-      answers:            ['First answer', 'Second answer'],
-      pendingConfirmation: true,
-      pendingSectionDraft: 'Model draft.',
-      currentSectionIndex: 0
-    }));
-
-    const operatorText = 'My custom final text for the Background section.';
-    await routes.htmlRecordAnswer('discovery', sid, 'edit:' + operatorText);
-    const sess = routes._getHtmlSession(sid);
-
-    assert.strictEqual(sess.sectionDrafts[0], operatorText,
-      'sectionDrafts[0] must equal the operator-supplied text (after "edit:" prefix), not the model draft');
-    assert.ok(!sess.pendingConfirmation, 'pendingConfirmation must be falsy after edit');
-  });
-});
-
-// ── T3.5 — AC5: Executor throws → silent fallback, no error ──────────────────
-
-queue.push(function runT3_5() {
-  console.log('\n── T3.5 — AC5: executor throws → silent fallback, session advances, no error');
-  return test('T3.5 (AC5): throwing executor causes silent fallback; no error thrown; pendingConfirmation not set', async function() {
-    const routes = freshRequire(ROUTES_PATH);
-
-    routes.setSkillTurnExecutorAdapter(async function() { return 'turn insight'; });
-    routes.setNextQuestionExecutorAdapter(async function() { return 'dynamic next Q'; });
-    routes.setSectionDraftExecutorAdapter(async function() {
-      throw new Error('Copilot API timeout after 15000ms');
-    });
-
-    const data = twoSectionData();
-    const sid = makeSession(routes, 'discovery', Object.assign({}, data, {
-      answers: ['First answer']
-    }));
-
-    let threwError = false;
-    try {
-      await routes.htmlRecordAnswer('discovery', sid, 'Second answer — last in section 0.');
-    } catch (_) {
-      threwError = true;
-    }
-
-    const sess = routes._getHtmlSession(sid);
-
-    assert.strictEqual(threwError, false, 'htmlRecordAnswer must not throw when executor throws');
-    assert.ok(!sess.pendingConfirmation,
-      'pendingConfirmation must not be set when executor throws (silent fallback)');
-    // Session should still have advances (answer recorded)
-    assert.ok(Array.isArray(sess.answers) && sess.answers.length === 2,
-      'answer must still be recorded even after executor throws');
-  });
-});
-
-// ── T3.6 — AC6: Default stub throws exact message ────────────────────────────
-
+// T3.6 -- AC6: Default stub message
 queue.push(function runT3_6() {
-  console.log('\n── T3.6 — AC6: default stub throws exact required message');
-  return test('T3.6 (AC6): default _sectionDraftExecutor stub throws exact required error message', async function() {
-    // Test via adapters module if exported, otherwise via a spy wrapper on routes
+  console.log('\n-- T3.6 -- AC6: default _sectionDraftExecutor stub message');
+  return test('T3.6 (AC6): default stub message from adapters or routes is correct', async function() {
     const adapters = freshRequire(ADAPTERS_PATH);
-
     if (typeof adapters.sectionDraftExecutor === 'function') {
-      assert.throws(
-        function() { adapters.sectionDraftExecutor('heading', [], 'instruction', 'token'); },
-        function(err) {
-          const expected = 'Adapter not wired: _sectionDraftExecutor. Call setSectionDraftExecutorAdapter() with a real implementation before use.';
-          assert.ok(err instanceof Error, 'must throw an Error instance');
-          assert.strictEqual(err.message, expected,
-            'Error message must be exactly:\n  "' + expected + '"\nGot:\n  "' + err.message + '"');
-          return true;
-        }
-      );
-    } else {
-      // Verify via a fresh routes module: capture stub message through the fallback path
-      const routesFresh = freshRequire(ROUTES_PATH);
-      let capturedStubMessage = null;
-
-      // Wire other adapters so they don't interfere
-      routesFresh.setSkillTurnExecutorAdapter(async function() { return 'ok'; });
-      routesFresh.setNextQuestionExecutorAdapter(async function() { return 'ok'; });
-      // Wire a spy that records the exact stub message before the silent fallback swallows it
-      routesFresh.setSectionDraftExecutorAdapter(async function() {
+      assert.throws(function() { adapters.sectionDraftExecutor('h', [], 'i', 't'); }, function(err) {
         const expected = 'Adapter not wired: _sectionDraftExecutor. Call setSectionDraftExecutorAdapter() with a real implementation before use.';
-        capturedStubMessage = expected;
-        throw new Error(expected);
+        assert.ok(err instanceof Error); assert.strictEqual(err.message, expected); return true;
       });
-
-      const data = twoSectionData();
-      const sid = makeSession(routesFresh, 'discovery', Object.assign({}, data, {
-        answers: ['First answer']
-      }));
-
-      await routesFresh.htmlRecordAnswer('discovery', sid, 'Last Q answer');
-      const expected = 'Adapter not wired: _sectionDraftExecutor. Call setSectionDraftExecutorAdapter() with a real implementation before use.';
-      assert.strictEqual(capturedStubMessage, expected, 'stub must throw with exact expected message');
+    } else {
+      const routes = freshRequire(ROUTES_PATH);
+      assert.strictEqual(typeof routes.setSectionDraftExecutorAdapter, 'function',
+        'setSectionDraftExecutorAdapter must exist');
     }
   });
 });
 
-// ── T3.7 — AC7: No H2 sections → no confirmation step ────────────────────────
+// T3.1 -- AC1: _sectionDraftExecutor NOT called by htmlSubmitTurn
+queue.push(function runT3_1() {
+  console.log('\n-- T3.1 -- AC1: _sectionDraftExecutor never called by htmlSubmitTurn');
+  return test('T3.1 (AC1): setSectionDraftExecutorAdapter wired function never invoked by htmlSubmitTurn', async function() {
+    const routes = freshRequire(ROUTES_PATH);
+    let sectionDraftCallCount = 0;
+    routes.setSectionDraftExecutorAdapter(async function() { sectionDraftCallCount++; return 'Draft.'; });
+    routes.setSkillTurnExecutorAdapter(async function() { return 'Model response.'; });
+    const sid = 'test-dsq2-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, { skillName: 'discovery', sessionPath: '/tmp/test', systemPrompt: 'PROMPT', turns: [], artefactContent: null, artefactPath: null, done: false });
+    await routes.htmlSubmitTurn('discovery', sid, 'Answer 1.', 'fake-tok');
+    await routes.htmlSubmitTurn('discovery', sid, 'Answer 2.', 'fake-tok');
+    assert.strictEqual(sectionDraftCallCount, 0, '_sectionDraftExecutor must NOT be called by htmlSubmitTurn');
+  });
+});
 
+// T3.2 -- AC2: session.turns has 2 entries after one htmlSubmitTurn
+queue.push(function runT3_2() {
+  console.log('\n-- T3.2 -- AC2: session.turns has 2 entries after one htmlSubmitTurn');
+  return test('T3.2 (AC2): session.turns has exactly 2 entries (user+assistant) after one call', async function() {
+    const routes = freshRequire(ROUTES_PATH);
+    routes.setSkillTurnExecutorAdapter(async function() { return 'Model response text.'; });
+    const sid = 'test-dsq2-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, { skillName: 'discovery', sessionPath: '/tmp/test', systemPrompt: 'PROMPT', turns: [], artefactContent: null, artefactPath: null, done: false });
+    await routes.htmlSubmitTurn('discovery', sid, 'First user answer.', 'fake-tok');
+    const sess = routes._getHtmlSession(sid);
+    assert.ok(Array.isArray(sess.turns), 'session.turns must be an array');
+    assert.strictEqual(sess.turns.length, 2, 'must have exactly 2 turns');
+    assert.strictEqual(sess.turns[0].role, 'user');
+    assert.strictEqual(sess.turns[1].role, 'assistant');
+  });
+});
+
+// T3.3 -- AC3: second htmlSubmitTurn appends 2 more entries (total 4)
+queue.push(function runT3_3() {
+  console.log('\n-- T3.3 -- AC3: second htmlSubmitTurn appends 2 more entries (total 4)');
+  return test('T3.3 (AC3): session.turns has 4 entries after two htmlSubmitTurn calls', async function() {
+    const routes = freshRequire(ROUTES_PATH);
+    routes.setSkillTurnExecutorAdapter(async function() { return 'Model response.'; });
+    const sid = 'test-dsq2-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, { skillName: 'discovery', sessionPath: '/tmp/test', systemPrompt: 'PROMPT', turns: [], artefactContent: null, artefactPath: null, done: false });
+    await routes.htmlSubmitTurn('discovery', sid, 'First answer.', 'fake-tok');
+    await routes.htmlSubmitTurn('discovery', sid, 'Second answer.', 'fake-tok');
+    const sess = routes._getHtmlSession(sid);
+    assert.strictEqual(sess.turns.length, 4, 'must have 4 turns after two calls');
+    assert.strictEqual(sess.turns[2].role, 'user');
+    assert.strictEqual(sess.turns[3].role, 'assistant');
+  });
+});
+
+// T3.4 -- AC4: third htmlSubmitTurn passes history of 4 prior turns
+queue.push(function runT3_4() {
+  console.log('\n-- T3.4 -- AC4: third htmlSubmitTurn passes history of 4 prior turns to executor');
+  return test('T3.4 (AC4): _skillTurnExecutor receives history of 4 prior turns on 3rd call', async function() {
+    const routes = freshRequire(ROUTES_PATH);
+    let capturedHistory = null; let callCount = 0;
+    routes.setSkillTurnExecutorAdapter(async function(systemPrompt, history, currentInput, token) {
+      callCount++; capturedHistory = history; return 'Response ' + callCount;
+    });
+    const sid = 'test-dsq2-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, { skillName: 'discovery', sessionPath: '/tmp/test', systemPrompt: 'PROMPT', turns: [], artefactContent: null, artefactPath: null, done: false });
+    await routes.htmlSubmitTurn('discovery', sid, 'First.', 'fake-tok');
+    await routes.htmlSubmitTurn('discovery', sid, 'Second.', 'fake-tok');
+    await routes.htmlSubmitTurn('discovery', sid, 'Third.', 'fake-tok');
+    assert.strictEqual(callCount, 3);
+    assert.ok(Array.isArray(capturedHistory), 'history must be an array');
+    assert.strictEqual(capturedHistory.length, 4, 'history on 3rd call must have 4 entries');
+  });
+});
+
+// T3.5 -- AC5: htmlSubmitTurn does not throw when _skillTurnExecutor throws
+queue.push(function runT3_5() {
+  console.log('\n-- T3.5 -- AC5: htmlSubmitTurn does not throw when _skillTurnExecutor throws');
+  return test('T3.5 (AC5): htmlSubmitTurn handles _skillTurnExecutor throw gracefully', async function() {
+    const routes = freshRequire(ROUTES_PATH);
+    routes.setSkillTurnExecutorAdapter(async function() { throw new Error('Copilot API timeout after 15000ms'); });
+    const sid = 'test-dsq2-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, { skillName: 'discovery', sessionPath: '/tmp/test', systemPrompt: 'PROMPT', turns: [], artefactContent: null, artefactPath: null, done: false });
+    let threwError = false;
+    try { await routes.htmlSubmitTurn('discovery', sid, 'My answer.', 'fake-tok'); } catch (_) { threwError = true; }
+    assert.strictEqual(threwError, false, 'htmlSubmitTurn must not throw when executor throws');
+    const sess = routes._getHtmlSession(sid);
+    assert.strictEqual(sess.done, false, 'session.done must remain false on executor error');
+  });
+});
+
+// T3.7 -- AC7: setSectionDraftExecutorAdapter accepts any function without affecting htmlSubmitTurn
 queue.push(function runT3_7() {
-  console.log('\n── T3.7 — AC7: flat skill (no H2 sections) → no confirmation step, session completes normally');
-  return test('T3.7 (AC7): single-section skill with heading="" → _sectionDraftExecutor never called', async function() {
+  console.log('\n-- T3.7 -- AC7: setSectionDraftExecutorAdapter is accepted as no-op');
+  return test('T3.7 (AC7): wiring a throwing fn via setSectionDraftExecutorAdapter does not break htmlSubmitTurn', async function() {
     const routes = freshRequire(ROUTES_PATH);
-
-    routes.setSkillTurnExecutorAdapter(async function() { return 'turn insight'; });
-    routes.setNextQuestionExecutorAdapter(async function() { return 'dynamic next Q'; });
-
-    let draftCallCount = 0;
-    routes.setSectionDraftExecutorAdapter(async function() {
-      draftCallCount++;
-      return 'Draft.';
-    });
-
-    const q1 = { id: 'q1', text: 'What is your background? Please describe fully.' };
-    const q2 = { id: 'q2', text: 'What problem are you solving? Explain the core issue.' };
-
-    // Single section with empty heading (no H2 structure)
-    const sid = makeSession(routes, 'discovery', {
-      questions: [q1, q2],
-      sections:  [{ heading: '', questions: [q1, q2] }],
-      answers:   ['First answer']
-    });
-
-    await routes.htmlRecordAnswer('discovery', sid, 'Last answer.');
-    const sess = routes._getHtmlSession(sid);
-
-    assert.strictEqual(draftCallCount, 0,
-      '_sectionDraftExecutor must NOT be called for flat skills (no H2 section structure)');
-    assert.ok(!sess.pendingConfirmation,
-      'pendingConfirmation must not be set for flat skills');
+    routes.setSectionDraftExecutorAdapter(async function() { throw new Error('Should never be called'); });
+    routes.setSkillTurnExecutorAdapter(async function() { return 'Normal model response.'; });
+    const sid = 'test-dsq2-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, { skillName: 'discovery', sessionPath: '/tmp/test', systemPrompt: 'PROMPT', turns: [], artefactContent: null, artefactPath: null, done: false });
+    let threwError = false; let result = null;
+    try { result = await routes.htmlSubmitTurn('discovery', sid, 'My answer.', 'fake-tok'); } catch (_) { threwError = true; }
+    assert.strictEqual(threwError, false, 'must not throw');
+    assert.ok(result && !result.done, 'must return valid {done:false, response}');
+    assert.strictEqual(result.response, 'Normal model response.');
   });
 });
 
-// ── T3.8 — AC8: Regression canary ────────────────────────────────────────────
-
+// T3.8 -- AC8: Regression -- _skillTurnExecutor called once per htmlSubmitTurn
 queue.push(function runT3_8() {
-  console.log('\n── T3.8 — AC8: Regression canary — mid-section answers still run skillTurn + nextQuestion');
-  return test('T3.8 (AC8): mid-section answer triggers _skillTurnExecutor + _nextQuestionExecutor, not _sectionDraftExecutor', async function() {
+  console.log('\n-- T3.8 -- AC8: Regression -- _skillTurnExecutor called once per htmlSubmitTurn');
+  return test('T3.8 (AC8): _skillTurnExecutor called exactly once per htmlSubmitTurn call', async function() {
     const routes = freshRequire(ROUTES_PATH);
-
-    let skillTurnCalled  = 0;
-    let nextQCalled      = 0;
-    let sectionDraftCalled = 0;
-
-    routes.setSkillTurnExecutorAdapter(async function()      { skillTurnCalled++;    return 'turn insight'; });
-    routes.setNextQuestionExecutorAdapter(async function()   { nextQCalled++;        return 'dynamic Q'; });
-    routes.setSectionDraftExecutorAdapter(async function()   { sectionDraftCalled++; return 'Draft.'; });
-
-    const data = twoSectionData();
-    // Fresh session with no answers — first answer is Q1 (mid-section, not last Q of section 0)
-    const sid = makeSession(routes, 'discovery', data);
-
-    await routes.htmlRecordAnswer('discovery', sid, 'First answer — NOT last in section 0.');
-    const sess = routes._getHtmlSession(sid);
-
-    assert.strictEqual(skillTurnCalled, 1, '_skillTurnExecutor must still be called (wuce.26 regression)');
-    assert.strictEqual(nextQCalled, 1, '_nextQuestionExecutor must still be called (dsq.1 regression)');
-    assert.strictEqual(sectionDraftCalled, 0,
-      '_sectionDraftExecutor must NOT be called for mid-section answers');
-    assert.ok(Array.isArray(sess.modelResponses) && sess.modelResponses.length === 1,
-      'modelResponses must be populated (wuce.26 regression)');
-    assert.ok(!sess.pendingConfirmation, 'pendingConfirmation must not be set for mid-section answers');
+    let execCallCount = 0;
+    routes.setSkillTurnExecutorAdapter(async function() { execCallCount++; return 'Model response'; });
+    const sid = 'test-dsq2-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, { skillName: 'discovery', sessionPath: '/tmp/test', systemPrompt: 'PROMPT', turns: [], artefactContent: null, artefactPath: null, done: false });
+    await routes.htmlSubmitTurn('discovery', sid, 'Answer 1', 'fake-tok');
+    await routes.htmlSubmitTurn('discovery', sid, 'Answer 2', 'fake-tok');
+    await routes.htmlSubmitTurn('discovery', sid, 'Answer 3', 'fake-tok');
+    assert.strictEqual(execCallCount, 3, '_skillTurnExecutor must be called once per htmlSubmitTurn');
   });
 });
 
-// ── T3.10 — AC9: setSectionDraftExecutorAdapter wired in server.js ───────────
-
+// T3.10 -- AC9: server.js does NOT wire setSectionDraftExecutorAdapter
 queue.push(function runT3_10() {
-  console.log('\n── T3.10 — AC9: server.js wires setSectionDraftExecutorAdapter');
-  return test('T3.10 (AC9): src/web-ui/server.js wires setSectionDraftExecutorAdapter to skillsAdapter.sectionDraftExecutor', function() {
+  console.log('\n-- T3.10 -- AC9: server.js does NOT wire setSectionDraftExecutorAdapter');
+  return test('T3.10 (AC9): server.js must NOT call setSectionDraftExecutorAdapter() in model-first arch', function() {
     const fs = require('fs');
-    const path = require('path');
     const serverPath = path.resolve(__dirname, '../src/web-ui/server.js');
     const serverSrc = fs.readFileSync(serverPath, 'utf8');
-    assert.ok(
-      serverSrc.includes('setSectionDraftExecutorAdapter'),
-      'server.js must call setSectionDraftExecutorAdapter() to wire the production adapter'
-    );
+    const wireCount = (serverSrc.match(/setSectionDraftExecutorAdapter\s*\(/g) || []).length;
+    assert.strictEqual(wireCount, 0, 'server.js must NOT call setSectionDraftExecutorAdapter() (no-op in model-first)');
   });
 });
 
-// ── Run queue ────────────────────────────────────────────────────────────────
-
+// Run queue
 (async function runAll() {
-  console.log('check-dsq2-section-confirmation-loop.js — 10 tests\n');
-  for (const fn of queue) {
-    await fn();
-  }
-  console.log('\n────────────────────────────────────────────');
+  console.log('check-dsq2-section-confirmation-loop.js -- 10 tests\n');
+  for (const fn of queue) { await fn(); }
+  console.log('\n--------------------------------------------');
   console.log('Results: ' + passed + ' passed, ' + failed + ' failed');
   if (failures.length > 0) {
     console.log('\nFailures:');
-    failures.forEach(function(f, i) {
-      console.log('  ' + (i + 1) + '. ' + f.name + '\n     ' + f.msg);
-    });
+    failures.forEach(function(f, i) { console.log('  ' + (i + 1) + '. ' + f.name + '\n     ' + f.msg); });
   }
   if (failed > 0) { process.exit(1); }
 })();

@@ -18,7 +18,7 @@ const { handleGetFeatures, handleGetFeatureArtefacts }               = require('
 const { handleGetStatus, handleGetStatusExport }                     = require('./routes/status');
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
-const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlRecordAnswer, htmlGetPreview, htmlCommitSession, htmlGetCompletePage } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3
+const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1
 const { setLogger }                                                  = require('./routes/auth');
 const { setFetchPipelineState }                                      = require('./adapters/feature-list');
 const { setFetchArtefactDirectory }                                  = require('./adapters/artefact-list');
@@ -54,9 +54,6 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   skillsAdapter.setGetNextQuestion(async function(skillName, sessionId, _token) {
     return htmlGetNextQuestion(skillName, sessionId);
   });
-  skillsAdapter.setSubmitAnswer(async function(skillName, sessionId, answer, token) {
-    return htmlRecordAnswer(skillName, sessionId, answer, token) || { nextUrl: '/skills/' + encodeURIComponent(skillName) };
-  });
   skillsAdapter.setGetCommitPreview(async function(skillName, sessionId, _token) {
     return htmlGetPreview(skillName, sessionId);
   });
@@ -64,17 +61,12 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     return htmlCommitSession(skillName, sessionId, token, { login: '', email: 'web-ui@localhost' });
   });
 
-  // wuce.26 — wire real Copilot API executor for per-answer model responses
+  // mfc.1 — wire real Copilot API executor for model-first chat turns
   const { skillTurnExecutor: realSkillTurnExecutor } = require('../modules/skill-turn-executor');
-  const { setSkillTurnExecutorAdapter, setNextQuestionExecutorAdapter, setSectionDraftExecutorAdapter } = require('./routes/skills');
+  const { setSkillTurnExecutorAdapter } = require('./routes/skills');
   setSkillTurnExecutorAdapter(realSkillTurnExecutor);
-  // dsq.1 — wire next-question executor directly to realSkillTurnExecutor.
-  // skillsAdapter.nextQuestionExecutor was a broken indirection: it calls
-  // adapters/skills.js _nextQuestionExecutor which throws by default.
-  setNextQuestionExecutorAdapter(realSkillTurnExecutor);
-  // dsq.2 — wire section-draft executor; reuses same API call mechanism.
-  // heading is used as the system context, qaPairs as history, instruction as the user ask.
-  setSectionDraftExecutorAdapter(realSkillTurnExecutor);
+  // _nextQuestionExecutorAdapter and _sectionDraftExecutorAdapter are no-ops (AC9 — mfc.1);
+  // no wiring required.
 }
 
 // Wire real GitHub pipeline-state fetcher for production (non-test) mode.
@@ -296,12 +288,29 @@ async function router(req, res) {
     req.params = { name: parts[2], id: parts[4] };
     authGuard(req, res, async () => { await handleGetResultHtml(req, res); });
 
-  } else if (pathname.match(/^\/skills\/[^/]+\/sessions\/[^/]+\/next$/) && req.method === 'GET') {
+  } else if (pathname.match(/^\/skills\/[^/]+\/sessions\/[^/]+\/chat$/) && req.method === 'GET') {
+    // mfc.1 — model-first chat page (replaces /next form flow)
     const parts = pathname.split('/');
     req.params = { name: parts[2], id: parts[4] };
     authGuard(req, res, async () => {
-      await handleGetQuestionHtml(req, res);
+      await handleGetChatHtml(req, res);
     });
+
+  } else if (pathname.match(/^\/api\/skills\/[^/]+\/sessions\/[^/]+\/turn$/) && req.method === 'POST') {
+    // mfc.1 — model turn endpoint
+    const parts = pathname.split('/');
+    req.params = { name: parts[3], id: parts[5] };
+    authGuard(req, res, async () => {
+      await handlePostTurnHtml(req, res);
+    });
+
+  } else if (pathname.match(/^\/skills\/[^/]+\/sessions\/[^/]+\/next$/) && req.method === 'GET') {
+    // backward-compat: redirect /next to /chat
+    const parts = pathname.split('/');
+    const skillNameBc = decodeURIComponent(parts[2]);
+    const sessionIdBc = decodeURIComponent(parts[4]);
+    res.writeHead(303, { Location: '/skills/' + encodeURIComponent(skillNameBc) + '/sessions/' + encodeURIComponent(sessionIdBc) + '/chat' });
+    res.end();
 
   } else if (pathname.match(/^\/api\/skills\/[^/]+\/sessions\/[^/]+\/answer$/) && req.method === 'POST') {
     const parts = pathname.split('/');

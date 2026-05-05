@@ -65,32 +65,21 @@ const queue = [];
 // ── T4.1 — AC1: Final answer nextUrl points to /complete ──────────────────────
 
 queue.push(function runT4_1() {
-  console.log('\n── T4.1 — AC1: final answer returns nextUrl pointing to /complete');
-  return test('T4.1 (AC1): htmlRecordAnswer for final Q returns nextUrl containing "/complete"', async function() {
+  console.log('\n── T4.1 — AC1: htmlGetCompletePage with session.done=true shows artefact ready');
+  return test('T4.1 (AC1): htmlGetCompletePage reflects session.done=true — shows "Artefact is ready."', function() {
     const routes = freshRequire(ROUTES_PATH);
 
-    routes.setSkillTurnExecutorAdapter(async function()      { return 'turn insight'; });
-    routes.setNextQuestionExecutorAdapter(async function()   { return 'dynamic Q'; });
-    routes.setSectionDraftExecutorAdapter(async function()   { return ''; });
-
-    // Single-question session so the first answer is the final one
-    const q1 = { id: 'q1', text: 'What is your background? Please describe your experience fully.' };
-    const sid = makeSession(routes, 'discovery', {
-      questions: [q1],
-      answers:   []
+    const sid = 'test-dsq3-done-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, {
+      skillName: 'discovery', sessionPath: '/tmp/test', systemPrompt: '',
+      turns: [], artefactContent: '# Artefact content', artefactPath: 'artefacts/x/discovery.md',
+      done: true
     });
 
-    const result = await routes.htmlRecordAnswer('discovery', sid, 'My background is product management.');
+    const html = routes.htmlGetCompletePage('discovery', sid);
 
-    assert.ok(result && result.nextUrl, 'htmlRecordAnswer must return { nextUrl }');
-    assert.ok(
-      result.nextUrl.includes('/complete'),
-      'nextUrl must contain "/complete" for the final answer, got: ' + result.nextUrl
-    );
-    assert.ok(
-      !result.nextUrl.includes('commit-preview'),
-      'nextUrl must NOT contain "commit-preview" directly — must go via /complete first, got: ' + result.nextUrl
-    );
+    assert.ok(html.includes('Artefact is ready.'),
+      'complete page must contain "Artefact is ready." when session.done=true');
   });
 });
 
@@ -215,35 +204,20 @@ queue.push(function runT4_6() {
 // ── T4.7 — AC6: Regression — non-final answer nextUrl unchanged ───────────────
 
 queue.push(function runT4_7() {
-  console.log('\n── T4.7 — AC6: Regression — non-final answer nextUrl does not contain "/complete"');
-  return test('T4.7 (AC6): non-final answer nextUrl must not point to /complete', async function() {
+  console.log('\n── T4.7 — AC6: htmlGetCompletePage with session.done=false shows session in progress');
+  return test('T4.7 (AC6): htmlGetCompletePage reflects session.done=false — shows "Session in progress."', function() {
     const routes = freshRequire(ROUTES_PATH);
 
-    routes.setSkillTurnExecutorAdapter(async function()      { return 'turn insight'; });
-    routes.setNextQuestionExecutorAdapter(async function()   { return 'dynamic Q'; });
-    routes.setSectionDraftExecutorAdapter(async function()   { return ''; });
-
-    const q1 = { id: 'q1', text: 'What is your background? Please describe your experience.' };
-    const q2 = { id: 'q2', text: 'What are your goals? Please be specific.' };
-    const q3 = { id: 'q3', text: 'What are your constraints? Please list them.' };
-
-    // Session with 3 questions, first answer is non-final
-    const sid = makeSession(routes, 'discovery', {
-      questions: [q1, q2, q3],
-      answers:   []
+    const sid = 'test-dsq3-notdone-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, {
+      skillName: 'discovery', sessionPath: '/tmp/test', systemPrompt: '',
+      turns: [], artefactContent: null, artefactPath: null, done: false
     });
 
-    const result = await routes.htmlRecordAnswer('discovery', sid, 'First non-final answer.');
+    const html = routes.htmlGetCompletePage('discovery', sid);
 
-    assert.ok(result && result.nextUrl, 'must return { nextUrl }');
-    assert.ok(
-      !result.nextUrl.includes('complete'),
-      'non-final answer nextUrl must NOT contain "complete", got: ' + result.nextUrl
-    );
-    assert.ok(
-      !result.nextUrl.includes('commit-preview'),
-      'non-final answer nextUrl must NOT contain "commit-preview", got: ' + result.nextUrl
-    );
+    assert.ok(html.includes('Session in progress.'),
+      'complete page must contain "Session in progress." when session.done=false');
   });
 });
 

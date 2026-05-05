@@ -19,28 +19,30 @@ const DEFAULT_TIMEOUT_MS = 30000;
 /**
  * Execute one skill turn by calling the Copilot Chat Completions API.
  *
- * @param {string}  skillContent   — full SKILL.md content used as the system message
- * @param {Array}   priorQA        — array of { question, answer, modelResponse } objects
- * @param {string}  currentAnswer  — the user's answer to the current question
+ * The model acts as the conversation driver: it reads the SKILL.md (in systemPrompt)
+ * and decides what to ask, exactly as GitHub Copilot Chat does in VS Code.
+ *
+ * @param {string}  systemPrompt   — full system prompt (SKILL.md + product context + web UI framing)
+ * @param {Array}   history        — array of { role: 'user'|'assistant', content: string }
+ * @param {string}  currentInput   — current user input (or 'Begin the session.' for the first turn)
  * @param {string}  token          — GitHub access token (Bearer token, never logged)
  * @returns {Promise<string>}      — the model's response text
  */
-function skillTurnExecutor(skillContent, priorQA, currentAnswer, token) {
+function skillTurnExecutor(systemPrompt, history, currentInput, token) {
   const model     = process.env.WUCE_TURN_MODEL            || DEFAULT_MODEL;
   const maxTokens = parseInt(process.env.WUCE_TURN_MODEL_MAX_TOKENS || String(DEFAULT_MAX_TOKENS), 10);
   const timeoutMs = parseInt(process.env.WUCE_TURN_TIMEOUT_MS       || String(DEFAULT_TIMEOUT_MS), 10);
 
-  // Build messages array: system → prior Q&A pairs → current answer
+  // Build messages array: system → conversation history → current user input
   const messages = [
-    { role: 'system', content: skillContent }
+    { role: 'system', content: systemPrompt }
   ];
 
-  (priorQA || []).forEach(function(qa) {
-    messages.push({ role: 'user',      content: (qa.question || '') + '\n\nAnswer: ' + (qa.answer || '') });
-    messages.push({ role: 'assistant', content: qa.modelResponse || '' });
+  (history || []).forEach(function(turn) {
+    messages.push({ role: turn.role, content: turn.content });
   });
 
-  messages.push({ role: 'user', content: currentAnswer });
+  messages.push({ role: 'user', content: currentInput });
 
   const body = JSON.stringify({
     model:      model,
