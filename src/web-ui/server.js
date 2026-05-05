@@ -68,10 +68,13 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   const { skillTurnExecutor: realSkillTurnExecutor } = require('../modules/skill-turn-executor');
   const { setSkillTurnExecutorAdapter, setNextQuestionExecutorAdapter, setSectionDraftExecutorAdapter } = require('./routes/skills');
   setSkillTurnExecutorAdapter(realSkillTurnExecutor);
-  // dsq.1 — wire next-question executor (reuses same Copilot API call)
-  setNextQuestionExecutorAdapter(skillsAdapter.nextQuestionExecutor);
-  // dsq.2 — wire section-draft executor
-  setSectionDraftExecutorAdapter(skillsAdapter.sectionDraftExecutor);
+  // dsq.1 — wire next-question executor directly to realSkillTurnExecutor.
+  // skillsAdapter.nextQuestionExecutor was a broken indirection: it calls
+  // adapters/skills.js _nextQuestionExecutor which throws by default.
+  setNextQuestionExecutorAdapter(realSkillTurnExecutor);
+  // dsq.2 — wire section-draft executor; reuses same API call mechanism.
+  // heading is used as the system context, qaPairs as history, instruction as the user ask.
+  setSectionDraftExecutorAdapter(realSkillTurnExecutor);
 }
 
 // Wire real GitHub pipeline-state fetcher for production (non-test) mode.

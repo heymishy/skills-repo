@@ -20,6 +20,8 @@ function extractQuestions(content) {
     const text = match[1].trim();
     // Skip short decorative bold lines (less than 20 chars)
     if (text.length < 20) { continue; }
+    // Skip step instructions (they are labels, not questions — they end with ':')
+    if (text.endsWith(':')) { continue; }
     questions.push({ id: 'q' + (questions.length + 1), text });
   }
   return questions;
