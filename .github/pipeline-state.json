@@ -6321,7 +6321,7 @@
           "reviewStatus": "passed",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.2-section-confirmation-loop-dor.md",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.2-review-2.md",
           "testPlan": {
             "status": "written",
@@ -6331,7 +6331,7 @@
           },
           "acTotal": 9,
           "acVerified": 0,
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "updatedAt": "2026-05-05T00:00:00.000Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/305",

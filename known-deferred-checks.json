@@ -22,13 +22,6 @@
   "_note": "This file records known-deferred governance check test names that should emit SKIP instead of FAIL once check-assurance-gate.js is updated to read this file (that code change requires a story per platform policy). Until then, this file serves as the authoritative record of which failures are known-deferred vs real regressions.",
   "pendingTestFiles": [
     {
-      "file": "tests/check-dsq2-section-confirmation-loop.js",
-      "story": "dsq.2",
-      "reason": "Pre-committed failing test stub (TDD). Feature branch feature/dsq-2 (PR #310) not yet merged. Register in package.json when PR merges.",
-      "addedAt": "2026-05-05",
-      "unblockCondition": "Merge PR #310 (feature/dsq-2), then add 'node tests/check-dsq2-section-confirmation-loop.js' to package.json and remove this entry."
-    },
-    {
       "file": "tests/check-dsq3-post-session-clarify-gate.js",
       "story": "dsq.3",
       "reason": "Pre-committed failing test stub (TDD). Feature branch feature/dsq-3 (PR #311) not yet merged. Register in package.json when PR merges.",
