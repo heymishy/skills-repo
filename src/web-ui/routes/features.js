@@ -16,6 +16,7 @@ const {
 const { renderShell, escHtml } = require('../utils/html-shell');
 const shellEscHtml = escHtml; // internal alias used by artefact-index handlers
 const { getLabel } = require('../utils/artefact-labels');
+const { renderFeaturesList } = require('../views/features-view');
 
 // listArtefacts dependency — replaceable in tests via setListArtefacts()
 let _listArtefacts = _listArtefactsDefault;
@@ -107,15 +108,19 @@ async function handleGetFeatures(req, res) {
   });
 
   if (accept.includes('text/html')) {
-    // HTML path: wrap feature list in renderShell
-    let bodyContent;
-    if (features.length === 0) {
-      // AC3: zero features — empty-state message, no empty <ul>
-      bodyContent = '<p class="no-features">No features found</p>';
-    } else {
-      bodyContent = renderFeatureList(features);
-    }
-    const html = renderShell({ title: 'Features', bodyContent, user: { login } });
+    // HTML path: use new design-system view
+    const viewFeatures = features.map(function(f) {
+      return {
+        slug:         f.slug,
+        title:        f.title || f.slug,
+        stage:        f.stage || '',
+        updated:      f.lastUpdated || '',
+        owner:        f.owner || '',
+        artefactCount: f.artefactCount || 0
+      };
+    });
+    const bodyContent = renderFeaturesList({ features: viewFeatures, repoCount: 0 });
+    const html = renderShell({ title: 'Features', bodyContent, user: { login }, active: 'features' });
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
     return;

@@ -416,6 +416,8 @@ async function handleResumeSession(req, res) {
 // ---------------------------------------------------------------------------
 
 const { renderShell, escHtml }   = require('../utils/html-shell');
+const { renderCommitPreview, renderCommitResult, renderAlreadyCommitted } = require('../views/commit-view');
+const { renderChat: _renderChatView } = require('../views/chat-view');
 const skillsAdapter              = require('../adapters/skills');
 
 /**
@@ -888,19 +890,16 @@ async function handleGetCommitPreviewHtml(req, res) {
     return;
   }
 
-  const safeContent = escHtml(preview.artefactContent || '');
-  const safePath    = escHtml(preview.artefactPath    || '');
+  const bodyContent = renderCommitPreview({
+    artefactPath:      preview.artefactPath    || '',
+    artefactContent:   preview.artefactContent || '',
+    commitFormAction:  '/api/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/commit',
+    branchName:        preview.branchName      || 'main',
+    defaultMessage:    preview.defaultMessage  || ('feat: ' + (preview.artefactPath || 'artefact')),
+    reviewers:         preview.reviewers       || []
+  });
 
-  const bodyContent = [
-    '<p>Review the generated artefact below, then commit to save it.</p>',
-    '<p><strong>Artefact path:</strong> ' + safePath + '</p>',
-    '<pre role="region" aria-label="Artefact preview">' + safeContent + '</pre>',
-    '<form method="POST" action="/api/skills/' + escHtml(skillName) + '/sessions/' + escHtml(sessionId) + '/commit">',
-    '<button type="submit">Commit artefact</button>',
-    '</form>'
-  ].join('\n');
-
-  const html = renderShell({ title: 'Commit preview', bodyContent: bodyContent, user: user });
+  const html = renderShell({ title: 'Commit preview', bodyContent, user, active: 'skills' });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -929,13 +928,15 @@ async function handlePostCommitHtml(req, res) {
     result = await _commitSession(skillName, sessionId, token);
   } catch (err) {
     const status = err.status || 500;
-    const msg = (status === 409)
-      ? 'This session has already been committed. The artefact has already been saved.'
-      : escHtml(err.message || 'An error occurred');
+    const is409 = (status === 409);
+    const bodyContent = is409
+      ? renderAlreadyCommitted({ artefactUrl: null })
+      : '<p>' + escHtml(err.message || 'An error occurred') + '</p>';
     const html = renderShell({
-      title:       (status === 409) ? 'Already committed' : 'Error',
-      bodyContent: '<p>' + msg + '</p>',
-      user
+      title:       is409 ? 'Already committed' : 'Error',
+      bodyContent,
+      user,
+      active: 'skills'
     });
     res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -988,18 +989,16 @@ async function handleGetResultHtml(req, res) {
     return;
   }
 
-  const safePath        = escHtml(result.artefactPath || '');
-  const safeSlug        = escHtml(result.featureSlug  || '');
-  const safeType        = escHtml(result.artefactType || '');
+  const bodyContent = renderCommitResult({
+    artefactPath: result.artefactPath || '',
+    featureSlug:  result.featureSlug  || '',
+    artefactType: result.artefactType || '',
+    prUrl:        result.prUrl        || null,
+    nextSkillName: result.nextSkillName || null,
+    nextSkillLabel: result.nextSkillLabel || null
+  });
 
-  const bodyContent = [
-    '<p>Artefact successfully committed.</p>',
-    '<p><strong>Artefact path:</strong> ' + safePath + '</p>',
-    '<p><a href="/artefact/' + safeSlug + '/' + safeType + '">View artefact</a></p>',
-    '<p><a href="/features">Back to features</a></p>'
-  ].join('\n');
-
-  const html = renderShell({ title: 'Commit complete', bodyContent: bodyContent, user: user });
+  const html = renderShell({ title: 'Commit complete', bodyContent, user, active: 'skills' });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -1198,93 +1197,93 @@ function _renderChatPage(skillName, sessionId, session) {
   var encodedId    = encodeURIComponent(sessionId);
   var turnUrl      = '/api/skills/' + encodedSkill + '/sessions/' + encodedId + '/turn';
 
-  var bubbles = (session.turns || []).map(function(t) {
-    var cls = t.role === 'user' ? 'msg msg--user' : 'msg msg--assistant';
-    return '<div class="' + cls + '"><div class="bubble">' +
-      simpleMarkdownToHtml(t.content) +
-      '</div></div>';
-  }).join('\n');
+  // Build priorQA pairs from the turns array (mfc.1 structure).
+  // Each pair: one assistant turn followed by one user turn.
+  var turns = session.turns || [];
+  var priorQA = [];
+  var currentQuestion = '';
 
-  var bodyContent = [
-    '<div class="chat-shell">',
-    '  <div class="chat-messages" id="chat-messages">',
-    bubbles,
-    '  </div>',
-    '  <div class="chat-footer">',
-    '    <form id="chat-form">',
-    '      <textarea id="chat-input" placeholder="Type your response..." rows="3"></textarea>',
-    '      <button type="submit" id="send-btn">Send</button>',
-    '    </form>',
-    '  </div>',
-    '</div>',
-    '<style>',
-    '.chat-shell{display:flex;flex-direction:column;height:80vh;max-width:800px;margin:auto}',
-    '.chat-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.75rem}',
-    '.msg--assistant .bubble{background:#f0f0f0;border-radius:8px;padding:.75rem 1rem;max-width:85%}',
-    '.msg--user{align-self:flex-end}.msg--user .bubble{background:#0969da;color:#fff;border-radius:8px;padding:.75rem 1rem;max-width:85%}',
-    '.chat-footer{padding:.75rem;border-top:1px solid #ddd}',
-    '#chat-form{display:flex;gap:.5rem}',
-    '#chat-input{flex:1;padding:.5rem;border:1px solid #ccc;border-radius:4px;resize:vertical}',
-    '#send-btn{padding:.5rem 1rem;background:#0969da;color:#fff;border:none;border-radius:4px;cursor:pointer}',
-    '</style>',
+  for (var i = 0; i < turns.length; i++) {
+    var t = turns[i];
+    if (t.role === 'assistant') {
+      var nextTurn = turns[i + 1];
+      if (nextTurn && nextTurn.role === 'user') {
+        priorQA.push({ question: t.content, answer: nextTurn.content, modelResponse: '' });
+        i++; // skip the user turn we just consumed
+      } else {
+        // Last assistant turn not yet answered — this is the current question
+        currentQuestion = t.content;
+      }
+    } else if (t.role === 'user') {
+      // User turn without a preceding assistant turn — render answer with empty question
+      priorQA.push({ question: '', answer: t.content, modelResponse: '' });
+    }
+  }
+
+  // Build draft sections from artefactContent if session is done
+  var draftSections = [];
+  if (session.done && session.artefactContent) {
+    draftSections = [{ title: 'Artefact', body: session.artefactContent, state: 'drafted' }];
+  }
+
+  var commitUrl = '/skills/' + encodedSkill + '/sessions/' + encodedId + '/commit-preview';
+
+  // Inline script to handle async chat, appended after the view HTML
+  var script = [
     '<script>',
     '(function(){',
     '  var form = document.getElementById("chat-form");',
-    '  var input = document.getElementById("chat-input");',
-    '  var messages = document.getElementById("chat-messages");',
+    '  if(!form) return;',
     '  var TURN_URL = "' + escHtml(turnUrl) + '";',
-    '  function scrollBottom(){ messages.scrollTop = messages.scrollHeight; }',
-    '  scrollBottom();',
-    '  function appendBubble(role, html){',
-    '    var d = document.createElement("div");',
-    '    d.className = "msg msg--" + role;',
-    '    d.innerHTML = "<div class=\\"bubble\\">" + html + "</div>";',
-    '    messages.appendChild(d); scrollBottom();',
-    '  }',
+    '  var COMMIT_URL = "' + escHtml(commitUrl) + '";',
     '  form.addEventListener("submit", function(e){',
     '    e.preventDefault();',
-    '    var answer = input.value.trim();',
+    '    var ta = form.querySelector("textarea[name=answer]");',
+    '    var answer = ta ? ta.value.trim() : "";',
     '    if(!answer) return;',
-    '    appendBubble("user", answer.replace(/[&<>"]/g, function(c){',
-    '      return {"&":"&amp;","<":"&lt;",">":"&gt;",\'"\':"&quot;"}[c];',
-    '    }));',
-    '    input.value = "";',
+    '    if(ta) ta.value = "";',
     '    fetch(TURN_URL, {',
     '      method: "POST",',
     '      headers: {"Content-Type": "application/json"},',
     '      body: JSON.stringify({answer: answer})',
     '    }).then(function(r){ return r.json(); }).then(function(data){',
-    '      appendBubble("assistant", data.response || "");',
     '      if(data.done){',
-    '        form.innerHTML = "<p>Session complete. <a href=\'" +',
-    '          "/skills/" + encodeURIComponent("' + escHtml(skillName) + '") +',
-    '          "/sessions/" + encodeURIComponent("' + escHtml(sessionId) + '") +',
-    '          "/commit-preview\'><strong>Review and commit artefact</strong></a></p>";',
+    '        window.location.href = COMMIT_URL;',
     '      } else if(data.response && data.response.indexOf("?") === -1) {',
-    '        // Model announced intent without asking a question (e.g. "One moment") — nudge it',
     '        setTimeout(function(){',
     '          fetch(TURN_URL, {',
     '            method: "POST",',
     '            headers: {"Content-Type": "application/json"},',
     '            body: JSON.stringify({answer: "continue"})',
     '          }).then(function(r){ return r.json(); }).then(function(d){',
-    '            appendBubble("assistant", d.response || "");',
-    '            if(d.done){',
-    '              form.innerHTML = "<p>Session complete. <a href=\'" +',
-    '                "/skills/" + encodeURIComponent("' + escHtml(skillName) + '") +',
-    '                "/sessions/" + encodeURIComponent("' + escHtml(sessionId) + '") +',
-    '                "/commit-preview\'><strong>Review and commit artefact</strong></a></p>";',
-    '            }',
-    '          }).catch(function(){ appendBubble("assistant", "[error]"); });',
+    '            if(d.done){ window.location.href = COMMIT_URL; }',
+    '            else { window.location.reload(); }',
+    '          }).catch(function(){ window.location.reload(); });',
     '        }, 800);',
+    '      } else {',
+    '        window.location.reload();',
     '      }',
-    '    }).catch(function(){ appendBubble("assistant", "[error sending message]"); });',
+    '    }).catch(function(){ window.location.reload(); });',
     '  });',
     '})();',
     '</script>'
   ].join('\n');
 
-  return renderShell({ title: 'Skill session — ' + escHtml(skillName), bodyContent: bodyContent, user: { login: '' } });
+  var bodyContent = _renderChatView({
+    skillName:         skillName,
+    skillLabel:        skillName,
+    featureSlug:       session.featureSlug || '',
+    sessionId:         sessionId,
+    questionIndex:     priorQA.length + 1,
+    totalQuestions:    Math.max(priorQA.length + (currentQuestion ? 1 : 0), 1),
+    currentQuestion:   currentQuestion,
+    priorQA:           priorQA,
+    draftSections:     draftSections,
+    pendingConfirmation: false,
+    userInitial:       'M'
+  }) + script;
+
+  return renderShell({ title: 'Skill session — ' + escHtml(skillName), bodyContent: bodyContent, user: { login: '' }, active: 'skills' });
 }
 
 /**
