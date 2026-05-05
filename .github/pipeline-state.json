@@ -6408,6 +6408,112 @@
         }
       ],
       "lastImprove": "2026-05-05"
+    },
+    {
+      "slug": "2026-05-05-web-ui-model-first-chat",
+      "name": "Web UI Model-First Chat Architecture",
+      "track": "standard",
+      "stage": "definition-of-done",
+      "health": "green",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discoveryStatus": "complete",
+      "discoveryArtefact": "artefacts/2026-05-05-web-ui-model-first-chat/discovery.md",
+      "benefitMetricStatus": "active",
+      "benefitMetricArtefact": "artefacts/2026-05-05-web-ui-model-first-chat/benefit-metric.md",
+      "spikes": [],
+      "epics": [],
+      "updatedAt": "2026-05-06",
+      "stories": [
+        {
+          "id": "mfc.1",
+          "slug": "mfc.1",
+          "name": "Replace scrape-first skill sessions with model-first chat architecture",
+          "epic": "",
+          "artefact": "artefacts/2026-05-05-web-ui-model-first-chat/stories/mfc.1-model-first-chat-session.md",
+          "stage": "definition-of-done",
+          "prStatus": "merged",
+          "dorStatus": "signed-off",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "artefact": "artefacts/2026-05-05-web-ui-model-first-chat/test-plans/mfc.1-test-plan.md"
+          },
+          "acTotal": 10,
+          "acVerified": 10,
+          "health": "green",
+          "issueUrl": null,
+          "dispatchedAt": null,
+          "dispatchTarget": null,
+          "prUrl": null,
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "updatedAt": "2026-05-06"
+        }
+      ],
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Discovery artefact template conformance rate",
+          "signal": "not-yet-measured",
+          "evidence": "Architecture that enables conformance is now live. First live session not yet run.",
+          "lastMeasured": null
+        },
+        {
+          "id": "M2",
+          "name": "Model-driven question adaptation visible in session transcript",
+          "signal": "not-yet-measured",
+          "evidence": "Model-first chat flow live. Measurement requires 5 consecutive live sessions.",
+          "lastMeasured": null
+        },
+        {
+          "id": "M3",
+          "name": "npm test passes with 0 failures after rewrite (binary gate)",
+          "signal": "on-track",
+          "evidence": "npm test: 0 failures. 25/25 mfc.1 tests pass. 7 rewritten test files pass. Governance 70/70. Commit d793217.",
+          "lastMeasured": "2026-05-06"
+        }
+      ],
+      "guardrails": [
+        {
+          "id": "ADR-009-D37",
+          "label": "Injectable adapter rule (D37/ADR-009)",
+          "description": "_skillTurnExecutor default stub throws; setSkillTurnExecutorAdapter wired in server.js",
+          "category": "adr",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-06",
+          "evidence": "T4.1 verifies single executor call. D37 stub throws confirmed at DoR. Server.js wires real skillTurnExecutor."
+        },
+        {
+          "id": "NFR-security-token",
+          "label": "Token never logged or echoed in response",
+          "description": "req.session.accessToken canonical; never logged; not in any HTTP response body",
+          "category": "nfr",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-06",
+          "evidence": "Code review: skillTurnExecutor uses token as Bearer header only. htmlSubmitTurn does not log token."
+        },
+        {
+          "id": "NFR-resilience-executor-throw",
+          "label": "Executor throw returns empty bubble, not error page",
+          "description": "If _skillTurnExecutor throws, handler returns {done:false, response:empty string}",
+          "category": "nfr",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-06",
+          "evidence": "htmlSubmitTurn try/catch at line 1148-1157 confirmed. handleGetChatHtml try/catch for initial turn confirmed."
+        }
+      ],
+      "dodArtefact": "artefacts/2026-05-05-web-ui-model-first-chat/dod/mfc.1-dod.md",
+      "dodStatus": "complete",
+      "releaseReady": false,
+      "layoutGapsAtMerge": false,
+      "layoutGapsRiskAccepted": false,
+      "lastImprove": null
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

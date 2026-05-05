@@ -1,54 +1,60 @@
 {
-  "currentPhase": "definition-of-ready",
-  "activeFeature": "2026-05-05-web-ui-dynamic-skill-questions",
-  "lastUpdated": "2026-05-05T00:00:00.000Z",
+  "currentPhase": "definition-of-done",
+  "activeFeature": "2026-05-05-web-ui-model-first-chat",
+  "lastUpdated": "2026-05-06T00:00:00.000Z",
   "cycle": {
     "discovery": {
       "status": "complete",
       "completedAt": "2026-05-05",
-      "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/discovery.md"
+      "artefact": "artefacts/2026-05-05-web-ui-model-first-chat/discovery.md"
     },
     "benefit-metric": {
       "status": "active",
-      "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/benefit-metric.md"
+      "artefact": "artefacts/2026-05-05-web-ui-model-first-chat/benefit-metric.md"
     },
     "definition": {
       "status": "complete",
-      "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/epics/dsq-epic-1.md"
+      "artefact": "artefacts/2026-05-05-web-ui-model-first-chat/stories/mfc.1-model-first-chat-session.md"
     },
     "review": {
       "status": "complete"
     },
     "test-plan": {
       "status": "complete",
-      "commitSha": "d690543"
+      "artefact": "artefacts/2026-05-05-web-ui-model-first-chat/test-plans/mfc.1-test-plan.md"
     },
     "definition-of-ready": {
       "status": "complete",
-      "commitSha": "05cc897",
       "artefacts": [
-        "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.1.5-section-aware-extraction-dor.md",
-        "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.1-dynamic-next-question-dor.md",
-        "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.2-section-confirmation-loop-dor.md",
-        "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.3-post-session-clarify-gate-dor.md",
-        "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.4-section-artefact-assembly-dor.md"
+        "artefacts/2026-05-05-web-ui-model-first-chat/dor/mfc.1-dor.md",
+        "artefacts/2026-05-05-web-ui-model-first-chat/dor/mfc.1-dor-contract.md"
       ]
+    },
+    "implementation": {
+      "status": "complete",
+      "commitSha": "d793217",
+      "branch": "master"
+    },
+    "definition-of-done": {
+      "status": "complete",
+      "artefact": "artefacts/2026-05-05-web-ui-model-first-chat/dod/mfc.1-dod.md",
+      "completedAt": "2026-05-06"
     }
   },
   "previousFeature": {
-    "slug": "2026-05-02-web-ui-copilot-execution-layer",
-    "status": "definition-of-done-complete",
-    "dodArtefact": "artefacts/2026-05-02-web-ui-copilot-execution-layer/dod/feature-dod.md",
-    "notes": "All 17 stories merged. wuce.3 6/6 ACs verified live 2026-05-03 (commit SHA 82d866c). 85/88 ACs closed. 3 CSS-layout ACs deferred. Production fixes committed: SameSite=Lax, null-email fallback, setFetchPipelineState wired."
+    "slug": "2026-05-05-web-ui-dynamic-skill-questions",
+    "status": "definition-of-ready-complete",
+    "notes": "All 5 dsq stories (dsq.1.5, dsq.1, dsq.2, dsq.3, dsq.4) signed off at DoR. Inner loop was superseded by mfc.1 which replaced the scrape-first architecture. dsq stories tests were rewritten as part of mfc.1 commit d793217."
   },
   "checkpoint": {
-    "writtenAt": "2026-05-05",
-    "contextAtWrite": "All 5 dsq stories (dsq.1.5, dsq.1, dsq.2, dsq.3, dsq.4) signed off at DoR. 10 DoR artefacts committed in 05cc897. nfr-profile.md created. dsq.2 AC9 and T3.10 added to enforce server.js wiring. All story tests are failing (RED state, correct). Schema: 0 errors. Governance: 70/70 pass. spc5 T7 failure is pre-existing (unrelated to dsq changes).",
-    "resumeInstruction": "DoR is complete for all 5 dsq stories. Begin inner loop with /branch-setup for dsq.1.5 (Section-aware question extraction) — it has no upstream story deps. After dsq.1.5 merges, run /branch-setup for dsq.1. Dependency order: dsq.1.5 first, then dsq.1, then dsq.2/dsq.3/dsq.4. Read DoR artefacts in artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/ before writing any code.",
+    "writtenAt": "2026-05-06",
+    "contextAtWrite": "mfc.1 definition-of-done complete. 10/10 ACs satisfied. npm test 0 failures (25 mfc.1 tests + 7 rewritten files). DoD artefact written. pipeline-state.json updated with mfc.1 feature (stage=definition-of-done, dodStatus=complete, M3 on-track). M1 and M2 not-yet-measured. Deviations D1/D2 recorded (minor). Port 3000 blocked by stale node process; live smoke test pending.",
+    "resumeInstruction": "mfc.1 DoD is complete. Next: (1) Kill stale node process on port 3000 (Get-Process -Name node | Stop-Process -Force) then start server (node --env-file=.env src/web-ui/server.js) and run live smoke test per artefacts/2026-05-05-web-ui-model-first-chat/verification-scripts/mfc.1-verification.md AC1-AC6. (2) After first live discovery session, measure M1 and M2 and update benefit-metric.md. (3) Consider /discovery for the next feature or /improve for a retrospective.",
     "pendingActions": [
-      "/branch-setup for dsq.1.5 (artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.1.5-section-aware-extraction-dor.md) — first story, no upstream deps",
-      "/branch-setup for dsq.1 (artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.1-dynamic-next-question-dor.md) — can run in parallel or after dsq.1.5 merges",
-      "spc5 T7 pre-existing failure: check-capture-completeness.js does not exit 0 when instrumentation.enabled=false — fix scripts/check-capture-completeness.js (separate issue, out of scope for dsq)"
+      "Kill stale node process on port 3000: Get-Process -Name node | Stop-Process -Force — then run node --env-file=.env src/web-ui/server.js",
+      "Run live smoke test: open browser at http://localhost:3000/skills, start a discovery session, verify redirect to /chat (AC1), initial message visible (AC3), answers accepted (AC4)",
+      "After first live session completes with artefact: measure M1 (Discovery artefact template conformance rate) and update artefacts/2026-05-05-web-ui-model-first-chat/benefit-metric.md M1 evidence field",
+      "After 5 live sessions: measure M2 (Model-driven question adaptation) and update benefit-metric.md M2 evidence field"
     ]
   }
 }
