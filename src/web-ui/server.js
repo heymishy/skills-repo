@@ -66,10 +66,12 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
 
   // wuce.26 — wire real Copilot API executor for per-answer model responses
   const { skillTurnExecutor: realSkillTurnExecutor } = require('../modules/skill-turn-executor');
-  const { setSkillTurnExecutorAdapter, setNextQuestionExecutorAdapter } = require('./routes/skills');
+  const { setSkillTurnExecutorAdapter, setNextQuestionExecutorAdapter, setSectionDraftExecutorAdapter } = require('./routes/skills');
   setSkillTurnExecutorAdapter(realSkillTurnExecutor);
   // dsq.1 — wire next-question executor (reuses same Copilot API call)
   setNextQuestionExecutorAdapter(skillsAdapter.nextQuestionExecutor);
+  // dsq.2 — wire section-draft executor
+  setSectionDraftExecutorAdapter(skillsAdapter.sectionDraftExecutor);
 }
 
 // Wire real GitHub pipeline-state fetcher for production (non-test) mode.
