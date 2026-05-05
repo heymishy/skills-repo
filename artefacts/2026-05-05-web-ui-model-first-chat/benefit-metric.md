@@ -46,6 +46,6 @@
 
 **Target:** npm test: 0 failures, all tests cover model-first chat behaviour.
 
-**Signal:** Not yet measured.
+**Signal:** on-track
 
-**Evidence (M3):** _(to be filled post-merge)_
+**Evidence (M3):** npm test: 0 failures. All 25 tests in check-mfc1-model-first-chat-session.js pass. 7 rewritten test files pass. Governance 70/70. Commit d793217. Date: 2026-05-06.
