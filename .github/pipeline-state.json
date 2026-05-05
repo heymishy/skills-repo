@@ -6270,7 +6270,7 @@
           "reviewStatus": "passed",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.1-dynamic-next-question-dor.md",
-          "prStatus": "none",
+          "prStatus": "draft",
           "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.1-review-1.md",
           "testPlan": {
             "status": "written",
@@ -6280,12 +6280,13 @@
           },
           "acTotal": 7,
           "acVerified": 0,
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "updatedAt": "2026-05-05T00:00:00.000Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/304",
           "dispatchedAt": "2026-05-05T00:00:00.000Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/309"
         },
         {
           "id": "dsq.1.5",
@@ -6295,7 +6296,7 @@
           "reviewStatus": "passed",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.1.5-section-aware-extraction-dor.md",
-          "prStatus": "none",
+          "prStatus": "draft",
           "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.1.5-review-1.md",
           "testPlan": {
             "status": "written",
@@ -6305,12 +6306,13 @@
           },
           "acTotal": 5,
           "acVerified": 0,
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "updatedAt": "2026-05-05T00:00:00.000Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/303",
           "dispatchedAt": "2026-05-05T00:00:00.000Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/308"
         },
         {
           "id": "dsq.2",
@@ -6319,7 +6321,7 @@
           "reviewStatus": "passed",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.2-section-confirmation-loop-dor.md",
-          "prStatus": "none",
+          "prStatus": "draft",
           "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.2-review-2.md",
           "testPlan": {
             "status": "written",
@@ -6329,12 +6331,13 @@
           },
           "acTotal": 9,
           "acVerified": 0,
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "updatedAt": "2026-05-05T00:00:00.000Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/305",
           "dispatchedAt": "2026-05-05T00:00:00.000Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/310"
         },
         {
           "id": "dsq.3",
@@ -6343,7 +6346,7 @@
           "reviewStatus": "passed",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.3-post-session-clarify-gate-dor.md",
-          "prStatus": "none",
+          "prStatus": "draft",
           "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.3-review-1.md",
           "testPlan": {
             "status": "written",
@@ -6353,12 +6356,13 @@
           },
           "acTotal": 6,
           "acVerified": 0,
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "updatedAt": "2026-05-05T00:00:00.000Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/306",
           "dispatchedAt": "2026-05-05T00:00:00.000Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/311"
         },
         {
           "id": "dsq.4",
@@ -6367,7 +6371,7 @@
           "reviewStatus": "passed",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.4-section-artefact-assembly-dor.md",
-          "prStatus": "none",
+          "prStatus": "draft",
           "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.4-review-1.md",
           "testPlan": {
             "status": "written",
@@ -6377,12 +6381,13 @@
           },
           "acTotal": 6,
           "acVerified": 0,
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "updatedAt": "2026-05-05T00:00:00.000Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/307",
           "dispatchedAt": "2026-05-05T00:00:00.000Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/312"
         }
       ],
       "track": "standard",
