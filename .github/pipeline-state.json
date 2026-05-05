@@ -6405,7 +6405,8 @@
           "name": "Adaptive web UI skill conversation",
           "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/epics/dsq-epic-1.md"
         }
-      ]
+      ],
+      "lastImprove": "2026-05-05"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
