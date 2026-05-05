@@ -189,6 +189,30 @@ let _skillTurnExecutor = function defaultSkillTurnExecutor() {
  */
 function setSkillTurnExecutor(fn) { _skillTurnExecutor = fn; }
 
+// dsq.1 — injectable next-question executor adapter
+/** @type {function(string, Array, string, string): Promise<string|null>} */
+let _nextQuestionExecutor = function defaultNextQuestionExecutor() {
+  throw new Error('Adapter not wired: _nextQuestionExecutor. Call setNextQuestionExecutorAdapter() with a real implementation before use.');
+};
+
+/**
+ * Replace the nextQuestionExecutor implementation (for testing or production wiring).
+ * @param {function(string, Array, string, string): Promise<string|null>} fn
+ */
+function setNextQuestionExecutor(fn) { _nextQuestionExecutor = fn; }
+
+/**
+ * Generate a dynamic next question for a skill session.
+ * @param {string} systemPrompt
+ * @param {Array}  history
+ * @param {string} instruction
+ * @param {string} token — GitHub access token
+ * @returns {Promise<string|null>} generated next question or null
+ */
+function nextQuestionExecutor(systemPrompt, history, instruction, token) {
+  return _nextQuestionExecutor(systemPrompt, history, instruction, token);
+}
+
 /**
  * Execute a skill turn: send skill content + prior Q&A + current answer to Copilot.
  * @param {string} skillContent  — full SKILL.md content as system prompt
@@ -206,5 +230,7 @@ module.exports = {
   getNextQuestion, submitAnswer, setGetNextQuestion, setSubmitAnswer,
   getCommitPreview, commitSession, getCommitResult,
   setGetCommitPreview, setCommitSession, setGetCommitResult,
-  skillTurnExecutor, setSkillTurnExecutor
+  skillTurnExecutor, setSkillTurnExecutor,
+  // dsq.1 — next-question executor
+  nextQuestionExecutor, setNextQuestionExecutor
 };
