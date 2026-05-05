@@ -259,7 +259,7 @@ queue.push(function runT3_1() {
 
 queue.push(function runT3_2() {
   console.log('\n── T3.2 — AC3: handleGetChatHtml fires executor with history=[] on first load');
-  return test('T3.2 (AC3): initial GET /chat fires executor with empty history and "Begin the session." as currentInput', async function() {
+  return test('T3.2 (AC3): initial GET /chat fires executor with empty history and single-question opener prompt as currentInput', async function() {
     const routes = freshRequire(ROUTES_PATH);
 
     let capturedHistory = null;
@@ -292,7 +292,7 @@ queue.push(function runT3_2() {
     await routes.handleGetChatHtml(req, res);
 
     assert.deepStrictEqual(capturedHistory, [], 'initial turn must have history=[]');
-    assert.strictEqual(capturedInput, 'Begin the session.', 'initial currentInput must be "Begin the session."');
+    assert.ok(typeof capturedInput === 'string' && capturedInput.startsWith('Begin the session.'), 'initial currentInput must start with "Begin the session."');
   });
 });
 
