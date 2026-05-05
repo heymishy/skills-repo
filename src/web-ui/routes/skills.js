@@ -1318,6 +1318,7 @@ function htmlGetCompletePage(skillName, sessionId) {
 
 /**
  * Build the artefact content + path from a completed HTML-flow session.
+ * dsq.4 — section-by-section artefact assembly.
  * @param {string} skillName
  * @param {string} sessionId
  * @returns {{artefactContent:string, artefactPath:string}}
@@ -1327,16 +1328,42 @@ function htmlGetPreview(skillName, sessionId) {
   if (!session) { return { artefactContent: '', artefactPath: '' }; }
   var today = new Date().toISOString().slice(0, 10);
   var artefactPath = 'artefacts/' + today + '-' + skillName + '/session-' + sessionId + '-output.md';
-  var content = '# ' + skillName + ' session output\n\n' +
-    session.questions.map(function(q, i) {
-      var qText  = q.text || String(q);
-      var answer = session.answers[i] || '';
-      var mr     = session.modelResponses && session.modelResponses[i];
-      var modelSection = (mr != null)
-        ? '\n\n**Model response:**\n\n' + mr
-        : '';
-      return '## Q' + (i + 1) + ': ' + qText + '\n\n' + answer + modelSection + '\n';
-    }).join('\n');
+
+  var content;
+  if (session.sections && session.sections.length > 0) {
+    content = '# ' + skillName + ' session output\n\n';
+    var globalIdx = 0;
+    session.sections.forEach(function(sec, si) {
+      var heading = sec.heading || skillName; // AC4: empty heading → use skill name
+      content += '## ' + heading + '\n\n';
+      if (session.sectionDrafts && session.sectionDrafts[si] != null) {
+        // AC2: confirmed draft — use it; advance globalIdx past this section's questions
+        content += session.sectionDrafts[si] + '\n\n';
+        globalIdx += (sec.questions ? sec.questions.length : 0);
+      } else {
+        // AC3: no draft — concatenate answers for this section's questions, no Q/A labels
+        var sectionAnswers = [];
+        var qLen = sec.questions ? sec.questions.length : 0;
+        for (var j = 0; j < qLen; j++) {
+          sectionAnswers.push((session.answers && session.answers[globalIdx]) || '');
+          globalIdx++;
+        }
+        content += sectionAnswers.join('\n') + '\n\n';
+      }
+    });
+  } else {
+    // Fallback: no sections → maintain backwards compatibility
+    content = '# ' + skillName + ' session output\n\n' +
+      (session.questions || []).map(function(q, i) {
+        var qText  = q.text || String(q);
+        var answer = (session.answers && session.answers[i]) || '';
+        var mr     = session.modelResponses && session.modelResponses[i];
+        var modelSection = (mr != null)
+          ? '\n\n**Model response:**\n\n' + mr
+          : '';
+        return '## Q' + (i + 1) + ': ' + qText + '\n\n' + answer + modelSection + '\n';
+      }).join('\n');
+  }
   return { artefactContent: content, artefactPath: artefactPath };
 }
 
