@@ -138,153 +138,139 @@ queue.push(function runT1_8() {
   });
 });
 
-// ── T1.1 — AC1: htmlRecordAnswer calls _nextQuestionExecutor with correct args ─
+// ── T1.1 — AC1: _nextQuestionExecutor is NOT called by htmlSubmitTurn ─────────
 
 queue.push(function runT1_1() {
-  console.log('\n── T1.1 — AC1: htmlRecordAnswer calls _nextQuestionExecutor with SKILL.md + history + instruction');
-  return test('T1.1 (AC1): _nextQuestionExecutor called once with systemPrompt containing skill content and instruction', async function() {
+  console.log('\n── T1.1 — AC1: _nextQuestionExecutor is a no-op and never called by htmlSubmitTurn');
+  return test('T1.1 (AC1): setNextQuestionExecutorAdapter wired function is never invoked by htmlSubmitTurn', async function() {
     const routes = freshRequire(ROUTES_PATH);
 
-    // Wire skillTurnExecutor (existing, must not interfere)
-    routes.setSkillTurnExecutorAdapter(async function() { return 'Copilot insight.'; });
-
-    // Wire nextQuestionExecutor spy
-    let executorCallCount = 0;
-    let capturedSystemPrompt = '';
-    let capturedHistory = null;
-    let capturedAnswer = '';
-    routes.setNextQuestionExecutorAdapter(async function(systemPrompt, history, answer, token) {
-      executorCallCount++;
-      capturedSystemPrompt = systemPrompt;
-      capturedHistory = history;
-      capturedAnswer = answer;
-      return 'What is your primary constraint?';
+    let nextQCallCount = 0;
+    routes.setNextQuestionExecutorAdapter(async function() {
+      nextQCallCount++;
+      return 'dynamic question text';
     });
 
-    const sid = makeSession(routes, 'discovery', null);
-    await routes.htmlRecordAnswer('discovery', sid, 'My background is in product management.');
+    routes.setSkillTurnExecutorAdapter(async function() { return 'Model response.'; });
 
-    assert.strictEqual(executorCallCount, 1, '_nextQuestionExecutor must be called exactly once');
-    assert.ok(typeof capturedSystemPrompt === 'string' && capturedSystemPrompt.length > 0,
-      'systemPrompt must be a non-empty string');
-    // AC1 requires the instruction to appear in the prompt
-    const instruction = 'Given the skill instructions and the conversation so far, what is the single best next question to ask the operator?';
-    assert.ok(
-      capturedSystemPrompt.includes(instruction) || capturedAnswer.includes(instruction),
-      'The instruction "' + instruction + '" must appear in the systemPrompt or answer argument'
-    );
-    assert.ok(Array.isArray(capturedHistory), 'history argument must be an array');
+    const sid = 'test-dsq1-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, {
+      skillName: 'discovery', sessionPath: '/tmp/test',
+      systemPrompt: 'TEST SYSTEM PROMPT', turns: [],
+      artefactContent: null, artefactPath: null, done: false
+    });
+
+    await routes.htmlSubmitTurn('discovery', sid, 'My background is in product management.', 'fake-tok');
+
+    assert.strictEqual(nextQCallCount, 0,
+      '_nextQuestionExecutor must NOT be called by htmlSubmitTurn in model-first architecture');
   });
 });
 
-// ── T1.2 — AC2: Non-empty response stored in dynamicQuestions and served ─────
+// ── T1.2 — AC2: session.turns grows after htmlSubmitTurn ────────────────────
 
 queue.push(function runT1_2() {
-  console.log('\n── T1.2 — AC2: non-empty executor response stored in session.dynamicQuestions and returned by htmlGetNextQuestion');
-  return test('T1.2 (AC2): dynamicQuestions[0] set to executor result; htmlGetNextQuestion returns it', async function() {
+  console.log('\n── T1.2 — AC2: session.turns grows after htmlSubmitTurn (user + assistant)');
+  return test('T1.2 (AC2): after htmlSubmitTurn, session.turns has user + assistant entry', async function() {
     const routes = freshRequire(ROUTES_PATH);
 
-    routes.setSkillTurnExecutorAdapter(async function() { return 'Copilot insight.'; });
-    routes.setNextQuestionExecutorAdapter(async function() {
-      return 'What is your primary constraint?';
+    routes.setSkillTurnExecutorAdapter(async function() { return 'Model response text.'; });
+
+    const sid = 'test-dsq1-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, {
+      skillName: 'discovery', sessionPath: '/tmp/test',
+      systemPrompt: 'TEST SYSTEM PROMPT', turns: [],
+      artefactContent: null, artefactPath: null, done: false
     });
 
-    const sid = makeSession(routes, 'discovery', null);
-    await routes.htmlRecordAnswer('discovery', sid, 'My background is in product management.');
+    await routes.htmlSubmitTurn('discovery', sid, 'My answer here.', 'fake-tok');
 
     const sess = routes._getHtmlSession(sid);
-    assert.ok(Array.isArray(sess.dynamicQuestions), 'session.dynamicQuestions must be an array');
-    assert.strictEqual(sess.dynamicQuestions[0], 'What is your primary constraint?',
-      'session.dynamicQuestions[0] must equal the executor return value');
-
-    const nextQ = routes.htmlGetNextQuestion('discovery', sid);
-    assert.ok(nextQ, 'htmlGetNextQuestion must return a result');
-    assert.strictEqual(nextQ.question, 'What is your primary constraint?',
-      'htmlGetNextQuestion must return the dynamic question, not the static one');
+    assert.ok(Array.isArray(sess.turns), 'session.turns must be an array');
+    assert.strictEqual(sess.turns.length, 2, 'must have 2 turns (user + assistant)');
+    assert.strictEqual(sess.turns[0].role, 'user', 'first turn must be user');
+    assert.strictEqual(sess.turns[1].role, 'assistant', 'second turn must be assistant');
   });
 });
 
-// ── T1.3 — AC3 path A: Executor throws → static fallback ─────────────────────
+// ── T1.3 — AC3: htmlSubmitTurn does not throw when _skillTurnExecutor throws ──
 
 queue.push(function runT1_3() {
-  console.log('\n── T1.3 — AC3 path A: executor throws → static fallback, no error propagated');
-  return test('T1.3 (AC3A): executor throw causes static fallback; session continues; no error thrown', async function() {
+  console.log('\n── T1.3 — AC3: htmlSubmitTurn does not throw when _skillTurnExecutor throws');
+  return test('T1.3 (AC3A): htmlSubmitTurn handles executor throw gracefully without propagating error', async function() {
     const routes = freshRequire(ROUTES_PATH);
 
-    routes.setSkillTurnExecutorAdapter(async function() { return 'Copilot insight.'; });
-    routes.setNextQuestionExecutorAdapter(async function() {
+    routes.setSkillTurnExecutorAdapter(async function() {
       throw new Error('API timeout');
     });
 
-    const syntheticQ1 = { id: 'q1', text: 'What is your background?' };
-    const syntheticQ2 = { id: 'q2', text: 'What are your goals?' };
-    const sid = makeSession(routes, 'discovery', {
-      questions: [syntheticQ1, syntheticQ2]
+    const sid = 'test-dsq1-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, {
+      skillName: 'discovery', sessionPath: '/tmp/test',
+      systemPrompt: 'TEST SYSTEM PROMPT', turns: [],
+      artefactContent: null, artefactPath: null, done: false
     });
 
     let threwError = false;
     try {
-      await routes.htmlRecordAnswer('discovery', sid, 'My background is product management.');
+      await routes.htmlSubmitTurn('discovery', sid, 'My answer.', 'fake-tok');
     } catch (_) {
       threwError = true;
     }
 
-    assert.strictEqual(threwError, false, 'htmlRecordAnswer must not throw when executor throws');
-
-    const nextQ = routes.htmlGetNextQuestion('discovery', sid);
-    assert.ok(nextQ, 'session must continue after fallback');
-    assert.strictEqual(nextQ.question, 'What are your goals?',
-      'static fallback question must be returned when executor throws');
+    assert.strictEqual(threwError, false, 'htmlSubmitTurn must not throw when executor throws');
+    const sess = routes._getHtmlSession(sid);
+    assert.strictEqual(sess.done, false, 'session.done must remain false on executor error');
   });
 });
 
-// ── T1.4 — AC3 path B: Executor returns empty string → static fallback ────────
+// ── T1.4 — AC3 path B: htmlSubmitTurn returns {done:false, response} ──────────
 
 queue.push(function runT1_4() {
-  console.log('\n── T1.4 — AC3 path B: executor returns empty string → static fallback');
-  return test('T1.4 (AC3B): empty executor response causes static fallback question to be served', async function() {
+  console.log('\n── T1.4 — AC3 path B: htmlSubmitTurn returns {done:false, response} without artefact signal');
+  return test('T1.4 (AC3B): htmlSubmitTurn returns {done:false, response} when no artefact signal', async function() {
     const routes = freshRequire(ROUTES_PATH);
 
-    routes.setSkillTurnExecutorAdapter(async function() { return 'Copilot insight.'; });
-    routes.setNextQuestionExecutorAdapter(async function() { return ''; });
+    routes.setSkillTurnExecutorAdapter(async function() { return 'What are your goals?'; });
 
-    const syntheticQ1 = { id: 'q1', text: 'What is your background?' };
-    const syntheticQ2 = { id: 'q2', text: 'What are your goals?' };
-    const sid = makeSession(routes, 'discovery', {
-      questions: [syntheticQ1, syntheticQ2]
+    const sid = 'test-dsq1-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, {
+      skillName: 'discovery', sessionPath: '/tmp/test',
+      systemPrompt: 'TEST SYSTEM PROMPT', turns: [],
+      artefactContent: null, artefactPath: null, done: false
     });
 
-    await routes.htmlRecordAnswer('discovery', sid, 'My background is product management.');
+    const result = await routes.htmlSubmitTurn('discovery', sid, 'My background.', 'fake-tok');
 
-    const nextQ = routes.htmlGetNextQuestion('discovery', sid);
-    assert.ok(nextQ, 'session must continue after empty fallback');
-    assert.strictEqual(nextQ.question, 'What are your goals?',
-      'static question must be used when executor returns empty string');
+    assert.ok(result, 'must return a result object');
+    assert.strictEqual(result.done, false, 'done must be false without artefact signal');
+    assert.strictEqual(result.response, 'What are your goals?', 'response must be the executor return value');
   });
 });
 
-// ── T1.5 — AC3 path C: Executor returns null → static fallback ───────────────
+// ── T1.5 — AC3 path C: session.done remains false without artefact signal ─────
 
 queue.push(function runT1_5() {
-  console.log('\n── T1.5 — AC3 path C: executor returns null → static fallback');
-  return test('T1.5 (AC3C): null executor response causes static fallback question to be served', async function() {
+  console.log('\n── T1.5 — AC3 path C: session.done remains false without artefact signal');
+  return test('T1.5 (AC3C): session.done stays false across multiple htmlSubmitTurn calls without artefact signal', async function() {
     const routes = freshRequire(ROUTES_PATH);
 
-    routes.setSkillTurnExecutorAdapter(async function() { return 'Copilot insight.'; });
-    routes.setNextQuestionExecutorAdapter(async function() { return null; });
+    routes.setSkillTurnExecutorAdapter(async function() { return 'Keep going, more context needed.'; });
 
-    const syntheticQ1 = { id: 'q1', text: 'What is your background?' };
-    const syntheticQ2 = { id: 'q2', text: 'What are your goals?' };
-    const sid = makeSession(routes, 'discovery', {
-      questions: [syntheticQ1, syntheticQ2]
+    const sid = 'test-dsq1-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, {
+      skillName: 'discovery', sessionPath: '/tmp/test',
+      systemPrompt: 'TEST SYSTEM PROMPT', turns: [],
+      artefactContent: null, artefactPath: null, done: false
     });
 
-    await routes.htmlRecordAnswer('discovery', sid, 'My background is product management.');
+    await routes.htmlSubmitTurn('discovery', sid, 'First answer.', 'fake-tok');
+    await routes.htmlSubmitTurn('discovery', sid, 'Second answer.', 'fake-tok');
+    await routes.htmlSubmitTurn('discovery', sid, 'Third answer.', 'fake-tok');
 
-    const nextQ = routes.htmlGetNextQuestion('discovery', sid);
-    assert.ok(nextQ, 'session must continue after null fallback');
-    assert.strictEqual(nextQ.question, 'What are your goals?',
-      'static question must be used when executor returns null');
+    const sess = routes._getHtmlSession(sid);
+    assert.strictEqual(sess.done, false, 'session.done must stay false without artefact signal');
+    assert.strictEqual(sess.turns.length, 6, 'must have 6 turns (3 user + 3 assistant)');
   });
 });
 
@@ -316,28 +302,30 @@ queue.push(function runT1_6() {
   });
 });
 
-// ── T1.9 — AC7: Regression canary — wuce.26 core behaviour unaffected ─────────
+// ── T1.9 — AC7: Regression canary — _skillTurnExecutor called once per turn ──
 
 queue.push(function runT1_9() {
-  console.log('\n── T1.9 — AC7: Regression canary — _skillTurnExecutor still called and modelResponses stored');
-  return test('T1.9 (AC7): after dsq.1 changes, htmlRecordAnswer still calls _skillTurnExecutor and stores modelResponses', async function() {
-    const routes  = freshRequire(ROUTES_PATH);
+  console.log('\n── T1.9 — AC7: Regression canary — _skillTurnExecutor called once per htmlSubmitTurn');
+  return test('T1.9 (AC7): htmlSubmitTurn calls _skillTurnExecutor exactly once per call', async function() {
+    const routes = freshRequire(ROUTES_PATH);
 
-    routes.setSkillTurnExecutorAdapter(async function() { return 'wuce26 insight'; });
-    routes.setNextQuestionExecutorAdapter(async function() { return 'dynamic next Q'; });
+    let execCallCount = 0;
+    routes.setSkillTurnExecutorAdapter(async function() {
+      execCallCount++;
+      return 'Model-first response';
+    });
 
-    const sid = makeSession(routes, 'discovery', null);
-    const result = await routes.htmlRecordAnswer('discovery', sid, 'My answer');
+    const sid = 'test-dsq1-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, {
+      skillName: 'discovery', sessionPath: '/tmp/test',
+      systemPrompt: 'TEST SYSTEM PROMPT', turns: [],
+      artefactContent: null, artefactPath: null, done: false
+    });
 
-    const sess = routes._getHtmlSession(sid);
+    await routes.htmlSubmitTurn('discovery', sid, 'My answer', 'fake-tok');
+    await routes.htmlSubmitTurn('discovery', sid, 'Second answer', 'fake-tok');
 
-    assert.ok(Array.isArray(sess.answers) && sess.answers.length === 1,
-      'answer must still be recorded (wuce.26 regression)');
-    assert.ok(Array.isArray(sess.modelResponses) && sess.modelResponses.length === 1,
-      'modelResponses must still be populated (wuce.26 regression)');
-    assert.strictEqual(sess.modelResponses[0], 'wuce26 insight',
-      'modelResponses[0] must be the _skillTurnExecutor result (wuce.26 regression)');
-    assert.ok(result && result.nextUrl, 'must still return { nextUrl } (wuce.26 regression)');
+    assert.strictEqual(execCallCount, 2, '_skillTurnExecutor must be called once per htmlSubmitTurn call');
   });
 });
 

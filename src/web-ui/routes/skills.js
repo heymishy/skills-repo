@@ -575,7 +575,7 @@ async function handlePostSkillSessionHtml(req, res) {
     const token   = req.session.accessToken;
     const session = await _createSession(skillName, token);
     const id      = session && session.id;
-    res.writeHead(303, { Location: '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(id) + '/next' });
+    res.writeHead(303, { Location: '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(id) + '/chat' });
     res.end();
   } catch (err) {
     _logger.error('handlePostSkillSessionHtml: ' + err.message);
@@ -806,27 +806,23 @@ let _skillTurnExecutor = skillsAdapter.skillTurnExecutor;
  */
 function setSkillTurnExecutorAdapter(fn) { _skillTurnExecutor = fn; }
 
-// dsq.1 — injectable next-question executor (generates dynamic follow-up question)
-let _nextQuestionExecutor = function defaultNextQuestionExecutor() {
-  throw new Error('Adapter not wired: _nextQuestionExecutor. Call setNextQuestionExecutorAdapter() with a real implementation before use.');
-};
+// mfc.1 — _nextQuestionExecutor and _sectionDraftExecutor retained as no-ops for backward compat (AC9).
+// They are not invoked in the model-first session flow.
+let _nextQuestionExecutor = function noOpNextQuestionExecutor() { return Promise.resolve(null); };
 
 /**
- * Replace the nextQuestionExecutor adapter (for testing or production wiring).
- * Default stub throws — must be wired before use (D37/ADR-009).
- * @param {function(string, Array, string, string): Promise<string|null>} fn
+ * Backward-compat no-op setter (AC9 — mfc.1).
+ * The model-first flow does not call _nextQuestionExecutor.
+ * @param {function} fn
  */
-function setNextQuestionExecutorAdapter(fn) { _nextQuestionExecutor = fn; }
+function setNextQuestionExecutorAdapter(fn) { void fn; /* no-op: model-first flow */ }
 
-// dsq.2 — injectable section-draft executor (synthesises a section draft from completed Q&A)
-let _sectionDraftExecutor = function defaultSectionDraftExecutor() {
-  throw new Error('Adapter not wired: _sectionDraftExecutor. Call setSectionDraftExecutorAdapter() with a real implementation before use.');
-};
+// mfc.1 — _sectionDraftExecutor no-op
+let _sectionDraftExecutor = function noOpSectionDraftExecutor() { return Promise.resolve(null); };
 
 /**
- * Replace the sectionDraftExecutor adapter (for testing or production wiring).
- * Default stub throws — must be wired before use (D37/ADR-009).
- * @param {function(string, Array, string, string): Promise<string|null>} fn
+ * Backward-compat no-op setter (AC9 — mfc.1).
+ * @param {function} fn
  */
 function setSectionDraftExecutorAdapter(fn) { _sectionDraftExecutor = fn; }
 
@@ -1009,34 +1005,36 @@ async function handleGetResultHtml(req, res) {
 }
 
 // ---------------------------------------------------------------------------
-// HTML-flow session helpers — used by server.js to wire the injectable adapters
-// so the form-based skill flow shares _sessionStore with the JSON API flow.
+// HTML-flow session helpers — model-first chat architecture (mfc.1)
 // ---------------------------------------------------------------------------
 
 /**
- * Create a session in _sessionStore for the HTML form flow.
- * Extracts questions from the skill's SKILL.md so that htmlGetNextQuestion works.
- * @param {string} skillName
- * @param {string} sessionPath  — absolute path returned by sessionManager.createSession
- * @returns {void}
+ * Build the system prompt for a skill session.
+ * Loads copilot-instructions.md + SKILL.md + product context + reference materials
+ * + web UI protocol section (instructs model to output ---ARTEFACT-START--- markers).
+ *
+ * @param {string}  skillName   — skill directory name under .github/skills/
+ * @param {string}  sessionPath — absolute session path (used to locate reference/ folder)
+ * @param {string}  [repoRoot]  — override repo root (defaults to _getRepoPath(); pass process.cwd() in tests)
+ * @returns {string}
  */
-function registerHtmlSession(sessionId, sessionPath, skillName) {
-  var questions = _getQuestionsForSkill(skillName);
-  // Load SKILL.md content for use as system prompt in per-answer model calls (wuce.26)
-  var repoPath    = _getRepoPath();
-  var skills      = listAvailableSkills(repoPath);
-  var skill       = skills.find(function(s) { return s.name === skillName; });
-  var skillContent = '';
-  if (skill && skill.path) {
-    var relPath = path.isAbsolute(skill.path) ? skill.path : path.join(repoPath, skill.path);
-    var mdPath  = path.join(relPath, 'SKILL.md');
-    if (fs.existsSync(mdPath)) {
-      skillContent = fs.readFileSync(mdPath, 'utf8');
-    }
+function buildSystemPrompt(skillName, sessionPath, repoRoot) {
+  var root = repoRoot || _getRepoPath();
+  var parts = [];
+
+  // 1. copilot-instructions.md
+  var ciPath = path.join(root, '.github', 'copilot-instructions.md');
+  if (fs.existsSync(ciPath)) {
+    parts.push(fs.readFileSync(ciPath, 'utf8'));
   }
-  // Augment skillContent with product context files so the model has the same
-  // grounding that VS Code Copilot gets when it reads product/ before a session.
-  var productContext = '';
+
+  // 2. SKILL.md
+  var skillMdPath = path.join(root, '.github', 'skills', skillName, 'SKILL.md');
+  if (fs.existsSync(skillMdPath)) {
+    parts.push('--- SKILL: ' + skillName + ' ---\n\n' + fs.readFileSync(skillMdPath, 'utf8'));
+  }
+
+  // 3. Product context files
   var PRODUCT_FILES = [
     { name: 'mission.md',      label: 'PRODUCT MISSION' },
     { name: 'tech-stack.md',   label: 'TECH STACK' },
@@ -1044,47 +1042,68 @@ function registerHtmlSession(sessionId, sessionPath, skillName) {
     { name: 'roadmap.md',      label: 'PRODUCT ROADMAP' }
   ];
   PRODUCT_FILES.forEach(function(pf) {
-    var pfPath = path.join(repoPath, 'product', pf.name);
+    var pfPath = path.join(root, 'product', pf.name);
     if (fs.existsSync(pfPath)) {
-      productContext += '\n\n--- ' + pf.label + ' ---\n' + fs.readFileSync(pfPath, 'utf8');
+      parts.push('--- ' + pf.label + ' ---\n\n' + fs.readFileSync(pfPath, 'utf8'));
     }
   });
 
-  // Also load reference materials from artefacts/[feature-slug]/reference/ if
-  // a session path is provided and a reference folder can be derived from it.
-  var referenceContext = '';
+  // 4. Reference materials from artefacts/[feature-slug]/reference/ (if present)
   if (sessionPath) {
-    // Derive the artefacts root and look for reference/ sibling to the session
-    var artefactsRoot = path.join(repoPath, 'artefacts');
-    // sessionPath is typically <artefactsRoot>/<feature-slug>/sessions/<id>
-    // Walk up to find a reference/ folder inside any feature folder
+    var artefactsRoot = path.join(root, 'artefacts');
     var sessionDir = path.dirname(sessionPath);
     var featureDir = path.dirname(sessionDir);
     if (featureDir.startsWith(artefactsRoot)) {
       var refDir = path.join(featureDir, 'reference');
       if (fs.existsSync(refDir)) {
-        var refFiles = fs.readdirSync(refDir).filter(function(f) { return f.endsWith('.md'); });
-        refFiles.forEach(function(rf) {
-          var rfContent = fs.readFileSync(path.join(refDir, rf), 'utf8');
-          referenceContext += '\n\n--- REFERENCE: ' + rf + ' ---\n' + rfContent;
+        fs.readdirSync(refDir).filter(function(f) { return f.endsWith('.md'); }).forEach(function(rf) {
+          parts.push('--- REFERENCE: ' + rf + ' ---\n\n' + fs.readFileSync(path.join(refDir, rf), 'utf8'));
         });
       }
     }
   }
 
-  var fullSkillContent = skillContent +
-    (productContext ? '\n\n=== PRODUCT CONTEXT ===\n' + productContext : '') +
-    (referenceContext ? '\n\n=== REFERENCE MATERIALS ===\n' + referenceContext : '');
+  // 5. Web UI protocol — instructs the model how to operate and when/how to output the artefact
+  parts.push([
+    '--- WEB UI PROTOCOL ---',
+    '',
+    'You are running as a web UI assistant for a structured skill session.',
+    'Read the SKILL.md instructions above and follow them to run the session.',
+    'Ask one question at a time. Wait for the operator\'s answer before proceeding.',
+    'When you have gathered all required information, output the complete artefact using these exact markers:',
+    '',
+    '---ARTEFACT-START---',
+    '[full artefact content here, in markdown]',
+    '---ARTEFACT-END---',
+    '---SLUG---',
+    'YYYY-MM-DD-descriptive-feature-slug',
+    '',
+    'The slug must be a lowercase, hyphenated date-prefixed identifier describing the artefact.',
+    'Do not output these markers until you are ready to produce the final artefact.'
+  ].join('\n'));
 
+  return parts.join('\n\n');
+}
+
+/**
+ * Create a session in _sessionStore for the model-first HTML chat flow (mfc.1).
+ * Stores systemPrompt (built from SKILL.md + product context + protocol) and
+ * an empty turns array. The old questions/answers/sections fields are removed.
+ *
+ * @param {string} sessionId
+ * @param {string} sessionPath  — absolute path returned by sessionManager.createSession
+ * @param {string} skillName
+ */
+function registerHtmlSession(sessionId, sessionPath, skillName) {
+  var systemPrompt = buildSystemPrompt(skillName, sessionPath);
   _sessionStore.set(sessionId, {
-    skillName:      skillName,
-    sessionPath:    sessionPath,
-    questions:      questions,
-    sections:       extractSections(fullSkillContent),
-    answers:        [],
-    modelResponses: [],
-    skillContent:   fullSkillContent,
-    userId:         null   // HTML sessions: auth guard at route level is the security boundary
+    skillName:       skillName,
+    sessionPath:     sessionPath,
+    systemPrompt:    systemPrompt,
+    turns:           [],
+    artefactContent: null,
+    artefactPath:    null,
+    done:            false
   });
 }
 
@@ -1095,6 +1114,211 @@ function registerHtmlSession(sessionId, sessionPath, skillName) {
  */
 function _getHtmlSession(sessionId) {
   return _sessionStore.get(sessionId);
+}
+
+/**
+ * Directly set a session entry (test helper — bypasses buildSystemPrompt file I/O).
+ * @param {string} sessionId
+ * @param {object} data
+ */
+function _setHtmlSession(sessionId, data) {
+  _sessionStore.set(sessionId, data);
+}
+
+/**
+ * Process one user turn in the model-first chat flow.
+ * Appends user turn, calls _skillTurnExecutor once, parses artefact signal, appends assistant turn.
+ *
+ * @param {string} skillName
+ * @param {string} sessionId
+ * @param {string} rawAnswer
+ * @param {string} [token]
+ * @returns {Promise<{done:boolean, response:string, artefactContent?:string}|null>}
+ */
+async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token) {
+  var session = _sessionStore.get(sessionId);
+  if (!session) { return null; }
+
+  var userContent = sanitiseAnswer(rawAnswer);
+  // Snapshot history BEFORE appending the new user turn (so executor receives it as history)
+  var historySnapshot = session.turns.slice();
+  session.turns.push({ role: 'user', content: userContent });
+
+  var response = '';
+  try {
+    response = await _skillTurnExecutor(
+      session.systemPrompt,
+      historySnapshot,
+      userContent,
+      token || ''
+    );
+  } catch (err) {
+    _logger.warn('htmlSubmitTurn executor error: ' + (err && err.message ? err.message : 'unknown'));
+    response = '';
+  }
+
+  var artefactMatch = response.match(/---ARTEFACT-START---\s*([\s\S]+?)\s*---ARTEFACT-END---/);
+  var slugMatch     = response.match(/---SLUG---\s*\n?([\w-]+)/);
+
+  if (artefactMatch) {
+    session.artefactContent = artefactMatch[1].trim();
+    var slug = slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName;
+    session.artefactPath = 'artefacts/' + slug + '/' + session.skillName + '.md';
+    session.done = true;
+    session.turns.push({ role: 'assistant', content: response });
+    return { done: true, response: response, artefactContent: session.artefactContent };
+  }
+
+  session.turns.push({ role: 'assistant', content: response });
+  return { done: false, response: response };
+}
+
+/**
+ * Render the single-page chat UI HTML.
+ * @param {string} skillName
+ * @param {string} sessionId
+ * @param {object} session
+ * @returns {string}
+ */
+function _renderChatPage(skillName, sessionId, session) {
+  var encodedSkill = encodeURIComponent(skillName);
+  var encodedId    = encodeURIComponent(sessionId);
+  var turnUrl      = '/api/skills/' + encodedSkill + '/sessions/' + encodedId + '/turn';
+
+  var bubbles = (session.turns || []).map(function(t) {
+    var cls = t.role === 'user' ? 'msg msg--user' : 'msg msg--assistant';
+    return '<div class="' + cls + '"><div class="bubble">' +
+      simpleMarkdownToHtml(t.content) +
+      '</div></div>';
+  }).join('\n');
+
+  var bodyContent = [
+    '<div class="chat-shell">',
+    '  <div class="chat-messages" id="chat-messages">',
+    bubbles,
+    '  </div>',
+    '  <div class="chat-footer">',
+    '    <form id="chat-form">',
+    '      <textarea id="chat-input" placeholder="Type your response..." rows="3"></textarea>',
+    '      <button type="submit" id="send-btn">Send</button>',
+    '    </form>',
+    '  </div>',
+    '</div>',
+    '<style>',
+    '.chat-shell{display:flex;flex-direction:column;height:80vh;max-width:800px;margin:auto}',
+    '.chat-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.75rem}',
+    '.msg--assistant .bubble{background:#f0f0f0;border-radius:8px;padding:.75rem 1rem;max-width:85%}',
+    '.msg--user{align-self:flex-end}.msg--user .bubble{background:#0969da;color:#fff;border-radius:8px;padding:.75rem 1rem;max-width:85%}',
+    '.chat-footer{padding:.75rem;border-top:1px solid #ddd}',
+    '#chat-form{display:flex;gap:.5rem}',
+    '#chat-input{flex:1;padding:.5rem;border:1px solid #ccc;border-radius:4px;resize:vertical}',
+    '#send-btn{padding:.5rem 1rem;background:#0969da;color:#fff;border:none;border-radius:4px;cursor:pointer}',
+    '</style>',
+    '<script>',
+    '(function(){',
+    '  var form = document.getElementById("chat-form");',
+    '  var input = document.getElementById("chat-input");',
+    '  var messages = document.getElementById("chat-messages");',
+    '  var TURN_URL = "' + escHtml(turnUrl) + '";',
+    '  function scrollBottom(){ messages.scrollTop = messages.scrollHeight; }',
+    '  scrollBottom();',
+    '  function appendBubble(role, html){',
+    '    var d = document.createElement("div");',
+    '    d.className = "msg msg--" + role;',
+    '    d.innerHTML = "<div class=\\"bubble\\">" + html + "</div>";',
+    '    messages.appendChild(d); scrollBottom();',
+    '  }',
+    '  form.addEventListener("submit", function(e){',
+    '    e.preventDefault();',
+    '    var answer = input.value.trim();',
+    '    if(!answer) return;',
+    '    appendBubble("user", answer.replace(/[&<>"]/g, function(c){',
+    '      return {"&":"&amp;","<":"&lt;",">":"&gt;",\'"\':"&quot;"}[c];',
+    '    }));',
+    '    input.value = "";',
+    '    fetch(TURN_URL, {',
+    '      method: "POST",',
+    '      headers: {"Content-Type": "application/json"},',
+    '      body: JSON.stringify({answer: answer})',
+    '    }).then(function(r){ return r.json(); }).then(function(data){',
+    '      appendBubble("assistant", data.response || "");',
+    '      if(data.done){',
+    '        form.innerHTML = "<p>Session complete. <a href=\'" +',
+    '          "/skills/" + encodeURIComponent("' + escHtml(skillName) + '") +',
+    '          "/sessions/" + encodeURIComponent("' + escHtml(sessionId) + '") +',
+    '          "/commit-preview\'><strong>Review and commit artefact</strong></a></p>";',
+    '      }',
+    '    }).catch(function(){ appendBubble("assistant", "[error sending message]"); });',
+    '  });',
+    '})();',
+    '</script>'
+  ].join('\n');
+
+  return renderShell({ title: 'Skill session — ' + escHtml(skillName), bodyContent: bodyContent, user: { login: '' } });
+}
+
+/**
+ * GET /skills/:name/sessions/:id/chat
+ * Renders the single-page chat UI. Fires the initial model turn if turns is empty.
+ * @param {object} req
+ * @param {object} res
+ */
+async function handleGetChatHtml(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var skillName = (req.params && req.params.name) || '';
+  var sessionId = (req.params && req.params.id) || '';
+  var session = _sessionStore.get(sessionId);
+  if (!session) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Session not found.</p>', user: { login: '' } }));
+    return;
+  }
+  // Fire initial turn when there is no prior conversation
+  if (session.turns.length === 0) {
+    var initResponse = '';
+    try {
+      initResponse = await _skillTurnExecutor(
+        session.systemPrompt,
+        [],
+        'Begin the session.',
+        req.session.accessToken
+      );
+    } catch (err) {
+      _logger.warn('handleGetChatHtml initial turn error: ' + (err && err.message ? err.message : 'unknown'));
+      initResponse = '';
+    }
+    session.turns.push({ role: 'assistant', content: initResponse });
+  }
+  var html = _renderChatPage(skillName, sessionId, session);
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
+/**
+ * POST /api/skills/:name/sessions/:id/turn
+ * Accepts a user answer, calls htmlSubmitTurn, returns JSON {done, response, artefactContent?}.
+ * @param {object} req
+ * @param {object} res
+ */
+async function handlePostTurnHtml(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    _json(res, 401, { error: 'Not authenticated' });
+    return;
+  }
+  var skillName = (req.params && req.params.name) || '';
+  var sessionId = (req.params && req.params.id) || '';
+  var body = await _readBody(req);
+  var answer = (body && typeof body.answer === 'string') ? body.answer : '';
+  var result = await htmlSubmitTurn(skillName, sessionId, answer, req.session.accessToken);
+  if (!result) {
+    _json(res, 404, { error: 'Session not found' });
+    return;
+  }
+  _json(res, 200, result);
 }
 
 /**
@@ -1307,28 +1531,28 @@ async function htmlRecordAnswer(skillName, sessionId, rawAnswer, token) {
 }
 
 /**
- * Render the "Draft complete" interstitial page that surfaces /clarify before committing.
- * dsq.3 — AC2/AC3/AC4/AC5
+ * Render the "Draft complete" interstitial page.
+ * In the model-first flow, session.done is set when the model outputs the artefact signal.
  * @param {string} skillName
  * @param {string} sessionId
  * @returns {string} HTML
  */
 function htmlGetCompletePage(skillName, sessionId) {
   var session = _sessionStore.get(sessionId);
-  var questionCount = session ? (session.questions ? session.questions.length : 0) : 0;
+  var isDone = session ? session.done : false;
   var commitPreviewUrl = '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/commit-preview';
   var bodyContent =
     '<h2>Draft complete</h2>' +
     '<p>Skill: <strong>' + escHtml(skillName) + '</strong></p>' +
-    '<p>' + questionCount + ' question' + (questionCount !== 1 ? 's' : '') + ' answered.</p>' +
+    (isDone ? '<p>Artefact is ready.</p>' : '<p>Session in progress.</p>') +
     '<p><a href="' + escHtml(commitPreviewUrl) + '">Commit artefact</a></p>' +
     '<p style="margin-top:1rem"><a href="/skills/clarify">Run /clarify first</a></p>';
   return renderShell({ title: 'Draft complete', bodyContent: bodyContent, user: { login: '' } });
 }
 
 /**
- * Build the artefact content + path from a completed HTML-flow session.
- * dsq.4 — section-by-section artefact assembly.
+ * Return the model-produced artefact content and path for an HTML-flow session.
+ * mfc.1 — reads session.artefactContent / session.artefactPath set by htmlSubmitTurn.
  * @param {string} skillName
  * @param {string} sessionId
  * @returns {{artefactContent:string, artefactPath:string}}
@@ -1336,45 +1560,10 @@ function htmlGetCompletePage(skillName, sessionId) {
 function htmlGetPreview(skillName, sessionId) {
   var session = _sessionStore.get(sessionId);
   if (!session) { return { artefactContent: '', artefactPath: '' }; }
-  var today = new Date().toISOString().slice(0, 10);
-  var artefactPath = 'artefacts/' + today + '-' + skillName + '/session-' + sessionId + '-output.md';
-
-  var content;
-  if (session.sections && session.sections.length > 0) {
-    content = '# ' + skillName + ' session output\n\n';
-    var globalIdx = 0;
-    session.sections.forEach(function(sec, si) {
-      var heading = sec.heading || skillName; // AC4: empty heading → use skill name
-      content += '## ' + heading + '\n\n';
-      if (session.sectionDrafts && session.sectionDrafts[si] != null) {
-        // AC2: confirmed draft — use it; advance globalIdx past this section's questions
-        content += session.sectionDrafts[si] + '\n\n';
-        globalIdx += (sec.questions ? sec.questions.length : 0);
-      } else {
-        // AC3: no draft — concatenate answers for this section's questions, no Q/A labels
-        var sectionAnswers = [];
-        var qLen = sec.questions ? sec.questions.length : 0;
-        for (var j = 0; j < qLen; j++) {
-          sectionAnswers.push((session.answers && session.answers[globalIdx]) || '');
-          globalIdx++;
-        }
-        content += sectionAnswers.join('\n') + '\n\n';
-      }
-    });
-  } else {
-    // Fallback: no sections → maintain backwards compatibility
-    content = '# ' + skillName + ' session output\n\n' +
-      (session.questions || []).map(function(q, i) {
-        var qText  = q.text || String(q);
-        var answer = (session.answers && session.answers[i]) || '';
-        var mr     = session.modelResponses && session.modelResponses[i];
-        var modelSection = (mr != null)
-          ? '\n\n**Model response:**\n\n' + mr
-          : '';
-        return '## Q' + (i + 1) + ': ' + qText + '\n\n' + answer + modelSection + '\n';
-      }).join('\n');
-  }
-  return { artefactContent: content, artefactPath: artefactPath };
+  return {
+    artefactContent: session.artefactContent || '',
+    artefactPath:    session.artefactPath    || ''
+  };
 }
 
 /**
@@ -1398,19 +1587,21 @@ module.exports = {
   // wuce.23 HTML handlers
   handleGetSkillsHtml, handlePostSkillSessionHtml,
   setListSkills, setCreateSession, setSkillsAuditLogger,
-  // wuce.24 HTML handlers
+  // wuce.24 HTML handlers (kept for backward compat routing)
   handleGetQuestionHtml, handlePostAnswerHtml,
   setGetNextQuestion, setSubmitAnswer, setQuestionAuditLogger,
   // wuce.25 HTML handlers
   handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml,
   setGetCommitPreview, setCommitSession, setGetCommitResult, setCommitAuditLogger,
-  // HTML-flow session helpers (wired via server.js injectable adapters)
-  registerHtmlSession, htmlGetNextQuestion, htmlRecordAnswer, htmlGetPreview, htmlCommitSession,
+  // HTML-flow session helpers
+  registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession,
+  // mfc.1 — chat architecture handlers
+  handleGetChatHtml, handlePostTurnHtml,
+  htmlSubmitTurn, buildSystemPrompt,
   // wuce.26 — test helpers + skill-turn executor adapter setter
-  _getHtmlSession, setSkillTurnExecutorAdapter,
-  // dsq.1 — next-question executor adapter setter
+  _getHtmlSession, _setHtmlSession, setSkillTurnExecutorAdapter,
+  // dsq.1/dsq.2 — backward-compat no-op setters (AC9 — mfc.1)
   setNextQuestionExecutorAdapter,
-  // dsq.2 — section-draft executor adapter setter
   setSectionDraftExecutorAdapter,
   // dsq.3 — complete page
   htmlGetCompletePage

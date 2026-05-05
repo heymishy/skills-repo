@@ -5,6 +5,7 @@
   "cycle": {
     "discovery": {
       "status": "complete",
+      "completedAt": "2026-05-05",
       "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/discovery.md"
     },
     "benefit-metric": {

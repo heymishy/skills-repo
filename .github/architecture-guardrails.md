@@ -1072,7 +1072,7 @@ The web UI's governance value proposition rests on every artefact write being at
 All artefact write-back from the web UI (sign-off, annotation, session commit) MUST use the **authenticated user's GitHub OAuth token** via the GitHub Contents API (`PUT /repos/{owner}/{repo}/contents/{path}`). Service account tokens, bot tokens, and GITHUB_TOKEN from GitHub Actions are not acceptable for this operation.
 
 - The token is retrieved from `req.session.accessToken` in the route handler
-- It is passed as `Authorization: Bearer <token>` in the Contents API call
+- It is passed via the `Authorization` header (OAuth token scheme) in the Contents API call
 - The resulting commit appears in GitHub history under the authenticated user's identity with their avatar
 - The OAuth App must request `repo` (or `contents:write` with fine-grained PAT) scope at authorisation time
 

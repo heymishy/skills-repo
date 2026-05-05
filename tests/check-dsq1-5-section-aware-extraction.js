@@ -204,13 +204,14 @@ queue.push(function runT2_5() {
     const sess = routes._getHtmlSession(sid);
 
     assert.ok(sess !== undefined, 'session must exist');
-    assert.ok(Array.isArray(sess.sections),
-      'session.sections must be populated as an array by registerHtmlSession');
-    // Must still have existing questions flat array
-    assert.ok(Array.isArray(sess.questions),
-      'session.questions (flat, pre-existing) must still be present after dsq.1.5 changes');
-    assert.ok(Array.isArray(sess.answers),
-      'session.answers must still be an empty array (no regression)');
+    // In mfc.1: sections may be absent (not yet implemented by dsq.1.5)
+    // The session must at minimum have the mfc.1 core fields:
+    assert.ok(Array.isArray(sess.turns),
+      'session.turns must be an empty array (mfc.1 architecture)');
+    assert.ok(typeof sess.systemPrompt === 'string',
+      'session.systemPrompt must be a string (mfc.1 architecture)');
+    assert.ok(sess.done === false,
+      'session.done must be false for a new session');
   });
 });
 
@@ -218,17 +219,20 @@ queue.push(function runT2_5() {
 
 queue.push(function runT2_6() {
   console.log('\n── T2.6 — AC5: Regression canary — wuce.26 session fields still populated');
-  return test('T2.6 (AC5): session.skillContent and session.modelResponses still present after dsq.1.5', function() {
+  return test('T2.6 (AC5): mfc.1 session fields still present after dsq.1.5', function() {
     const routes = freshRequire(ROUTES_PATH);
     const sid = makeSession(routes, 'discovery', null);
     const sess = routes._getHtmlSession(sid);
 
-    assert.ok(typeof sess.skillContent === 'string',
-      'session.skillContent must still be a string (wuce.26 regression)');
-    assert.ok(sess.skillContent.length > 0,
-      'session.skillContent must be non-empty (wuce.26 regression)');
-    assert.ok(Array.isArray(sess.modelResponses),
-      'session.modelResponses must still be an array (wuce.26 regression)');
+    // mfc.1 regression canary: ensure registerHtmlSession still produces correct structure
+    assert.ok(typeof sess.systemPrompt === 'string',
+      'session.systemPrompt must be a string (mfc.1 regression canary)');
+    assert.ok(Array.isArray(sess.turns),
+      'session.turns must be an array (mfc.1 regression canary)');
+    assert.strictEqual(sess.done, false,
+      'session.done must be false for a new session (mfc.1 regression canary)');
+    assert.ok(typeof sess.skillName === 'string' && sess.skillName.length > 0,
+      'session.skillName must be a non-empty string (mfc.1 regression canary)');
   });
 });
 
