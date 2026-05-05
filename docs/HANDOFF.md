@@ -2,6 +2,7 @@
 
 **Document type:** Enterprise handoff bundle
 **Prepared:** 2026-04-12
+**Updated:** 2026-05-06 — mfc.1 model-first chat architecture DoD complete (commit d793217 + 2177400 + 2ca8cc2). Scrape-first skill session flow fully replaced. WEB UI PROTOCOL prompt tuning committed (2ca8cc2). See Section 9 (updated) for artefact locations and what to skip. Pending: live smoke test for AC5/AC6, M1/M2 measurement after first live session.
 **Updated:** 2026-05-04 — wuce.26 artefact chain: per-answer model response in skill HTML flow. New injectable module `src/modules/skill-turn-executor.js` (Copilot chat completions, Bearer token, 300-token cap). Short-track pipeline complete: story + test plan (14 tests) + verification script + DoR signed off (17/17 hard blocks, High oversight). Coding agent ready for dispatch. See Section 9 pending items.
 **Updated:** 2026-05-03 — Pipeline-state write safety fix: read-from-master-before-write rule enforced in `/subagent-execution`, `/branch-complete`, and `/implementation-plan`. Fixes the structural fan-out overwrite problem that caused 8 wuce stories to show stale `prStatus: none` after their PRs had merged. Root cause: concurrent worktrees write from stale T0 copy of pipeline-state.json rather than current master. Fix: mandatory `git fetch origin master` + `git show origin/master:.github/pipeline-state.json` + SHA log before every write. Porting note in `artefacts/2026-05-03-pipeline-state-write-safety/fix-note.md`.
 **Updated:** 2026-04-29 — `/reverse-engineer` SKILL.md evolution v2: Q0 outcome gate, stack-specific reading plans (Spring/Struts 2/ACE-IIB/COBOL/large-test-suites), multi-pass corpus management with corpus-state.md protocol, sub-agent coordination model, ESB dependency detection + reading plan sub-output, corpus convergence criterion (6 conditions, 2:1 VERIFIED:UNCERTAIN), Outputs +7 (ESB reading plan) +8 (corpus-state.md), outcome-aware artefact emphasis section, updated completion statement. CHANGELOG.md and HANDOFF.md updated.
@@ -15,9 +16,84 @@
 
 ---
 
-## 9. wuce.26 — Per-answer model response (2026-05-04)
+## 9. mfc.1 — Model-first chat session architecture (2026-05-06) ← CURRENT STATE
 
-### What was added
+### What was delivered
+
+**Story mfc.1** replaced the scrape-first skill session flow (question extraction from SKILL.md, static Q&A form) with a model-driven, open-ended chat interface. The model conducts the session end-to-end: it asks questions, adapts based on answers, and signals when it has gathered enough to emit the complete artefact.
+
+**This supersedes the wuce.26 scrape-first approach entirely.** The old `extractQuestions`, `htmlGetNextQuestion`, `htmlRecordAnswer`, `questions[]`, `answers[]`, `modelResponses[]`, `sectionDrafts[]` session fields no longer exist. Do not resume any work targeting those fields — they are gone.
+
+**Key implementation files (all committed on master, commit d793217):**
+
+| File | What changed |
+|------|--------------|
+| `src/web-ui/routes/skills.js` | Full rewrite of session architecture. New functions: `registerHtmlSession`, `buildSystemPrompt`, `htmlSubmitTurn`, `handleGetChatHtml`, `handlePostTurnHtml`, `_renderChatPage`. Old scrape-first functions retained but marked as legacy (they are unused in the new flow). |
+| `src/modules/skill-turn-executor.js` | Signature changed to `(systemPrompt, history, currentInput, token)`. Messages: `[{role:'system',...}, ...history, {role:'user', content:currentInput}]`. |
+| `src/web-ui/server.js` | Routes: GET `/skills/:name/sessions/:id/chat` → `handleGetChatHtml`; POST `/api/skills/:name/sessions/:id/turn` → `handlePostTurnHtml`; GET `/next` → 303 redirect to `/chat`. |
+| `tests/check-mfc1-model-first-chat-session.js` | 25 tests, all pass. |
+
+**mfc.1 session structure:**
+```js
+{
+  skillName, sessionPath,
+  systemPrompt,       // built by buildSystemPrompt() at session creation
+  turns: [],          // [{role:'user'|'assistant', content:string}]
+  artefactContent: null, // set when model emits ---ARTEFACT-START--- signal
+  artefactPath: null,
+  done: false
+}
+```
+
+**Artefact signal protocol (model output):**
+```
+---ARTEFACT-START---
+[full artefact markdown]
+---ARTEFACT-END---
+---SLUG---
+YYYY-MM-DD-descriptive-slug
+```
+
+**WEB UI PROTOCOL (injected into every session system prompt — commit 2ca8cc2):**
+- OPENING TURN: one welcoming sentence + one question only. No lists, headers, or numbered items in the opener.
+- ONE QUESTION AT A TIME.
+- RICH INPUT HANDLING: if the operator front-loads a detailed answer covering multiple questions, acknowledge it and advance to the first genuinely open question — never re-ask covered ground.
+
+### Artefact locations
+
+| Artefact | Path |
+|----------|------|
+| Discovery | `artefacts/2026-05-05-web-ui-model-first-chat/discovery.md` |
+| Benefit metric | `artefacts/2026-05-05-web-ui-model-first-chat/benefit-metric.md` |
+| Story | `artefacts/2026-05-05-web-ui-model-first-chat/stories/mfc.1-model-first-chat-session.md` |
+| Test plan | `artefacts/2026-05-05-web-ui-model-first-chat/test-plans/mfc.1-test-plan.md` |
+| Verification script | `artefacts/2026-05-05-web-ui-model-first-chat/verification-scripts/mfc.1-verification.md` |
+| DoR | `artefacts/2026-05-05-web-ui-model-first-chat/dor/mfc.1-dor.md` |
+| DoR contract | `artefacts/2026-05-05-web-ui-model-first-chat/dor/mfc.1-dor-contract.md` |
+| DoD | `artefacts/2026-05-05-web-ui-model-first-chat/dod/mfc.1-dod.md` |
+
+### What to skip if resuming from this point
+
+- **DO NOT implement** `tests/check-wuce26-per-answer-model-response.js` or any wuce.26 test files — the wuce.26 story was superseded by mfc.1 before implementation. The test file does not exist and should not be created.
+- **DO NOT implement** any dsq (dynamic-skill-questions) stories (dsq.1, dsq.1.5, dsq.2, dsq.3, dsq.4) — these targeted the scrape-first flow. They are at DoR sign-off stage but their underlying architecture was replaced by mfc.1. The DoR artefacts exist but the stories do not need to be coded.
+- **DO NOT** reference `htmlGetNextQuestion`, `htmlRecordAnswer`, `extractQuestions`, `questions[]`, `answers[]`, `modelResponses[]`, `sectionDrafts[]`, or `pendingConfirmation` on the session object — these are gone from the mfc.1 architecture.
+- **DO NOT** modify `src/skill-content-adapter.js` for session purposes — it is not used in the mfc.1 flow.
+
+### Pending next actions
+
+1. Kill stale node process (`Get-Process -Name node | Stop-Process -Force`) then restart server (`node --env-file=.env src/web-ui/server.js`)
+2. Run live smoke test per `artefacts/2026-05-05-web-ui-model-first-chat/verification-scripts/mfc.1-verification.md` AC1–AC6
+3. After first live discovery session: measure M1 (artefact template conformance) and update `benefit-metric.md`
+4. After 5 live sessions: measure M2 (model-driven question adaptation visible in transcript)
+5. Consider `/discovery` for the next feature (digital 2×2 facilitation tool — noted in trial session 2026-05-06) or `/improve` for mfc.1 retrospective
+
+---
+
+## 9a. wuce.26 — Per-answer model response (2026-05-04) ← SUPERSEDED by mfc.1
+
+> **SKIP THIS SECTION** if resuming from 2026-05-06 or later. wuce.26 was superseded before implementation by mfc.1. No wuce.26 code was ever committed. The artefact chain (story/test-plan/DoR) exists in `artefacts/2026-05-02-web-ui-copilot-execution-layer/` but should not be implemented.
+
+### What was added (artefact chain only — never implemented)
 
 **Story wuce.26** extends the skill HTML form flow (E6) so that the operator sees a brief Copilot model response after each answer they submit. The session currently shows prior Q&A context between questions (added in the preceding bug-fix commit); this story adds live AI-generated feedback to make the session conversational.
 
@@ -134,7 +210,17 @@ Four product-context files were updated to reflect Phase 4 delivery actuals and 
 
 - **Pipeline-state write safety — read-from-master-before-write (2026-05-03):** Three inner-loop SKILL.md files updated: `/subagent-execution`, `/branch-complete`, `/implementation-plan`. Each skill's "State update — mandatory final step" section now begins with a canonical safety rule block requiring agents to `git fetch origin master`, read from `git show origin/master:.github/pipeline-state.json`, log the master SHA (`[pipeline-state] read from master @ <sha>`), apply only this story's fields to the fetched state, and write back. Inline callouts added at Step 1 and Step 2d in `/subagent-execution`. Fixes the structural fan-out overwrite problem that caused wuce.2–8 and wuce.12 to show stale state after their PRs merged. Root cause analysis and porting notes at `artefacts/2026-05-03-pipeline-state-write-safety/fix-note.md`.
 
+### Delivered since 2026-05-06
+
+- **mfc.1 — Model-first chat-driven skill session architecture (2026-05-06):** Complete rewrite of skill session web UI from scrape-first Q&A form to model-driven open-ended chat. `buildSystemPrompt` composes system prompt from `copilot-instructions.md` + SKILL.md + 4 product context files + WEB UI PROTOCOL. `htmlSubmitTurn` fires `_skillTurnExecutor` once per turn and parses `---ARTEFACT-START---` / `---SLUG---` signals. `handleGetChatHtml` fires initial model turn on first page load. Chat-bubble UI rendered server-side. `skill-turn-executor.js` signature updated. `server.js` routes wired. 25/25 tests pass. DoD complete — AC1–AC10 all verified. See Section 9 for full details and what to skip.
+
+- **mfc.1 — WEB UI PROTOCOL prompt tuning (2026-05-06):** Single-question opener rule and RICH INPUT HANDLING strengthened. Model now produces exactly one welcoming sentence + one question on session open, and skips over questions already answered by rich first-turn input. Commit `2ca8cc2`.
+
 ### Pending items as of 2026-05-06
+
+- **mfc.1 live smoke test** — Kill stale node process (`Get-Process -Name node | Stop-Process -Force`), restart server, run AC1–AC6 verification per `artefacts/2026-05-05-web-ui-model-first-chat/verification-scripts/mfc.1-verification.md`. Port 3000 occupied by stale process from prior session.
+
+- **mfc.1 M1/M2 measurement** — M1 (Discovery artefact template conformance rate) and M2 (Model-driven question adaptation visible in transcript) not yet measured. Clock starts after first live session. Update `artefacts/2026-05-05-web-ui-model-first-chat/benefit-metric.md` evidence fields.
 
 - **wuce.13–16 Wave 4 PRs** — Draft PRs #280 (wuce.13 skill launcher), #281 (wuce.14 artefact preview), #282 (wuce.15 artefact writeback), #283 (wuce.16 session persistence) open and awaiting CI pass + merge. These PRs implement the browser-facing features that wuce.17 E2E specs will cover.
 
