@@ -157,6 +157,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 | ADR-phase4-enforcement | Active | Mechanism selection: which enforcement mechanism (MCP, CLI, or deferred) applies to each Phase 4 surface class | E3 enforcement stories (p4-enf-package, p4-enf-mcp, p4-enf-cli, p4-enf-schema); all surface adapters |
 | ADR-015 | Active | Two-tier artefact scope model: system corpus vs feature delivery — `/modernisation-decompose` is the canonical bridge mechanism; ad-hoc cross-scope artefact sharing is not permitted | All contributors working on modernisation programmes; /modernisation-decompose skill invocations |
 | ADR-018 | Active | Playwright is the E2E testing framework; specs in `tests/e2e/`; devDependency only; unit test chain (`npm test`) must not invoke Playwright; auth bypass is test-fixture-layer only (`NODE_ENV=test` guard) | All browser-facing feature stories; wuce E3/E4 subagents; DoR H-E2E gate check |
+| ADR-019 | Active | Dynamic content is per-turn substitution only — the static question list governs question count, progress display, and fallback; dynamic model output replaces individual items in place and never changes the list length | All web UI skill session features (dsq and successors); any story that introduces model-generated content into a progress-counted sequence |
 
 ---
 
@@ -1017,6 +1018,42 @@ This dual-structure emerged organically. Scripts that traverse stories must hand
 - New pipeline skill runs produce flat stories — no epic nesting
 - All `validate-trace.sh` story resolution and all governance check scripts must use the dual-path pattern
 - When a new story is added to a Phase 1/2 feature as part of a bugfix or retrospective story, it should still be added flat (as a top-level `stories` entry on the feature) rather than nested inside an existing epic
+
+---
+
+### ADR-019: Dynamic content is per-turn substitution — static list governs count and progress
+
+**Status:** Active
+**Date:** 2026-05-05
+**Story:** dsq.1 — Dynamic next-question generation
+
+#### Context
+
+The web UI skill session presents questions from a static list extracted from SKILL.md headings. dsq.1 added a second model call that generates a contextually-adapted next question after each answer. A design decision was needed: does the dynamic output replace individual items in the static list, or does it produce its own parallel list that may have a different length?
+
+#### Decision
+
+The static question list is the single source of truth for question count, progress display (`Question X of N`), and fallback. Dynamic model output replaces individual items in place — one substitution per turn — and never changes the list length. The `dynamicQuestions[]` session array grows one entry per turn; entry `i` replaces static question `i+1` if present, otherwise the static question is shown. Progress display and commit-preview logic always derive `N` from the static list.
+
+#### Rationale
+
+- Operators need a stable progress indicator to know when a session will end; a model-generated list of variable length breaks that expectation.
+- The static list is a verified known-good fallback; making it authoritative for count means the fallback path and the dynamic path have identical structure.
+- One substitution per turn is the minimum viable change — it can be extended (e.g. model skips multiple questions) in a later story once the baseline is established.
+
+#### Consequences
+
+**Rules in:**
+- Any story introducing model-generated questions, sections, or steps into a progress-counted UI sequence must treat the static/template version as the count authority.
+- Test coverage must include a case asserting the denominator N is constant across all questions regardless of whether dynamic or static content was served.
+
+**Rules out:**
+- A model call that returns a variable-length question list and replaces the static list wholesale (breaks fallback and progress guarantees).
+- Progress display that derives `N` from `dynamicQuestions.length` (dynamic list may be shorter than the session's total questions).
+
+#### Revisit trigger
+
+If a future story introduces section-skipping or adaptive session shortening, revisit whether `N` should remain static or be revised dynamically at confirmed section boundaries (where the operator has already confirmed a section is complete).
 
 ---
 

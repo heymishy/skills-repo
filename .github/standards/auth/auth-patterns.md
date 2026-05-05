@@ -27,3 +27,14 @@
 - No credentials in URLs or logs
 - No storing plaintext passwords or tokens
 - No client-side auth decisions without server verification
+
+---
+
+## Web UI OAuth session token rule
+
+**`req.session.accessToken` is the canonical field name for the GitHub OAuth token on all web UI routes.**
+
+- All routes that read the GitHub token from session MUST use `req.session.accessToken`.
+- Never use `req.session.token` — it is not populated by the OAuth callback and will always be `undefined`.
+- This is enforced at DoR with the grep check: `grep -rn "req\.session\.token[^A]" src/web-ui/` must return zero results.
+- Applies to: skill turn executor wiring, next-question executor wiring, section draft executor wiring, and any future route that makes a model call on behalf of the operator.

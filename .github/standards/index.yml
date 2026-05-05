@@ -38,6 +38,11 @@ standards:
     files:
       - .github/standards/data/data-standards.md
 
+  web-ui:
+    description: Web UI patterns for the skills platform server (raw http.createServer, injectable adapters, session handling)
+    files:
+      - .github/standards/web-ui/web-ui-patterns.md
+
   payments:
     description: Payment processing constraints (PCI-DSS, tokenisation, retry limits)
     files:

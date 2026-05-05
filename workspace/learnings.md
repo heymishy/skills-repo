@@ -2008,3 +2008,31 @@ await context.setExtraHTTPHeaders({ 'X-Test-Token': 'test-access-token' });
 **Process rule (implementation plan):** Every task that writes a `tests/check-<story>.js` file must include as its final step: "Add `&& node tests/check-<story>.js` to `package.json` scripts.test and verify `npm test` completes with the new test passing."
 
 **Process rule (TDD pre-commits):** When pre-committing failing test stubs to master (the SWE agent pre-commit TDD pattern), add the file to `known-deferred-checks.json` `pendingTestFiles` in the same commit. This exempts it from the governance check until the feature branch merges.
+
+---
+
+## D39 — Chained branch rebase: use `--onto` when a parent branch has merged
+
+**Date:** 2026-05-05
+**Observed at:** DSQ feature — 5 chained branches (dsq.1.5 → dsq.1 → dsq.2 → dsq.3 → dsq.4), each depending on the previous.
+
+**What happened:** Each dsq branch was created off the tip of its predecessor. When a branch merged to master (e.g. dsq.2 merged as PR #310), the remaining child branches (dsq.3, dsq.4) still had the old parent tip in their history. A plain `git rebase origin/master` replayed all commits from the old parent tip, including changes already in master — producing duplicated hunks and false conflicts in `package.json` and `src/web-ui/routes/skills.js`.
+
+**Root cause:** `git rebase origin/master` replays the full commit range from the branch point (old parent tip) to HEAD, not just this branch's unique commits. When the parent branch has already merged, the parent's commits are in master — replaying them creates duplicate-apply conflicts.
+
+**Correct pattern — `git rebase --onto`:**
+
+```bash
+# Before: dsq.4 was branched off dsq.3 at commit <old-dsq.3-tip>
+# After: dsq.3 has merged; new master tip is <new-master>
+git rebase --onto origin/master <old-dsq.3-tip> feature/dsq-4
+git push --force-with-lease origin feature/dsq-4
+```
+
+`--onto <newbase> <upstream>` replays only the commits after `<upstream>` (the old parent tip), placing them on `<newbase>` (current master). The parent's already-merged commits are not replayed.
+
+**How to find `<old-parent-tip>`:** Before merging the parent branch, note its tip SHA. Alternatively: `git merge-base origin/master feature/dsq-4` gives the last common ancestor — use the tip of the merged parent branch instead.
+
+**When plain `git rebase origin/master` is safe:** When branches are independent (not chained). When a branch was created directly from master. In both cases there is no "phantom parent range" to worry about.
+
+**Process rule:** Any feature that delivers via chained branches (story N depends on story N-1's code) should document the parent-tip SHA at branch-setup time in the implementation plan. The implementation-plan task for each non-first branch should include: "When rebasing after parent merges, use `git rebase --onto origin/master <parent-tip> feature/<branch-name>`."
