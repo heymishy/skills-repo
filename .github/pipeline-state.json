@@ -6279,14 +6279,15 @@
             "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/test-plans/dsq.1-dynamic-next-question-test-plan.md"
           },
           "acTotal": 7,
-          "acVerified": 0,
-          "stage": "definition-of-done",
+          "acVerified": 7,
+          "stage": "released",
           "health": "green",
           "updatedAt": "2026-05-05T00:00:00.000Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/304",
           "dispatchedAt": "2026-05-05T00:00:00.000Z",
           "dispatchTarget": "vscode",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/309"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/309",
+          "dodStatus": "passed"
         },
         {
           "id": "dsq.1.5",
@@ -6296,7 +6297,7 @@
           "reviewStatus": "passed",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/dor/dsq.1.5-section-aware-extraction-dor.md",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "reviewArtefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/review/dsq.1.5-review-1.md",
           "testPlan": {
             "status": "written",
@@ -6305,14 +6306,15 @@
             "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/test-plans/dsq.1.5-section-aware-extraction-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 0,
-          "stage": "branch-complete",
+          "acVerified": 5,
+          "stage": "released",
           "health": "green",
           "updatedAt": "2026-05-05T00:00:00.000Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/303",
           "dispatchedAt": "2026-05-05T00:00:00.000Z",
           "dispatchTarget": "vscode",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/308"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/308",
+          "dodStatus": "passed"
         },
         {
           "id": "dsq.2",
@@ -6330,14 +6332,15 @@
             "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/test-plans/dsq.2-section-confirmation-loop-test-plan.md"
           },
           "acTotal": 9,
-          "acVerified": 0,
-          "stage": "definition-of-done",
+          "acVerified": 9,
+          "stage": "released",
           "health": "green",
           "updatedAt": "2026-05-05T00:00:00.000Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/305",
           "dispatchedAt": "2026-05-05T00:00:00.000Z",
           "dispatchTarget": "vscode",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/310"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/310",
+          "dodStatus": "passed"
         },
         {
           "id": "dsq.3",
@@ -6355,14 +6358,15 @@
             "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/test-plans/dsq.3-post-session-clarify-gate-test-plan.md"
           },
           "acTotal": 6,
-          "acVerified": 0,
-          "stage": "definition-of-done",
+          "acVerified": 6,
+          "stage": "released",
           "health": "green",
           "updatedAt": "2026-05-05T00:00:00.000Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/306",
           "dispatchedAt": "2026-05-05T00:00:00.000Z",
           "dispatchTarget": "vscode",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/311"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/311",
+          "dodStatus": "passed"
         },
         {
           "id": "dsq.4",
@@ -6380,14 +6384,15 @@
             "artefact": "artefacts/2026-05-05-web-ui-dynamic-skill-questions/test-plans/dsq.4-section-artefact-assembly-test-plan.md"
           },
           "acTotal": 6,
-          "acVerified": 0,
-          "stage": "definition-of-done",
+          "acVerified": 6,
+          "stage": "released",
           "health": "green",
           "updatedAt": "2026-05-05T00:00:00.000Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/307",
           "dispatchedAt": "2026-05-05T00:00:00.000Z",
           "dispatchTarget": "vscode",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/312"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/312",
+          "dodStatus": "passed"
         }
       ],
       "track": "standard",
