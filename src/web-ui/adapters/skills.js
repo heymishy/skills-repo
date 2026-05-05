@@ -213,6 +213,30 @@ function nextQuestionExecutor(systemPrompt, history, instruction, token) {
   return _nextQuestionExecutor(systemPrompt, history, instruction, token);
 }
 
+// dsq.2 — injectable section-draft executor adapter
+/** @type {function(string, Array, string, string): Promise<string|null>} */
+let _sectionDraftExecutor = function defaultSectionDraftExecutor() {
+  throw new Error('Adapter not wired: _sectionDraftExecutor. Call setSectionDraftExecutorAdapter() with a real implementation before use.');
+};
+
+/**
+ * Replace the sectionDraftExecutor implementation (for testing or production wiring).
+ * @param {function(string, Array, string, string): Promise<string|null>} fn
+ */
+function setSectionDraftExecutor(fn) { _sectionDraftExecutor = fn; }
+
+/**
+ * Synthesise a section draft from completed Q&A pairs.
+ * @param {string} heading     — section heading
+ * @param {Array}  qaPairs     — Q&A pairs for this section
+ * @param {string} instruction — synthesis instruction
+ * @param {string} token       — GitHub access token
+ * @returns {Promise<string|null>} section draft or null
+ */
+function sectionDraftExecutor(heading, qaPairs, instruction, token) {
+  return _sectionDraftExecutor(heading, qaPairs, instruction, token);
+}
+
 /**
  * Execute a skill turn: send skill content + prior Q&A + current answer to Copilot.
  * @param {string} skillContent  — full SKILL.md content as system prompt
@@ -232,5 +256,7 @@ module.exports = {
   setGetCommitPreview, setCommitSession, setGetCommitResult,
   skillTurnExecutor, setSkillTurnExecutor,
   // dsq.1 — next-question executor
-  nextQuestionExecutor, setNextQuestionExecutor
+  nextQuestionExecutor, setNextQuestionExecutor,
+  // dsq.2 — section-draft executor
+  sectionDraftExecutor, setSectionDraftExecutor
 };

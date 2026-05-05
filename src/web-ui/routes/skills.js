@@ -818,6 +818,18 @@ let _nextQuestionExecutor = function defaultNextQuestionExecutor() {
  */
 function setNextQuestionExecutorAdapter(fn) { _nextQuestionExecutor = fn; }
 
+// dsq.2 — injectable section-draft executor (synthesises a section draft from completed Q&A)
+let _sectionDraftExecutor = function defaultSectionDraftExecutor() {
+  throw new Error('Adapter not wired: _sectionDraftExecutor. Call setSectionDraftExecutorAdapter() with a real implementation before use.');
+};
+
+/**
+ * Replace the sectionDraftExecutor adapter (for testing or production wiring).
+ * Default stub throws — must be wired before use (D37/ADR-009).
+ * @param {function(string, Array, string, string): Promise<string|null>} fn
+ */
+function setSectionDraftExecutorAdapter(fn) { _sectionDraftExecutor = fn; }
+
 // Audit logger for commit route — injectable via setCommitAuditLogger().
 let _commitAuditLogger = function(data) {
   process.stdout.write('[skills-html] commit-audit ' + JSON.stringify(data) + '\n');
@@ -1135,6 +1147,25 @@ async function htmlRecordAnswer(skillName, sessionId, rawAnswer, token) {
   var session = _sessionStore.get(sessionId);
   if (!session) { return null; }
 
+  // dsq.2: if a section draft is pending confirmation, handle the confirm/edit before normal processing
+  if (session.pendingConfirmation) {
+    if (!session.sectionDrafts) { session.sectionDrafts = []; }
+    var trimmedConfirmAnswer = rawAnswer.trim();
+    if (trimmedConfirmAnswer.startsWith('edit:')) {
+      session.sectionDrafts[session.currentSectionIndex] = trimmedConfirmAnswer.slice('edit:'.length);
+    } else {
+      // 'confirm' or any other answer → accept the pending draft
+      session.sectionDrafts[session.currentSectionIndex] = session.pendingSectionDraft;
+    }
+    session.pendingConfirmation = false;
+    session.pendingSectionDraft = null;
+    var donePending = session.answers.length >= session.questions.length;
+    var nextUrlConfirm = donePending
+      ? '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/commit-preview'
+      : '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/next';
+    return { nextUrl: nextUrlConfirm };
+  }
+
   var answerIndex = session.answers.length;
   session.answers.push(sanitiseAnswer(rawAnswer));
 
@@ -1212,6 +1243,52 @@ async function htmlRecordAnswer(skillName, sessionId, rawAnswer, token) {
     session.dynamicQuestions[answerIndex] = dynamicNextQ;
   }
 
+  // dsq.2: detect section boundary — if the answered question is the last in a named section,
+  // call _sectionDraftExecutor to synthesise a draft and put the session in pending confirmation.
+  if (session.sections && session.sections.length > 0) {
+    var answeredQ = session.questions[answerIndex];
+    for (var _si = 0; _si < session.sections.length; _si++) {
+      var _sec = session.sections[_si];
+      if (!_sec.heading) { continue; } // AC7: skip flat/unnamed sections
+      var _secQs = _sec.questions;
+      if (!_secQs || _secQs.length === 0) { continue; }
+      var _lastSecQ = _secQs[_secQs.length - 1];
+      // Match by object identity (T3.1 shares same objects) or by id (defensive fallback)
+      if (_lastSecQ === answeredQ || (_lastSecQ && answeredQ && _lastSecQ.id && _lastSecQ.id === answeredQ.id)) {
+        // Collect all Q&A pairs for this section
+        var _secQaPairs = _secQs.map(function(q) {
+          var globalIdx = session.questions.indexOf(q);
+          if (globalIdx === -1) {
+            for (var x = 0; x < session.questions.length; x++) {
+              if (session.questions[x] && q && session.questions[x].id === q.id) { globalIdx = x; break; }
+            }
+          }
+          return { question: q.text || String(q), answer: session.answers[globalIdx] || '' };
+        });
+        var _secInstruction = 'Synthesise the operator\'s answers into a concise draft of the ' + _sec.heading + ' section for the artefact.';
+        var _draftText = null;
+        try {
+          _draftText = await _sectionDraftExecutor(_sec.heading, _secQaPairs, _secInstruction, token || '');
+        } catch (_draftErr) {
+          // AC5: silent fallback — log only, do not propagate
+          _logger.warn('sectionDraftExecutor error (fallback): ' + (_draftErr && _draftErr.message ? _draftErr.message : 'unknown'));
+          _draftText = null;
+        }
+        if (_draftText && typeof _draftText === 'string' && _draftText.trim().length > 0) {
+          session.pendingConfirmation = true;
+          session.pendingSectionDraft = _draftText;
+          session.currentSectionIndex = _si;
+          var doneDraft = session.answers.length >= session.questions.length;
+          var nextUrlDraft = doneDraft
+            ? '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/commit-preview'
+            : '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/next';
+          return { nextUrl: nextUrlDraft, pendingDraft: true, draftText: _draftText };
+        }
+        break; // Only one section boundary can be crossed per answer
+      }
+    }
+  }
+
   var done = session.answers.length >= session.questions.length;
   var nextUrl = done
     ? '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/commit-preview'
@@ -1275,5 +1352,7 @@ module.exports = {
   // wuce.26 — test helpers + skill-turn executor adapter setter
   _getHtmlSession, setSkillTurnExecutorAdapter,
   // dsq.1 — next-question executor adapter setter
-  setNextQuestionExecutorAdapter
+  setNextQuestionExecutorAdapter,
+  // dsq.2 — section-draft executor adapter setter
+  setSectionDraftExecutorAdapter
 };
