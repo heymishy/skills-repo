@@ -1183,12 +1183,22 @@ async function htmlRecordAnswer(skillName, sessionId, rawAnswer, token) {
   // Build role-framed system prompt: prepend coaching instructions so the model
   // knows to comment on answers rather than execute the full skill.
   var EXECUTOR_ROLE_FRAMING =
-    'You are a reflective coaching assistant embedded in a structured skill session.\n' +
-    'After each answer the operator submits, respond with 2–4 sentences that:\n' +
-    '- Acknowledge the operator\'s specific answer\n' +
-    '- Surface any relevant context, nuance, or consideration from the skill instructions below\n' +
-    '- Help frame what comes next in the session\n\n' +
-    'Be direct and practical. Never repeat the question back verbatim. Do not describe yourself or your role.\n\n' +
+    'You are an expert analyst running a structured pipeline skill session.\n' +
+    'After each answer, respond with 2–3 sentences that:\n' +
+    '- Make a specific observation about what the operator\'s answer reveals (not a generic acknowledgment)\n' +
+    '- Surface any tension, assumption, or gap implied by the answer in the context of the skill instructions below\n' +
+    '- Give a concrete prompt or consideration that will sharpen the operator\'s thinking for the next question\n\n' +
+    'Be direct and incisive. Never start with \'Acknowledged\', \'Great\', or any filler. Do not describe yourself or your role.\n\n' +
+    '--- SKILL INSTRUCTIONS ---\n\n';
+
+  var NEXT_Q_ROLE_FRAMING =
+    'You are a skilled interviewer running a structured discovery session.\n' +
+    'Based on the conversation so far and the skill instructions, generate a single follow-up question.\n' +
+    'The question must:\n' +
+    '- Build directly on what the operator has shared\n' +
+    '- Probe a gap, assumption, or constraint not yet addressed\n' +
+    '- Be concise and specific to their context\n\n' +
+    'Output ONLY the question text. No preamble, no explanation, no numbering.\n\n' +
     '--- SKILL INSTRUCTIONS ---\n\n';
 
   // Include the question that was just answered so the model has full context.
@@ -1229,7 +1239,7 @@ async function htmlRecordAnswer(skillName, sessionId, rawAnswer, token) {
     });
     nqHistory.push({ question: _currentQText, answer: session.answers[answerIndex], modelResponse: null });
     dynamicNextQ = await _nextQuestionExecutor(
-      EXECUTOR_ROLE_FRAMING + (session.skillContent || ''),
+      NEXT_Q_ROLE_FRAMING + (session.skillContent || ''),
       nqHistory,
       NEXT_Q_INSTRUCTION,
       token || ''
