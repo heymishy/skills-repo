@@ -21,7 +21,7 @@ const fs   = require('fs');
 const sessionStore = require('../../session-store');
 
 const { listAvailableSkills, validateSkillName } = require('../../adapters/skill-discovery');
-const { extractQuestions }  = require('../../skill-content-adapter');
+const { extractQuestions, extractSections } = require('../../skill-content-adapter');
 const { sanitiseAnswer }    = require('../../answer-sanitiser');
 const { validateLicence }   = require('../../adapters/copilot-licence');
 const sessionManager        = require('../../modules/session-manager');
@@ -1056,6 +1056,7 @@ function registerHtmlSession(sessionId, sessionPath, skillName) {
     skillName:      skillName,
     sessionPath:    sessionPath,
     questions:      questions,
+    sections:       extractSections(fullSkillContent),
     answers:        [],
     modelResponses: [],
     skillContent:   fullSkillContent,
