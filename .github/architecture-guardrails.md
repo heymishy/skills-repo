@@ -1057,6 +1057,61 @@ If a future story introduces section-skipping or adaptive session shortening, re
 
 ---
 
+### ADR-020: GitHub Contents API is the write-back mechanism — authenticated user's token only, never a service account
+
+**Date:** 2026-05-04
+**Status:** Active
+**Story:** wuce.3 — Attributed sign-off; wuce.8 — Annotation; wuce.15 — Artefact write-back
+
+#### Context
+
+The web UI's governance value proposition rests on every artefact write being attributed to the authenticated human who performed it. The question is: what mechanism performs the write, and whose identity does it carry?
+
+#### Decision
+
+All artefact write-back from the web UI (sign-off, annotation, session commit) MUST use the **authenticated user's GitHub OAuth token** via the GitHub Contents API (`PUT /repos/{owner}/{repo}/contents/{path}`). Service account tokens, bot tokens, and GITHUB_TOKEN from GitHub Actions are not acceptable for this operation.
+
+- The token is retrieved from `req.session.accessToken` in the route handler
+- It is passed as `Authorization: Bearer <token>` in the Contents API call
+- The resulting commit appears in GitHub history under the authenticated user's identity with their avatar
+- The OAuth App must request `repo` (or `contents:write` with fine-grained PAT) scope at authorisation time
+
+#### Consequences
+
+- Any story that introduces a new artefact write path must verify committer identity in its DoD (compare commit author in GitHub history against the authenticated user's login)
+- If a service account or bot identity appears on a governance commit, it is a DoD failure — revert and re-run with correct token
+- Read operations may use a service account or GITHUB_TOKEN where appropriate; write operations may not
+- Future multi-SCM support (e.g. Bitbucket write-back) requires a parallel token flow — GitHub OAuth does not confer Bitbucket write access; these are two separate auth concerns that must not be conflated
+
+---
+
+### ADR-021: Copilot CLI subprocess is the Phase 2 skill execution engine — COPILOT_HOME isolated per user session
+
+**Date:** 2026-05-02
+**Status:** Active
+**Story:** wuce.9 — CLI subprocess invocation; wuce.10 — Per-user session isolation; wuce.11 — SKILL.md discovery; wuce.12 — BYOK config
+
+#### Context
+
+Phase 2 of the web UI requires server-side execution of pipeline skills (SKILL.md files) on behalf of authenticated users. The discovery phase identified this as a high-risk assumption requiring a spike. The spike (outcome artefact: `artefacts/2026-05-02-web-ui-copilot-execution-layer/spikes/spike-copilot-cli-noninteractive-outcome.md`) returned PROCEED.
+
+#### Decision
+
+1. **GitHub Copilot CLI programmatic interface** (`-p` flag, `--no-ask-user`, `--allow-all-tools`, `--silent`, `--output-format=json`) is the Phase 2 skill execution engine. ACP server mode is the preferred option for multi-turn once it reaches GA; the `-p` subprocess path is the stable primary.
+2. **Per-user `COPILOT_HOME` isolation is mandatory.** Each user session gets an isolated `COPILOT_HOME` directory. Sharing a `COPILOT_HOME` between concurrent sessions is a security violation — it allows one user's OAuth token and conversation history to leak into another's CLI context.
+3. **BYOK (Bring Your Own Key) support** via `COPILOT_PROVIDER_TYPE`, `COPILOT_PROVIDER_BASE_URL`, `COPILOT_PROVIDER_API_KEY`, and `COPILOT_MODEL` env vars enables self-hosted deployments that do not route through GitHub's Copilot service.
+4. **`COPILOT_SKILLS_DIRS`** must point to the pipeline's `.github/skills/` directory so skill routing resolves from the repo's own skill library.
+
+#### Consequences
+
+- Phase 2 requires a Copilot licence per execution user — documented in benefit-metric.md
+- Any story that introduces a new skill execution path must include a `COPILOT_HOME` isolation unit test (see wuce.10 pattern: 17/17 tests)
+- Any alternative execution engine (direct GitHub Models API, MCP-only) requires a new ADR before implementation — not a code-level decision
+- The ACP server path (multi-turn TCP server mode) must be gated by a feature flag until it reaches GA; the subprocess path is the production fallback
+- Revisit trigger: if GitHub deprecates the `-p` flag or ACP exits public preview with breaking changes
+
+---
+
 ### ADR-018: Playwright is the E2E testing framework — tests/e2e/ only, devDependency, unit chain isolated
 
 **Status:** Active
