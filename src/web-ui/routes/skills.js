@@ -806,6 +806,18 @@ let _skillTurnExecutor = skillsAdapter.skillTurnExecutor;
  */
 function setSkillTurnExecutorAdapter(fn) { _skillTurnExecutor = fn; }
 
+// dsq.1 — injectable next-question executor (generates dynamic follow-up question)
+let _nextQuestionExecutor = function defaultNextQuestionExecutor() {
+  throw new Error('Adapter not wired: _nextQuestionExecutor. Call setNextQuestionExecutorAdapter() with a real implementation before use.');
+};
+
+/**
+ * Replace the nextQuestionExecutor adapter (for testing or production wiring).
+ * Default stub throws — must be wired before use (D37/ADR-009).
+ * @param {function(string, Array, string, string): Promise<string|null>} fn
+ */
+function setNextQuestionExecutorAdapter(fn) { _nextQuestionExecutor = fn; }
+
 // Audit logger for commit route — injectable via setCommitAuditLogger().
 let _commitAuditLogger = function(data) {
   process.stdout.write('[skills-html] commit-audit ' + JSON.stringify(data) + '\n');
@@ -1093,8 +1105,16 @@ function htmlGetNextQuestion(skillName, sessionId) {
         : null
     };
   });
+  // dsq.1: serve dynamic question if available (generated after prior answer), fall back to static
+  var staticText  = session.questions[idx].text || String(session.questions[idx]);
+  var dynamicText = (session.dynamicQuestions && idx > 0 && session.dynamicQuestions[idx - 1] &&
+    typeof session.dynamicQuestions[idx - 1] === 'string' &&
+    session.dynamicQuestions[idx - 1].trim().length > 0)
+    ? session.dynamicQuestions[idx - 1]
+    : null;
+  var questionText = dynamicText || staticText;
   return {
-    question:       (session.questions[idx].text || String(session.questions[idx])),
+    question:       questionText,
     questionIndex:  idx + 1,
     totalQuestions: session.questions.length,
     priorQA:        priorQA
@@ -1164,6 +1184,34 @@ async function htmlRecordAnswer(skillName, sessionId, rawAnswer, token) {
   if (!session.modelResponses) { session.modelResponses = []; }
   session.modelResponses[answerIndex] = modelResponse;
 
+  // dsq.1 — call next-question executor to generate a dynamic follow-up question.
+  // Stored at dynamicQuestions[answerIndex] so htmlGetNextQuestion can serve it at idx answerIndex+1.
+  var NEXT_Q_INSTRUCTION = 'Given the skill instructions and the conversation so far, what is the single best next question to ask the operator?';
+  var dynamicNextQ = null;
+  try {
+    var nqHistory = session.questions.slice(0, answerIndex).map(function(q, i) {
+      return {
+        question:      q.text || String(q),
+        answer:        session.answers[i] || '',
+        modelResponse: session.modelResponses[i] !== undefined ? session.modelResponses[i] : null
+      };
+    });
+    nqHistory.push({ question: _currentQText, answer: session.answers[answerIndex], modelResponse: null });
+    dynamicNextQ = await _nextQuestionExecutor(
+      EXECUTOR_ROLE_FRAMING + (session.skillContent || ''),
+      nqHistory,
+      NEXT_Q_INSTRUCTION,
+      token || ''
+    );
+  } catch (_nqErr) {
+    _logger.warn('nextQuestionExecutor error (fallback to static): ' + (_nqErr && _nqErr.message ? _nqErr.message : 'unknown'));
+    dynamicNextQ = null;
+  }
+  if (!session.dynamicQuestions) { session.dynamicQuestions = []; }
+  if (dynamicNextQ && typeof dynamicNextQ === 'string' && dynamicNextQ.trim().length > 0) {
+    session.dynamicQuestions[answerIndex] = dynamicNextQ;
+  }
+
   var done = session.answers.length >= session.questions.length;
   var nextUrl = done
     ? '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/commit-preview'
@@ -1225,5 +1273,7 @@ module.exports = {
   // HTML-flow session helpers (wired via server.js injectable adapters)
   registerHtmlSession, htmlGetNextQuestion, htmlRecordAnswer, htmlGetPreview, htmlCommitSession,
   // wuce.26 — test helpers + skill-turn executor adapter setter
-  _getHtmlSession, setSkillTurnExecutorAdapter
+  _getHtmlSession, setSkillTurnExecutorAdapter,
+  // dsq.1 — next-question executor adapter setter
+  setNextQuestionExecutorAdapter
 };
