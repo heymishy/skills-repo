@@ -61,3 +61,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: pattern
   signal-text: "Injectable adapter stubs that return null/empty silently mask production misconfiguration across wuce.23-25. Four adapters (getNextQuestion, submitAnswer, getCommitPreview, commitSession) were never wired in server.js; unit tests passed because they injected test doubles. The fix is threefold: stubs must throw not return empty, DoR must have explicit AC for production wiring, and implementation-plan must name the wiring task separately. This is now D37."
   source: agent-auto
+
+- date: 2026-05-05
+  session-phase: dsq inner-loop — post-PR-open investigation
+  signal-type: gap
+  signal-text: "Story check scripts written by implementation agent but not registered in npm test chain. All 5 dsq check scripts (tests/check-dsq*.js) existed and passed when run directly, but none were in package.json scripts.test. CI showed SUCCESS on all PRs because existing tests passed; the new tests were simply never run. Root cause: /implementation-plan tasks stop at 'write the test file' without an explicit 'register in package.json' step; DoR H5/H6 check test existence not registration; no governance check caught unregistered files. Structural fix: tests/check-test-registration.js governance check + known-deferred-checks.json pendingTestFiles for TDD pre-committed stubs. Also found 3 older check files (check-p4-obs-*.js) with the same gap. This is now D38."
+  source: agent-auto

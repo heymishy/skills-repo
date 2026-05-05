@@ -1981,3 +1981,30 @@ await context.setExtraHTTPHeaders({ 'X-Test-Token': 'test-access-token' });
 3. **Implementation plan must list server.js wiring as an explicit task.** For every `setX()` introduced by a story, the `/implementation-plan` output must include a task: "Wire `X` in server.js with real implementation — not a stub." This is distinct from the handler task.
 
 **Prevention rule:** Injectable adapters with stub defaults are invisible production gaps. Stubs must throw. Production wiring must be an explicit AC. The implementation plan must name the wiring task separately from the handler task.
+
+## D38 — Story check scripts written but not registered in npm test chain: CI shows SUCCESS, tests never run
+
+**Date:** 2026-05-05
+**Observed at:** DSQ feature — stories dsq.1.5, dsq.1, dsq.2, dsq.3, dsq.4.
+
+**What happened:** All 5 dsq story check scripts (`tests/check-dsq*.js`) were written by the implementation agent as the correct deliverable. Each script ran and passed when called directly. However, none were registered in `package.json` `scripts.test`. CI ran `npm test` — which did not include any of the 5 scripts — and reported SUCCESS on every PR. The tests existed and were green, but were invisible to CI. The gap was only discovered post-PR-open when investigating why the AC pass rate showed "—" in the issue.
+
+**Root cause (three layers):**
+
+1. **`/implementation-plan` does not include an explicit "register in npm test chain" task.** Each task plan says "write `tests/check-<story>.js`" but stops there. Adding `&& node tests/check-<story>.js` to `package.json` is a separate mechanical step that is easy to omit when focus is on the implementation logic.
+
+2. **No DoR AC enforces registration.** The DoR checks test existence (H5/H6: "tests written and failing") but not registration. A test file that exists and fails correctly satisfies H5/H6 regardless of whether it is wired into the chain.
+
+3. **No governance check caught unregistered files.** Nothing in `npm test` (which runs on every CI push) verified that every `tests/check-*.js` file was in the test chain. An unregistered file is silently ignored by CI.
+
+**Also found:** Three older check files (`check-p4-obs-status.js`, `check-p4-obs-archive.js`, `check-p4-obs-benefit.js`) were in `tests/` on master, fully passing, but also unregistered. They had existed in this state since their feature merged — same gap, different feature.
+
+**Structural fix implemented:**
+
+- **`tests/check-test-registration.js`** — new governance check that scans `tests/check-*.js` and verifies each appears in `package.json` scripts.test. Wired into the `npm test` chain. This makes any future unregistered test a CI failure on the very next push.
+- **`known-deferred-checks.json` `pendingTestFiles`** — new array for pre-committed TDD stub files that are intentionally failing on master (standard TDD pattern). These are exempt from the registration requirement until their feature branch merges. When a branch merges: (1) remove the entry from `pendingTestFiles`, (2) add the test to `package.json`.
+- **Three missing p4-obs tests registered** on master in the same commit.
+
+**Process rule (implementation plan):** Every task that writes a `tests/check-<story>.js` file must include as its final step: "Add `&& node tests/check-<story>.js` to `package.json` scripts.test and verify `npm test` completes with the new test passing."
+
+**Process rule (TDD pre-commits):** When pre-committing failing test stubs to master (the SWE agent pre-commit TDD pattern), add the file to `known-deferred-checks.json` `pendingTestFiles` in the same commit. This exempts it from the governance check until the feature branch merges.
