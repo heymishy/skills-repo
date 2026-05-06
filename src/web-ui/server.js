@@ -25,7 +25,7 @@ const { setFetchArtefactDirectory }                                  = require('
 const skillsAdapter                                                  = require('./adapters/skills');          // wuce.23 HTML form wiring
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
-const { handleGetJourney, handlePostJourney, handlePostGateConfirm, handleGetStories, handlePostStories } = require('./routes/journey'); // ougl.3
+const { handleGetJourney, handlePostJourney, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete } = require('./routes/journey'); // ougl.3
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -391,6 +391,12 @@ async function router(req, res) {
     const journeyIdPart = pathname.split('/')[3];
     req.params = { journeyId: journeyIdPart };
     await handlePostStories(req, res);
+
+  } else if (pathname.match(/^\/journey\/[^/]+\/complete$/) && req.method === 'GET') {
+    // ougl.7 — journey completion screen
+    const journeyIdPart = pathname.split('/')[2];
+    req.params = { journeyId: journeyIdPart };
+    await handleGetJourneyComplete(req, res);
 
   } else if (pathname === '/api/me' && req.method === 'GET') {
     const authenticated = !!(req.session && req.session.accessToken);
