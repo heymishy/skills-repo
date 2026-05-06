@@ -2,12 +2,15 @@
 var path = require('path');
 var crypto = require('crypto');
 var os = require('os');
+var fs = require('fs');
 var { renderShell, escHtml } = require('../utils/html-shell');
 
 // Injectable adapters — defaults wire to real implementations
 var _journeyStore = require('../modules/journey-store');
 var _registerHtmlSession = null;
 var _linkSessionToJourney = null;
+var _getHtmlSessionFn = null;
+var _repoRoot = null;
 
 function getRegisterHtmlSession() {
   if (_registerHtmlSession) return _registerHtmlSession;
@@ -19,10 +22,21 @@ function getLinkSessionToJourney() {
   return require('./skills').linkSessionToJourney;
 }
 
+function getGetHtmlSession() {
+  if (_getHtmlSessionFn) return _getHtmlSessionFn;
+  return require('./skills')._getHtmlSession;
+}
+
+function getRepoRoot() {
+  return _repoRoot || path.resolve(__dirname, '../../..');
+}
+
 // Adapter setters (used by tests)
 function setRegisterHtmlSession(fn) { _registerHtmlSession = fn; }
 function setLinkSessionToJourney(fn) { _linkSessionToJourney = fn; }
 function setJourneyStoreModule(mod) { _journeyStore = mod; }
+function setGetHtmlSession(fn) { _getHtmlSessionFn = fn; }
+function setRepoRoot(root) { _repoRoot = root; }
 
 /**
  * GET /journey — render the journey entry form.
@@ -85,10 +99,94 @@ function handlePostJourney(req, res) {
   return Promise.resolve();
 }
 
+/**
+ * POST /api/journey/:journeyId/gate-confirm — save artefact, build handoff, route to next stage.
+ */
+async function handlePostGateConfirm(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Journey not found.</p>' }));
+    return;
+  }
+  var activeSessionId = journey.activeSessionId;
+  var session = getGetHtmlSession()(activeSessionId);
+  if (!session) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Session not found.</p>' }));
+    return;
+  }
+  if (!session.done) {
+    res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Error', bodyContent: '<p>Session not complete yet.</p>' }));
+    return;
+  }
+  var artefactRelPath = session.artefactPath || '';
+  var repoRoot = getRepoRoot();
+  var absPath = path.resolve(path.join(repoRoot, artefactRelPath));
+  var resolvedRoot = path.resolve(repoRoot);
+  // Security: path traversal check
+  if (!absPath.startsWith(resolvedRoot + path.sep) && absPath !== resolvedRoot) {
+    res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Error', bodyContent: '<p>Invalid artefact path.</p>' }));
+    return;
+  }
+  // Write artefact to disk only if not already present
+  if (!fs.existsSync(absPath)) {
+    fs.mkdirSync(path.dirname(absPath), { recursive: true });
+    fs.writeFileSync(absPath, session.artefactContent || '', 'utf8');
+  }
+  // Call completeStage to record this stage
+  _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath);
+  // Build priorArtefacts from all completed stages (read authoritative disk content)
+  var updatedJourney = _journeyStore.getJourney(journeyId);
+  var priorArtefacts = (updatedJourney.completedStages || []).map(function(stage) {
+    var stageAbsPath = path.resolve(path.join(repoRoot, stage.artefactPath));
+    var content = '';
+    try { content = fs.readFileSync(stageAbsPath, 'utf8'); } catch (_) {}
+    return { path: stage.artefactPath, content: content };
+  });
+  // Determine next stage
+  var nextStage = _journeyStore.getNextStage(session.skillName);
+  console.info(JSON.stringify({ event: 'artefact_saved_to_disk', journeyId: journeyId, stage: session.skillName, featureSlug: journey.featureSlug }));
+  if (nextStage === null) {
+    // Final stage (definition-of-ready) — complete journey (ougl.7)
+    _journeyStore.markJourneyComplete(journeyId);
+    console.info(JSON.stringify({ event: 'journey_completed', journeyId: journeyId, featureSlug: journey.featureSlug, stageCount: updatedJourney.completedStages.length }));
+    res.writeHead(303, { Location: '/journey/' + journeyId + '/complete' });
+    res.end();
+  } else if (nextStage === 'test-plan') {
+    // Switch to per-story routing (ougl.6)
+    res.writeHead(303, { Location: '/journey/' + journeyId + '/stories' });
+    res.end();
+  } else {
+    // Create new session for next stage
+    var newSid = crypto.randomUUID();
+    var newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-' + nextStage + '.md');
+    getRegisterHtmlSession()(newSid, newSessionPath, nextStage, priorArtefacts);
+    getLinkSessionToJourney()(newSid, journeyId);
+    if (_journeyStore.setActiveSession) {
+      _journeyStore.setActiveSession(journeyId, newSid, nextStage);
+    }
+    res.writeHead(303, { Location: '/skills/' + nextStage + '/sessions/' + newSid + '/chat' });
+    res.end();
+  }
+}
+
 module.exports = {
   handleGetJourney,
   handlePostJourney,
+  handlePostGateConfirm,
   setRegisterHtmlSession,
   setLinkSessionToJourney,
-  setJourneyStoreModule
+  setJourneyStoreModule,
+  setGetHtmlSession,
+  setRepoRoot
 };
+
