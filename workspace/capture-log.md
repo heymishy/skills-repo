@@ -67,3 +67,15 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: "Story check scripts written by implementation agent but not registered in npm test chain. All 5 dsq check scripts (tests/check-dsq*.js) existed and passed when run directly, but none were in package.json scripts.test. CI showed SUCCESS on all PRs because existing tests passed; the new tests were simply never run. Root cause: /implementation-plan tasks stop at 'write the test file' without an explicit 'register in package.json' step; DoR H5/H6 check test existence not registration; no governance check caught unregistered files. Structural fix: tests/check-test-registration.js governance check + known-deferred-checks.json pendingTestFiles for TDD pre-committed stubs. Also found 3 older check files (check-p4-obs-*.js) with the same gap. This is now D38."
   source: agent-auto
+
+- date: 2026-05-06
+  session-phase: review — 2026-05-06-web-ui-guided-outer-loop
+  signal-type: gap
+  signal-text: "Systemic gap in definition artefacts: Complexity rating (1/2/3) and Scope stability (Stable/Unstable) were absent from all 7 ougl stories. These fields are defined in the estimation model in copilot-instructions.md and should be set at /definition time. Estimated root cause: the /definition SKILL.md does not explicitly list these fields as mandatory story-level fields in its output checklist. They are defined in a separate 'Estimation model' section of the instructions. Consider adding a /review Category D check for these fields or adding them to the story template."
+  source: agent-auto
+
+- date: 2026-05-06
+  session-phase: review — 2026-05-06-web-ui-guided-outer-loop
+  signal-type: gap
+  signal-text: "Review finding ougl.3 1-M1: story AC7 referenced sessionManager.createSession which does not exist in the codebase. The story author named a function from another framework/convention rather than the actual session-creation call chain (registerHtmlSession, createJourney, setActiveSession, linkSessionToJourney). Pattern: when error-condition ACs describe 'the thing that throws', they tend to name a plausible-sounding function rather than the actual one. Fix at /review time: any error-condition AC that names a specific function as the failure point should be verified against the actual codebase during review."
+  source: agent-auto
