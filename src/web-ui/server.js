@@ -385,6 +385,10 @@ function createApp() {
 }
 
 if (require.main === module) {
+  process.on('unhandledRejection', function(reason) {
+    console.error('[unhandledRejection]', reason && reason.stack ? reason.stack : reason);
+  });
+
   try {
     validateRequiredEnvVars();
   } catch (err) {
