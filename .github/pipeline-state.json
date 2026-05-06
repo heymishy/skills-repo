@@ -6519,13 +6519,15 @@
       "slug": "2026-05-06-web-ui-guided-outer-loop",
       "name": "Web UI Guided Outer Loop Journey",
       "track": "standard",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "discoveryArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/discovery.md",
       "discoveryStatus": "approved",
+      "benefitMetricArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/benefit-metric.md",
+      "benefitMetricStatus": "active",
       "stories": []
     }
   ],
