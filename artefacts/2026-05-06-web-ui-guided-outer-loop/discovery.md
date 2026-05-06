@@ -37,7 +37,9 @@ Full outer loop journey, fully orchestrated through the web UI:
 6. **/review** — review runs per story, findings surfaced inline
 7. **/definition-of-ready** — DoR sign-off produced, saved to `artefacts/[slug]/dor/`
 
-Side-trips (/clarify, /decisions, /trace, /estimate, /spike) are invoked automatically by the model when /workflow or a skill determines they are needed — the practitioner does not manually invoke skills, just as in the VS Code surface.
+Stage transitions are gated: when a skill produces its stage artefact, the web UI presents an operator confirmation step ("Save [artefact name] and continue to [next skill]?") before writing the artefact to disk and loading the next skill session. The operator does not need to know what comes next — the confirmation is pre-labelled by the journey — but the write and the transition are not fully automatic.
+
+Side-trips (/clarify, /decisions, /trace, /estimate, /spike) are **out of scope for this MVP** — see Out of Scope. The straight-through happy path is the only supported journey. Operators who need a side-trip mid-session may complete it manually in VS Code and resume the web UI journey.
 
 The exact same SKILL.md files are used. No reimplementation of skill logic. mfc.1 skill-turn-executor is the execution engine.
 
@@ -48,25 +50,35 @@ The exact same SKILL.md files are used. No reimplementation of skill logic. mfc.
 - **Direct coding agent dispatch** — the web UI saves DoR artefacts to disk but does not open GitHub issues, create PRs, or trigger the coding agent
 - **Session persistence across browser close** — if the tab is closed mid-session, the session is not resumable; same in-memory behaviour as mfc.1
 - **Automatic pipeline-state.json write-back** — artefacts are saved to disk; `.github/pipeline-state.json` update remains a manual operator step for MVP
+- **Side-trips** (/clarify, /decisions, /trace, /estimate, /spike mid-journey) — MVP is straight-through happy path only; side-trips that arise during a journey must be handled manually in VS Code; the stack-based session model required for automatic side-trip nesting and resume is a post-MVP concern
+- **Fully automatic stage transitions** — stage transitions are gated on operator confirmation (see MVP Scope); artefact write and next-skill load are not triggered without an explicit operator action
 
 ## Assumptions and Risks
 
 **Assumptions:**
-- The mfc.1 skill-turn-executor and system prompt assembly pattern is sufficient to drive multi-skill orchestration — /workflow can be loaded as the initial skill and can transition to subsequent skills within the same session context.
+- The mfc.1 skill-turn-executor and system prompt assembly pattern is sufficient to drive per-skill sessions — each stage is an independent session using the appropriate SKILL.md, with a handoff context block injected at session start.
 - The same SKILL.md files that produce correct output in VS Code can be loaded verbatim for the web UI — no reimplementation or adaptation is required.
 - Artefact detection via the existing signal protocol (---ARTEFACT-START--- / ---ARTEFACT-END---) generalises across all outer loop skills, not just single-skill sessions.
-- Session state can encode the current pipeline stage (which skill is active, what artefacts have been produced) without requiring a persistent store — in-memory is sufficient for single-session journeys.
+- Session state can encode the current pipeline stage (active skill, artefacts produced so far, handoff context) without requiring a persistent store — in-memory is sufficient for a single operator session without browser close.
+
+**Architectural decision required — spike dependency (primary unknown):**
+Two architectures are under consideration for multi-skill orchestration:
+
+- **Option A — Single persistent /workflow session:** /workflow SKILL.md is loaded once; subsequent skill SKILL.md content is injected into the same session context as stages advance. History continuity is maintained across stages. Side-trip nesting is harder (requires in-session context switching). Very long sessions may exceed model context limits.
+- **Option B — /workflow as router, per-skill sessions with handoff:** /workflow acts as a stateless router; each skill stage runs in its own fresh session. The router passes a structured handoff block (prior artefact paths, key decisions, active feature slug) as a context prefix when starting each new session. History does not carry across sessions. Side-trips are their own session. Context limits are not a concern per session. Consistent with the mfc.1 single-skill model.
+
+**Directional preference: Option B.** Cleaner isolation, tractable context management, maps directly to the mfc.1 model. History continuity across stages is a nice-to-have, not a requirement — artefact files on disk serve as the durable record. **This must be validated as a spike before definition begins.**
 
 **Risks:**
 - Skill SKILL.md files may contain VS Code-specific instructions (e.g. "run git command", "create file via tool") that the web UI cannot execute — the web UI protocol section in the system prompt may need to be extended to override these with artefact-write equivalents.
-- The orchestration layer (detecting when a skill stage is complete and autonomously transitioning to the next) may require a more sophisticated session state machine than mfc.1's single-skill model — this is the primary architectural unknown.
-- Non-engineers using the web UI may produce lower-quality discovery artefacts if the guided journey does not scaffold context (what is this stage for, what counts as done) — may need stage-entry preamble from /workflow.
-- Side-trips (e.g. /clarify called mid-discovery) require the session to track that a side-trip is in progress and return to the parent skill on completion — this sub-session nesting behaviour is untested in mfc.1.
+- The handoff context block (Option B) must carry enough prior-stage context for each skill to produce coherent output without having seen the prior conversation — the schema and content of that block is an open design question for the spike.
+- Non-engineers using the web UI may produce lower-quality discovery artefacts if the guided journey does not scaffold context (what is this stage for, what counts as done) — may need stage-entry preamble injected at the start of each skill session.
+- Side-trips (e.g. /clarify called mid-discovery) are descoped from MVP. If the model recommends a side-trip during a session, the operator must leave the web UI, run it in VS Code, and return. This is a gap acknowledged at MVP scope.
 
 ## Directional Success Indicators
 
 - A practitioner opens the web UI, runs the guided journey from /workflow through /discovery, and the resulting discovery.md artefact is complete and ready for approval — without touching VS Code or needing prior pipeline knowledge
-- A non-engineer (BA, business lead, SME) can complete a /discovery artefact end-to-end through the web UI without assistance from an engineer operating the toolchain
+- A non-engineer (BA, business lead, SME) **who has a GitHub account** can complete a /discovery artefact end-to-end through the web UI without assistance from an engineer operating the toolchain
 - The full outer loop produces DoR-ready stories that are structurally equivalent to those produced via the VS Code surface — the coding agent can consume them without modification
 
 ## Constraints
@@ -74,8 +86,10 @@ The exact same SKILL.md files are used. No reimplementation of skill logic. mfc.
 - Zero new npm dependencies — Node.js built-ins only; no new packages added to package.json
 - Same SKILL.md files, same rules — no reimplementation of skill logic; the web UI surface reads the same files as VS Code
 - mfc.1 model-first chat architecture (skill-turn-executor, system prompt assembly, artefact signal protocol) is the execution engine — this feature builds the orchestration wrapper on top
+- **GitHub account required** — the web UI requires GitHub OAuth login; non-engineer personas (BAs, SMEs, business leads) must have a GitHub account to use the surface; no alternative auth path is in scope for this MVP
 - Session authenticated via GitHub OAuth (same as existing web UI); `req.session.accessToken` is the canonical token field
 - Artefact writes are server-side file writes to the repo root — the web UI cannot run shell commands, git operations, or OS-level scripts on the operator's machine
+- **Spike required before definition** — the orchestration architecture (Option A vs Option B, handoff block schema) must be resolved as a spike before stories can be written; definition is blocked until the spike produces a PROCEED verdict
 
 ## Architecture / Technical Context
 
