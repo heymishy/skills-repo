@@ -44,7 +44,7 @@ So that I can start a discovery session without knowing which skill to run or ho
 
 **AC6:** Given the journey entry screen renders (AC1), when the HTML is examined, then it contains a heading or title that includes the word "journey" (case-insensitive), and the form does not expose `sessionId`, `journeyId`, or any internal server state in any hidden `<input>` element.
 
-**AC7:** Given `POST /api/journey` is called and `sessionManager.createSession` throws an error, when the response is returned, then it is HTTP 500 with a rendered HTML error page (using `renderShell`) containing a human-readable error message — not a raw stack trace.
+**AC7:** Given `POST /api/journey` is called and the session-creation step throws an error (e.g. `registerHtmlSession` throws, or `createJourney` throws), when the response is returned, then it is HTTP 500 with a rendered HTML error page (using `renderShell`) containing a human-readable error message — not a raw stack trace.
 
 ## Out of Scope
 
