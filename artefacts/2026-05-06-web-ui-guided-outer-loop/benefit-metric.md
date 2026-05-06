@@ -75,12 +75,14 @@ MM2 (Option B handoff coherence) cannot produce a meaningful baseline until the 
 
 ## Metric Coverage Matrix
 
+_Updated at /review (2026-05-06) — /definition complete, 7 stories committed._
+
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1 — Journey completion rate | TBD at /definition | Gap — pending definition |
-| M2 — Non-engineer autonomous completion | TBD at /definition | Gap — pending definition |
-| MM1 — Artefact quality parity | TBD at /definition | Gap — pending definition |
-| MM2 — Option B handoff coherence | Spike story + TBD at /definition | Gap — pending spike + definition |
+| M1 — Journey completion rate | ougl.7 (journey_completed instrumentation event; completion screen renders = M1 numerator event) | Covered — ougl.7 AC9 (observability log) |
+| M2 — Non-engineer autonomous completion | ougl.3 (journey entry screen for non-engineers), ougl.4 (guided advance between stages), ougl.7 (completion screen confirms loop is done) | Covered — M2 is satisfied when a non-engineer reaches ougl.7 completion screen unaided |
+| MM1 — Artefact quality parity | ougl.1 (priorArtefacts handoff injection), ougl.5 (gate-confirm write-then-read), ougl.6 (per-story handoff), ougl.7 (DoR handoff) | Covered — handoff mechanism delivered across all stage transitions; measured by validate-trace.sh on web UI-produced artefacts |
+| MM2 — Option B handoff coherence | ougl.1 (buildSystemPrompt handoff block format), ougl.5 (disk-canonical write-then-read pattern) | Covered — handoff schema B-iii implemented in ougl.1 + ougl.5; coherence rated by operator at each gate-confirm step |
 
 ---
 
