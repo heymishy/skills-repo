@@ -27,6 +27,7 @@ const { validateLicence }   = require('../../adapters/copilot-licence');
 const sessionManager        = require('../../modules/session-manager');
 const { validateArtefactPath } = require('../../artefact-path-validator');
 const { commitArtefact }       = require('../../scm-adapter');
+const _journeyStore            = require('../modules/journey-store'); // ougl.4
 
 const MAX_ANSWER_LENGTH = 1000;
 
@@ -1039,7 +1040,7 @@ async function handleGetResultHtml(req, res) {
  * @param {string}  [repoRoot]  — override repo root (defaults to _getRepoPath(); pass process.cwd() in tests)
  * @returns {string}
  */
-function buildSystemPrompt(skillName, sessionPath, repoRoot) {
+function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts) {
   var root = repoRoot || _getRepoPath();
   var parts = [];
 
@@ -1082,6 +1083,18 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot) {
         });
       }
     }
+  }
+
+  // 4.5. Handoff context — prior artefacts from earlier stages
+  if (priorArtefacts && priorArtefacts.length > 0) {
+    var handoffParts = ['--- HANDOFF CONTEXT ---'];
+    priorArtefacts.forEach(function(pa) {
+      handoffParts.push('--- PRIOR ARTEFACT: ' + pa.path + ' ---');
+      handoffParts.push(pa.content);
+      handoffParts.push('--- END PRIOR ARTEFACT ---');
+    });
+    handoffParts.push('--- END HANDOFF CONTEXT ---');
+    parts.push(handoffParts.join('\n'));
   }
 
   // 5. Web UI protocol — instructs the model how to operate and when/how to output the artefact
@@ -1137,8 +1150,20 @@ function registerHtmlSession(sessionId, sessionPath, skillName) {
     turns:           [],
     artefactContent: null,
     artefactPath:    null,
-    done:            false
+    done:            false,
+    journeyId:       null
   });
+}
+
+/**
+ * Link an existing HTML session to a journey.
+ * @param {string} sessionId
+ * @param {string} journeyId
+ */
+function linkSessionToJourney(sessionId, journeyId) {
+  var session = _sessionStore.get(sessionId);
+  if (!session) return;
+  session.journeyId = journeyId;
 }
 
 /**
@@ -1398,6 +1423,26 @@ function _renderChatPage(skillName, sessionId, session) {
     userInitial:       'M',
     modelLabel:        getActiveModel()
   }) + script;
+
+  // ougl.4 — journey-aware gate-confirm button
+  if (session.done && session.journeyId) {
+    var safeJourneyId = escHtml(session.journeyId);
+    var journeyPanel;
+    if (skillName === 'definition-of-ready') {
+      journeyPanel = '<div class="sw-journey-gate" style="padding:16px;margin-top:12px">' +
+        '<a href="/journey/' + safeJourneyId + '/complete" ' +
+        'style="display:inline-block;font-size:14px;font-weight:600;color:#fff;background:var(--ink);padding:8px 18px;border-radius:6px;text-decoration:none">' +
+        'View journey complete &#x2192;</a></div>';
+    } else {
+      var nextStage = _journeyStore.getNextStage(skillName) || 'next stage';
+      journeyPanel = '<div class="sw-journey-gate" style="padding:16px;margin-top:12px">' +
+        '<form method="POST" action="/api/journey/' + safeJourneyId + '/gate-confirm">' +
+        '<button type="submit" class="sw-btn sw-btn--primary">' +
+        'Save and continue to ' + escHtml(nextStage) + ' &#x2192;</button>' +
+        '</form></div>';
+    }
+    bodyContent = bodyContent + journeyPanel;
+  }
 
   return renderShell({ title: 'Skill session — ' + escHtml(skillName), bodyContent: bodyContent, user: { login: '' }, active: 'skills' });
 }
@@ -1817,6 +1862,8 @@ module.exports = {
   htmlSubmitTurn, buildSystemPrompt,
   // wuce.26 — test helpers + skill-turn executor adapter setter
   _getHtmlSession, _setHtmlSession, setSkillTurnExecutorAdapter,
+  // ougl.2 — journey session link
+  linkSessionToJourney,
   // mfc.3 — streaming turn handler + adapter setter
   handlePostTurnStreamHtml, setSkillTurnExecutorStreamAdapter,
   // dsq.1/dsq.2 — backward-compat no-op setters (AC9 — mfc.1)
