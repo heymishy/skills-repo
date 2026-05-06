@@ -6564,7 +6564,10 @@
           "e2eToolingRequired": false,
           "reviewArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-1-review-1.md",
           "updatedAt": "2026-05-14",
-          "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-1-dor.md"
+          "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-1-dor.md",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/313",
+          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "ougl.2",
@@ -6589,7 +6592,10 @@
           "e2eToolingRequired": false,
           "reviewArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-2-review-1.md",
           "updatedAt": "2026-05-14",
-          "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-2-dor.md"
+          "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-2-dor.md",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/314",
+          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "ougl.3",
@@ -6614,7 +6620,10 @@
           "e2eToolingRequired": false,
           "reviewArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-3-review-1.md",
           "updatedAt": "2026-05-14",
-          "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-3-dor.md"
+          "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-3-dor.md",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/315",
+          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "ougl.4",
@@ -6639,7 +6648,10 @@
           "e2eToolingRequired": false,
           "reviewArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-4-review-1.md",
           "updatedAt": "2026-05-14",
-          "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-4-dor.md"
+          "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-4-dor.md",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/316",
+          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "ougl.5",
@@ -6664,7 +6676,10 @@
           "e2eToolingRequired": false,
           "reviewArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-5-review-1.md",
           "updatedAt": "2026-05-14",
-          "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-5-dor.md"
+          "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-5-dor.md",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/317",
+          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "ougl.6",
@@ -6689,7 +6704,10 @@
           "e2eToolingRequired": false,
           "reviewArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-6-review-1.md",
           "updatedAt": "2026-05-14",
-          "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-6-dor.md"
+          "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-6-dor.md",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/318",
+          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "ougl.7",
@@ -6714,7 +6732,10 @@
           "e2eToolingRequired": false,
           "reviewArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-7-review-1.md",
           "updatedAt": "2026-05-14",
-          "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-7-dor.md"
+          "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-7-dor.md",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/319",
+          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         }
       ]
     }
