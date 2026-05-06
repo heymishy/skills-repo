@@ -2,46 +2,135 @@
 /**
  * src/modules/skill-turn-executor.js — wuce.26
  *
- * Sends a skill turn (system prompt + prior Q&A + current answer) to the
- * GitHub Copilot Chat Completions API and returns the model response text.
+ * Sends a skill turn (system prompt + prior Q&A + current answer) to a model
+ * provider and returns the response text.
+ *
+ * Two providers supported — selected via SKILL_EXECUTOR_PROVIDER env var:
+ *   copilot   (default) — GitHub Copilot Chat Completions API (OpenAI-compatible)
+ *   anthropic           — Anthropic Messages API (direct, BYOK)
  *
  * No new npm dependencies — uses Node built-in `https` module only.
  *
- * Security: access token is NEVER logged or included in error messages.
+ * Security: access tokens and API keys are NEVER logged or included in error messages.
  */
 
 const https = require('https');
 
-const DEFAULT_MODEL     = 'gpt-4o';
-const DEFAULT_MAX_TOKENS = 300;
+const DEFAULT_MODEL      = 'gpt-4o';
+const DEFAULT_ANTHROPIC_MODEL = 'claude-sonnet-4.6';
+const DEFAULT_MAX_TOKENS = 4096;
 const DEFAULT_TIMEOUT_MS = 30000;
+const ANTHROPIC_VERSION  = '2023-06-01';
 
 /**
- * Execute one skill turn by calling the Copilot Chat Completions API.
- *
- * The model acts as the conversation driver: it reads the SKILL.md (in systemPrompt)
- * and decides what to ask, exactly as GitHub Copilot Chat does in VS Code.
- *
- * @param {string}  systemPrompt   — full system prompt (SKILL.md + product context + web UI framing)
- * @param {Array}   history        — array of { role: 'user'|'assistant', content: string }
- * @param {string}  currentInput   — current user input (or 'Begin the session.' for the first turn)
- * @param {string}  token          — GitHub access token (Bearer token, never logged)
- * @returns {Promise<string>}      — the model's response text
+ * Call the Anthropic Messages API directly (BYOK path).
+ * Uses ANTHROPIC_API_KEY and WUCE_TURN_MODEL (or DEFAULT_ANTHROPIC_MODEL).
+ * Anthropic request format differs from OpenAI: system is a top-level field,
+ * messages must not include a system role, and auth uses x-api-key.
  */
-function skillTurnExecutor(systemPrompt, history, currentInput, token) {
-  const model     = process.env.WUCE_TURN_MODEL            || DEFAULT_MODEL;
-  const maxTokens = parseInt(process.env.WUCE_TURN_MODEL_MAX_TOKENS || String(DEFAULT_MAX_TOKENS), 10);
-  const timeoutMs = parseInt(process.env.WUCE_TURN_TIMEOUT_MS       || String(DEFAULT_TIMEOUT_MS), 10);
+function _callAnthropic(systemPrompt, history, currentInput, maxTokens, timeoutMs) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return Promise.reject(new Error('ANTHROPIC_API_KEY is not set. Set it in .env to use the anthropic provider.'));
+  }
 
-  // Build messages array: system → conversation history → current user input
-  const messages = [
-    { role: 'system', content: systemPrompt }
-  ];
+  const model = process.env.WUCE_TURN_MODEL || DEFAULT_ANTHROPIC_MODEL;
 
+  const messages = [];
   (history || []).forEach(function(turn) {
     messages.push({ role: turn.role, content: turn.content });
   });
+  messages.push({ role: 'user', content: currentInput });
 
+  const body = JSON.stringify({
+    model:      model,
+    max_tokens: maxTokens,
+    system:     systemPrompt,
+    messages:   messages
+  });
+
+  const options = {
+    hostname: 'api.anthropic.com',
+    path:     '/v1/messages',
+    method:   'POST',
+    headers:  {
+      'x-api-key':         apiKey,
+      'anthropic-version': ANTHROPIC_VERSION,
+      'Content-Type':      'application/json',
+      'Content-Length':    Buffer.byteLength(body)
+    }
+  };
+
+  return new Promise(function(resolve, reject) {
+    const req = https.request(options, function(res) {
+      let raw = '';
+      res.on('data', function(chunk) { raw += chunk; });
+      res.on('end', function() {
+        if (res.statusCode !== 200) {
+          const preview = raw.slice(0, 300).replace(/[\r\n]+/g, ' ');
+          reject(new Error('Anthropic API HTTP ' + res.statusCode + ': ' + preview));
+          return;
+        }
+        try {
+          const parsed = JSON.parse(raw);
+          // Anthropic response: { content: [{ type: 'text', text: '...' }] }
+          const content = parsed &&
+            parsed.content &&
+            parsed.content[0] &&
+            parsed.content[0].text;
+          if (typeof content === 'string') {
+            resolve(content);
+          } else {
+            reject(new Error('Unexpected Anthropic response format: ' + raw.slice(0, 200)));
+          }
+        } catch (_parseErr) {
+          reject(new Error('Failed to parse Anthropic API response: ' + raw.slice(0, 200)));
+        }
+      });
+    });
+
+    req.setTimeout(timeoutMs, function() {
+      req.destroy(new Error('Anthropic API request timed out after ' + timeoutMs + 'ms'));
+    });
+
+    req.on('error', function(err) {
+      reject(new Error('Anthropic API request failed: ' + (err && err.message ? err.message : 'unknown error')));
+    });
+
+    req.write(body);
+    req.end();
+  });
+}
+
+/**
+ * Call the GitHub Copilot Chat Completions API (OpenAI-compatible path).
+ *
+ * Token resolution order:
+ *   1. session token passed from the OAuth flow (standard user auth)
+ *   2. GITHUB_TOKEN env var — the GitHub CLI token (`gh auth token`), which carries
+ *      the copilot scope and can access Claude models via the Copilot proxy
+ * GITHUB_TOKEN is a server-side fallback for local dev; it is never sent to the client.
+ */
+function _callCopilot(systemPrompt, history, currentInput, token, maxTokens, timeoutMs) {
+  // GITHUB_TOKEN (gh auth token) has the copilot scope and can access all models.
+  // The OAuth session token (req.session.accessToken) only has repo+read:user scope
+  // and cannot access Claude models. Prefer GITHUB_TOKEN when set.
+  const authToken = process.env.GITHUB_TOKEN || token;
+  if (!authToken) {
+    return Promise.reject(new Error(
+      'No auth token available. Either log in via GitHub OAuth or set GITHUB_TOKEN in .env '
+      + '(run: gh auth token)'
+    ));
+  }
+
+  const model = process.env.WUCE_TURN_MODEL || DEFAULT_MODEL;
+
+  const messages = [
+    { role: 'system', content: systemPrompt }
+  ];
+  (history || []).forEach(function(turn) {
+    messages.push({ role: turn.role, content: turn.content });
+  });
   messages.push({ role: 'user', content: currentInput });
 
   const body = JSON.stringify({
@@ -55,10 +144,11 @@ function skillTurnExecutor(systemPrompt, history, currentInput, token) {
     path:     '/chat/completions',
     method:   'POST',
     headers:  {
-      'Authorization': 'Bearer ' + token,
-      'User-Agent':    'skills-repo-web-ui',
-      'Content-Type':  'application/json',
-      'Content-Length': Buffer.byteLength(body)
+      'Authorization':          'Bearer ' + authToken,
+      'User-Agent':             'skills-repo-web-ui',
+      'Copilot-Integration-Id': 'vscode-chat',
+      'Content-Type':           'application/json',
+      'Content-Length':         Buffer.byteLength(body)
     }
   };
 
@@ -102,6 +192,31 @@ function skillTurnExecutor(systemPrompt, history, currentInput, token) {
     req.write(body);
     req.end();
   });
+}
+
+/**
+ * Execute one skill turn.
+ *
+ * Routes to Anthropic or Copilot based on SKILL_EXECUTOR_PROVIDER env var.
+ *   SKILL_EXECUTOR_PROVIDER=anthropic  → Anthropic Messages API (requires ANTHROPIC_API_KEY)
+ *   SKILL_EXECUTOR_PROVIDER=copilot    → Copilot Chat Completions API (default, requires GitHub token)
+ *
+ * @param {string}  systemPrompt   — full system prompt (SKILL.md + product context + web UI framing)
+ * @param {Array}   history        — array of { role: 'user'|'assistant', content: string }
+ * @param {string}  currentInput   — current user input (or 'Begin the session.' for the first turn)
+ * @param {string}  token          — GitHub access token (only used for copilot provider)
+ * @returns {Promise<string>}      — the model's response text
+ */
+function skillTurnExecutor(systemPrompt, history, currentInput, token) {
+  const provider  = (process.env.SKILL_EXECUTOR_PROVIDER || 'copilot').toLowerCase();
+  const maxTokens = parseInt(process.env.WUCE_TURN_MODEL_MAX_TOKENS || String(DEFAULT_MAX_TOKENS), 10);
+  const timeoutMs = parseInt(process.env.WUCE_TURN_TIMEOUT_MS       || String(DEFAULT_TIMEOUT_MS), 10);
+
+  if (provider === 'anthropic') {
+    return _callAnthropic(systemPrompt, history, currentInput, maxTokens, timeoutMs);
+  }
+
+  return _callCopilot(systemPrompt, history, currentInput, token, maxTokens, timeoutMs);
 }
 
 module.exports = { skillTurnExecutor };
