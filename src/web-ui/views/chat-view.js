@@ -30,17 +30,7 @@ function lightMarkdown(text) {
  * @param {boolean} data.pendingConfirmation
  */
 function renderChat(data) {
-  const progress = [];
-  for (let i = 0; i < (data.totalQuestions || 0); i++) {
-    const filled = i < (data.questionIndex - 1);
-    progress.push('<div style="width:14px;height:3px;border-radius:2px;background:' +
-      (filled ? 'var(--ink)' : 'var(--line)') + '"></div>');
-  }
-
   const messages = [];
-  messages.push('<div class="sw-chat-system">' +
-    escHtml(data.skillLabel + ' · ' + (data.totalQuestions - data.questionIndex + 1) + ' question' +
-      (data.totalQuestions - data.questionIndex + 1 === 1 ? '' : 's') + ' remaining') + '</div>');
 
   (data.priorQA || []).forEach(function(qa, i) {
     if (qa.question) {
@@ -148,9 +138,7 @@ function renderChat(data) {
         '<header class="sw-chat-head">',
           '<div>',
             '<div class="sw-chat-title">' + escHtml(data.skillLabel) + '</div>',
-            '<div class="sw-chat-sub">' + escHtml(String(data.questionIndex - 1)) + ' of ' + escHtml(String(data.totalQuestions)) + ' questions answered</div>',
           '</div>',
-          '<div class="sw-chat-progress">' + progress.join('') + '</div>',
         '</header>',
         '<div class="sw-chat-thread" id="chat-messages">' + messages.join('') + '</div>',
         '<footer class="sw-chat-foot">',
@@ -175,7 +163,7 @@ function renderChat(data) {
             '<div class="sw-chat-sub">Updates as you answer</div>',
           '</div>',
         '</header>',
-        '<div style="flex:1;overflow:auto;padding:24px 28px">',
+        '<div id="draft-content" style="flex:1;overflow:auto;padding:24px 28px">',
           '<div style="font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;font-weight:500">Draft</div>',
           '<h1 style="font-family:var(--serif);font-size:24px;font-weight:600;margin:0 0 24px;letter-spacing:-0.3px">' +
             escHtml(data.skillLabel + ' — ' + (data.featureSlug || '')) + '</h1>',
