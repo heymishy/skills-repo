@@ -6519,7 +6519,7 @@
       "slug": "2026-05-06-web-ui-guided-outer-loop",
       "name": "Web UI Guided Outer Loop Journey",
       "track": "standard",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "regulated": false,
       "complianceProfile": "standard",
@@ -6528,6 +6528,9 @@
       "discoveryStatus": "approved",
       "benefitMetricArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/benefit-metric.md",
       "benefitMetricStatus": "active",
+      "spikeArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/spikes/arch-option-b-validation-outcome.md",
+      "spikeStatus": "proceed",
+      "updatedAt": "2026-05-06",
       "stories": []
     }
   ],
