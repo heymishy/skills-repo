@@ -103,6 +103,101 @@ function _callAnthropic(systemPrompt, history, currentInput, maxTokens, timeoutM
 }
 
 /**
+ * Streaming variant of _callCopilot.
+ * Sends stream:true, parses OpenAI-compatible SSE chunks, calls onChunk(text) for each delta.
+ * Resolves with the full concatenated text when [DONE] is received.
+ */
+function _callCopilotStream(systemPrompt, history, currentInput, token, onChunk, maxTokens, timeoutMs) {
+  const authToken = process.env.GITHUB_TOKEN || token;
+  if (!authToken) {
+    return Promise.reject(new Error(
+      'No auth token available. Either log in via GitHub OAuth or set GITHUB_TOKEN in .env '
+      + '(run: gh auth token)'
+    ));
+  }
+
+  const model = process.env.WUCE_TURN_MODEL || DEFAULT_MODEL;
+
+  const messages = [{ role: 'system', content: systemPrompt }];
+  (history || []).forEach(function(turn) {
+    messages.push({ role: turn.role, content: turn.content });
+  });
+  messages.push({ role: 'user', content: currentInput });
+
+  const body = JSON.stringify({
+    model:      model,
+    max_tokens: maxTokens,
+    messages:   messages,
+    stream:     true
+  });
+
+  const options = {
+    hostname: 'api.githubcopilot.com',
+    path:     '/chat/completions',
+    method:   'POST',
+    headers:  {
+      'Authorization':          'Bearer ' + authToken,
+      'User-Agent':             'skills-repo-web-ui',
+      'Copilot-Integration-Id': 'vscode-chat',
+      'Content-Type':           'application/json',
+      'Content-Length':         Buffer.byteLength(body)
+    }
+  };
+
+  return new Promise(function(resolve, reject) {
+    const req = https.request(options, function(res) {
+      if (res.statusCode !== 200) {
+        let errRaw = '';
+        res.on('data', function(c) { errRaw += c; });
+        res.on('end', function() {
+          reject(new Error('Copilot API HTTP ' + res.statusCode + ': ' + errRaw.slice(0, 300).replace(/[\r\n]+/g, ' ')));
+        });
+        return;
+      }
+
+      let fullText = '';
+      let buffer   = '';
+
+      res.on('data', function(chunk) {
+        buffer += chunk.toString();
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // last line may be incomplete
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line.startsWith('data: ')) continue;
+          const payload = line.slice(6);
+          if (payload === '[DONE]') continue;
+          try {
+            const parsed  = JSON.parse(payload);
+            const delta   = parsed && parsed.choices && parsed.choices[0] && parsed.choices[0].delta;
+            const content = delta && typeof delta.content === 'string' ? delta.content : '';
+            if (content) {
+              fullText += content;
+              if (typeof onChunk === 'function') { onChunk(content); }
+            }
+          } catch (_) { /* skip malformed SSE line */ }
+        }
+      });
+
+      res.on('end', function() {
+        resolve(fullText);
+      });
+    });
+
+    req.setTimeout(timeoutMs, function() {
+      req.destroy(new Error('Copilot API stream timed out after ' + timeoutMs + 'ms'));
+    });
+
+    req.on('error', function(err) {
+      reject(new Error('Copilot API stream failed: ' + (err && err.message ? err.message : 'unknown error')));
+    });
+
+    req.write(body);
+    req.end();
+  });
+}
+
+/**
  * Call the GitHub Copilot Chat Completions API (OpenAI-compatible path).
  *
  * Token resolution order:
@@ -220,6 +315,30 @@ function skillTurnExecutor(systemPrompt, history, currentInput, token) {
 }
 
 /**
+ * Streaming skill turn — calls onChunk(text) for each token as it arrives.
+ * Only the copilot provider supports streaming; anthropic falls back to non-streaming.
+ * @param {string}   systemPrompt
+ * @param {Array}    history
+ * @param {string}   currentInput
+ * @param {string}   token
+ * @param {function} onChunk — called with each text delta
+ * @returns {Promise<string>} full response text
+ */
+function skillTurnExecutorStream(systemPrompt, history, currentInput, token, onChunk) {
+  const provider  = (process.env.SKILL_EXECUTOR_PROVIDER || 'copilot').toLowerCase();
+  const maxTokens = parseInt(process.env.WUCE_TURN_MODEL_MAX_TOKENS || String(DEFAULT_MAX_TOKENS), 10);
+  const timeoutMs = parseInt(process.env.WUCE_TURN_TIMEOUT_MS       || String(DEFAULT_TIMEOUT_MS), 10);
+
+  if (provider === 'anthropic') {
+    // Anthropic streaming not yet implemented — fall back to non-streaming and call onChunk once
+    return _callAnthropic(systemPrompt, history, currentInput, maxTokens, timeoutMs)
+      .then(function(text) { if (typeof onChunk === 'function') { onChunk(text); } return text; });
+  }
+
+  return _callCopilotStream(systemPrompt, history, currentInput, token, onChunk, maxTokens, timeoutMs);
+}
+
+/**
  * Returns the model ID that will be used for the next turn, based on env config.
  * @returns {string}
  */
@@ -231,4 +350,4 @@ function getActiveModel() {
   return process.env.WUCE_TURN_MODEL || DEFAULT_MODEL;
 }
 
-module.exports = { skillTurnExecutor, getActiveModel };
+module.exports = { skillTurnExecutor, skillTurnExecutorStream, getActiveModel };

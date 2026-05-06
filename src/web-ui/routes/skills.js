@@ -809,6 +809,17 @@ let _skillTurnExecutor = skillsAdapter.skillTurnExecutor;
  */
 function setSkillTurnExecutorAdapter(fn) { _skillTurnExecutor = fn; }
 
+// mfc.3 — injectable streaming skill-turn executor
+let _skillTurnExecutorStream = function defaultSkillTurnExecutorStream() {
+  return Promise.reject(new Error('Adapter not wired: skillTurnExecutorStream. Call setSkillTurnExecutorStreamAdapter() with a real implementation before use.'));
+};
+
+/**
+ * Replace the skillTurnExecutorStream adapter (for testing).
+ * @param {function(string, Array, string, string, function): Promise<string>} fn
+ */
+function setSkillTurnExecutorStreamAdapter(fn) { _skillTurnExecutorStream = fn; }
+
 // mfc.1 — _nextQuestionExecutor and _sectionDraftExecutor retained as no-ops for backward compat (AC9).
 // They are not invoked in the model-first session flow.
 let _nextQuestionExecutor = function noOpNextQuestionExecutor() { return Promise.resolve(null); };
@@ -1238,6 +1249,7 @@ function _renderChatPage(skillName, sessionId, session) {
     '  var thread  = document.getElementById("chat-messages");',
     '  if(!form || !thread) return;',
     '  var TURN_URL   = "' + escHtml(turnUrl) + '";',
+    '  var STREAM_URL = TURN_URL + "-stream";',
     '  var COMMIT_URL = "' + escHtml(commitUrl) + '";',
     '  var submitBtn  = form.querySelector("button[type=\'submit\']");',
     '',
@@ -1291,24 +1303,57 @@ function _renderChatPage(skillName, sessionId, session) {
     '',
     '  function sendTurn(answer) {',
     '    if(submitBtn) submitBtn.disabled = true;',
-    '    var thinkingDiv = appendBubble("assistant", \'<em style="color:var(--muted)">\u2026<\/em>\');',
-    '    return fetch(TURN_URL, {',
+    '    var thinkingDiv = appendBubble("assistant", \'<span class="sw-thinking"><span class="sw-dot"></span><span class="sw-dot"></span><span class="sw-dot"></span></span>\');',
+    '    var streamText = "";',
+    '    var streamDiv  = null;',
+    '    fetch(STREAM_URL, {',
     '      method: "POST",',
     '      headers: {"Content-Type": "application/json"},',
     '      body: JSON.stringify({answer: answer})',
-    '    }).then(function(r){ return r.json(); }).then(function(data){',
-    '      if(thinkingDiv) thinkingDiv.remove();',
-    '      var responseText = (data && data.response) ? data.response : "";',
-    '      if(responseText) appendBubble("assistant", lightMd(responseText));',
-    '      if(data && data.artefactContent) updateDraftPanel(data.artefactContent);',
-    '      if(data && data.done) {',
-    '        showCommitLink();',
-    '      } else if(responseText && responseText.indexOf("?") === -1) {',
-    '        // Model gave a non-question acknowledgment — prompt it to continue.',
-    '        setTimeout(function(){ sendTurn("continue"); }, 800);',
-    '      } else {',
-    '        if(submitBtn) submitBtn.disabled = false;',
+    '    }).then(function(r) {',
+    '      if(!r.ok || !r.body) throw new Error("Stream failed");',
+    '      if(thinkingDiv) { thinkingDiv.remove(); thinkingDiv = null; }',
+    '      streamDiv = appendBubble("assistant", "");',
+    '      var textNode = streamDiv.querySelector(".sw-chat-text");',
+    '      var reader   = r.body.getReader();',
+    '      var decoder  = new TextDecoder();',
+    '      var buf      = "";',
+    '      function pump() {',
+    '        return reader.read().then(function(result) {',
+    '          if(result.done) return;',
+    '          buf += decoder.decode(result.value, {stream: true});',
+    '          var lines = buf.split("\\n");',
+    '          buf = lines.pop();',
+    '          lines.forEach(function(line) {',
+    '            if(!line.startsWith("data: ")) return;',
+    '            var payload = line.slice(6).trim();',
+    '            try {',
+    '              var evt = JSON.parse(payload);',
+    '              if(evt.chunk) {',
+    '                streamText += evt.chunk;',
+    '                if(textNode) textNode.innerHTML = lightMd(streamText);',
+    '                scrollToBottom();',
+    '              }',
+    '              if(evt.done !== undefined) {',
+    '                if(evt.artefactContent) updateDraftPanel(evt.artefactContent);',
+    '                if(evt.done) {',
+    '                  showCommitLink();',
+    '                } else if(streamText && streamText.indexOf("?") === -1) {',
+    '                  setTimeout(function(){ sendTurn("continue"); }, 800);',
+    '                } else {',
+    '                  if(submitBtn) submitBtn.disabled = false;',
+    '                }',
+    '              }',
+    '              if(evt.error) {',
+    '                if(textNode) textNode.innerHTML = \'<em style="color:var(--error,red)">\' + evt.error + \'</em>\';',
+    '                if(submitBtn) submitBtn.disabled = false;',
+    '              }',
+    '            } catch(_) {}',
+    '          });',
+    '          return pump();',
+    '        });',
     '      }',
+    '      return pump();',
     '    }).catch(function(){',
     '      if(thinkingDiv) thinkingDiv.remove();',
     '      appendBubble("assistant", \'<em style="color:var(--error,red)">Error — please try again.</em>\');',
@@ -1409,6 +1454,78 @@ async function handlePostTurnHtml(req, res) {
     return;
   }
   _json(res, 200, result);
+}
+
+/**
+ * POST /api/skills/:name/sessions/:id/turn-stream
+ * Streaming variant: sends SSE chunks as the model generates text.
+ * Each SSE event is `data: {"chunk":"..."}\n\n`.
+ * Final event: `data: {"done":bool, "artefactContent":"..."}\n\n`.
+ */
+async function handlePostTurnStreamHtml(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'text/plain' });
+    res.end('Not authenticated');
+    return;
+  }
+  var sessionId = (req.params && req.params.id) || '';
+  var body = await _readBody(req);
+  var rawAnswer = (body && typeof body.answer === 'string') ? body.answer : '';
+
+  var session = _sessionStore.get(sessionId);
+  if (!session) {
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Session not found');
+    return;
+  }
+
+  res.writeHead(200, {
+    'Content-Type':  'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection':    'keep-alive'
+  });
+
+  var userContent     = sanitiseAnswer(rawAnswer);
+  var historySnapshot = session.turns.slice();
+  session.turns.push({ role: 'user', content: userContent });
+
+  var fullText = '';
+  try {
+    fullText = await _skillTurnExecutorStream(
+      session.systemPrompt,
+      historySnapshot,
+      userContent,
+      req.session.accessToken,
+      function onChunk(chunk) {
+        res.write('data: ' + JSON.stringify({ chunk: chunk }) + '\n\n');
+      }
+    );
+  } catch (err) {
+    _logger.warn('handlePostTurnStreamHtml executor error: ' + (err && err.message ? err.message : 'unknown'));
+    res.write('data: ' + JSON.stringify({ error: 'Model error — please try again.' }) + '\n\n');
+    res.end();
+    return;
+  }
+
+  var artefactMatch = fullText.match(/---ARTEFACT-START---\s*([\s\S]+?)\s*---ARTEFACT-END---/);
+  var slugMatch     = fullText.match(/---SLUG---\s*\n?([\w-]+)/);
+  var done = !!artefactMatch;
+
+  if (artefactMatch) {
+    session.artefactContent = artefactMatch[1].trim();
+    var skillName = (req.params && req.params.name) || '';
+    var slug = slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName;
+    session.artefactPath = 'artefacts/' + slug + '/' + (session.skillName || skillName) + '.md';
+    session.done = true;
+  }
+
+  session.turns.push({ role: 'assistant', content: fullText });
+
+  res.write('data: ' + JSON.stringify({
+    done: done,
+    artefactContent: artefactMatch ? session.artefactContent : undefined
+  }) + '\n\n');
+  res.end();
 }
 
 /**
@@ -1690,6 +1807,8 @@ module.exports = {
   htmlSubmitTurn, buildSystemPrompt,
   // wuce.26 — test helpers + skill-turn executor adapter setter
   _getHtmlSession, _setHtmlSession, setSkillTurnExecutorAdapter,
+  // mfc.3 — streaming turn handler + adapter setter
+  handlePostTurnStreamHtml, setSkillTurnExecutorStreamAdapter,
   // dsq.1/dsq.2 — backward-compat no-op setters (AC9 — mfc.1)
   setNextQuestionExecutorAdapter,
   setSectionDraftExecutorAdapter,

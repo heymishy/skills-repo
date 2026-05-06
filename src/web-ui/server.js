@@ -18,7 +18,7 @@ const { handleGetFeatures, handleGetFeatureArtefacts }               = require('
 const { handleGetStatus, handleGetStatusExport }                     = require('./routes/status');
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
-const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1
+const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3
 const { setLogger }                                                  = require('./routes/auth');
 const { setFetchPipelineState }                                      = require('./adapters/feature-list');
 const { setFetchArtefactDirectory }                                  = require('./adapters/artefact-list');
@@ -62,9 +62,10 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   });
 
   // mfc.1 — wire real Copilot API executor for model-first chat turns
-  const { skillTurnExecutor: realSkillTurnExecutor } = require('../modules/skill-turn-executor');
-  const { setSkillTurnExecutorAdapter } = require('./routes/skills');
+  const { skillTurnExecutor: realSkillTurnExecutor, skillTurnExecutorStream: realSkillTurnExecutorStream } = require('../modules/skill-turn-executor');
+  const { setSkillTurnExecutorAdapter, setSkillTurnExecutorStreamAdapter } = require('./routes/skills');
   setSkillTurnExecutorAdapter(realSkillTurnExecutor);
+  setSkillTurnExecutorStreamAdapter(realSkillTurnExecutorStream);
   // _nextQuestionExecutorAdapter and _sectionDraftExecutorAdapter are no-ops (AC9 — mfc.1);
   // no wiring required.
 }
@@ -304,6 +305,14 @@ async function router(req, res) {
       await handlePostTurnHtml(req, res);
     });
 
+  } else if (pathname.match(/^\/api\/skills\/[^/]+\/sessions\/[^/]+\/turn-stream$/) && req.method === 'POST') {
+    // mfc.3 — streaming model turn endpoint (SSE)
+    const parts = pathname.split('/');
+    req.params = { name: parts[3], id: parts[5] };
+    authGuard(req, res, async () => {
+      await handlePostTurnStreamHtml(req, res);
+    });
+
   } else if (pathname.match(/^\/skills\/[^/]+\/sessions\/[^/]+\/next$/) && req.method === 'GET') {
     // backward-compat: redirect /next to /chat
     const parts = pathname.split('/');
@@ -387,6 +396,9 @@ function createApp() {
 if (require.main === module) {
   process.on('unhandledRejection', function(reason) {
     console.error('[unhandledRejection]', reason && reason.stack ? reason.stack : reason);
+  });
+  process.on('uncaughtException', function(err) {
+    console.error('[uncaughtException]', err && err.stack ? err.stack : err);
   });
 
   try {
