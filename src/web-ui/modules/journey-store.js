@@ -114,9 +114,35 @@ function advanceToNextStory(journeyId) {
   var journey = _journeys.get(journeyId);
   if (!journey) return null;
   journey.currentStoryIndex = (journey.currentStoryIndex || 0) + 1;
-  var stories = journey.stories || [];
+  var stories = journey.storyList || journey.stories || [];
   if (journey.currentStoryIndex >= stories.length) return null;
   return stories[journey.currentStoryIndex];
+}
+
+/**
+ * Set the story list for per-story routing (ougl.6).
+ * @param {string} journeyId
+ * @param {string[]} storyList
+ */
+function setStoryList(journeyId, storyList) {
+  var journey = _journeys.get(journeyId);
+  if (!journey) return;
+  journey.storyList = storyList;
+  journey.mode = 'story';
+  journey.currentStoryIndex = 0;
+}
+
+/**
+ * Get the current story slug for per-story routing (ougl.6).
+ * @param {string} journeyId
+ * @returns {string|null}
+ */
+function getCurrentStory(journeyId) {
+  var journey = _journeys.get(journeyId);
+  if (!journey) return null;
+  var list = journey.storyList || journey.stories || [];
+  if (journey.currentStoryIndex >= list.length) return null;
+  return list[journey.currentStoryIndex] || null;
 }
 
 /**
@@ -147,6 +173,8 @@ module.exports = {
   getNextStage,
   getJourneyStories,
   advanceToNextStory,
+  setStoryList,
+  getCurrentStory,
   markJourneyComplete,
   _clear
 };

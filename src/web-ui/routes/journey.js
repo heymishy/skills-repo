@@ -179,10 +179,96 @@ async function handlePostGateConfirm(req, res) {
   }
 }
 
+/**
+ * GET /journey/:journeyId/stories — render story list entry form.
+ */
+async function handleGetStories(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Journey not found.</p>' }));
+    return;
+  }
+  var safeId = escHtml(journeyId);
+  var body = [
+    '<div class="sw-page-content">',
+    '<h1>Story list for journey</h1>',
+    '<p>Enter one story slug per line. These will be processed through test-plan and definition-of-ready.</p>',
+    '<form method="POST" action="/api/journey/' + safeId + '/stories">',
+    '<textarea name="stories" rows="10" cols="50" placeholder="e.g. wgol.1&#10;wgol.2&#10;wgol.3"></textarea>',
+    '<br><button type="submit" class="sw-btn sw-btn--primary">Start per-story stages</button>',
+    '</form>',
+    '</div>'
+  ].join('');
+  var html = renderShell({ title: 'Stories', bodyContent: body, user: { login: req.session.login || '' } });
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
+/**
+ * POST /api/journey/:journeyId/stories — set story list and start test-plan session for first story.
+ */
+async function handlePostStories(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Journey not found.</p>' }));
+    return;
+  }
+  var raw = (req.body && req.body.stories) || '';
+  var slugs = raw.split('\n').map(function(s) { return s.trim(); }).filter(function(s) { return s.length > 0; });
+  if (slugs.length === 0) {
+    res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Error', bodyContent: '<p>At least one story slug is required.</p>' }));
+    return;
+  }
+  // Security: validate slugs — no path traversal
+  var hasTraversal = slugs.some(function(s) { return s.includes('..') || s.startsWith('/'); });
+  if (hasTraversal) {
+    res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Error', bodyContent: '<p>Invalid story slug.</p>' }));
+    return;
+  }
+  _journeyStore.setStoryList(journeyId, slugs);
+  // Build priorArtefacts from completed stages
+  var repoRoot = getRepoRoot();
+  var updatedJourney = _journeyStore.getJourney(journeyId);
+  var priorArtefacts = (updatedJourney.completedStages || []).map(function(stage) {
+    var stageAbsPath = path.resolve(path.join(repoRoot, stage.artefactPath));
+    var content = '';
+    try { content = fs.readFileSync(stageAbsPath, 'utf8'); } catch (_) {}
+    return { path: stage.artefactPath, content: content };
+  });
+  // Create test-plan session for first story
+  var newSid = crypto.randomUUID();
+  var newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-test-plan.md');
+  getRegisterHtmlSession()(newSid, newSessionPath, 'test-plan', priorArtefacts);
+  getLinkSessionToJourney()(newSid, journeyId);
+  if (_journeyStore.setActiveSession) {
+    _journeyStore.setActiveSession(journeyId, newSid, 'test-plan');
+  }
+  res.writeHead(303, { Location: '/skills/test-plan/sessions/' + newSid + '/chat' });
+  res.end();
+}
+
 module.exports = {
   handleGetJourney,
   handlePostJourney,
   handlePostGateConfirm,
+  handleGetStories,
+  handlePostStories,
   setRegisterHtmlSession,
   setLinkSessionToJourney,
   setJourneyStoreModule,
