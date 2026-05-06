@@ -1,8 +1,8 @@
 # Discovery: Web UI Guided Outer Loop Journey
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-05-06
-**Approved by:** — (pending)
+**Approved by:** Hamis — 2026-05-06
 **Author:** GitHub Copilot / Hamis
 
 ---
@@ -110,11 +110,11 @@ The orchestration layer (/workflow routing → skill transition → artefact sav
 
 ## Reviewers
 
-- (pending)
+- Hamis — Platform operator / product owner
 
 ## Approved By
 
-- (pending)
+- Hamis — Platform operator / product owner — 2026-05-06
 
 ---
 
