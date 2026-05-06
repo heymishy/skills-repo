@@ -6519,8 +6519,10 @@
       "slug": "2026-05-06-web-ui-guided-outer-loop",
       "name": "Web UI Guided Outer Loop Journey",
       "track": "standard",
-      "stage": "definition-of-done",
+      "stage": "released",
       "health": "green",
+      "releaseReady": true,
+      "dodArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dod/ougl-dod.md",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -6546,13 +6548,13 @@
           "title": "Extend buildSystemPrompt with priorArtefacts handoff block",
           "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-1-buildsystemprompt-handoff.md",
           "testPlan": {
-            "status": "passing",
+            "status": "all-passing",
             "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/test-plans/ougl-1-test-plan.md",
             "totalTests": 8,
             "passing": 8
           },
           "acTotal": 8,
-          "acVerified": 0,
+          "acVerified": 8,
           "epic": "ougl-epic-1-journey-foundation",
           "stage": "definition-of-done",
           "dorStatus": "signed-off",
@@ -6569,20 +6571,21 @@
           "dispatchedAt": "2026-05-07T00:00:00.000Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
-          "dodStatus": "complete"
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "ougl.2",
           "title": "Journey state store module, registerHtmlSession extension, and server.js wiring",
           "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-2-journey-state-store.md",
           "testPlan": {
-            "status": "passing",
+            "status": "all-passing",
             "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/test-plans/ougl-2-test-plan.md",
             "totalTests": 9,
             "passing": 9
           },
           "acTotal": 10,
-          "acVerified": 0,
+          "acVerified": 10,
           "epic": "ougl-epic-1-journey-foundation",
           "stage": "definition-of-done",
           "dorStatus": "signed-off",
@@ -6599,20 +6602,21 @@
           "dispatchedAt": "2026-05-07T00:00:00.000Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
-          "dodStatus": "complete"
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "ougl.3",
           "title": "Journey entry screen and start endpoint",
           "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-3-journey-entry-and-start.md",
           "testPlan": {
-            "status": "passing",
+            "status": "all-passing",
             "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/test-plans/ougl-3-test-plan.md",
             "totalTests": 7,
             "passing": 7
           },
           "acTotal": 7,
-          "acVerified": 0,
+          "acVerified": 7,
           "epic": "ougl-epic-2-discovery-to-definition",
           "stage": "definition-of-done",
           "dorStatus": "signed-off",
@@ -6629,20 +6633,21 @@
           "dispatchedAt": "2026-05-07T00:00:00.000Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
-          "dodStatus": "complete"
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "ougl.4",
           "title": "Journey-aware chat page — Save and continue button when session is done",
           "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-4-journey-aware-chat-button.md",
           "testPlan": {
-            "status": "passing",
+            "status": "all-passing",
             "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/test-plans/ougl-4-test-plan.md",
             "totalTests": 7,
             "passing": 7
           },
           "acTotal": 7,
-          "acVerified": 0,
+          "acVerified": 7,
           "epic": "ougl-epic-2-discovery-to-definition",
           "stage": "definition-of-done",
           "dorStatus": "signed-off",
@@ -6659,20 +6664,21 @@
           "dispatchedAt": "2026-05-07T00:00:00.000Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
-          "dodStatus": "complete"
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "ougl.5",
           "title": "Gate-confirm handler — write artefact to disk, build handoff, route to next stage",
           "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-5-gate-confirm-feature-stages.md",
           "testPlan": {
-            "status": "passing",
+            "status": "all-passing",
             "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/test-plans/ougl-5-test-plan.md",
             "totalTests": 12,
             "passing": 12
           },
           "acTotal": 12,
-          "acVerified": 0,
+          "acVerified": 12,
           "epic": "ougl-epic-2-discovery-to-definition",
           "stage": "definition-of-done",
           "dorStatus": "signed-off",
@@ -6689,20 +6695,21 @@
           "dispatchedAt": "2026-05-07T00:00:00.000Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
-          "dodStatus": "complete"
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "ougl.6",
           "title": "Per-story stage routing — story list entry and test-plan/review session management",
           "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-6-perstory-stage-routing.md",
           "testPlan": {
-            "status": "passing",
+            "status": "all-passing",
             "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/test-plans/ougl-6-test-plan.md",
             "totalTests": 9,
             "passing": 9
           },
           "acTotal": 9,
-          "acVerified": 0,
+          "acVerified": 9,
           "epic": "ougl-epic-3-testplan-to-dor",
           "stage": "definition-of-done",
           "dorStatus": "signed-off",
@@ -6719,20 +6726,21 @@
           "dispatchedAt": "2026-05-07T00:00:00.000Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
-          "dodStatus": "complete"
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "ougl.7",
           "title": "Definition-of-ready per-story stage and journey completion screen",
           "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-7-dor-and-journey-complete.md",
           "testPlan": {
-            "status": "passing",
+            "status": "all-passing",
             "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/test-plans/ougl-7-test-plan.md",
             "totalTests": 8,
             "passing": 8
           },
-          "acTotal": 8,
-          "acVerified": 0,
+          "acTotal": 9,
+          "acVerified": 9,
           "epic": "ougl-epic-3-testplan-to-dor",
           "stage": "definition-of-done",
           "dorStatus": "signed-off",
@@ -6749,7 +6757,60 @@
           "dispatchedAt": "2026-05-07T00:00:00.000Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
-          "dodStatus": "complete"
+          "dodStatus": "complete",
+          "releaseReady": true
+        }
+      ],
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Journey completion rate",
+          "target": ">= 80% of initiated sessions produce saved discovery.md within 3 months",
+          "signal": "not-yet-measured",
+          "evidence": null,
+          "lastMeasured": null,
+          "contributingStories": [
+            "ougl.7"
+          ]
+        },
+        {
+          "id": "M2",
+          "name": "Non-engineer autonomous completion",
+          "target": ">= 1 confirmed non-engineer-completed discovery artefact within 4 weeks of MVP",
+          "signal": "not-yet-measured",
+          "evidence": null,
+          "lastMeasured": null,
+          "contributingStories": [
+            "ougl.3",
+            "ougl.4",
+            "ougl.7"
+          ]
+        },
+        {
+          "id": "MM1",
+          "name": "Artefact quality parity (web UI trace pass rate >= VS Code baseline)",
+          "target": "Web UI trace pass rate >= VS Code trace pass rate",
+          "signal": "not-yet-measured",
+          "evidence": null,
+          "lastMeasured": null,
+          "contributingStories": [
+            "ougl.1",
+            "ougl.5",
+            "ougl.6",
+            "ougl.7"
+          ]
+        },
+        {
+          "id": "MM2",
+          "name": "Option B handoff coherence (>= 4/5 operator coherence rating)",
+          "target": ">= 4/5 average operator coherence rating across first 3 complete outer loop runs",
+          "signal": "not-yet-measured",
+          "evidence": null,
+          "lastMeasured": null,
+          "contributingStories": [
+            "ougl.1",
+            "ougl.5"
+          ]
         }
       ]
     }
