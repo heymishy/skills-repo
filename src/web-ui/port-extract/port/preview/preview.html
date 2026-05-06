@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Port preview</title>
+<style>
+  body { margin: 0; font-family: system-ui; background: #18181B; color: #fff; }
+  .head { padding: 12px 20px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .head h1 { font-size: 14px; font-weight: 500; margin: 0 16px 0 0; }
+  .head button { background: #27272A; color: #fff; border: 1px solid #3F3F46; padding: 4px 10px; border-radius: 6px; cursor: pointer; font: inherit; font-size: 12px; }
+  .head button.active { background: #4F46E5; border-color: #4F46E5; }
+  iframe { width: 100%; height: calc(100vh - 48px); border: none; background: #fff; display: block; }
+</style>
+</head>
+<body>
+<div class="head">
+  <h1>Port preview</h1>
+  <button data-screen="dashboard" class="active">Dashboard</button>
+  <button data-screen="features">Features</button>
+  <button data-screen="features-empty">Features (empty)</button>
+  <button data-screen="artefact">Artefact</button>
+  <button data-screen="chat">Skill chat</button>
+  <button data-screen="chat-pending">Chat (pending confirm)</button>
+  <button data-screen="commit">Commit preview</button>
+  <button data-screen="result">Result</button>
+  <button data-screen="actions-empty">Actions (empty)</button>
+  <button data-screen="already">Already committed</button>
+</div>
+<iframe id="frame" src="render.html?screen=dashboard"></iframe>
+<script>
+  document.querySelectorAll('button[data-screen]').forEach(function(b) {
+    b.addEventListener('click', function() {
+      document.querySelectorAll('button.active').forEach(function(x) { x.classList.remove('active'); });
+      b.classList.add('active');
+      document.getElementById('frame').src = 'render.html?screen=' + b.dataset.screen;
+    });
+  });
+</script>
+</body>
+</html>
