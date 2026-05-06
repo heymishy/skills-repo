@@ -6530,8 +6530,25 @@
       "benefitMetricStatus": "active",
       "spikeArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/spikes/arch-option-b-validation-outcome.md",
       "spikeStatus": "proceed",
+      "definitionArtefacts": {
+        "epics": [
+          "artefacts/2026-05-06-web-ui-guided-outer-loop/epics/ougl-epic-1-journey-foundation.md",
+          "artefacts/2026-05-06-web-ui-guided-outer-loop/epics/ougl-epic-2-discovery-to-definition.md",
+          "artefacts/2026-05-06-web-ui-guided-outer-loop/epics/ougl-epic-3-testplan-to-dor.md"
+        ],
+        "slicingStrategy": "User journey",
+        "storyCount": 7
+      },
       "updatedAt": "2026-05-06",
-      "stories": []
+      "stories": [
+        { "id": "ougl.1", "title": "Extend buildSystemPrompt with priorArtefacts handoff block", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-1-buildsystemprompt-handoff.md", "epic": "ougl-epic-1-journey-foundation", "dorStatus": "not-started", "prStatus": "none" },
+        { "id": "ougl.2", "title": "Journey state store module, registerHtmlSession extension, and server.js wiring", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-2-journey-state-store.md", "epic": "ougl-epic-1-journey-foundation", "dorStatus": "not-started", "prStatus": "none" },
+        { "id": "ougl.3", "title": "Journey entry screen and start endpoint", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-3-journey-entry-and-start.md", "epic": "ougl-epic-2-discovery-to-definition", "dorStatus": "not-started", "prStatus": "none" },
+        { "id": "ougl.4", "title": "Journey-aware chat page — Save and continue button when session is done", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-4-journey-aware-chat-button.md", "epic": "ougl-epic-2-discovery-to-definition", "dorStatus": "not-started", "prStatus": "none" },
+        { "id": "ougl.5", "title": "Gate-confirm handler — write artefact to disk, build handoff, route to next stage", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-5-gate-confirm-feature-stages.md", "epic": "ougl-epic-2-discovery-to-definition", "dorStatus": "not-started", "prStatus": "none" },
+        { "id": "ougl.6", "title": "Per-story stage routing — story list entry and test-plan/review session management", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-6-perstory-stage-routing.md", "epic": "ougl-epic-3-testplan-to-dor", "dorStatus": "not-started", "prStatus": "none" },
+        { "id": "ougl.7", "title": "Definition-of-ready per-story stage and journey completion screen", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-7-dor-and-journey-complete.md", "epic": "ougl-epic-3-testplan-to-dor", "dorStatus": "not-started", "prStatus": "none" }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
