@@ -1,7 +1,7 @@
 ﻿{
-  "currentPhase": "test-plan",
+  "currentPhase": "definition-of-ready",
   "activeFeature": "2026-05-06-web-ui-guided-outer-loop",
-  "lastUpdated": "2026-05-06T00:00:00.000Z",
+  "lastUpdated": "2026-05-14T00:00:00.000Z",
   "cycle": {
     "discovery": { "status": "complete", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/discovery.md" },
     "benefit-metric": { "status": "active", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/benefit-metric.md" },
@@ -9,21 +9,17 @@
     "decisions": { "status": "complete", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/decisions.md" },
     "definition": { "status": "complete", "storyCount": 7 },
     "review": { "status": "complete", "outcome": "PASS - 7/7 stories, 0 HIGH findings" },
-    "test-plan": { "status": "complete", "commitSha": "388eddf", "tddScripts": ["tests/check-ougl1-buildsystemprompt-handoff.js","tests/check-ougl2-journey-state-store.js","tests/check-ougl3-journey-entry-and-start.js","tests/check-ougl4-journey-aware-chat-button.js","tests/check-ougl5-gate-confirm-feature-stages.js","tests/check-ougl6-perstory-stage-routing.js","tests/check-ougl7-dor-and-journey-complete.js"] }
+    "test-plan": { "status": "complete", "commitSha": "388eddf", "tddScripts": ["tests/check-ougl1-buildsystemprompt-handoff.js","tests/check-ougl2-journey-state-store.js","tests/check-ougl3-journey-entry-and-start.js","tests/check-ougl4-journey-aware-chat-button.js","tests/check-ougl5-gate-confirm-feature-stages.js","tests/check-ougl6-perstory-stage-routing.js","tests/check-ougl7-dor-and-journey-complete.js"] },
+    "definition-of-ready": { "status": "complete", "storiesSignedOff": 7, "notes": "nfr-profile.md created this session (H-NFR prerequisite). ougl.3 MEDIUM finding 1-M1 resolved in ca6f644. ougl.5 _getRepoPath constraint resolved in DoR contract. All 17 hard blocks pass for all 7 stories." }
   },
   "previousFeature": { "slug": "2026-05-05-web-ui-model-first-chat", "status": "definition-of-done-complete" },
   "checkpoint": {
-    "writtenAt": "2026-05-06",
-    "contextAtWrite": "/test-plan phase complete for 2026-05-06-web-ui-guided-outer-loop. All 7 test plan .md artefacts, 7 verification scripts, 7 check-ougl*.js TDD scripts committed (388eddf). TDD baseline: ougl1 has 5 failing tests; ougl2-7 all fail (journey-store.js and journey.js do not yet exist).",
-    "resumeInstruction": "test-plan phase complete. Next phase: /definition-of-ready for each story (ougl.1 through ougl.7) in order. Produce ougl-N-dor.md and ougl-N-dor-contract.md to artefacts/2026-05-06-web-ui-guided-outer-loop/dor/.",
+    "writtenAt": "2026-05-14",
+    "contextAtWrite": "/definition-of-ready complete for all 7 ougl stories. 15 artefacts created: nfr-profile.md + 7 dor.md + 7 dor-contract.md. pipeline-state.json updated: feature stage=definition-of-ready, all stories dorStatus=signed-off, health=green. Schema validated: 0 errors. Next: /issue-dispatch to create GitHub issues for coding agent, or begin implementation via /branch-setup for ougl.1.",
+    "resumeInstruction": "definition-of-ready phase complete. All 7 ougl stories (ougl.1-ougl.7) are signed-off. Next step: run /issue-dispatch to create GitHub issues for the coding agent (--target vscode or --target github-agent), or run /branch-setup for ougl.1 to begin implementation. Implementation order: ougl.1 → ougl.2 → ougl.3 → ougl.4 → ougl.5 → ougl.6 → ougl.7 (each story depends on previous).",
     "pendingActions": [
-      "Run /definition-of-ready for ougl.1 (Extend buildSystemPrompt with priorArtefacts handoff block)",
-      "Run /definition-of-ready for ougl.2 (Journey state store module, registerHtmlSession extension, and server.js wiring)",
-      "Run /definition-of-ready for ougl.3 (Journey entry screen and start endpoint)",
-      "Run /definition-of-ready for ougl.4 (Journey-aware chat page - Save and continue button when session is done)",
-      "Run /definition-of-ready for ougl.5 (Gate-confirm handler - write artefact to disk, build handoff, route to next stage)",
-      "Run /definition-of-ready for ougl.6 (Per-story stage routing - story list entry and test-plan/review session management)",
-      "Run /definition-of-ready for ougl.7 (Definition-of-ready per-story stage and journey completion screen)"
+      "Dispatch stories to coding agent: run /issue-dispatch for ougl.1 through ougl.7 (ordered — each story depends on prior). DoR artefacts at artefacts/2026-05-06-web-ui-guided-outer-loop/dor/. Medium oversight: confirm with tech lead (self, solo repo) before each dispatch.",
+      "After all stories implemented and PRs merged: run /definition-of-done for the feature."
     ]
   }
 }
