@@ -167,3 +167,52 @@ When delivering an HTML route layer across multiple stories, sequence story disp
 Dispatching a read-only view story before the shared shell is on master causes every consuming story to either re-implement the shell (duplicate) or import a path that doesn't exist yet (broken tests from the start).
 
 This sequencing applies to any layered HTML surface — not just skills flows.
+
+---
+
+## Model turn history format
+
+When passing conversation history to the model, use the `[{role, content}]` array format — never ad-hoc string concatenation or session-specific field names.
+
+```js
+// Correct — portable across any model call site
+const messages = [
+  { role: 'system', content: systemPrompt },
+  ...session.turns,           // [{role:'user'|'assistant', content}]
+  { role: 'user', content: currentInput }
+];
+```
+
+**Rules:**
+- System prompt is always the first message.
+- Full history is passed on every turn — do not truncate unless a documented token budget is exceeded.
+- User and assistant turns are stored as `{role, content}` pairs in `session.turns` — not as domain-specific fields.
+- This format is the contract between the route handler and `skill-turn-executor.js`. Future model adapters must accept this shape.
+
+Source: mfc.1 architecture decision.
+
+---
+
+## Artefact signal protocol
+
+When a model session is expected to produce a committable artefact, the model signals completion using embedded markers in its response:
+
+```
+---SLUG---
+<feature-slug>
+---ARTEFACT-START---
+<full artefact content>
+---ARTEFACT-END---
+```
+
+The server-side parser extracts content between the markers and derives the artefact path as `artefacts/<slug>/<skillName>.md`.
+
+**Rules:**
+- The system prompt MUST instruct the model to use this exact marker syntax. Do not rely on the model discovering it from examples.
+- The `---SLUG---` line MUST precede `---ARTEFACT-START---` in the same response.
+- The parser must be robust to leading/trailing whitespace around marker lines.
+- If the model produces markers inside a fenced code block (e.g. as an example), the first occurrence wins — the system prompt must warn the model not to produce the markers as examples.
+- `session.done` is set to `true` when the signal is found. Subsequent turns for that session are rejected with a 409.
+- This protocol is skill-agnostic — it works for any SKILL.md, not only discovery.
+
+Source: mfc.1 architecture decision.
