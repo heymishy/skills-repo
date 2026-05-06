@@ -2,7 +2,8 @@
 
 **Document type:** Enterprise handoff bundle
 **Prepared:** 2026-04-12
-**Updated:** 2026-05-06 — mfc.1 model-first chat architecture DoD complete (commit d793217 + 2177400 + 2ca8cc2). Scrape-first skill session flow fully replaced. WEB UI PROTOCOL prompt tuning committed (2ca8cc2). See Section 9 (updated) for artefact locations and what to skip. Pending: live smoke test for AC5/AC6, M1/M2 measurement after first live session.
+**Updated:** 2026-05-06 (3) — Notion-calm web UI design port distribution package committed (858ef37). Drop-in view layer for enterprise/consumer forks. See Section 9b (new) for file locations and agent instructions. As-built architecture reference committed (f71d001) — see Section 9c (new).
+**Updated:** 2026-05-06 (2) — mfc.1 model-first chat architecture DoD complete (commit d793217 + 2177400 + 2ca8cc2). Scrape-first skill session flow fully replaced. WEB UI PROTOCOL prompt tuning committed (2ca8cc2). See Section 9 (updated) for artefact locations and what to skip. Pending: live smoke test for AC5/AC6, M1/M2 measurement after first live session.
 **Updated:** 2026-05-04 — wuce.26 artefact chain: per-answer model response in skill HTML flow. New injectable module `src/modules/skill-turn-executor.js` (Copilot chat completions, Bearer token, 300-token cap). Short-track pipeline complete: story + test plan (14 tests) + verification script + DoR signed off (17/17 hard blocks, High oversight). Coding agent ready for dispatch. See Section 9 pending items.
 **Updated:** 2026-05-03 — Pipeline-state write safety fix: read-from-master-before-write rule enforced in `/subagent-execution`, `/branch-complete`, and `/implementation-plan`. Fixes the structural fan-out overwrite problem that caused 8 wuce stories to show stale `prStatus: none` after their PRs had merged. Root cause: concurrent worktrees write from stale T0 copy of pipeline-state.json rather than current master. Fix: mandatory `git fetch origin master` + `git show origin/master:.github/pipeline-state.json` + SHA log before every write. Porting note in `artefacts/2026-05-03-pipeline-state-write-safety/fix-note.md`.
 **Updated:** 2026-04-29 — `/reverse-engineer` SKILL.md evolution v2: Q0 outcome gate, stack-specific reading plans (Spring/Struts 2/ACE-IIB/COBOL/large-test-suites), multi-pass corpus management with corpus-state.md protocol, sub-agent coordination model, ESB dependency detection + reading plan sub-output, corpus convergence criterion (6 conditions, 2:1 VERIFIED:UNCERTAIN), Outputs +7 (ESB reading plan) +8 (corpus-state.md), outcome-aware artefact emphasis section, updated completion statement. CHANGELOG.md and HANDOFF.md updated.
@@ -86,6 +87,59 @@ YYYY-MM-DD-descriptive-slug
 3. After first live discovery session: measure M1 (artefact template conformance) and update `benefit-metric.md`
 4. After 5 live sessions: measure M2 (model-driven question adaptation visible in transcript)
 5. Consider `/discovery` for the next feature (digital 2×2 facilitation tool — noted in trial session 2026-05-06) or `/improve` for mfc.1 retrospective
+
+---
+
+## 9b. Notion-calm web UI design port (2026-05-06)
+
+A self-contained design port package for applying the Notion-calm visual redesign to any consumer/enterprise fork of the skills framework web UI. Committed at `858ef37`.
+
+### What it contains
+
+| Path | Purpose |
+|------|---------|
+| `src/web-ui/port-extract/port/AGENT-INSTRUCTIONS.md` | **Start here.** Step-by-step task for a coding agent: copy files → wire requires → `npm test` → smoke check. Includes exact code snippets for every route handler. |
+| `src/web-ui/port-extract/port/INTEGRATION.md` | Detailed per-route data shapes and wiring examples |
+| `src/web-ui/port-extract/port/PR.md` | PR title/description template for the consumer's repo |
+| `src/web-ui/port-extract/port/preview/preview.html` | Static browser preview — open directly, no server needed |
+| `src/web-ui/port-extract/port/src/web-ui/utils/html-shell.js` | Notion-calm shell (drop-in replacement; `renderShell` API backwards-compatible) |
+| `src/web-ui/port-extract/port/src/web-ui/views/` | 7 pure-function view modules: `components`, `dashboard-view`, `features-view`, `artefact-view`, `chat-view`, `commit-view`, `actions-view` |
+| `src/web-ui/skills framework-web-ui.zip` | Distributable archive of the above |
+
+### How to apply in a consumer repo
+
+Point a coding agent at `AGENT-INSTRUCTIONS.md`. The instructions are self-contained — the agent needs no additional context. Four steps: copy the `port/src/web-ui/` tree over the consumer's `src/web-ui/`, update `require` paths per the wiring guide, run `npm test`, run the smoke check.
+
+No new npm dependencies. No build step. All view modules are pure functions (data → HTML string) with no I/O.
+
+### Design system summary
+
+Sidebar layout with CSS custom properties: `--surface`, `--bg`, `--line`, `--ink`, `--muted`, `--accent-soft`. Fonts: Inter (sans), Source Serif 4 (serif), JetBrains Mono (mono). Class prefix `sw-`. Nav items: `dashboard`, `skills`, `features`, `actions`, `status`.
+
+---
+
+## 9c. Web UI as-built architecture reference (2026-05-06)
+
+A 460-line enterprise port reference document committed at `f71d001`.
+
+**Location:** [`docs/web-ui-skill-session-as-built.md`](web-ui-skill-session-as-built.md)
+
+### What it covers
+
+- Three generations of architecture and why the mfc.1 model-first approach replaced the scrape-first and Q&A-guided approaches
+- Session lifecycle (5 steps: session creation → system prompt assembly → initial model turn → conversation turns → artefact extraction)
+- System prompt assembly table (`copilot-instructions.md` + `SKILL.md` + product context files + WEB UI PROTOCOL)
+- Artefact signal protocol — exact regexes for `---ARTEFACT-START---` / `---ARTEFACT-END---` / `---SLUG---` markers
+- Model provider call format (POST to `https://api.githubcopilot.com/chat/completions`, headers, streaming vs non-streaming)
+- Complete session state schema
+- Full route map (all GET/POST endpoints)
+- Key file map (`server.js`, `routes/skills.js`, `modules/skill-turn-executor.js`, view modules)
+- Injectable adapter pattern example (D37 compliant)
+- Environment variables
+- Legacy code not to port (dsq/wuce scrape-first functions still in `routes/skills.js` — backward compat only)
+- Enterprise deployment checklist
+
+**Use this document** when porting the web UI to a new environment, onboarding an enterprise team, or when the artefact chain (`artefacts/2026-05-05-web-ui-model-first-chat/`) doesn't reflect the current implementation (the mfc.1 artefacts describe the correct architecture; wuce/dsq artefacts describe superseded flows).
 
 ---
 
