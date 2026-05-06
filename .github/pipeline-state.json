@@ -6514,6 +6514,19 @@
       "layoutGapsAtMerge": false,
       "layoutGapsRiskAccepted": false,
       "lastImprove": "2026-05-06"
+    },
+    {
+      "slug": "2026-05-06-web-ui-guided-outer-loop",
+      "name": "Web UI Guided Outer Loop Journey",
+      "track": "standard",
+      "stage": "discovery",
+      "health": "green",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "discoveryArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/discovery.md",
+      "discoveryStatus": "draft",
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
