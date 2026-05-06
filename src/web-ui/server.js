@@ -25,6 +25,7 @@ const { setFetchArtefactDirectory }                                  = require('
 const skillsAdapter                                                  = require('./adapters/skills');          // wuce.23 HTML form wiring
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
+const _path                                                          = require('path');                       // wuce.23 session ID extraction
 const { handleGetJourney, handlePostJourney, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete } = require('./routes/journey'); // ougl.3
 
 const PORT = process.env.PORT || 3000;
