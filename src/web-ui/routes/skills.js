@@ -1039,7 +1039,7 @@ async function handleGetResultHtml(req, res) {
  * @param {string}  [repoRoot]  — override repo root (defaults to _getRepoPath(); pass process.cwd() in tests)
  * @returns {string}
  */
-function buildSystemPrompt(skillName, sessionPath, repoRoot) {
+function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts) {
   var root = repoRoot || _getRepoPath();
   var parts = [];
 
@@ -1082,6 +1082,18 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot) {
         });
       }
     }
+  }
+
+  // 4.5. Handoff context — prior artefacts from earlier stages
+  if (priorArtefacts && priorArtefacts.length > 0) {
+    var handoffParts = ['--- HANDOFF CONTEXT ---'];
+    priorArtefacts.forEach(function(pa) {
+      handoffParts.push('--- PRIOR ARTEFACT: ' + pa.path + ' ---');
+      handoffParts.push(pa.content);
+      handoffParts.push('--- END PRIOR ARTEFACT ---');
+    });
+    handoffParts.push('--- END HANDOFF CONTEXT ---');
+    parts.push(handoffParts.join('\n'));
   }
 
   // 5. Web UI protocol — instructs the model how to operate and when/how to output the artefact
