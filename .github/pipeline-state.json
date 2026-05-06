@@ -6513,7 +6513,7 @@
       "releaseReady": false,
       "layoutGapsAtMerge": false,
       "layoutGapsRiskAccepted": false,
-      "lastImprove": null
+      "lastImprove": "2026-05-06"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -6525,9 +6525,27 @@
         "type": "standards",
         "file": "standards/software-engineering/core.md",
         "summary": "Phase 4 learnings: stateless-module rule, config-injection rule, test-count-metadata rule"
+      },
+      {
+        "date": "2026-05-06",
+        "type": "standards",
+        "file": ".github/standards/web-ui/web-ui-patterns.md",
+        "summary": "mfc.1 /improve: artefact signal protocol, turn history format"
+      },
+      {
+        "date": "2026-05-06",
+        "type": "guardrails",
+        "file": ".github/architecture-guardrails.md",
+        "summary": "mfc.1 /improve: supersede-don't-deliver approved pattern; shadow-changes anti-pattern"
+      },
+      {
+        "date": "2026-05-06",
+        "type": "coding-standard",
+        "file": ".github/copilot-instructions.md",
+        "summary": "mfc.1 /improve: decisions.md mandatory for architectural features"
       }
     ],
-    "lastUpdated": "2026-04-20"
+    "lastUpdated": "2026-05-06"
   },
-  "updatedAt": "2026-05-05T00:00:00.000Z"
+  "updatedAt": "2026-05-06T00:00:00.000Z"
 }
