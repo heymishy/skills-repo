@@ -130,6 +130,12 @@ function renderChat(data) {
       '.sw-draft-section { margin-bottom: 24px; }',
       '.sw-draft-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }',
       '.sw-draft-head h2 { margin: 0; font-size: 15px; font-weight: 600; font-family: var(--sans); }',
+      '@keyframes sw-dot-pulse { 0%,60%,100% { opacity:0.25; transform:translateY(0); } 30% { opacity:1; transform:translateY(-3px); } }',
+      '.sw-thinking { display:inline-flex; gap:4px; align-items:center; padding:2px 0; }',
+      '.sw-dot { width:7px; height:7px; border-radius:50%; background:var(--muted); display:inline-block; animation:sw-dot-pulse 1.2s infinite; }',
+      '.sw-dot:nth-child(1) { animation-delay:0s; }',
+      '.sw-dot:nth-child(2) { animation-delay:0.2s; }',
+      '.sw-dot:nth-child(3) { animation-delay:0.4s; }',
     '</style>',
     '<div class="sw-chat">',
 
