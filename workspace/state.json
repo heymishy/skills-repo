@@ -1,131 +1,29 @@
-{
-  "currentPhase": "review",
+﻿{
+  "currentPhase": "test-plan",
   "activeFeature": "2026-05-06-web-ui-guided-outer-loop",
   "lastUpdated": "2026-05-06T00:00:00.000Z",
   "cycle": {
-    "discovery": {
-      "status": "complete",
-      "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/discovery.md"
-    },
-    "benefit-metric": {
-      "status": "active",
-      "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/benefit-metric.md"
-    },
-    "spike": {
-      "status": "proceed",
-      "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/spikes/arch-option-b-validation-outcome.md"
-    },
-    "decisions": {
-      "status": "complete",
-      "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/decisions.md"
-    },
-    "definition": {
-      "status": "complete",
-      "storyCount": 7,
-      "artefacts": [
-        "artefacts/2026-05-06-web-ui-guided-outer-loop/epics/ougl-epic-1-journey-foundation.md",
-        "artefacts/2026-05-06-web-ui-guided-outer-loop/epics/ougl-epic-2-discovery-to-definition.md",
-        "artefacts/2026-05-06-web-ui-guided-outer-loop/epics/ougl-epic-3-testplan-to-dor.md",
-        "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-1-buildsystemprompt-handoff.md",
-        "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-2-journey-state-store.md",
-        "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-3-journey-entry-and-start.md",
-        "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-4-journey-aware-chat-button.md",
-        "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-5-gate-confirm-feature-stages.md",
-        "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-6-perstory-stage-routing.md",
-        "artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-7-dor-and-journey-complete.md"
-      ]
-    },
-    "review": {
-      "status": "complete",
-      "outcome": "PASS — 7/7 stories pass, 0 HIGH findings, 1 MEDIUM (ougl.3 AC7 fix required before test-plan)",
-      "artefacts": [
-        "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-1-review-1.md",
-        "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-2-review-1.md",
-        "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-3-review-1.md",
-        "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-4-review-1.md",
-        "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-5-review-1.md",
-        "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-6-review-1.md",
-        "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-7-review-1.md"
-      ]
-    }
+    "discovery": { "status": "complete", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/discovery.md" },
+    "benefit-metric": { "status": "active", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/benefit-metric.md" },
+    "spike": { "status": "proceed", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/spikes/arch-option-b-validation-outcome.md" },
+    "decisions": { "status": "complete", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/decisions.md" },
+    "definition": { "status": "complete", "storyCount": 7 },
+    "review": { "status": "complete", "outcome": "PASS - 7/7 stories, 0 HIGH findings" },
+    "test-plan": { "status": "complete", "commitSha": "388eddf", "tddScripts": ["tests/check-ougl1-buildsystemprompt-handoff.js","tests/check-ougl2-journey-state-store.js","tests/check-ougl3-journey-entry-and-start.js","tests/check-ougl4-journey-aware-chat-button.js","tests/check-ougl5-gate-confirm-feature-stages.js","tests/check-ougl6-perstory-stage-routing.js","tests/check-ougl7-dor-and-journey-complete.js"] }
   },
-  "previousFeature": {
-    "slug": "2026-05-05-web-ui-model-first-chat",
-    "status": "definition-of-done-complete",
-    "notes": "mfc.1 DoD complete. 10/10 ACs satisfied. Live smoke test pending (port 3000 stale node process)."
-  },
+  "previousFeature": { "slug": "2026-05-05-web-ui-model-first-chat", "status": "definition-of-done-complete" },
   "checkpoint": {
     "writtenAt": "2026-05-06",
-    "contextAtWrite": "/review complete for 2026-05-06-web-ui-guided-outer-loop. All 7 stories (ougl.1-ougl.7) reviewed Categories A-E. 0 HIGH findings across all 7. 1 MEDIUM: ougl.3 AC7 references non-existent sessionManager.createSession (fix before /test-plan). Systemic LOWs: Complexity/Scope stability fields absent (all 7 stories); benefit-metric.md coverage matrix now populated. Commit b079852 — 9 files, all hooks green. Tests: 78 passing.",
-    "resumeInstruction": "2026-05-06-web-ui-guided-outer-loop /review is complete. Next step is /test-plan for each story in order. Before starting /test-plan for ougl.3: fix 1-M1 MEDIUM finding — update AC7 in artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-3-journey-entry-and-start.md to name registerHtmlSession (or the session-creation call chain) instead of the non-existent sessionManager.createSession. Then run /test-plan for ougl.1 through ougl.7 in sequence. Each test plan goes to artefacts/2026-05-06-web-ui-guided-outer-loop/test-plans/[story-slug]-test-plan.md.",
+    "contextAtWrite": "/test-plan phase complete for 2026-05-06-web-ui-guided-outer-loop. All 7 test plan .md artefacts, 7 verification scripts, 7 check-ougl*.js TDD scripts committed (388eddf). TDD baseline: ougl1 has 5 failing tests; ougl2-7 all fail (journey-store.js and journey.js do not yet exist).",
+    "resumeInstruction": "test-plan phase complete. Next phase: /definition-of-ready for each story (ougl.1 through ougl.7) in order. Produce ougl-N-dor.md and ougl-N-dor-contract.md to artefacts/2026-05-06-web-ui-guided-outer-loop/dor/.",
     "pendingActions": [
-      "Fix ougl.3 MEDIUM finding 1-M1 before /test-plan: update AC7 in artefacts/2026-05-06-web-ui-guided-outer-loop/stories/ougl-3-journey-entry-and-start.md — replace 'sessionManager.createSession throws' with 'registerHtmlSession (or equivalent session-creation call) throws'",
-      "Run /test-plan for ougl.1 (Extend buildSystemPrompt with priorArtefacts handoff block) — output to artefacts/2026-05-06-web-ui-guided-outer-loop/test-plans/ougl-1-test-plan.md",
-      "Run /test-plan for ougl.2 (Journey state store module) — output to artefacts/2026-05-06-web-ui-guided-outer-loop/test-plans/ougl-2-test-plan.md",
-      "Run /test-plan for ougl.3 (Journey entry screen and start endpoint) — after fixing AC7 MEDIUM first",
-      "Run /test-plan for ougl.4 (Journey-aware chat page — Save and continue button)",
-      "Run /test-plan for ougl.5 (Gate-confirm handler)",
-      "Run /test-plan for ougl.6 (Per-story stage routing)",
-      "Run /test-plan for ougl.7 (Definition-of-ready per-story stage and journey completion screen)",
-      "After all 7 test plans: run /definition-of-ready for each story in order",
-      "Before ougl.5 DoR: resolve 1-L4 — confirm whether _getRepoPath is exported from src/web-ui/routes/skills.js; update architecture constraint accordingly"
-    ]
-  }
-}
-
-  "cycle": {
-    "discovery": {
-      "status": "complete",
-      "completedAt": "2026-05-05",
-      "artefact": "artefacts/2026-05-05-web-ui-model-first-chat/discovery.md"
-    },
-    "benefit-metric": {
-      "status": "active",
-      "artefact": "artefacts/2026-05-05-web-ui-model-first-chat/benefit-metric.md"
-    },
-    "definition": {
-      "status": "complete",
-      "artefact": "artefacts/2026-05-05-web-ui-model-first-chat/stories/mfc.1-model-first-chat-session.md"
-    },
-    "review": {
-      "status": "complete"
-    },
-    "test-plan": {
-      "status": "complete",
-      "artefact": "artefacts/2026-05-05-web-ui-model-first-chat/test-plans/mfc.1-test-plan.md"
-    },
-    "definition-of-ready": {
-      "status": "complete",
-      "artefacts": [
-        "artefacts/2026-05-05-web-ui-model-first-chat/dor/mfc.1-dor.md",
-        "artefacts/2026-05-05-web-ui-model-first-chat/dor/mfc.1-dor-contract.md"
-      ]
-    },
-    "implementation": {
-      "status": "complete",
-      "commitSha": "d793217",
-      "branch": "master"
-    },
-    "definition-of-done": {
-      "status": "complete",
-      "artefact": "artefacts/2026-05-05-web-ui-model-first-chat/dod/mfc.1-dod.md",
-      "completedAt": "2026-05-06"
-    }
-  },
-  "previousFeature": {
-    "slug": "2026-05-05-web-ui-dynamic-skill-questions",
-    "status": "definition-of-ready-complete",
-    "notes": "All 5 dsq stories (dsq.1.5, dsq.1, dsq.2, dsq.3, dsq.4) signed off at DoR. Inner loop was superseded by mfc.1 which replaced the scrape-first architecture. dsq stories tests were rewritten as part of mfc.1 commit d793217."
-  },
-  "checkpoint": {
-    "writtenAt": "2026-05-06",
-    "contextAtWrite": "mfc.1 definition-of-done complete. 10/10 ACs satisfied. npm test 0 failures (25 mfc.1 tests + 7 rewritten files). DoD artefact written. pipeline-state.json updated with mfc.1 feature (stage=definition-of-done, dodStatus=complete, M3 on-track). M1 and M2 not-yet-measured. Deviations D1/D2 recorded (minor). Port 3000 blocked by stale node process; live smoke test pending.",
-    "resumeInstruction": "mfc.1 DoD is complete. Next: (1) Kill stale node process on port 3000 (Get-Process -Name node | Stop-Process -Force) then start server (node --env-file=.env src/web-ui/server.js) and run live smoke test per artefacts/2026-05-05-web-ui-model-first-chat/verification-scripts/mfc.1-verification.md AC1-AC6. (2) After first live discovery session, measure M1 and M2 and update benefit-metric.md. (3) Consider /discovery for the next feature or /improve for a retrospective.",
-    "pendingActions": [
-      "Kill stale node process on port 3000: Get-Process -Name node | Stop-Process -Force — then run node --env-file=.env src/web-ui/server.js",
-      "Run live smoke test: open browser at http://localhost:3000/skills, start a discovery session, verify redirect to /chat (AC1), initial message visible (AC3), answers accepted (AC4)",
-      "After first live session completes with artefact: measure M1 (Discovery artefact template conformance rate) and update artefacts/2026-05-05-web-ui-model-first-chat/benefit-metric.md M1 evidence field",
-      "After 5 live sessions: measure M2 (Model-driven question adaptation) and update benefit-metric.md M2 evidence field"
+      "Run /definition-of-ready for ougl.1 (Extend buildSystemPrompt with priorArtefacts handoff block)",
+      "Run /definition-of-ready for ougl.2 (Journey state store module, registerHtmlSession extension, and server.js wiring)",
+      "Run /definition-of-ready for ougl.3 (Journey entry screen and start endpoint)",
+      "Run /definition-of-ready for ougl.4 (Journey-aware chat page - Save and continue button when session is done)",
+      "Run /definition-of-ready for ougl.5 (Gate-confirm handler - write artefact to disk, build handoff, route to next stage)",
+      "Run /definition-of-ready for ougl.6 (Per-story stage routing - story list entry and test-plan/review session management)",
+      "Run /definition-of-ready for ougl.7 (Definition-of-ready per-story stage and journey completion screen)"
     ]
   }
 }
