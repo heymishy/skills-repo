@@ -26,6 +26,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
+const { handleGetJourney, handlePostJourney, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete } = require('./routes/journey'); // ougl.3
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -365,6 +366,38 @@ async function router(req, res) {
     const parts = pathname.split('/');
     req.params = { name: parts[3], id: parts[5] };
     await handleResumeSession(req, res);
+
+  } else if (pathname === '/journey' && req.method === 'GET') {
+    // ougl.3 — journey entry screen
+    handleGetJourney(req, res);
+
+  } else if (pathname === '/api/journey' && req.method === 'POST') {
+    // ougl.3 — start journey + discovery session
+    await handlePostJourney(req, res);
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/gate-confirm$/) && req.method === 'POST') {
+    // ougl.5 — gate-confirm: save artefact and advance to next stage
+    const journeyIdPart = pathname.split('/')[3];
+    req.params = { journeyId: journeyIdPart };
+    await handlePostGateConfirm(req, res);
+
+  } else if (pathname.match(/^\/journey\/[^/]+\/stories$/) && req.method === 'GET') {
+    // ougl.6 — per-story stage routing: story list entry form
+    const journeyIdPart = pathname.split('/')[2];
+    req.params = { journeyId: journeyIdPart };
+    await handleGetStories(req, res);
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/stories$/) && req.method === 'POST') {
+    // ougl.6 — per-story stage routing: set story list + start test-plan
+    const journeyIdPart = pathname.split('/')[3];
+    req.params = { journeyId: journeyIdPart };
+    await handlePostStories(req, res);
+
+  } else if (pathname.match(/^\/journey\/[^/]+\/complete$/) && req.method === 'GET') {
+    // ougl.7 — journey completion screen
+    const journeyIdPart = pathname.split('/')[2];
+    req.params = { journeyId: journeyIdPart };
+    await handleGetJourneyComplete(req, res);
 
   } else if (pathname === '/api/me' && req.method === 'GET') {
     const authenticated = !!(req.session && req.session.accessToken);

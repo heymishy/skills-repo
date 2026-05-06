@@ -1,9 +1,9 @@
-﻿{
+{
   "currentPhase": "definition-of-ready",
   "activeFeature": "2026-05-06-web-ui-guided-outer-loop",
   "lastUpdated": "2026-05-14T00:00:00.000Z",
   "cycle": {
-    "discovery": { "status": "complete", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/discovery.md" },
+    "discovery": { "status": "complete", "completedAt": "2026-05-06", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/discovery.md" },
     "benefit-metric": { "status": "active", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/benefit-metric.md" },
     "spike": { "status": "proceed", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/spikes/arch-option-b-validation-outcome.md" },
     "decisions": { "status": "complete", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/decisions.md" },
