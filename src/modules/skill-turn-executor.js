@@ -219,4 +219,16 @@ function skillTurnExecutor(systemPrompt, history, currentInput, token) {
   return _callCopilot(systemPrompt, history, currentInput, token, maxTokens, timeoutMs);
 }
 
-module.exports = { skillTurnExecutor };
+/**
+ * Returns the model ID that will be used for the next turn, based on env config.
+ * @returns {string}
+ */
+function getActiveModel() {
+  const provider = (process.env.SKILL_EXECUTOR_PROVIDER || 'copilot').toLowerCase();
+  if (provider === 'anthropic') {
+    return process.env.WUCE_TURN_MODEL || DEFAULT_ANTHROPIC_MODEL;
+  }
+  return process.env.WUCE_TURN_MODEL || DEFAULT_MODEL;
+}
+
+module.exports = { skillTurnExecutor, getActiveModel };

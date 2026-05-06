@@ -419,6 +419,7 @@ const { renderShell, escHtml }   = require('../utils/html-shell');
 const { renderCommitPreview, renderCommitResult, renderAlreadyCommitted } = require('../views/commit-view');
 const { renderChat: _renderChatView } = require('../views/chat-view');
 const skillsAdapter              = require('../adapters/skills');
+const { getActiveModel }         = require('../../modules/skill-turn-executor');
 
 /**
  * Minimal markdown-to-HTML converter for model response rendering (wuce.26).
@@ -1339,7 +1340,8 @@ function _renderChatPage(skillName, sessionId, session) {
     priorQA:           priorQA,
     draftSections:     draftSections,
     pendingConfirmation: false,
-    userInitial:       'M'
+    userInitial:       'M',
+    modelLabel:        getActiveModel()
   }) + script;
 
   return renderShell({ title: 'Skill session — ' + escHtml(skillName), bodyContent: bodyContent, user: { login: '' }, active: 'skills' });

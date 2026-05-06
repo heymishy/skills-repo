@@ -139,6 +139,7 @@ function renderChat(data) {
           '<div>',
             '<div class="sw-chat-title">' + escHtml(data.skillLabel) + '</div>',
           '</div>',
+          (data.modelLabel ? '<span style="font-size:11px;color:var(--muted);background:var(--line-2);padding:2px 8px;border-radius:10px;font-family:var(--mono)">' + escHtml(data.modelLabel) + '</span>' : ''),
         '</header>',
         '<div class="sw-chat-thread" id="chat-messages">' + messages.join('') + '</div>',
         '<footer class="sw-chat-foot">',
