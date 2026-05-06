@@ -1149,8 +1149,20 @@ function registerHtmlSession(sessionId, sessionPath, skillName) {
     turns:           [],
     artefactContent: null,
     artefactPath:    null,
-    done:            false
+    done:            false,
+    journeyId:       null
   });
+}
+
+/**
+ * Link an existing HTML session to a journey.
+ * @param {string} sessionId
+ * @param {string} journeyId
+ */
+function linkSessionToJourney(sessionId, journeyId) {
+  var session = _sessionStore.get(sessionId);
+  if (!session) return;
+  session.journeyId = journeyId;
 }
 
 /**
@@ -1829,6 +1841,8 @@ module.exports = {
   htmlSubmitTurn, buildSystemPrompt,
   // wuce.26 — test helpers + skill-turn executor adapter setter
   _getHtmlSession, _setHtmlSession, setSkillTurnExecutorAdapter,
+  // ougl.2 — journey session link
+  linkSessionToJourney,
   // mfc.3 — streaming turn handler + adapter setter
   handlePostTurnStreamHtml, setSkillTurnExecutorStreamAdapter,
   // dsq.1/dsq.2 — backward-compat no-op setters (AC9 — mfc.1)
