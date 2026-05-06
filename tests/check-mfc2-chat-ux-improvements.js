@@ -212,6 +212,33 @@ queue.push(function runT2_7() {
   });
 });
 
+// ── T2.8 — model label rendered in chat header ────────────────────────────────
+
+queue.push(function runT2_8() {
+  console.log('\n── T2.8 — model label shown in chat header when modelLabel is provided');
+  return test('T2.8: renderChat renders modelLabel as a badge in the header', function() {
+    const { renderChat } = freshRequire(CHAT_VIEW_PATH);
+    const html = renderChat({
+      skillName:   'discovery',
+      skillLabel:  'Discovery',
+      featureSlug: 'test-feature',
+      sessionId:   'sess-1',
+      questionIndex:    1,
+      totalQuestions:   1,
+      currentQuestion:  'What is the problem?',
+      priorQA:     [],
+      draftSections: [],
+      pendingConfirmation: false,
+      userInitial: 'M',
+      modelLabel:  'claude-sonnet-4.6'
+    });
+    assert.ok(
+      html.includes('claude-sonnet-4.6'),
+      'rendered HTML must contain the modelLabel text "claude-sonnet-4.6" in the header'
+    );
+  });
+});
+
 // ── Run all ───────────────────────────────────────────────────────────────────
 
 (async function main() {
