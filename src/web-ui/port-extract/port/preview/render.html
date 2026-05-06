@@ -1,0 +1,236 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Render</title>
+</head>
+<body>
+<script>
+// Polyfill enough of node's `module.exports` so we can require() the view files
+// directly in the browser. Each .js file is fetched, wrapped, and evaluated.
+const moduleCache = {};
+async function req(path) {
+  if (moduleCache[path]) { return moduleCache[path].exports; }
+  const url = '../src/web-ui/' + path.replace(/^\.\.\//, '').replace(/^\.\//, '') + '.js';
+  // Resolve relative to this file's location (we cheat: build from the path arg directly)
+  const realUrl = '../src/web-ui/' + resolveBare(path) + '.js';
+  const src = await (await fetch(realUrl)).text();
+  const mod = { exports: {} };
+  moduleCache[path] = mod;
+  const fn = new Function('module', 'exports', 'require',
+    src.replace(/'use strict';\s*/, '')
+       .replace(/require\(['"]([^'"]+)['"]\)/g, function(_, p) {
+         return 'require(\'' + resolveBareFrom(path, p) + '\')';
+       })
+  );
+  fn(mod, mod.exports, function(p) {
+    // Synchronous-shaped wrapper. We pre-fetch dependencies first.
+    return moduleCache[p].exports;
+  });
+  return mod.exports;
+}
+function resolveBare(p) {
+  // 'utils/html-shell' or 'views/dashboard-view' or '../utils/html-shell'
+  if (p.startsWith('../utils/')) return 'utils/' + p.slice('../utils/'.length);
+  return p;
+}
+function resolveBareFrom(parent, p) {
+  // parent like 'views/dashboard-view'; relative '../utils/html-shell'
+  if (p.startsWith('../utils/')) return 'utils/' + p.slice('../utils/'.length);
+  if (p.startsWith('./'))         return parent.split('/')[0] + '/' + p.slice(2);
+  return p;
+}
+
+// Pre-fetch dependency graph
+async function loadAll(modules) {
+  for (const m of modules) {
+    const url = '../src/web-ui/' + m + '.js';
+    const src = await (await fetch(url)).text();
+    moduleCache[m] = { exports: {}, src: src };
+  }
+  for (const m of modules) {
+    const mod = moduleCache[m];
+    const fn = new Function('module', 'exports', 'require',
+      mod.src.replace(/'use strict';\s*/, '')
+        .replace(/require\(['"]([^'"]+)['"]\)/g, function(_, p) {
+          return 'require(\'' + resolveBareFrom(m, p) + '\')';
+        })
+    );
+    fn(mod, mod.exports, function(p) { return moduleCache[p].exports; });
+  }
+}
+
+(async () => {
+  await loadAll([
+    'utils/html-shell',
+    'views/components',
+    'views/dashboard-view',
+    'views/features-view',
+    'views/artefact-view',
+    'views/chat-view',
+    'views/commit-view',
+    'views/actions-view'
+  ]);
+
+  const { renderShell } = moduleCache['utils/html-shell'].exports;
+  const dash    = moduleCache['views/dashboard-view'].exports;
+  const feat    = moduleCache['views/features-view'].exports;
+  const art     = moduleCache['views/artefact-view'].exports;
+  const chat    = moduleCache['views/chat-view'].exports;
+  const commit  = moduleCache['views/commit-view'].exports;
+  const acts    = moduleCache['views/actions-view'].exports;
+
+  const screen = new URLSearchParams(location.search).get('screen') || 'dashboard';
+  const user = { login: 'mishys' };
+
+  let title, body, active = '', crumbs = [], headerActions = '';
+
+  if (screen === 'dashboard') {
+    title = 'Home'; active = 'dashboard';
+    body = dash.renderDashboard({
+      greetingName: 'Mishy', dateLabel: 'Tuesday, 6 May',
+      pendingActionsCount: 3, inProgressCount: 2,
+      skills: [
+        { name: 'discovery', label: 'Discovery', desc: 'Map outcomes, users, constraints, and unknowns for a new feature.', est: '20 min', stage: 'Discovery' },
+        { name: 'definition', label: 'Definition', desc: 'Turn a discovery into a clear scope, success metrics, and risks.', est: '15 min', stage: 'Definition' },
+        { name: 'story-shaping', label: 'Story shaping', desc: 'Slice scope into vertical, DoR-ready user stories.', est: '25 min', stage: 'Definition' },
+        { name: 'risk-review', label: 'Risk review', desc: 'Surface delivery risks and mitigations before commit.', est: '10 min', stage: 'Review' },
+        { name: 'success-metrics', label: 'Success metrics', desc: 'Choose 1–3 outcome metrics with baselines and targets.', est: '12 min', stage: 'Definition' },
+        { name: 'rollout-plan', label: 'Rollout plan', desc: 'Define gates, audiences, and rollback for staged release.', est: '15 min', stage: 'Delivery' }
+      ],
+      actions: [
+        { what: 'Sign off discovery for Search rewrite', feature: 'platform-search', age: '2h', you: true },
+        { what: 'Resume Definition session', feature: 'billing-export', age: '1d', you: false },
+        { what: 'Review story-shaping for Onboarding v2', feature: 'onboarding-v2', age: '3d', you: true }
+      ],
+      recent: [
+        { skill: 'Story shaping', feature: 'platform-search', when: '14 min ago', stage: 'Drafting', tone: 'amber' },
+        { skill: 'Definition', feature: 'billing-export', when: '2h ago', stage: 'Committed', tone: 'green' },
+        { skill: 'Discovery', feature: 'mobile-deep-links', when: 'yesterday', stage: 'Committed', tone: 'green' }
+      ]
+    });
+
+  } else if (screen === 'features') {
+    title = 'Features'; active = 'features'; crumbs = ['Features'];
+    body = feat.renderFeaturesList({
+      repoCount: 3,
+      features: [
+        { slug: 'platform-search', title: 'Search rewrite', stage: 'review', updated: '2h ago', owner: 'mishys', artefactCount: 4 },
+        { slug: 'billing-export', title: 'CSV export for billing', stage: 'definition', updated: '1d ago', owner: 'priyas', artefactCount: 2 },
+        { slug: 'onboarding-v2', title: 'Onboarding v2', stage: 'delivery', updated: '3d ago', owner: 'rohan', artefactCount: 6 },
+        { slug: 'mobile-deep-links', title: 'Mobile deep-links', stage: 'discovery', updated: '5d ago', owner: 'lina', artefactCount: 1 },
+        { slug: 'audit-log', title: 'Audit log', stage: 'committed', updated: '2w ago', owner: 'sam', artefactCount: 5 }
+      ]
+    });
+
+  } else if (screen === 'features-empty') {
+    title = 'Features'; active = 'features'; crumbs = ['Features'];
+    body = feat.renderFeaturesList({ features: [], repoCount: 0 });
+
+  } else if (screen === 'artefact') {
+    title = 'Discovery — Search rewrite'; active = 'features';
+    crumbs = ['Features', 'Search rewrite', 'Discovery'];
+    headerActions = '<button class="sw-btn">Edit</button>' +
+                    '<button class="sw-btn sw-btn--primary">Sign off</button>';
+    const proseHtml =
+      '<h2>Why this work</h2>' +
+      '<p>Customer-reported search latency has crept above the 800 ms p95 budget on three of the last four weekly reports. Pages of results, when they do arrive, suffer from a relevance ranking that pre-dates the move to the new content model.</p>' +
+      '<p>This work is bounded to the <strong>discovery</strong> needed to make a confident definition decision: not a full architectural rewrite, just enough to know whether the right move is incremental tuning or a fresh stack.</p>' +
+      '<h2>Outcomes we believe matter</h2>' +
+      '<ul>' +
+        '<li>Search-driven sessions return a clicked result within <strong>1.2 s p95</strong>, end-to-end.</li>' +
+        '<li>Top-1 click-through rate on the result page rises from <strong>32 % to 45 %+</strong>.</li>' +
+        '<li>Operations effort to keep search healthy drops to <strong>under 1 day per month</strong>.</li>' +
+      '</ul>' +
+      '<h2>What we don\'t yet know</h2>' +
+      '<p>The biggest unknown is whether the existing index can be tuned, or whether the move to the new content model has shifted the shape of queries enough that re-indexing alone won\'t close the gap. Definition will need to choose between a 4-week tuning effort and a 10-week rewrite.</p>';
+    body = art.renderArtefact({
+      proseHtml: proseHtml,
+      meta: {
+        title: 'Discovery — Search rewrite',
+        feature: 'platform-search', stage: 'In review',
+        author: 'mishys', updated: '2 hours ago',
+        featureSlug: 'platform-search', fileSlug: 'discovery'
+      },
+      commitSha: 'a3f1b2e', commitUrl: 'https://github.com/heymishy/skills-repo/commit/a3f1b2e',
+      signoffs: [
+        { login: 'rohan',   role: 'Eng lead',   signed: true },
+        { login: 'priyas',  role: 'Product',    signed: false },
+        { login: 'sam',     role: 'Design',     signed: false }
+      ],
+      comments: [
+        { by: 'rohan',  text: '"Top-1 CTR" needs a clearer baseline window — last 30 days?', when: '1h' },
+        { by: 'priyas', text: 'Should we mention the mobile cohort separately? p95 is much worse there.', when: '20m' }
+      ]
+    });
+
+  } else if (screen === 'chat' || screen === 'chat-pending') {
+    title = 'Story shaping · Question 4'; active = 'skills';
+    crumbs = ['Run a skill', 'Story shaping'];
+    body = chat.renderChat({
+      skillName: 'story-shaping', skillLabel: 'Story shaping',
+      featureSlug: 'platform-search', sessionId: 'sess_abc123',
+      questionIndex: 4, totalQuestions: 7,
+      currentQuestion: 'For the **first vertical slice**, what\'s the smallest end-to-end behaviour a real user could try and that you could get useful signal from?',
+      priorQA: [
+        { question: 'Which user segment most feels the pain today?', answer: 'Power users on mobile — they search constantly, often with abbreviated queries, and they\'re the loudest in support.', modelResponse: 'Naming "mobile power users" sharpens the brief — it implies the slice should be query-side, not result-page-side. Worth flagging that mobile p95 is 2× desktop.' },
+        { question: 'What outcome do we believe matters most?', answer: 'Clicked result within 1.2 s p95 end-to-end.', modelResponse: 'A single, latency-shaped outcome is good for slicing. Consider whether you also need a relevance signal — fast-but-wrong results would still hurt CTR.' },
+        { question: 'What is the riskiest assumption we want to test first?', answer: 'That re-indexing into the new content model alone closes >80% of the latency gap, without a query-engine change.', modelResponse: '' }
+      ],
+      draftSections: [
+        { title: 'Outcome', body: 'Mobile power users see a clicked search result within 1.2s p95, with click-through rate on the top result rising from 32% to 45%+.', state: 'drafted' },
+        { title: 'Users & pain', body: 'Power users on mobile search constantly, often with abbreviated queries, and currently see 2x the latency of desktop. They are the loudest cohort in support.', state: 'drafted' },
+        screen === 'chat-pending'
+          ? { title: 'Riskiest assumption', body: 'That re-indexing into the new content model alone closes >80% of the latency gap, without a query-engine change.', state: 'pending' }
+          : { title: 'Riskiest assumption', body: '', state: 'empty' },
+        { title: 'First vertical slice', body: '', state: 'empty' },
+        { title: 'Out of scope', body: '', state: 'empty' }
+      ],
+      pendingConfirmation: screen === 'chat-pending',
+      userInitial: 'M'
+    });
+
+  } else if (screen === 'commit') {
+    title = 'Review & commit'; active = 'skills';
+    crumbs = ['Run a skill', 'Story shaping', 'Review & commit'];
+    body = commit.renderCommitPreview({
+      artefactPath: 'artefacts/platform-search/story-shaping.md',
+      artefactContent: '# Story shaping — Search rewrite\n\n## Outcome\n\nMobile power users see a clicked search result within 1.2s p95, with click-through rate on the top result rising from 32% to 45%+.\n\n## Users & pain\n\nPower users on mobile search constantly, often with abbreviated queries, and currently see 2x the latency of desktop. They are the loudest cohort in support.\n\n## Riskiest assumption\n\nThat re-indexing into the new content model alone closes >80% of the latency gap, without a query-engine change.\n\n## First vertical slice\n\nA single mobile query path, instrumented end-to-end, against the new index — feature-flagged to 5% of mobile traffic for one week.\n\n## Out of scope\n\nDesktop search, ranking-model changes, query-engine swap.\n',
+      commitFormAction: '/api/skills/story-shaping/sessions/sess_abc123/commit',
+      branchName: 'skill/story-shaping/sess_abc123',
+      defaultMessage: 'artefact: story-shaping for platform-search [sess_abc123]',
+      reviewers: ['rohan', 'priyas', 'sam']
+    });
+
+  } else if (screen === 'result') {
+    title = 'Committed'; active = 'skills';
+    body = commit.renderCommitResult({
+      artefactPath: 'artefacts/platform-search/story-shaping.md',
+      featureSlug: 'platform-search', artefactType: 'story-shaping',
+      prUrl: 'https://github.com/heymishy/skills-repo/pull/142',
+      nextSkillName: 'risk-review', nextSkillLabel: 'Risk review'
+    });
+
+  } else if (screen === 'actions-empty') {
+    title = 'My actions'; active = 'actions'; crumbs = ['My actions'];
+    body = acts.renderActions({ items: [] });
+
+  } else if (screen === 'already') {
+    title = 'Already committed'; active = 'skills';
+    body = commit.renderAlreadyCommitted({
+      artefactUrl: '/artefact/platform-search/story-shaping'
+    });
+  }
+
+  const html = renderShell({ title, bodyContent: body, user, active, crumbs, headerActions });
+
+  // Replace document with the rendered HTML
+  document.open();
+  document.write(html);
+  document.close();
+})().catch(function(err) {
+  document.body.innerHTML = '<pre style="color:#b00;padding:20px">' + (err.stack || err.message) + '</pre>';
+});
+</script>
+</body>
+</html>
