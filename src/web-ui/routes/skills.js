@@ -505,21 +505,27 @@ function setSkillsAuditLogger(fn) { _htmlAuditLogger = fn; }
  * @returns {string}
  */
 function _renderSkillsList(skills, user) {
-  const rows = skills.map(function(skill) {
+  const items = skills.map(function(skill) {
     const safeName = escHtml(skill.name || '');
     const safeDesc = escHtml(skill.description || '');
     return [
-      '<article>',
-      '<h2>' + safeName + '</h2>',
-      '<p>' + safeDesc + '</p>',
-      '<form method="POST" action="/api/skills/' + safeName + '/sessions">',
-      '<button type="submit">Start</button>',
-      '</form>',
-      '</article>'
+      '<div class="sw-card" style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">',
+      '  <div>',
+      '    <div style="font-weight:600;font-size:15px;margin-bottom:4px">' + safeName + '</div>',
+      '    <div style="font-size:13px;color:var(--muted)">' + safeDesc + '</div>',
+      '  </div>',
+      '  <form method="POST" action="/api/skills/' + safeName + '/sessions" style="flex-shrink:0">',
+      '    <button type="submit" class="sw-btn sw-btn--primary">Start</button>',
+      '  </form>',
+      '</div>'
     ].join('\n');
   }).join('\n');
 
-  return renderShell({ title: 'Run a Skill', bodyContent: rows, user: user });
+  const body = skills.length === 0
+    ? '<div class="sw-empty"><div class="sw-empty-icon">❖</div><h1>No skills available</h1><p>No SKILL.md files were found in the repository.</p></div>'
+    : '<p class="sw-section-title">Available skills</p><div style="display:flex;flex-direction:column;gap:12px">' + items + '</div>';
+
+  return renderShell({ title: 'Run a Skill', bodyContent: body, user: user, active: 'skills' });
 }
 
 /**
@@ -553,7 +559,8 @@ async function handleGetSkillsHtml(req, res) {
     const html = renderShell({
       title:       'Error',
       bodyContent: '<p>An error occurred loading skills.</p>',
-      user:        { login: (req.session && req.session.login) || '' }
+      user:        { login: (req.session && req.session.login) || '' },
+      active:      'skills'
     });
     res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -585,7 +592,8 @@ async function handlePostSkillSessionHtml(req, res) {
     const html = renderShell({
       title:       'Error',
       bodyContent: '<p>Could not start skill session: ' + escHtml(err.message) + '</p>',
-      user:        { login: (req.session && req.session.login) || '' }
+      user:        { login: (req.session && req.session.login) || '' },
+      active:      'skills'
     });
     res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -685,7 +693,8 @@ async function handleGetQuestionHtml(req, res) {
     const html = renderShell({
       title:       status === 404 ? 'Session not found' : 'Error',
       bodyContent: '<p>' + escHtml(err.message || 'An error occurred') + '</p>',
-      user
+      user,
+      active: 'skills'
     });
     res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -744,7 +753,7 @@ async function handleGetQuestionHtml(req, res) {
     priorHtml
   ].join('\n');
 
-  const html = renderShell({ title: 'Question ' + qi + ' of ' + tq, bodyContent: bodyContent, user: user });
+  const html = renderShell({ title: 'Question ' + qi + ' of ' + tq, bodyContent: bodyContent, user: user, active: 'skills' });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -780,7 +789,8 @@ async function handlePostAnswerHtml(req, res) {
     const html = renderShell({
       title:       'Error',
       bodyContent: '<p>' + escHtml(err.message || 'An error occurred') + '</p>',
-      user
+      user,
+      active: 'skills'
     });
     res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);

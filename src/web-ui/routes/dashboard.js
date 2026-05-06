@@ -140,7 +140,7 @@ async function handleGetActionsHtml(req, res) {
   } catch (err) {
     _logger.warn('action_queue_error', { userId, reason: err.message });
     res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(renderShell({ title: 'Actions', bodyContent: '<p>Error loading actions.</p>', user: { login } }));
+    res.end(renderShell({ title: 'Actions', bodyContent: '<p>Error loading actions.</p>', user: { login }, active: 'actions' }));
     return;
   }
 

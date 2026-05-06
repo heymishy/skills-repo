@@ -80,7 +80,7 @@ async function handleGetStatus(req, res) {
 
   if (wantsHtml) {
     const boardHtml = statusBoardModule.renderStatusBoard(features);
-    const html = renderShell({ title: 'Pipeline Status', bodyContent: boardHtml, user: { login } });
+    const html = renderShell({ title: 'Pipeline Status', bodyContent: boardHtml, user: { login }, active: 'status' });
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
     return;

@@ -377,8 +377,9 @@ async function router(req, res) {
 
   } else {
     // Sign-in page (unauthenticated root)
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end('<html><body><h1>Sign in with GitHub</h1><a href="/auth/github">Sign in with GitHub</a></body></html>');
+    const { renderLoginPage } = require('./utils/html-shell');
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderLoginPage());
   }
 }
 
