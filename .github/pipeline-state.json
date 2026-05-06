@@ -6519,7 +6519,7 @@
       "slug": "2026-05-06-web-ui-guided-outer-loop",
       "name": "Web UI Guided Outer Loop Journey",
       "track": "standard",
-      "stage": "definition-of-ready",
+      "stage": "subagent-execution",
       "health": "green",
       "regulated": false,
       "complianceProfile": "standard",
@@ -6539,7 +6539,7 @@
         "slicingStrategy": "User journey",
         "storyCount": 7
       },
-      "updatedAt": "2026-05-14",
+      "updatedAt": "2026-05-07",
       "stories": [
         {
           "id": "ougl.1",
@@ -6556,18 +6556,19 @@
           "epic": "ougl-epic-1-journey-foundation",
           "stage": "definition-of-ready",
           "dorStatus": "signed-off",
-          "prStatus": "none",
+          "prStatus": "draft",
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "reviewArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-1-review-1.md",
-          "updatedAt": "2026-05-14",
+          "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-1-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/313",
           "dispatchedAt": "2026-05-07T00:00:00.000Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/320"
         },
         {
           "id": "ougl.2",
@@ -6584,18 +6585,19 @@
           "epic": "ougl-epic-1-journey-foundation",
           "stage": "definition-of-ready",
           "dorStatus": "signed-off",
-          "prStatus": "none",
+          "prStatus": "draft",
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "reviewArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-2-review-1.md",
-          "updatedAt": "2026-05-14",
+          "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-2-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/314",
           "dispatchedAt": "2026-05-07T00:00:00.000Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/320"
         },
         {
           "id": "ougl.3",
@@ -6612,18 +6614,19 @@
           "epic": "ougl-epic-2-discovery-to-definition",
           "stage": "definition-of-ready",
           "dorStatus": "signed-off",
-          "prStatus": "none",
+          "prStatus": "draft",
           "reviewStatus": "has-findings",
           "highFindings": 0,
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "reviewArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-3-review-1.md",
-          "updatedAt": "2026-05-14",
+          "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-3-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/315",
           "dispatchedAt": "2026-05-07T00:00:00.000Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/320"
         },
         {
           "id": "ougl.4",
@@ -6640,18 +6643,19 @@
           "epic": "ougl-epic-2-discovery-to-definition",
           "stage": "definition-of-ready",
           "dorStatus": "signed-off",
-          "prStatus": "none",
+          "prStatus": "draft",
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "reviewArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-4-review-1.md",
-          "updatedAt": "2026-05-14",
+          "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-4-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/316",
           "dispatchedAt": "2026-05-07T00:00:00.000Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/320"
         },
         {
           "id": "ougl.5",
@@ -6668,18 +6672,19 @@
           "epic": "ougl-epic-2-discovery-to-definition",
           "stage": "definition-of-ready",
           "dorStatus": "signed-off",
-          "prStatus": "none",
+          "prStatus": "draft",
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "reviewArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-5-review-1.md",
-          "updatedAt": "2026-05-14",
+          "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-5-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/317",
           "dispatchedAt": "2026-05-07T00:00:00.000Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/320"
         },
         {
           "id": "ougl.6",
@@ -6696,18 +6701,19 @@
           "epic": "ougl-epic-3-testplan-to-dor",
           "stage": "definition-of-ready",
           "dorStatus": "signed-off",
-          "prStatus": "none",
+          "prStatus": "draft",
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "reviewArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-6-review-1.md",
-          "updatedAt": "2026-05-14",
+          "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-6-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/318",
           "dispatchedAt": "2026-05-07T00:00:00.000Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/320"
         },
         {
           "id": "ougl.7",
@@ -6724,18 +6730,19 @@
           "epic": "ougl-epic-3-testplan-to-dor",
           "stage": "definition-of-ready",
           "dorStatus": "signed-off",
-          "prStatus": "none",
+          "prStatus": "draft",
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "reviewArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/review/ougl-7-review-1.md",
-          "updatedAt": "2026-05-14",
+          "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-7-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/319",
           "dispatchedAt": "2026-05-07T00:00:00.000Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/320"
         }
       ]
     }
