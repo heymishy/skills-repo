@@ -155,20 +155,59 @@ async function handlePostGateConfirm(req, res) {
   // Determine next stage
   var nextStage = _journeyStore.getNextStage(session.skillName);
   console.info(JSON.stringify({ event: 'artefact_saved_to_disk', journeyId: journeyId, stage: session.skillName, featureSlug: journey.featureSlug }));
-  if (nextStage === null) {
-    // Final stage (definition-of-ready) — complete journey (ougl.7)
+
+  // Per-story stage sequence: test-plan → review → definition-of-ready
+  var PER_STORY_SEQ = ['test-plan', 'review', 'definition-of-ready'];
+  var perStoryIdx = PER_STORY_SEQ.indexOf(session.skillName);
+  var newSid, newSessionPath, perStoryNextStage;
+
+  if (session.skillName === 'definition-of-ready') {
+    // Story-mode: check for more stories; feature-mode: complete journey
+    var nextStory = _journeyStore.advanceToNextStory(journeyId);
+    if (nextStory) {
+      // More stories: create test-plan session for next story
+      newSid = crypto.randomUUID();
+      newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-test-plan.md');
+      getRegisterHtmlSession()(newSid, newSessionPath, 'test-plan', priorArtefacts);
+      getLinkSessionToJourney()(newSid, journeyId);
+      if (_journeyStore.setActiveSession) {
+        _journeyStore.setActiveSession(journeyId, newSid, 'test-plan');
+      }
+      res.writeHead(303, { Location: '/skills/test-plan/sessions/' + newSid + '/chat' });
+      res.end();
+    } else {
+      // No more stories (or feature-mode): complete journey
+      _journeyStore.markJourneyComplete(journeyId);
+      console.info(JSON.stringify({ event: 'journey_completed', journeyId: journeyId, featureSlug: journey.featureSlug, stageCount: updatedJourney.completedStages.length }));
+      res.writeHead(303, { Location: '/journey/' + journeyId + '/complete' });
+      res.end();
+    }
+  } else if (perStoryIdx !== -1 && perStoryIdx < PER_STORY_SEQ.length - 1) {
+    // Per-story intermediate stage (test-plan or review): advance within per-story sequence
+    perStoryNextStage = PER_STORY_SEQ[perStoryIdx + 1];
+    newSid = crypto.randomUUID();
+    newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-' + perStoryNextStage + '.md');
+    getRegisterHtmlSession()(newSid, newSessionPath, perStoryNextStage, priorArtefacts);
+    getLinkSessionToJourney()(newSid, journeyId);
+    if (_journeyStore.setActiveSession) {
+      _journeyStore.setActiveSession(journeyId, newSid, perStoryNextStage);
+    }
+    res.writeHead(303, { Location: '/skills/' + perStoryNextStage + '/sessions/' + newSid + '/chat' });
+    res.end();
+  } else if (nextStage === null) {
+    // Non-per-story null: complete journey
     _journeyStore.markJourneyComplete(journeyId);
     console.info(JSON.stringify({ event: 'journey_completed', journeyId: journeyId, featureSlug: journey.featureSlug, stageCount: updatedJourney.completedStages.length }));
     res.writeHead(303, { Location: '/journey/' + journeyId + '/complete' });
     res.end();
   } else if (nextStage === 'test-plan') {
-    // Switch to per-story routing (ougl.6)
+    // Feature-level: switch to per-story routing (ougl.6)
     res.writeHead(303, { Location: '/journey/' + journeyId + '/stories' });
     res.end();
   } else {
-    // Create new session for next stage
-    var newSid = crypto.randomUUID();
-    var newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-' + nextStage + '.md');
+    // Feature-level: create session for next stage
+    newSid = crypto.randomUUID();
+    newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-' + nextStage + '.md');
     getRegisterHtmlSession()(newSid, newSessionPath, nextStage, priorArtefacts);
     getLinkSessionToJourney()(newSid, journeyId);
     if (_journeyStore.setActiveSession) {
@@ -263,12 +302,45 @@ async function handlePostStories(req, res) {
   res.end();
 }
 
+/**
+ * GET /journey/:journeyId/complete — render the journey completion screen.
+ */
+async function handleGetJourneyComplete(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Journey not found.</p>' }));
+    return;
+  }
+  var stageItems = (journey.completedStages || []).map(function(stage) {
+    return '<li><strong>' + escHtml(stage.skillName) + '</strong>: <code>' + escHtml(stage.artefactPath) + '</code></li>';
+  }).join('');
+  var body = [
+    '<div class="sw-page-content">',
+    '<h1>Journey complete!</h1>',
+    '<p>All stages completed for <strong>' + escHtml(journey.featureSlug || journeyId) + '</strong>.</p>',
+    '<h2>Completed stages</h2>',
+    '<ul>' + stageItems + '</ul>',
+    '</div>'
+  ].join('');
+  var html = renderShell({ title: 'Journey Complete', bodyContent: body, user: { login: req.session.login || '' } });
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
 module.exports = {
   handleGetJourney,
   handlePostJourney,
   handlePostGateConfirm,
   handleGetStories,
   handlePostStories,
+  handleGetJourneyComplete,
   setRegisterHtmlSession,
   setLinkSessionToJourney,
   setJourneyStoreModule,
