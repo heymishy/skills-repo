@@ -352,8 +352,9 @@ function handleGetStageControls(req, res) {
     return;
   }
   var clarifyAvailable = journey.activeSkill === 'discovery';
+  var estimateAvailable = (journey.activeSkill === 'discovery' || journey.activeSkill === 'definition');
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ clarifyAvailable: clarifyAvailable, logDecisionAvailable: true, traceAvailable: true }));
+  res.end(JSON.stringify({ clarifyAvailable: clarifyAvailable, logDecisionAvailable: true, traceAvailable: true, estimateAvailable: estimateAvailable }));
 }
 
 /**
@@ -438,6 +439,69 @@ async function handleDeleteSideTrip(req, res) {
   }
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ closed: true }));
+}
+
+/**
+ * POST /api/journey/:journeyId/estimate — owle.4
+ * Appends an estimation row to workspace/estimation-norms.md.
+ * Required body fields: pass (E1|E2|E3), focusHours (positive number), complexity, scopeStability.
+ * Optional: notes.
+ * featureSlug is read server-side from journey — NEVER from request body.
+ */
+async function handlePostEstimate(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Unauthorised' }));
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+
+  var body = req.body || {};
+  var focusHours = Number(body.focusHours);
+  if (body.focusHours === undefined || body.focusHours === null || isNaN(focusHours) || String(body.focusHours).trim() === '') {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Invalid focusHours: must be a number' }));
+    return;
+  }
+  if (focusHours < 0) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Invalid focusHours: must be non-negative' }));
+    return;
+  }
+
+  var featureSlug = journey.featureSlug || '';
+  var repoRoot = getRepoRoot();
+  var normPath = path.join(repoRoot, 'workspace', 'estimation-norms.md');
+
+  var date = new Date().toISOString().slice(0, 10);
+  var pass = String(body.pass || '');
+  var complexity = String(body.complexity || '');
+  var scopeStability = String(body.scopeStability || '');
+  var notes = String(body.notes || '');
+  var row = '| ' + [date, featureSlug, pass, focusHours, complexity, scopeStability, notes].join(' | ') + ' |\n';
+
+  var HEADER = '| date | feature | pass | focusHours | complexity | scopeStability | notes |\n'
+    + '|------|---------|------|------------|------------|----------------|-------|\n';
+
+  try {
+    var workspaceDir = path.dirname(normPath);
+    fs.mkdirSync(workspaceDir, { recursive: true });
+    if (!fs.existsSync(normPath)) {
+      fs.writeFileSync(normPath, HEADER, 'utf8');
+    }
+    fs.appendFileSync(normPath, row, 'utf8');
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: true, row: row.trim() }));
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Write failed', detail: err.message }));
+  }
 }
 
 /**
@@ -627,6 +691,7 @@ module.exports = {
   handlePostStories,
   handleGetJourneyComplete,
   handleGetStageControls,
+  handlePostEstimate,
   handleGetTrace,
   handlePostDecisions,
   handlePostSideTripClarify,
