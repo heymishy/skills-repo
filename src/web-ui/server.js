@@ -26,7 +26,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete } = require('./routes/journey'); // ougl.3
+const { handleGetJourney, handlePostJourney, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState } = require('./routes/journey'); // ougl.3 / owle.1
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -399,6 +399,30 @@ async function router(req, res) {
     const journeyIdPart = pathname.split('/')[2];
     req.params = { journeyId: journeyIdPart };
     await handleGetJourneyComplete(req, res);
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/stage-controls$/) && req.method === 'GET') {
+    // owle.1 — stage control flags (clarifyAvailable)
+    const journeyIdPart = pathname.split('/')[3];
+    req.params = { journeyId: journeyIdPart };
+    authGuard(req, res, () => handleGetStageControls(req, res));
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/side-trip\/clarify$/) && req.method === 'POST') {
+    // owle.1 — open clarify side-trip
+    const journeyIdPart = pathname.split('/')[3];
+    req.params = { journeyId: journeyIdPart };
+    authGuard(req, res, async () => await handlePostSideTripClarify(req, res));
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/side-trip$/) && req.method === 'DELETE') {
+    // owle.1 — close side-trip
+    const journeyIdPart = pathname.split('/')[3];
+    req.params = { journeyId: journeyIdPart };
+    authGuard(req, res, async () => await handleDeleteSideTrip(req, res));
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+$/) && req.method === 'GET') {
+    // owle.1 — journey state (excludes sideTripSessionId)
+    const journeyIdPart = pathname.split('/')[3];
+    req.params = { journeyId: journeyIdPart };
+    authGuard(req, res, () => handleGetJourneyState(req, res));
 
   } else if (pathname === '/api/me' && req.method === 'GET') {
     const authenticated = !!(req.session && req.session.accessToken);
