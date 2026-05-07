@@ -26,7 +26,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState } = require('./routes/journey'); // ougl.3 / owle.1-4
+const { handleGetJourney, handlePostJourney, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState } = require('./routes/journey'); // ougl.3 / owle.1-5
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -429,6 +429,18 @@ async function router(req, res) {
     const journeyIdPart = pathname.split('/')[3];
     req.params = { journeyId: journeyIdPart };
     authGuard(req, res, async () => await handlePostEstimate(req, res));
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/spikes\/[^/]+$/) && req.method === 'PATCH') {
+    // owle.5 — record spike outcome
+    const parts = pathname.split('/');
+    req.params = { journeyId: parts[3], spikeSlug: parts[5] };
+    authGuard(req, res, async () => await handlePatchSpike(req, res));
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/spikes$/) && req.method === 'POST') {
+    // owle.5 — create spike
+    const journeyIdPart = pathname.split('/')[3];
+    req.params = { journeyId: journeyIdPart };
+    authGuard(req, res, async () => await handlePostSpike(req, res));
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+\/side-trip$/) && req.method === 'DELETE') {
     // owle.1 — close side-trip

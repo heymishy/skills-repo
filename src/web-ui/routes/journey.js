@@ -353,8 +353,31 @@ function handleGetStageControls(req, res) {
   }
   var clarifyAvailable = journey.activeSkill === 'discovery';
   var estimateAvailable = (journey.activeSkill === 'discovery' || journey.activeSkill === 'definition');
+  var spikeAvailable = true;
+
+  // Enumerate open spikes for this journey's feature
+  var openSpikes = [];
+  var featureSlugForControls = journey.featureSlug || '';
+  if (featureSlugForControls) {
+    var spikesDir = path.join(getRepoRoot(), 'artefacts', featureSlugForControls, 'spikes');
+    if (fs.existsSync(spikesDir)) {
+      var spikeFiles = fs.readdirSync(spikesDir).filter(function(f) { return f.endsWith('.md'); });
+      spikeFiles.forEach(function(f) {
+        var full = path.join(spikesDir, f);
+        var content = '';
+        try { content = fs.readFileSync(full, 'utf8'); } catch(_) {}
+        if (content.includes('status: OPEN') || content.includes('status:OPEN')) {
+          // Extract title from first heading or filename
+          var titleMatch = content.match(/^#\s+(.+)$/m);
+          var title = titleMatch ? titleMatch[1].trim() : f.replace(/-spike\.md$/, '');
+          openSpikes.push({ title: title, path: path.join('artefacts', featureSlugForControls, 'spikes', f) });
+        }
+      });
+    }
+  }
+
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ clarifyAvailable: clarifyAvailable, logDecisionAvailable: true, traceAvailable: true, estimateAvailable: estimateAvailable }));
+  res.end(JSON.stringify({ clarifyAvailable: clarifyAvailable, logDecisionAvailable: true, traceAvailable: true, estimateAvailable: estimateAvailable, spikeAvailable: spikeAvailable, openSpikes: openSpikes }));
 }
 
 /**
@@ -683,6 +706,139 @@ function handleGetJourneyState(req, res) {
   }));
 }
 
+/**
+ * titleToSlug — converts a spike title to a filename-safe slug.
+ * Returns empty string if no alphanumeric chars present.
+ */
+function titleToSlug(title) {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
+ * POST /api/journey/:journeyId/spikes — owle.5
+ * Creates a new spike artefact file at artefacts/<featureSlug>/spikes/<slug>-spike.md.
+ * Required body: title, question, scopeLimitHours, doneCondition.
+ * featureSlug read server-side from journey.
+ */
+async function handlePostSpike(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Unauthorised' }));
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+  var body = req.body || {};
+  var rawTitle = String(body.title || '');
+  // Reject titles containing path traversal sequences
+  if (rawTitle.includes('..') || rawTitle.includes('/') || rawTitle.includes('\\')) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Invalid title: path separators not allowed' }));
+    return;
+  }
+  var slug = titleToSlug(rawTitle);
+  if (!slug) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Invalid title: must contain at least one alphanumeric character' }));
+    return;
+  }
+  var featureSlug = journey.featureSlug || '';
+  var repoRoot = getRepoRoot();
+  var spikesDir = path.join(repoRoot, 'artefacts', featureSlug, 'spikes');
+  var spikePath = path.join(spikesDir, slug + '-spike.md');
+  // Path traversal guard
+  var resolvedRoot = path.resolve(repoRoot);
+  var resolvedSpike = path.resolve(spikePath);
+  if (!resolvedSpike.startsWith(resolvedRoot + path.sep)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Invalid title: path traversal detected' }));
+    return;
+  }
+  if (fs.existsSync(spikePath)) {
+    res.writeHead(409, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Spike already exists' }));
+    return;
+  }
+  var question = String(body.question || '');
+  var scopeLimitHours = body.scopeLimitHours !== undefined ? body.scopeLimitHours : '';
+  var doneCondition = String(body.doneCondition || '');
+  var content = '# ' + rawTitle + '\n\n'
+    + 'status: OPEN\n'
+    + 'scopeLimitHours: ' + scopeLimitHours + '\n'
+    + 'outcome:\n\n'
+    + '## Question\n\n' + question + '\n\n'
+    + '## Done Condition\n\n' + doneCondition + '\n\n'
+    + '## Outcome / Summary\n\n';
+  try {
+    fs.mkdirSync(spikesDir, { recursive: true });
+    fs.writeFileSync(spikePath, content, 'utf8');
+    res.writeHead(201, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: true, path: path.join('artefacts', featureSlug, 'spikes', slug + '-spike.md') }));
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Write failed', detail: err.message }));
+  }
+}
+
+/**
+ * PATCH /api/journey/:journeyId/spikes/:spikeSlug — owle.5
+ * Records outcome on a spike file (status: OPEN → RESOLVED).
+ * Required body: outcome, summary.
+ */
+async function handlePatchSpike(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Unauthorised' }));
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+  var spikeSlug = req.params && req.params.spikeSlug;
+  if (!spikeSlug) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'spikeSlug required' }));
+    return;
+  }
+  var featureSlug = journey.featureSlug || '';
+  var repoRoot = getRepoRoot();
+  var spikePath = path.join(repoRoot, 'artefacts', featureSlug, 'spikes', spikeSlug + '-spike.md');
+  // Path traversal guard
+  var resolvedRoot = path.resolve(repoRoot);
+  if (!path.resolve(spikePath).startsWith(resolvedRoot + path.sep)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Invalid spikeSlug' }));
+    return;
+  }
+  if (!fs.existsSync(spikePath)) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Spike not found' }));
+    return;
+  }
+  var body = req.body || {};
+  var outcome = String(body.outcome || '');
+  var summary = String(body.summary || '');
+  var content = fs.readFileSync(spikePath, 'utf8');
+  content = content.replace(/status: OPEN/g, 'status: RESOLVED');
+  content = content.replace(/outcome:\s*\n/, 'outcome: ' + outcome + '\n');
+  content += '\n**Summary:** ' + summary + '\n';
+  fs.writeFileSync(spikePath, content, 'utf8');
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ success: true }));
+}
+
 module.exports = {
   handleGetJourney,
   handlePostJourney,
@@ -692,6 +848,8 @@ module.exports = {
   handleGetJourneyComplete,
   handleGetStageControls,
   handlePostEstimate,
+  handlePostSpike,
+  handlePatchSpike,
   handleGetTrace,
   handlePostDecisions,
   handlePostSideTripClarify,
