@@ -1346,15 +1346,15 @@ function _renderChatPage(skillName, sessionId, session) {
     '  function sendTurn(answer) {',
     '    if(submitBtn) submitBtn.disabled = true;',
     '    var thinkingDiv = appendBubble("assistant", \'<span class="sw-thinking"><span class="sw-dot"></span><span class="sw-dot"></span><span class="sw-dot"></span></span>\');',
-    '    var streamText = "";',
-    '    var streamDiv  = null;',
+    '    var streamText   = "";',
+    '    var streamDiv   = null;',
+    '    var partialDraft = "";',
     '    fetch(STREAM_URL, {',
     '      method: "POST",',
     '      headers: {"Content-Type": "application/json"},',
     '      body: JSON.stringify({answer: answer})',
     '    }).then(function(r) {',
     '      if(!r.ok || !r.body) throw new Error("Stream failed");',
-    '      if(thinkingDiv) { thinkingDiv.remove(); thinkingDiv = null; }',
     '      streamDiv = appendBubble("assistant", "");',
     '      var textNode = streamDiv.querySelector(".sw-chat-text");',
     '      var reader   = r.body.getReader();',
@@ -1372,12 +1372,17 @@ function _renderChatPage(skillName, sessionId, session) {
     '            try {',
     '              var evt = JSON.parse(payload);',
     '              if(evt.chunk) {',
+    '                if(thinkingDiv) { thinkingDiv.remove(); thinkingDiv = null; }',
     '                streamText += evt.chunk;',
     '                if(textNode) textNode.innerHTML = lightMd(stripArtefactBlock(streamText));',
     '                scrollToBottom();',
     '              }',
+    '              if(evt.draftChunk) {',
+    '                partialDraft += evt.draftChunk;',
+    '                updateDraftPanel(partialDraft);',
+    '              }',
     '              if(evt.done !== undefined) {',
-    '                if(evt.artefactContent) updateDraftPanel(evt.artefactContent);',
+    '                if(evt.artefactContent) { partialDraft = ""; updateDraftPanel(evt.artefactContent); }',
     '                if(evt.done) {',
     '                  showCommitLink();',
     '                } else if(streamText && streamText.indexOf("?") === -1) {',
@@ -1553,6 +1558,10 @@ async function handlePostTurnStreamHtml(req, res) {
 
   var fullText = '';
   try {
+    var _artefactAccum  = '';
+    var _inArtefactMode = false;
+    var _DRAFT_START = '---ARTEFACT-START---';
+    var _DRAFT_END   = '---ARTEFACT-END---';
     fullText = await _skillTurnExecutorStream(
       session.systemPrompt,
       historySnapshot,
@@ -1560,6 +1569,25 @@ async function handlePostTurnStreamHtml(req, res) {
       req.session.accessToken,
       function onChunk(chunk) {
         res.write('data: ' + JSON.stringify({ chunk: chunk }) + '\n\n');
+        _artefactAccum += chunk;
+        if (!_inArtefactMode) {
+          var startIdx = _artefactAccum.indexOf(_DRAFT_START);
+          if (startIdx !== -1) {
+            _inArtefactMode = true;
+            var afterStart = _artefactAccum.slice(startIdx + _DRAFT_START.length).replace(/^\r?\n/, '');
+            var endIdx = afterStart.indexOf(_DRAFT_END);
+            var draftText = endIdx !== -1 ? afterStart.slice(0, endIdx) : afterStart;
+            if (draftText) {
+              res.write('data: ' + JSON.stringify({ draftChunk: draftText }) + '\n\n');
+            }
+          }
+        } else {
+          var endIdx2 = chunk.indexOf(_DRAFT_END);
+          var draftChunk2 = endIdx2 !== -1 ? chunk.slice(0, endIdx2) : chunk;
+          if (draftChunk2) {
+            res.write('data: ' + JSON.stringify({ draftChunk: draftChunk2 }) + '\n\n');
+          }
+        }
       }
     );
   } catch (err) {
