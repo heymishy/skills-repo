@@ -439,7 +439,7 @@ function handleGetJourneyById(req, res) {
 /**
  * GET /api/journey/:journeyId — returns journey state as JSON.
  * Requires authentication (login). Available to any authenticated user (not just owner).
- * Returns { turns, stage, activeUsers } (AC1, AC2, AC4).
+ * Returns { turns, stage, stages (breadcrumb), activeUsers } (wsm.2 AC1/AC2/AC4, wsm.3 AC1).
  */
 async function handleGetJourneyState(req, res) {
   if (!req.session || !req.session.accessToken) {
@@ -466,8 +466,23 @@ async function handleGetJourneyState(req, res) {
     turns = (session && session.turns) || [];
   }
 
+  // wsm.3 AC1: compute breadcrumb stages from completedStages + active stage
+  var stages = _computeBreadcrumb(journey);
+
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ turns: turns, stage: journey.activeSkill, activeUsers: activeUsers }));
+  res.end(JSON.stringify({
+    turns: turns,
+    stage: journey.activeSkill || (journey.completedStages && journey.completedStages.length > 0
+      ? ((journey.completedStages[journey.completedStages.length - 1] || {}).skillName || 'discovery')
+      : 'discovery'),
+    stages: stages,
+    activeUsers: activeUsers,
+    status: journey.status || 'active',
+    activeSkill: journey.activeSkill,
+    activeSessionId: journey.activeSessionId,
+    completedStages: journey.completedStages,
+    complete: journey.complete
+  }));
 }
 
 /**
@@ -505,6 +520,237 @@ function checkJourneyIdle(journeyId) {
   if (_now() - lastActivity > idleMs) {
     journey.status = 'idle';
   }
+}
+
+// ---------------------------------------------------------------------------
+// wsm.3 — stage back-navigation, breadcrumb, and needs-review
+// ---------------------------------------------------------------------------
+
+/**
+ * Injectable disk session writer for journey state persistence.
+ * Used to persist needs-review flags across restarts.
+ */
+var _diskJourneyWriter = {
+  write: function() {},
+  read: function() { return null; },
+  list: function() { return []; },
+  loadSessions: function() {}
+};
+
+/**
+ * Wire the disk session writer for journey metadata persistence (wsm.3).
+ * @param {object} writer — { write(id, data), read(id), list() }
+ */
+function setDiskSessionWriter(writer) { _diskJourneyWriter = writer; }
+
+/**
+ * Compute the breadcrumb stages array from a journey's completedStages + active stage.
+ * Completed stages are navigable; current/future are not.
+ * @param {object} journey
+ * @returns {Array<{ stage: string, status: string, navigable: boolean }>}
+ */
+function _computeBreadcrumb(journey) {
+  var completed = (journey.completedStages || []).map(function(s) {
+    return { stage: s.skillName, status: s.status || 'completed', navigable: true };
+  });
+  if (journey.activeSkill) {
+    completed.push({ stage: journey.activeSkill, status: 'active', navigable: false });
+  }
+  return completed;
+}
+
+/**
+ * GET /api/journey/:journeyId/stage/:stageName
+ * Returns turns and state for a prior completed stage.
+ * Returns 404 for stages not yet completed.
+ */
+async function handleGetJourneyStage(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var stageName = req.params && req.params.stageName;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+  var stage = (journey.completedStages || []).find(function(s) { return s.skillName === stageName; });
+  if (!stage) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Stage not found or not yet completed' }));
+    return;
+  }
+  var turns = [];
+  if (stage.sessionId) {
+    var getSession = getGetHtmlSession();
+    var session = getSession(stage.sessionId);
+    turns = (session && session.turns) || [];
+  }
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({
+    turns: turns,
+    state: { skillName: stage.skillName, artefactPath: stage.artefactPath, status: stage.status || 'completed' },
+    reCommitAvailable: true
+  }));
+}
+
+/**
+ * POST /api/journey/:journeyId/stage/:stageName/recommit
+ * Owner only. If confirmed:true, sets all stages after the target to status:'needs-review'.
+ * Persists to disk. If confirmed:false, returns { cancelled: true }.
+ */
+async function handlePostJourneyRecommit(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var stageName = req.params && req.params.stageName;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+  // Owner-only check
+  if (journey.ownerId && journey.ownerId !== (req.session && req.session.login)) {
+    res.writeHead(403, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'FORBIDDEN' }));
+    return;
+  }
+  var body = req.body || {};
+  // confirmed:false → cancel with no state change
+  if (!body.confirmed) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ cancelled: true }));
+    return;
+  }
+  // Find the target stage index in completedStages
+  var stages = journey.completedStages || [];
+  var targetIdx = stages.findIndex(function(s) { return s.skillName === stageName; });
+  if (targetIdx === -1) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Stage not found in completed stages' }));
+    return;
+  }
+  // Set all stages AFTER the target to needs-review (target itself is unchanged)
+  for (var i = targetIdx + 1; i < stages.length; i++) {
+    stages[i].status = 'needs-review';
+  }
+  // Persist the updated stage statuses to disk
+  var metaKey = 'journey-meta-' + journeyId;
+  _diskJourneyWriter.write(metaKey, {
+    journeyId: journeyId,
+    completedStageStatuses: stages.map(function(s) {
+      return { skillName: s.skillName, status: s.status || 'completed' };
+    })
+  });
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ success: true, stages: _computeBreadcrumb(journey) }));
+}
+
+/**
+ * GET /api/journey/:journeyId/stage-controls
+ * Returns stage controls including needsReview flag for the stage specified by ?stage= query param.
+ */
+async function handleGetJourneyStageControls(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+  // Parse ?stage= from URL
+  var url = req.url || '';
+  var stageParam = '';
+  var qIdx = url.indexOf('?');
+  if (qIdx !== -1) {
+    var qs = url.slice(qIdx + 1);
+    qs.split('&').forEach(function(part) {
+      var kv = part.split('=');
+      if (kv[0] === 'stage') stageParam = decodeURIComponent(kv[1] || '');
+    });
+  }
+  // Also support req.query if available
+  if (!stageParam && req.query && req.query.stage) stageParam = req.query.stage;
+  // Find stage in completedStages
+  var stage = stageParam ? (journey.completedStages || []).find(function(s) { return s.skillName === stageParam; }) : null;
+  var needsReview = !!(stage && stage.status === 'needs-review');
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({
+    stage: stageParam || null,
+    needsReview: needsReview,
+    needsReviewMessage: needsReview ? 'A prior stage was updated — review this stage before proceeding' : null
+  }));
+}
+
+/**
+ * POST /api/journey/:journeyId/stage/:stageName/commit
+ * Owner only. Clears the needs-review flag for a specific completed stage (not downstream).
+ * Optionally updates artefactPath if provided in body.
+ */
+async function handlePostJourneyStageCommit(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var stageName = req.params && req.params.stageName;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+  if (journey.ownerId && journey.ownerId !== (req.session && req.session.login)) {
+    res.writeHead(403, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'FORBIDDEN' }));
+    return;
+  }
+  var stage = (journey.completedStages || []).find(function(s) { return s.skillName === stageName; });
+  if (!stage) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Stage not found' }));
+    return;
+  }
+  var body = req.body || {};
+  if (body.artefactPath) stage.artefactPath = body.artefactPath;
+  stage.status = 'completed';
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ success: true, stage: stage.skillName, status: stage.status }));
+}
+
+/**
+ * Load journey metadata (stage statuses) from disk and apply to journeyStore.
+ * Called at startup restore time.
+ * @param {object} diskReader — { list(), read(id) }
+ * @param {object} journeyStoreMod — { getJourney(id) }
+ */
+function loadJourneyMeta(diskReader, journeyStoreMod) {
+  var keys = diskReader.list();
+  keys.forEach(function(key) {
+    if (key.indexOf('journey-meta-') !== 0) return;
+    var data = diskReader.read(key);
+    if (!data || !data.journeyId || !Array.isArray(data.completedStageStatuses)) return;
+    var journey = journeyStoreMod.getJourney(data.journeyId);
+    if (!journey) return;
+    data.completedStageStatuses.forEach(function(saved) {
+      var stage = (journey.completedStages || []).find(function(s) { return s.skillName === saved.skillName; });
+      if (stage) stage.status = saved.status;
+    });
+  });
 }
 
 /**
@@ -1012,6 +1258,8 @@ async function handlePatchSpike(req, res) {
   res.end(JSON.stringify({ success: true }));
 }
 
+=======
+>>>>>>> 86b5fec... feat(wsm.3): stage back-navigation, breadcrumb, needs-review flags
 module.exports = {
   handleGetJourney,
   handlePostJourney,
@@ -1033,6 +1281,49 @@ module.exports = {
   handleGetJourneyViewers,
   checkJourneyIdle,
   setNow,
+  // wsm.3 — stage back-navigation and needs-review
+  handleGetJourneyStage,
+  handlePostJourneyRecommit,
+  handleGetJourneyStageControls,
+  handlePostJourneyStageCommit,
+  loadJourneyMeta,
+  setDiskSessionWriter,
+  // adapter setters
+  setRegisterHtmlSession,
+  setLinkSessionToJourney,
+  setJourneyStoreModule,
+  setGetHtmlSession,
+  setRepoRoot,
+  setPipelineStateWriter
+};
+module.exports = {
+  handleGetJourney,
+  handlePostJourney,
+  handlePostGateConfirm,
+  handleGetStories,
+  handlePostStories,
+  handleGetJourneyComplete,
+  handleGetStageControls,
+  handlePostEstimate,
+  handlePostSpike,
+  handlePatchSpike,
+  handleGetTrace,
+  handlePostDecisions,
+  handlePostSideTripClarify,
+  handleDeleteSideTrip,
+  // wsm.2 — collaborative journey sharing
+  handleGetJourneyById,
+  handleGetJourneyState,
+  handleGetJourneyViewers,
+  checkJourneyIdle,
+  setNow,
+  // wsm.3 — stage back-navigation and needs-review
+  handleGetJourneyStage,
+  handlePostJourneyRecommit,
+  handleGetJourneyStageControls,
+  handlePostJourneyStageCommit,
+  loadJourneyMeta,
+  setDiskSessionWriter,
   // adapter setters
   setRegisterHtmlSession,
   setLinkSessionToJourney,
