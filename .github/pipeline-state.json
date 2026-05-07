@@ -6845,7 +6845,10 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.1-dor.md",
-          "updatedAt": "2026-05-08"
+          "updatedAt": "2026-05-08",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/321",
+          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "owle.2",
@@ -6864,7 +6867,10 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.2-dor.md",
-          "updatedAt": "2026-05-08"
+          "updatedAt": "2026-05-08",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/322",
+          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "owle.3",
@@ -6883,7 +6889,10 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.3-dor.md",
-          "updatedAt": "2026-05-08"
+          "updatedAt": "2026-05-08",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/323",
+          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "owle.4",
@@ -6902,7 +6911,10 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.4-dor.md",
-          "updatedAt": "2026-05-08"
+          "updatedAt": "2026-05-08",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/324",
+          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "owle.5",
@@ -6921,7 +6933,10 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.5-dor.md",
-          "updatedAt": "2026-05-08"
+          "updatedAt": "2026-05-08",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/325",
+          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "owle.6",
@@ -6940,7 +6955,10 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.6-dor.md",
-          "updatedAt": "2026-05-08"
+          "updatedAt": "2026-05-08",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/326",
+          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         }
       ]
     },
@@ -6975,7 +6993,10 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.1-dor.md",
-          "updatedAt": "2026-05-08"
+          "updatedAt": "2026-05-08",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/327",
+          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "wsm.2",
@@ -6994,7 +7015,10 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.2-dor.md",
-          "updatedAt": "2026-05-08"
+          "updatedAt": "2026-05-08",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/328",
+          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "wsm.3",
@@ -7013,7 +7037,10 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.3-dor.md",
-          "updatedAt": "2026-05-08"
+          "updatedAt": "2026-05-08",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/329",
+          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchTarget": "vscode"
         }
       ]
     }
