@@ -39,6 +39,22 @@ const NO_LICENCE_MSG = 'No active Copilot licence found for this account. Please
 // Scoped to process lifetime; orphaned sessions cleaned up by session-manager on restart.
 const _sessionStore = new Map();
 
+// wsm.1 — injectable disk session writer. Default stub throws so misconfiguration is visible.
+// Wire in server.js startup via setSessionStore(require('./adapters/session-store')).
+var _diskSessionWriter = {
+  write: function() {
+    throw new Error('Adapter not wired: sessionStore. Call setSessionStore() before use.');
+  },
+  read: function() { return null; },
+  list: function() { return []; },
+  loadSessions: function() {}
+};
+/**
+ * Replace the disk session writer adapter (for testing and production wiring).
+ * @param {{ write: function, read: function, list: function, loadSessions: function }} store
+ */
+function setSessionStore(store) { _diskSessionWriter = store; }
+
 // Audit logger — replaced via setLogger() in tests and production bootstrap.
 // Never log answer content (ADR-009).
 let _logger = {
@@ -1224,11 +1240,24 @@ async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token) {
     var slug = slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName;
     session.artefactPath = 'artefacts/' + slug + '/' + session.skillName + '.md';
     session.done = true;
-    session.turns.push({ role: 'assistant', content: response });
-    return { done: true, response: response, artefactContent: session.artefactContent };
   }
 
   session.turns.push({ role: 'assistant', content: response });
+
+  // wsm.1: persist session to disk after mutation (non-fatal — write failure must not break the turn)
+  try {
+    _diskSessionWriter.write(sessionId, session);
+  } catch (writeErr) {
+    console.error(JSON.stringify({
+      event: 'session_write_error',
+      sessionId: sessionId,
+      error: writeErr && writeErr.message ? writeErr.message : String(writeErr)
+    }));
+  }
+
+  if (session.done) {
+    return { done: true, response: response, artefactContent: session.artefactContent };
+  }
   return { done: false, response: response };
 }
 
@@ -1897,6 +1926,8 @@ module.exports = {
   htmlSubmitTurn, buildSystemPrompt,
   // wuce.26 — test helpers + skill-turn executor adapter setter
   _getHtmlSession, _setHtmlSession, setSkillTurnExecutorAdapter,
+  // wsm.1 — disk session writer injectable
+  setSessionStore,
   // ougl.2 — journey session link
   linkSessionToJourney,
   // mfc.3 — streaming turn handler + adapter setter
