@@ -948,7 +948,7 @@ async function handlePostCommitHtml(req, res) {
 
   let result;
   try {
-    result = await _commitSession(skillName, sessionId, token);
+    result = await _commitSession(skillName, sessionId, token, user.login);
   } catch (err) {
     const status = err.status || 500;
     const is409 = (status === 409);
@@ -1319,6 +1319,13 @@ function _renderChatPage(skillName, sessionId, session) {
     '    return d;',
     '  }',
     '',
+    '  function stripArtefactBlock(text) {',
+    '    var s = text.replace(/---ARTEFACT-START---[\\s\\S]*?---ARTEFACT-END---/g, "");',
+    '    s = s.replace(/---SLUG---[\\s\\S]*?\\n---\\n?/g, "");',
+    '    s = s.replace(/\\n{3,}/g, "\\n\\n").trim();',
+    '    return s;',
+    '  }',
+    '',
     '  function updateDraftPanel(artefactContent) {',
     '    var panel = document.getElementById("draft-content");',
     '    if(!panel) return;',
@@ -1366,7 +1373,7 @@ function _renderChatPage(skillName, sessionId, session) {
     '              var evt = JSON.parse(payload);',
     '              if(evt.chunk) {',
     '                streamText += evt.chunk;',
-    '                if(textNode) textNode.innerHTML = lightMd(streamText);',
+    '                if(textNode) textNode.innerHTML = lightMd(stripArtefactBlock(streamText));',
     '                scrollToBottom();',
     '              }',
     '              if(evt.done !== undefined) {',
