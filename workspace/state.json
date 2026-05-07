@@ -1,7 +1,7 @@
 {
-  "currentPhase": "definition-of-ready",
+  "currentPhase": "definition-of-done",
   "activeFeature": "2026-05-06-web-ui-guided-outer-loop",
-  "lastUpdated": "2026-05-14T00:00:00.000Z",
+  "lastUpdated": "2026-05-07T00:00:00.000Z",
   "cycle": {
     "discovery": { "status": "complete", "completedAt": "2026-05-06", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/discovery.md" },
     "benefit-metric": { "status": "active", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/benefit-metric.md" },
@@ -14,12 +14,13 @@
   },
   "previousFeature": { "slug": "2026-05-05-web-ui-model-first-chat", "status": "definition-of-done-complete" },
   "checkpoint": {
-    "writtenAt": "2026-05-14",
-    "contextAtWrite": "/definition-of-ready complete for all 7 ougl stories. 15 artefacts created: nfr-profile.md + 7 dor.md + 7 dor-contract.md. pipeline-state.json updated: feature stage=definition-of-ready, all stories dorStatus=signed-off, health=green. Schema validated: 0 errors. Next: /issue-dispatch to create GitHub issues for coding agent, or begin implementation via /branch-setup for ougl.1.",
-    "resumeInstruction": "definition-of-ready phase complete. All 7 ougl stories (ougl.1-ougl.7) are signed-off. Next step: run /issue-dispatch to create GitHub issues for the coding agent (--target vscode or --target github-agent), or run /branch-setup for ougl.1 to begin implementation. Implementation order: ougl.1 → ougl.2 → ougl.3 → ougl.4 → ougl.5 → ougl.6 → ougl.7 (each story depends on previous).",
+    "writtenAt": "2026-05-07",
+    "contextAtWrite": "Definition-of-done complete for ougl feature (ougl.1-7, PR #320 merged). 62/62 ACs, 60/60 tests, 13/13 NFRs met. DoD artefact written to artefacts/2026-05-06-web-ui-guided-outer-loop/dod/ougl-dod.md. Feature stage=released, releaseReady=true in pipeline-state.json. Schema valid. Committed b9030b3.",
+    "resumeInstruction": "ougl feature is DoD-complete and released. Next options: (1) /release — produce release notes and change request body; (2) /improve — extract learnings back to standards/copilot-instructions; (3) start next feature via /workflow.",
     "pendingActions": [
-      "Dispatch stories to coding agent: run /issue-dispatch for ougl.1 through ougl.7 (ordered — each story depends on prior). DoR artefacts at artefacts/2026-05-06-web-ui-guided-outer-loop/dor/. Medium oversight: confirm with tech lead (self, solo repo) before each dispatch.",
-      "After all stories implemented and PRs merged: run /definition-of-done for the feature."
+      "Metric measurement: all 4 metrics (M1, M2, MM1, MM2) are not-yet-measured. After first real web UI journey session: record signals via /record-signal.",
+      "Optional: run /release to produce release notes for PR #320.",
+      "Optional: run /improve to extract learnings from ougl delivery into standards."
     ]
   }
 }
