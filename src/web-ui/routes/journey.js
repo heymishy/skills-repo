@@ -353,7 +353,7 @@ function handleGetStageControls(req, res) {
   }
   var clarifyAvailable = journey.activeSkill === 'discovery';
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ clarifyAvailable: clarifyAvailable }));
+  res.end(JSON.stringify({ clarifyAvailable: clarifyAvailable, logDecisionAvailable: true }));
 }
 
 /**
@@ -441,6 +441,72 @@ async function handleDeleteSideTrip(req, res) {
 }
 
 /**
+ * POST /api/journey/:journeyId/decisions — owle.2
+ * Appends a decision entry to artefacts/<featureSlug>/decisions.md.
+ * Required body fields: title, context, decision, rationale. Optional: riskAccept (bool).
+ * Returns 200 on success; 400 on validation failure or path traversal.
+ */
+async function handlePostDecisions(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Unauthorised' }));
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+
+  // Validate required fields before any file I/O
+  var body = req.body || {};
+  var required = ['title', 'context', 'decision', 'rationale'];
+  for (var i = 0; i < required.length; i++) {
+    if (!body[required[i]]) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Missing required field', missing: required[i] }));
+      return;
+    }
+  }
+
+  // Derive path server-side from journey — NEVER from request body/params
+  var featureSlug = journey.featureSlug || '';
+  var repoRoot = getRepoRoot();
+  var decisionsPath = path.resolve(repoRoot, 'artefacts', featureSlug, 'decisions.md');
+  var guard = path.resolve(repoRoot, 'artefacts', featureSlug);
+  if (!guard.startsWith(repoRoot + path.sep)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Invalid feature slug' }));
+    return;
+  }
+
+  var date = new Date().toISOString().slice(0, 10);
+  var riskLabel = body.riskAccept ? ' RISK-ACCEPT' : '';
+  var entry = '\n## ' + body.title + riskLabel + '\n\n'
+    + '**Date:** ' + date + '\n'
+    + '**Context:** ' + body.context + '\n'
+    + '**Decision:** ' + body.decision + '\n'
+    + '**Rationale:** ' + body.rationale + '\n';
+
+  try {
+    var dir = path.dirname(decisionsPath);
+    fs.mkdirSync(dir, { recursive: true });
+    var header = '# Decisions — ' + featureSlug + '\n';
+    if (!fs.existsSync(decisionsPath)) {
+      fs.writeFileSync(decisionsPath, header, 'utf8');
+    }
+    fs.appendFileSync(decisionsPath, entry, 'utf8');
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ written: decisionsPath }));
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Write failed', detail: err.message }));
+  }
+}
+
+/**
  * GET /api/journey/:journeyId — owle.1
  * Returns main journey state. sideTripSessionId is intentionally excluded.
  */
@@ -477,6 +543,7 @@ module.exports = {
   handlePostStories,
   handleGetJourneyComplete,
   handleGetStageControls,
+  handlePostDecisions,
   handlePostSideTripClarify,
   handleDeleteSideTrip,
   handleGetJourneyState,
