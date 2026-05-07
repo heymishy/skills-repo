@@ -35,6 +35,24 @@ Three stories in scope:
 
 `artefacts/2026-05-07-web-ui-session-management/`
 
+## Reviewers
+
+- Hamis — Platform operator / product owner
+
+## Approved By
+
+- Hamis — Platform operator / product owner — 2026-05-07
+
+---
+
 ## Short-Track Justification
 
 All three stories are well-understood, bounded in scope, directly implement known user needs identified during wuce/ougl/wusl delivery sessions, and carry no architectural uncertainty requiring a full discovery → benefit-metric → review cycle.
+
+## Reviewers
+
+- Hamis — Platform operator / product owner
+
+## Approved By
+
+- Hamis — Platform operator / product owner — 2026-05-07
