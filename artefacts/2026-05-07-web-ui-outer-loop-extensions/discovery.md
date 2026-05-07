@@ -52,3 +52,11 @@ Six tightly scoped additions close the remaining outer-loop gaps:
 ## Status
 
 **Approved for short-track.** Stories → test-plans → DoR → coding agent.
+
+## Reviewers
+
+- Hamis — Platform operator / product owner
+
+## Approved By
+
+- Hamis — Platform operator / product owner — 2026-05-07
