@@ -6813,6 +6813,209 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "2026-05-07-web-ui-outer-loop-extensions",
+      "name": "Web UI Outer Loop Extensions",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "releaseReady": false,
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "discoveryArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/discovery.md",
+      "discoveryStatus": "approved",
+      "updatedAt": "2026-05-08",
+      "stories": [
+        {
+          "id": "owle.1",
+          "title": "Clarify side-trip",
+          "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/stories/owle.1-clarify-side-trip.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.1-test-plan.md"
+          },
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.1-dor.md",
+          "updatedAt": "2026-05-08"
+        },
+        {
+          "id": "owle.2",
+          "title": "Decisions side-trip",
+          "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/stories/owle.2-decisions-side-trip.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.2-test-plan.md"
+          },
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.2-dor.md",
+          "updatedAt": "2026-05-08"
+        },
+        {
+          "id": "owle.3",
+          "title": "Trace side-trip",
+          "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/stories/owle.3-trace-side-trip.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.3-test-plan.md"
+          },
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.3-dor.md",
+          "updatedAt": "2026-05-08"
+        },
+        {
+          "id": "owle.4",
+          "title": "Estimate side-trip",
+          "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/stories/owle.4-estimate-side-trip.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.4-test-plan.md"
+          },
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.4-dor.md",
+          "updatedAt": "2026-05-08"
+        },
+        {
+          "id": "owle.5",
+          "title": "Spike side-trip",
+          "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/stories/owle.5-spike-side-trip.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.5-test-plan.md"
+          },
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.5-dor.md",
+          "updatedAt": "2026-05-08"
+        },
+        {
+          "id": "owle.6",
+          "title": "Pipeline-state auto-write",
+          "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/stories/owle.6-pipeline-state-auto-write.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.6-test-plan.md"
+          },
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.6-dor.md",
+          "updatedAt": "2026-05-08"
+        }
+      ]
+    },
+    {
+      "slug": "2026-05-07-web-ui-session-management",
+      "name": "Web UI Session Management",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "releaseReady": false,
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "discoveryArtefact": "artefacts/2026-05-07-web-ui-session-management/discovery.md",
+      "discoveryStatus": "approved",
+      "updatedAt": "2026-05-08",
+      "stories": [
+        {
+          "id": "wsm.1",
+          "title": "Session persistence",
+          "artefact": "artefacts/2026-05-07-web-ui-session-management/stories/wsm.1-session-persistence.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-07-web-ui-session-management/test-plans/wsm.1-test-plan.md"
+          },
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.1-dor.md",
+          "updatedAt": "2026-05-08"
+        },
+        {
+          "id": "wsm.2",
+          "title": "Collaborative sessions",
+          "artefact": "artefacts/2026-05-07-web-ui-session-management/stories/wsm.2-collaborative-sessions.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-07-web-ui-session-management/test-plans/wsm.2-test-plan.md"
+          },
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.2-dor.md",
+          "updatedAt": "2026-05-08"
+        },
+        {
+          "id": "wsm.3",
+          "title": "Non-happy path navigation",
+          "artefact": "artefacts/2026-05-07-web-ui-session-management/stories/wsm.3-non-happy-path.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-07-web-ui-session-management/test-plans/wsm.3-test-plan.md"
+          },
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.3-dor.md",
+          "updatedAt": "2026-05-08"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
