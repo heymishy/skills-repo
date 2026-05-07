@@ -2,6 +2,7 @@
 
 **Document type:** Enterprise handoff bundle
 **Prepared:** 2026-04-12
+**Updated:** 2026-05-07 — wusl.1 + wusl.2: chat streaming UX + progressive live draft delivered (commit `bac7b12`). (1) Animated thinking dots now stay visible until first real token arrives — `thinkingDiv.remove()` moved from HTTP response-start into `if(evt.chunk)` handler. (2) `handlePostTurnStreamHtml` now emits `{draftChunk}` SSE events as the model streams artefact content after `---ARTEFACT-START---`; split-marker boundary handled via accumulation buffer; client accumulates `partialDraft` and calls `updateDraftPanel` progressively. 15 new tests across two new test files. See Section 9a below.
 **Updated:** 2026-05-06 (3) — Notion-calm web UI design port distribution package committed (858ef37). Drop-in view layer for enterprise/consumer forks. See Section 9b (new) for file locations and agent instructions. As-built architecture reference committed (f71d001) — see Section 9c (new).
 **Updated:** 2026-05-06 (2) — mfc.1 model-first chat architecture DoD complete (commit d793217 + 2177400 + 2ca8cc2). Scrape-first skill session flow fully replaced. WEB UI PROTOCOL prompt tuning committed (2ca8cc2). See Section 9 (updated) for artefact locations and what to skip. Pending: live smoke test for AC5/AC6, M1/M2 measurement after first live session.
 **Updated:** 2026-05-04 — wuce.26 artefact chain: per-answer model response in skill HTML flow. New injectable module `src/modules/skill-turn-executor.js` (Copilot chat completions, Bearer token, 300-token cap). Short-track pipeline complete: story + test plan (14 tests) + verification script + DoR signed off (17/17 hard blocks, High oversight). Coding agent ready for dispatch. See Section 9 pending items.
@@ -17,7 +18,25 @@
 
 ---
 
-## 9. mfc.1 — Model-first chat session architecture (2026-05-06) ← CURRENT STATE
+## 9a. wusl.1 + wusl.2 — Chat streaming UX + progressive live draft (2026-05-07) ← CURRENT STATE
+
+**Commit:** `bac7b12` on master.
+
+**What changed in `src/web-ui/routes/skills.js`:**
+
+1. **wusl.1 — thinking dots visible until first token:** `thinkingDiv.remove()` moved from the `.then(function(r)` fetch handler (which fires on HTTP response headers) into the `if(evt.chunk)` block in the SSE pump loop. The three animated dots now remain visible until the first real text token arrives from the model.
+
+2. **wusl.2 — progressive live draft:** `handlePostTurnStreamHtml` accumulates all chunks in `_artefactAccum`. When `---ARTEFACT-START---` is detected (including split across chunk boundaries), `_inArtefactMode` is set true and a `{draftChunk: "..."}` SSE event is emitted for the content after the marker. Subsequent chunks in artefact mode emit further `{draftChunk}` events (truncated at `---ARTEFACT-END---`). Client pump loop accumulates `partialDraft` and calls `updateDraftPanel(partialDraft)` on each `{draftChunk}` event. The final `{done, artefactContent}` event resets partialDraft and calls `updateDraftPanel` with the clean extracted content.
+
+**New test files:**
+- `tests/check-wusl1-chat-streaming.js` — 7 tests (all pass)
+- `tests/check-wusl2-progressive-live-draft.js` — 8 tests (all pass)
+
+Both added to `npm test` chain.
+
+---
+
+## 9. mfc.1 — Model-first chat session architecture (2026-05-06)
 
 ### What was delivered
 
