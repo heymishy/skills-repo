@@ -353,7 +353,7 @@ function handleGetStageControls(req, res) {
   }
   var clarifyAvailable = journey.activeSkill === 'discovery';
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ clarifyAvailable: clarifyAvailable, logDecisionAvailable: true }));
+  res.end(JSON.stringify({ clarifyAvailable: clarifyAvailable, logDecisionAvailable: true, traceAvailable: true }));
 }
 
 /**
@@ -438,6 +438,90 @@ async function handleDeleteSideTrip(req, res) {
   }
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ closed: true }));
+}
+
+/**
+ * Computes a trace result for an artefact directory.
+ * Checks presence of discovery.md, stories/, test-plans/<slug>-test-plan.md, dor/<slug>-dor.md.
+ * Returns { status: 'passed'|'has-findings'|'failed', findings: [{type, path, message}] }.
+ */
+function computeTrace(artefactsDir) {
+  var findings = [];
+
+  // Missing discovery.md is a hard failure
+  var discoveryPath = path.join(artefactsDir, 'discovery.md');
+  if (!fs.existsSync(discoveryPath)) {
+    findings.push({ type: 'missing-discovery', path: discoveryPath, message: 'discovery.md not found' });
+    return { status: 'failed', findings: findings };
+  }
+
+  // Enumerate story files
+  var storiesDir = path.join(artefactsDir, 'stories');
+  var stories = [];
+  if (fs.existsSync(storiesDir)) {
+    stories = fs.readdirSync(storiesDir).filter(function(f) { return f.endsWith('.md'); });
+  }
+  if (stories.length === 0) {
+    findings.push({ type: 'no-stories', path: storiesDir, message: 'No story files found in stories/' });
+  }
+
+  // For each story, check test-plan and dor
+  stories.forEach(function(storyFile) {
+    var slug = storyFile.replace(/\.md$/, '');
+    var testPlanPath = path.join(artefactsDir, 'test-plans', slug + '-test-plan.md');
+    if (!fs.existsSync(testPlanPath)) {
+      findings.push({ type: 'missing-test-plan', path: testPlanPath, message: 'Test plan not found for story: ' + slug });
+    }
+    var dorPath = path.join(artefactsDir, 'dor', slug + '-dor.md');
+    if (!fs.existsSync(dorPath)) {
+      findings.push({ type: 'missing-dor', path: dorPath, message: 'DoR not found for story: ' + slug });
+    }
+  });
+
+  if (findings.length > 0) {
+    return { status: 'has-findings', findings: findings };
+  }
+  return { status: 'passed', findings: [] };
+}
+
+/**
+ * GET /api/journey/:journeyId/trace — owle.3
+ * Runs a presence-based trace check on the feature's artefact directory.
+ * Returns { status, findings }. Fresh on every request — no caching.
+ */
+async function handleGetTrace(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Unauthorised' }));
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+
+  var featureSlug = journey.featureSlug || '';
+  var repoRoot = getRepoRoot();
+  var artefactsDir = path.resolve(repoRoot, 'artefacts', featureSlug);
+  // Path traversal guard
+  if (!artefactsDir.startsWith(path.resolve(repoRoot, 'artefacts') + path.sep) &&
+      artefactsDir !== path.resolve(repoRoot, 'artefacts')) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Invalid feature slug' }));
+    return;
+  }
+
+  try {
+    var result = computeTrace(artefactsDir);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(result));
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Trace failed', detail: err.message }));
+  }
 }
 
 /**
@@ -543,6 +627,7 @@ module.exports = {
   handlePostStories,
   handleGetJourneyComplete,
   handleGetStageControls,
+  handleGetTrace,
   handlePostDecisions,
   handlePostSideTripClarify,
   handleDeleteSideTrip,
