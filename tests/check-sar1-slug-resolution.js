@@ -169,14 +169,48 @@ test('T12 — extractFeatureSlugFromBranchName matches story in epic-nested layo
     `expected epic-nested feature slug, got "${result}"`);
 });
 
-// ── T13: extractFeatureSlugFromBranchName — returns '' for non-feature branch ──
-test('T13 — extractFeatureSlugFromBranchName returns "" for non-story branch name', () => {
+// ── T13: extractFeatureSlugFromBranchName — returns '' for non-feature/feat prefix ──
+test('T13 — extractFeatureSlugFromBranchName returns "" for non-feature/feat prefix branches', () => {
   assert(typeof extractFeatureSlugFromBranchName === 'function', 'extractFeatureSlugFromBranchName must be a function');
   const state = { features: [{ slug: 'feat', stories: [{ id: 'owle.1' }] }] };
   assert.strictEqual(extractFeatureSlugFromBranchName('main', state), '', 'main → ""');
   assert.strictEqual(extractFeatureSlugFromBranchName('chore/cleanup', state), '', 'chore branch → ""');
+  assert.strictEqual(extractFeatureSlugFromBranchName('master', state), '', 'master → ""');
   assert.strictEqual(extractFeatureSlugFromBranchName('', state), '', 'empty string → ""');
   assert.strictEqual(extractFeatureSlugFromBranchName(null, state), '', 'null → ""');
+});
+
+// ── T15: extractFeatureSlugFromBranchName — covers non-dot story ID formats ──
+test('T15 — extractFeatureSlugFromBranchName matches p4-xxx, dviz.N-desc, dsq.1.5 style IDs', () => {
+  assert(typeof extractFeatureSlugFromBranchName === 'function', 'extractFeatureSlugFromBranchName must be a function');
+  const state = {
+    features: [
+      { slug: '2026-04-18-skills-platform-phase4', stories: [
+          { id: 'p4-dist-install' },
+          { id: 'p4-enf-cli' },
+          { id: 'p4-spike-a' },
+        ] },
+      { slug: '2026-04-22-dashboard-v2', stories: [
+          { id: 'dviz.1-pipeline-adapter' },
+          { id: 'dviz.2-pages-workflow' },
+        ] },
+      { slug: '2026-04-21-skill-routing-cli-tools', stories: [
+          { id: 'dsq.1.5' },
+        ] },
+    ],
+  };
+  assert.strictEqual(
+    extractFeatureSlugFromBranchName('feature/p4-dist-install', state),
+    '2026-04-18-skills-platform-phase4', 'p4-dist-install hyphen style');
+  assert.strictEqual(
+    extractFeatureSlugFromBranchName('feature/p4-spike-a', state),
+    '2026-04-18-skills-platform-phase4', 'p4-spike-a hyphen style');
+  assert.strictEqual(
+    extractFeatureSlugFromBranchName('feature/dviz.1-pipeline-adapter', state),
+    '2026-04-22-dashboard-v2', 'dviz.N-description style');
+  assert.strictEqual(
+    extractFeatureSlugFromBranchName('feature/dsq.1.5', state),
+    '2026-04-21-skill-routing-cli-tools', 'dsq.1.5 multi-dot version');
 });
 
 // ── T14: extractFeatureSlugFromBranchName — returns '' when story not in state ──
