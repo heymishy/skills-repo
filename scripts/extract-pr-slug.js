@@ -45,7 +45,7 @@ function buildSlugSourceNote(source, slug) {
  */
 function extractFeatureSlugFromBranchName(branchName, stateObj) {
   if (!branchName || !stateObj || !stateObj.features) return '';
-  const m = branchName.match(/^(?:feature|feat)\/([a-z][a-z0-9]*\.[0-9]+)$/);
+  const m = branchName.match(/^(?:feature|feat)\/(.+)$/);
   if (!m) return '';
   const storyId = m[1];
   for (const feat of stateObj.features) {
