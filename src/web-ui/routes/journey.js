@@ -31,6 +31,12 @@ function getRepoRoot() {
   return _repoRoot || path.resolve(__dirname, '../../..');
 }
 
+// owle.6: injectable pipeline-state writer
+var _pipelineStateWriter = function() {
+  throw new Error('Adapter not wired: pipelineStateWriter. Call setPipelineStateWriter() before use.');
+};
+function setPipelineStateWriter(fn) { _pipelineStateWriter = fn; }
+
 // Adapter setters (used by tests)
 function setRegisterHtmlSession(fn) { _registerHtmlSession = fn; }
 function setLinkSessionToJourney(fn) { _linkSessionToJourney = fn; }
@@ -144,6 +150,27 @@ async function handlePostGateConfirm(req, res) {
   }
   // Call completeStage to record this stage
   _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath);
+
+  // owle.6: notify pipeline-state writer (after disk write + completeStage)
+  try {
+    var stateUpdate = {};
+    if (session.skillName === 'discovery') {
+      stateUpdate.discoveryStatus = 'complete';
+      stateUpdate.artefact = artefactRelPath;
+    } else if (session.skillName === 'definition-of-ready') {
+      stateUpdate.dorStatus = 'signed-off';
+      stateUpdate.stage = 'branch-complete';
+      stateUpdate.updatedAt = new Date().toISOString().slice(0, 10);
+    } else {
+      stateUpdate.stage = session.skillName;
+    }
+    var currentStory = journey.stories && journey.stories[journey.currentStoryIndex];
+    var storyId = currentStory ? (currentStory.id || currentStory.slug || null) : null;
+    _pipelineStateWriter(journey.featureSlug, storyId, stateUpdate);
+  } catch (psErr) {
+    console.error(JSON.stringify({ event: 'pipeline_state_write_failed', error: psErr.message }));
+  }
+
   // Build priorArtefacts from all completed stages (read authoritative disk content)
   var updatedJourney = _journeyStore.getJourney(journeyId);
   var priorArtefacts = (updatedJourney.completedStages || []).map(function(stage) {
@@ -859,6 +886,7 @@ module.exports = {
   setLinkSessionToJourney,
   setJourneyStoreModule,
   setGetHtmlSession,
-  setRepoRoot
+  setRepoRoot,
+  setPipelineStateWriter
 };
 
