@@ -26,7 +26,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState } = require('./routes/journey'); // ougl.3 / owle.1
+const { handleGetJourney, handlePostJourney, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState } = require('./routes/journey'); // ougl.3 / owle.1 / owle.2
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -411,6 +411,12 @@ async function router(req, res) {
     const journeyIdPart = pathname.split('/')[3];
     req.params = { journeyId: journeyIdPart };
     authGuard(req, res, async () => await handlePostSideTripClarify(req, res));
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/decisions$/) && req.method === 'POST') {
+    // owle.2 — append decision entry to decisions.md
+    const journeyIdPart = pathname.split('/')[3];
+    req.params = { journeyId: journeyIdPart };
+    authGuard(req, res, async () => await handlePostDecisions(req, res));
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+\/side-trip$/) && req.method === 'DELETE') {
     // owle.1 — close side-trip
