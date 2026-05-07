@@ -145,18 +145,30 @@ jobs:
               echo "slug_source=pr-body" >> "$GITHUB_OUTPUT"
               echo "[resolve_feature] Extracted from PR body: ${PR_SLUG}"
             else
-              FEATURE_SLUG=$(node -e "
-                const s = require('./.github/pipeline-state.json');
-                const DONE = new Set(['archived','definition-of-done','released']);
-                const inProgress = s.features.filter(f => !DONE.has(f.stage));
-                const pick = inProgress.length > 0
-                  ? inProgress[inProgress.length - 1]
-                  : s.features.filter(f => f.stage !== 'archived').slice(-1)[0];
-                process.stdout.write(pick ? pick.slug : '');
-              " 2>/dev/null || echo "")
-              echo "slug=${FEATURE_SLUG}" >> "$GITHUB_OUTPUT"
-              echo "slug_source=auto-resolved" >> "$GITHUB_OUTPUT"
-              echo "[resolve_feature] Auto-resolved: ${FEATURE_SLUG}"
+              BRANCH_SLUG=$(node -e "
+                const { extractFeatureSlugFromBranchName } = require('./scripts/extract-pr-slug.js');
+                const fs = require('fs');
+                const stateObj = JSON.parse(fs.readFileSync('.github/pipeline-state.json', 'utf8'));
+                process.stdout.write(extractFeatureSlugFromBranchName(process.argv[1], stateObj));
+              " '${{ github.head_ref }}' 2>/dev/null || echo "")
+              if [ -n "${BRANCH_SLUG}" ]; then
+                echo "slug=${BRANCH_SLUG}" >> "$GITHUB_OUTPUT"
+                echo "slug_source=branch-name" >> "$GITHUB_OUTPUT"
+                echo "[resolve_feature] Resolved from branch name: ${BRANCH_SLUG}"
+              else
+                FEATURE_SLUG=$(node -e "
+                  const s = require('./.github/pipeline-state.json');
+                  const DONE = new Set(['archived','definition-of-done','released']);
+                  const inProgress = s.features.filter(f => !DONE.has(f.stage));
+                  const pick = inProgress.length > 0
+                    ? inProgress[inProgress.length - 1]
+                    : s.features.filter(f => f.stage !== 'archived').slice(-1)[0];
+                  process.stdout.write(pick ? pick.slug : '');
+                " 2>/dev/null || echo "")
+                echo "slug=${FEATURE_SLUG}" >> "$GITHUB_OUTPUT"
+                echo "slug_source=auto-resolved" >> "$GITHUB_OUTPUT"
+                echo "[resolve_feature] Auto-resolved: ${FEATURE_SLUG}"
+              fi
             fi
           fi
 
@@ -284,11 +296,16 @@ jobs:
             });
 
             // ── Parse test results from CI run ──
+            // Handles three output formats used by story test files:
+            //   canonical:  [key] Results: N passed, M failed
+            //   owle-style: [key-suffix] N run, N passed, M failed  (key = word chars before first hyphen)
+            //   wsm-style:  === key results: N passed, M failed ===
             const testResultsByFile = {};
             if (fs.existsSync('.ci-test-results.txt')) {
               fs.readFileSync('.ci-test-results.txt', 'utf8').split('\n').forEach(line => {
-                const m = line.match(/\[(\w+)\]\s+Results:\s*(\d+)\s+passed,\s*(\d+)\s+failed/);
-                if (m) testResultsByFile[m[1]] = { passed: parseInt(m[2]), failed: parseInt(m[3]) };
+                const m = line.match(/\[([a-z][a-z0-9]*)(?:-[^\]]+)?\]\s+(?:results?:?\s*|\d+\s+run,\s*)?(\d+)\s+passed,\s*(\d+)\s+failed/i)
+                       || line.match(/===\s+([a-z][a-z0-9]*)\s+results?:?\s*(\d+)\s+passed,\s*(\d+)\s+failed/i);
+                if (m) testResultsByFile[m[1].toLowerCase()] = { passed: parseInt(m[2]), failed: parseInt(m[3]) };
               });
             }
 

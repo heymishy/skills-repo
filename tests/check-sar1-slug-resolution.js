@@ -26,11 +26,12 @@ function test(label, fn) {
 }
 
 // ── Load module under test ──
-let extractPRSlug, buildSlugSourceNote;
+let extractPRSlug, buildSlugSourceNote, extractFeatureSlugFromBranchName;
 try {
   const mod = require(SCRIPT);
   extractPRSlug      = mod.extractPRSlug;
   buildSlugSourceNote = mod.buildSlugSourceNote;
+  extractFeatureSlugFromBranchName = mod.extractFeatureSlugFromBranchName;
 } catch (_) {
   // Module doesn't exist yet — all tests will fail naturally
 }
@@ -114,6 +115,76 @@ test('T8 — buildSlugSourceNote("pr-body", slug) contains Source: PR body and C
   assert(note.includes('PR body'), `expected "PR body" in note, got: "${note}"`);
   assert(note.includes('Chain references'), `expected "Chain references" in note, got: "${note}"`);
   assert(note.includes('2026-04-29-audit-slug-resolution'), `expected slug in note, got: "${note}"`);
+});
+
+// ── T9: buildSlugSourceNote — branch-name confirmation with slug shown ──
+test('T9 — buildSlugSourceNote("branch-name", slug) contains Source: branch name and slug', () => {
+  assert(typeof buildSlugSourceNote === 'function', 'buildSlugSourceNote must be a function');
+  const note = buildSlugSourceNote('branch-name', '2026-05-07-web-ui-outer-loop-extensions');
+  assert(note.includes('branch name'), `expected "branch name" in note, got: "${note}"`);
+  assert(note.includes('2026-05-07-web-ui-outer-loop-extensions'), `expected slug in note, got: "${note}"`);
+  assert(!note.includes('⚠️'), `branch-name source should not include warning icon, got: "${note}"`);
+});
+
+// ── T10: extractFeatureSlugFromBranchName — matches story in flat stories[] ──
+test('T10 — extractFeatureSlugFromBranchName matches story in flat feature stories', () => {
+  assert(typeof extractFeatureSlugFromBranchName === 'function',
+    'extractFeatureSlugFromBranchName must be a function (not exported from extract-pr-slug.js)');
+  const state = {
+    features: [
+      { slug: '2026-05-07-web-ui-outer-loop-extensions', stories: [{ id: 'owle.1' }, { id: 'owle.2' }] },
+      { slug: '2026-05-07-web-ui-session-management',    stories: [{ id: 'wsm.1' }, { id: 'wsm.2' }] },
+    ],
+  };
+  const result = extractFeatureSlugFromBranchName('feature/owle.1', state);
+  assert.strictEqual(result, '2026-05-07-web-ui-outer-loop-extensions',
+    `expected owle feature slug, got "${result}"`);
+});
+
+// ── T11: extractFeatureSlugFromBranchName — matches story in second feature ──
+test('T11 — extractFeatureSlugFromBranchName matches story in second feature', () => {
+  assert(typeof extractFeatureSlugFromBranchName === 'function', 'extractFeatureSlugFromBranchName must be a function');
+  const state = {
+    features: [
+      { slug: '2026-05-07-web-ui-outer-loop-extensions', stories: [{ id: 'owle.1' }] },
+      { slug: '2026-05-07-web-ui-session-management',    stories: [{ id: 'wsm.1' }, { id: 'wsm.3' }] },
+    ],
+  };
+  const result = extractFeatureSlugFromBranchName('feature/wsm.3', state);
+  assert.strictEqual(result, '2026-05-07-web-ui-session-management',
+    `expected wsm feature slug, got "${result}"`);
+});
+
+// ── T12: extractFeatureSlugFromBranchName — matches story in epic-nested layout ──
+test('T12 — extractFeatureSlugFromBranchName matches story in epic-nested layout', () => {
+  assert(typeof extractFeatureSlugFromBranchName === 'function', 'extractFeatureSlugFromBranchName must be a function');
+  const state = {
+    features: [{
+      slug: '2026-04-01-epic-feat',
+      epics: [{ stories: [{ id: 'p1.1' }, { slug: 'p1.2' }] }],
+    }],
+  };
+  const result = extractFeatureSlugFromBranchName('feature/p1.2', state);
+  assert.strictEqual(result, '2026-04-01-epic-feat',
+    `expected epic-nested feature slug, got "${result}"`);
+});
+
+// ── T13: extractFeatureSlugFromBranchName — returns '' for non-feature branch ──
+test('T13 — extractFeatureSlugFromBranchName returns "" for non-story branch name', () => {
+  assert(typeof extractFeatureSlugFromBranchName === 'function', 'extractFeatureSlugFromBranchName must be a function');
+  const state = { features: [{ slug: 'feat', stories: [{ id: 'owle.1' }] }] };
+  assert.strictEqual(extractFeatureSlugFromBranchName('main', state), '', 'main → ""');
+  assert.strictEqual(extractFeatureSlugFromBranchName('chore/cleanup', state), '', 'chore branch → ""');
+  assert.strictEqual(extractFeatureSlugFromBranchName('', state), '', 'empty string → ""');
+  assert.strictEqual(extractFeatureSlugFromBranchName(null, state), '', 'null → ""');
+});
+
+// ── T14: extractFeatureSlugFromBranchName — returns '' when story not in state ──
+test('T14 — extractFeatureSlugFromBranchName returns "" when story not found in state', () => {
+  assert(typeof extractFeatureSlugFromBranchName === 'function', 'extractFeatureSlugFromBranchName must be a function');
+  const state = { features: [{ slug: 'feat', stories: [{ id: 'owle.1' }] }] };
+  const result = extractFeatureSlugFromBranchName('feature/xyz.9', state);
+  assert.strictEqual(result, '', `unknown story → "", got "${result}"`);
 });
 
 // ── Results ──
