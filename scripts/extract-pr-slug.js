@@ -18,16 +18,45 @@ function extractPRSlug(bodyText) {
 /**
  * Build a slug source note for the audit record "What was delivered" section header.
  *
- * @param {'pr-body'|'auto-resolved'|string} source  How the slug was resolved
- * @param {string} [slug]  The resolved slug (used when source is 'pr-body')
+ * @param {'pr-body'|'branch-name'|'auto-resolved'|string} source  How the slug was resolved
+ * @param {string} [slug]  The resolved slug (used when source is 'pr-body' or 'branch-name')
  * @returns {string}  Human-readable source note
  */
 function buildSlugSourceNote(source, slug) {
   if (source === 'pr-body') {
     return `Source: PR body (Chain references) · \`${slug}\``;
   }
+  if (source === 'branch-name') {
+    return `Source: branch name · \`${slug}\``;
+  }
   if (source === 'auto-resolved') {
     return `⚠️ slug auto-resolved from pipeline-state — verify artefacts are correct`;
+  }
+  return '';
+}
+
+/**
+ * Derive a feature slug from a branch name by matching the story ID embedded in
+ * the branch name (e.g. "feature/owle.1") against pipeline-state stories.
+ *
+ * @param {string}      branchName  Git branch name, e.g. "feature/owle.1"
+ * @param {object|null} stateObj    Parsed pipeline-state.json object
+ * @returns {string}  The feature slug, or empty string if not matched
+ */
+function extractFeatureSlugFromBranchName(branchName, stateObj) {
+  if (!branchName || !stateObj || !stateObj.features) return '';
+  const m = branchName.match(/^(?:feature|feat)\/([a-z][a-z0-9]*\.[0-9]+)$/);
+  if (!m) return '';
+  const storyId = m[1];
+  for (const feat of stateObj.features) {
+    for (const s of feat.stories || []) {
+      if ((s.id || s.slug) === storyId) return feat.slug;
+    }
+    for (const e of feat.epics || []) {
+      for (const s of e.stories || []) {
+        if ((s.id || s.slug) === storyId) return feat.slug;
+      }
+    }
   }
   return '';
 }
@@ -71,7 +100,7 @@ function buildDispatchNote(status, storyId, issueUrl) {
   return '';
 }
 
-module.exports = { extractPRSlug, buildSlugSourceNote, extractStorySlug, buildDispatchNote };
+module.exports = { extractPRSlug, buildSlugSourceNote, extractStorySlug, buildDispatchNote, extractFeatureSlugFromBranchName };
 
 // CLI entrypoint — reads PR_BODY env var and prints the extracted slug to stdout
 if (require.main === module) {
