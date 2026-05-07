@@ -1542,9 +1542,39 @@ async function handlePostTurnHtml(req, res) {
   }
   var skillName = (req.params && req.params.name) || '';
   var sessionId = (req.params && req.params.id) || '';
+  var session = _sessionStore.get(sessionId);
+
+  // wsm.2: journey ownership + concurrent turn protection
+  var _linkedJourney = null;
+  if (session && session.journeyId) {
+    var _jStore = require('../modules/journey-store');
+    _linkedJourney = _jStore.getJourney(session.journeyId);
+    if (_linkedJourney) {
+      // Ownership check — server-side session login only (T3, T8 — body.ownerId is ignored)
+      if (_linkedJourney.ownerId && _linkedJourney.ownerId !== (req.session && req.session.login)) {
+        _json(res, 403, { error: 'FORBIDDEN' });
+        return;
+      }
+      // Concurrent turn guard (T6)
+      if (_linkedJourney.turnInProgress) {
+        _json(res, 409, { error: 'Turn already in progress' });
+        return;
+      }
+      _linkedJourney.turnInProgress = true;
+    }
+  }
+
   var body = await _readBody(req);
   var answer = (body && typeof body.answer === 'string') ? body.answer : '';
-  var result = await htmlSubmitTurn(skillName, sessionId, answer, req.session.accessToken);
+  var result;
+  try {
+    result = await htmlSubmitTurn(skillName, sessionId, answer, req.session.accessToken);
+  } finally {
+    if (_linkedJourney) {
+      _linkedJourney.turnInProgress = false;
+      _linkedJourney.lastActivityAt = Date.now();
+    }
+  }
   if (!result) {
     _json(res, 404, { error: 'Session not found' });
     return;

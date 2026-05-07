@@ -81,6 +81,8 @@ function handlePostJourney(req, res) {
     var featureSlug = (req.body && req.body.featureSlug) || '';
     var created = _journeyStore.createJourney(featureSlug);
     var journeyId = created.journeyId;
+    // wsm.2: store ownerId from session (server-side only — cannot be set from request body)
+    created.ownerId = req.session.login || null;
     var sid = crypto.randomUUID();
     var sessionPath = path.join(os.tmpdir(), 'ougl-sessions', sid + '-discovery.md');
     getRegisterHtmlSession()(sid, sessionPath, 'discovery');
@@ -359,6 +361,150 @@ async function handleGetJourneyComplete(req, res) {
   var html = renderShell({ title: 'Journey Complete', bodyContent: body, user: { login: req.session.login || '' } });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
+}
+
+// ---------------------------------------------------------------------------
+// wsm.2 — collaborative journey sharing: viewer sync, ownership, idle
+// ---------------------------------------------------------------------------
+
+// Injectable clock for test isolation (T7 requires mock clock)
+var _now = function() { return Date.now(); };
+function setNow(fn) { _now = fn; }
+
+// Viewer activity tracker: journeyId → Map<login, lastSeenMs>
+var _viewerActivity = new Map();
+
+/**
+ * Register a viewer's activity on a journey (called on each GET state/viewer poll).
+ * @param {string} journeyId
+ * @param {string} login
+ */
+function _registerViewer(journeyId, login) {
+  if (!_viewerActivity.has(journeyId)) {
+    _viewerActivity.set(journeyId, new Map());
+  }
+  _viewerActivity.get(journeyId).set(login || 'anon', _now());
+}
+
+/**
+ * Count viewers who have been active within inactivityMs milliseconds.
+ * @param {string} journeyId
+ * @param {number} [inactivityMs=30000]
+ * @returns {number}
+ */
+function _getActiveViewerCount(journeyId, inactivityMs) {
+  var cutoff = _now() - (inactivityMs != null ? inactivityMs : 30000);
+  if (!_viewerActivity.has(journeyId)) return 0;
+  var count = 0;
+  var map = _viewerActivity.get(journeyId);
+  for (var entry of map) {
+    if (entry[1] >= cutoff) count++;
+  }
+  return count;
+}
+
+/**
+ * GET /journey/:journeyId — shareable journey URL.
+ * Unauthenticated → 302 /auth/github (AC2).
+ * Authenticated → renders journey overview HTML or 404 if not found.
+ */
+function handleGetJourneyById(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Journey not found', bodyContent: '<p>Journey not found.</p>', user: { login: req.session.login || '' } }));
+    return;
+  }
+  var login = req.session.login || '';
+  _registerViewer(journeyId, login);
+  var activeUsers = _getActiveViewerCount(journeyId);
+  var body = [
+    '<div class="sw-page-content">',
+    '<h1>Journey: ' + escHtml(journey.featureSlug || journeyId) + '</h1>',
+    '<p>Stage: <strong>' + escHtml(journey.activeSkill || 'not started') + '</strong></p>',
+    '<p>Active viewers: ' + activeUsers + '</p>',
+    '</div>'
+  ].join('');
+  var html = renderShell({ title: 'Journey', bodyContent: body, user: { login: login } });
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
+/**
+ * GET /api/journey/:journeyId — returns journey state as JSON.
+ * Requires authentication (login). Available to any authenticated user (not just owner).
+ * Returns { turns, stage, activeUsers } (AC1, AC2, AC4).
+ */
+async function handleGetJourneyState(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+  var login = req.session.login || 'anon';
+  _registerViewer(journeyId, login);
+  var activeUsers = _getActiveViewerCount(journeyId);
+
+  // Get turns from active session if available
+  var turns = [];
+  if (journey.activeSessionId) {
+    var getSession = getGetHtmlSession();
+    var session = getSession(journey.activeSessionId);
+    turns = (session && session.turns) || [];
+  }
+
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ turns: turns, stage: journey.activeSkill, activeUsers: activeUsers }));
+}
+
+/**
+ * GET /api/journey/:journeyId/viewers — returns active viewer count.
+ * Requires authentication.
+ */
+async function handleGetJourneyViewers(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+  var activeUsers = _getActiveViewerCount(journeyId);
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ count: activeUsers }));
+}
+
+/**
+ * Check if a journey has been idle for > 30 minutes and set status:'idle' if so.
+ * Uses injectable _now() for test isolation.
+ * @param {string} journeyId
+ */
+function checkJourneyIdle(journeyId) {
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) return;
+  var lastActivity = journey.lastActivityAt || 0;
+  var idleMs = 30 * 60 * 1000;
+  if (_now() - lastActivity > idleMs) {
+    journey.status = 'idle';
+  }
 }
 
 /**
@@ -881,7 +1027,13 @@ module.exports = {
   handlePostDecisions,
   handlePostSideTripClarify,
   handleDeleteSideTrip,
+  // wsm.2 — collaborative journey sharing
+  handleGetJourneyById,
   handleGetJourneyState,
+  handleGetJourneyViewers,
+  checkJourneyIdle,
+  setNow,
+  // adapter setters
   setRegisterHtmlSession,
   setLinkSessionToJourney,
   setJourneyStoreModule,
