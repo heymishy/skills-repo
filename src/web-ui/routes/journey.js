@@ -334,6 +334,141 @@ async function handleGetJourneyComplete(req, res) {
   res.end(html);
 }
 
+/**
+ * GET /api/journey/:journeyId/stage-controls — owle.1
+ * Returns clarifyAvailable:true only when the journey's active skill is 'discovery'.
+ */
+function handleGetStageControls(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Unauthorised' }));
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+  var clarifyAvailable = journey.activeSkill === 'discovery';
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ clarifyAvailable: clarifyAvailable }));
+}
+
+/**
+ * POST /api/journey/:journeyId/side-trip/clarify — owle.1
+ * Opens a /clarify skill session with the journey's discovery.md pre-loaded as context.
+ * Returns { sideTripSessionId }. parentJourneyId is stored server-side only.
+ */
+async function handlePostSideTripClarify(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Unauthorised' }));
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+
+  // Path traversal guard: validate featureSlug resolves within repoRoot
+  var featureSlug = journey.featureSlug || '';
+  var repoRoot = getRepoRoot();
+  var discoveryRel = path.join('artefacts', featureSlug, 'discovery.md');
+  var discoveryAbs = path.resolve(path.join(repoRoot, discoveryRel));
+  var resolvedRoot = path.resolve(repoRoot);
+  if (!discoveryAbs.startsWith(resolvedRoot + path.sep) && discoveryAbs !== resolvedRoot) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Invalid feature slug' }));
+    return;
+  }
+
+  // Read discovery.md — tolerate missing file
+  var discoveryContent = '';
+  try { discoveryContent = fs.readFileSync(discoveryAbs, 'utf8'); } catch (_) {}
+
+  // Create clarify session
+  var sid = crypto.randomUUID();
+  var sessionPath = path.join(os.tmpdir(), 'ougl-sessions', sid + '-clarify.md');
+  getRegisterHtmlSession()(sid, sessionPath, 'clarify');
+  getLinkSessionToJourney()(sid, journeyId);
+
+  // Inject discovery content into system prompt + store parentJourneyId server-side
+  var session = getGetHtmlSession()(sid);
+  if (session && discoveryContent) {
+    session.systemPrompt += '\n\n---\n\n**Pre-loaded discovery artefact (read-only context):**\n\n' + discoveryContent;
+  }
+  if (session) {
+    session.parentJourneyId = journeyId;
+  }
+
+  // Record side-trip session on journey for cleanup — does NOT change activeSkill/activeSessionId
+  journey.sideTripSessionId = sid;
+
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ sideTripSessionId: sid }));
+}
+
+/**
+ * DELETE /api/journey/:journeyId/side-trip — owle.1
+ * Closes the active side-trip session. Does not modify parent journey state.
+ */
+async function handleDeleteSideTrip(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Unauthorised' }));
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+  var sideTripSid = journey.sideTripSessionId;
+  if (sideTripSid) {
+    var stSession = getGetHtmlSession()(sideTripSid);
+    if (stSession) { stSession.done = true; }
+    journey.sideTripSessionId = null;
+  }
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ closed: true }));
+}
+
+/**
+ * GET /api/journey/:journeyId — owle.1
+ * Returns main journey state. sideTripSessionId is intentionally excluded.
+ */
+function handleGetJourneyState(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Unauthorised' }));
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+  // sideTripSessionId intentionally omitted — server-side only
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({
+    journeyId:       journey.journeyId,
+    featureSlug:     journey.featureSlug,
+    activeSkill:     journey.activeSkill,
+    activeSessionId: journey.activeSessionId,
+    completedStages: journey.completedStages,
+    complete:        journey.complete
+  }));
+}
+
 module.exports = {
   handleGetJourney,
   handlePostJourney,
@@ -341,6 +476,10 @@ module.exports = {
   handleGetStories,
   handlePostStories,
   handleGetJourneyComplete,
+  handleGetStageControls,
+  handlePostSideTripClarify,
+  handleDeleteSideTrip,
+  handleGetJourneyState,
   setRegisterHtmlSession,
   setLinkSessionToJourney,
   setJourneyStoreModule,
