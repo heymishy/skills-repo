@@ -160,6 +160,8 @@ Skill files and templates are content, not code — they are governed by pipelin
 | ADR-015 | Active | Two-tier artefact scope model: system corpus vs feature delivery — `/modernisation-decompose` is the canonical bridge mechanism; ad-hoc cross-scope artefact sharing is not permitted | All contributors working on modernisation programmes; /modernisation-decompose skill invocations |
 | ADR-018 | Active | Playwright is the E2E testing framework; specs in `tests/e2e/`; devDependency only; unit test chain (`npm test`) must not invoke Playwright; auth bypass is test-fixture-layer only (`NODE_ENV=test` guard) | All browser-facing feature stories; wuce E3/E4 subagents; DoR H-E2E gate check |
 | ADR-019 | Active | Dynamic content is per-turn substitution only — the static question list governs question count, progress display, and fallback; dynamic model output replaces individual items in place and never changes the list length | All web UI skill session features (dsq and successors); any story that introduces model-generated content into a progress-counted sequence |
+| ADR-022 | Active | Multi-skill journey orchestration is Option B — one session per skill stage with structured artefact handoff; Option A (single persistent session across multiple skills) is incompatible with the mfc.1 session model and must not be used | All features that orchestrate multiple skill stages through the web UI; any future guided journey or wizard flow |
+| ADR-023 | Active | Handoff schema between journey stages is artefact content injection (B-iii) — prior-stage artefact file content injected as named sections; full Q&A replay (B-i) and model-synthesised summary (B-ii) are deferred | All gate-confirm handlers; `buildSystemPrompt` callers that pass `priorArtefacts`; any story that reads prior-stage context into a new session |
 
 ---
 
@@ -1111,6 +1113,73 @@ Phase 2 of the web UI requires server-side execution of pipeline skills (SKILL.m
 - Any alternative execution engine (direct GitHub Models API, MCP-only) requires a new ADR before implementation — not a code-level decision
 - The ACP server path (multi-turn TCP server mode) must be gated by a feature flag until it reaches GA; the subprocess path is the production fallback
 - Revisit trigger: if GitHub deprecates the `-p` flag or ACP exits public preview with breaking changes
+
+---
+
+### ADR-022: Multi-skill journey orchestration is Option B — per-skill sessions with structured artefact handoff
+
+**Date:** 2026-05-06
+**Status:** Active
+**Story:** ougl.1–ougl.7 (2026-05-06-web-ui-guided-outer-loop)
+**Decided by:** Hamis — confirmed on spike PROCEED verdict 2026-05-06
+
+#### Context
+
+The ougl feature required orchestrating 7 outer loop skills (/workflow → /discovery → /benefit-metric → /definition → /test-plan → /review → /definition-of-ready) through the web UI. Two architectures were evaluated:
+
+- **Option A:** A single long-running session where all skill stages run within one session context. /workflow SKILL.md loads once; subsequent SKILL.md content is injected as the session advances.
+- **Option B:** One fresh session per skill stage. /workflow acts as a stateless router. Each skill stage runs in its own isolated session with a structured handoff block (prior artefact content) injected at session start.
+
+#### Decision
+
+**Option B is chosen. Option A is explicitly ruled out and must not be revisited without first refactoring the mfc.1 session model.**
+
+Three structural blockers in the mfc.1 session model make Option A incompatible:
+
+1. `session.done` fires on the first artefact signal and cannot be reset — /benefit-metric cannot start in a session where /discovery has already set `done: true`.
+2. `buildSystemPrompt` is called once at session creation and stored as `session.systemPrompt` — the system prompt is immutable per session; swapping SKILL.md content between stages is not supported without session model changes.
+3. Context budget risk — 7 SKILL.md files plus the full outer loop conversation history approaches the 128k token limit before any artefact output is produced.
+
+Option B requires only additive changes to the existing codebase: a `priorArtefacts` parameter to `buildSystemPrompt`, a journey state store module, and gate-confirm route handlers.
+
+#### Consequences
+
+- Any future feature that orchestrates multiple skills through the web UI MUST follow Option B: one session per stage, handoff via artefact content injection.
+- The journey state store (`src/web-ui/modules/journey-store.js`) is the canonical implementation. Future multi-stage features extend or reuse it — they do not introduce a new session-spanning model.
+- Side-trips (/clarify, /decisions, /spike mid-journey) are each their own session when implemented. They are out of scope for ougl MVP but follow the same per-session-per-skill rule.
+- Revisit trigger: if the mfc.1 session model is refactored to support session reset and hot-swappable system prompts, Option A can be re-evaluated. No such refactor is planned.
+
+---
+
+### ADR-023: Handoff schema between journey stages is artefact content injection (B-iii)
+
+**Date:** 2026-05-06
+**Status:** Active
+**Story:** ougl.1, ougl.5 (2026-05-06-web-ui-guided-outer-loop)
+**Decided by:** Hamis — confirmed on spike PROCEED verdict 2026-05-06
+
+#### Context
+
+With Option B (ADR-022), each new skill stage session receives context from prior stages via a handoff block injected into the system prompt. Three handoff schema options were evaluated:
+
+- **B-i:** Replay the full Q&A turn history from prior sessions into the new session's message array.
+- **B-ii:** Ask the model to synthesise a structured summary at each stage boundary; inject the summary as the handoff.
+- **B-iii:** Read the prior-stage artefact file from disk and inject its content as named sections in the system prompt via `buildSystemPrompt`'s `priorArtefacts` parameter.
+
+#### Decision
+
+**B-iii (artefact content injection) is the active handoff schema.** B-i and B-ii are deferred, not discarded.
+
+- **B-i** carries unbounded token cost (all Q&A across all prior sessions) and introduces a multi-persona context that the new session's model did not participate in — context confusion risk.
+- **B-ii** adds a model call per stage boundary (latency, cost, fidelity risk — key decisions can be silently dropped in summaries) for marginal benefit over B-iii on the majority of use cases.
+- **B-iii** maps directly to `buildSystemPrompt`'s existing reference materials injection pattern. Token budget for the largest expected injection (7-stage feature) is approximately 8k tokens — well within per-session budget. Artefacts are designed to be self-contained summaries of each stage's output.
+
+#### Consequences
+
+- The `buildSystemPrompt(skill, repoPath, webUiConfig, priorArtefacts)` function signature is the contract. The `priorArtefacts` parameter accepts `[{path, content}]` arrays. All callers must use this parameter for cross-stage context — never inject prior-session Q&A directly into the messages array.
+- **Disk canonicity rule (companion constraint):** `content` in each `priorArtefacts` entry MUST be read from disk (via `fs.readFileSync`), not sourced from `session.artefactContent`. This ensures trace validation (which reads disk) is consistent with what the next stage model received. See web-ui-patterns.md — "Disk canonicity" section.
+- **Known limitation (RISK-ACCEPT):** B-iii captures the structured output of each stage but not the deliberative reasoning path. If an operator heavily edits a model-generated artefact, the downstream stage receives only the final text, not the reasoning behind the edits. Monitoring signal: if MM2 coherence ratings drop below 4/5 on ≥2 features with heavily-edited artefacts, revisit B-ii as a post-MVP enhancement.
+- Revisit trigger: operator-reported coherence degradation at stage transitions, or a model API that supports native session-to-session context handoff without token cost.
 
 ---
 
