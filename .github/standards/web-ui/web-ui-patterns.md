@@ -193,6 +193,106 @@ Source: mfc.1 architecture decision.
 
 ---
 
+## Multi-skill journey orchestration (Option B — per-skill sessions with handoff)
+
+When building a multi-step guided journey across several skills (e.g. /workflow → /discovery → /benefit-metric → ... → /definition-of-ready), the session architecture MUST follow **Option B**: one fresh session per skill stage, with a structured handoff block injected at the start of each new session.
+
+**Option A (single persistent session across multiple skills) is explicitly ruled out.** Three structural blockers in the mfc.1 session model make it incompatible without significant refactoring: (1) `session.done` fires on the first artefact signal and cannot be reset; (2) `buildSystemPrompt` is called once at session creation and stored as `session.systemPrompt` — the system prompt is immutable per session, so swapping SKILL.md content between stages is not supported; (3) context budget risk — multiple SKILL.md files plus full outer loop conversation history approaches the model's 128k token limit before any artefact output. Do not attempt to revive Option A unless mfc.1's session model is refactored to support session reset and swappable system prompts. Source: ADR-022.
+
+**Option B implementation rules:**
+
+1. The orchestrator creates a new session for each skill stage using `registerHtmlSession(sessionId, repoPath, skillName, priorArtefacts)`.
+2. Prior-stage context is passed as the `priorArtefacts` parameter — an array of `{path, content}` objects where `content` is read from disk (not from in-memory session state).
+3. The journey state store tracks `completedStages`, `activeSessionId`, and `storyList` (for per-story stages).
+4. The orchestrator must link each new session to the journey via `linkSessionToJourney(sessionId, journeyId)` immediately after creation.
+5. The gate-confirm handler is the transition point: it writes the artefact to disk, reads it back, builds the handoff, creates the next stage session, and redirects.
+
+**Handoff block injection via `buildSystemPrompt`:**
+
+The `priorArtefacts` parameter adds a `--- HANDOFF CONTEXT ---` block to the system prompt. Each prior artefact appears as:
+
+```
+--- PRIOR ARTEFACT: artefacts/[date-slug]/[skillName].md ---
+[file content]
+--- END PRIOR ARTEFACT ---
+```
+
+This is B-iii (artefact content only). Token budget for largest injection ≈ 8k tokens — well within per-session budget. Source: ADR-023.
+
+---
+
+## Disk canonicity — write-then-read for gate-confirm handoff
+
+Any gate-confirm handler that transitions to the next skill stage MUST follow the write-then-read sequence:
+
+1. **Write** `session.artefactContent` to disk at the resolved `artefactPath`.
+2. **Read back** from disk using `fs.readFileSync(artefactPath, 'utf8')`.
+3. **Use the disk content** (not `session.artefactContent`) to build the `priorArtefacts` array for the next stage session.
+
+```js
+// Correct — disk is canonical
+fs.writeFileSync(resolvedPath, session.artefactContent, 'utf8');
+const diskContent = fs.readFileSync(resolvedPath, 'utf8');
+const priorArtefacts = [{ path: session.artefactPath, content: diskContent }];
+```
+
+**Why:** `/trace` always validates against disk. Using `session.artefactContent` directly for handoff would create a divergence between what the next skill receives and what the trace sees if any edit was made between LLM output and the gate-confirm click. Disk is the durable record. Source: ougl decisions.md (2026-05-06).
+
+**Atomicity ordering:** the disk write MUST precede the `completeStage()` call. If the write fails (throws), `completeStage` is never called and the journey state is not advanced. This is the correct failure mode — a failed write must not advance the stage.
+
+---
+
+## Structured lifecycle log events
+
+Route handlers that perform significant lifecycle operations (artefact saved to disk, journey completed, story advanced) MUST emit structured log events at those boundaries.
+
+**Format:**
+
+```js
+console.log(JSON.stringify({ event: 'artefact_saved_to_disk', journeyId, skillName, artefactPath }));
+console.log(JSON.stringify({ event: 'journey_completed', journeyId, stageCount: journey.completedStages.length }));
+console.log(JSON.stringify({ event: 'story_advanced', journeyId, nextStory, remainingCount }));
+```
+
+**Rules:**
+- All log events use `JSON.stringify({...})` — not template literals. This ensures parseable output for log aggregation tools.
+- The `event` field is a `snake_case` string identifying the lifecycle point.
+- Include enough context fields to correlate the event without reading session state (at minimum: `journeyId` or equivalent correlation ID, plus the key entity acted on).
+- Do not log sensitive values (access tokens, session content, user-provided free text).
+- Lifecycle log events should be verified by at least one test that asserts the log call was made with the expected arguments (spy or capture pattern).
+
+Source: ougl NFR-obs-journeycompleted, NFR-obs-artefactsaved (2026-05-06).
+
+---
+
+## Path traversal guard for disk writes
+
+Any route handler that writes a file to disk at a path derived from request data (URL params, form fields, session values set earlier in the flow) MUST validate that the resolved path starts with the repo root before any write is performed.
+
+```js
+const repoRoot = path.resolve(__dirname, '../../..'); // adjust depth for your module location
+const resolvedPath = path.resolve(artefactPath);
+if (!resolvedPath.startsWith(repoRoot + path.sep) && resolvedPath !== repoRoot) {
+  return respond(res, 400, 'artefact path escapes repo root');
+}
+// safe to write
+fs.writeFileSync(resolvedPath, content, 'utf8');
+```
+
+**Rules:**
+- The guard MUST use `path.resolve()` on the input before comparison — never compare raw strings.
+- The comparison is `startsWith(repoRoot + path.sep)` — not `startsWith(repoRoot)` alone, which would incorrectly allow paths like `/repo-root-suffix/...`.
+- Return HTTP 400 (not 500) when the guard triggers — this is a client input error, not a server fault.
+- Do not log the offending path value in production (it may contain traversal sequences).
+- This guard applies to any path value that the user could influence, even indirectly (e.g. a feature slug stored in session that is later used to construct an artefact path).
+- A dedicated test MUST cover the path traversal case (e.g. `artefactPath = '../../etc/passwd'`) and assert: (1) HTTP 400 returned, (2) no file written to disk.
+
+This complements the skill name allowlist (which validates URL-path skill names) — both are required defences.
+
+Source: ougl.5 AC11, ougl.6 AC8, NFR-sec-pathtraversal (2026-05-06).
+
+---
+
 ## Artefact signal protocol
 
 When a model session is expected to produce a committable artefact, the model signals completion using embedded markers in its response:

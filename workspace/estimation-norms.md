@@ -1,4 +1,4 @@
-# Estimation norms — cross-feature actuals
+﻿# Estimation norms — cross-feature actuals
 
 | Date | Feature | Stories | Engagement | OL estimate | OL actual | Delta | IL (human) | Calendar days |
 |------|---------|---------|-----------|------------|-----------|-------|------------|---------------|
@@ -69,7 +69,39 @@
 
 ---
 
-## E3 actuals � 2026-05-02-web-ui-copilot-execution-layer (WUCE)
+## E3 actuals — 2026-05-06-web-ui-guided-outer-loop (ougl)
+
+```yaml
+featureSlug: "2026-05-06-web-ui-guided-outer-loop"
+featureTitle: "Web UI Guided Outer Loop Journey"
+date: "2026-05-07"
+phase: "E3"
+calendarDays: 2
+storyCount: 7
+outerLoopEstimateH: null
+outerLoopActualH: null
+engagementFraction: null
+focusHPerStory: null
+deliveryModel: "agent-wave (single PR, VS Code subagent-execution)"
+e1estimate: null
+e2estimate: null
+e1delta: null
+e2delta: null
+acCount: 62
+acsAutomated: 60
+acsManualVerification: 2
+testCount: 60
+testMethod: "Node.js unit tests (60/60, 7 check-ouglN scripts)"
+sessionId: "568d554a"
+premiumRequestsForecast: null
+premiumRequestsActual: null
+outerLoopCharacter: "agent-wave-established-surface"
+note: "null-path — no E1/E2 recorded; E3 actuals not extracted from JSONL (timing not parsed this session). Seeds normalisation table. Feature built on top of the established mfc.1/wuce pattern (Option B orchestration, injectable adapters, escHtml, path traversal guard). 7 stories, 62 ACs, 60 automated tests, all merged in one PR (#320). Qualitative calibration: ougl was structurally similar to wuce (agent-wave, established surface patterns) but smaller (7 vs 17 stories). Expected focus/story ≈ 0.3–0.4h based on wuce baseline. Calibration to confirm when JSONL timing is extracted."
+```
+
+---
+
+## E3 actuals — 2026-05-02-web-ui-copilot-execution-layer (WUCE)
 
 ```yaml
 featureSlug: "2026-05-02-web-ui-copilot-execution-layer"
@@ -95,5 +127,5 @@ sessionId: "568d554a"
 premiumRequestsForecast: null
 premiumRequestsActual: null
 outerLoopCharacter: "agent-heavy-wave-delivery"
-note: "null-path � no E1/E2 recorded; seeds normalisation table only. 25% engagement fraction reflects highly agent-heavy delivery: 4 dispatch waves, full TDD inner loop per story, operator focus concentrated in Wave 1 (OAuth design) and DoD writing. 0.33h focus/story is a floor calibration point for agent-wave features. For comparison: Phase 4 (p4) was 0.89h focus/story for complexity-heavy genuinely-novel stories. WUCE was simpler ACs, well-understood surface patterns, agent did full TDD � hence 0.33 is plausible. Calibration rule proposed: agent-wave delivery with pre-existing surface patterns ? 0.3-0.4h/story outer loop. Novel surface with operator design decisions ? 0.7-1.0h/story."
+note: "null-path � no E1/E2 recorded; seeds normalisation table only. 25% engagement fraction reflects highly agent-heavy delivery: 4 dispatch waves, full TDD inner loop per story, operator focus concentrated in Wave 1 (OAuth design) and DoD writing. 0.33h focus/story is a floor calibration point for agent-wave features. For comparison: Phase 4 (p4) was 0.89h focus/story for complexity-heavy genuinely-novel stories. WUCE was simpler ACs, well-understood surface patterns, agent did full TDD � hence 0.33 is plausible. Calibration rule proposed: agent-wave delivery with pre-existing surface patterns ? 0.3-0.4h/story outer loop. Novel surface with operator design decisions ? 0.7-1.0h/story."
 ```

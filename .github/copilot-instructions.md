@@ -272,6 +272,10 @@ An AC that requires CSS layout and has neither is an open gap — it must not si
 
 > **Operator one-time action (GitHub branch protection):** Configure a path-based bypass in the repository's GitHub Ruleset (Settings → Rules → your master ruleset) for paths `workspace/**`, `artefacts/**`, and `.github/pipeline-state.json`. This allows direct push without a PR for these bookkeeping paths while keeping the PR gate intact for all code paths. Until that bypass is in place, use a short-lived branch + immediate merge as described above.
 
+**Disk canonicity for gate-confirm and artefact handoff (ougl):** Any handler that writes an artefact to disk and then passes its content to the next stage MUST follow the write-then-read sequence: (1) write `session.artefactContent` to disk, (2) read the file back from disk via `fs.readFileSync`, (3) use the disk content for handoff. Never use `session.artefactContent` directly as handoff input after the disk write. Disk is the durable canonical record — `/trace` validates against disk, so any divergence between what the next stage model receives and what trace sees is a traceability defect. Companion rule: the disk write MUST precede `completeStage()` — if the write fails, the stage must not advance. Source: ougl decisions.md (2026-05-06), ADR-023.
+
+**Path traversal guard for disk writes (ougl):** Any route handler that writes a file to disk at a path derived from request data (URL params, form fields, session-stored slugs, or artefact paths set earlier in the flow) MUST validate the resolved path before writing. Use `path.resolve(inputPath)` and assert `resolvedPath.startsWith(repoRoot + path.sep)`. Return HTTP 400 if the check fails — do not log the raw path value in production. A dedicated test must cover the path traversal case and assert both the 400 response and that no file was written to disk. This guard is required in addition to (not instead of) allowlist validation of slug/skill-name URL parameters. Source: ougl.5 AC11, ougl.6 AC8, NFR-sec-pathtraversal, web-ui-patterns.md.
+
 ---
 
 ## Product context files
