@@ -58,8 +58,9 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   skillsAdapter.setGetCommitPreview(async function(skillName, sessionId, _token) {
     return htmlGetPreview(skillName, sessionId);
   });
-  skillsAdapter.setCommitSession(async function(skillName, sessionId, token) {
-    return htmlCommitSession(skillName, sessionId, token, { login: '', email: 'web-ui@localhost' });
+  skillsAdapter.setCommitSession(async function(skillName, sessionId, token, login) {
+    const name = login || 'web-ui';
+    return htmlCommitSession(skillName, sessionId, token, { name, email: name + '@users.noreply.github.com' });
   });
 
   // mfc.1 — wire real Copilot API executor for model-first chat turns
