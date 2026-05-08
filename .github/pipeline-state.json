@@ -7159,23 +7159,29 @@
           "id": "wucp.1",
           "slug": "wucp.1",
           "name": "Pipeline context auto-loader",
-          "stage": "definition",
+          "stage": "review",
           "health": "green",
           "prStatus": "none",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.1.md",
           "testPlan": { "artefact": null, "status": "not-started" },
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/review/wucp.1-review-1.md"
         },
         {
           "id": "wucp.2",
           "slug": "wucp.2",
           "name": "Slash command router",
-          "stage": "definition",
+          "stage": "review",
           "health": "green",
           "prStatus": "none",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.2.md",
           "testPlan": { "artefact": null, "status": "not-started" },
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/review/wucp.2-review-1.md"
         },
         {
           "id": "wucp.3",
@@ -7193,12 +7199,15 @@
           "id": "wucp.4",
           "slug": "wucp.4",
           "name": "Session start wizard",
-          "stage": "definition",
+          "stage": "review",
           "health": "green",
           "prStatus": "none",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.4.md",
           "testPlan": { "artefact": null, "status": "not-started" },
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/review/wucp.4-review-1.md"
         }
       ],
       "epics": [
