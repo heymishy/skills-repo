@@ -26,7 +26,8 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState } = require('./routes/journey'); // ougl.3 / owle.1-5
+const { handleGetJourney, handlePostJourney, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter } = require('./routes/journey'); // ougl.3 / owle.1-6
+const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -119,6 +120,16 @@ if (process.env.NODE_ENV !== 'test') {
     const decoded = Buffer.from(data.content.replace(/\n/g, ''), 'base64').toString('utf8');
     return JSON.parse(decoded);
   });
+}
+
+// owle.6: Wire pipeline-state auto-writer (runs on every gate-confirm success)
+{
+  const repoRootForAdapter = process.env.COPILOT_REPO_PATH || _path.resolve(__dirname, '../..');
+  if (process.env.NODE_ENV === 'test') {
+    setPipelineStateWriter(function() {}); // no-op in test mode
+  } else {
+    setPipelineStateWriter(pipelineStateWriterFactory(repoRootForAdapter));
+  }
 }
 
 // ── Test-mode infrastructure (NODE_ENV=test only) ─────────────────────────
