@@ -6972,8 +6972,8 @@
       "slug": "2026-05-07-web-ui-session-management",
       "name": "Web UI Session Management",
       "track": "short",
-      "stage": "definition-of-ready",
-      "health": "green",
+      "stage": "definition-of-done",
+      "health": "amber",
       "releaseReady": false,
       "regulated": false,
       "complianceProfile": "standard",
@@ -6990,9 +6990,9 @@
             "status": "written",
             "artefact": "artefacts/2026-05-07-web-ui-session-management/test-plans/wsm.1-test-plan.md"
           },
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/336",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -7000,10 +7000,13 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.1-dor.md",
-          "updatedAt": "2026-05-09",
+          "updatedAt": "2026-05-08",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/327",
           "dispatchedAt": "2026-05-08T00:00:00.000Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-05-07-web-ui-session-management/dod/wsm.1-dod.md"
         },
         {
           "id": "wsm.2",
@@ -7013,20 +7016,24 @@
             "status": "written",
             "artefact": "artefacts/2026-05-07-web-ui-session-management/test-plans/wsm.2-test-plan.md"
           },
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/337",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "health": "green",
+          "health": "amber",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.2-dor.md",
-          "updatedAt": "2026-05-09",
+          "updatedAt": "2026-05-08",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/328",
           "dispatchedAt": "2026-05-08T00:00:00.000Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "dodStatus": "complete-with-deviations",
+          "releaseReady": false,
+          "blocker": "Viewer response shape (turns/stage missing), viewer count, idle cleanup — 6 failing assertions. Follow-up story required.",
+          "dodArtefact": "artefacts/2026-05-07-web-ui-session-management/dod/wsm.2-dod.md"
         },
         {
           "id": "wsm.3",
@@ -7036,20 +7043,91 @@
             "status": "written",
             "artefact": "artefacts/2026-05-07-web-ui-session-management/test-plans/wsm.3-test-plan.md"
           },
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/338",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "amber",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.3-dor.md",
+          "updatedAt": "2026-05-08",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/329",
+          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchTarget": "vscode",
+          "dodStatus": "complete-with-deviations",
+          "releaseReady": false,
+          "blocker": "stages array missing from GET journey response (AC1 breadcrumb), session-boundary marker not injected (AC6). Follow-up stories required.",
+          "dodArtefact": "artefacts/2026-05-07-web-ui-session-management/dod/wsm.3-dod.md"
+        },
+        {
+          "id": "wsm.4",
+          "title": "Journey API GET response shape fix (duplicate handler removal)",
+          "artefact": "artefacts/2026-05-07-web-ui-session-management/stories/wsm.4-get-response-shape-fix.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-05-07-web-ui-session-management/test-plans/wsm.4-test-plan.md"
+          },
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.3-dor.md",
-          "updatedAt": "2026-05-09",
-          "issueUrl": "https://github.com/heymishy/skills-repo/issues/329",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
-          "dispatchTarget": "vscode"
+          "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.4-dor.md",
+          "updatedAt": "2026-05-08"
+        }
+      ],
+      "lastImprove": "2026-05-08",
+      "guardrails": [
+        {
+          "label": "NFR-sec-no-accesstoken-disk",
+          "id": "NFR-sec-no-accesstoken-disk",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-08",
+          "evidence": "T2 — file content asserted no accessToken key after write",
+          "category": "nfr"
+        },
+        {
+          "label": "NFR-rel-session-write-failure",
+          "id": "NFR-rel-session-write-failure",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-08",
+          "evidence": "T7 — write failure injected; server continues, ERROR logged",
+          "category": "nfr"
+        },
+        {
+          "label": "NFR-sec-ownership-serverside",
+          "id": "NFR-sec-ownership-serverside",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-08",
+          "evidence": "T8 wsm2 — spoofed ownerId ignored; 403 returned",
+          "category": "nfr"
+        },
+        {
+          "label": "NFR-sec-viewer-restriction",
+          "id": "NFR-sec-viewer-restriction",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-08",
+          "evidence": "T3 wsm2 — viewer 403 confirmed",
+          "category": "nfr"
+        },
+        {
+          "label": "NFR-consistency-needs-review",
+          "id": "NFR-consistency-needs-review",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-05-08",
+          "evidence": "T7 wsm3 — flags survive disk round-trip in same request cycle",
+          "category": "nfr"
         }
       ]
     }
