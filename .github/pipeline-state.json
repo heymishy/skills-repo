@@ -7188,6 +7188,17 @@
           "testPlan": { "artefact": null, "status": "not-started" },
           "dorStatus": "not-started",
           "blockedOn": "wucp.0"
+        },
+        {
+          "id": "wucp.4",
+          "slug": "wucp.4",
+          "name": "Session start wizard",
+          "stage": "definition",
+          "health": "green",
+          "prStatus": "none",
+          "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.4.md",
+          "testPlan": { "artefact": null, "status": "not-started" },
+          "dorStatus": "not-started"
         }
       ],
       "epics": [
@@ -7196,7 +7207,7 @@
           "name": "Web UI Runtime Capabilities",
           "status": "not-started",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/epics/wucp-runtime-capabilities.md",
-          "stories": ["wucp.0", "wucp.1", "wucp.2", "wucp.3"]
+          "stories": ["wucp.0", "wucp.1", "wucp.2", "wucp.3", "wucp.4"]
         }
       ],
       "updatedAt": "2026-05-09",
