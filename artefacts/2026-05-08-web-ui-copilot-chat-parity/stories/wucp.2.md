@@ -21,6 +21,9 @@ So that I'm not limited to the linear journey stage sequence and can run `/workf
 - **No modification to `.github/skills/`:** skill capability annotations for the web UI surface cannot be added to SKILL.md files per the discovery constraint. The capability map (skill → required surface capabilities) is maintained as a static configuration object in the router implementation
 - **D37 (Injectable adapter rule):** If the skill-loader is extracted as an adapter (`let _loadSkill = defaultFn`), its stub must throw
 - **Coexistence with journey stage mode:** The router must not break the existing journey stage flow. Journey state (`stage`, `stageIndex`, `sessionId`) must be preserved across slash command invocations
+- **Path injection guard (coding standard, copilot-instructions.md):** Skill name from request input is validated against the `fs.readdirSync` allowlist before any file read. A skill name containing `/`, `..`, or path separators is rejected with HTTP 400 — this is a mandatory security requirement, not just an NFR
+- **Capability map:** The capability map (skill → required surface capabilities) is a static configuration constant in the router. Classification covers all skills present in the library at the time of implementation; updating the map when adding new skills is a standard maintenance task
+- **ADR-022 (multi-skill orchestration): N/A** — slash command is a per-turn `buildSystemPrompt()` override within an existing session; no session boundary or artefact handoff is created
 
 ## Dependencies
 
@@ -31,9 +34,9 @@ So that I'm not limited to the linear journey stage sequence and can run `/workf
 
 **AC1:** Given the operator types `/workflow` (or any slash-prefixed skill name matching a directory under `.github/skills/`) in the web UI message input, When the message is submitted, Then the server loads `.github/skills/[skill-name]/SKILL.md` and includes its full content in `buildSystemPrompt()` for that turn, replacing the current journey-stage skill with the requested skill.
 
-**AC2:** Given the skill list is derived dynamically from `fs.readdirSync('.github/skills')`, When a new skill directory is added to `.github/skills/`, Then it is immediately available via the router with no code change required. (Verified by adding a test skill directory and confirming the router returns it in the available skills list.)
+**AC2:** Given the skill list is derived dynamically from `fs.readdirSync('.github/skills')`, When a new skill directory is added to `.github/skills/`, Then it is immediately available via the router with no code change required.
 
-**AC3:** Given a slash command invokes a skill that requires surface capabilities not available in the web UI (e.g. `/branch-setup` requiring `git worktree`, `/trace` requiring `scripts/validate-trace.sh`), When the skill is loaded, Then the router includes a capability notice in the system prompt: `"NOTE: This skill requires [capability list]. Some outputs may be limited or unavailable in the web UI."` The capability map is a static configuration object in the router; the 44 skills are classified at implementation time.
+**AC3:** Given a slash command invokes a skill that requires surface capabilities not available in the web UI (e.g. `/branch-setup` requiring `git worktree`, `/trace` requiring `scripts/validate-trace.sh`), When the skill is loaded, Then the router includes a capability notice in the system prompt: `"NOTE: This skill requires [capability list]. Some outputs may be limited or unavailable in the web UI."`
 
 **AC4:** Given the operator is in journey stage mode (e.g. mid-definition on story 2 of 4), When they type `/decisions` to log a decision, Then the router loads the `/decisions` SKILL.md for that turn only; on the next turn (if no slash command is typed), the session resumes journey stage mode at the same position it was at before the slash command. Journey stage position (`currentStage`, `stageIndex`) is not mutated by slash command invocations.
 

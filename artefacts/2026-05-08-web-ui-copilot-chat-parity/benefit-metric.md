@@ -114,9 +114,9 @@ If MM1 falls below the minimum signal threshold (< 60% emission rate), the imple
 |--------|---------------------|-----------------|
 | M1 — `/workflow` accuracy | wucp.3 (tool execution loop — creates measurement log) | Covered |
 | M2 — `/trace` file-read parity | wucp.3 (tool execution loop — enables file reads M2 requires) | Covered |
-| M3 — Outer loop completeness | wucp.1 (context auto-loader — removes session-start friction); wucp.2 (slash command router — enables non-journey skills); wucp.3 (tool loop — completes file-read requirement for mid-session skills) | Covered |
+| M3 — Outer loop completeness | wucp.1 (context auto-loader — removes session-start friction); wucp.2 (slash command router — enables non-journey skills); wucp.3 (tool loop — completes file-read requirement for mid-session skills); wucp.4 (session start wizard — correct feature context selection, required for M3 dogfood cycle validity) | Covered |
 | MM1 — Tool marker emission rate | wucp.0 (MM1 spike — directly measures and documents baseline; gates wucp.3) | Covered |
-| MM2 — Unassisted replication | wucp.1 + wucp.2 + wucp.3 (all three gaps closed together enable unassisted replication) | Covered |
+| MM2 — Unassisted replication | wucp.1 + wucp.2 + wucp.3 (all three gaps closed together enable unassisted replication); wucp.4 (session start wizard — eliminates manual slug entry, reducing friction in unassisted cycle) | Covered |
 
 ---
 

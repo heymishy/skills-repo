@@ -55,7 +55,7 @@ So that skills like `/workflow` and `/orient` give an accurate "here is where we
 
 - **Security:** No credential values may appear in the assembled system prompt. Validated by AC5 schema inspection. Any future addition to `context.yml` that introduces a credential value field (not a secretRef) is a breaking change that requires a re-inspection.
 - **Performance:** System prompt assembly must complete in under 500ms for repositories with up to 30 features in `pipeline-state.json` and `workspace/learnings.md` up to 500 lines. Files are read synchronously at session start — async is not required for this volume.
-- **Security (path):** File reads in the auto-loader are from known, static paths (not from request data) — path-traversal guard (ADR-023) is not required for this story's reads. If any path is ever derived from request data in a future extension, the guard becomes mandatory.
+- **Security (path):** File reads in the auto-loader are from known, static paths (not from request data) — path traversal guard (coding standard, copilot-instructions.md) is not applicable here. If any path is ever derived from request data in a future extension, the guard becomes mandatory.
 - **Accessibility:** None — system prompt change only, no UI changes
 
 ## Complexity Rating

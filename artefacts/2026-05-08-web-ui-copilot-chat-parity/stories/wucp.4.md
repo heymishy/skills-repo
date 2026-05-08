@@ -20,7 +20,7 @@ So that the session is immediately oriented to the right feature context — pip
 - **wucp.1 dependency:** The session wizard sets `session.activeFeatureSlug`; wucp.1's `buildSystemPrompt()` reads it to scope the artefact listing. If wucp.1 has not shipped, this story's artefact-listing scoping is a no-op — but the wizard itself can ship independently since it only sets a session field
 - **Journey stage coexistence:** The wizard is a pre-journey screen, not a journey stage. It must not mutate `stageIndex` or inject a stage into the journey sequence. Once the operator selects a project, journey stage 0 (currently `/discovery`) proceeds normally
 - **No new npm dependencies:** Feature list is read from `pipeline-state.json` using `fs.readFileSync` + `JSON.parse`
-- **ADR-023 path guard:** Not applicable — the feature slug is selected from a controlled allowlist (the `pipeline-state.json` features array), not from free-form request input. Slug is validated against the allowlist before use
+- **Path traversal guard (coding standard, copilot-instructions.md):** Not applicable — the feature slug is selected from a controlled allowlist (the `pipeline-state.json` features array), not from free-form request input. Slug is validated against the allowlist before use
 
 ## Dependencies
 
