@@ -7130,6 +7130,21 @@
           "category": "nfr"
         }
       ]
+    },
+    {
+      "slug": "2026-05-08-web-ui-copilot-chat-parity",
+      "name": "Web UI Copilot Chat Parity",
+      "track": "standard",
+      "stage": "discovery",
+      "health": "green",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "stories": [],
+      "updatedAt": "2026-05-08",
+      "discoveryArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/discovery.md",
+      "discoveryStatus": "draft"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
