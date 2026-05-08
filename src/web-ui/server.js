@@ -66,11 +66,16 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
 
   // mfc.1 — wire real Copilot API executor for model-first chat turns
   const { skillTurnExecutor: realSkillTurnExecutor, skillTurnExecutorStream: realSkillTurnExecutorStream } = require('../modules/skill-turn-executor');
-  const { setSkillTurnExecutorAdapter, setSkillTurnExecutorStreamAdapter } = require('./routes/skills');
+  const { setSkillTurnExecutorAdapter, setSkillTurnExecutorStreamAdapter, setSessionStore: _setSessionStore, _setHtmlSession: _restoreHtmlSession } = require('./routes/skills');
   setSkillTurnExecutorAdapter(realSkillTurnExecutor);
   setSkillTurnExecutorStreamAdapter(realSkillTurnExecutorStream);
   // _nextQuestionExecutorAdapter and _sectionDraftExecutorAdapter are no-ops (AC9 — mfc.1);
   // no wiring required.
+
+  // wsm.1 — wire disk session persistence adapter and restore sessions on startup
+  const _diskSessionStoreAdapter = require('./adapters/session-store');
+  _setSessionStore(_diskSessionStoreAdapter);
+  _diskSessionStoreAdapter.loadSessions(_restoreHtmlSession);
 }
 
 // Wire real GitHub pipeline-state fetcher for production (non-test) mode.
