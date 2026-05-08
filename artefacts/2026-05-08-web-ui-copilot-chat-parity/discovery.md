@@ -15,7 +15,7 @@ The skills platform web UI (delivered by ougl/owle/wsm features, now structurall
 
 2. **No slash command router** — the web UI exposes skills only through a hard-coded journey stage sequence (`discovery → benefit-metric → definition → review → test-plan → definition-of-ready`). An operator who wants to run `/estimate`, `/decisions`, `/improve`, `/coverage-map`, `/record-signal`, or any of the 30+ skills outside the linear sequence cannot do so. VS Code Copilot Chat allows free invocation of any skill at any point.
 
-3. **No pipeline context at session start** — `buildSystemPrompt()` pre-loads the active skill's `SKILL.md` and product context files but not: the current feature slug, the current pipeline phase, the list of artefacts already produced, or `workspace/state.json` checkpoint. The model begins every session unaware of where the operator is in the pipeline — it cannot give the same "here is where we are and what's next" orientation that VS Code Copilot Chat provides.
+3. **No pipeline context at session start** — `buildSystemPrompt()` pre-loads the active skill's `SKILL.md` and `product/` context files but not the operator's current working state. Missing at session start: `pipeline-state.json` (current feature, phase, health), `workspace/state.json` (checkpoint and resume instruction), `context.yml` (toolchain settings: instrumentation flags, skills-upstream remote, E2E gate, MCP configuration), `fleet-state.json` (squad/tribe aggregation for fleet operators), `artefact-coverage-exemptions.json` (coverage gate config), and the listing of artefact files under the active feature slug. VS Code Copilot Chat has direct file system access to all of these — the model can read any of them on demand. In the web UI, none of them are present at session start and cannot be requested mid-session without the tool loop. The model begins every session unaware of where the operator is in the pipeline — it cannot give the same "here is where we are and what's next" orientation that VS Code provides.
 
 The combined effect: the web UI is structurally complete but operationally shallow. Operators using it as their primary surface receive a degraded pipeline experience compared to VS Code, which defeats the purpose of the ougl/owle/wsm investment.
 
@@ -45,7 +45,15 @@ The smallest set of capabilities that closes the three runtime gaps:
 
 2. **Slash command router:** A top-level entry mode (distinct from the journey stage sequence) where the operator types any skill name — e.g. `/workflow`, `/estimate`, `/decisions`, `/record-signal` — and the server dynamically loads the corresponding `SKILL.md` into `buildSystemPrompt()`. The skill list is derived from `fs.readdirSync('.github/skills')` — always in sync with the skill library, no per-skill routing code required. Journey stage mode and slash command mode coexist — the operator can switch between them.
 
-3. **Pipeline context auto-loader:** `buildSystemPrompt()` extended to pre-load at session start: `pipeline-state.json` (current feature, phase, health summary), `workspace/state.json` (checkpoint and resume instruction), and a listing of artefact files under the active feature slug. This is a pure addition — approximately 30 lines to the prompt assembly function, no new routes or adapters.
+3. **Pipeline context auto-loader:** `buildSystemPrompt()` extended to pre-load at session start the full set of state files the VS Code surface has access to:
+   - `pipeline-state.json` — current feature, phase, health, story statuses
+   - `workspace/state.json` — checkpoint block and resume instruction
+   - `context.yml` — toolchain settings: `instrumentation.enabled`, `skills_upstream`, `audit.e2e_tests`, MCP config (credential refs, not values — `secretRef` pattern is already safe to surface)
+   - Artefact file listing under the active feature slug (filenames only, not contents — model requests specific files via the tool loop)
+   - Conditionally: `fleet-state.json` if present (for platform maintainers running cross-squad operations); `artefact-coverage-exemptions.json` if present (for operators checking coverage gate status)
+   - `workspace/learnings.md` summary (first 50 lines — captures recent delivery signals without full context cost)
+
+   This is a pure addition to `buildSystemPrompt()` — approximately 40–50 lines, no new routes or adapters. Files that do not exist are silently skipped (not an error — operator may not have all workspace primitives present).
 
 These three capabilities may be delivered in one feature or split into three consecutive stories if the scope warrants it. That decision is deferred to `/definition`.
 
@@ -63,7 +71,8 @@ These three capabilities may be delivered in one feature or split into three con
 - The `<TOOL:.../>` marker format is distinguishable from normal prose and skill output with sufficient reliability to avoid false positives. Validated by: choosing a non-ambiguous marker format and testing against the full SKILL.md library.
 - Path-traversal guarding (resolve + `startsWith(repoRoot)`) is sufficient to prevent arbitrary file reads. Validated by: existing pattern in ougl.5/ougl.6 (ADR-023) — same guard, already tested.
 - The skills in scope that require file reads (`/workflow`, `/trace`, `/improve`, `/coverage-map`, `/record-signal`) are satisfied by `read_file` and `list_dir` alone — no shell execution required for MVP. Risk: `/trace` and `npm test` emit from scripts. May require a `run_script` tool for full `/trace` parity — flagged as a post-MVP extension point.
-- `buildSystemPrompt()` token budget can absorb the pipeline context addition without hitting model context limits. Risk: for large features with many artefacts, the listing may be large. Mitigated by: listing filenames only (not contents) until the model requests a specific file via the tool loop.
+- `buildSystemPrompt()` token budget can absorb the pipeline context addition without hitting model context limits. Risk: for operators with large feature sets or deep `workspace/learnings.md`, the pre-loaded context may approach token limits. Mitigated by: (a) artefact listing is filenames only — not file contents; (b) `workspace/learnings.md` is capped at first 50 lines; (c) `fleet-state.json` and `artefact-coverage-exemptions.json` are conditional — only loaded if present and only if session type warrants it. A token budget check is an explicit implementation task.
+- `context.yml` contains `secretRef` names (not credential values) — loading it into the system prompt is safe under the existing MCP credential pattern (ADR-009). No credential values are ever in `context.yml`; only reference names. This assumption must be validated at implementation by inspecting the full `context.yml` schema.
 
 **Risks:**
 - If the `<TOOL:.../>` emission format is inconsistently applied by the model, the tool loop silently fails — the session continues but the file is never read. Risk level: medium. Mitigation: server-side detection and fallback notification in the turn output.
