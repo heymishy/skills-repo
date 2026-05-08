@@ -276,6 +276,12 @@ An AC that requires CSS layout and has neither is an open gap — it must not si
 
 **Path traversal guard for disk writes (ougl):** Any route handler that writes a file to disk at a path derived from request data (URL params, form fields, session-stored slugs, or artefact paths set earlier in the flow) MUST validate the resolved path before writing. Use `path.resolve(inputPath)` and assert `resolvedPath.startsWith(repoRoot + path.sep)`. Return HTTP 400 if the check fails — do not log the raw path value in production. A dedicated test must cover the path traversal case and assert both the 400 response and that no file was written to disk. This guard is required in addition to (not instead of) allowlist validation of slug/skill-name URL parameters. Source: ougl.5 AC11, ougl.6 AC8, NFR-sec-pathtraversal, web-ui-patterns.md.
 
+**Conflict marker verification before `git add` (wsm / D40):** After ANY conflict resolution — merge, rebase, or cherry-pick — run a conflict marker scan on every modified file BEFORE `git add`. Zero results are required before staging.
+- PowerShell: `Select-String -Pattern '<<<<<<|======|>>>>>>' <file>`
+- Bash: `grep -n "<<<\|===\|>>>" <file>`
+
+This is especially critical for cherry-pick resolutions where the HEAD content is kept verbatim: the `<<<<<<< HEAD ... =======` pair is removed by the editor, but the `>>>>>>> <sha>` tail line below the kept content is easily missed — it produces a `SyntaxError` that kills the entire CI test suite rather than a failing assertion. A syntax error masking test results is a recurring pattern; this scan prevents it. Source: wsm.3, `workspace/learnings.md` D40.
+
 ---
 
 ## Product context files

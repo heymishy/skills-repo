@@ -110,6 +110,8 @@ Skill files and templates are content, not code — they are governed by pipelin
 | Required-check workflow committing back to the branch it evaluates | Fires a new `synchronize` event on every evaluation — gate re-triggers itself → infinite loop; the evaluator modifies its own evaluation target | Two-workflow pattern: evaluate on `pull_request` with `contents: read`, persist post-merge with `contents: write` on `push` to main |
 | Using `[ci skip]` on a branch with required checks | Suppresses all workflow runs on that SHA, including required status reporters; the SHA is permanently stuck on "Waiting for status" with no way to recover without a new commit | Reserve `[ci skip]` for direct housekeeping commits to main where no required checks apply |
 | Ad-hoc cross-cutting surface changes without a story (shadow changes) | Creates a change set with no spec, no test, no trace, and no reproducible porting path. Evidenced by the mfc.1 / Notion-calm design system delivery: design applied directly to master in 4 commits; no story spec meant distribution was hard and the pipeline couldn't trace it. | Any change to shared surface modules (`html-shell.js`, design tokens, navigation structure, shared CSS) is a story — even a small one. Use `.github/templates/retrospective-story.md` for changes already committed. |
+| Merging a PR without running conflict marker scan | Cherry-pick and rebase conflict resolutions frequently leave `=======` / `>>>>>>>` tail markers after the `<<<<<<< HEAD` block is removed. These produce `SyntaxError` in the CI test suite — zero test assertions run, CI reports no results rather than failures, masking all AC evidence. Evidenced by wsm.3 PR #338. | Before every `git add` after conflict resolution: `Select-String -Pattern '<<<<<<\|======\|>>>>>>' <file>` (PowerShell) or `grep -n '<<<\|===\|>>>' <file>` (Bash). Zero results required. See D40, `copilot-instructions.md`. |
+| Implementing a new journey GET consumer without verifying the full response shape | `handleGetJourneyState` has an explicit shape contract (ADR-024). Adding a new consumer (viewer, breadcrumb, turn-list) without verifying the required fields are present causes shape-assertion test failures at DoD. Evidenced by wsm.2 (6 failures) and wsm.3 (8 failures). | Before PR open: run `node tests/check-wsm*.js` locally. Fix any `turns not an array`, `stages missing`, or similar shape failures before merging. See `.github/standards/web-ui/web-ui-patterns.md`. |
 
 ---
 
@@ -162,6 +164,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 | ADR-019 | Active | Dynamic content is per-turn substitution only — the static question list governs question count, progress display, and fallback; dynamic model output replaces individual items in place and never changes the list length | All web UI skill session features (dsq and successors); any story that introduces model-generated content into a progress-counted sequence |
 | ADR-022 | Active | Multi-skill journey orchestration is Option B — one session per skill stage with structured artefact handoff; Option A (single persistent session across multiple skills) is incompatible with the mfc.1 session model and must not be used | All features that orchestrate multiple skill stages through the web UI; any future guided journey or wizard flow |
 | ADR-023 | Active | Handoff schema between journey stages is artefact content injection (B-iii) — prior-stage artefact file content injected as named sections; full Q&A replay (B-i) and model-synthesised summary (B-ii) are deferred | All gate-confirm handlers; `buildSystemPrompt` callers that pass `priorArtefacts`; any story that reads prior-stage context into a new session |
+| ADR-024 | Active | `GET /api/journey/:id` response shape is the canonical contract for all web UI consumers — `turns`, `stages`, `completedStages`, `stage`, `ownerId`, `activeSkill` are required fields; partial shapes are forbidden | All stories that add consumers of the journey GET endpoint; `handleGetJourneyState` implementations; viewer, breadcrumb, and turn-list UI features |
 
 ---
 
@@ -1183,7 +1186,30 @@ With Option B (ADR-022), each new skill stage session receives context from prio
 
 ---
 
-### ADR-018: Playwright is the E2E testing framework — tests/e2e/ only, devDependency, unit chain isolated
+### ADR-024: GET /api/journey/:id response shape is the canonical contract for all web UI consumers
+
+**Date:** 2026-05-08
+**Status:** Active
+**Story:** wsm.2, wsm.3 (2026-05-07-web-ui-session-management) — derived from AC1/3/6 implementation gaps
+**Decided by:** Hamis — post-DoD improvement extract 2026-05-08
+
+#### Context
+
+During wsm.2 and wsm.3 delivery, `handleGetJourneyState` was implemented to satisfy the journey owner's forward-progress flow (active stage, completedStages, activeSkill). New consumers — viewer sync (wsm.2) and breadcrumb navigation (wsm.3) — were added in the same or subsequent stories without updating the response shape. `turns` and `stage` were absent from the viewer response; `stages[]` was absent from the breadcrumb response; `session-boundary` marker was not injected into the turns array. Six tests in wsm.2 and eight tests in wsm.3 failed at DoD with shape-assertion errors (`turns not an array`, `Cannot read properties of undefined (reading 'find')`). The root cause was not a logic bug but an undocumented, unverified response shape contract.
+
+#### Decision
+
+The `GET /api/journey/:id` response shape is a formally governed contract. The full required field set is defined in `.github/standards/web-ui/web-ui-patterns.md` ("Journey state GET response shape contract"). Any story that adds a new consumer of the journey GET endpoint must verify that the fields it depends on are present in the shape before the story is marked ready for DoR. Any change to `handleGetJourneyState` must verify the full test suite passes on the modified response.
+
+#### Consequences
+
+- The complete required field set (`turns`, `stages`, `stage`, `ownerId`, `completedStages`, `activeSkill`) is the minimum. Stories that require additional fields add them via story AC, documented in the shape contract.
+- `turns` is always an array (never `undefined`). `stages` is always an array, derived from journey stage configuration on every GET.
+- Session-boundary markers (`{ role: 'system', type: 'session-boundary' }`) are injected at GET time when persisted turns are present — not stored in the session state object.
+- Any story that modifies `handleGetJourneyState` must include a task: "Run `node tests/check-wsm*.js` locally and confirm zero shape-assertion failures before opening the PR."
+- Follow-up stories required: wsm.2 follow-up (add `turns`, `stage` to viewer GET; fix viewer count); wsm.3 follow-up (add `stages[]` to GET response; inject `session-boundary` marker). These are AC completions, not scope extensions.
+
+---
 
 **Status:** Active
 **Date:** 2026-05-06

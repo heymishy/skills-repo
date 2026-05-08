@@ -316,3 +316,42 @@ The server-side parser extracts content between the markers and derives the arte
 - This protocol is skill-agnostic — it works for any SKILL.md, not only discovery.
 
 Source: mfc.1 architecture decision.
+
+---
+
+## Journey state GET response shape contract (wsm / ADR-024)
+
+`GET /api/journey/:id` (the canonical journey state endpoint) MUST return a response that includes all of the following fields. Any story that adds a new consumer of this endpoint (viewer, breadcrumb, turn-list UI) MUST ensure the field it consumes is present — not assume the handler returns it.
+
+### Required response fields
+
+```js
+{
+  id: string,                   // journey ID
+  stage: string,                // active skill stage name
+  status: string,               // journey status (e.g. 'active', 'complete')
+  ownerId: string,              // GitHub login of journey owner
+  turns: Array<TurnObject>,     // all turns (owner + model) in chronological order
+  stages: Array<StageObject>,   // all skill stages with navigable flag
+  completedStages: string[],    // list of completed stage names
+  activeSkill: string           // current active skill name
+}
+```
+
+Where:
+- `TurnObject`: `{ role, content, type? }` — `type: 'session-boundary'` is a synthetic marker injected when a journey was persisted and reloaded
+- `StageObject`: `{ name, label, navigable: boolean, completed: boolean, needsReview?: boolean }`
+
+### Rules
+
+1. **Never return a partial shape.** If a consumer AC requires `turns` or `stages`, the handler MUST include them. Partial shapes produce silent test failures that are only discovered at DoD verification.
+2. **`turns` is always an array** — never `undefined`, never omitted. If no turns exist, return `[]`.
+3. **`stages` is always an array** — never omitted. Derive it from the journey's stage configuration on every GET, marking each stage `navigable: true` if it is completed or is the current active stage.
+4. **Session boundary marker**: When a session was persisted and the journey's turns include turns from a prior server process, inject a `{ role: 'system', type: 'session-boundary', content: 'Previous session' }` object at the boundary point before returning the turns array.
+5. **AC must be phrased as shape assertions.** Any AC that depends on a response field must name the field explicitly: "GET /api/journey/:id response MUST include `stages[]` with `navigable` flag per stage" — not "breadcrumb shows navigable stages." The handler author needs the shape contract, not the UI description.
+
+### Verification gate (pre-PR requirement)
+
+Before opening a PR for any change to `handleGetJourneyState` or any story that adds a consumer of the journey GET endpoint, run the full check script (`tests/check-wsm*.js`) locally. A shape failure (`turns not an array`, `stages missing`) means the handler is incomplete — do not merge.
+
+Source: wsm.2 AC1/3/6, wsm.3 AC1/6, workspace/learnings.md D41, ADR-024.
