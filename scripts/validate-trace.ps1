@@ -47,6 +47,16 @@ function Write-Ok   { param([string]$msg) Write-Host "  ✓ $msg" -ForegroundCol
 function Write-Warn { param([string]$msg) Write-Host "  ⚠ $msg" -ForegroundColor Yellow }
 function Write-Fail { param([string]$msg) Write-Host "  ✗ $msg" -ForegroundColor Red }
 
+# Safe property accessor for PSCustomObjects — avoids PropertyNotFoundException
+# with Set-StrictMode -Version Latest on PowerShell 7 when a property is absent.
+function Get-JsonProp {
+    param([object]$Obj, [string]$Name, [object]$Default = $null)
+    if ($null -eq $Obj) { return $Default }
+    $prop = $Obj.PSObject.Properties[$Name]
+    if ($null -ne $prop) { return $prop.Value }
+    return $Default
+}
+
 # ── Check: pipeline-state.json exists and is valid JSON ──────────────────────
 function Check-SchemaValid {
     Write-Info "Checking: pipeline-state.json is schema-valid"
@@ -136,18 +146,18 @@ function Check-TestPlanCoverage {
     $missing = [System.Collections.Generic.List[string]]::new()
 
     foreach ($feature in $state.features) {
-        $featureSlug = if ($feature.slug) { $feature.slug } else { "unknown" }
+        $featureSlug = Get-JsonProp $feature 'slug' "unknown"
 
         # Collect story objects from feature.stories[] and epic.stories[]
         $stories = [System.Collections.Generic.List[object]]::new()
-        if ($feature.stories) {
+        if (Get-JsonProp $feature 'stories') {
             foreach ($s in $feature.stories) {
                 if ($s -is [PSCustomObject]) { $stories.Add($s) }
             }
         }
-        if ($stories.Count -eq 0 -and $feature.epics) {
+        if ($stories.Count -eq 0 -and (Get-JsonProp $feature 'epics')) {
             foreach ($epic in $feature.epics) {
-                if ($epic.stories) {
+                if (Get-JsonProp $epic 'stories') {
                     foreach ($s in $epic.stories) {
                         if ($s -is [PSCustomObject]) { $stories.Add($s) }
                     }
@@ -156,13 +166,13 @@ function Check-TestPlanCoverage {
         }
 
         foreach ($story in $stories) {
-            $stage = if ($story.stage) { $story.stage } else { "" }
+            $stage = Get-JsonProp $story 'stage' ""
             if ($stage -notin $stagesNeedingTestPlan) { continue }
-            $artefact = if ($story.artefact) { $story.artefact } else { "" }
+            $artefact = Get-JsonProp $story 'artefact' ""
             $fileSlug  = if ($artefact) {
                 [System.IO.Path]::GetFileNameWithoutExtension($artefact)
             } else {
-                if ($story.slug) { $story.slug } else { "unknown" }
+                Get-JsonProp $story 'slug' "unknown"
             }
             $testPlanPath = Join-Path $RepoRoot "artefacts" $featureSlug "test-plans" "${fileSlug}-test-plan.md"
             if (-not (Test-Path $testPlanPath)) {
@@ -200,18 +210,18 @@ function Check-UnresolvedBlockers {
 
     $found = $false
     foreach ($feature in $state.features) {
-        $featureSlug = if ($feature.slug) { $feature.slug } else { "unknown" }
-        if ($feature.health -eq 'red' -and -not $feature.blocker) {
+        $featureSlug = Get-JsonProp $feature 'slug' "unknown"
+        if ((Get-JsonProp $feature 'health') -eq 'red' -and -not (Get-JsonProp $feature 'blocker')) {
             Write-Host "UNRESOLVED BLOCKER: feature $featureSlug has health=red but no blocker recorded"
             $found = $true
         }
-        if ($feature.epics) {
+        if (Get-JsonProp $feature 'epics') {
             foreach ($epic in $feature.epics) {
-                if ($epic.stories) {
+                if (Get-JsonProp $epic 'stories') {
                     foreach ($story in $epic.stories) {
                         if ($story -isnot [PSCustomObject]) { continue }
-                        $storySlug = if ($story.slug) { $story.slug } else { "unknown" }
-                        if ($story.health -eq 'red' -and -not $story.blocker) {
+                        $storySlug = Get-JsonProp $story 'slug' "unknown"
+                        if ((Get-JsonProp $story 'health') -eq 'red' -and -not (Get-JsonProp $story 'blocker')) {
                             Write-Host "UNRESOLVED BLOCKER: $featureSlug/$storySlug has health=red but no blocker recorded"
                             $found = $true
                         }
