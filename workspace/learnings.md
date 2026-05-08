@@ -1225,6 +1225,46 @@ This is the enterprise-standard maker/checker pattern: the gate that signs off a
 
 **Implication for fleet deployment:** Consuming squad repos that adopt the platform should add branch protection during onboarding, not after the pipeline is mature. A structural flaw in a workflow that ships to 20 repos is 20× harder to fix than one caught in a single onboarding repo. The cost of finding architectural issues early (during setup) is far lower than the cost of finding them at scale.
 
+---
+
+## D40 — Orphaned conflict markers from cherry-pick ship to master as a SyntaxError, killing all downstream CI tests
+
+**Date:** 2026-05-08
+**Observed at:** WSM feature — wsm.3 PR #338.
+
+**What happened:** During wsm.3 stacked-PR rebase, the branch was rebased as a cherry-pick of its commit (`86b5fec`) onto the new master. The cherry-pick conflicted in `src/web-ui/routes/journey.js`. The conflict was resolved by keeping the HEAD side of the `module.exports` block — which correctly removed the `<<<<<<< HEAD ... =======` pair — but the tail markers `=======\n>>>>>>> 86b5fec... feat(wsm.3): ...` were not removed. The file appeared clean to a casual review because the functional content was correct. PR #338 merged. On master, `node -e "require('./src/web-ui/routes/journey.js')"` produced `SyntaxError: Unexpected token '==='`. All CI tests that directly or transitively imported `journey.js` failed at module load — including wsm.2 and wsm.3 check scripts. The failure mode was a syntax error, not a test assertion — meaning zero ACs appeared to run, and the entire test suite reported no results rather than failing tests.
+
+**Root cause:** The regex / manual edit used to resolve the conflict removed the opening marker `<<<<<<< HEAD` but did not remove the closing markers `=======` and `>>>>>>> <sha>`. In a cherry-pick conflict where the HEAD side is kept in full (the typical resolution), the `<<<<<<< HEAD ... =======` pair is removed, but the `>>>>>>> <sha>` suffix line is easily missed — it is below the kept content and appears to be a stray line rather than a conflict marker.
+
+**Impact:** The conflict marker was invisible during casual review (both `git diff` and the PR diff showed correct JS logic), only detectable by running the file through a JS parser or by grepping for the raw marker characters.
+
+**Prevention rule (now a mandatory standard in copilot-instructions.md):** After any conflict resolution (merge, rebase, or cherry-pick), before `git add <file>`, run:
+- PowerShell: `Select-String -Pattern '<<<<<<|======|>>>>>>' <file>` — zero results required
+- Bash/cmd: `grep -n "<<<\|===\|>>>" <file>` — zero results required
+
+This check is especially important for cherry-pick resolutions where the HEAD content is kept verbatim: the `=======` / `>>>>>>>` tail is below the kept block and is the most commonly left-behind residue.
+
+**Also recorded as:** a coding standard in `copilot-instructions.md` and an anti-pattern in `.github/standards/web-ui/web-ui-patterns.md`.
+
+---
+
+## D41 — GET handler response shape gap: handler returns partial shape; ACs depending on absent fields shipped incomplete
+
+**Date:** 2026-05-08
+**Observed at:** WSM feature — wsm.2 AC1/AC3/AC6 (6 failing tests), wsm.3 AC1/AC6 (8 failing tests).
+
+**What happened:** Both wsm.2 and wsm.3 shipped with implementation gaps in `handleGetJourneyState`: the handler's response JSON was missing fields that ACs required. wsm.2 was missing `turns` and `stage` in the viewer-context response — causing T2c, T2d, T4b (viewer sync tests) and T5b/T5c (viewer count) to fail. wsm.3 was missing the `stages` array (breadcrumb navigation data, AC1) and the `session-boundary` marker in the turns array (previous-session separator, AC6). The code compiled and ran without errors; tests that did not inspect these fields passed. The gaps were discovered only at DoD test verification after all three PRs had merged.
+
+**Root cause:** The GET handler was implemented to satisfy the happy-path flow (owner session progressing forward), but the fields required by viewer consumers and UI consumers (breadcrumb, session separator) were not in the base response shape. The tests for these fields existed in the test plan (they are what failed), but no integration-level verification of the full response shape was run against a real server before the PR was opened. Unit tests for individual handler logic do not catch shape gaps — they mock inputs and check outputs in isolation.
+
+**Prevention (two levers):**
+
+1. **Response shape AC must be explicit:** Any AC that requires a named field in an HTTP response body must be phrased as a test-verifiable assertion: "GET /api/journey/:id response MUST include `stages[]` with `navigable` flag per stage." Not: "breadcrumb shows navigable stages." Ambiguity in the AC propagates to ambiguity in the implementation — the handler author may not know the API consumer's shape expectations.
+
+2. **Verify full response JSON against test assertions before PR open:** Before opening a PR for any handler that has response-shape ACs, run the corresponding `tests/check-*.js` file in its entirety. If it fails on a shape assertion (`turns not an array`, `stages missing`), the handler is incomplete. This is a /verify-completion discipline — see `.github/skills/verify-completion/SKILL.md`.
+
+**Follow-up stories required:** wsm.2 follow-up (viewer GET response shape, viewer count), wsm.3 follow-up (stages array in GET response, session-boundary marker injection). These are AC1/3/6 gaps, not scope additions.
+
 **Operational rule:** Any new platform repo should have branch protection (required checks, restrict direct push to main) configured before the first story enters the inner loop. If branch protection is deferred, the onboarding is not structurally complete.
 
 **Action:** Add to the `/branch-setup` or `/bootstrap` skill a mandatory "verify branch protection is configured before dispatching inner loop" check. At minimum, document this requirement in `ONBOARDING.md` as a day-1 platform setup step.
