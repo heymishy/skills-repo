@@ -7135,16 +7135,70 @@
       "slug": "2026-05-08-web-ui-copilot-chat-parity",
       "name": "Web UI Copilot Chat Parity",
       "track": "standard",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "stories": [],
-      "updatedAt": "2026-05-08",
+      "updatedAt": "2026-05-09",
       "discoveryArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/discovery.md",
-      "discoveryStatus": "draft"
+      "discoveryStatus": "approved",
+      "benefitMetricArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/benefit-metric.md",
+      "benefitMetricStatus": "active",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "/workflow pipeline health accuracy from web UI",
+          "target": "≥ 80% of /workflow invocations produce an artefact-grounded report (tool execution confirmed in server log) across first 10 live sessions",
+          "baseline": "0% — no tool execution loop today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "/trace artefact-read parity from web UI (MVP: file-read parity)",
+          "target": "≥ 5 confirmed read_file executions per /trace run; response contains ≥ 1 direct reference to real artefact content, consistently across 5 runs",
+          "baseline": "0% — no file reads today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Web UI outer loop completeness (dogfood signal)",
+          "target": "One complete outer loop cycle (discovery → DoR) completed via web UI as sole interface, before Phase 5 WS0 begins",
+          "baseline": "Not achievable today — VS Code required for file-reading skills",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "mm1",
+          "name": "Tool marker emission reliability",
+          "target": "≥ 80% emission rate across 20 prompted scenarios with Sonnet 4.6",
+          "baseline": "Unknown — establishing baseline is first implementation task",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "mm2",
+          "name": "Unassisted outer loop replication rate",
+          "target": "M3 dogfood cycle completed fully unassisted (no VS Code fallback, no second-person assist)",
+          "baseline": "Not achievable today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

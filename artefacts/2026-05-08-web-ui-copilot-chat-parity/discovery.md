@@ -1,8 +1,8 @@
 # Discovery: Web UI Copilot Chat Parity
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-05-08
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Hamish King — Platform Owner — 2026-05-09
 **Author:** Hamish King (platform owner) + GitHub Copilot
 
 ---
@@ -107,7 +107,7 @@ These three capabilities may be delivered in one feature or split into three con
 
 ## Approved By
 
-[Name — Role — Date]
+Hamish King — Platform Owner — 2026-05-09
 
 ---
 
