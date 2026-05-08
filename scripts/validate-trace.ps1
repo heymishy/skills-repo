@@ -1,4 +1,4 @@
-# validate-trace.ps1
+﻿# validate-trace.ps1
 # Windows-native trace validator with full parity to validate-trace.sh
 #
 # Usage:
@@ -10,7 +10,7 @@
 #   0 = all hard-fail checks passed (warnings may exist)
 #   1 = one or more hard-fail checks failed
 #
-# PowerShell 5.1+ only — zero external module dependencies.
+# PowerShell 5.1+ only ÔÇö zero external module dependencies.
 
 param(
     [switch]$ci,
@@ -20,7 +20,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-# ── Setup ──────────────────────────────────────────────────────────────────────
+# ÔöÇÔöÇ Setup ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 $ScriptDir  = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $RepoRoot   = Split-Path -Parent $ScriptDir
 $Artefacts  = Join-Path $RepoRoot "artefacts"
@@ -32,7 +32,7 @@ $ReportFile = Join-Path $RepoRoot "trace-validation-report.json"
 $CiMode     = $ci.IsPresent
 $SingleCheck = $check
 
-# ── Result tracking ────────────────────────────────────────────────────────────
+# ÔöÇÔöÇ Result tracking ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 $Failures = [System.Collections.Generic.List[string]]::new()
 $Warnings = [System.Collections.Generic.List[string]]::new()
 $Passes   = [System.Collections.Generic.List[string]]::new()
@@ -41,13 +41,13 @@ function Record-Pass  { param([string]$name) $Passes.Add($name) }
 function Record-Warn  { param([string]$name, [string]$msg) $Warnings.Add("${name}: ${msg}") }
 function Record-Fail  { param([string]$name, [string]$msg) $Failures.Add("${name}: ${msg}") }
 
-# ── Output helpers ─────────────────────────────────────────────────────────────
+# ÔöÇÔöÇ Output helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 function Write-Info { param([string]$msg) Write-Host "[trace] $msg" -ForegroundColor Cyan }
-function Write-Ok   { param([string]$msg) Write-Host "  ✓ $msg" -ForegroundColor Green }
-function Write-Warn { param([string]$msg) Write-Host "  ⚠ $msg" -ForegroundColor Yellow }
-function Write-Fail { param([string]$msg) Write-Host "  ✗ $msg" -ForegroundColor Red }
+function Write-Ok   { param([string]$msg) Write-Host "  Ô£ô $msg" -ForegroundColor Green }
+function Write-Warn { param([string]$msg) Write-Host "  ÔÜá $msg" -ForegroundColor Yellow }
+function Write-Fail { param([string]$msg) Write-Host "  Ô£ù $msg" -ForegroundColor Red }
 
-# Safe property accessor for PSCustomObjects — avoids PropertyNotFoundException
+# Safe property accessor for PSCustomObjects ÔÇö avoids PropertyNotFoundException
 # with Set-StrictMode -Version Latest on PowerShell 7 when a property is absent.
 function Get-JsonProp {
     param([object]$Obj, [string]$Name, [object]$Default = $null)
@@ -80,7 +80,7 @@ function Read-TraceConfigList {
     return ,$result
 }
 
-# Reads feature slug → track map from pipeline-state.json
+# Reads feature slug ÔåÆ track map from pipeline-state.json
 function Read-FeatureTracks {
     $tracks = @{}
     if (-not (Test-Path $StateFile)) { return $tracks }
@@ -98,7 +98,7 @@ function Read-FeatureTracks {
     return $tracks
 }
 
-# ── Check: pipeline-state.json exists and is valid JSON ──────────────────────
+# ÔöÇÔöÇ Check: pipeline-state.json exists and is valid JSON ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 function Check-SchemaValid {
     Write-Info "Checking: pipeline-state.json is schema-valid"
     if (-not (Test-Path $StateFile)) {
@@ -115,12 +115,12 @@ function Check-SchemaValid {
     }
 }
 
-# ── Check: discovery artefacts exist for all active features ──────────────────
+# ÔöÇÔöÇ Check: discovery artefacts exist for all active features ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 function Check-DiscoveryExists {
     Write-Info "Checking: discovery artefacts exist"
     if (-not (Test-Path $Artefacts -PathType Container)) {
         Record-Pass "discovery_exists"
-        Write-Ok "artefacts/ is empty — no features to check"
+        Write-Ok "artefacts/ is empty ÔÇö no features to check"
         return
     }
     $referenceDirs          = Read-TraceConfigList 'reference_dirs'
@@ -137,12 +137,12 @@ function Check-DiscoveryExists {
         }
         $track = if ($featureTracks.ContainsKey($feature)) { $featureTracks[$feature] } else { '' }
         if ($track -and $tracksWithoutDiscovery.Contains($track)) {
-            Write-Ok "Skipping: artefacts/$feature (track: $track — discovery not required)"
+            Write-Ok "Skipping: artefacts/$feature (track: $track ÔÇö discovery not required)"
             continue
         }
         $discoveryPath = Join-Path $featureDir.FullName "discovery.md"
         if (-not (Test-Path $discoveryPath)) {
-            $hint = if ($track) { "track: $track" } else { 'not registered in pipeline-state — add to reference_dirs or pipeline-state with correct track' }
+            $hint = if ($track) { "track: $track" } else { 'not registered in pipeline-state ÔÇö add to reference_dirs or pipeline-state with correct track' }
             Record-Fail "discovery_exists" "$feature is missing discovery.md ($hint)"
             Write-Fail "Missing: artefacts/$feature/discovery.md  [$hint]"
             $missing++
@@ -154,12 +154,12 @@ function Check-DiscoveryExists {
     }
 }
 
-# ── Check: discovery artefacts are Approved ───────────────────────────────────
+# ÔöÇÔöÇ Check: discovery artefacts are Approved ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 function Check-DiscoveryApproved {
     Write-Info "Checking: discovery artefacts are Approved"
     if (-not (Test-Path $Artefacts -PathType Container)) {
         Record-Pass "discovery_approved"
-        Write-Ok "artefacts/ is empty — nothing to check"
+        Write-Ok "artefacts/ is empty ÔÇö nothing to check"
         return
     }
     $unapproved = 0
@@ -181,12 +181,12 @@ function Check-DiscoveryApproved {
     }
 }
 
-# ── Check: test plan coverage ─────────────────────────────────────────────────
+# ÔöÇÔöÇ Check: test plan coverage ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 function Check-TestPlanCoverage {
     Write-Info "Checking: all stories have test plans"
     if (-not (Test-Path $StateFile)) {
         Record-Pass "test_plan_coverage"
-        Write-Ok "No pipeline-state.json — skipping"
+        Write-Ok "No pipeline-state.json ÔÇö skipping"
         return
     }
     try {
@@ -252,16 +252,16 @@ function Check-TestPlanCoverage {
         Write-Ok "All in-flight stories have test plans"
     }
     else {
-        Record-Fail "test_plan_coverage" "One or more stories are missing test plans — see output above"
+        Record-Fail "test_plan_coverage" "One or more stories are missing test plans ÔÇö see output above"
     }
 }
 
-# ── Check: unresolved blockers ────────────────────────────────────────────────
+# ÔöÇÔöÇ Check: unresolved blockers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 function Check-UnresolvedBlockers {
     Write-Info "Checking: no unresolved blockers"
     if (-not (Test-Path $StateFile)) {
         Record-Pass "unresolved_blockers"
-        Write-Ok "No pipeline-state.json — skipping"
+        Write-Ok "No pipeline-state.json ÔÇö skipping"
         return
     }
     try {
@@ -300,13 +300,13 @@ function Check-UnresolvedBlockers {
         Write-Ok "No unresolved blockers found"
     }
     else {
-        Record-Fail "unresolved_blockers" "Stories have red health with no blocker recorded — see output above"
+        Record-Fail "unresolved_blockers" "Stories have red health with no blocker recorded ÔÇö see output above"
     }
 }
 
-# ── Main ───────────────────────────────────────────────────────────────────────
+# ÔöÇÔöÇ Main ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 Write-Host ""
-Write-Info "Trace Validation — $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+Write-Info "Trace Validation ÔÇö $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 Write-Host ""
 
 if ($SingleCheck) {
@@ -336,7 +336,7 @@ Write-Info "Results: $($Passes.Count) passed, $($Warnings.Count) warnings, $($Fa
 foreach ($w in $Warnings) { Write-Warn $w }
 foreach ($f in $Failures) { Write-Fail $f }
 
-# ── JSON report ───────────────────────────────────────────────────────────────
+# ÔöÇÔöÇ JSON report ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 if ($CiMode) {
     $report = @{
         passed   = @($Passes)
@@ -350,7 +350,7 @@ if ($CiMode) {
 # Exit with failure if any hard-fail checks failed
 if ($Failures.Count -gt 0) {
     Write-Host ""
-    Write-Fail "Trace validation FAILED — $($Failures.Count) hard-fail check(s) did not pass."
+    Write-Fail "Trace validation FAILED ÔÇö $($Failures.Count) hard-fail check(s) did not pass."
     exit 1
 }
 
