@@ -1258,8 +1258,6 @@ async function handlePatchSpike(req, res) {
   res.end(JSON.stringify({ success: true }));
 }
 
-=======
->>>>>>> 86b5fec... feat(wsm.3): stage back-navigation, breadcrumb, needs-review flags
 module.exports = {
   handleGetJourney,
   handlePostJourney,
@@ -1296,7 +1294,8 @@ module.exports = {
   setRepoRoot,
   setPipelineStateWriter
 };
-module.exports = {
+
+module.exports = {
   handleGetJourney,
   handlePostJourney,
   handlePostGateConfirm,
