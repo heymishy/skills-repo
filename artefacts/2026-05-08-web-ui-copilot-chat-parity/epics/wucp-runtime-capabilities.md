@@ -6,6 +6,8 @@
 
 Rationale: The highest-uncertainty item (MM1 baseline — does the model reliably emit `<TOOL:.../>` markers?) gates the highest-risk story (Gap 1 tool execution loop). Model-independent work (Gap 2 slash command router, Gap 3 context auto-loader) has no dependency on the spike result and proceeds in parallel. Gap 1 follows only after MM1 emission rate is confirmed ≥ 60%.
 
+**Spike-gate scope:** wucp.0 blocks **only wucp.3**. If the spike returns MM1 < 60% (Outcome C), wucp.3 is suspended pending prompt redesign — but wucp.1 (Gap 3, context auto-loader), wucp.2 (Gap 2, slash command router), and wucp.4 (session start wizard) are all unaffected and proceed to /review and /test-plan immediately. A failed spike does not block the epic — it blocks one story. DoR sign-off and dispatch for wucp.1, wucp.2, and wucp.4 must not wait for wucp.0 to resolve.
+
 ## Goal
 
 A platform operator can run any pipeline skill from the web UI and receive artefact-grounded output — including skills that read pipeline state, check artefact presence, and inspect workspace context — without switching to VS Code. The web UI becomes a viable primary delivery surface for the full outer loop cycle.

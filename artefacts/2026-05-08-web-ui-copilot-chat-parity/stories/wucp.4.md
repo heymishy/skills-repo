@@ -33,9 +33,9 @@ So that the session is immediately oriented to the right feature context — pip
 
 **AC2:** Given the operator selects "New project", When the selection is confirmed, Then a new session is initialised with no `activeFeatureSlug`, `stageIndex` is set to 0 (discovery), and the journey proceeds to the `/discovery` stage prompt. The session is in "new feature" mode — wucp.1's context loader loads `pipeline-state.json` and `workspace/state.json` globally but does not scope the artefact listing to any feature slug.
 
-**AC3:** Given the operator selects "Existing project", When the selection is confirmed, Then the UI displays a list of active features read from `pipeline-state.json`. Each entry shows: feature name, current stage, and health indicator. Features with `stage: "released"` or `stage: "archived"` are excluded from the list.
+**AC3:** Given the operator selects "Existing project", When the selection is confirmed, Then the UI displays a list of active features read from `pipeline-state.json`. Each entry shows: feature name, current stage, and health indicator. Features with `stage: "released"` or `stage: "archived"` are excluded from the list. If all features are excluded (i.e. every feature in pipeline-state.json is released or archived), the UI displays the message: "No active projects found. Start a new project instead." and renders a single "New project" action — the operator is not left with a blank or empty picker.
 
-**AC4:** Given the feature list is displayed, When the operator selects a feature, Then `session.activeFeatureSlug` is set to the selected feature's slug, the journey is initialised at the feature's current stage (e.g. if the feature is at `"review"`, `stageIndex` is set to the review stage position), and wucp.1's `buildSystemPrompt()` scopes the artefact listing to `artefacts/[activeFeatureSlug]/`.
+**AC4:** Given the feature list is displayed, When the operator selects a feature, Then `session.activeFeatureSlug` is set to the selected feature's slug, the journey is initialised at the stage corresponding to the feature's `stage` field, and wucp.1's `buildSystemPrompt()` scopes the artefact listing to `artefacts/[activeFeatureSlug]/`. The stage-name → stageIndex mapping MUST be implemented as a hardcoded lookup table in the server (e.g. `const STAGE_INDEX = { discovery: 0, 'benefit-metric': 1, definition: 2, review: 3, 'test-plan': 4, 'definition-of-ready': 5, 'branch-setup': 6, 'implementation-plan': 7, 'subagent-execution': 8, 'verify-completion': 9, 'branch-complete': 10, 'definition-of-done': 11 }`). Dynamic derivation from the journey sequence array is NOT acceptable — a hardcoded map is easier to test, has no runtime ambiguity, and any stage not in the map falls back to stageIndex 0. The lookup table must be exported so it can be unit-tested independently.
 
 **AC5:** Given `pipeline-state.json` is absent or unreadable, When the operator selects "Existing project", Then the UI displays an informational message: "No pipeline state found. Starting a new project." and proceeds as per AC2 (new project flow). No error is thrown.
 
@@ -56,7 +56,7 @@ So that the session is immediately oriented to the right feature context — pip
 
 ## Complexity Rating
 
-**Rating:** 2 (clear path; the main ambiguity is how to map "existing feature's current stage" to a `stageIndex` — requires a stage-name → index lookup that must align with the journey stage sequence)
+**Rating:** 2 (clear path; the stage-name → stageIndex mapping is resolved by a hardcoded lookup table — see AC4. No dynamic derivation required.)
 **Scope stability:** Stable
 
 ## Scope Accumulator Note
