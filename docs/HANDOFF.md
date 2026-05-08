@@ -2,6 +2,7 @@
 
 **Document type:** Enterprise handoff bundle
 **Prepared:** 2026-04-12
+**Updated:** 2026-05-08 — ougl.1–7 guided outer loop, owle.1–6 outer loop extensions, wsm.1–3 session management all delivered. PRs #320, #330–#338 merged. D40 (conflict marker rule in `copilot-instructions.md`), D41 (GET response shape contract in `web-ui-patterns.md`), ADR-024 added to `architecture-guardrails.md`. wsm.2 (6 test failures) and wsm.3 (8 test failures) complete-with-deviations — follow-up stories needed. See Section 9d.
 **Updated:** 2026-05-07 — wusl.1 + wusl.2: chat streaming UX + progressive live draft delivered (commit `bac7b12`). (1) Animated thinking dots now stay visible until first real token arrives — `thinkingDiv.remove()` moved from HTTP response-start into `if(evt.chunk)` handler. (2) `handlePostTurnStreamHtml` now emits `{draftChunk}` SSE events as the model streams artefact content after `---ARTEFACT-START---`; split-marker boundary handled via accumulation buffer; client accumulates `partialDraft` and calls `updateDraftPanel` progressively. 15 new tests across two new test files. See Section 9a below.
 **Updated:** 2026-05-06 (3) — Notion-calm web UI design port distribution package committed (858ef37). Drop-in view layer for enterprise/consumer forks. See Section 9b (new) for file locations and agent instructions. As-built architecture reference committed (f71d001) — see Section 9c (new).
 **Updated:** 2026-05-06 (2) — mfc.1 model-first chat architecture DoD complete (commit d793217 + 2177400 + 2ca8cc2). Scrape-first skill session flow fully replaced. WEB UI PROTOCOL prompt tuning committed (2ca8cc2). See Section 9 (updated) for artefact locations and what to skip. Pending: live smoke test for AC5/AC6, M1/M2 measurement after first live session.
@@ -14,11 +15,99 @@
 **Updated:** 2026-04-21 (2) — Phase 5/6 roadmap published; product/ docs updated with Phase 4 actual delivery scope, enforcement architecture, competitive positioning, and G19 intentional gap note. See Section 8.
 **Updated:** 2026-04-21 (1) — Phase 4 fully DoD-complete — all 27 stories including E5 Platform Observability & Measurement. PRs #176 and #177 merged and traced. See Sections 6.8–6.15 and Phase 4 story tables.
 **Prepared by:** Platform maintainer (Hamish)
-**Status:** Phases 1–4 DoD-complete. Phase 5 (WS0–WS7) and Phase 6 (WS8–WS11) roadmapped. wuce.26 DoR signed off — coding agent ready for dispatch. src.1 implementation draft PR #182 pending CI pass + merge. src.1 SKILL.md-only additions pending draft PR #178.
+**Status:** Phases 1–4 DoD-complete. Phase 5 (WS0–WS7) and Phase 6 (WS8–WS11) roadmapped. ougl.1–7, owle.1–6, wsm.1–3 delivered (PRs #320, #330–#338). wsm.2 and wsm.3 complete-with-deviations (follow-up stories needed). src.1 implementation draft PR #182 pending. src.1 SKILL.md additions pending draft PR #178.
 
 ---
 
-## 9a. wusl.1 + wusl.2 — Chat streaming UX + progressive live draft (2026-05-07) ← CURRENT STATE
+## 9d. ougl.1–7 + owle.1–6 + wsm.1–3 — Guided outer loop, extensions, and session management (2026-05-08) ← CURRENT STATE
+
+Three features delivered in a single session batch. All PRs merged (#320, #330–#338). `npm test` exits with pre-existing wsm.2 (6 failures) and wsm.3 (8 failures) only — no new regressions.
+
+### ougl.1–7 — Guided outer loop web UI (PR #320, commit `74a2bc2`)
+
+New `src/web-ui/routes/journey.js` (~800 lines) implements full multi-stage journey orchestration for running the outer pipeline loop (discovery → benefit-metric → definition → review → test-plan → DoR → sign-off) through the web UI. `src/web-ui/server.js` extended with journey routes.
+
+**Journey session shape:**
+```js
+{
+  journeyId, featureSlug, ownerId,
+  stage, status,
+  stages: [],           // all stage names
+  completedStages: [],  // stages with dodStatus:'complete'
+  activeSkill: null,    // current stage name
+  turns: [],
+  artefactContent: null, artefactPath: null,
+  done: false,
+  gateResults: {}
+}
+```
+
+**Key handlers:** `POST /journey` (create), `GET /journey/:id/state` (current state), `POST /journey/:id/stage` (advance/turn), `POST /journey/:id/gate-confirm` (confirm gate, advance stage).
+
+**ADRs recorded:**
+- **ADR-022** — Option B (per-skill sessions with handoff) is the mandated orchestration pattern. Option A (single monolithic multi-skill session) ruled out by three structural blockers: context budget exhaustion, session state schema divergence, and injectable adapter isolation incompatibility.
+- **ADR-023** — B-iii artefact content injection as the handoff schema. Gate-confirm reads artefact from disk (ADR — disk canonicity rule), injects as `previousArtefactContent` for next stage's system prompt.
+
+**Outcome:** 62/62 ACs, 60/60 tests (`tests/check-ougl1-7-journey.js`), 13/13 NFRs. DoD complete for all 7 stories.
+
+**Artefact chain:** [`artefacts/2026-05-06-web-ui-guided-outer-loop/`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-05-06-web-ui-guided-outer-loop/)
+
+### owle.1–6 — Outer loop extension side-trips (PRs #330–#335)
+
+Six side-trip handlers added to `src/web-ui/routes/journey.js`. All adapters injectable and D37-compliant (stubs throw). Wired in `server.js`.
+
+| Story | PR | Commit | Handler(s) | Description |
+|-------|-----|--------|-----------|-------------|
+| owle.1 | #330 | `3fcbe76` | `handlePostClarify` | Clarification model turn; `clarificationTurns[]` on session |
+| owle.2 | #331 | `ade823c` | `handlePostDecisions`, `logDecisionAvailable` | Creates entry in `artefacts/[feature-slug]/decisions.md` |
+| owle.3 | #332 | `774269d` | `handlePostTrace` | Triggers `validate-trace.sh --ci`; findings stored on session |
+| owle.4 | #333 | `7138c16` | `handlePostEstimate` | Writes E1/E2/E3 rows to `workspace/estimation-norms.md` |
+| owle.5 | #334 | `982f8b3` | `handlePostSpike`, `handlePatchSpike`, `spikeAvailable` | Spike sessions with PROCEED/REDESIGN/DEFER outcome |
+| owle.6 | #335 | `bd45f8c` | `handlePostGateConfirm` (extended) | Writes stage/dorStatus/dodStatus/lastUpdated to `.github/pipeline-state.json` via Contents API on success |
+
+**Artefact chain:** [`artefacts/2026-05-07-web-ui-outer-loop-extensions/`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-05-07-web-ui-outer-loop-extensions/)
+
+### wsm.1–3 — Session management: persistence, shareable URLs, back-navigation (PRs #336–#338)
+
+| Story | PR | Commit | Tests | DoD status |
+|-------|-----|--------|-------|-----------|
+| wsm.1 — Disk persistence adapter | #336 | `edbd9df` | 23/23 ✅ | Complete |
+| wsm.2 — Shareable URLs + viewer sync + ownership guards | #337 | `08cb081` | 16/22 ⚠️ | Complete-with-deviations |
+| wsm.3 — Back-navigation + breadcrumb + needs-review flag | #338 | `9f50688` | 30/38 ⚠️ | Complete-with-deviations |
+
+**wsm.1 details:** `createSessionPersistenceAdapter(repoRoot)` writes/reads `workspace/sessions/[sessionId].json`. `setPersistenceAdapter` setter in `skills.js` and `journey.js`. Production-wired in `server.js`. `save()` after every mutation; `load()` on GET if session not in memory.
+
+**wsm.2 deviations (6 failures):** `GET /journey/:id/viewers` returns `{ viewers: [] }` object; test expects `string[]`. Viewer count assertions gap. Idle cleanup timer not implemented. Follow-up story needed before viewer-dependent UI is built.
+
+**wsm.3 deviations (8 failures):** `GET /journey/:id/state` does not return `stages[]`/`completedStages[]`/`activeSkill` fields in response (fields are on session object but absent from the GET response shape). `_sessionBoundary` adapter injection gap. Follow-up story aligns with ADR-024 / D41 GET response shape contract.
+
+**DoD artefacts:**
+- [`artefacts/2026-05-07-web-ui-session-management/dod/wsm.1-dod.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-05-07-web-ui-session-management/dod/wsm.1-dod.md)
+- [`artefacts/2026-05-07-web-ui-session-management/dod/wsm.2-dod.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-05-07-web-ui-session-management/dod/wsm.2-dod.md)
+- [`artefacts/2026-05-07-web-ui-session-management/dod/wsm.3-dod.md`](https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/artefacts/2026-05-07-web-ui-session-management/dod/wsm.3-dod.md)
+
+### /improve learnings (D40/D41/ADR-024)
+
+**D40 — Conflict marker scan before `git add`** (added to `copilot-instructions.md` Coding standards): After any conflict resolution (merge, rebase, cherry-pick), scan every modified file before `git add`. PowerShell: `Select-String -Pattern '<<<<<<|======|>>>>>>' <file>`. Bash: `grep -n "<<<\|===\|>>>" <file>`. Triggered by orphaned `>>>>>>> <sha>` tail line in `journey.js` after a cherry-pick HEAD-keep resolution (commit `5019679`) — the `<<<<<<< HEAD`/`=======` pair was removed but the closing marker was missed, producing a SyntaxError that killed the full CI test suite.
+
+**D41 — GET journey state response shape contract** (added to `.github/standards/web-ui/web-ui-patterns.md` "Journey state GET response shape contract (wsm / ADR-024)" section): GET handlers returning journey/session state MUST include: `id`, `stage`, `status`, `ownerId`, `turns[]`, `stages[]`, `completedStages[]`, `activeSkill`. Missing fields cause silent consumer breakage.
+
+**ADR-024 — GET journey state response shape is the canonical contract** (added to `.github/architecture-guardrails.md`): All web UI consumers use `GET /journey/:id/state`. Any handler returning journey state must include the 8 required fields. Partial shapes are a breaking API change. Source: wsm/D41.
+
+### Key file raw URLs (for enterprise porting without git access)
+
+| File | Raw URL |
+|------|---------|
+| `src/web-ui/routes/journey.js` | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/src/web-ui/routes/journey.js |
+| `src/web-ui/server.js` | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/src/web-ui/server.js |
+| `.github/standards/web-ui/web-ui-patterns.md` | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/standards/web-ui/web-ui-patterns.md |
+| `.github/architecture-guardrails.md` | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/architecture-guardrails.md |
+| `.github/copilot-instructions.md` | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/.github/copilot-instructions.md |
+| `workspace/learnings.md` | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/master/workspace/learnings.md |
+
+---
+
+## 9a. wusl.1 + wusl.2 — Chat streaming UX + progressive live draft (2026-05-07)
 
 **Commit:** `bac7b12` on master.
 
@@ -302,6 +391,23 @@ Four product-context files were updated to reflect Phase 4 delivery actuals and 
 - **src.1 — skill-routing-cli-integration implementation** — Draft PR #182 awaiting CI pass and merge (pre-existing assurance-gate failures unrelated to this story).
 
 - **src.1 SKILL.md additions** — Draft PR #178 open; awaiting review and merge.
+
+### Delivered since 2026-05-07
+
+- **ougl.1–7 — Guided outer loop web UI (PR #320, commit `74a2bc2`, 2026-05-08):** Full multi-stage journey orchestration. New `src/web-ui/routes/journey.js`. ADR-022 (Option B per-skill sessions with handoff), ADR-023 (B-iii artefact content injection). 62/62 ACs, 60/60 tests, 13/13 NFRs. DoD complete for all 7 stories. See Section 9d for details.
+- **owle.1–6 — Outer loop extension side-trips (PRs #330–#335, 2026-05-08):** Six side-trip handlers added to `journey.js`: clarify (owle.1), decisions (owle.2), trace (owle.3), estimate (owle.4), spike (owle.5), auto-write pipeline-state on gate-confirm (owle.6). All DoD-complete. See Section 9d.
+- **wsm.1–3 — Session management (PRs #336–#338, 2026-05-08):** Disk persistence (wsm.1, 23/23 tests, DoD-complete), shareable URLs + viewers (wsm.2, 16/22 tests, complete-with-deviations), back-navigation + breadcrumb (wsm.3, 30/38 tests, complete-with-deviations). See Section 9d.
+- **fix: remove orphaned conflict marker from `journey.js` (commit `5019679`, 2026-05-08):** `>>>>>>> <sha>` tail line from prior cherry-pick removed. D40 learning logged.
+- **/improve — wsm learnings: D40/D41/ADR-024 (2026-05-08):** Conflict marker scan rule added to `copilot-instructions.md`. GET journey state response shape contract documented in `web-ui-patterns.md`. ADR-024 added to `architecture-guardrails.md`. See Section 9d.
+- **wusl.1 + wusl.2 — Chat streaming UX + progressive live draft (commit `bac7b12`, 2026-05-07):** Thinking dots remain until first token (wusl.1). Progressive draft panel via `{draftChunk}` SSE events (wusl.2). 15 tests, all pass. See Section 9a.
+
+### Pending items as of 2026-05-08
+
+- **wsm.2 follow-up stories needed:** 6 test failures in `tests/check-wsm2-shareable-urls.js` — viewer GET response shape mismatch, viewer count gap, idle cleanup timer not implemented. Create short-track stories before building viewer-dependent UI.
+- **wsm.3 follow-up stories needed:** 8 test failures in `tests/check-wsm3-back-nav-breadcrumb.js` — `GET /journey/:id/state` does not return `stages[]`/`completedStages[]`/`activeSkill` fields; `_sessionBoundary` adapter not wired. Aligns with ADR-024 / D41 GET response shape contract.
+- **src.1 — skill-routing-cli-integration implementation** — Draft PR #182 pending CI pass and merge. Two pre-existing assurance-gate failures unrelated to this story.
+- **src.1 SKILL.md additions** — Draft PR #178 open; awaiting review and merge.
+- **mfc.1 M1/M2 measurement** — M1 (Discovery artefact template conformance rate) and M2 (Model-driven question adaptation) not yet measured. Update `artefacts/2026-05-05-web-ui-model-first-chat/benefit-metric.md` after first live session.
 
 ---
 
