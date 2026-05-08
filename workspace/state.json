@@ -1,29 +1,84 @@
 {
-  "currentPhase": "discovery",
+  "currentPhase": "definition",
   "activeFeature": "2026-05-08-web-ui-copilot-chat-parity",
   "previousActiveFeature": "2026-05-07-web-ui-session-management",
-  "lastUpdated": "2026-05-08T09:00:00.000Z",
+  "lastUpdated": "2026-05-09T00:00:00.000Z",
   "cycle": {
-    "discovery": { "status": "draft", "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/discovery.md", "completedAt": null }
+    "definition": {
+      "status": "complete",
+      "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/epics/wucp-runtime-capabilities.md",
+      "completedAt": "2026-05-09"
+    }
+  },
+  "wucp": {
+    "wucp.0": {
+      "status": "definition-complete",
+      "storyArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.0.md",
+      "type": "spike",
+      "dispatchable": true
+    },
+    "wucp.1": {
+      "status": "definition-complete",
+      "storyArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.1.md",
+      "reviewReady": true
+    },
+    "wucp.2": {
+      "status": "definition-complete",
+      "storyArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.2.md",
+      "reviewReady": true
+    },
+    "wucp.3": {
+      "status": "definition-complete",
+      "storyArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.3.md",
+      "reviewReady": false,
+      "blockedOn": "wucp.0 MM1 >= 60% (reference/prompt-validation-results.md)"
+    },
+    "wucp.4": {
+      "status": "definition-complete",
+      "storyArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.4.md",
+      "reviewReady": true
+    }
   },
   "wsm": {
-    "wsm.1": { "status": "dod-complete", "prUrl": "https://github.com/heymishy/skills-repo/pull/336", "dodArtefact": "artefacts/2026-05-07-web-ui-session-management/dod/wsm.1-dod.md" },
-    "wsm.2": { "status": "dod-complete-with-deviations", "prUrl": "https://github.com/heymishy/skills-repo/pull/337", "dodArtefact": "artefacts/2026-05-07-web-ui-session-management/dod/wsm.2-dod.md" },
-    "wsm.3": { "status": "dod-complete-with-deviations", "prUrl": "https://github.com/heymishy/skills-repo/pull/338", "dodArtefact": "artefacts/2026-05-07-web-ui-session-management/dod/wsm.3-dod.md" },
-    "wsm.4": { "status": "dor-signed-off", "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.4-dor.md", "testPlan": "artefacts/2026-05-07-web-ui-session-management/test-plans/wsm.4-test-plan.md" }
+    "wsm.1": {
+      "status": "dod-complete",
+      "prUrl": "https://github.com/heymishy/skills-repo/pull/336",
+      "dodArtefact": "artefacts/2026-05-07-web-ui-session-management/dod/wsm.1-dod.md"
+    },
+    "wsm.2": {
+      "status": "dod-complete-with-deviations",
+      "prUrl": "https://github.com/heymishy/skills-repo/pull/337",
+      "dodArtefact": "artefacts/2026-05-07-web-ui-session-management/dod/wsm.2-dod.md"
+    },
+    "wsm.3": {
+      "status": "dod-complete-with-deviations",
+      "prUrl": "https://github.com/heymishy/skills-repo/pull/338",
+      "dodArtefact": "artefacts/2026-05-07-web-ui-session-management/dod/wsm.3-dod.md"
+    },
+    "wsm.4": {
+      "status": "dor-signed-off",
+      "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.4-dor.md",
+      "testPlan": "artefacts/2026-05-07-web-ui-session-management/test-plans/wsm.4-test-plan.md"
+    }
   },
-  "previousFeature": { "slug": "2026-05-06-web-ui-guided-outer-loop", "status": "dod-complete-released", "prUrl": "https://github.com/heymishy/skills-repo/pull/320" },
+  "previousFeature": {
+    "slug": "2026-05-06-web-ui-guided-outer-loop",
+    "status": "dod-complete-released",
+    "prUrl": "https://github.com/heymishy/skills-repo/pull/320"
+  },
   "checkpoint": {
-    "writtenAt": "2026-05-08",
-    "contextAtWrite": "/discovery run for 2026-05-08-web-ui-copilot-chat-parity. Discovery artefact written at artefacts/2026-05-08-web-ui-copilot-chat-parity/discovery.md. Status: draft, awaiting operator approval. Three capabilities in scope: (1) tool execution loop (read-only: read_file + list_dir markers), (2) slash command router (dynamic SKILL.md load from .github/skills/), (3) pipeline context auto-loader (pipeline-state.json + workspace/state.json + artefact listing pre-loaded at session start). Out of scope: VS Code extension UX, custom model routing layer, mobile/native apps, write-tool execution. wsm.4 fix (duplicate handleGetJourneyState) implemented but not yet committed — still in working tree. Untracked: artefacts/2026-05-07-web-ui-session-management/dod/ and artefacts/2026-05-07-web-ui-outer-loop-extensions/plans/.",
-    "resumeInstruction": "Discovery draft is written for 2026-05-08-web-ui-copilot-chat-parity. Next step: operator reviews discovery.md, approves it (fills in Approved By), then run /benefit-metric. Before that: commit wsm.4 fix (duplicate handleGetJourneyState deletion in src/web-ui/routes/journey.js) — needs feature branch, CHANGELOG entry, and draft PR. Also commit untracked DoD artefacts (artefacts/2026-05-07-web-ui-session-management/dod/) and plans (artefacts/2026-05-07-web-ui-outer-loop-extensions/plans/).",
+    "writtenAt": "2026-05-09",
+    "contextAtWrite": "/definition complete for wucp (2026-05-08-web-ui-copilot-chat-parity). 5 stories committed: wucp.0 spike, wucp.1 context auto-loader, wucp.2 slash command router, wucp.3 tool execution loop (spike-gated), wucp.4 session start wizard (scope addition). Epic, NFR profile, benefit-metric coverage matrix all committed. wucp.4 AC3/AC4 ambiguities resolved: empty-list edge case explicit, STAGE_INDEX hardcoded lookup table required, STAGE_INDEX must be exported for unit testing. Epic spike-gate scope clarified: wucp.0 blocks only wucp.3 — a failed spike does not block the epic. wsm.4 fix (duplicate handleGetJourneyState deletion) and package.json web script addition remain uncommitted in working tree.",
+    "resumeInstruction": "/definition for wucp is complete. Next steps in priority order: (1) Create branch fix/wsm.4-duplicate-handler — commit journey.js fix + package.json web script + CHANGELOG, push, open draft PR. Run wsm.2 (22/22) + wsm.3 (38/38) tests to confirm no regression before PR. (2) Run /review on wucp.1, wucp.2, wucp.4 (all model-independent, no spike dependency, reviewReady: true). (3) Dispatch wucp.0 spike — can go immediately. (4) Defer /review on wucp.3 until wucp.0 spike produces reference/prompt-validation-results.md with MM1 >= 60%.",
     "pendingActions": [
-      "REVIEW REQUIRED: Read artefacts/2026-05-08-web-ui-copilot-chat-parity/discovery.md and approve it (fill in Approved By field) before /benefit-metric can proceed.",
-      "wsm.4 commit needed: src/web-ui/routes/journey.js has the duplicate handleGetJourneyState deleted (working tree, not staged). Create branch fix/wsm.4-duplicate-handler, add CHANGELOG entry, commit, push, open draft PR. Verify: node tests/check-wsm2-collaborative-sessions.js (22/22) + node tests/check-wsm3-non-happy-path.js (38/38).",
+      "wsm.4 implementation: src/web-ui/routes/journey.js (duplicate handleGetJourneyState deleted, uncommitted) + package.json (npm run web script, uncommitted) — create branch fix/wsm.4-duplicate-handler, add CHANGELOG entry, commit both files, push, open draft PR. Before commit: verify node tests/check-wsm2-collaborative-sessions.js (22/22) + node tests/check-wsm3-non-happy-path.js (38/38) pass with no regression.",
+      "/review wucp.1 (artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.1.md) — context auto-loader, Gap 3. No spike dependency. Run /review now.",
+      "/review wucp.2 (artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.2.md) — slash command router, Gap 2. No spike dependency. Run /review now.",
+      "/review wucp.4 (artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.4.md) — session start wizard, scope addition. No spike dependency. Run /review now.",
+      "Dispatch wucp.0 spike — can go immediately via /issue-dispatch or VS Code agent session. Produces reference/prompt-validation-results.md which gates wucp.3.",
+      "/review wucp.3 (artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.3.md) — DEFERRED until wucp.0 spike result known (reference/prompt-validation-results.md with MM1 >= 60% required).",
       "Untracked artefacts to commit: artefacts/2026-05-07-web-ui-session-management/dod/ (wsm.1/2/3 DoD files) and artefacts/2026-05-07-web-ui-outer-loop-extensions/plans/ — bundle with wsm.4 PR or separate housekeeping commit.",
-      "Metric measurement: ougl M1 (Journey completion rate >= 80%), M2 (Non-engineer autonomous completion >= 1 confirmed), MM1 (Web UI trace pass rate >= VS Code baseline), MM2 (Operator coherence rating >= 4/5) — all not-yet-measured. Record via /record-signal after first live web UI journey session.",
-      "Optional: /improve owle — learnings from owle.1-6 (6 owle stories) not yet extracted to standards.",
-      "src.1: PR #182 (implementation) and PR #178 (SKILL.md additions) still pending CI pass + merge."
+      "/estimate E2 for wucp: 5 stories, complexity mix 3x complexity-1 (wucp.0/1 spike), 1x complexity-2 (wucp.2, wucp.4), 1x complexity-3 (wucp.3). Run /estimate to record refined E2."
     ]
   }
 }
