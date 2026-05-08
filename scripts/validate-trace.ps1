@@ -57,6 +57,47 @@ function Get-JsonProp {
     return $Default
 }
 
+# Reads a list section from trace-validation.yml (e.g. reference_dirs, tracks_without_discovery)
+function Read-TraceConfigList {
+    param([string]$Key)
+    $configFile = Join-Path $GithubDir "trace-validation.yml"
+    $result = [System.Collections.Generic.HashSet[string]]::new()
+    if (-not (Test-Path $configFile)) { return ,$result }
+    $inSection = $false
+    foreach ($line in (Get-Content $configFile)) {
+        if ($line -match ("^" + [regex]::Escape($Key) + ":")) {
+            $inSection = $true
+            continue
+        }
+        if ($inSection) {
+            if ($line -match '^\s{2,}-\s+(.+)$') {
+                $null = $result.Add($matches[1].Trim())
+            } elseif ($line -match '^[a-zA-Z]') {
+                break
+            }
+        }
+    }
+    return ,$result
+}
+
+# Reads feature slug → track map from pipeline-state.json
+function Read-FeatureTracks {
+    $tracks = @{}
+    if (-not (Test-Path $StateFile)) { return $tracks }
+    try {
+        $state = Get-Content $StateFile -Raw | ConvertFrom-Json
+        $features = Get-JsonProp $state 'features'
+        if ($null -ne $features) {
+            foreach ($feature in $features) {
+                $slug  = Get-JsonProp $feature 'slug'
+                $track = Get-JsonProp $feature 'track' 'standard'
+                if ($slug) { $tracks[$slug] = $track }
+            }
+        }
+    } catch {}
+    return $tracks
+}
+
 # ── Check: pipeline-state.json exists and is valid JSON ──────────────────────
 function Check-SchemaValid {
     Write-Info "Checking: pipeline-state.json is schema-valid"
@@ -82,20 +123,34 @@ function Check-DiscoveryExists {
         Write-Ok "artefacts/ is empty — no features to check"
         return
     }
+    $referenceDirs          = Read-TraceConfigList 'reference_dirs'
+    $tracksWithoutDiscovery = Read-TraceConfigList 'tracks_without_discovery'
+    $featureTracks          = Read-FeatureTracks
+
     $missing = 0
     foreach ($featureDir in (Get-ChildItem -Path $Artefacts -Directory)) {
         $feature = $featureDir.Name
         if ($feature -match '^\.' ) { continue }
+        if ($referenceDirs.Contains($feature)) {
+            Write-Ok "Skipping reference dir: artefacts/$feature"
+            continue
+        }
+        $track = if ($featureTracks.ContainsKey($feature)) { $featureTracks[$feature] } else { '' }
+        if ($track -and $tracksWithoutDiscovery.Contains($track)) {
+            Write-Ok "Skipping: artefacts/$feature (track: $track — discovery not required)"
+            continue
+        }
         $discoveryPath = Join-Path $featureDir.FullName "discovery.md"
         if (-not (Test-Path $discoveryPath)) {
-            Record-Fail "discovery_exists" "$feature is missing discovery.md"
-            Write-Fail "Missing: artefacts/$feature/discovery.md"
+            $hint = if ($track) { "track: $track" } else { 'not registered in pipeline-state — add to reference_dirs or pipeline-state with correct track' }
+            Record-Fail "discovery_exists" "$feature is missing discovery.md ($hint)"
+            Write-Fail "Missing: artefacts/$feature/discovery.md  [$hint]"
             $missing++
         }
     }
     if ($missing -eq 0) {
         Record-Pass "discovery_exists"
-        Write-Ok "All features have discovery.md"
+        Write-Ok "All standard-track features have discovery.md"
     }
 }
 
