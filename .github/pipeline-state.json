@@ -7135,13 +7135,70 @@
       "slug": "2026-05-08-web-ui-copilot-chat-parity",
       "name": "Web UI Copilot Chat Parity",
       "track": "standard",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "stories": [],
+      "slicingStrategy": "risk-first",
+      "stories": [
+        {
+          "id": "wucp.0",
+          "slug": "wucp.0",
+          "name": "MM1 prompt validation spike",
+          "type": "spike",
+          "stage": "definition",
+          "health": "green",
+          "prStatus": "none",
+          "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.0.md",
+          "testPlan": { "artefact": null, "status": "not-started" },
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wucp.1",
+          "slug": "wucp.1",
+          "name": "Pipeline context auto-loader",
+          "stage": "definition",
+          "health": "green",
+          "prStatus": "none",
+          "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.1.md",
+          "testPlan": { "artefact": null, "status": "not-started" },
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wucp.2",
+          "slug": "wucp.2",
+          "name": "Slash command router",
+          "stage": "definition",
+          "health": "green",
+          "prStatus": "none",
+          "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.2.md",
+          "testPlan": { "artefact": null, "status": "not-started" },
+          "dorStatus": "not-started"
+        },
+        {
+          "id": "wucp.3",
+          "slug": "wucp.3",
+          "name": "Tool execution loop",
+          "stage": "definition",
+          "health": "green",
+          "prStatus": "none",
+          "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.3.md",
+          "testPlan": { "artefact": null, "status": "not-started" },
+          "dorStatus": "not-started",
+          "blockedOn": "wucp.0"
+        }
+      ],
+      "epics": [
+        {
+          "slug": "wucp-runtime-capabilities",
+          "name": "Web UI Runtime Capabilities",
+          "status": "not-started",
+          "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/epics/wucp-runtime-capabilities.md",
+          "stories": ["wucp.0", "wucp.1", "wucp.2", "wucp.3"]
+        }
+      ],
       "updatedAt": "2026-05-09",
       "discoveryArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/discovery.md",
       "discoveryStatus": "approved",
@@ -7156,7 +7213,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["wucp.3"]
         },
         {
           "id": "m2",
@@ -7166,7 +7223,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["wucp.3"]
         },
         {
           "id": "m3",
@@ -7176,7 +7233,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["wucp.1", "wucp.2", "wucp.3"]
         },
         {
           "id": "mm1",
@@ -7186,7 +7243,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["wucp.0"]
         },
         {
           "id": "mm2",
@@ -7196,7 +7253,7 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": ["wucp.0", "wucp.1", "wucp.2", "wucp.3"]
         }
       ]
     }

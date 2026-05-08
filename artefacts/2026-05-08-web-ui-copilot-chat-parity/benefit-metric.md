@@ -108,15 +108,15 @@ If MM1 falls below the minimum signal threshold (< 60% emission rate), the imple
 
 ## Metric Coverage Matrix
 
-*Populated by /definition after stories are created.*
+*Populated by /definition — 2026-05-09.*
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1 — `/workflow` accuracy | TBD at /definition | Gap |
-| M2 — `/trace` file-read parity | TBD at /definition | Gap |
-| M3 — Outer loop completeness | TBD at /definition | Gap |
-| MM1 — Tool marker emission rate | TBD at /definition | Gap |
-| MM2 — Unassisted replication | TBD at /definition | Gap |
+| M1 — `/workflow` accuracy | wucp.3 (tool execution loop — creates measurement log) | Covered |
+| M2 — `/trace` file-read parity | wucp.3 (tool execution loop — enables file reads M2 requires) | Covered |
+| M3 — Outer loop completeness | wucp.1 (context auto-loader — removes session-start friction); wucp.2 (slash command router — enables non-journey skills); wucp.3 (tool loop — completes file-read requirement for mid-session skills) | Covered |
+| MM1 — Tool marker emission rate | wucp.0 (MM1 spike — directly measures and documents baseline; gates wucp.3) | Covered |
+| MM2 — Unassisted replication | wucp.1 + wucp.2 + wucp.3 (all three gaps closed together enable unassisted replication) | Covered |
 
 ---
 

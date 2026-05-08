@@ -79,3 +79,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: "Review finding ougl.3 1-M1: story AC7 referenced sessionManager.createSession which does not exist in the codebase. The story author named a function from another framework/convention rather than the actual session-creation call chain (registerHtmlSession, createJourney, setActiveSession, linkSessionToJourney). Pattern: when error-condition ACs describe 'the thing that throws', they tend to name a plausible-sounding function rather than the actual one. Fix at /review time: any error-condition AC that names a specific function as the failure point should be verified against the actual codebase during review."
   source: agent-auto
+
+- date: 2026-05-09
+  session-phase: definition — 2026-05-08-web-ui-copilot-chat-parity
+  signal-type: pattern
+  signal-text: "Model switcher + quality comparison idea raised during wucp /definition: a UI-configurable model switch for operators when multiple models are available, with lightweight per-session quality tagging (thumbs up/down per turn or per session) and a simple comparison view. Lighter weight and more UX-friendly than the /experiment skill (which operates via context.yml switching). Explicitly out of scope for wucp — candidate for a separate discovery artefact. Potential feature slug: 2026-05-XX-web-ui-model-switcher."
+  source: agent-auto
