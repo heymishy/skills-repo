@@ -1,26 +1,25 @@
 {
-  "currentPhase": "definition-of-done",
-  "activeFeature": "2026-05-06-web-ui-guided-outer-loop",
-  "lastUpdated": "2026-05-07T00:00:00.000Z",
+  "currentPhase": "definition-of-ready",
+  "activeFeature": "2026-05-07-web-ui-session-management",
+  "lastUpdated": "2026-05-08T00:00:00.000Z",
   "cycle": {
-    "discovery": { "status": "complete", "completedAt": "2026-05-06", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/discovery.md" },
-    "benefit-metric": { "status": "active", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/benefit-metric.md" },
-    "spike": { "status": "proceed", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/spikes/arch-option-b-validation-outcome.md" },
-    "decisions": { "status": "complete", "artefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/decisions.md" },
-    "definition": { "status": "complete", "storyCount": 7 },
-    "review": { "status": "complete", "outcome": "PASS - 7/7 stories, 0 HIGH findings" },
-    "test-plan": { "status": "complete", "commitSha": "388eddf", "tddScripts": ["tests/check-ougl1-buildsystemprompt-handoff.js","tests/check-ougl2-journey-state-store.js","tests/check-ougl3-journey-entry-and-start.js","tests/check-ougl4-journey-aware-chat-button.js","tests/check-ougl5-gate-confirm-feature-stages.js","tests/check-ougl6-perstory-stage-routing.js","tests/check-ougl7-dor-and-journey-complete.js"] },
-    "definition-of-ready": { "status": "complete", "storiesSignedOff": 7, "notes": "nfr-profile.md created this session (H-NFR prerequisite). ougl.3 MEDIUM finding 1-M1 resolved in ca6f644. ougl.5 _getRepoPath constraint resolved in DoR contract. All 17 hard blocks pass for all 7 stories." }
+    "wsm.1": { "status": "dod-complete", "prUrl": "https://github.com/heymishy/skills-repo/pull/336", "dodArtefact": "artefacts/2026-05-07-web-ui-session-management/dod/wsm.1-dod.md" },
+    "wsm.2": { "status": "dod-complete-with-deviations", "prUrl": "https://github.com/heymishy/skills-repo/pull/337", "dodArtefact": "artefacts/2026-05-07-web-ui-session-management/dod/wsm.2-dod.md" },
+    "wsm.3": { "status": "dod-complete-with-deviations", "prUrl": "https://github.com/heymishy/skills-repo/pull/338", "dodArtefact": "artefacts/2026-05-07-web-ui-session-management/dod/wsm.3-dod.md" },
+    "wsm.4": { "status": "dor-signed-off", "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.4-dor.md", "testPlan": "artefacts/2026-05-07-web-ui-session-management/test-plans/wsm.4-test-plan.md" },
+    "improve-wsm": { "status": "complete", "learnings": ["D40 conflict marker rule", "D41 GET response shape contract", "ADR-024"], "commitSha": "8b66f3c" }
   },
-  "previousFeature": { "slug": "2026-05-05-web-ui-model-first-chat", "status": "definition-of-done-complete" },
+  "previousFeature": { "slug": "2026-05-06-web-ui-guided-outer-loop", "status": "dod-complete-released", "prUrl": "https://github.com/heymishy/skills-repo/pull/320" },
   "checkpoint": {
-    "writtenAt": "2026-05-07",
-    "contextAtWrite": "Definition-of-done complete for ougl feature (ougl.1-7, PR #320 merged). 62/62 ACs, 60/60 tests, 13/13 NFRs met. DoD artefact written to artefacts/2026-05-06-web-ui-guided-outer-loop/dod/ougl-dod.md. Feature stage=released, releaseReady=true in pipeline-state.json. Schema valid. Committed b9030b3.",
-    "resumeInstruction": "ougl feature is DoD-complete and released. Next options: (1) /release — produce release notes and change request body; (2) /improve — extract learnings back to standards/copilot-instructions; (3) start next feature via /workflow.",
+    "writtenAt": "2026-05-08",
+    "contextAtWrite": "wsm.1/2/3 PRs merged and DoD artefacts written. /improve wsm complete (D40/D41/ADR-024 standards committed 8b66f3c). wsm.4 short-track story created: root cause is duplicate handleGetJourneyState at line 1103 of journey.js shadowing correct async version at line 444. Single deletion fixes all 14 failing assertions (wsm.2: T2c/T2d/T4b/T5b/T5c/T7c, wsm.3: T1b-T1e/T6b-T6e). DoR signed-off, coding agent instructions in dor/wsm.4-dor.md. CHANGELOG + HANDOFF updated (4738c0f). Outstanding metrics M1/M2/MM1/MM2 not-yet-measured — no data yet. Untracked: artefacts/2026-05-07-web-ui-outer-loop-extensions/plans/ and artefacts/2026-05-07-web-ui-session-management/dod/ — not staged (pre-existing from prior session, not committed).",
+    "resumeInstruction": "wsm.4 is DoR-signed-off and ready for coding agent. Implement by deleting the duplicate handleGetJourneyState function at ~line 1103 of src/web-ui/routes/journey.js. See dor/wsm.4-dor.md for exact instructions. After wsm.4: (1) /improve owle — owle.1-6 learnings not yet extracted; (2) /record-signal ougl M1/M2/MM1/MM2 after first live web UI session; (3) src.1 PRs #182 and #178 still pending.",
     "pendingActions": [
-      "Metric measurement: all 4 metrics (M1, M2, MM1, MM2) are not-yet-measured. After first real web UI journey session: record signals via /record-signal.",
-      "Optional: run /release to produce release notes for PR #320.",
-      "Optional: run /improve to extract learnings from ougl delivery into standards."
+      "wsm.4 implementation: delete duplicate handleGetJourneyState at ~line 1103 of src/web-ui/routes/journey.js. DoR: artefacts/2026-05-07-web-ui-session-management/dor/wsm.4-dor.md. Verify: node tests/check-wsm2-collaborative-sessions.js (22/22 pass) + node tests/check-wsm3-non-happy-path.js (38/38 pass). Open draft PR.",
+      "Metric measurement: ougl M1 (Journey completion rate >= 80%), M2 (Non-engineer autonomous completion >= 1 confirmed), MM1 (Web UI trace pass rate >= VS Code baseline), MM2 (Operator coherence rating >= 4/5) — all not-yet-measured. Record via /record-signal after first live web UI journey session.",
+      "Optional: /improve owle — learnings from owle.1-6 (6 owle stories) not yet extracted to standards.",
+      "Optional: /release — produce release notes for ougl (PR #320) + owle (PRs #330-335) + wsm.1-3 (PRs #336-338) batch.",
+      "src.1: PR #182 (implementation) and PR #178 (SKILL.md additions) still pending CI pass + merge."
     ]
   }
 }
