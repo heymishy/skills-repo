@@ -11,7 +11,7 @@
 function extractPRSlug(bodyText) {
   if (!bodyText) return '';
   // Exclude * and other non-slug chars; a valid feature slug is always YYYY-MM-DD-name
-  const match = bodyText.match(/artefacts\/([^/\s*`|)\]]+)\//);
+  const match = bodyText.match(/artefacts\/([^/\s*`|)\]<>]+)\//);
   return match ? match[1] : '';
 }
 
