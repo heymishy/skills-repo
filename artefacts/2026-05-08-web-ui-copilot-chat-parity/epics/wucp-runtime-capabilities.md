@@ -34,6 +34,7 @@ A platform operator can run any pipeline skill from the web UI and receive artef
 - [ ] wucp.1 — Pipeline context auto-loader (Gap 3)
 - [ ] wucp.2 — Slash command router (Gap 2)
 - [ ] wucp.3 — Tool execution loop (Gap 1) — blocked on wucp.0 MM1 ≥ 60%
+- [ ] wucp.4 — Session start wizard (project/repo selection) — scope addition; enables wucp.1 full value
 
 ## Human Oversight Level
 
