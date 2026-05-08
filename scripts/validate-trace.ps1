@@ -223,15 +223,24 @@ function Check-TestPlanCoverage {
         foreach ($story in $stories) {
             $stage = Get-JsonProp $story 'stage' ""
             if ($stage -notin $stagesNeedingTestPlan) { continue }
-            $artefact = Get-JsonProp $story 'artefact' ""
-            $fileSlug  = if ($artefact) {
-                [System.IO.Path]::GetFileNameWithoutExtension($artefact)
+            # Use testPlan.artefact directly when set (handles short-slug test plan filenames)
+            $testPlanObj   = Get-JsonProp $story 'testPlan'
+            $directArtefact = if ($null -ne $testPlanObj) { Get-JsonProp $testPlanObj 'artefact' "" } else { "" }
+            if ($directArtefact) {
+                $testPlanPath = Join-Path $RepoRoot $directArtefact.Replace('/', [System.IO.Path]::DirectorySeparatorChar)
             } else {
-                Get-JsonProp $story 'slug' "unknown"
+                $artefact = Get-JsonProp $story 'artefact' ""
+                $fileSlug  = if ($artefact) {
+                    [System.IO.Path]::GetFileNameWithoutExtension($artefact)
+                } else {
+                    $sid = Get-JsonProp $story 'slug'
+                    if (-not $sid) { $sid = Get-JsonProp $story 'id' "unknown" }
+                    $sid
+                }
+                $testPlanPath = Join-Path $RepoRoot "artefacts" $featureSlug "test-plans" "${fileSlug}-test-plan.md"
             }
-            $testPlanPath = Join-Path $RepoRoot "artefacts" $featureSlug "test-plans" "${fileSlug}-test-plan.md"
             if (-not (Test-Path $testPlanPath)) {
-                $rel = "artefacts/$featureSlug/test-plans/${fileSlug}-test-plan.md"
+                $rel = $testPlanPath.Replace($RepoRoot + [System.IO.Path]::DirectorySeparatorChar, '').Replace([System.IO.Path]::DirectorySeparatorChar, '/')
                 Write-Host "MISSING: $rel"
                 $missing.Add($rel)
             }
