@@ -126,11 +126,18 @@ function hasPwsh() {
     fs.writeFileSync(path.join(githubDir, 'pipeline-state.json'), '{ invalid json !!! }', 'utf8');
     fs.mkdirSync(path.join(tmpDir, 'artefacts'), { recursive: true });
     fs.mkdirSync(path.join(tmpDir, 'scripts'), { recursive: true });
+    // Copy the PS1 into tmpDir/scripts/ so $RepoRoot is derived from tmpDir, not the real repo root.
+    // validate-trace.ps1 sets $RepoRoot = Split-Path -Parent $ScriptDir where $ScriptDir is derived
+    // from $MyInvocation.MyCommand.Definition — i.e. the PS1 file's own location, not $PWD.
+    // If we run the real PS1 from tmpDir, $RepoRoot still points to the real repo and the test
+    // reads the real (valid) pipeline-state.json instead of the invalid one we placed in tmpDir.
+    const ps1Copy = path.join(tmpDir, 'scripts', 'validate-trace.ps1');
+    fs.copyFileSync(ps1, ps1Copy);
 
-    // Run the PS1 from tmpDir so it reads the invalid state file
+    // Run the copy from tmpDir so it reads the invalid state file
     const result = cp.spawnSync(
       'pwsh',
-      ['-NonInteractive', '-File', ps1, '--ci'],
+      ['-NonInteractive', '-File', ps1Copy, '--ci'],
       { cwd: tmpDir, timeout: 15000, encoding: 'utf8' }
     );
     if (result.status !== 0) {

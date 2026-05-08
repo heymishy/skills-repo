@@ -47,6 +47,57 @@ function Write-Ok   { param([string]$msg) Write-Host "  ✓ $msg" -ForegroundCol
 function Write-Warn { param([string]$msg) Write-Host "  ⚠ $msg" -ForegroundColor Yellow }
 function Write-Fail { param([string]$msg) Write-Host "  ✗ $msg" -ForegroundColor Red }
 
+# Safe property accessor for PSCustomObjects — avoids PropertyNotFoundException
+# with Set-StrictMode -Version Latest on PowerShell 7 when a property is absent.
+function Get-JsonProp {
+    param([object]$Obj, [string]$Name, [object]$Default = $null)
+    if ($null -eq $Obj) { return $Default }
+    $prop = $Obj.PSObject.Properties[$Name]
+    if ($null -ne $prop) { return $prop.Value }
+    return $Default
+}
+
+# Reads a list section from trace-validation.yml (e.g. reference_dirs, tracks_without_discovery)
+function Read-TraceConfigList {
+    param([string]$Key)
+    $configFile = Join-Path $GithubDir "trace-validation.yml"
+    $result = [System.Collections.Generic.HashSet[string]]::new()
+    if (-not (Test-Path $configFile)) { return ,$result }
+    $inSection = $false
+    foreach ($line in (Get-Content $configFile)) {
+        if ($line -match ("^" + [regex]::Escape($Key) + ":")) {
+            $inSection = $true
+            continue
+        }
+        if ($inSection) {
+            if ($line -match '^\s{2,}-\s+(.+)$') {
+                $null = $result.Add($matches[1].Trim())
+            } elseif ($line -match '^[a-zA-Z]') {
+                break
+            }
+        }
+    }
+    return ,$result
+}
+
+# Reads feature slug → track map from pipeline-state.json
+function Read-FeatureTracks {
+    $tracks = @{}
+    if (-not (Test-Path $StateFile)) { return $tracks }
+    try {
+        $state = Get-Content $StateFile -Raw | ConvertFrom-Json
+        $features = Get-JsonProp $state 'features'
+        if ($null -ne $features) {
+            foreach ($feature in $features) {
+                $slug  = Get-JsonProp $feature 'slug'
+                $track = Get-JsonProp $feature 'track' 'standard'
+                if ($slug) { $tracks[$slug] = $track }
+            }
+        }
+    } catch {}
+    return $tracks
+}
+
 # ── Check: pipeline-state.json exists and is valid JSON ──────────────────────
 function Check-SchemaValid {
     Write-Info "Checking: pipeline-state.json is schema-valid"
@@ -72,20 +123,34 @@ function Check-DiscoveryExists {
         Write-Ok "artefacts/ is empty — no features to check"
         return
     }
+    $referenceDirs          = Read-TraceConfigList 'reference_dirs'
+    $tracksWithoutDiscovery = Read-TraceConfigList 'tracks_without_discovery'
+    $featureTracks          = Read-FeatureTracks
+
     $missing = 0
     foreach ($featureDir in (Get-ChildItem -Path $Artefacts -Directory)) {
         $feature = $featureDir.Name
         if ($feature -match '^\.' ) { continue }
+        if ($referenceDirs.Contains($feature)) {
+            Write-Ok "Skipping reference dir: artefacts/$feature"
+            continue
+        }
+        $track = if ($featureTracks.ContainsKey($feature)) { $featureTracks[$feature] } else { '' }
+        if ($track -and $tracksWithoutDiscovery.Contains($track)) {
+            Write-Ok "Skipping: artefacts/$feature (track: $track — discovery not required)"
+            continue
+        }
         $discoveryPath = Join-Path $featureDir.FullName "discovery.md"
         if (-not (Test-Path $discoveryPath)) {
-            Record-Fail "discovery_exists" "$feature is missing discovery.md"
-            Write-Fail "Missing: artefacts/$feature/discovery.md"
+            $hint = if ($track) { "track: $track" } else { 'not registered in pipeline-state — add to reference_dirs or pipeline-state with correct track' }
+            Record-Fail "discovery_exists" "$feature is missing discovery.md ($hint)"
+            Write-Fail "Missing: artefacts/$feature/discovery.md  [$hint]"
             $missing++
         }
     }
     if ($missing -eq 0) {
         Record-Pass "discovery_exists"
-        Write-Ok "All features have discovery.md"
+        Write-Ok "All standard-track features have discovery.md"
     }
 }
 
@@ -136,18 +201,18 @@ function Check-TestPlanCoverage {
     $missing = [System.Collections.Generic.List[string]]::new()
 
     foreach ($feature in $state.features) {
-        $featureSlug = if ($feature.slug) { $feature.slug } else { "unknown" }
+        $featureSlug = Get-JsonProp $feature 'slug' "unknown"
 
         # Collect story objects from feature.stories[] and epic.stories[]
         $stories = [System.Collections.Generic.List[object]]::new()
-        if ($feature.stories) {
+        if (Get-JsonProp $feature 'stories') {
             foreach ($s in $feature.stories) {
                 if ($s -is [PSCustomObject]) { $stories.Add($s) }
             }
         }
-        if ($stories.Count -eq 0 -and $feature.epics) {
+        if ($stories.Count -eq 0 -and (Get-JsonProp $feature 'epics')) {
             foreach ($epic in $feature.epics) {
-                if ($epic.stories) {
+                if (Get-JsonProp $epic 'stories') {
                     foreach ($s in $epic.stories) {
                         if ($s -is [PSCustomObject]) { $stories.Add($s) }
                     }
@@ -156,17 +221,26 @@ function Check-TestPlanCoverage {
         }
 
         foreach ($story in $stories) {
-            $stage = if ($story.stage) { $story.stage } else { "" }
+            $stage = Get-JsonProp $story 'stage' ""
             if ($stage -notin $stagesNeedingTestPlan) { continue }
-            $artefact = if ($story.artefact) { $story.artefact } else { "" }
-            $fileSlug  = if ($artefact) {
-                [System.IO.Path]::GetFileNameWithoutExtension($artefact)
+            # Use testPlan.artefact directly when set (handles short-slug test plan filenames)
+            $testPlanObj   = Get-JsonProp $story 'testPlan'
+            $directArtefact = if ($null -ne $testPlanObj) { Get-JsonProp $testPlanObj 'artefact' "" } else { "" }
+            if ($directArtefact) {
+                $testPlanPath = Join-Path $RepoRoot $directArtefact.Replace('/', [System.IO.Path]::DirectorySeparatorChar)
             } else {
-                if ($story.slug) { $story.slug } else { "unknown" }
+                $artefact = Get-JsonProp $story 'artefact' ""
+                $fileSlug  = if ($artefact) {
+                    [System.IO.Path]::GetFileNameWithoutExtension($artefact)
+                } else {
+                    $sid = Get-JsonProp $story 'slug'
+                    if (-not $sid) { $sid = Get-JsonProp $story 'id' "unknown" }
+                    $sid
+                }
+                $testPlanPath = Join-Path $RepoRoot "artefacts" $featureSlug "test-plans" "${fileSlug}-test-plan.md"
             }
-            $testPlanPath = Join-Path $RepoRoot "artefacts" $featureSlug "test-plans" "${fileSlug}-test-plan.md"
             if (-not (Test-Path $testPlanPath)) {
-                $rel = "artefacts/$featureSlug/test-plans/${fileSlug}-test-plan.md"
+                $rel = $testPlanPath.Replace($RepoRoot + [System.IO.Path]::DirectorySeparatorChar, '').Replace([System.IO.Path]::DirectorySeparatorChar, '/')
                 Write-Host "MISSING: $rel"
                 $missing.Add($rel)
             }
@@ -200,18 +274,18 @@ function Check-UnresolvedBlockers {
 
     $found = $false
     foreach ($feature in $state.features) {
-        $featureSlug = if ($feature.slug) { $feature.slug } else { "unknown" }
-        if ($feature.health -eq 'red' -and -not $feature.blocker) {
+        $featureSlug = Get-JsonProp $feature 'slug' "unknown"
+        if ((Get-JsonProp $feature 'health') -eq 'red' -and -not (Get-JsonProp $feature 'blocker')) {
             Write-Host "UNRESOLVED BLOCKER: feature $featureSlug has health=red but no blocker recorded"
             $found = $true
         }
-        if ($feature.epics) {
+        if (Get-JsonProp $feature 'epics') {
             foreach ($epic in $feature.epics) {
-                if ($epic.stories) {
+                if (Get-JsonProp $epic 'stories') {
                     foreach ($story in $epic.stories) {
                         if ($story -isnot [PSCustomObject]) { continue }
-                        $storySlug = if ($story.slug) { $story.slug } else { "unknown" }
-                        if ($story.health -eq 'red' -and -not $story.blocker) {
+                        $storySlug = Get-JsonProp $story 'slug' "unknown"
+                        if ((Get-JsonProp $story 'health') -eq 'red' -and -not (Get-JsonProp $story 'blocker')) {
                             Write-Host "UNRESOLVED BLOCKER: $featureSlug/$storySlug has health=red but no blocker recorded"
                             $found = $true
                         }

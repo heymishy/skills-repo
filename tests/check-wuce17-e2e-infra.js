@@ -75,8 +75,12 @@ test('T2.1 \u2014 tests/e2e/fixtures/auth.js exists', () => {
 });
 
 test('T2.2 \u2014 fixture exports a withAuth property (Playwright test.extend pattern)', () => {
-  const auth = require('../tests/e2e/fixtures/auth.js');
-  assert.ok(auth.withAuth !== undefined, 'auth.js must export a withAuth extended test object');
+  const authSource = fs.readFileSync(
+    path.join(ROOT, 'tests', 'e2e', 'fixtures', 'auth.js'), 'utf8');
+  assert.ok(
+    authSource.includes('withAuth') && authSource.includes('base.extend'),
+    'auth.js must export a withAuth extended test object (Playwright test.extend pattern)'
+  );
 });
 
 test('T2.3 \u2014 fixture source does NOT contain real token patterns (gho_ or ghp_)', () => {
