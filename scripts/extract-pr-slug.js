@@ -47,17 +47,26 @@ function extractFeatureSlugFromBranchName(branchName, stateObj) {
   if (!branchName || !stateObj || !stateObj.features) return '';
   const m = branchName.match(/^(?:feature|feat)\/(.+)$/);
   if (!m) return '';
-  // Branch names include a description suffix (e.g. "wucp.2-slash-command-router").
-  // Extract just the story-id prefix: letters+digits, a dot, then digits.
-  const idMatch = m[1].match(/^([a-z][a-z0-9]*\.[0-9]+)/i);
-  const storyId = idMatch ? idMatch[1] : m[1];
+  const fullSuffix = m[1];
+  // Also extract just the story-id prefix (e.g. "wucp.2" from "wucp.2-slash-command-router").
+  const idMatch = fullSuffix.match(/^([a-z][a-z0-9]*\.[0-9]+(?:\.[0-9]+)*)/i);
+  const prefixId = idMatch ? idMatch[1] : null;
+  const matchesStory = (s) => {
+    const sid = s.id || s.slug;
+    if (!sid) return false;
+    // Exact match first (handles "dviz.1-pipeline-adapter" style IDs)
+    if (sid === fullSuffix) return true;
+    // Prefix match: story has bare ID like "wucp.2", branch has "wucp.2-description"
+    if (prefixId && sid === prefixId) return true;
+    return false;
+  };
   for (const feat of stateObj.features) {
     for (const s of feat.stories || []) {
-      if ((s.id || s.slug) === storyId) return feat.slug;
+      if (matchesStory(s)) return feat.slug;
     }
     for (const e of feat.epics || []) {
       for (const s of e.stories || []) {
-        if ((s.id || s.slug) === storyId) return feat.slug;
+        if (matchesStory(s)) return feat.slug;
       }
     }
   }
