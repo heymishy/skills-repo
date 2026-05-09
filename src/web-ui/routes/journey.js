@@ -1097,35 +1097,7 @@ async function handlePostDecisions(req, res) {
 }
 
 /**
- * GET /api/journey/:journeyId — owle.1
- * Returns main journey state. sideTripSessionId is intentionally excluded.
- */
-function handleGetJourneyState(req, res) {
-  if (!req.session || !req.session.accessToken) {
-    res.writeHead(401, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Unauthorised' }));
-    return;
-  }
-  var journeyId = req.params && req.params.journeyId;
-  var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Journey not found' }));
-    return;
-  }
-  // sideTripSessionId intentionally omitted — server-side only
-  res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({
-    journeyId:       journey.journeyId,
-    featureSlug:     journey.featureSlug,
-    activeSkill:     journey.activeSkill,
-    activeSessionId: journey.activeSessionId,
-    completedStages: journey.completedStages,
-    complete:        journey.complete
-  }));
-}
-
-/**
+ /**
  * titleToSlug — converts a spike title to a filename-safe slug.
  * Returns empty string if no alphanumeric chars present.
  */
