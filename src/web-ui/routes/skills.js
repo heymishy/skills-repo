@@ -1056,8 +1056,9 @@ async function handleGetResultHtml(req, res) {
  * @param {string}  [repoRoot]  — override repo root (defaults to _getRepoPath(); pass process.cwd() in tests)
  * @returns {string}
  */
-function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts) {
+function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, sessionContext) {
   var root = repoRoot || _getRepoPath();
+  var ctx = sessionContext || {};
   var parts = [];
 
   // 1. copilot-instructions.md
@@ -1113,7 +1114,59 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts) {
     parts.push(handoffParts.join('\n'));
   }
 
-  // 5. Web UI protocol — instructs the model how to operate and when/how to output the artefact
+  // 5. Pipeline context files (wucp.1)
+  var PIPELINE_CONTEXT_FILES = [
+    { rel: 'pipeline-state.json',              label: 'pipeline-state.json' },
+    { rel: 'workspace/state.json',             label: 'workspace/state.json' },
+    { rel: 'context.yml',                      label: 'context.yml' }
+  ];
+  PIPELINE_CONTEXT_FILES.forEach(function(pf) {
+    try {
+      var pfPath = path.join(root, pf.rel);
+      if (fs.existsSync(pfPath)) {
+        parts.push('--- ' + pf.label + ' ---\n\n' + fs.readFileSync(pfPath, 'utf8'));
+      }
+    } catch (_) {}
+  });
+
+  // 5a. workspace/learnings.md — first 50 lines only
+  try {
+    var learningsPath = path.join(root, 'workspace', 'learnings.md');
+    if (fs.existsSync(learningsPath)) {
+      var allLines = fs.readFileSync(learningsPath, 'utf8').split('\n');
+      var firstFifty = allLines.slice(0, 50).join('\n');
+      parts.push('--- workspace/learnings.md ---\n\n' + firstFifty);
+    }
+  } catch (_) {}
+
+  // 5b. fleet-state.json — conditional
+  try {
+    var fleetPath = path.join(root, 'fleet-state.json');
+    if (fs.existsSync(fleetPath)) {
+      parts.push('--- fleet-state.json ---\n\n' + fs.readFileSync(fleetPath, 'utf8'));
+    }
+  } catch (_) {}
+
+  // 5c. artefact-coverage-exemptions.json — conditional
+  try {
+    var exemptPath = path.join(root, 'artefact-coverage-exemptions.json');
+    if (fs.existsSync(exemptPath)) {
+      parts.push('--- artefact-coverage-exemptions.json ---\n\n' + fs.readFileSync(exemptPath, 'utf8'));
+    }
+  } catch (_) {}
+
+  // 5d. Artefact listing for activeFeatureSlug — filenames only
+  if (ctx.activeFeatureSlug) {
+    try {
+      var featureArtefactsDir = path.join(root, 'artefacts', ctx.activeFeatureSlug);
+      if (fs.existsSync(featureArtefactsDir)) {
+        var fileList = fs.readdirSync(featureArtefactsDir);
+        parts.push('--- Artefact listing: artefacts/' + ctx.activeFeatureSlug + '/ ---\n\n' + fileList.join('\n'));
+      }
+    } catch (_) {}
+  }
+
+  // 6. Web UI protocol — instructs the model how to operate and when/how to output the artefact
   parts.push([
     '--- WEB UI PROTOCOL ---',
     '',
