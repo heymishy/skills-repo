@@ -1230,6 +1230,166 @@ async function handlePatchSpike(req, res) {
   res.end(JSON.stringify({ success: true }));
 }
 
+// ---------------------------------------------------------------------------
+// wucp.2 — Slash command router
+// ---------------------------------------------------------------------------
+
+/**
+ * Static map classifying skills by the surface capabilities they require.
+ * Skills with non-empty capabilities display a notice in the web UI prompt.
+ * Skills with [] have no surface limitations and work fully in the web UI.
+ */
+var SLASH_CAPABILITY_MAP = {
+  'benefit-metric':          { capabilities: [], limitedOnWebUI: false },
+  'bootstrap':               { capabilities: [], limitedOnWebUI: false },
+  'branch-complete':         { capabilities: ['git-worktree', 'bash-scripts', 'pr-creation'], limitedOnWebUI: true },
+  'branch-setup':            { capabilities: ['git-worktree', 'bash-scripts'], limitedOnWebUI: true },
+  'checkpoint':              { capabilities: [], limitedOnWebUI: false },
+  'clarify':                 { capabilities: [], limitedOnWebUI: false },
+  'coverage-map':            { capabilities: [], limitedOnWebUI: false },
+  'decisions':               { capabilities: [], limitedOnWebUI: false },
+  'definition':              { capabilities: [], limitedOnWebUI: false },
+  'definition-of-done':      { capabilities: [], limitedOnWebUI: false },
+  'definition-of-ready':     { capabilities: [], limitedOnWebUI: false },
+  'discovery':               { capabilities: [], limitedOnWebUI: false },
+  'ea-registry':             { capabilities: ['external-registry'], limitedOnWebUI: true },
+  'estimate':                { capabilities: [], limitedOnWebUI: false },
+  'ideate':                  { capabilities: [], limitedOnWebUI: false },
+  'implementation-plan':     { capabilities: [], limitedOnWebUI: false },
+  'implementation-review':   { capabilities: [], limitedOnWebUI: false },
+  'improve':                 { capabilities: [], limitedOnWebUI: false },
+  'improvement-agent':       { capabilities: [], limitedOnWebUI: false },
+  'issue-dispatch':          { capabilities: ['gh-cli'], limitedOnWebUI: true },
+  'loop-design':             { capabilities: [], limitedOnWebUI: false },
+  'metric-review':           { capabilities: [], limitedOnWebUI: false },
+  'modernisation-decompose': { capabilities: [], limitedOnWebUI: false },
+  'org-mapping':             { capabilities: [], limitedOnWebUI: false },
+  'orient':                  { capabilities: [], limitedOnWebUI: false },
+  'persona-routing':         { capabilities: [], limitedOnWebUI: false },
+  'prioritise':              { capabilities: [], limitedOnWebUI: false },
+  'programme':               { capabilities: [], limitedOnWebUI: false },
+  'record-signal':           { capabilities: [], limitedOnWebUI: false },
+  'reference-corpus-update': { capabilities: [], limitedOnWebUI: false },
+  'release':                 { capabilities: ['git', 'bash-scripts', 'ci-cd'], limitedOnWebUI: true },
+  'reverse-engineer':        { capabilities: [], limitedOnWebUI: false },
+  'review':                  { capabilities: [], limitedOnWebUI: false },
+  'scale-pipeline':          { capabilities: [], limitedOnWebUI: false },
+  'spike':                   { capabilities: [], limitedOnWebUI: false },
+  'start':                   { capabilities: [], limitedOnWebUI: false },
+  'subagent-execution':      { capabilities: ['git', 'bash-scripts'], limitedOnWebUI: true },
+  'systematic-debugging':    { capabilities: [], limitedOnWebUI: false },
+  'tdd':                     { capabilities: ['bash-scripts', 'test-runner'], limitedOnWebUI: true },
+  'test-plan':               { capabilities: [], limitedOnWebUI: false },
+  'token-optimization':      { capabilities: [], limitedOnWebUI: false },
+  'trace':                   { capabilities: ['bash-scripts'], limitedOnWebUI: true },
+  'verify-completion':       { capabilities: ['bash-scripts', 'test-runner'], limitedOnWebUI: true },
+  'workflow':                { capabilities: [], limitedOnWebUI: false }
+};
+
+/**
+ * Returns an array of skill directory names under .github/skills/.
+ * Reads the directory fresh each call (dynamic discovery — AC2).
+ * @param {string} repoRoot
+ * @returns {string[]}
+ */
+function getAvailableSkills(repoRoot) {
+  var root = repoRoot || _repoRoot || path.resolve(__dirname, '../../..');
+  var skillsDir = path.join(root, '.github', 'skills');
+  try {
+    return fs.readdirSync(skillsDir).filter(function(name) {
+      try {
+        return fs.statSync(path.join(skillsDir, name)).isDirectory();
+      } catch (_) { return false; }
+    });
+  } catch (_) {
+    return [];
+  }
+}
+
+/**
+ * Validates a skill name from user input before any file read.
+ * Returns false if name contains path traversal characters.
+ * Returns false if name is not in the discovered skill allowlist.
+ * Returns true if valid.
+ * @param {string} name
+ * @param {string} repoRoot
+ * @returns {boolean}
+ */
+function validateSlashSkillName(name, repoRoot) {
+  if (!name || typeof name !== 'string') return false;
+  // Reject path traversal patterns — MANDATORY security check (AC6)
+  if (name.indexOf('/') !== -1 || name.indexOf('\\') !== -1 || name.indexOf('..') !== -1) {
+    return false;
+  }
+  var available = getAvailableSkills(repoRoot);
+  return available.indexOf(name) !== -1;
+}
+
+/**
+ * Reads .github/skills/[skillName]/SKILL.md and assembles a prompt.
+ * Prepends a capability notice if the skill is in SLASH_CAPABILITY_MAP with
+ * non-empty capabilities.
+ * @param {string} skillName
+ * @param {string} repoRoot
+ * @returns {string}
+ */
+function buildSlashCommandPrompt(skillName, repoRoot) {
+  var root = repoRoot || _repoRoot || path.resolve(__dirname, '../../..');
+  var skillMdPath = path.join(root, '.github', 'skills', skillName, 'SKILL.md');
+  var skillContent = fs.readFileSync(skillMdPath, 'utf8');
+  var parts = [];
+  var entry = SLASH_CAPABILITY_MAP[skillName];
+  if (entry && entry.capabilities && entry.capabilities.length > 0) {
+    parts.push('NOTE: This skill requires ' + entry.capabilities.join(', ') + '. Some outputs may be limited or unavailable in the web UI.');
+  }
+  parts.push(skillContent);
+  return parts.join('\n\n');
+}
+
+/**
+ * Sets session.activeSlashCommand without mutating stage position (AC4).
+ * @param {object} session
+ * @param {string} skillName
+ */
+function applySlashCommand(session, skillName) {
+  session.activeSlashCommand = skillName;
+}
+
+/**
+ * Removes session.activeSlashCommand; journey stage resumes unchanged (AC4).
+ * @param {object} session
+ */
+function clearSlashCommand(session) {
+  delete session.activeSlashCommand;
+}
+
+/**
+ * Route handler for POST /slash-command.
+ * Validates skill name, loads prompt, applies to session. HTTP 400 on failure.
+ * @param {object} req
+ * @param {object} res
+ */
+function handleSlashCommand(req, res) {
+  var root = _repoRoot || path.resolve(__dirname, '../../..');
+  var body = req.body || {};
+  var skillName = String(body.skillName || '');
+
+  if (!validateSlashSkillName(skillName, root)) {
+    var available = getAvailableSkills(root);
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      error: 'Unknown or invalid skill: "' + skillName + '"',
+      availableSkills: available
+    }));
+    return;
+  }
+
+  var prompt = buildSlashCommandPrompt(skillName, root);
+  applySlashCommand(req.session, skillName);
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ success: true, prompt: prompt, activeSlashCommand: skillName }));
+}
+
 module.exports = {
   handleGetJourney,
   handlePostJourney,
@@ -1301,6 +1461,14 @@ module.exports = {
   setJourneyStoreModule,
   setGetHtmlSession,
   setRepoRoot,
-  setPipelineStateWriter
+  setPipelineStateWriter,
+  // wucp.2 — slash command router
+  SLASH_CAPABILITY_MAP,
+  getAvailableSkills,
+  validateSlashSkillName,
+  buildSlashCommandPrompt,
+  applySlashCommand,
+  clearSlashCommand,
+  handleSlashCommand
 };
 
