@@ -413,7 +413,7 @@ queue.push(function() {
 // ---------------------------------------------------------------------------
 console.log('\n--- wucp.1: Pipeline context auto-loader tests ---\n');
 queue.reduce(function(p, fn) { return p.then(fn); }, Promise.resolve()).then(function() {
-  console.log('\n' + passed + ' passed, ' + failed + ' failed');
+  console.log('\n=== wucp1 results: ' + passed + ' passed, ' + failed + ' failed ===');
   if (failures.length) {
     console.log('\nFailures:');
     failures.forEach(function(f) { console.log('  FAIL: ' + f.name + '\n       ' + (f.err && f.err.message || f.err)); });
