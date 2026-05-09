@@ -26,7 +26,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter } = require('./routes/journey'); // ougl.3 / owle.1-6
+const { handleGetJourney, handlePostJourney, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter, handleGetWizard, handlePostWizardSelection } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 
 const PORT = process.env.PORT || 3000;
@@ -384,9 +384,17 @@ async function router(req, res) {
     req.params = { name: parts[3], id: parts[5] };
     await handleResumeSession(req, res);
 
+  } else if (pathname === '/journey/wizard' && req.method === 'POST') {
+    // wucp.4 — wizard feature selection POST
+    await handlePostWizardSelection(req, res);
+
   } else if (pathname === '/journey' && req.method === 'GET') {
-    // ougl.3 — journey entry screen
-    handleGetJourney(req, res);
+    // ougl.3 / wucp.4 — journey entry: show wizard if no activeFeatureSlug
+    if (req.session && !req.session.activeFeatureSlug) {
+      handleGetWizard(req, res);
+    } else {
+      handleGetJourney(req, res);
+    }
 
   } else if (pathname === '/api/journey' && req.method === 'POST') {
     // ougl.3 — start journey + discovery session
