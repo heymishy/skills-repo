@@ -7153,7 +7153,10 @@
           "prStatus": "none",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.0.md",
           "testPlan": { "artefact": null, "status": "not-started" },
-          "dorStatus": "not-started"
+          "dorStatus": "not-started",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/343",
+          "dispatchedAt": "2026-05-09T00:00:00Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "wucp.1",
