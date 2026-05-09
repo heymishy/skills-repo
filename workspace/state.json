@@ -4,6 +4,11 @@
   "previousActiveFeature": "2026-05-07-web-ui-session-management",
   "lastUpdated": "2026-05-09T00:00:00.000Z",
   "cycle": {
+    "discovery": {
+      "status": "complete",
+      "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/discovery.md",
+      "completedAt": "2026-05-08"
+    },
     "definition": {
       "status": "complete",
       "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/epics/wucp-runtime-capabilities.md",
