@@ -47,7 +47,10 @@ function extractFeatureSlugFromBranchName(branchName, stateObj) {
   if (!branchName || !stateObj || !stateObj.features) return '';
   const m = branchName.match(/^(?:feature|feat)\/(.+)$/);
   if (!m) return '';
-  const storyId = m[1];
+  // Branch names include a description suffix (e.g. "wucp.2-slash-command-router").
+  // Extract just the story-id prefix: letters+digits, a dot, then digits.
+  const idMatch = m[1].match(/^([a-z][a-z0-9]*\.[0-9]+)/i);
+  const storyId = idMatch ? idMatch[1] : m[1];
   for (const feat of stateObj.features) {
     for (const s of feat.stories || []) {
       if ((s.id || s.slug) === storyId) return feat.slug;
