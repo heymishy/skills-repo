@@ -13,6 +13,10 @@
       "reason": "Bootstrap skill added out-of-band as a platform utility with no formal story chain. Retroactive story pending — tracked in artefact-coverage-exemptions.json as technical debt."
     },
     {
+      "slug": "model-sweep",
+      "reason": "Model-sweep skill directory created out-of-band as part of model evaluation capability exploration (artefacts/2026-05-10-model-evaluation-capability). No formal story chain yet. Retroactive story pending."
+    },
+    {
       "slug": "branch-complete",
       "reason": "Branch-complete skill added as part of inner loop skill set without a separate story artefact. Covered by Phase 1/2 pipeline scope but no individual DoR. Retroactive story pending."
     },
