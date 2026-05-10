@@ -55,11 +55,12 @@ skills_upstream:
     - docs/skill-pipeline-instructions.md
   strategy: merge
 
-# Instrumentation — Skill Performance Capture experiment: Sonnet 4.6
-# This context variant is FOR SONNET. See experiment-opus-phase4.yml for Opus variant.
+# Instrumentation — Model Evaluation Capability pilot: EXP-001 (discovery, Layer 1)
+# Run: Layer 1 semi-manual via VS Code model selector against corpus T1-T5
+# See: workspace/experiments/EXP-001-discovery-phase4-5/manifest.md
 instrumentation:
   enabled: true
-  experiment_id: "exp-phase4-sonnet-vs-opus-20260419"
+  experiment_id: "EXP-001-discovery-phase4-5"
   model_label: "claude-sonnet-4-6"
   cost_tier: "fast"
 
