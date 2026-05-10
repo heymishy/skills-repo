@@ -2,6 +2,7 @@
 
 **Document type:** Enterprise handoff bundle
 **Prepared:** 2026-04-12
+**Updated:** 2026-05-11 — EXP-001 model evaluation experiment: run-3 scored (partial), run-3 design finding written (section-by-section confirmation gate is the primary variable, not model capability), run-3b plan published with batch-bypass input format, Finacle follow-up answers, and T5 enterprise-context probe. PR #348 (feat/model-evaluation-capability). See Section 9e.
 **Updated:** 2026-05-08 — ougl.1–7 guided outer loop, owle.1–6 outer loop extensions, wsm.1–3 session management all delivered. PRs #320, #330–#338 merged. D40 (conflict marker rule in `copilot-instructions.md`), D41 (GET response shape contract in `web-ui-patterns.md`), ADR-024 added to `architecture-guardrails.md`. wsm.2 (6 test failures) and wsm.3 (8 test failures) complete-with-deviations — follow-up stories needed. See Section 9d.
 **Updated:** 2026-05-07 — wusl.1 + wusl.2: chat streaming UX + progressive live draft delivered (commit `bac7b12`). (1) Animated thinking dots now stay visible until first real token arrives — `thinkingDiv.remove()` moved from HTTP response-start into `if(evt.chunk)` handler. (2) `handlePostTurnStreamHtml` now emits `{draftChunk}` SSE events as the model streams artefact content after `---ARTEFACT-START---`; split-marker boundary handled via accumulation buffer; client accumulates `partialDraft` and calls `updateDraftPanel` progressively. 15 new tests across two new test files. See Section 9a below.
 **Updated:** 2026-05-06 (3) — Notion-calm web UI design port distribution package committed (858ef37). Drop-in view layer for enterprise/consumer forks. See Section 9b (new) for file locations and agent instructions. As-built architecture reference committed (f71d001) — see Section 9c (new).
@@ -15,11 +16,68 @@
 **Updated:** 2026-04-21 (2) — Phase 5/6 roadmap published; product/ docs updated with Phase 4 actual delivery scope, enforcement architecture, competitive positioning, and G19 intentional gap note. See Section 8.
 **Updated:** 2026-04-21 (1) — Phase 4 fully DoD-complete — all 27 stories including E5 Platform Observability & Measurement. PRs #176 and #177 merged and traced. See Sections 6.8–6.15 and Phase 4 story tables.
 **Prepared by:** Platform maintainer (Hamish)
-**Status:** Phases 1–4 DoD-complete. Phase 5 (WS0–WS7) and Phase 6 (WS8–WS11) roadmapped. ougl.1–7, owle.1–6, wsm.1–3 delivered (PRs #320, #330–#338). wsm.2 and wsm.3 complete-with-deviations (follow-up stories needed). src.1 implementation draft PR #182 pending. src.1 SKILL.md additions pending draft PR #178.
+**Status:** Phases 1–4 DoD-complete. Phase 5 (WS0–WS7) and Phase 6 (WS8–WS11) roadmapped. ougl.1–7, owle.1–6, wsm.1–3 delivered (PRs #320, #330–#338). wsm.2 and wsm.3 complete-with-deviations (follow-up stories needed). EXP-001 model evaluation in progress: run-3 scored (partial), run-3b planned (PR #348). src.1 implementation draft PR #182 pending. src.1 SKILL.md additions pending draft PR #178.
 
 ---
 
-## 9d. ougl.1–7 + owle.1–6 + wsm.1–3 — Guided outer loop, extensions, and session management (2026-05-08) ← CURRENT STATE
+## 9e. EXP-001 — /discovery model evaluation experiment (2026-05-10/11, PR #348) ← CURRENT STATE
+
+**Branch:** `feat/model-evaluation-capability` — PR #348 open (draft).
+
+Structured Layer 1 (manual) model sweep comparing `claude-sonnet-4-6` vs `claude-opus-4-6` on the `/discovery` skill across 5 corpus cases. Primary goal: determine which model produces higher-quality discovery artefacts on complex and ambiguous inputs, and whether the pipeline's SESSION START gate needs evaluation-mode handling.
+
+### Run history summary
+
+| Run | Status | Key outcome |
+|-----|--------|-------------|
+| run-1 | CONFOUNDED | `product/mission.md` in test repo caused domain bleed. All 10 cells void. |
+| run-2 | COMPLETE (partial) | Fresh clone. SESSION START gate triggered on all 10 cases. T1 unscoreable. T3-Sonnet wrong content (corrected). Stale `state.json` contaminated T2-Sonnet. |
+| run-3 | SCORED (partial) | `state.json` reset + `/discovery —` prefix. T2/T4 categorical PASS (both models). T1/T3/T5 partial — design finding: section-by-section confirmation gate prevents one-pass artefact. T3 regression: both models drafted Section 1 before asking AML definitional Qs. |
+| run-3b | PLANNED | Batch-bypass input format for T1/T3/T5. T3 includes Finacle follow-up. T5 includes enterprise-context probe. |
+
+### Run-3 design finding (2026-05-10)
+
+**Classification: pipeline design finding — not a model quality finding.**
+
+The `/discovery` skill's section-by-section confirmation gate (which stops after each section to ask the operator "shall I continue?") is the primary variable preventing scoreable full artefacts in evaluation contexts. The `/discovery —` prefix successfully bypasses the SESSION START gate, but not the inter-section gate. Both models behave identically here — this is a skill design property, not a model capability property.
+
+**Implication for scorecard:** The post-run-3b scorecard's primary recommendation will be a pipeline gate `--eval` mode (or a recognised input phrase that collapses confirmation flows into a single-pass output). Tagged for token-optimization proposal: `evaluation_mode: true` context flag to reduce round-trips and repeated section preamble tokens in instrumented runs.
+
+### T2 / T4 final verdicts (complete — not re-run in run-3b)
+
+| Case | Sonnet | Opus |
+|------|--------|------|
+| T2 — Ambiguous cross-cutting | PASS — asked domain clarification Q directly | PASS — consent-to-proceed style (weaker form, still compliant) |
+| T4 — Scope too wide | PASS — asked which API + what's slow | PASS — asked 3 Qs incl. artefact-first governance Q (stronger) |
+
+### Run-3b targets (pending execution)
+
+| Case | Models | What's being collected |
+|------|--------|------------------------|
+| T1 | Both | Full one-pass artefact (D1–D7 scoring) |
+| T3 pass 1 | Both | Solution-reframing behaviour |
+| T3 pass 2 | Both | Full artefact with Finacle answers — D1–D7 (primary AML problem-vs-solution test) |
+| T5 pass 1 | Both | Feature-list gate + proactive constraint surfacing |
+| T5 pass 2 | Both | Enterprise-context probe — records which of 4 constraints named when asked |
+
+### Key file raw URLs (feat branch — update to master URLs after PR #348 merges)
+
+| File | Raw URL |
+|------|---------|
+| EXP-001 manifest | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/feat/model-evaluation-capability/workspace/experiments/EXP-001-discovery-phase4-5/manifest.md |
+| Run files directory | https://github.com/heymishy/skills-repo/tree/feat/model-evaluation-capability/workspace/experiments/EXP-001-discovery-phase4-5/runs |
+| `/discovery` EVAL.md | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/feat/model-evaluation-capability/.github/skills/discovery/EVAL.md |
+| `/definition-of-ready` EVAL.md | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/feat/model-evaluation-capability/.github/skills/definition-of-ready/EVAL.md |
+| T1 corpus case | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/feat/model-evaluation-capability/.github/skills/discovery/corpus/T1-well-formed-input.md |
+| T2 corpus case | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/feat/model-evaluation-capability/.github/skills/discovery/corpus/T2-vague-input-clarification.md |
+| T3 corpus case | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/feat/model-evaluation-capability/.github/skills/discovery/corpus/T3-solution-masquerades-as-problem.md |
+| T4 corpus case | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/feat/model-evaluation-capability/.github/skills/discovery/corpus/T4-scope-too-wide.md |
+| T5 corpus case | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/feat/model-evaluation-capability/.github/skills/discovery/corpus/T5-hidden-constraints.md |
+| `scripts/run-model-sweep.js` | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/feat/model-evaluation-capability/scripts/run-model-sweep.js |
+| `/model-sweep` SKILL.md | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/feat/model-evaluation-capability/.github/skills/model-sweep/SKILL.md |
+| Token-optimization proposal | https://raw.githubusercontent.com/heymishy/skills-repo/refs/heads/feat/model-evaluation-capability/workspace/proposals/proposed-update-token-optimization-measurement.md |
+
+--- ougl.1–7 + owle.1–6 + wsm.1–3 — Guided outer loop, extensions, and session management (2026-05-08) ← CURRENT STATE
 
 Three features delivered in a single session batch. All PRs merged (#320, #330–#338). `npm test` exits with pre-existing wsm.2 (6 failures) and wsm.3 (8 failures) only — no new regressions.
 
