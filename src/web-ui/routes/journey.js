@@ -1390,42 +1390,98 @@ function handleSlashCommand(req, res) {
   res.end(JSON.stringify({ success: true, prompt: prompt, activeSlashCommand: skillName }));
 }
 
-module.exports = {
-  handleGetJourney,
-  handlePostJourney,
-  handlePostGateConfirm,
-  handleGetStories,
-  handlePostStories,
-  handleGetJourneyComplete,
-  handleGetStageControls,
-  handlePostEstimate,
-  handlePostSpike,
-  handlePatchSpike,
-  handleGetTrace,
-  handlePostDecisions,
-  handlePostSideTripClarify,
-  handleDeleteSideTrip,
-  // wsm.2 — collaborative journey sharing
-  handleGetJourneyById,
-  handleGetJourneyState,
-  handleGetJourneyViewers,
-  checkJourneyIdle,
-  setNow,
-  // wsm.3 — stage back-navigation and needs-review
-  handleGetJourneyStage,
-  handlePostJourneyRecommit,
-  handleGetJourneyStageControls,
-  handlePostJourneyStageCommit,
-  loadJourneyMeta,
-  setDiskSessionWriter,
-  // adapter setters
-  setRegisterHtmlSession,
-  setLinkSessionToJourney,
-  setJourneyStoreModule,
-  setGetHtmlSession,
-  setRepoRoot,
-  setPipelineStateWriter
+// ---------------------------------------------------------------------------
+// wucp.4 — Session start wizard
+// ---------------------------------------------------------------------------
+
+var STAGE_INDEX = {
+  discovery: 0,
+  'benefit-metric': 1,
+  definition: 2,
+  review: 3,
+  'test-plan': 4,
+  'definition-of-ready': 5,
+  'branch-setup': 6,
+  'implementation-plan': 7,
+  'subagent-execution': 8,
+  'verify-completion': 9,
+  'branch-complete': 10,
+  'definition-of-done': 11
 };
+
+function _readPipelineFeatures(root) {
+  var stateFile = require('path').join(root || _repoRoot || '', '.github', 'pipeline-state.json');
+  if (!require('fs').existsSync(stateFile)) { return null; }
+  try {
+    var state = JSON.parse(require('fs').readFileSync(stateFile, 'utf8'));
+    return Array.isArray(state.features) ? state.features : [];
+  } catch (e) {
+    return null;
+  }
+}
+
+function handleGetWizard(req, res) {
+  if (req.session && req.session.activeFeatureSlug) {
+    res.writeHead(302, { Location: '/journey' });
+    res.end();
+    return;
+  }
+  var features = _readPipelineFeatures(_repoRoot);
+  var active = [];
+  if (features !== null) {
+    active = features.filter(function(f) { return f.stage !== 'released' && f.stage !== 'archived'; });
+  }
+  var listHtml;
+  if (features === null) {
+    listHtml = '<p>No pipeline state found. Start a new project below.</p>';
+  } else if (active.length === 0) {
+    listHtml = '<p>No active projects found. Start a new project below.</p>';
+  } else {
+    listHtml = '<ul>' + active.map(function(f) {
+      return '<li>' + escHtml(f.slug) + ' — ' + escHtml(f.stage || '') + '</li>';
+    }).join('\n') + '\n</ul>';
+  }
+  var body = '<h1>Project selection</h1>\n' +
+    '<form method="POST" action="/journey/wizard">\n' +
+    '<h2>Existing projects</h2>\n' +
+    listHtml + '\n' +
+    '<h2>Start a new project</h2>\n' +
+    '<button type="submit" name="selection" value="new">New project</button>\n' +
+    '</form>';
+  var html = renderShell({ title: 'Project selection', bodyContent: body });
+  res.writeHead(200, { 'Content-Type': 'text/html' });
+  res.end(html);
+}
+
+function handlePostWizardSelection(req, res) {
+  var reqBody = (req && req.body) || {};
+  var featureSlug = reqBody.featureSlug;
+  var selection = reqBody.selection;
+
+  // 'new' selection or no slug — reset to start, do NOT set activeFeatureSlug
+  if (!featureSlug || (selection && (selection === 'new' || selection.startsWith('new')))) {
+    req.session.stageIndex = 0;
+    res.writeHead(302, { Location: '/journey' });
+    res.end();
+    return;
+  }
+
+  // Validate slug against pipeline-state.json allowlist (security — AC6)
+  var features = _readPipelineFeatures(_repoRoot);
+  var allowedSlugs = features ? features.map(function(f) { return f.slug; }) : [];
+  if (allowedSlugs.indexOf(featureSlug) === -1) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Invalid feature slug' }));
+    return;
+  }
+
+  // Valid slug — set session
+  var feature = features.find(function(f) { return f.slug === featureSlug; });
+  req.session.activeFeatureSlug = featureSlug;
+  req.session.stageIndex = (feature && STAGE_INDEX[feature.stage] !== undefined) ? STAGE_INDEX[feature.stage] : 0;
+  res.writeHead(302, { Location: '/journey' });
+  res.end();
+}
 
 module.exports = {
   handleGetJourney,
@@ -1469,6 +1525,10 @@ module.exports = {
   buildSlashCommandPrompt,
   applySlashCommand,
   clearSlashCommand,
-  handleSlashCommand
+  handleSlashCommand,
+  // wucp.4 — session wizard
+  STAGE_INDEX,
+  handleGetWizard,
+  handlePostWizardSelection
 };
 
