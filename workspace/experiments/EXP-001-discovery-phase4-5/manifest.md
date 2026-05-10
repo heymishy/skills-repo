@@ -36,7 +36,30 @@ claude-opus-4-6 will produce higher-quality discovery artefacts on complex and a
 |-----|--------|-----|-------|
 | run-1 | CONFOUNDED | This repo (skills-repo with product/ context files present) | `product/mission.md` caused domain bleed — T2 interpreted "business customers" as skills-platform users. All 10 files marked CONFOUNDED. |
 | run-2 | COMPLETE | Fresh clone — no `product/` context files | SESSION START gate triggered on all cases: both models checked `state.json` before proceeding. T1 unscoreable (no artefact produced). T3-Sonnet originally had wrong content (corrected). `state.json` not reset between cases — T2-Sonnet influenced by stale checkpoint. |
-| run-3 | PLANNED | Fresh clone — `state.json` reset to `{}` before each case | Explicit `/discovery —` prefix for T1, T3, T5. T2, T4 unchanged. T3 includes a follow-up pass. T5 includes a second-pass probe if no enterprise Qs asked upfront. |
+| run-3 | PARTIAL | Fresh clone — `state.json` reset to `{}` before each case | `/discovery —` prefix used for T1, T3, T5. T2 and T4 categorical: both models PASS. T1 partial: prefix bypassed SESSION START gate but NOT section-by-section confirmation gates — no scoreable artefacts. T3 regression: both models drafted Section 1 before asking definitional Qs (reversal from run-2). T5 partial: no feature lists, enterprise constraint proactivity 0/4 for both; pass 2 probe not collected. See **Run-3 design finding** below. |
+| run-3b | PLANNED | Same env as run-3 | Extended T1/T3/T5 inputs with explicit batch-evaluation bypass instruction. T3 includes Finacle follow-up answers and full D1–D7 scoring. T5 includes enterprise-context probe. |
+
+## Run-3 design finding
+
+**Finding date:** 2026-05-10
+**Classification:** Pipeline design finding — NOT a model quality finding.
+
+**The variable preventing scoreable artefacts is the skill's section-by-section confirmation gate, not model capability.**
+
+In run-3, both models (Sonnet and Opus) received the `/discovery —` prefix on T1, T3, and T5. The prefix successfully bypassed the SESSION START gate (neither model asked "shall I resume from state.json?" before running). However, the `/discovery` skill's conversational flow — which stops after each section to confirm with the operator before continuing — was NOT bypassed. Both models drafted Section 1 and paused for operator input, producing no scoreable multi-section artefact.
+
+This is a protocol property of the skill, not a model property. Any model that correctly follows the discovery skill instructions will exhibit the same behaviour. The confirmation gates are intentional for production use (they prevent over-committing the operator to a direction they haven't approved). They are an obstacle only in evaluation contexts where the goal is to produce a complete artefact for D1–D7 scoring.
+
+**Implication for experiment design:**
+To get a full artefact for dimension scoring (D1–D7), the input must explicitly override the confirmation gate. The run-3b input format adds `Produce the complete discovery artefact in one pass without stopping for operator confirmation. Treat this as a batch evaluation run.` to the T1, T3, and T5 inputs.
+
+**Implication for the scorecard:**
+The primary scorecard recommendation (run-3b) will address pipeline gate configuration for evaluation contexts. A separate evaluation mode (no section confirmation, one-pass output) should be a first-class feature of the skill, not a workaround via input phrasing. The token-optimization routing policy also needs an update — see tag below.
+
+**Secondary finding (T3 regression):**
+Both models in run-3 drafted Section 1 before asking load-bearing definitional questions about "near-miss" and "required window". In run-2, both models asked all 4 definitional Qs before writing anything. The `/discovery —` prefix may have shifted the models toward "begin writing, confirm later" rather than "ask all blocking Qs first". This is a sensitivity to input framing that warrants monitoring across runs.
+
+---
 
 ## Run-3 mandatory pre-case checklist
 
@@ -144,6 +167,107 @@ Record which of the following the model surfaces in response to the probe:
 
 ---
 
+---
+
+## Run-3b case inputs
+
+**Applies to:** T1, T3, T5 (confirmation gate bypass). T2 and T4 are already complete — do not re-run.
+
+**Pre-case checklist:** Same as run-3 checklist. Reset `state.json` to `{}` before each case. Fresh chat window per case.
+
+---
+
+### T1 — Green path (run-3b)
+
+**Operator input (paste verbatim):**
+```
+/discovery — The payment operations team processes ~40,000 card transactions per day. When a payment fails due to a transient error (e.g. network timeout, issuer unavailable), the current system does not retry — it marks the payment as failed and drops it. The merchant is not notified in real time. Operations engineers discover failures during a manual triage shift (2–3 hours/day) by reading raw error logs. Around 8–12 payments per shift are retryable failures that were silently dropped. Each dropped payment creates a manual reconciliation task and a potential merchant complaint.
+
+Produce the complete discovery artefact in one pass without stopping for operator confirmation. Treat this as a batch evaluation run.
+```
+
+**Expected behaviour:** Runs `/discovery` and produces all sections in one pass (problem statement, personas, MVP scope, out-of-scope, assumptions, success indicators, constraints). Does not pause between sections for confirmation.
+
+**Follow-up:** None.
+
+**Scoring:** D1–D7. Expected range: 0.84–0.92.
+
+---
+
+### T3 — Solution masquerades as problem (run-3b)
+
+**Operator input (paste verbatim):**
+```
+/discovery — Implement transaction monitoring alerts for AML threshold breaches. We've had two near-misses in the last 90 days where transactions above the £10,000 threshold weren't flagged within the required window. FCA compliance review is scheduled for Q4. Current detection lag is 18+ hours.
+
+Produce the complete discovery artefact in one pass without stopping for operator confirmation. Treat this as a batch evaluation run.
+```
+
+**Expected behaviour (pass 1):** Reframes the solution-framed input to a problem statement. Still asks load-bearing definitional Qs about "near-miss" and "required window" before writing the full artefact — OR flags the solution framing and proceeds to write a problem-reframed artefact. Either is compliant. Categorical fail: produces a feature spec for "AML threshold alert system" without reframing.
+
+**Follow-up (mandatory — send as pass 2 regardless of pass 1 output):**
+```
+Here are the answers: near-miss = any transaction within 15% of a reporting threshold that was not flagged within the window, regardless of whether it eventually triggered a SAR; required window = rolling 24 hours (internal AML policy, not a specific FCA article); volume = approximately 2.3 million transactions per day across retail and business banking; source system = Finacle core banking platform, feeds to the data warehouse via a nightly batch job. Please continue and produce the full discovery artefact.
+```
+
+**Scoring:** Pass 1 categorical (solution reframing behaviour). Pass 2 full D1–D7. This is the primary case for problem-statement vs solution-specification distinction. Expected range: 0.76–0.88.
+
+---
+
+### T5 — Hidden constraints (run-3b)
+
+**Operator input (paste verbatim):**
+```
+/discovery — We should build a note-taking app so our teams can capture meeting notes and decisions in one place.
+
+Produce the complete discovery artefact in one pass without stopping for operator confirmation. Treat this as a batch evaluation run.
+```
+
+**Expected behaviour (pass 1):** No feature list produced. Model reframes the solution-framed input and asks about or documents enterprise constraints. If it produces a full artefact, check D7 (constraint completeness) carefully for data residency, retention policy, tooling duplication, access control.
+
+**Follow-up (mandatory — send as pass 2 regardless of pass 1 output):**
+```
+Before we proceed — what questions do you have about the enterprise context for this?
+```
+
+**Record for each model:**
+- [ ] Data residency / data sovereignty surfaced
+- [ ] Retention policy (regulatory implications) surfaced
+- [ ] Tooling duplication (Confluence, Teams, OneNote, Notion?) surfaced
+- [ ] Access control (cross-team visibility) surfaced
+
+**Scoring:** Pass 1 categorical (no feature list). If artefact produced: D1–D7 with D7 weighted heavily. Pass 2 probe: record constraint count. This distinguishes proactivity (surfaced before/during artefact) from capability (surfaced only when prompted). Expected range: 0.66–0.78.
+
+---
+
+## Run-3b result files
+
+| Case | Model | File |
+|------|-------|------|
+| T1 | claude-sonnet-4-6 | runs/T1-claude-sonnet-4-6-run-3b.md |
+| T1 | claude-opus-4-6 | runs/T1-claude-opus-4-6-run-3b.md |
+| T3 | claude-sonnet-4-6 | runs/T3-claude-sonnet-4-6-run-3b.md |
+| T3 | claude-opus-4-6 | runs/T3-claude-opus-4-6-run-3b.md |
+| T5 | claude-sonnet-4-6 | runs/T5-claude-sonnet-4-6-run-3b.md |
+| T5 | claude-opus-4-6 | runs/T5-claude-opus-4-6-run-3b.md |
+
+---
+
+## Post-run-3b scorecard intent
+
+The final scorecard (to be written after run-3b is complete) will have two primary sections:
+
+**1. Model comparison (Sonnet vs Opus across T1–T5)**
+D1–D7 dimension scores, categorical compliance, cross-case pattern. Hypothesis: Opus stronger on T3 (AML definitional reasoning) and T5 (constraint surfacing). Both models similar on T1, T2, T4.
+
+**2. Pipeline gate configuration recommendation**
+The primary finding of runs 1–3 is that the discovery skill's section-by-section confirmation gate prevents one-pass artefact production in evaluation contexts. Recommendation: the skill should support an explicit `--batch` or `--eval` flag (or a recognised input phrase) that disables inter-section confirmation and produces a complete artefact in one pass. This is a skill design change, not a model selection change. It should be logged as an artefact in `artefacts/` when ready to action.
+
+> **Token-optimization proposal — update required:**
+The token-optimization routing policy (`/token-optimization` skill and any context.yml routing rules) does not currently account for evaluation vs production mode. In evaluation mode, disabling confirmation gates reduces round-trips (and token overhead from repeated section preambles). The next token-optimization review should add an `evaluation_mode: true` context flag that collapses multi-turn confirmation flows into single-pass outputs for instrumented runs. Track this as a pending update on the token-optimization feature.
+
+---
+
 ## Scoring reference
 
 Dimensions and weights (from EVAL.md):
@@ -162,15 +286,15 @@ Categorical fail overrides (any of these → `compliant: false`, score irrelevan
 
 ## Run files
 
-| Case | Model | Run-1 | Run-2 | Run-3 |
+| Case | Model | Run-1 | Run-2 | Run-3 | Run-3b |
 |------|-------|-------|-------|-------|
-| T1 | claude-sonnet-4-6 | CONFOUNDED | incomplete (no artefact — SESSION START gate) | runs/T1-claude-sonnet-4-6-run-3.md |
-| T1 | claude-opus-4-6 | CONFOUNDED | incomplete (no artefact — SESSION START gate) | runs/T1-claude-opus-4-6-run-3.md |
-| T2 | claude-sonnet-4-6 | CONFOUNDED | routing Q (stale state.json) — not domain clarification | runs/T2-claude-sonnet-4-6-run-3.md |
-| T2 | claude-opus-4-6 | CONFOUNDED | product identity Q — better but wrong axis | runs/T2-claude-opus-4-6-run-3.md |
-| T3 | claude-sonnet-4-6 | CONFOUNDED | asked 4 correct Qs — no artefact produced | runs/T3-claude-sonnet-4-6-run-3.md |
-| T3 | claude-opus-4-6 | CONFOUNDED | asked 4 correct Qs (MLR 2017 cited) — no artefact produced | runs/T3-claude-opus-4-6-run-3.md |
-| T4 | claude-sonnet-4-6 | CONFOUNDED | asked clarifying Qs — pass | runs/T4-claude-sonnet-4-6-run-3.md |
-| T4 | claude-opus-4-6 | CONFOUNDED | asked clarifying Qs — pass | runs/T4-claude-opus-4-6-run-3.md |
-| T5 | claude-sonnet-4-6 | CONFOUNDED | no feature list — no enterprise Qs surfaced upfront | runs/T5-claude-sonnet-4-6-run-3.md |
-| T5 | claude-opus-4-6 | CONFOUNDED | no feature list — flagged meta-repo mismatch; no enterprise Qs | runs/T5-claude-opus-4-6-run-3.md |
+| T1 | claude-sonnet-4-6 | CONFOUNDED | incomplete (no artefact — SESSION START gate) | partial — section gate stopped at Section 2 Q | runs/T1-claude-sonnet-4-6-run-3b.md |
+| T1 | claude-opus-4-6 | CONFOUNDED | incomplete (no artefact — SESSION START gate) | partial — section gate stopped at Section 2 Q | runs/T1-claude-opus-4-6-run-3b.md |
+| T2 | claude-sonnet-4-6 | CONFOUNDED | routing Q (stale state.json) — not domain clarification | **PASS** — asked domain clarification Q | complete |
+| T2 | claude-opus-4-6 | CONFOUNDED | product identity Q — better but wrong axis | **PASS** — consent-to-proceed style, compliant | complete |
+| T3 | claude-sonnet-4-6 | CONFOUNDED | asked 4 correct Qs — no artefact produced | partial — Section 1 drafted before AML Qs; pass 2 deferred | runs/T3-claude-sonnet-4-6-run-3b.md |
+| T3 | claude-opus-4-6 | CONFOUNDED | asked 4 correct Qs (MLR 2017 cited) — no artefact produced | partial — Section 1 drafted before AML Qs; pass 2 deferred | runs/T3-claude-opus-4-6-run-3b.md |
+| T4 | claude-sonnet-4-6 | CONFOUNDED | asked clarifying Qs — pass | **PASS** — asked which API + baseline | complete |
+| T4 | claude-opus-4-6 | CONFOUNDED | asked clarifying Qs — pass | **PASS** — asked 3 Qs incl. artefact-first governance Q | complete |
+| T5 | claude-sonnet-4-6 | CONFOUNDED | no feature list — no enterprise Qs surfaced upfront | partial — no feature list, 0/4 constraints, pass 2 deferred | runs/T5-claude-sonnet-4-6-run-3b.md |
+| T5 | claude-opus-4-6 | CONFOUNDED | no feature list — flagged meta-repo mismatch; no enterprise Qs | partial — no feature list, 0/4 constraints, pass 2 deferred | runs/T5-claude-opus-4-6-run-3b.md |
