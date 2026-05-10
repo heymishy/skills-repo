@@ -349,18 +349,23 @@ if (require.main === module) {
   const commitSha = process.env.COMMIT_SHA ||
                     process.env.GITHUB_SHA ||
                     process.env.BITBUCKET_COMMIT || '';
-  const regulated = process.env.REGULATED  === 'true';
+  const regulated      = process.env.REGULATED       === 'true';
+  const surfaceType    = process.env.SURFACE_TYPE    || 'assurance-gate';
+  const storySlug      = process.env.STORY_SLUG      || null;
+  const iterationCount = parseInt(process.env.ITERATION_COUNT || '1', 10);
 
   process.stdout.write(
     '[assurance-gate] Starting (trigger=' + trigger +
     ' prRef=' + prRef +
     ' sha=' + commitSha.slice(0, 8) +
-    ' regulated=' + regulated + ')\n'
+    ' regulated=' + regulated +
+    ' surfaceType=' + surfaceType +
+    ' storySlug=' + (storySlug || 'none') + ')\n'
   );
 
   var result;
   try {
-    result = runGate({ trigger, prRef, commitSha, regulated });
+    result = runGate({ trigger, prRef, commitSha, regulated, surfaceType, storySlug, iterationCount });
   } catch (err) {
     process.stderr.write('[assurance-gate] Fatal error: ' + err.message + '\n');
     process.exit(1);
