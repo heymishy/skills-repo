@@ -22,8 +22,16 @@ Running /discovery with capture blocks enabled will produce structured metadata 
 - Input doc: `artefacts/2026-04-18-skills-platform-phase4-revised/ref-skills-platform-phase4-5.md` (v6, PR #173)
 - Product context: `product/mission.md`, `product/roadmap.md`, `product/constraints.md`
 
+## Run command
+
+```bash
+node scripts/run-model-sweep.js --skill discovery --models claude-sonnet-4-6,claude-opus-4-6
+```
+
+This experiment compares Sonnet 4.6 vs Opus 4.6 only. Do not run without `--models` \u2014 the default sweep includes Haiku, which is not part of this experiment.
+
 ## Runs
 
 | Run | Model | Date | Artefact path |
 |-----|-------|------|---------------|
-| 1 | claude-opus-4-6 | 2026-04-19 | _pending_ |
+| 1 | claude-sonnet-4-6, claude-opus-4-6 | _pending_ | _pending_ |
