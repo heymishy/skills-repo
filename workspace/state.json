@@ -85,5 +85,6 @@
       "Untracked artefacts to commit: artefacts/2026-05-07-web-ui-session-management/dod/ (wsm.1/2/3 DoD files) and artefacts/2026-05-07-web-ui-outer-loop-extensions/plans/ — bundle with wsm.4 PR or separate housekeeping commit.",
       "/estimate E2 for wucp: 5 stories, complexity mix 3x complexity-1 (wucp.0/1 spike), 1x complexity-2 (wucp.2, wucp.4), 1x complexity-3 (wucp.3). Run /estimate to record refined E2."
     ]
-  }
+  },
+  "lastDreamRun": "2026-05-11T00:44:17.279Z"
 }
