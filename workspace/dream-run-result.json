@@ -1,0 +1,9 @@
+{
+  "runAt": "2026-05-11T00:44:25.827Z",
+  "proposalsGenerated": 0,
+  "proposalPaths": [],
+  "humanAttentionRequired": false,
+  "attentionReason": null,
+  "skipped": true,
+  "skippedReason": "Interval guard: last run was 0h ago (minimum: 23h)"
+}
