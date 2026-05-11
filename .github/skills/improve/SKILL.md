@@ -22,6 +22,16 @@ triggers:
 
 # Improve Skill
 
+## Invocation mode
+
+`/improve` operates in **interactive mode** by default. In interactive mode, Steps 3 and 4 pause to present findings and routing proposals to the operator, waiting for a reply before writing anything. This is the recommended mode for routine post-merge learning sessions.
+
+**Non-interactive mode** is available for automated CI pipelines. When `improve.auto_confirm: true` is set in `.github/context.yml`, the skill skips the confirmation prompts in Steps 3 and 4 and applies all accepted patterns automatically. On completion it writes a structured summary to `workspace/improve-run-result.json` with fields: `runAt`, `patternsExtracted`, `filesUpdated`, `proposalsWritten`, and `skipped`.
+
+The current repo default (`improve.auto_confirm: false`) keeps interactive mode active. To switch, update `context.yml` and ensure the invoking agent or workflow is configured to handle unattended execution.
+
+---
+
 ## Entry condition check
 
 Before proceeding, verify:
@@ -221,7 +231,7 @@ After writing to any standards file:
 > These learnings are now active — /definition-of-ready will inject them
 > into future stories with matching domain tags.
 >
-> **Governed path for upward standards loop:** If any extracted pattern warrants a SKILL.md update, produce a `proposed-skill-update.md` diff in `workspace/proposals/` with rationale and confidence score. Do not edit SKILL.md files directly — the squad lead raises a PR against the fleet repo; the platform team reviews and merges. All consuming repos receive the improvement on their next upstream sync.
+> **Governed path for upward standards loop:** If any extracted pattern warrants a SKILL.md update, produce a proposal file in `workspace/proposals/` named `YYYY-MM-DD-[skill-target]-improve-proposal.md`. The proposal must include all 8 required front-matter fields in its YAML block: `evidence` (supporting trace or artefact path), `proposed_diff` (the change to make), `confidence` (low/medium/high), `anti_overfitting_gate` (rationale for why this isn't over-indexed on a single case), `status: pending_review`, `created_at` (ISO date), `skill_target` (the skill slug to update, e.g. `definition`), and `source: improve`. Before producing the proposal, check `workspace/proposals/` for any existing file that already has the same `skill_target` with `status: pending_review` or `accepted` — if one exists, do not produce a duplicate; note the existing proposal path instead. Do not edit SKILL.md files directly — the squad lead raises a PR against the fleet repo; the platform team reviews and merges. All consuming repos receive the improvement on their next upstream sync.
 >
 > **Recommended: commit `.github/standards/` and `.github/architecture-guardrails.md`**
 > with message: `chore: /improve learnings from [story-slug]`
