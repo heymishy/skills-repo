@@ -7153,7 +7153,10 @@
           "health": "green",
           "prStatus": "none",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.0.md",
-          "testPlan": { "artefact": null, "status": "not-started" },
+          "testPlan": {
+            "artefact": null,
+            "status": "not-started"
+          },
           "dorStatus": "not-started",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/343",
           "dispatchedAt": "2026-05-09T00:00:00Z",
@@ -7163,13 +7166,18 @@
           "id": "wucp.1",
           "slug": "wucp.1",
           "name": "Pipeline context auto-loader",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
-          "prStatus": "none",
+          "prStatus": "merged",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.1.md",
-          "testPlan": { "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/test-plans/wucp.1-test-plan.md", "status": "written", "totalTests": 19, "passing": 0 },
+          "testPlan": {
+            "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/test-plans/wucp.1-test-plan.md",
+            "status": "written",
+            "totalTests": 19,
+            "passing": 19
+          },
           "acTotal": 7,
-          "acVerified": 0,
+          "acVerified": 7,
           "hasLayoutDependentGaps": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/dor/wucp.1-dor.md",
@@ -7179,7 +7187,9 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/review/wucp.1-review-1.md",
-          "updatedAt": "2026-05-09"
+          "updatedAt": "2026-05-11",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/345",
+          "mergedAt": "2026-05-10"
         },
         {
           "id": "wucp.2",
@@ -7191,7 +7201,12 @@
           "prUrl": "https://github.com/heymishy/skills-repo/pull/346",
           "mergedAt": "2026-05-10",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.2.md",
-          "testPlan": { "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/test-plans/wucp.2-test-plan.md", "status": "written", "totalTests": 17, "passing": 17 },
+          "testPlan": {
+            "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/test-plans/wucp.2-test-plan.md",
+            "status": "written",
+            "totalTests": 17,
+            "passing": 17
+          },
           "acTotal": 6,
           "acVerified": 6,
           "hasLayoutDependentGaps": false,
@@ -7213,7 +7228,10 @@
           "health": "green",
           "prStatus": "none",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.3.md",
-          "testPlan": { "artefact": null, "status": "not-started" },
+          "testPlan": {
+            "artefact": null,
+            "status": "not-started"
+          },
           "dorStatus": "not-started",
           "blockedOn": "wucp.0"
         },
@@ -7227,7 +7245,12 @@
           "prUrl": "https://github.com/heymishy/skills-repo/pull/347",
           "mergedAt": "2026-05-10",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.4.md",
-          "testPlan": { "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/test-plans/wucp.4-test-plan.md", "status": "written", "totalTests": 20, "passing": 20 },
+          "testPlan": {
+            "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/test-plans/wucp.4-test-plan.md",
+            "status": "written",
+            "totalTests": 20,
+            "passing": 20
+          },
           "acTotal": 6,
           "acVerified": 6,
           "hasLayoutDependentGaps": false,
@@ -7248,10 +7271,16 @@
           "name": "Web UI Runtime Capabilities",
           "status": "not-started",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/epics/wucp-runtime-capabilities.md",
-          "stories": ["wucp.0", "wucp.1", "wucp.2", "wucp.3", "wucp.4"]
+          "stories": [
+            "wucp.0",
+            "wucp.1",
+            "wucp.2",
+            "wucp.3",
+            "wucp.4"
+          ]
         }
       ],
-      "updatedAt": "2026-05-09",
+      "updatedAt": "2026-05-11",
       "discoveryArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/discovery.md",
       "discoveryStatus": "approved",
       "benefitMetricArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/benefit-metric.md",
@@ -7265,7 +7294,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["wucp.3"]
+          "contributingStories": [
+            "wucp.3"
+          ]
         },
         {
           "id": "m2",
@@ -7275,7 +7306,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["wucp.3"]
+          "contributingStories": [
+            "wucp.3"
+          ]
         },
         {
           "id": "m3",
@@ -7285,7 +7318,11 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["wucp.1", "wucp.2", "wucp.3"]
+          "contributingStories": [
+            "wucp.1",
+            "wucp.2",
+            "wucp.3"
+          ]
         },
         {
           "id": "mm1",
@@ -7295,7 +7332,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["wucp.0"]
+          "contributingStories": [
+            "wucp.0"
+          ]
         },
         {
           "id": "mm2",
@@ -7305,7 +7344,12 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["wucp.0", "wucp.1", "wucp.2", "wucp.3"]
+          "contributingStories": [
+            "wucp.0",
+            "wucp.1",
+            "wucp.2",
+            "wucp.3"
+          ]
         }
       ]
     }
