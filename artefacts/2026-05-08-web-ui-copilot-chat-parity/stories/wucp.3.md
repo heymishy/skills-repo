@@ -52,7 +52,7 @@ If the spike result (wucp.0) shows emission rate < 60%, this story is blocked pe
 
 **AC7:** Given the tool executor is wired as an injectable adapter, When `server.js` starts, Then the production tool executor is wired before any session handles a message. A test verifies that calling the tool executor before wiring throws the stub error.
 
-**AC8 (Path traversal guard — mandatory):** Given a path-traversal attempt is emitted (e.g. `<TOOL:read_file path="../../../etc/passwd"/>`, `<TOOL:read_file path="/etc/passwd"/>`), When the server processes it, Then `path.resolve(inputPath)` is called, the resolved path is asserted to start with `repoRoot + path.sep`, the request is rejected with HTTP 400 if the check fails, no file read is attempted, and a `tool_result` error turn is injected informing the model the path was out of bounds. A dedicated test asserts both the 400 response and that no file was read.
+**AC8 (Path traversal guard — mandatory):** Given a path-traversal attempt is emitted (e.g. `<TOOL:read_file path="../../../etc/passwd"/>`, `<TOOL:read_file path="/etc/passwd"/>`), When the server processes it, Then `path.resolve(inputPath)` is called, the resolved path is asserted to start with `repoRoot + path.sep`, no file read is attempted, and a `tool_result` error turn is injected informing the model the path was out of bounds. A dedicated test asserts the error turn content and that no file was read. Note: HTTP 400 does not apply here — this guard fires during in-loop model output processing, not at a route boundary. The turn is already accepted; only the file operation is blocked. Resolution documented in review finding 1-M1 (wucp.3-review-1.md, 2026-05-13).
 
 **AC9:** Given a `read_file` path points to a file that does not exist, When the server processes it, Then a `tool_result` turn is injected with the message: `"[File not found: some/relative/path]"`. No error is thrown; model generation continues.
 
@@ -74,7 +74,7 @@ If the spike result (wucp.0) shows emission rate < 60%, this story is blocked pe
 ## Complexity Rating
 
 **Rating:** 3 (path-traversal security constraint, injectable adapter wiring, multi-turn loop coordination, prompt engineering dependency from wucp.0)
-**Scope stability:** Unstable until wucp.0 spike result is known — approach is confirmed viable only after MM1 ≥ 60%
+**Scope stability:** Stable — wucp.0 spike confirmed GO (Outcome A, 100% emission rate, 2026-05-13)
 
 ## Definition of Ready Pre-check
 

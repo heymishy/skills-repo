@@ -7213,12 +7213,19 @@
           "id": "wucp.3",
           "slug": "wucp.3",
           "name": "Tool execution loop",
-          "stage": "definition",
+          "stage": "test-plan",
           "health": "green",
           "prStatus": "none",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.3.md",
-          "testPlan": { "artefact": null, "status": "not-started" },
-          "dorStatus": "not-started"
+          "testPlan": { "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/test-plans/wucp.3-test-plan.md", "status": "written", "totalTests": 21, "passing": 0 },
+          "acTotal": 9,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/review/wucp.3-review-1.md",
+          "updatedAt": "2026-05-13"
         },
         {
           "id": "wucp.4",
