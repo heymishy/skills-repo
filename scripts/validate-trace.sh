@@ -342,6 +342,28 @@ PYTHON
     fi
 }
 
+# ── Check: no eval-mode artefacts in production paths ────────────────────────
+check_no_eval_mode_artefacts() {
+    info "Checking: no eval-mode artefacts committed to production paths"
+    if [[ ! -d "$ARTEFACTS" ]]; then
+        record_pass "no_eval_mode_artefacts"
+        ok "artefacts/ is empty — nothing to check"
+        return
+    fi
+    local found=0
+    while IFS= read -r -d '' file; do
+        if grep -qF '<!-- eval-mode: true -->' "$file" 2>/dev/null; then
+            record_fail "no_eval_mode_artefacts" "$(basename "$file"): contains eval-mode marker — eval artefacts must not be committed to artefacts/"
+            fail "Eval-mode artefact in production path: $file"
+            ((found++)) || true
+        fi
+    done < <(find "$ARTEFACTS" -name '*.md' -print0 2>/dev/null)
+    if [[ $found -eq 0 ]]; then
+        record_pass "no_eval_mode_artefacts"
+        ok "No eval-mode artefacts found in artefacts/"
+    fi
+}
+
 # ── Main ───────────────────────────────────────────────────────────────────────
 echo ""
 info "Trace Validation — $(date '+%Y-%m-%d %H:%M:%S')"
@@ -355,6 +377,7 @@ else
     check_discovery_approved
     check_test_plan_coverage
     check_unresolved_blockers
+    check_no_eval_mode_artefacts
 fi
 
 echo ""

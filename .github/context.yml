@@ -74,3 +74,9 @@ improvement_agent:
 
 improve:
   auto_confirm: false           # interactive mode (default); set true for non-interactive CI runs
+
+evaluation:
+  mode: false           # set to true for eval harness, sweep script, non-interactive runs
+                        # NEVER set to true in production — eval artefacts are scored then discarded
+  judge_model: claude-sonnet-4-6   # fixed judge — never the model under evaluation
+  output_path: workspace/eval-run-result.json

@@ -20,11 +20,12 @@
  */
 'use strict';
 
-var fs                = require('fs');
-var path              = require('path');
+var fs                 = require('fs');
+var path               = require('path');
 var failureDetector    = require('./failure-detector.js');
 var calibration        = require('./calibration.js');
 var complianceReport   = require('./compliance-report.js');
+var experimentSignals  = require('./experiment-signals.js');
 
 var ROOT = path.join(__dirname, '..', '..');
 
@@ -108,9 +109,10 @@ function writeDreamRunResult(dreamResultPath, result) {
 
 // Registered improvement agent dimensions (in run order)
 var DIMENSIONS = [
-  { name: 'failure-detector',  run: function (opts) { return failureDetector.runAgent(opts); } },
-  { name: 'calibration',       run: function (opts) { return calibration.runCalibration(opts); } },
-  { name: 'compliance-report', run: function (opts) { return complianceReport.generateComplianceReport(opts); } },
+  { name: 'failure-detector',   run: function (opts) { return failureDetector.runAgent(opts); } },
+  { name: 'calibration',        run: function (opts) { return calibration.runCalibration(opts); } },
+  { name: 'compliance-report',  run: function (opts) { return complianceReport.generateComplianceReport(opts); } },
+  { name: 'experiment-signals', run: function (opts) { return experimentSignals.runExperimentSignals(opts); } },
 ];
 
 /**
@@ -138,9 +140,11 @@ function runAllDimensions(options) {
   var results          = {};
 
   // ── Interval guard ───────────────────────────────────────────────────────────
+  // Guard only skips when lastDreamRun is present AND elapsed time is less than
+  // min_dream_interval_hours. Absence of lastDreamRun (first ever run) always proceeds.
   var minIntervalHours = readMinDreamInterval(contextYmlPath);
   var lastDreamRun     = readLastDreamRun(stateJsonPath);
-  if (lastDreamRun) {
+  if (lastDreamRun !== null && lastDreamRun !== undefined) {
     var elapsedHours = (Date.now() - new Date(lastDreamRun).getTime()) / (1000 * 60 * 60);
     if (elapsedHours < minIntervalHours) {
       var skipResult = {
@@ -191,16 +195,25 @@ function runAllDimensions(options) {
   if (fdResult && Array.isArray(fdResult.proposals)) {
     allProposalPaths = allProposalPaths.concat(fdResult.proposals);
   }
+  var expSigResult             = results['experiment-signals'];
+  var experimentSignalsDetected = (expSigResult && typeof expSigResult.signalCount === 'number')
+    ? expSigResult.signalCount
+    : 0;
+  var experimentSignalDetails  = (expSigResult && Array.isArray(expSigResult.signals))
+    ? expSigResult.signals
+    : [];
   var humanAttentionRequired = allProposalPaths.length > 0;
   var dreamRunResult = {
-    runAt:                  runAt,
-    proposalsGenerated:     allProposalPaths.length,
-    proposalPaths:          allProposalPaths,
-    humanAttentionRequired: humanAttentionRequired,
-    attentionReason:        humanAttentionRequired
-                              ? allProposalPaths.length + ' proposal(s) generated — human review required'
-                              : null,
-    skipped:                false,
+    runAt:                      runAt,
+    proposalsGenerated:         allProposalPaths.length,
+    proposalPaths:              allProposalPaths,
+    humanAttentionRequired:     humanAttentionRequired,
+    attentionReason:            humanAttentionRequired
+                                  ? allProposalPaths.length + ' proposal(s) generated — human review required'
+                                  : null,
+    experimentSignalsDetected:  experimentSignalsDetected,
+    experimentSignalDetails:    experimentSignalDetails,
+    skipped:                    false,
   };
   try {
     writeDreamRunResult(dreamResultPath, dreamRunResult);
