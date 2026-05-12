@@ -1,0 +1,223 @@
+# Routing Policy Framework
+
+**Status:** Draft — pending EXP-002a, EXP-002b, EXP-003 evidence
+**Governed by:** Platform change policy — changes to this document require a pipeline story + PR + platform team review
+**Measurement_backed updates:** Any routing table update must cite the `experiment_id` that produced the evidence. Undocumented routing changes are out-of-process.
+
+---
+
+## Purpose
+
+This document defines the model routing policy for the skills pipeline: which model is used for which skill, scenario, and input type. It is the formalised output of the eval programme described in `workspace/experiments/eval-programme-roadmap.md`.
+
+Routing decisions at three levels:
+
+1. **Skill-level routing** — which model handles each pipeline skill
+2. **Scenario routing** — whether context files are injected (Scenario 2) or not (Scenario 1), and the consequences for model selection
+3. **Input-type routing** — which input characteristics require model upgrades or local model use
+
+---
+
+## Cost layers
+
+All routing decisions must account for two distinct cost layers. Every cost figure in this document should specify which layer it applies to.
+
+**Layer 1 — GitHub Copilot AI Credits (VS Code model selector):** Cost is measured in AI Credits, which are consumed at a per-model multiplier rate relative to Claude Sonnet 4.6 (1x baseline). This is the cost layer for all manually-run, VS Code-based pipeline sessions.
+
+**Layer 2 — Direct API (programmatic via `run-model-sweep.js`):** Cost is measured in dollars per million input/output tokens at published API rates. This is the cost layer for automated sweeps and CI-driven eval runs.
+
+**Key Layer 1 multipliers (verified 2026-05-12):**
+
+| Model | Layer 1 multiplier | Layer 2 rate (input/output per M) |
+|-------|-------------------|-----------------------------------|
+| claude-opus-4-7 | 15x | $5.00/$25.00 (API string confirmed 2026-05-12; claude-opus-4-6 also valid as API string) |
+| claude-sonnet-4-6 | 1x (baseline) | $3.00/$15.00 |
+| claude-haiku-4-5 | 0.33x | $1.00/$5.00 |
+| gpt-4o | 0x (free) | ~$2.50/$10.00 (TODO: verify) |
+| gpt-4.1 | 0x (free) | TODO: verify |
+| gpt-5-mini | 0x (free) | TODO: verify |
+
+**Routing implication:** A model with a 0x Layer 1 multiplier has zero Copilot credit cost regardless of Layer 2 API rates. If EXP-002a confirms GPT-4o meets quality threshold on T1 and T3, it becomes the cost-optimal routing for non-regulated generative stages under Layer 1 — regardless of quality differential with Sonnet where both pass threshold.
+
+For Layer 2 rates, always check the PRICING map in `scripts/run-model-sweep.js` (canonical source) and verify against published pricing before running large sweeps.
+
+---
+
+## Current routing policy
+
+**Status:** Partially measurement-backed — /discovery rows updated with EXP-002a evidence. Other skills pending EXP-003.
+
+| Skill | Current model | Evidence basis | measurement_backed | Review trigger |
+|-------|--------------|----------------|--------------------|----------------|
+| /discovery (non-regulated input) | claude-sonnet-4-6 | EXP-002a: T1+T3 avg 0.807, 6/6 pass rate — highest performer; 1x Layer 1 cost | true (`experiment_id: EXP-002a`) | EXP-002b (T5 mitigation) |
+| /discovery (non-regulated, T1-class, cost-optimised) | claude-haiku-4-5 | EXP-002a: T1+T3 avg 0.759, 5/6 pass rate; 0.33x Layer 1 cost — one-in-six T3 failure risk accepted | true (`experiment_id: EXP-002a`) | EXP-002b |
+| /discovery (regulated input) | claude-sonnet-4-6 | EXP-002a: D7 T3 = 0.900 (above 0.80 regulated threshold) — outperforms Opus (0.700) at 1/15th the cost | true (`experiment_id: EXP-002a`) | EXP-003 (CPF validation) |
+| /definition | claude-sonnet-4-6 | Provisional — no dedicated eval yet | EXP-003 complete |
+| /review | claude-sonnet-4-6 | Provisional — structured checklist; Sonnet sufficient by assumption | EXP-003 complete |
+| /test-plan | claude-sonnet-4-6 | Provisional | EXP-003 complete |
+| /definition-of-ready | claude-sonnet-4-6 | Provisional — gate application; structured | EXP-003 complete |
+| /benefit-metric | claude-sonnet-4-6 | Provisional | After EXP-LOCAL-001 if L1 local model available |
+| /definition-of-done | claude-sonnet-4-6 | Provisional | After EXP-LOCAL-001 if L1 local model available |
+
+---
+
+## Scenario routing decision tree
+
+```
+For each skill run:
+
+1. Does the skill require context files (Scenario 2 or 3)?
+   └── No → Use Scenario 1 routing table (above)
+   └── Yes → Go to step 2
+
+2. Is data_classification_check.approved_for_external_api = true?
+   └── No → REQUIRED: use local-* model only
+             └── Does a local model of sufficient tier exist? (see capability-tiers.md)
+                 └── No → Cannot run this skill until local model qualified or context files sanitised
+                 └── Yes → Use the highest-tier available local model
+   └── Yes → Go to step 3
+
+3. Is this a regulated input? (see regulated input definition below)
+   └── Yes → Use cloud Opus or equivalent (see regulated input routing)
+   └── No → Use standard Scenario 2 routing (cloud Sonnet or higher)
+
+4. For non-regulated inputs: which Layer 1 cost tier applies?
+   └── If running via Layer 1 (VS Code Copilot) → Go to step 5a
+   └── If running via Layer 2 (direct API) → Go to step 5b
+
+5a. Does any compliant model have a 0x Copilot multiplier?
+   └── Yes AND EXP-002a H5 confirmed for this skill/tier:
+         Zero-cost model is the routing choice. Confirm it is in the compliant list from step 3.
+         GPT-4o, GPT-4.1, GPT-5-mini are candidates when H5 is confirmed.
+   └── Yes but EXP-002a H5 not yet confirmed:
+         Use Sonnet as interim. Note in run metadata that H5 recheck is pending.
+   └── No 0x model is compliant:
+         Apply standard Layer 1 cost comparison (lowest multiplier among compliant models).
+
+5b. Apply Layer 2 cost comparison using PRICING map in run-model-sweep.js.
+    Use the lowest-cost model that meets the quality threshold for this skill tier.
+```
+
+---
+
+## Regulated input routing
+
+### Definition — what counts as a "regulated input"
+
+An input is a regulated input if the operator's brief, or any context file loaded for the run, references:
+
+- **AML/CFT obligations** — transaction record retention, suspicious activity reporting, customer due diligence requirements
+- **PCI DSS** — payment card data, QSA assessment obligations, cardholder data environment
+- **Prudential banking regulation** — capital requirements, operational risk policy, business continuity obligations mandated by the relevant regulatory authority
+- **Data residency obligations** — any requirement that data must be stored in a specific jurisdiction, including statutory requirements under national data protection or banking legislation
+
+### Regulated input routing rule — non-negotiable
+
+**When input is regulated:**
+- Required model: a cloud model with demonstrated T3 D7 ≥ 0.80 on the regulated input corpus. As of EXP-002a, claude-sonnet-4-6 (D7 T3 = 0.900) meets this threshold and is the routing default.
+- Prohibited: claude-haiku-4-5 (D7 T3 gap — not measured at regulated threshold); any local-* model at tier L1 or L2 (regardless of general T1/T3 scores)
+- Prohibited: gpt-4o and gpt-4o-mini — EXP-002a confirmed both fail all regulated cases on D4/D5/D7
+- Opus exception: claude-opus-4-7 may still be preferred if the operator has domain-specific reasons for requiring higher D5 assumption quality (near 1.0 on T1 and T3), with a RISK-ACCEPT logged in `decisions.md` citing the cost premium (15x over Sonnet)
+
+**This rule applies regardless of cost savings.** A configuration that saves $X per story but loses one PCI DSS constraint in the DoR contract has failed the governance requirement. EXP-003 (CPF validation) will further validate the regulated routing once multi-turn context is available.
+
+### Exception protocol
+
+If a regulated-input run must proceed with a non-Opus model (e.g. cost emergency, model unavailability):
+1. Log a RISK-ACCEPT in the feature's `decisions.md`
+2. Add an explicit "constraint audit" step in the DoR contract: "reviewer must verify all regulatory constraints from discovery artefact appear in test plan NFRs"
+3. The exception is valid for one run only — not a standing permission
+
+---
+
+## Local model routing
+
+### Local model permitted conditions
+
+A local model is permitted when:
+- `data_classification_check.approved_for_external_api = false` (required, not merely permitted)
+- OR cost reduction is the goal AND the skill is in the "L1 sufficient" or "L2 sufficient" category
+- AND the local model has a confirmed tier in `local-model-scaffolding/model-registry.md`
+
+### Local model required conditions
+
+A local model is REQUIRED (cloud model prohibited) when:
+- `data_classification_check.approved_for_external_api = false`
+- This is enforced by the harness guard in `provider-spec.md`
+
+### Local model prohibited conditions
+
+A local model is PROHIBITED when:
+- Input is a regulated input (see regulated input definition above) — regardless of local model tier
+- The local model's tier is L1 and the skill requires L2 or L3 capability
+- The local model's tier is L2 and the skill requires L3 capability
+- The local model has no entry in the model registry (untiered)
+
+---
+
+## Multi-provider routing
+
+**GPT models — EXP-002a finding (2026-05-12):** Both GPT models fail all discovery evaluation cases.
+
+| Model | T1+T3 avg | Pass rate | Permitted for | Evidence |
+|-------|-----------|-----------|---------------|----------|
+| gpt-4o | 0.467 | 0/6 | Not approved for production discovery routing | EXP-002a (63 results) |
+| gpt-4o-mini | 0.592 | 0/6 | Not approved for production discovery routing | EXP-002a (63 results) |
+
+**Failure pattern:** Both GPT models score near-zero on D4 (out-of-scope discipline), D5 (assumption quality), and D7 (constraint completeness) across all cases. These are the three dimensions most critical for regulated input handling. The 0x Copilot Layer 1 multiplier does not offset a 0/6 pass rate — cost savings are irrelevant when the quality bar is not met.
+
+**GPT H5 conclusion:** EXP-002a H5 ("would GPT-4o at 0x cost route for non-regulated discovery?") is confirmed FAIL. GPT models remain unapproved for production pipeline routing on the `/discovery` skill. This will be reviewed if EXP-002b includes a targeted system prompt supplement for GPT (see Recommendation 3 in EXP-002a scorecard).
+
+---
+
+## T5 proactivity gap — interim mitigation
+
+Until EXP-002b resolves the context gap vs model gap question, the following interim mitigation is in effect for all discovery skill runs on any input with potential hidden constraints:
+
+**Operator action:** Before running `/discovery` on any input that may involve regulatory obligations or cross-system constraints, prepend the following to the operator input:
+
+> "Before writing the discovery artefact, identify any constraints in this domain that may not be explicit in the problem statement — including regulatory obligations, data residency requirements, and cross-system dependencies. List them as open questions before proceeding to the problem statement."
+
+This is a manual mitigation for the T5 gap. It is not a permanent fix — it is a workaround until EXP-002b determines the correct structural intervention (context files, SKILL.md change, or explicit regulatory framing in system context).
+
+---
+
+## Measurement_backed update protocol
+
+### What triggers a routing policy update
+
+1. An experiment completes and results meet or exceed the routing threshold
+2. The experiment_id is cited in the update
+3. A pipeline story is created for the routing policy change
+4. PR opened with the story artefact and experiment evidence
+
+### What does NOT trigger a routing policy update
+
+- Operator intuition or ad-hoc testing (without an experiment manifest)
+- A single run without the standard trials_per_cell (must meet the manifest's trial count)
+- Benchmark scores from external sources (not run against this pipeline's EVAL.md corpus)
+
+### Update table (post-experiment)
+
+| Routing rule | Experiment | Finding | Change made | Date |
+|-------------|------------|---------|------------|------|
+| Haiku permitted for non-regulated T1-class discovery | EXP-002a | T1+T3 avg 0.759, 5/6 pass rate — approved with operator risk acknowledgement of 1-in-6 T3 failure | Added haiku cost-optimised row to routing table; measurement_backed: true | 2026-05-12 |
+| GPT-4o tier assessment (/discovery) | EXP-002a | T1+T3 avg 0.467, 0/6 passes — D4/D5/D7 collapse across all cases | Confirmed NOT approved for production routing; H5 hypothesis confirmed FAIL | 2026-05-12 |
+| Sonnet as default for regulated discovery | EXP-002a | D7 T3 = 0.900 (above 0.80 threshold); outperforms Opus (0.700) at 1/15th Layer 1 cost | Updated regulated routing from Opus to Sonnet; measurement_backed: true | 2026-05-12 |
+| T5 proactivity intervention | EXP-002b | _pending_ | _pending_ | _pending_ |
+| Config recommendation for regulated inputs | EXP-003 | _pending_ | _pending_ | _pending_ |
+| Config C regulated CPF assessment | EXP-003 | _pending_ | _pending_ | _pending_ |
+| Local model L1 approval (structured skills) | EXP-LOCAL-001 | _pending_ | _pending_ | _pending_ |
+
+---
+
+## token-optimization SKILL.md update gate
+
+Changes to the model routing guidance in `.github/skills/token-optimization/SKILL.md` are governed by:
+
+1. This document must be updated first (measurement_backed update above)
+2. A pipeline story must exist with the experiment_id in its AC
+3. PR must cite this document and the experiment artefact
+4. Platform team review required (platform change policy)
+
+No one-liner or ad-hoc updates to `token-optimization/SKILL.md` routing guidance. The harness evidence → this document → SKILL.md is the only permitted path.
