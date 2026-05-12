@@ -20,9 +20,12 @@
  *   - No user-controlled input is interpolated into API calls without sanitisation
  *   - Output files are written under workspace/experiments/ only
  *
- * Pricing reference (verify at https://www.anthropic.com/pricing before large sweeps):
- *   claude-sonnet-4-6: $3/$15 per million input/output tokens  (as of 2026-05-10)
- *   claude-opus-4-6:   $15/$75 per million input/output tokens (as of 2026-05-10)
+ * Pricing reference (verify before large sweeps):
+ *   claude-sonnet-4-6: $3/$15 per million input/output tokens  (as of 2026-05-12)
+ *   claude-opus-4-7:   $5/$25 per million input/output tokens  (as of 2026-05-12)
+ *   claude-haiku-4-5:  $1/$5  per million input/output tokens  (as of 2026-05-12)
+ *   Sources: https://www.anthropic.com/pricing  https://platform.openai.com/pricing
+ *   These are Layer 2 (direct API) rates only. Layer 1 (Copilot) costs differ — see eval-programme-roadmap.md
  */
 
 'use strict';
@@ -43,16 +46,225 @@ const JUDGE_MODEL = 'claude-sonnet-4-6';
 /** Number of trials per matrix cell (averaged for stability) */
 const DEFAULT_TRIALS = 3;
 
-/** Anthropic API endpoint */
-const ANTHROPIC_API_HOST = 'api.anthropic.com';
-const ANTHROPIC_API_PATH = '/v1/messages';
+/** Anthropic API version header (used inside getProvider) */
 const ANTHROPIC_API_VERSION = '2023-06-01';
 
-/** Pricing per million tokens — update when Anthropic changes pricing */
+// ─── Evaluation config reader ───────────────────────────────────────────────
+
+/**
+ * Reads the evaluation: block from .github/context.yml.
+ * Returns defaults if the file is absent or the block is missing.
+ *
+ * @returns {{ mode: boolean, judgeModel: string, outputPath: string }}
+ */
+function readEvaluationConfig() {
+  const contextPath = path.join(REPO_ROOT, '.github', 'context.yml');
+  const defaults = {
+    mode: false,
+    judgeModel: 'claude-sonnet-4-6',
+    outputPath: path.join(REPO_ROOT, 'workspace', 'eval-run-result.json'),
+  };
+  let content;
+  try { content = fs.readFileSync(contextPath, 'utf8'); } catch (e) { return defaults; }
+
+  const lines = content.split('\n');
+  let inSection = false;
+  let sectionIndent = -1;
+  const result = Object.assign({}, defaults);
+
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i].replace(/\s*#.*$/, '').trimEnd();
+    if (!raw.trim()) continue;
+    const indent = (raw.match(/^(\s*)/) || ['', ''])[1].length;
+    const trimmed = raw.trim();
+
+    if (!inSection) {
+      if (trimmed === 'evaluation:') { inSection = true; sectionIndent = indent; }
+      continue;
+    }
+    if (indent <= sectionIndent && /^\w[\w_]*:/.test(trimmed)) break;
+
+    const m = trimmed.match(/^([\w_]+)\s*:\s*(.+)$/);
+    if (!m) continue;
+    const key = m[1];
+    const val = m[2].trim().replace(/^['"]|['"]$/g, '');
+    if (key === 'mode')         result.mode       = (val === 'true');
+    if (key === 'judge_model')  result.judgeModel  = val;
+    if (key === 'output_path')  result.outputPath  = path.join(REPO_ROOT, val);
+  }
+  return result;
+}
+
+// ─── Provider abstraction ───────────────────────────────────────────────────
+
+/**
+ * Returns provider configuration for a given model ID.
+ * Supports three providers: Anthropic (claude-*), OpenAI (gpt-*), Local (local-*)
+ *
+ * @param {string} modelId
+ * @returns {{ host: string, port: number|null, path: string,
+ *             buildHeaders: (body: string) => object,
+ *             buildBody: (model: string, messages: object[], maxTokens: number, systemPrompt?: string) => string,
+ *             parseResponse: (parsed: object) => { content: string, inputTokens: number, outputTokens: number } }}
+ */
+function getProvider(modelId) {
+  if (modelId.startsWith('claude-')) {
+    return {
+      host: 'api.anthropic.com',
+      port: null,
+      path: '/v1/messages',
+      buildHeaders(body) {
+        const apiKey = process.env.ANTHROPIC_API_KEY;
+        if (!apiKey) throw new Error('ANTHROPIC_API_KEY environment variable is not set');
+        return {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+          'x-api-key': apiKey,
+          'anthropic-version': ANTHROPIC_API_VERSION,
+        };
+      },
+      buildBody(model, messages, maxTokens, systemPrompt) {
+        const body = { model, max_tokens: maxTokens, messages };
+        if (systemPrompt) body.system = systemPrompt;
+        return JSON.stringify(body);
+      },
+      parseResponse(parsed) {
+        const content = (parsed.content || []).map(b => b.text || '').join('');
+        return { content, inputTokens: parsed.usage?.input_tokens || 0, outputTokens: parsed.usage?.output_tokens || 0 };
+      },
+    };
+  }
+
+  if (modelId.startsWith('gpt-')) {
+    return {
+      host: 'api.openai.com',
+      port: null,
+      path: '/v1/chat/completions',
+      buildHeaders(body) {
+        const apiKey = process.env.OPENAI_API_KEY;
+        if (!apiKey) throw new Error('OPENAI_API_KEY environment variable is not set');
+        return {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+          'Authorization': `Bearer ${apiKey}`,
+        };
+      },
+      buildBody(model, messages, maxTokens, systemPrompt) {
+        // System prompt goes in messages array — NOT as a top-level field.
+        // Top-level system field is an Anthropic pattern; OpenAI ignores it silently
+        // (root cause of EXP-001 run-1 0% emission rate on GPT models).
+        const allMessages = systemPrompt
+          ? [{ role: 'system', content: systemPrompt }, ...messages]
+          : messages;
+        return JSON.stringify({ model, max_tokens: maxTokens, messages: allMessages });
+      },
+      parseResponse(parsed) {
+        const content = parsed.choices?.[0]?.message?.content || '';
+        return {
+          content,
+          inputTokens:  parsed.usage?.prompt_tokens     || 0,
+          outputTokens: parsed.usage?.completion_tokens || 0,
+        };
+      },
+    };
+  }
+
+  if (modelId.startsWith('local-')) {
+    return {
+      host: process.env.LOCAL_MODEL_HOST || 'localhost',
+      port: parseInt(process.env.LOCAL_MODEL_PORT || '3000', 10),
+      path: '/v1/chat/completions',
+      buildHeaders(body) {
+        const headers = {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+        };
+        if (process.env.LOCAL_MODEL_KEY) {
+          headers['Authorization'] = `Bearer ${process.env.LOCAL_MODEL_KEY}`;
+        }
+        return headers;
+      },
+      buildBody(model, messages, maxTokens, systemPrompt) {
+        const allMessages = systemPrompt
+          ? [{ role: 'system', content: systemPrompt }, ...messages]
+          : messages;
+        return JSON.stringify({ model, max_tokens: maxTokens, messages: allMessages });
+      },
+      parseResponse(parsed) {
+        const content = parsed.choices?.[0]?.message?.content || '';
+        return {
+          content,
+          inputTokens:  parsed.usage?.prompt_tokens     || 0,
+          outputTokens: parsed.usage?.completion_tokens || 0,
+          inferenceMs:  parsed._inferenceMs             || null, // cost proxy for local models
+        };
+      },
+    };
+  }
+
+  throw new Error(`Unknown model prefix — cannot determine provider for model: ${modelId}`);
+}
+
+/**
+ * Calls the appropriate model API via the provider abstraction.
+ * Returns { content, inputTokens, outputTokens }
+ * Throws on non-200 responses or missing env vars.
+ *
+ * Security: API keys are read from environment only, never logged or written to disk.
+ *
+ * @param {string} modelId
+ * @param {object[]} messages
+ * @param {number} [maxTokens]
+ * @param {string} [systemPrompt]
+ * @returns {Promise<{ content: string, inputTokens: number, outputTokens: number }>}
+ */
+function callModel(modelId, messages, maxTokens = 4096, systemPrompt) {
+  const provider = getProvider(modelId);
+  return new Promise((resolve, reject) => {
+    const body = provider.buildBody(modelId, messages, maxTokens, systemPrompt);
+    let headers;
+    try { headers = provider.buildHeaders(body); } catch (e) { return reject(e); }
+
+    const options = {
+      hostname: provider.host,
+      path: provider.path,
+      method: 'POST',
+      headers,
+    };
+    if (provider.port) options.port = provider.port;
+
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => { data += chunk; });
+      res.on('end', () => {
+        if (res.statusCode !== 200) {
+          return reject(new Error(`API error ${res.statusCode}: ${data.slice(0, 200)}`));
+        }
+        let parsed;
+        try { parsed = JSON.parse(data); } catch (e) { return reject(new Error(`JSON parse error: ${e.message}`)); }
+        try { resolve(provider.parseResponse(parsed)); } catch (e) { reject(new Error(`Response parse error: ${e.message}`)); }
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
+// PRICING MAP — Layer 2 (direct API) rates per million tokens
+// For Layer 1 (GitHub Copilot AI Credits) costs, see workspace/experiments/eval-programme-roadmap.md
+// Last verified: 2026-05-12
+// Source: api.anthropic.com/pricing + platform.openai.com/pricing
 const PRICING = {
+  // Anthropic
   'claude-sonnet-4-6': { inputPerM: 3.00, outputPerM: 15.00 },
-  'claude-opus-4-6':   { inputPerM: 15.00, outputPerM: 75.00 },
-  'claude-haiku-3-5':  { inputPerM: 0.80, outputPerM: 4.00 },
+  'claude-opus-4-7':   { inputPerM: 5.00, outputPerM: 25.00 },   // NOTE: claude-opus-4-6 also remains valid as a direct API string (SDK-confirmed 2026-05-12)
+  'claude-haiku-4-5':  { inputPerM: 1.00, outputPerM: 5.00 },
+  // OpenAI — TODO: verify current rates at platform.openai.com/pricing before running
+  'gpt-4o':            { inputPerM: 2.50, outputPerM: 10.00 },   // TODO: verify current rate
+  'gpt-4o-mini':       { inputPerM: 0.15, outputPerM: 0.60 },    // TODO: verify current rate
+  'gpt-4.1':           { inputPerM: 2.00, outputPerM: 8.00 },    // TODO: verify current rate — estimate only
+  'gpt-5-mini':        { inputPerM: 0.15, outputPerM: 0.60 },    // TODO: verify current rate — estimate only
 };
 
 // ─── CLI argument parsing ───────────────────────────────────────────────────
@@ -168,59 +380,23 @@ function extractJudgePrompt(evalContent) {
 
 // ─── Anthropic API call ─────────────────────────────────────────────────────
 
-/**
- * Calls the Anthropic Messages API.
- * Returns { content, inputTokens, outputTokens }
- * Throws on non-200 responses.
- *
- * Security: apiKey is read from environment only, never logged or written to disk.
- */
-function callAnthropicApi(apiKey, model, messages, maxTokens = 4096) {
-  return new Promise((resolve, reject) => {
-    const body = JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      messages,
-    });
-    const options = {
-      hostname: ANTHROPIC_API_HOST,
-      path: ANTHROPIC_API_PATH,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body),
-        'x-api-key': apiKey,
-        'anthropic-version': ANTHROPIC_API_VERSION,
-      },
-    };
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => { data += chunk; });
-      res.on('end', () => {
-        if (res.statusCode !== 200) {
-          // Do not include apiKey in error message
-          return reject(new Error(`API error ${res.statusCode}: ${data.slice(0, 200)}`));
-        }
-        let parsed;
-        try { parsed = JSON.parse(data); } catch (e) { return reject(new Error(`JSON parse error: ${e.message}`)); }
-        const content = (parsed.content || []).map(b => b.text || '').join('');
-        const inputTokens = parsed.usage?.input_tokens || 0;
-        const outputTokens = parsed.usage?.output_tokens || 0;
-        resolve({ content, inputTokens, outputTokens });
-      });
-    });
-    req.on('error', reject);
-    req.write(body);
-    req.end();
-  });
-}
-
 // ─── Cost tracking ──────────────────────────────────────────────────────────
 
 function estimateCost(model, inputTokens, outputTokens) {
   const pricing = PRICING[model];
   if (!pricing) return null;
   return (inputTokens / 1e6) * pricing.inputPerM + (outputTokens / 1e6) * pricing.outputPerM;
+}
+
+/**
+ * Writes workspace/eval-run-result.json for a single completed eval case.
+ * Overwrites on each call — last case wins (log all cases via the scorecard).
+ *
+ * @param {string} outputPath  - absolute path derived from evaluation.output_path
+ * @param {object} result
+ */
+function writeEvalRunResult(outputPath, result) {
+  try { fs.writeFileSync(outputPath, JSON.stringify(result, null, 2) + '\n', 'utf8'); } catch (e) { /* non-fatal */ }
 }
 
 // ─── Output file writing ────────────────────────────────────────────────────
@@ -317,9 +493,21 @@ async function main() {
     process.exit(1);
   }
 
+  // Read evaluation config (mode flag, judge model override, output path)
+  const evalConfig = readEvaluationConfig();
+  const effectiveJudgeModel = evalConfig.judgeModel || JUDGE_MODEL;
+  const evalOutputPath = evalConfig.outputPath;
+
+  if (evalConfig.mode) {
+    console.log(`[eval] evaluation.mode: true — non-interactive mode active`);
+    console.log(`[eval] judge model: ${effectiveJudgeModel}`);
+    console.log(`[eval] output path: ${evalOutputPath}`);
+  }
+
+  // Pre-flight: at least one API key must be set (judge always uses Anthropic)
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey && !args.dryRun) {
-    console.error('Error: ANTHROPIC_API_KEY environment variable is not set');
+    console.error('Error: ANTHROPIC_API_KEY environment variable is not set (required for the judge model)');
     console.error('For a dry run (no API calls), use --dry-run');
     process.exit(1);
   }
@@ -393,8 +581,19 @@ async function main() {
       // Step 1: Run candidate model on corpus case
       let runContent, runInputTokens, runOutputTokens;
       try {
+        // In evaluation mode, inject the eval-mode system prompt prefix.
+        // This instructs the model to run non-interactively and append the eval-mode marker.
+        let systemPrompt;
+        if (evalConfig.mode) {
+          systemPrompt = [
+            'EVALUATION MODE ACTIVE. Run in non-interactive mode. Skip all confirmation prompts.',
+            'Produce the complete artefact in a single pass. Apply all substantive skill logic.',
+            'Append <!-- eval-mode: true --> as the final line of the artefact.',
+            `Write the eval result to ${evalOutputPath} on completion.`,
+          ].join(' ');
+        }
         const skillPrompt = `You are running the /${skill.skillName} pipeline skill. ${operatorInput}`;
-        const result = await callAnthropicApi(apiKey, model, [{ role: 'user', content: skillPrompt }]);
+        const result = await callModel(model, [{ role: 'user', content: skillPrompt }], 4096, systemPrompt);
         runContent = result.content;
         runInputTokens = result.inputTokens;
         runOutputTokens = result.outputTokens;
@@ -419,7 +618,7 @@ async function main() {
           .replace('{OUTPUT}', runContent);
 
         try {
-          const judgeResult = await callAnthropicApi(apiKey, JUDGE_MODEL, [{ role: 'user', content: judgePromptFilled }], 1024);
+          const judgeResult = await callModel(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024);
           totalInputTokens += judgeResult.inputTokens;
           totalOutputTokens += judgeResult.outputTokens;
           // Parse JSON from judge output (strip any surrounding text)
@@ -434,6 +633,18 @@ async function main() {
           console.warn(`  Judge error: ${err.message}`);
         }
       }
+
+      // Write eval-run-result.json for this case
+      writeEvalRunResult(evalOutputPath, {
+        skill: skill.skillName,
+        caseId: corpusCase.caseId,
+        model,
+        trial,
+        completedAt: new Date().toISOString(),
+        artefactPath: runFilePath,
+        dimensionsScored: scoreJson ? Object.keys(scoreJson.scores || {}).length : null,
+        verdict: scoreJson ? (scoreJson.pass ? 'pass' : 'fail') : null,
+      });
 
       // Save result
       const resultFilePath = writeResultFile(experimentDir, skill.skillName, corpusCase.caseId, model, trial, scoreJson || { error: 'judge failed', model_label: model });
