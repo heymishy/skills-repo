@@ -7143,6 +7143,53 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "slicingStrategy": "risk-first",
+      "guardrails": [
+        {
+          "id": "ADR-023",
+          "category": "adr",
+          "label": "Path traversal guard — path.resolve + startsWith(repoRoot+sep)",
+          "description": "All file read paths derived from model output must be validated with path.resolve + startsWith(repoRoot + path.sep). Applies to wucp.3 tool execution loop.",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-05-13"
+        },
+        {
+          "id": "D37",
+          "category": "mandatory-constraint",
+          "label": "Injectable adapter stub must throw (D37)",
+          "description": "Injectable adapters introduced by wucp.3 (setToolExecutor) must have stubs that throw, not return null/empty. Production wiring in server.js is a named separate task.",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-05-13"
+        },
+        {
+          "id": "NFR-sec-pathtraversal",
+          "category": "nfr",
+          "label": "Security: path traversal — mandatory test coverage",
+          "description": "Path traversal tests (T3.18–T3.20) assert zero file reads on attack inputs. ADR-023 pattern applied.",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-05-13"
+        },
+        {
+          "id": "NFR-perf-toolloop",
+          "category": "nfr",
+          "label": "Performance: tool loop overhead <200ms for files up to 50KB",
+          "description": "Cannot be verified in unit CI — manual-only NFR gap declared in test plan (S3.10 in verification script). Risk-accepted at DoR.",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-05-13"
+        },
+        {
+          "id": "NFR-zero-npm",
+          "category": "mandatory-constraint",
+          "label": "Zero external npm dependencies",
+          "description": "Tool executor uses fs and path built-ins only. Enforced by governance test suite.",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-05-13"
+        }
+      ],
       "stories": [
         {
           "id": "wucp.0",
@@ -7213,7 +7260,7 @@
           "id": "wucp.3",
           "slug": "wucp.3",
           "name": "Tool execution loop",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
           "prStatus": "none",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.3.md",
@@ -7221,7 +7268,8 @@
           "acTotal": 9,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/dor/wucp.3-dor.md",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/review/wucp.3-review-1.md",
