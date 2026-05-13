@@ -10,11 +10,11 @@ const fs   = require('fs');
 const path = require('path');
 
 const ROOT       = path.join(__dirname, '..');
-const SPIKE_FILE = path.join(ROOT, 'artefacts', '2026-04-19-skills-platform-phase4', 'spikes', 'spike-d-output.md');
+const SPIKE_FILE = path.join(ROOT, 'artefacts', 'archived', '2026-04-19-skills-platform-phase4', 'spikes', 'spike-d-output.md');
 const STATE_FILE = path.join(ROOT, '.github', 'pipeline-state.json');
-const DEC_FILE   = path.join(ROOT, 'artefacts', '2026-04-19-skills-platform-phase4', 'decisions.md');
+const DEC_FILE   = path.join(ROOT, 'artefacts', 'archived', '2026-04-19-skills-platform-phase4', 'decisions.md');
 // E4 story spot-check — nta-surface depends directly on a PROCEED verdict from Spike D
-const E4_SURFACE = path.join(ROOT, 'artefacts', '2026-04-19-skills-platform-phase4', 'stories', 'p4-nta-surface.md');
+const E4_SURFACE = path.join(ROOT, 'artefacts', 'archived', '2026-04-19-skills-platform-phase4', 'stories', 'p4-nta-surface.md');
 
 let passed = 0;
 let failed = 0;

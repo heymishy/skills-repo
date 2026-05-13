@@ -10,10 +10,10 @@ const fs   = require('fs');
 const path = require('path');
 
 const ROOT       = path.join(__dirname, '..');
-const SPIKE_FILE = path.join(ROOT, 'artefacts', '2026-04-19-skills-platform-phase4', 'spikes', 'spike-b2-output.md');
+const SPIKE_FILE = path.join(ROOT, 'artefacts', 'archived', '2026-04-19-skills-platform-phase4', 'spikes', 'spike-b2-output.md');
 const STATE_FILE = path.join(ROOT, '.github', 'pipeline-state.json');
-const DEC_FILE   = path.join(ROOT, 'artefacts', '2026-04-19-skills-platform-phase4', 'decisions.md');
-const ENF_CLI    = path.join(ROOT, 'artefacts', '2026-04-19-skills-platform-phase4', 'stories', 'p4-enf-cli.md');
+const DEC_FILE   = path.join(ROOT, 'artefacts', 'archived', '2026-04-19-skills-platform-phase4', 'decisions.md');
+const ENF_CLI    = path.join(ROOT, 'artefacts', 'archived', '2026-04-19-skills-platform-phase4', 'stories', 'p4-enf-cli.md');
 
 let passed = 0;
 let failed = 0;

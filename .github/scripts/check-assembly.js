@@ -30,7 +30,7 @@ const os = require('os');
 
 const root         = path.join(__dirname, '..', '..');
 const fixtureFile  = path.join(root, 'tests', 'fixtures', 'assembled-copilot-instructions.md');
-const benefitFile  = path.join(root, 'artefacts', '2026-04-09-skills-platform-phase1', 'benefit-metric.md');
+const benefitFile  = path.join(root, 'artefacts', 'archived', '2026-04-09-skills-platform-phase1', 'benefit-metric.md');
 const assembleScript = path.join(root, 'scripts', 'assemble-copilot-instructions.sh');
 
 // On Windows, WSL bash may be absent or broken; prefer Git Bash when available.

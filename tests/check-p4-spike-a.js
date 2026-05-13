@@ -10,9 +10,9 @@ const fs   = require('fs');
 const path = require('path');
 
 const ROOT       = path.join(__dirname, '..');
-const SPIKE_FILE = path.join(ROOT, 'artefacts', '2026-04-19-skills-platform-phase4', 'spikes', 'spike-a-output.md');
+const SPIKE_FILE = path.join(ROOT, 'artefacts', 'archived', '2026-04-19-skills-platform-phase4', 'spikes', 'spike-a-output.md');
 const STATE_FILE = path.join(ROOT, '.github', 'pipeline-state.json');
-const DEC_FILE   = path.join(ROOT, 'artefacts', '2026-04-19-skills-platform-phase4', 'decisions.md');
+const DEC_FILE   = path.join(ROOT, 'artefacts', 'archived', '2026-04-19-skills-platform-phase4', 'decisions.md');
 
 const E3_STORIES = [
   'p4-enf-package.md',
@@ -218,7 +218,7 @@ console.log('\n[p4-spike-a] AC4 — Verdict in pipeline-state.json and decisions
 console.log('\n[p4-spike-a] AC5 — E3 stories reference Spike A output as architecture input');
 
 E3_STORIES.forEach(storyFile => {
-  const storyPath = path.join(ROOT, 'artefacts', '2026-04-19-skills-platform-phase4', 'stories', storyFile);
+  const storyPath = path.join(ROOT, 'artefacts', 'archived', '2026-04-19-skills-platform-phase4', 'stories', storyFile);
   const label     = storyFile.replace('.md', '');
   if (!fs.existsSync(storyPath)) {
     console.log(`  - T11/T12: ${label} not yet written — will pass after story decomposition`);

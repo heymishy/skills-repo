@@ -10,11 +10,11 @@ const fs   = require('fs');
 const path = require('path');
 
 const ROOT       = path.join(__dirname, '..');
-const SPIKE_FILE = path.join(ROOT, 'artefacts', '2026-04-19-skills-platform-phase4', 'spikes', 'spike-c-output.md');
+const SPIKE_FILE = path.join(ROOT, 'artefacts', 'archived', '2026-04-19-skills-platform-phase4', 'spikes', 'spike-c-output.md');
 const STATE_FILE = path.join(ROOT, '.github', 'pipeline-state.json');
-const DEC_FILE   = path.join(ROOT, 'artefacts', '2026-04-19-skills-platform-phase4', 'decisions.md');
+const DEC_FILE   = path.join(ROOT, 'artefacts', 'archived', '2026-04-19-skills-platform-phase4', 'decisions.md');
 // Spot-check E2 story — dist-lockfile is the primary consumer of the lockfile design decision
-const E2_LOCKFILE = path.join(ROOT, 'artefacts', '2026-04-19-skills-platform-phase4', 'stories', 'p4-dist-lockfile.md');
+const E2_LOCKFILE = path.join(ROOT, 'artefacts', 'archived', '2026-04-19-skills-platform-phase4', 'stories', 'p4-dist-lockfile.md');
 
 let passed = 0;
 let failed = 0;

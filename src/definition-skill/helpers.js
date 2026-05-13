@@ -83,9 +83,11 @@ function validateExternalAnnotation(text) {
  */
 function resolveSlug(slug, featureDir) {
   const expectedPath = path.join(root, 'artefacts', featureDir, 'stories', slug + '.md');
+  const archivedPath = path.join(root, 'artefacts', 'archived', featureDir, 'stories', slug + '.md');
+  const resolved = fs.existsSync(expectedPath) || fs.existsSync(archivedPath);
   return {
-    resolved:     fs.existsSync(expectedPath),
-    expectedPath: expectedPath,
+    resolved,
+    expectedPath: fs.existsSync(expectedPath) ? expectedPath : archivedPath,
   };
 }
 

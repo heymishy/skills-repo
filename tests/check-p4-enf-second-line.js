@@ -12,7 +12,7 @@ const child_process = require('child_process');
 const os            = require('os');
 
 const ROOT           = path.join(__dirname, '..');
-const THEME_F_DOC    = path.join(ROOT, 'artefacts', '2026-04-19-skills-platform-phase4', 'theme-f-inputs.md');
+const THEME_F_DOC    = path.join(ROOT, 'artefacts', 'archived', '2026-04-19-skills-platform-phase4', 'theme-f-inputs.md');
 const VALIDATE_TRACE = path.join(ROOT, 'scripts', 'validate-trace.sh');
 
 let passed = 0;
