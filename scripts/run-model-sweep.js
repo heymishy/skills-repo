@@ -12,6 +12,7 @@
  *   node scripts/run-model-sweep.js --experiment EXP-002 --cases T5
  *   node scripts/run-model-sweep.js --experiment EXP-002b --context-files .github/architecture-guardrails.md,product/constraints.md,product/mission.md,product/tech-stack.md
  *   node scripts/run-model-sweep.js --experiment EXP-002b --context-files .github/architecture-guardrails.md,product/constraints.md,product/mission.md,product/tech-stack.md --pass2
+ *   node scripts/run-model-sweep.js --experiment EXP-002 --delay 65000
  *   node scripts/run-model-sweep.js --experiment EXP-002 --dry-run
  *   node scripts/run-model-sweep.js --list-skills
  *
@@ -274,7 +275,7 @@ const PRICING = {
 // ─── CLI argument parsing ───────────────────────────────────────────────────
 
 function parseArgs(argv) {
-  const args = { skills: null, models: null, trials: DEFAULT_TRIALS, dryRun: false, listSkills: false, experiment: null, contextFiles: null, pass2: false, cases: null };
+  const args = { skills: null, models: null, trials: DEFAULT_TRIALS, dryRun: false, listSkills: false, experiment: null, contextFiles: null, pass2: false, cases: null, delay: 0 };
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--dry-run') { args.dryRun = true; continue; }
@@ -286,6 +287,7 @@ function parseArgs(argv) {
     if (arg === '--trials' && argv[i + 1]) { args.trials = parseInt(argv[++i], 10); continue; }
     if (arg === '--cases' && argv[i + 1]) { args.cases = argv[++i].split(',').map(s => s.trim()); continue; }
     if (arg === '--context-files' && argv[i + 1]) { args.contextFiles = argv[++i].split(',').map(s => s.trim()); continue; }
+    if (arg === '--delay' && argv[i + 1]) { args.delay = parseInt(argv[++i], 10); continue; }
   }
   return args;
 }
@@ -720,6 +722,7 @@ async function main() {
   const allResults = {};
   let totalInputTokens = 0;
   let totalOutputTokens = 0;
+  let apiCallsMade = 0;  // track calls across all cells for --delay
 
   for (const cell of matrix) {
     const { skill, corpusCase, model } = cell;
@@ -737,6 +740,13 @@ async function main() {
 
     for (let trial = 1; trial <= args.trials; trial++) {
       console.log(`\nRunning: ${skill.skillName} × ${corpusCase.caseId} × ${model} trial ${trial}/${args.trials}`);
+
+      // Optional rate-limit guard: delay before every API call after the first
+      if (args.delay > 0 && apiCallsMade > 0) {
+        console.log(`  Waiting ${args.delay}ms (--delay rate-limit guard)...`);
+        await new Promise(r => setTimeout(r, args.delay));
+      }
+      apiCallsMade++;
 
       // Step 1: Run candidate model on corpus case
       let runContent, runInputTokens, runOutputTokens;
