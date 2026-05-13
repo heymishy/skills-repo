@@ -1,0 +1,17 @@
+{
+  "case_id": "T1",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.55,
+    "d3_mvp_bounding": 0.82,
+    "d4_out_of_scope_discipline": 0.75,
+    "d5_assumption_quality": 0.95,
+    "d6_success_observability": 0.82,
+    "d7_constraint_completeness": 0.72
+  },
+  "weighted_score": 0.8,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong assumption quality and risk surfacing (idempotency, duplicate charge, classification accuracy) with well-bounded MVP scope, but persona specificity is weak — the response describes roles functionally (operations team, merchants) without naming distinct personas with associated timing and cost burdens as the corpus requires."
+}

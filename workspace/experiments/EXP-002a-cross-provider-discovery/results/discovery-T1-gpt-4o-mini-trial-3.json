@@ -1,0 +1,17 @@
+{
+  "case_id": "T1",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.2,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.2
+  },
+  "weighted_score": 0.611,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response is reasonably structured with good persona identification and bounded MVP, but critically lacks assumption quality (no idempotency or failure-code taxonomy risk), misses hard constraints (PCI-DSS entirely absent), and the problem statement leans too quickly into solution framing rather than anchoring on the gap and cost."
+}

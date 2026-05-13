@@ -1,0 +1,17 @@
+{
+  "case_id": "T1",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.55,
+    "d3_mvp_bounding": 0.85,
+    "d4_out_of_scope_discipline": 0.55,
+    "d5_assumption_quality": 0.9,
+    "d6_success_observability": 0.55,
+    "d7_constraint_completeness": 0.85
+  },
+  "weighted_score": 0.71,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong on assumption quality, compliance constraints, and idempotency risk surfacing, but underperforms on named personas with explicit costs and lacks a formal out-of-scope section with ≥2 items with stated reasons; the problem framing is partially solution-led in the opening paragraph."
+}

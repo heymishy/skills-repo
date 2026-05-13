@@ -1,0 +1,17 @@
+{
+  "case_id": "T1",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.55,
+    "d3_mvp_bounding": 0.85,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.85
+  },
+  "weighted_score": 0.757,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong assumption quality and constraint coverage (idempotency, card network rules, PCI-adjacent compliance risks), but the response leads with the solution architecture rather than the problem/cost framing, and personas are implied through roles rather than named with explicit cost context."
+}

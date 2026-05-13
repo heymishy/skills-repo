@@ -1,0 +1,17 @@
+{
+  "case_id": "T3",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.2,
+    "d6_success_observability": 0.85,
+    "d7_constraint_completeness": 0.5
+  },
+  "weighted_score": 0.5745,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response correctly anchors the 18-hour→15-minute baseline/target and names the MLRO with SAR context, but critically fails on out-of-scope discipline (no items named with reasons), misses structuring risk as an assumption about the £10k threshold, omits audit trail as a hard constraint, and does not explicitly defer SAR filing automation or other items out of MVP scope."
+}

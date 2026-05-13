@@ -1,0 +1,17 @@
+{
+  "case_id": "T1",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.8,
+    "d4_out_of_scope_discipline": 0.9,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.55
+  },
+  "weighted_score": 0.8,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong problem framing, rich assumption surfacing with risk-if-wrong logic, and well-reasoned out-of-scope discipline; main weakness is constraint completeness — PCI-DSS is not explicitly named and idempotency is treated as a question rather than a sourced hard constraint."
+}

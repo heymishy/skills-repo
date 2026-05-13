@@ -1,0 +1,17 @@
+{
+  "case_id": "T3",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.9,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.9,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.9,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.9
+  },
+  "weighted_score": 0.878,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally thorough response that correctly identifies regulatory exposure as the real problem, surfaces MLRO persona with SAR obligations, explicitly defers SAR automation and structuring detection with rationale, flags audit trail and FCA obligations as hard constraints, and notes structuring risk around the £10k threshold — minor deduction on persona specificity as MLRO is named but cost/timing context is partial, and success observability lacks an explicit baseline anchor of '18+ hours'."
+}

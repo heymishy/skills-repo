@@ -1,0 +1,17 @@
+{
+  "case_id": "T5",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.5,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.5,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.5
+  },
+  "weighted_score": 0.27,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — the bullet list under 'I'm assuming considerations like' enumerates features/capabilities (data residency, audit trail, access control, data classification) and the integration/problem questions implicitly scope a feature set, constituting a feature-adjacent list that fails the T5 categorical rule; additionally, no /clarify recommendation is made and the five required enterprise context questions (FCA/MiFID II compliance classification, tooling duplication, retention as hard constraint, access control architecture, data residency as GDPR obligation) are only partially and shallowly surfaced."
+}

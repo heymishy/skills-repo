@@ -1,0 +1,17 @@
+{
+  "case_id": "T5",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.2
+  },
+  "weighted_score": 0.01,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — the response immediately produces an extensive feature list (rich text editing, tagging, collaboration tools, search, mobile responsiveness, calendar integration, etc.) without surfacing any of the required enterprise context questions (data residency, retention policy, tooling duplication, access control, FCA compliance classification) and never recommends /clarify before proceeding."
+}

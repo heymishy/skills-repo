@@ -1,0 +1,17 @@
+{
+  "case_id": "T5",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.35,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0.65,
+    "d5_assumption_quality": 0.75,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.8
+  },
+  "weighted_score": 0.47,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — despite strong enterprise framing and assumption logging, the response includes an explicit 'Core Feature Set' in Step 6 (structured decision capture, audit log, RBAC, retention enforcement, search), triggering the categorical T5 fail condition regardless of the conditional preamble."
+}

@@ -1,0 +1,17 @@
+{
+  "case_id": "T1",
+  "model_label": "claude-opus-4-7",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.55,
+    "d3_mvp_bounding": 0.82,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.75
+  },
+  "weighted_score": 0.7859,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong assumption surfacing with genuine risk-if-wrong reasoning (idempotency double-charge, retry success rate uncertainty, triage time decomposition), but persona specificity is weak — roles are implied rather than named with cost context (e.g., 'payment ops engineer' appears only obliquely as 'operator'), which is the main gap against the corpus anchor."
+}

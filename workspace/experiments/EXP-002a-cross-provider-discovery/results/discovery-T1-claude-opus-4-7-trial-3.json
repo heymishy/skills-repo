@@ -1,0 +1,17 @@
+{
+  "case_id": "T1",
+  "model_label": "claude-opus-4-7",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.737,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong assumption interrogation and problem-framing via clarifying questions, but out-of-scope discipline is weak — only the merchant dashboard is named with a reason, and no additional named deferrals (circuit breakers, fraud screening) with rationale appear."
+}

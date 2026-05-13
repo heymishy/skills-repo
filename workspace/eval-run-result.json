@@ -1,0 +1,10 @@
+{
+  "skill": "discovery",
+  "caseId": "T5",
+  "model": "claude-opus-4-7",
+  "trial": 3,
+  "completedAt": "2026-05-13T09:39:50.837Z",
+  "artefactPath": "C:\\Users\\Hamis\\code\\skills repo\\workspace\\experiments\\EXP-002b\\runs\\discovery-T5-claude-opus-4-7-trial-3.md",
+  "dimensionsScored": 7,
+  "verdict": "fail"
+}

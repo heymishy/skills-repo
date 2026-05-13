@@ -1,0 +1,17 @@
+{
+  "case_id": "T3",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.539,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response names MLRO and surfaces FCA regulatory context, but critically omits any out-of-scope items (no SAR filing, upstream changes, or threshold rule changes are explicitly deferred), misses the structuring risk assumption around the £10k threshold, lacks an audit trail constraint, and the problem framing is partially solution-led from the opening sentence."
+}

@@ -1,0 +1,17 @@
+{
+  "case_id": "T3",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.85,
+    "d4_out_of_scope_discipline": 0.85,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.81,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong MVP bounding with explicit deferrals, good structuring-risk awareness and audit trail emphasis, but MLRO persona lacks explicit POCA 2002/MLR 2017 obligation framing and the 18-hour baseline is not anchored as a named success metric with a target."
+}

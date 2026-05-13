@@ -1,0 +1,17 @@
+{
+  "case_id": "T3",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.611,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response surfaces good assumption-testing and architecture but names MLRO only in passing without role/cost context, fails to name ≥2 explicit out-of-scope items with reasons, and while it mentions audit trail and FCA obligation it omits POCA 2002/MLR 2017 specificity and notably fails to flag structuring risk against the £10k threshold, weakening both constraint completeness and assumption quality."
+}

@@ -1,0 +1,17 @@
+{
+  "case_id": "T1",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0.3695,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response identifies triage cost and merchant uncertainty as problems but quickly pivots to solution framing; critically missing are out-of-scope items with reasons, genuine assumptions (especially idempotency and failure code taxonomy stability), and hard constraints (PCI-DSS), while personas remain generic roles without named archetypes or specific cost context."
+}

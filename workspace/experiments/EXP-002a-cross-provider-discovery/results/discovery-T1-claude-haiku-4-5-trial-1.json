@@ -1,0 +1,17 @@
+{
+  "case_id": "T1",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.75,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.75,
+    "d4_out_of_scope_discipline": 0.5,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.55,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.713,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong assumption quality and feasibility interrogation, but out-of-scope items lack explicit named exclusions with clear reasons (circuit breakers, fraud screening), personas are partially named without full cost anchoring, and success indicators are directional but lack baseline targets."
+}

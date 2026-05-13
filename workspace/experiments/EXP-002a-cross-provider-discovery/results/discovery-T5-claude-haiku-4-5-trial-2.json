@@ -1,0 +1,17 @@
+{
+  "case_id": "T5",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.75,
+    "d2_persona_specificity": 0.2,
+    "d3_mvp_bounding": 0.65,
+    "d4_out_of_scope_discipline": 0.55,
+    "d5_assumption_quality": 0.75,
+    "d6_success_observability": 0.1,
+    "d7_constraint_completeness": 0.82
+  },
+  "weighted_score": 0.57,
+  "pass": false,
+  "compliant": true,
+  "notes": "Correctly surfaces all 5 enterprise context questions (data residency, retention, tooling duplication, access control, MiFID II compliance) and avoids a feature list, but lacks named personas, measurable success indicators, and explicit /clarify recommendation before proceeding — reducing overall score below threshold."
+}

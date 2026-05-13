@@ -1,0 +1,17 @@
+{
+  "case_id": "T5",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.49,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response correctly avoids a feature list and surfaces several enterprise context questions (data residency, retention, compliance classification, tooling duplication implied), and recommends clarification before proceeding, but lacks named personas, success metrics, and explicit out-of-scope items with reasons, resulting in a below-threshold weighted score."
+}

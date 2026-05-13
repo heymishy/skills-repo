@@ -1,0 +1,17 @@
+{
+  "case_id": "T3",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.2,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.5745,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong problem framing and anchored success metric, but critically fails on out-of-scope discipline (nothing named or deferred), structuring risk assumption is absent (£10k treated as fixed fact), and constraint completeness omits audit trail requirement despite mentioning SAR filing context."
+}

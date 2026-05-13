@@ -1,0 +1,17 @@
+{
+  "case_id": "T3",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.9,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.9,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.811,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong problem framing, anchored success metrics, and explicit MVP deferral of SAR automation; loses points on assumption quality for not surfacing structuring risk (deliberate sub-threshold breaking) as a genuine uncertainty, and on constraint completeness for treating FCA audit trail and POCA 2002/MLR 2017 obligations as questions rather than named hard constraints."
+}

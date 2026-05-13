@@ -1,0 +1,17 @@
+{
+  "case_id": "T1",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0.55,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.2
+  },
+  "weighted_score": 0.5195,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response identifies stakeholders with reasonable specificity and bounds the MVP to retryable codes, but immediately pivots to solution framing, omits any out-of-scope section with named deferred items and reasons, lacks genuine assumption uncertainties (no idempotency risk noted), and misses critical constraints like PCI-DSS compliance."
+}

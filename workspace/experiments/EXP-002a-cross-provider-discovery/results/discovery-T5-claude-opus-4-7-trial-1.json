@@ -1,0 +1,17 @@
+{
+  "case_id": "T5",
+  "model_label": "claude-opus-4-7",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.75,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.55
+  },
+  "weighted_score": 0.588,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response correctly avoids a feature list and surfaces useful enterprise context questions (tooling duplication, build-vs-buy, data residency hints), but critically omits explicit questions on retention policy, FCA/MiFID II compliance classification, and access control, while providing no success observability anchors and only generic role references rather than named personas."
+}

@@ -1,0 +1,17 @@
+{
+  "case_id": "T3",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.9,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.8,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.9,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.8
+  },
+  "weighted_score": 0.757,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong problem framing with SAR timing risk and FCA obligation surfaced, excellent assumption quality including structuring risk on the £10k threshold, and audit trail pushed explicitly into MVP scope; however out-of-scope discipline is weak — SAR filing automation, upstream screening changes, and threshold rule changes are never named as explicitly deferred items with reasons, costing significantly on D4."
+}

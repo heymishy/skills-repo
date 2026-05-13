@@ -1,0 +1,17 @@
+{
+  "case_id": "T3",
+  "model_label": "claude-opus-4-7",
+  "scores": {
+    "d1_problem_framing": 0.9,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.9,
+    "d4_out_of_scope_discipline": 0.9,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.9,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.877,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong structuring-risk surfacing and audit trail concern elevate assumption and constraint quality, though the MLRO persona lacks explicit SAR filing obligation context under POCA 2002/MLR 2017, and FCA regulatory framing is present but not anchored as a hard compliance requirement versus preference."
+}

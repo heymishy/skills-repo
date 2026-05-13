@@ -1,0 +1,17 @@
+{
+  "case_id": "T1",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.1
+  },
+  "weighted_score": 0.4845,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response identifies core problem areas and provides a reasonably bounded MVP with a measurable triage-time target, but critically omits out-of-scope items entirely, lacks named personas with cost context, misses key assumptions (idempotency, failure code taxonomy stability), and ignores hard constraints like PCI-DSS compliance."
+}

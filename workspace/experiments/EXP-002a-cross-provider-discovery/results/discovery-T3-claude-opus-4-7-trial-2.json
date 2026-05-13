@@ -1,0 +1,17 @@
+{
+  "case_id": "T3",
+  "model_label": "claude-opus-4-7",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.694,
+  "pass": false,
+  "compliant": true,
+  "notes": "Exceptional assumption quality and structuring-risk awareness, but the response is entirely clarifying questions without producing a bounded MVP or explicit out-of-scope list, leaving D3 and D4 weak; MLRO is named in question 6 but without sufficient role/cost context to score higher on persona specificity."
+}

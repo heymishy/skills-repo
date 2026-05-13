@@ -1,0 +1,17 @@
+{
+  "case_id": "T1",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.55,
+    "d3_mvp_bounding": 0.75,
+    "d4_out_of_scope_discipline": 0.85,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.9,
+    "d7_constraint_completeness": 0.8
+  },
+  "weighted_score": 0.808,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong assumption quality and out-of-scope discipline with reasoned deferral, but persona specificity is limited — operators, merchants, and finance team are referenced functionally but never named with role-specific cost framing as expected by the rubric."
+}

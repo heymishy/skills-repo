@@ -1,0 +1,17 @@
+{
+  "case_id": "T5",
+  "model_label": "claude-opus-4-7",
+  "scores": {
+    "d1_problem_framing": 0.9,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.85,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.8,
+    "d6_success_observability": 0.6,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.71,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong problem reframing and no feature list produced; surfaces data residency, retention, tooling duplication, and compliance concerns but misses access control and FCA classification as explicit questions, and personas remain generic (team leads, compliance) without role/cost specificity."
+}

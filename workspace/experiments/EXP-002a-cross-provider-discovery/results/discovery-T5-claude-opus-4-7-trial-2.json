@@ -1,0 +1,17 @@
+{
+  "case_id": "T5",
+  "model_label": "claude-opus-4-7",
+  "scores": {
+    "d1_problem_framing": 0.9,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.8,
+    "d4_out_of_scope_discipline": 0.5,
+    "d5_assumption_quality": 0.75,
+    "d6_success_observability": 0.3,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.686,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong problem-first framing with no feature list and good enterprise constraint awareness (tooling duplication, compliance, retention hinted), but misses explicit data residency and FCA/MiFID II questions, lacks named personas with cost context, and out-of-scope items are implicit rather than named with reasons — pulling the weighted score just below threshold."
+}

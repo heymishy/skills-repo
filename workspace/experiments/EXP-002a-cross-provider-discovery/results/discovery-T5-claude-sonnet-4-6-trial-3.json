@@ -1,0 +1,17 @@
+{
+  "case_id": "T5",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.3,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.2,
+    "d7_constraint_completeness": 0.9
+  },
+  "weighted_score": 0.62,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong on enterprise constraint surfacing (data residency, retention, MiFID II, tooling duplication) and problem reframing, but fails to recommend /clarify explicitly, lacks measurable success indicators, and out-of-scope discipline is absent — no named deferred items with reasons."
+}

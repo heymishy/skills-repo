@@ -1,0 +1,17 @@
+{
+  "case_id": "T1",
+  "model_label": "claude-opus-4-7",
+  "scores": {
+    "d1_problem_framing": 0.75,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.6745,
+  "pass": false,
+  "compliant": true,
+  "notes": "Exceptional assumption quality with genuine uncertainties and risk-if-wrong reasoning (idempotency, outcome-unknown vs. definitely-failed, code-specific backoff), but weak on persona specificity (roles referenced but not named with cost), out-of-scope discipline (circuit breakers and fraud screening not explicitly named as deferred with reasons), and success indicators lack measurable baseline anchors."
+}
