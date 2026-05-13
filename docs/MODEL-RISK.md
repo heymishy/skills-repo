@@ -1,10 +1,10 @@
-# Model Risk Register: Skills Platform (Phase 1 through Phase 4)
+# Model Risk Register: Skills Platform (Phase 1 through Phase 5)
 
 **Platform:** Skills-based SDLC governance pipeline (GitHub Copilot Agent mode)  
 **Document status:** Authored — pending T3M1 evidence record and sign-off (dependency-gated on P1.3 + P1.7 DoD-complete)  
 **Audience:** Platform adopters, governance functions, risk reviewers  
 **Maintained by:** Platform maintainer  
-**Last substantive update:** 2026-04-16
+**Last substantive update:** 2026-04-16 (scope extended to Phase 5: 2026-05-14)
 
 > **Adoption gate:** This document must be read and signed off before the platform is used beyond the dogfood context. A `MODEL-RISK.md` without a completed sign-off record (Section 4) is not cleared for non-dogfood adoption.
 
@@ -68,9 +68,11 @@ Each entry states the risk clearly and records either a mitigation (a control th
 
 ## 1.1 Artefact Coverage Audit Record
 
-Artefact coverage audit conducted 2026-04-16. Phase 1: 8/8 complete. Phase 2: 13/13 complete. Phase 3: all stories DoD-complete. Phase 4: 9 stories DoD-complete as of 2026-04-21. Post-pipeline changelog coverage: 45% at Phase 2 audit — Phase 3 and Phase 4 deliveries have added further formal story coverage. Full audit at time of Phase 2 close: `workspace/retrospective-audit-2026-04-16.md`.
+Artefact coverage audit conducted 2026-04-16. Phase 1: 8/8 complete. Phase 2: 13/13 complete. Phase 3: all stories DoD-complete. Phase 4: all stories DoD-complete as of 2026-04-21. Post-pipeline changelog coverage: 45% at Phase 2 audit — Phase 3 and Phase 4 deliveries have added further formal story coverage. Full audit at time of Phase 2 close: `workspace/retrospective-audit-2026-04-16.md`.
 
 **Phase 4 note:** The 80%+ coverage target from the Phase 2 audit remains a longer-term goal. No new retrospective coverage audit has been conducted for Phase 3 or Phase 4 CHANGELOG additions. This is a Phase 5 or continuous improvement action item.
+
+**Phase 5 note (2026-05-14):** Phase 5 is active. The following workstreams have reached released or definition-of-done status: ougl (7 stories), owle (6 stories), wsm (3 stories), mfc (2 stories), wusl (2 stories), dsq (5 stories), wuce (35 stories at definition-of-done). wucp (5 stories) is in definition. Model evaluation capability feature is in definition stage. The risk register entries above were authored for Phase 1–4 and remain valid. No new risks specific to Phase 5 have been formally registered; however, R5 (Copilot Agent mode inter-session limitation) and R4 (token budget) apply with equal force to Phase 5 inner loop work. The web UI layer (Phase 5 primary delivery) introduces a new operational surface — OAuth App configuration, session management, and Copilot API token scoping — not covered by the existing risk register. A Phase 5 risk register addendum should be authored before non-dogfood use of the web UI surface.
 
 ---
 

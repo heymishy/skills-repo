@@ -32,8 +32,8 @@
 
 ---
 
-## Phase 4 Scope
+## Phase 4 Outcome / Phase 5 Status
 
-The compatibility gaps documented above for Cursor, Claude Code, and Amazon Q Developer are not blockers for adopting the pipeline with those tools — they require additional operator steps rather than pipeline redesign. Bridging these gaps (e.g. `--target cursor`, `--target claude-code` dispatch formats, auto-loader scripts) is Phase 4 scope.
+The compatibility gaps documented above for Cursor, Claude Code, and Amazon Q Developer were identified as Phase 4 scope. Phase 4 closed 2026-04-21 without implementing `--target cursor`, `--target claude-code`, or auto-loader scripts for non-Copilot surfaces — Phase 4 delivery was focused on distribution (sidecar install, lockfile, upstream sync), structural enforcement, non-technical access surface, and second-line validation. This is confirmed by `workspace/surface-and-runtime-validation-report.md`: "No `--target cursor` dispatch format exists."
 
-See `workspace/phase4-backlog-agent-live-delivery-run.md` for the gate condition and prerequisites for a live Phase 4 delivery run.
+**Phase 5 status (2026-05-14):** Bridging gaps for Cursor, Claude Code, and Amazon Q Developer remains an open backlog item. No Phase 5 story has been scoped for these dispatch format additions. The gaps documented in the matrix above are unchanged. If non-Copilot agent compatibility is required, use the operator-assisted workarounds in the Notes column and raise a Phase 5 or Phase 6 story via `/discovery`.

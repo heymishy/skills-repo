@@ -89,6 +89,8 @@ Injectable adapters — each wraps an external dependency; defaults throw to pre
 | `src/web-ui/adapters/annotation-writer.js` | PR annotation write adapter (GitHub API) | [annotation-writer.js](https://raw.githubusercontent.com/heymishy/skills-repo/master/src/web-ui/adapters/annotation-writer.js) |
 | `src/web-ui/adapters/sign-off-writer.js` | DoR sign-off write adapter (GitHub API) | [sign-off-writer.js](https://raw.githubusercontent.com/heymishy/skills-repo/master/src/web-ui/adapters/sign-off-writer.js) |
 | `src/web-ui/adapters/action-queue.js` | Action queue (GitHub commit queue) adapter | [action-queue.js](https://raw.githubusercontent.com/heymishy/skills-repo/master/src/web-ui/adapters/action-queue.js) |
+| `src/web-ui/adapters/pipeline-state-writer.js` | Pipeline-state.json write adapter (GitHub Contents API) | [pipeline-state-writer.js](https://raw.githubusercontent.com/heymishy/skills-repo/master/src/web-ui/adapters/pipeline-state-writer.js) |
+| `src/web-ui/adapters/session-store.js` | Session store adapter — injectable wrapper around session persistence | [session-store.js](https://raw.githubusercontent.com/heymishy/skills-repo/master/src/web-ui/adapters/session-store.js) |
 
 ---
 
@@ -114,6 +116,7 @@ Injectable adapters — each wraps an external dependency; defaults throw to pre
 | File | Purpose | Raw URL |
 |---|---|---|
 | `src/web-ui/modules/journey-store.js` | In-memory journey/flow session store | [journey-store.js](https://raw.githubusercontent.com/heymishy/skills-repo/master/src/web-ui/modules/journey-store.js) |
+| `src/web-ui/modules/tool-executor.js` | Tool call executor — processes model tool-call responses in skill sessions | [tool-executor.js](https://raw.githubusercontent.com/heymishy/skills-repo/master/src/web-ui/modules/tool-executor.js) |
 
 ---
 

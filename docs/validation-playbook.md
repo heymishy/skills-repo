@@ -1,7 +1,8 @@
-# Validation Playbook — Skills Platform Phase 1 through Phase 4
+# Validation Playbook — Skills Platform Phase 1 through Phase 5
 
 **Audience:** Second operator with no prior knowledge of this platform. Written for clean Windows or macOS.
 **Purpose:** Confirm the platform is installable, functionally correct, and meets its stated benefit metrics before proceeding to ent. pilot or Phase 3 scoping.
+**Last updated:** 2026-05-14 (Phase 5 active — web UI workstreams delivered; skill counts updated)
 **Total estimated time:** 2–3 hours (30 min + 60–90 min + 20 min)
 **References:** `MODEL-RISK.md`, `HANDOFF.md`, `.github/architecture-guardrails.md`
 
@@ -87,11 +88,11 @@ cd skills-platform-val
 npm test
 ```
 
-**Expected outcome (as of Phase 2 close):**
+**Expected outcome (as of Phase 5 active — 2026-05-14):**
 - `[viz-check]` — 1 script block(s) OK — pipeline-viz.html is clean
 - `[governance-sync]` — 13 gate(s) in sync ✓
 - `[viz-behaviour]` — 70 passed, 0 failed
-- `[skill-contracts]` — 37 skill(s), 156 contract(s) OK ✓
+- `[skill-contracts]` — 41 skill(s), 175 contract(s) OK ✓
 - `[pipeline-paths]` — 14 path(s), 32 reader link(s) OK ✓
 - All remaining checks: passed with 0 failures
 
@@ -104,7 +105,7 @@ npm test
 
 Open `dashboards/pipeline-viz.html` directly in any browser (double-click, or `open dashboards/pipeline-viz.html` on macOS / `start dashboards/pipeline-viz.html` on Windows).
 
-**Pass:** Page renders without error. The feature list shows at least four features including `2026-04-09-skills-platform-phase1`, `2026-04-11-skills-platform-phase2`, `2026-04-14-skills-platform-phase3`, and `2026-04-19-skills-platform-phase4`. Story counts are visible. Fleet panel shows at least two squad entries.
+**Pass:** Page renders without error. The feature list shows at least four features including `2026-04-09-skills-platform-phase1`, `2026-04-11-skills-platform-phase2`, `2026-04-14-skills-platform-phase3`, and `2026-04-19-skills-platform-phase4`. Phase 5 active features (e.g. `2026-05-06-web-ui-guided-outer-loop`, `2026-05-10-model-evaluation-capability`) will also appear. Story counts are visible. Fleet panel shows at least two squad entries.
 **Fail (check):** Page is blank or shows a JS error in browser console — check that you opened the file from the repo root (not a downloaded copy with blocked assets).
 **Fail (content):** Only one feature appears, or fleet panel is empty — this indicates a data regression; file a bug before proceeding.
 
@@ -147,7 +148,7 @@ Open `workspace/results.tsv` in a text editor.
 | Check | Pass | Fail | Notes |
 |-------|------|------|-------|
 | Clone | ✅ | ☐ | |
-| npm test | ✅ | ☐ | 37 skill(s), 156 contract(s) — 1 count above playbook baseline (Phase 2 drift, not a failure) |
+| npm test | ✅ | ☐ | 41 skill(s), 175 contract(s) — counts updated at Phase 5 active (2026-05-14) |
 | Pipeline viz | ✅ | ☐ | |
 | MODEL-RISK sign-off | ✅ | ☐ | |
 | HANDOFF ADRs | ✅ | ☐ | |
