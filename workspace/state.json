@@ -1,16 +1,17 @@
 {
-  "currentPhase": "released",
-  "activeFeature": null,
+  "currentPhase": "model-evaluation-experiments",
+  "activeFeature": "workspace/experiments",
   "previousActiveFeature": "2026-05-08-web-ui-copilot-chat-parity",
-  "lastUpdated": "2026-05-13T00:00:00.000Z",
+  "lastUpdated": "2026-05-13T14:00:00.000Z",
   "checkpoint": {
     "writtenAt": "2026-05-13",
-    "contextAtWrite": "All wucp/owle/dsq/sar features released. Pipeline state fully tidied. No active in-flight work.",
-    "resumeInstruction": "Read next session priorities below before starting any work. Do not start a new feature without checking dream-run-result.json first (Dreaming Loop Monday).",
+    "contextAtWrite": "EXP-002b complete. All data committed to master (commits 17414dd, 09c6d64, 26480b3). SKILL.md change proposal written at workspace/proposals/proposed-discovery-skill-update-exp-002b.md. Platform-wide context injection risk finding documented in learnings.md and proposal. All previously untracked workspace experiment artefacts committed. Working tree clean.",
+    "resumeInstruction": "Read workspace/proposals/proposed-discovery-skill-update-exp-002b.md before starting. Then follow the four-step session priority sequence below in order. Do not skip the challenger pre-check.",
     "pendingActions": [
-      "EXP-002b — context-loaded T5 diagnosis: run /discovery skill corpus T5 (enterprise constraints) with explicit context files loaded. Determine if the gap is model gap or context gap. If context: enrich corpus/standards files. If model: raise as SKILL.md change.",
-      "wucp end-to-end validation — the web UI now has tool execution (wucp.3 tool-executor.js). Run a real /trace session in the web UI and verify read_file + list_dir markers fire against actual repo files. Record outcome in workspace/capture-log.md.",
-      "Dreaming Loop Monday — after Monday scheduled run, check dream-run-result.json. Verify experiment-signals dimension picked up EXP-002a D7 findings and generated a proposal. If no proposal: diagnose signal feed."
+      "PRIORITY 1 — Challenger pre-check on discovery SKILL.md proposal: Read workspace/proposals/proposed-discovery-skill-update-exp-002b.md. Before applying any SKILL.md change, run the improvement-agent challenger pre-check to confirm the three proposed changes are not regressions. If pre-check passes: proceed to Priority 2. If fails: note the specific failure and stop.",
+      "PRIORITY 2 — Apply SKILL.md change if challenger passes: Edit .github/skills/discovery/SKILL.md with the three changes specified in the proposal (constraint surfacing rule D5/D7, success observability rule D6, /clarify trigger D2). Artefact-first route: short-track via /test-plan -> /definition-of-ready -> coding agent. The proposal specifies exact insertion locations.",
+      "PRIORITY 3 — /definition pre-check before EXP-003: Read .github/skills/definition/SKILL.md lines 60-90 and lines 410-425. Confirm exactly how architecture-guardrails.md is read (lazy read within skill execution vs injected by harness). Check workspace/experiments/EXP-003-pipeline-eval/manifest.md for whether Config B includes architecture-guardrails.md as a context-files parameter. If harness would inject the 96KB file: update the EXP-003 manifest to extract relevant sections only before proceeding.",
+      "PRIORITY 4 — EXP-003 end-to-end pipeline eval: Run EXP-003 Config A first (baseline), then Config B (Opus front-loaded), then Config C (cost-optimised). Primary metric: CPF (constraint propagation fidelity) across discovery -> definition -> test-plan -> DoR chain. Use command pattern from EXP-002b runs. Record results in workspace/experiments/EXP-003-pipeline-eval/scorecard.md."
     ]
   },
   "cycle": {
