@@ -7143,72 +7143,21 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "slicingStrategy": "risk-first",
-      "guardrails": [
-        {
-          "id": "ADR-023",
-          "category": "adr",
-          "label": "Path traversal guard — path.resolve + startsWith(repoRoot+sep)",
-          "description": "All file read paths derived from model output must be validated with path.resolve + startsWith(repoRoot + path.sep). Applies to wucp.3 tool execution loop.",
-          "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-05-13"
-        },
-        {
-          "id": "D37",
-          "category": "mandatory-constraint",
-          "label": "Injectable adapter stub must throw (D37)",
-          "description": "Injectable adapters introduced by wucp.3 (setToolExecutor) must have stubs that throw, not return null/empty. Production wiring in server.js is a named separate task.",
-          "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-05-13"
-        },
-        {
-          "id": "NFR-sec-pathtraversal",
-          "category": "nfr",
-          "label": "Security: path traversal — mandatory test coverage",
-          "description": "Path traversal tests (T3.18–T3.20) assert zero file reads on attack inputs. ADR-023 pattern applied.",
-          "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-05-13"
-        },
-        {
-          "id": "NFR-perf-toolloop",
-          "category": "nfr",
-          "label": "Performance: tool loop overhead <200ms for files up to 50KB",
-          "description": "Cannot be verified in unit CI — manual-only NFR gap declared in test plan (S3.10 in verification script). Risk-accepted at DoR.",
-          "status": "not-assessed",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-05-13"
-        },
-        {
-          "id": "NFR-zero-npm",
-          "category": "mandatory-constraint",
-          "label": "Zero external npm dependencies",
-          "description": "Tool executor uses fs and path built-ins only. Enforced by governance test suite.",
-          "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-05-13"
-        }
-      ],
       "stories": [
         {
           "id": "wucp.0",
           "slug": "wucp.0",
           "name": "MM1 prompt validation spike",
           "type": "spike",
-          "stage": "definition-of-done",
+          "stage": "definition",
           "health": "green",
           "prStatus": "none",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.0.md",
           "testPlan": {
             "artefact": null,
-            "status": "not-applicable"
+            "status": "not-started"
           },
-          "dorStatus": "signed-off",
-          "spikeOutcome": "GO",
-          "spikeEmissionRate": 100,
-          "spikeResultsArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/reference/prompt-validation-results.md",
-          "completedAt": "2026-05-13",
+          "dorStatus": "not-started",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/343",
           "dispatchedAt": "2026-05-09T00:00:00Z",
           "dispatchTarget": "vscode"
@@ -7225,10 +7174,10 @@
             "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/test-plans/wucp.1-test-plan.md",
             "status": "written",
             "totalTests": 19,
-            "passing": 0
+            "passing": 19
           },
           "acTotal": 7,
-          "acVerified": 0,
+          "acVerified": 7,
           "hasLayoutDependentGaps": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/dor/wucp.1-dor.md",
@@ -7238,8 +7187,9 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/review/wucp.1-review-1.md",
-          "updatedAt": "2026-05-09",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/345"
+          "updatedAt": "2026-05-11",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/345",
+          "mergedAt": "2026-05-10"
         },
         {
           "id": "wucp.2",
@@ -7279,24 +7229,15 @@
           "prStatus": "draft",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.3.md",
           "testPlan": {
-            "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/test-plans/wucp.3-test-plan.md",
-            "status": "written",
-            "totalTests": 21,
-            "passing": 0
+            "artefact": null,
+            "status": "not-started"
           },
-          "acTotal": 9,
-          "acVerified": 0,
-          "hasLayoutDependentGaps": false,
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/dor/wucp.3-dor.md",
-          "reviewStatus": "passed",
-          "highFindings": 0,
-          "reviewArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/review/wucp.3-review-1.md",
+          "blockedOn": "wucp.0",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/348",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/350",
           "dispatchedAt": "2026-05-13T00:00:00Z",
-          "dispatchTarget": "vscode",
-          "updatedAt": "2026-05-13",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/348"
+          "dispatchTarget": "vscode"
         },
         {
           "id": "wucp.4",
@@ -7305,15 +7246,17 @@
           "stage": "definition-of-done",
           "health": "green",
           "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/347",
+          "mergedAt": "2026-05-10",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.4.md",
           "testPlan": {
             "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/test-plans/wucp.4-test-plan.md",
             "status": "written",
             "totalTests": 20,
-            "passing": 0
+            "passing": 20
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "hasLayoutDependentGaps": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/dor/wucp.4-dor.md",
@@ -7323,8 +7266,7 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/review/wucp.4-review-1.md",
-          "updatedAt": "2026-05-09",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/347"
+          "updatedAt": "2026-05-10"
         }
       ],
       "epics": [
@@ -7342,7 +7284,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-05-09",
+      "updatedAt": "2026-05-11",
       "discoveryArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/discovery.md",
       "discoveryStatus": "approved",
       "benefitMetricArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/benefit-metric.md",
