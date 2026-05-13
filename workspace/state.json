@@ -1,8 +1,18 @@
 {
-  "currentPhase": "definition",
-  "activeFeature": "2026-05-08-web-ui-copilot-chat-parity",
-  "previousActiveFeature": "2026-05-07-web-ui-session-management",
-  "lastUpdated": "2026-05-09T00:00:00.000Z",
+  "currentPhase": "released",
+  "activeFeature": null,
+  "previousActiveFeature": "2026-05-08-web-ui-copilot-chat-parity",
+  "lastUpdated": "2026-05-13T00:00:00.000Z",
+  "checkpoint": {
+    "writtenAt": "2026-05-13",
+    "contextAtWrite": "All wucp/owle/dsq/sar features released. Pipeline state fully tidied. No active in-flight work.",
+    "resumeInstruction": "Read next session priorities below before starting any work. Do not start a new feature without checking dream-run-result.json first (Dreaming Loop Monday).",
+    "pendingActions": [
+      "EXP-002b — context-loaded T5 diagnosis: run /discovery skill corpus T5 (enterprise constraints) with explicit context files loaded. Determine if the gap is model gap or context gap. If context: enrich corpus/standards files. If model: raise as SKILL.md change.",
+      "wucp end-to-end validation — the web UI now has tool execution (wucp.3 tool-executor.js). Run a real /trace session in the web UI and verify read_file + list_dir markers fire against actual repo files. Record outcome in workspace/capture-log.md.",
+      "Dreaming Loop Monday — after Monday scheduled run, check dream-run-result.json. Verify experiment-signals dimension picked up EXP-002a D7 findings and generated a proposal. If no proposal: diagnose signal feed."
+    ]
+  },
   "cycle": {
     "discovery": {
       "status": "complete",
