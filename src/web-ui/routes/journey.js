@@ -1347,6 +1347,34 @@ function buildSlashCommandPrompt(skillName, repoRoot) {
 }
 
 /**
+ * buildSystemPrompt(opts) — returns the WEB UI PROTOCOL system prompt section.
+ * AC6: instructs the model to emit tool markers for file reads and dir listings.
+ * @param {object} opts - { skillName, repoRoot }
+ * @returns {string}
+ */
+function buildSystemPrompt(opts) {
+  var skillName = (opts && opts.skillName) || '';
+  return [
+    'You are running inside a web UI for a software delivery pipeline. The repository is checked out on the server.',
+    '',
+    'When you need to read a file to answer this request, emit exactly this marker on its own line BEFORE writing your response:',
+    '',
+    '<TOOL:read_file path="relative/path/to/file"/>',
+    '',
+    'When you need to list a directory, emit exactly this marker on its own line:',
+    '',
+    '<TOOL:list_dir path="relative/path/to/dir"/>',
+    '',
+    'Rules:',
+    '- Always use paths relative to the repo root (e.g. workspace/state.json, not /absolute/path)',
+    '- Emit the marker first — do not describe what you are about to read, just emit the marker',
+    '- After the marker, continue your response as if you have access to the file contents',
+    '- Use only these two tool verbs: read_file, list_dir — no others',
+    '- Markers are self-closing: end with />  not with a separate </TOOL:read_file>'
+  ].join('\n');
+}
+
+/**
  * Sets session.activeSlashCommand without mutating stage position (AC4).
  * @param {object} session
  * @param {string} skillName
@@ -1469,6 +1497,8 @@ module.exports = {
   buildSlashCommandPrompt,
   applySlashCommand,
   clearSlashCommand,
-  handleSlashCommand
+  handleSlashCommand,
+  // wucp.3 — tool execution loop
+  buildSystemPrompt
 };
 

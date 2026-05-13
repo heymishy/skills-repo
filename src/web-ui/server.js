@@ -28,6 +28,7 @@ const sessionManager                                                 = require('
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
 const { handleGetJourney, handlePostJourney, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter } = require('./routes/journey'); // ougl.3 / owle.1-6
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
+const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -62,6 +63,16 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   skillsAdapter.setCommitSession(async function(skillName, sessionId, token, login) {
     const name = login || 'web-ui';
     return htmlCommitSession(skillName, sessionId, token, { name, email: name + '@users.noreply.github.com' });
+  });
+
+  // wucp.3 — wire real fs adapter for tool execution loop (read_file / list_dir)
+  const _repoRootForTools = process.env.COPILOT_REPO_PATH || _path.resolve(__dirname, '../..');
+  setToolExecutor(function(verb, resolvedPath) {
+    var _fs = require('fs');
+    if (verb === 'list_dir') {
+      return _fs.readdirSync(resolvedPath).join('\n');
+    }
+    return _fs.readFileSync(resolvedPath, 'utf8');
   });
 
   // mfc.1 — wire real Copilot API executor for model-first chat turns
