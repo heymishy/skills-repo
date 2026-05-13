@@ -18,6 +18,8 @@ There are two improvement pathways:
 
 **Agent-driven improvement via the improvement agent:** The improvement agent runs continuously, reading delivery traces and detecting failure patterns — cases where the same skill failure or delivery gap recurred across multiple features. When it detects a pattern, it generates a proposed SKILL.md diff and flags it for human review. The human can accept, reject, or defer the proposal. No SKILL.md change reaches production without a human approval gate.
 
+**Scheduled dreaming:** The improvement agent also runs autonomously on a weekly schedule via a GitHub Actions workflow (`improvement-agent-schedule.yml`, Monday 03:00 UTC). An interval guard prevents back-to-back runs. After each scheduled run, the agent writes `lastDreamRun` to `workspace/state.json` and `workspace/dream-run-result.json`. Any proposals surfaced by a dreaming cycle still require human review before they can be applied — the cycle detects and proposes; it does not self-apply. The term "dreaming" refers to the scheduled, unsupervised improvement cycle: the platform processes its own delivery history while the operator is not present.
+
 Both pathways are subject to the same principle: the platform improves itself using the same governed pipeline that it enforces for all other changes.
 
 ## What you do with it

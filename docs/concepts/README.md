@@ -16,7 +16,7 @@ The three sections below are not the file naming order — read them in this seq
 
 ## Building blocks
 
-The eight building blocks are the runtime concepts of the pipeline. Read them in this order:
+The ten building blocks are the runtime concepts of the pipeline. Read them in this order:
 
 1. [Outer loop](building-blocks/outer-loop-inner-loop.md) — the human-paced delivery loop from discovery through story, gate checks, and PR review to merge
 2. [Skills pipeline](building-blocks/skills-pipeline.md) — the sequence of skill-driven steps that carries a story from discovery through implementation to merge
@@ -26,6 +26,8 @@ The eight building blocks are the runtime concepts of the pipeline. Read them in
 6. [Definition of Done (DoD)](building-blocks/definition-of-done.md) — the exit verification after a PR merges
 7. [Watermark gate](building-blocks/watermark-gate.md) — the test-count floor that prevents suite regression
 8. [Benefit metrics](building-blocks/benefit-metrics.md) — the measurable outcomes each feature is tracked against
+9. [Web UI execution layer](building-blocks/web-ui.md) — the browser-based operator surface that runs the skills pipeline without VS Code (Phase 5)
+10. [Model evaluation](primitives/model-evaluation.md) — the empirical framework for measuring skill output quality across model choices (Phase 5)
 
 ---
 
@@ -44,11 +46,12 @@ The six principles explain why the platform is designed the way it is:
 
 ## Primitives
 
-The six primitives are the low-level constructs that building blocks are composed from:
+The seven primitives are the low-level constructs that building blocks are composed from:
 
 - [Assurance gate](primitives/assurance-gate.md)
 - [Eval suite](primitives/eval-suite.md)
 - [Learnings log](primitives/learnings-log.md)
+- [Model evaluation](primitives/model-evaluation.md)
 - [Pipeline state](primitives/pipeline-state.md)
 - [Skill](primitives/skill.md)
 - [Surface adapter](primitives/surface-adapter.md)

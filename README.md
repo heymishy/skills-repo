@@ -8,7 +8,7 @@
 
 > Delivery standards, quality gates, and discipline practices encoded as versioned, hash-verified instruction sets. Executed by AI agents inside GitHub Copilot. Verified automatically on every PR. No hosted service required.
 
-**Quick nav:** [Mission](#mission-and-intent) · [Problems](#problems-this-solves) · [Principles](#core-principles) · [Primitives](#primitives) · [Pipeline](#pipeline-overview) · [Skills](#skills-reference) · [Assurance](#assurance-and-traceability) · [Self-improving harness](#self-improving-harness) · [Standards](#standards-model) · [Surfaces](#delivery-surfaces) · [Status](#phase-delivery-status) · [Known gaps](#known-gaps) · [Getting started](#getting-started) · [Docs](#platform-documentation) · [ADRs](#architecture-decisions)
+**Quick nav:** [Mission](#mission-and-intent) · [Problems](#problems-this-solves) · [Principles](#core-principles) · [Primitives](#primitives) · [Pipeline](#pipeline-overview) · [Skills](#skills-reference) · [Assurance](#assurance-and-traceability) · [Self-improving harness](#self-improving-harness) · [Model eval](#model-evaluation-capability) · [Standards](#standards-model) · [Surfaces](#delivery-surfaces) · [Web UI](#web-ui-execution-layer) · [Status](#phase-delivery-status) · [Known gaps](#known-gaps) · [Getting started](#getting-started) · [Docs](#platform-documentation) · [ADRs](#architecture-decisions)
 
 ---
 
@@ -219,6 +219,10 @@ Running continuously against committed trace files, the improvement agent:
 
 No SKILL.md change reaches production without a human approval gate.
 
+### Scheduled dreaming
+
+The improvement agent runs autonomously on a weekly schedule via `.github/workflows/improvement-agent-schedule.yml` (Monday 03:00 UTC, configurable in `context.yml`). An interval guard (`improvement_agent.min_dream_interval_hours`, default 23 h) prevents back-to-back runs — if a run completed within the interval, the workflow skips and exits cleanly. After each completed run the agent writes `lastDreamRun` to `workspace/state.json` and `workspace/dream-run-result.json`. Human review is still required for any proposal surfaced by a dreaming cycle — the cycle detects and proposes; it does not self-apply.
+
 ### The scaling dynamic
 
 A single team running a single loop produces a handful of learnings entries and a few trace signals. At ten teams running ten features per quarter, the improvement agent sees one hundred delivery cycles worth of failure patterns. The `/improve` extractions accumulate in `workspace/learnings.md` and standards files that every team receives at their next `/definition-of-ready`. The harness quality improves as a function of real collective usage — not of dedicated maintenance investment.
@@ -251,6 +255,20 @@ flowchart TB
     classDef improve fill:#8b5cf6,color:#fff,stroke:none
     classDef store fill:#6b7280,color:#fff,stroke:none
 ```
+
+---
+
+## Model evaluation capability
+
+The platform ships an empirical model evaluation framework for measuring skill output quality across model choices. Quality claims are measurement-backed — not anecdotal.
+
+**How it works:** Each key skill can carry a `corpus/` directory (3–5 representative input cases spanning the skill's operational range) and an `EVAL.md` spec (7-dimension evaluation rubric, calibration scores, judge prompt). Two sweep layers: **Layer 1** is a manual sweep via the VS Code model selector; **Layer 2** is a programmatic sweep via `scripts/run-model-sweep.js`, which reads configuration from `context.yml` (`evaluation.mode`, `judge_model`, `output_path`), calls the Anthropic API directly, and writes per-case `eval-run-result.json` files.
+
+**EXP-001 results — `/discovery` skill (Sonnet 4.6 vs Opus 4.6):** T1 basic framing — Sonnet 0.865 / Opus 0.910. T3 structural completeness — Sonnet 0.787 / Opus 0.895. T5 hidden constraints and deceptive simplicity — both models below the 0.70 threshold (Sonnet 0.49, Opus 0.562). Key finding: the skill's section-by-section confirmation gate is the primary variable preventing T5 passage, not model capability. Routing recommendation pending EXP-003 end-to-end pipeline evaluation.
+
+**Improvement agent integration:** `src/improvement-agent/experiment-signals.js` scans experiment result directories for dimensions scoring below 0.70 across 2+ runs and emits structured signals into the same improvement cycle as delivery trace signals.
+
+Reference: [`artefacts/2026-05-10-model-evaluation-capability/`](artefacts/2026-05-10-model-evaluation-capability/discovery.md) · [`workspace/experiments/`](workspace/experiments/) · [`/model-sweep` skill](.github/skills/model-sweep/SKILL.md) · [concept page](docs/concepts/primitives/model-evaluation.md)
 
 ---
 
@@ -371,6 +389,20 @@ Each squad runs the platform in their own repository with their own `pipeline-st
 
 ---
 
+## Web UI execution layer
+
+Phase 5 delivers a browser-based operator surface that runs the skills pipeline without VS Code or a local git environment. Operators sign in via GitHub OAuth, launch skill sessions, watch model output stream live, and commit the resulting artefact to the repository — all from a browser tab.
+
+The server is a zero-framework Node.js HTTP module (`src/web-ui/server.js`) with no npm AI dependencies. The **model-first architecture** injects the full `SKILL.md` plus product context files into the model's system prompt at session start; the model drives the conversation, asks its own questions, and produces the artefact. Output streams to the browser via SSE. Artefact commit goes directly to the GitHub Contents API. Session state is in-memory (no database); server restarts clear all sessions.
+
+**Delivered capabilities:** Streaming skill session with live draft panel · artefact commit via GitHub API · DoR sign-off through the GitHub issue `/approve-dor` interface · PR annotation from the browser · pipeline status board with CSV/JSON export · guided outer-loop journey mode for non-technical operators · session management with multi-session support.
+
+**Technology constraints (ADR-012):** CommonJS throughout, `http.createServer()` routing, zero new npm dependencies, injectable adapters with throw-by-default stubs (D37), `req.session.accessToken` as the canonical session field. Default model: `claude-sonnet-4-6` via `POST https://api.githubcopilot.com/chat/completions`.
+
+Reference: [docs/web-ui-skill-session-as-built.md](docs/web-ui-skill-session-as-built.md) · [docs/web-ui-copilot-api-guide.md](docs/web-ui-copilot-api-guide.md) · [docs/web-ui-file-index.md](docs/web-ui-file-index.md) · [concept page](docs/concepts/building-blocks/web-ui.md)
+
+---
+
 ## Phase delivery status
 
 | Phase | Stories | Outer loop focus | Calendar days | Status |
@@ -462,11 +494,15 @@ All human-readable reference documents live in `docs/`. Machine-consumed instruc
 
 | Document | Purpose |
 |----------|---------|
+| [concepts/README.md](docs/concepts/README.md) | Framework concepts guide — reading-order introduction to building blocks, principles, and primitives |
 | [ONBOARDING.md](docs/ONBOARDING.md) | Squad onboarding guide — step-by-step setup, required reading list, and first-run checklist |
 | [HANDOFF.md](docs/HANDOFF.md) | Session handoff and context recovery — Phase 1–4 delivery record, Phase 5/6 roadmap context, current open items |
 | [MODEL-RISK.md](docs/MODEL-RISK.md) | Model risk register — T3M1 audit questions (8/8 closed), risk ratings, and the 2026-04-16 artefact coverage audit record |
 | [validation-playbook.md](docs/validation-playbook.md) | AC verification playbook — how to run the plain-language AC verification scripts produced by `/test-plan` |
 | [skill-pipeline-instructions.md](docs/skill-pipeline-instructions.md) | Full pipeline instructions reference — the complete sequence of skills, entry conditions, and exit conditions |
+| [web-ui-skill-session-as-built.md](docs/web-ui-skill-session-as-built.md) | Web UI as-built reference — architecture decisions, session flow, and route inventory |
+| [web-ui-copilot-api-guide.md](docs/web-ui-copilot-api-guide.md) | Copilot API integration guide — authentication, streaming, and model configuration for the web UI layer |
+| [web-ui-file-index.md](docs/web-ui-file-index.md) | Web UI file index — every file in `src/web-ui/` with purpose, dependencies, and test coverage |
 | [feature-additions.md](docs/feature-additions.md) | Feature additions log — a record of capabilities added between formal story cycles |
 | [agent-behaviour-observability.md](docs/agent-behaviour-observability.md) | Phase 3 observability candidate approaches (Candidate 1–3) and Phase 5 backlog registration |
 | [agent-compatibility-matrix.md](docs/agent-compatibility-matrix.md) | AGENTS.md compatibility matrix — which agent runtimes support which surface and skill combinations |
@@ -493,4 +529,4 @@ The `artefacts/`, `.github/skills/`, `.github/templates/`, and `.github/governan
 
 Built with the skills platform's own pipeline — 70+ stories across 4 phases, ~15 calendar days.
 
-[Onboarding](docs/ONBOARDING.md) · [Handoff](docs/HANDOFF.md) · [Model risk](docs/MODEL-RISK.md) · [Validation playbook](docs/validation-playbook.md) · [Pipeline instructions](docs/skill-pipeline-instructions.md) · [Feature additions](docs/feature-additions.md) · [Architecture decisions](.github/architecture-guardrails.md) · [Phase 5/6 roadmap](artefacts/phase5-6-roadmap.md) · [Product roadmap](product/roadmap.md)
+[Onboarding](docs/ONBOARDING.md) · [Handoff](docs/HANDOFF.md) · [Model risk](docs/MODEL-RISK.md) · [Validation playbook](docs/validation-playbook.md) · [Pipeline instructions](docs/skill-pipeline-instructions.md) · [Feature additions](docs/feature-additions.md) · [Framework concepts](docs/concepts/README.md) · [Web UI as-built](docs/web-ui-skill-session-as-built.md) · [Architecture decisions](.github/architecture-guardrails.md) · [Phase 5/6 roadmap](artefacts/phase5-6-roadmap.md) · [Product roadmap](product/roadmap.md)
