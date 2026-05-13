@@ -2076,3 +2076,27 @@ git push --force-with-lease origin feature/dsq-4
 **When plain `git rebase origin/master` is safe:** When branches are independent (not chained). When a branch was created directly from master. In both cases there is no "phantom parent range" to worry about.
 
 **Process rule:** Any feature that delivers via chained branches (story N depends on story N-1's code) should document the parent-tip SHA at branch-setup time in the implementation plan. The implementation-plan task for each non-first branch should include: "When rebasing after parent merges, use `git rebase --onto origin/master <parent-tip> feature/<branch-name>`."
+
+---
+
+## D41 — Audit gate artefact chain missing when branch name has no story-ID prefix (PR #348, 2026-05-13)
+
+**Symptom:** PR's "Governed Delivery Audit Record" comment shows no artefact chain / no references — the artefact staging and collection steps silently produce nothing.
+
+**Root cause:** The assurance gate resolves the feature slug in priority order:
+1. udit.feature_slug override in .github/context.yml
+2. rtefacts/<slug>/ pattern extracted from the PR body
+3. Story-ID prefix extracted from the branch name (e.g. wucp.3 from eat/wucp.3-tool-executor)
+4. Auto-resolve: last non-done feature in pipeline-state
+
+eat/model-evaluation-capability has no story-ID in the branch name (path 3 returns empty). The PR body had no rtefacts/ reference (path 2 returns empty). Auto-resolve (path 4) picked the wrong feature. Result: esolve_feature output was wrong/empty, so collect governed artefacts collected nothing.
+
+**Fix:** Add an explicit override to .github/context.yml:
+`yaml
+audit:
+  feature_slug: 2026-05-08-web-ui-copilot-chat-parity  # explicit for branches without story-ID prefix
+`
+
+**Rule for future long-running experiment branches:** Any branch whose name does not encode a story-ID (e.g. eat/model-evaluation-capability, eat/some-long-running-experiment) MUST set udit.feature_slug in context.yml at branch-setup time, before the first PR opens. Remove or update the override when the branch is merged.
+
+**Prevention at branch-setup:** The /branch-setup skill should prompt: "Does your branch name contain a story ID (e.g. eat/wucp.3-...)? If not, set udit.feature_slug in context.yml now."
