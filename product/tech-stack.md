@@ -1,7 +1,7 @@
 # Product: Skills Platform — Tech Stack and File Structure
 
-**Document type:** Product reference — technical architecture and file layout  
-**Last updated:** 2026-04-09 (Managed Agents patterns integrated)
+**Document type:** Product reference — technical architecture and file layout
+**Last updated:** 2026-05-14 (Web UI layer added — Phase 5 active delivery)
 
 ---
 
@@ -39,7 +39,7 @@ skills-platform/
 │   │   ├── benefit-metric.md
 │   │   ├── token-optimization.md
 │   │   ├── trace.md
-│   │   └── ... (34 skills total)
+│   │   └── ... (41 skills total)
 │   └── POLICY.md                    # Core policy floors
 ├── standards/
 │   ├── index.yml                    # Routing table
@@ -337,6 +337,69 @@ mcp:
     bitbucket-url: https://bitbucket.org
     jira-url: https://jira.org
 ```
+
+---
+
+## Web UI layer (Phase 5 — added 2026-05-14)
+
+The platform includes a browser-accessible skill session interface delivered as a zero-dependency Node.js HTTP server. This layer is the primary Phase 5 delivery.
+
+### Architecture
+
+```
+Browser
+  │
+  │  GET  /skills                                 — skill picker
+  │  POST /api/skills/:name/sessions              → 303 /skills/:name/sessions/:id/chat
+  │  GET  /skills/:name/sessions/:id/chat         ← initial model turn fired server-side
+  │  POST /api/skills/:name/sessions/:id/turn-stream  (SSE streaming)
+  │  GET  /skills/:name/sessions/:id/commit-preview
+  │  POST /api/skills/:name/sessions/:id/commit
+  │  GET  /skills/:name/sessions/:id/result
+  │
+  ▼
+src/web-ui/server.js              — raw Node.js http.createServer(); zero Express dependency
+  │
+  ├── routes/skills.js            — skill session handlers; session state (_sessionStore Map)
+  │     ├── buildSystemPrompt()   — assembles copilot-instructions.md + SKILL.md + product context
+  │     ├── registerHtmlSession() — creates session entry
+  │     ├── htmlSubmitTurn()      — non-streaming turn processor
+  │     └── handlePostTurnStreamHtml() — SSE streaming turn processor
+  │
+  ├── modules/skill-turn-executor.js
+  │     ├── skillTurnExecutor()        — single-turn GitHub Copilot Chat Completions call
+  │     ├── skillTurnExecutorStream()  — streaming version (SSE)
+  │     └── getActiveModel()           — reads WUCE_TURN_MODEL env var
+  │
+  └── GitHub Copilot Chat Completions API
+        POST https://api.githubcopilot.com/chat/completions
+        Authorization: Bearer <GITHUB_TOKEN>
+```
+
+### Runtime constraints
+
+- **Node.js CommonJS only** — `require()`, no ES modules, no TypeScript
+- **No Express** — `http.createServer()` with URL matching via `pathname.match()` in the server router
+- **Zero new npm dependencies** — `https`, `fs`, `path`, `os`, `crypto` built-ins only
+- **No persistence** — session state lives in a `Map` for the lifetime of the Node process
+- **Injectable adapters (D37/ADR-009)** — every external dependency wired via a setter function; default stubs throw (never return null/undefined)
+- **`req.session.accessToken` is canonical** — the GitHub OAuth token is always at this key; never `req.session.token`
+
+### Model-first architecture
+
+The model receives the full SKILL.md as its system prompt and drives the entire conversation — asking questions and producing the artefact itself. The earlier form-based Q&A architecture (wuce/dsq artefacts) has been superseded by this approach. See `docs/web-ui-skill-session-as-built.md` for the authoritative as-built reference.
+
+### Key source files
+
+| File | Purpose |
+|------|---------|
+| `src/web-ui/server.js` | HTTP server entry point; URL dispatch |
+| `src/web-ui/routes/skills.js` | Skill session handlers; session state |
+| `src/web-ui/modules/skill-turn-executor.js` | GitHub Copilot Chat Completions caller |
+| `src/web-ui/skill-launcher.js` | Skill picker and session initialisation |
+| `src/web-ui/public/` | Static assets (HTML, CSS, JS) |
+| `docs/web-ui-skill-session-as-built.md` | Authoritative as-built reference for enterprise port |
+| `docs/web-ui-file-index.md` | Complete file index for web-UI layer |
 
 The PAT value never appears in any tracked file. The MCP proxy fetches it from the secrets store at call time using the `secretRef` name.
 

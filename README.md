@@ -112,7 +112,7 @@ The outer loop produces fully specified, DoR-gated work items before any code is
 
 ## Skills reference
 
-38 skills across four groups. `/workflow` is always safe to run — it surfaces current pipeline state and tells you which skill runs next.
+41 skills across four groups. `/workflow` is always safe to run — it surfaces current pipeline state and tells you which skill runs next.
 
 ### 🔵 Outer loop
 
@@ -379,10 +379,12 @@ Each squad runs the platform in their own repository with their own `pipeline-st
 | Phase 2 — Scale, observability, full adapter model | 13 | 1h | 2 | ✅ Complete |
 | Phase 3 — Governance hardening, T3M1, cross-team autoresearch | 22 | ~2.5h | 5 | ✅ Complete (T3M1 8/8 closed) |
 | Phase 4 — Structural enforcement, distribution, second-line independence | 27 | TBD | 8 | ✅ Complete (all 27 stories DoD) |
-| Phase 5 — Harness infrastructure, spec integrity, platform intelligence | WS0–WS7 | TBD | TBD | 📋 Roadmap — see `artefacts/phase5-6-roadmap.md` |
+| Phase 5 — Web UI, harness infrastructure, spec integrity, platform intelligence | WS0–WS7 | TBD | TBD | 🟡 Active — Web UI stories delivered; model evaluation in definition |
 | Phase 6 — Policy lifecycle, agent identity, second model review | WS8–WS11 | TBD | TBD | 📋 Roadmap — entry conditions from Phase 5 |
 
 Phase 2 outer loop focus time (1h) reflects high pipeline fluency at Phase 2 start and an engagement fraction of approximately 25%. Confidence on that figure is medium-low. Phase 4 delivered 27 stories across 5 epics including the shared governance package (ADR-013), p4-enf-mcp and p4-enf-cli enforcement spokes, E5 platform observability tooling, and two enforcement spikes (B1/B2). Scope narrowing deferred non-technical channel and distribution completion to Phase 5 WS0.
+
+Phase 5 is active. Delivered workstreams include: web-UI skill session with model-first chat architecture (mfc.1–2), streaming live draft (wusl.1–2), dynamic skill questions (dsq.1–5), guided outer loop (ougl.1–7), outer loop extensions (owle.1–6), and session management (wsm.1–3). The copilot execution layer (wuce, 35 stories) is at definition-of-done stage. Copilot chat parity (wucp.0–4) is in definition. Model evaluation capability (EXP-001 through EXP-009 programme) is in the definition stage with EXP-001 and EXP-002b complete.
 
 For Phase 5/6 workstream detail, dependency sequencing, gap audit (19 gaps), and competitive positioning, see [`artefacts/phase5-6-roadmap.md`](artefacts/phase5-6-roadmap.md).
 

@@ -50,9 +50,11 @@ Squads adopt incrementally. Named patterns: **Subset** (current context only) �
 
 ## Phase 4 — Multi-surface structural enforcement and second-line independence
 
+**Status: ✅ Complete (all 27 stories DoD as of 2026-04-21)**
+
 **Outcome:** Agent execution is structurally mediated — not merely instructed — across all primary delivery surfaces. A shared governance package (ADR-013) provides three operations (`resolveAndVerifySkill`, `evaluateGateAndAdvance`, `writeVerifiedTrace`) that every surface adapter calls. No surface reimplements governance logic independently. A risk function or independent CoP co-owns the assurance-gate SKILL.md files, making second-line independence a structural fact rather than a claim. The distribution model reaches squads without forking.
 
-### Phase 4 themes delivered (or in-flight)
+### Phase 4 themes delivered
 
 - **Shared governance package (ADR-013)** — three-operation contract: skill resolution and hash verification, gate evaluation and state advance, verified trace write. Two enforcement spoke adapters: `p4-enf-mcp` for VS Code and Claude Code surfaces; `p4-enf-cli` for regulated and CI contexts.
 - **Distribution foundation (Theme B partial)** — `sync-from-upstream.sh/ps1`, assurance gate hash check, `secretRef` credential pattern. Full versioned lockfile and `upgrade` command deferred to Phase 5 (see scope narrowing note below).
@@ -76,6 +78,30 @@ The following originally-labelled Phase 4 items are delivered in Phase 5 and Pha
 ---
 
 ## Phase 5 — Harness infrastructure, spec integrity, platform intelligence, and distribution completion
+
+**Status: 🟡 Active — Web UI workstreams delivered; model evaluation in definition**
+
+### Phase 5 workstreams delivered (as of 2026-05-14)
+
+The web-UI layer is the primary Phase 5 delivery to date. These workstreams are complete or at definition-of-done stage:
+
+- **Web UI — model-first chat architecture (mfc.1–2)** — Replaced the earlier form-based Q&A flow. The model now receives the full SKILL.md as system prompt and drives the entire conversation. Express-less Node.js HTTP server; injectable adapters (D37/ADR-009); GitHub Copilot Chat Completions API integration. ✅ Released
+- **Web UI — streaming live draft (wusl.1–2)** — Animated thinking dots, SSE streaming for artefact content after `---ARTEFACT-START---`, progressive draft panel updates. ✅ Released
+- **Web UI — dynamic skill questions (dsq.1–5)** — Dynamic question generation, section confirmation loops, post-session clarify gate. ✅ Released
+- **Web UI — guided outer loop (ougl.1–7)** — Full outer loop (discovery through DoR) navigable via the web UI. ✅ Released
+- **Web UI — outer loop extensions (owle.1–6)** — Benefit metric, review, definition-of-done, trace skills exposed via web UI. ✅ Released
+- **Web UI — session management (wsm.1–3)** — Session persistence, resume, and history. wsm.2 and wsm.3 complete-with-deviations (follow-up stories needed). ✅ Released (with deviations)
+- **Web UI — copilot execution layer (wuce, 35 stories)** — Per-answer model response in skill HTML flow; injectable `skill-turn-executor.js` module. 📋 At definition-of-done stage
+- **Web UI — session wizard / copilot chat parity (wucp.0–4)** — Context auto-loader, slash command router, session start wizard. 📋 In definition
+
+### Model evaluation capability (2026-05-10)
+
+A structured evaluation programme for the skill library has been initiated as a Phase 5 capability:
+
+- **EVAL.md specification format** — per-skill evaluation rubrics with corpus cases and scoring dimensions; `/model-sweep` SKILL.md; `scripts/run-model-sweep.js` for programmatic Layer 2 sweeps
+- **EXP-001 (discovery skill evaluation)** — Layer 1 manual sweep comparing `claude-sonnet-4-6` vs `claude-opus-4-6` across 5 corpus cases. Run-3 complete (T2/T4 final verdicts); run-3b planned for T1/T3/T5
+- **EXP-002b (constraint surfacing evaluation)** — Complete; T5 constraint surfacing baseline established (0.490–0.562)
+- **EXP-003 (end-to-end pipeline evaluation)** — Pending; will cover constraint propagation fidelity across the full discovery → definition → test-plan → DoR chain
 
 **Outcome:** Every governance property the platform claims — enforcement tier, execution isolation, context scope, spec integrity, cross-team intelligence, dynamic checklist composition — has a specific, inspectable mechanism. A risk examiner can trace any agent execution to a versioned, hash-pinned instruction set, a specific model version, and a human approval record. Non-technical discipline participants (product managers, business analysts, UX practitioners) have a governed delivery channel with artefact parity. Operational domain standards (incident response, change management, capacity planning) are live on at least one non-engineering surface.
 

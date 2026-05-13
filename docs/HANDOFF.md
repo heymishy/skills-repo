@@ -16,7 +16,7 @@
 **Updated:** 2026-04-21 (2) — Phase 5/6 roadmap published; product/ docs updated with Phase 4 actual delivery scope, enforcement architecture, competitive positioning, and G19 intentional gap note. See Section 8.
 **Updated:** 2026-04-21 (1) — Phase 4 fully DoD-complete — all 27 stories including E5 Platform Observability & Measurement. PRs #176 and #177 merged and traced. See Sections 6.8–6.15 and Phase 4 story tables.
 **Prepared by:** Platform maintainer (Hamish)
-**Status:** Phases 1–4 DoD-complete. Phase 5 (WS0–WS7) and Phase 6 (WS8–WS11) roadmapped. ougl.1–7, owle.1–6, wsm.1–3 delivered (PRs #320, #330–#338). wsm.2 and wsm.3 complete-with-deviations (follow-up stories needed). EXP-001 model evaluation in progress: run-3 scored (partial), run-3b planned (PR #348). src.1 implementation draft PR #182 pending. src.1 SKILL.md additions pending draft PR #178.
+**Status:** Phases 1–4 DoD-complete. Phase 5 active — ougl.1–7, owle.1–6, wsm.1–3, mfc.1–2, wusl.1–2, dsq.1–5 delivered (released). wuce (35 stories) at definition-of-done stage. wucp.0–4 in definition. wsm.4 dor-signed-off awaiting dispatch. Model evaluation capability (2026-05-10): EXP-001 run-3 scored (partial), run-3b planned; EXP-002b complete. src.1 implementation draft PR #182 pending. src.1 SKILL.md additions pending draft PR #178.
 
 ---
 
