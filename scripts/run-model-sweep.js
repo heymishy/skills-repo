@@ -11,13 +11,18 @@
  *   node scripts/run-model-sweep.js --experiment EXP-002 --models claude-sonnet-4-6,claude-opus-4-6
  *   node scripts/run-model-sweep.js --experiment EXP-002 --cases T5
  *   node scripts/run-model-sweep.js --experiment EXP-002b --context-files .github/architecture-guardrails.md,product/constraints.md,product/mission.md,product/tech-stack.md
+ *   node scripts/run-model-sweep.js --experiment EXP-002b --context-files product/constraints.md,product/mission.md,product/tech-stack.md --provider copilot
  *   node scripts/run-model-sweep.js --experiment EXP-002b --context-files .github/architecture-guardrails.md,product/constraints.md,product/mission.md,product/tech-stack.md --pass2
  *   node scripts/run-model-sweep.js --experiment EXP-002 --delay 65000
+ *   node scripts/run-model-sweep.js --experiment EXP-002 --provider copilot --dry-run
  *   node scripts/run-model-sweep.js --experiment EXP-002 --dry-run
  *   node scripts/run-model-sweep.js --list-skills
  *
  * Environment:
- *   ANTHROPIC_API_KEY — required (except for --dry-run and --list-skills)
+ *   ANTHROPIC_API_KEY      — required for direct Anthropic API calls (claude-* models)
+ *   OPENAI_API_KEY         — required for direct OpenAI API calls (gpt-* models)
+ *   GITHUB_TOKEN           — required for --provider copilot; also accepted as GITHUB_COPILOT_TOKEN
+ *                            Auto-used when ANTHROPIC_API_KEY is absent and GITHUB_TOKEN is set.
  *
  * Security:
  *   - API key is never written to any output file
@@ -102,17 +107,72 @@ function readEvaluationConfig() {
 
 // ─── Provider abstraction ───────────────────────────────────────────────────
 
+// ─── Copilot proxy provider ──────────────────────────────────────────────────
+
+/**
+ * Model name overrides for the GitHub Copilot proxy.
+ * The proxy accepts the same model IDs as direct provider APIs in most cases.
+ * Add an override only when Copilot requires a different version string.
+ * Current available models: https://docs.github.com/en/copilot/using-github-copilot/ai-models
+ */
+const COPILOT_MODEL_MAP = {
+  // Examples — uncomment if Copilot requires a different version string:
+  // 'claude-sonnet-4-6': 'claude-sonnet-4-5',
+  // 'claude-opus-4-7':   'claude-opus-4-5',
+};
+
+function getCopilotProvider() {
+  return {
+    host: 'api.githubcopilot.com',
+    port: null,
+    path: '/chat/completions',
+    buildHeaders(body) {
+      const token = process.env.GITHUB_TOKEN || process.env.GITHUB_COPILOT_TOKEN;
+      if (!token) throw new Error('GITHUB_TOKEN or GITHUB_COPILOT_TOKEN is not set — required for --provider copilot');
+      return {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body),
+        'Authorization': `Bearer ${token}`,
+        'Copilot-Integration-Id': 'vscode-chat',
+        'Editor-Version': 'vscode/1.89.0',
+        'Editor-Plugin-Version': 'copilot-chat/0.45.0',
+      };
+    },
+    buildBody(model, messages, maxTokens, systemPrompt) {
+      const mappedModel = COPILOT_MODEL_MAP[model] || model;
+      const allMessages = systemPrompt
+        ? [{ role: 'system', content: systemPrompt }, ...messages]
+        : messages;
+      return JSON.stringify({ model: mappedModel, max_tokens: maxTokens, messages: allMessages });
+    },
+    parseResponse(parsed) {
+      const content = parsed.choices?.[0]?.message?.content || '';
+      return {
+        content,
+        inputTokens:  parsed.usage?.prompt_tokens     || 0,
+        outputTokens: parsed.usage?.completion_tokens || 0,
+        inferenceMs:  null,
+      };
+    },
+  };
+}
+
+// ─── Provider abstraction ───────────────────────────────────────────────────
+
 /**
  * Returns provider configuration for a given model ID.
- * Supports three providers: Anthropic (claude-*), OpenAI (gpt-*), Local (local-*)
+ * Supports four providers: Copilot proxy, Anthropic (claude-*), OpenAI (gpt-*), Local (local-*)
  *
  * @param {string} modelId
+ * @param {string|null} [providerOverride] - 'copilot' forces the GitHub Copilot proxy regardless of model prefix
  * @returns {{ host: string, port: number|null, path: string,
  *             buildHeaders: (body: string) => object,
  *             buildBody: (model: string, messages: object[], maxTokens: number, systemPrompt?: string) => string,
  *             parseResponse: (parsed: object) => { content: string, inputTokens: number, outputTokens: number } }}
  */
-function getProvider(modelId) {
+function getProvider(modelId, providerOverride) {
+  if (providerOverride === 'copilot') return getCopilotProvider();
+
   if (modelId.startsWith('claude-')) {
     return {
       host: 'api.anthropic.com',
@@ -223,8 +283,8 @@ function getProvider(modelId) {
  * @param {string} [systemPrompt]
  * @returns {Promise<{ content: string, inputTokens: number, outputTokens: number }>}
  */
-function callModel(modelId, messages, maxTokens = 4096, systemPrompt) {
-  const provider = getProvider(modelId);
+function callModel(modelId, messages, maxTokens = 4096, systemPrompt, providerOverride) {
+  const provider = getProvider(modelId, providerOverride);
   return new Promise((resolve, reject) => {
     const body = provider.buildBody(modelId, messages, maxTokens, systemPrompt);
     let headers;
@@ -275,7 +335,7 @@ const PRICING = {
 // ─── CLI argument parsing ───────────────────────────────────────────────────
 
 function parseArgs(argv) {
-  const args = { skills: null, models: null, trials: DEFAULT_TRIALS, dryRun: false, listSkills: false, experiment: null, contextFiles: null, pass2: false, cases: null, delay: 0 };
+  const args = { skills: null, models: null, trials: DEFAULT_TRIALS, dryRun: false, listSkills: false, experiment: null, contextFiles: null, pass2: false, cases: null, delay: 0, provider: null };
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--dry-run') { args.dryRun = true; continue; }
@@ -288,6 +348,7 @@ function parseArgs(argv) {
     if (arg === '--cases' && argv[i + 1]) { args.cases = argv[++i].split(',').map(s => s.trim()); continue; }
     if (arg === '--context-files' && argv[i + 1]) { args.contextFiles = argv[++i].split(',').map(s => s.trim()); continue; }
     if (arg === '--delay' && argv[i + 1]) { args.delay = parseInt(argv[++i], 10); continue; }
+    if (arg === '--provider' && argv[i + 1]) { args.provider = argv[++i]; continue; }
   }
   return args;
 }
@@ -618,11 +679,28 @@ async function main() {
     console.log(`[eval] output path: ${evalOutputPath}`);
   }
 
-  // Pre-flight: at least one API key must be set (judge always uses Anthropic)
+  // Pre-flight: need at least one usable credential
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey && !args.dryRun) {
-    console.error('Error: ANTHROPIC_API_KEY environment variable is not set (required for the judge model)');
-    console.error('For a dry run (no API calls), use --dry-run');
+  const githubToken = process.env.GITHUB_TOKEN || process.env.GITHUB_COPILOT_TOKEN;
+  if (!apiKey && !githubToken && !args.dryRun) {
+    console.error('Error: no API credentials found.');
+    console.error('  Direct API:     set ANTHROPIC_API_KEY (claude-* models) or OPENAI_API_KEY (gpt-* models)');
+    console.error('  Copilot proxy:  set GITHUB_TOKEN or GITHUB_COPILOT_TOKEN (and use --provider copilot)');
+    console.error('  Dry run:        use --dry-run');
+    process.exit(1);
+  }
+
+  // Provider resolution: explicit flag > auto-detect from env vars > model-prefix routing
+  let effectiveProvider = args.provider || null;
+  if (!effectiveProvider) {
+    if (!apiKey && githubToken) {
+      effectiveProvider = 'copilot';
+      console.log('Auto-detected provider: ANTHROPIC_API_KEY not set, GITHUB_TOKEN found → using Copilot proxy');
+    }
+  } else if (effectiveProvider === 'copilot') {
+    console.log('Provider: Copilot proxy (api.githubcopilot.com)');
+  } else if (!['anthropic', 'openai'].includes(effectiveProvider)) {
+    console.error(`Error: unknown --provider value '${effectiveProvider}'. Valid values: anthropic, openai, copilot`);
     process.exit(1);
   }
 
@@ -779,7 +857,7 @@ async function main() {
         } else {
           userContent = `You are running the /${skill.skillName} pipeline skill. ${operatorInput}`;
         }
-        const result = await callModel(model, [{ role: 'user', content: userContent }], 4096, systemPrompt);
+        const result = await callModel(model, [{ role: 'user', content: userContent }], 4096, systemPrompt, effectiveProvider);
         runContent = result.content;
         runInputTokens = result.inputTokens;
         runOutputTokens = result.outputTokens;
@@ -804,7 +882,7 @@ async function main() {
           .replace('{OUTPUT}', runContent);
 
         try {
-          const judgeResult = await callModel(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024);
+          const judgeResult = await callModel(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024, undefined, effectiveProvider);
           totalInputTokens += judgeResult.inputTokens;
           totalOutputTokens += judgeResult.outputTokens;
           // Parse JSON from judge output (strip any surrounding text)
@@ -845,7 +923,7 @@ async function main() {
       const resultFilePath = writeResultFile(experimentDir, skill.skillName, corpusCase.caseId, model, trial, resultData);
       console.log(`  Result saved: ${path.relative(REPO_ROOT, resultFilePath)}`);
 
-      const cost = estimateCost(model, runInputTokens, runOutputTokens);
+      const cost = effectiveProvider === 'copilot' ? null : estimateCost(model, runInputTokens, runOutputTokens);
       allResults[cellKey].push({
         meta: { skillName: skill.skillName, caseId: corpusCase.caseId, modelLabel: model, trial },
         score: scoreJson,
@@ -871,13 +949,23 @@ async function main() {
   // Print cost summary
   const totalCost = Object.values(allResults).flat().reduce((a, t) => a + (t.cost || 0), 0);
   console.log(`\nTotal tokens: ${totalInputTokens.toLocaleString()} input, ${totalOutputTokens.toLocaleString()} output`);
-  if (totalCost) console.log(`Estimated total cost: $${totalCost.toFixed(3)}`);
+  if (totalCost) {
+    console.log(`Estimated total cost: $${totalCost.toFixed(3)}`);
+  } else if (effectiveProvider === 'copilot') {
+    console.log('Cost: AI Credits (Copilot proxy — no direct API spend)');
+  }
   console.log('\nSweep complete.');
 }
 
 main().catch(err => {
   // Ensure API key is never in the error output
-  const msg = err.message.includes(process.env.ANTHROPIC_API_KEY || '____NEVER____')
+  const tokensToRedact = [
+    process.env.ANTHROPIC_API_KEY,
+    process.env.OPENAI_API_KEY,
+    process.env.GITHUB_TOKEN,
+    process.env.GITHUB_COPILOT_TOKEN,
+  ].filter(Boolean);
+  const msg = tokensToRedact.some(t => err.message.includes(t))
     ? 'Internal error (redacted — potential credential leak in error path)'
     : err.message;
   console.error(`Fatal: ${msg}`);
