@@ -2,7 +2,7 @@
   "currentPhase": "model-evaluation-experiments",
   "activeFeature": "2026-05-10-model-evaluation-capability",
   "previousActiveFeature": "2026-05-08-web-ui-copilot-chat-parity",
-  "lastUpdated": "2026-05-14T09:00:00.000Z",
+  "lastUpdated": "2026-05-14T18:00:00.000Z",
   "lastDreamRun": "2026-05-11T00:44:17.279Z",
   "cycle": {
     "discovery": {
@@ -74,8 +74,8 @@
   },
   "checkpoint": {
     "writtenAt": "2026-05-14",
-    "contextAtWrite": "Session 2026-05-14: discovery for 2026-05-10-model-evaluation-capability approved (all 6 MVP items delivered, EXP-001 and EXP-002b complete). benefit-metric.md created with MM1 (target met), MM2 (baseline established, EXP-003 pending), MM3 (proposal written, pending). Feature registered in pipeline-state.json (stage: definition). 18 completed April 2026 features archived to pipeline-state-archive.json (22 total in archive). Pipeline-state.json now has 11 active features. Duplicate checkpoint key bug fixed. wucp.0-4 still at definition-complete, pending /review. wsm.4 pending dispatch.",
-    "resumeInstruction": "Discovery for 2026-05-10-model-evaluation-capability is approved and benefit-metric is active. Follow the four-step priority sequence in pendingActions in order. Do not skip the challenger pre-check on the SKILL.md proposal before running EXP-003. wucp stories (wucp.1/2/4) are ready for /review and can be run in parallel with the EXP work.",
+    "contextAtWrite": "Session 2026-05-14 (evening): documentation pass on docs/ and README. Committed docs/ file-level updates (validation-playbook, MODEL-RISK, agent-compatibility-matrix, agent-behaviour-observability, web-ui-file-index) in commit 61aa855. Added Phase 5 concept pages (docs/concepts/building-blocks/web-ui.md, docs/concepts/primitives/model-evaluation.md), updated self-improving-harness concept for scheduled dreaming, updated docs/concepts/README.md (10 building blocks, 7 primitives), updated README with Web UI section, Model evaluation capability section, Scheduled dreaming subsection, Platform docs table (concepts + web UI docs), and footer links — commit a4077aa. No pipeline phase change. Active feature remains 2026-05-10-model-evaluation-capability.",
+    "resumeInstruction": "Documentation is up to date. Active pipeline phase is model-evaluation-experiments. Follow the four-step priority sequence in pendingActions in order. PRIORITY 1: run improvement-agent challenger pre-check on workspace/proposals/proposed-discovery-skill-update-exp-002b.md before applying any SKILL.md change. PRIORITY 2: apply the discovery SKILL.md update if challenger passes. PRIORITY 3: verify EXP-003 manifest context-files config for architecture-guardrails.md size before running. PRIORITY 4: run EXP-003. PARALLEL: wucp.1/2/4 are reviewReady and can run /review in parallel.",
     "pendingActions": [
       "PRIORITY 1 — Challenger pre-check on discovery SKILL.md proposal: Read workspace/proposals/proposed-discovery-skill-update-exp-002b.md. Before applying any SKILL.md change, run the improvement-agent challenger pre-check to confirm the three proposed changes (constraint surfacing rule D5/D7, success observability rule D6, /clarify trigger D2) are not regressions. If pre-check passes: proceed to Priority 2. If fails: note the specific failure and stop.",
       "PRIORITY 2 — Apply SKILL.md change if challenger passes: Edit .github/skills/discovery/SKILL.md with the three changes specified in workspace/proposals/proposed-discovery-skill-update-exp-002b.md. Artefact-first route: short-track via /test-plan -> /definition-of-ready -> coding agent. The proposal specifies exact insertion locations.",
