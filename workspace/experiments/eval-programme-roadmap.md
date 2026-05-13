@@ -9,10 +9,23 @@
 The eval programme is a measurement-first approach to model routing: no routing policy is updated without experiment evidence backing the change. Each experiment in the sequence unblocks specific routing decisions.
 
 ```
-EXP-001 ──► EXP-002a ──► EXP-002b ──► EXP-003
+EXP-001 ──► EXP-002a ──► EXP-002b ──► EXP-003 ──► EXP-004 ──► EXP-005
+                │                          │
+                │                          └──────► EXP-006
+                │                          │
+                │                          └──────► EXP-007
+                │                          │
+                │                          └──────► EXP-008
+                │                          │
+                │                          └──────► EXP-009
                 │
-                └──────────────────────────────► EXP-LOCAL-001
+                └──────────────────────────────────────────────► EXP-LOCAL-001
 ```
+
+**Phase 1 (now):** EXP-003 — CPF measurement, no per-skill rubrics needed
+**Phase 2 (next):** EXP-004/005 — gate skill rubrics (/definition-of-ready, /definition-of-done)
+**Phase 3 (background):** EXP-006 through EXP-009 — generative skill rubrics
+**Phase 4 (deferred):** /improve — human-reviewed via challenger pre-check only
 
 ---
 
@@ -204,3 +217,64 @@ After each experiment completes:
 5. Platform team review required before merge (per platform change policy)
 
 Routing policy changes without experiment_id citations are out-of-process.
+
+---
+
+## EVAL.md coverage gap — full pipeline rubric programme (Phase 2+)
+
+**Recorded: 2026-05-13**
+
+EXP-001 through EXP-003 run without per-skill EVAL.md rubrics for most pipeline stages. The full outer loop has eight skills that need eval coverage. The current state:
+
+| Skill | EVAL.md | Corpus | Status |
+|-------|---------|--------|--------|
+| /discovery | ✅ | T1–T5 | Done — EXP-001/002a/002b |
+| /definition-of-ready | ✅ | None | Dimensions exist, corpus cases needed |
+| /definition | ❌ | None | Not started |
+| /benefit-metric | ❌ | None | Not started |
+| /review | ❌ | None | Not started |
+| /test-plan | ❌ | None | Not started |
+| /definition-of-done | ❌ | None | Not started |
+| /improve | ❌ | None | Not started — may never be fully automated |
+
+**Why this is tolerable for EXP-003:** EXP-003 measures CPF (constraint propagation fidelity) — whether constraints survive the full pipeline chain. This does not require per-skill EVAL.md rubrics. A finding like "Config C drops regulatory constraints between discovery and DoR" is valid evidence even without a /test-plan EVAL.md. EXP-003 runs now with CPF as the primary metric.
+
+**Updated programme sequence (full EVAL.md coverage):**
+
+```
+EXP-003 (CPF, no per-skill rubrics needed)
+    ↓
+EXP-004: /definition-of-ready corpus (gate skill — T1-T4 cases: missing ACs, unresolved PROCEED-BLOCKED, vague NFRs, genuinely ready story)
+    ↓
+EXP-005: /definition-of-done corpus (gate skill — same pattern)
+    ↓
+EXP-006: /definition (hardest generative skill after /discovery — slicing strategy, constraint propagation)
+    ↓
+EXP-007: /benefit-metric (baseline probing, measurement method quality)
+    ↓
+EXP-008: /review (Category E architecture gap detection, Category C AC completeness)
+    ↓
+EXP-009: /test-plan (AC-to-test coverage, edge case generation)
+```
+
+**Why gate skills first (EXP-004/005):** /definition-of-ready and /definition-of-done are binary gate skills — their failure mode is a false positive (signing off a story that isn't ready), which is a governance failure. EVAL.md dimensions for these should weight correctness over depth. Corpus cases should be adversarial: stories that look ready but have a hidden gap.
+
+**Why /improve is last (or never):** /improve's output is proposals and learnings, not artefacts. Evaluating whether a proposed SKILL.md change is correct requires human judgement about platform design intent. The challenger pre-check process is the current quality gate for /improve output — this likely stays human-reviewed rather than automated.
+
+**Estimated scope:** One experiment per skill, roughly one month of background work spread across sessions while delivery continues. Corpus case design is the hard part for each skill — model sweep infrastructure is already in place.
+
+**Updated dependency summary (full programme):**
+
+| Experiment | Depends on | Enables |
+|------------|-----------|---------|
+| EXP-001 | None (complete) | T1–T4 Sonnet/Opus baseline; T5 gap identified |
+| EXP-002a | `getProvider()` (complete) | Multi-provider tier classification; Haiku L1 check |
+| EXP-002b | EXP-002a (complete) | Context gap vs model gap; SKILL.md proposal |
+| EXP-003 | EXP-002a + EXP-002b | CPF evidence; config recommendation |
+| EXP-004 | EXP-003 | /definition-of-ready rubric + corpus; gate skill routing |
+| EXP-005 | EXP-004 | /definition-of-done rubric + corpus; gate skill routing |
+| EXP-006 | EXP-003 | /definition rubric + corpus; generative skill routing |
+| EXP-007 | EXP-003 | /benefit-metric rubric + corpus |
+| EXP-008 | EXP-003 | /review rubric + corpus; Category E gap-detection baseline |
+| EXP-009 | EXP-003 | /test-plan rubric + corpus |
+| EXP-LOCAL-001 | Local infra + EXP-002a | Local model tier classification |
