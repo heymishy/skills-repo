@@ -116,9 +116,9 @@ function readEvaluationConfig() {
  * Current available models: https://docs.github.com/en/copilot/using-github-copilot/ai-models
  */
 const COPILOT_MODEL_MAP = {
-  // Examples — uncomment if Copilot requires a different version string:
-  // 'claude-sonnet-4-6': 'claude-sonnet-4-5',
-  // 'claude-opus-4-7':   'claude-opus-4-5',
+  // Copilot proxy uses dots (e.g. claude-sonnet-4.6) while harness uses dashes (claude-sonnet-4-6)
+  'claude-sonnet-4-6': 'claude-sonnet-4.6',
+  'claude-opus-4-7':   'claude-opus-4.7',
 };
 
 function getCopilotProvider() {

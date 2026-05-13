@@ -1,0 +1,41 @@
+{
+  "case_id": "T5",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.5,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.5
+  },
+  "weighted_score": 0.31,
+  "pass": false,
+  "compliant": true,
+  "notes": "Correctly avoids feature lists and asks a clarifying regulatory question, but fails to surface the full set of enterprise context questions (data residency, retention, tooling duplication, access control, compliance classification) and produces no problem framing, personas, out-of-scope items, or success indicators.",
+  "context_injection": true,
+  "pass2": true,
+  "context_files_meta": [
+    {
+      "relPath": ".github/architecture-guardrails.md",
+      "bytes": 96396,
+      "sha256": "f02e9fb0a681a0e03f57e7c912ea383c88c9250a6c998502748d9b0599b028ae"
+    },
+    {
+      "relPath": "product/constraints.md",
+      "bytes": 11656,
+      "sha256": "7b322f20ab77c8e05c08ee8ce073f8d1f586230469e3cbd4e5b007f4c5e37128"
+    },
+    {
+      "relPath": "product/mission.md",
+      "bytes": 7866,
+      "sha256": "f50d26b1888ac2e2e1d54a2dd4fa2e0a2696dd3aff07638eba84c576a40e1dc3"
+    },
+    {
+      "relPath": "product/tech-stack.md",
+      "bytes": 19932,
+      "sha256": "29e94c147d9813b55b050373f1ce6192fa180b6805f75fc9c44d6f34167a5a9c"
+    }
+  ]
+}
