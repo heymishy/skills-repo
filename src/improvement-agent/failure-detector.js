@@ -568,16 +568,61 @@ function renderProposalMarkdown(proposal) {
 }
 
 /**
+ * Check whether a pending or accepted proposal for the given skillTarget already exists
+ * in proposalsDir. Prevents duplicate proposals from the scheduled agent when an
+ * operator-authored /improve proposal is already in the review queue.
+ *
+ * The no-self-modify rule is enforced unconditionally: any skillTarget of
+ * 'improvement-agent' always returns true (blocked).
+ *
+ * @param {string} proposalsDir
+ * @param {string} skillTarget - the skill slug to check (e.g. 'definition')
+ * @returns {boolean} true if a blocking duplicate exists, false otherwise
+ */
+function isProposalDuplicate(proposalsDir, skillTarget) {
+  if (skillTarget === 'improvement-agent') return true;
+  if (!skillTarget) return false;
+  if (!fs.existsSync(proposalsDir)) return false;
+  var entries;
+  try { entries = fs.readdirSync(proposalsDir); } catch (e) { return false; }
+  for (var i = 0; i < entries.length; i++) {
+    var entry = entries[i];
+    if (!entry.endsWith('.md')) continue;
+    // Skip challenger / overfitting artefacts — these are not proposals
+    if (entry.includes('-challenger-spec') || entry.includes('-challenger-result') ||
+        entry.includes('-proposed-skill')  || entry.includes('-overfitting-warning')) continue;
+    var filePath = path.join(proposalsDir, entry);
+    var content;
+    try { content = fs.readFileSync(filePath, 'utf8'); } catch (e) { continue; }
+    var targetMatch = content.match(/^skill_target:\s*(.+)$/m);
+    var statusMatch = content.match(/^status:\s*(.+)$/m);
+    if (!targetMatch) continue;
+    var fileSkillTarget = targetMatch[1].trim().replace(/^['"]|['"]$/g, '');
+    if (fileSkillTarget !== skillTarget) continue;
+    var fileStatus = statusMatch ? statusMatch[1].trim().replace(/^['"]|['"]$/g, '') : '';
+    if (fileStatus === 'pending_review' || fileStatus === 'accepted') return true;
+  }
+  return false;
+}
+
+/**
  * Write a proposal file to proposalsDir.
  * Idempotent: if the file already exists, returns the existing path without overwriting.
+ * Returns null if a skill-target duplicate check blocks the write (isProposalDuplicate).
  *
  * @param {string} proposalsDir
  * @param {object} proposal
- * @returns {string} file path written (or existing)
+ * @returns {string|null} file path written (or existing), or null if duplicate-blocked
  */
 function writeProposalFile(proposalsDir, proposal) {
   if (!fs.existsSync(proposalsDir)) {
     fs.mkdirSync(proposalsDir, { recursive: true });
+  }
+
+  // Skill-target deduplication: block if a pending or accepted proposal already
+  // exists for the same skill_target (/improve → improvement-agent bridge, Item 7).
+  if (proposal.skill_target && isProposalDuplicate(proposalsDir, proposal.skill_target)) {
+    return null;
   }
 
   var filePath = path.join(proposalsDir, proposal.fileName);
@@ -931,6 +976,7 @@ module.exports = {
   checkAntiOverfitting:               checkAntiOverfitting,
   buildFailureProposal:               buildFailureProposal,
   buildStalenessProposal:             buildStalenessProposal,
+  isProposalDuplicate:                isProposalDuplicate,
   writeProposalFile:                  writeProposalFile,
   writeOverfittingWarning:            writeOverfittingWarning,
   findPreviousDeferralForAnnotation:  findPreviousDeferralForAnnotation,

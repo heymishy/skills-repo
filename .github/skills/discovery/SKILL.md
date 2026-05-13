@@ -19,6 +19,41 @@ triggers:
 
 # Discovery Skill
 
+## Evaluation mode
+
+When `evaluation.mode: true` is set in `.github/context.yml`, this skill runs in
+non-interactive mode:
+
+- All confirmation prompts are skipped — the skill proceeds through every step
+  without waiting for operator reply
+- Clarifying questions (Steps 1–2) are produced as content in the artefact, not
+  as interactive gates
+- The complete artefact is produced in a single pass
+- The final line of any artefact produced must be: `<!-- eval-mode: true -->`
+  This marker signals the artefact was produced in eval mode and must not be
+  committed to a production artefact path
+- A structured result is written to the path configured at `evaluation.output_path`
+  in `.github/context.yml` (default: `workspace/eval-run-result.json`) on completion
+
+**Substantive behaviour is unchanged.** The skill still applies all quality logic —
+constraint surfacing, scope refusal on thin inputs, regulatory question generation.
+The only difference is whether it pauses for a reply before producing output.
+
+**eval-run-result.json schema:**
+```json
+{
+  "skill": "discovery",
+  "caseId": "[corpus case ID if running against eval corpus, else null]",
+  "model": "[model that produced this artefact]",
+  "completedAt": "[ISO datetime]",
+  "artefactPath": "[path to produced artefact, or null if eval-mode discard]",
+  "dimensionsScored": null,
+  "verdict": null
+}
+```
+
+---
+
 ## Entry condition
 
 No prerequisites. First step in the pipeline.

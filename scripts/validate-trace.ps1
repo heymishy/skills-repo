@@ -304,6 +304,27 @@ function Check-UnresolvedBlockers {
     }
 }
 
+function Check-NoEvalModeArtefacts {
+    Write-Info "Checking: no eval-mode artefacts committed to production paths"
+    if (-not (Test-Path $Artefacts)) {
+        Record-Pass "no_eval_mode_artefacts"
+        Write-Ok "artefacts/ is empty — nothing to check"
+        return
+    }
+    $found = $false
+    Get-ChildItem -Path $Artefacts -Recurse -Filter '*.md' -File | ForEach-Object {
+        if (Select-String -Path $_.FullName -Pattern '<!-- eval-mode: true -->' -Quiet) {
+            Record-Fail "no_eval_mode_artefacts" "$($_.Name): contains eval-mode marker — eval artefacts must not be committed to artefacts/"
+            Write-Fail "Eval-mode artefact in production path: $($_.FullName)"
+            $found = $true
+        }
+    }
+    if (-not $found) {
+        Record-Pass "no_eval_mode_artefacts"
+        Write-Ok "No eval-mode artefacts found in artefacts/"
+    }
+}
+
 # ── Main ───────────────────────────────────────────────────────────────────────
 Write-Host ""
 Write-Info "Trace Validation — $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
@@ -311,11 +332,12 @@ Write-Host ""
 
 if ($SingleCheck) {
     switch ($SingleCheck) {
-        "schema_valid"          { Check-SchemaValid }
-        "discovery_exists"      { Check-DiscoveryExists }
-        "discovery_approved"    { Check-DiscoveryApproved }
-        "test_plan_coverage"    { Check-TestPlanCoverage }
-        "unresolved_blockers"   { Check-UnresolvedBlockers }
+        "schema_valid"              { Check-SchemaValid }
+        "discovery_exists"          { Check-DiscoveryExists }
+        "discovery_approved"        { Check-DiscoveryApproved }
+        "test_plan_coverage"        { Check-TestPlanCoverage }
+        "unresolved_blockers"       { Check-UnresolvedBlockers }
+        "no_eval_mode_artefacts"    { Check-NoEvalModeArtefacts }
         default {
             Write-Host "Unknown check: $SingleCheck" -ForegroundColor Red
             exit 1
@@ -328,6 +350,7 @@ else {
     Check-DiscoveryApproved
     Check-TestPlanCoverage
     Check-UnresolvedBlockers
+    Check-NoEvalModeArtefacts
 }
 
 Write-Host ""

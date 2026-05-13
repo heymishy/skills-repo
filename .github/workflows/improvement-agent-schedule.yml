@@ -1,0 +1,61 @@
+name: Improvement Agent — Scheduled Dreaming
+
+# Item 6 (dreaming-architecture) — runs the improvement agent on a schedule.
+# Detects failure/staleness signals, generates diff proposals, writes dream-run-result.json.
+# ADR-009: separate workflow file per concern.
+on:
+  schedule:
+    - cron: '0 3 * * 1'   # Monday 03:00 UTC
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# Skip runs triggered by the agent's own commit or post-merge bookkeeping.
+# For schedule/workflow_dispatch triggers, head_commit.message is null, so
+# contains() returns false — the job always runs in those cases.
+jobs:
+  dream:
+    name: Run improvement agent dreaming cycle
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name != 'push' ||
+      (!contains(github.event.head_commit.message, '[post-merge]') &&
+       !contains(github.event.head_commit.message, 'chore: improvement agent dream run'))
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run improvement agent
+        run: node src/improvement-agent/index.js --verbose
+
+      - name: Commit agent outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add workspace/proposals/ workspace/state.json workspace/dream-run-result.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: improvement agent dream run [post-merge]"
+            git push
+          fi
+
+      - name: Emit attention notice if human review required
+        if: always()
+        run: |
+          if [ -f workspace/dream-run-result.json ]; then
+            ATTENTION=$(node -e "try { var r=require('./workspace/dream-run-result.json'); process.stdout.write(String(r.humanAttentionRequired)); } catch(e) { process.stdout.write('false'); }")
+            if [ "$ATTENTION" = "true" ]; then
+              REASON=$(node -e "try { var r=require('./workspace/dream-run-result.json'); process.stdout.write(r.attentionReason||'proposals generated'); } catch(e) { process.stdout.write('proposals generated'); }")
+              echo "::notice::Improvement agent: human attention required — $REASON"
+            fi
+          fi

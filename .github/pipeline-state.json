@@ -7224,16 +7224,20 @@
           "id": "wucp.3",
           "slug": "wucp.3",
           "name": "Tool execution loop",
-          "stage": "definition",
+          "stage": "verify-completion",
           "health": "green",
-          "prStatus": "none",
+          "prStatus": "draft",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.3.md",
           "testPlan": {
             "artefact": null,
             "status": "not-started"
           },
-          "dorStatus": "not-started",
-          "blockedOn": "wucp.0"
+          "dorStatus": "signed-off",
+          "blockedOn": "wucp.0",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/348",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/350",
+          "dispatchedAt": "2026-05-13T00:00:00Z",
+          "dispatchTarget": "vscode"
         },
         {
           "id": "wucp.4",

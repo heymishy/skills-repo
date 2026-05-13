@@ -126,7 +126,9 @@
     },
     {
       "slug": "web-ui",
-      "reason": "src/web-ui module is fully covered by artefacts under artefacts/2026-05-02-web-ui-copilot-execution-layer/ but no individual file bears the 'web-ui' slug — artefacts use wuce.N story slugs. Slug mismatch only."
-    }
+      "reason": "src/web-ui module is fully covered by artefacts under artefacts/2026-05-02-web-ui-copilot-execution-layer/ but no individual file bears the 'web-ui' slug — artefacts use wuce.N story slugs. Slug mismatch only."    },
+    {
+      "slug": "model-sweep",
+      "reason": "model-sweep skill added as part of the model-evaluation-capability feature (EXP-001). Feature is currently in discovery phase — formal story artefacts (mec.N) will be created at definition. Temporary exemption until story artefacts are written."    }
   ]
 }

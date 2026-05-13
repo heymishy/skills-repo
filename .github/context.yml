@@ -55,11 +55,12 @@ skills_upstream:
     - docs/skill-pipeline-instructions.md
   strategy: merge
 
-# Instrumentation — Skill Performance Capture experiment: Sonnet 4.6
-# This context variant is FOR SONNET. See experiment-opus-phase4.yml for Opus variant.
+# Instrumentation — Model Evaluation Capability pilot: EXP-001 (discovery, Layer 1)
+# Run: Layer 1 semi-manual via VS Code model selector against corpus T1-T5
+# See: workspace/experiments/EXP-001-discovery-phase4-5/manifest.md
 instrumentation:
   enabled: true
-  experiment_id: "exp-phase4-sonnet-vs-opus-20260419"
+  experiment_id: "EXP-001-discovery-phase4-5"
   model_label: "claude-sonnet-4-6"
   cost_tier: "fast"
 
@@ -67,3 +68,17 @@ audit:
   ci_attachment: true           # opt-in: collect and upload governed artefact bundles on each PR
   ci_platform: github-actions   # adapter to use for upload + comment
   artifact_retention_days: 7    # days to retain CI artefact bundles
+  feature_slug: 2026-05-08-web-ui-copilot-chat-parity  # explicit slug for PR #348 (branch name does not encode story ID)
+
+improvement_agent:
+  min_dream_interval_hours: 23  # minimum hours between scheduled dreaming runs
+
+improve:
+  auto_confirm: false           # interactive mode (default); set true for non-interactive CI runs
+
+evaluation:
+  mode: false           # set to true for eval harness, sweep script, non-interactive runs
+                        # NEVER set to true in production — eval artefacts are scored then discarded
+  # fixed judge — never the model under evaluation
+  judge_model: claude-sonnet-4-6
+  output_path: workspace/eval-run-result.json

@@ -554,7 +554,7 @@ function acceptProposal(proposalFilePath, acceptedBy, opts) {
   }
 
   var proposalId = deriveProposalId(proposalFilePath);
-  var skillSlug  = fm.skill_slug || fm.skillSlug || '';
+  var skillSlug  = fm.skill_slug || fm.skillSlug || fm.skill_target || '';
 
   // No-self-modify constraint
   if (skillSlug === SELF_MODIFY_SKILL_SLUG) {

@@ -25,6 +25,33 @@ const crypto = require('crypto');
 const DEFAULT_TRACES_DIR = path.join(__dirname, '..', '..', 'workspace', 'traces');
 const DEFAULT_ROOT       = path.join(__dirname, '..', '..');
 
+// ── Remediation hints map ────────────────────────────────────────────────────
+// Maps check names to human-readable hint + remediation action.
+// Populated in completedEntry on fail verdict only.
+
+const REMEDIATION_HINTS = {
+  'workspace-state-valid': {
+    hint: 'workspace/state.json is missing or contains invalid JSON.',
+    remediation: 'Run /checkpoint to write a valid state file, then push.',
+  },
+  'pipeline-state-valid': {
+    hint: '.github/pipeline-state.json is missing or contains invalid JSON.',
+    remediation: 'Validate with: python -c "import json; json.load(open(\'.github/pipeline-state.json\'))"',
+  },
+  'artefacts-dir-exists': {
+    hint: 'artefacts/ directory not found.',
+    remediation: 'Run: mkdir artefacts && git add artefacts/.gitkeep && git commit',
+  },
+  'governance-gates-exists': {
+    hint: '.github/governance-gates.yml is missing.',
+    remediation: 'Restore: git checkout origin/master -- .github/governance-gates.yml',
+  },
+  't3m1-fields-valid': {
+    hint: 'A T3M1 mandatory field is null or absent in a regulated story trace.',
+    remediation: 'Pass all four T3M1 fields (standardsInjected, watermarkResult, stalenessFlag, sessionIdentity) to runGate().',
+  },
+};
+
 // ── Trace helpers ─────────────────────────────────────────────────────────────
 
 /**
@@ -207,6 +234,9 @@ function runGate(ctx) {
     watermarkResult   = undefined,
     stalenessFlag     = undefined,
     sessionIdentity   = undefined,
+    surfaceType  = 'assurance-gate',
+    storySlug    = null,
+    iterationCount = 1,
   } = ctx || {};
 
   const startedAt = new Date().toISOString();
@@ -255,6 +285,20 @@ function runGate(ctx) {
   const verdict   = allPassed ? 'pass' : 'fail';
   const failurePattern = verdict === 'fail' ? deriveFailurePattern(checks) : null;
 
+  // Compute remediation hints for failing checks
+  const remediationHints = [];
+  if (verdict === 'fail') {
+    checks.forEach(function (c) {
+      if (!c.passed && REMEDIATION_HINTS[c.name]) {
+        remediationHints.push({
+          check:       c.name,
+          hint:        REMEDIATION_HINTS[c.name].hint,
+          remediation: REMEDIATION_HINTS[c.name].remediation,
+        });
+      }
+    });
+  }
+
   // ── STEP 3: Write completed trace entry ───────────────────────────────────
   const completedAt = new Date().toISOString();
   const traceHash   = computeTraceHash({ trigger, prRef, commitSha, startedAt, completedAt, verdict });
@@ -266,11 +310,18 @@ function runGate(ctx) {
     commitSha,
     startedAt,
     completedAt,
+    createdAt:   completedAt,
+    surfaceType,
+    storySlug,
+    iterationCount,
     verdict,
     failurePattern,
     traceHash,
     checks,
   };
+  if (remediationHints.length) {
+    completedEntry.remediationHints = remediationHints;
+  }
   if (regulated) {
     completedEntry.standardsInjected = standardsInjected !== undefined ? standardsInjected : null;
     completedEntry.watermarkResult   = watermarkResult   !== undefined ? watermarkResult   : null;
@@ -279,7 +330,7 @@ function runGate(ctx) {
   }
   appendTraceEntry(tracesDir, runId, completedEntry);
 
-  return { verdict, traceHash, runId, tracePath };
+  return { verdict, traceHash, runId, tracePath, checks, failurePattern, remediationHints };
 }
 
 // ── Exports ───────────────────────────────────────────────────────────────────
@@ -290,20 +341,31 @@ module.exports = { runGate, computeTraceHash, runChecks, appendTraceEntry, build
 
 if (require.main === module) {
   const trigger   = process.env.TRIGGER    || 'ci';
-  const prRef     = process.env.PR_REF     || process.env.GITHUB_REF  || '';
-  const commitSha = process.env.COMMIT_SHA || process.env.GITHUB_SHA  || '';
-  const regulated = process.env.REGULATED  === 'true';
+  const prRef     = process.env.PR_REF     ||
+                    process.env.GITHUB_REF ||
+                    (process.env.BITBUCKET_PR_ID
+                      ? 'refs/pull/' + process.env.BITBUCKET_PR_ID + '/merge'
+                      : '');
+  const commitSha = process.env.COMMIT_SHA ||
+                    process.env.GITHUB_SHA ||
+                    process.env.BITBUCKET_COMMIT || '';
+  const regulated      = process.env.REGULATED       === 'true';
+  const surfaceType    = process.env.SURFACE_TYPE    || 'assurance-gate';
+  const storySlug      = process.env.STORY_SLUG      || null;
+  const iterationCount = parseInt(process.env.ITERATION_COUNT || '1', 10);
 
   process.stdout.write(
     '[assurance-gate] Starting (trigger=' + trigger +
     ' prRef=' + prRef +
     ' sha=' + commitSha.slice(0, 8) +
-    ' regulated=' + regulated + ')\n'
+    ' regulated=' + regulated +
+    ' surfaceType=' + surfaceType +
+    ' storySlug=' + (storySlug || 'none') + ')\n'
   );
 
   var result;
   try {
-    result = runGate({ trigger, prRef, commitSha, regulated });
+    result = runGate({ trigger, prRef, commitSha, regulated, surfaceType, storySlug, iterationCount });
   } catch (err) {
     process.stderr.write('[assurance-gate] Fatal error: ' + err.message + '\n');
     process.exit(1);
@@ -319,6 +381,32 @@ if (require.main === module) {
   if (process.env.GITHUB_OUTPUT) {
     fs.appendFileSync(process.env.GITHUB_OUTPUT, 'verdict=' + result.verdict + '\n');
     fs.appendFileSync(process.env.GITHUB_OUTPUT, 'trace_hash=' + result.traceHash + '\n');
+  }
+
+  // Write platform-agnostic gate-verdict.json for ci-adapter.js to consume
+  const verdictFilePath = path.join(DEFAULT_ROOT, 'workspace', 'gate-verdict.json');
+  try {
+    fs.writeFileSync(verdictFilePath, JSON.stringify({
+      verdict:        result.verdict,
+      traceHash:      result.traceHash,
+      commitSha:      commitSha.slice(0, 8),
+      prRef:          prRef,
+      timestamp:      new Date().toISOString(),
+      checks:         result.checks         || [],
+      failurePattern: result.failurePattern || null,
+    }, null, 2) + '\n', 'utf8');
+  } catch (e) {
+    process.stderr.write('[assurance-gate] Warning: could not write gate-verdict.json: ' + e.message + '\n');
+  }
+
+  // Write gate-remediation.json on fail verdict
+  if (result.verdict === 'fail' && result.remediationHints && result.remediationHints.length) {
+    const remFile = path.join(DEFAULT_ROOT, 'workspace', 'gate-remediation.json');
+    try {
+      fs.writeFileSync(remFile, JSON.stringify({ remediationHints: result.remediationHints }, null, 2) + '\n', 'utf8');
+    } catch (e) {
+      process.stderr.write('[assurance-gate] Warning: could not write gate-remediation.json: ' + e.message + '\n');
+    }
   }
 
   process.exit(result.verdict === 'pass' ? 0 : 1);
