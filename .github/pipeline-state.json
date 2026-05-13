@@ -7224,9 +7224,9 @@
           "id": "wucp.3",
           "slug": "wucp.3",
           "name": "Tool execution loop",
-          "stage": "verify-completion",
+          "stage": "definition-of-done",
           "health": "green",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.3.md",
           "testPlan": {
             "artefact": null,
