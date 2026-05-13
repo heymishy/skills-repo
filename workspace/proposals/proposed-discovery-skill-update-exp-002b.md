@@ -213,3 +213,41 @@ This change modifies `.github/skills/discovery/SKILL.md`. Per the artefact-first
 3. Run the EXP-003 validation sweep as the acceptance test
 
 **Short-track eligible:** The change is bounded, has no cross-skill dependencies, and has a clear eval corpus test. Use `/test-plan → /definition-of-ready → coding agent` track.
+
+---
+
+## Platform-wide implication — context injection risk by skill tier
+
+**Finding:** Bulk context injection (>50KB) suppresses clarification and gap-detection behaviour across all skills that depend on question-asking. The mechanism is model-level: when the context window is saturated with authoritative reference content, the model shifts from information-gathering mode to synthesis mode — it stops asking questions because it believes it has enough to proceed.
+
+This finding is not discovery-specific. It applies to any skill whose correct behaviour depends on detecting what is missing from the operator's input.
+
+| Risk tier | Skills | Reason |
+|-----------|--------|--------|
+| **HIGH — never bulk-inject** | `/clarify`, `/definition` | Entire skill value is asking questions or probing scope boundaries; bulk context suppresses both |
+| **MEDIUM — inject with caution** | `/benefit-metric`, `/definition-of-ready` | Need to probe whether baselines are measurable / ACs are complete; context causes the model to assume completeness |
+| **LOW — context is additive** | `/trace`, `/test-plan`, `/implementation-plan`, `/branch-setup` | Analytical or mechanical; more context is genuinely useful, no clarification-asking to suppress |
+
+**Production mitigation:** Skills should extract and synthesise relevant excerpts from reference files rather than passing raw file contents into the prompt. The 96KB `architecture-guardrails.md` must never be injected in full — extract the relevant constraint sections only. Discovery's Step 0 production behaviour (extracts and presents excerpts) is the correct pattern; it is more resilient than the EXP-002b harness approach of raw file injection.
+
+**Evidence:** EXP-002b T2/T4 — context loading (135KB) turned passing clarification behaviour (N/A ✅ in EXP-001 baseline) into 0.000 NON-COMPLIANT across all models and both passes.
+
+---
+
+## Pre-check required before EXP-003 runs — /definition context read
+
+**Finding from SKILL.md inspection (2026-05-13):** `/definition` Step 0 explicitly reads `architecture-guardrails.md` at two points:
+- Line 63: `Read .github/architecture-guardrails.md if it exists.` (constraint extraction step)
+- Line 418: reads and parses the full file to seed the `guardrails[]` array in pipeline state
+
+`architecture-guardrails.md` is currently 96KB. In the EXP-003 Config B configuration, `/definition` runs on `claude-opus-4-7` — the same model that showed T2/T4 clarification suppression under 135KB context injection in EXP-002b.
+
+**Risk:** If the EXP-003 harness injects `architecture-guardrails.md` in full before the `/definition` skill prompt (as the EXP-002b harness did for discovery), Config B `/definition` results may be degraded for the same reason T5 degraded — the model sees the full constraint library and stops probing operator scope intent.
+
+**Pre-check actions before EXP-003:**
+1. Confirm whether the EXP-003 harness injects `architecture-guardrails.md` as a context file, or whether `/definition` reads it lazily as part of the skill's own Step 0 execution
+2. If injected as a context file: extract only the relevant guardrails sections (ADR entries + active constraints) rather than the raw full file
+3. If read lazily within skill execution: this is production-equivalent behaviour and does not need mitigation
+4. Add a T2/T4 regression check for `/definition` in EXP-003 design if context loading for that skill is ever proposed beyond the current lazy-read pattern
+
+**Validation plan addition:** EXP-003 should include a `/definition` context-read audit step as a pre-run check item.

@@ -1265,6 +1265,23 @@ This check is especially important for cherry-pick resolutions where the HEAD co
 
 **Follow-up stories required:** wsm.2 follow-up (viewer GET response shape, viewer count), wsm.3 follow-up (stages array in GET response, session-boundary marker injection). These are AC1/3/6 gaps, not scope additions.
 
+---
+
+## Context injection suppresses clarification behaviour (EXP-002b, 2026-05-13)
+
+**Mechanism:** When a model has >50KB of authoritative context in the prompt, it shifts from information-gathering to synthesis mode — it stops asking questions because it believes it already has enough to proceed. This is a model-level behaviour, not a skill-level bug.
+
+**Evidence:** EXP-002b T2/T4 sanity checks. Both T2 and T4 passed in EXP-001 (no context) via the N/A clarification path (correct behaviour: ask for missing input). Under 135KB context injection, both dropped to 0.000 NON-COMPLIANT across all models — the model produced full outputs instead of asking questions.
+
+**Skills most vulnerable:**
+- `/clarify` — catastrophic risk. The skill's entire value is question-asking. Bulk context makes it answer questions itself.
+- `/definition` — high risk. Probes scope boundaries and slicing strategy. Large context causes confident assumption over operator intent.
+- `/review` — medium risk. Category E (architecture) gap-finding degrades when the model can fill gaps from context rather than flagging them as missing.
+
+**Production rule:** Never bulk-inject reference files into a skill prompt. Always extract relevant excerpts and synthesise them. The 96KB `architecture-guardrails.md` is specifically dangerous — it must always be extracted, never injected raw. Discovery's Step 0 production behaviour (extracts and presents excerpts) is the correct reference pattern.
+
+**Specific risk in EXP-003:** `/definition` reads `architecture-guardrails.md` at Step 0 (line 63) and again for guardrails seeding (line 418). If the EXP-003 harness injects this file as a context file (as EXP-002b did), Config B `/definition` results may be degraded. Pre-check required before EXP-003 runs — confirm whether harness injects the file or lets the skill read it lazily.
+
 **Operational rule:** Any new platform repo should have branch protection (required checks, restrict direct push to main) configured before the first story enters the inner loop. If branch protection is deferred, the onboarding is not structurally complete.
 
 **Action:** Add to the `/branch-setup` or `/bootstrap` skill a mandatory "verify branch protection is configured before dispatching inner loop" check. At minimum, document this requirement in `ONBOARDING.md` as a day-1 platform setup step.
@@ -2079,9 +2096,9 @@ git push --force-with-lease origin feature/dsq-4
 
 ---
 
-## D41 � Audit gate artefact chain missing when branch name has no story-ID prefix (PR #348, 2026-05-13)
+## D41 � Audit gate artefact chain missing when branch name has no story-ID prefix (PR #348, 2026-05-13)
 
-**Symptom:** PR's "Governed Delivery Audit Record" comment shows no artefact chain / no references � the artefact staging and collection steps silently produce nothing.
+**Symptom:** PR's "Governed Delivery Audit Record" comment shows no artefact chain / no references � the artefact staging and collection steps silently produce nothing.
 
 **Root cause:** The assurance gate resolves the feature slug in priority order:
 1. udit.feature_slug override in .github/context.yml
@@ -2089,7 +2106,8 @@ git push --force-with-lease origin feature/dsq-4
 3. Story-ID prefix extracted from the branch name (e.g. wucp.3 from eat/wucp.3-tool-executor)
 4. Auto-resolve: last non-done feature in pipeline-state
 
-eat/model-evaluation-capability has no story-ID in the branch name (path 3 returns empty). The PR body had no rtefacts/ reference (path 2 returns empty). Auto-resolve (path 4) picked the wrong feature. Result: esolve_feature output was wrong/empty, so collect governed artefacts collected nothing.
+eat/model-evaluation-capability has no story-ID in the branch name (path 3 returns empty). The PR body had no rtefacts/ reference (path 2 returns empty). Auto-resolve (path 4) picked the wrong feature. Result: 
+esolve_feature output was wrong/empty, so collect governed artefacts collected nothing.
 
 **Fix:** Add an explicit override to .github/context.yml:
 `yaml
