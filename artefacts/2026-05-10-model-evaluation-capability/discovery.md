@@ -8,9 +8,9 @@
   MVP scope and out-of-scope fields are the primary review targets.
 -->
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-05-10
-**Approved by:** Pending
+**Approved by:** heymishy — 2026-05-14
 **Author:** Copilot (/discovery)
 
 ---
@@ -49,19 +49,46 @@ Three triggers align:
 
 ## MVP Scope
 
-The minimum viable set that produces a working model sweep with a quality-per-dollar scorecard:
+Delivered 2026-05-10. All six items below were built in the same session as this discovery was written.
 
-1. **`EVAL.md` for `/discovery`** — grading dimensions derived from the actual `/discovery` SKILL.md (not invented), 3–5 test cases with inputs from existing artefacts, a judge prompt returning structured JSON scores, and a pass threshold.
+1. ✅ **`EVAL.md` for `/discovery`** — grading dimensions derived from the actual `/discovery` SKILL.md (not invented), 3–5 test cases with inputs from existing artefacts, a judge prompt returning structured JSON scores, and a pass threshold.
 
-2. **`EVAL.md` for one gate skill** — either `/review` or `/definition-of-ready` (whichever has richer measurable criteria), same structure as above. Gate skills weight correctness more heavily than generative skills.
+2. ✅ **`EVAL.md` for one gate skill** — either `/review` or `/definition-of-ready` (whichever has richer measurable criteria), same structure as above. Gate skills weight correctness more heavily than generative skills.
 
-3. **`/model-sweep` SKILL** — a SKILL.md at `.github/skills/model-sweep/SKILL.md` that: reads `context.yml` for the active routing policy, discovers all skills with an `EVAL.md` dynamically, builds a sweep matrix (models × inference parameters), runs each cell against each test case, scores with claude-sonnet-4-6 as judge, computes quality-per-dollar, and commits a scorecard to `workspace/experiments/EXP-XXX-model-sweep-[date]/` in the existing EXP-xxx manifest format.
+3. ✅ **`/model-sweep` SKILL** — a SKILL.md at `.github/skills/model-sweep/SKILL.md` that: reads `context.yml` for the active routing policy, discovers all skills with an `EVAL.md` dynamically, builds a sweep matrix (models × inference parameters), runs each cell against each test case, scores with claude-sonnet-4-6 as judge, computes quality-per-dollar, and commits a scorecard to `workspace/experiments/EXP-XXX-model-sweep-[date]/` in the existing EXP-xxx manifest format.
 
-4. **`EXP-TEMPLATE-model-sweep.md`** — a reusable experiment manifest template for sweep experiments, backward-compatible with the existing EXP-001 format but extended with sweep-specific fields (matrix definition, per-cell results, scorecard summary).
+4. ✅ **`EXP-TEMPLATE-model-sweep.md`** — a reusable experiment manifest template for sweep experiments, backward-compatible with the existing EXP-001 format but extended with sweep-specific fields (matrix definition, per-cell results, scorecard summary).
 
-5. **Workspace proposal for `token-optimization`** — a governed proposal at `workspace/proposals/proposed-update-token-optimization-measurement.md` to tag model routing tiers as `measurement-backed: false` until a sweep has been run, with a pathway to flip to `measurement-backed: true` referencing the experiment artefact.
+5. ✅ **Workspace proposal for `token-optimization`** — a governed proposal at `workspace/proposals/proposed-update-token-optimization-measurement.md` to tag model routing tiers as `measurement-backed: false` until a sweep has been run, with a pathway to flip to `measurement-backed: true` referencing the experiment artefact.
 
-6. **`rightmodel` integration summary** — a written record at `workspace/experiments/rightmodel-integration-summary.md` documenting what was built, the gap analysis findings, the fit assessment, and open questions.
+6. ✅ **`rightmodel` integration summary** — a written record at `workspace/experiments/rightmodel-integration-summary.md` documenting what was built, the gap analysis findings, the fit assessment, and open questions.
+
+---
+
+## Experiment Execution
+
+**EXP-001 — `/discovery` Sonnet vs Opus model sweep (completed 2026-05-12)**
+
+| Test case | Sonnet 4.6 | Opus 4.6 | Delta |
+|-----------|-----------|---------|-------|
+| T1 — Payment retry regulation (simple, explicit constraints) | 0.865 | 0.910 | Opus +0.045 |
+| T2 — Onboarding ambiguity (categorical) | Pass | Pass | — |
+| T3 — AML monitoring (complex regulatory, multi-constraint) | 0.787 | 0.895 | Opus +0.108 |
+| T4 — Adversarial thin input (categorical) | Pass | Pass | — |
+| T5 — Hidden enterprise constraints (proactivity test) | 0.49 (fail) | 0.49 (fail) | Neither passes |
+
+Key finding: T5 fails for both models at 0.49 — below the 0.70 pass threshold. Both models completed the discovery without surfacing data residency, retention, tooling duplication, and access control constraints that were present in the input. This is a structural `/discovery` SKILL.md gap (no explicit constraint-surfacing rule), not a model capability gap. Opus leads meaningfully on T1 (+0.045) and T3 (+0.108) for complex regulatory task inputs.
+
+**EXP-002b — Context-loaded T5 sweep (completed 2026-05-13)**
+
+| Pass | Opus 4.6 avg | Sonnet 4.6 avg | Threshold |
+|------|-------------|---------------|-----------|
+| Pass 1 | 0.519 | 0.390 | 0.70 (both fail) |
+| Pass 2 | 0.562 | 0.350 | 0.70 (both fail) |
+
+Context-loading improves Opus T5 by +0.043 across passes; Sonnet degrades by −0.040. Neither model reaches threshold even with enterprise context provided. Confirms: the constraint surfacing failure is structural and requires a SKILL.md rule change to fix. Proposed fix: `workspace/proposals/proposed-discovery-skill-update-exp-002b.md` (challenger pre-check pending).
+
+**EXP-003 — Full pipeline cost-performance comparison (planned)** — depends on EXP-002a (OpenAI provider implementation) and SKILL.md update challenger check passing.
 
 ---
 
@@ -83,27 +110,27 @@ The minimum viable set that produces a working model sweep with a quality-per-do
 
 ## Assumptions and Risks
 
-**Assumptions:**
-- The `rightmodel` workshop's SKILL pattern is compatible enough with this repo's SKILL.md conventions to adapt rather than rebuild from scratch. If the workshop uses patterns incompatible with how Claude Code reads SKILL files, adaptation time increases.
-- Claude Sonnet 4.6 is an acceptable judge model — cost-efficient, sufficient quality. There is an inherent self-preference bias risk when Sonnet scores Sonnet outputs against Opus outputs; this is acknowledged and accepted at MVP scope.
-- Existing artefacts in `artefacts/` are diverse enough to seed 3–5 representative test cases per EVAL.md without manufacturing synthetic inputs.
-- EXP-001's stall is a rubric/harness gap, not an infrastructure gap — the `workspace/experiments/` directory structure and manifest format are sound and can be extended.
-- Current Anthropic pricing: Sonnet 4.6 at $3/$15 per million tokens (input/output), Opus 4.6 at $15/$75 per million tokens. These must be verified via web search before hardcoding in the sweep SKILL — pricing changes between release cycles.
+**Assumptions (with validation status):**
+- ✅ The `rightmodel` workshop's SKILL pattern is compatible enough with this repo's SKILL.md conventions to adapt rather than rebuild from scratch — confirmed; adapted successfully in the same session.
+- ⚠️ Claude Sonnet 4.6 is an acceptable judge model — cost-efficient, sufficient quality. Confirmed for T1–T4. T5 self-preference bias risk partially observed: Sonnet T5 scores are lower than Opus T5 scores under the same judge; whether this reflects capability or judge bias is unresolved.
+- ✅ Existing artefacts in `artefacts/` are diverse enough to seed 3–5 representative test cases per EVAL.md without manufacturing synthetic inputs — confirmed; 5 financial services corpus cases built from existing pipeline artefact patterns.
+- ✅ EXP-001's stall is a rubric/harness gap, not an infrastructure gap — confirmed; adding EVAL.md + `run-model-sweep.js` resolved it.
+- ✅ Current Anthropic pricing: Sonnet 4.6 at $3/$15 per million tokens (input/output), Opus 4.6 at $15/$75 per million tokens — verified; used in token-optimization proposal.
 
-**Risks:**
-- A poorly-designed EVAL.md rubric produces misleading quality-per-dollar scores. Mitigation: dimensions must be derived from SKILL.md content, not invented; a review step before running the sweep is recommended.
-- The sweep SKILL's judge loop may produce inconsistent scores across runs (LLM non-determinism). Mitigation: fixed temperature settings, multiple-run averaging noted as a follow-on improvement.
-- rightmodel's reference SKILL may assume Claude Code tool access patterns that differ from this repo's agent execution environment. Mitigation: read the rightmodel SKILL before building; note all adaptation decisions explicitly.
+**Risks (with materialisation status):**
+- ✅ A poorly-designed EVAL.md rubric produces misleading quality-per-dollar scores — did not materialise; T5 dimension correctly identified a structural SKILL.md gap rather than producing false-positive quality scores.
+- ⚠️ The sweep SKILL's judge loop may produce inconsistent scores across runs (LLM non-determinism) — partially observed; EXP-002b Sonnet T5 Pass 1→Pass 2 degraded (0.390→0.350) against expectation. Multiple-run averaging flagged as EXP-003 improvement.
+- Not materialised: rightmodel's reference SKILL assuming Claude Code tool access patterns incompatible with this repo — adaptation was successful.
 
 ---
 
 ## Directional Success Indicators
 
-- A platform maintainer can invoke the model sweep by saying "run a model sweep" in Claude Code agent mode with no additional configuration — the SKILL discovers EVAL.md files, builds the matrix, and runs it.
-- After the first sweep run, a scorecard exists in `workspace/experiments/` that shows quality scores and cost-per-quality for at least two models on at least one skill.
-- The `token-optimization` model routing policy tiers are explicitly tagged with a `measurement-backed` flag, creating a named link between policy and evidence.
-- The `/improve` loop gains a clear pathway: when a model is changed or a new model is released, the operator runs the sweep → reviews the scorecard → updates the routing policy proposal if warranted.
-- At least one finding from the gap analysis (e.g. "Opus materially outperforms Sonnet on DoR correctness" or "Sonnet is sufficient for discovery generative tasks") is captured as a concrete recommendation.
+- ✅ A platform maintainer can invoke the model sweep by saying "run a model sweep" in Claude Code agent mode with no additional configuration — `/model-sweep` SKILL.md and `scripts/run-model-sweep.js` are built and available.
+- ✅ After the first sweep run, a scorecard exists in `workspace/experiments/` that shows quality scores and cost-per-quality for at least two models on at least one skill — EXP-001 scorecard (`workspace/experiments/EXP-001-discovery-phase4-5/scorecard.md`) and EXP-002b scorecard (`workspace/experiments/EXP-002b/scorecard.md`) both produced.
+- ⚠️ The `token-optimization` model routing policy tiers are explicitly tagged with a `measurement-backed` flag — proposal written at `workspace/proposals/proposed-update-token-optimization-measurement.md`, application to the skill pending operator review.
+- ✅ The `/improve` loop gains a clear pathway — `workspace/experiments/eval-programme-roadmap.md` records the full programme sequence; `src/improvement-agent/experiment-signals.js` dimension reads experiment results below 0.70 threshold and emits structured signals.
+- ✅ At least one finding from the gap analysis is captured as a concrete recommendation — EXP-001/002b: T5 hidden constraint surfacing fails both models (structural SKILL.md gap, not model capability gap); proposed fix tracked in `workspace/proposals/proposed-discovery-skill-update-exp-002b.md`.
 
 ---
 

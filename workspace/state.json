@@ -1,20 +1,9 @@
 {
   "currentPhase": "model-evaluation-experiments",
-  "activeFeature": "workspace/experiments",
+  "activeFeature": "2026-05-10-model-evaluation-capability",
   "previousActiveFeature": "2026-05-08-web-ui-copilot-chat-parity",
-  "lastUpdated": "2026-05-13T15:00:00.000Z",
-  "checkpoint": {
-    "writtenAt": "2026-05-13",
-    "contextAtWrite": "EXP-002b complete. Eval programme roadmap extended with EXP-004 through EXP-009 full EVAL.md coverage plan (commit e6c733e). Four-phase sequencing documented: Phase 1 EXP-003 (CPF, no per-skill rubrics), Phase 2 gate skills EXP-004/005, Phase 3 generative skills EXP-006-009, Phase 4 /improve deferred to human-reviewed challenger. Working tree clean. All commits on master.",
-    "resumeInstruction": "Read workspace/proposals/proposed-discovery-skill-update-exp-002b.md before starting. Then follow the four-step session priority sequence below in order. Do not skip the challenger pre-check.",
-    "pendingActions": [
-      "PRIORITY 1 — Challenger pre-check on discovery SKILL.md proposal: Read workspace/proposals/proposed-discovery-skill-update-exp-002b.md. Before applying any SKILL.md change, run the improvement-agent challenger pre-check to confirm the three proposed changes are not regressions. If pre-check passes: proceed to Priority 2. If fails: note the specific failure and stop.",
-      "PRIORITY 2 — Apply SKILL.md change if challenger passes: Edit .github/skills/discovery/SKILL.md with the three changes specified in the proposal (constraint surfacing rule D5/D7, success observability rule D6, /clarify trigger D2). Artefact-first route: short-track via /test-plan -> /definition-of-ready -> coding agent. The proposal specifies exact insertion locations.",
-      "PRIORITY 3 — /definition pre-check before EXP-003: Read .github/skills/definition/SKILL.md lines 60-90 and lines 410-425. Confirm exactly how architecture-guardrails.md is read (lazy read within skill execution vs injected by harness). Check workspace/experiments/EXP-003-pipeline-eval/manifest.md for whether Config B includes architecture-guardrails.md as a context-files parameter. If harness would inject the 96KB file: update the EXP-003 manifest to extract relevant sections only before proceeding.",
-      "PRIORITY 4 — EXP-003 end-to-end pipeline eval: Run EXP-003 Config A first (baseline), then Config B (Opus front-loaded), then Config C (cost-optimised). Primary metric: CPF (constraint propagation fidelity) across discovery -> definition -> test-plan -> DoR chain. Use command pattern from EXP-002b runs. Record results in workspace/experiments/EXP-003-pipeline-eval/scorecard.md.",
-      "DEFERRED — EXP-004 through EXP-009 full EVAL.md coverage programme: Sequenced in workspace/experiments/eval-programme-roadmap.md. Gate skills first (EXP-004 /definition-of-ready corpus, EXP-005 /definition-of-done corpus), then generative skills (EXP-006 /definition, EXP-007 /benefit-metric, EXP-008 /review, EXP-009 /test-plan). One experiment per skill, background work across sessions. Infrastructure already in place — corpus case design is the hard part for each skill."
-    ]
-  },
+  "lastUpdated": "2026-05-14T09:00:00.000Z",
+  "lastDreamRun": "2026-05-11T00:44:17.279Z",
   "cycle": {
     "discovery": {
       "status": "complete",
@@ -84,19 +73,17 @@
     "prUrl": "https://github.com/heymishy/skills-repo/pull/320"
   },
   "checkpoint": {
-    "writtenAt": "2026-05-09",
-    "contextAtWrite": "/definition complete for wucp (2026-05-08-web-ui-copilot-chat-parity). 5 stories committed: wucp.0 spike, wucp.1 context auto-loader, wucp.2 slash command router, wucp.3 tool execution loop (spike-gated), wucp.4 session start wizard (scope addition). Epic, NFR profile, benefit-metric coverage matrix all committed. wucp.4 AC3/AC4 ambiguities resolved: empty-list edge case explicit, STAGE_INDEX hardcoded lookup table required, STAGE_INDEX must be exported for unit testing. Epic spike-gate scope clarified: wucp.0 blocks only wucp.3 — a failed spike does not block the epic. wsm.4 fix (duplicate handleGetJourneyState deletion) and package.json web script addition remain uncommitted in working tree.",
-    "resumeInstruction": "/definition for wucp is complete. Next steps in priority order: (1) Create branch fix/wsm.4-duplicate-handler — commit journey.js fix + package.json web script + CHANGELOG, push, open draft PR. Run wsm.2 (22/22) + wsm.3 (38/38) tests to confirm no regression before PR. (2) Run /review on wucp.1, wucp.2, wucp.4 (all model-independent, no spike dependency, reviewReady: true). (3) Dispatch wucp.0 spike — can go immediately. (4) Defer /review on wucp.3 until wucp.0 spike produces reference/prompt-validation-results.md with MM1 >= 60%.",
+    "writtenAt": "2026-05-14",
+    "contextAtWrite": "Session 2026-05-14: discovery for 2026-05-10-model-evaluation-capability approved (all 6 MVP items delivered, EXP-001 and EXP-002b complete). benefit-metric.md created with MM1 (target met), MM2 (baseline established, EXP-003 pending), MM3 (proposal written, pending). Feature registered in pipeline-state.json (stage: definition). 18 completed April 2026 features archived to pipeline-state-archive.json (22 total in archive). Pipeline-state.json now has 11 active features. Duplicate checkpoint key bug fixed. wucp.0-4 still at definition-complete, pending /review. wsm.4 pending dispatch.",
+    "resumeInstruction": "Discovery for 2026-05-10-model-evaluation-capability is approved and benefit-metric is active. Follow the four-step priority sequence in pendingActions in order. Do not skip the challenger pre-check on the SKILL.md proposal before running EXP-003. wucp stories (wucp.1/2/4) are ready for /review and can be run in parallel with the EXP work.",
     "pendingActions": [
-      "wsm.4 implementation: src/web-ui/routes/journey.js (duplicate handleGetJourneyState deleted, uncommitted) + package.json (npm run web script, uncommitted) — create branch fix/wsm.4-duplicate-handler, add CHANGELOG entry, commit both files, push, open draft PR. Before commit: verify node tests/check-wsm2-collaborative-sessions.js (22/22) + node tests/check-wsm3-non-happy-path.js (38/38) pass with no regression.",
-      "/review wucp.1 (artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.1.md) — context auto-loader, Gap 3. No spike dependency. Run /review now.",
-      "/review wucp.2 (artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.2.md) — slash command router, Gap 2. No spike dependency. Run /review now.",
-      "/review wucp.4 (artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.4.md) — session start wizard, scope addition. No spike dependency. Run /review now.",
-      "Dispatch wucp.0 spike — can go immediately via /issue-dispatch or VS Code agent session. Produces reference/prompt-validation-results.md which gates wucp.3.",
-      "/review wucp.3 (artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.3.md) — DEFERRED until wucp.0 spike result known (reference/prompt-validation-results.md with MM1 >= 60% required).",
-      "Untracked artefacts to commit: artefacts/2026-05-07-web-ui-session-management/dod/ (wsm.1/2/3 DoD files) and artefacts/2026-05-07-web-ui-outer-loop-extensions/plans/ — bundle with wsm.4 PR or separate housekeeping commit.",
-      "/estimate E2 for wucp: 5 stories, complexity mix 3x complexity-1 (wucp.0/1 spike), 1x complexity-2 (wucp.2, wucp.4), 1x complexity-3 (wucp.3). Run /estimate to record refined E2."
+      "PRIORITY 1 — Challenger pre-check on discovery SKILL.md proposal: Read workspace/proposals/proposed-discovery-skill-update-exp-002b.md. Before applying any SKILL.md change, run the improvement-agent challenger pre-check to confirm the three proposed changes (constraint surfacing rule D5/D7, success observability rule D6, /clarify trigger D2) are not regressions. If pre-check passes: proceed to Priority 2. If fails: note the specific failure and stop.",
+      "PRIORITY 2 — Apply SKILL.md change if challenger passes: Edit .github/skills/discovery/SKILL.md with the three changes specified in workspace/proposals/proposed-discovery-skill-update-exp-002b.md. Artefact-first route: short-track via /test-plan -> /definition-of-ready -> coding agent. The proposal specifies exact insertion locations.",
+      "PRIORITY 3 — /definition pre-check before EXP-003: Read .github/skills/definition/SKILL.md lines 60-90 and lines 410-425. Confirm exactly how architecture-guardrails.md is read. Check workspace/experiments/EXP-003-pipeline-eval/manifest.md for whether Config B includes architecture-guardrails.md as a context-files parameter. If harness would inject the 96KB file: update the EXP-003 manifest to extract relevant sections only.",
+      "PRIORITY 4 — EXP-003 end-to-end pipeline eval: Run EXP-003 Config A (baseline), Config B (Opus front-loaded), Config C (cost-optimised). Primary metric: CPF (constraint propagation fidelity) across discovery -> definition -> test-plan -> DoR chain. Record in workspace/experiments/EXP-003-pipeline-eval/scorecard.md.",
+      "PARALLEL — wucp /review pipeline: wucp.1 (context auto-loader), wucp.2 (slash command router), wucp.4 (session start wizard) are all reviewReady: true with no spike dependency. Can run /review on these in parallel with EXP work.",
+      "DEFERRED — EXP-004 through EXP-009 full EVAL.md coverage programme: Sequenced in workspace/experiments/eval-programme-roadmap.md. Gate skills first, then generative skills.",
+      "DEFERRED — Token-optimization proposal review: workspace/proposals/proposed-update-token-optimization-measurement.md awaiting operator decision. Acceptance applies measurement_backed field to routing policy tiers (MM3 metric)."
     ]
-  },
-  "lastDreamRun": "2026-05-11T00:44:17.279Z"
+  }
 }
