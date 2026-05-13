@@ -7273,6 +7273,9 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/review/wucp.3-review-1.md",
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/350",
+          "dispatchedAt": "2026-05-13T00:00:00Z",
+          "dispatchTarget": "vscode",
           "updatedAt": "2026-05-13"
         },
         {
