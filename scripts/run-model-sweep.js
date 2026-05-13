@@ -9,6 +9,9 @@
  *   node scripts/run-model-sweep.js --experiment EXP-002
  *   node scripts/run-model-sweep.js --experiment EXP-002 --skills discovery,definition-of-ready
  *   node scripts/run-model-sweep.js --experiment EXP-002 --models claude-sonnet-4-6,claude-opus-4-6
+ *   node scripts/run-model-sweep.js --experiment EXP-002 --cases T5
+ *   node scripts/run-model-sweep.js --experiment EXP-002b --context-files .github/architecture-guardrails.md,product/constraints.md,product/mission.md,product/tech-stack.md
+ *   node scripts/run-model-sweep.js --experiment EXP-002b --context-files .github/architecture-guardrails.md,product/constraints.md,product/mission.md,product/tech-stack.md --pass2
  *   node scripts/run-model-sweep.js --experiment EXP-002 --dry-run
  *   node scripts/run-model-sweep.js --list-skills
  *
@@ -33,6 +36,7 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const crypto = require('crypto');
 
 // ─── Configuration ─────────────────────────────────────────────────────────
 
@@ -270,17 +274,125 @@ const PRICING = {
 // ─── CLI argument parsing ───────────────────────────────────────────────────
 
 function parseArgs(argv) {
-  const args = { skills: null, models: null, trials: DEFAULT_TRIALS, dryRun: false, listSkills: false, experiment: null };
+  const args = { skills: null, models: null, trials: DEFAULT_TRIALS, dryRun: false, listSkills: false, experiment: null, contextFiles: null, pass2: false, cases: null };
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--dry-run') { args.dryRun = true; continue; }
     if (arg === '--list-skills') { args.listSkills = true; continue; }
+    if (arg === '--pass2') { args.pass2 = true; continue; }
     if (arg === '--experiment' && argv[i + 1]) { args.experiment = argv[++i]; continue; }
     if (arg === '--skills' && argv[i + 1]) { args.skills = argv[++i].split(',').map(s => s.trim()); continue; }
     if (arg === '--models' && argv[i + 1]) { args.models = argv[++i].split(',').map(s => s.trim()); continue; }
     if (arg === '--trials' && argv[i + 1]) { args.trials = parseInt(argv[++i], 10); continue; }
+    if (arg === '--cases' && argv[i + 1]) { args.cases = argv[++i].split(',').map(s => s.trim()); continue; }
+    if (arg === '--context-files' && argv[i + 1]) { args.contextFiles = argv[++i].split(',').map(s => s.trim()); continue; }
   }
   return args;
+}
+
+// ─── Context injection ──────────────────────────────────────────────────────
+
+/** Human-readable section headings for well-known context files. */
+const CONTEXT_SECTION_NAMES = {
+  '.github/architecture-guardrails.md': 'Architecture Guardrails',
+  'product/constraints.md':             'Product Constraints',
+  'product/mission.md':                 'Product Mission',
+  'product/tech-stack.md':              'Technology Stack',
+};
+
+/**
+ * Validates that a context file path does not escape REPO_ROOT.
+ * Throws on path traversal.
+ *
+ * @param {string} relPath - path relative to repo root (as supplied on the CLI)
+ * @returns {string} absolute path
+ */
+function safeContextFilePath(relPath) {
+  const resolved = path.resolve(REPO_ROOT, relPath);
+  if (!resolved.startsWith(REPO_ROOT + path.sep) && resolved !== REPO_ROOT) {
+    throw new Error(`Path traversal rejected for context file: ${relPath}`);
+  }
+  return resolved;
+}
+
+/**
+ * Loads context files from disk in the order given.
+ * Returns metadata + content for each file.
+ * Throws if any file is missing or a path traversal is attempted.
+ *
+ * @param {string[]} relPaths - paths relative to repo root
+ * @returns {{ relPath: string, absPath: string, content: string, bytes: number, sha256: string }[]}
+ */
+function loadContextFiles(relPaths) {
+  return relPaths.map(relPath => {
+    const absPath = safeContextFilePath(relPath);
+    if (!fs.existsSync(absPath)) throw new Error(`Context file not found: ${relPath}`);
+    const content = fs.readFileSync(absPath, 'utf8');
+    const bytes = Buffer.byteLength(content, 'utf8');
+    const sha256 = crypto.createHash('sha256').update(content).digest('hex');
+    return { relPath, absPath, content, bytes, sha256 };
+  });
+}
+
+/**
+ * Builds the context-injected system prompt from context files + the base skill prompt.
+ * Context files are prepended in the supplied order before the skill instructions.
+ * When pass2=true a regulatory framing block is inserted between the context and the skill.
+ *
+ * Security: file contents are sent to the API in the system prompt.
+ * Only metadata (relPath, bytes, sha256) is written to the result file on disk.
+ *
+ * @param {{ relPath: string, content: string }[]} contextFiles
+ * @param {string} skillPrompt - SKILL.md contents (or fallback framing string)
+ * @param {boolean} [pass2=false]
+ * @returns {string}
+ */
+function buildContextSystemPrompt(contextFiles, skillPrompt, pass2 = false) {
+  const lines = [
+    'You are running a pipeline skill for a governed software delivery pipeline.',
+    '',
+    'Before receiving the operator input, read the following organisational context.',
+    'This context is authoritative and takes precedence over any assumptions you might otherwise make about the operating domain.',
+  ];
+
+  for (const file of contextFiles) {
+    const key = file.relPath.replace(/\\/g, '/');
+    const sectionName = CONTEXT_SECTION_NAMES[key]
+      || path.basename(file.relPath, '.md').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    lines.push('', '---', `## ${sectionName}`, '', file.content.trim());
+  }
+
+  if (pass2) {
+    lines.push(
+      '', '---', '## Regulatory and Compliance Framing', '',
+      'This platform serves a regulated financial enterprise subject to prudential banking regulation and anti-money-laundering requirements. All discovery artefacts must explicitly surface:',
+      '- Data residency requirements (where customer and transactional data may be stored and processed)',
+      '- Retention policy constraints (including statutory retention periods where applicable)',
+      '- Access control boundaries where the problem domain involves customer or financial data',
+      '- Applicable regulatory filing obligations (e.g. suspicious activity reporting, transaction reporting thresholds)',
+      '',
+      'Where the input domain involves financial transactions, customer data, or compliance obligations, name the applicable regulatory regime before writing the problem statement. Do not proceed to MVP scoping until regulatory context is surfaced.',
+    );
+  }
+
+  lines.push('', '---', '', 'You have now read the full organisational context. Proceed with the skill.', '', skillPrompt);
+  return lines.join('\n');
+}
+
+/**
+ * Reads manifest.md from an experiment directory and checks approved_for_external_api.
+ * Returns true if approved, false if explicitly denied, null if absent/unreadable.
+ *
+ * @param {string} experimentDir
+ * @returns {boolean|null}
+ */
+function parseManifestApproval(experimentDir) {
+  const manifestPath = path.join(experimentDir, 'manifest.md');
+  if (!fs.existsSync(manifestPath)) return null;
+  const content = fs.readFileSync(manifestPath, 'utf8');
+  const match = content.match(/approved_for_external_api\s*\|\s*(true|false)/);
+  if (!match) return null;
+  return match[1] === 'true';
 }
 
 // ─── Skill + corpus discovery ───────────────────────────────────────────────
@@ -528,13 +640,47 @@ async function main() {
   ensureDir(path.join(experimentDir, 'runs'));
   ensureDir(path.join(experimentDir, 'results'));
 
+  // Data classification guard — required when context files will be sent to a cloud API
+  if (args.contextFiles && !args.dryRun) {
+    const hasCloudModel = (args.models || Object.keys(PRICING)).some(m => !m.startsWith('local-'));
+    if (hasCloudModel) {
+      const approved = parseManifestApproval(experimentDir);
+      if (approved === false) {
+        console.error('Error: manifest.md data_classification_check.approved_for_external_api is false.');
+        console.error('Context files must not be sent to cloud APIs. Use --models local-* instead.');
+        process.exit(1);
+      }
+      if (approved === null) {
+        console.warn('Warning: could not verify approved_for_external_api in manifest.md. Proceeding (operator must confirm classification before running).');
+      }
+    }
+  }
+
+  // Load context files once — applied to every cell and trial
+  let contextFilesData = null;
+  if (args.contextFiles) {
+    try {
+      contextFilesData = loadContextFiles(args.contextFiles);
+    } catch (e) {
+      console.error(`Error loading context files: ${e.message}`);
+      process.exit(1);
+    }
+  }
+
   // Build matrix
   const matrix = [];
   for (const skill of skills) {
-    const cases = discoverCorpusCases(skill.corpusDir);
+    let cases = discoverCorpusCases(skill.corpusDir);
     if (cases.length === 0) {
       console.warn(`Warning: no corpus cases found for skill '${skill.skillName}' — skipping`);
       continue;
+    }
+    if (args.cases) {
+      cases = cases.filter(c => args.cases.includes(c.caseId));
+      if (cases.length === 0) {
+        console.warn(`Warning: no corpus cases match --cases filter for '${skill.skillName}' — skipping`);
+        continue;
+      }
     }
     for (const corpusCase of cases) {
       for (const model of models) {
@@ -546,12 +692,26 @@ async function main() {
   console.log(`\nExperiment: ${args.experiment}`);
   console.log(`Skills: ${[...new Set(matrix.map(m => m.skill.skillName))].join(', ')}`);
   console.log(`Models: ${models.join(', ')}`);
+  if (args.cases) console.log(`Cases: ${args.cases.join(', ')}`);
   console.log(`Matrix cells: ${matrix.length} (× ${args.trials} trials = ${matrix.length * args.trials} runs)`);
+  if (contextFilesData) {
+    console.log(`Context injection: ${contextFilesData.length} file(s) — ${contextFilesData.map(f => f.relPath).join(', ')}`);
+    if (args.pass2) console.log(`Pass 2 (regulatory injection): enabled`);
+  }
 
   if (args.dryRun) {
     console.log('\nDry run — no API calls. Matrix:');
     for (const cell of matrix) {
       console.log(`  ${cell.skill.skillName} × ${cell.corpusCase.caseId} × ${cell.model} × ${args.trials} trials`);
+    }
+    if (args.contextFiles) {
+      console.log('\nContext files that would be injected:');
+      for (const relPath of args.contextFiles) {
+        const absPath = path.resolve(REPO_ROOT, relPath);
+        const exists = fs.existsSync(absPath);
+        console.log(`  ${relPath} — ${exists ? 'found' : 'NOT FOUND'}`);
+      }
+      if (args.pass2) console.log('  [Pass 2 regulatory injection: enabled]');
     }
     return;
   }
@@ -581,19 +741,35 @@ async function main() {
       // Step 1: Run candidate model on corpus case
       let runContent, runInputTokens, runOutputTokens;
       try {
-        // In evaluation mode, inject the eval-mode system prompt prefix.
-        // This instructs the model to run non-interactively and append the eval-mode marker.
         let systemPrompt;
-        if (evalConfig.mode) {
+        let userContent;
+        if (contextFilesData) {
+          // Context-injected run: system prompt = context files + SKILL.md; user = operator input only.
+          const skillMdPath = path.join(SKILLS_DIR, skill.skillName, 'SKILL.md');
+          const skillMdContent = fs.existsSync(skillMdPath)
+            ? fs.readFileSync(skillMdPath, 'utf8')
+            : `You are running the /${skill.skillName} pipeline skill.`;
+          systemPrompt = buildContextSystemPrompt(contextFilesData, skillMdContent, args.pass2);
+          userContent = operatorInput;
+          if (trial === 1) {
+            // Only log file metadata on first trial per cell to avoid log spam
+            for (const f of contextFilesData) {
+              console.log(`  Context: ${f.relPath} (${f.bytes}B sha256=${f.sha256.slice(0, 8)}...)`);
+            }
+          }
+        } else if (evalConfig.mode) {
+          // Standard eval mode: non-interactive prefix in system prompt
           systemPrompt = [
             'EVALUATION MODE ACTIVE. Run in non-interactive mode. Skip all confirmation prompts.',
             'Produce the complete artefact in a single pass. Apply all substantive skill logic.',
             'Append <!-- eval-mode: true --> as the final line of the artefact.',
             `Write the eval result to ${evalOutputPath} on completion.`,
           ].join(' ');
+          userContent = `You are running the /${skill.skillName} pipeline skill. ${operatorInput}`;
+        } else {
+          userContent = `You are running the /${skill.skillName} pipeline skill. ${operatorInput}`;
         }
-        const skillPrompt = `You are running the /${skill.skillName} pipeline skill. ${operatorInput}`;
-        const result = await callModel(model, [{ role: 'user', content: skillPrompt }], 4096, systemPrompt);
+        const result = await callModel(model, [{ role: 'user', content: userContent }], 4096, systemPrompt);
         runContent = result.content;
         runInputTokens = result.inputTokens;
         runOutputTokens = result.outputTokens;
@@ -646,8 +822,17 @@ async function main() {
         verdict: scoreJson ? (scoreJson.pass ? 'pass' : 'fail') : null,
       });
 
+      // Augment result with context injection metadata (file names + hashes, NOT contents)
+      const contextMeta = contextFilesData ? {
+        context_injection: true,
+        pass2: args.pass2,
+        context_files_meta: contextFilesData.map(f => ({ relPath: f.relPath, bytes: f.bytes, sha256: f.sha256 })),
+      } : { context_injection: false };
+      if (scoreJson) Object.assign(scoreJson, contextMeta);
+      const resultData = scoreJson || Object.assign({ error: 'judge failed', model_label: model }, contextMeta);
+
       // Save result
-      const resultFilePath = writeResultFile(experimentDir, skill.skillName, corpusCase.caseId, model, trial, scoreJson || { error: 'judge failed', model_label: model });
+      const resultFilePath = writeResultFile(experimentDir, skill.skillName, corpusCase.caseId, model, trial, resultData);
       console.log(`  Result saved: ${path.relative(REPO_ROOT, resultFilePath)}`);
 
       const cost = estimateCost(model, runInputTokens, runOutputTokens);
