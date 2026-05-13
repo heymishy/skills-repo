@@ -2,16 +2,17 @@
   "currentPhase": "model-evaluation-experiments",
   "activeFeature": "workspace/experiments",
   "previousActiveFeature": "2026-05-08-web-ui-copilot-chat-parity",
-  "lastUpdated": "2026-05-13T14:00:00.000Z",
+  "lastUpdated": "2026-05-13T15:00:00.000Z",
   "checkpoint": {
     "writtenAt": "2026-05-13",
-    "contextAtWrite": "EXP-002b complete. All data committed to master (commits 17414dd, 09c6d64, 26480b3). SKILL.md change proposal written at workspace/proposals/proposed-discovery-skill-update-exp-002b.md. Platform-wide context injection risk finding documented in learnings.md and proposal. All previously untracked workspace experiment artefacts committed. Working tree clean.",
+    "contextAtWrite": "EXP-002b complete. Eval programme roadmap extended with EXP-004 through EXP-009 full EVAL.md coverage plan (commit e6c733e). Four-phase sequencing documented: Phase 1 EXP-003 (CPF, no per-skill rubrics), Phase 2 gate skills EXP-004/005, Phase 3 generative skills EXP-006-009, Phase 4 /improve deferred to human-reviewed challenger. Working tree clean. All commits on master.",
     "resumeInstruction": "Read workspace/proposals/proposed-discovery-skill-update-exp-002b.md before starting. Then follow the four-step session priority sequence below in order. Do not skip the challenger pre-check.",
     "pendingActions": [
       "PRIORITY 1 — Challenger pre-check on discovery SKILL.md proposal: Read workspace/proposals/proposed-discovery-skill-update-exp-002b.md. Before applying any SKILL.md change, run the improvement-agent challenger pre-check to confirm the three proposed changes are not regressions. If pre-check passes: proceed to Priority 2. If fails: note the specific failure and stop.",
       "PRIORITY 2 — Apply SKILL.md change if challenger passes: Edit .github/skills/discovery/SKILL.md with the three changes specified in the proposal (constraint surfacing rule D5/D7, success observability rule D6, /clarify trigger D2). Artefact-first route: short-track via /test-plan -> /definition-of-ready -> coding agent. The proposal specifies exact insertion locations.",
       "PRIORITY 3 — /definition pre-check before EXP-003: Read .github/skills/definition/SKILL.md lines 60-90 and lines 410-425. Confirm exactly how architecture-guardrails.md is read (lazy read within skill execution vs injected by harness). Check workspace/experiments/EXP-003-pipeline-eval/manifest.md for whether Config B includes architecture-guardrails.md as a context-files parameter. If harness would inject the 96KB file: update the EXP-003 manifest to extract relevant sections only before proceeding.",
-      "PRIORITY 4 — EXP-003 end-to-end pipeline eval: Run EXP-003 Config A first (baseline), then Config B (Opus front-loaded), then Config C (cost-optimised). Primary metric: CPF (constraint propagation fidelity) across discovery -> definition -> test-plan -> DoR chain. Use command pattern from EXP-002b runs. Record results in workspace/experiments/EXP-003-pipeline-eval/scorecard.md."
+      "PRIORITY 4 — EXP-003 end-to-end pipeline eval: Run EXP-003 Config A first (baseline), then Config B (Opus front-loaded), then Config C (cost-optimised). Primary metric: CPF (constraint propagation fidelity) across discovery -> definition -> test-plan -> DoR chain. Use command pattern from EXP-002b runs. Record results in workspace/experiments/EXP-003-pipeline-eval/scorecard.md.",
+      "DEFERRED — EXP-004 through EXP-009 full EVAL.md coverage programme: Sequenced in workspace/experiments/eval-programme-roadmap.md. Gate skills first (EXP-004 /definition-of-ready corpus, EXP-005 /definition-of-done corpus), then generative skills (EXP-006 /definition, EXP-007 /benefit-metric, EXP-008 /review, EXP-009 /test-plan). One experiment per skill, background work across sessions. Infrastructure already in place — corpus case design is the hard part for each skill."
     ]
   },
   "cycle": {
