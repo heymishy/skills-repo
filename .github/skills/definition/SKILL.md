@@ -229,6 +229,70 @@ Do not write the story on the assumption that the discovery artefact's named pre
 
 ---
 
+## Step 4a — Regulated constraint propagation check
+
+**Run this step only when the discovery Constraints section contains at least one regulated constraint** — a constraint referencing an external compliance framework, a legal obligation, or a process gate requiring third-party assessment (e.g. PCI DSS, AML/CFT, GDPR, SOX, HIPAA). Skip this step only if no regulated constraints are present.
+
+**Do not use a feature-level check.** Verifying that a regulated constraint "appears somewhere in the feature" is insufficient and produces false positives. This step checks per-story — specifically, it checks every story whose implementation scope falls within the regulated gate.
+
+### Step 4a.1 — List regulated constraints
+
+From the discovery Constraints section, list each regulated constraint:
+
+> **Regulated constraints found:**
+> - [C-ID]: [name] — gate type: [process gate / technical requirement / retention rule]
+> - ...
+
+### Step 4a.2 — Identify triggering stories
+
+For each regulated constraint, enumerate the stories that trigger it.
+
+**A story triggers a regulated gate if it:**
+- Introduces, modifies, or removes a system component (data store, network path, encryption mechanism, access control, API, replication channel) within the regulated scope, OR
+- Has ACs that require implementation code rather than documentation, vendor engagement, or validation only
+
+**A story does NOT trigger a regulated gate if it is solely:**
+- Requirements scoping, workshop facilitation, or documentation
+- Vendor engagement, project management, or pre-engagement scheduling
+- Post-implementation validation or sign-off (unless the validation itself is a regulated requirement)
+
+Present the trigger assignment for operator confirmation:
+
+> | Constraint | Stories that trigger it | Rationale |
+> |-----------|------------------------|----------|
+> | [C-ID]: [name] | [story-slug], [story-slug] | [brief — e.g. "S1.2 implements replication within PCI DSS CDE scope"] |
+>
+> Does this trigger assignment look correct?
+> Reply: yes — or [describe any change]
+
+Record the confirmed trigger table in `decisions.md` (source: agent-auto).
+
+### Step 4a.3 — Verify Architecture Constraints in each triggering story
+
+For each (constraint, triggering story) pair, open the saved story artefact and verify the constraint appears in its Architecture Constraints field.
+
+If missing:
+
+> ⚠️ **REGULATED CONSTRAINT GAP: [C-ID] ([name]) not in [story-slug] Architecture Constraints.**
+>
+> This story triggers the gate because: [rationale from trigger table]
+>
+> Apply fix — add to [story-slug] Architecture Constraints:
+> `[C-ID]: [constraint name] — this story's implementation scope falls within this regulated gate.`
+>
+> Reply: yes — or explain why this story does not trigger the gate
+
+Apply the fix to the story artefact immediately. Do not defer to /review or /definition-of-ready.
+
+If the operator disputes the trigger assignment, log the exclusion in `decisions.md`: constraint ID, story slug, rationale for exclusion, operator confirmation date.
+
+After all gaps are resolved:
+
+> ✅ **Regulated constraint propagation check complete (Step 4a)**
+> Constraints checked: [n] | Stories updated: [n] | Trigger exclusions logged: [n]
+
+---
+
 ## Step 5 — Benefit coverage matrix
 
 After all stories are written, populate the metric coverage matrix in the
@@ -346,6 +410,7 @@ If no NFRs are identified, state this explicitly in the profile:
 - Every story's "So that..." connects to a named metric
 - Every story has a genuine out-of-scope section (not "N/A")
 - Minimum 3 ACs per story in Given/When/Then format
+- **Regulated constraint propagation (Step 4a):** for each regulated constraint in discovery, appears as Architecture Constraint in every story whose implementation scope triggers the gate — per-story check, not feature-level
 - Benefit coverage matrix complete — no orphaned metric, no unlinked story
 - Scope accumulator run — ratio reviewed and any drift acknowledged
 - All scope notes recorded in /decisions

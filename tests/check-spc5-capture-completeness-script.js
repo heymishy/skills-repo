@@ -25,12 +25,12 @@ function fail(label, detail) {
   failed++;
 }
 
-function runScript(args, stdinEnv) {
+function runScript(args, stdinEnv, timeout) {
   try {
     const result = cp.spawnSync(process.execPath, [SCRIPT_PATH, ...args], {
       encoding: 'utf8',
       env: { ...process.env, ...stdinEnv },
-      timeout: 15000,
+      timeout: timeout || 15000,
     });
     return { code: result.status, stdout: result.stdout || '', stderr: result.stderr || '' };
   } catch (e) {
@@ -131,9 +131,10 @@ if (scriptSrc.includes('process.exit(1)')) {
 
 // ── T7: Exits 0 with skip message when instrumentation.enabled=false ─────────
 
-// Since context.yml has enabled: false by default in this repo, running the script
-// on the real artefacts dir should produce a skip-mode exit 0.
-const r7 = runScript([]);
+// Since context.yml may have enabled: true (running an experiment) or false (default),
+// either case produces exit 0: skip path (false) or completeness-pass path (true, >=80%).
+// A 60s timeout is required because when enabled=true the full artefact scan runs.
+const r7 = runScript([], undefined, 60000);
 if (r7.code === 0 && (r7.stdout.includes('skipping') || r7.stdout.includes('false'))) {
   pass('T7 exits 0 with skip message when instrumentation.enabled=false');
 } else if (r7.code === 0) {
