@@ -3181,6 +3181,30 @@
         }
       ],
       "updatedAt": "2026-05-14"
+    },
+    {
+      "slug": "2026-05-14-disaster-recovery-rto-aml",
+      "name": "Disaster Recovery: RTO Violation + AML/CFT Compliance Gap",
+      "stage": "discovery",
+      "discoveryStatus": "in-progress",
+      "health": "red",
+      "track": "standard",
+      "regulated": true,
+      "complianceProfile": "regulated",
+      "complianceFrameworks": [
+        "AML/CFT"
+      ],
+      "sensitiveDataCategories": [
+        "Transaction records",
+        "Audit trail"
+      ],
+      "discoveryArtefact": "artefacts/2026-05-14-disaster-recovery-rto-aml/discovery.md",
+      "businessDrivers": [
+        "RTO violation: board-approved 2-hour target not met; $420K/hour business loss",
+        "AML/CFT compliance gap: transaction record replication within 5-year retention window unverified"
+      ],
+      "urgency": "critical",
+      "updatedAt": "2026-05-14"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
