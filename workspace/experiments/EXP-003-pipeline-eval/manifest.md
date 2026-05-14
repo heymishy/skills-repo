@@ -19,6 +19,7 @@ This is a Scenario 3 experiment. Scenario 3 measures constraint propagation acro
 | config_b_run_1 | complete — 2026-05-14 |
 | config_b_run_2 | complete — 2026-05-14 |
 | config_c_run_1 | complete — 2026-05-14 |
+| config_c_run_2 | complete — 2026-05-14 |
 
 ## Data classification check
 
@@ -222,6 +223,7 @@ Use current published pricing at time of run. Record pricing snapshot in run met
 | B-1 | B | discovery+definition (partial) | Opus 4.7 (discovery+def only) | 2026-05-14 | C1, C2, C3, C4, C5 + C6(NC) | C1✅ C2✅ C3✅ C4✅ C5✅ | **1.00** (partial — see B-2) |
 | B-2 | B | discovery→DoR (full pipeline) | Opus 4.7 (disc+def) + Sonnet (review+tp+dor) | 2026-05-14 | C1, C2, C3, C4, C5 | C1✅ C2✅ C3✅ C4✅ C5✅ | **1.00** |
 | C-1 | C | discovery→DoR | All claude-sonnet-4-6 (⚠️ Haiku switch not executed — see F4) | 2026-05-14 | C1, C2, C3, C4, C5 | C1⚠️ C2⚠️(recovered) C3✅ C4⚠️ C5✅ | **0.60** (binary end-chain); at-source CPF: 0.40; regulated at source: 0.33 |
+| C-2 | C | discovery→DoR | claude-sonnet-4-6 (disc+def) + claude-haiku-4-5 (review+tp+dor) | 2026-05-14 | C1, C2, C3, C4, C5 | C1⚠️ C2❌(chain 0.35) C3✅ C4⚠️ C5⚠️ | **Chain 0.68 FAIL**; final-stage 0.76; regulated chain 0.675 FAIL; C3 chain 1.00 |
 | | D | discovery→DoR | GPT-4o+Haiku | _pending_ | Requires EXP-002a H5 confirmed | | |
 
 ## CPF detail table (per run)
@@ -261,6 +263,18 @@ Use current published pricing at time of run. Record pricing snapshot in run met
 
 5. **F5 — CPF non-determinism confirmed.** Config A and Config C both used claude-sonnet-4-6 for all stages. Config A achieved CPF = 1.00; Config C achieved regulated-at-source CPF = 0.33. This confirms that Sonnet CPF is not deterministically 1.00 — there is a model behaviour failure mode where regulatory constraints are present in the input narrative but not elevated to named Constraints section entries. This finding supports the constraint-surfacing rule proposal in workspace/proposals/proposed-discovery-skill-update-exp-002b.md (D5/D7 rules).
 
+**Config C Run 2 findings (2026-05-14 — Sonnet disc+def, Haiku review+tp+dor):**
+
+1. **Chain CPF = 0.68 FAIL; regulated chain CPF = 0.675 FAIL.** C2 (PCI DSS) chain score = 0.35 — catastrophic weakening at Definition. C3 (AML/CFT) chain score = 1.00 — only constraint with perfect propagation. Full per-constraint per-stage scores in runs/config-C-run-2/cpf-scores.md.
+
+2. **C2 drop is a slicing strategy effect, not pure variability (F6).** Config C run 2 Sonnet chose vertical-slice framing with no regulatory risk rationale. Config A Sonnet chose risk-first, explicitly naming C2 and C5 as motivation ("most likely to expand scope or block go-live"). With risk-first: a dedicated Epic 3 for regulatory compliance was created, forcing C2 into every story's Architecture Constraints that depends on it. With vertical-slice: C2 was assigned to preparation stories (S1.1/S1.3) only, and architectural-change stories (S1.2 replication implementation; S2.2 failover automation) had no PCI DSS AC or NFR. The slicing strategy choice is itself stochastic, but once made, the downstream CPF outcome follows deterministically.
+
+3. **Self-check false positive in definition.md propagation table (F7).** Sonnet produced a "Constraint Propagation Analysis" table that self-assessed C2 as "Named in S1.1 AC5 (QSA pre-engagement); S1.3 includes Compliance team validation" and declared "ALL FIVE CONSTRAINTS PROPAGATED." This was a false positive. The table validated "constraint appears somewhere in the feature" not "constraint appears in every story that makes an architectural change within the constraint's scope." S1.2 and S2.2 — the stories requiring a QSA gate — had no C2 mention. The model's summary was internally inconsistent with the story bodies it had just written.
+
+4. **Haiku downstream recovery consistent and correct.** Review (Haiku) correctly identified H2 (C2 absent from story ACs/NFRs) as a HIGH finding. Test-plan (Haiku) added T2.2.2 (QSA architectural assessment gate test for S2.2). DoR (Haiku) added explicit PCI DSS prerequisites in S1.2 and S2.2 contracts. C2 recovered from 0.35 (definition) to 0.60 (DoR) through four Haiku-produced stages. Haiku's stage contributions are consistently correct and additive.
+
+5. **Config C run 2 is a valid Config C run.** Unlike run 1 (where Haiku switch was not executed), run 2 correctly used Sonnet for discovery+definition and Haiku for review+test-plan+DoR. CPF = FAIL at chain and regulated thresholds. This confirms Config C is not safe for regulated-constraint stories. Re-run required if the intent is to isolate Haiku-only definition behaviour (run 2 attributes the definition failure to Sonnet, not Haiku).
+
 ## Scorecard summary
 
 *Populated after all runs complete.*
@@ -269,7 +283,7 @@ Use current published pricing at time of run. Record pricing snapshot in run met
 |--------|----------------------|----------------------|------------|--------------|---------|----------------|
 | A — Uniform Sonnet | ~$1.50 | 1.0x baseline | **1.00** | **1.00** | **PASS** | Regulated-input stories at standard cost |
 | B — Tiered front-loaded | ~$0.90 | ~15x | **1.00** | **1.00** | **PASS** | Regulated-input stories at lower Layer 2 cost than Config A; depth-of-extraction finding (Opus surfaces additional operational constraints beyond canonical inventory) |
-| C — Cost-optimised | ~$0.60 | ~0.4x | **0.60** (binary end-chain) | **0.33 at source** / 0.67 end-chain | **FAIL** (reg. CPF at source < 0.80) | Non-regulated stories only; re-run required with actual Haiku downstream to isolate model effect |
+| C — Cost-optimised | ~$0.60 | ~0.4x | Run 1: **0.60** (binary end-chain) / Run 2: **0.68** (chain avg) | Run 1: **0.33 at source** / Run 2: **0.675 chain FAIL** | **FAIL** (reg. chain CPF < 0.80 both runs) | Non-regulated stories only; Config C run 2 confirms Sonnet (not Haiku) is the definition failure driver; re-run with Haiku definition required to isolate Haiku CPF |
 | D — GPT-4o + Haiku | ~$0.30 | ~0.07x | _pending_ | _pending_ | _pending_ | Requires EXP-002a H5 confirmed |
 
 ## Findings
@@ -306,7 +320,8 @@ Use current published pricing at time of run. Record pricing snapshot in run met
 - [x] Config B Run 2 complete — 2026-05-14. CPF = 1.00 (5/5 canonical), regulated CPF = 1.00. Genuine full-pipeline run (all 5 skills: Opus 4.7 for discovery+definition, Sonnet for review+test-plan+dor). See runs/config-B-run-2/. (Run 1 = partial: discovery+definition with Opus, C6 depth-of-extraction finding recorded.)
 - [x] Config C Run 1: /discovery (Sonnet) through /definition-of-ready (Sonnet — Haiku switch not executed; see F4 in cpf-scores.md)
 - [x] Config C regulated CPF at source = 0.33 < 0.80 threshold: routing-policy-framework.md updated to add Config C prohibition for regulated-input stories (EXP-003 evidence)
-- [ ] Config C re-run (proper): execute with Haiku downstream stages to validate Haiku-specific CPF (isolate model effect from Config C intent)
+- [x] Config C Run 2: /discovery+/definition (Sonnet) + /review+/test-plan+/DoR (Haiku) — complete 2026-05-14. Chain CPF = 0.68 FAIL; regulated chain CPF = 0.675 FAIL. Key finding: Sonnet vertical-slice choice suppresses C2 propagation (F6); self-check false positive in propagation table (F7). See runs/config-C-run-2/cpf-scores.md.
+- [ ] Config C re-run (proper — Haiku for /definition): execute with Haiku at /definition stage to isolate Haiku definition CPF. Run 2 attributes the definition failure to Sonnet's slicing strategy choice — a Haiku-definition run would determine whether Haiku independently propagates regulated constraints or also drops them.
 - [ ] Update measurement_backed fields in token-optimization proposal after completion
 
 ## Deviations from template
