@@ -1,0 +1,9 @@
+{
+  "skill": "definition",
+  "caseId": "S1",
+  "model": "claude-opus-4-7",
+  "completedAt": "2026-05-14T00:00:00Z",
+  "artefactPath": "workspace/experiments/EXP-003-pipeline-eval/runs/config-B-run-2/definition.md",
+  "dimensionsScored": null,
+  "verdict": null
+}

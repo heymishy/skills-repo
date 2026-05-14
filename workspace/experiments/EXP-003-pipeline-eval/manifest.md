@@ -17,6 +17,7 @@ This is a Scenario 3 experiment. Scenario 3 measures constraint propagation acro
 | status | in-progress |
 | config_a_run_1 | complete — 2026-05-14 |
 | config_b_run_1 | complete — 2026-05-14 |
+| config_b_run_2 | complete — 2026-05-14 |
 | config_c_run_1 | complete — 2026-05-14 |
 
 ## Data classification check
@@ -207,18 +208,19 @@ Use current published pricing at time of run. Record pricing snapshot in run met
 | Config | Canonical CPF | Additional constraints extracted | Notes |
 |--------|--------------|----------------------------------|-------|
 | A — Uniform Sonnet | 5/5 = 1.00 | 0 | Canonical S1 inventory only |
-| B — Opus front-loaded | 5/5 = 1.00 | 1 (C6 — 100% volume at secondary on failover) | Opus extracted C6 from follow-up context; not in canonical inventory |
+| B — Opus front-loaded | 5/5 = 1.00 | Run 1: 1 (C6 — 100% volume at secondary on failover); Run 2: 0 | Run 2 (genuine full-pipeline run): canonical 5/5 = 1.00, no additional non-canonical constraints. Run 1 (partial — disc+def only): C6 extracted by Opus from follow-up context; not in canonical inventory |
 | C — Cost-optimised | 3/5 = 0.60 (binary end-chain; C2 recovered by review) | 0 | C2 (PCI DSS) absent from discovery Constraints and definition ACs — recovered by review H2/H3. At-source regulated CPF (pre-review): 1/3 = 0.33. See cpf-scores.md findings F1–F4. |
 | D — Zero-cost Layer 1 | _pending_ | _pending_ | Requires EXP-002a H5 confirmed |
 
-**Depth-of-extraction finding (Config A vs Config B):** Both configs achieve canonical CPF = 1.0. Config B (Opus front-loaded) extracted one additional operational constraint (C6: “100% transaction volume at secondary — cannot partially route”) from the follow-up context that Config A (Sonnet uniform) did not elevate to a named constraint. This is not a CPF advantage — the canonical score is equal at 1.0 for both. It is a qualitative model behaviour observation: Opus extracts additional signal from operator-provided follow-up context and elevates it to a named, propagated constraint, while Sonnet does not. This finding is relevant for model routing decisions when follow-up context is information-dense and may contain implicit constraints that would otherwise remain unarticulated.
+**Depth-of-extraction finding (Config A vs Config B):** Both configs achieve canonical CPF = 1.0. Config B run 1 (Opus front-loaded, partial: discovery+definition only) extracted one additional operational constraint (C6: "100% transaction volume at secondary — cannot partially route") from the follow-up context that Config A (Sonnet uniform) did not elevate to a named constraint. Config B run 2 (full pipeline genuine run) detected two non-canonical constraints (NC1: NZ data residency; NC2: High oversight level) — both well-propagated but outside the canonical inventory. Neither additional extraction counts toward canonical CPF — the canonical score is equal at 1.0 across Config A, Config B run 1, and Config B run 2. The qualitative observation stands: Opus extracts additional signal and elevates it to named, propagated constraints, while Sonnet uniform does not. Relevant for model routing decisions when follow-up context is information-dense and may contain implicit constraints.
 
 ## Runs log
 
 | Run | Config | Stage | Model | Date | CPF constraints identified | CPF propagated | CPF score |
 |-----|--------|-------|-------|------|--------------------------|---------------|-----------|
 | A-1 | A | discovery→DoR | All claude-sonnet-4-6 | 2026-05-14 | C1, C2, C3, C4, C5 (5 total; C2 and C3 regulated; C5 audit-gap) | C1✅ C2✅ C3✅ C4✅ C5✅ | **1.00** |
-| | B | discovery→DoR | Tiered (Opus 4.7 front) | _pending_ | | | |
+| B-1 | B | discovery+definition (partial) | Opus 4.7 (discovery+def only) | 2026-05-14 | C1, C2, C3, C4, C5 + C6(NC) | C1✅ C2✅ C3✅ C4✅ C5✅ | **1.00** (partial — see B-2) |
+| B-2 | B | discovery→DoR (full pipeline) | Opus 4.7 (disc+def) + Sonnet (review+tp+dor) | 2026-05-14 | C1, C2, C3, C4, C5 | C1✅ C2✅ C3✅ C4✅ C5✅ | **1.00** |
 | C-1 | C | discovery→DoR | All claude-sonnet-4-6 (⚠️ Haiku switch not executed — see F4) | 2026-05-14 | C1, C2, C3, C4, C5 | C1⚠️ C2⚠️(recovered) C3✅ C4⚠️ C5✅ | **0.60** (binary end-chain); at-source CPF: 0.40; regulated at source: 0.33 |
 | | D | discovery→DoR | GPT-4o+Haiku | _pending_ | Requires EXP-002a H5 confirmed | | |
 
@@ -228,18 +230,24 @@ Use current published pricing at time of run. Record pricing snapshot in run met
 
 | Constraint | Source (section) | Regulated? | Config A Run 1 | Config B | Config C |
 |------------|-----------------|-----------|----------------|---------|---------|
-| C1: RTO ≤ 2h / RPO ≤ 15min (Board policy) | Constraints | N (internal policy) | **P** — definition (6 stories), test plan (NFR-1.3-1, NFR-2.2-1/2/3), DoR (stories 1.3, 2.1, 2.2 contracts) | P/D/A | **A** — RTO propagated (test plan T1.2.6/T2.2.1/T2.3.1); RPO not pinned to a value anywhere (review H1); non-regulated |
-| C2: PCI DSS QSA before go-live | Constraints | **Y** | **P** — definition (5 stories), test plan (NFR-3.1-1 CRITICAL), DoR (story 3.1 HARD GATE) | P/D/A | **D** — absent from discovery Constraints (narrative mention only, score 0.1) and definition ACs (score 0.0); recovered by review H2/H3 findings; end-chain: test plan T2.2.2 + DoR S1.2 BLOCKED |
-| C3: AML/CFT Act 5-year retention at secondary | Constraints | **Y** | **P** — definition (stories 1.3, 3.2), test plan (NFR-3.2-1 CRITICAL, NFR-3.2-3), DoR (story 3.2 HARD GATE) | P/D/A | **P** — S1.3 dedicated story; test plan T1.2.4, T1.3.1, T1.3.2; DoR S1.3 contract |
-| C4: Single Auckland DC (technical baseline) | Constraints | N | **P** — definition (stories 1.1, 1.2 — provisioning goal), DoR (story 1.2 contract eliminates C4); no NFR test required (addressed by provisioning) | P/D/A | **A** — background context in discovery (not in Constraints section); DoR S1.2 captures as explicit assumption; no dedicated test |
-| C5: AML replication gap unverified (hidden audit finding) | [ASSUMPTION] in discovery | Y (AML-adjacent, audit gap) | **P** — surfaced as [ASSUMPTION] in discovery per EXP-002b writing rule; definition (stories 1.3, 3.2 Architecture Constraints), test plan (NFR-1.3-3 oldest-bucket, NFR-3.2-2 definitive-finding required), DoR (story 3.2 contract — "Unverified NOT acceptable") | P/D/A | **P** — test-plan Scenario 1.4 explicit investigation test; DoR S1.2 explicit assumption (C5) |
-| **CPF** | | | **5/5 = 1.00** | — | **3P + 2A** → binary: 3/5 = 0.60 (C2 D conservative-regulated; C1/C4 A non-reg) |
-| **Regulated CPF** | C2, C3, C5 | **3/3 = 1.00** | — | **1/3 = 0.33 at source** (C2 D, C3 P, C5 P); **2/3 end-chain** (C2 recovered) |
+| C1: RTO ≤ 2h / RPO ≤ 15min (Board policy) | Constraints | N (internal policy) | **P** — definition (6 stories), test plan (NFR-1.3-1, NFR-2.2-1/2/3), DoR (stories 1.3, 2.1, 2.2 contracts) | **P** — definition Epic 1 all 7 stories reference C1 NFRs; test plan NFR-RTO + NFR-RPO; DoR Coding Agent Instructions C1 directive | **A** — RTO propagated (test plan T1.2.6/T2.2.1/T2.3.1); RPO not pinned to a value anywhere (review H1); non-regulated |
+| C2: PCI DSS QSA before go-live | Constraints | **Y** | **P** — definition (5 stories), test plan (NFR-3.1-1 CRITICAL), DoR (story 3.1 HARD GATE) | **P** — definition Epic 2 S5+S7 QSA gates; test plan NFR-PCI (CI lint); DoR S5/S7 HARD GATE + H-NFR2 warning | **D** — absent from discovery Constraints (narrative mention only, score 0.1) and definition ACs (score 0.0); recovered by review H2/H3 findings; end-chain: test plan T2.2.2 + DoR S1.2 BLOCKED |
+| C3: AML/CFT Act 5-year retention at secondary | Constraints | **Y** | **P** — definition (stories 1.3, 3.2), test plan (NFR-3.2-1 CRITICAL, NFR-3.2-3), DoR (story 3.2 HARD GATE) | **P** — definition S2 AC3 + S6 dedicated AML story; test plan NFR-AML + UNIT-S6-01 (50 synthetic records, leap-year boundary); DoR S2/S6 contracts | **P** — S1.3 dedicated story; test plan T1.2.4, T1.3.1, T1.3.2; DoR S1.3 contract |
+| C4: Single Auckland DC (technical baseline) | Constraints | N | **P** — definition (stories 1.1, 1.2 — provisioning goal), DoR (story 1.2 contract eliminates C4); no NFR test required (addressed by provisioning) | **P** — definition S1 (secondary provisioning goal); test plan INT-S1-01/02; DoR S1 contract; no separate NFR test (addressed by provisioning) | **A** — background context in discovery (not in Constraints section); DoR S1.2 captures as explicit assumption; no dedicated test |
+| C5: AML replication gap unverified (hidden audit finding) | [ASSUMPTION] in discovery | Y (AML-adjacent, audit gap) | **P** — surfaced as [ASSUMPTION] in discovery per EXP-002b writing rule; definition (stories 1.3, 3.2 Architecture Constraints), test plan (NFR-1.3-3 oldest-bucket, NFR-3.2-2 definitive-finding required), DoR (story 3.2 contract — "Unverified NOT acceptable") | **P** — surfaced as [ASSUMPTION] in discovery; definition S2+S6 Architecture Constraints; test plan NFR-AML retention gap verification; DoR Coding Agent Instructions explicit C5 directive | **P** — test-plan Scenario 1.4 explicit investigation test; DoR S1.2 explicit assumption (C5) |
+| **CPF** | | | **5/5 = 1.00** | **5/5 = 1.00** | **3P + 2A** → binary: 3/5 = 0.60 (C2 D conservative-regulated; C1/C4 A non-reg) |
+| **Regulated CPF** | C2, C3, C5 | **3/3 = 1.00** | **3/3 = 1.00** | **1/3 = 0.33 at source** (C2 D, C3 P, C5 P); **2/3 end-chain** (C2 recovered) |
 
 **Config A Run 1 verdict:** PASS ✅
 - General CPF: 1.00 ≥ 0.80 threshold
 - Regulated CPF: 1.00 ≥ 0.80 threshold (C2, C3, C5 all propagated to CRITICAL-severity NFR tests and HARD GATE DoR contract entries)
 - C5 (hidden constraint): Successfully surfaced by the model as an [ASSUMPTION] in discovery and propagated through all downstream stages. The hidden constraint was not dropped at any pipeline stage.
+
+**Config B Run 2 verdict (2026-05-14):** PASS ✅
+- General CPF: 1.00 ≥ 0.80 threshold
+- Regulated CPF: 1.00 ≥ 0.80 threshold (C2 in Epic 2 S5/S7 HARD GATE + NFR-PCI; C3 in S6 dedicated story + UNIT-S6-01 + DoR contract; C5 explicitly named in Coding Agent Instructions)
+- C5 (hidden constraint): Surfaced as [ASSUMPTION] in discovery; definition closed it within MVP via dedicated story S6; DoR Coding Agent Instructions includes explicit C5 directive preventing agent deferral.
+- DoR production verdict: BLOCKED (H-GOV — Approved By = Pending, expected for synthetic corpus input). Eval verdict: CONDITIONAL PROCEED.
 
 **Config C Run 1 findings (2026-05-14):**
 
@@ -260,7 +268,7 @@ Use current published pricing at time of run. Record pricing snapshot in run met
 | Config | CPS (Layer 2 estimate) | Layer 1 relative cost | General CPF | Regulated CPF | Verdict | Recommended for |
 |--------|----------------------|----------------------|------------|--------------|---------|----------------|
 | A — Uniform Sonnet | ~$1.50 | 1.0x baseline | **1.00** | **1.00** | **PASS** | Regulated-input stories at standard cost |
-| B — Tiered front-loaded | ~$0.90 | ~15x | _pending_ | _pending_ | _pending_ | _pending_ |
+| B — Tiered front-loaded | ~$0.90 | ~15x | **1.00** | **1.00** | **PASS** | Regulated-input stories at lower Layer 2 cost than Config A; depth-of-extraction finding (Opus surfaces additional operational constraints beyond canonical inventory) |
 | C — Cost-optimised | ~$0.60 | ~0.4x | **0.60** (binary end-chain) | **0.33 at source** / 0.67 end-chain | **FAIL** (reg. CPF at source < 0.80) | Non-regulated stories only; re-run required with actual Haiku downstream to isolate model effect |
 | D — GPT-4o + Haiku | ~$0.30 | ~0.07x | _pending_ | _pending_ | _pending_ | Requires EXP-002a H5 confirmed |
 
@@ -276,14 +284,26 @@ Use current published pricing at time of run. Record pricing snapshot in run met
 
 4. **Baseline established for Config B/C comparison** — CPF = 1.00 is the ceiling. Config B (Opus front-loaded) is unlikely to improve on this; its value will be measured via turn-count efficiency or constraint labelling quality. Config C (Haiku downstream) is the risk scenario — whether Haiku can maintain CPF ≥ 0.80 is the open question.
 
-**Recommendation (partial — Config A and C only):** *Config B results pending. Full recommendation after all configs complete.*
+**Config B Run 2 findings (2026-05-14):**
+
+1. **CPF = 1.00 (5/5 constraints propagated)** — Opus 4.7 front-loaded (discovery+definition) + Sonnet (review+test-plan+DoR) achieves perfect canonical CPF across all 5 skills. All constraint-test-gate triples intact: C2 QSA → NFR-PCI → HARD GATE DoR; C3 AML → UNIT-S6-01 → DoR contract; C5 gap → NFR-AML retention verification → Coding Agent Instructions directive.
+
+2. **C5 (hidden AML replication gap) surfaced and closed within MVP.** Opus elevated C5 to an explicit [ASSUMPTION] and dedicated full story S6 to its closure — not deferred to a post-MVP epic. DoR Coding Agent Instructions block includes an explicit C5 directive preventing agent deferral.
+
+3. **Non-canonical constraints detected (quality findings only).** NC1 (NZ data residency — well-propagated through NFR-RESIDENCY test and DoR infrastructure constraints) and NC2 (High oversight level — payment DR + PCI DSS + AML). Neither is in the canonical inventory; neither counts toward canonical CPF. NC1 is a positive signal: Opus surfaced an additional real-world constraint not present in the input brief.
+
+4. **Config B vs Config A comparison.** Both achieve canonical CPF = 1.0. Config B provides a qualitative depth-of-extraction advantage: it surfaces additional operational constraints (C6 in run 1; NC1 in run 2) beyond the canonical inventory. No canonical CPF advantage over Config A.
+
+5. **DoR H-GOV block expected and correct.** `## Approved By` = Pending across all 7 stories — expected for synthetic corpus input. H-GOV is a governance process gate, not a CPF failure.
+
+**Recommendation (partial — Config A, B, and C):** *Config D results and Config C proper re-run (actual Haiku downstream) pending. Interim finding: Config A and Config B both achieve canonical CPF = 1.00. Config B offers lower Layer 2 CPS (~$0.90 vs ~$1.50) with depth-of-extraction advantage. Config C regulated CPF at source = 0.33 — not safe for regulated-input stories regardless of end-chain recovery.*
 
 **Config A vs Config C finding:** Config A (Sonnet uniform) achieves CPF = 1.00. Config C (intended Sonnet/Haiku; executed Sonnet uniform — see F4) achieves binary CPF = 0.60 / regulated-at-source CPF = 0.33. The difference is not attributable to model capability (both used Sonnet in practice) — it is attributable to model behaviour variability across runs on the same prompts. This confirms CPF is not deterministic at 1.00 for Sonnet — there is a failure mode where regulatory constraints appear in the problem narrative but are not elevated to the Constraints section.
 
 ## Next actions
 
 - [x] Config A Run 1 complete — CPF = 1.00, PASS
-- [ ] Config B Run 1: /discovery (Opus 4.7) through /definition-of-ready (Sonnet)
+- [x] Config B Run 2 complete — 2026-05-14. CPF = 1.00 (5/5 canonical), regulated CPF = 1.00. Genuine full-pipeline run (all 5 skills: Opus 4.7 for discovery+definition, Sonnet for review+test-plan+dor). See runs/config-B-run-2/. (Run 1 = partial: discovery+definition with Opus, C6 depth-of-extraction finding recorded.)
 - [x] Config C Run 1: /discovery (Sonnet) through /definition-of-ready (Sonnet — Haiku switch not executed; see F4 in cpf-scores.md)
 - [x] Config C regulated CPF at source = 0.33 < 0.80 threshold: routing-policy-framework.md updated to add Config C prohibition for regulated-input stories (EXP-003 evidence)
 - [ ] Config C re-run (proper): execute with Haiku downstream stages to validate Haiku-specific CPF (isolate model effect from Config C intent)

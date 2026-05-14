@@ -1,10 +1,15 @@
 {
-  "skill": "discovery",
-  "caseId": "T5",
+  "skill": "definition-of-ready",
+  "caseId": "S1",
   "model": "claude-opus-4-7",
-  "trial": 3,
-  "completedAt": "2026-05-13T09:39:50.837Z",
-  "artefactPath": "C:\\Users\\Hamis\\code\\skills repo\\workspace\\experiments\\EXP-002b\\runs\\discovery-T5-claude-opus-4-7-trial-3.md",
-  "dimensionsScored": 7,
-  "verdict": "fail"
+  "completedAt": "2026-05-14T00:00:00Z",
+  "artefactPath": "workspace/experiments/EXP-003-pipeline-eval/runs/config-B-run-2/dor.md",
+  "dimensionsScored": {
+    "cpf": 1.0,
+    "regulatedConstraintsMet": true,
+    "nonCanonicalConstraints": 2,
+    "reviewVerdict": "PASS",
+    "dorVerdict": "BLOCKED (H-GOV process gate — not a CPF failure)"
+  },
+  "verdict": "CPF threshold met (1.0 >= 0.80); all 5 canonical constraints propagated through all 5 skills"
 }
