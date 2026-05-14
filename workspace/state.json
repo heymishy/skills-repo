@@ -2,7 +2,7 @@
   "currentPhase": "model-evaluation-experiments",
   "activeFeature": "2026-05-10-model-evaluation-capability",
   "previousActiveFeature": "2026-05-08-web-ui-copilot-chat-parity",
-  "lastUpdated": "2026-05-14T18:00:00.000Z",
+  "lastUpdated": "2026-05-14T20:00:00.000Z",
   "lastDreamRun": "2026-05-11T00:44:17.279Z",
   "cycle": {
     "discovery": {
@@ -74,16 +74,18 @@
   },
   "checkpoint": {
     "writtenAt": "2026-05-14",
-    "contextAtWrite": "EXP-003 Config B run 2 complete — full pipeline (all 5 skills) executed in eval mode. Discovery+definition: claude-opus-4-7. Review+test-plan+DoR: claude-sonnet-4-6. CPF = 5/5 = 1.00; regulated CPF = 1.00 (C2/C3/C5 all propagated). DoR verdict: BLOCKED in production (H-GOV — Approved By = Pending, expected for synthetic corpus input); CONDITIONAL PROCEED in eval mode. Manifest updated with Config B run 2 results across all sections (scorecard table, detail table, runs log, findings). evaluation.mode reset to false. EXP-003 runs A, B, and C complete.",
-    "resumeInstruction": "EXP-003 Config A (CPF=1.00), Config B run 2 (CPF=1.00), and Config C run 1 (regulated CPF at source=0.33, FAIL) are complete. Pending: Config D (requires EXP-002a H5 confirmed) and Config C proper re-run (with actual Haiku downstream stages). NEXT PRIORITY: Challenger pre-check on discovery SKILL.md proposal — read workspace/proposals/proposed-discovery-skill-update-exp-002b.md and run improvement-agent pre-check for D5/D7, D6, D2 rule changes before editing any SKILL.md file. PARALLEL (unchanged): wucp.1/2/4 are reviewReady and can run /review at any time.",
+    "contextAtWrite": "EXP-004-dor-rubric complete — Haiku GF 1.00 both trials (8 runs), Sonnet GF 1.00 both trials (8 runs). All 16 runs, 16 judge files, 4 scorecards, and haiku-vs-sonnet-final.md complete. Haiku approved as default model for /definition-of-ready at 0.33× cost. routing-policy-framework.md updated with measurement_backed: true, citing EXP-004-dor-rubric. evaluation.mode reset to false. Committed: chore: EXP-004 complete — Haiku GF 1.00 approved for /definition-of-ready at 0.33x cost.",
+    "resumeInstruction": "EXP-004 is complete. Haiku approved for /definition-of-ready (GF 1.00, 2 trials, 0 categorical fails). NEXT PRIORITY: (1) Check dreaming run status — lastDreamRun was 2026-05-11T00:44:17.279Z, check if improvement-agent auto-run has fired since then; if not, trigger manually via /dream. (2) Address Layer 2 API routing enforcement gap — routing-policy-framework.md now shows Haiku as default for /definition-of-ready (measurement_backed: true) but scripts/run-model-sweep.js and any programmatic DoR invocation still default to Sonnet; wire the routing change. PARALLEL (unchanged): wucp.1/2/4 are reviewReady and can run /review at any time. EXP-003 pending actions also carry forward.",
     "pendingActions": [
-      "PRIORITY 1 (unchanged) — Challenger pre-check on discovery SKILL.md proposal: Read workspace/proposals/proposed-discovery-skill-update-exp-002b.md. Before applying any SKILL.md change, run the improvement-agent challenger pre-check to confirm the three proposed changes (constraint surfacing rule D5/D7, success observability rule D6, /clarify trigger D2) are not regressions. If pre-check passes: proceed to Priority 2. If fails: note the specific failure and stop.",
-      "PRIORITY 2 (unchanged) — Apply SKILL.md change if challenger passes: Edit .github/skills/discovery/SKILL.md with the three changes specified in workspace/proposals/proposed-discovery-skill-update-exp-002b.md. Artefact-first route: short-track via /test-plan -> /definition-of-ready -> coding agent. The proposal specifies exact insertion locations.",
-      "PRIORITY 3 — EXP-003 Config C proper re-run: Set evaluation.mode: true, run /discovery with Sonnet, SWITCH model picker to claude-haiku-4-5 before running /definition, /review, /test-plan, /definition-of-ready. Save artefacts to workspace/experiments/EXP-003-pipeline-eval/runs/config-C-run-2/. Score CPF (especially regulated CPF). If regulated CPF still < 0.80: the routing-policy-framework.md prohibition stands permanently. Reset evaluation.mode: false after.",
-      "PRIORITY 4 — EXP-003 Config D: Requires EXP-002a H5 confirmed (GPT-4o ≥ 0.70 on T1 and T3) before running. Do not run Config D until H5 is confirmed.",
-      "PARALLEL — wucp /review pipeline: wucp.1 (context auto-loader), wucp.2 (slash command router), wucp.4 (session start wizard) are all reviewReady: true with no spike dependency. Can run /review on these in parallel with EXP work.",
-      "DEFERRED — EXP-004 through EXP-009 full EVAL.md coverage programme: Sequenced in workspace/experiments/eval-programme-roadmap.md. Gate skills first, then generative skills.",
-      "DEFERRED — Token-optimization proposal review: workspace/proposals/proposed-update-token-optimization-measurement.md awaiting operator decision. Acceptance applies measurement_backed field to routing policy tiers (MM3 metric)."
+      "PRIORITY 1 — Monday dreaming run check: lastDreamRun = 2026-05-11T00:44:17.279Z. Check if improvement-agent auto-run has fired since then. If not, trigger manually via /dream or confirm auto-run is scheduled.",
+      "PRIORITY 2 — Layer 2 API routing enforcement gap: routing-policy-framework.md now shows claude-haiku-4-5 as default for /definition-of-ready (measurement_backed: true, EXP-004-dor-rubric). But scripts/run-model-sweep.js and any programmatic DoR invocation still default to Sonnet. Wire the routing change in the script's MODEL_ROUTING map or equivalent config.",
+      "PRIORITY 3 (from EXP-003 era) — Challenger pre-check on discovery SKILL.md proposal: Read workspace/proposals/proposed-discovery-skill-update-exp-002b.md. Before applying any SKILL.md change, run the improvement-agent challenger pre-check to confirm the three proposed changes (constraint surfacing rule D5/D7, success observability rule D6, /clarify trigger D2) are not regressions.",
+      "PRIORITY 4 (from EXP-003 era) — Apply SKILL.md change if challenger passes: Edit .github/skills/discovery/SKILL.md with the three changes specified in workspace/proposals/proposed-discovery-skill-update-exp-002b.md.",
+      "PRIORITY 5 — EXP-003 Config C proper re-run: Set evaluation.mode: true, run /discovery with Sonnet, switch model picker to claude-haiku-4-5 before /definition, /review, /test-plan, /definition-of-ready. Save to workspace/experiments/EXP-003-pipeline-eval/runs/config-C-run-2/. Reset evaluation.mode: false after.",
+      "PRIORITY 6 — EXP-003 Config D: Requires EXP-002a H5 confirmed (GPT-4o >= 0.70 on T1 and T3) before running.",
+      "PARALLEL — wucp /review pipeline: wucp.1 (context auto-loader), wucp.2 (slash command router), wucp.4 (session start wizard) are all reviewReady: true. Can run /review in parallel with other priorities.",
+      "DEFERRED — EXP-005 through EXP-009 full EVAL.md coverage programme: Sequenced in workspace/experiments/eval-programme-roadmap.md. Gate skills first, then generative skills.",
+      "DEFERRED — Token-optimization proposal review: workspace/proposals/proposed-update-token-optimization-measurement.md awaiting operator decision."
     ]
   }
 }

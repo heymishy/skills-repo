@@ -8,7 +8,7 @@
 | experiment_type | gate-skill-rubric |
 | created | 2026-05-21 |
 | operator | heymishy |
-| status | in-progress |
+| status | complete |
 
 ## Sweep configuration
 
@@ -90,22 +90,22 @@ Total cells: 4 cases × 2 models × 2 trials = 16 runs.
 
 | Run | Case | Model | Trial | Date | Run file | G1 | G2 | G3 | G4 | G5 | G6 | Weighted | Pass | GF correct |
 |-----|------|-------|-------|------|----------|----|----|----|----|----|-----|---------|------|-----------|
-| 1 | T1 | haiku-4-5 | 1 | _pending_ | | | | | | | | | | |
-| 2 | T1 | haiku-4-5 | 2 | _pending_ | | | | | | | | | | |
-| 3 | T1 | sonnet-4-6 | 1 | _pending_ | | | | | | | | | | |
-| 4 | T1 | sonnet-4-6 | 2 | _pending_ | | | | | | | | | | |
-| 5 | T2 | haiku-4-5 | 1 | _pending_ | | | | | | | | | | |
-| 6 | T2 | haiku-4-5 | 2 | _pending_ | | | | | | | | | | |
-| 7 | T2 | sonnet-4-6 | 1 | _pending_ | | | | | | | | | | |
-| 8 | T2 | sonnet-4-6 | 2 | _pending_ | | | | | | | | | | |
-| 9 | T3 | haiku-4-5 | 1 | _pending_ | | | | | | | | | | |
-| 10 | T3 | haiku-4-5 | 2 | _pending_ | | | | | | | | | | |
-| 11 | T3 | sonnet-4-6 | 1 | _pending_ | | | | | | | | | | |
-| 12 | T3 | sonnet-4-6 | 2 | _pending_ | | | | | | | | | | |
-| 13 | T4 | haiku-4-5 | 1 | _pending_ | | | | | | | | | | |
-| 14 | T4 | haiku-4-5 | 2 | _pending_ | | | | | | | | | | |
-| 15 | T4 | sonnet-4-6 | 1 | _pending_ | | | | | | | | | | |
-| 16 | T4 | sonnet-4-6 | 2 | _pending_ | | | | | | | | | | |
+| 1 | T1 | haiku-4-5 | 1 | 2026-05-14 | runs/haiku/T1-run-1.md | 1.0 | 1.0 | N/A | 1.0 | N/A | 1.0 | 1.00 | ✅ | ✅ |
+| 2 | T1 | haiku-4-5 | 2 | 2026-05-14 | runs/haiku/T1-run-2.md | 1.0 | 1.0 | N/A | 1.0 | N/A | 1.0 | 1.00 | ✅ | ✅ |
+| 3 | T1 | sonnet-4-6 | 1 | 2026-05-14 | runs/sonnet/T1-run-1.md | 1.0 | 1.0 | N/A | 1.0 | N/A | 1.0 | 1.00 | ✅ | ✅ |
+| 4 | T1 | sonnet-4-6 | 2 | 2026-05-14 | runs/sonnet/T1-run-2.md | 1.0 | 1.0 | N/A | 1.0 | N/A | 1.0 | 1.00 | ✅ | ✅ |
+| 5 | T2 | haiku-4-5 | 1 | 2026-05-14 | runs/haiku/T2-run-1.md | 1.0 | 1.0 | N/A | 1.0 | N/A | 1.0 | 1.00 | ✅ | ✅ |
+| 6 | T2 | haiku-4-5 | 2 | 2026-05-14 | runs/haiku/T2-run-2.md | 1.0 | 1.0 | N/A | 1.0 | N/A | 1.0 | 1.00 | ✅ | ✅ |
+| 7 | T2 | sonnet-4-6 | 1 | 2026-05-14 | runs/sonnet/T2-run-1.md | 1.0 | 1.0 | N/A | 1.0 | N/A | 1.0 | 1.00 | ✅ | ✅ |
+| 8 | T2 | sonnet-4-6 | 2 | 2026-05-14 | runs/sonnet/T2-run-2.md | 1.0 | 1.0 | N/A | 1.0 | N/A | 1.0 | 1.00 | ✅ | ✅ |
+| 9 | T3 | haiku-4-5 | 1 | 2026-05-14 | runs/haiku/T3-run-1.md | 1.0 | 1.0 | N/A | 1.0 | N/A | 1.0 | 1.00 | ✅ | ✅ |
+| 10 | T3 | haiku-4-5 | 2 | 2026-05-14 | runs/haiku/T3-run-2.md | 1.0 | 1.0 | N/A | 1.0 | N/A | 1.0 | 1.00 | ✅ | ✅ |
+| 11 | T3 | sonnet-4-6 | 1 | 2026-05-14 | runs/sonnet/T3-run-1.md | 1.0 | 1.0 | N/A | 1.0 | N/A | 1.0 | 1.00 | ✅ | ✅ |
+| 12 | T3 | sonnet-4-6 | 2 | 2026-05-14 | runs/sonnet/T3-run-2.md | 1.0 | 1.0 | N/A | 1.0 | N/A | 1.0 | 1.00 | ✅ | ✅ |
+| 13 | T4 | haiku-4-5 | 1 | 2026-05-14 | runs/haiku/T4-run-1.md | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.00 | ✅ | ✅ |
+| 14 | T4 | haiku-4-5 | 2 | 2026-05-14 | runs/haiku/T4-run-2.md | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.00 | ✅ | ✅ |
+| 15 | T4 | sonnet-4-6 | 1 | 2026-05-14 | runs/sonnet/T4-run-1.md | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.00 | ✅ | ✅ |
+| 16 | T4 | sonnet-4-6 | 2 | 2026-05-14 | runs/sonnet/T4-run-2.md | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.00 | ✅ | ✅ |
 
 ## Scorecard summary
 
@@ -127,14 +127,27 @@ Total cells: 4 cases × 2 models × 2 trials = 16 runs.
 - If Haiku misses any BLOCKED case (false positive): Haiku is prohibited for DoR gate decisions on regulated stories. Sonnet required.
 - If Haiku correctly identifies blocks but produces incomplete instructions (G3 weak): conditional approval possible (use Haiku for block detection; Sonnet for instructions generation when story passes).
 
+## Final results — 2026-05-14
+
+**Hypothesis outcome: CONFIRMED.** Haiku achieves GF = 1.00 with zero categorical fails across all 4 adversarial cases and both trials.
+
+| Model | Trial 1 GF | Trial 2 GF | Combined GF | Mean weighted | Categorical fails | Decision |
+|-------|-----------|-----------|-------------|---------------|-------------------|----------|
+| claude-haiku-4-5 | 1.00 | 1.00 | **1.00** | 1.00 | 0 | **APPROVED — default** |
+| claude-sonnet-4-6 | 1.00 | 1.00 | **1.00** | 1.00 | 0 | Fallback (categorical fail trigger only) |
+
+All 4 adversarial traps defeated by both models in all 16 runs.
+Routing policy updated in `workspace/proposals/routing-policy-framework.md` — measurement_backed: true, EXP-004-dor-rubric.
+Full comparison: `workspace/experiments/EXP-004-dor-rubric/haiku-vs-sonnet-final.md`
+
 ## Next actions
 
-- [ ] Run all 16 cells (see matrix above)
-- [ ] Score with judge prompt from EVAL.md
-- [ ] Populate scorecard
-- [ ] Update routing-policy-framework.md based on results
-- [ ] Mark measurement_backed: true/false for DoR Haiku routing claim
-- [ ] Archive experiment: update status to "complete"
+- [x] Run all 16 cells (see matrix above)
+- [x] Score with judge prompt from EVAL.md
+- [x] Populate scorecard
+- [x] Update routing-policy-framework.md based on results
+- [x] Mark measurement_backed: true for DoR Haiku routing claim
+- [x] Archive experiment: update status to "complete"
 
 ## Deviations from template
 

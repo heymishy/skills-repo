@@ -55,7 +55,8 @@ For Layer 2 rates, always check the PRICING map in `scripts/run-model-sweep.js` 
 | /definition | claude-sonnet-4-6 | Provisional — no dedicated eval yet | EXP-003 complete |
 | /review | claude-sonnet-4-6 | Provisional — structured checklist; Sonnet sufficient by assumption | EXP-003 complete |
 | /test-plan | claude-sonnet-4-6 | Provisional | EXP-003 complete |
-| /definition-of-ready | claude-sonnet-4-6 | Provisional — gate application; structured | EXP-003 complete |
+| /definition-of-ready | claude-haiku-4-5 | EXP-004: GF 1.00 trials 1+2, 0 categorical fails, all 4 adversarial traps defeated. Default at 0.33× Sonnet cost. | true (`experiment_id: EXP-004-dor-rubric`, 2026-05-14) | Corpus expansion or categorical fail trigger |
+| /definition-of-ready (fallback) | claude-sonnet-4-6 | EXP-004: GF 1.00 trials 1+2. Escalate on categorical fail trigger only. | true (`experiment_id: EXP-004-dor-rubric`, 2026-05-14) | Corpus expansion |
 | /benefit-metric | claude-sonnet-4-6 | Provisional | After EXP-LOCAL-001 if L1 local model available |
 | /definition-of-done | claude-sonnet-4-6 | Provisional | After EXP-LOCAL-001 if L1 local model available |
 
