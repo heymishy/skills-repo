@@ -224,6 +224,7 @@ Use current published pricing at time of run. Record pricing snapshot in run met
 | B-2 | B | discovery→DoR (full pipeline) | Opus 4.7 (disc+def) + Sonnet (review+tp+dor) | 2026-05-14 | C1, C2, C3, C4, C5 | C1✅ C2✅ C3✅ C4✅ C5✅ | **1.00** |
 | C-1 | C | discovery→DoR | All claude-sonnet-4-6 (⚠️ Haiku switch not executed — see F4) | 2026-05-14 | C1, C2, C3, C4, C5 | C1⚠️ C2⚠️(recovered) C3✅ C4⚠️ C5✅ | **0.60** (binary end-chain); at-source CPF: 0.40; regulated at source: 0.33 |
 | C-2 | C | discovery→DoR | claude-sonnet-4-6 (disc+def) + claude-haiku-4-5 (review+tp+dor) | 2026-05-14 | C1, C2, C3, C4, C5 | C1⚠️ C2❌(chain 0.35) C3✅ C4⚠️ C5⚠️ | **Chain 0.68 FAIL**; final-stage 0.76; regulated chain 0.675 FAIL; C3 chain 1.00 |
+| fix-val-def-f6f7-r1 | C (fix validation) | /definition only (Step 4a applied) | claude-sonnet-4-6 | 2026-05-14 | C1, C2, C3, C4, C5 | C2✅(1.00) C3✅(1.00) — all triggering stories covered via Step 4a | **C2 definition: 1.00 PASS** (was 0.35); regulated definition: 1.00 PASS. See fix-validation/definition-f6f7/run-1/ |
 | | D | discovery→DoR | GPT-4o+Haiku | _pending_ | Requires EXP-002a H5 confirmed | | |
 
 ## CPF detail table (per run)
@@ -321,7 +322,8 @@ Use current published pricing at time of run. Record pricing snapshot in run met
 - [x] Config C Run 1: /discovery (Sonnet) through /definition-of-ready (Sonnet — Haiku switch not executed; see F4 in cpf-scores.md)
 - [x] Config C regulated CPF at source = 0.33 < 0.80 threshold: routing-policy-framework.md updated to add Config C prohibition for regulated-input stories (EXP-003 evidence)
 - [x] Config C Run 2: /discovery+/definition (Sonnet) + /review+/test-plan+/DoR (Haiku) — complete 2026-05-14. Chain CPF = 0.68 FAIL; regulated chain CPF = 0.675 FAIL. Key finding: Sonnet vertical-slice choice suppresses C2 propagation (F6); self-check false positive in propagation table (F7). See runs/config-C-run-2/cpf-scores.md.
-- [ ] Config C re-run (proper — Haiku for /definition): execute with Haiku at /definition stage to isolate Haiku definition CPF. Run 2 attributes the definition failure to Sonnet's slicing strategy choice — a Haiku-definition run would determine whether Haiku independently propagates regulated constraints or also drops them.
+- [x] F6/F7 fix validation: Step 4a added to /definition SKILL.md (commit `4dae4e3`); re-run on Config C run 2 discovery confirms C2 chain at definition = 1.00 (was 0.35). See fix-validation/definition-f6f7/run-1/. Fix verdict: CONFIRMED.
+- [ ] Config C re-run (proper — Haiku for /definition): execute with Haiku at /definition stage to isolate Haiku definition CPF. Run 2 attributes the definition failure to Sonnet's slicing strategy choice — a Haiku-definition run would determine whether Haiku independently propagates regulated constraints or also drops them. Note: Step 4a is now in SKILL.md — any re-run will include Step 4a enforcement regardless of model.
 - [ ] Update measurement_backed fields in token-optimization proposal after completion
 
 ## Deviations from template
@@ -329,3 +331,76 @@ Use current published pricing at time of run. Record pricing snapshot in run met
 - experiment_type is end-to-end-pipeline, not model-sweep — Scenario 3 is distinct from Scenarios 1 and 2
 - Layer 1 (semi-manual) only — Scenario 3 requires multi-turn pipeline execution; Layer 2 automation of full pipeline is a separate project
 - 2 trials per config (not 3) — pipeline runs are time-intensive; 2 trials provides directional signal for config comparison
+
+---
+
+## F6/F7 Fix Validation
+
+**Purpose:** Validate that the Step 4a regulated constraint propagation check (added to `.github/skills/definition/SKILL.md` in commit `4dae4e3`) resolves the F6/F7 findings from Config C run 2. This is a /definition stage-only re-run — not a full pipeline run. The question being answered: does Step 4a correctly identify S1.2 and S2.2 as C2-triggering stories and add C2 to their Architecture Constraints before the artefact is finalised?
+
+**Run artefact:** `fix-validation/definition-f6f7/run-1/definition.md`
+
+**Input:** Config C run 2 discovery artefact (`runs/config-C-run-2/discovery.md`) — same S1 corpus, same constraints (C1–C5).
+
+**Model:** claude-sonnet-4-6 (same as Config C run 2 discovery+definition stages — isolates the SKILL.md fix, not a model change).
+
+**Slicing strategy:** Vertical slice (same as Config C run 2 — chosen deliberately to test whether Step 4a fixes C2 propagation independent of strategy choice).
+
+### Step 4a execution trace
+
+Step 4a.1 identified two regulated constraints: C2 (PCI DSS — process gate) and C3 (AML/CFT — retention rule).
+
+Step 4a.2 trigger analysis:
+
+| Constraint | Triggering stories identified | Exclusions |
+|---|---|---|
+| C2: PCI DSS QSA gate | S1.2, S1.3, S2.2 | S1.1 (vendor engagement exclusion), S2.1 (monitoring only), S2.3 (procedural), S3.x (observability) |
+| C3: AML/CFT 5-year retention | S1.2, S1.3 | All other stories |
+
+Step 4a.3 gap findings and fixes:
+
+| Story | Constraint | Gap found? | Fix applied |
+|---|---|---|---|
+| S1.2 | C2 (PCI DSS) | **Yes** — not in Architecture Constraints | C2 added: "deploys replication technology that introduces Hamilton as a new CDE node; QSA assessment required before go-live" |
+| S1.2 | C3 (AML/CFT) | **Yes** — not explicitly named as Architecture Constraint | C3 added: "replication implementation must capture every transaction for 5-year statutory retention window" |
+| S1.3 | C2 (PCI DSS) | **Yes** — present implicitly via Compliance team reference, not explicitly named | C2 added: "creates audit trail schema within CDE; must be part of QSA assessment before go-live" |
+| S2.2 | C2 (PCI DSS) | **Yes** — not in Architecture Constraints | C2 added: "deploys failover logic activating Hamilton as active CDE node; architectural activation of PCI DSS scope expansion; QSA assessment required" |
+| S1.3 | C3 | No gap — present and correctly named | No action |
+
+**Step 4a completion summary:** Constraints checked: 2 | Stories with gaps fixed: 3 (S1.2 — C2+C3 both added; S1.3 — C2 explicitly named; S2.2 — C2 added) | Trigger exclusions logged: 4
+
+### CPF result — definition stage
+
+| Constraint | Config C run 2 (definition stage) | Fix validation run 1 (definition stage) | Change |
+|---|---|---|---|
+| C1 (Board SLA) | Present in NFRs — 0.75 | Present in NFRs — 0.75 | No change (not regulated; not within Step 4a scope) |
+| **C2 (PCI DSS)** | **0.35 — FAIL** (only in S1.1 AC5 and S1.3 implicit; absent from S1.2 and S2.2) | **1.00 — PASS** (Architecture Constraint in S1.2, S1.3, S2.2; all triggering stories covered) | **+0.65** |
+| **C3 (AML/CFT)** | 1.00 (S1.2 text + S1.3 dedicated) | 1.00 (Architecture Constraint explicitly named in S1.2 and S1.3) | No change in score; explicit naming is now correct form |
+| C4 (single DC) | Present in S1.1/S1.2 — 0.75 | Present in S1.1/S1.2 — 0.75 | No change |
+| C5 (hidden AML gap) | Present in S1.1/S1.3 — 0.75 | Present in S1.1/S1.3 — 0.75 | No change |
+
+**Definition stage CPF (fix validation):**
+- C2 chain at definition: **1.00** (was 0.35 in run 2)
+- Regulated chain at definition: **1.00** (was 0.675 in run 2)
+- C2 was present as Architecture Constraint in every story whose implementation scope triggers the PCI DSS gate: S1.2 ✓ S1.3 ✓ S2.2 ✓
+
+**Self-check false positive (F7) resolved:** The Constraint Propagation Analysis table no longer claims "ALL FIVE CONSTRAINTS PROPAGATED" on a feature-level basis. The table now distinguishes triggering stories from non-triggering stories and shows per-story Architecture Constraint presence. The verdict explicitly states: "No false positives: this check is per-triggering-story, not feature-level."
+
+### Fix validation verdict
+
+**F6 (slicing strategy suppresses C2 propagation): RESOLVED** — Step 4a identified the C2 gap in S1.2 and S2.2 regardless of vertical-slice strategy choice and applied the fix before the artefact was finalised. Slicing strategy no longer mediates C2 propagation.
+
+**F7 (self-check false positive): RESOLVED** — The Constraint Propagation Analysis table now performs per-triggering-story checks, not feature-level checks. The false-positive mechanism (claiming "appears somewhere in feature" = propagated) is replaced by an explicit Architecture Constraints field per triggering story.
+
+**Challenger AC coverage:**
+- AC1 (Step 4a triggers on regulated constraints): ✅ C2 and C3 correctly identified
+- AC2 (trigger heuristic identifies S1.2 as C2-triggering): ✅ S1.2 identified — "introduces Hamilton as CDE node"
+- AC3 (trigger heuristic identifies S2.2 as C2-triggering): ✅ S2.2 identified — "activates Hamilton as active CDE node"
+- AC4 (gap prompt fires; fix applied before artefact finalised): ✅ All three gap prompts fired; fixes applied in Step 4a.3 section
+- AC5 (C2 chain CPF at definition = 1.00): ✅ C2 in Architecture Constraints of S1.2, S1.3, S2.2 — all triggering stories covered
+
+**Overall fix validation verdict: CONFIRMED** — Step 4a resolves F6 and F7. C2 chain CPF at definition stage improves from 0.35 to 1.00. The fix is effective for the vertical-slice strategy case that produced the original failure.
+
+### Scope of this validation
+
+This validation covers the /definition stage only. It does not re-run /review, /test-plan, or /definition-of-ready. The expectation is that the downstream CPF chain will also improve (C2 is now in S1.2 and S2.2 Architecture Constraints entering /review, reducing the probability that Haiku /review needs to recover a gap that Sonnet /definition left). Full-pipeline re-run evidence would provide chain CPF confirmation but is not required to validate the /definition fix itself.
