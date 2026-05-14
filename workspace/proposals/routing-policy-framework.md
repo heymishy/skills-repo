@@ -119,7 +119,9 @@ An input is a regulated input if the operator's brief, or any context file loade
 - Prohibited: gpt-4o and gpt-4o-mini — EXP-002a confirmed both fail all regulated cases on D4/D5/D7
 - Opus exception: claude-opus-4-7 may still be preferred if the operator has domain-specific reasons for requiring higher D5 assumption quality (near 1.0 on T1 and T3), with a RISK-ACCEPT logged in `decisions.md` citing the cost premium (15x over Sonnet)
 
-**This rule applies regardless of cost savings.** A configuration that saves $X per story but loses one PCI DSS constraint in the DoR contract has failed the governance requirement. EXP-003 (CPF validation) will further validate the regulated routing once multi-turn context is available.
+**This rule applies regardless of cost savings.** A configuration that saves $X per story but loses one PCI DSS constraint in the DoR contract has failed the governance requirement.
+
+**Config C prohibition (EXP-003 evidence — 2026-05-14):** Config C (Sonnet /discovery + Haiku downstream, or Sonnet uniform) is **prohibited for regulated-input stories.** EXP-003 Config C Run 1 produced regulated CPF at source = 0.33 (C2 PCI DSS scored 0.0 in definition; absent from discovery Constraints section). This is a binary governance failure: a coding agent dispatched post-definition receives no PCI DSS constraint. Recovery by downstream review/DoR skills does not make the config safe for regulated inputs — the dispatch point (post-definition) is upstream of recovery. `experiment_id: EXP-003-pipeline-eval`, run: config-C-run-1, date: 2026-05-14. A properly-executed Config C re-run (with Haiku downstream stages as designed) is pending; the prohibition remains in force until that re-run demonstrates regulated CPF ≥ 0.80 at source.
 
 ### Exception protocol
 
