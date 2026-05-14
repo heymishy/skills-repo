@@ -1,3 +1,15 @@
+---
+evidence: ["workspace/experiments/EXP-002b/scorecard.md", "workspace/experiments/EXP-002b-context-loaded-discovery/scorecard.md"]
+proposed_diff:
+  before: "These don't need to be precise metrics yet - that's /benefit-metric's job."
+  after: "Three changes: (1) constraint labelling rule in S6, (2) observability minimum rule in S7, (3) /clarify decision gate after S8. See proposal body for full diff."
+confidence: "medium"
+anti_overfitting_gate: "passed — proposal adds new checks (D5/D6/clarify-trigger), does not remove or weaken any existing check"
+status: "pending_review"
+created_at: "2026-05-13"
+skill_slug: "discovery"
+---
+
 # Proposed update — `/discovery` SKILL.md: constraint surfacing, success observability, /clarify trigger
 
 **Proposal ID:** PROP-discovery-002b

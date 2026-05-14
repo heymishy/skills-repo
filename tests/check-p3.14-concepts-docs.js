@@ -92,6 +92,7 @@ const EXPECTED_PRIMITIVES = [
   'assurance-gate.md',
   'eval-suite.md',
   'learnings-log.md',
+  'model-evaluation.md',
   'pipeline-state.md',
   'skill.md',
   'surface-adapter.md',
@@ -106,6 +107,7 @@ const EXPECTED_BUILDING_BLOCKS = [
   'outer-loop-inner-loop.md',
   'skills-pipeline.md',
   'watermark-gate.md',
+  'web-ui.md',
 ].sort();
 
 const EXPECTED_CONCEPTS_ROOT = ['README.md', 'building-blocks', 'primitives', 'principles'].sort();

@@ -72,9 +72,9 @@ Check whether `product/` (repo root) exists and contains:
 - `tech-stack.md` — current technology decisions
 
 If found, read them and extract:
-- Target users (from `mission.md`) ? pre-populate the "Who it affects" section
-- Hard constraints (from `constraints.md`) ? pre-populate the Constraints section
-- Technical limits (from `tech-stack.md`) ? surface as known constraints
+- Target users (from `mission.md`) → pre-populate the "Who it affects" section
+- Hard constraints (from `constraints.md`) → pre-populate the Constraints section
+- Technical limits (from `tech-stack.md`) → surface as known constraints
 
 Surface what was found:
 
@@ -244,7 +244,6 @@ If the answer is vague or "nothing is out of scope":
 > Reply: give an example
 
 ### Section 6 â€” Assumptions and risks
-
 **Writing rule — constraint labelling (applies before writing this section and the Constraints section):**
 Before writing any section that references constraints, compliance requirements, data handling, integration dependencies, or regulatory obligations, list every constraint you cannot confirm from the input as an explicit assumption using this exact format:
 
@@ -272,7 +271,7 @@ For each success indicator, name:
 Do not write vague directional signals like "improved adoption" or "reduced friction". If you cannot specify a baseline, write `[UNKNOWN BASELINE]` explicitly — not a directional phrase. This signals to /benefit-metric where measurement work is needed.
 
 Example (acceptable):
-> **Onboarding time-to-first-artefact:** Baseline: ~4 hours (operator-estimated). Target: =30 minutes. Measured via: session transcript timing script.
+> **Onboarding time-to-first-artefact:** Baseline: ~4 hours (operator-estimated). Target: ≤30 minutes. Measured via: session transcript timing script.
 
 Example (not acceptable):
 > Faster onboarding for new teams.
@@ -377,7 +376,7 @@ The discovery artefact must include the following Attribution section:
 
 After producing the artefact:
 
-> **Discovery draft complete ?**
+> **Discovery draft complete ✅**
 >
 > Before approving and moving to /benefit-metric, run **/clarify** to sharpen the artefact.
 > /clarify identifies the highest-value open questions across scope, integration, constraints,
@@ -455,7 +454,7 @@ If the operator replies `skip`, write `"e1": null` to `estimate` in `workspace/s
 
 ## State update - mandatory final step
 
-> **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ?."
+> **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
 When the discovery artefact is saved and approved, update `.github/pipeline-state.json` in the **project repository**:
 
