@@ -117,6 +117,7 @@ function readEvaluationConfig() {
  */
 const COPILOT_MODEL_MAP = {
   // Copilot proxy uses dots (e.g. claude-sonnet-4.6) while harness uses dashes (claude-sonnet-4-6)
+  'claude-haiku-4-5':  'claude-haiku-4.5',
   'claude-sonnet-4-6': 'claude-sonnet-4.6',
   'claude-opus-4-7':   'claude-opus-4.7',
 };
@@ -316,6 +317,26 @@ function callModel(modelId, messages, maxTokens = 4096, systemPrompt, providerOv
   });
 }
 
+// ─── Model routing policy ───────────────────────────────────────────────────
+
+/**
+ * Canonical model routing policy — sourced from workspace/proposals/routing-policy-framework.md.
+ * Maps skill name → approved model ID for that skill's default production use.
+ *
+ * Used when --policy is given without --models. Supply --models to override.
+ * All values MUST be keys in PRICING (enforced by tests/check-model-routing.js).
+ *
+ * Last updated: 2026-05-16 (EXP-002a, EXP-004, EXP-005, EXP-006, EXP-007)
+ * Source: workspace/proposals/routing-policy-framework.md (current routing policy table)
+ */
+const MODEL_ROUTING = {
+  'discovery':           'claude-sonnet-4-6',   // EXP-002a: T1+T3 avg 0.807; regulated + non-regulated default
+  'definition':          'claude-haiku-4-5',     // EXP-005: all 4 cases pass; 0.33× cost
+  'review':              'claude-haiku-4-5',     // EXP-006: FDR_HIGH 1.00 across T1–T3; 0.33× cost
+  'test-plan':           'claude-haiku-4-5',     // EXP-007: TCF 1.00 non-regulated; PCI pending EXP-007R revalidation
+  'definition-of-ready': 'claude-haiku-4-5',     // EXP-004: GF 1.00 trials 1+2; 0.33× cost
+};
+
 // PRICING MAP — Layer 2 (direct API) rates per million tokens
 // For Layer 1 (GitHub Copilot AI Credits) costs, see workspace/experiments/eval-programme-roadmap.md
 // Last verified: 2026-05-12
@@ -335,12 +356,14 @@ const PRICING = {
 // ─── CLI argument parsing ───────────────────────────────────────────────────
 
 function parseArgs(argv) {
-  const args = { skills: null, models: null, trials: DEFAULT_TRIALS, dryRun: false, listSkills: false, experiment: null, contextFiles: null, pass2: false, cases: null, delay: 0, provider: null };
+  const args = { skills: null, models: null, trials: DEFAULT_TRIALS, dryRun: false, listSkills: false, experiment: null, contextFiles: null, pass2: false, cases: null, delay: 0, provider: null, policy: false, routing: false };
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--dry-run') { args.dryRun = true; continue; }
     if (arg === '--list-skills') { args.listSkills = true; continue; }
     if (arg === '--pass2') { args.pass2 = true; continue; }
+    if (arg === '--policy') { args.policy = true; continue; }
+    if (arg === '--routing') { args.routing = true; continue; }
     if (arg === '--experiment' && argv[i + 1]) { args.experiment = argv[++i]; continue; }
     if (arg === '--skills' && argv[i + 1]) { args.skills = argv[++i].split(',').map(s => s.trim()); continue; }
     if (arg === '--models' && argv[i + 1]) { args.models = argv[++i].split(',').map(s => s.trim()); continue; }
@@ -662,6 +685,21 @@ async function main() {
     return;
   }
 
+  // --routing mode: print the routing table and exit (no experiment needed)
+  if (args.routing) {
+    console.log('\nModel routing policy (applies when --policy flag is used without --models):');
+    console.log('\n' + 'Skill'.padEnd(24) + 'Model'.padEnd(24) + 'Layer 2 cost (input/output per M)');
+    console.log('─'.repeat(72));
+    for (const [skill, model] of Object.entries(MODEL_ROUTING)) {
+      const pricing = PRICING[model];
+      const costStr = pricing ? `$${pricing.inputPerM}/$${pricing.outputPerM}` : 'unknown';
+      console.log(skill.padEnd(24) + model.padEnd(24) + costStr);
+    }
+    console.log('\nSource: workspace/proposals/routing-policy-framework.md');
+    console.log('Override: --models <model-id>  (--policy is ignored when --models is set)');
+    return;
+  }
+
   // Experiment ID required for all other modes
   if (!args.experiment) {
     console.error('Error: --experiment EXP-XXX is required');
@@ -711,8 +749,12 @@ async function main() {
     process.exit(1);
   }
 
-  // Determine models
-  const models = args.models || Object.keys(PRICING);
+  // Determine models — --policy uses per-skill routing; --models overrides; fallback is all PRICING keys
+  const policyActive = args.policy && !args.models;
+  const models = args.models || (args.policy ? null : Object.keys(PRICING));
+  if (args.policy && args.models) {
+    console.log('Note: --models overrides --policy for this run.');
+  }
 
   // Experiment directory
   const experimentDir = path.join(EXPERIMENTS_DIR, args.experiment);
@@ -762,16 +804,30 @@ async function main() {
         continue;
       }
     }
+    // Resolve models for this skill: policy lookup, explicit --models override, or all PRICING keys
+    let skillModels;
+    if (policyActive) {
+      const routedModel = MODEL_ROUTING[skill.skillName];
+      if (!routedModel) {
+        console.warn(`Warning: --policy active but no routing entry for '${skill.skillName}' — skipping (add to MODEL_ROUTING to include)`);
+        continue;
+      }
+      skillModels = [routedModel];
+    } else {
+      skillModels = models;
+    }
     for (const corpusCase of cases) {
-      for (const model of models) {
+      for (const model of skillModels) {
         matrix.push({ skill, corpusCase, model });
       }
     }
   }
 
+  const activeModels = policyActive ? [...new Set(matrix.map(m => m.model))] : (models || []);
+  const modelSuffix = policyActive ? ' (via --policy routing table)' : (args.policy && args.models ? ' (--models overrides --policy)' : '');
   console.log(`\nExperiment: ${args.experiment}`);
   console.log(`Skills: ${[...new Set(matrix.map(m => m.skill.skillName))].join(', ')}`);
-  console.log(`Models: ${models.join(', ')}`);
+  console.log(`Models: ${activeModels.join(', ')}${modelSuffix}`);
   if (args.cases) console.log(`Cases: ${args.cases.join(', ')}`);
   console.log(`Matrix cells: ${matrix.length} (× ${args.trials} trials = ${matrix.length * args.trials} runs)`);
   if (contextFilesData) {
