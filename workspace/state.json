@@ -2,7 +2,7 @@
   "currentPhase": "model-evaluation-experiments",
   "activeFeature": "2026-05-10-model-evaluation-capability",
   "previousActiveFeature": "2026-05-08-web-ui-copilot-chat-parity",
-  "lastUpdated": "2026-05-15T00:00:00.000Z",
+  "lastUpdated": "2026-05-15T10:06:04.924Z",
   "lastDreamRun": "2026-05-11T00:44:17.279Z",
   "cycle": {
     "discovery": {
@@ -79,6 +79,13 @@
       "result": "Haiku FDR_HIGH 1.00 (6/6 adversarial cases, 2 trials). Sonnet FDR_HIGH 1.00 (6/6, 2 trials). Both approved. Haiku default at 0.33x cost; Sonnet override for direct-author delivery.",
       "routingUpdate": "routing-policy-framework.md updated — /review default changed to claude-haiku-4-5, measurement_backed: true, experiment_id: EXP-006-review-rubric",
       "evalMdFix": "D4 anchor corrected: T4 category mapping was C(MEDIUM)+D(LOW), now D(MEDIUM)+C(LOW)+D(LOW)"
+    },
+    "EXP-007-testplan-rubric": {
+      "status": "scaffolded",
+      "createdAt": "2026-05-15",
+      "manifest": "workspace/experiments/EXP-007-testplan-rubric/manifest.md",
+      "evalMd": ".github/skills/test-plan/EVAL.md",
+      "corpus": ".github/skills/test-plan/corpus/"
     }
   },
   "checkpoint": {
@@ -89,10 +96,8 @@
       "PRIORITY 1 — EXP-007 /test-plan rubric (Provisional Sonnet, pending evidence): Design corpus cases for /test-plan skill evaluation. Primary question: can Haiku generate complete, non-hallucinated test plans that cover all ACs? See workspace/experiments/eval-programme-roadmap.md for the EXP-007 scope definition. Start with /discovery of the evaluation design, then write EVAL.md and corpus cases.",
       "PRIORITY 2 — Dreaming run check: lastDreamRun = 2026-05-11T00:44:17.279Z. Check if improvement-agent auto-run has fired since then. If not, trigger manually via /dream or confirm auto-run is scheduled.",
       "PRIORITY 3 — Layer 2 API routing enforcement gap: routing-policy-framework.md now shows claude-haiku-4-5 as default for /review and /definition-of-ready (both measurement_backed: true). But scripts/run-model-sweep.js and any programmatic invocation still default to Sonnet. Wire the routing change in the script MODEL_ROUTING map or equivalent config.",
-      "PRIORITY 4 (from EXP-003 era) — Challenger pre-check on discovery SKILL.md proposal: Read workspace/proposals/proposed-discovery-skill-update-exp-002b.md. Before applying any SKILL.md change, run the improvement-agent challenger pre-check to confirm the three proposed changes (constraint surfacing rule D5/D7, success observability rule D6, /clarify trigger D2) are not regressions.",
-      "PRIORITY 5 (from EXP-003 era) — Apply SKILL.md change if challenger passes: Edit .github/skills/discovery/SKILL.md with the three changes specified in workspace/proposals/proposed-discovery-skill-update-exp-002b.md.",
-      "PRIORITY 6 — EXP-003 Config C proper re-run: Set evaluation.mode: true, run /discovery with Sonnet, switch model picker to claude-haiku-4-5 before /definition, /review, /test-plan, /definition-of-ready. Save to workspace/experiments/EXP-003-pipeline-eval/runs/config-C-run-2/. Reset evaluation.mode: false after.",
-      "PRIORITY 7 — EXP-003 Config D: Requires EXP-002a H5 confirmed (GPT-4o >= 0.70 on T1 and T3) before running.",
+      "PRIORITY 4 — EXP-003 Config C proper re-run: Set evaluation.mode: true, run /discovery with Sonnet, switch model picker to claude-haiku-4-5 before /definition, /review, /test-plan, /definition-of-ready. Save to workspace/experiments/EXP-003-pipeline-eval/runs/config-C-run-2/. Reset evaluation.mode: false after.",
+      "PRIORITY 5 — EXP-003 Config D: Requires EXP-002a H5 confirmed (GPT-4o >= 0.70 on T1 and T3) before running.",
       "PARALLEL — wucp /review pipeline: wucp.1 (context auto-loader), wucp.2 (slash command router), wucp.4 (session start wizard) are all reviewReady: true. Can run /review in parallel with other priorities.",
       "DEFERRED — Token-optimization proposal review: workspace/proposals/proposed-update-token-optimization-measurement.md awaiting operator decision.",
       "NOTE — EVAL.md D1 anchor miscalibrations to fix before EXP-007: D1 T2 anchor references broken slug/missing benefit metric (actual defect is C2 propagation table contradiction). D1 T3 anchor references CSV export AC (actual defect is broker portal/KiwiSaver scope violation). Did not affect EXP-006 scores."
