@@ -262,6 +262,10 @@ Write integration tests for those handoffs specifically.
 One test per NFR from the story. If NFRs says "None — confirmed", write no
 NFR tests and state this explicitly.
 
+**NFR test scope rule (EXP-007, 2026-05-16):** An NFR test must assert only the stated NFR observable outcome. Do not add AC-level assertions (e.g. confirming a gateway was called, or that a payment was processed) inside an NFR test body. NFR tests are threshold or negative-constraint tests — mixing a positive functional assertion from another AC into an NFR test conflates two distinct verification goals and produces a test with ambiguous failure semantics. Examples:
+- NFR-SEC-1 (card data must not be logged): assert only `capturedLogs.not.toContain(cardData)` and `dbField === null`. Do not add `expect(gateway.processPayment).toHaveBeenCalledWith(...)` — that belongs in the AC1 test.
+- NFR-PERF-1 (p99 < 200ms): assert only the latency threshold. Do not assert business-logic outcomes.
+
 ### Gap table
 
 Follow the gap table format from `templates/test-plan.md`.

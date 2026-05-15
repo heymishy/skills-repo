@@ -7,8 +7,9 @@
 | experiment_id | EXP-007-testplan-rubric |
 | experiment_type | skill-rubric-tcf |
 | created | 2026-05-15 |
+| completed | 2026-05-16 |
 | operator | heymishy |
-| status | scaffolded — runs not yet executed |
+| status | complete |
 
 ## Sweep configuration
 
@@ -146,10 +147,10 @@ To control for interactive variable answers, use the following fixed responses t
 
 | Model | Trial | T1 D1 | T1 D3 | T1 D5 | T2 D1 | T2 D4 | T3 D1 | T3 D2 | T4 D1 | T4 D3 | T5 D1 | T5 D3 | T5 D5 | TCF | Compliant |
 |-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-----|-----------|
-| haiku-4-5 | 1 | — | — | — | — | — | — | — | — | — | — | — | — | — | — |
-| haiku-4-5 | 2 | — | — | — | — | — | — | — | — | — | — | — | — | — | — |
-| sonnet-4-6 | 1 | — | — | — | — | — | — | — | — | — | — | — | — | — | — |
-| sonnet-4-6 | 2 | — | — | — | — | — | — | — | — | — | — | — | — | — | — |
+| haiku-4-5 | 1 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | **0.7** | 1.0 | 1.00 | ✅ |
+| haiku-4-5 | 2 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | **0.7** | 1.0 | 1.00 | ✅ |
+| sonnet-4-6 | 1 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | **1.0** | 1.0 | 1.00 | ✅ |
+| sonnet-4-6 | 2 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | **1.0** | 1.0 | 1.00 | ✅ |
 
 ---
 
@@ -165,9 +166,7 @@ To control for interactive variable answers, use the following fixed responses t
 
 | Model | TCF (avg) | Categorical fails | Recommended routing |
 |-------|-----------|-------------------|---------------------|
-| haiku-4-5 | — | — | — |
-| sonnet-4-6 | — | — | — |
+| haiku-4-5 | 1.00 | 0 | Approved for non-regulated stories (default at 0.33× Sonnet cost). Not recommended for PCI/compliance stories pending SKILL.md NFR scope rule fix. |
+| sonnet-4-6 | 1.00 | 0 | Approved for all stories. Preferred for PCI/compliance stories (D3=1.0 vs Haiku D3=0.7 on T5). |
 
-**Routing decision unlocked:** If Haiku TCF = 1.00 with zero categorical fails across both trials → update `/test-plan` routing row to `claude-haiku-4-5`, `measurement_backed: true`, `experiment_id: EXP-007-testplan-rubric`.
-
-If Haiku has any categorical fail → routing stays `claude-sonnet-4-6` provisional; record specific failure mode for SKILL.md intervention consideration.
+**Routing decision:** Haiku TCF = 1.00, zero categorical fails → `/test-plan` routing updated: `claude-haiku-4-5` for non-regulated, `measurement_backed: true`, `experiment_id: EXP-007-testplan-rubric`. Sonnet preferred for PCI/compliance-classified stories pending /test-plan SKILL.md NFR scope rule addition.

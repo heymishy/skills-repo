@@ -2,7 +2,7 @@
   "currentPhase": "model-evaluation-experiments",
   "activeFeature": "2026-05-10-model-evaluation-capability",
   "previousActiveFeature": "2026-05-08-web-ui-copilot-chat-parity",
-  "lastUpdated": "2026-05-15T10:06:04.924Z",
+  "lastUpdated": "2026-05-16T00:00:00.000Z",
   "lastDreamRun": "2026-05-11T00:44:17.279Z",
   "cycle": {
     "discovery": {
@@ -81,26 +81,31 @@
       "evalMdFix": "D4 anchor corrected: T4 category mapping was C(MEDIUM)+D(LOW), now D(MEDIUM)+C(LOW)+D(LOW)"
     },
     "EXP-007-testplan-rubric": {
-      "status": "scaffolded",
+      "status": "complete",
       "createdAt": "2026-05-15",
+      "completedAt": "2026-05-16",
       "manifest": "workspace/experiments/EXP-007-testplan-rubric/manifest.md",
       "evalMd": ".github/skills/test-plan/EVAL.md",
-      "corpus": ".github/skills/test-plan/corpus/"
+      "corpus": ".github/skills/test-plan/corpus/",
+      "result": "Haiku TCF 1.00, zero categorical fails (5/5 cases × 2 trials). Sonnet TCF 1.00, zero categorical fails. Haiku approved for /test-plan non-regulated. Sonnet preferred for PCI/compliance stories (Haiku D3=0.7 on T5 — NFR scope-mixing, confirmed systematic). All outer-loop skills (/discovery, /definition, /review, /test-plan, /definition-of-ready) now evidence-backed.",
+      "routingUpdate": "routing-policy-framework.md updated — /test-plan split: Haiku default for non-regulated (measurement_backed: true); Sonnet for PCI/compliance pending SKILL.md NFR scope rule fix",
+      "skillMdFix": ".github/skills/test-plan/SKILL.md NFR scope rule added (EXP-007-testplan-rubric, 2026-05-16) — NFR tests must not include positive AC assertions alongside negative constraints",
+      "finalReport": "workspace/experiments/EXP-007-testplan-rubric/haiku-vs-sonnet-final.md"
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-05-15",
-    "contextAtWrite": "EXP-006-review-rubric complete. Haiku FDR_HIGH 1.00 both trials (10 runs), Sonnet FDR_HIGH 1.00 both trials (10 runs). All 20 runs, 20 judge files, 4 scorecards, and haiku-vs-sonnet-final.md complete. Haiku approved as default model for /review at 0.33x cost. Sonnet approved as override for direct-author delivery. routing-policy-framework.md updated with measurement_backed: true, citing EXP-006-review-rubric. EVAL.md D4 anchor fixed (T4 C(MEDIUM)+D(LOW) -> D(MEDIUM)+C(LOW)+D(LOW)). evaluation.mode reset to false.",
-    "resumeInstruction": "EXP-006 is complete. Haiku approved for /review default (FDR_HIGH 1.00, 2 trials, 0 categorical fails). NEXT PRIORITY: EXP-007 /test-plan rubric — design corpus cases, write EVAL.md, run Haiku vs Sonnet sweep. See workspace/experiments/eval-programme-roadmap.md for EXP-007 scope. PARALLEL (unchanged): wucp.1/2/4 are reviewReady and can run /review at any time. wsm.4 is dor-signed-off and ready for dispatch.",
+    "writtenAt": "2026-05-16",
+    "contextAtWrite": "EXP-007-testplan-rubric complete. Haiku TCF 1.00 (5/5 cases × 2 trials, 0 categorical fails) — approved for /test-plan on non-regulated stories at 0.33× Sonnet cost. Sonnet preferred for PCI/compliance stories — Haiku D3=0.7 on T5 (NFR scope-mixing, confirmed systematic both trials). NFR scope rule added to .github/skills/test-plan/SKILL.md. routing-policy-framework.md updated with two measurement-backed /test-plan rows. EXP-007 manifest.md populated with final results. evaluation.mode reset to false. All outer-loop skills (/discovery, /definition, /review, /test-plan, /definition-of-ready) are now evidence-backed — zero provisional routing rows remain.",
+    "resumeInstruction": "EXP-007 complete. All outer-loop skills now have measurement-backed routing. NEXT PRIORITY: Layer 2 API routing enforcement — scripts/run-model-sweep.js MODEL_ROUTING map must be wired to the routing-policy-framework.md decisions (Haiku default for /definition, /review, /test-plan non-regulated, /definition-of-ready). SECOND PRIORITY: SCR (Scope Creep Resistance) feature design — discovery for programmatic scope-drift detection from pipeline-state.json. See workspace/proposals/ for prior proposals.",
     "pendingActions": [
-      "PRIORITY 1 — EXP-007 /test-plan rubric (Provisional Sonnet, pending evidence): Design corpus cases for /test-plan skill evaluation. Primary question: can Haiku generate complete, non-hallucinated test plans that cover all ACs? See workspace/experiments/eval-programme-roadmap.md for the EXP-007 scope definition. Start with /discovery of the evaluation design, then write EVAL.md and corpus cases.",
-      "PRIORITY 2 — Dreaming run check: lastDreamRun = 2026-05-11T00:44:17.279Z. Check if improvement-agent auto-run has fired since then. If not, trigger manually via /dream or confirm auto-run is scheduled.",
-      "PRIORITY 3 — Layer 2 API routing enforcement gap: routing-policy-framework.md now shows claude-haiku-4-5 as default for /review and /definition-of-ready (both measurement_backed: true). But scripts/run-model-sweep.js and any programmatic invocation still default to Sonnet. Wire the routing change in the script MODEL_ROUTING map or equivalent config.",
+      "PRIORITY 1 — Layer 2 API routing enforcement: routing-policy-framework.md now has measurement_backed: true for /discovery (Sonnet), /definition (Haiku), /review (Haiku default, Sonnet direct-author), /test-plan (Haiku non-regulated, Sonnet PCI/compliance), /definition-of-ready (Haiku default). Wire these in scripts/run-model-sweep.js MODEL_ROUTING map so programmatic Layer 2 runs match the policy.",
+      "PRIORITY 2 — SCR feature design: /discovery for a scope creep resistance capability — programmatic detection of story-level scope drift from the original discovery MVP. See workspace/experiments/eval-programme-roadmap.md for context.",
+      "PRIORITY 3 — /test-plan SKILL.md NFR scope rule validation: Once NFR scope rule is in SKILL.md (done), run a single Haiku trial on T5 to confirm D3=1.0 with the fix. If confirmed, downgrade PCI/compliance routing from Sonnet to Haiku.",
       "PRIORITY 4 — EXP-003 Config C proper re-run: Set evaluation.mode: true, run /discovery with Sonnet, switch model picker to claude-haiku-4-5 before /definition, /review, /test-plan, /definition-of-ready. Save to workspace/experiments/EXP-003-pipeline-eval/runs/config-C-run-2/. Reset evaluation.mode: false after.",
       "PRIORITY 5 — EXP-003 Config D: Requires EXP-002a H5 confirmed (GPT-4o >= 0.70 on T1 and T3) before running.",
       "PARALLEL — wucp /review pipeline: wucp.1 (context auto-loader), wucp.2 (slash command router), wucp.4 (session start wizard) are all reviewReady: true. Can run /review in parallel with other priorities.",
-      "DEFERRED — Token-optimization proposal review: workspace/proposals/proposed-update-token-optimization-measurement.md awaiting operator decision.",
-      "NOTE — EVAL.md D1 anchor miscalibrations to fix before EXP-007: D1 T2 anchor references broken slug/missing benefit metric (actual defect is C2 propagation table contradiction). D1 T3 anchor references CSV export AC (actual defect is broker portal/KiwiSaver scope violation). Did not affect EXP-006 scores."
+      "PARALLEL — wsm.4 is dor-signed-off and ready for dispatch.",
+      "DEFERRED — Token-optimization proposal review: workspace/proposals/proposed-update-token-optimization-measurement.md awaiting operator decision."
     ]
   }
 }
