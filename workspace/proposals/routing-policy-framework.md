@@ -52,9 +52,10 @@ For Layer 2 rates, always check the PRICING map in `scripts/run-model-sweep.js` 
 | /discovery (non-regulated input) | claude-sonnet-4-6 | EXP-002a: T1+T3 avg 0.807, 6/6 pass rate — highest performer; 1x Layer 1 cost | true (`experiment_id: EXP-002a`) | EXP-002b (T5 mitigation) |
 | /discovery (non-regulated, T1-class, cost-optimised) | claude-haiku-4-5 | EXP-002a: T1+T3 avg 0.759, 5/6 pass rate; 0.33x Layer 1 cost — one-in-six T3 failure risk accepted | true (`experiment_id: EXP-002a`) | EXP-002b |
 | /discovery (regulated input) | claude-sonnet-4-6 | EXP-002a: D7 T3 = 0.900 (above 0.80 regulated threshold) — outperforms Opus (0.700) at 1/15th the cost | true (`experiment_id: EXP-002a`) | EXP-003 (CPF validation) |
-| /definition | claude-sonnet-4-6 | Provisional — no dedicated eval yet | EXP-003 complete |
-| /review | claude-sonnet-4-6 | Provisional — structured checklist; Sonnet sufficient by assumption | EXP-003 complete |
-| /test-plan | claude-sonnet-4-6 | Provisional | EXP-003 complete |
+| /definition | claude-haiku-4-5 | EXP-005: all 4 cases pass at 0.33× Sonnet cost; measurement_backed: true | true (`experiment_id: EXP-005`, 2026-05-14) | Corpus expansion or categorical fail |
+| /review (default) | claude-haiku-4-5 | EXP-006: FDR_HIGH 1.00 across T1–T3 both trials (6/6 adversarial cases); zero phantom HIGHs on T5; avg weighted 0.98; no categorical fails. Approved at 0.33× Sonnet cost. | true (`experiment_id: EXP-006-review-rubric`, 2026-05-14) | Corpus expansion or categorical fail trigger |
+| /review (direct-author override) | claude-sonnet-4-6 | EXP-006: FDR_HIGH 1.00 both trials; identical gate performance to Haiku but adds causal chain reasoning, explicit fix text, and downstream impact articulation — higher value when review output is delivered directly to story author or compliance reviewer. | true (`experiment_id: EXP-006-review-rubric`, 2026-05-14) | Default if direct-author context confirmed |
+| /test-plan | claude-sonnet-4-6 | Provisional — pending EXP-007 | EXP-007 complete |
 | /definition-of-ready | claude-haiku-4-5 | EXP-004: GF 1.00 trials 1+2, 0 categorical fails, all 4 adversarial traps defeated. Default at 0.33× Sonnet cost. | true (`experiment_id: EXP-004-dor-rubric`, 2026-05-14) | Corpus expansion or categorical fail trigger |
 | /definition-of-ready (fallback) | claude-sonnet-4-6 | EXP-004: GF 1.00 trials 1+2. Escalate on categorical fail trigger only. | true (`experiment_id: EXP-004-dor-rubric`, 2026-05-14) | Corpus expansion |
 | /benefit-metric | claude-sonnet-4-6 | Provisional | After EXP-LOCAL-001 if L1 local model available |

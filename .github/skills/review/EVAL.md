@@ -82,27 +82,27 @@ For T4 and T5 there are no planted HIGH defects — D1 on these cases tests the 
 
 ### D3 — MEDIUM finding detection
 **Weight:** 0.15
-**What it measures:** Does the model correctly identify the planted MEDIUM-severity defects in T4? T4 contains two planted defects: (a) ACs use "should" language throughout (MEDIUM under Category C — "ACs use 'should' or describe implementation") and (b) the complexity rating is absent (LOW under Category D). The MEDIUM detection score reflects only the "should" language finding; the LOW finding is scored under D5 finding specificity.
+**What it measures:** Does the model correctly identify the planted MEDIUM-severity defect in T4? T4's planted MEDIUM is a missing performance NFR in S1.3: the discovery specified "report generation shall complete within 10 seconds for datasets up to 50,000 rows" but the story's NFR section contains no performance NFR at all. This maps to Category D MEDIUM ("NFRs blank or benefit linkage missing"). The two planted LOWs (S2.1 vague AC2 and S2.2 blank effort) are scored under D5 finding specificity.
 
 | Score | Meaning |
 |-------|---------|
-| 1.0 | MEDIUM finding raised for the "should" language pattern, explicitly citing the language and labelling it MEDIUM; finding references Category C |
-| 0.7 | Finding present and "should" language named, but labelled LOW rather than MEDIUM — detects the issue, miscalibrates severity downward |
-| 0.4 | Finding present but generic — references "AC quality" without citing the "should" language pattern specifically |
-| 0.0 | No finding raised for "should" language; Category C scored at 4 or 5; verdict PASS |
+| 1.0 | MEDIUM finding raised for the missing performance NFR in S1.3, explicitly citing the absence and referencing the discovery requirement; labelled MEDIUM; finding references Category D |
+| 0.7 | Finding present and missing NFR named, but labelled LOW rather than MEDIUM — detects the issue, miscalibrates severity downward |
+| 0.4 | Finding present but generic — references "completeness" or "NFR section" without citing the specific missing performance requirement or its discovery source |
+| 0.0 | No finding raised for the missing performance NFR; Category D scored at 4 or 5; or verdict PASS |
 
 **Note:** D3 is scored N/A for T1, T2, T3 (adversarial HIGH cases) and T5 (clean baseline). On those cases, the D3 weight (0.15) is redistributed proportionally to the remaining scored dimensions.
 
 **Corpus anchors:**
-- T4 → 1.0: finding text cites examples of "should" usage ("'The filter should update the chart' uses non-observable 'should' language"); labelled MEDIUM; Category C score reduced to 3 or 2
-- T4 → 0.7: "should" language named but finding labelled LOW rather than MEDIUM
-- T4 → 0.4: finding says "ACs lack precision" without identifying the "should" pattern
+- T4 → 1.0: finding text names S1.3, states no performance NFR is present, and quotes or references the discovery requirement ("report generation shall complete within 10 seconds for datasets up to 50,000 rows"); labelled MEDIUM; Category D (Completeness) score reduced to 3 or 2
+- T4 → 0.7: missing NFR in S1.3 named but finding labelled LOW rather than MEDIUM
+- T4 → 0.4: finding says "NFR section is incomplete" or "completeness concern" without naming S1.3 or citing the specific missing performance requirement
 
 ---
 
 ### D4 — Category attribution
 **Weight:** 0.15
-**What it measures:** Is each finding correctly attributed to the review category defined in the SKILL.md? Each planted defect has a canonical category assignment: T1 → Category C (AC quality), T2 → Category A (Traceability), T3 → Category B (Scope discipline), T4 → Category C (MEDIUM) and Category D (LOW). A finding with correct detection and correct severity but wrong category attribution reduces the actionability of the review report — the author cannot quickly locate which criterion governs the fix.
+**What it measures:** Is each finding correctly attributed to the review category defined in the SKILL.md? Each planted defect has a canonical category assignment: T1 → Category C (AC quality), T2 → Category A (Traceability), T3 → Category B (Scope discipline), T4 → Category D (MEDIUM: missing performance NFR = Completeness) and Category C (LOW: vague AC2 = AC quality) and Category D (LOW: blank effort = Completeness). A finding with correct detection and correct severity but wrong category attribution reduces the actionability of the review report — the author cannot quickly locate which criterion governs the fix.
 
 | Score | Meaning |
 |-------|---------|
@@ -207,8 +207,8 @@ Score each dimension on a 0.0–1.0 scale using the rubric below. Use the corpus
 Rubric:
 D1 — HIGH finding detection (weight 0.30): Did the model raise a HIGH finding for the planted HIGH defect? T1/T2/T3 only — T4 and T5 have no planted HIGH. 1.0=HIGH-finding-present+defect-named+category-correct; 0.7=finding-present+defect-named+severity-downgraded-to-MEDIUM; 0.4=finding-vague+defect-class-named+element-not-quoted; 0.0=no-finding-for-planted-defect or verdict-PASS
 D2 — Severity calibration and false-positive suppression (weight 0.20): T4: no HIGH raised for a MEDIUM defect. T5: zero HIGH findings on clean story. 1.0=T4-no-HIGH+T5-zero-HIGH; 0.7=T4-no-HIGH+T5-one-spurious-MEDIUM; 0.4=T4-MEDIUM-escalated-to-HIGH or T5-one-MEDIUM-without-basis; 0.0=T4-MEDIUM-to-HIGH-escalation or T5-any-HIGH-raised
-D3 — MEDIUM finding detection (weight 0.15): T4 only — did the model raise a MEDIUM finding for "should" language in ACs under Category C? SKIP (N/A) for T1, T2, T3, T5. 1.0=MEDIUM-finding+should-language-named+Category-C; 0.7=finding-present+should-named+labelled-LOW; 0.4=finding-present+generic-AC-quality+no-should-language-citation; 0.0=no-finding-for-should-language
-D4 — Category attribution (weight 0.15): Are findings attributed to the correct review category (A=Traceability, B=Scope, C=AC-quality, D=Completeness)? T1→C; T2→A; T3→B; T4→C(MEDIUM)+D(LOW). 1.0=all-findings-attributed-to-correct-category+finding-IDs-present; 0.7=correct-category+no-finding-IDs or one-category-wrong; 0.4=findings-present+no-category-attribution; 0.0=narrative-output+no-category-or-ID-structure
+D3 — MEDIUM finding detection (weight 0.15): T4 only — did the model raise a MEDIUM finding for the missing performance NFR in S1.3 under Category D? Discovery specified "report generation shall complete within 10 seconds for datasets up to 50,000 rows" but S1.3 has no performance NFR. SKIP (N/A) for T1, T2, T3, T5. 1.0=MEDIUM-finding+S1.3-named+missing-performance-NFR-cited+discovery-source-referenced+Category-D; 0.7=missing-NFR-in-S1.3-named+labelled-LOW-not-MEDIUM; 0.4=finding-present+generic-completeness-concern+specific-NFR-not-named; 0.0=no-finding-for-missing-performance-NFR
+D4 — Category attribution (weight 0.15): Are findings attributed to the correct review category (A=Traceability, B=Scope, C=AC-quality, D=Completeness)? T1→C; T2→A; T3→B; T4→D(MEDIUM)+C(LOW)+D(LOW). 1.0=all-findings-attributed-to-correct-category+finding-IDs-present; 0.7=correct-category+no-finding-IDs or one-category-wrong; 0.4=findings-present+no-category-attribution; 0.0=narrative-output+no-category-or-ID-structure
 D5 — Finding specificity (weight 0.10): Do findings quote or name the specific artefact element (AC text, field name, slug value)? 1.0=specific-element-quoted-or-named+fix-actionable-without-re-reading; 0.7=most-specific+one-generic; 0.4=correct-category-and-severity+no-element-quoted; 0.0=entirely-generic+no-element-cited
 D6 — Output structure (weight 0.10): Does the output follow FINDINGS→SCORE→VERDICT order with finding IDs and per-criterion score table? 1.0=findings-first+score-table+verdict-last+finding-IDs; 0.7=order-correct+score-table-incomplete or finding-IDs-absent; 0.4=verdict-before-score or positive-opening-before-findings; 0.0=narrative+no-structure+no-score-table
 

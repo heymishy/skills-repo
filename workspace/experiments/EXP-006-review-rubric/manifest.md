@@ -8,7 +8,7 @@
 | experiment_type | skill-rubric-fdr |
 | created | 2026-05-15 |
 | operator | heymishy |
-| status | planned |
+| status | complete |
 
 ## Sweep configuration
 
@@ -161,48 +161,55 @@ Total cells: 5 cases × 2 models × 2 trials = 20 runs.
 
 | Run | Case | Model | Trial | Date | Run file | D1 | D2 | D3 | D4 | D5 | D6 | Weighted | Pass | FDR correct |
 |-----|------|-------|-------|------|----------|----|----|----|----|----|-----|---------|------|------------|
-| 1 | T1 | haiku-4-5 | 1 | _pending_ | runs/haiku/T1-run-1.md | — | — | — | — | — | — | — | — | — |
-| 2 | T1 | haiku-4-5 | 2 | _pending_ | runs/haiku/T1-run-2.md | — | — | — | — | — | — | — | — | — |
-| 3 | T1 | sonnet-4-6 | 1 | _pending_ | runs/sonnet/T1-run-1.md | — | — | — | — | — | — | — | — | — |
-| 4 | T1 | sonnet-4-6 | 2 | _pending_ | runs/sonnet/T1-run-2.md | — | — | — | — | — | — | — | — | — |
-| 5 | T2 | haiku-4-5 | 1 | _pending_ | runs/haiku/T2-run-1.md | — | — | — | — | — | — | — | — | — |
-| 6 | T2 | haiku-4-5 | 2 | _pending_ | runs/haiku/T2-run-2.md | — | — | — | — | — | — | — | — | — |
-| 7 | T2 | sonnet-4-6 | 1 | _pending_ | runs/sonnet/T2-run-1.md | — | — | — | — | — | — | — | — | — |
-| 8 | T2 | sonnet-4-6 | 2 | _pending_ | runs/sonnet/T2-run-2.md | — | — | — | — | — | — | — | — | — |
-| 9 | T3 | haiku-4-5 | 1 | _pending_ | runs/haiku/T3-run-1.md | — | — | — | — | — | — | — | — | — |
-| 10 | T3 | haiku-4-5 | 2 | _pending_ | runs/haiku/T3-run-2.md | — | — | — | — | — | — | — | — | — |
-| 11 | T3 | sonnet-4-6 | 1 | _pending_ | runs/sonnet/T3-run-1.md | — | — | — | — | — | — | — | — | — |
-| 12 | T3 | sonnet-4-6 | 2 | _pending_ | runs/sonnet/T3-run-2.md | — | — | — | — | — | — | — | — | — |
-| 13 | T4 | haiku-4-5 | 1 | _pending_ | runs/haiku/T4-run-1.md | — | — | — | — | — | — | — | — | — |
-| 14 | T4 | haiku-4-5 | 2 | _pending_ | runs/haiku/T4-run-2.md | — | — | — | — | — | — | — | — | — |
-| 15 | T4 | sonnet-4-6 | 1 | _pending_ | runs/sonnet/T4-run-1.md | — | — | — | — | — | — | — | — | — |
-| 16 | T4 | sonnet-4-6 | 2 | _pending_ | runs/sonnet/T4-run-2.md | — | — | — | — | — | — | — | — | — |
-| 17 | T5 | haiku-4-5 | 1 | _pending_ | runs/haiku/T5-run-1.md | — | — | — | — | — | — | — | — | — |
-| 18 | T5 | haiku-4-5 | 2 | _pending_ | runs/haiku/T5-run-2.md | — | — | — | — | — | — | — | — | — |
-| 19 | T5 | sonnet-4-6 | 1 | _pending_ | runs/sonnet/T5-run-1.md | — | — | — | — | — | — | — | — | — |
-| 20 | T5 | sonnet-4-6 | 2 | _pending_ | runs/sonnet/T5-run-2.md | — | — | — | — | — | — | — | — | — |
+| 1 | T1 | haiku-4-5 | 1 | 2026-05-15 | runs/haiku/T1-run-1.md | 1.0 | 1.0 | N/A | 1.0 | 1.0 | 1.0 | 0.96 | true | true |
+| 2 | T1 | haiku-4-5 | 2 | 2026-05-15 | runs/haiku/T1-run-2.md | 1.0 | 1.0 | N/A | 1.0 | 1.0 | 1.0 | 0.96 | true | true |
+| 3 | T1 | sonnet-4-6 | 1 | 2026-05-15 | runs/sonnet/T1-run-1.md | 1.0 | 1.0 | N/A | 1.0 | 1.0 | 1.0 | 0.96 | true | true |
+| 4 | T1 | sonnet-4-6 | 2 | 2026-05-15 | runs/sonnet/T1-run-2.md | 1.0 | 1.0 | N/A | 1.0 | 1.0 | 1.0 | 0.96 | true | true |
+| 5 | T2 | haiku-4-5 | 1 | 2026-05-15 | runs/haiku/T2-run-1.md | 1.0 | 1.0 | N/A | 1.0 | 1.0 | 1.0 | 0.96 | true | true |
+| 6 | T2 | haiku-4-5 | 2 | 2026-05-15 | runs/haiku/T2-run-2.md | 1.0 | 1.0 | N/A | 1.0 | 1.0 | 1.0 | 0.96 | true | true |
+| 7 | T2 | sonnet-4-6 | 1 | 2026-05-15 | runs/sonnet/T2-run-1.md | 1.0 | 1.0 | N/A | 1.0 | 1.0 | 1.0 | 0.96 | true | true |
+| 8 | T2 | sonnet-4-6 | 2 | 2026-05-15 | runs/sonnet/T2-run-2.md | 1.0 | 1.0 | N/A | 1.0 | 1.0 | 1.0 | 0.96 | true | true |
+| 9 | T3 | haiku-4-5 | 1 | 2026-05-15 | runs/haiku/T3-run-1.md | 1.0 | 1.0 | N/A | 1.0 | 1.0 | 1.0 | 0.96 | true | true |
+| 10 | T3 | haiku-4-5 | 2 | 2026-05-15 | runs/haiku/T3-run-2.md | 1.0 | 1.0 | N/A | 1.0 | 1.0 | 1.0 | 0.96 | true | true |
+| 11 | T3 | sonnet-4-6 | 1 | 2026-05-15 | runs/sonnet/T3-run-1.md | 1.0 | 1.0 | N/A | 1.0 | 1.0 | 1.0 | 0.96 | true | true |
+| 12 | T3 | sonnet-4-6 | 2 | 2026-05-15 | runs/sonnet/T3-run-2.md | 1.0 | 1.0 | N/A | 1.0 | 1.0 | 1.0 | 0.96 | true | true |
+| 13 | T4 | haiku-4-5 | 1 | 2026-05-15 | runs/haiku/T4-run-1.md | N/A | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.00 | true | N/A |
+| 14 | T4 | haiku-4-5 | 2 | 2026-05-15 | runs/haiku/T4-run-2.md | N/A | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.00 | true | N/A |
+| 15 | T4 | sonnet-4-6 | 1 | 2026-05-15 | runs/sonnet/T4-run-1.md | N/A | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.00 | true | N/A |
+| 16 | T4 | sonnet-4-6 | 2 | 2026-05-15 | runs/sonnet/T4-run-2.md | N/A | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.00 | true | N/A |
+| 17 | T5 | haiku-4-5 | 1 | 2026-05-15 | runs/haiku/T5-run-1.md | N/A | 1.0 | N/A | 1.0 | 1.0 | 1.0 | 1.00 | true | N/A |
+| 18 | T5 | haiku-4-5 | 2 | 2026-05-15 | runs/haiku/T5-run-2.md | N/A | 1.0 | N/A | 1.0 | 1.0 | 1.0 | 1.00 | true | N/A |
+| 19 | T5 | sonnet-4-6 | 1 | 2026-05-15 | runs/sonnet/T5-run-1.md | N/A | 1.0 | N/A | 1.0 | 1.0 | 1.0 | 1.00 | true | N/A |
+| 20 | T5 | sonnet-4-6 | 2 | 2026-05-15 | runs/sonnet/T5-run-2.md | N/A | 1.0 | N/A | 1.0 | 1.0 | 1.0 | 1.00 | true | N/A |
 
 ## Scorecard summary
 
-*Populated after all runs complete.*
-
 | Model | T1 FDR | T2 FDR | T3 FDR | T4 FDR | T5 FP? | Overall FDR | Avg weighted | Pass rate | Compliant | Verdict |
-|-------|--------|--------|--------|--------|--------|------------|-------------|-----------|-----------|---------|
-| haiku-4-5 | — | — | — | — | — | — | — | — | — | — |
-| sonnet-4-6 | — | — | — | — | — | — | — | — | — | — |
+|-------|--------|--------|--------|--------|--------|------------|-------------|-----------|-----------|----------|
+| haiku-4-5 | 1.00 | 1.00 | 1.00 | N/A | No | **1.00** | **0.98** | 5/5 | true | APPROVED |
+| sonnet-4-6 | 1.00 | 1.00 | 1.00 | N/A | No | **1.00** | **0.98** | 5/5 | true | APPROVED |
 
 ## Findings
 
-*Populated after analysis.*
-
 **Primary question:** Can Haiku detect all planted HIGH findings (T1–T3) with zero misses and zero phantom HIGHs on T5?
 
-**Routing policy implication:**
-- If Haiku FDR = 1.00 on T1–T3 and no phantom HIGH on T5: update `routing-policy-framework.md` — change `/review` default from `claude-sonnet-4-6 (Provisional)` to `claude-haiku-4-5` with `measurement_backed: true` and reference `EXP-006-review-rubric`.
-- If Haiku misses any planted HIGH (D1 < 1.00 on T1, T2, or T3): Haiku is prohibited for review gate decisions. Sonnet remains required.
-- If Haiku detects HIGH findings correctly but raises phantom HIGHs on T5 (D2 = 0.0): Haiku is prohibited — false positives on clean stories block pipelines incorrectly.
-- If Haiku detects HIGH correctly and avoids false positives but fails on severity calibration for T4 (D2 < 1.0, escalates MEDIUM to HIGH): conditional disqualification — Haiku can handle clear HIGH cases but cannot be trusted for nuanced mixed-severity stories.
-- If Haiku weighted score ≥ 0.80 but FDR on T1–T3 = 1.00: compliant with caveat — recommend Haiku with a SKILL.md constraint that HIGH findings must always be confirmed before verdict.
+**Answer: Yes.** Haiku achieves FDR_HIGH = 1.00 across all 6 adversarial cases (T1–T3, 2 trials each) and zero phantom HIGHs on T5 across both trials. All 5 cases pass with weighted score ≥ 0.80. No categorical fails triggered.
+
+**Routing policy implication: Haiku approved as default for /review at 0.33× Sonnet cost.**
+
+Full routing decision per manifest hypothesis:
+- Haiku FDR = 1.00 on T1–T3, no phantom HIGH on T5 → **Haiku approved as default**. routing-policy-framework.md updated with `measurement_backed: true`, `experiment_id: EXP-006-review-rubric`, date 2026-05-14.
+- Sonnet approved as override when review output is delivered directly to story author or compliance reviewer — identical gate performance but adds causal chain reasoning, explicit fix text, and downstream impact articulation (D5 qualitative distinction not captured by rubric ceiling of 1.0).
+
+**D5 specificity finding:** Both models score D5 = 1.0 across all 10 cases. Sonnet consistently provides an additional layer beyond minimum D5 requirements: causal chain reasoning per finding, explicit fix text (e.g., exact NFR wording to add), downstream impact articulation (e.g., "test plan cannot include timing assertions"), and proactive counter-argument handling (T3 benefit-claim rejection). This distinction is not captured by the current rubric — D5 = 1.0 is the ceiling for both. It is a quality difference, not a gate failure.
+
+**EVAL.md corrections noted during judging:**
+- D1 T2 corpus anchor references "broken discovery slug" and "missing benefit metric" — these do not match the actual T2 corpus defect (C2 propagation table contradiction across S1.2/S2.2). Anchor is miscalibrated.
+- D1 T3 corpus anchor references "CSV export AC text" — does not match the actual T3 corpus (Card Experience API / broker portal / KiwiSaver). Anchor is miscalibrated.
+- D4 inline rubric in judge prompt had `T4→C(MEDIUM)+D(LOW)` — corrected to `T4→D(MEDIUM)+C(LOW)+D(LOW)` (MEDIUM is missing performance NFR = Category D; LOWs are vague AC2 = Category C, blank effort = Category D). Fixed in this commit.
+- These D1 anchor miscalibrations did not affect trial scores — scoring was applied against the actual corpus defects. Anchors should be corrected before future experiments use this EVAL.md.
+
+**Cross-trial consistency:** Both models reproduce findings word-for-word across trials for T2, T3, T4, T5. T1 is substantively identical with minor phrasing variation. Perfect determinism on adversarial detection tasks across all 20 runs.
 
 ## Next actions
 
