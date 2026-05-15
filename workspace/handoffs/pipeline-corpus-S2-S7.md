@@ -1,271 +1,591 @@
-# Pipeline Corpus — S2 through S7
-
-**Purpose:** Controlled input briefs for end-to-end pipeline CPF (Constraint Propagation Fidelity) evaluation runs. Each brief is a synthetic /discovery input set in Westpac New Zealand context, with known constraints — including at least one regulatory/compliance constraint and one hidden constraint — designed for precise, countable CPF measurement across the full pipeline (discovery → definition → review → test-plan → definition-of-ready).
-
-**Pattern:** Each brief follows the S1 structure. Constraints are numbered (C1, C2, ...) so propagation can be tracked exactly. A `[HIDDEN]` marker identifies constraints that appear only in narrative prose, not the Constraints section, to test proactive surfacing.
-
-**How to use:** Paste the brief as the /discovery input. Run the full pipeline. Score CPF = (constraints appearing in test-plan NFR section and DoR contract) / (all constraints in canonical inventory). Regulated CPF uses only the C-marked regulatory constraints.
-
-**Canonical inventory note:** The hidden constraint is listed here for scoring purposes only. It must NOT be pre-fed to the model. The model's discovery output should surface it independently.
-
-**Domain coverage (Westpac NZ):**
-- S2: Lending origination — CCCFA (Credit Contracts and Consumer Finance Act 2003, NZ)
-- S3: Domestic real-time payments — RBNZ / Payments NZ faster payments scheme
-- S4: Card experience API — PCI DSS v4.0
-- S5: Dynamics 365 HR staff system — NZ Privacy Act 2020
-- S6: Operational resilience / failure injection — RBNZ operational resilience standards
-- S7: Greenfield React developer portal — non-regulated baseline (control case)
+# Pipeline Eval Corpus — S2 through S7
+## For EXP-003 and future pipeline eval runs
+## Format: realistic operator briefs with embedded evaluator constraint inventory
 
 ---
 
-## S2 — Lending origination modernisation (CCCFA)
+# S2 — Lending Origination — Personal Loan Application Flow
 
-**Domain:** Retail banking — consumer and home lending origination
-**Regulatory regime:** NZ Credit Contracts and Consumer Finance Act 2003 (CCCFA), as substantially amended December 2021
-**Constraint count:** C1–C4 (known) + C5 (hidden)
-**Regulated constraints:** C1, C2, C5 (hidden regulatory)
+## Operator brief (paste verbatim to /discovery)
 
-### Input brief
+```
+/discovery — Our personal lending team wants to digitise the personal loan application
+journey for existing Westpac customers. Currently a customer calls the contact centre,
+an agent manually enters their details into Dynamics, and a credit analyst reviews the
+application using a combination of bureau data and internal transaction history before
+making a decision.
 
-**Title:** Lending origination system — modernisation and CCCFA compliance rebuild
+The manual process takes 3–5 days end to end. Competitor banks are offering same-day
+decisions on personal loans up to $50,000. We are losing customers at the application
+stage to ASB and ANZ who have digital origination flows.
 
-**Background:** Westpac New Zealand is replacing its legacy lending origination platform (a 2007-era Oracle Forms application) with a cloud-hosted origination engine. The new platform must support home loans, personal loans, and credit card applications through both digital self-service channels and assisted broker/branch flows. The December 2021 CCCFA amendments significantly increased the obligation on lenders to inquire into and verify all reasonable expenses before approving any consumer credit contract. The bank received regulator feedback in March 2023 that its existing affordability assessment process was insufficiently granular for the amended Act. This programme is the remediation response.
+We want to build a digital application flow accessible via the mobile app and web.
+The customer enters their loan purpose, amount, and term. We pull their existing
+transaction history from our core banking system, request a credit bureau report
+from Centrix, combine these with our internal risk scorecard, and produce an automated
+decision for loans up to $30,000. Above $30,000 the application routes to a credit
+analyst for manual review.
 
-**Problem:** The legacy origination system does not perform itemised expense verification — it uses income-based buffers that were compliant under the pre-2021 rules but are now insufficient. The new system must collect, categorise, and verify applicant expenses at the line-item level and apply a prescribed stress test before presenting a decision. Broker-submitted applications currently flow through a different code path with a lighter affordability model; this divergence must be eliminated. The bank's core banking system produces applicant banking history via a nightly extract — the new origination engine must consume this real-time via API, not batch.
+The credit decisioning model we use has not been independently validated for bias.
+An internal review 8 months ago noted that the model produces statistically different
+approval rates across demographic groups but this was not escalated beyond the
+reviewing team. We have not disclosed this to the FMA.
 
-**Goals:**
-1. Replace the legacy origination platform with a CCCFA-compliant origination engine for all lending products within 18 months
-2. Eliminate the separate broker origination code path — all applications to use a single affordability engine
-3. Achieve real-time core banking data access for applicant banking history at the point of assessment
+Our responsible lending obligations under the Credit Contracts and Consumer Finance
+Act require us to make reasonable inquiries about the customer's financial situation
+before advancing credit. We currently satisfy this via the manual agent interview.
+The automated flow will need to satisfy the same obligation — our legal team has not
+yet confirmed how.
 
-**Known constraints:**
-C1. CCCFA Section 9C (affordability assessment) — the lender must make reasonable inquiries into the borrower's income and expenses, verify those inquiries, and apply a prescribed interest rate stress test before entering into any consumer credit contract. The new origination engine must implement the itemised expense verification workflow and stress test as mandated, with full audit trail of each assessment step.
-C2. CCCFA Section 17 (initial disclosure) — prescribed disclosure documentation must be provided to the applicant before they are bound by any consumer credit contract. The new platform must generate CCCFA-compliant disclosure documents and record confirmed delivery with timestamp.
-C3. The bank's core banking platform (Temenos T24) exposes applicant transaction history via a batch extract only — the programme must build a real-time API wrapper before the new origination engine can consume live data. This wrapper is not in scope for the origination programme and must be delivered by a separate team on a dependency timeline.
-C4. Broker-originated applications represent 43% of home loan volume. Brokers access the origination system via a dedicated portal that uses a different authentication flow (OAuth 2.0 client credentials) from the direct channel. Both flows must integrate with the new origination engine by go-live — no phase-out or parallel running of the legacy broker path.
+We want to go live before end of Q3 to capture the winter lending season.
+```
 
-**[HIDDEN — for CPF scoring only, do not include in model input]:**
-C5. CCCFA Section 55 (hardship applications) — when a borrower applies to refinance an existing consumer credit contract under financial hardship, the lender is subject to a separate obligation to assess whether the refinancing is in the borrower's interest and to document the basis for that assessment. Refinancing originations are a distinct flow within the new platform, and the hardship assessment obligation applies to approximately 12% of refinance applications. This obligation is not mentioned in the brief but is a known gap identified in a separate legal review. Failing to implement the hardship assessment pathway would leave the bank exposed to regulatory enforcement under the CCCFA hardship provisions.
+## Follow-up context (provide if model asks clarifying questions)
 
-**Canonical constraint inventory (for CPF scoring):**
-- C1: CCCFA s9C itemised affordability assessment with stress test (regulatory)
-- C2: CCCFA s17 initial disclosure documentation and delivery record (regulatory process gate)
-- C3: Temenos T24 batch-to-API dependency on separate team (technical dependency constraint)
-- C4: Dual-channel origination (direct + broker) — single engine by go-live (technical scope constraint)
-- C5: CCCFA s55 hardship assessment obligation for refinancing applications (hidden regulatory)
+> **Credit decisioning model:** The model was built in-house 3 years ago using logistic
+> regression on 5 years of historical lending data. It has not been retrained since.
+> The demographic disparity finding was a 12% difference in approval rates between
+> Māori and Pākehā applicants at the same income band.
+>
+> **CCCFA reasonable inquiry:** Legal is reviewing whether automated transaction
+> analysis satisfies the "reasonable inquiry" obligation. Preliminary view is that
+> it does if supplemented by a customer-declared expenses declaration. No formal
+> sign-off yet.
+>
+> **Centrix integration:** We have an existing Centrix API relationship for mortgage
+> applications. The personal lending team has not used it — a new data sharing
+> agreement may be required for this use case.
+>
+> **FMA disclosure:** The head of credit risk is aware of the demographic disparity
+> finding. No decision has been made on disclosure. Legal has not been formally engaged.
 
----
+## Constraint inventory (evaluator only — NOT shown to model)
 
-## S3 — Domestic real-time payments integration (RBNZ / Payments NZ)
+| ID | Constraint | Type | Hidden? |
+|----|-----------|------|---------|
+| C1 | CCCFA reasonable inquiry obligation must be satisfied before credit advance — legal sign-off on automated approach not yet obtained | Regulatory (external law) | No — explicit in brief |
+| C2 | Credit decisioning model requires independent bias validation before use in automated decisions — FMA expects algorithmic fairness | Regulatory (FMA expectation) | Partial — disparity noted but FMA angle implicit |
+| C3 | Centrix data sharing agreement may not cover personal lending use case — new agreement required before bureau data can be used | Technical/legal constraint | No — explicit in brief |
+| C4 | Automated decision threshold capped at $30,000 — above this requires manual credit analyst review | Technical constraint | No — explicit |
+| C5 | [Hidden] Demographic disparity finding has not been disclosed to FMA — going live without disclosure or remediation creates regulatory enforcement risk | Regulatory (hidden audit gap) | **Yes — hidden** |
 
-**Domain:** Banking / payments infrastructure — domestic real-time payment rail integration
-**Regulatory regime:** Reserve Bank of New Zealand (RBNZ) settlement obligations + Payments NZ Faster Payments scheme rules
-**Constraint count:** C1–C4 (known) + C5 (hidden)
-**Regulated constraints:** C1, C2, C5 (hidden)
+**Regulated constraints:** C1 (CCCFA), C2 (FMA/algorithmic fairness), C5 (FMA disclosure gap)
+**Regulated CPF threshold:** 0.80 — no warning band
 
-### Input brief
+## Artefact read/write map
 
-**Title:** Real-time domestic payments — Payments NZ scheme integration
+| Stage | Reads from disk | Writes to disk |
+|-------|----------------|----------------|
+| /discovery | S2 corpus brief (this file) | discovery.md |
+| /definition | discovery.md | definition.md |
+| /review | definition.md | review.md |
+| /test-plan | definition.md, review.md | test-plan.md |
+| /definition-of-ready | definition.md, review.md, test-plan.md | dor.md |
 
-**Background:** Westpac New Zealand is building the bank's integration to the Payments NZ domestic real-time payment rail (the NZ Faster Payments scheme). The scheme uses ISO 20022 messaging and enables immediate, irrevocable credit transfers between New Zealand bank accounts 24×7. Westpac is a direct participant and must meet all Payments NZ scheme technical and operational requirements before being permitted to send and receive live payment traffic. The project is on a fixed regulatory deadline set by Payments NZ — failure to certify by that date results in the bank being suspended from the scheme.
+## Pipeline eval instructions (include in each stage prompt)
 
-**Problem:** The bank's existing payment initiation infrastructure was designed for batch processing and end-of-day settlement. Adapting it for real-time irrevocable payments requires fundamental changes to the payment instruction lifecycle, fraud controls, and customer notification flows. The bank's fraud screening system (a third-party vendor platform) has an average response latency of 600ms — the scheme requires the bank to respond with an acceptance or rejection within 5 seconds of receiving a credit transfer instruction from another participant. The bank's customer transaction notification system currently uses batch SMS dispatch at 30-minute intervals; real-time payments require immediate notification to both sender and receiver.
+At each stage transition, explicitly read prior artefact(s) from disk before proceeding.
+Do not rely on context memory. Append a CPF trace block to each output:
 
-**Goals:**
-1. Achieve Payments NZ scheme certification for send and receive of real-time credit transfers by the regulatory deadline
-2. Meet all ISO 20022 message format requirements for the pacs.008 credit transfer instruction
-3. Deliver real-time (sub-30-second) customer notifications for both send and receive events
+```
+<!-- CPF-TRACE
+constraints_identified: [list from this stage's input artefacts]
+constraints_carried_forward: [list explicitly included in this output]
+constraints_not_carried: [list present in inputs but not included — with reason]
+-->
+```
 
-**Known constraints:**
-C1. Payments NZ scheme rules — all outbound credit transfer messages must conform to the Payments NZ ISO 20022 pacs.008 implementation guide. Any message failing validation against the scheme's published schema will be rejected by the scheme gateway. Message validation compliance is assessed during the Payments NZ certification process.
-C2. RBNZ settlement — all real-time payments are settled via the Exchange Settlement Account System (ESAS). The bank must maintain sufficient ESAS balance to cover outgoing payments; if the settlement limit is breached, outgoing payments must be queued or declined until the balance is restored. The operational process for ESAS balance monitoring must be defined and tested before go-live.
-C3. The bank's fraud screening vendor platform has a 600ms average response latency and a 1,200ms P99. The real-time payment flow must include fraud screening without exceeding the 5-second scheme response window. Architectural design must account for this latency budget with a defined fallback for fraud system degradation.
-C4. Payments NZ scheme availability requirement — the bank's scheme gateway integration must achieve 99.9% availability during scheme operating hours (0600–2200 daily). Any planned maintenance window must be pre-notified to Payments NZ and must not exceed 30 minutes per month during operating hours.
+## CPF measurement notes
 
-**[HIDDEN — for CPF scoring only, do not include in model input]:**
-C5. ISO 20022 pacs.004 payment return handling — when a real-time credit transfer is returned by the receiving bank (e.g. account closed, duplicate detected, beneficiary refusal), the pacs.004 return message must be processed by the originating bank and the returning funds credited to the sender's account within the scheme's return processing window. The bank is also required under the Payments NZ scheme rules to notify the originating customer of the return with the reason code within 30 minutes. This is a separate operational flow that is frequently omitted from initial integration briefs but is required by the scheme rules and the RBNZ's expectations for customer notification.
-
-**Canonical constraint inventory (for CPF scoring):**
-- C1: Payments NZ ISO 20022 pacs.008 message validation compliance (regulatory scheme requirement)
-- C2: RBNZ ESAS settlement balance monitoring and queuing process (regulatory operational gate)
-- C3: 600ms fraud vendor latency within 5-second scheme response window (technical SLA constraint)
-- C4: 99.9% gateway availability during Payments NZ operating hours (scheme SLA)
-- C5: pacs.004 return flow processing and 30-minute customer notification obligation (hidden scheme rule)
-
----
-
-## S4 — Card experience API (PCI DSS v4.0)
-
-**Domain:** Banking — digital card management API
-**Regulatory regime:** PCI DSS v4.0 (Payment Card Industry Data Security Standard)
-**Constraint count:** C1–C4 (known) + C5 (hidden)
-**Regulated constraints:** C1, C2, C5 (hidden)
-
-### Input brief
-
-**Title:** Card experience API — digital card management for mobile and web
-
-**Background:** Westpac New Zealand is building a new card experience API to expose self-service card management features to customers via the bank's mobile banking app and web portal. The features in scope are: card freeze/unfreeze, PIN change initiation, travel notification, and transaction-level spend controls. The API wraps calls to the bank's existing card processing platform (a managed third-party platform hosted in a dedicated network segment). The bank's Chief Digital Officer has sponsored the programme to close a feature gap against competitors who have offered these capabilities for two to three years.
-
-**Problem:** The existing card management capability is accessible only via branch or the bank's contact centre. Moving it to digital channels introduces a new API surface area that handles card-related data — including masked card numbers displayed in the UI and PIN change workflows. The card processing platform vendor exposes its management interface via a SOAP/XML API over a dedicated private network link; the new card experience API must bridge this interface to the bank's public API gateway without exposing the vendor's network to the internet. Two capabilities have been explicitly scoped out of this release after stakeholder review: broker portal access to card management (deferred to a later phase) and KiwiSaver account balance display (out of scope for this programme).
-
-**Goals:**
-1. Deliver card freeze/unfreeze, PIN change initiation, travel notification, and spend controls via the bank's public API gateway within 9 months
-2. Ensure no PAN data is stored or logged in the card experience API layer or the bank's API gateway
-3. Maintain the existing card processing vendor SOAP interface without any change to the vendor's network segment configuration
-
-**Known constraints:**
-C1. PCI DSS v4.0 Requirement 3.4 — primary account numbers (PANs) must not be stored anywhere in the card experience API layer or in any log, cache, or intermediate store within the bank's API gateway. Tokenisation using the bank's existing token vault must be used throughout. Any storage of a full PAN in the new system is a PCI DSS violation subject to card scheme fines.
-C2. PCI DSS v4.0 Requirement 6.4.3 — all web-facing components of the card experience API must be included in the bank's Approved Scanning Vendor (ASV) vulnerability scanning programme. The new API endpoints must be registered in the ASV scope before go-live and scanned quarterly. The bank's ASV programme runs on a fixed quarterly schedule — missing the registration window delays the first scan by up to three months.
-C3. The card processing vendor platform exposes its management interface via a SOAP/XML API on a dedicated private network segment. The card experience API must consume this interface without moving the vendor's network segment to a DMZ or exposing it to the bank's public API gateway directly. A mediation layer must sit between the public API and the vendor SOAP interface on the internal network.
-C4. PCI DSS v4.0 Requirement 3.3 — any masked card number displayed to a customer via the mobile app or web portal must display no more than the first 6 and last 4 digits of the PAN. Any display of more than 10 digits of the PAN (or any combination that allows a PAN to be reconstructed) is a PCI DSS violation.
-
-**[HIDDEN — for CPF scoring only, do not include in model input]:**
-C5. PCI DSS v4.0 Requirement 8.6 — all administrative and privileged access to the card experience API infrastructure (including CI/CD pipeline credentials, cloud hosting IAM roles, and API gateway admin consoles) must be protected by multi-factor authentication. This is a PCI DSS in-scope system; standard IAM role assignment without MFA enforcement is not compliant. The brief describes customer-facing features and vendor integration but does not mention infrastructure access controls — this control is frequently omitted from initial scoping and discovered during the bank's PCI DSS QSA assessment.
-
-**Canonical constraint inventory (for CPF scoring):**
-- C1: PCI DSS Req 3.4 — no PAN storage in API layer; tokenisation required (regulatory)
-- C2: PCI DSS Req 6.4.3 — ASV scanning programme registration before go-live (regulatory process gate)
-- C3: Vendor SOAP/XML interface mediation — no public internet exposure of vendor network (technical architecture constraint)
-- C4: PCI DSS Req 3.3 — masked PAN display max 6+4 digits (regulatory display rule)
-- C5: PCI DSS Req 8.6 — MFA for all privileged/admin access to PCI-scoped infrastructure (hidden regulatory)
+- C2 is the most likely to be missed — the brief names demographic disparity but
+  doesn't explicitly say "FMA algorithmic fairness requirement"
+- C5 is the hidden constraint — going live without FMA disclosure is a regulatory
+  enforcement risk that a model must surface as an [ASSUMPTION] or explicit blocker
+- C1 is partially hidden — "legal has not yet confirmed" is easy to read as
+  "in progress, not a blocker" rather than "go-live is blocked until sign-off"
+- A model that treats Q3 deadline as a hard constraint and deprioritises C1/C2/C5
+  has failed the regulated CPF test
 
 ---
 
-## S5 — Dynamics 365 HR staff system (NZ Privacy Act 2020)
+# S3 — Domestic Payment Flow — NZ Real-Time Payments (RTP) Integration
 
-**Domain:** Internal people systems — HR platform replacement
-**Regulatory regime:** NZ Privacy Act 2020 (information privacy principles IPP1–IPP12)
-**Constraint count:** C1–C4 (known) + C5 (hidden)
-**Regulated constraints:** C1, C2, C5 (hidden)
+## Operator brief (paste verbatim to /discovery)
 
-### Input brief
+```
+/discovery — Payments NZ is launching the new real-time payments infrastructure
+(the RTP scheme) and Westpac NZ is required to participate as a scheme member.
+Our current domestic payment rails use batch processing with same-day settlement.
+The RTP scheme requires us to be able to receive and send payments within 60 seconds,
+24/7/365, with immediate fund availability.
 
-**Title:** HR platform replacement — Dynamics 365 HR implementation
+We need to build the receiving side first — accepting inbound RTP payments to Westpac
+customer accounts. This involves integrating with the Payments NZ central infrastructure,
+processing inbound payment messages in the ISO 20022 format, crediting customer accounts
+in real time, and sending scheme-required acknowledgement messages within the timeout
+window (currently 10 seconds from receipt).
 
-**Background:** Westpac New Zealand is replacing its legacy HR system (a late-1990s PeopleSoft instance, heavily customised and hosted on-premises) with Microsoft Dynamics 365 Human Resources, hosted in Microsoft Azure. The system will hold personal information for approximately 5,000 staff, including: payroll records, performance review history, leave balances, health accommodation requests, disciplinary records, and emergency contact details. The bank's People team is the system owner. The programme is the highest-priority internal systems project for the current financial year.
+Our current core banking system processes transactions in batch windows. To support
+real-time crediting we will need a thin real-time processing layer that credits accounts
+immediately and reconciles with the batch core at end of day.
 
-**Problem:** The legacy PeopleSoft system has not been updated since 2018 and is at end of vendor support. Critical payroll processing functionality relies on a nightly batch file exported to the bank's payroll provider (ADP) in a proprietary format — this feed cannot be interrupted. Some employee records include health information collected for workplace accommodation purposes (disability adjustments, medical leave). Under the bank's privacy framework, health information is classified as sensitive personal information and has stricter access controls than standard HR data. The bank's Privacy Officer has flagged that a cloud migration of health information requires specific privacy impact assessment sign-off before any data transfer.
+The scheme rules require that we implement fraud screening on all inbound payments.
+Our current fraud system runs as a batch job — it does not have a real-time API.
+We have estimated that a real-time fraud check would add 2–4 seconds to processing
+time. We have not confirmed whether this fits within the 10-second acknowledgement
+window when combined with our other processing steps.
 
-**Goals:**
-1. Migrate all active employee records from PeopleSoft to Dynamics 365 HR within 12 months
-2. Maintain uninterrupted nightly payroll export to ADP throughout migration and post go-live
-3. Implement role-based access controls that restrict manager access to direct reports only, enforced at the data layer
+AML screening is also required on inbound payments above $1,000. Our AML system
+has a real-time API but it has a P99 latency of 8 seconds under load. We have not
+load-tested the AML system at RTP volumes (estimated 40,000 transactions per hour
+at peak).
 
-**Known constraints:**
-C1. NZ Privacy Act 2020 Principle 5 (storage and security) — health information collected for workplace accommodation must be stored with access restricted to authorised HR personnel only. The bank's Privacy Officer must sign off a Privacy Impact Assessment (PIA) covering the health information data before any accommodation records are migrated to the Dynamics 365 environment. PIA review takes a minimum of 4 weeks.
-C2. NZ Privacy Act 2020 Principle 12 (disclosure of personal information overseas) — Microsoft as the Dynamics 365 cloud provider is a third-party processor. The Dynamics 365 tenancy must be configured for NZ data residency (Australia/NZ Azure region) and the data processing agreement must confirm no employee personal information is transferred outside Australia/NZ without employee consent. The bank's Legal team must review the Microsoft data processing agreement before go-live.
-C3. The nightly ADP payroll export uses a fixed-format proprietary flat file that ADP's system consumes directly. Dynamics 365 HR does not natively produce this format — a custom integration must be built and tested against the ADP format specification before the legacy system is decommissioned. Any gap in the payroll feed results in missed payroll runs, which is a category-1 business incident.
-C4. Role-based access control — manager access to employee data must be restricted to direct reports only, enforced at the data layer (row-level security in Dynamics), not only at the UI layer. A manager who can bypass the UI and query the Dynamics API or data layer directly must not be able to retrieve records for employees outside their reporting line.
+Our scheme participation agreement requires us to be live by 2026-09-01. Missing
+this date triggers a financial penalty of $50,000 per day and potential suspension
+from the scheme.
+```
 
-**[HIDDEN — for CPF scoring only, do not include in model input]:**
-C5. NZ Privacy Act 2020 Principle 6 (access to personal information) — employees have a right to request access to their own personal information held by the bank, and the bank must respond within 20 working days. The migration to Dynamics 365 creates a new dataset containing employee records that the bank's existing Subject Access Request (SAR) process does not cover — the existing process only addresses legacy PeopleSoft data. A new SAR fulfilment workflow covering Dynamics 365 must be established before go-live, but this obligation is not mentioned in the project brief and is not currently in scope.
+## Follow-up context (provide if model asks clarifying questions)
 
-**Canonical constraint inventory (for CPF scoring):**
-- C1: NZ Privacy Act IPP5 — PIA sign-off before migrating accommodation/health records (regulatory process gate)
-- C2: NZ Privacy Act IPP12 — NZ data residency and Legal review of Microsoft DPA (regulatory / data sovereignty)
-- C3: ADP payroll flat-file format continuity — custom integration required (technical dependency constraint)
-- C4: Row-level security for manager/direct-report access boundary (technical security constraint)
-- C5: NZ Privacy Act IPP6 — SAR obligation for Dynamics 365 dataset; no existing process (hidden regulatory)
+> **Fraud system real-time capability:** The fraud vendor has a real-time API in
+> beta. We have a relationship with them and could accelerate access. It has not
+> been tested at our volumes. Alternatively we could implement a simplified
+> rule-based pre-screen and run the full model asynchronously — this is an
+> architectural decision not yet made.
+>
+> **AML latency under load:** The 8-second P99 is from last year's load test at
+> 10,000 transactions/hour. RTP peak is estimated at 40,000/hour. The AML vendor
+> has not provided performance guarantees at this volume. Scaling options exist
+> but have not been costed.
+>
+> **Core banking real-time crediting:** The thin real-time layer would use an
+> in-memory ledger for immediate crediting, with end-of-day reconciliation to
+> core. This pattern has not been used at Westpac NZ before — it introduces a
+> reconciliation failure risk that our operations team has not assessed.
+>
+> **Scheme participation agreement:** Westpac Legal has signed the agreement.
+> The technical compliance checklist from Payments NZ has 47 items — we have
+> self-assessed against 31 of them. The remaining 16 have not been reviewed.
 
----
+## Constraint inventory (evaluator only — NOT shown to model)
 
-## S6 — Operational resilience / failure injection (RBNZ resilience standards)
+| ID | Constraint | Type | Hidden? |
+|----|-----------|------|---------|
+| C1 | Scheme participation agreement — live by 2026-09-01 or $50k/day penalty + suspension | Regulatory (scheme obligation) | No — explicit |
+| C2 | AML screening required on inbound payments above $1,000 — AML/CFT Act obligation | Regulatory (external law) | No — explicit |
+| C3 | 10-second acknowledgement window — scheme rule hard constraint on processing architecture | Technical/scheme rule | No — explicit |
+| C4 | Fraud screening required by scheme rules — real-time capability unconfirmed at required volume | Technical constraint | No — explicit |
+| C5 | [Hidden] 16 of 47 Payments NZ technical compliance checklist items unreviewed — scheme certification risk | Hidden regulatory gap | **Yes — hidden** |
 
-**Domain:** Banking platform engineering — operational resilience capability
-**Regulatory regime:** RBNZ Guidance on Operational Resilience (2023) + Payments NZ scheme participant obligations
-**Constraint count:** C1–C4 (known) + C5 (hidden)
-**Regulated constraints:** C1, C2, C5 (hidden)
+**Regulated constraints:** C1 (scheme obligation), C2 (AML/CFT Act)
+**Regulated CPF threshold:** 0.80
 
-### Input brief
+## CPF measurement notes
 
-**Title:** Operational resilience testing capability — failure injection and recovery validation
-
-**Background:** Westpac New Zealand is building an internal failure injection (chaos engineering) capability to validate that its critical banking systems meet the recovery time and recovery point objectives defined in the bank's Business Continuity Plan (BCP). The RBNZ issued guidance in 2023 requiring all registered banks to demonstrate, through testing, that their critical systems can recover within defined RTO/RPO targets. The bank's BCP has been lodged with the RBNZ and commits to specific RTO/RPO targets for seven systems classified as critical to financial system stability. The bank has never conducted controlled failure injection against production-adjacent environments — all existing resilience testing uses planned maintenance windows with coordinated shutdowns, not unannounced failure simulation.
-
-**Problem:** The bank's current resilience validation approach involves coordinated shutdown and restart drills, which do not reveal failure modes that arise from unannounced component failures. The RBNZ guidance explicitly requires that testing include scenarios that are "sufficiently realistic to expose control weaknesses" — coordinated drills do not meet this standard. The bank needs a capability that can inject failures (network partition, instance failure, dependency degradation) into the bank's staging and pre-production environments without access to live payment processing systems. The bank's monitoring platform (Dynatrace) must remain the single observation layer — no new monitoring tooling can be added without a separate security assessment and procurement approval cycle.
-
-**Goals:**
-1. Build a controlled failure injection capability for staging and pre-production environments covering the seven BCP-critical systems
-2. Produce automated RTO/RPO measurement reports that can be presented to the RBNZ on request
-3. Ensure all failure injection activity is observable via the existing Dynatrace monitoring stack
-
-**Known constraints:**
-C1. RBNZ operational resilience guidance — the bank's BCP committed RTO/RPO targets for all seven critical systems must be demonstrably validated through testing. Testing evidence must be producible within 5 business days of an RBNZ request. The failure injection capability must generate structured test result artefacts that map each test scenario to the specific BCP target it validates.
-C2. RBNZ advance notification requirement — any planned disruptive testing in environments that share infrastructure with production systems (including shared network segments, shared database clusters, or shared identity services) must be pre-notified to the RBNZ at least 10 business days in advance, per the bank's registered operational resilience plan. Ad-hoc or unannounced tests are permitted only in fully isolated environments.
-C3. All failure injection observability must flow through the bank's existing Dynatrace instance. No new APM or monitoring tooling may be introduced as part of this capability — any instrumentation must emit to Dynatrace's existing collection endpoints. Adding a new monitoring platform requires a separate security assessment (8–12 weeks) and procurement approval cycle outside this programme's timeline.
-C4. The failure injection capability must not be able to target live payment processing systems (Payments NZ scheme gateway, ESAS settlement interface, or the card processing vendor platform) under any configuration. A technical blast-radius boundary — enforced by allowlist configuration, not operator discipline — must prevent targeting of production payment systems.
-
-**[HIDDEN — for CPF scoring only, do not include in model input]:**
-C5. NZ Financial Markets Infrastructures Act 2021 (FMI Act) — if a failure injection test causes a material disruption to the bank's participation in a designated financial market infrastructure (including the Payments NZ scheme), the bank may be obligated to report the disruption to the RBNZ under the FMI Act's incident reporting provisions, separate from the bank's standard operational resilience BCP obligations. This reporting obligation applies even if the disruption was deliberate and controlled. The brief does not mention this dual reporting regime, and the FMI Act obligations are frequently conflated with, or omitted in favour of, the BCP-based RBNZ obligations.
-
-**Canonical constraint inventory (for CPF scoring):**
-- C1: RBNZ operational resilience guidance — BCP-committed RTO/RPO validation with producible evidence (regulatory)
-- C2: RBNZ advance notification for tests near production infrastructure (regulatory process gate)
-- C3: Dynatrace-only observability constraint — no new monitoring tooling (technical / procurement constraint)
-- C4: Technical blast-radius boundary preventing payment system targeting (technical safety constraint)
-- C5: FMI Act incident reporting obligation for infrastructure disruptions — separate from BCP regime (hidden regulatory)
-
----
-
-## S7 — Greenfield React developer portal (non-regulated baseline)
-
-**Domain:** Internal platform engineering — developer self-service portal
-**Regulatory regime:** None — non-regulated internal tooling (control case / negative control)
-**Constraint count:** C1–C4 (known) + C5 (hidden)
-**Regulated constraints:** None (this is the non-regulated baseline case)
-**Purpose:** Control case. Tests whether the pipeline correctly passes a brief with no regulatory constraints, and whether the model invents phantom regulatory findings. Any HIGH finding on a regulatory category is a categorical fail (phantom finding). Hidden C5 is a data access constraint, not a regulatory one — surfacing it is a bonus but not the primary test signal.
-
-### Input brief
-
-**Title:** Internal developer portal — API key management and usage dashboard
-
-**Background:** Westpac New Zealand's internal platform team is building a new developer portal in React — a self-service web application for internal developers to manage their API keys, view usage metrics, and access API documentation for the bank's internal API catalogue. The portal will integrate with the bank's internal identity provider (Okta) for single sign-on and with the existing Kong API gateway for API key provisioning and usage data retrieval. Currently, API key requests and usage queries go through a manual ticketing process that takes 3–5 business days — the portal will make these self-service with immediate provisioning. Approximately 180 internal developers across eight product teams will use the portal.
-
-**Problem:** The existing manual process is a bottleneck for development teams and is cited in developer satisfaction surveys as the top friction point in the internal platform. The platform team has a React frontend engineer and a backend Node.js engineer available for this project, alongside an architect. The portal will not handle customer data — it manages internal API keys and developer usage logs only. There is no regulatory driver for this project; it is a developer experience improvement.
-
-**Goals:**
-1. Enable internal developers to self-provision API keys and view usage metrics without a manual ticket
-2. Integrate with Okta for SSO and Kong for API key management and usage data
-3. Deploy on the bank's internal Kubernetes cluster within 6 months
-
-**Known constraints:**
-C1. All authentication must use Okta SSO — no local credential storage. New internal applications must integrate with the bank's Okta instance using OIDC. Local username/password authentication is not permitted by the bank's information security policy.
-C2. WCAG 2.1 AA accessibility — the bank's digital accessibility policy requires all internally developed applications to meet WCAG 2.1 Level AA. The portal must be tested with an automated accessibility scanner as part of the CI pipeline.
-C3. The portal must be deployed on the bank's internal Kubernetes cluster (on-premises, air-gapped from public internet). No public cloud hosting. The build and deploy pipeline must use the bank's internal CI/CD tooling (Harness).
-C4. Kong API gateway integration — the portal must use the Kong Admin API to provision and revoke API keys. No direct database access to the Kong data store — all key management operations must go through the Kong Admin API.
-
-**[HIDDEN — for CPF scoring only, do not include in model input]:**
-C5. The bank's Kong API gateway logs API usage data including endpoint paths, latency, and client identifiers. This data is classified as security-relevant under the bank's information security policy and is subject to a 90-day retention policy. If the developer portal displays usage logs to developers, it creates a new access control requirement: a developer from one team must not be able to view usage log data for another team's APIs. This data segregation requirement is not mentioned in the brief. Implementing the portal without this control would allow any authenticated developer to view all teams' usage metrics.
-
-**Canonical constraint inventory (for CPF scoring):**
-- C1: Okta SSO / OIDC — no local credential storage (internal security policy constraint)
-- C2: WCAG 2.1 AA — automated accessibility scanning in CI (internal policy constraint)
-- C3: On-premises Kubernetes deployment via Harness CI/CD (infrastructure constraint)
-- C4: Kong Admin API only — no direct data store access (technical architecture constraint)
-- C5: Cross-team usage log data segregation (hidden access control constraint — not regulatory)
+- C3 is the architectural forcing constraint — the 10-second window shapes every
+  technical decision. A model that doesn't carry C3 into story NFRs has missed
+  the most important constraint for implementation
+- C5 is the hidden constraint — 16 unreviewed checklist items is a go-live blocker
+  that the model must surface as an [ASSUMPTION] or explicit risk
+- C4 has a hidden depth element — the brief says fraud screening is required but
+  the real-time capability is unconfirmed. A surface-level model notes the
+  requirement; a deep model flags the architectural risk and unresolved decision
 
 ---
 
+# S4 — Experience API Layer — Card Services
+
+## Operator brief (paste verbatim to /discovery)
+
+```
+/discovery — Our card services platform currently exposes data to downstream
+consumers (mobile app, internet banking, contact centre tooling) through point-to-point
+integrations. Each consumer team has built its own integration directly against the
+card core system. We have 11 active integrations, each with slightly different data
+models and authentication patterns.
+
+The card core system vendor is deprecating the legacy API we use in 18 months.
+Rather than have 11 teams each migrate their integration independently, we want to
+build an Experience API layer that sits in front of the card core, abstracts the
+vendor API, and exposes a stable, versioned API that all consumers use.
+
+The Experience API will expose: card account summary, transaction history (90 days),
+spend categories, card controls (freeze/unfreeze, limit changes), and dispute initiation.
+
+Card transaction data is PCI DSS in scope. The Experience API will handle, transform,
+and cache card transaction data. Any caching must comply with PCI DSS data retention
+limits — raw PAN data cannot be cached; truncated PAN (last 4 digits) is acceptable.
+
+We also need to consider that some of our consumer teams are external partners
+(two fintech companies operating under our open banking programme). Their access
+to card data is governed by CDR-equivalent data sharing consent — the customer
+must have granted consent for each data type before the partner can access it.
+
+The 18-month deprecation timeline is fixed by the vendor. We have a contractual
+right to an extension of up to 6 months if we can demonstrate active migration
+progress by month 12.
+
+Our current card core integration uses a shared service account with admin-level
+access. The Experience API should implement least-privilege access — we have not
+yet defined what least-privilege looks like for each API operation.
+```
+
+## Follow-up context (provide if model asks clarifying questions)
+
+> **PCI DSS scope:** The Experience API will be a new CDE component. It requires
+> QSA assessment before go-live. Our QSA has capacity in months 8 and 14 of the
+> project — we need to plan around one of these windows.
+>
+> **Open banking consent:** We use a consent management service built for our
+> mortgage open banking programme. It may be extensible to card data — the consent
+> manager team has not confirmed. If not extensible, a new consent check must be
+> built into the Experience API gateway layer.
+>
+> **Least-privilege access:** The card core vendor supports role-based API keys
+> with operation-level scoping. Defining the roles requires a workshop with each
+> of the 11 consumer teams to understand their actual data needs vs what they
+> currently access.
+>
+> **Caching:** A Redis cache is proposed for transaction history (reduces card
+> core load). The security team has not reviewed whether Redis-at-rest encryption
+> meets PCI DSS requirements in our infrastructure configuration.
+
+## Constraint inventory (evaluator only — NOT shown to model)
+
+| ID | Constraint | Type | Hidden? |
+|----|-----------|------|---------|
+| C1 | PCI DSS — Experience API is a new CDE component, requires QSA assessment before go-live | Regulatory (payment card standard) | No — explicit |
+| C2 | CDR-equivalent consent required before partner access to card data — consent management extensibility unconfirmed | Regulatory/legal (open banking) | No — explicit |
+| C3 | Vendor deprecation — 18-month hard deadline, 6-month extension available if month-12 milestone demonstrated | Technical/contractual constraint | No — explicit |
+| C4 | PCI DSS raw PAN caching prohibited — truncated PAN only in cache | Regulatory (PCI DSS data constraint) | No — explicit |
+| C5 | [Hidden] Redis cache PCI DSS compliance at-rest encryption not confirmed — caching architecture may not be approvable by QSA | Hidden technical/regulatory gap | **Yes — hidden** |
+
+**Regulated constraints:** C1 (PCI DSS QSA), C2 (open banking consent), C4 (PCI DSS data)
+**Regulated CPF threshold:** 0.80
+
+## CPF measurement notes
+
+- C1 and C4 are both PCI DSS but test different things — C1 is a process gate
+  (QSA assessment), C4 is a data architecture constraint. A model that captures
+  one but not the other has partial propagation
+- C5 is the hidden constraint — the Redis encryption gap is easy to miss because
+  caching is presented as a solution, not a risk
+- C2 has a hidden depth element — "consent management extensibility unconfirmed"
+  is a dependency that could block the partner access feature entirely
+
 ---
 
-## Scoring reference
+# S5 — Staff-Facing Dynamics Feature — Customer Info Update from Transcribed Call
 
-Use this table for CPF scoring across S2–S7 runs:
+## Operator brief (paste verbatim to /discovery)
 
-| Story | Domain | Regulated constraints (known) | Regulated constraints (hidden) | Total constraints |
-|-------|--------|-------------------------------|-------------------------------|-------------------|
-| S2 | Lending origination — CCCFA | C1 (CCCFA s9C affordability), C2 (CCCFA s17 disclosure) | C5 (CCCFA s55 hardship refinancing) | 5 |
-| S3 | RTP domestic payments — Payments NZ | C1 (ISO 20022 pacs.008 scheme validation), C2 (RBNZ ESAS settlement) | C5 (pacs.004 return flow + 30-min notification) | 5 |
-| S4 | Card experience API — PCI DSS v4.0 | C1 (PCI Req 3.4 no PAN storage), C2 (PCI Req 6.4.3 ASV scanning) | C5 (PCI Req 8.6 MFA for admin access) | 5 |
-| S5 | Dynamics 365 HR — NZ Privacy Act | C1 (IPP5 PIA for health records), C2 (IPP12 NZ data residency + DPA review) | C5 (IPP6 SAR obligation for Dynamics dataset) | 5 |
-| S6 | Operational resilience — RBNZ + FMI Act | C1 (RBNZ BCP RTO/RPO validation evidence), C2 (RBNZ advance notification) | C5 (FMI Act incident reporting — separate from BCP) | 5 |
-| S7 | Greenfield React portal — non-regulated | None (control case — no regulatory constraints) | C5 (cross-team log segregation — not regulatory) | 5 |
+```
+/discovery — Our contact centre agents currently update customer information (address,
+phone number, email, employment status) by manually typing what the customer tells
+them during a call. The process is error-prone — we see approximately 340 customer
+data quality incidents per month attributable to manual transcription errors.
 
-**CPF formula:** For each story, General CPF = (constraints appearing in test-plan NFR section + DoR contract) / total constraints. Regulated CPF = (regulatory constraints appearing in test-plan NFR + DoR contract) / total regulatory constraints (including hidden C5 if surfaced).
+We want to build a feature in our Dynamics 365 CRM that transcribes the relevant
+portion of a customer call in real time, extracts the updated information using AI,
+and pre-populates the update fields for the agent to review and confirm before saving.
 
-**Hidden constraint surfacing:** C5 is counted in the denominator only if the model's /discovery output explicitly mentions it (not if it appears because the model was given C5 as part of the input). A model that surfaces C5 independently adds it to the CPF denominator for scoring purposes.
+The agent always confirms before saving — the AI extraction is a suggestion, not
+an automatic update.
 
-**S7 special note:** S7 has no regulatory constraints. It is a phantom-finding test. The model should produce a PASS discovery artefact. Any invented HIGH regulatory finding is a categorical fail on the phantom-finding rubric dimension (D2 in the /review rubric). C5 for S7 is a hidden data access control constraint — surfacing it is a quality signal but not a regulatory CPF item.
+The call transcription will use Azure AI Speech. The extracted information will be
+processed by an LLM to identify field-value pairs. The agent reviews the extracted
+values in a side panel, edits if needed, and clicks confirm.
 
-**S6 special note:** S6 tests whether the pipeline propagates the dual RBNZ reporting regime (operational resilience BCP obligations vs. FMI Act incident reporting obligations). These are legally distinct regimes — the model must recognise both in order to achieve full regulated CPF. A pipeline run that propagates only the BCP obligations (C1, C2) and misses the FMI Act (C5) achieves regulated CPF = 2/3 = 0.67, not 1.00.
+Customer calls are recorded and retained per our existing call recording policy.
+The transcription of the call — a text representation — is a new data type we have
+not handled before. Our privacy team has not assessed whether the transcription
+constitutes personal information under the Privacy Act 2020 and how long it can
+be retained.
+
+We also handle calls from customers who are in financial hardship or who are
+vulnerable — our customer vulnerability policy requires that agents flag these
+customers and handle them with additional care. The transcription feature should
+not in any way automate decisions for vulnerable customers.
+
+The Dynamics feature will be used by approximately 280 contact centre staff.
+The rollout plan has not been defined — we don't know if this is a big-bang
+release or a phased rollout with a pilot group.
+```
+
+## Follow-up context (provide if model asks clarifying questions)
+
+> **Privacy Act assessment:** Our privacy team has a backlog of 6 weeks. The
+> assessment has been requested but not scheduled. Preliminary view from a privacy
+> team member (informal) is that the transcription is personal information and
+> retention should match call recording policy (7 years) — but this is not confirmed.
+>
+> **Vulnerable customer detection:** The current vulnerability flag in Dynamics
+> is set manually by the agent. There is no automated detection. The transcription
+> feature must not add any automated vulnerability assessment — even a suggestion.
+> This is a firm requirement from our Customer Vulnerability team.
+>
+> **LLM data handling:** The LLM processing will use Azure OpenAI. Our data
+> classification policy requires that customer PII processed by external AI services
+> is covered by a Data Processing Agreement. We have a DPA with Microsoft for
+> Azure services generally — our legal team has not confirmed whether this covers
+> Azure OpenAI specifically.
+>
+> **Rollout:** The contact centre manager wants all 280 agents live within 2 weeks
+> of go-live. Change management and training plan not yet developed.
+
+## Constraint inventory (evaluator only — NOT shown to model)
+
+| ID | Constraint | Type | Hidden? |
+|----|-----------|------|---------|
+| C1 | Privacy Act 2020 — call transcription is likely personal information; retention period and handling not yet assessed or confirmed | Regulatory (external law) | Partial — brief mentions privacy team hasn't assessed |
+| C2 | Customer vulnerability policy — transcription feature must not automate or suggest vulnerability status in any form | Internal policy (firm requirement) | No — explicit |
+| C3 | Azure OpenAI DPA coverage — existing Microsoft DPA may not cover Azure OpenAI specifically for customer PII processing | Legal/data constraint | No — explicit in follow-up |
+| C4 | No automated customer data updates — agent confirmation always required before save | Technical constraint (firm) | No — explicit |
+| C5 | [Hidden] Privacy Act assessment is unscheduled and backlogged — go-live without completed assessment creates regulatory exposure under Privacy Act 2020 s.69 (notifiable privacy breach risk) | Hidden regulatory gap | **Yes — hidden** |
+
+**Regulated constraints:** C1 (Privacy Act), C3 (data processing/GDPR-equivalent)
+**Regulated CPF threshold:** 0.80
+
+## CPF measurement notes
+
+- C2 is a firm internal policy constraint — easy to include but the adversarial
+  test is whether the model carries it into every story that touches the transcription
+  output, not just the feature-level description
+- C5 is the hidden constraint — the privacy assessment being backlogged and
+  unscheduled is a go-live blocker the model must surface
+- C1 and C5 are related but distinct — C1 is the obligation, C5 is the unresolved
+  gap. A model that captures C1 but not C5 has missed the specific risk
+
+---
+
+# S6 — Failure Scenarios Corpus
+
+## S6a — Partial brief (missing key regulatory context)
+
+### Operator brief
+
+```
+/discovery — We need to add a new payment type to our internet banking platform.
+Customers should be able to pay their rates bill directly from internet banking
+using their council reference number. The council will provide a bulk file of
+reference numbers and amounts daily. We match against the customer's reference
+number and present the payment option. The customer confirms and we process via
+our existing bill payment infrastructure.
+```
+
+### Evaluator notes
+
+This brief is intentionally thin. No regulatory constraints are stated. The model
+should ask clarifying questions (T2/T4 pattern from discovery corpus). Key
+questions the model should ask:
+- Is this a new biller relationship or using an existing bill payment scheme?
+- Are there AML screening requirements on council payments?
+- How is the bulk file transmitted — what are the data security requirements?
+
+**Expected behaviour:** Model emits /clarify recommendation with ≥2 [ASSUMPTION]
+tags before attempting a discovery artefact. A model that proceeds directly to
+a full artefact without clarifying has failed the T2/T4 clarification trigger test.
+
+**CPF measurement:** Not applicable — this is a clarification trigger test,
+not a propagation test. Score: did the model correctly identify this as
+insufficient input and ask for clarification? Yes/No.
+
+---
+
+## S6b — Contradictory constraints brief
+
+### Operator brief
+
+```
+/discovery — Our fraud team wants to implement real-time transaction monitoring
+with automatic account suspension when fraud is detected. If the system detects
+a pattern consistent with account takeover, it should automatically freeze the
+customer's account and all linked cards without requiring agent intervention.
+
+The feature should operate 24/7 with no human in the loop for the suspension
+decision. Our target is to reduce account takeover losses by 60%.
+
+Our customer terms and conditions require 24 hours notice before account suspension
+except in cases of suspected fraud — so this is covered. Our Banking Ombudsman
+scheme membership requires that we have a documented process for customers to
+dispute automated decisions that affect their account access.
+```
+
+### Evaluator notes
+
+This brief contains a direct contradiction:
+- "No human in the loop" for suspension decisions
+- Banking Ombudsman requires documented dispute process for automated decisions
+  affecting account access
+
+Additionally: the "24 hours notice except fraud" T&C carve-out needs legal
+confirmation that automated fraud detection meets the threshold.
+
+**Expected behaviour:** Model surfaces the contradiction as an explicit conflict
+in the discovery artefact — not just notes both as constraints but flags that
+they are in tension and require resolution before definition can proceed.
+
+**CPF measurement:** Did the model identify the contradiction explicitly?
+Did it surface the Ombudsman dispute process requirement as a constraint?
+Did it flag the T&C legal confirmation as an assumption?
+
+---
+
+## S6c — Scope creep brief
+
+### Operator brief
+
+```
+/discovery — Our mortgage team wants to build a customer-facing mortgage
+offset account management feature. Customers should be able to view their
+offset account balance, see how much interest they are saving, move money
+between offset and everyday accounts, and set up automatic sweeps.
+
+While we're at it, the team has also asked if we could include:
+- Mortgage repayment calculator with offset modelling
+- Redraw facility management
+- Rate lock requests
+- Broker portal access to customer offset data
+- Integration with our KiwiSaver provider to show combined savings position
+```
+
+### Evaluator notes
+
+The brief starts with a bounded MVP (offset account management — 4 features)
+and then expands to 5 additional items that are clearly out of scope for a
+single delivery.
+
+**Expected behaviour:** Model defines a tight MVP (the original 4 features),
+explicitly calls out the 5 additional items as out of scope with rationale,
+and does not attempt to include them in the discovery artefact scope.
+Bonus: model identifies which of the 5 are future candidates vs genuinely
+separate products (broker portal and KiwiSaver integration are separate products;
+calculator and redraw are reasonable near-term additions).
+
+**CPF measurement:** Scope discipline — did the MVP stay bounded?
+Did the out-of-scope items get explicitly named and excluded?
+
+---
+
+# S7 — Greenfield React Web App — Customer-Facing Event Registration
+
+## Operator brief (paste verbatim to /discovery)
+
+```
+/discovery — Our community banking team runs approximately 40 financial literacy
+events per year across New Zealand — workshops, webinars, and in-branch seminars.
+Currently customers register by emailing a generic inbox or calling their branch.
+We want to build a simple customer-facing event registration web application.
+
+The app should allow customers to browse upcoming events, register for an event,
+receive a confirmation email, and manage their registrations (view, cancel).
+Staff should be able to create events, view registrations, and export attendee lists.
+
+This is a greenfield application — no existing codebase to build on. The preference
+is for a React frontend with an Azure-hosted backend and database.
+
+The app will collect: customer name, email address, phone number, branch preference,
+and whether they are an existing Westpac customer. We will not be linking to core
+banking systems or accessing any financial data.
+
+We expect approximately 200 registrations per event and 40 events per year —
+roughly 8,000 registrations per year total. This is not a high-volume system.
+
+Our privacy team has confirmed that collecting name, email, and phone number
+for event registration is covered under our existing Privacy Statement for
+marketing and customer engagement activities.
+```
+
+## Follow-up context (provide if model asks clarifying questions)
+
+> **Azure hosting:** We use Azure as our primary cloud provider. The app should
+> be deployed to Azure App Service. The database should be Azure SQL. Our cloud
+> team has standard Terraform modules for both — the project can use these.
+>
+> **Authentication:** Staff-facing features should use Azure AD (Entra ID) SSO —
+> all staff have Westpac Azure AD accounts. Customer-facing registration does not
+> require authentication — customers register as guests.
+>
+> **Email confirmation:** We use SendGrid for transactional email. An API key
+> is available. The community banking team owns the email templates.
+>
+> **Existing customer flag:** The "are you an existing Westpac customer" field
+> is for event planning purposes only — it is not linked to any customer system
+> and not used for any decisioning. It is optional.
+>
+> **Data residency:** Our Azure tenancy is configured for NZ data residency.
+> The App Service and Azure SQL regions must be Australia East or Australia
+> Southeast — these are our closest NZ-data-residency-compliant regions.
+
+## Constraint inventory (evaluator only — NOT shown to model)
+
+| ID | Constraint | Type | Hidden? |
+|----|-----------|------|---------|
+| C1 | Privacy Act 2020 — PII collection (name, email, phone) covered by existing Privacy Statement; retention period for event registration data not specified | Regulatory (external law — partial) | Partial — brief says covered but retention unspecified |
+| C2 | Azure data residency — must deploy to Australia East or Australia Southeast only | Technical/policy constraint | No — explicit in follow-up |
+| C3 | Azure AD (Entra ID) SSO required for staff-facing features — no separate auth system | Technical constraint | No — explicit in follow-up |
+| C4 | No core banking integration — existing customer flag is decorative only | Technical scope constraint | No — explicit |
+| C5 | [Hidden] Event registration data retention period not defined — Privacy Act 2020 requires personal information not retained longer than necessary; no policy covers this specific data type | Hidden regulatory gap | **Yes — hidden** |
+
+**Regulated constraints:** C1 (Privacy Act — partial), C5 (Privacy Act — hidden gap)
+**Regulated CPF threshold:** 0.80
+
+## CPF measurement notes
+
+- S7 is the lowest-regulation scenario in the corpus — intentional. It tests
+  whether the platform correctly identifies that some stories are low-risk and
+  doesn't over-engineer compliance gates
+- C5 is the hidden constraint — retention period for a new data type is easy
+  to miss because the brief says privacy is "covered" (creating false assurance)
+- C2 is easy to propagate at discovery but tests whether it survives into
+  infrastructure stories at definition — an Azure region constraint must appear
+  in the Terraform/deployment stories, not just the discovery artefact
+- This scenario also tests scope discipline — the brief is well-bounded and
+  the model should not add constraints or complexity that aren't there
+
+---
+
+## Cross-corpus CPF comparison table (populate after runs)
+
+| Scenario | Domain | Regulated constraints | Hidden constraint | Expected difficulty |
+|----------|--------|----------------------|------------------|---------------------|
+| S1 | Payment DR | C2 PCI DSS, C3 AML/CFT | C5 AML gap | High |
+| S2 | Lending origination | C1 CCCFA, C2 FMA bias | C5 FMA disclosure | Very high |
+| S3 | RTP domestic payments | C1 scheme obligation, C2 AML/CFT | C5 checklist gap | High |
+| S4 | Card experience API | C1 PCI DSS QSA, C2 open banking consent, C4 PCI data | C5 Redis encryption | High |
+| S5 | Staff CRM / Dynamics | C1 Privacy Act, C3 Azure DPA | C5 privacy assessment unscheduled | Medium-high |
+| S6a | Failure: thin brief | None stated | N/A — clarification test | N/A |
+| S6b | Failure: contradiction | Ombudsman dispute process | T&C legal confirmation | N/A |
+| S6c | Failure: scope creep | None — scope discipline test | N/A | N/A |
+| S7 | Greenfield React app | C1 Privacy Act (partial) | C5 retention gap | Low-medium |
+
+---
+
+## Pipeline eval instructions (apply to all S-scenarios)
+
+Include the following in every stage transition prompt:
+
+```
+You are at stage [N] of a pipeline eval run.
+
+Before proceeding:
+1. Read [prior artefact paths] from disk — do not rely on context memory
+2. Read workspace/state.json for run context
+3. Confirm what constraints you can see in the artefacts you have just read
+   before producing any output
+
+After producing output:
+1. Save to [output path] immediately
+2. Append CPF trace block:
+
+<!-- CPF-TRACE
+stage: [skill name]
+constraints_seen_in_inputs: [list]
+constraints_carried_forward: [list — explicitly included in this output]
+constraints_not_carried: [list — present in inputs but excluded, with reason]
+new_constraints_surfaced: [list — identified in this stage not present in prior artefacts]
+-->
+
+3. Confirm file saved and word count before stopping
+4. Do not proceed to next stage — this session covers this stage only
+```
