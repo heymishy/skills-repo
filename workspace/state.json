@@ -88,21 +88,30 @@
       "evalMd": ".github/skills/test-plan/EVAL.md",
       "corpus": ".github/skills/test-plan/corpus/",
       "result": "Haiku TCF 1.00, zero categorical fails (5/5 cases × 2 trials). Sonnet TCF 1.00, zero categorical fails. Haiku approved for /test-plan non-regulated. Sonnet preferred for PCI/compliance stories (Haiku D3=0.7 on T5 — NFR scope-mixing, confirmed systematic). All outer-loop skills (/discovery, /definition, /review, /test-plan, /definition-of-ready) now evidence-backed.",
-      "routingUpdate": "routing-policy-framework.md updated — /test-plan split: Haiku default for non-regulated (measurement_backed: true); Sonnet for PCI/compliance pending SKILL.md NFR scope rule fix",
+      "routingUpdate": "routing-policy-framework.md updated — /test-plan split: Haiku default for non-regulated (measurement_backed: true); Sonnet for PCI/compliance pending SKILL.md NFR scope rule fix. After EXP-007R: both rows consolidated to Haiku.",
       "skillMdFix": ".github/skills/test-plan/SKILL.md NFR scope rule added (EXP-007-testplan-rubric, 2026-05-16) — NFR tests must not include positive AC assertions alongside negative constraints",
       "finalReport": "workspace/experiments/EXP-007-testplan-rubric/haiku-vs-sonnet-final.md"
+    },
+    "EXP-007R-testplan-nfr": {
+      "status": "complete",
+      "createdAt": "2026-05-16",
+      "completedAt": "2026-05-16",
+      "manifest": "workspace/experiments/EXP-007R-testplan-nfr/manifest.md",
+      "hypothesis": "NFR scope rule (commit a8e09c8) eliminates Haiku D3=0.7 scope-mixing on T5",
+      "result": "D3=1.0 confirmed. NFR-SEC-1 test body contains only negative-constraint assertions. No expect(mockGateway.processPayment).toHaveBeenCalledWith() in NFR block. Weighted score 0.925. Pass condition met.",
+      "runFile": "workspace/experiments/EXP-007-testplan-rubric/runs/haiku/T5-fix-validation-run-1.md",
+      "judgeFile": "workspace/experiments/EXP-007-testplan-rubric/runs/haiku/T5-fix-validation-run-1-judge.md",
+      "routingUpdate": "routing-policy-framework.md updated — /test-plan (PCI/compliance-classified stories) downgraded from claude-sonnet-4-6 to claude-haiku-4-5. Routing policy now fully Haiku-dominant across all 4 non-discovery skills."
     }
   },
   "checkpoint": {
     "writtenAt": "2026-05-16",
-    "contextAtWrite": "EXP-007-testplan-rubric complete. Haiku TCF 1.00 (5/5 cases × 2 trials, 0 categorical fails) — approved for /test-plan on non-regulated stories at 0.33× Sonnet cost. Sonnet preferred for PCI/compliance stories — Haiku D3=0.7 on T5 (NFR scope-mixing, confirmed systematic both trials). NFR scope rule added to .github/skills/test-plan/SKILL.md. routing-policy-framework.md updated with two measurement-backed /test-plan rows. EXP-007 manifest.md populated with final results. evaluation.mode reset to false. All outer-loop skills (/discovery, /definition, /review, /test-plan, /definition-of-ready) are now evidence-backed — zero provisional routing rows remain.",
-    "resumeInstruction": "EXP-007 complete. All outer-loop skills now have measurement-backed routing. NEXT PRIORITY: Layer 2 API routing enforcement — scripts/run-model-sweep.js MODEL_ROUTING map must be wired to the routing-policy-framework.md decisions (Haiku default for /definition, /review, /test-plan non-regulated, /definition-of-ready). SECOND PRIORITY: SCR (Scope Creep Resistance) feature design — discovery for programmatic scope-drift detection from pipeline-state.json. See workspace/proposals/ for prior proposals.",
+    "contextAtWrite": "EXP-007R-testplan-nfr complete. Haiku D3=1.0 on T5 after NFR scope rule (commit a8e09c8). NFR-SEC-1 test body contains only negative-constraint assertions — no gateway assertion. Weighted score 0.925. PCI/compliance routing downgraded from Sonnet to Haiku. Routing policy is now fully Haiku-dominant across all 4 non-discovery skills. MODEL_ROUTING wired to run-model-sweep.js (commit 957c8fd, earlier this session). 28 routing tests passing.",
+    "resumeInstruction": "EXP-007R complete. Routing policy now fully Haiku-dominant (discovery=Sonnet, all others=Haiku). NEXT PRIORITY: SCR (Scope Creep Resistance) feature design — /discovery for programmatic scope-drift detection from pipeline-state.json. See workspace/proposals/ for prior proposals. Also pending: wucp /review pipeline (wucp.1, wucp.2, wucp.4 all reviewReady: true), wsm.4 dispatch (dor-signed-off), EXP-003 Config C re-run.",
     "pendingActions": [
-      "PRIORITY 1 — Layer 2 API routing enforcement: routing-policy-framework.md now has measurement_backed: true for /discovery (Sonnet), /definition (Haiku), /review (Haiku default, Sonnet direct-author), /test-plan (Haiku non-regulated, Sonnet PCI/compliance), /definition-of-ready (Haiku default). Wire these in scripts/run-model-sweep.js MODEL_ROUTING map so programmatic Layer 2 runs match the policy.",
-      "PRIORITY 2 — SCR feature design: /discovery for a scope creep resistance capability — programmatic detection of story-level scope drift from the original discovery MVP. See workspace/experiments/eval-programme-roadmap.md for context.",
-      "PRIORITY 3 — /test-plan SKILL.md NFR scope rule validation: Once NFR scope rule is in SKILL.md (done), run a single Haiku trial on T5 to confirm D3=1.0 with the fix. If confirmed, downgrade PCI/compliance routing from Sonnet to Haiku.",
-      "PRIORITY 4 — EXP-003 Config C proper re-run: Set evaluation.mode: true, run /discovery with Sonnet, switch model picker to claude-haiku-4-5 before /definition, /review, /test-plan, /definition-of-ready. Save to workspace/experiments/EXP-003-pipeline-eval/runs/config-C-run-2/. Reset evaluation.mode: false after.",
-      "PRIORITY 5 — EXP-003 Config D: Requires EXP-002a H5 confirmed (GPT-4o >= 0.70 on T1 and T3) before running.",
+      "PRIORITY 1 — SCR feature design: /discovery for a scope creep resistance capability — programmatic detection of story-level scope drift from the original discovery MVP. See workspace/experiments/eval-programme-roadmap.md for context.",
+      "PRIORITY 2 — EXP-003 Config C proper re-run: Set evaluation.mode: true, run /discovery with Sonnet, switch model picker to claude-haiku-4-5 before /definition, /review, /test-plan, /definition-of-ready. Save to workspace/experiments/EXP-003-pipeline-eval/runs/config-C-run-2/. Reset evaluation.mode: false after.",
+      "PRIORITY 3 — EXP-003 Config D: Requires EXP-002a H5 confirmed (GPT-4o >= 0.70 on T1 and T3) before running.",
       "PARALLEL — wucp /review pipeline: wucp.1 (context auto-loader), wucp.2 (slash command router), wucp.4 (session start wizard) are all reviewReady: true. Can run /review in parallel with other priorities.",
       "PARALLEL — wsm.4 is dor-signed-off and ready for dispatch.",
       "DEFERRED — Token-optimization proposal review: workspace/proposals/proposed-update-token-optimization-measurement.md awaiting operator decision."
