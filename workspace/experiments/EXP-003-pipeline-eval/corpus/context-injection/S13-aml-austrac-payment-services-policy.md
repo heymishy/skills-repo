@@ -17,7 +17,7 @@
 
 Registered banks in New Zealand are "reporting entities" under the AML/CFT Act 2009. All outbound international payment instructions processed by a registered bank must comply with this Act, regardless of the routing channel used to transmit the payment. A registered bank that processes a customer payment instruction through an internal or intra-group channel rather than through a third-party correspondent bank retains full primary reporting entity obligations under the Act.
 
-Westpac NZ, as a registered bank, remains the primary reporting entity for all payments it originates on behalf of customers, including payments routed via intra-group arrangements.
+the enterprise, as a registered bank, remains the primary reporting entity for all payments it originates on behalf of customers, including payments routed via intra-group arrangements.
 
 ---
 
@@ -65,16 +65,16 @@ Where the receiving entity is an Australian bank, the NZ originating bank must e
 ---
 
 # Part B — AUSTRAC Correspondent Banking Requirements (Australian)
-## Obligations Affecting the Westpac AU Receiving Leg
+## Obligations Affecting the the enterprise's Australian counterpart Receiving Leg
 ### (Simulated for EXP-003 S13 evaluation — Australian jurisdiction summary)
 
 ---
 
 ## B.1 AUSTRAC obligations overview
 
-AUSTRAC is Australia's financial intelligence and anti-money laundering regulator. Westpac Australia, as a reporting entity under the Anti-Money Laundering and Counter-Terrorism Financing Act 2006 (Cth), bears primary AUSTRAC obligations for all funds received into Australian bank accounts — including funds received via intra-group arrangements from overseas group entities.
+AUSTRAC is Australia's financial intelligence and anti-money laundering regulator. the enterprise's Australian counterpart, as a reporting entity under the Anti-Money Laundering and Counter-Terrorism Financing Act 2006 (Cth), bears primary AUSTRAC obligations for all funds received into Australian bank accounts — including funds received via intra-group arrangements from overseas group entities.
 
-**Correspondent banking obligation (Westpac NZ must satisfy):** When Westpac AU receives a credit instruction from Westpac NZ via the intra-group channel, Westpac AU must receive sufficient originator information to satisfy its AUSTRAC Know Your Customer (KYC) and record retention obligations. The sending entity (Westpac NZ) is responsible for ensuring that the originator information accompanying the credit instruction meets AUSTRAC's minimum requirements for inbound international transfers.
+**Correspondent banking obligation (the enterprise must satisfy):** When the enterprise's Australian counterpart receives a credit instruction from the enterprise via the intra-group channel, the enterprise's Australian counterpart must receive sufficient originator information to satisfy its AUSTRAC Know Your Customer (KYC) and record retention obligations. The sending entity (the enterprise) is responsible for ensuring that the originator information accompanying the credit instruction meets AUSTRAC's minimum requirements for inbound international transfers.
 
 **Minimum originator fields required by AUSTRAC:**
 - Full legal name of the originating customer
@@ -83,15 +83,15 @@ AUSTRAC is Australia's financial intelligence and anti-money laundering regulato
 - Purpose of payment (where known)
 - Currency and amount
 
-If Westpac NZ's credit instruction to Westpac AU omits any required originator information field, Westpac AU may be required to request additional information before crediting the beneficiary account, which would delay settlement and undermine the 2-hour customer SLA.
+If the enterprise's credit instruction to the enterprise's Australian counterpart omits any required originator information field, the enterprise's Australian counterpart may be required to request additional information before crediting the beneficiary account, which would delay settlement and undermine the 2-hour customer SLA.
 
 ---
 
 ## B.2 AML/CTF Programme — Correspondent Banking Arrangement
 
-Westpac AU's AML/CTF Programme (as required by AUSTRAC) includes requirements for conducting due diligence on "correspondent banking relationships". An intra-group payment arrangement — where Westpac NZ sends payment instructions to Westpac AU for onward crediting to third-party Australian accounts — is a form of correspondent banking arrangement, regardless of the group relationship. Westpac AU must:
+the enterprise's Australian counterpart's AML/CTF Programme (as required by AUSTRAC) includes requirements for conducting due diligence on "correspondent banking relationships". An intra-group payment arrangement — where the enterprise sends payment instructions to the enterprise's Australian counterpart for onward crediting to third-party Australian accounts — is a form of correspondent banking arrangement, regardless of the group relationship. the enterprise's Australian counterpart must:
 (a) Document the correspondent banking arrangement (the proprietary intra-group channel) in its AML/CTF Programme;
-(b) Conduct due diligence on the originating entity (Westpac NZ) before establishing the arrangement;
+(b) Conduct due diligence on the originating entity (the enterprise) before establishing the arrangement;
 (c) Monitor the volume and nature of instructions received through the arrangement on an ongoing basis.
 
 The mere fact of a group ownership relationship does not exempt the arrangement from AUSTRAC's correspondent banking programme requirements.

@@ -9,7 +9,7 @@
 ## Operator input — paste verbatim to start each Config run
 
 ```
-/discovery — Our finance operations team produces Westpac NZ's monthly RBNZ prudential returns and quarterly FMA regulatory reports manually. Three senior analysts extract data from three separate source systems — core banking, treasury, and card platforms — reconcile the figures in Excel, and upload the completed returns via the RBNZ Reporting Portal and the FMA's online submission gateway.
+/discovery — Our finance operations team produces the enterprise's monthly RBNZ prudential returns and quarterly FMA regulatory reports manually. Three senior analysts extract data from three separate source systems — core banking, treasury, and card platforms — reconcile the figures in Excel, and upload the completed returns via the RBNZ Reporting Portal and the FMA's online submission gateway.
 
 The process consumes 6–8 business days per monthly cycle. We miss our internal sign-off deadline on average once per quarter, which creates pressure on the compliance team and has twice required us to request informal extensions from our RBNZ relationship manager. Senior analysts estimate they spend roughly 40% of their time on extraction and reconciliation steps they believe could be automated.
 

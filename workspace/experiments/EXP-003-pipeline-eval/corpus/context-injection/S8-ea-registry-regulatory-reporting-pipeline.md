@@ -1,5 +1,5 @@
 # Synthetic EA Registry Entry
-# Application: Regulatory Reporting Pipeline (Westpac NZ Finance Operations)
+# Application: Regulatory Reporting Pipeline (the enterprise Finance Operations)
 # Registry version: 2026-Q1
 # Status: PROPOSED — not yet registered (this entry models the expected registration)
 # Entry type: Internal Application
@@ -9,7 +9,7 @@
 ## Application Profile
 
 **Name:** Regulatory Reporting Pipeline
-**Owner:** Finance Operations, Westpac NZ
+**Owner:** Finance Operations, the enterprise
 **Domain:** Finance / Regulatory Compliance
 **Classification:** Regulated — RBNZ Prudential Reporting, FMA Financial Reporting
 **Criticality:** HIGH — supports statutory regulatory submissions
@@ -18,7 +18,7 @@
 **Description:**
 Automated pipeline that extracts balance sheet and transaction data from core banking, treasury, and card source systems, applies reconciliation and normalisation transformations, and produces pre-populated regulatory return files for analyst review and submission to RBNZ and FMA regulatory portals. Analysts retain approval authority before any submission is dispatched.
 
-**Hosting:** On-premises, Westpac NZ Auckland data centre
+**Hosting:** On-premises, the enterprise Auckland data centre
 **Technology stack:** Python (transformation layer), Azure Data Factory (orchestration), PostgreSQL (audit log), SharePoint Online (return file staging for analyst review)
 **Environment:** Production (proposed), Development, UAT
 

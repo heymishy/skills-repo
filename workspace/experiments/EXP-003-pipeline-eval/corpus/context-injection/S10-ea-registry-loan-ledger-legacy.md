@@ -10,7 +10,7 @@
 
 **Name:** LoanLedger-NZ (Legacy Loan Ledger System)
 **Replacement system:** CoreBanking-NXT (already live for deposits; being extended to loans)
-**Owner:** Retail Technology, Westpac NZ
+**Owner:** Retail Technology, the enterprise
 **Domain:** Core Banking / Retail Lending
 **Classification:** Regulated — CCCFA, RBNZ BS7/BS11, RBNZ Prudential Reporting
 **Criticality:** CRITICAL — hosts 280,000 active loan accounts
@@ -18,9 +18,9 @@
 **End-of-life:** Vendor support contract ends 12 months from project initiation. No extension available.
 
 **Description:**
-Legacy loan ledger system in production for 18 years. Manages all active personal loan, home loan, and commercial lending accounts at Westpac NZ. Produces RBNZ-prescribed prudential reports (BS3 Asset Quality, BS7 Statistical Return) directly from internal reporting modules. System is approaching vendor end-of-life. Migration to CoreBanking-NXT is required within the vendor deadline.
+Legacy loan ledger system in production for 18 years. Manages all active personal loan, home loan, and commercial lending accounts at the enterprise. Produces RBNZ-prescribed prudential reports (BS3 Asset Quality, BS7 Statistical Return) directly from internal reporting modules. System is approaching vendor end-of-life. Migration to CoreBanking-NXT is required within the vendor deadline.
 
-**Hosting:** On-premises, Westpac NZ Auckland data centre
+**Hosting:** On-premises, the enterprise Auckland data centre
 **Technology stack:** IBM DB2, COBOL batch processing, J2EE reporting tier
 **Environments:** Production only (no dev/UAT — new feature development has been frozen)
 
@@ -85,7 +85,7 @@ Legacy loan ledger system in production for 18 years. Manages all active persona
 | ID | Description | Severity |
 |----|-------------|---------|
 | LLNZ-RISK-001 | RBNZ BS11 30-business-day notification has not been filed. Project initiation may already have triggered the notification obligation. Filing must occur before development work begins. | CRITICAL |
-| LLNZ-RISK-002 | CoreBanking-NXT vendor migration toolset has not been procured or demonstrated on Westpac NZ data volumes. Migration toolset capability is unproven. | HIGH |
+| LLNZ-RISK-002 | CoreBanking-NXT vendor migration toolset has not been procured or demonstrated on the enterprise data volumes. Migration toolset capability is unproven. | HIGH |
 | LLNZ-RISK-003 | RBNZ BS3/BS7 report equivalence on CoreBanking-NXT has not been validated. Report formats and field derivations may differ. | HIGH |
 | LLNZ-RISK-004 | PPSR registration transfer process not confirmed with legal. Home loan security registrations may require manual re-registration at cutover. | HIGH |
 

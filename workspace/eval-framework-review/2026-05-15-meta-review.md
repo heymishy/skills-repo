@@ -267,7 +267,7 @@ As a result, all EXP-001 T5 cells are conditionally invalid and T5 was excluded 
 
 **Location:** `workspace/handoffs/pipeline-corpus-S2-S7.md`; EXP-003 manifest
 
-**Issue:** EXP-003 used a single corpus story (S1 — Westpac payment infrastructure). S2-S7 are defined with constraint inventories and artefact read/write maps, but none have been run through the full pipeline evaluation. The routing policy evidence (Configs A–C) is therefore based on a single domain story. S2 (lending origination) and subsequent stories are more complex (S2 has five constraints including C5 hidden demographic bias — a more subtle hidden constraint than S1's AML audit gap).
+**Issue:** EXP-003 used a single corpus story (S1 — the enterprise payment infrastructure). S2-S7 are defined with constraint inventories and artefact read/write maps, but none have been run through the full pipeline evaluation. The routing policy evidence (Configs A–C) is therefore based on a single domain story. S2 (lending origination) and subsequent stories are more complex (S2 has five constraints including C5 hidden demographic bias — a more subtle hidden constraint than S1's AML audit gap).
 
 **Impact:** The end-to-end CPF evidence is N=1 domain story. Domain-specific constraint extraction behaviours (e.g. financial crime regulation versus credit law) are not captured.
 

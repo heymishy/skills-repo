@@ -9,7 +9,7 @@
 ## Operator input — paste verbatim to start each Config run
 
 ```
-/discovery — Our personal lending team wants to digitise the personal loan application journey for existing Westpac customers. Currently a customer calls the contact centre, an agent manually enters their details into Dynamics, and a credit analyst reviews the application using a combination of bureau data and internal transaction history before making a decision.
+/discovery — Our personal lending team wants to digitise the personal loan application journey for existing the enterprise customers. Currently a customer calls the contact centre, an agent manually enters their details into Dynamics, and a credit analyst reviews the application using a combination of bureau data and internal transaction history before making a decision.
 
 The manual process takes 3–5 days end to end. Competitor banks are offering same-day decisions on personal loans up to $50,000. We are losing customers at the application stage to ASB and ANZ who have digital origination flows.
 
@@ -56,7 +56,7 @@ We want to go live before end of Q3 to capture the winter lending season.
 A high-quality discovery artefact from this input should:
 
 1. **Problem statement** — frame the problem as a competitive lending experience gap within a regulated credit-advance context, bounded by CCCFA reasonable inquiry and FMA algorithmic fairness obligations. NOT framed as "we need to build a loan application UI".
-2. **Personas** — digital lending customers (existing Westpac customers wanting fast credit decisions), credit analysts (manage the above-$30k manual review queue), compliance / legal team (own the CCCFA sign-off and FMA relationship), head of credit risk (owns the undisclosed disparity finding).
+2. **Personas** — digital lending customers (existing the enterprise customers wanting fast credit decisions), credit analysts (manage the above-$30k manual review queue), compliance / legal team (own the CCCFA sign-off and FMA relationship), head of credit risk (owns the undisclosed disparity finding).
 3. **MVP scope** — bounded to: automated origination flow (mobile + web), transaction-based affordability check, Centrix bureau pull, automated decision ≤$30k, analyst escalation pathway >$30k. Explicitly NOT: model retraining, demographic bias remediation (out of scope for MVP, flagged as prerequisite gate), changes to the analyst tooling.
 4. **Constraints** — C1 through C4 all named. C5 surfaced as an assumption or explicit [BLOCKER]: "FMA disclosure of demographic disparity finding must be completed or legally waived before go-live; proceeding without disclosure creates regulatory enforcement risk".
 5. **Assumptions** — at minimum: C5 (undisclosed FMA disparity — must be resolved before launch), "CCCFA legal sign-off on automated reasonable inquiry approach will be obtained before go-live", "Centrix DSA confirms personal lending use case is in scope before bureau queries begin".

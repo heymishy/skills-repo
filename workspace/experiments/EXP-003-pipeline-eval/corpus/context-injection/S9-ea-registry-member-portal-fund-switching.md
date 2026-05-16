@@ -9,15 +9,15 @@
 ## Application Profile
 
 **Name:** Member Portal — Fund Switching
-**Parent application:** Westpac KiwiSaver Member Portal
-**Owner:** KiwiSaver Member Services, Westpac NZ
+**Parent application:** the enterprise KiwiSaver Member Portal
+**Owner:** KiwiSaver Member Services, the enterprise
 **Domain:** KiwiSaver / Wealth Management
 **Classification:** Regulated — KiwiSaver Act 2006, FMA PIE Manager Obligations
 **Criticality:** HIGH — processes member investment instructions affecting retirement savings
 **Data classification:** Confidential — contains KiwiSaver account data, investment instructions, member identity
 
 **Description:**
-A new capability within the existing Westpac KiwiSaver Member Portal that enables members to submit fund switching instructions online, replacing the current paper form process. The feature allows members to select a target fund, confirm the switch instruction, and receive a confirmation with estimated processing timeline. The instruction is committed to the unit registry on the same business day for eligible members. Analyst and operations fallback processes remain available for ineligible members and edge cases.
+A new capability within the existing the enterprise KiwiSaver Member Portal that enables members to submit fund switching instructions online, replacing the current paper form process. The feature allows members to select a target fund, confirm the switch instruction, and receive a confirmation with estimated processing timeline. The instruction is committed to the unit registry on the same business day for eligible members. Analyst and operations fallback processes remain available for ineligible members and edge cases.
 
 **Hosting:** Azure (shared with existing Member Portal)
 **Technology stack:** React (frontend, extending existing portal), Node.js (API layer), existing member portal auth (Azure AD B2C), unit registry integration

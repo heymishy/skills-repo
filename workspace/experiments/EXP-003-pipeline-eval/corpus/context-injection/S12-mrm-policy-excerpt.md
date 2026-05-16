@@ -1,11 +1,11 @@
 # Synthetic Policy Document — S12 Context Injection
 # SYNTHETIC DOCUMENT — for EXP-003-pipeline-eval evaluation only
-# Simulates excerpts from Westpac NZ Model Risk Management Policy (2023 edition).
+# Simulates excerpts from the enterprise Model Risk Management Policy (2023 edition).
 # Does NOT represent any real organisation's policy. Version mismatch is the C5 hidden constraint signal.
 
 ---
 
-# Westpac NZ Model Risk Management Policy
+# the enterprise Model Risk Management Policy
 ## Version: 2.0 — Effective 1 July 2023
 ## Policy Owner: Chief Risk Officer
 ## Previous version: 1.4 (January 2021) — superseded by this version
@@ -28,7 +28,7 @@
 ## Part 1 — Scope and Definitions
 
 **1.1 Scope**
-This policy applies to all models developed, procured, or operated by Westpac NZ that are used in:
+This policy applies to all models developed, procured, or operated by the enterprise that are used in:
 (a) automated or assisted credit decisions affecting customers;
 (b) regulatory capital calculations;
 (c) pricing of financial products for individual customers;
@@ -81,7 +81,7 @@ A model retrain should be initiated when one or more of the following thresholds
 Previous versions of this policy (including version 1.4) treated retraining as a lighter-weight process, subject only to MRM Committee review without independent validation. This distinction has been removed in version 2.0. Any retraining project initiated or continuing after 1 July 2023 must comply with Part 3.2 — including retraining projects that were already in planning under the previous policy.
 
 **3.3 Fairness assessment — prescribed methodology**
-The fairness assessment for a retrained model must use the methodology prescribed in Part 5 of this policy. The internal Westpac Disparity Metric v1.x is not an acceptable substitute for the prescribed fairness methodology for credit models subject to FMA regulatory scrutiny. See Part 5.3.
+The fairness assessment for a retrained model must use the methodology prescribed in Part 5 of this policy. The internal the enterprise Disparity Metric v1.x is not an acceptable substitute for the prescribed fairness methodology for credit models subject to FMA regulatory scrutiny. See Part 5.3.
 
 ---
 
@@ -100,7 +100,7 @@ Fairness assessments are required for all models in the scope of this policy tha
 A fairness assessment is required: at initial deployment, at each model retrain, and at annual monitoring intervals. The assessment must use the current prescribed fairness methodology at the time of the assessment.
 
 **5.3 Prescribed fairness methodology — FMA Algorithmic Fairness Framework (2024)**
-As of the date of this policy update, the FMA has published the Algorithmic Fairness Framework for Financial Services (2024). Westpac NZ credit models subject to FMA regulatory scrutiny must be assessed using this framework, not using internal disparity metrics alone.
+As of the date of this policy update, the FMA has published the Algorithmic Fairness Framework for Financial Services (2024). the enterprise credit models subject to FMA regulatory scrutiny must be assessed using this framework, not using internal disparity metrics alone.
 
 The FMA Algorithmic Fairness Framework prescribes:
 (a) Protected characteristics to assess: gender, age, ethnicity, disability status, and region;
@@ -108,7 +108,7 @@ The FMA Algorithmic Fairness Framework prescribes:
 (c) Threshold for remediation: disparity of more than 5 percentage points on any prescribed metric triggers mandatory review and remediation before deployment;
 (d) Documentation requirements: the fairness report must document each prescribed metric, the disparity result, and the remediation action taken if a threshold was breached.
 
-An internal disparity metric (such as Westpac's internal v1.2 methodology) may be used as a supplementary indicator but does not replace the FMA-prescribed assessment for regulatory purposes. A credit model validated using only the internal disparity metric will not satisfy FMA regulatory requirements if the model is scrutinised.
+An internal disparity metric (such as the enterprise's internal v1.2 methodology) may be used as a supplementary indicator but does not replace the FMA-prescribed assessment for regulatory purposes. A credit model validated using only the internal disparity metric will not satisfy FMA regulatory requirements if the model is scrutinised.
 
 **5.4 Remediation**
 Where the FMA-prescribed fairness assessment identifies a disparity above the 5 percentage point threshold, the model development team must document the finding, assess root cause, and either: (a) adjust the model's training approach to reduce the disparity and re-assess; or (b) obtain documented sign-off from the CRO and legal team confirming that the model is compliant notwithstanding the observed disparity (e.g., because the disparity is attributable to a lawful difference in risk profile rather than to unlawful discrimination). Option (b) must be documented and available for regulatory review.
@@ -117,7 +117,7 @@ Where the FMA-prescribed fairness assessment identifies a disparity above the 5 
 
 ## Part 6 — Third-Party Models
 
-Where Westpac NZ procures or licenses a third-party model for use in decision-making, the full governance process under this policy applies to the vendor model. The vendor model validation report (if provided) may be used as input to the internal independent validation but does not substitute for it. The internal model validation team must independently assess the model's methodology, data inputs, and fairness characteristics.
+Where the enterprise procures or licenses a third-party model for use in decision-making, the full governance process under this policy applies to the vendor model. The vendor model validation report (if provided) may be used as input to the internal independent validation but does not substitute for it. The internal model validation team must independently assess the model's methodology, data inputs, and fairness characteristics.
 
 ---
 

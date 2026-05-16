@@ -9,7 +9,7 @@
 ## Operator input — paste verbatim to start each Config run
 
 ```
-/discovery — We are decommissioning Westpac NZ's legacy loan ledger system, which has been in production for 18 years. Approximately 280,000 active loan accounts — personal loans, home loans, and commercial lending — are currently managed by this system. We have been running a new core banking platform for deposit accounts for 14 months and it is working well. We want to migrate all loan accounts to the same platform so we can retire the legacy system and operate a single core.
+/discovery — We are decommissioning the enterprise's legacy loan ledger system, which has been in production for 18 years. Approximately 280,000 active loan accounts — personal loans, home loans, and commercial lending — are currently managed by this system. We have been running a new core banking platform for deposit accounts for 14 months and it is working well. We want to migrate all loan accounts to the same platform so we can retire the legacy system and operate a single core.
 
 The legacy system vendor has confirmed that their support contract ends in 12 months. After that date, the system receives no patches, no security updates, and no vendor support. Extending the contract is not an option — the vendor is withdrawing the product from the market. The 12-month window is our hard cutover deadline.
 
@@ -54,7 +54,7 @@ The project will be run in-house with the new platform vendor providing a migrat
 ## Expected artefact characteristics (for judge scoring)
 
 1. **Problem statement** — forced migration under a hard vendor deadline with regulatory data integrity and reporting obligations; the forcing function is the vendor contract end-date; risks are data loss, regulatory reporting continuity, and unacknowledged RBNZ notification obligations.
-2. **Personas** — loan account holders, Westpac NZ retail lending operations, RBNZ relationship team (notification and report equivalence), new platform vendor migration team, CTO/CRO (migration risk accountability).
+2. **Personas** — loan account holders, the enterprise retail lending operations, RBNZ relationship team (notification and report equivalence), new platform vendor migration team, CTO/CRO (migration risk accountability).
 3. **MVP scope** — data migration toolchain + parallel validation framework + regulatory report equivalence confirmation + RBNZ notification and sign-off. NOT: new loan origination features, lending product changes, or customer-facing migration communications (unless required by regulation).
 4. **Constraints** — C1 through C4 all named. C5 surfaced: "RBNZ BS11 notification status unknown — this must be confirmed before project activity proceeds; if the 30-business-day notification has not been filed, it is an immediate remediation action."
 5. **Assumptions** — at minimum: RBNZ BS11 notification status (confirm with regulatory team before proceeding — may require immediate filing), 3 missing RBNZ report types (must be confirmed producible before cutover), PPSR transfer requirement for security registrations.

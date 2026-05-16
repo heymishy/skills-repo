@@ -10,7 +10,7 @@
 
 ```
 /discovery — Our personal lending team wants to digitise the personal loan application
-journey for existing Westpac customers. Currently a customer calls the contact centre,
+journey for existing the enterprise customers. Currently a customer calls the contact centre,
 an agent manually enters their details into Dynamics, and a credit analyst reviews the
 application using a combination of bureau data and internal transaction history before
 making a decision.
@@ -114,12 +114,12 @@ constraints_not_carried: [list present in inputs but not included — with reaso
 
 ```
 /discovery — Payments NZ is launching the new real-time payments infrastructure
-(the RTP scheme) and Westpac NZ is required to participate as a scheme member.
+(the RTP scheme) and the enterprise is required to participate as a scheme member.
 Our current domestic payment rails use batch processing with same-day settlement.
 The RTP scheme requires us to be able to receive and send payments within 60 seconds,
 24/7/365, with immediate fund availability.
 
-We need to build the receiving side first — accepting inbound RTP payments to Westpac
+We need to build the receiving side first — accepting inbound RTP payments to the enterprise
 customer accounts. This involves integrating with the Payments NZ central infrastructure,
 processing inbound payment messages in the ISO 20022 format, crediting customer accounts
 in real time, and sending scheme-required acknowledgement messages within the timeout
@@ -160,10 +160,10 @@ from the scheme.
 >
 > **Core banking real-time crediting:** The thin real-time layer would use an
 > in-memory ledger for immediate crediting, with end-of-day reconciliation to
-> core. This pattern has not been used at Westpac NZ before — it introduces a
+> core. This pattern has not been used at the enterprise before — it introduces a
 > reconciliation failure risk that our operations team has not assessed.
 >
-> **Scheme participation agreement:** Westpac Legal has signed the agreement.
+> **Scheme participation agreement:** the enterprise Legal has signed the agreement.
 > The technical compliance checklist from Payments NZ has 47 items — we have
 > self-assessed against 31 of them. The remaining 16 have not been reviewed.
 
@@ -485,7 +485,7 @@ This is a greenfield application — no existing codebase to build on. The prefe
 is for a React frontend with an Azure-hosted backend and database.
 
 The app will collect: customer name, email address, phone number, branch preference,
-and whether they are an existing Westpac customer. We will not be linking to core
+and whether they are an existing the enterprise customer. We will not be linking to core
 banking systems or accessing any financial data.
 
 We expect approximately 200 registrations per event and 40 events per year —
@@ -503,13 +503,13 @@ marketing and customer engagement activities.
 > team has standard Terraform modules for both — the project can use these.
 >
 > **Authentication:** Staff-facing features should use Azure AD (Entra ID) SSO —
-> all staff have Westpac Azure AD accounts. Customer-facing registration does not
+> all staff have the enterprise Azure AD accounts. Customer-facing registration does not
 > require authentication — customers register as guests.
 >
 > **Email confirmation:** We use SendGrid for transactional email. An API key
 > is available. The community banking team owns the email templates.
 >
-> **Existing customer flag:** The "are you an existing Westpac customer" field
+> **Existing customer flag:** The "are you an existing the enterprise customer" field
 > is for event planning purposes only — it is not linked to any customer system
 > and not used for any decisioning. It is optional.
 >

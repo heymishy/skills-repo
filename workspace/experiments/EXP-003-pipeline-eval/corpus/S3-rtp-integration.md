@@ -9,9 +9,9 @@
 ## Operator input — paste verbatim to start each Config run
 
 ```
-/discovery — Payments NZ is launching the new real-time payments infrastructure (the RTP scheme) and Westpac NZ is required to participate as a scheme member. Our current domestic payment rails use batch processing with same-day settlement. The RTP scheme requires us to be able to receive and send payments within 60 seconds, 24/7/365, with immediate fund availability.
+/discovery — Payments NZ is launching the new real-time payments infrastructure (the RTP scheme) and the enterprise is required to participate as a scheme member. Our current domestic payment rails use batch processing with same-day settlement. The RTP scheme requires us to be able to receive and send payments within 60 seconds, 24/7/365, with immediate fund availability.
 
-We need to build the receiving side first — accepting inbound RTP payments to Westpac customer accounts. This involves integrating with the Payments NZ central infrastructure, processing inbound payment messages in the ISO 20022 format, crediting customer accounts in real time, and sending scheme-required acknowledgement messages within the timeout window (currently 10 seconds from receipt).
+We need to build the receiving side first — accepting inbound RTP payments to the enterprise customer accounts. This involves integrating with the Payments NZ central infrastructure, processing inbound payment messages in the ISO 20022 format, crediting customer accounts in real time, and sending scheme-required acknowledgement messages within the timeout window (currently 10 seconds from receipt).
 
 Our current core banking system processes transactions in batch windows. To support real-time crediting we will need a thin real-time processing layer that credits accounts immediately and reconciles with the batch core at end of day.
 
@@ -30,9 +30,9 @@ Our scheme participation agreement requires us to be live by 2026-09-01. Missing
 >
 > **AML latency under load:** The 8-second P99 is from last year's load test at 10,000 transactions/hour. RTP peak is estimated at 40,000/hour. The AML vendor has not provided performance guarantees at this volume. Scaling options exist but have not been costed.
 >
-> **Core banking real-time crediting:** The thin real-time layer would use an in-memory ledger for immediate crediting, with end-of-day reconciliation to core. This pattern has not been used at Westpac NZ before — it introduces a reconciliation failure risk that our operations team has not assessed.
+> **Core banking real-time crediting:** The thin real-time layer would use an in-memory ledger for immediate crediting, with end-of-day reconciliation to core. This pattern has not been used at the enterprise before — it introduces a reconciliation failure risk that our operations team has not assessed.
 >
-> **Scheme participation agreement:** Westpac Legal has signed the agreement. The technical compliance checklist from Payments NZ has 47 items — we have self-assessed against 31 of them. The remaining 16 have not been reviewed.
+> **Scheme participation agreement:** the enterprise Legal has signed the agreement. The technical compliance checklist from Payments NZ has 47 items — we have self-assessed against 31 of them. The remaining 16 have not been reviewed.
 
 ---
 
@@ -54,7 +54,7 @@ Our scheme participation agreement requires us to be live by 2026-09-01. Missing
 ## Expected artefact characteristics (for judge scoring)
 
 1. **Problem statement** — forced participation in a new national payment scheme with a hard compliance deadline and a real-time processing architecture challenge; not "build a payment feature".
-2. **Personas** — Westpac NZ customers receiving payments (24/7 immediate availability expectation), Payments NZ scheme operations (monitor compliance and certification), Westpac NZ payment operations (own the real-time layer and reconciliation), AML compliance team (own screening obligation at scale).
+2. **Personas** — the enterprise customers receiving payments (24/7 immediate availability expectation), Payments NZ scheme operations (monitor compliance and certification), the enterprise payment operations (own the real-time layer and reconciliation), AML compliance team (own screening obligation at scale).
 3. **MVP scope** — receiving-side only (not sending); ISO 20022 inbound message processing, real-time account crediting, scheme acknowledgement within 10-second window, AML screening above $1,000, fraud pre-screening within processing budget.
 4. **Constraints** — C1 through C4 all named. C5 surfaced as a blocker: "16 of 47 Payments NZ compliance checklist items unreviewed — scheme certification status must be confirmed before go-live date is committed to."
 5. **Assumptions** — at minimum: AML system can be scaled to 40,000 tph within 10-second window (unconfirmed — spike required), fraud pre-screen can fit within processing budget (unconfirmed), 16 outstanding checklist items contain no blocking items (unconfirmed).
@@ -75,6 +75,6 @@ Our scheme participation agreement requires us to be live by 2026-09-01. Missing
 |--------------|-------------|----------------|
 | `context.yml` | Standard toolchain context | ~2 KB |
 | `architecture-guardrails.md` excerpt | Real-time payments processing standards, AML/CFT integration patterns, ISO 20022 message format requirements | ~7 KB |
-| Synthetic EA registry entry | Payments NZ RTP Central Infrastructure (external system — scheme membership), Westpac NZ AML Screening Service (existing — latency data), Westpac NZ Fraud Detection Platform (existing — batch; real-time capability in vendor beta) | ~5 KB |
+| Synthetic EA registry entry | Payments NZ RTP Central Infrastructure (external system — scheme membership), the enterprise AML Screening Service (existing — latency data), the enterprise Fraud Detection Platform (existing — batch; real-time capability in vendor beta) | ~5 KB |
 | **Estimated total** | | **~14 KB** |
 | **Bulk injection risk** | Below 50 KB threshold | None |

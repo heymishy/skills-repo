@@ -1,5 +1,5 @@
 # Synthetic EA Registry Entry
-# Application: Credit Risk Model Platform (Westpac NZ)
+# Application: Credit Risk Model Platform (the enterprise)
 # Registry version: 2026-Q1
 # Status: ACTIVE — production system; retraining project in planning
 # Entry type: Internal Application (AI/ML model)
@@ -9,9 +9,9 @@
 ## Application Profile
 
 **Name:** Credit Risk Model Platform
-**Owner:** Credit Risk Technology, Westpac NZ
+**Owner:** Credit Risk Technology, the enterprise
 **Domain:** Credit Risk / Retail Lending
-**Classification:** Regulated — CCCFA (credit decisions), FMA fairness obligations, Westpac MRM Policy (2023 edition)
+**Classification:** Regulated — CCCFA (credit decisions), FMA fairness obligations, the enterprise MRM Policy (2023 edition)
 **Criticality:** HIGH — drives automated credit limit increase decisions for ~400,000 credit card accounts
 **Data classification:** Restricted — customer credit risk scores, model input features, decision outputs
 
@@ -38,7 +38,7 @@ Internal AI/ML platform hosting the models used for automated credit product dec
 | Gini coefficient (latest holdout evaluation) | 0.63 |
 | MRM committee approval reference | MRM-2024-Q1-007 |
 | Fairness assessment reference | FAR-2024-Q1-007 |
-| Fairness methodology used | Westpac Internal Disparity Metric v1.2 |
+| Fairness methodology used | the enterprise Internal Disparity Metric v1.2 |
 | FMA prescribed fairness methodology | **FMA Algorithmic Fairness Framework (2024)** — applied to all models making credit decisions on individuals |
 | Fairness methodology alignment status | **MISALIGNED — internal metric does not implement the FMA 2024 framework; a re-assessment using the FMA methodology is required before retraining** |
 
@@ -80,7 +80,7 @@ Internal AI/ML platform hosting the models used for automated credit product dec
 |-----------|-----------|--------|
 | CCCFA — algorithmic credit decisions must be explainable on request | MBIE / Financial Commerce Commission (FCA) | Each credit decision must be explainable in plain terms if the customer requests a reason for a declined or reduced offer |
 | FMA Algorithmic Fairness Framework (2024) — models making lending decisions on individuals must be assessed for demographic disparity using the FMA prescribed methodology | FMA | Applies to new model deployment AND to retraining of existing models under 2023 MRM Policy update (see MRM Policy excerpt) |
-| Westpac Model Risk Management Policy (2023 edition) — full independent validation required for credit model retraining | Internal (risk policy) | The 2023 MRM Policy update expanded "full independent validation" scope from new deployments only to include retraining of credit models; pre-2023 process (MRM committee review only) is no longer sufficient |
+| the enterprise Model Risk Management Policy (2023 edition) — full independent validation required for credit model retraining | Internal (risk policy) | The 2023 MRM Policy update expanded "full independent validation" scope from new deployments only to include retraining of credit models; pre-2023 process (MRM committee review only) is no longer sufficient |
 
 ---
 
@@ -90,7 +90,7 @@ Internal AI/ML platform hosting the models used for automated credit product dec
 
 The team responsible for the retraining project has referenced the pre-2023 MRM Policy in their project plan. The current MRM committee approval process (bi-monthly meeting, single review cycle) does not satisfy the 2023 Policy requirements. The full independent validation process adds approximately 6–8 weeks to the deployment timeline.
 
-**Status of FMA fairness methodology alignment:** The model's current FAR (Fairness Assessment Report FAR-2024-Q1-007) was produced using the internal Westpac disparity metric v1.2, not the FMA Algorithmic Fairness Framework published in 2024. For the retrained model, a fairness assessment using the FMA-prescribed methodology is required before deployment approval. If the retraining project does not update the fairness methodology, the fairness report will not satisfy regulatory scrutiny.
+**Status of FMA fairness methodology alignment:** The model's current FAR (Fairness Assessment Report FAR-2024-Q1-007) was produced using the internal the enterprise disparity metric v1.2, not the FMA Algorithmic Fairness Framework published in 2024. For the retrained model, a fairness assessment using the FMA-prescribed methodology is required before deployment approval. If the retraining project does not update the fairness methodology, the fairness report will not satisfy regulatory scrutiny.
 
 ---
 

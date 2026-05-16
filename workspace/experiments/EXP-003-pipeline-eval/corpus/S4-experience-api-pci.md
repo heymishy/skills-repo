@@ -46,7 +46,7 @@ Our current card core integration uses a shared service account with admin-level
 | C2 | CDR-equivalent consent required before external partner access to card data — consent management extensibility unconfirmed | Regulatory/legal (open banking) | No — explicit |
 | C3 | Vendor deprecation — 18-month hard deadline; 6-month extension available only if month-12 migration milestone demonstrated | Technical/contractual | No — explicit |
 | C4 | PCI DSS raw PAN caching prohibited — truncated PAN (last 4 digits) only; raw PAN must never enter the cache | Regulatory (PCI DSS data) | No — explicit |
-| C5 | [Hidden] Redis cache PCI DSS compliance — at-rest encryption has not been confirmed for the Redis configuration in Westpac's infrastructure; if at-rest encryption is not enabled, caching card data in Redis is a PCI DSS violation that will fail QSA assessment | Hidden technical/regulatory gap | **Yes — hidden** |
+| C5 | [Hidden] Redis cache PCI DSS compliance — at-rest encryption has not been confirmed for the Redis configuration in the enterprise's infrastructure; if at-rest encryption is not enabled, caching card data in Redis is a PCI DSS violation that will fail QSA assessment | Hidden technical/regulatory gap | **Yes — hidden** |
 
 **Regulated constraints:** C1 (PCI DSS QSA), C2 (open banking consent), C4 (PCI DSS data prohibition)
 **Regulated CPF threshold:** 0.80 (failure threshold for C1, C2, C4)
@@ -56,7 +56,7 @@ Our current card core integration uses a shared service account with admin-level
 ## Expected artefact characteristics (for judge scoring)
 
 1. **Problem statement** — vendor-forced API migration in a PCI DSS–regulated environment with an open banking consent overlay for external partners; not "build an API abstraction layer".
-2. **Personas** — 11 internal consumer teams (depend on stable API contract), two external fintech partners (require consent-gated access), card customers (whose PAN data must never be exposed), Westpac QSA / security team (own PCI DSS assessment gate), card core vendor (owns the deprecation deadline).
+2. **Personas** — 11 internal consumer teams (depend on stable API contract), two external fintech partners (require consent-gated access), card customers (whose PAN data must never be exposed), the enterprise QSA / security team (own PCI DSS assessment gate), card core vendor (owns the deprecation deadline).
 3. **MVP scope** — Experience API exposing all five data types (summary, history, spend categories, controls, dispute); consent gate for external partners; truncated PAN only in cache; QSA assessment planned for month 8.
 4. **Constraints** — C1 through C4 all named. C5 surfaced as a risk or assumption: "Redis at-rest encryption must be confirmed before caching card data; if not confirmed, Redis caching is not a viable option under PCI DSS."
 5. **Assumptions** — at minimum: Redis at-rest encryption is or can be enabled (confirm with security before design is committed), consent management service extensibility (confirm with consent team before partner access story is scoped), least-privilege role definitions (workshop required before API key stories can be written).

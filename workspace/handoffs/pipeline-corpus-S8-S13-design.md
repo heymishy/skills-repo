@@ -52,7 +52,7 @@ Internal finance / regulatory reporting infrastructure.
 CPF — constraint propagation fidelity
 
 ### Brief summary (for design confirmation)
-Westpac NZ wants to automate the monthly regulatory returns it submits to the RBNZ
+the enterprise wants to automate the monthly regulatory returns it submits to the RBNZ
 and FMA. Currently a team of 3 analysts manually extract data from core banking,
 reconcile it in Excel, and upload the prescribed return templates. The automation
 would replace the extraction and reconciliation steps; analysts would review and
@@ -98,7 +98,7 @@ Customer AML/CFT onboarding — digital identity verification via biometric ID c
 CPF — constraint propagation fidelity
 
 ### Brief summary (for design confirmation)
-Westpac NZ wants to allow new-to-bank customers to open a transaction account
+the enterprise wants to allow new-to-bank customers to open a transaction account
 entirely digitally without visiting a branch. Identity verification will use a
 third-party biometric service (passport scan + selfie liveness check) that the
 vendor claims meets AML/CFT Act identity verification requirements. The account
@@ -114,7 +114,7 @@ cannot process.
 | C2 | Financial Action Task Force (FATF) Recommendation 10 — digital identity verification must meet equivalence standards for in-person CDD | Regulatory (FATF guidance) | Partial — digital ID presented as straightforward; FATF equivalence not named |
 | C3 | Restricted account state — account may not be used for transactions until CDD is complete; regulatory obligation, not just UX choice | Regulatory constraint | No — explicit |
 | C4 | Manual fallback queue — edge cases that cannot be auto-verified must be processed within prescribed timeframe (AML/CFT Act s.22 enhanced due diligence) | Regulatory (external law) | No — explicit |
-| C5 | **[Hidden]** The biometric ID vendor has not provided contractual confirmation that their service meets RBNZ/DIA prescribed CDD standards. Using a non-confirmed vendor for CDD creates regulatory exposure — Westpac remains liable for CDD quality regardless of vendor | Hidden vendor/regulatory gap | **Yes — hidden** |
+| C5 | **[Hidden]** The biometric ID vendor has not provided contractual confirmation that their service meets RBNZ/DIA prescribed CDD standards. Using a non-confirmed vendor for CDD creates regulatory exposure — the enterprise remains liable for CDD quality regardless of vendor | Hidden vendor/regulatory gap | **Yes — hidden** |
 
 ### Regulated constraints
 C1 (AML/CFT Act), C2 (FATF/DIA equivalence), C4 (enhanced CDD timeframe)
@@ -146,7 +146,7 @@ CPF with migration-story variant — constraint propagation must survive into mi
 tasks, not just discovery/definition
 
 ### Brief summary (for design confirmation)
-Westpac NZ is decommissioning its legacy loan ledger system (used for 18 years) and
+the enterprise is decommissioning its legacy loan ledger system (used for 18 years) and
 migrating all loan accounts to a new core banking platform already in production for
 deposits. The migration covers approximately 280,000 active loan accounts. The legacy
 system will be shut down 12 months from project start. Data migration will run in
@@ -194,7 +194,7 @@ for third-party data access.
 CPF — with emphasis on constraint propagation into API schema design stories
 
 ### Brief summary (for design confirmation)
-Westpac NZ wants to build a consent management API that lets accredited third parties
+the enterprise wants to build a consent management API that lets accredited third parties
 access customer financial data under a CDR-equivalent framework. Customers consent to
 specific data types for specific third parties for a defined period. The API exposes:
 transaction history, account balances, credit card summaries, and "enriched insights"
@@ -207,9 +207,9 @@ fintechs, comparison services, and aggregators.
 |----|-----------|------|---------|
 | C1 | Privacy Act 2020 — sharing personal financial data with third parties requires explicit consent; consent must be granular (per data type, per party) | Regulatory (external law) | No — explicit |
 | C2 | Consumer Data Right framework (CDR-equivalent) — right to revoke consent; data must be deleted within 24 hours of consent withdrawal | Regulatory (framework obligation) | No — explicit |
-| C3 | Open banking accreditation — third parties must be accredited before receiving data; Westpac must validate accreditation on each API call | Technical/regulatory constraint | No — explicit |
+| C3 | Open banking accreditation — third parties must be accredited before receiving data; the enterprise must validate accreditation on each API call | Technical/regulatory constraint | No — explicit |
 | C4 | Data minimisation — API responses must not include data types beyond what was explicitly consented | Regulatory (Privacy Act principle) | Partial — data minimisation implicit in consent model |
-| C5 | **[Hidden]** The "enriched insights" (spending categories, income estimation) are **derived data** — inferences Westpac generates from raw transactions. The customer's consent covers "transaction data" but does not explicitly cover derived inferences. Sharing derived data under a raw-data consent is likely a consent boundary violation | Hidden data-consent scope gap | **Yes — hidden** |
+| C5 | **[Hidden]** The "enriched insights" (spending categories, income estimation) are **derived data** — inferences the enterprise generates from raw transactions. The customer's consent covers "transaction data" but does not explicitly cover derived inferences. Sharing derived data under a raw-data consent is likely a consent boundary violation | Hidden data-consent scope gap | **Yes — hidden** |
 
 ### Regulated constraints
 C1 (Privacy Act 2020), C2 (CDR consent revocation), C4 (data minimisation)
@@ -241,7 +241,7 @@ AI/ML governance — credit decisioning model lifecycle.
 CPF — constraint propagation into AI deployment stories specifically
 
 ### Brief summary (for design confirmation)
-Westpac NZ's credit limit increase model (used for automatic credit limit recommendations
+the enterprise's credit limit increase model (used for automatic credit limit recommendations
 on existing cards) was trained 2 years ago. The credit team wants to retrain it on
 fresh transaction data and redeploy. The new model shows 8% improvement in Gini
 coefficient. The demographic disparity check shows comparable disparity to the current
@@ -253,7 +253,7 @@ No regulatory approval is anticipated — this is a model update, not a new prod
 | ID | Constraint | Type | Hidden? |
 |----|-----------|------|---------|
 | C1 | FMA algorithmic fairness — credit decisioning models affecting NZ consumers require documented bias assessment; FMA expects fairness monitoring for models used in credit decisions | Regulatory (FMA guidance) | No — explicit (disparity check mentioned) |
-| C2 | Model governance policy — Westpac's internal model governance policy requires a Model Risk Management (MRM) review before deploying a retrained model, even for an "update" | Internal policy | Partial — policy exists but not named in brief |
+| C2 | Model governance policy — the enterprise's internal model governance policy requires a Model Risk Management (MRM) review before deploying a retrained model, even for an "update" | Internal policy | Partial — policy exists but not named in brief |
 | C3 | CCCFA responsible lending — automated credit limit recommendations must satisfy responsible lending obligations; model updates must not degrade CCCFA compliance | Regulatory (external law) | Partial — credit context implies CCCFA |
 | C4 | Explainability requirement — FMA and internal policy require that credit decisions can be explained to customers on request; a retrained model must pass explainability review | Regulatory + internal policy | No — implied but not explicit |
 | C5 | **[Hidden]** The current production model was deployed under a previous version of the MRM policy (pre-2023 update). Retraining the model resets the MRM review clock — the new MRM policy requires a full independent validation, not just an MRM committee sign-off. The team is planning for MRM sign-off (old process) and has not assessed whether the new policy applies | Hidden governance version mismatch | **Yes — hidden** |
@@ -291,12 +291,12 @@ CPF — with multi-jurisdiction complexity; tests whether the model identifies t
 a single feature touches two regulatory regimes
 
 ### Brief summary (for design confirmation)
-Westpac NZ wants to build a streamlined trans-Tasman payment feature allowing NZ
+the enterprise wants to build a streamlined trans-Tasman payment feature allowing NZ
 retail customers to send money to Australian bank accounts in real time (under 2
 hours). Currently customers must use the SWIFT network, which takes 1-2 business
-days and incurs $18–25 fees. Westpac has a relationship with Westpac Australia
+days and incurs $18–25 fees. the enterprise has a relationship with the enterprise's Australian counterpart
 which enables a proprietary internal routing channel. The proprietary channel would
-settle in the Westpac group treasury books, with net settlement at end of day.
+settle in the the enterprise group treasury books, with net settlement at end of day.
 Target fee: under $5.
 
 ### Constraint inventory design
@@ -304,10 +304,10 @@ Target fee: under $5.
 | ID | Constraint | Type | Hidden? |
 |----|-----------|------|---------|
 | C1 | RBNZ AML/CFT Act — outbound international payments subject to AML/CFT obligations in NZ; threshold reporting and sanctions screening required | Regulatory (NZ law) | No — explicit |
-| C2 | AUSTRAC (Australian Transaction Reports and Analysis Centre) — inbound payments from NZ trigger Australian AML obligations; correspondent bank (Westpac AU) bears primary AUSTRAC obligation | Regulatory (AU law) | Partial — "Westpac AU relationship" mentioned but AUSTRAC obligation implicit |
+| C2 | AUSTRAC (Australian Transaction Reports and Analysis Centre) — inbound payments from NZ trigger Australian AML obligations; correspondent bank (the enterprise's Australian counterpart) bears primary AUSTRAC obligation | Regulatory (AU law) | Partial — "the enterprise's Australian counterpart relationship" mentioned but AUSTRAC obligation implicit |
 | C3 | RBNZ FX controls — internal group treasury settlement must comply with RBNZ foreign exchange regulations; net settlement model requires RBNZ confirmation | Regulatory (RBNZ) | Partial — treasury settlement mentioned; FX regulation angle implicit |
 | C4 | Payment Services Regulations 2021 (NZ) — new payment service type requires DIA registration if not covered under existing licence | Regulatory (NZ law) | No — explicit in follow-up |
-| C5 | **[Hidden]** The proprietary intra-group routing channel bypasses the standard SWIFT correspondent bank model. Westpac's SWIFT correspondent bank agreement with its intermediary banks contains a clause prohibiting routing transactions outside the agreed SWIFT channel without prior notification to the correspondent. Using the proprietary channel without notifying the correspondent constitutes a contractual breach with significant credit relationship risk | Hidden contractual obligation | **Yes — hidden** |
+| C5 | **[Hidden]** The proprietary intra-group routing channel bypasses the standard SWIFT correspondent bank model. the enterprise's SWIFT correspondent bank agreement with its intermediary banks contains a clause prohibiting routing transactions outside the agreed SWIFT channel without prior notification to the correspondent. Using the proprietary channel without notifying the correspondent constitutes a contractual breach with significant credit relationship risk | Hidden contractual obligation | **Yes — hidden** |
 
 ### Regulated constraints
 C1 (RBNZ AML/CFT), C2 (AUSTRAC), C3 (RBNZ FX), C4 (DIA registration)

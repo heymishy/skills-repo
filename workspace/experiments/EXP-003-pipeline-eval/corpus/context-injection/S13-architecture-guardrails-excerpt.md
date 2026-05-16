@@ -22,7 +22,7 @@ Non-compliant architectures identified at design review will be returned for rem
 
 **ADR-CB-001 — SWIFT Gateway Routing**
 
-All international SWIFT payments processed by Westpac NZ must route via the approved SWIFT gateway infrastructure. The approved SWIFT gateway is the single integration point for SWIFT message generation, transmission, and receipt.
+All international SWIFT payments processed by the enterprise must route via the approved SWIFT gateway infrastructure. The approved SWIFT gateway is the single integration point for SWIFT message generation, transmission, and receipt.
 
 **Permitted:** Using the approved SWIFT gateway for all message types (MT103, MT202, MT199, FIN, MX/ISO20022).
 
@@ -46,7 +46,7 @@ The review must include:
 
 **ADR-CB-003 — Mandatory Sanctions Screening for International Payments**
 
-All international payment channels, regardless of routing mechanism, must integrate with Westpac NZ's central sanctions screening service before funds are released or committed to the payment network.
+All international payment channels, regardless of routing mechanism, must integrate with the enterprise's central sanctions screening service before funds are released or committed to the payment network.
 
 **Integration requirement:** The sanctions screening service must be called synchronously in the payment processing flow before the payment instruction is transmitted, committed to the treasury books, or settled with a correspondent or counterparty. Asynchronous or batch-mode screening is not permitted for real-time or same-day settlement payment channels.
 
@@ -55,7 +55,7 @@ All international payment channels, regardless of routing mechanism, must integr
 - Any payment instruction that traverses an inter-bank settlement mechanism outside the NZ domestic payment network (including intra-group channels that settle across NZ/AU jurisdiction boundaries).
 - Any payment instruction denominated in a foreign currency, regardless of beneficiary location.
 
-**Not covered:** Intra-account transfers within Westpac NZ-held accounts, NZ domestic payments settled within the NZ clearing systems (RealMe, EFTPOS NZ, Payments NZ BECS), and internal Westpac NZ book transfers that do not cross a jurisdiction or currency boundary.
+**Not covered:** Intra-account transfers within the enterprise-held accounts, NZ domestic payments settled within the NZ clearing systems (RealMe, EFTPOS NZ, Payments NZ BECS), and internal the enterprise book transfers that do not cross a jurisdiction or currency boundary.
 
 **ADR-CB-004 — Screening Service Integration and Fallback**
 
@@ -73,7 +73,7 @@ The central sanctions screening service is a mandatory dependency for any paymen
 For any payment feature that involves a jurisdiction-crossing settlement leg, the architecture team must produce a jurisdiction obligation map before the feature's definition is finalised. The obligation map must identify:
 1. **Originating jurisdiction obligations** — AML/CFT screening, threshold reporting, originator information requirements that apply to the NZ end of the payment.
 2. **Receiving jurisdiction obligations** — AML/CFT obligations that the receiving financial institution (or its correspondent) must satisfy on the AU/US/GB/other end of the payment.
-3. **Information provision obligations** — what originator information Westpac NZ is required to provide to the receiving institution to enable the receiving institution to satisfy its own jurisdiction's AML/CFT obligations.
+3. **Information provision obligations** — what originator information the enterprise is required to provide to the receiving institution to enable the receiving institution to satisfy its own jurisdiction's AML/CFT obligations.
 4. **Settlement channel obligations** — FX transaction reporting, end-of-day net position reporting, or other treasury-level reporting obligations that arise from the settlement mechanism used.
 
 **ADR-CB-006 — AUSTRAC Information Standards for AU-Leg Payments**
@@ -93,14 +93,14 @@ Where the payment channel does not natively carry these fields (e.g., a treasury
 
 Before implementing any new payment channel or materially changing the characteristics of an existing payment channel (routing mechanism, settlement model, participant eligibility criteria, pricing structure), the product team must obtain a written assessment from the Regulatory Affairs team confirming:
 1. Whether the channel constitutes a new payment service type under the Payment Services Regulations 2021.
-2. If a new payment service type is identified: whether Westpac NZ's existing payment service licence covers the new type or whether a DIA registration for the new type is required.
+2. If a new payment service type is identified: whether the enterprise's existing payment service licence covers the new type or whether a DIA registration for the new type is required.
 3. The estimated timeline for registration if required.
 
 A feature that is identified as a new payment service type may not be offered to retail customers before the DIA registration is complete.
 
 **ADR-CB-008 — RBNZ FX Transaction Reporting — Net Settlement Models**
 
-Intra-group net settlement of cross-currency positions is a foreign exchange transaction for RBNZ FX Transaction Reporting purposes, even where settlement is internal to the Westpac Group and does not involve an external counterparty.
+Intra-group net settlement of cross-currency positions is a foreign exchange transaction for RBNZ FX Transaction Reporting purposes, even where settlement is internal to the the enterprise group and does not involve an external counterparty.
 
 Before implementing a net settlement model for a cross-border payment feature, the Treasury Operations team must confirm:
 1. Whether the net settlement positions will be reported as aggregate FX transactions or as individual per-payment FX transactions.

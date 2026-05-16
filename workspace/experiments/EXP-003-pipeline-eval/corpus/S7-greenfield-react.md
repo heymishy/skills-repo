@@ -15,7 +15,7 @@ The app should allow customers to browse upcoming events, register for an event,
 
 This is a greenfield application — no existing codebase to build on. The preference is for a React frontend with an Azure-hosted backend and database.
 
-The app will collect: customer name, email address, phone number, branch preference, and whether they are an existing Westpac customer. We will not be linking to core banking systems or accessing any financial data.
+The app will collect: customer name, email address, phone number, branch preference, and whether they are an existing the enterprise customer. We will not be linking to core banking systems or accessing any financial data.
 
 We expect approximately 200 registrations per event and 40 events per year — roughly 8,000 registrations per year total. This is not a high-volume system.
 
@@ -28,11 +28,11 @@ Our privacy team has confirmed that collecting name, email, and phone number for
 
 > **Azure hosting:** We use Azure as our primary cloud provider. The app should be deployed to Azure App Service. The database should be Azure SQL. Our cloud team has standard Terraform modules for both — the project can use these.
 >
-> **Authentication:** Staff-facing features should use Azure AD (Entra ID) SSO — all staff have Westpac Azure AD accounts. Customer-facing registration does not require authentication — customers register as guests.
+> **Authentication:** Staff-facing features should use Azure AD (Entra ID) SSO — all staff have the enterprise Azure AD accounts. Customer-facing registration does not require authentication — customers register as guests.
 >
 > **Email confirmation:** We use SendGrid for transactional email. An API key is available. The community banking team owns the email templates.
 >
-> **Existing customer flag:** The "are you an existing Westpac customer" field is for event planning purposes only — it is not linked to any customer system and not used for any decisioning. It is optional.
+> **Existing customer flag:** The "are you an existing the enterprise customer" field is for event planning purposes only — it is not linked to any customer system and not used for any decisioning. It is optional.
 >
 > **Data residency:** Our Azure tenancy is configured for NZ data residency. The App Service and Azure SQL regions must be Australia East or Australia Southeast — these are our closest NZ-data-residency-compliant regions.
 
@@ -45,8 +45,8 @@ Our privacy team has confirmed that collecting name, email, and phone number for
 | C1 | Privacy Act 2020 — PII collection (name, email, phone) covered by existing Privacy Statement; retention period for event registration data not defined | Regulatory (external law — partial) | Partial — brief says "covered" but retention unspecified |
 | C2 | Azure data residency — deploy to Australia East or Australia Southeast only; no other regions acceptable | Technical/policy constraint | No — explicit in follow-up |
 | C3 | Azure AD (Entra ID) SSO required for staff-facing features — no separate authentication system | Technical constraint | No — explicit in follow-up |
-| C4 | No core banking integration — "existing Westpac customer" flag is decorative; not linked to any customer system; not used for decisioning | Technical scope constraint | No — explicit |
-| C5 | [Hidden] Event registration data retention period not defined — Privacy Act 2020 requires personal information not be retained longer than necessary for the purpose it was collected; no Westpac policy covers this specific data type; a retention policy must be defined before go-live | Hidden regulatory gap (minor) | **Yes — hidden** |
+| C4 | No core banking integration — "existing the enterprise customer" flag is decorative; not linked to any customer system; not used for decisioning | Technical scope constraint | No — explicit |
+| C5 | [Hidden] Event registration data retention period not defined — Privacy Act 2020 requires personal information not be retained longer than necessary for the purpose it was collected; no the enterprise policy covers this specific data type; a retention policy must be defined before go-live | Hidden regulatory gap (minor) | **Yes — hidden** |
 
 **Regulated constraints:** C1 (Privacy Act — partial), C5 (Privacy Act — retention gap)
 **Regulated CPF threshold:** 0.80
@@ -56,7 +56,7 @@ Our privacy team has confirmed that collecting name, email, and phone number for
 ## Expected artefact characteristics (for judge scoring)
 
 1. **Problem statement** — manual event registration process replaced by a simple self-service web app; low-regulation greenfield. The core challenge is delivering a functional, well-structured registration system with appropriate Privacy Act handling. NOT framed as a high-risk regulatory project.
-2. **Personas** — Westpac customers attending events (register, view, cancel), community banking staff (create events, view registrations, export lists), contact centre staff (redirected from phone-based registration).
+2. **Personas** — the enterprise customers attending events (register, view, cancel), community banking staff (create events, view registrations, export lists), contact centre staff (redirected from phone-based registration).
 3. **MVP scope** — all stated features (browse, register, confirm, manage registrations, staff event management, attendee export). No core banking integration. Azure App Service + Azure SQL. React frontend.
 4. **Constraints** — C1 through C4 named; appropriate level of detail (no over-engineering). C5 surfaced as a lightweight assumption: "retention period for event registration data must be defined and confirmed with privacy team before go-live; existing Privacy Statement coverage does not define a retention period for this data type."
 5. **Risk calibration** — this is a low-risk application. A model that adds elaborate security, AML, or regulatory compliance layers not supported by the brief has over-engineered the response. The evaluator should penalise false-positive constraint injection as well as false-negative constraint omission.
