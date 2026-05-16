@@ -484,3 +484,11 @@ Step 4a.3 gap findings and fixes:
 ### Scope of this validation
 
 This validation covers the /definition stage only. It does not re-run /review, /test-plan, or /definition-of-ready. The expectation is that the downstream CPF chain will also improve (C2 is now in S1.2 and S2.2 Architecture Constraints entering /review, reducing the probability that Haiku /review needs to recover a gap that Sonnet /definition left). Full-pipeline re-run evidence would provide chain CPF confirmation but is not required to validate the /definition fix itself.
+
+---
+
+## Corpus breadth extension — EXP-008
+
+EXP-003 established the routing policy baseline on a single domain story (S1). **EXP-008-corpus-breadth-eval** (`workspace/experiments/EXP-008-corpus-breadth-eval/manifest.md`) extends this to the full S2–S13 corpus across all four configs with context injection always enabled. EXP-008 tests whether the EXP-003 routing policy generalises to harder, multi-jurisdiction, and context-injection-augmented scenarios.
+
+EXP-008 is a separate experiment — the controlled variable remains model orchestration config, but the corpus changes. Do not add S2–S13 runs to this manifest; record them in the EXP-008 manifest.
