@@ -28,6 +28,8 @@ H3 (Context injection improves hidden constraint surfacing): With context inject
 
 H4 (Multi-jurisdiction adds scoring challenge for all configs): S13 multi-jurisdiction (NZ + AU + cross-border) will expose regime-coverage gaps where a config propagates one jurisdiction's constraints but drops the other leg.
 
+H5 (AQ quality premium at equivalent CPF): Config B (Opus front-loaded) will produce higher AQ (Artefact Quality) scores than Config A on stories where both achieve CPF ≥ 0.80. Hypothesis: Opus at /discovery and /definition produces better problem framing, tighter scope discipline, and more coding-agent-executable ACs — higher inner-loop executability — even when regulated constraint propagation is equivalent. Expected: AQ(Config B) > AQ(Config A) by ≥ 0.10 on high-complexity stories (S8, S10, S12, S13). If confirmed, this is the quality-above-threshold justification for the Config B cost premium.
+
 ## Prerequisites
 
 | Prerequisite | Status | Notes |
@@ -35,7 +37,7 @@ H4 (Multi-jurisdiction adds scoring challenge for all configs): S13 multi-jurisd
 | EXP-003 complete (all four configs on S1) | Partial — Config D pending | Config D EXP-003 result is not a hard gate for EXP-008 Config A/B/C; it is a gate for EXP-008 Config D |
 | EXP-002a H5 confirmed (GPT-4o context loading) | Not confirmed | Required before running any EXP-008 Config D run |
 | Context injection files for S8–S13 | Complete | `corpus/context-injection/` — 13 files covering S8–S13 scenarios |
-| Context injection files for S2–S7 | **NOT YET CREATED** | Must be created before S2–S7 runs. Format: EA registry entry + policy excerpt per scenario. See S8–S13 files as reference. |
+| Context injection files for S2–S7 | Complete | `corpus/context-injection/` — 9 files covering S2–S7 scenarios (S2 ×2, S3 ×1, S4 ×2, S5 ×2, S7 ×2). Created 2026-05-17. |
 
 ## Data classification check
 
@@ -57,7 +59,7 @@ H4 (Multi-jurisdiction adds scoring challenge for all configs): S13 multi-jurisd
 | story_corpus | S2–S13 (12 stories — see Corpus table below) |
 | context_injection | Always-on. Inject the corresponding context-injection/ file(s) for each scenario at the start of the /discovery run. S2–S7 require injection files to be created before those story runs begin. |
 | trials_per_story_per_config | 1 (Layer 1 cost and time; anomaly re-run allowed if CPF is borderline ±0.10 of threshold) |
-| judge_model | claude-sonnet-4-6 (locked — same as EXP-003) |
+| judge_model | claude-sonnet-4-6 (locked — same as EXP-003; scores both CPF propagation and AQ per completed run) |
 | pass_threshold_cpf_general | 0.60 (general constraints) |
 | pass_threshold_cpf_regulated | 0.80 (regulated constraints — no warning band; below 0.80 is a failure for regulated) |
 | total_planned_runs | 44 (11 CPF stories × 4 configs; S6 excluded — behavioural scoring, not CPF) — multi-session effort |
@@ -164,6 +166,33 @@ Denominator is 11, not 12 — S6 is a behavioural scenario (clarification trigge
 
 A config with C5_surfacing_rate < 0.50 is assessed as failing to detect high-subtlety hidden constraints at acceptable rates — a material finding for regulated production use.
 
+## AQ (Artefact Quality) scoring methodology
+
+AQ is a secondary scoring dimension applied alongside CPF. Where CPF measures whether regulated constraints *propagated* through the pipeline, AQ measures the *quality and executability* of artefacts produced — whether the pipeline run would generate working, reviewable delivery when handed to a coding agent.
+
+AQ is scored by the judge model (claude-sonnet-4-6) at the end of each pipeline run, after /definition-of-ready completes. The judge reads the full artefact set (discovery, definition, review, test plan, DoR contract) and scores five dimensions:
+
+| Dimension | What it measures | Max |
+|-----------|-----------------|-----|
+| Problem framing | Discovery frames the problem as a regulatory + competitive gap, not a solution description. Personas are complete and correctly scoped. Success indicators are anchored to measurable baselines. | 2 |
+| Scope discipline | MVP scope is appropriately bounded. Additions and out-of-scope items are explicitly named. No scope creep into unrelated features. | 2 |
+| Story testability | ACs are unambiguous and coding-agent-executable. No AC requires human judgement to verify. Each AC has a clear pass/fail condition. | 2 |
+| NFR specificity | NFRs in the test plan are concrete, testable assertions (specific thresholds, named standards, measurable conditions) — not generic statements ("must be performant", "must be secure"). | 2 |
+| DoR gate quality | The DoR contract gates the right regulated conditions. Adversarial cases are covered in the test plan, not just the happy path. A real PR passing this DoR would be safe to merge in a regulated environment. | 2 |
+
+```
+AQ = total_score / 10
+```
+
+**AQ thresholds:**
+- AQ ≥ 0.80 — high quality; artefacts suitable for handoff to a coding agent without rework
+- AQ 0.60–0.79 — acceptable; minor rework expected before coding agent handoff
+- AQ < 0.60 — insufficient quality; significant rework required; not recommended for regulated production delivery
+
+**The quality-above-threshold question:** The primary AQ finding in EXP-008 is whether Config B produces higher AQ than Config A on stories where *both* achieve CPF ≥ 0.80. CPF = 1.00 does not guarantee AQ ≥ 0.80 — a pipeline can propagate all constraints but still produce under-specified ACs, poorly bounded scope, or generic NFR statements. If Config B achieves equivalent CPF at meaningfully higher AQ (≥ 0.10 delta), the cost premium for Opus at /discovery and /definition is justified for regulated production pipelines.
+
+**Scoring note:** AQ is not measured for S6 (behavioural scenarios have no artefact set to score against the rubric).
+
 ## Run prioritisation
 
 Session 1 (highest stakes — F16 remediation directly addressed):
@@ -218,6 +247,26 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 | S12 | — | — | — | — |
 | S13 | — | — | — | — |
 | **Rate** | **—/11** | **—/11** | **—/11** | **—/11** |
+
+## AQ score tracker
+
+AQ scores per story per config. Score = 0.0–1.0 (sum of five 0–2 rubric dimensions, divided by 10). AQ ≥ 0.80 = high quality. AQ < 0.60 = insufficient for regulated delivery.
+
+| Story | Config A AQ | Config B AQ | Config C AQ | Config D AQ |
+|-------|------------|------------|------------|------------|
+| S2 | — | — | — | — |
+| S3 | — | — | — | — |
+| S4 | — | — | — | — |
+| S5 | — | — | — | — |
+| S6 | N/A — behavioural | N/A — behavioural | N/A — behavioural | N/A — behavioural |
+| S7 | — | — | — | — |
+| S8 | — | — | — | — |
+| S9 | — | — | — | — |
+| S10 | — | — | — | — |
+| S11 | — | — | — | — |
+| S12 | — | — | — | — |
+| S13 | — | — | — | — |
+| **Mean (CPF stories)** | **—** | **—** | **—** | **—** |
 
 ## Context injection setup — S2–S7 (required before those runs)
 
