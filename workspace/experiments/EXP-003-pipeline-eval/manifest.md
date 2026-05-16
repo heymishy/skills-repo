@@ -18,8 +18,10 @@ This is a Scenario 3 experiment. Scenario 3 measures constraint propagation acro
 | config_a_run_1 | complete — 2026-05-14 |
 | config_b_run_1 | complete — 2026-05-14 |
 | config_b_run_2 | complete — 2026-05-14 |
+| config_a_run_2 | complete — 2026-05-16 |
 | config_c_run_1 | complete — 2026-05-14 |
 | config_c_run_2 | complete — 2026-05-14 |
+| config_c_run_3 | complete — 2026-05-16 |
 
 ## Data classification check
 
@@ -225,6 +227,7 @@ Use current published pricing at time of run. Record pricing snapshot in run met
 | C-1 | C | discovery→DoR | All claude-sonnet-4-6 (⚠️ Haiku switch not executed — see F4) | 2026-05-14 | C1, C2, C3, C4, C5 | C1⚠️ C2⚠️(recovered) C3✅ C4⚠️ C5✅ | **0.60** (binary end-chain); at-source CPF: 0.40; regulated at source: 0.33 |
 | C-2 | C | discovery→DoR | claude-sonnet-4-6 (disc+def) + claude-haiku-4-5 (review+tp+dor) | 2026-05-14 | C1, C2, C3, C4, C5 | C1⚠️ C2❌(chain 0.35) C3✅ C4⚠️ C5⚠️ | **Chain 0.68 FAIL**; final-stage 0.76; regulated chain 0.675 FAIL; C3 chain 1.00 |
 | fix-val-def-f6f7-r1 | C (fix validation) | /definition only (Step 4a applied) | claude-sonnet-4-6 | 2026-05-14 | C1, C2, C3, C4, C5 | C2✅(1.00) C3✅(1.00) — all triggering stories covered via Step 4a | **C2 definition: 1.00 PASS** (was 0.35); regulated definition: 1.00 PASS. See fix-validation/definition-f6f7/run-1/ |
+| **A-2** | **A** | **discovery→DoR (post-Step 4a — uniform Sonnet baseline)** | **claude-sonnet-4-6 all stages** | **2026-05-16** | **C1, C2, C3, C4, C5 — ALL PROPAGATED** | **C1✅ C2✅(1 Step 4a gap-fill: S2.1) C3✅ C4✅ C5✅** | **CHAIN 1.00 ✅ PASS**; **regulated CPF 1.00 ✅ PASS**; Layer 2 CPS ~$1.50 (Sonnet uniform) |
 | **C-3** | **C** | **discovery→DoR (proper — Haiku at /definition)** | **claude-sonnet-4-6 (disc) + claude-haiku-4-5 (def+review+tp+dor)** | **2026-05-16** | **C1, C2, C3, C4, C5 — ALL PROPAGATED** | **C1✅ C2✅(Step 4a fired) C3✅ C4✅ C5✅** | **CHAIN 1.00 ✅ PASS**; **regulated CPF 1.00 ✅ PASS**; Layer 2 CPS ~$0.70 (53% savings) |
 | | D | discovery→DoR | GPT-4o+Haiku | _pending_ | Requires EXP-002a H5 confirmed | | |
 
@@ -283,7 +286,8 @@ Use current published pricing at time of run. Record pricing snapshot in run met
 
 | Config | CPS (Layer 2 estimate) | Layer 1 relative cost | General CPF | Regulated CPF | Verdict | Recommended for |
 |--------|----------------------|----------------------|------------|--------------|---------|----------------|
-| A — Uniform Sonnet | ~$1.50 | 1.0x baseline | **1.00** | **1.00** | **PASS** | Regulated-input stories at standard cost |
+| A — Uniform Sonnet (Run 1, pre-Step 4a) | ~$1.50 | 1.0x baseline | **1.00** | **1.00** | **PASS** | Regulated-input stories at standard cost |
+| **A — Uniform Sonnet (Run 2, post-Step 4a)** | **~$1.50** | **1.0x baseline** | **1.00** | **1.00** | **PASS** | **Uniform Sonnet baseline with Step 4a active. 1 gap-fill (S2.1 C2). Equivalent regulated CPF to Config C run 3 at +114% cost — confirms Config C routing policy.** |
 | B — Tiered front-loaded | ~$0.90 | ~15x | **1.00** | **1.00** | **PASS** | Regulated-input stories at lower Layer 2 cost than Config A; depth-of-extraction finding (Opus surfaces additional operational constraints beyond canonical inventory) |
 | C — Cost-optimised | ~$0.60 | ~0.4x | Run 1: **0.60** (binary end-chain) / Run 2: **0.68** (chain avg) | Run 1: **0.33 at source** / Run 2: **0.675 chain FAIL** | **FAIL** (reg. chain CPF < 0.80 both runs) | Non-regulated stories only; Config C run 2 confirms Sonnet (not Haiku) is the definition failure driver; re-run with Haiku definition required to isolate Haiku CPF |
 | D — GPT-4o + Haiku | ~$0.30 | ~0.07x | _pending_ | _pending_ | _pending_ | Requires EXP-002a H5 confirmed |
@@ -315,6 +319,18 @@ Use current published pricing at time of run. Record pricing snapshot in run met
 **Recommendation (partial — Config A, B, and C):** *Config D results and Config C proper re-run (actual Haiku downstream) pending. Interim finding: Config A and Config B both achieve canonical CPF = 1.00. Config B offers lower Layer 2 CPS (~$0.90 vs ~$1.50) with depth-of-extraction advantage. Config C regulated CPF at source = 0.33 — not safe for regulated-input stories regardless of end-chain recovery.*
 
 **Config A vs Config C finding:** Config A (Sonnet uniform) achieves CPF = 1.00. Config C (intended Sonnet/Haiku; executed Sonnet uniform — see F4) achieves binary CPF = 0.60 / regulated-at-source CPF = 0.33. The difference is not attributable to model capability (both used Sonnet in practice) — it is attributable to model behaviour variability across runs on the same prompts. This confirms CPF is not deterministic at 1.00 for Sonnet — there is a failure mode where regulatory constraints appear in the problem narrative but are not elevated to the Constraints section.
+
+**Config A Run 2 findings (2026-05-16 — Sonnet uniform, post-Step 4a):**
+
+1. **Regulated CPF = 1.00 confirmed at all 4 stages.** Uniform claude-sonnet-4-6 with Step 4a active achieves CPF chain = 1.00 / regulated chain = 1.00 across /definition, /review, /test-plan, and /definition-of-ready. This is the clean Sonnet baseline for post-Step 4a comparison against Config C run 3.
+
+2. **Sonnet natural propagation advantage is real but incomplete.** Sonnet correctly propagated C2 to S1.1 (Hamilton CDE node expansion) and S1.2 (replication channel in CDE) without Step 4a intervention — correctly identifying both as CDE architectural changes. Config C run 3 Haiku needed Step 4a gap-fills for S1.2 and S2.2. However, Sonnet missed C2 for S2.1 (failover automation logic), requiring 1 Step 4a gap-fill. Step 4a is necessary regardless of model.
+
+3. **Step 4a is the decisive control — not model capability.** Both Config A run 2 (Sonnet, 1 gap-fill) and Config C run 3 (Haiku, 2 gap-fills) reach regulated CPF = 1.00 only because Step 4a is active. The routing policy cannot be relaxed on the basis that "Sonnet doesn't need Step 4a" — Sonnet still missed S2.1. Step 4a must remain mandatory for all configs at all models.
+
+4. **No CPF benefit to justify +114% cost premium.** Config A run 2 vs Config C run 3: identical regulated CPF (1.00), Config A costs ~$1.50 vs ~$0.70 for Config C. The difference in gap-fill count (1 vs 2) does not represent a measurable quality difference — both reach CPF 1.00 with Step 4a. Config C run 3 (Haiku downstream with Step 4a) is confirmed as the cost-optimal routing for regulated-constraint stories.
+
+5. **Config A run 2 serves as the post-Step 4a Sonnet baseline.** This run provides the calibration data point confirming that the Config C run 3 caveat removal (Haiku sufficient with Step 4a active) is correct and cost-justified. The regulated routing policy stands: use Config C (Step 4a active, Haiku downstream) for regulated-constraint stories.
 
 ---
 
