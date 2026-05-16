@@ -105,11 +105,10 @@
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-05-16",
-    "contextAtWrite": "EXP-003 Config C run 3 complete. Regulated CPF = 1.00 across all 5 constraints (C1-C5, with C2 PCI DSS, C3 AML/CFT, C5 audit gap regulated). Step 4a (regulated constraint propagation check in /definition SKILL.md, commit acdc349) fired successfully — C2 present in S1.2 and S2.2 Architecture Constraints. Haiku at /definition maintained CPF = 1.00 when Step 4a active. Routing policy caveat lifted: /definition now defaults to Haiku for both regulated and non-regulated stories. Layer 2 CPS ~$0.70 (53% savings vs Config A Sonnet ~$1.50).",
-    "resumeInstruction": "EXP-003 Config C run 3 complete. Routing policy caveat lifted. NEXT ACTION: All 4 stage artefacts (definition.md, review.md, test-plan.md, definition-of-ready.md), cpf-scores.md, routing-policy-framework.md update, and manifest.md Config C-3 entry are ready to commit to master with message: 'chore: EXP-003 Config C run 3 complete — regulated CPF 1.00, routing policy caveat lifted'.",
+    "writtenAt": "2026-05-16T15:40:00Z",
+    "contextAtWrite": "EXP-003 Config A run 2 complete (Sonnet uniform, post-Step 4a SKILL.md, commit acdc349). Regulated CPF = 1.00 across all 5 constraints. Step 4a fired: 1 gap-fill (S2.1 C2 — failover automation framed as operational not CDE; Step 4a caught it). Config A run 2 vs Config C run 3: identical regulated CPF = 1.00. Config A costs ~$1.50 vs Config C ~$0.70 (+114%). Config C (Haiku downstream, Step 4a active) confirmed as cost-optimal routing policy. All 5 run artefacts + manifest.md committed (6fb6cbd) and pushed to master (81091f0).",
+    "resumeInstruction": "EXP-003 Config A run 2 is fully complete, committed, and pushed. NEXT ACTION: Choose between (a) EXP-003 Config D (GPT-4o + Haiku — requires EXP-002a H5 confirmed), (b) wucp /review pipeline (wucp.1/wucp.2/wucp.4 are reviewReady: true), or (c) wsm.4 dispatch. Routing policy is current: /definition Haiku default, Step 4a mandatory, Config C (Haiku downstream) confirmed cost-optimal for regulated-constraint stories.",
     "pendingActions": [
-      "GIT COMMIT AND PUSH — All config-C-run-3 artefacts + updated routing-policy-framework.md + manifest.md with message: 'chore: EXP-003 Config C run 3 complete — regulated CPF 1.00, routing policy caveat lifted'.",
       "NEXT PRIORITY — SCR feature design: /discovery for programmatic scope-drift detection from pipeline-state.json. See workspace/proposals/ for prior proposals.",
       "PARALLEL — wucp /review pipeline: wucp.1 (context auto-loader), wucp.2 (slash command router), wucp.4 (session start wizard) are reviewReady: true.",
       "PARALLEL — wsm.4 dispatch (dor-signed-off).",
