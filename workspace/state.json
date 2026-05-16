@@ -104,17 +104,25 @@
       "routingUpdate": "routing-policy-framework.md updated — /test-plan (PCI/compliance-classified stories) downgraded from claude-sonnet-4-6 to claude-haiku-4-5. Routing policy now fully Haiku-dominant across all 4 non-discovery skills."
     }
   },
+  "EXP-008": {
+    "status": "scaffolded",
+    "manifest": "workspace/experiments/EXP-008-corpus-breadth-eval/manifest.md",
+    "scaffoldCommit": "dad8b9a",
+    "committedAt": "2026-05-17",
+    "description": "S2-S13 corpus breadth evaluation — 12 stories x 4 model configs = 48 planned runs, context injection always-on",
+    "priority": "S2 Config A, S8 Config A, S13 Config A (first runs)",
+    "prerequisite": "S2-S7 context injection files must be created before S2-S7 runs"
+  },
   "checkpoint": {
-    "writtenAt": "2026-05-16T17:30:00Z",
-    "contextAtWrite": "Session: P14 trace production gap diagnosed + S8-S13 corpus design spec written. P14 root cause: PRs #53-55 changed trace-commit.yml to push to 'traces' branch instead of master; improvement-agent-schedule.yml reads workspace/traces/ on master only; secondary issue is no trace writer in assurance-gate.yml generates new JSONL per PR. Full diagnosis at workspace/platform-audit/trace-gap-diagnosis-2026-05-16.md. S8-S13 design spec at workspace/handoffs/pipeline-corpus-S8-S13-design.md — 6 scenarios designed (S8: reporting pipeline, S9: KYC onboarding, S10: core banking migration, S11: CDR consent API, S12: AI model retraining, S13: trans-Tasman payments). Design spec awaiting operator confirmation before full operator briefs written.",
-    "resumeInstruction": "NEXT: (1) Operator confirms S8-S13 design spec at workspace/handoffs/pipeline-corpus-S8-S13-design.md — if confirmed, write full operator briefs to workspace/handoffs/pipeline-corpus-S8-S13.md. (2) Story for P14 trace gap fix: add fetch step to improvement-agent-schedule.yml (Option A from diagnosis doc) + add trace-writer step to assurance-gate.yml. (3) Continue prior items: SCR feature /discovery, wucp /review pipeline (wucp.1/wucp.2/wucp.4 reviewReady: true), wsm.4 dispatch.",
+    "writtenAt": "2026-05-17T00:00:00Z",
+    "contextAtWrite": "Session: EXP-008-corpus-breadth-eval scaffolded and committed (dad8b9a). 12 stories x 4 model configs = 48 planned runs. Context injection always-on. Run matrix initialised. npm test passes (exit 0). trw.1 dispatched as GitHub issue #351 (prior session). Next: create S2-S7 context injection files, then begin first EXP-008 runs (S2, S8, S13 — Config A).",
+    "resumeInstruction": "EXP-008 scaffold committed to master (dad8b9a). IMMEDIATE NEXT: (1) Create context injection files for S2-S7 — use existing S8-S13 files in workspace/experiments/EXP-003-pipeline-eval/corpus/context-injection/ as template, ~4-8KB each, synthetic content aligned to corpus scenarios. (2) Begin first EXP-008 runs: S2 Config A (fresh, with injection), S8 Config A, S13 Config A. (3) trw.1 implementation: issue #351 dispatched, awaiting VS Code coding agent. (4) wsm.4 still dor-signed-off and dispatchable.",
     "pendingActions": [
+      "EXP-008 S2-S7 INJECTION — Create context injection files: S2 (EA registry lending origination + FMA responsible lending excerpt), S3 (EA registry RTP gateway + RTP scheme policy excerpt), S4 (EA registry experience API + PCI-DSS architecture guardrails), S5 (EA registry CRM platform + privacy policy excerpt), S6 (EA registry payment platform + DR policy excerpt), S7 (EA registry web app). Place in workspace/experiments/EXP-003-pipeline-eval/corpus/context-injection/ using S8-S13 files as format reference.",
+      "EXP-008 FIRST RUNS — After S2 injection file created: run S2 Config A (fresh, with injection). Also run S8 Config A and S13 Config A. Record CPF scores and C5 surfacing in workspace/experiments/EXP-008-corpus-breadth-eval/manifest.md run matrix.",
+      "trw.1 IMPLEMENTATION — Issue #351 open at https://github.com/heymishy/skills-repo/issues/351. Needs: scripts/write-ci-trace.js, modified .github/workflows/trace-commit.yml, tests/check-trw1-trace-writer.js.",
+      "wsm.4 DISPATCH — Story dor-signed-off. DoR artefact at artefacts/2026-05-07-web-ui-session-management/dor/wsm.4-dor.md.",
       "P14 FIX — Story: add git fetch origin traces + checkout origin/traces -- workspace/traces/ step to improvement-agent-schedule.yml before agent run. See workspace/platform-audit/trace-gap-diagnosis-2026-05-16.md Option A.",
-      "P14 FIX — Story: add per-PR trace writer step to assurance-gate.yml to generate a new JSONL record per PR merge. Without this, traces directory never grows regardless of which branch improvement agent reads.",
-      "S8-S13 CORPUS — Operator confirms workspace/handoffs/pipeline-corpus-S8-S13-design.md, then write full briefs to pipeline-corpus-S8-S13.md.",
-      "NEXT PRIORITY — SCR feature design: /discovery for programmatic scope-drift detection from pipeline-state.json. See workspace/proposals/ for prior proposals.",
-      "PARALLEL — wucp /review pipeline: wucp.1 (context auto-loader), wucp.2 (slash command router), wucp.4 (session start wizard) are reviewReady: true.",
-      "PARALLEL — wsm.4 dispatch (dor-signed-off).",
       "PENDING EXP-003 Config D: Requires EXP-002a H5 confirmed (GPT-4o >= 0.70 on T1 and T3) before running."
     ]
   }
