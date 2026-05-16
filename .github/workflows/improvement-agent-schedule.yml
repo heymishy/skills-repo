@@ -29,6 +29,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Fetch latest traces from traces branch
+        # P14 fix: traces are committed to origin/traces (not master) by trace-commit.yml.
+        # Populate workspace/traces/ from that branch before the agent reads it.
+        run: |
+          git fetch origin traces
+          git checkout origin/traces -- workspace/traces/ || true
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
