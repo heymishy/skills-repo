@@ -193,6 +193,8 @@ AQ = total_score / 10
 
 **Scoring note:** AQ is not measured for S6 (behavioural scenarios have no artefact set to score against the rubric).
 
+**Judge prompt:** `judge-prompts/aq-scoring-prompt.md` — operator runbook, full scoring rubric with 0/1/2 criteria per dimension, prompt template to paste into the judge session, human review workflow, and run record YAML format.
+
 ## Run prioritisation
 
 Session 1 (highest stakes — F16 remediation directly addressed):
@@ -285,9 +287,32 @@ Use the S8–S13 injection files as format reference. Each file should be 4–8K
 
 ## Runs log
 
-_(Populated as runs are completed. One entry per story per config.)_
+_(Populated as runs are completed. One YAML entry per story per config. Format defined in `judge-prompts/aq-scoring-prompt.md`.)_
 
----
+```yaml
+# Example entry — replace with actual run data
+# - story: S2
+#   config: A
+#   date: 2026-05-17
+#   model_discovery: claude-sonnet-4-6
+#   model_definition: claude-sonnet-4-6
+#   model_review: claude-sonnet-4-6
+#   model_test_plan: claude-sonnet-4-6
+#   model_dor: claude-sonnet-4-6
+#   cpf_general: 1.00
+#   cpf_regulated: 1.00
+#   c5_surfaced: true
+#   aq: 0.80
+#   aq_dimensions:
+#     problem_framing: 2
+#     scope_discipline: 1
+#     story_testability: 2
+#     nfr_specificity: 2
+#     dor_gate_quality: 1
+#   aq_overrides: []
+#   aq_override_notes: ""
+#   notes: ""
+```
 
 ## Cross-reference
 
@@ -295,4 +320,5 @@ _(Populated as runs are completed. One entry per story per config.)_
 - **Meta-review F16** (`workspace/eval-framework-review/2026-05-15-meta-review.md`) — motivating finding for EXP-008
 - **Corpus S2–S7** (`workspace/handoffs/pipeline-corpus-S2-S7.md`) — full constraint inventories and operator briefs
 - **Corpus S8–S13** (`workspace/handoffs/pipeline-corpus-S8-S13.md`) — full constraint inventories, adversarial scenario design notes, context injection maps
-- **Context injection files** (`corpus/context-injection/`) — S8–S13 files present; S2–S7 to be created
+- **Context injection files** (`corpus/context-injection/`) — S8–S13 files present; S2–S7 complete (9 files, 2026-05-17)
+- **AQ judge prompt** (`judge-prompts/aq-scoring-prompt.md`) — operator runbook, rubric, prompt template, human review workflow
