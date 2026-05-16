@@ -67,8 +67,8 @@ Automated pipeline that extracts balance sheet and transaction data from core ba
 | ID | Description | Severity |
 |----|-------------|---------|
 | RRPL-RISK-001 | TreasuryLedger does not have a regulatory-data REST API in the vendor's standard offering. Current data flow requires manual CSV extract by treasury operations team. Automated extraction requires either custom API development or treasury vendor engagement. | HIGH |
-| RRPL-RISK-002 | The normalisation transformation applied to source system fields (to correct rounding and timing mismatches from 2019 migration) has not been placed under formal change control. The transformation rules exist only in an Excel macro. This transformation changes figures that appear in regulatory returns. | CRITICAL — requires governance remediation before pipeline deployment |
-| RRPL-RISK-003 | RBNZ has not been notified that normalised figures (rather than raw source figures) have been submitted in prudential returns. Retroactive disclosure obligation may exist. | HIGH |
+| RRPL-RISK-002 | The normalisation transformation applied to source system fields (to correct rounding and timing mismatches from 2019 migration) exists only in an Excel macro written and maintained by one analyst. No independent review of the transformation logic is on record. This transformation changes figures that appear in regulatory returns. | HIGH — single-author transformation; no independent review on record |
+| RRPL-RISK-003 | RBNZ has not been notified that normalised figures (rather than raw source figures) have been submitted in prudential returns. RBNZ has been receiving the submitted figures without visibility into the normalisation step applied to source data upstream of the return population. | HIGH |
 
 ---
 
@@ -98,5 +98,3 @@ Any change to transformation logic in this pipeline must follow the Finance Oper
 5. RBNZ notification (BS11 s.4.2) at least 30 business days before implementation if change is material
 6. Test evidence generated in UAT environment
 7. CAB approval before production deployment
-
-*Note: The normalisation transformation currently embedded in the Excel macro has NOT been through this procedure.*
