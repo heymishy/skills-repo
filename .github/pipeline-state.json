@@ -3208,7 +3208,10 @@
           "dor": {
             "artefact": "artefacts/2026-05-16-trace-writer-fix/dor/trw.1-dor.md",
             "signedOffAt": "2026-05-16"
-          }
+          },
+          "issueUrl": "https://github.com/heymishy/skills-repo/issues/351",
+          "dispatchedAt": "2026-05-16T00:00:00Z",
+          "dispatchTarget": "vscode"
         }
       ],
       "updatedAt": "2026-05-16"
