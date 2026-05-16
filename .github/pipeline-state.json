@@ -3185,7 +3185,7 @@
     {
       "slug": "2026-05-16-trace-writer-fix",
       "name": "CI Trace Writer Fix",
-      "stage": "test-plan-complete",
+      "stage": "definition-of-ready",
       "health": "green",
       "track": "platform",
       "regulated": false,
@@ -3196,14 +3196,18 @@
         {
           "id": "trw.1",
           "slug": "trw.1",
-          "name": "CI trace writer: audit comment inline JS extraction",
-          "status": "test-plan-complete",
-          "dorStatus": "pending",
+          "name": "CI trace writer: guarantee one fresh JSONL record per master push",
+          "status": "definition-of-ready",
+          "dorStatus": "signed-off",
           "prStatus": "none",
           "artefact": "artefacts/2026-05-16-trace-writer-fix/stories/trw.1-ci-trace-writer.md",
           "testPlan": {
             "artefact": "artefacts/2026-05-16-trace-writer-fix/test-plans/trw.1-ci-trace-writer-test-plan.md",
             "status": "complete"
+          },
+          "dor": {
+            "artefact": "artefacts/2026-05-16-trace-writer-fix/dor/trw.1-dor.md",
+            "signedOffAt": "2026-05-16"
           }
         }
       ],

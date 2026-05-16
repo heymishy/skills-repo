@@ -5,6 +5,9 @@
 **Short-track:** Yes — platform infrastructure bug fix
 **Created:** 2026-05-16
 **Priority:** Medium (P14 secondary gap — primary loop unblocked by improvement-agent-schedule.yml fix)
+**Complexity:** 1 — Well understood. Script writes from CI env vars to a fixed hardcoded path. No ambiguity, no external dependencies beyond GitHub Actions environment.
+**Scope stability:** Stable
+**Benefit linkage:** Platform trace freshness — P14 secondary fix. Ensures improvement agent reads current (not stale) traces, directly supporting MM1 signal quality and improvement loop integrity.
 
 ---
 
@@ -35,23 +38,24 @@ The fix must not depend on the artifact download path being reliable. A guarante
 ## Acceptance criteria
 
 ### AC1 — Fresh record per push
-When any commit is pushed to master (via PR merge or direct), `trace-commit.yml` generates at least one new JSONL file in the `workspace/traces/` directory on the `origin/traces` branch. The file timestamp must match the CI run date, not a date from a cached artifact.
+**Given** a repository with `trace-commit.yml` configured to trigger on push to master
+**When** any commit is pushed to master (via PR merge or direct push)
+**Then** at least one new JSONL file is committed to `workspace/traces/` on the `origin/traces` branch, and its timestamp matches the current CI run date — not a date from a cached artifact
 
 ### AC2 — Correct record content
-The generated JSONL record must contain the following fields:
-- `runId` — the GitHub Actions run ID for this push-triggered `trace-commit.yml` run
-- `commitSha` — the merge commit SHA (`GITHUB_SHA`)
-- `headRef` — the branch or PR head ref (`GITHUB_REF`)
-- `trigger` — `"post-merge"` (distinguishes from gate-run records)
-- `timestamp` — ISO 8601 UTC timestamp of record generation
-- `verdict` — `"trace-committed"` (indicates this is a bookkeeping record, not a gate result)
-- `surface` — `"ci-trace-commit"` (surface type identifier)
+**Given** `scripts/write-ci-trace.js` runs in a GitHub Actions push context
+**When** the generated JSONL file is read and each line is parsed as JSON
+**Then** the record contains all 7 required fields: `runId` (Actions run ID), `commitSha` (GITHUB_SHA value), `headRef` (GITHUB_REF value), `trigger` = `"post-merge"`, `timestamp` (ISO 8601 UTC), `verdict` = `"trace-committed"`, `surface` = `"ci-trace-commit"`
 
 ### AC3 — Naming convention
-The generated JSONL file must follow the existing naming convention: `{ISO-timestamp-in-UTC-with-colons-replaced-by-dashes}-ci-{8-char-commit-sha}.jsonl`. Example: `2026-05-16T10-30-00-000Z-ci-bd7f996f.jsonl`.
+**Given** `GITHUB_SHA` is known and a UTC timestamp is generated at run time
+**When** the output filename is inspected
+**Then** it matches the pattern `{ISO-timestamp-with-colons-replaced-by-dashes}-ci-{8-char-sha}.jsonl` — example: `2026-05-16T10-30-00-000Z-ci-bd7f996f.jsonl`
 
 ### AC4 — Additive to existing traces
-The `origin/traces` branch must retain all previously committed JSONL files. The new writer is additive — it does not overwrite or delete existing trace records.
+**Given** the `origin/traces` branch contains pre-existing JSONL files
+**When** `trace-commit.yml` runs after a master push
+**Then** all pre-existing JSONL files remain present on the branch — the new writer is additive and does not overwrite or delete any existing trace records
 
 ### AC5 — Improvement agent compatibility
 The JSONL file format must be parseable by `improvement-agent-schedule.yml`'s trace reading logic. Specifically: one JSON object per line, with the required fields from AC2, with no trailing commas or invalid JSON.
@@ -81,6 +85,19 @@ The script must not generate or log any GitHub token, credential, or repository 
 - Changing `assurance-gate.yml` artifact generation or upload logic
 - Fixing the underlying reason assurance-gate.yml is not producing new artifacts for recent PRs (that is a separate investigation; this story guarantees baseline trace coverage)
 - Backfilling trace records for merged PRs between 2026-04-12 and 2026-05-16
+
+---
+
+## NFRs
+
+None — reviewed 2026-05-16. Security items (no credential logging, hardcoded output path with no user-controlled input) are covered by AC2 field constraints and test T11 in the test plan. No data classification concerns (trace metadata only, no PII).
+
+## Architecture Constraints
+
+- **D37** — Not applicable. No injectable adapters introduced by this story.
+- **Path traversal guard** — Not applicable. Output path is hardcoded to `workspace/traces/` within the CI environment; no user-controlled input participates in path construction.
+- **Credential guard** — `write-ci-trace.js` must not log `GITHUB_TOKEN` or any other secret to stdout, stderr, or the output JSONL file. Verified by test T11.
+- **Additive-only** — The script appends a new file to the traces directory; it never reads, modifies, or deletes existing files.
 
 ---
 
