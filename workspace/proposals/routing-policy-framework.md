@@ -1,6 +1,6 @@
 # Routing Policy Framework
 
-**Status:** Draft — pending EXP-002a, EXP-002b, EXP-003 evidence
+**Status:** Measurement-backed for all outer-loop skills (discovery, definition, review, test-plan, DoR); provisional for /benefit-metric and /definition-of-done (no experiment)
 **Governed by:** Platform change policy — changes to this document require a pipeline story + PR + platform team review
 **Measurement_backed updates:** Any routing table update must cite the `experiment_id` that produced the evidence. Undocumented routing changes are out-of-process.
 
@@ -43,9 +43,34 @@ For Layer 2 rates, always check the PRICING map in `scripts/run-model-sweep.js` 
 
 ---
 
+## Production caveats — validated routing
+
+> **Read this section before using Haiku routing for any regulated-domain story.**
+
+### /definition — regulated story caveat (ACTIVE until EXP-003 Config C run 3 completes)
+
+The EXP-005 rubric experiment confirmed Haiku achieves CPF = 1.00 in **isolated per-stage evaluation** against the four corpus cases. However, EXP-003 Config C — the only **full end-to-end pipeline run** with Haiku at the definition stage — produced:
+
+- Chain CPF: 0.68 (below 0.80 general threshold)
+- Regulated-constraint CPF: 0.675 (below 0.80 regulated threshold)
+
+Root cause (EXP-003 F6): Haiku adopted a vertical-slice decomposition strategy at definition, dropping the regulatory constraint (C2: AML audit gap) from story S1.2 and S1.3. The per-stage corpus does not replicate this failure because the corpus inputs present constraints directly; the pipeline failure mode arises from the model's story-slicing strategy when navigating a full discovery artefact.
+
+A Step 4a fix (regulated constraint propagation check added to definition SKILL.md, commit reference in EXP-003 manifest) was validated in isolation (definition-f6f7-r1 run: CPF 1.00 at definition stage). **No full-pipeline Config C re-run with the fixed SKILL.md has been executed.**
+
+**Required override until Config C run 3 produces regulated CPF ≥ 0.80:**
+
+> For any story with regulatory constraints (PCI DSS, AML/CFT, prudential banking regulation, data residency obligations, GDPR Article 22, SOC 2 controls), use **claude-sonnet-4-6** at the `/definition` stage regardless of the routing table default.
+
+Non-regulated stories may continue to use Haiku at `/definition` — the constraint-drop failure mode is specific to regulatory constraint propagation under vertical-slice strategies.
+
+**Config C run 3 entry conditions:** EXP-003 Config C re-run with (a) Haiku model switch confirmed executed, (b) Step 4a SKILL.md fix in effect. If result ≥ 0.80 regulated CPF, this caveat is lifted and the routing table default applies unconditionally.
+
+---
+
 ## Current routing policy
 
-**Status:** Partially measurement-backed — /discovery rows updated with EXP-002a evidence. Other skills pending EXP-003.
+**Status:** Measurement-backed for all outer-loop skills; see caveats section above for /definition regulated story override.
 
 | Skill | Current model | Evidence basis | measurement_backed | Review trigger |
 |-------|--------------|----------------|--------------------|----------------|

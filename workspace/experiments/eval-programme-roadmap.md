@@ -2,6 +2,28 @@
 
 **Purpose:** Full evaluation programme sequence, dependencies, and what each experiment enables for routing policy decisions.
 
+**Last updated:** 2026-05-16
+
+---
+
+## Current state (as of 2026-05-16)
+
+| Experiment | Status | Routing decision unlocked |
+|------------|--------|---------------------------|
+| EXP-001 — discovery isolated sweep | Complete | Sonnet/Opus T1–T4 baseline |
+| EXP-002a — cross-provider discovery | Complete | GPT-4o disqualified (H5 disproved); Haiku qualified at 5/6 T1+T3; Sonnet approved as primary discovery model |
+| EXP-002b — context-loaded discovery | Pending (EXP-002a gating removed — see note below) | T5 context gap vs model gap diagnosis |
+| EXP-003 — end-to-end CPF pipeline | In progress — Config C run 3 pending (Step 4a fix validation) | Config A (Sonnet uniform) ✅; Config B (Opus front-loaded) ✅; Config C (Haiku downstream) ⚠️ FAIL — regulated CPF 0.675 |
+| EXP-004 — /definition-of-ready rubric | Complete | Haiku approved for DoR (GF 1.00 all trials) |
+| EXP-005 — /definition rubric | Complete | Haiku approved for definition in isolation (CPF 1.00 all trials); E2E validation pending via EXP-003 Config C run 3 |
+| EXP-006 — /review rubric | Complete | Haiku approved for review (FDR_HIGH 1.00; 0.33× cost) |
+| EXP-007 — /test-plan rubric | Complete | Haiku approved for test-plan (TCF 1.00 all cases) |
+| EXP-007R — /test-plan NFR fix validation | Complete | Haiku D3 scope-mixing eliminated by NFR scope rule (commit a8e09c8); PCI/compliance override removed |
+
+**Open action:** EXP-003 Config C run 3 (full pipeline with Step 4a SKILL.md fix + confirmed Haiku model switch). Until complete, regulated-story /definition override applies — see `proposals/routing-policy-framework.md` caveats section.
+
+**Note on EXP-002b:** EXP-002a confirmed GPT-4o fails discovery (H5 disproved), making the cross-provider shortlisting function of EXP-002a complete. EXP-002b (Scenario 2 context-loading) remains useful for T5 proactivity diagnosis but is no longer a hard prerequisite for any pending experiment.
+
 ---
 
 ## Programme overview
@@ -22,10 +44,12 @@ EXP-001 ──► EXP-002a ──► EXP-002b ──► EXP-003 ──► EXP-00
                 └──────────────────────────────────────────────► EXP-LOCAL-001
 ```
 
-**Phase 1 (now):** EXP-003 — CPF measurement, no per-skill rubrics needed
-**Phase 2 (next):** EXP-004/005 — gate skill rubrics (/definition-of-ready, /definition-of-done)
-**Phase 3 (background):** EXP-006 through EXP-009 — generative skill rubrics
-**Phase 4 (deferred):** /improve — human-reviewed via challenger pre-check only
+**Phase 1 (complete):** EXP-001/002a — discovery baseline; cross-provider qualification
+**Phase 2 (complete):** EXP-003 (partial) + EXP-004 — CPF measurement; DoR rubric
+**Phase 3 (complete):** EXP-005/006/007/007R — definition, review, test-plan rubrics
+**Phase 4 (in progress):** EXP-003 Config C run 3 — E2E CPF validation of Haiku routing with Step 4a fix
+**Phase 5 (next):** EXP-002b — T5 context gap diagnosis; EXP-008/009 — /benefit-metric and /improve rubrics
+**Phase 6 (deferred):** /improve — human-reviewed via challenger pre-check only; EXP-LOCAL-001 — local model tier classification
 
 ---
 
@@ -52,9 +76,9 @@ EXP-001 ──► EXP-002a ──► EXP-002b ──► EXP-003 ──► EXP-00
 
 ## EXP-002a — Cross-provider isolated sweep (Scenario 1)
 
-**Status:** Planned — requires provider abstraction (`getProvider()`) implemented in `run-model-sweep.js`
+**Status:** Complete — see `workspace/experiments/EXP-002a-cross-provider-discovery/`
 
-**Entry condition:** `getProvider()` function implemented + `OPENAI_API_KEY` available
+**Entry condition (was):** `getProvider()` function implemented + `OPENAI_API_KEY` available — both satisfied
 
 **What will be tested:** Discovery skill, 5 models (haiku-4-5, sonnet-4-6, opus-4-6, gpt-4o, gpt-4o-mini), Scenario 1, Layer 2
 
@@ -105,9 +129,9 @@ EXP-001 ──► EXP-002a ──► EXP-002b ──► EXP-003 ──► EXP-00
 
 ## EXP-003 — End-to-end pipeline eval (Scenario 3)
 
-**Status:** Planned — requires EXP-002a and EXP-002b complete
+**Status:** In progress — Configs A and B complete (PASS); Config C run 1 invalid (model switch not executed); Config C run 2 FAIL (regulated CPF 0.675); fix-validation (Step 4a) complete in isolation; **Config C run 3 pending** (full pipeline with Step 4a SKILL.md fix). Config D formally cancelled — EXP-002a disproved H5 (GPT-4o T1+T3 avg 0.467, below 0.70 threshold).
 
-**Entry condition:** EXP-002a and EXP-002b complete; `evaluation_mode` field implemented in sweep harness for Scenario 3 tracking
+**Entry condition (was):** EXP-002a and EXP-002b complete; `evaluation_mode` field implemented in sweep harness for Scenario 3 tracking — EXP-002a complete; EXP-002b gating removed (see current state note); `evaluation_mode` tracking added
 
 **What will be tested:** Full pipeline (/discovery → /definition → /review → /test-plan → /DoR), 3 configs (A: uniform Sonnet, B: tiered front-loaded, C: cost-optimised), Scenario 3, Layer 1
 
@@ -153,11 +177,16 @@ EXP-001 ──► EXP-002a ──► EXP-002b ──► EXP-003 ──► EXP-00
 
 | Experiment | Depends on | Enables |
 |------------|-----------|---------|
-| EXP-001 | None (complete) | T1–T4 Sonnet/Opus baseline; T5 gap identified |
-| EXP-002a | `getProvider()` implementation | Multi-provider tier classification; Haiku L1 check; T5 confound-corrected baseline |
-| EXP-002b | EXP-002a complete | Context gap vs model gap diagnosis; T5 intervention decision |
-| EXP-003 | EXP-002a + EXP-002b | CPF evidence; config recommendation; regulated routing requirement |
-| EXP-LOCAL-001 | Local infra + EXP-002a | Local model tier classification; local routing approval |
+| EXP-001 | None | Complete — T1–T4 Sonnet/Opus baseline; T5 gap identified |
+| EXP-002a | `getProvider()` (now implemented) | Complete — GPT-4o disqualified; Haiku qualified; Sonnet discovery routing approved |
+| EXP-002b | EXP-002a | Pending — context gap vs model gap; T5 intervention decision |
+| EXP-003 | EXP-002a | In progress — Configs A+B PASS; Config C run 3 pending |
+| EXP-004 | EXP-003 (was gating dep) | Complete — DoR Haiku approved; GF 1.00 |
+| EXP-005 | EXP-003 (was gating dep) | Complete — definition Haiku approved in isolation; E2E validation via Config C run 3 |
+| EXP-006 | EXP-003 (was gating dep) | Complete — review Haiku approved; FDR_HIGH 1.00 |
+| EXP-007 | EXP-003 (was gating dep) | Complete — test-plan Haiku approved; TCF 1.00 |
+| EXP-007R | EXP-007 | Complete — D3 NFR scope-mixing fixed; PCI/compliance override removed |
+| EXP-LOCAL-001 | Local infra + EXP-002a | Pending — local model tier classification |
 
 ---
 
@@ -165,10 +194,10 @@ EXP-001 ──► EXP-002a ──► EXP-002b ──► EXP-003 ──► EXP-00
 
 | Prerequisite | Required for | Status |
 |-------------|-------------|--------|
-| `getProvider()` in `run-model-sweep.js` | EXP-002a, EXP-002b, EXP-003 | Not yet implemented |
-| `OPENAI_API_KEY` available | EXP-002a (GPT models) | Operator action |
+| `getProvider()` in `run-model-sweep.js` | EXP-002a, EXP-002b, EXP-003 | **Implemented** (Anthropic, OpenAI, Copilot, local providers) |
+| `OPENAI_API_KEY` available | EXP-002a (GPT models) | Used in EXP-002a (complete) |
 | EXP-002b context-injection-spec harness support | EXP-002b | Not yet implemented |
-| `evaluation_mode` field in sweep harness | EXP-003 tracking | Not yet implemented |
+| `evaluation_mode` field in sweep harness | EXP-003 tracking | **Implemented** |
 | Local model infrastructure (Ollama or equivalent) | EXP-LOCAL-001 | Operator action |
 | `run-model-sweep.js` HTTP vs HTTPS protocol switch for local models | EXP-LOCAL-001 | Not yet implemented |
 
@@ -228,13 +257,13 @@ EXP-001 through EXP-003 run without per-skill EVAL.md rubrics for most pipeline 
 
 | Skill | EVAL.md | Corpus | Status |
 |-------|---------|--------|--------|
-| /discovery | ✅ | T1–T5 | Done — EXP-001/002a/002b |
-| /definition-of-ready | ✅ | None | Dimensions exist, corpus cases needed |
-| /definition | ❌ | None | Not started |
-| /benefit-metric | ❌ | None | Not started |
-| /review | ❌ | None | Not started |
-| /test-plan | ❌ | None | Not started |
-| /definition-of-done | ❌ | None | Not started |
+| /discovery | ✅ | T1–T5 | Done — EXP-001/002a |
+| /definition-of-ready | ✅ | T1–T4 | Done — EXP-004 (Haiku approved; GF 1.00 all trials) |
+| /definition | ✅ | T1–T4 | Done — EXP-005 (Haiku approved in isolation; E2E validation pending EXP-003 Config C run 3) |
+| /review | ✅ | T1–T5 | Done — EXP-006 (Haiku approved; FDR_HIGH 1.00 all adversarial cases) |
+| /test-plan | ✅ | T1–T5 | Done — EXP-007 + EXP-007R (Haiku approved including PCI/compliance stories; NFR scope rule fix validated) |
+| /benefit-metric | ❌ | None | Not started — Provisional Sonnet |
+| /definition-of-done | ❌ | None | Not started — Provisional Sonnet |
 | /improve | ❌ | None | Not started — may never be fully automated |
 
 **Why this is tolerable for EXP-003:** EXP-003 measures CPF (constraint propagation fidelity) — whether constraints survive the full pipeline chain. This does not require per-skill EVAL.md rubrics. A finding like "Config C drops regulatory constraints between discovery and DoR" is valid evidence even without a /test-plan EVAL.md. EXP-003 runs now with CPF as the primary metric.

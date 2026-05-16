@@ -6,7 +6,7 @@
 |-------|-------|
 | experiment_id | EXP-004-dor-rubric |
 | experiment_type | gate-skill-rubric |
-| created | 2026-05-21 |
+| created | 2026-05-14 |
 | operator | heymishy |
 | status | complete |
 
