@@ -356,7 +356,7 @@ const PRICING = {
 // ─── CLI argument parsing ───────────────────────────────────────────────────
 
 function parseArgs(argv) {
-  const args = { skills: null, models: null, trials: DEFAULT_TRIALS, dryRun: false, listSkills: false, experiment: null, contextFiles: null, pass2: false, cases: null, delay: 0, provider: null, policy: false, routing: false };
+  const args = { skills: null, models: null, trials: DEFAULT_TRIALS, dryRun: false, listSkills: false, experiment: null, contextFiles: null, pass2: false, cases: null, delay: 0, provider: null, policy: false, routing: false, conversation: null };
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--dry-run') { args.dryRun = true; continue; }
@@ -372,8 +372,101 @@ function parseArgs(argv) {
     if (arg === '--context-files' && argv[i + 1]) { args.contextFiles = argv[++i].split(',').map(s => s.trim()); continue; }
     if (arg === '--delay' && argv[i + 1]) { args.delay = parseInt(argv[++i], 10); continue; }
     if (arg === '--provider' && argv[i + 1]) { args.provider = argv[++i]; continue; }
+    if (arg === '--conversation' && argv[i + 1]) { args.conversation = argv[++i]; continue; }
   }
   return args;
+}
+
+// ─── Multi-turn conversation runner ────────────────────────────────────────
+
+/**
+ * Loads a conversation spec from a JSON file and runs it against a model.
+ * Sends user turns via callModel, maintaining message history.
+ * For "check" turns: applies must_match / must_not_match regexes against the last
+ * assistant response — no API call made for check turns.
+ *
+ * Returns { spec, checkResults, messages, totalInputTokens, totalOutputTokens }
+ *
+ * Security: conversationPath is validated against REPO_ROOT before reading.
+ *
+ * @param {string} conversationPath - path to the JSON conversation spec file
+ * @param {string} providerOverride - optional provider string
+ * @param {string} modelId - model to use for user turns
+ * @returns {Promise<{ spec: object, checkResults: object[], messages: object[], totalInputTokens: number, totalOutputTokens: number }>}
+ */
+async function runConversation(conversationPath, providerOverride, modelId) {
+  // Path traversal guard
+  const resolvedPath = path.resolve(conversationPath);
+  if (!resolvedPath.startsWith(REPO_ROOT + path.sep) && resolvedPath !== REPO_ROOT) {
+    throw new Error(`Path traversal rejected for conversation file: ${conversationPath}`);
+  }
+  if (!fs.existsSync(resolvedPath)) {
+    throw new Error(`Conversation spec file not found: ${conversationPath}`);
+  }
+
+  let spec;
+  try {
+    spec = JSON.parse(fs.readFileSync(resolvedPath, 'utf8'));
+  } catch (e) {
+    throw new Error(`Failed to parse conversation spec JSON: ${e.message}`);
+  }
+
+  if (!Array.isArray(spec.turns) || spec.turns.length === 0) {
+    throw new Error(`Conversation spec must have a non-empty 'turns' array`);
+  }
+
+  const messages = [];
+  const checkResults = [];
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
+  let lastAssistantContent = null;
+
+  for (const turn of spec.turns) {
+    if (turn.role === 'user') {
+      messages.push({ role: 'user', content: turn.content });
+      const result = await callModel(modelId, messages, 4096, undefined, providerOverride);
+      lastAssistantContent = result.content;
+      totalInputTokens += result.inputTokens;
+      totalOutputTokens += result.outputTokens;
+      messages.push({ role: 'assistant', content: lastAssistantContent });
+
+    } else if (turn.role === 'check') {
+      if (lastAssistantContent === null) {
+        checkResults.push({ id: turn.id, score_dimension: turn.score_dimension, gate_weight: turn.gate_weight || 1.0, pass: false, error: 'No assistant response to check against' });
+        continue;
+      }
+
+      const textToCheck = lastAssistantContent;
+      const mustMatchPatterns = turn.must_match || [];
+      const mustNotMatchPatterns = turn.must_not_match || [];
+
+      const mustMatchResults = mustMatchPatterns.map(pattern => {
+        try { return new RegExp(pattern, 'i').test(textToCheck); } catch (e) { return false; }
+      });
+      const mustNotMatchResults = mustNotMatchPatterns.map(pattern => {
+        try { return new RegExp(pattern, 'i').test(textToCheck); } catch (e) { return false; }
+      });
+
+      const allMustMatch = mustMatchResults.every(Boolean);
+      const noMustNotMatch = mustNotMatchResults.every(r => !r);
+      const pass = allMustMatch && noMustNotMatch;
+
+      checkResults.push({
+        id: turn.id,
+        score_dimension: turn.score_dimension,
+        gate_weight: turn.gate_weight || 1.0,
+        pass,
+        must_match_results: mustMatchPatterns.map((p, i) => ({ pattern: p, matched: mustMatchResults[i] })),
+        must_not_match_results: mustNotMatchPatterns.map((p, i) => ({ pattern: p, matched: mustNotMatchResults[i] })),
+        partial_response_preview: textToCheck.slice(0, 200),
+      });
+
+    } else {
+      throw new Error(`Unknown turn role: ${turn.role}. Valid values: 'user', 'check'`);
+    }
+  }
+
+  return { spec, checkResults, messages, totalInputTokens, totalOutputTokens };
 }
 
 // ─── Context injection ──────────────────────────────────────────────────────
@@ -697,6 +790,62 @@ async function main() {
     }
     console.log('\nSource: workspace/proposals/routing-policy-framework.md');
     console.log('Override: --models <model-id>  (--policy is ignored when --models is set)');
+    return;
+  }
+
+  // --conversation mode: run a multi-turn conversation spec against one model
+  if (args.conversation) {
+    if (!args.experiment) {
+      console.error('Error: --experiment EXP-XXX is required with --conversation');
+      process.exit(1);
+    }
+    const resolvedModels = args.models || [MODEL_ROUTING['discovery'] || Object.keys(PRICING)[0]];
+    const experimentDir = path.join(EXPERIMENTS_DIR, args.experiment);
+    ensureDir(experimentDir);
+    ensureDir(path.join(experimentDir, 'runs'));
+    ensureDir(path.join(experimentDir, 'results'));
+
+    // Pre-flight credentials check
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const githubToken = process.env.GITHUB_TOKEN || process.env.GITHUB_COPILOT_TOKEN;
+    let effectiveProvider = args.provider || null;
+    if (!effectiveProvider && !apiKey && githubToken) {
+      effectiveProvider = 'copilot';
+      console.log('Auto-detected provider: ANTHROPIC_API_KEY not set, GITHUB_TOKEN found → using Copilot proxy');
+    }
+    if (!apiKey && !githubToken && !args.dryRun) {
+      console.error('Error: no API credentials found. Set ANTHROPIC_API_KEY or GITHUB_TOKEN.');
+      process.exit(1);
+    }
+
+    console.log(`\n[conversation] Spec: ${args.conversation}`);
+    console.log(`[conversation] Models: ${resolvedModels.join(', ')}`);
+
+    if (args.dryRun) {
+      console.log('[conversation] Dry run — no API calls.');
+      return;
+    }
+
+    for (const model of resolvedModels) {
+      console.log(`\n[conversation] Running: ${model}`);
+      try {
+        const { spec, checkResults, totalInputTokens, totalOutputTokens } = await runConversation(args.conversation, effectiveProvider, model);
+        const caseId = spec.case_id || path.basename(args.conversation, '.json');
+        const passedGates = checkResults.filter(r => r.pass).length;
+        console.log(`  Gates passed: ${passedGates}/${checkResults.length}`);
+        for (const r of checkResults) {
+          console.log(`  ${r.id}: ${r.pass ? 'PASS' : 'FAIL'} (${r.score_dimension || 'N/A'})`);
+        }
+        const cost = effectiveProvider === 'copilot' ? null : estimateCost(model, totalInputTokens, totalOutputTokens);
+        const resultData = { case_id: caseId, skill: spec.skill || 'unknown', model, check_results: checkResults, total_input_tokens: totalInputTokens, total_output_tokens: totalOutputTokens, cost, completedAt: new Date().toISOString() };
+        const modelLabel = model.replace(/[^a-z0-9\-]/gi, '-');
+        const resultPath = path.join(experimentDir, 'results', `${caseId}-${modelLabel}-conversation.json`);
+        fs.writeFileSync(resultPath, JSON.stringify(resultData, null, 2), 'utf8');
+        console.log(`  Result saved: ${path.relative(REPO_ROOT, resultPath)}`);
+      } catch (err) {
+        console.error(`  Error: ${err.message}`);
+      }
+    }
     return;
   }
 

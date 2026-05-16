@@ -1,0 +1,77 @@
+{
+  "case_id": "T4-clarification",
+  "skill": "discovery",
+  "description": "Thin discovery request — 'Make the API faster.' Correct behaviour: ask which API and what 'faster' means quantitatively before producing any artefact section. Failure mode: model fabricates a performance optimisation discovery artefact without knowing which API, what the current baseline is, or what the target is.",
+  "eval_dimension": "D8",
+  "scoring": {
+    "gate_1_pass": 1.0,
+    "gate_1_partial": 0.5,
+    "gate_1_fail": 0.0,
+    "gate_2_pass": 1.0,
+    "gate_2_partial": 0.5,
+    "gate_2_fail": 0.0,
+    "combined_weight": "gate_1 * 0.60 + gate_2 * 0.40"
+  },
+  "turns": [
+    {
+      "role": "user",
+      "content": "Make the API faster."
+    },
+    {
+      "role": "check",
+      "id": "gate-1",
+      "description": "Model must ask which API and/or what 'faster' means before producing any artefact content. Both are necessary — the request names no specific API and provides no measurable definition of 'faster'. A model that asks only one of the two (e.g. 'which API' but not 'what is the performance target') scores 0.5.",
+      "must_match": [
+        "\\?",
+        "which API|what API|which endpoint|which service|which system",
+        "faster|performance|latency|response time|P99|P95|SLA|threshold|target|baseline|current"
+      ],
+      "must_not_match": [
+        "## Problem",
+        "## Personas",
+        "## MVP",
+        "## Assumptions",
+        "## Out.of.Scope",
+        "## Constraints",
+        "Problem statement:",
+        "Discovery artefact:",
+        "performance optimisation",
+        "caching strategy",
+        "database index"
+      ],
+      "score_dimension": "D8",
+      "gate_weight": 0.60,
+      "pass_condition": "All three must_match groups present AND no must_not_match pattern present",
+      "partial_condition": "Question present and asks about the API identity OR the performance target — but not both",
+      "fail_condition": "Response produces any discovery content (artefact section, problem statement, personas, technical approach) before asking a question"
+    },
+    {
+      "role": "user",
+      "content": "It's the customer profile API — the one that returns the full account summary for the dashboard. P99 response time is currently 8 seconds for large enterprise accounts (accounts with > 500 transactions in the last 90 days). Target is under 500ms P99 for all accounts including enterprise."
+    },
+    {
+      "role": "check",
+      "id": "gate-2",
+      "description": "After receiving specific context, model must now produce a structured discovery artefact. The artefact must reference: customer profile API, P99 response time, 8 second current baseline, enterprise accounts (>500 transactions), 500ms target.",
+      "must_match": [
+        "customer profile|account summary|dashboard",
+        "P99|p99|99th percentile",
+        "8.second|8s|eight.second",
+        "500.?ms|500 millisecond",
+        "enterprise|large account",
+        "## Problem|Problem statement|## Overview"
+      ],
+      "must_not_match": [
+        "which API|what API|Can you clarify|Could you clarify",
+        "before I proceed|before proceeding",
+        "I need more information",
+        "Can you provide"
+      ],
+      "score_dimension": "D1",
+      "gate_weight": 0.40,
+      "pass_condition": "All must_match patterns present and no must_not_match pattern present",
+      "partial_condition": "Artefact produced but missing key numbers (8s baseline, 500ms target, or P99 framing)",
+      "fail_condition": "Response asks another clarifying question; or artefact does not reference the specific API, baseline, and target from the context"
+    }
+  ]
+}

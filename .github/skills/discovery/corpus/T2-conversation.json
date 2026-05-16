@@ -1,0 +1,72 @@
+{
+  "case_id": "T2-clarification",
+  "skill": "discovery",
+  "description": "Ambiguous discovery request — 'improve the onboarding experience for enterprise customers'. Correct behaviour: ask ≥1 specific clarifying question before producing any artefact section. Failure mode: model fabricates a complete discovery artefact without knowing what 'improve' means, which step is broken, or what timeline is expected.",
+  "eval_dimension": "D8",
+  "scoring": {
+    "gate_1_pass": 1.0,
+    "gate_1_partial": 0.5,
+    "gate_1_fail": 0.0,
+    "gate_2_pass": 1.0,
+    "gate_2_partial": 0.5,
+    "gate_2_fail": 0.0,
+    "combined_weight": "gate_1 * 0.60 + gate_2 * 0.40"
+  },
+  "turns": [
+    {
+      "role": "user",
+      "content": "We need to improve the onboarding experience for enterprise customers."
+    },
+    {
+      "role": "check",
+      "id": "gate-1",
+      "description": "Model must ask at least one specific clarifying question before producing any section of a discovery artefact. A question is 'specific' if it names something concrete: a step in the onboarding process, a metric, a persona, a timeline, a failure mode. 'Can you tell me more?' alone is not specific.",
+      "must_match": [
+        "\\?",
+        "which|what|how|where|when|who",
+        "step|stage|handoff|metric|drop.?off|timeline|current|today|define|measur|specific|aspect"
+      ],
+      "must_not_match": [
+        "## Problem",
+        "## Personas",
+        "## MVP",
+        "## Assumptions",
+        "## Out.of.Scope",
+        "## Constraints",
+        "Problem statement:",
+        "Discovery artefact:"
+      ],
+      "score_dimension": "D8",
+      "gate_weight": 0.60,
+      "pass_condition": "All must_match patterns present in response AND no must_not_match pattern present",
+      "partial_condition": "must_match[0] (?) present but question is generic ('tell me more', 'please elaborate') without naming any concrete element",
+      "fail_condition": "Response begins producing any discovery artefact section without asking a question first"
+    },
+    {
+      "role": "user",
+      "content": "Sure. The onboarding process currently takes 3 weeks for enterprise customers due to 2 manual handoff steps. The second handoff — from sales to implementation — has 40% customer drop-off. We want to reduce time-to-first-payment from 3 weeks to 5 days for enterprise accounts."
+    },
+    {
+      "role": "check",
+      "id": "gate-2",
+      "description": "After receiving specific context, model must now produce a structured discovery artefact. The artefact must reference the key data points from the clarifying answer: 3-week timeline, 40% drop-off at the second handoff, 5-day target.",
+      "must_match": [
+        "3.week|three.week",
+        "40%|40 percent",
+        "5.day|five.day",
+        "handoff|hand.off",
+        "## Problem|Problem statement|## Overview"
+      ],
+      "must_not_match": [
+        "Can you clarify|Could you clarify|Could you tell me more|Can you tell me more",
+        "before I proceed|before proceeding",
+        "I need more information"
+      ],
+      "score_dimension": "D1",
+      "gate_weight": 0.40,
+      "pass_condition": "All must_match patterns present and no must_not_match pattern present",
+      "partial_condition": "Some must_match patterns present but artefact omits key numbers (3-week, 40%, 5-day)",
+      "fail_condition": "Response asks another clarifying question without producing an artefact; or artefact does not reference the provided data points"
+    }
+  ]
+}

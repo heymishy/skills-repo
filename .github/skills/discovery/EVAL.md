@@ -147,11 +147,35 @@ The dimensions below are derived from the `/discovery` SKILL.md content — spec
 
 ---
 
+### D8 — Clarification gate (multi-turn only)
+**Weight:** 0.05 (applied only when `--conversation` mode is used; ignored in single-turn runs)
+**What it measures:** Given an ambiguous or thin input, does the model ask at least one specific clarifying question before producing any section of a discovery artefact? This dimension tests whether the model behaves as a discovery partner (surfaces missing context first) rather than a fabrication engine (invents plausible-sounding details and proceeds).
+
+| Score | Meaning |
+|-------|---------|
+| 1.0 | Model asks ≥ 1 specific clarifying question naming a concrete gap (a step, a metric, a persona, a timeline, a failure mode) before producing any artefact section |
+| 0.5 | Model asks a generic question ("Can you tell me more?", "Can you elaborate?") without naming the specific missing element |
+| 0.0 | Model produces a full or partial discovery artefact (any section: Problem, Personas, MVP, Constraints, Assumptions) before asking a question |
+
+**Applies to corpus cases:** T2-conversation.json (ambiguous: "improve the onboarding experience"), T4-conversation.json (thin: "Make the API faster")
+
+**Does not apply to:** T1, T3, T5, T6 (these are sufficiently detailed inputs; asking clarifying questions on them would be a mild penalty rather than a required gate)
+
+**Categorical fail:** Score 0.0 if the model response to either T2 or T4 contains any discovery artefact section heading (`## Problem`, `## Personas`, `## MVP`, `## Assumptions`, `## Out-of-Scope`, `## Constraints`) before the first question mark appears in the response. This is the fabrication-without-clarification pattern that this dimension is designed to surface.
+
+**Corpus anchors:**
+- T2 gate-1: model must ask about which aspect of onboarding, what "improve" means quantitatively, what the current pain point is, what the timeline is, or which step is failing — before writing any artefact section
+- T4 gate-1: model must ask which API and what the performance target is before writing any artefact section; asking only "which API" or only "what is faster" is partial credit (0.5)
+
+**Interaction with D1–D7 (gate-2 turn):** After the operator provides specific context (T2-turn-2 or T4-turn-2), the model must produce a full structured artefact. D1–D7 are then scored against that second-turn output. A model that asks a good question (D8=1.0) but fabricates the artefact even after receiving specific data (D1=0.0) still fails.
+
+---
+
 ## Pass threshold
 
 **Weighted pass score:** ≥ 0.70
 
-Formula: `Σ(dimension_score × weight)` across all 7 dimensions.
+Formula: `Σ(dimension_score × weight)` across all applicable dimensions (D1–D7 for single-turn; D1–D8 for conversation-mode runs). Note: D8 weight (0.05) is additive in conversation-mode; D1–D7 weights remain unchanged.
 
 A weighted score below 0.70 indicates the skill run should not be used as the basis for downstream pipeline artefacts. A score of 0.85+ indicates strong model suitability for this skill.
 

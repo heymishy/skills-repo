@@ -172,6 +172,19 @@ console.log('\n[model-routing] T9 — four skills route to claude-haiku-4-5');
   }
 }
 
+// ── T10 — --conversation flag handled in parseArgs ──────────────────────────
+console.log('\n[model-routing] T10 — --conversation flag present in parseArgs');
+{
+  assert(
+    sweepSrc !== null && sweepSrc.includes("'--conversation'"),
+    "T10: '--conversation' string literal present in parseArgs"
+  );
+  assert(
+    sweepSrc !== null && sweepSrc.includes('args.conversation'),
+    "T10b: args.conversation referenced in script"
+  );
+}
+
 // ── Summary ───────────────────────────────────────────────────────────────────
 console.log(`\n[model-routing] Results: ${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);
