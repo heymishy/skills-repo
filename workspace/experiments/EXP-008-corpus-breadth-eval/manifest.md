@@ -60,7 +60,7 @@ H4 (Multi-jurisdiction adds scoring challenge for all configs): S13 multi-jurisd
 | judge_model | claude-sonnet-4-6 (locked — same as EXP-003) |
 | pass_threshold_cpf_general | 0.60 (general constraints) |
 | pass_threshold_cpf_regulated | 0.80 (regulated constraints — no warning band; below 0.80 is a failure for regulated) |
-| total_planned_runs | 48 (12 stories × 4 configs) — multi-session effort |
+| total_planned_runs | 44 (11 CPF stories × 4 configs; S6 excluded — behavioural scoring, not CPF) — multi-session effort |
 
 ## Orchestration configurations
 
@@ -78,8 +78,8 @@ H4 (Multi-jurisdiction adds scoring challenge for all configs): S13 multi-jurisd
 
 | Stage | Model |
 |-------|-------|
-| /discovery | claude-opus-4-5 |
-| /definition | claude-opus-4-5 |
+| /discovery | claude-opus-4-6 |
+| /definition | claude-opus-4-6 |
 | /review | claude-sonnet-4-6 |
 | /test-plan | claude-sonnet-4-6 |
 | /definition-of-ready | claude-sonnet-4-6 |
@@ -116,7 +116,7 @@ Expected trajectory for Config C: EXP-003 showed Haiku regulated CPF of 0.33 at-
 | S3 | Real-time payment integration | Payments / RTP scheme | Medium | 2 | Scheme compliance gap | **To be created** |
 | S4 | Experience API + PCI DSS | API / PCI DSS | Medium | 2 | Redis at-rest encryption gap | **To be created** |
 | S5 | Dynamics CRM privacy | Privacy / Privacy Act | Medium | 2 | Data retention policy gap | **To be created** |
-| S6 | Failure scenarios | Business continuity | Medium-low | 1 | DR test evidence gap | **To be created** |
+| S6 | Failure scenarios (S6a — thin brief, S6b — contradiction, S6c — scope creep) | Behavioural — clarification trigger / contradiction detection / scope discipline | N/A — behavioural, not CPF | 0 — no C1–C5 inventory; scored on clarification trigger rate and contradiction detection, not constraint propagation | N/A — no injection (injection would interfere with behavioural measurement) |
 | S7 | Greenfield React app | Front-end / browser | Low | 1 | Data retention policy | **To be created** |
 | S8 | Regulatory reporting pipeline | RBNZ/FMA reporting | Medium-high | 2 (C1 RBNZ, C2 FMA) | Normalisation logic — no change control | S8-ea-registry-regulatory-reporting-pipeline.md, S8-rbnz-fma-policy-doc.md |
 | S9 | KiwiSaver switching | FMA KiwiSaver Code | High | 2 (C1 KiwiSaver Code, C2 FMA hardship) | Hardship fee waiver obligation | S9-ea-registry-member-portal-fund-switching.md, S9-fma-kiwisaver-code-conduct-excerpt.md |
@@ -157,15 +157,17 @@ A config that passes overall CPF but fails NZ-leg or AU-leg regulated CPF is sco
 C5 is tracked separately as `c5_surfaced: true/false` in every run record. This produces a hidden-constraint surfacing rate per config across all 12 stories, which is a new secondary metric in EXP-008 not tracked in EXP-003.
 
 ```
-C5_surfacing_rate = (stories where c5_surfaced == true) / 12
+C5_surfacing_rate = (stories where c5_surfaced == true) / 11
 ```
+
+Denominator is 11, not 12 — S6 is a behavioural scenario (clarification trigger / contradiction detection) with no C1–C5 constraint inventory. It is excluded from the C5 surfacing rate.
 
 A config with C5_surfacing_rate < 0.50 is assessed as failing to detect high-subtlety hidden constraints at acceptable rates — a material finding for regulated production use.
 
 ## Run prioritisation
 
 Session 1 (highest stakes — F16 remediation directly addressed):
-- S2 Config A (partial discovery.md exists in EXP-003 runs/config-A-S2/ but was run without injection — treat as reference; fresh run preferred)
+- S2 Config A (prior run in EXP-003/config-A-S2/ was without injection — not comparable to EXP-008 design; fresh run required with S2 injection files injected at /discovery start)
 - S8 Config A
 - S13 Config A
 
@@ -189,7 +191,7 @@ Each cell: `—` (not started), `setup` (injection files needed), `in-progress`,
 | S3 | — | — | — | — |
 | S4 | — | — | — | — |
 | S5 | — | — | — | — |
-| S6 | — | — | — | — |
+| S6 | N/A — behavioural | N/A — behavioural | N/A — behavioural | N/A — behavioural |
 | S7 | — | — | — | — |
 | S8 | — | — | — | — |
 | S9 | — | — | — | — |
@@ -208,7 +210,6 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 | S3 | — | — | — | — |
 | S4 | — | — | — | — |
 | S5 | — | — | — | — |
-| S6 | — | — | — | — |
 | S7 | — | — | — | — |
 | S8 | — | — | — | — |
 | S9 | — | — | — | — |
@@ -216,7 +217,7 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
 | S13 | — | — | — | — |
-| **Rate** | **—/12** | **—/12** | **—/12** | **—/12** |
+| **Rate** | **—/11** | **—/11** | **—/11** | **—/11** |
 
 ## Context injection setup — S2–S7 (required before those runs)
 
@@ -228,8 +229,8 @@ Files to create in `corpus/context-injection/` before starting each S2–S7 run:
 | S3 | S3-ea-registry-rtp-gateway.md, S3-rtp-scheme-policy-excerpt.md | EA entry for RTP gateway; scheme operator policy doc |
 | S4 | S4-ea-registry-experience-api.md, S4-pci-dss-architecture-guardrails.md | EA entry for experience API layer; architecture guardrail on PCI DSS data handling |
 | S5 | S5-ea-registry-crm-platform.md, S5-privacy-policy-excerpt.md | EA entry for Dynamics CRM; Privacy Act / data retention policy excerpt |
-| S6 | S6-ea-registry-payment-platform.md, S6-dr-policy-excerpt.md | EA entry for payment platform; DR/BCM policy excerpt |
-| S7 | S7-ea-registry-web-app.md | EA entry for customer-facing web app; no policy doc needed (lower complexity) |
+| S6 | No injection files — behavioural scenario | S6 measures clarification trigger rate, contradiction detection, and scope discipline. Injecting context would provide material the model should be asking for — this would invalidate the behavioural measurement. |
+| S7 | S7-context-yml-excerpt.md, S7-architecture-guardrails-excerpt.md | Standard Azure deployment config; architecture guardrails WITHOUT retention policy content (C5 intentionally absent) |
 
 Use the S8–S13 injection files as format reference. Each file should be 4–8KB. Content is synthetic — do not use real enterprise policy text.
 
