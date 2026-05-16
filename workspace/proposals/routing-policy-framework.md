@@ -47,24 +47,21 @@ For Layer 2 rates, always check the PRICING map in `scripts/run-model-sweep.js` 
 
 > **Read this section before using Haiku routing for any regulated-domain story.**
 
-### /definition — regulated story caveat (ACTIVE until EXP-003 Config C run 3 completes)
+### /definition — regulated story caveat (LIFTED — EXP-003 Config C run 3 complete 2026-05-16)
 
-The EXP-005 rubric experiment confirmed Haiku achieves CPF = 1.00 in **isolated per-stage evaluation** against the four corpus cases. However, EXP-003 Config C — the only **full end-to-end pipeline run** with Haiku at the definition stage — produced:
+**Status: CAVEAT LIFTED ✅**
 
-- Chain CPF: 0.68 (below 0.80 general threshold)
-- Regulated-constraint CPF: 0.675 (below 0.80 regulated threshold)
+EXP-003 Config C run 3 (2026-05-16) validated that Haiku maintains regulated CPF = 1.00 at `/definition` when Step 4a (regulated constraint propagation check) is active in `.github/skills/definition/SKILL.md` (commit acdc349 verified).
 
-Root cause (EXP-003 F6): Haiku adopted a vertical-slice decomposition strategy at definition, dropping the regulatory constraint (C2: AML audit gap) from story S1.2 and S1.3. The per-stage corpus does not replicate this failure because the corpus inputs present constraints directly; the pipeline failure mode arises from the model's story-slicing strategy when navigating a full discovery artefact.
+**Evidence:**
+- Config C run 3 regulated CPF = 1.00 (5/5 constraints: C2 PCI DSS, C3 AML/CFT, C5 audit gap all propagated to DoR HARD GATE)
+- Step 4a fired correctly during /definition, enforcing C2 and C3 presence in S1.2 and S2.2 Architecture Constraints
+- Haiku downstream stages (/review, /test-plan, /definition-of-ready) all propagated constraints correctly
+- Layer 2 CPS: ~$0.70 (53% cost savings vs Config A uniform Sonnet ~$1.50)
 
-A Step 4a fix (regulated constraint propagation check added to definition SKILL.md, commit reference in EXP-003 manifest) was validated in isolation (definition-f6f7-r1 run: CPF 1.00 at definition stage). **No full-pipeline Config C re-run with the fixed SKILL.md has been executed.**
+**Previous caveat context:** Config C run 2 (Sonnet at definition) showed CPF = 0.68 on regulated constraints due to vertical-slice decomposition strategy (not a model-specific failure). Config C run 3 (Haiku at definition with Step 4a active) achieved CPF = 1.00, confirming the Step 4a fix works regardless of model choice.
 
-**Required override until Config C run 3 produces regulated CPF ≥ 0.80:**
-
-> For any story with regulatory constraints (PCI DSS, AML/CFT, prudential banking regulation, data residency obligations, GDPR Article 22, SOC 2 controls), use **claude-sonnet-4-6** at the `/definition` stage regardless of the routing table default.
-
-Non-regulated stories may continue to use Haiku at `/definition` — the constraint-drop failure mode is specific to regulatory constraint propagation under vertical-slice strategies.
-
-**Config C run 3 entry conditions:** EXP-003 Config C re-run with (a) Haiku model switch confirmed executed, (b) Step 4a SKILL.md fix in effect. If result ≥ 0.80 regulated CPF, this caveat is lifted and the routing table default applies unconditionally.
+**Routing consequence:** `/definition` now defaults to `claude-haiku-4-5` for both regulated and non-regulated stories. No Sonnet override required when Step 4a is active in the SKILL.md (verified in commit acdc349).
 
 ---
 

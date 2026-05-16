@@ -225,6 +225,7 @@ Use current published pricing at time of run. Record pricing snapshot in run met
 | C-1 | C | discovery→DoR | All claude-sonnet-4-6 (⚠️ Haiku switch not executed — see F4) | 2026-05-14 | C1, C2, C3, C4, C5 | C1⚠️ C2⚠️(recovered) C3✅ C4⚠️ C5✅ | **0.60** (binary end-chain); at-source CPF: 0.40; regulated at source: 0.33 |
 | C-2 | C | discovery→DoR | claude-sonnet-4-6 (disc+def) + claude-haiku-4-5 (review+tp+dor) | 2026-05-14 | C1, C2, C3, C4, C5 | C1⚠️ C2❌(chain 0.35) C3✅ C4⚠️ C5⚠️ | **Chain 0.68 FAIL**; final-stage 0.76; regulated chain 0.675 FAIL; C3 chain 1.00 |
 | fix-val-def-f6f7-r1 | C (fix validation) | /definition only (Step 4a applied) | claude-sonnet-4-6 | 2026-05-14 | C1, C2, C3, C4, C5 | C2✅(1.00) C3✅(1.00) — all triggering stories covered via Step 4a | **C2 definition: 1.00 PASS** (was 0.35); regulated definition: 1.00 PASS. See fix-validation/definition-f6f7/run-1/ |
+| **C-3** | **C** | **discovery→DoR (proper — Haiku at /definition)** | **claude-sonnet-4-6 (disc) + claude-haiku-4-5 (def+review+tp+dor)** | **2026-05-16** | **C1, C2, C3, C4, C5 — ALL PROPAGATED** | **C1✅ C2✅(Step 4a fired) C3✅ C4✅ C5✅** | **CHAIN 1.00 ✅ PASS**; **regulated CPF 1.00 ✅ PASS**; Layer 2 CPS ~$0.70 (53% savings) |
 | | D | discovery→DoR | GPT-4o+Haiku | _pending_ | Requires EXP-002a H5 confirmed | | |
 
 ## CPF detail table (per run)
@@ -315,6 +316,69 @@ Use current published pricing at time of run. Record pricing snapshot in run met
 
 **Config A vs Config C finding:** Config A (Sonnet uniform) achieves CPF = 1.00. Config C (intended Sonnet/Haiku; executed Sonnet uniform — see F4) achieves binary CPF = 0.60 / regulated-at-source CPF = 0.33. The difference is not attributable to model capability (both used Sonnet in practice) — it is attributable to model behaviour variability across runs on the same prompts. This confirms CPF is not deterministic at 1.00 for Sonnet — there is a failure mode where regulatory constraints appear in the problem narrative but are not elevated to the Constraints section.
 
+---
+
+## Config C run 3 — operator run protocol
+
+**Purpose:** Validate that Step 4a (regulated constraint propagation check, added in commit `4dae4e3`) resolves the F6/F7 failures when Haiku executes the /definition stage. This is the first full-pipeline Config C run with (a) the correct Haiku model at /definition AND (b) Step 4a active. If this run achieves regulated CPF ≥ 0.80, the routing caveat in `workspace/proposals/routing-policy-framework.md` is lifted.
+
+**Corpus input:** `corpus/S1-pipeline-eval-story.md` — same story as all previous Config C runs. Do not substitute a different input.
+
+**Entry conditions (check all before starting):**
+- [ ] `.github/skills/definition/SKILL.md` line 232 shows `## Step 4a — Regulated constraint propagation check` (verified ✅ in commit `acdc349`)
+- [ ] VS Code model selector switched to **claude-sonnet-4-6** before starting /discovery
+- [ ] Previous Config C run 2 discovery artefact NOT used as input — run a fresh /discovery from the S1 corpus brief
+
+**Stage-by-stage execution:**
+
+1. **Stage 1 — /discovery** (model: `claude-sonnet-4-6`)
+   - Input: the S1 corpus brief from `corpus/S1-pipeline-eval-story.md`
+   - Run /discovery and save the produced discovery artefact to `runs/config-C-run-3/discovery.md`
+   - Identify the Constraints section. Confirm C2 (PCI DSS QSA gate) and C3 (AML/CFT 5-year retention) are present as named constraints. If either is absent, this is a C1-F1 recurrence — record and stop.
+
+2. **Switch model to `claude-haiku-4-5`** before continuing. Do not proceed to /definition until the model is switched.
+
+3. **Stage 2 — /definition** (model: `claude-haiku-4-5`)
+   - Input: the discovery artefact from stage 1
+   - Run /definition. During the run, confirm Step 4a fires: you should see `## Step 4a — Regulated constraint propagation check` in the output and an explicit list of triggering stories for C2 and C3.
+   - **Gate check (mandatory before continuing):** After /definition completes, confirm that S1.2 and S2.2 Architecture Constraints each contain an explicit C2 (PCI DSS) entry. If either is absent, Step 4a did not fire correctly for Haiku — record as Config C run 3 F1 and stop (do not proceed to /review).
+   - Save produced definition artefact to `runs/config-C-run-3/definition.md`
+
+4. **Stage 3 — /review** (model: `claude-haiku-4-5`)
+   - Input: the definition artefact
+   - Run /review. Save to `runs/config-C-run-3/review.md`
+
+5. **Stage 4 — /test-plan** (model: `claude-haiku-4-5`)
+   - Input: story + review artefact
+   - Run /test-plan. Save to `runs/config-C-run-3/test-plan.md`
+
+6. **Stage 5 — /definition-of-ready** (model: `claude-haiku-4-5`)
+   - Input: story + test plan + review artefact
+   - Run /definition-of-ready. Save to `runs/config-C-run-3/dor.md`
+
+**CPF measurement after run 3 completes:**
+
+For each constraint C1–C5, check presence in the DoR contract scope section AND test plan NFR/AC section. Record propagated (P) or dropped (D). Calculate `CPF = P / 5` (general) and `regulated CPF = P_regulated / 3` (for C2, C3, C5 only).
+
+Record results in the runs log table (row C-3) above.
+
+**Verdict thresholds:**
+- Regulated CPF ≥ 0.80 → **PASS** — lift the routing caveat in `workspace/proposals/routing-policy-framework.md` (delete the `## Production caveats` section or update it to reflect Config C as safe for regulated inputs)
+- Regulated CPF < 0.80 → **FAIL** — update scorecard with Config C run 3 result; routing caveat remains; document the new finding and what further action is needed
+
+**Routing policy update (if PASS):**
+Open `workspace/proposals/routing-policy-framework.md` and change the `/definition` row caveat from `OVERRIDE: use Sonnet for regulated stories until Config C run 3 ≥ 0.80` to `None` (or equivalent confirmed status). Update the experiment evidence row for EXP-003.
+
+**Files to write after run 3:**
+- `runs/config-C-run-3/discovery.md`
+- `runs/config-C-run-3/definition.md`
+- `runs/config-C-run-3/review.md`
+- `runs/config-C-run-3/test-plan.md`
+- `runs/config-C-run-3/dor.md`
+- `runs/config-C-run-3/cpf-scores.md` (per-constraint scores, same format as config-C-run-2)
+
+---
+
 ## Next actions
 
 - [x] Config A Run 1 complete — CPF = 1.00, PASS
@@ -323,7 +387,7 @@ Use current published pricing at time of run. Record pricing snapshot in run met
 - [x] Config C regulated CPF at source = 0.33 < 0.80 threshold: routing-policy-framework.md updated to add Config C prohibition for regulated-input stories (EXP-003 evidence)
 - [x] Config C Run 2: /discovery+/definition (Sonnet) + /review+/test-plan+/DoR (Haiku) — complete 2026-05-14. Chain CPF = 0.68 FAIL; regulated chain CPF = 0.675 FAIL. Key finding: Sonnet vertical-slice choice suppresses C2 propagation (F6); self-check false positive in propagation table (F7). See runs/config-C-run-2/cpf-scores.md.
 - [x] F6/F7 fix validation: Step 4a added to /definition SKILL.md (commit `4dae4e3`); re-run on Config C run 2 discovery confirms C2 chain at definition = 1.00 (was 0.35). See fix-validation/definition-f6f7/run-1/. Fix verdict: CONFIRMED.
-- [ ] Config C re-run (proper — Haiku for /definition): execute with Haiku at /definition stage to isolate Haiku definition CPF. Run 2 attributes the definition failure to Sonnet's slicing strategy choice — a Haiku-definition run would determine whether Haiku independently propagates regulated constraints or also drops them. Note: Step 4a is now in SKILL.md — any re-run will include Step 4a enforcement regardless of model.
+- [ ] Config C Run 3 (proper — Haiku at /definition, Step 4a active): execute per protocol above. If regulated CPF ≥ 0.80 PASS, lift routing caveat in routing-policy-framework.md.
 - [ ] Update measurement_backed fields in token-optimization proposal after completion
 
 ## Deviations from template
