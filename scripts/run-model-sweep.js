@@ -333,7 +333,7 @@ const MODEL_ROUTING = {
   'discovery':           'claude-sonnet-4-6',   // EXP-002a: T1+T3 avg 0.807; regulated + non-regulated default
   'definition':          'claude-haiku-4-5',     // EXP-005: all 4 cases pass; 0.33× cost
   'review':              'claude-haiku-4-5',     // EXP-006: FDR_HIGH 1.00 across T1–T3; 0.33× cost
-  'test-plan':           'claude-haiku-4-5',     // EXP-007: TCF 1.00 non-regulated; PCI pending EXP-007R revalidation
+  'test-plan':           'claude-haiku-4-5',     // EXP-007 + EXP-007R: TCF 1.00 all story types including PCI (D3=1.0 fix confirmed 2026-05-15)
   'definition-of-ready': 'claude-haiku-4-5',     // EXP-004: GF 1.00 trials 1+2; 0.33× cost
 };
 
