@@ -228,7 +228,7 @@ Each cell: `—` (not started), `setup` (injection files needed), `in-progress`,
 | S9 | CPF=1.00 | — | — | — |
 | S10 | CPF=1.00 | — | — | — |
 | S11 | CPF=1.00 | — | — | — |
-| S12 | — | — | — | — |
+| S12 | CPF=1.00 | — | — | — |
 | S13 | CPF=1.00 | CPF=1.00 | CPF=1.00 | — |
 
 Config D column: all cells blocked on EXP-002a H5 gate.
@@ -238,6 +238,8 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 **Update 2026-05-17 (S10):** Config A S10 complete. CPF=1.00 (cpf_general=1.00, cpf_regulated=1.00). C5 surfaced: true (full — not injection-aided; both injection files passed design test). AQ=1.00 {2,2,2,2,2} (judge confirmed — DoR gate quality corrected 1→2; self-score of 0.90 {2,2,2,2,1} was overly strict on "Legal Counsel" function-vs-role distinction not supported by rubric). 3 HIGH review findings, all resolved. C5 valid for H3 validation.
 
 **Update 2026-05-17 (S11):** Config A S11 complete. CPF=1.00 (cpf_general=1.00, cpf_regulated=1.00). C5 surfaced: true (partial — injection-aided; OBCP-RISK-001 provides factual premise, model connects to Privacy Act 2020 Principle 10 use-limitation gap and contradicts 'privacy team is comfortable' claim). AQ=0.80 {2,1,1,2,2} (judge confirmed 2026-05-18 — scope_discipline corrected 2→1; self-score's '6 explicit out-of-scope items' not substantiated from artefacts; discovery.md has no formal out-of-scope section). 3 HIGH review findings, all resolved. C5 pattern: consistent with S9 partial (injection aids factual premise, model provides inferential step).
+
+**Update 2026-05-18 (S12):** Config A S12 complete. CPF=1.00 (cpf_general=1.00, cpf_regulated=1.00). C5 surfaced: true (partial — injection-aided; EA registry CRMP-RISK-001 directly names MRM policy version gap and team's specific situation; injection design test FAIL on ea-registry file; MRM policy excerpt PASS). C5 excluded from EXP-008 H3 validation (same treatment as S9). 7 stories across 4 epics, 35 tests, 3 HIGH review findings all resolved. DoR verdict: PROCEED. Oversight: HIGH (regulated AI/ML credit model — FMA, CCCFA, MRM Policy v2.0 scope). AQ pending judge scoring.
 
 ## C5 surfacing rate tracker
 
@@ -252,9 +254,9 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 | S9 | true (partial) | — | — | — |
 | S10 | true (full) | — | — | — |
 | S11 | true (partial) | — | — | — |
-| S12 | — | — | — | — |
+| S12 | true (partial) | — | — | — |
 | S13 | true | true | true | — |
-| **Rate** | **6/11 (S2,S8,S9,S10,S11,S13)** | **3/11 (S2,S8,S13)** | **3/11 (S2,S8,S13)** | **—/11** |
+| **Rate** | **7/11 (S2,S8,S9,S10,S11,S12,S13)** | **3/11 (S2,S8,S13)** | **3/11 (S2,S8,S13)** | **—/11** |
 
 ## AQ score tracker
 

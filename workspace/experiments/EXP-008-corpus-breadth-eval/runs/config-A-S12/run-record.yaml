@@ -1,0 +1,127 @@
+story: S12
+config: A
+date: 2026-05-18
+model_discovery: claude-sonnet-4-6
+model_definition: claude-sonnet-4-6
+model_review: claude-sonnet-4-6
+model_test_plan: claude-sonnet-4-6
+model_dor: claude-sonnet-4-6
+
+# CPF results
+cpf_general: 1.00
+cpf_regulated: 1.00
+cpf_general_detail: "5/5 constraints propagated (C1, C2, C3, C4, C5)"
+cpf_regulated_detail: "2/2 regulated constraints propagated (C1 FMA, C3 CCCFA)"
+
+# C5 results
+c5_surfaced: true
+c5_surface_stage: /discovery
+c5_surface_mechanism: "EA registry CRMP-RISK-001 (CRITICAL flag: team following pre-2023 MRM process; 2023 Policy requires full independent validation for retraining; current plan does not allocate time or resource) + Governance risk section ('Policy version mismatch') naming gap explicitly + MRM Policy v2.0 Part 3.2 (retraining = new deployment, mandatory independent validation) + brief's 'submit to next MRM committee slot'"
+c5_surfacing_quality: partial
+c5_surfacing_notes: "EA registry injection file directly names the CLIRM team's specific gap (CRMP-RISK-001). This fails the injection design test (CONVENTIONS.md: model can answer c5_surfaced without any reasoning). C5 classified as partial/injection-aided. Consistent with S9 (ELIG-003 + MPSW-RISK-002 FAIL pattern). C5 EXCLUDED from EXP-008 H3 validation."
+
+# Injection design test
+injection_design_test:
+  ea_registry: FAIL
+  ea_registry_reason: "CRMP-RISK-001 directly states team is following pre-2023 MRM process; names the gap; model can answer c5_surfaced without inference"
+  mrm_policy: PASS
+  mrm_policy_reason: "Part 3.2 and version history signal framework requirement but do not name CLIRM team's specific gap; model must connect brief's committee-submission plan to v2.0 requirements"
+  overall: FAIL_partial
+  consequence: "C5 surfaced as injection-aided; excluded from H3 validation; same treatment as S9"
+
+# AQ results (null — requires judge scoring)
+aq: null
+aq_status: requires_judge_scoring
+aq_self_score_invalid: true
+aq_self_score_reason: "Same-session scoring invalid per EXP-008 judge protocol. Pipeline artefacts produced by claude-sonnet-4-6 in this session; self-evaluation by same model in same session cannot be objective."
+aq_dimensions: null
+
+# Pipeline execution summary
+dor_verdict: PROCEED
+oversight_level: HIGH
+review_high_findings: 3
+review_high_all_resolved: true
+review_medium_findings: 1
+review_low_findings: 3
+test_count: 35
+stories: 7
+epics: 4
+
+# Constraint propagation detail
+constraint_propagation:
+  C1:
+    name: FMA Algorithmic Fairness Framework (2024)
+    surfaced_at: /discovery
+    propagated_to: ["Story 1.1 AC1-AC5"]
+    gate_field: fma_fairness_assessment_reference
+    gate_format: "FAR-YYYY-xxx"
+    responsible_party: "Head of Model Risk"
+    test_coverage: [T-FAIR-001, T-FAIR-002, T-FAIR-003, T-FAIR-004, T-FAIR-005, T-FAIR-006]
+    propagated: true
+  C2:
+    name: "Enterprise MRM Policy v2.0 — full independent validation mandatory"
+    surfaced_at: /discovery
+    propagated_to: ["Story 2.1 AC1-AC5", "Story 2.2 AC1-AC5", "Story 4.1 AC1-AC5"]
+    gate_fields: [independent_validation_reference, mrm_committee_approval_reference]
+    responsible_parties: ["CRO / Head of Model Risk (validation)", "MRM Committee Chair (approval)"]
+    test_coverage: [T-IV-001, T-IV-002, T-IV-003, T-IV-004, T-IV-005, T-MRM-001, T-MRM-002, T-MRM-003, T-MRM-004]
+    propagated: true
+  C3:
+    name: "CCCFA responsible lending — Legal Counsel confirmation required"
+    surfaced_at: /discovery
+    propagated_to: ["Story 1.2 AC1-AC4"]
+    gate_field: cccfa_legal_opinion_reference
+    responsible_party: Legal Counsel
+    test_coverage: [T-CCCFA-001, T-CCCFA-002, T-CCCFA-003]
+    propagated: true
+  C4:
+    name: "Explainability — FMA + CCCFA customer-facing plain-language explanation"
+    surfaced_at: /discovery
+    propagated_to: ["Story 3.1 AC1-AC5"]
+    gate_field: fma_explanation_compliance_confirmed
+    responsible_parties: ["Legal Counsel", "Head of Customer Experience"]
+    test_coverage: [T-EXPL-001, T-EXPL-002, T-EXPL-003, T-EXPL-004, T-EXPL-005]
+    propagated: true
+  C5:
+    name: "MRM Policy version mismatch — team following pre-2023 process; v2.0 mandatory independent validation not in scope"
+    classification: HIDDEN_CONSTRAINT_BLOCKER
+    surfaced_at: /discovery
+    c5_surfaced: true
+    c5_surfacing_quality: partial
+    injection_aided: true
+    excluded_from_h3: true
+    propagated_to: ["Story 2.1 AC1 (organisational independence)", "Story 2.1 AC4 (independent_validation_reference gate)", "Story 2.2 AC4 (staging blocked on approval reference)", "Story 4.1 AC1 (all 5 gate fields required)"]
+    gate_field: mrm_committee_approval_reference
+    gate_format: "MRM-YYYY-QX-NNN"
+    responsible_party: "MRM Committee Chair"
+    test_coverage: [T-IV-004, T-MRM-004, T-DEPLOY-001, T-DEPLOY-005]
+    propagated: true
+
+# Artefacts
+artefacts_dir: runs/config-A-S12/
+artefacts:
+  - discovery.md
+  - definition.md
+  - review.md
+  - test-plan.md
+  - dor.md
+  - aq-score.md
+  - run-record.yaml
+
+# Run notes
+notes: |
+  EXP-008 Config A S12 run complete.
+  
+  Injection design test: EA registry FAIL (CRMP-RISK-001 directly names policy version gap).
+  MRM Policy injection: PASS (signals framework requirement without naming team-specific gap).
+  C5 classified as partial/injection-aided. Excluded from EXP-008 H3 validation.
+  Same treatment as S9 (ELIG-003 + MPSW-RISK-002 FAIL pattern).
+  
+  CPF result: 1.00 general (5/5), 1.00 regulated (C1+C3 both propagated).
+  C5 surfaced as blocker at /discovery stage. [BLOCKER] section named MRM Policy v2.0 Part 3.2 gap.
+  Discovery correctly identified 18-26 week revised timeline (vs 12-week original plan).
+  
+  Pipeline: 7 stories across 4 epics. 35 test cases. 3 HIGH review findings (all resolved).
+  DoR verdict: PROCEED. Oversight: HIGH (regulated AI/ML credit model).
+  
+  AQ: null — requires separate judge session for valid scoring.
