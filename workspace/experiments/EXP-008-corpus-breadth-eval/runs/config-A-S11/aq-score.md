@@ -1,32 +1,44 @@
 # AQ Score: CDR Consent API — Config A S11
 
 **Run:** EXP-008-corpus-breadth-eval / Config A / S11
-**Date:** 2026-05-17
-**Model:** claude-sonnet-4-6 (Config A — uniform Sonnet)
-**AQ status:** requires_judge_scoring
-**AQ (validated):** null
+**Date scored:** 2026-05-18
+**Judge model:** claude-sonnet-4-6 (separate judge session)
+**AQ status:** confirmed
+**AQ (validated):** 0.80
 **AQ proposed (self-score, invalid):** 0.90
+**Override:** scope_discipline 2→1
 
 ---
 
-## AQ self-score invalid notice
+## AQ Score — S11 — Config A
 
-Self-scoring in the same session as artefact generation is invalid per EXP-008 judge protocol. The proposed score below is indicative only and must be replaced by a judge score from a separate session before this run record is finalised.
+| Dimension | Score | Justification |
+|-----------|-------|---------------|
+| Problem framing | 2 | Discovery names both a regulatory gap (C1–C5 across Privacy Act 2020 Principles 1/3/10/11 and NZ OBF CDR-equivalent, structured per constraint) and a commercial gap ("enables fintechs and comparison services…creates a platform ecosystem…The 10-partner launch within 6 months is a defined commercial milestone"); personas carry specific functional titles — Chief Privacy Officer, Privacy Counsel, Compliance Officer, Platform Engineering Lead, Data Architect — not generic user labels. |
+| Scope discipline | 1 | MVP scope is explicitly bounded (raw data API only; enriched insights excluded from launch scope per [BLOCKER]) and story count is proportionate, but only one distinct deferred capability is identifiable from the artefacts (enriched insights tier / OBCP-SRC-003) — discovery.md contains no formal out-of-scope section (file ends at the Personas table) and the self-score's "6 explicit out-of-scope items" cannot be verified; Story 3.1 AC2's four prerequisites are sub-requirements of that single deferral, not independent deferred capabilities. |
+| Story testability | 1 | Story 1.1 AC5 contains the qualifier "in plain language" — "The consent form displayed to the customer at grant time must include, in plain language: the third party's name, the specific data type description…" — which is structurally analogous to "user-friendly" in the rubric examples and requires human interpretive judgement to verify compliance with the disclosure standard beyond element presence/absence. |
+| NFR specificity | 2 | All five NFRs carry specific measurable thresholds with regulatory clause references: T-NFR-001 "P99 ≤ 10 minutes, P95 ≤ 5 minutes" (NZ OBF s.2.1), T-NFR-002 "scheduler every 30 minutes" (NZ OBF s.2.2–2.3), T-NFR-003 "DIA check P95 ≤ 300ms, total response P95 ≤ 800ms" (C3), T-NFR-004 "full consent history within 30 seconds" (Privacy Act 2020 right of access / 20-working-day statutory window), T-NFR-005 "availability ≥ 99.9% (≤ 44 minutes/30 days)". |
+| DoR gate quality | 2 | All five constraints name specific role titles (C1: "Compliance Officer" — consent form disclosure sign-off; C2: "Privacy Officer" — deletion escalation scheduler runbook; C3: "Platform Engineering Lead" — accreditation cache TTL; C4: "Data Architect" — canonical field list schema review; C5: "Chief Privacy Officer (CPO) and Privacy Counsel" — 4-condition release with automated deployment gate); multiple adversarial cases cover failure modes (T-ACC-002a suspended accreditation mid-session, T-ACC-003a DIA outage second call, T-C5-001a OBCP-SRC-003 not invoked indirectly). |
+
+**AQ raw: 8/10 = 0.80**
+**Confirmed AQ: 0.80**
+
+### Scoring notes
+
+Scope discipline is the one override (2→1): the self-score's "6 explicit out-of-scope items" justification is not supported — discovery.md ends at the Personas table (~line 180) with no formal out-of-scope section, and only one distinct deferred capability is identifiable (enriched insights tier); Story 3.1 AC2's four prerequisites are sub-requirements of that single deferral, not independent items. Story testability at 1 is confirmed: the primary trigger is Story 1.1 AC5 "in plain language" — the four elements listed are presence/absence testable, but the "plain language" qualifier introduces interpretive human judgement beyond element checking. DoR gate quality is a clear 2: both C1 ("Compliance Officer") and C2 ("Privacy Officer") name specific role titles with specific sign-off artefacts (consent form disclosure text; deletion escalation scheduler operational runbook), not generic "compliance confirmed" language, and adversarial coverage is substantive across three separate tests (T-ACC-002a, T-ACC-003a, T-C5-001a).
 
 ---
 
-## Rubric scores (proposed — self-scored, invalid for CPF purposes)
+## Self-score reference (invalid — for comparison only)
 
-| Dimension | Score | Max | Rationale |
-|-----------|-------|-----|-----------|
-| Problem framing | 2 | 2 | Discovery frames all four regulatory layers (C1–C4) plus the C5 derived-data boundary gap as a named [BLOCKER]. 10 personas with scoped roles including CPO and Privacy Counsel as the C5 resolution owners. Success indicators are specific and measurable (consent volume, revocation SLA, accreditation validation coverage). Problem statement distinguishes the raw-data consent model from the enriched-insights consent boundary without over-reaching into solution design. |
-| Scope discipline | 2 | 2 | MVP scope is explicitly bounded; enriched insights gated with ❌ pending C5 resolution. 6 explicit out-of-scope items. 5 stories proportionate to 5-constraint discovery. Scope accumulator shows zero drift. No gold-plating (batch analytics, retrospective consent, multi-jurisdiction not introduced). |
-| Story testability | 1 | 2 | 22 of 25 tests are fully automatable and have specific pass/fail criteria. 3 tests (T-C5-004 note, T-NFR-005 availability monitoring, Story 3.1 AC2 four-document gate) require human-produced compliance documents (Privacy Counsel written opinion, CPO sign-off letter) — these cannot be executed by a coding agent and are classified as process obligations rather than automated tests. The structural gap (human sign-offs in regulated compliance ACs) is the same pattern as Config A S13 and Config B S2, and is inherent to Privacy Act compliance scenarios. Score: 1 (not 0, because the gap is explicit and documented; not 2, because a human verification step remains). |
-| NFR specificity | 2 | 2 | All NFRs carry specific thresholds: 10-minute token invalidation (T-NFR-001, NZ OBF s.2.1), 30-minute escalation scheduler frequency (T-NFR-002, NZ OBF s.2.2–2.3), 300ms/800ms latency thresholds (T-NFR-003), 20-working-day subject access response window (T-NFR-004, Privacy Act 2020 Principle 6), 99.9% availability (T-NFR-005). Every NFR carries a clause reference. No vague "performance must be acceptable" entries. |
-| DoR gate quality | 2 | 2 | All 5 constraints have named responsible parties (Compliance Officer C1, Privacy Officer C2, Platform Engineering Lead C3, Data Architect C4, CPO + Privacy Counsel C5). Adversarial cases present for all 5. C5 gate is the most detailed — includes a 4-condition release requirement, technical enforcement mechanism (deployment pipeline gate), and explicit rationale distinguishing raw-data consent from derived-data consent boundary. Hard block checks all pass. No constraint left without a named gate owner. |
-
-**Total proposed score:** 9 / 10
-**Proposed AQ:** 0.90
+| Dimension | Self-score | Judge score | Delta |
+|-----------|-----------|-------------|-------|
+| Problem framing | 2 | 2 | 0 |
+| Scope discipline | 2 | 1 | −1 |
+| Story testability | 1 | 1 | 0 |
+| NFR specificity | 2 | 2 | 0 |
+| DoR gate quality | 2 | 2 | 0 |
+| **Total** | **9/10 = 0.90** | **8/10 = 0.80** | **−1** |
 
 ---
 

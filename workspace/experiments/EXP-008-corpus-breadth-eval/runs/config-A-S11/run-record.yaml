@@ -78,18 +78,31 @@ constraint_propagation:
     blocker_in_discovery: true
 
 # AQ scores
-aq: null
-aq_status: requires_judge_scoring
-aq_self_score_invalid: true
+aq: 0.80
+aq_status: confirmed
+aq_judge_date: 2026-05-18
+aq_judge_model: claude-sonnet-4-6
 aq_proposed: 0.90
 aq_dimensions:
   problem_framing: 2
-  scope_discipline: 2
+  scope_discipline: 1
   story_testability: 1
   nfr_specificity: 2
   dor_gate_quality: 2
-aq_overrides: []
-aq_override_notes: ""
+aq_overrides: ["scope_discipline"]
+aq_override_notes: >
+  scope_discipline corrected 2→1: self-score cited '6 explicit out-of-scope items' but
+  artefacts contain no formal out-of-scope section in discovery.md (file ends at Personas
+  table, ~line 180) and no equivalent listing in definition.md. Only one distinct deferred
+  capability is identifiable (enriched insights tier / OBCP-SRC-003). Story 3.1 AC2's four
+  prerequisites (Privacy Counsel written opinion, CPO sign-off, consent form update,
+  privacy_act_assessment_reference field) are sub-requirements of the single enriched
+  insights deferral, not independent deferred items. Rubric requires at least two distinct
+  deferred/out-of-scope items for Score 2. story_testability scored 1 (confirmed): Story 1.1
+  AC5 'in plain language' qualifier is the primary trigger — analogous to 'user-friendly'
+  in rubric examples. Both DoR gates for C1 (Compliance Officer) and C2 (Privacy Officer)
+  name specific role titles with named sign-off artefacts, confirmed as satisfying the
+  named-responsible-party rubric definition.
 
 # AQ scoring table (for audit trail)
 # | Dimension         | Score | Justification |

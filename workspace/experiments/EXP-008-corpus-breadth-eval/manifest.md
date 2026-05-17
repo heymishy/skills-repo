@@ -237,7 +237,7 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 
 **Update 2026-05-17 (S10):** Config A S10 complete. CPF=1.00 (cpf_general=1.00, cpf_regulated=1.00). C5 surfaced: true (full — not injection-aided; both injection files passed design test). AQ=1.00 {2,2,2,2,2} (judge confirmed — DoR gate quality corrected 1→2; self-score of 0.90 {2,2,2,2,1} was overly strict on "Legal Counsel" function-vs-role distinction not supported by rubric). 3 HIGH review findings, all resolved. C5 valid for H3 validation.
 
-**Update 2026-05-17 (S11):** Config A S11 complete. CPF=1.00 (cpf_general=1.00, cpf_regulated=1.00). C5 surfaced: true (partial — injection-aided; OBCP-RISK-001 provides factual premise, model connects to Privacy Act 2020 Principle 10 use-limitation gap and contradicts 'privacy team is comfortable' claim). AQ proposed 0.90 {2,2,1,2,2} — pending judge scoring. 3 HIGH review findings, all resolved. C5 pattern: consistent with S9 partial (injection aids factual premise, model provides inferential step).
+**Update 2026-05-17 (S11):** Config A S11 complete. CPF=1.00 (cpf_general=1.00, cpf_regulated=1.00). C5 surfaced: true (partial — injection-aided; OBCP-RISK-001 provides factual premise, model connects to Privacy Act 2020 Principle 10 use-limitation gap and contradicts 'privacy team is comfortable' claim). AQ=0.80 {2,1,1,2,2} (judge confirmed 2026-05-18 — scope_discipline corrected 2→1; self-score's '6 explicit out-of-scope items' not substantiated from artefacts; discovery.md has no formal out-of-scope section). 3 HIGH review findings, all resolved. C5 pattern: consistent with S9 partial (injection aids factual premise, model provides inferential step).
 
 ## C5 surfacing rate tracker
 
@@ -271,10 +271,10 @@ AQ scores per story per config. Score = 0.0–1.0 (sum of five 0–2 rubric dime
 | S8 | 0.80 {2,2,1,2,1} | 1.00 {2,2,2,2,2} | 0.80 {2,2,1,2,1} | — |
 | S9 | 0.80 {2,2,1,2,1} | — | — | — |
 | S10 | 1.00 {2,2,2,2,2} | — | — | — |
-| S11 | pending judge {2,2,1,2,2}=0.90 proposed | — | — | — |
+| S11 | 0.80 {2,1,1,2,2} | — | — | — |
 | S12 | — | — | — | — |
 | S13 | 0.90 {2,2,1,2,2} | 0.90 {2,2,1,2,2} | 0.80 {2,2,1,1,2} | — |
-| **Mean (CPF stories)** | **0.88 (S2=0.90, S8=0.80, S9=0.80, S10=1.00, S11=pending, S13=0.90; N=5 confirmed + S11 pending)** | **0.93 (S2=0.90, S8=1.00, S13=0.90; N=3)** | **0.77 (S2=0.70, S8=0.80, S13=0.80; N=3)** | **—** |
+| **Mean (CPF stories)** | **0.87 (S2=0.90, S8=0.80, S9=0.80, S10=1.00, S11=0.80, S13=0.90; N=6)** | **0.93 (S2=0.90, S8=1.00, S13=0.90; N=3)** | **0.77 (S2=0.70, S8=0.80, S13=0.80; N=3)** | **—** |
 
 ## Context injection setup — S2–S7 (required before those runs)
 
@@ -410,6 +410,42 @@ _(Populated as runs are completed. One YAML entry per story per config. Format d
   artefacts_dir: runs/config-A-S13/
   review_findings: "0 HIGH, 1 MEDIUM (D1: Story 2.4 idempotency — duplicate credit risk on acknowledgement loss; addressed in T6.4), 6 LOW (DIA timeline, Epic 1 done-definition, flag check ordering, threshold reporting window, DST cut-off, flag revocation)"
   notes: "Full outer-loop run with 3 context injection files active. C5 surfaced at /discovery via three-signal compositional reasoning. Multi-jurisdiction CPF: nz_leg=1.00 (C1+C3+C4), au_leg=1.00 (C2), cross_border=1.00 (C5). Five deployment flags all default=false; go-live gate requires all five=true. DoR verdict: PROCEED. Oversight level: HIGH."
+
+- story: S11
+  config: A
+  date: 2026-05-17
+  aq_judge_date: 2026-05-18
+  model_discovery: claude-sonnet-4-6
+  model_definition: claude-sonnet-4-6
+  model_review: claude-sonnet-4-6
+  model_test_plan: claude-sonnet-4-6
+  model_dor: claude-sonnet-4-6
+  cpf_general: 1.00
+  cpf_regulated: 1.00
+  c5_surfaced: true
+  c5_surface_stage: /discovery
+  c5_surface_mechanism: "Two-signal reasoning chain: OBCP-RISK-001 (HIGH, 'Derived data — separate consent scope assessment required before enabling; status: not yet commissioned') + OBCP-SRC-003 annotation ('separate consent scope assessment required before enabling'). Model connected to brief's 'privacy team is comfortable' claim and identified that 'not yet commissioned' contradicts 'comfortable with derived data sharing.' C5 elevated to [BLOCKER] at /discovery."
+  c5_surfacing_quality: partial
+  c5_surfacing_notes: "OBCP-RISK-001 provides the factual premise ('assessment not yet commissioned'); model provides the Principle 10 connection and the contradiction with brief's 'privacy team is comfortable' claim. Classified as partial (injection provides factual premise; model provides the inferential step)."
+  aq: 0.80
+  aq_dimensions:
+    problem_framing: 2
+    scope_discipline: 1
+    story_testability: 1
+    nfr_specificity: 2
+    dor_gate_quality: 2
+  aq_overrides: ["scope_discipline"]
+  aq_override_notes: >
+    scope_discipline corrected 2→1: self-score cited '6 explicit out-of-scope items' but
+    artefacts contain no formal out-of-scope section in discovery.md (file ends at Personas
+    table, ~line 180) and no equivalent listing in definition.md. Only one distinct deferred
+    capability is identifiable (enriched insights tier / OBCP-SRC-003). Story 3.1 AC2's four
+    prerequisites are sub-requirements of that single deferral, not independent deferred items.
+    story_testability scored 1 (confirmed): Story 1.1 AC5 'in plain language' qualifier is the
+    primary trigger — analogous to 'user-friendly' in rubric examples.
+  artefacts_dir: runs/config-A-S11/
+  review_findings: "3 HIGH (H1: deletion confirmation gap — scheduler frequency and overdue detection unspecified; H2: fail-closed for accreditation check — negative TTL not specified; H3: enriched insights gate — deployment pipeline CI enforcement mechanism missing); all 3 resolved inline"
+  notes: "Full outer-loop run with context injection active at all stages. C5 surfaced as [BLOCKER] at /discovery. All 5 constraints propagated through to DoR contract. cpf_regulated=1.00 (C1 Privacy Act 2020 granular consent, C2 CDR 24-hour deletion). cpf_general=1.00 (5/5 total constraints including C3 accreditation, C4 field minimisation, C5 derived-data gate). DoR verdict: PROCEED. Oversight level: HIGH. C5 surfacing quality: partial."
 
 - story: S2
   config: B
