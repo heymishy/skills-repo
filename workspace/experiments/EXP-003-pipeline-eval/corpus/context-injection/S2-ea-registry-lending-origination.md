@@ -109,7 +109,6 @@ Internal logistic regression model built 3 years ago on 5 years of historical le
 | CDM-RISK-001 | Demographic disparity: internal review (8 months ago) found 12% approval rate difference between Māori and Pākehā applicants at same income band. Finding not escalated. Model has not been remediated or independently validated since finding. | CRITICAL — regulatory and reputational risk |
 | CDM-RISK-002 | No independent validation: model has not been validated by an independent model validator since original build 3 years ago. FMA expects independent validation for models used in automated credit decisions. | HIGH |
 | CDM-RISK-003 | Model staleness: model trained on data from 3–8 years ago. No retraining cycle defined. Performance on current customer population unknown. | HIGH |
-| CDM-RISK-004 | FMA disclosure: the demographic disparity finding has not been disclosed to FMA. The FMA Algorithmic Accountability Guidance (2023) expects firms to proactively disclose known disparity findings to the FMA. Proceeding to go-live without disclosure or remediation creates regulatory enforcement risk. | CRITICAL |
 
 ---
 

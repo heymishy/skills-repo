@@ -1,0 +1,113 @@
+story: S8
+config: A
+date: 2026-05-17
+model_discovery: claude-sonnet-4-6
+model_definition: claude-sonnet-4-6
+model_review: claude-sonnet-4-6
+model_test_plan: claude-sonnet-4-6
+model_dor: claude-sonnet-4-6
+
+# CPF scores
+cpf_general: 1.00
+cpf_regulated: 1.00
+c5_surfaced: true
+c5_surface_stage: /discovery
+c5_surface_mechanism: >
+  Follow-up context ('no formal review has occurred / analyst who wrote it is still
+  with the team and is the only person who fully understands the correction rules') +
+  EA registry RRPL-RISK-002 ('no independent review of the transformation logic is on
+  record'; severity: HIGH) + FMA policy doc s.4.2 (legacy analyst-maintained spreadsheet
+  calculations being incorporated into automated pipelines — documentation, independent
+  review, governance sign-off, regulatory notification all required).
+c5_surfacing_quality: partial
+c5_surfacing_notes: >
+  Factual basis (single-author Excel macro, no independent review) reproduced from
+  RRPL-RISK-002. Governance gap conclusion and change-control inferential inversion
+  are model reasoning. "No test suite" is a model addition with no injection source.
+  Not a pure domain-knowledge surface — injection provided the factual premise,
+  model drew the compliance conclusion.
+
+# AQ scores
+aq: 0.80
+aq_dimensions:
+  problem_framing: 2
+  scope_discipline: 2
+  story_testability: 1
+  nfr_specificity: 2
+  dor_gate_quality: 1
+aq_overrides: []
+aq_override_notes: >
+  story_testability scored 1 (not 2): Story 1.2 AC1 uses "sufficient precision for
+  independent reproduction" — T-REG-005 tests structural field presence but cannot
+  mechanically verify precision depth; Story 3.2 AC5 uses "legible" and "sufficient
+  to independently verify" (partially mitigated by T-AUDIT-007 human drill).
+  dor_gate_quality scored 1 (not 2): Gate 3 explicitly names Compliance Officer as
+  responsible party; Gates 1 and 2 specify technically precise conditions (document IDs,
+  business-day CI/CD check) but do not name the responsible party in the gate description
+  itself — named Compliance Officer responsibility is clear from DoR body, oversight
+  determination, and W3, but not repeated in the gate instruction. Both dimensions are
+  close calls — see scoring_notes for full reasoning.
+
+# AQ dimension justifications
+aq_justifications:
+  problem_framing: >
+    Discovery names both an operational efficiency gap (6-8 business day manual cycle,
+    40% of analyst time) and a regulatory disclosure gap (RBNZ undisclosed normalisation
+    since 2019); personas have scoped roles (Compliance Officer, Finance Operations
+    Manager, CFO/designated finance officer); all five success indicators are measurable,
+    including "<=2 business days post-pipeline-run" and ">=30 business days BS11
+    notification before go-live."
+  scope_discipline: >
+    MVP scope is explicitly bounded in discovery with 6 numbered deliverables; six items
+    are explicitly named out-of-scope (TreasuryLedger API development, FMA Annual
+    Financial Statements return, normalisation remediation, return form redesign,
+    automated submission without human approval, retrospective correction of historical
+    returns); 8 stories across 3 epics are proportionate to the stated MVP.
+  story_testability: >
+    Most ACs have unambiguous pass/fail conditions, but Story 1.2 AC1 uses "sufficient
+    precision for independent reproduction" — T-REG-005 tests structural field presence
+    in the specification document but cannot mechanically verify whether the documented
+    logic meets the precision threshold without human review; Story 3.2 AC5 uses
+    "legible" and "sufficient to independently verify," which are also judgment-dependent
+    (partially mitigated by the T-AUDIT-007 human-in-the-loop drill operationalisation).
+  nfr_specificity: >
+    All 14 NFRs in the test plan table name a concrete threshold, named standard, or
+    measurable condition — examples: NFR-C1-02 ">=30 business days (Holidays Act 2003
+    Schedule 1)," NFR-C2-02 "<=60 seconds at 7-year data volume," NFR-PERF-01
+    "3 retries; <=60 second max delay; alert within 5 minutes of 3rd failure" — no NFR
+    reads as a generic statement.
+  dor_gate_quality: >
+    Gate 3 explicitly names "the Compliance Officer" as the responsible party for setting
+    NORMALISATION_LAYER_APPROVED; Gates 1 and 2 specify technically precise conditions
+    (document IDs populated in deployment config, producibility-drill-signoff document
+    present, business-day CI/CD check) but do not name who must perform the prerequisite
+    human action in the gate description itself; adversarial test coverage is strong
+    (T-NORM-002, T-WF-001, T-EXTR-002, T-NORM-003, T-NORM-004).
+
+# Review findings
+review_findings: >
+  3 HIGH: H1 (Story 2.3 abort-pathway audit completeness — no-file + audit log
+  status checks added as T-NORM-005), H2 (Story 1.1 BS11 business-day calculation —
+  T-REG-003/004 with Holidays Act 2003 Schedule 1 public holiday scenarios),
+  H3 (Story 3.2 pre-launch producibility drill operational workflow — T-AUDIT-007
+  human-in-the-loop acceptance test with compliance officer sign-off record as go-live
+  gate). All 3 resolved inline in test plan.
+
+# Artefacts
+artefacts_dir: runs/config-A-S8/
+
+# Run notes
+notes: >
+  Full outer-loop run (all 5 stages) with context injection active at all stages.
+  C5 surfaced as B2 blocker at /discovery from EA registry RRPL-RISK-002 + FMA
+  policy doc s.4.2 + follow-up context. All 5 constraints propagated through to
+  DoR contract. cpf_regulated=1.00 (2/2 regulated constraints: C1 RBNZ BS11 material
+  change notification and s.2.1 methodology disclosure; C2 FMA Regulatory Returns
+  Guide 2022 audit trail and producibility). cpf_general=1.00 (5/5 constraints:
+  C1, C2, C3 human sign-off mandatory, C4 normalisation as methodology change, C5
+  governance gap). DoR verdict: PROCEED. Oversight level: HIGH.
+  C5 surfacing quality annotated as partial — injection provided factual premise
+  (RRPL-RISK-002 single-author macro, no independent review); model supplied the
+  governance gap conclusion, change-control inferential inversion, and "no test
+  suite" addition. AQ=0.80: strong artefact set, with story_testability and
+  dor_gate_quality both close calls at the 1/2 boundary.

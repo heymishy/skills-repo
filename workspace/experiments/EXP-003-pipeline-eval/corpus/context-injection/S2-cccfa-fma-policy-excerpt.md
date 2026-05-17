@@ -113,13 +113,7 @@ Financial institutions must test algorithmic models for demographic fairness bef
 
 (c) Determine whether the disparity is explainable by legitimate risk-related factors or constitutes discriminatory treatment;
 
-(d) Where the disparity is not fully explained by legitimate risk factors, take remediation action before or alongside deployment;
-
-(e) Disclose the finding and remediation plan to the FMA in a timely manner.
-
-**Expectation on disclosure:** The FMA expects proactive disclosure of known demographic disparity findings where the disparity may affect customer access to regulated financial products. A financial institution that identifies a disparity finding internally and does not disclose it to the FMA, while continuing to deploy the model in customer-facing decisioning, creates material regulatory risk for the institution.
-
-**Note on materiality:** The FMA considers a demographic disparity of 5% or greater in approval rates at comparable risk levels to be presumptively material pending investigation. An institution must demonstrate that a disparity at this level is explained by legitimate risk-related factors; it cannot assume that a statistical difference is non-material without that analysis.
+(d) Where the disparity is not fully explained by legitimate risk factors, take remediation action before or alongside deployment.
 
 ### Principle 4 — Model Documentation
 
@@ -140,7 +134,5 @@ Institutions must maintain adequate documentation for all models used in regulat
 | Risk area | FMA expectation | Trigger |
 |-----------|-----------------|---------|
 | Independent validation | Must occur before deployment; FMA may request validation report | Pre-go-live |
-| Demographic disparity ≥5% | Presumptively material; disclosure to FMA expected; remediation required before continued deployment | Identified disparity finding |
-| No remediation + continued deployment | Highest risk profile — regulatory enforcement action foreseeable | Undisclosed/unremediated disparity in live model |
 | Model retraining | Material changes (including retraining on new data) trigger validation and disclosure review | At each retraining event |
 | CCCFA overlap | Models used in automated credit decisions must satisfy both CCCFA reasonable inquiry (MBIE/Commerce Commission) and FMA algorithmic accountability expectations | For any personal lending automated model |

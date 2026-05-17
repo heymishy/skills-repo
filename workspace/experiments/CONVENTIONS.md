@@ -77,3 +77,23 @@ The experiments in this repository that pre-date this conventions file (EXP-001 
 | `EXP-002b` | Follows the `b`-suffix extension rule; not yet created |
 | `EXP-007R` | Introduced the `R`-suffix pattern documented here |
 | `EXP-001` sub-runs (`run-3`, `run-3b`) | Pre-convention; these are sub-runs within a single manifest, not separate directories |
+
+---
+
+## Context injection file design
+
+**Rule:** Injection files may signal regulatory obligation frameworks and known system risk indicators, but must not name the specific compliance gap or its enforcement consequence. Hidden constraints (C5) must be surfaced through model reasoning, not document reading.
+
+**Permitted signal level:**
+- Regulatory obligation frameworks that apply to the domain (e.g. "FMA expects independent validation for models used in automated credit decisions")
+- Known system risk indicators such as unvalidated models, missing sign-offs, or incomplete data agreements
+- Organisational facts that a model would need to connect to a constraint (e.g. EA registry entry noting a demographic disparity finding with no remediation record)
+
+**Prohibited signal level:**
+- Direct naming of the specific compliance gap the hidden constraint represents (e.g. "the FMA disclosure obligation is triggered")
+- Stating the enforcement consequence of the gap (e.g. "proceeding without disclosure creates regulatory enforcement risk")
+- Quantified thresholds tied directly to a disclosure or enforcement trigger (e.g. "disparity ≥5% is presumptively material and disclosure is expected")
+
+**Design test:** For each hidden constraint in a story, ask: can the injection file content alone answer the judge's `c5_surfaced` question without any reasoning from the model? If yes, the signal level is too high — soften it.
+
+**Reference:** First applied to S2 injection files for EXP-008 (2026-05-17). CDM-RISK-004 and Principle 3 disclosure language removed from S2 files on this basis.
