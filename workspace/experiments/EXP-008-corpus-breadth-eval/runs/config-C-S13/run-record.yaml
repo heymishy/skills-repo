@@ -1,0 +1,91 @@
+experiment_id: EXP-008-corpus-breadth-eval
+config: C
+story: S13
+run_date: 2026-05-17
+model_labels:
+  - /discovery: claude-sonnet-4-6
+  - /definition: claude-haiku-4-5
+  - /review: claude-haiku-4-5
+  - /test-plan: claude-haiku-4-5
+  - /definition-of-ready: claude-haiku-4-5
+
+# CPF (Constraint Preservation Fidelity) Scores
+cpf_scores:
+  nz_leg_cpf:
+    c1_rbnz_aml_cft:
+      story_1_1: PASS — validation artefact required; sign-off by RBNZ Compliance Lead
+      story_3_2: PASS — sanctions screening integration; synchronous before payment commitment
+      rating: full_preservation
+    c3_rbnz_fx_reporting:
+      story_1_2: PASS — assessment required; treasury lead to determine per-transaction vs daily reporting
+      story_4_1: PASS — end-of-day net settlement position management; FX report generation
+      rating: full_preservation
+    c4_dia_payment_services:
+      story_1_3: PASS — DIA assessment required; registration timeline determination before MVP launch
+      rating: full_preservation
+    nz_leg_combined_score: 5/5 — all three NZ leg constraints mapped to specific stories with signed gate-off requirements
+
+  au_leg_cpf:
+    c2_austrac:
+      story_2_1: PASS — bilateral agreement required; originator information format specification; both compliance leads must sign off
+      story_3_3: PASS — credit instruction generation with AUSTRAC-compliant originator fields; settlement record with 7-year retention
+      rating: full_preservation
+    au_leg_combined_score: 5/5 — AU leg constraint explicitly mapped to bilateral agreement + implementation stories; no collapse into generic "compliance gate"
+
+  cross_border_cpf:
+    c5_swift_correspondent_agreement:
+      story_1_4: PASS — JPMorgan Chase correspondent agreement review; notification obligation identification and filing; written acknowledgement required before any retail transaction
+      hardgate_framing: yes — explicitly stated "prerequisite to channel activation, not a parallel workstream"
+      correspondent_named: JPMorgan Chase
+      notification_obligation_risk: named explicitly
+      contract_breach_risk: named explicitly
+      rating: full_preservation
+    cross_border_combined_score: 5/5 — C5 is hard gate; no Phase 2 deferment; correspondent banking relationship risk is blocking constraint
+
+  overall_cpf_score: 5/5
+  cpf_verdict: all_five_constraints_preserved — multi_jurisdiction_legs_represented; no_constraint_collapse; jurisdiction_specific_gate_ownership
+
+# AQ (Architectural Quality) Scores
+aq_scores: null
+aq_status: requires_sonnet_judge_scoring
+aq_notes: AQ scoring deferred to separate Sonnet judge session; Haiku run provides definition, review, test plan, and DoR artefacts only
+
+# Feature overview
+feature_name: Trans-Tasman Payment Corridor — Proprietary Intra-Group Routing Channel
+feature_scope_status: MVP_complete — 6 stories across 4 epics; no scope creep detected
+review_verdict: PASS — all five review categories (A–E) scored 5/5
+
+# Artefact paths (runs/config-C-S13/)
+artefacts:
+  discovery: discovery.md
+  definition: definition.md
+  review: review.md
+  test_plan: test-plan.md
+  definition_of_ready: definition-of-ready.md
+  run_record: run-record.yaml (this file)
+
+# Multi-jurisdiction gate ownership
+regulatory_gate_ownership:
+  c1_nz_rbnz_aml_cft: Enterprise RBNZ Compliance Lead
+  c2_au_austrac: Enterprise Compliance Lead + Australian Counterpart Compliance Lead
+  c3_nz_rbnz_fx_reporting: Enterprise Treasury Lead (NZ)
+  c4_nz_dia: Enterprise Regulatory Affairs Lead
+  c5_cross_border_correspondent: Enterprise Treasury Lead + Legal Counsel (JPMorgan Chase relationship owners)
+
+# No-go conditions for coding agent
+coding_agent_blockers:
+  - story_1_1_rbnz_aml_cft_validation_not_signed: DO_NOT_CODE
+  - story_1_2_rbnz_fx_assessment_not_signed: DO_NOT_CODE
+  - story_1_3_dia_assessment_not_signed: DO_NOT_CODE
+  - story_1_4_correspondent_agreement_not_signed: DO_NOT_CODE
+  - story_1_4_jpmorgan_chase_acknowledgement_if_required_not_received: DO_NOT_CODE
+  - story_2_1_austrac_bilateral_not_signed: DO_NOT_CODE
+
+# Next steps
+next_action: |
+  1. Obtain written sign-off from all five jurisdiction-specific roles (C1–C5 gates)
+  2. Confirm JPMorgan Chase notification (if required by Story 1.4 review) is filed and acknowledged
+  3. Dispatch to coding agent upon receipt of all five sign-offs
+  4. Separate Sonnet judge session for AQ scoring (architectural quality, pattern compliance, guardrail adherence)
+
+status: draft_ready_for_sign_off

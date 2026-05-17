@@ -229,9 +229,11 @@ Each cell: `—` (not started), `setup` (injection files needed), `in-progress`,
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
-| S13 | CPF=1.00 | CPF=1.00 | — | — |
+| S13 | CPF=1.00 | CPF=1.00 | CPF=1.00 | — |
 
 Config D column: all cells blocked on EXP-002a H5 gate.
+
+**Update 2026-05-17:** Config C S13 complete. CPF=1.00 (multi-jurisdiction: nz_leg=1.00, au_leg=1.00, cross_border=1.00). AQ pending Sonnet judge scoring.
 
 ## C5 surfacing rate tracker
 
@@ -247,8 +249,8 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
-| S13 | true | true | — | — |
-| **Rate** | **3/11** | **3/11 (S2,S8,S13)** | **2/11 (S2,S8)** | **—/11** |
+| S13 | true | true | true | — |
+| **Rate** | **3/11** | **3/11 (S2,S8,S13)** | **3/11 (S2,S8,S13)** | **—/11** |
 
 ## AQ score tracker
 
@@ -267,8 +269,8 @@ AQ scores per story per config. Score = 0.0–1.0 (sum of five 0–2 rubric dime
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
-| S13 | 0.90 {2,2,1,2,2} | 0.90 {2,2,1,2,2} | — | — |
-| **Mean (CPF stories)** | **0.87 (S2=0.90, S8=0.80, S13=0.90; N=3)** | **0.93 (S2=0.90, S8=1.00, S13=0.90; N=3)** | **0.75 (S2=0.70, S8=0.80; N=2)** | **—** |
+| S13 | 0.90 {2,2,1,2,2} | 0.90 {2,2,1,2,2} | pending | — |
+| **Mean (CPF stories)** | **0.87 (S2=0.90, S8=0.80, S13=0.90; N=3)** | **0.93 (S2=0.90, S8=1.00, S13=0.90; N=3)** | **pending (S2=0.70, S8=0.80, S13=pending; N=3)** | **—** |
 
 ## Context injection setup — S2–S7 (required before those runs)
 
@@ -625,6 +627,106 @@ _(Populated as runs are completed. One YAML entry per story per config. Format d
     Oversight: HIGH. AQ: 0.70 — scored by claude-sonnet-4-6 judge (prior Haiku
     self-assessment replaced). Top of acceptable band; constraint propagation thorough
     but testability precision and gate owner specificity show typical cost-config gaps.
+
+- story: S8
+  config: C
+  date: 2026-05-17
+  model_discovery: claude-sonnet-4-6
+  model_definition: claude-haiku-4-5
+  model_review: claude-haiku-4-5
+  model_test_plan: claude-haiku-4-5
+  model_dor: claude-haiku-4-5
+  cpf_general: 1.00
+  cpf_regulated: 1.00
+  c5_surfaced: true
+  c5_surface_stage: /discovery (Sonnet) + /definition (Haiku structured as B2 blocker)
+  c5_surface_mechanism: "Sonnet /discovery identified two-signal premise (RRPL-RISK-002 single-author macro + FMA s.4.2 methodology disclosure). Haiku /definition named the governance gap (no-independent-review pattern) but did not elaborate the RBNZ Act 2021 s.93 consequence that Config B named. C5 was propagated as B2 pre-go-live blocker with Compliance Officer enforcement owner (less specific than Config B's named CFO/Finance Operations Manager/Treasury Ops Manager roles)."
+  c5_surfacing_quality: partial
+  c5_surfacing_notes: "Config B scored full surface (consequence chain explicit); Config C surface is partial (governance gap named without regulatory consequence elaboration). Factual premise (RRPL-RISK-002, FMA s.4.2) is the injection source; governance gap naming is model inference; no consequence chain."
+  dor_verdict: PROCEED
+  dor_gate_quality: 1
+  gate_owner_propagation: PARTIAL
+  gate_owner_notes: "Enforcement named as generic 'Compliance Officer', not split into six role-specific gates as Config B. C-GATE-1 and C-GATE-3 list specific fields but do not name Treasury Operations Manager role."
+  aq: 0.80
+  aq_dimensions:
+    problem_framing: 2
+    scope_discipline: 2
+    story_testability: 1
+    nfr_specificity: 2
+    dor_gate_quality: 1
+  aq_overrides: []
+  aq_override_notes: "story_testability=1: same rationale as Config A S8. nfr_specificity=2: NF-NORM-001/NF-AUD-001 reference specific field requirements (transform_rule_id, business_day_ci_run_date) — same precision as Config A. dor_gate_quality=1: all gates present, but gate owner specificity gap vs Config B. Config B S8 scored dor_gate_quality=2 because it named six non-delegable roles; Config C S8 scores 1 because it consolidates to 'Compliance Officer' with no role split."
+  artefacts_dir: runs/config-C-S8/
+  config_a_comparison: "Config A S8 aq=0.80 {2,2,1,2,1}; Config C S8 aq=0.80 {2,2,1,2,1}. Delta=0.00. story_testability and dor_gate_quality both map to Config A S8 scores (both scored 1). Unlike Config B S8 (delta +0.20), Haiku /definition does not restructure governance stories to use CI/CD gates — it preserves the human-verification-required pattern. dor_gate_quality remains at 1 (generic roles). CPF parity (1.00=1.00): both Config A and Config C propagate all five constraints. C5 surfacing quality: Config A partial, Config C partial (same assessment)."
+  notes: >
+    Config C (Sonnet /discovery only; Haiku /definition–/DoR). All 5 constraints
+    propagated (C1 RBNZ s.2.1/s.4.2, C2 FMA s.4.2, C3 human sign-off, C4 normalisation
+    methodology, C5 Excel macro governance gap). DoR verdict: PROCEED (all hard blocks pass).
+    Oversight: HIGH. C5 surfacing: partial (governance gap named without regulatory
+    consequence). CPF: 1.00 general, 1.00 regulated. AQ=0.80 (same as Config A; no
+    Opus-driven improvement). Gate owner propagation: PARTIAL. Haiku cost-config trade-off:
+    CPF parity with Config A, but dor_gate_quality and C5 consequence elaboration both less
+    specific than Config B.
+
+- story: S13
+  config: C
+  date: 2026-05-17
+  model_discovery: claude-sonnet-4-6
+  model_definition: claude-haiku-4-5
+  model_review: claude-haiku-4-5
+  model_test_plan: claude-haiku-4-5
+  model_dor: claude-haiku-4-5
+  cpf_general: 1.00
+  cpf_regulated: 1.00
+  nz_leg_cpf: 1.00
+  au_leg_cpf: 1.00
+  cross_border_cpf: 1.00
+  c5_surfaced: true
+  c5_surface_stage: /discovery (Sonnet) + /test-plan (Haiku explicit AC requirement for JPMorgan Chase acknowledgement)
+  c5_surface_mechanism: "Sonnet /discovery identified three-signal compositional reasoning (TTPS-SWIFT-001 correspondent ID + TTPS-RISK-001 impact gap + ADR-CB-002 routing restriction note). Haiku /definition propagated C5 as Story 1.4 hard blocker with Haiku-specific framing: 'correspondence review required' with no elaboration of contractual vs regulatory distinction. Haiku /test-plan added explicit AC verification step for 'JPMorgan Chase written acknowledgement' (if required)."
+  c5_surfacing_quality: full
+  c5_surfacing_notes: >
+    First Config C full C5 surface (previously Config C S2/S8 partial). Unlike Config C S8
+    where consequence was omitted, C5 is carried forward through all five stages with explicit
+    test-plan verification step. Haiku /definition did not name the contractual/regulatory
+    boundary distinction (Config B's explicit 'Treasury Legal Counsel non-delegable' gate),
+    but /test-plan introduced the acknowledgement verification gate implicitly by adding
+    'JPMorgan Chase written acknowledgement received' to AC3 of Story 1.4. This is an
+    emergent gate (arises from test plan specificity, not DoR hard block framing).
+  dor_verdict: PROCEED
+  dor_gate_quality: 1
+  gate_owner_propagation: PARTIAL
+  gate_owner_simplification_detected: false
+  gate_owner_notes: "Five flags present (Story 1.1–1.4, 2.1 gate owners); all named functionally (RBNZ Compliance Lead, Treasury Lead NZ, Regulatory Affairs Lead, Treasury Lead + Legal Counsel, Enterprise + Australian Counterpart Compliance Leads). Haiku preserved multi-jurisdiction specificity (no collapse to generic roles). However, gate ownership language is less precise than Config B: 'Enterprise Compliance Lead + Australian Counterpart Compliance Lead' vs Config B's named Legal Counsel non-delegability boundary for C5."
+  aq: pending
+  aq_status: requires_sonnet_judge_scoring
+  aq_dimensions: null
+  aq_override_notes: "AQ scoring deferred to separate Sonnet judge session (Haiku self-assessment not used; Sonnet judge assigned per Config C S2/S8 protocol). Expected range: 0.70–0.80 based on Config C pattern (cost-config trade-off on nfr_specificity and dor_gate_quality, but full CPF propagation and multi-jurisdiction boundary preservation)."
+  artefacts_dir: runs/config-C-S13/
+  config_a_comparison: >
+    Config A S13 aq=0.90 {2,2,1,2,2}; Config C S13 aq=pending. CPF parity (1.00=1.00).
+    Multi-jurisdiction CPF sub-scores identical: nz_leg=1.00, au_leg=1.00, cross_border=1.00
+    for both Config A and Config C. C5 surfacing: both full (both identify the three-signal
+    compositional inference; both carry C5 through all stages). Expected AQ delta: 0.00–0.10
+    based on Config C S2/S8 pattern (nfr_specificity and dor_gate_quality gaps). If AQ delta
+    on S13 is identical to S8 (delta=0.00), this indicates Haiku cost-config trade-off is
+    consistent across governance and multi-jurisdiction scenarios.
+  notes: >
+    Config C (Sonnet /discovery only; Haiku /definition–/DoR). All 5 constraints
+    propagated with multi-jurisdiction specificity (C1 RBNZ AML/CFT Act 2009, C2 AUSTRAC
+    AML/CTF Act 2006 (Cth), C3 RBNZ FX Transaction Reporting, C4 DIA Payment Services
+    Regulations, C5 SWIFT JPMorgan Chase correspondent agreement clause). DoR verdict:
+    PROCEED. Oversight: HIGH. Five deployment flags all named with jurisdiction-specific
+    roles (no collapse to generic 'Compliance Officer'); C5 emergent gate arises from
+    test-plan verification step. Multi-jurisdiction CPF sub-scores: nz_leg_cpf=1.00,
+    au_leg_cpf=1.00, cross_border_cpf=1.00. Gate owner integrity check: PASSED (no
+    simplification from /definition regulatory gate ownership table). C5 surfacing quality:
+    full (three-signal inference carried through all five stages with test-plan explicit
+    acknowledgement gate). CPF finding: Config C S13 achieves CPF=1.00 at equivalent depth
+    to Config A/B (multi-jurisdiction boundaries preserved; no constraint collapse).
+    Haiku cost-config trade-off: CPF parity, but dor_gate_quality expected to remain <2.0
+    (gate ownership language less precise than Config B's named non-delegability boundaries).
+
 # Example entry template (for future runs):
 # - story: SX
 #   config: A
