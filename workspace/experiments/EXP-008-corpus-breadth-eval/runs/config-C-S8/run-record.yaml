@@ -130,13 +130,27 @@ c5_tracking:
       C5 (Normalisation governance gap): Control adequacy requirement (FMA s.4.2 five-step preconditions) — prerequisite for Phase 2 start
       Both are Phase 2 gates; both explicitly named; neither confused or conflated
 
-# Architecture Quality (AQ) scoring — DEFERRED
+# Architecture Quality (AQ) scoring — SCORED
 aq:
-  aq_status: requires_sonnet_judge_scoring
-  aq_score: null
+  aq_status: scored
+  aq_score: 0.80
   aq_scoring_model: claude-sonnet-4-6
-  aq_scoring_date: null
-  aq_scoring_method: Judge evaluation of definition.md, review.md, test-plan.md, dor.md against quality rubric (Story Clarity, Test Completeness, Constraint Clarity, Regulatory Completeness)
+  aq_scoring_date: 2026-05-17
+  aq_scoring_method: Judge evaluation of discovery.md, definition.md, test-plan.md, dor.md against 5-dimension rubric (Problem Framing, Scope Discipline, Story Testability, NFR Specificity, DoR Gate Quality)
+  aq_dimensions:
+    problem_framing: 2
+    scope_discipline: 2
+    story_testability: 1
+    nfr_specificity: 2
+    dor_gate_quality: 1
+  aq_overrides: []
+  aq_override_notes: ""
+  aq_dimension_justifications:
+    problem_framing: "Both regulatory gap (RBNZ s.2.2 undisclosed normalisation, FMA s.4.1) and business gap (6-8 business day cycle, 40% analyst time on automation-eligible tasks) named. 7 scoped-role personas. 5 measurable success indicators with specific thresholds."
+    scope_discipline: "MVP scope bounded with 6 named items; 5 named out-of-scope exclusions in discovery; every story carries its own explicit Out of Scope section."
+    story_testability: "S2-AC3 uses 'legible...and sufficient for an independent reviewer to verify' — 'legible' and 'sufficient' require human judgment. S3-AC1 requires 'see a summary of differences' without specifying format/completeness threshold."
+    nfr_specificity: "All regulatory NFRs cite specific clauses with measurable conditions (RBNZ s.2.3, FMA s.3.1, RBNZ s.3.1 20th, WCAG 2.1 AA). One generic item (NFR-S1-S2 'encrypted per enterprise standards') is organisational not regulatory — scored 2."
+    dor_gate_quality: "Adversarial cases present (S2-T2, S4-T9, S4-T5). Compliance Officer named as Phase 2 normalisation gate. However, discovery's BS11 s.4.2 Phase 1 go-live precondition (notification filed ≥30 business days before deployment) is not captured as a named-party gate in the DoR."
 
 # Artefact paths
 artefacts:
