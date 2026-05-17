@@ -111,6 +111,8 @@ config_a_comparison:
     config_b: HARD BLOCK FAIL on pending discovery Approved By
     signal: Config B reads discovery.md at DoR time and enforces H-GOV correctly
 
+injection_correction: "CDM-RISK-001 severity label softened post-run — c5_surfacing_quality retroactively revised to partial"
+
 notes: >
   Full outer-loop run. Opus at /discovery + /definition (Config B front-loaded model).
   Sonnet at /review + /test-plan + /definition-of-ready (downstream stages).
