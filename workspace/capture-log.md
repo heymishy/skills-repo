@@ -68,6 +68,12 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-text: "Story check scripts written by implementation agent but not registered in npm test chain. All 5 dsq check scripts (tests/check-dsq*.js) existed and passed when run directly, but none were in package.json scripts.test. CI showed SUCCESS on all PRs because existing tests passed; the new tests were simply never run. Root cause: /implementation-plan tasks stop at 'write the test file' without an explicit 'register in package.json' step; DoR H5/H6 check test existence not registration; no governance check caught unregistered files. Structural fix: tests/check-test-registration.js governance check + known-deferred-checks.json pendingTestFiles for TDD pre-committed stubs. Also found 3 older check files (check-p4-obs-*.js) with the same gap. This is now D38."
   source: agent-auto
 
+- date: 2026-05-17
+  session-phase: EXP-008 Config C S2 — /discovery complete; /definition pending
+  signal-type: decision
+  signal-text: "CDM-RISK-001 in S2-ea-registry-lending-origination.md carried the severity label 'CRITICAL — regulatory and reputational risk' at the time all three S2 /discovery runs (Config A, B, C) executed. This label pre-answered c5_surfaced without requiring independent model reasoning, violating the CONVENTIONS.md injection design test ('can the injection file content alone answer the judge's c5_surfaced question without any reasoning from the model?'). Label softened post-run to 'HIGH — model performance finding; escalation status unknown'. All three run records annotated with injection_correction and c5_surfacing_quality: partial. Manifest c5_surfaced boolean remains true — C5 was surfaced — but S2 c5_surfacing_quality results for Config A and B should be interpreted with the over-signal caveat when comparing against Config C /definition onward and Config D (which use the corrected file). The historical impurity does not invalidate CPF or AQ scores; it narrows the confidence of cross-config C5 surfacing rate comparisons at S2 specifically."
+  source: agent-auto
+
 - date: 2026-05-06
   session-phase: review — 2026-05-06-web-ui-guided-outer-loop
   signal-type: gap
