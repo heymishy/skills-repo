@@ -46,9 +46,32 @@ cpf_scores:
   cpf_verdict: all_five_constraints_preserved — multi_jurisdiction_legs_represented; no_constraint_collapse; jurisdiction_specific_gate_ownership
 
 # AQ (Architectural Quality) Scores
-aq_scores: null
-aq_status: requires_sonnet_judge_scoring
-aq_notes: AQ scoring deferred to separate Sonnet judge session; Haiku run provides definition, review, test plan, and DoR artefacts only
+aq_scores:
+  problem_framing: 2
+  scope_discipline: 2
+  story_testability: 1
+  nfr_specificity: 1
+  dor_gate_quality: 2
+  raw_total: 8
+  aq_score: 0.80
+aq_status: scored_by_sonnet_judge
+aq_judge: claude-sonnet-4-6
+aq_scored_date: 2026-05-17
+aq_overrides: none
+aq_scoring_notes: |
+  Story testability close call on 1 vs 2 — "fit-for-purpose" in Story 1.1 AC1 is a professional
+  judgment phrase, but the explicit unresolved "[latency threshold — to be confirmed]" in TC-1.1.2
+  and Story 3.2 AC1 tips the dimension to 1 (neither AC has a mechanical pass/fail condition).
+  NFR specificity is clear: Stories 3.3 and 4.1 name "7-year AUSTRAC/RBNZ retention minimum";
+  assessment stories 1.1–1.4 use label references ("RBNZ FX reporting compliance is mandatory",
+  "credit relationship risk mitigation is mandatory") with no clause numbers, and Story 3.2
+  screening latency has no P95 specification.
+  DoR gate quality lands at 2 (not 1 as Haiku self-characterised): all five constraints gated
+  with named jurisdiction-specific roles and conditions beyond "compliance confirmed"; adversarial
+  cases present (TC-3.2.3 BLOCK, TC-3.2.4 unavailable fallback, TC-1.4.2 notification-required).
+  S13 profile {2,2,1,1,2} differs from S8 Config C {2,2,1,2,1}: stronger DoR gate quality from
+  5-constraint complexity; weaker NFR from assessment-heavy story structure. Delta vs Config A/B
+  S13 (0.90 {2,2,1,2,2}) = NFR specificity only.
 
 # Feature overview
 feature_name: Trans-Tasman Payment Corridor — Proprietary Intra-Group Routing Channel

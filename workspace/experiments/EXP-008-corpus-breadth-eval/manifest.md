@@ -269,8 +269,8 @@ AQ scores per story per config. Score = 0.0–1.0 (sum of five 0–2 rubric dime
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
-| S13 | 0.90 {2,2,1,2,2} | 0.90 {2,2,1,2,2} | pending | — |
-| **Mean (CPF stories)** | **0.87 (S2=0.90, S8=0.80, S13=0.90; N=3)** | **0.93 (S2=0.90, S8=1.00, S13=0.90; N=3)** | **pending (S2=0.70, S8=0.80, S13=pending; N=3)** | **—** |
+| S13 | 0.90 {2,2,1,2,2} | 0.90 {2,2,1,2,2} | 0.80 {2,2,1,1,2} | — |
+| **Mean (CPF stories)** | **0.87 (S2=0.90, S8=0.80, S13=0.90; N=3)** | **0.93 (S2=0.90, S8=1.00, S13=0.90; N=3)** | **0.77 (S2=0.70, S8=0.80, S13=0.80; N=3)** | **—** |
 
 ## Context injection setup — S2–S7 (required before those runs)
 
