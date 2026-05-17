@@ -1,0 +1,160 @@
+---
+experiment: EXP-008-corpus-breadth-eval
+config: C
+story: S8
+run_date: 2026-05-17
+run_duration_hours: 2.5
+run_context: Pipeline stages /definition through /definition-of-ready executed with claude-haiku-4-5 (cost-optimised model)
+
+# Stages completed in this run
+stages_completed:
+  - /definition
+  - /review
+  - /test-plan
+  - /definition-of-ready
+
+stages_pending:
+  - /implementation (to be executed by coding agent)
+  - /definition-of-done (post-merge validation)
+
+# Model usage summary
+model_config:
+  discovery_model: claude-sonnet-4-6
+  definition_model: claude-haiku-4-5
+  review_model: claude-haiku-4-5
+  test_plan_model: claude-haiku-4-5
+  dor_model: claude-haiku-4-5
+  judge_model: null  # AQ scoring deferred to claude-sonnet-4-6 after agent implementation
+
+# Constraint Propagation Fidelity (CPF) scoring
+cpf:
+  total_constraints_in_discovery: 5
+  constraints_list:
+    - id: C1
+      name: RBNZ Prudential Reporting Standards
+      description: Monthly deadline (20th), methodology adjustment notification (s.2.1), change-controlled derivation logic (s.2.3), material change notification (BS11 s.4.2 ≥30 business days)
+      in_discovery: true
+      in_definition: true
+      in_review: true
+      in_test_plan: true
+      in_dor: true
+      status: fully_carried_forward
+    - id: C2
+      name: FMA Financial Reporting Act 2013
+      description: Complete audit trail (4 components), immutable logs, 7-year retention, 5-business-day producibility, derivation logic formal change management (s.4.1), normalisation formalisation preconditions (s.4.2)
+      in_discovery: true
+      in_definition: true
+      in_review: true
+      in_test_plan: true
+      in_dor: true
+      status: fully_carried_forward
+    - id: C3
+      name: Human sign-off mandatory
+      description: Regulatory + operational (analyst + finance officer approval required; identity-attributed, timestamped)
+      in_discovery: true
+      in_definition: true
+      in_review: true
+      in_test_plan: true
+      in_dor: true
+      status: fully_carried_forward
+    - id: C4
+      name: Normalisation is material change
+      description: RBNZ s.2.2 methodology adjustment + BS11 s.4.2 material change; requires RBNZ s.2.1 methodology notification + BS11 technology notification before production
+      in_discovery: true
+      in_definition: true
+      in_review: true
+      in_test_plan: false
+      in_dor: true
+      status: correctly_deferred_to_phase2
+    - id: C5
+      name: "Normalisation logic governance gap [BLOCKER — B1]"
+      description: Excel macro single-author unreviewed; FMA s.4.1 undocumented/unversioned/unreviewed logic fails audit trail; FMA s.4.2 requires 5 preconditions (documentation, independent review, governance sign-off, FMA+RBNZ notification, legacy artefact retention); none currently satisfied
+      in_discovery: true
+      in_definition: true
+      in_review: true
+      in_test_plan: false
+      in_dor: true
+      status: correctly_deferred_to_phase2_with_explicit_gate
+  
+  cpf_general: 1.0
+  cpf_general_calculation: "5 constraints carried forward / 5 total constraints = 1.0"
+  cpf_regulated: 1.0
+  cpf_regulated_calculation: "5 regulated/governance constraints carried forward / 5 total regulated = 1.0"
+  
+  phase1_scope_constraints:
+    - C1: fully_implemented_in_s1_s2_s5
+    - C2: fully_implemented_in_s1_s2_s3_s4
+    - C3: fully_implemented_in_s3_s4
+  
+  phase2_scope_constraints:
+    - C4: deferred_to_epic2_phase2
+    - C5: deferred_to_epic2_phase2_with_fma_s42_preconditions
+
+# C5 constraint propagation tracking
+c5_tracking:
+  c5_surfaced: true
+  c5_surfaced_at_discovery: true
+  c5_surfaced_at_definition: true
+  c5_surfaced_at_review: true
+  c5_surfaced_at_test_plan: false
+  c5_surfaced_at_dor: true
+  
+  c5_surfacing_quality: full
+  
+  c5_definition_evidence: |
+    - Epic 1 (Phase 1): 5 stories without normalisation; explicit exclusion stated
+    - Epic 2 (Phase 2): Placeholder with title "Normalisation Logic Governance & Activation"
+    - Architecture Constraints in Epic 2: "FMA s.4.2 five-step preconditions (documentation, independent review, governance sign-off, FMA+RBNZ notification, legacy artefact retention)"
+    - S1 Architecture Constraints: Explicit C5 reference with "[BLOCKER — B1]" tag
+  
+  c5_review_evidence: |
+    - Category E finding: "S1 Architecture Constraints (explicit C5 reference, B1 gate, normalisation exclusion); Epic 2 (five-step precondition path) — PASS"
+    - Finding statement: "C5 is held front-and-centre; compliance activation gate named explicitly"
+    - No softening or dropping of C5 from /definition to /review
+  
+  c5_test_plan_evidence: |
+    - No direct normalisation tests (normalisation excluded Phase 1)
+    - Out of Scope sections: "Normalisation transformation layer is explicitly excluded"
+    - Architecture Constraints: C5 reference maintained; no weakening
+    - Smoke test scripts: No normalisation verification steps (by design — Phase 1 does not include normalisation)
+  
+  c5_dor_evidence: |
+    - Constraint Propagation Check table: C5 listed as "correctly_deferred_to_phase2_with_explicit_gate"
+    - Coding Agent Instructions: All 5 stories include explicit C5 constraint handling statement
+    - S1 explicit constraint statement: "Normalisation transformation layer is explicitly excluded from this story's implementation scope"
+    - Regulatory Compliance Verification: FMA s.4.2 (C5 preconditions) correctly identified as "Phase 2 scope, gated by Compliance Officer Production Activation Clearance"
+  
+  c5_distinction_maintained:
+    c4_vs_c5: |
+      C4 (Normalisation is material change): Notification requirement (RBNZ s.2.1, BS11 s.4.2) — prerequisite for Phase 2 start
+      C5 (Normalisation governance gap): Control adequacy requirement (FMA s.4.2 five-step preconditions) — prerequisite for Phase 2 start
+      Both are Phase 2 gates; both explicitly named; neither confused or conflated
+
+# Architecture Quality (AQ) scoring — DEFERRED
+aq:
+  aq_status: requires_sonnet_judge_scoring
+  aq_score: null
+  aq_scoring_model: claude-sonnet-4-6
+  aq_scoring_date: null
+  aq_scoring_method: Judge evaluation of definition.md, review.md, test-plan.md, dor.md against quality rubric (Story Clarity, Test Completeness, Constraint Clarity, Regulatory Completeness)
+
+# Artefact paths
+artefacts:
+  discovery: workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-C-S8/discovery.md
+  definition: workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-C-S8/definition.md
+  review: workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-C-S8/review.md
+  test_plan: workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-C-S8/test-plan.md
+  dor: workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-C-S8/dor.md
+
+# Summary
+summary: |
+  EXP-008 Config C S8 pipeline complete: /discovery (Sonnet-4-6) → /definition, /review, /test-plan, /dor (Haiku-4-5).
+  
+  Key findings:
+  - CPF_general = 1.0 (5/5 constraints carried forward)
+  - CPF_regulated = 1.0 (5/5 regulatory constraints carried forward)
+  - C5 fully surfaced at /discovery, /definition, /review, /dor (deferred to Phase 2 with explicit FMA s.4.2 gate)
+  - All hard blocks (H1–H9, H-NFR, H-E2E) pass; all warnings (W1–W5) acknowledged
+  - Ready for coding agent: all 5 stories have complete Coding Agent Instructions blocks
+  
+  Cost optimisation (Config C): Haiku successfully carried forward all constraints from Sonnet discovery. No constraint loss or softening detected.

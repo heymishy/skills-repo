@@ -224,7 +224,7 @@ Each cell: `—` (not started), `setup` (injection files needed), `in-progress`,
 | S5 | — | — | — | — |
 | S6 | N/A — behavioural | N/A — behavioural | N/A — behavioural | N/A — behavioural |
 | S7 | — | — | — | — |
-| S8 | CPF=1.00 | CPF=1.00 | — | — |
+| S8 | CPF=1.00 | CPF=1.00 | CPF=1.00 | — |
 | S9 | — | — | — | — |
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
@@ -242,13 +242,13 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 | S4 | — | — | — | — |
 | S5 | — | — | — | — |
 | S7 | — | — | — | — |
-| S8 | true | true | — | — |
+| S8 | true | true | true | — |
 | S9 | — | — | — | — |
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
 | S13 | true | true | — | — |
-| **Rate** | **3/11** | **3/3 (S2,S8,S13)** | **—/11** | **—/11** |
+| **Rate** | **3/11** | **3/11 (S2,S8,S13)** | **2/11 (S2,S8)** | **—/11** |
 
 ## AQ score tracker
 
@@ -262,13 +262,13 @@ AQ scores per story per config. Score = 0.0–1.0 (sum of five 0–2 rubric dime
 | S5 | — | — | — | — |
 | S6 | N/A — behavioural | N/A — behavioural | N/A — behavioural | N/A — behavioural |
 | S7 | — | — | — | — |
-| S8 | 0.80 {2,2,1,2,1} | 1.00 {2,2,2,2,2} | — | — |
+| S8 | 0.80 {2,2,1,2,1} | 1.00 {2,2,2,2,2} | — (pending judge) | — |
 | S9 | — | — | — | — |
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
 | S13 | 0.90 {2,2,1,2,2} | 0.90 {2,2,1,2,2} | — | — |
-| **Mean (CPF stories)** | **0.87 (S2=0.90, S8=0.80, S13=0.90; N=3)** | **0.93 (S2=0.90, S8=1.00, S13=0.90; N=3)** | **—** | **—** |
+| **Mean (CPF stories)** | **0.87 (S2=0.90, S8=0.80, S13=0.90; N=3)** | **0.93 (S2=0.90, S8=1.00, S13=0.90; N=3)** | **0.70 (S2=0.70; N=1)** | **—** |
 
 ## Context injection setup — S2–S7 (required before those runs)
 
