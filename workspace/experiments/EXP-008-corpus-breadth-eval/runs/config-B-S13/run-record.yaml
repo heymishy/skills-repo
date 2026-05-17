@@ -1,0 +1,77 @@
+story: S13
+config: B
+date: "2026-05-17"
+
+# Model provenance (Config B: Opus for /discovery + /definition; Sonnet for /review + /test-plan + /dor)
+model_discovery: claude-opus-4-6
+model_definition: claude-opus-4-6
+model_review: claude-sonnet-4-6
+model_test_plan: claude-sonnet-4-6
+model_dor: claude-sonnet-4-6
+
+# CPF scores
+cpf_general: 1.00       # all 5 constraints propagated from discovery through dor
+cpf_regulated: 1.00     # C1 (RBNZ AML/CFT), C2 (AUSTRAC), C3 (RBNZ FX), C4 (DIA/PSR 2021) — all 4 regulatory constraints propagated
+c5_surfaced: true       # C5 (SWIFT correspondent clause) surfaced via 3-signal compositional inference in discovery; propagated through all phases
+
+# Multi-jurisdiction CPF sub-scores
+nz_leg_cpf: 1.00        # C1 (RBNZ AML/CFT Act 2009), C3 (RBNZ FX Transaction Reporting, NZD $100k threshold), C4 (PSR 2021 / DIA written determination) — 3/3 propagated
+au_leg_cpf: 1.00        # C2 (AUSTRAC AML/CTF Act 2006 (Cth), direct originator obligation) — 1/1 propagated
+cross_border_cpf: 1.00  # C5 (SWIFT JPMorgan Chase correspondent agreement clause — contractual, non-delegable to regulatory functions) — 1/1 propagated
+overall_cpf: 1.00       # all 5/5 constraints propagated
+
+# AQ score
+aq: 0.90
+aq_dimensions:
+  problem_framing: 2      # NZD $4.2M competitive gap + 5 regulatory/contractual gaps named; 11 jurisdiction-scoped personas; measurable indicators (NZD $1M, NZD $5/txn, 2-hour SLA)
+  scope_discipline: 2     # 8 MVP items + 8 explicit out-of-scope items with rationale; 12 stories 1:1 mapped; zero scope drift confirmed
+  story_testability: 1    # Epic 1 ACs 1–2 per story are compliance-delivery ACs (human-gate action — compliance officer files written confirmation); document-ID enforcement in AC3+ is automated; substance of confirmation requires human review → score 1
+  nfr_specificity: 2      # All 7 jurisdiction NFRs + 3 performance NFRs name specific thresholds + statutory clauses (RBNZ AML/CFT Act s.A.4.2/s.A.4.3, AUSTRAC s.B.1, Holidays Act 2003, ADR-CB-002 through ADR-CB-008)
+  dor_gate_quality: 2     # 5 hard blocks with named responsible parties + specific sign-off conditions + adversarial coverage; C5 non-delegable boundary explicit with rejection reason
+
+aq_overrides: false
+aq_override_notes: ""
+
+# Config A vs Config B comparison (S13)
+config_a_aq: 0.90
+config_b_aq: 0.90
+delta_aq: 0.00
+delta_story_testability: 0    # story_testability = 1 in both Config A and Config B; no improvement from Opus front-loading on this dimension
+delta_dor_gate_quality: 0     # dor_gate_quality = 2 in both; parity
+delta_notes: >
+  Opus front-loading (Config B) produced AQ parity with Sonnet-uniform (Config A) on S13.
+  The story_testability ceiling at 1 is a structural property of this scenario: Epic 1 ACs 1–2 per story
+  describe compliance officer document-filing actions that require human verification of substance — no model
+  can improve this without redesigning the AC pattern or splitting compliance-delivery ACs from enforcement ACs.
+  This finding is relevant to H5 (Opus front-loading AQ premium hypothesis): no AQ premium observed for
+  this scenario type. CPF parity also observed (both 1.00): the Opus front-loading advantage, if any, is in
+  surface quality of the discovery/definition prose, not in constraint propagation rate on a corpus that
+  already challenges both models equally.
+
+# Artefact paths
+artefacts:
+  discovery: "workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-B-S13/discovery.md"
+  definition: "workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-B-S13/definition.md"
+  review: "workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-B-S13/review.md"
+  test_plan: "workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-B-S13/test-plan.md"
+  dor: "workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-B-S13/dor.md"
+  aq_score: "workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-B-S13/aq-score.md"
+
+# Key findings
+notes: |
+  1. CPF = 1.00 (5/5 constraints propagated). C5 surfaced via 3-signal compositional inference in discovery
+     (Opus-authored), propagated faithfully through all phases including test plan NFR-MJ-5 and DoR Hard Block 5.
+  2. AQ = 0.90 = Config A S13. No AQ premium from Opus front-loading on this scenario.
+  3. story_testability = 1 in both configs. The ceiling is structural: Epic 1 compliance-delivery ACs (human-gate
+     actions) cannot be made automated-testable without splitting the AC structure. This is a finding for the
+     experiment — Opus does not restructure ACs to eliminate this pattern.
+  4. nfr_specificity = 2 (improvement signal): multi-jurisdiction NFR section is more precisely specified than
+     Config A baseline (both score 2, but Config B NFR section includes statutory clause citations absent
+     from Config A). Marginal quality improvement not captured in rubric score.
+  5. dor_gate_quality = 2 in both configs. Hard Block 5 (C5, Treasury Legal Counsel, non-delegable to
+     regulatory functions) is the most precisely specified gate ownership pattern observed in this run set —
+     consistent between Config A and Config B DoR output on this dimension.
+  6. Multi-jurisdiction CPF breakdown: nz_leg_cpf=1.00 (3/3), au_leg_cpf=1.00 (1/1), cross_border_cpf=1.00
+     (1/1). All jurisdiction legs fully covered.
+  7. Gate owner structure simplification check (user-specified): PASSED — no collapse to generic "Compliance
+     Officer" detected; C5 contractual/not-regulatory boundary preserved in Coding Agent Instructions.

@@ -229,7 +229,7 @@ Each cell: `—` (not started), `setup` (injection files needed), `in-progress`,
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
-| S13 | CPF=1.00 | — | — | — |
+| S13 | CPF=1.00 | CPF=1.00 | — | — |
 
 Config D column: all cells blocked on EXP-002a H5 gate.
 
@@ -247,8 +247,8 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
-| S13 | true | — | — | — |
-| **Rate** | **3/11** | **2/2 (S2,S8)** | **—/11** | **—/11** |
+| S13 | true | true | — | — |
+| **Rate** | **3/11** | **3/3 (S2,S8,S13)** | **—/11** | **—/11** |
 
 ## AQ score tracker
 
@@ -267,8 +267,8 @@ AQ scores per story per config. Score = 0.0–1.0 (sum of five 0–2 rubric dime
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
-| S13 | 0.90 | — | — | — |
-| **Mean (CPF stories)** | **0.87 (S2=0.90, S8=0.80, S13=0.90; N=3)** | **0.95 (S2=0.90, S8=1.00; N=2)** | **—** | **—** |
+| S13 | 0.90 {2,2,1,2,2} | 0.90 {2,2,1,2,2} | — | — |
+| **Mean (CPF stories)** | **0.87 (S2=0.90, S8=0.80, S13=0.90; N=3)** | **0.93 (S2=0.90, S8=1.00, S13=0.90; N=3)** | **—** | **—** |
 
 ## Context injection setup — S2–S7 (required before those runs)
 
@@ -514,6 +514,80 @@ _(Populated as runs are completed. One YAML entry per story per config. Format d
     table into Coding Agent Instructions with non-delegable constraints explicitly stated.
     story_testability = 2 confirmed in test-plan CPF-TRACE: CI/CD gate enforcement pathway
     makes all governance stories automatable. Config B AQ premium over Config A = +0.20.
+
+- story: S13
+  config: B
+  date: 2026-05-17
+  model_discovery: claude-opus-4-6
+  model_definition: claude-opus-4-6
+  model_review: claude-sonnet-4-6
+  model_test_plan: claude-sonnet-4-6
+  model_dor: claude-sonnet-4-6
+  cpf_general: 1.00
+  cpf_regulated: 1.00
+  nz_leg_cpf: 1.00
+  au_leg_cpf: 1.00
+  cross_border_cpf: 1.00
+  c5_surfaced: true
+  c5_surface_stage: /discovery
+  c5_surface_mechanism: "three-signal compositional reasoning (Opus-authored): TTPS-SWIFT-001 (JPMorgan Chase active SWIFT correspondent for NZD/AUD) + TTPS-RISK-001 (impact of proprietary channel on correspondent relationship not assessed; severity: HIGH) + ADR-CB-002 Note (correspondent agreements may contain routing restriction terms; notification obligation must be confirmed before routing change). C5 elevated to R1 with contractual non-delegable classification (Treasury Legal Counsel sole authority)."
+  c5_surfacing_quality: full
+  c5_surfacing_notes: >
+    Opus discovery reproduced the same three-signal compositional inference as Config A S13,
+    but elevated C5's ownership boundary more explicitly: Treasury Legal Counsel non-delegable
+    to any regulatory function (RBNZ AML/CFT, AUSTRAC, Regulatory Affairs) named in discovery
+    with C5 contractual vs regulatory distinction. This boundary survived intact through all
+    five stages into DoR Hard Block 5 with explicit rejection reason for any regulatory-function
+    authorisation attempt.
+  dor_verdict: PROCEED
+  dor_gate_quality: 2
+  gate_owner_propagation: CONFIRMED
+  gate_owner_simplification_detected: false
+  aq: 0.90
+  aq_dimensions:
+    problem_framing: 2
+    scope_discipline: 2
+    story_testability: 1
+    nfr_specificity: 2
+    dor_gate_quality: 2
+  aq_overrides: []
+  aq_override_notes: >
+    story_testability scored 1 (not 2): Epic 1 governance ACs (AC1–AC2 per story, 5 stories)
+    describe compliance-officer document-filing and regulatory notification deliverables that
+    are precise but require human verification of document substance — same rubric structural
+    gap as Config A S13 and Config B S2. The enforcement mechanism (document-ID change-control
+    in AC3+) is automated; the filing action itself is not. This is a scenario-structural ceiling,
+    not a model-quality difference. Opus does not restructure ACs to eliminate the human-gate
+    pattern; it preserves the compliance-delivery / enforcement-mechanism separation throughout.
+    dor_gate_quality = 2 (clear): all five flags have named responsible parties with non-delegable
+    boundaries; C5 Hard Block 5 includes explicit rejection reason for regulatory-function
+    authorisation. Gate owner integrity check (user-specified): PASSED — no collapse to generic
+    'Compliance Officer'; C5 contractual/not-regulatory boundary preserved.
+  artefacts_dir: runs/config-B-S13/
+  config_a_comparison: >
+    Config A S13 aq=0.90 {2,2,1,2,2}; Config B S13 aq=0.90 {2,2,1,2,2}.
+    Delta = 0.00. story_testability: 1→1 (no change — ceiling is structural, not model-quality
+    dependent). dor_gate_quality: 2→2 (parity — Config A S13 already achieved the full 2 on this
+    dimension). H5 AQ premium hypothesis: NOT CONFIRMED for S13. Opus front-loading produces
+    equivalent AQ on S13. Contrast with S8 Config B (delta=+0.20): the Opus advantage on
+    story_testability is story-specific — it manifests when Opus redesigns governance ACs to use
+    CI/CD gates (S8), but not when the scenario inherently requires human-verification-required
+    compliance-delivery ACs (S13). CPF parity (1.00 = 1.00): both configs propagate all five
+    constraints through all stages. Multi-jurisdiction CPF breakdown identical: nz_leg=1.00,
+    au_leg=1.00, cross_border=1.00 for both Config A and Config B.
+  notes: >
+    Config B (Opus at /discovery + /definition; Sonnet at /review + /test-plan + /dor).
+    All 5 constraints propagated (C1 RBNZ AML/CFT Act 2009, C2 AUSTRAC AML/CTF Act 2006 (Cth),
+    C3 RBNZ FX Transaction Reporting NZD $100,000 threshold, C4 PSR 2021 / DIA written
+    determination, C5 SWIFT JPMorgan Chase correspondent agreement clause — contractual).
+    DoR verdict: PROCEED. Oversight: HIGH. Five deployment flags default=false; all five
+    must be true before live activation. Gate owner integrity check: PASSED — no simplification
+    from definition Table 3 through Coding Agent Instructions Hard Blocks 1–5.
+    Multi-jurisdiction CPF sub-scores: nz_leg_cpf=1.00, au_leg_cpf=1.00, cross_border_cpf=1.00.
+    AQ finding: Opus front-loading produces no AQ premium on S13. H5 confirmation status
+    for S13 specifically: NOT CONFIRMED (delta=0.00). Running H5 scorecard:
+    S2 delta=0.00, S8 delta=+0.20, S13 delta=0.00. H5 holds for S8 scenario type
+    (CI/CD-gate governance stories); does not hold for compliance-delivery-AC scenario type.
 
 # Example entry template (for future runs):
 # - story: SX
