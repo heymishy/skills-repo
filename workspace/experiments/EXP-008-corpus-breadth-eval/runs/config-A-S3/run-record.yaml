@@ -1,0 +1,158 @@
+story: S3
+config: A
+date: 2026-05-18
+model_discovery: claude-sonnet-4-6
+model_definition: claude-sonnet-4-6
+model_review: claude-sonnet-4-6
+model_test_plan: claude-sonnet-4-6
+model_dor: claude-sonnet-4-6
+
+# CPF results
+cpf_general: 1.00
+cpf_regulated: 1.00
+cpf_general_detail: "5/5 constraints propagated (C1, C2, C3, C4, C5)"
+cpf_regulated_detail: "2/2 regulated constraints propagated (C1 Payments NZ scheme obligation, C2 AML/CFT Act 2009)"
+
+# C5 results
+c5_surfaced: true
+c5_surface_stage: /discovery
+c5_surface_mechanism: "EA registry certification table (16 of 47 items not yet assessed — factual status, PERMITTED) + scheme admission row (requires signed Participation Agreement + completed certification, status NOT YET GRANTED) → model composed: 16 items outstanding → certification incomplete → scheme admission requires completed certification → scheme admission NOT YET GRANTED → production access requires scheme admission → 2026-09-01 deadline at risk → certification is a go-live PRECONDITION not a parallel workstream; discovery [PRECONDITION] section surfaced this explicitly with $50k/day penalty framing; C5 propagated through all five pipeline stages"
+c5_surfacing_quality: full
+c5_surfacing_notes: "Injection design test FAIL pre-fix → PASS post-fix. RTP-RISK-001 enforcement consequence ('Payments NZ will not grant production access until all 47 items are cleared') and 'HIGH — go-live blocker' severity label removed from injection file before run. Post-fix: model surfaced C5 through multi-signal compositional inference from permitted factual status indicators only. Classified as FULL — not injection-aided. Valid for EXP-008 H3 validation. C5 propagated correctly through all five pipeline stages as: /discovery [PRECONDITION] → /definition sequencing constraint (Story 3.1 day-one parallel workstream) → /review H3 structural finding (process gate insufficient; technical enforcement required) → /test-plan T-CERT-GATE (programmatic deployment block) + T-DEPLOY-001 (all 5 gates required) → /dor hard deployment gate with named responsible owners."
+
+# Injection design test
+injection_design_test:
+  ea_registry: FAIL_then_PASS
+  ea_registry_reason_fail: "RTP-RISK-001 stated 'Payments NZ will not grant production access until all 47 items are cleared' (enforcement consequence — prohibited per CONVENTIONS.md) and severity 'HIGH — go-live blocker' (enforcement consequence label — prohibited)"
+  ea_registry_fix_applied: "Removed enforcement consequence statement; changed severity from 'HIGH — go-live blocker' to 'HIGH'; softened description to note incomplete certification coverage without quantifying enforcement trigger"
+  ea_registry_reason_pass: "Post-fix: certification table (31 complete; 16 not yet assessed) and scheme admission status (NOT YET GRANTED, requires completed certification) are factual status indicators (PERMITTED); model must reason to precondition framing without injection file naming enforcement consequence"
+  overall: PASS_after_fix
+  consequence: "C5 surfaced as full, not injection-aided; valid for H3 validation; distinct from S9 (which ran with FAIL injection file — partial)"
+
+# AQ results (judge scoring required)
+aq: null
+aq_status: requires_judge_scoring
+aq_judge_date: null
+aq_judge_model: null
+aq_dimensions:
+  problem_framing: null
+  scope_discipline: null
+  story_testability: null
+  nfr_specificity: null
+  dor_gate_quality: null
+aq_overrides: []
+aq_override_notes: >
+  AQ scoring deferred. Same-session self-scoring is invalid per EXP-008 CONVENTIONS.md.
+  Judge must read artefacts cold in a separate session. See aq-score.md for instructions.
+
+# Pipeline execution summary
+dor_verdict: PROCEED
+oversight_level: HIGH
+review_high_findings: 3
+review_high_all_resolved: true
+review_medium_findings: 2
+review_low_findings: 2
+test_count: 33
+stories: 7
+epics: 3
+
+# Deployment gate fields (all required for production deployment)
+deployment_gates:
+  - scheme_admission_reference          # Payments NZ scheme admission — Story 3.1 AC5, T-CERT-GATE
+  - aml_peak_load_test_reference        # AML load test at 40,000 tph — Story 2.2 AC6, T-AML-LOAD
+  - fraud_architecture_adr_reference    # Fraud architecture ADR approval — Story 2.3 AC1, T-FRAUD-ADR
+  - e2e_load_test_reference             # End-to-end load test P99 — Story 3.2 AC1, T-E2E-001
+  - aml_domestic_threshold_confirmation # Financial Crime Compliance threshold confirmation — Story 2.2 AC7, T-AML-THRESHOLD
+
+# Constraint propagation detail
+constraint_propagation:
+  C1:
+    name: "Payments NZ scheme participation obligation — 2026-09-01 deadline; $50,000/day penalty + suspension"
+    classification: REGULATED_SCHEME_OBLIGATION
+    surfaced_at: /discovery
+    propagated_to: ["Story 3.1 AC6-AC7 (scheme admission gate)", "Story 3.2 AC1 (load test gate)", "T-DEPLOY-001 (all gates required)"]
+    gate_field: scheme_admission_reference
+    responsible_party: "Head of Payments"
+    test_coverage: [T-CERT-001, T-CERT-002, T-CERT-003, T-CERT-GATE, T-DEPLOY-001]
+    propagated: true
+  C2:
+    name: "AML/CFT Act 2009 — mandatory AML/CFT and sanctions screening before account credit"
+    classification: REGULATED_STATUTORY_OBLIGATION
+    surfaced_at: /discovery
+    propagated_to: ["Story 2.2 AC1-AC7 (AML integration)", "T-AML-LOAD (load gate)", "T-AML-THRESHOLD (threshold confirmation gate)"]
+    gate_fields: [aml_peak_load_test_reference, aml_domestic_threshold_confirmation]
+    responsible_party: "Financial Crime Compliance Lead"
+    test_coverage: [T-AML-001, T-AML-002, T-AML-003, T-AML-004, T-AML-005, T-AML-LOAD, T-AML-THRESHOLD]
+    propagated: true
+  C3:
+    name: "10-second acknowledgement window — scheme rule hard constraint on end-to-end processing"
+    classification: SCHEME_TECHNICAL_RULE
+    surfaced_at: /discovery
+    propagated_to: ["T-NFR-001 (end-to-end gate)", "Story 1.2 AC1-AC2 (ACK timeout handling)", "T-E2E-001 (load test)"]
+    gate_field: e2e_load_test_reference
+    responsible_party: "Payment Operations Team Lead"
+    test_coverage: [T-NFR-001, T-NFR-002, T-NFR-003, T-NFR-004, T-NFR-005, T-ACK-001, T-ACK-002, T-E2E-001, T-E2E-002]
+    propagated: true
+  C4:
+    name: "Fraud screening required by scheme rules; vendor beta API not production-ready; ADR required"
+    classification: SCHEME_RULE_ARCHITECTURE_CONSTRAINT
+    surfaced_at: /discovery
+    propagated_to: ["Story 2.3 AC1-AC6 (fraud pre-screening)", "T-FRAUD-ADR (ADR gate)"]
+    gate_field: fraud_architecture_adr_reference
+    responsible_party: "Payment Architecture Lead / CTO"
+    test_coverage: [T-FRAUD-ADR, T-FRAUD-001, T-FRAUD-002, T-FRAUD-003]
+    propagated: true
+  C5:
+    name: "Payments NZ Technical Compliance Certification — 16 of 47 items not yet assessed; scheme admission not yet granted; certification is a go-live PRECONDITION"
+    classification: HIDDEN_CONSTRAINT_BLOCKER
+    surfaced_at: /discovery
+    c5_surfaced: true
+    c5_surfacing_quality: full
+    injection_aided: false
+    excluded_from_h3: false
+    injection_design_test_result: "PASS (post-fix) — enforcement consequence removed from injection file; model surfaced precondition framing through table-status reasoning"
+    propagated_to: ["Story 3.1 AC1-AC7 (certification gap remediation)", "Story 3.1 AC7 (scheme_admission_reference deployment gate)", "T-CERT-GATE (technical deployment block)", "T-DEPLOY-001 (all 5 gates required)", "/dor deployment gate table (scheme_admission_reference + responsible owner)"]
+    gate_field: scheme_admission_reference
+    responsible_party: "Head of Payments"
+    test_coverage: [T-CERT-001, T-CERT-002, T-CERT-GATE, T-CERT-003, T-DEPLOY-001]
+    c5_propagation_chain: >
+      /discovery [PRECONDITION] section (go-live gate framing, not parallel workstream)
+      → /definition Story 3.1 day-one parallel workstream + scope accumulator unstable scope flag
+      → /review H3 structural finding (process gate insufficient; technical enforcement required)
+      → /test-plan T-CERT-GATE (programmatic deployment block enforced in tooling) + T-DEPLOY-001
+      → /dor deployment gate table (scheme_admission_reference as hard block, named owner: Head of Payments)
+    propagated: true
+
+# Artefacts
+artefacts_dir: runs/config-A-S3/
+artefacts:
+  - discovery.md
+  - definition.md
+  - review.md
+  - test-plan.md
+  - dor.md
+  - aq-score.md
+  - run-record.yaml
+
+# Run notes
+notes: |
+  EXP-008 Config A S3 run complete.
+  
+  Injection design test: EA registry FAIL pre-run → PASS post-fix. RTP-RISK-001 enforcement
+  consequence removed (prohibited signal per CONVENTIONS.md). Re-test PASS. This is the
+  cleanest Config A C5 result to date: full surfacing quality, not injection-aided.
+  
+  CPF result: 1.00 general (5/5), 1.00 regulated (C1 scheme obligation + C2 AML/CFT Act
+  2009 both propagated with hard gates).
+  
+  C5 surfaced as [PRECONDITION] at /discovery via multi-signal compositional inference:
+  certification table (16 items not assessed) + scheme admission requires completed
+  certification + NOT YET GRANTED status + 2026-09-01 deadline → certification is a
+  go-live precondition. Model framed correctly as precondition, not parallel workstream.
+  
+  Pipeline: 7 stories across 3 epics. 33 test cases. 3 HIGH review findings (all resolved:
+  H1→T-AML-LOAD, H2→T-FRAUD-ADR, H3→T-CERT-GATE). 5 deployment gate fields required.
+  DoR verdict: PROCEED. Oversight: HIGH (AML/CFT Act 2009 + Payments NZ scheme obligation
+  + $50k/day penalty exposure).
+  
+  AQ scoring pending — separate judge session required.

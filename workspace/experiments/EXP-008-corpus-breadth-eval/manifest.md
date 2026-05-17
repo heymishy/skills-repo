@@ -219,7 +219,7 @@ Each cell: `—` (not started), `setup` (injection files needed), `in-progress`,
 | Story | Config A | Config B | Config C | Config D |
 |-------|----------|----------|----------|----------|
 | S2 | CPF=1.00 | CPF=1.00 | CPF=1.00 | — |
-| S3 | — | — | — | — |
+| S3 | CPF=1.00 | — | — | — |
 | S4 | — | — | — | — |
 | S5 | — | — | — | — |
 | S6 | N/A — behavioural | N/A — behavioural | N/A — behavioural | N/A — behavioural |
@@ -243,12 +243,14 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 
 **Update 2026-05-18 (S12 injection fix):** `S12-ea-registry-credit-risk-model-platform.md` corrected post Config A run. "Governance risk: Policy version mismatch" section and CRMP-RISK-001 description rewrote to remove direct naming of team's pre-2023 MRM process usage and independent validation gap. Replacement language: "MRM governance process version applicable to this retrain has not been confirmed with the MRM team — the 2023 policy update introduced changes to the retraining governance requirements; project team should confirm which version applies before submitting." CRMP-RISK-001 severity changed CRITICAL → HIGH. Injection design test re-run: PASS on both files. Config A run-record reflects original (FAIL) state — Config A was run before this correction. **Config B and Config C S12 runs must use the corrected file.**
 
+**Update 2026-05-18 (S3):** Config A S3 complete. CPF=1.00 (cpf_general=1.00, cpf_regulated=1.00). C5 surfaced: true (full — not injection-aided; injection design test FAIL identified pre-run on RTP-RISK-001; enforcement consequence 'Payments NZ will not grant production access until all 47 items are cleared' and 'HIGH — go-live blocker' severity label removed; re-test PASS; model surfaced certification precondition through multi-signal compositional inference from factual status indicators only). C5 valid for EXP-008 H3 validation — first S3 Config A full-quality C5 result. 7 stories across 3 epics, 33 tests, 3 HIGH review findings all resolved (H1→T-AML-LOAD AML latency gate, H2→T-FRAUD-ADR fraud ADR gate, H3→T-CERT-GATE scheme certification deployment block). 5 deployment gate fields required. DoR verdict: PROCEED. Oversight: HIGH (AML/CFT Act 2009 + Payments NZ scheme participation rules — $50k/day penalty from 2026-09-02). AQ pending judge scoring.
+
 ## C5 surfacing rate tracker
 
 | Story | Config A C5 surfaced | Config B C5 surfaced | Config C C5 surfaced | Config D C5 surfaced |
 |-------|---------------------|---------------------|---------------------|---------------------|
 | S2 | true | true | true | — |
-| S3 | — | — | — | — |
+| S3 | true (full) | — | — | — |
 | S4 | — | — | — | — |
 | S5 | — | — | — | — |
 | S7 | — | — | — | — |

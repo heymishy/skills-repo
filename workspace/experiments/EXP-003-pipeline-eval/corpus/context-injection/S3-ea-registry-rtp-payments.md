@@ -62,7 +62,7 @@ The national real-time payments infrastructure operated by Payments NZ. Particip
 
 | ID | Description | Severity |
 |----|-------------|---------|
-| RTP-RISK-001 | Certification gap: 16 of 47 compliance checklist items not yet self-assessed or confirmed as complete. Payments NZ will not grant production access until all 47 items are cleared. The items outstanding include: inbound recall processing, end-to-end P99 latency under peak load, and AML/CFT screening evidence. | HIGH — go-live blocker |
+| RTP-RISK-001 | Certification status: Multiple items in the Payments NZ Technical Compliance Certification have not yet been fully self-assessed or confirmed as complete. Areas with incomplete coverage include message handling scenarios, end-to-end performance under peak load, and AML/CFT screening evidence. Full certification status has not been confirmed with Payments NZ. | HIGH |
 | RTP-RISK-002 | 10-second acknowledgement: scheme requires end-to-end acknowledgement within 10 seconds. Any upstream dependency (AML screening, fraud platform, core banking) that adds latency must complete within this window. Integration design must budget for realistic latency at peak load. | HIGH — design constraint |
 | RTP-RISK-003 | Scheme rule changes: Payments NZ publishes scheme rule updates periodically. Participants are required to implement rule changes within specified timeframes. A version governance process must be in place. | MEDIUM |
 
