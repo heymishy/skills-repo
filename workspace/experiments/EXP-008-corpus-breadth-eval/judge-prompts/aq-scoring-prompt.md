@@ -79,7 +79,7 @@ Score 2: DoR contract gates all regulated constraints named in the discovery (mi
 Score 1: DoR contract gates most regulated constraints but one is absent or stated vaguely ("compliance confirmed" without specifying which obligation or responsible party). OR: adversarial cases are absent from the test plan.
 Score 0: DoR contract does not gate the primary regulated constraint identified in the discovery. OR: all gates are stated as general quality checks ("reviewed", "tested", "approved") rather than specific regulatory conditions with named responsible parties.
 
-**Named responsible party definition:** A role title (e.g. "Compliance Officer", "Legal Counsel", "Chief Risk Officer") satisfies the named responsible party criterion. A named individual is not required — the rubric criterion is "[role]". Generic team or department names ("Legal team", "Compliance department", "IT") do NOT satisfy the criterion. The role must be specific enough that accountability is unambiguous.
+**Named responsible party definition:** A specific role title (e.g. "Compliance Officer", "Legal Counsel", "Chief Risk Officer", "Data Architect") satisfies this criterion. A named individual is not required. Generic department or team names ("legal team", "compliance department", "IT") do NOT satisfy this criterion — the role must be specific enough that accountability is unambiguous within the organisation.
 
 ---
 
