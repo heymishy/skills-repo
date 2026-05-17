@@ -218,7 +218,7 @@ Each cell: `—` (not started), `setup` (injection files needed), `in-progress`,
 
 | Story | Config A | Config B | Config C | Config D |
 |-------|----------|----------|----------|----------|
-| S2 | — | — | — | — |
+| S2 | CPF=1.00 | — | — | — |
 | S3 | — | — | — | — |
 | S4 | — | — | — | — |
 | S5 | — | — | — | — |
@@ -229,7 +229,7 @@ Each cell: `—` (not started), `setup` (injection files needed), `in-progress`,
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
-| S13 | — | — | — | — |
+| S13 | CPF=1.00 | — | — | — |
 
 Config D column: all cells blocked on EXP-002a H5 gate.
 
@@ -237,7 +237,7 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 
 | Story | Config A C5 surfaced | Config B C5 surfaced | Config C C5 surfaced | Config D C5 surfaced |
 |-------|---------------------|---------------------|---------------------|---------------------|
-| S2 | — | — | — | — |
+| S2 | true | — | — | — |
 | S3 | — | — | — | — |
 | S4 | — | — | — | — |
 | S5 | — | — | — | — |
@@ -247,8 +247,8 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
-| S13 | — | — | — | — |
-| **Rate** | **—/11** | **—/11** | **—/11** | **—/11** |
+| S13 | true | — | — | — |
+| **Rate** | **2/11** | **—/11** | **—/11** | **—/11** |
 
 ## AQ score tracker
 
@@ -256,21 +256,23 @@ AQ scores per story per config. Score = 0.0–1.0 (sum of five 0–2 rubric dime
 
 | Story | Config A AQ | Config B AQ | Config C AQ | Config D AQ |
 |-------|------------|------------|------------|------------|
-| S2 | — | — | — | — |
+| S2 | 0.90 | — | — | — |
 | S3 | — | — | — | — |
 | S4 | — | — | — | — |
 | S5 | — | — | — | — |
 | S6 | N/A — behavioural | N/A — behavioural | N/A — behavioural | N/A — behavioural |
 | S7 | — | — | — | — |
-| S8 | — | — | — | — |
+| S8 | 0.80 | — | — | — |
 | S9 | — | — | — | — |
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
-| S13 | — | — | — | — |
-| **Mean (CPF stories)** | **—** | **—** | **—** | **—** |
+| S13 | 0.90 | — | — | — |
+| **Mean (CPF stories)** | **0.87 (S2=0.90, S8=0.80, S13=0.90; N=3)** | **—** | **—** | **—** |
 
 ## Context injection setup — S2–S7 (required before those runs)
+
+**Injection design rule (applies to all S2–S13 injection files):** Files may signal regulatory obligation frameworks and known system risk indicators, but must not name the specific compliance gap or its enforcement consequence. Hidden constraints must be surfaced through model reasoning, not document reading. See `workspace/experiments/CONVENTIONS.md` — Context injection file design.
 
 Files to create in `corpus/context-injection/` before starting each S2–S7 run:
 
@@ -290,28 +292,124 @@ Use the S8–S13 injection files as format reference. Each file should be 4–8K
 _(Populated as runs are completed. One YAML entry per story per config. Format defined in `judge-prompts/aq-scoring-prompt.md`.)_
 
 ```yaml
-# Example entry — replace with actual run data
-# - story: S2
+- story: S2
+  config: A
+  date: 2026-05-17
+  model_discovery: claude-sonnet-4-6
+  model_definition: claude-sonnet-4-6
+  model_review: claude-sonnet-4-6
+  model_test_plan: claude-sonnet-4-6
+  model_dor: claude-sonnet-4-6
+  cpf_general: 1.00
+  cpf_regulated: 1.00
+  c5_surfaced: true
+  c5_surface_stage: /discovery
+  c5_surface_mechanism: "operator brief ('not escalated beyond reviewing team' + 'not disclosed to FMA') + EA registry CDM-RISK-001 CRITICAL signal + FMA policy excerpt Principle 3 disclosure obligation"
+  aq: 0.90
+  aq_dimensions:
+    problem_framing: 2
+    scope_discipline: 2
+    story_testability: 2
+    nfr_specificity: 2
+    dor_gate_quality: 1
+  aq_overrides: []
+  aq_override_notes: "DoR gate quality: scored 1 not 2 — all regulated constraints gated with specific enforcement and adversarial tests, but gate specifications lack named responsible parties. Story testability close call at 2: 'clear'/'appropriate' adjectives qualified by exhaustive enumerations."
+  artefacts_dir: runs/config-A-S2/
+  review_findings: "3 HIGH (H1: Story 1.2 AC4 remediation definition ambiguous; H2: Story 2.3 production gate missing enforcement mechanism; H3: Story 3.2 schema dependency not formalised); all 3 resolved inline in test plan"
+  notes: "Full outer-loop run with context injection active at all stages. C5 surfaced as B1 blocker at /discovery. All 5 constraints propagated through to DoR contract. cpf_regulated=1.00 (3/3 regulated constraints: C1 CCCFA, C2 FMA model validation, C5 FMA enforcement risk). cpf_general=1.00 (5/5 total constraints). DoR verdict: PROCEED. Oversight level: HIGH."
+
+- story: S8
+  config: A
+  date: 2026-05-17
+  model_discovery: claude-sonnet-4-6
+  model_definition: claude-sonnet-4-6
+  model_review: claude-sonnet-4-6
+  model_test_plan: claude-sonnet-4-6
+  model_dor: claude-sonnet-4-6
+  cpf_general: 1.00
+  cpf_regulated: 1.00
+  c5_surfaced: true
+  c5_surface_stage: /discovery
+  c5_surface_mechanism: "follow-up context ('no formal review has occurred / analyst who wrote it is still with the team and is the only person who fully understands the correction rules') + EA registry RRPL-RISK-002 ('no independent review of the transformation logic is on record'; severity: HIGH) + FMA policy doc s.4.2 (legacy analyst-maintained spreadsheet calculations being incorporated into automated pipelines — documentation, independent review, governance sign-off, regulatory notification all required)"
+  c5_surfacing_quality: partial
+  c5_surfacing_notes: >
+    Factual basis (single-author Excel macro, no independent review)
+    reproduced from RRPL-RISK-002. Governance gap conclusion and
+    change-control inferential inversion are model reasoning.
+    "No test suite" is a model addition with no injection source.
+    Not a pure domain-knowledge surface — injection provided the
+    factual premise, model drew the compliance conclusion.
+  aq: 0.80
+  aq_dimensions:
+    problem_framing: 2
+    scope_discipline: 2
+    story_testability: 1
+    nfr_specificity: 2
+    dor_gate_quality: 1
+  aq_overrides: []
+  aq_override_notes: >
+    story_testability scored 1 (not 2): Story 1.2 AC1 uses "sufficient precision for
+    independent reproduction" — T-REG-005 tests structural field presence but cannot
+    mechanically verify precision depth; Story 3.2 AC5 uses "legible" and "sufficient
+    to independently verify" (partially mitigated by T-AUDIT-007 human drill).
+    dor_gate_quality scored 1 (not 2): Gate 3 explicitly names Compliance Officer;
+    Gates 1 and 2 specify technically precise conditions (document IDs, business-day
+    CI/CD check) but do not name the responsible party in the gate description itself.
+    Both dimensions are close calls — see run-record.yaml aq_override_notes for full reasoning.
+  artefacts_dir: runs/config-A-S8/
+  review_findings: "3 HIGH (H1: regulatory notification gate missing — no BS11 s.4.2 advance notification workflow; H2: normalisation governance blocked — Excel macro not independently reviewed; H3: TreasuryLedger API gap — no automated extraction path); all 3 resolved inline in test plan"
+  notes: "Full outer-loop run with context injection active at all stages. C5 surfaced as B2 blocker at /discovery. All 5 constraints propagated through to DoR contract. cpf_regulated=1.00 (2/2 regulated constraints: C1 RBNZ BS11 material change notification, C2 FMA Regulatory Returns Guide methodology disclosure). cpf_general=1.00 (5/5 total constraints). DoR verdict: PROCEED. Oversight level: HIGH. C5 surfacing quality annotated as partial — see c5_surfacing_notes."
+
+- story: S13
+  config: A
+  date: 2026-05-17
+  model_discovery: claude-sonnet-4-6
+  model_definition: claude-sonnet-4-6
+  model_review: claude-sonnet-4-6
+  model_test_plan: claude-sonnet-4-6
+  model_dor: claude-sonnet-4-6
+  cpf_general: 1.00
+  cpf_regulated: 1.00
+  nz_leg_cpf: 1.00
+  au_leg_cpf: 1.00
+  cross_border_cpf: 1.00
+  c5_surfaced: true
+  c5_surface_stage: /discovery
+  c5_surface_mechanism: "three-signal compositional reasoning: TTPS-SWIFT-001 (JPMorgan Chase active SWIFT correspondent for NZD/AUD) + TTPS-RISK-001 (impact of proprietary channel on correspondent relationship not assessed; severity: HIGH) + ADR-CB-002 Note (correspondent agreements may contain routing restriction terms; notification obligation must be confirmed before routing change)"
+  c5_surfacing_quality: full
+  c5_surfacing_notes: >
+    First confirmed full-quality C5 surface in EXP-008 Config A series. Unlike S8
+    (partial — injection provided the factual premise, model drew the conclusion), S13
+    C5 required three-signal compositional inference: no single source names the
+    contractual clause risk. Model correctly identified the mechanism, elevated C5 to
+    R1 with escalation condition, and propagated through all five stages.
+  aq: 0.90
+  aq_dimensions:
+    problem_framing: 2
+    scope_discipline: 2
+    story_testability: 1
+    nfr_specificity: 2
+    dor_gate_quality: 2
+  aq_overrides: []
+  aq_override_notes: >
+    story_testability scored 1 (not 2): Epic 1 governance ACs (AC1–AC2 in Stories
+    1.1–1.5) describe document-filing and regulatory notification deliverables that are
+    precise and unambiguous but require human verification of document existence and
+    signatory authority — not executable by a coding agent. This is a rubric structural
+    gap (not a vague-language failure); governance-delivery ACs that are precise-but-
+    human-executed sit in a category the rubric does not directly model. dor_gate_quality
+    scored 2 (vs S8's 1): all five deployment flags name a distinct responsible party by
+    functional role in the Coding Agent Instructions block, satisfying the named
+    responsible party criterion that S8 only partially met.
+  artefacts_dir: runs/config-A-S13/
+  review_findings: "0 HIGH, 1 MEDIUM (D1: Story 2.4 idempotency — duplicate credit risk on acknowledgement loss; addressed in T6.4), 6 LOW (DIA timeline, Epic 1 done-definition, flag check ordering, threshold reporting window, DST cut-off, flag revocation)"
+  notes: "Full outer-loop run with 3 context injection files active. C5 surfaced at /discovery via three-signal compositional reasoning. Multi-jurisdiction CPF: nz_leg=1.00 (C1+C3+C4), au_leg=1.00 (C2), cross_border=1.00 (C5). Five deployment flags all default=false; go-live gate requires all five=true. DoR verdict: PROCEED. Oversight level: HIGH."
+
+# Example entry template (for future runs):
+# - story: SX
 #   config: A
-#   date: 2026-05-17
-#   model_discovery: claude-sonnet-4-6
-#   model_definition: claude-sonnet-4-6
-#   model_review: claude-sonnet-4-6
-#   model_test_plan: claude-sonnet-4-6
-#   model_dor: claude-sonnet-4-6
-#   cpf_general: 1.00
-#   cpf_regulated: 1.00
-#   c5_surfaced: true
-#   aq: 0.80
-#   aq_dimensions:
-#     problem_framing: 2
-#     scope_discipline: 1
-#     story_testability: 2
-#     nfr_specificity: 2
-#     dor_gate_quality: 1
-#   aq_overrides: []
-#   aq_override_notes: ""
-#   notes: ""
+#   date: YYYY-MM-DD
+#   ...
 ```
 
 ## Cross-reference

@@ -1,0 +1,236 @@
+story: S13
+config: A
+date: 2026-05-17
+model_discovery: claude-sonnet-4-6
+model_definition: claude-sonnet-4-6
+model_review: claude-sonnet-4-6
+model_test_plan: claude-sonnet-4-6
+model_dor: claude-sonnet-4-6
+
+# CPF scores — overall
+cpf_general: 1.00
+cpf_regulated: 1.00
+c5_surfaced: true
+c5_surface_stage: /discovery
+c5_surface_mechanism: >
+  Three-signal reasoning chain: TTPS-SWIFT-001 (JPMorgan Chase is the active SWIFT
+  correspondent for NZD/AUD international payments) + TTPS-RISK-001 (impact of
+  proprietary channel on correspondent relationship has not been assessed; severity: HIGH)
+  + ADR-CB-002 Note (correspondent bank agreements commonly contain terms governing
+  routing of transactions through the correspondent; routing changes that bypass a SWIFT
+  correspondent without satisfying any notification obligation create contractual and
+  credit relationship risk; architecture review must confirm proposed routing is not
+  restricted by existing correspondent agreement terms). No single injection source
+  named the contractual clause risk directly — C5 was surfaced by inferential composition
+  across three independent signals.
+c5_surfacing_quality: full
+c5_surfacing_notes: >
+  Unlike S8 (partial — injection provided the factual premise, model drew the compliance
+  conclusion), S13 C5 surfacing is full: the three-signal reasoning chain requires the
+  model to identify that (1) JPMorgan Chase is the active SWIFT correspondent, (2) the
+  new channel redirects NZD/AUD volume away from that correspondent, and (3) ADR-CB-002
+  Note implies notification obligations may exist in the bilateral agreement. No single
+  injection source provides the complete C5 constraint — the model must compose all three
+  signals independently and infer the contractual risk. C5 was correctly elevated from
+  R1 (risk) to B5 (blocker with escalation condition) at /discovery, then propagated
+  through /definition (Story 1.5 as C5 PRIMARY), /review (confirmed propagated — no
+  Category B findings), /test-plan (T1.5, T1.8, T10.1–T10.4), and /dor (H5 hard block
+  for Story 2.4). The escalation condition ("escalate to BLOCKER if notification
+  obligation confirmed") was also correctly surfaced.
+
+# CPF sub-scores — multi-jurisdiction split (S13-specific)
+nz_leg_cpf: 1.00    # C1 (RBNZ AML/CFT) + C3 (RBNZ FX reporting) + C4 (DIA/PSR 2021) = 3/3
+au_leg_cpf: 1.00    # C2 (AUSTRAC) = 1/1
+cross_border_cpf: 1.00  # C5 (SWIFT correspondent clause) = 1/1
+overall_cpf: 1.00   # 5/5
+
+# Per-constraint propagation detail
+constraint_propagation:
+  C1_rbnz_amlcft:
+    nz_leg: true
+    surface_stage: /discovery
+    propagated_through: [discovery, definition, review, test_plan, dor]
+    enforcement_stories: [1.1, 2.1, 2.4, 2.5]
+    test_coverage: [T1.1, T1.6, T2.1, T4.1, T4.2, T5.1, T5.2, T5.3]
+  C2_austrac:
+    au_leg: true
+    surface_stage: /discovery
+    propagated_through: [discovery, definition, review, test_plan, dor]
+    enforcement_stories: [1.2, 2.1, 2.4, 2.5]
+    test_coverage: [T1.2, T1.8, T3.1, T3.7, T6.1, T6.2, T6.3, T6.4]
+  C3_rbnz_fx_reporting:
+    nz_leg: true
+    surface_stage: /discovery
+    propagated_through: [discovery, definition, review, test_plan, dor]
+    enforcement_stories: [1.3, 3.1]
+    test_coverage: [T1.3, T7.1, T7.2, T7.3, T7.4, T7.5]
+  C4_dia_psr2021:
+    nz_leg: true
+    surface_stage: /discovery
+    propagated_through: [discovery, definition, review, test_plan, dor]
+    enforcement_stories: [1.4, 2.1]
+    test_coverage: [T1.4, T1.7]
+  C5_swift_correspondent:
+    cross_border: true
+    surface_stage: /discovery
+    propagated_through: [discovery, definition, review, test_plan, dor]
+    enforcement_stories: [1.5, 2.1, 2.4]
+    test_coverage: [T1.5, T1.8, T10.1, T10.2, T10.3, T10.4]
+
+# AQ scores
+aq: 0.90
+aq_dimensions:
+  problem_framing: 2
+  scope_discipline: 2
+  story_testability: 1
+  nfr_specificity: 2
+  dor_gate_quality: 2
+aq_overrides: []
+aq_override_notes: ""
+
+# AQ scoring table (for audit trail)
+# | Dimension         | Score | Justification |
+# |-------------------|-------|---------------|
+# | Problem framing   | 2 | Discovery names both competitive gap ($4.2M annual revenue lost to Wise/Western
+# |                   |   | Union, SWIFT product at $18-25/tx vs target ≤$5) and regulatory gap (RBNZ AML/CFT,
+# |                   |   | AUSTRAC, RBNZ FX, DIA all unconfirmed for the new channel); personas are scoped
+# |                   |   | functional roles (Treasury Legal Counsel, RBNZ AML/CFT Compliance Officer,
+# |                   |   | Regulatory Affairs Manager); success indicators include specific measurable
+# |                   |   | conditions (≤$5 fee, 2-hour settlement, $1M+ revenue recovery within 12 months,
+# |                   |   | zero RBNZ/AUSTRAC compliance findings).
+# | Scope discipline  | 2 | MVP scope explicitly bounded with 8 named out-of-scope items (AU-to-NZ direction,
+# |                   |   | payments >$10,000 via proprietary channel, non-Australia corridors, AML/CFT
+# |                   |   | framework redesign, AU counterpart system development, JPMorgan Chase commercial
+# |                   |   | management, retrospective payment migration, automated submission/settlement
+# |                   |   | without human confirmation); 13 stories across 3 epics proportionate to
+# |                   |   | 5-constraint regulated complexity spanning two jurisdictions.
+# | Story testability | 1 | Most ACs are unambiguous and coding-agent-executable (all Epic 2/3 ACs and
+# |                   |   | AC3–AC5 in each Epic 1 story), but AC1 and AC2 across the five Epic 1 governance
+# |                   |   | stories describe document-filing and regulatory notification deliverables that
+# |                   |   | require human verification of document existence and signatory authority rather
+# |                   |   | than automated test execution (e.g. Story 1.1 AC1: "RBNZ AML/CFT Compliance
+# |                   |   | Officer produces a written confirmation... filed in SharePoint").
+# | NFR specificity   | 2 | All NFR assertions in T1–T10 reference specific thresholds or named standards:
+# |                   |   | T5.2 uses ≥NZD $10,000 trigger, T8.1 uses ≤7200 seconds, T3.8 uses "7 years from
+# |                   |   | transaction date" citing policy s.A.5, T4.4 uses "DFAT consolidated list" (named
+# |                   |   | screening list), T4.5 uses "fail-closed per ADR-CB-004" (named specific ADR);
+# |                   |   | no test uses generic "must comply with X" framing without clause specificity.
+# | DoR gate quality  | 2 | All five regulated constraints (C1–C5) are gated in the Coding Agent Instructions
+# |                   |   | with distinct named responsible parties by functional role (AMLCFT_CHANNEL_VALIDATED:
+# |                   |   | "RBNZ AML/CFT Compliance Officer"; AUSTRAC_CONFIRMATION_RECEIVED: "Payments
+# |                   |   | Compliance Officer"; FX_REPORTING_VALIDATED: "Regulatory Affairs team lead or
+# |                   |   | Enterprise Treasury Manager"; DIA_REGISTRATION_CLEARED: "Regulatory Affairs
+# |                   |   | Manager"; CORRESPONDENT_AGREEMENT_CLEARED: "Treasury Legal Counsel"); adversarial
+# |                   |   | cases in test plan include T1.1–T1.10 (flag-gate failures), T4.5–T4.6
+# |                   |   | (fail-closed screening), T6.4 (idempotency), T10.4 (flag revocation).
+
+# AQ dimension justifications (short-form for manifest)
+aq_justifications:
+  problem_framing: >
+    Discovery names both a competitive business gap (NZD $4.2M annual revenue lost to
+    Wise/Western Union; SWIFT product at $18-25/transaction vs target ≤$5) and a
+    regulatory gap (RBNZ AML/CFT, AUSTRAC originator information, RBNZ FX reporting,
+    and DIA registration all unconfirmed for the new channel); personas are named with
+    scoped functional roles (Treasury Legal Counsel, RBNZ AML/CFT Compliance Officer,
+    Regulatory Affairs Manager, Enterprise's Australian counterpart compliance teams);
+    success indicators include specific measurable conditions (≤$5 fee, 2-hour
+    settlement SLA, NZD $1M+ revenue recovery within 12 months of rollout, zero RBNZ
+    or AUSTRAC compliance findings in first 12 months, zero AU counterpart credit
+    instruction rejections).
+  scope_discipline: >
+    MVP scope explicitly bounded with 8 named out-of-scope items (AU-to-NZ direction
+    deferred to future phase, payments above NZD $10,000 via proprietary channel, non-
+    Australia international corridors, AML/CFT framework redesign, AU counterpart system
+    development, JPMorgan Chase commercial management, retrospective payment volume
+    migration, automated submission or settlement without human confirmation); 13 stories
+    across 3 epics is proportionate to 5-constraint regulated complexity spanning NZ and
+    AU jurisdictions with 5 mandatory pre-launch compliance gates.
+  story_testability: >
+    Most ACs have unambiguous pass/fail conditions and are coding-agent-executable, but
+    AC1 and AC2 in each of the five Epic 1 governance stories describe document-filing
+    and regulatory notification deliverables (e.g. Story 1.1 AC1: "RBNZ AML/CFT
+    Compliance Officer produces a written confirmation... filed in SharePoint at
+    [Document-ID]"; Story 1.5 AC2: "Treasury Legal Counsel files the review memorandum")
+    that require human verification of document existence and signatory authority and
+    cannot be executed by a coding agent without access to external document management
+    systems.
+  nfr_specificity: >
+    All test assertions in T1–T10 reference specific thresholds or named standards: T5.2
+    uses exact NZD $10,000 threshold; T8.1 uses ≤7200 seconds for 2-hour SLA; T3.8 uses
+    7-year retention period citing policy s.A.5; T4.2–T4.4 name three specific screening
+    lists (RBNZ-designated persons, OFAC SDN, DFAT consolidated); T4.5 specifies
+    fail-closed per ADR-CB-004; T7.2 specifies 17:00 NZST settlement cut-off; no NFR
+    uses generic "must comply with X" framing without a specific clause or measurable
+    condition.
+  dor_gate_quality: >
+    All five regulated constraints (C1–C5) are gated with named responsible parties in
+    the Coding Agent Instructions: AMLCFT_CHANNEL_VALIDATED setter "RBNZ AML/CFT
+    Compliance Officer"; AUSTRAC_CONFIRMATION_RECEIVED setter "Payments Compliance
+    Officer"; FX_REPORTING_VALIDATED setter "Regulatory Affairs team lead or Enterprise
+    Treasury Manager"; DIA_REGISTRATION_CLEARED setter "Regulatory Affairs Manager";
+    CORRESPONDENT_AGREEMENT_CLEARED setter "Treasury Legal Counsel"; adversarial
+    coverage in test plan includes T1.1–T1.10 (single and multi-flag gate failures
+    at intake and transmission stages), T4.5–T4.6 (fail-closed screening service
+    unavailability), T6.4 (idempotency on duplicate credit instruction transmission),
+    T10.4 (flag revocation mid-operation).
+
+# Scoring notes
+scoring_notes: >
+  Story testability (1 not 2) is the only close call. The Epic 1 governance ACs are
+  precisely stated with crystal-clear pass/fail conditions — they are not vague; the
+  1 score reflects the rubric's strict criterion that "each AC could be verified by a
+  coding agent or automated test without clarification from the operator." AC1 and AC2
+  in each of the five Epic 1 stories describe document-filing events (written
+  confirmation in SharePoint with document ID, regulatory notification filed with
+  submission reference) that cannot be verified by a coding agent without integration
+  to document management systems. The rubric's score-1 criterion focuses on "vague
+  language" as the failing pattern; however, the score-2 criterion requires coding-agent
+  verifiability, which these ACs fail not due to ambiguity but due to requiring human
+  action. This is a structural gap in the AQ rubric: it was designed for pure engineering
+  stories, and governance-delivery stories with precise-but-human-executed ACs sit in a
+  category the rubric does not directly model. Rubric annotation candidate for future
+  runs: "Governance-delivery ACs that are unambiguous but require human verification
+  score 1 — they are precise but not coding-agent-executable." DoR gate quality (scored
+  2 vs S8's 1): S13 explicitly names a responsible party for every one of its five
+  deployment flags in the Coding Agent Instructions block, satisfying the rubric's named
+  responsible party criterion without the ambiguity that caused the S8 score-1 (where
+  Gates 1 and 2 relied on contextual inference rather than explicit naming in the gate
+  condition).
+
+# Review findings summary
+review_findings: >
+  PASS — 0 HIGH findings, 1 MEDIUM, 6 LOW. MEDIUM D1: Story 2.4 idempotency of credit
+  instruction transmission not specified — duplicate credit risk on acknowledgement loss;
+  addressed in test plan T6.4. LOW findings: A1 (DIA timeline assumption absent), A2
+  (Epic 1 done-definition clarity for engineering team), C1 (Story 2.1 flag check vs.
+  originator info field ordering ambiguity), C2 (Story 2.5 threshold reporting window
+  deferred to Story 1.1 AC2 confirmation), C3 (Story 3.1 NZST/NZDT DST cut-off
+  unaddressed — addressed in T7.3), E1 (no flag revocation mechanism specified —
+  addressed in T10.4 and DoR W3). Category B (constraint propagation): PASS, no
+  findings.
+
+# Commit hashes
+commits:
+  discovery: 8a1b532
+  definition: 6800f60
+  review: ed4670e
+  test_plan: 2f3a731
+  dor: b175354
+
+# Artefacts
+artefacts_dir: runs/config-A-S13/
+
+# Run notes
+notes: >
+  Full outer-loop run with context injection active at all stages (3 injection files:
+  S13-ea-registry-trans-tasman-payments.md, S13-aml-austrac-payment-services-policy.md,
+  S13-architecture-guardrails-excerpt.md). C5 surfaced as R1 risk at /discovery via
+  three-signal compositional reasoning; escalation condition correctly identified
+  (escalate to BLOCKER if notification obligation confirmed). All 5 constraints
+  propagated through to DoR contract. cpf_regulated=1.00 (C1 RBNZ AML/CFT +
+  C2 AUSTRAC = 2/2). cpf_general=1.00 (5/5 total). Multi-jurisdiction sub-scores:
+  nz_leg=1.00 (C1+C3+C4), au_leg=1.00 (C2), cross_border=1.00 (C5). DoR verdict:
+  PROCEED. Oversight level: HIGH (Epic 1 and Epic 2). Five deployment flags all
+  default=false; go-live gate requires all five=true. AQ=0.90 — highest in run set
+  to date (S2=0.90, S8=0.80). C5 surfacing quality annotated as full (vs S8 partial)
+  — first confirmed full-quality C5 surface in EXP-008 Config A series.
