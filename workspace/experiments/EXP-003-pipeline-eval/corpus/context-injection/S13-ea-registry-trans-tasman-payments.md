@@ -44,7 +44,7 @@ New intra-group payment routing service that routes NZ retail customer payment i
 
 | Interface ID | Application | Interface type | Data transferred | Notes |
 |-------------|-------------|---------------|-----------------|-------|
-| TTPS-ROUTE-001 | the enterprise group Treasury Intra-Group API | Internal — cross-entity | Screened payment instruction → AU credit instruction + NZD/AUD settlement position update | **This is the proprietary channel — replaces SWIFT for eligible transactions. SWIFT correspondent bank notification obligation: see TTPS-RISK-001.** |
+| TTPS-ROUTE-001 | the enterprise group Treasury Intra-Group API | Internal — cross-entity | Screened payment instruction → AU credit instruction + NZD/AUD settlement position update | Proprietary channel — replaces SWIFT for eligible transactions. Correspondent banking relationship implications to be assessed before activation. |
 | TTPS-SWIFT-001 | SWIFT International Payment Gateway | External (via correspondent bank JPMorgan Chase) | Payment instruction + originator data → SWIFT MT103 | Standard SWIFT channel — used for payments above $10,000 and for any country outside Australia |
 
 ### Settlement and confirmation
@@ -75,19 +75,11 @@ New intra-group payment routing service that routes NZ retail customer payment i
 
 ---
 
-## Critical constraint: SWIFT correspondent bank agreement
+## Correspondent banking relationship
 
-**TTPS-RISK-001 — BLOCKER: SWIFT correspondent bank notification obligation (contractual)**
+**TTPS-RISK-001 — Correspondent banking relationship: JPMorgan Chase (NZD/AUD international payments)**
 
-the enterprise's SWIFT correspondent relationship with JPMorgan Chase (for international AUD payments) is governed by a bilateral correspondent banking agreement. The agreement includes a standard correspondent bank clause requiring the enterprise to provide written notification to JPMorgan Chase before:
-(a) routing transactions ordinarily processed through the JPMorgan Chase SWIFT channel via an alternative channel; and
-(b) establishing any new settlement arrangement that materially changes the volume of transactions flowing through the correspondent relationship.
-
-The proposed proprietary intra-group channel for payments under $10,000 will reduce the volume of NZD/AUD transactions flowing through the JPMorgan Chase SWIFT channel. This triggers the correspondent notification obligation. Routing transactions through the proprietary channel without prior written notification to JPMorgan Chase is a contractual breach.
-
-**Severity:** BLOCKER — correspondent bank agreement breach exposes the enterprise to credit relationship risk with JPMorgan Chase. The correspondent relationship supports not only retail NZD/AUD payments but also the enterprise's trade finance and wholesale banking transactions. Breach may trigger review of the broader correspondent relationship.
-
-**Status:** Correspondent bank agreement review not commissioned. This obligation is not currently in the project scope. Treasury Legal must review the bilateral agreement and determine the notification requirement before the proprietary channel can go live.
+The enterprise uses JPMorgan Chase as its SWIFT correspondent for NZD/AUD international payments. Changes to international payment routing that affect transaction volumes flowing through correspondent banking relationships should be reviewed against the enterprise's active correspondent banking agreements before implementation.
 
 ---
 
@@ -95,7 +87,7 @@ The proposed proprietary intra-group channel for payments under $10,000 will red
 
 | ID | Description | Severity |
 |----|-------------|---------|
-| TTPS-RISK-001 | SWIFT correspondent bank notification obligation — JPMorgan Chase agreement requires prior written notification before routing NZD/AUD transactions outside the agreed SWIFT channel; notification not filed; breach risk | BLOCKER |
+| TTPS-RISK-001 | SWIFT correspondent banking relationship — JPMorgan Chase is the active correspondent for NZD/AUD international payments; impact of proprietary channel on correspondent relationship not assessed | HIGH |
 | TTPS-RISK-002 | DIA Payment Services Regulations — new payment service type classification not confirmed; DIA registration may be required before launch; timeline unknown | HIGH |
 | TTPS-RISK-003 | RBNZ FX Transaction Reporting — end-of-day net settlement position reporting obligation not assessed for the intra-group channel; existing FX reporting was designed for SWIFT transactions, not intra-group net settlement | HIGH |
 | TTPS-RISK-004 | AUSTRAC originator information format — the required format and fields for the enterprise's Australian counterpart to satisfy its AUSTRAC correspondent banking obligations on the AU leg have not been confirmed with the enterprise's Australian counterpart compliance | MEDIUM |
