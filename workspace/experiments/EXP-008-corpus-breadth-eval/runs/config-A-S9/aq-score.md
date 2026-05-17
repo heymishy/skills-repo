@@ -1,5 +1,12 @@
 ## AQ Score — S9 — Config A
 
+> **STATUS: INVALID — REQUIRES INDEPENDENT JUDGE SESSION**
+> This AQ score was produced in the same session that generated the artefacts (2026-05-17).
+> Self-scoring is not valid per the EXP-008 judge protocol. A separate claude-sonnet-4-6
+> judge session must score this run before the AQ result is recorded as final.
+> Provisional dimension notes are preserved below for judge reference.
+> `aq_status: requires_sonnet_judge_scoring`
+
 | Dimension | Score | Justification |
 |-----------|-------|---------------|
 | Problem framing | 2 | Discovery names both a regulatory gap (KiwiSaver Act s.45 — current paper process cannot meet same-day registry commitment obligation) and a business gap (52,000 members cannot self-serve online; paper process costs cited), with scoped personas (52,000 members, operations team, compliance officer, board, fund administrator), and measurable success indicators including "switch processing time from 10–15 business days to same-day" and "regulatory pre-condition completion" as explicit tracked outcomes. |

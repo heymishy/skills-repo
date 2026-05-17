@@ -77,7 +77,7 @@ A new capability within the existing the enterprise KiwiSaver Member Portal that
 | ELIG-003 | Member has no active hardship application that overrides switch eligibility | Allow switch, but WAIVE any applicable switching fee automatically |
 | ELIG-004 | Member has completed identity verification (MFA confirmed) | Block switch submission; prompt MFA completion |
 
-Note: ELIG-003 implements the KiwiSaver Act 2006 s.58 hardship fee waiver obligation. The switching fee ($15 for third+ switches per calendar year) must be automatically waived for members who have an active hardship application or approved hardship withdrawal on record, regardless of how many prior switches have been made. This check is mandatory — it cannot be deferred to operations.
+Note: Members with active hardship applications have specific fee protections under KiwiSaver Act provisions — eligibility check must confirm hardship status before any fee is applied.
 
 ---
 
@@ -86,7 +86,7 @@ Note: ELIG-003 implements the KiwiSaver Act 2006 s.58 hardship fee waiver obliga
 | ID | Description | Severity |
 |----|-------------|---------|
 | MPSW-RISK-001 | FMA Significant Event Notice has not been filed. The SEN must be filed and a 30-day member notification period completed before this interface can be made live. Filing has not commenced. | BLOCKER |
-| MPSW-RISK-002 | The $15 switching fee for third+ switches per calendar year has not been reviewed against the KiwiSaver Act s.58 hardship fee waiver provisions. Implementing the fee without the hardship waiver is a statutory breach. | HIGH |
+| MPSW-RISK-002 | The $15 switching fee for third+ switches has not been reviewed against KiwiSaver Act hardship provisions — fee implementation requires legal confirmation of applicable exemptions. | HIGH |
 | MPSW-RISK-003 | Unit Registry API integration has not been load-tested at expected peak volumes (estimated 2,000 concurrent switch instructions at EOFY window). | MEDIUM |
 | MPSW-RISK-004 | The March 31 EOFY delivery date stated by the board does not account for the 30-day FMA SEN notification period. The earliest compliant go-live date is 30+ days after SEN filing, which has not started. | HIGH — timeline expectation to be recalibrated |
 
