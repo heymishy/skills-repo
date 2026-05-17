@@ -256,7 +256,7 @@ AQ scores per story per config. Score = 0.0–1.0 (sum of five 0–2 rubric dime
 
 | Story | Config A AQ | Config B AQ | Config C AQ | Config D AQ |
 |-------|------------|------------|------------|------------|
-| S2 | 0.90 {2,2,2,2,1} | 0.90 {2,2,1,2,2} | pending_judge | — |
+| S2 | 0.90 {2,2,2,2,1} | 0.90 {2,2,1,2,2} | 0.70 {2,2,1,1,1} | — |
 | S3 | — | — | — | — |
 | S4 | — | — | — | — |
 | S5 | — | — | — | — |
@@ -603,19 +603,17 @@ _(Populated as runs are completed. One YAML entry per story per config. Format d
   c5_surface_mechanism: "Sonnet /discovery found three-signal C5: operator brief non-disclosure statement + EA registry CDM-RISK-001 HIGH signal (retroactively softened from CRITICAL post-run 2026-05-17) + FMA Principle 3 disclosure obligation. Haiku /definition propagated C5 as explicit E3.2 hard blocker gate story with three resolution paths (FMA notification, legal opinion, remediation plan). All downstream stages (review, test-plan, DoR) carried C5 forward without simplification."
   c5_surfacing_quality: partial
   dor_verdict: PROCEED
-  dor_gate_quality: 2
-  gate_owner_propagation: CONFIRMED
-  aq: null
+  dor_gate_quality: 1
+  gate_owner_propagation: PARTIAL
+  aq: 0.70
   aq_dimensions:
-    problem_framing: null
-    scope_discipline: null
-    story_testability: null
-    nfr_specificity: null
-    dor_gate_quality: null
-  aq_status: requires_sonnet_judge_scoring
-  aq_invalid: true
+    problem_framing: 2
+    scope_discipline: 2
+    story_testability: 1
+    nfr_specificity: 1
+    dor_gate_quality: 1
   aq_overrides: []
-  aq_override_notes: "AQ score invalid — self-assessed by Haiku; must be re-scored by claude-sonnet-4-6 per judge protocol. Haiku-produced artefacts (definition.md, review.md, test-plan.md, dor.md) are valid for CPF evaluation and coding agent implementation use."
+  aq_override_notes: "Scored by claude-sonnet-4-6 judge. problem_framing=2: both gaps (competitive ASB/ANZ same-day vs 3-5d manual; regulatory FMA+CCCFA) named; 4 scoped personas; measurable indicators (within minutes, >=70% auto-approval). scope_discipline=2: MVP bounded (<=30k, existing customers); 6 explicit OOS items; 7 proportionate stories. story_testability=1: E1.2 AC2/AC4 use e.g. for rationale text (interpretation space); T1.1.3 states 'clear and actionable'. nfr_specificity=1: C2.1 and C3.1 are label-reference checks (verify dependency note exists) without citing FMA Principle 2 or DSA clause. dor_gate_quality=1: all 5 constraints gated, adversarial cases present; C1 owner 'Legal and Compliance' (team) and C3 owner 'Partnerships' (dept) — generic vs Config B's named functional roles."
   artefacts_dir: runs/config-C-S2/
   notes: >
     Config C (Sonnet /discovery only; Haiku /definition–/DoR). All 5 constraints
@@ -624,9 +622,9 @@ _(Populated as runs are completed. One YAML entry per story per config. Format d
     (post-run injection correction: CDM-RISK-001 severity softened from CRITICAL to HIGH;
     c5_surfacing_quality retroactively aligned with Config A/B assessment).
     DoR verdict: PROCEED with conditions (C1, C2, C3 external prerequisites).
-    Oversight: HIGH. AQ score flagged for re-scoring by Sonnet judge (Haiku
-    self-assessment invalid per judge protocol). Artefacts ready for coding agent
-    implementation upon AQ judge completion.
+    Oversight: HIGH. AQ: 0.70 — scored by claude-sonnet-4-6 judge (prior Haiku
+    self-assessment replaced). Top of acceptable band; constraint propagation thorough
+    but testability precision and gate owner specificity show typical cost-config gaps.
 # Example entry template (for future runs):
 # - story: SX
 #   config: A

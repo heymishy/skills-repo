@@ -30,16 +30,15 @@ c5_surface_mechanism: >
 c5_surfacing_quality: partial — C5 surfaced in /discovery by Sonnet (pre-run injection); Haiku carried forward into /definition as E3.2 gate story and /test-plan with test cases. Partial quality because injection correction post-run: CDM-RISK-001 severity softened from CRITICAL to HIGH after this run completed; retroactively aligned with Config A/B assessment.
 injection_correction: CDM-RISK-001 severity label softened post-run — c5_surfacing_quality retroactively revised to partial (aligned with Config A/B retroactive annotation)
 
-aq: null
+aq: 0.70
 aq_dimensions:
-  problem_framing: null
-  scope_discipline: null
-  story_testability: null
-  nfr_specificity: null
-  dor_gate_quality: null
-aq_status: requires_sonnet_judge_scoring
+  problem_framing: 2
+  scope_discipline: 2
+  story_testability: 1
+  nfr_specificity: 1
+  dor_gate_quality: 1
 aq_overrides: []
-aq_override_notes: "AQ score invalid — self-assessed by Haiku; must be re-scored by claude-sonnet-4-6 per judge protocol. Haiku-produced artefacts valid for CPF evaluation and implementation use."
+aq_override_notes: "Scored by claude-sonnet-4-6 judge per aq-scoring-prompt.md protocol. Prior Haiku self-assessment (flagged invalid) replaced. No human overrides applied. problem_framing=2: both competitive gap (ASB/ANZ same-day vs 3-5 day manual) and regulatory gap (FMA disclosure, CCCFA sign-off) explicitly named; 4 scoped personas; measurable success indicators (within minutes, >=70% auto-approval, compliance deliverables). scope_discipline=2: MVP bounded (<=30k automated, existing customers only); 6 explicit out-of-scope items; 7 stories proportionate. story_testability=1: most ACs specific but E1.2 AC2/AC4 use e.g. for decision rationale content (interpretation space); test case T1.1.3 states 'clear and actionable' (human judgement required). nfr_specificity=1: specific thresholds for $30k ceiling, 7-year retention, PII hashing, 2-5 min decision; but C2.1 and C3.1 regulatory NFR tests are label-reference checks (verify dependency comment exists) without citing FMA Principle 2 or DSA clause. dor_gate_quality=1: all 5 constraints gated, adversarial cases present; but C1 owner named as 'Legal and Compliance' (team) and C3 owner as 'Partnerships' (department) — generic team names vs Config B's specific functional roles (General Counsel, Chief Risk Officer); C5 block in Coding Agent Instructions names no owner."
 
 artefacts_dir: runs/config-C-S2/
 artefacts_produced:
