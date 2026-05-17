@@ -226,7 +226,7 @@ Each cell: `—` (not started), `setup` (injection files needed), `in-progress`,
 | S7 | — | — | — | — |
 | S8 | CPF=1.00 | CPF=1.00 | CPF=1.00 | — |
 | S9 | CPF=1.00 | — | — | — |
-| S10 | — | — | — | — |
+| S10 | CPF=1.00 | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
 | S13 | CPF=1.00 | CPF=1.00 | CPF=1.00 | — |
@@ -234,6 +234,8 @@ Each cell: `—` (not started), `setup` (injection files needed), `in-progress`,
 Config D column: all cells blocked on EXP-002a H5 gate.
 
 **Update 2026-05-17:** Config C S13 complete. CPF=1.00 (multi-jurisdiction: nz_leg=1.00, au_leg=1.00, cross_border=1.00). AQ pending Sonnet judge scoring.
+
+**Update 2026-05-17 (S10):** Config A S10 complete. CPF=1.00 (cpf_general=1.00, cpf_regulated=1.00). C5 surfaced: true (full — not injection-aided; both injection files passed design test). AQ=0.90 {2,2,2,2,1}. 3 HIGH review findings, all resolved. C5 valid for H3 validation.
 
 ## C5 surfacing rate tracker
 
@@ -246,11 +248,11 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 | S7 | — | — | — | — |
 | S8 | true | true | true | — |
 | S9 | true (partial) | — | — | — |
-| S10 | — | — | — | — |
+| S10 | true (full) | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
 | S13 | true | true | true | — |
-| **Rate** | **4/11 (S2,S8,S9,S13)** | **3/11 (S2,S8,S13)** | **3/11 (S2,S8,S13)** | **—/11** |
+| **Rate** | **5/11 (S2,S8,S9,S10,S13)** | **3/11 (S2,S8,S13)** | **3/11 (S2,S8,S13)** | **—/11** |
 
 ## AQ score tracker
 
@@ -266,11 +268,11 @@ AQ scores per story per config. Score = 0.0–1.0 (sum of five 0–2 rubric dime
 | S7 | — | — | — | — |
 | S8 | 0.80 {2,2,1,2,1} | 1.00 {2,2,2,2,2} | 0.80 {2,2,1,2,1} | — |
 | S9 | 0.80 {2,2,1,2,1} | — | — | — |
-| S10 | — | — | — | — |
+| S10 | 0.90 {2,2,2,2,1} | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
 | S13 | 0.90 {2,2,1,2,2} | 0.90 {2,2,1,2,2} | 0.80 {2,2,1,1,2} | — |
-| **Mean (CPF stories)** | **0.85 (S2=0.90, S8=0.80, S9=0.80, S13=0.90; N=4)** | **0.93 (S2=0.90, S8=1.00, S13=0.90; N=3)** | **0.77 (S2=0.70, S8=0.80, S13=0.80; N=3)** | **—** |
+| **Mean (CPF stories)** | **0.86 (S2=0.90, S8=0.80, S9=0.80, S10=0.90, S13=0.90; N=5)** | **0.93 (S2=0.90, S8=1.00, S13=0.90; N=3)** | **0.77 (S2=0.70, S8=0.80, S13=0.80; N=3)** | **—** |
 
 ## Context injection setup — S2–S7 (required before those runs)
 

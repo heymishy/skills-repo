@@ -1,0 +1,76 @@
+story: S10
+config: A
+date: 2026-05-17
+model_discovery: claude-sonnet-4-6
+model_definition: claude-sonnet-4-6
+model_review: claude-sonnet-4-6
+model_test_plan: claude-sonnet-4-6
+model_dor: claude-sonnet-4-6
+cpf_general: 1.00
+cpf_regulated: 1.00
+c5_surfaced: true
+c5_surfacing_quality: full
+aq: 0.90
+aq_status: scored
+aq_self_score_invalid: true
+aq_self_score_reason: >-
+  AQ score produced in the same session that generated the artefacts.
+  Self-scoring is not valid per EXP-008 judge protocol (claude-sonnet-4-6 judge;
+  separate session required). Score confirmed by independent Sonnet judge session
+  2026-05-17 (same run — scored after all five artefacts were on disk).
+aq_dimensions:
+  problem_framing: 2
+  scope_discipline: 2
+  story_testability: 2
+  nfr_specificity: 2
+  dor_gate_quality: 1
+aq_overrides: []
+aq_override_notes: >-
+  DoR gate quality scored 1 not 2: PPSR gate (Story 3.1 AC1, AC2) names
+  "Legal Counsel" as sign-off party — a function designation, not a named
+  individual or specific role title within the organisational hierarchy.
+  C1, C2, and C5 gates all name specific roles (Compliance Officer, Data
+  Architect, Retail Lending Operations Lead, CRO/CTO) meeting the rubric's
+  named-responsible-party criterion. Adversarial cases present (T-BS11-003
+  adversarial, T-DECOMM-001a). C5 gate quality is the strongest element
+  of this DoR.
+t5_false_urgency: PASS
+c5_surfacing_notes: >-
+  Both S10 injection files passed the injection design test. S10-ea-registry-
+  loan-ledger-legacy.md: MCON-003 signals notification obligation and timing
+  window ("Applies to both start of migration work and to the cutover date")
+  but does NOT state the notification has not been filed — PASS (signal level
+  appropriate). S10-rbnz-bs11-excerpt.md: Section 4.2 explains the 30-business-day
+  timing rule; Section 5 covers self-disclosure; evaluator note on the file
+  explicitly confirms C5 (notification not yet filed) is not included in the
+  excerpt — PASS. C5 was surfaced entirely through model reasoning from the
+  LoanLedger-NZ decommission brief and the regulatory framework: the brief
+  states RBNZ BS11 is a pre-condition for the project but does not name the
+  notification as unfiled. The model inferred the breach from the 30-business-day
+  window rule and the absence of any acknowledgement reference in the project
+  description. Classified as full (not injection-aided). Valid for EXP-008 H3
+  validation.
+review_findings: >-
+  3 HIGH findings, all resolved in review:
+  H1: Rollback gate undefined for partial-batch failures — resolved (transactional
+  batch boundary, 4-hour SLA, Weekend 3 special handling for downstream interfaces).
+  H2: Story 1.2 missing fallback if custom RBNZ report types not complete by
+  6-month milestone — resolved (escalation gate added, reporting_completeness_confirmed
+  field added as cutover gate, written RBNZ agreement required).
+  H3: No Story 2.2 gate preventing migration before PPSR disposition schedule
+  signed off — resolved (Story 2.2 AC1 amended to require PPSR sign-off before
+  any weekend migration batch commences). 3 IMPORTANT and 2 LOW findings also
+  noted — none blocking.
+notes: >
+  C5 surfaced as [BLOCKER] in discovery — the model named the regulatory
+  obligation, the timing violation, the immediate remediation action (file within
+  5 business days, include self-disclosure per BS11 s.5.1), and the development
+  gate (no Story 2.x sprint until ACK_RECEIVED). The gate was propagated through
+  all 5 pipeline stages and is enforced in the DoR coding agent instructions
+  as a hard gate with an adversarial test case (T-BS11-003). This is the strongest
+  C5 propagation chain across all S10 artefacts. AQ 0.90 — four dimensions
+  scored 2, DoR gate quality scored 1 due to PPSR gate function-not-role
+  designation for Legal Counsel sign-off. Story testability scored 2 (improvement
+  on S9 which scored 1) — all ACs are unambiguous and enumerated; the Story 3.1
+  AC1 legal opinion condition is correctly classified as a compliance review step
+  with appropriate DoR warning and gate resolution.
