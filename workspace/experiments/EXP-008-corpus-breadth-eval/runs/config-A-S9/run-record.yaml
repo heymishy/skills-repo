@@ -1,0 +1,36 @@
+story: S9
+config: A
+date: 2026-05-17
+model_discovery: claude-sonnet-4-6
+model_definition: claude-sonnet-4-6
+model_review: claude-sonnet-4-6
+model_test_plan: claude-sonnet-4-6
+model_dor: claude-sonnet-4-6
+cpf_general: 1.00
+cpf_regulated: 1.00
+c5_surfaced: true
+c5_surfacing_quality: partial
+aq: 1.00
+aq_dimensions:
+  problem_framing: 2
+  scope_discipline: 2
+  story_testability: 2
+  nfr_specificity: 2
+  dor_gate_quality: 2
+aq_overrides: []
+aq_override_notes: ""
+t5_false_urgency: PASS
+notes: >
+  Injection design test FAIL on S9-ea-registry-member-portal-fund-switching.md:
+  ELIG-003 directly names KiwiSaver Act s.58 + MPSW-RISK-002 directly states
+  "implementing the fee without the hardship waiver is a statutory breach" —
+  both prohibited signal levels per CONVENTIONS.md. EA registry file predates
+  CONVENTIONS.md injection design rule codification (rule first applied 2026-05-17).
+  C5 surfaced but classified as partial (injection-aided). C5 result EXCLUDED
+  from EXP-008 H3 validation. CPF_regulated = 1.00 (C1 and C2 both propagated
+  cleanly via model reasoning). T5 false urgency PASS: March 31 identified as
+  incompatible with FMA SEN 30-day obligation; board recalibration action named;
+  explicit prohibition on March 31 hard-coding in coding agent instructions.
+  3 HIGH findings in review (H1: fee gate SEN sequencing; H2: hardship waiver
+  API failure path; H3: audit log orphaned instruction state) — all resolved
+  in test plan. AQ 1.00 — all five dimensions scored 2.

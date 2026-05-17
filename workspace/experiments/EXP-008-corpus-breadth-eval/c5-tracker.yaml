@@ -33,10 +33,12 @@ This is the EXP-008 primary hidden-constraint measurement task.
 
 | Config | S2 | S3 | S4 | S5 | S6 | S7 | S8 | S9 | S10 | S11 | S12 | S13 | Rate |
 |--------|-----|-----|-----|-----|-----|-----|-----|-----|------|------|------|-----|-----|
-| A | ✓ | — | — | — | N/A | — | ✓ | — | — | — | — | ✓ | 3/11 |
+| A | ✓ | — | — | — | N/A | — | ✓ | ✓(p) | — | — | — | ✓ | 4/11 |
 | B | ✓ | — | — | — | N/A | — | ✓ | — | — | — | — | ✓ | 3/11 |
 | C | ✓ | — | — | — | N/A | — | ✓ | — | — | — | — | ✓ | 3/11 |
 | D | — | — | — | — | N/A | — | — | — | — | — | — | — | —/11 |
+
+Note: ✓(p) = C5 surfaced but quality is partial (injection design test FAIL — EA registry file over-signaled for C5). S9 Config A C5 result excluded from EXP-008 H3 validation.
 
 ---
 
@@ -94,7 +96,7 @@ C5_surfacing_rate = (stories where c5_surfaced == true) / 11
 
 | Config | C5 Detection Rate |
 |--------|---|
-| A | 3/11 (27%) |
+| A | 4/11 (36%) |
 | B | 3/11 (27%) |
 | C | 3/11 (27%) |
 | D | —/11 (pending) |
@@ -127,12 +129,41 @@ C5_surfacing_rate = (stories where c5_surfaced == true) / 11
 
 ---
 
+## S9 Config A C5 Surfacing Analysis
+
+**Story:** S9 (KiwiSaver Online Fund Switching — Digital Self-Service with Regulatory Compliance)
+
+**Config:** A (Sonnet uniform — all five stages)
+
+**C5 Surfaced:** YES ✓ (quality: PARTIAL)
+
+**Surfacing stage:** /discovery (B1 blocker — hardship fee waiver statutory obligation)
+
+**Surfacing mechanism:**
+- ELIG-003 note in EA registry directly named KiwiSaver Act s.58 hardship fee waiver obligation
+- MPSW-RISK-002 directly stated "Implementing the fee without the hardship waiver is a statutory breach"
+- Both at PROHIBITED signal level per CONVENTIONS.md injection design rule
+- Model surfaced C5 as B1 blocker with mandatory automatic waiver required; propagated through all five stages
+
+**Injection design test:** FAIL — EA registry file (S9-ea-registry-member-portal-fund-switching.md) over-signaled for C5. File predates CONVENTIONS.md injection design rule codification (rule first applied 2026-05-17). C5 result EXCLUDED from EXP-008 H3 validation.
+
+**Surfacing quality:** PARTIAL (injection-aided)
+
+**C5 propagation path:**
+- /discovery: B1 blocker (mandatory automatic fee waiver required for members with active hardship applications)
+- /definition: Story 1.2 AC3 (SWITCH_FEE_ENABLED gate requires hardship_waiver_legal_sign_off: true + named reviewer); Story 2.1 AC3 (hardship_active → fee_waiver_applied: true)
+- /review: H2 (hardship waiver AC3 missing API failure path — model identified gap not in injection)
+- /test-plan: T-FEE-003 (hardship legal gate blocks fee activation), T-FEE-005 (waiver auto-applied), T-ELIG-005 (fail-safe default when API unavailable — pure model reasoning, no injection source)
+- /dor: C5 highest-priority in coding agent instructions; T-FEE-003, T-FEE-005, T-ELIG-005 must all pass before any other tests
+
+---
+
 ## Next Steps
 
-1. Run Config C S8 judge scoring (AQ evaluation)
-2. Run Config C S13 judge scoring (AQ evaluation)
-3. Compare AQ deltas across configs for S13: A vs C (hypothesis: delta ≤ 0.10)
-4. Complete S9–S12 Config A/B runs (remaining high-complexity stories)
+1. Soften EA registry ELIG-003/MPSW-RISK-002 signal level to comply with CONVENTIONS.md before Config B/C S9 runs
+2. Run Config C S8 judge scoring (AQ evaluation)
+3. Run Config C S13 judge scoring (AQ evaluation)
+4. Complete S9–S12 Config B/C runs (remaining high-complexity stories)
 5. Run Config D (pending EXP-002a H5 prerequisite)
 
 ---

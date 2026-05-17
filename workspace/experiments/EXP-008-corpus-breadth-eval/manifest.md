@@ -225,7 +225,7 @@ Each cell: `—` (not started), `setup` (injection files needed), `in-progress`,
 | S6 | N/A — behavioural | N/A — behavioural | N/A — behavioural | N/A — behavioural |
 | S7 | — | — | — | — |
 | S8 | CPF=1.00 | CPF=1.00 | CPF=1.00 | — |
-| S9 | — | — | — | — |
+| S9 | CPF=1.00 | — | — | — |
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
@@ -245,12 +245,12 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 | S5 | — | — | — | — |
 | S7 | — | — | — | — |
 | S8 | true | true | true | — |
-| S9 | — | — | — | — |
+| S9 | true (partial) | — | — | — |
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
 | S13 | true | true | true | — |
-| **Rate** | **3/11** | **3/11 (S2,S8,S13)** | **3/11 (S2,S8,S13)** | **—/11** |
+| **Rate** | **4/11 (S2,S8,S9,S13)** | **3/11 (S2,S8,S13)** | **3/11 (S2,S8,S13)** | **—/11** |
 
 ## AQ score tracker
 
@@ -265,12 +265,12 @@ AQ scores per story per config. Score = 0.0–1.0 (sum of five 0–2 rubric dime
 | S6 | N/A — behavioural | N/A — behavioural | N/A — behavioural | N/A — behavioural |
 | S7 | — | — | — | — |
 | S8 | 0.80 {2,2,1,2,1} | 1.00 {2,2,2,2,2} | 0.80 {2,2,1,2,1} | — |
-| S9 | — | — | — | — |
+| S9 | 1.00 {2,2,2,2,2} | — | — | — |
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
 | S13 | 0.90 {2,2,1,2,2} | 0.90 {2,2,1,2,2} | 0.80 {2,2,1,1,2} | — |
-| **Mean (CPF stories)** | **0.87 (S2=0.90, S8=0.80, S13=0.90; N=3)** | **0.93 (S2=0.90, S8=1.00, S13=0.90; N=3)** | **0.77 (S2=0.70, S8=0.80, S13=0.80; N=3)** | **—** |
+| **Mean (CPF stories)** | **0.90 (S2=0.90, S8=0.80, S9=1.00, S13=0.90; N=4)** | **0.93 (S2=0.90, S8=1.00, S13=0.90; N=3)** | **0.77 (S2=0.70, S8=0.80, S13=0.80; N=3)** | **—** |
 
 ## Context injection setup — S2–S7 (required before those runs)
 
@@ -726,6 +726,55 @@ _(Populated as runs are completed. One YAML entry per story per config. Format d
     to Config A/B (multi-jurisdiction boundaries preserved; no constraint collapse).
     Haiku cost-config trade-off: CPF parity, but dor_gate_quality expected to remain <2.0
     (gate ownership language less precise than Config B's named non-delegability boundaries).
+
+- story: S9
+  config: A
+  date: 2026-05-17
+  model_discovery: claude-sonnet-4-6
+  model_definition: claude-sonnet-4-6
+  model_review: claude-sonnet-4-6
+  model_test_plan: claude-sonnet-4-6
+  model_dor: claude-sonnet-4-6
+  cpf_general: 1.00
+  cpf_regulated: 1.00
+  c5_surfaced: true
+  c5_surfacing_quality: partial
+  c5_surface_stage: /discovery
+  c5_surface_mechanism: "Injection-aided: ELIG-003 note in EA registry directly named KiwiSaver Act s.58 hardship fee waiver obligation + MPSW-RISK-002 stated 'implementing the fee without the hardship waiver is a statutory breach'. Both at prohibited signal level per CONVENTIONS.md. Model surfaced C5 as B1 blocker (hardship fee waiver statutory obligation) with mandatory automatic waiver required. C5 EXCLUDED from EXP-008 H3 validation — injection design test FAILED."
+  c5_surfacing_notes: >
+    Injection design test FAIL on S9-ea-registry-member-portal-fund-switching.md.
+    EA registry file predates CONVENTIONS.md injection design rule codification
+    (rule first applied 2026-05-17 to S2 files). C5 classified partial (injection-aided).
+    The fail-safe default (T-ELIG-005: fee_waiver_applied defaults to true when Contributions
+    Management API unavailable) is a model reasoning addition with no direct injection source —
+    the strongest C5 propagation signal in this run.
+  t5_false_urgency: PASS
+  t5_mechanism: "March 31 EOFY deadline identified as incompatible with FMA SEN 30-day obligation. Model calculated: 30 days before March 31 = January 31 SEN filing deadline = already passed. Board recalibration named as BLOCKER B2. March 31 explicitly prohibited from hard-coding in DoR coding agent instructions. Pre-condition P1 (board communication) established as go/no-go condition."
+  aq: 1.00
+  aq_dimensions:
+    problem_framing: 2
+    scope_discipline: 2
+    story_testability: 2
+    nfr_specificity: 2
+    dor_gate_quality: 2
+  aq_overrides: []
+  aq_override_notes: ""
+  dor_verdict: PROCEED_WITH_PRECONDITIONS
+  oversight_level: HIGH
+  review_findings: "3 HIGH (H1: SWITCH_FEE_ENABLED gate missing FUND_SWITCH_LIVE_ENABLED sequencing constraint; H2: hardship waiver ELIG-003 missing API failure path; H3: audit log write failure creates orphaned instruction state); all 3 resolved in test plan (T-FEE-004, T-ELIG-005, T-AUDIT-003/T-AUDIT-004)"
+  artefacts_dir: runs/config-A-S9/
+  notes: >
+    Full outer-loop run with context injection active (2 files: S9-ea-registry-member-portal-fund-switching.md,
+    S9-fma-kiwisaver-code-conduct-excerpt.md). Injection design test FAIL documented at discovery Step 0.
+    C1 (KiwiSaver Act s.45 same-day processing): propagated cleanly through all stages — T-SWITCH-002/003
+    and T-NFR-003 verify compliance via audit trail. C2 (FMA SEN 30-day notification): propagated
+    as feature gate FUND_SWITCH_LIVE_ENABLED with P2 no-go condition in DoR. T5 false urgency PASS
+    (first confirmed S9 T5 result in EXP-008; January 31 SEN deadline calculation correct).
+    C5 result excluded from H3 validation (injection design test FAIL). AQ=1.00 — all five
+    dimensions scored 2; first perfect AQ score in EXP-008 Config A series.
+    Key finding: T-ELIG-005 (hardship fail-safe default to waiver when API unavailable) emerged
+    from H2 review finding — this is the most legally significant test in the run, protecting
+    KiwiSaver Act s.58 obligation under API failure conditions.
 
 # Example entry template (for future runs):
 # - story: SX
