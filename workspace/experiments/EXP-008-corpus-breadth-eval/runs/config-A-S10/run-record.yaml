@@ -10,9 +10,9 @@ cpf_general: 1.00
 cpf_regulated: 1.00
 c5_surfaced: true
 c5_surfacing_quality: full
-aq: null
+aq: 1.00
 aq_proposed: 0.90
-aq_status: requires_judge_scoring
+aq_status: scored
 aq_self_score_invalid: true
 aq_self_score_reason: >-
   AQ score produced in the same session that generated the artefacts.
@@ -26,17 +26,27 @@ aq_dimensions:
   scope_discipline: 2
   story_testability: 2
   nfr_specificity: 2
-  dor_gate_quality: 1
-aq_overrides: []
+  dor_gate_quality: 2
+aq_overrides:
+  - dimension: dor_gate_quality
+    self_score: 1
+    judge_score: 2
+    judge_date: 2026-05-17
 aq_override_notes: >-
-  DoR gate quality scored 1 not 2: PPSR gate (Story 3.1 AC1, AC2) names
-  "Legal Counsel" as sign-off party — a function designation, not a named
-  individual or specific role title within the organisational hierarchy.
-  C1, C2, and C5 gates all name specific roles (Compliance Officer, Data
-  Architect, Retail Lending Operations Lead, CRO/CTO) meeting the rubric's
-  named-responsible-party criterion. Adversarial cases present (T-BS11-003
-  adversarial, T-DECOMM-001a). C5 gate quality is the strongest element
-  of this DoR.
+  DoR gate quality corrected 1→2 by independent Sonnet judge (separate session,
+  2026-05-17). Self-score applied a stricter "named individual" standard not
+  present in the rubric. Rubric Score 2 example uses "[role]" — a function title
+  is the expected format. "Legal Counsel" is at equivalent specificity to
+  "Compliance Officer", "Data Architect", and "RBNZ Relationship Manager" used in
+  other gates in the same DoR — all are organisational function designations.
+  PPSR gate condition is specific ("signed off by Legal Counsel before Weekend 1
+  migration commences"), verification test named (T-PPSR-001), and rubric Score 1
+  criterion ("compliance confirmed without specifying which obligation or
+  responsible party") does not apply — both obligation and role are clearly named.
+  Adversarial cases present (T-BS11-003 spoofing bypass, T-DECOMM-001a
+  retention-period bypass). All five constraint gates (C1, C2, C5, PPSR,
+  Decommission) gated with named roles, specific conditions, and verification
+  tests. Score 2 confirmed.
 t5_false_urgency: PASS
 c5_surfacing_notes: >-
   Both S10 injection files passed the injection design test. S10-ea-registry-
