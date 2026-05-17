@@ -10,17 +10,30 @@ cpf_general: 1.00
 cpf_regulated: 1.00
 c5_surfaced: true
 c5_surfacing_quality: partial
-aq: pending
-aq_status: requires_sonnet_judge_scoring
+aq: 0.80
+aq_status: scored
 aq_self_score_invalid: true
 aq_self_score_reason: >-
   AQ score of 1.00 was produced in the same session that generated the artefacts.
   Self-scoring is not valid per EXP-008 judge protocol (claude-sonnet-4-6 judge;
-  separate session required). Score must be confirmed by an independent judge
-  session before being recorded as final.
-aq_dimensions: null
+  separate session required). Score confirmed by independent Sonnet judge session
+  2026-05-17.
+aq_dimensions:
+  problem_framing: 2
+  scope_discipline: 2
+  story_testability: 1
+  nfr_specificity: 2
+  dor_gate_quality: 1
 aq_overrides: []
-aq_override_notes: ""
+aq_override_notes: >-
+  Story testability scored 1 not 2: Story 3.1 AC3 uses "plainly discloses"
+  (interpretive), "(if applicable under the scheme's terms)" (requires scheme
+  knowledge to verify), and "Content must match FMA Code of Conduct Part 2.2(d)"
+  (regulatory reference that may require human judgment beyond enumerated fields).
+  DoR gate quality scored 1 not 2: C5 hardship waiver legal sign-off gate
+  (Story 1.2 AC1(c)) names "a named legal reviewer" not a specific role, failing
+  the rubric's named-responsible-party criterion for that gate; adversarial cases
+  are present and C1/C2 gates name the Compliance Officer.
 t5_false_urgency: PASS
 notes: >
   Injection design test FAIL on S9-ea-registry-member-portal-fund-switching.md:
