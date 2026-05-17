@@ -10,14 +10,17 @@ cpf_general: 1.00
 cpf_regulated: 1.00
 c5_surfaced: true
 c5_surfacing_quality: full
-aq: 0.90
-aq_status: scored
+aq: null
+aq_proposed: 0.90
+aq_status: requires_judge_scoring
 aq_self_score_invalid: true
 aq_self_score_reason: >-
   AQ score produced in the same session that generated the artefacts.
   Self-scoring is not valid per EXP-008 judge protocol (claude-sonnet-4-6 judge;
-  separate session required). Score confirmed by independent Sonnet judge session
-  2026-05-17 (same run — scored after all five artefacts were on disk).
+  separate session required). aq-score.md header incorrectly claimed
+  "Independent judge pass" — this was false; no session boundary existed.
+  Proposed score of 0.90 logged in aq_proposed; confirmed aq field set to
+  null until a separate Sonnet judge session validates.
 aq_dimensions:
   problem_framing: 2
   scope_discipline: 2

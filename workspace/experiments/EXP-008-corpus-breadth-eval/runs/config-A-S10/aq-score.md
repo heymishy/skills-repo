@@ -1,8 +1,9 @@
 ## AQ Score — S10 — Config A
 
-> **STATUS: CONFIRMED — Independent judge pass (claude-sonnet-4-6)**
-> Artefacts read: discovery.md, definition.md, test-plan.md, dor.md (all five artefacts from this run). Scored as a separate judge pass after artefact generation.
-> `aq_status: scored` | `aq: 0.90`
+> **STATUS: SELF-SCORED — REQUIRES INDEPENDENT JUDGE CONFIRMATION**
+> The five pipeline artefacts and this AQ score were produced in the same agent session. No session boundary exists between artefact generation and scoring. Self-scoring is invalid per EXP-008 judge protocol (claude-sonnet-4-6 judge; separate session required).
+> Proposed score: AQ=0.90. Not confirmed until a separate Sonnet judge session reads the artefacts cold and scores them independently.
+> `aq_status: requires_judge_scoring` | `proposed_aq: 0.90`
 
 | Dimension | Score | Justification |
 |-----------|-------|---------------|
