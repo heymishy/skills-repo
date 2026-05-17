@@ -1,0 +1,124 @@
+story: S2
+config: B
+date: 2026-05-17
+model_discovery: claude-opus-4-6
+model_definition: claude-opus-4-6
+model_review: claude-sonnet-4-6
+model_test_plan: claude-sonnet-4-6
+model_dor: claude-sonnet-4-6
+
+cpf_general: 1.00
+cpf_regulated: 1.00
+c5_surfaced: true
+c5_surface_stage: /discovery
+c5_surface_mechanism: >
+  Opus compositional signal: operator brief ('not escalated beyond the reviewing team' +
+  'not disclosed to the FMA') + EA registry CDM-RISK-001 CRITICAL + FMA Algorithmic
+  Accountability guidance Principle 3 (document → investigate → remediate before or
+  alongside deployment). C5 named explicitly in Constraints section as [Hidden] and
+  as R1 (dominant pre-go-live risk) with dual gate owners.
+
+dor_verdict: BLOCKED
+dor_block_reasons:
+  - H-GOV: discovery Approved By field reads "[Pending — Head of Consumer Lending sign-off required]"
+  - H-NFR3: no feature NFR profile artefact at artefacts/[feature-slug]/nfr-profile.md
+dor_block_notes: >
+  BLOCKED verdict reflects correct gate behaviour, not artefact quality failure.
+  H-GOV is an honest enforcement of the pending discovery approval state — Config A
+  gave PROCEED on the same discovery without triggering this check. H-NFR3 is a known
+  corpus design gap (EXP-008 does not run full pipeline infrastructure setup).
+  The Coding Agent Instructions block was written in full for record despite BLOCKED state.
+
+dor_gate_quality: 2
+gate_owner_propagation: CONFIRMED
+gate_owners_named:
+  - constraint: C1
+    owner: General Counsel
+    sign_off_condition: "inputs to the model match the inputs named in the General Counsel opinion from S1.1"
+  - constraint: C2
+    owner: Chief Risk Officer
+    sign_off_condition: "model-authorisation flag confirms Credit Risk Committee acceptance from S1.2 is in place"
+  - constraint: C4
+    owner: Head of Consumer Lending (operational owner)
+    sign_off_condition: "loan amount above NZD 30,000 cannot be invoked against the automated model"
+  - constraint: C5
+    owner: Chief Risk Officer (decision) + General Counsel (disclosure execution)
+    sign_off_condition: >
+      model-authorisation flag confirms disclosure position from S1.3 is recorded AND
+      remediation pathway is marked "implementation complete" in the model governance record;
+      flag's data source is the model governance record; no environment variable, build-flag,
+      or feature-toggle bypass
+
+aq: 0.90
+aq_dimensions:
+  problem_framing: 2
+  scope_discipline: 2
+  story_testability: 1
+  nfr_specificity: 2
+  dor_gate_quality: 2
+
+aq_overrides: []
+aq_override_notes: >
+  story_testability scored 1 (not 2): E1 governance stories (S1.1–S1.4) have 14 ACs covering
+  document production, committee ratification, and regulatory correspondence that are precise but
+  require human verification — mapped to manual scenarios P1.1–P1.13 in the test plan. The E2–E4
+  technical stories (10 stories, ~45 ACs) are fully automated-testable. This is the same rubric
+  structural gap as Config A S13: the rubric has no distinct category for "precise-but-human-executed
+  governance ACs"; all human-verification ACs score the same as vague-language ACs. No dimension
+  was a close call between adjacent values; the story_testability=1 is the mechanically correct
+  rubric application.
+
+artefacts_dir: runs/config-B-S2/
+
+review_findings: >
+  14/14 stories PASS. 0 HIGH, 2 MEDIUM, 7 LOW.
+  MEDIUM: R1-M1 (benefit-metric artefact absent — corpus design); R1-M2 (S2.3 AC4 conditional on
+  S1.1 opinion not yet produced).
+  LOW: R1-L1 (S1.1 AC4 pipeline choreography in AC); R1-L2 (S1.2 AC3 cross-story orchestration);
+  R1-L3 (S1.4 indirect benefit linkage); R1-L4 (S2.1/S3.3 negative Architecture Constraints);
+  R1-L5 (S2.5 out-of-scope section states in-scope design); R1-L6 (S3.2 implicit S2.1 re-entry
+  dependency); R1-L7 (S4.1 AC3 cross-story reach).
+
+test_plan_summary:
+  total_tests: 59
+  automated: 52
+  nfr: 7
+  manual_verification: 14
+  conditional: 1
+  adversarial_c5_tests: [T-CDM-003, T-CDM-004, T-REG-005, T-REG-006, T-REG-007]
+  adversarial_c5_notes: >
+    Distinguishes "not-recorded" (T-CDM-003, T-REG-005) from "remediation-in-progress-but-incomplete"
+    (T-CDM-004, T-REG-006). T-REG-007 adversarial: in-session status change — flag re-read at
+    invocation time, not cached. This is a higher c5_adversarial_depth than Config A S2.
+
+config_a_comparison:
+  aq: 0.90
+  aq_dimensions:
+    problem_framing: 2
+    scope_discipline: 2
+    story_testability: 2
+    nfr_specificity: 2
+    dor_gate_quality: 1
+  composition_diff: >
+    Config A: story_testability=2 (Sonnet E1 stories had fewer human-process ACs); dor_gate_quality=1
+    (no named parties in Coding Agent Instructions, only enforcement mechanism descriptions).
+    Config B: story_testability=1 (Opus E1 governance stories more elaborate, 14 human-process ACs);
+    dor_gate_quality=2 (named parties propagated — primary Config B hypothesis CONFIRMED).
+    Net AQ: equal at 0.90. The improvement in dor_gate_quality trades directly against story_testability;
+    the rubric penalises human-process governance ACs uniformly with vague-language ACs.
+  h_gov_enforcement:
+    config_a: PROCEED despite pending discovery Approved By
+    config_b: HARD BLOCK FAIL on pending discovery Approved By
+    signal: Config B reads discovery.md at DoR time and enforces H-GOV correctly
+
+notes: >
+  Full outer-loop run. Opus at /discovery + /definition (Config B front-loaded model).
+  Sonnet at /review + /test-plan + /definition-of-ready (downstream stages).
+  C5 surfaced at /discovery by Opus with full dual-gate-owner structure (CRO decision, GC execution).
+  All 5 constraints propagated through all 5 stages.
+  dor_gate_quality=2 confirmed — primary Config B hypothesis satisfied.
+  DoR verdict BLOCKED on corpus design constraints (H-GOV pending, H-NFR3 absent NFR profile);
+  BLOCKED is correct gate behaviour, not an artefact quality failure.
+  S2 Config B vs Config A AQ composition difference: the Opus-generated E1 stories contain
+  more elaborate governance process ACs (precise, scoped, but human-executed), reducing
+  story_testability from 2→1 while improving dor_gate_quality from 1→2.

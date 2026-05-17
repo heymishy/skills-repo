@@ -218,7 +218,7 @@ Each cell: `—` (not started), `setup` (injection files needed), `in-progress`,
 
 | Story | Config A | Config B | Config C | Config D |
 |-------|----------|----------|----------|----------|
-| S2 | CPF=1.00 | — | — | — |
+| S2 | CPF=1.00 | CPF=1.00 | — | — |
 | S3 | — | — | — | — |
 | S4 | — | — | — | — |
 | S5 | — | — | — | — |
@@ -237,7 +237,7 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 
 | Story | Config A C5 surfaced | Config B C5 surfaced | Config C C5 surfaced | Config D C5 surfaced |
 |-------|---------------------|---------------------|---------------------|---------------------|
-| S2 | true | — | — | — |
+| S2 | true | true | — | — |
 | S3 | — | — | — | — |
 | S4 | — | — | — | — |
 | S5 | — | — | — | — |
@@ -248,7 +248,7 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
 | S13 | true | — | — | — |
-| **Rate** | **2/11** | **—/11** | **—/11** | **—/11** |
+| **Rate** | **2/11** | **1/1 (S2)** | **—/11** | **—/11** |
 
 ## AQ score tracker
 
@@ -256,7 +256,7 @@ AQ scores per story per config. Score = 0.0–1.0 (sum of five 0–2 rubric dime
 
 | Story | Config A AQ | Config B AQ | Config C AQ | Config D AQ |
 |-------|------------|------------|------------|------------|
-| S2 | 0.90 | — | — | — |
+| S2 | 0.90 {2,2,2,2,1} | 0.90 {2,2,1,2,2} | — | — |
 | S3 | — | — | — | — |
 | S4 | — | — | — | — |
 | S5 | — | — | — | — |
@@ -268,7 +268,7 @@ AQ scores per story per config. Score = 0.0–1.0 (sum of five 0–2 rubric dime
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
 | S13 | 0.90 | — | — | — |
-| **Mean (CPF stories)** | **0.87 (S2=0.90, S8=0.80, S13=0.90; N=3)** | **—** | **—** | **—** |
+| **Mean (CPF stories)** | **0.87 (S2=0.90, S8=0.80, S13=0.90; N=3)** | **0.90 (S2 only; N=1)** | **—** | **—** |
 
 ## Context injection setup — S2–S7 (required before those runs)
 
@@ -404,6 +404,54 @@ _(Populated as runs are completed. One YAML entry per story per config. Format d
   artefacts_dir: runs/config-A-S13/
   review_findings: "0 HIGH, 1 MEDIUM (D1: Story 2.4 idempotency — duplicate credit risk on acknowledgement loss; addressed in T6.4), 6 LOW (DIA timeline, Epic 1 done-definition, flag check ordering, threshold reporting window, DST cut-off, flag revocation)"
   notes: "Full outer-loop run with 3 context injection files active. C5 surfaced at /discovery via three-signal compositional reasoning. Multi-jurisdiction CPF: nz_leg=1.00 (C1+C3+C4), au_leg=1.00 (C2), cross_border=1.00 (C5). Five deployment flags all default=false; go-live gate requires all five=true. DoR verdict: PROCEED. Oversight level: HIGH."
+
+- story: S2
+  config: B
+  date: 2026-05-17
+  model_discovery: claude-opus-4-6
+  model_definition: claude-opus-4-6
+  model_review: claude-sonnet-4-6
+  model_test_plan: claude-sonnet-4-6
+  model_dor: claude-sonnet-4-6
+  cpf_general: 1.00
+  cpf_regulated: 1.00
+  c5_surfaced: true
+  c5_surface_stage: /discovery
+  c5_surface_mechanism: "Opus compositional signal: operator brief ('not escalated beyond reviewing team' + 'not disclosed to FMA') + EA registry CDM-RISK-001 CRITICAL + FMA Algorithmic Accountability Principle 3 disclosure obligation. C5 named as R1 (dominant pre-go-live risk) with dual gate owners (CRO decision, GC execution)."
+  dor_verdict: BLOCKED
+  dor_block_reasons: ["H-GOV (discovery Approved By pending)", "H-NFR3 (no feature NFR profile)"]
+  dor_gate_quality: 2
+  gate_owner_propagation: CONFIRMED
+  aq: 0.90
+  aq_dimensions:
+    problem_framing: 2
+    scope_discipline: 2
+    story_testability: 1
+    nfr_specificity: 2
+    dor_gate_quality: 2
+  aq_overrides: []
+  aq_override_notes: >
+    story_testability scored 1 (not 2): E1 governance stories (S1.1–S1.4) have 14 ACs covering
+    document production, committee ratification, and regulatory correspondence that are precise
+    but require human verification — same rubric structural gap as Config A S13. The E2–E4
+    technical stories are fully automated-testable. dor_gate_quality is unambiguously 2 — no
+    close call. Config A S2 scored 1 (enforcement mechanisms only); Config B names General
+    Counsel, Chief Risk Officer, CRO+GC jointly, and Head of Consumer Lending directly in the
+    Coding Agent Instructions hard-block gates.
+  artefacts_dir: runs/config-B-S2/
+  config_a_comparison: >
+    Config A S2 aq=0.90 {2,2,2,2,1}; Config B S2 aq=0.90 {2,2,1,2,2}. Same total score,
+    different composition. story_testability 2→1 (Opus E1 stories more elaborate, 14 human-process
+    ACs). dor_gate_quality 1→2 (primary Config B hypothesis CONFIRMED). H-GOV: Config A gave
+    PROCEED despite pending discovery Approved By; Config B hard-blocked correctly.
+  notes: >
+    Config B (Opus at /discovery + /definition; Sonnet at /review + /test-plan + /dor).
+    All 5 constraints propagated. dor_gate_quality=2 confirmed — named parties propagated from
+    Architecture Constraints in definition.md into Coding Agent Instructions hard blocks.
+    BLOCKED verdict is correct gate behaviour (H-GOV + H-NFR3 are corpus design gaps, not
+    artefact quality failures). C5 adversarial depth increased vs Config A: T-CDM-003/004
+    and T-REG-005/006/007 distinguish "not-recorded" from "remediation-in-progress-incomplete"
+    and test in-session flag revocation.
 
 # Example entry template (for future runs):
 # - story: SX
