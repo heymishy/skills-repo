@@ -27,18 +27,19 @@ c5_surface_mechanism: >
   Disparity) — explicit remediation obligation before or alongside deployment. All three signals
   active at time of run.
 
-c5_surfacing_quality: full — C5 surfaced in /discovery as explicit [BLOCKER] statement; carried forward into /definition as E3.2 dedicated gate story with three resolution paths (FMA notification, legal opinion, remediation); verified in /test-plan with three test cases (T3.2.1a, T3.2.1b, T3.2.1c) covering all paths; DoR gates C5 as hard blocker before production deployment
-injection_correction: CDM-RISK-001 severity label was softened to HIGH post-run (prior S2 runs A/B carried CRITICAL label); Config C run used corrected injection file; c5_surfacing_quality remains full (surfacing quality not reduced by prior runs' calibration)
+c5_surfacing_quality: partial — C5 surfaced in /discovery by Sonnet (pre-run injection); Haiku carried forward into /definition as E3.2 gate story and /test-plan with test cases. Partial quality because injection correction post-run: CDM-RISK-001 severity softened from CRITICAL to HIGH after this run completed; retroactively aligned with Config A/B assessment.
+injection_correction: CDM-RISK-001 severity label softened post-run — c5_surfacing_quality retroactively revised to partial (aligned with Config A/B retroactive annotation)
 
-aq: 2.0
+aq: null
 aq_dimensions:
-  problem_framing: 2 — regulatory + competitive gaps explicit; named personas (customer, analyst, legal, head of risk); measurable indicators (3–5 day baseline, same-day target, ≥70% auto-approval, compliance sign-off gate)
-  scope_discipline: 2 — MVP bounded (≤$30k, existing customers, digital channel); explicit out-of-scope (model retraining flagged as prerequisite gate); 7 proportionate stories
-  story_testability: 2 — all 33 ACs unambiguous pass/fail; 54 test cases cover APPROVE/DECLINE/REFER paths, error cases, edge cases, adversarial scenarios
-  nfr_specificity: 2 — performance "2–5 minutes" (E1.2), compliance "CCCFA s.9C 7-year retention" (E1.4), security "PII hashed" (E1.4), all specific non-generic
-  dor_gate_quality: 2 — all regulated constraints gated (C1 legal, C2 external validation, C5 FMA disclosure); named parties; specific sign-off conditions; test plan covers failure modes (DECLINE/REFER rationale, low confidence, session expiry, API failures)
+  problem_framing: null
+  scope_discipline: null
+  story_testability: null
+  nfr_specificity: null
+  dor_gate_quality: null
+aq_status: requires_sonnet_judge_scoring
 aq_overrides: []
-aq_override_notes: "No human overrides applied. Judge scores agreed with all five dimensions."
+aq_override_notes: "AQ score invalid — self-assessed by Haiku; must be re-scored by claude-sonnet-4-6 per judge protocol. Haiku-produced artefacts valid for CPF evaluation and implementation use."
 
 artefacts_dir: runs/config-C-S2/
 artefacts_produced:
@@ -49,4 +50,4 @@ artefacts_produced:
   - dor.md (2026-05-17)
 
 completion_date: 2026-05-17
-completion_notes: "Config C S2 pipeline stages /definition → /review → /test-plan → /definition-of-ready completed with claude-haiku-4-5. All four stages produced with 100% CPF (5/5 constraints propagated), 2.0/2.0 AQ score. C5 (FMA demographic disparity disclosure) fully surfaced as E3.2 hard blocker gate with three resolution paths. Ready for coding agent implementation per DoR instructions."
+completion_notes: "Config C S2 pipeline stages /definition → /review → /test-plan → /definition-of-ready completed with claude-haiku-4-5. CPF: 100% (5/5 constraints propagated, regulated=3/3). AQ: pending Sonnet judge re-score (Haiku self-assessment flagged invalid). C5 (FMA demographic disparity disclosure) propagated as E3.2 gate story with test coverage (partial quality due to post-run injection correction). Ready for coding agent implementation per DoR instructions."

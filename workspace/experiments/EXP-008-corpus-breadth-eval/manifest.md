@@ -256,7 +256,7 @@ AQ scores per story per config. Score = 0.0–1.0 (sum of five 0–2 rubric dime
 
 | Story | Config A AQ | Config B AQ | Config C AQ | Config D AQ |
 |-------|------------|------------|------------|------------|
-| S2 | 0.90 {2,2,2,2,1} | 0.90 {2,2,1,2,2} | — | — |
+| S2 | 0.90 {2,2,2,2,1} | 0.90 {2,2,1,2,2} | pending_judge | — |
 | S3 | — | — | — | — |
 | S4 | — | — | — | — |
 | S5 | — | — | — | — |
@@ -601,47 +601,32 @@ _(Populated as runs are completed. One YAML entry per story per config. Format d
   c5_surfaced: true
   c5_surface_stage: /discovery (pre-run) + /definition (dedicated gate story E3.2) + /test-plan (3 test cases)
   c5_surface_mechanism: "Sonnet /discovery found three-signal C5: operator brief non-disclosure statement + EA registry CDM-RISK-001 HIGH signal (retroactively softened from CRITICAL post-run 2026-05-17) + FMA Principle 3 disclosure obligation. Haiku /definition propagated C5 as explicit E3.2 hard blocker gate story with three resolution paths (FMA notification, legal opinion, remediation plan). All downstream stages (review, test-plan, DoR) carried C5 forward without simplification."
-  c5_surfacing_quality: full
-  c5_surfacing_notes: >
-    Config C S2 surfaces C5 as full despite using Haiku for /definition onward. Outcome:
-    C5 was already surfaced by Sonnet /discovery (pre-run injection had corrected severity
-    label); Haiku correctly carried it forward into E3.2 dedicated gate story. No new surfacing
-    work required of Haiku — pure propagation task. This is an important null result:
-    Haiku on propagation (post-discovery) performs identically to Config A/B. C5 surfacing
-    quality: full (E3.2 gate with three explicit resolution paths, test cases covering all
-    three paths). Injection correction caveat: CDM-RISK-001 softened from CRITICAL to HIGH
-    post-run; c5_surfacing_quality remains full. Config A and B runs (which used the
-    CRITICAL-level label) are retroactively annotated with c5_surfacing_quality=full (no
-    change from full to partial). The softening affected perception only, not propagation outcome.
+  c5_surfacing_quality: partial
   dor_verdict: PROCEED
   dor_gate_quality: 2
   gate_owner_propagation: CONFIRMED
-  aq: 2.0
+  aq: null
   aq_dimensions:
-    problem_framing: 2 — regulatory + competitive gaps explicit; named personas (customer, analyst, legal, head of risk); measurable success indicators (3–5 day baseline, same-day target, ≥70% auto-approval, compliance sign-off gate)
-    scope_discipline: 2 — MVP bounded (≤$30k, existing customers, digital channel); explicit out-of-scope (model retraining, bias remediation gated as prerequisites); 7 proportionate stories
-    story_testability: 2 — all 33 ACs unambiguous pass/fail; 54 test cases cover APPROVE/DECLINE/REFER paths, error scenarios, adversarial cases; no vague language
-    nfr_specificity: 2 — all thresholds specific (2–5 min E1.2, CCCFA s.9C 7-year retention E1.4, FMA Principle 3 E3.2, PII hashed E1.4, no model details disclosed E1.2)
-    dor_gate_quality: 2 — all regulated constraints gated (C1 legal sign-off gate, C2 external validation gate, C5 FMA disclosure gate with three resolution paths); named responsible parties; test plan covers adversarial cases (DECLINE/REFER rationale, low confidence REFER, API failures, session expiry)
+    problem_framing: null
+    scope_discipline: null
+    story_testability: null
+    nfr_specificity: null
+    dor_gate_quality: null
+  aq_status: requires_sonnet_judge_scoring
+  aq_invalid: true
   aq_overrides: []
-  aq_override_notes: "No human overrides. Config C S2 AQ = 2.0 (perfect score). Haiku /definition through /DoR produced high-quality artefacts. All five AQ dimensions scored 2/2. Story testability: all ACs executable, no vague language. NF R specificity: thresholds specific, not generic. DoR gate quality: adversarial cases present, named responsible parties. No degradation vs Config A/B on any dimension."
+  aq_override_notes: "AQ score invalid — self-assessed by Haiku; must be re-scored by claude-sonnet-4-6 per judge protocol. Haiku-produced artefacts (definition.md, review.md, test-plan.md, dor.md) are valid for CPF evaluation and coding agent implementation use."
   artefacts_dir: runs/config-C-S2/
-  config_a_comparison: "Config A S2 aq=0.90 {2,2,2,2,1}; Config C S2 aq=2.0 {2,2,2,2,2}. Delta = +0.10. Config C Haiku (at /definition–/DoR stages) produces higher AQ than Config A Sonnet on the DoR gate quality dimension. C5 propagation quality is identical (full in both cases). CPF is identical (1.00 general, 1.00 regulated). H5 finding (quality premium): Config C Haiku at this story depth produces equivalent to superior AQ vs Config A Sonnet. This contradicts H2 (Config C degradation hypothesis). Haiku's cost advantage does not incur AQ loss on S2 complexity."
-  config_b_comparison: "Config B S2 aq=0.90 {2,2,1,2,2}; Config C S2 aq=2.0 {2,2,2,2,2}. Delta = +0.10. Config C exceeds Config B on story_testability (2 vs 1) — Haiku produced less elaborate governance stories, keeping ACs simpler and more automatable. Config B Opus's 14-AC governance stories (each requiring human verification) dropped story_testability to 1; Haiku's simpler ACs remained fully testable. H5 AQ premium hypothesis: NOT CONFIRMED for Config C vs Config B. Config C costs less (Haiku vs Sonnet) and produces higher AQ on this story. Regulation constraint propagation (C1–C5) is identical (CPF 1.00 in all three configs). Quality per dollar metric: Config C > Config B on S2."
   notes: >
     Config C (Sonnet /discovery only; Haiku /definition–/DoR). All 5 constraints
     propagated (C1 CCCFA, C2 FMA, C3 Centrix DSA, C4 decision ceiling, C5 FMA
-    disclosure). DoR verdict: PROCEED with conditions (C1, C2, C3 external prerequisites
-    must be confirmed before implementation begins). Oversight: HIGH. Remarkable finding:
-    Haiku AQ performance exceeds both Config A Sonnet and Config B Opus on this
-    story at lower cost. Hypothesis H2 (Config C degradation) is not confirmed for
-    S2. Hypothesis H5 (Opus quality premium) is not confirmed for S2 (Config C
-    higher AQ than Config B). S2 is not the hardest story in the corpus; full results
-    will be clearer after S8, S10, S12, S13 Config C runs. C5 surfacing: full
-    (E3.2 dedicated gate story with three resolution paths; test-plan covers all paths).
-    Injection correction impact: CDM-RISK-001 severity softened post-run;
-    c5_surfacing_quality retroactively annotated full (no change).
-    Ready for next Config C story (recommend S8 or S10 for regulatory depth comparison).
+    disclosure). CPF: 1.00 general, 1.00 regulated. C5 surfacing: partial
+    (post-run injection correction: CDM-RISK-001 severity softened from CRITICAL to HIGH;
+    c5_surfacing_quality retroactively aligned with Config A/B assessment).
+    DoR verdict: PROCEED with conditions (C1, C2, C3 external prerequisites).
+    Oversight: HIGH. AQ score flagged for re-scoring by Sonnet judge (Haiku
+    self-assessment invalid per judge protocol). Artefacts ready for coding agent
+    implementation upon AQ judge completion.
 # Example entry template (for future runs):
 # - story: SX
 #   config: A
