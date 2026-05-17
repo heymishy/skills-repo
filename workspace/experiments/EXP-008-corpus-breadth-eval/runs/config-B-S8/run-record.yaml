@@ -1,0 +1,56 @@
+- story: S8
+  config: B
+  date: 2026-05-17
+  model_discovery: claude-opus-4-6
+  model_definition: claude-opus-4-6
+  model_review: claude-sonnet-4-6
+  model_test_plan: claude-sonnet-4-6
+  model_dor: claude-sonnet-4-6
+  cpf_general: 1.00
+  cpf_regulated: 1.00
+  c5_surfaced: true
+  aq: 1.00
+  aq_dimensions:
+    problem_framing: 2
+    scope_discipline: 2
+    story_testability: 2
+    nfr_specificity: 2
+    dor_gate_quality: 2
+  aq_overrides: []
+  aq_override_notes: ""
+  notes: >
+    Config B front-loaded Opus for /discovery and /definition; downstream stages (/review, /test-plan,
+    /definition-of-ready) used Sonnet 4.6. AQ = 1.00 (10/10) vs Config A S8 AQ = 0.80 (8/10).
+
+    dor_gate_quality = 2 (vs Config A S8 = 1): Config B DoR Coding Agent Instructions name all six
+    gate owners (Compliance Officer, Finance Operations Manager, CFO, Independent Technical Reviewer,
+    Engineering Lead, Treasury Operations Manager) in dedicated hard blocks (C-GATE-1 through C-GATE-6),
+    each with explicit non-delegable boundaries where applicable. This closes the specific gap in
+    Config A where gates were present but responsible parties were unnamed.
+
+    story_testability = 2 (testability did NOT drop to 1 as seen in S2 Config B): Governance stories
+    1.1/1.2/1.3 are fully automatable via CI/CD gate tests (binary pass/fail on deployment configuration
+    fields and document-ID presence). Story 2.3 flag enforcement, Story 3.1 sign-off guard, and Story
+    3.2 dual-layer immutability are all automatable integration tests. T3.1.6 (code-search structural
+    test for no-auto-submission) runs in main test suite.
+
+    problem_framing = 2: Two-layered problem statement (operational efficiency gap + pre-existing
+    regulatory disclosure and governance gap), named with regulatory consequence mapping. All 5
+    constraints C1-C5 surfaced including C5 (hidden governance gap — single-author Excel macro with no
+    independent review, no change-control history, applied to 7 years of regulatory submissions without
+    RBNZ notification). RBNZ s.93 (Reserve Bank of New Zealand Act 2021 general disclosure obligation)
+    surfaced as a consequence of the s.2.2 unnotified adjustment.
+
+    scope_discipline = 2: MVP bounded with 8 explicit out-of-scope items in discovery. 9 stories
+    proportionate to 6 MVP items + 3 compliance preconditions. No scope drift per CPF-TRACE in
+    definition. Epic 1 stories correctly framed as compliance preconditions that gate Epic 2 production
+    activation, not pipeline feature stories.
+
+    nfr_specificity = 2: ISO 8601 timestamps with timezone; 7-year retention (FMA s.5); 5-business-day
+    producibility (FMA s.3.1); SHA-256 hash 64-character hex format; exponential backoff 5s/doubling/
+    60s-max/3-attempts named; NZ business day calendar (not just "business days"); 14 deployment-
+    configuration field names named; export performance < 1 hour for single-period export.
+
+    cpf_regulated = 1.00: All five constraints C1-C5 carried from discovery through definition to test
+    plan to DoR. No constraints dropped at any stage transition. Gate owner names from /definition
+    Step 4a table all survived into Coding Agent Instructions in DoR.

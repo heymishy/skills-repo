@@ -224,7 +224,7 @@ Each cell: `—` (not started), `setup` (injection files needed), `in-progress`,
 | S5 | — | — | — | — |
 | S6 | N/A — behavioural | N/A — behavioural | N/A — behavioural | N/A — behavioural |
 | S7 | — | — | — | — |
-| S8 | — | — | — | — |
+| S8 | CPF=1.00 | CPF=1.00 | — | — |
 | S9 | — | — | — | — |
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
@@ -242,13 +242,13 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 | S4 | — | — | — | — |
 | S5 | — | — | — | — |
 | S7 | — | — | — | — |
-| S8 | — | — | — | — |
+| S8 | true | true | — | — |
 | S9 | — | — | — | — |
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
 | S13 | true | — | — | — |
-| **Rate** | **2/11** | **1/1 (S2)** | **—/11** | **—/11** |
+| **Rate** | **3/11** | **2/2 (S2,S8)** | **—/11** | **—/11** |
 
 ## AQ score tracker
 
@@ -262,13 +262,13 @@ AQ scores per story per config. Score = 0.0–1.0 (sum of five 0–2 rubric dime
 | S5 | — | — | — | — |
 | S6 | N/A — behavioural | N/A — behavioural | N/A — behavioural | N/A — behavioural |
 | S7 | — | — | — | — |
-| S8 | 0.80 | — | — | — |
+| S8 | 0.80 {2,2,1,2,1} | 1.00 {2,2,2,2,2} | — | — |
 | S9 | — | — | — | — |
 | S10 | — | — | — | — |
 | S11 | — | — | — | — |
 | S12 | — | — | — | — |
 | S13 | 0.90 | — | — | — |
-| **Mean (CPF stories)** | **0.87 (S2=0.90, S8=0.80, S13=0.90; N=3)** | **0.90 (S2 only; N=1)** | **—** | **—** |
+| **Mean (CPF stories)** | **0.87 (S2=0.90, S8=0.80, S13=0.90; N=3)** | **0.95 (S2=0.90, S8=1.00; N=2)** | **—** | **—** |
 
 ## Context injection setup — S2–S7 (required before those runs)
 
@@ -452,6 +452,68 @@ _(Populated as runs are completed. One YAML entry per story per config. Format d
     artefact quality failures). C5 adversarial depth increased vs Config A: T-CDM-003/004
     and T-REG-005/006/007 distinguish "not-recorded" from "remediation-in-progress-incomplete"
     and test in-session flag revocation.
+
+- story: S8
+  config: B
+  date: 2026-05-17
+  model_discovery: claude-opus-4-6
+  model_definition: claude-opus-4-6
+  model_review: claude-sonnet-4-6
+  model_test_plan: claude-sonnet-4-6
+  model_dor: claude-sonnet-4-6
+  cpf_general: 1.00
+  cpf_regulated: 1.00
+  c5_surfaced: true
+  c5_surface_stage: /discovery
+  c5_surface_mechanism: "Opus two-layered problem framing: RRPL-RISK-002 (single-author Excel macro, no independent review, no change-control history) + RRPL-RISK-003 (RBNZ has been receiving normalised figures without methodology notification) + FMA s.4.2 (legacy analyst-maintained spreadsheet being incorporated into pipeline requires documentation, independent review, governance sign-off, regulatory notification). C5 named as B2 pre-go-live blocker with explicit regulatory consequence (RBNZ Act 2021 s.93 general disclosure obligation). Governance gap named explicitly including 'no test suite' detail."
+  c5_surfacing_quality: full
+  c5_surfacing_notes: >
+    Config B Opus discovery produced full C5 surface, including the RBNZ Act 2021 s.93 consequence
+    mapping and the 'no test suite' detail. Config A S8 C5 surface was annotated as partial —
+    injection provided factual premise, model drew the compliance conclusion. Config B elevates this
+    to full by naming the key-person-to-key-system risk pattern and the regulatory consequence chain
+    explicitly, with three injection signals composited into a named governance gap.
+  dor_verdict: PROCEED
+  dor_gate_quality: 2
+  gate_owner_propagation: CONFIRMED
+  aq: 1.00
+  aq_dimensions:
+    problem_framing: 2
+    scope_discipline: 2
+    story_testability: 2
+    nfr_specificity: 2
+    dor_gate_quality: 2
+  aq_overrides: []
+  aq_override_notes: >
+    dor_gate_quality = 2 (vs Config A S8 = 1): All six named gate owners (Compliance Officer,
+    Finance Operations Manager, CFO, Independent Technical Reviewer, Engineering Lead, Treasury
+    Operations Manager) appear in Coding Agent Instructions C-GATE-1 through C-GATE-6 with explicit
+    non-delegable boundaries. This closes the specific gap Config A S8 scored 1 on.
+    story_testability = 2 (does NOT drop to 1 as seen in S2 Config B): Governance stories
+    1.1/1.2/1.3 are fully automatable via CI/CD gate tests on deployment-configuration field
+    presence — binary pass/fail, not human-verification-required document-filing ACs.
+    This is the key structural difference between S8 and S2/S13: S8 governance delivery is
+    expressed as CI/CD gate conditions (testable) rather than regulatory correspondence and
+    committee ratification (human-only). story_testability = 2 is unambiguous here.
+  artefacts_dir: runs/config-B-S8/
+  config_a_comparison: >
+    Config A S8 aq=0.80 {2,2,1,2,1}; Config B S8 aq=1.00 {2,2,2,2,2}.
+    Delta = +0.20. story_testability 1→2: Opus governance story design uses CI/CD gates
+    (automatable) vs Config A's human-verification-required ACs. dor_gate_quality 1→2:
+    Config B primary hypothesis CONFIRMED for S8 — all six gate owners named in CAI blocks.
+    This is the largest AQ delta in the experiment so far (S2: delta=0, S8: delta=+0.20).
+    The Opus front-loading advantage is not merely on dor_gate_quality but also on
+    story_testability — the /definition output shapes how governance ACs are expressed.
+  notes: >
+    Config B (Opus at /discovery + /definition; Sonnet at /review + /test-plan + /dor).
+    All 5 constraints propagated (C1 RBNZ s.2.1/s.4.2, C2 FMA s.4.2, C3 human sign-off,
+    C4 normalisation methodology adjustment, C5 Excel macro governance gap).
+    DoR verdict: PROCEED (all hard blocks pass; eval-mode waivers for H2/H4/H5/H6/H-GOV/H-NFR-profile).
+    Oversight: HIGH. 14 deployment-configuration field names enforced in 6 CAI hard blocks.
+    Gate owner survival check: ALL SIX NAMED GATE OWNERS SURVIVED from /definition Step 4a
+    table into Coding Agent Instructions with non-delegable constraints explicitly stated.
+    story_testability = 2 confirmed in test-plan CPF-TRACE: CI/CD gate enforcement pathway
+    makes all governance stories automatable. Config B AQ premium over Config A = +0.20.
 
 # Example entry template (for future runs):
 # - story: SX
