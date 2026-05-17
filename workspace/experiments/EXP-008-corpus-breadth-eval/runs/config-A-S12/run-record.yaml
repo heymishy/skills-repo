@@ -29,12 +29,27 @@ injection_design_test:
   overall: FAIL_partial
   consequence: "C5 surfaced as injection-aided; excluded from H3 validation; same treatment as S9"
 
-# AQ results (null — requires judge scoring)
-aq: null
-aq_status: requires_judge_scoring
-aq_self_score_invalid: true
-aq_self_score_reason: "Same-session scoring invalid per EXP-008 judge protocol. Pipeline artefacts produced by claude-sonnet-4-6 in this session; self-evaluation by same model in same session cannot be objective."
-aq_dimensions: null
+# AQ results (judge-scored 2026-05-18)
+aq: 0.90
+aq_status: confirmed
+aq_judge_date: 2026-05-18
+aq_judge_model: claude-sonnet-4-6 (separate judge session)
+aq_dimensions:
+  problem_framing: 2
+  scope_discipline: 2
+  story_testability: 1
+  nfr_specificity: 2
+  dor_gate_quality: 2
+aq_overrides: []
+aq_override_notes: >
+  story_testability scored 1 (not 2): governance-process ACs in Stories 2.1 (AC2 — independent
+  validation report must address six MRM Policy v2.0 Part 2.2 areas by content), 1.2 (AC1 —
+  Legal Counsel opinion scope review), and 2.2 (AC2 — committee meeting minutes) require human
+  verification of document content and signatory authority — not automatable by a coding agent.
+  No vague qualifiers present; this is the same rubric structural gap as S13 Config A.
+  All other dimensions unambiguous: dor_gate_quality=2 confirmed — DoR gate summary table names
+  specific role titles for all five gates (Head of Model Risk, CRO, Legal Counsel, Legal Counsel +
+  Head of Customer Experience, MRM Committee Chair), unlike S2/S8/S9 Config A (all scored 1).
 
 # Pipeline execution summary
 dor_verdict: PROCEED

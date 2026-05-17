@@ -276,9 +276,9 @@ AQ scores per story per config. Score = 0.0–1.0 (sum of five 0–2 rubric dime
 | S9 | 0.80 {2,2,1,2,1} | — | — | — |
 | S10 | 1.00 {2,2,2,2,2} | — | — | — |
 | S11 | 0.80 {2,1,1,2,2} | — | — | — |
-| S12 | — | — | — | — |
+| S12 | 0.90 {2,2,1,2,2} | — | — | — |
 | S13 | 0.90 {2,2,1,2,2} | 0.90 {2,2,1,2,2} | 0.80 {2,2,1,1,2} | — |
-| **Mean (CPF stories)** | **0.87 (S2=0.90, S8=0.80, S9=0.80, S10=1.00, S11=0.80, S13=0.90; N=6)** | **0.93 (S2=0.90, S8=1.00, S13=0.90; N=3)** | **0.77 (S2=0.70, S8=0.80, S13=0.80; N=3)** | **—** |
+| **Mean (CPF stories)** | **0.87 (S2=0.90, S8=0.80, S9=0.80, S10=1.00, S11=0.80, S12=0.90, S13=0.90; N=7)** | **0.93 (S2=0.90, S8=1.00, S13=0.90; N=3)** | **0.77 (S2=0.70, S8=0.80, S13=0.80; N=3)** | **—** |
 
 ## Context injection setup — S2–S7 (required before those runs)
 
@@ -450,6 +450,43 @@ _(Populated as runs are completed. One YAML entry per story per config. Format d
   artefacts_dir: runs/config-A-S11/
   review_findings: "3 HIGH (H1: deletion confirmation gap — scheduler frequency and overdue detection unspecified; H2: fail-closed for accreditation check — negative TTL not specified; H3: enriched insights gate — deployment pipeline CI enforcement mechanism missing); all 3 resolved inline"
   notes: "Full outer-loop run with context injection active at all stages. C5 surfaced as [BLOCKER] at /discovery. All 5 constraints propagated through to DoR contract. cpf_regulated=1.00 (C1 Privacy Act 2020 granular consent, C2 CDR 24-hour deletion). cpf_general=1.00 (5/5 total constraints including C3 accreditation, C4 field minimisation, C5 derived-data gate). DoR verdict: PROCEED. Oversight level: HIGH. C5 surfacing quality: partial."
+
+- story: S12
+  config: A
+  date: 2026-05-18
+  aq_judge_date: 2026-05-18
+  model_discovery: claude-sonnet-4-6
+  model_definition: claude-sonnet-4-6
+  model_review: claude-sonnet-4-6
+  model_test_plan: claude-sonnet-4-6
+  model_dor: claude-sonnet-4-6
+  cpf_general: 1.00
+  cpf_regulated: 1.00
+  c5_surfaced: true
+  c5_surface_stage: /discovery
+  c5_surface_mechanism: "EA registry CRMP-RISK-001 (CRITICAL: team following pre-2023 MRM process; independent validation not in scope) + Governance risk section ('Policy version mismatch') naming gap explicitly + MRM Policy v2.0 Part 3.2 (retraining = new deployment; mandatory independent validation) + brief's 'submit to next MRM committee slot' (v1.4 process indicator)"
+  c5_surfacing_quality: partial
+  c5_surfacing_notes: "EA registry injection file directly names the CLIRM team's specific gap (CRMP-RISK-001 CRITICAL). Fails injection design test — model can answer c5_surfaced without inference. C5 classified as partial/injection-aided. Excluded from EXP-008 H3 validation. Same treatment as S9."
+  aq: 0.90
+  aq_dimensions:
+    problem_framing: 2
+    scope_discipline: 2
+    story_testability: 1
+    nfr_specificity: 2
+    dor_gate_quality: 2
+  aq_overrides: []
+  aq_override_notes: >
+    story_testability scored 1 (not 2): governance-process ACs (Story 2.1 AC2 — independent
+    validation must address six MRM Policy v2.0 Part 2.2 areas by content; Story 1.2 AC1 —
+    Legal Counsel opinion scope; Story 2.2 AC2 — committee meeting minutes) require human
+    verification of document content — not coding-agent executable. Same rubric structural gap
+    as S13 Config A. No vague qualifiers present. dor_gate_quality=2 confirmed: DoR gate summary
+    table names specific role titles for all five gates (Head of Model Risk, CRO, Legal Counsel,
+    Legal Counsel + Head of Customer Experience, MRM Committee Chair) — clearest Config A
+    dor_gate_quality=2 in the series for a complex regulated scenario.
+  artefacts_dir: runs/config-A-S12/
+  review_findings: "3 HIGH (H1: deployment manifest enforcement mechanism not specified; H2: independent validation triggered FAR revision path not specified; H3: CRMP-OUT-001 API contract change not covered); all 3 resolved inline in test plan (H1→T-DEPLOY-001, H2→T-IV-005, H3→T-EXPL-005)"
+  notes: "Full outer-loop run with 2 context injection files active. C5 surfaced as [BLOCKER] at /discovery. All 5 constraints propagated through to DoR contract. cpf_general=1.00 (5/5). cpf_regulated=1.00 (C1 FMA Algorithmic Fairness Framework 2024, C3 CCCFA responsible lending). 7 stories across 4 epics, 35 tests. DoR verdict: PROCEED. Oversight: HIGH. Injection design test: EA registry FAIL / MRM Policy PASS. C5 injection-aided; excluded from H3 validation. AQ 0.90 {2,2,1,2,2} — matches S13 pattern (highest Config A DoR gate quality score in complex-regulated tier)."
 
 - story: S2
   config: B
