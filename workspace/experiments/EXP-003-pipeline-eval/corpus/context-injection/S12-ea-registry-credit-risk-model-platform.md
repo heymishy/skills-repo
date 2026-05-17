@@ -86,9 +86,7 @@ Internal AI/ML platform hosting the models used for automated credit product dec
 
 ## Governance risk: Policy version mismatch
 
-**Critical flag:** The CLIRM retraining project is being governed under the pre-2023 MRM committee process. The 2023 MRM Policy update — effective 2023-07-01 — requires full independent validation (not just MRM committee review) for any retraining of an existing credit model.
-
-The team responsible for the retraining project has referenced the pre-2023 MRM Policy in their project plan. The current MRM committee approval process (bi-monthly meeting, single review cycle) does not satisfy the 2023 Policy requirements. The full independent validation process adds approximately 6–8 weeks to the deployment timeline.
+**Flag:** MRM governance process version applicable to this retrain has not been confirmed with the MRM team — the 2023 policy update introduced changes to the retraining governance requirements; project team should confirm which version applies before submitting.
 
 **Status of FMA fairness methodology alignment:** The model's current FAR (Fairness Assessment Report FAR-2024-Q1-007) was produced using the internal the enterprise disparity metric v1.2, not the FMA Algorithmic Fairness Framework published in 2024. For the retrained model, a fairness assessment using the FMA-prescribed methodology is required before deployment approval. If the retraining project does not update the fairness methodology, the fairness report will not satisfy regulatory scrutiny.
 
@@ -98,7 +96,7 @@ The team responsible for the retraining project has referenced the pre-2023 MRM 
 
 | ID | Description | Severity |
 |----|-------------|---------|
-| CRMP-RISK-001 | Policy version mismatch — team is following pre-2023 MRM process; 2023 Policy requires full independent validation for retraining; current plan does not allocate time or resource for independent validation | CRITICAL |
+| CRMP-RISK-001 | MRM governance process version applicable to this retrain has not been confirmed with the MRM team — the 2023 policy update introduced changes to the retraining governance requirements; project team should confirm which version applies before submitting | HIGH |
 | CRMP-RISK-002 | Fairness methodology misalignment — internal disparity metric does not implement FMA 2024 Algorithmic Fairness Framework; retraining fairness assessment must use FMA methodology | HIGH |
 | CRMP-RISK-003 | Gini drift monitoring — current 0.63 holdout Gini is below the 0.65 internal threshold for production model health; daily batch scoring output should be flagged until retraining is complete | MEDIUM |
 

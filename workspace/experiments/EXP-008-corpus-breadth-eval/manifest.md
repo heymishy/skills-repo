@@ -241,6 +241,8 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 
 **Update 2026-05-18 (S12):** Config A S12 complete. CPF=1.00 (cpf_general=1.00, cpf_regulated=1.00). C5 surfaced: true (partial — injection-aided; EA registry CRMP-RISK-001 directly names MRM policy version gap and team's specific situation; injection design test FAIL on ea-registry file; MRM policy excerpt PASS). C5 excluded from EXP-008 H3 validation (same treatment as S9). 7 stories across 4 epics, 35 tests, 3 HIGH review findings all resolved. DoR verdict: PROCEED. Oversight: HIGH (regulated AI/ML credit model — FMA, CCCFA, MRM Policy v2.0 scope). AQ pending judge scoring.
 
+**Update 2026-05-18 (S12 injection fix):** `S12-ea-registry-credit-risk-model-platform.md` corrected post Config A run. "Governance risk: Policy version mismatch" section and CRMP-RISK-001 description rewrote to remove direct naming of team's pre-2023 MRM process usage and independent validation gap. Replacement language: "MRM governance process version applicable to this retrain has not been confirmed with the MRM team — the 2023 policy update introduced changes to the retraining governance requirements; project team should confirm which version applies before submitting." CRMP-RISK-001 severity changed CRITICAL → HIGH. Injection design test re-run: PASS on both files. Config A run-record reflects original (FAIL) state — Config A was run before this correction. **Config B and Config C S12 runs must use the corrected file.**
+
 ## C5 surfacing rate tracker
 
 | Story | Config A C5 surfaced | Config B C5 surfaced | Config C C5 surfaced | Config D C5 surfaced |
