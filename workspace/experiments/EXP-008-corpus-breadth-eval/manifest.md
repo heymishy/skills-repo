@@ -227,7 +227,7 @@ Each cell: `—` (not started), `setup` (injection files needed), `in-progress`,
 | S8 | CPF=1.00 | CPF=1.00 | CPF=1.00 | — |
 | S9 | CPF=1.00 | — | — | — |
 | S10 | CPF=1.00 | — | — | — |
-| S11 | — | — | — | — |
+| S11 | CPF=1.00 | — | — | — |
 | S12 | — | — | — | — |
 | S13 | CPF=1.00 | CPF=1.00 | CPF=1.00 | — |
 
@@ -236,6 +236,8 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 **Update 2026-05-17:** Config C S13 complete. CPF=1.00 (multi-jurisdiction: nz_leg=1.00, au_leg=1.00, cross_border=1.00). AQ pending Sonnet judge scoring.
 
 **Update 2026-05-17 (S10):** Config A S10 complete. CPF=1.00 (cpf_general=1.00, cpf_regulated=1.00). C5 surfaced: true (full — not injection-aided; both injection files passed design test). AQ=1.00 {2,2,2,2,2} (judge confirmed — DoR gate quality corrected 1→2; self-score of 0.90 {2,2,2,2,1} was overly strict on "Legal Counsel" function-vs-role distinction not supported by rubric). 3 HIGH review findings, all resolved. C5 valid for H3 validation.
+
+**Update 2026-05-17 (S11):** Config A S11 complete. CPF=1.00 (cpf_general=1.00, cpf_regulated=1.00). C5 surfaced: true (partial — injection-aided; OBCP-RISK-001 provides factual premise, model connects to Privacy Act 2020 Principle 10 use-limitation gap and contradicts 'privacy team is comfortable' claim). AQ proposed 0.90 {2,2,1,2,2} — pending judge scoring. 3 HIGH review findings, all resolved. C5 pattern: consistent with S9 partial (injection aids factual premise, model provides inferential step).
 
 ## C5 surfacing rate tracker
 
@@ -249,10 +251,10 @@ Config D column: all cells blocked on EXP-002a H5 gate.
 | S8 | true | true | true | — |
 | S9 | true (partial) | — | — | — |
 | S10 | true (full) | — | — | — |
-| S11 | — | — | — | — |
+| S11 | true (partial) | — | — | — |
 | S12 | — | — | — | — |
 | S13 | true | true | true | — |
-| **Rate** | **5/11 (S2,S8,S9,S10,S13)** | **3/11 (S2,S8,S13)** | **3/11 (S2,S8,S13)** | **—/11** |
+| **Rate** | **6/11 (S2,S8,S9,S10,S11,S13)** | **3/11 (S2,S8,S13)** | **3/11 (S2,S8,S13)** | **—/11** |
 
 ## AQ score tracker
 
@@ -269,10 +271,10 @@ AQ scores per story per config. Score = 0.0–1.0 (sum of five 0–2 rubric dime
 | S8 | 0.80 {2,2,1,2,1} | 1.00 {2,2,2,2,2} | 0.80 {2,2,1,2,1} | — |
 | S9 | 0.80 {2,2,1,2,1} | — | — | — |
 | S10 | 1.00 {2,2,2,2,2} | — | — | — |
-| S11 | — | — | — | — |
+| S11 | pending judge {2,2,1,2,2}=0.90 proposed | — | — | — |
 | S12 | — | — | — | — |
 | S13 | 0.90 {2,2,1,2,2} | 0.90 {2,2,1,2,2} | 0.80 {2,2,1,1,2} | — |
-| **Mean (CPF stories)** | **0.88 (S2=0.90, S8=0.80, S9=0.80, S10=1.00, S13=0.90; N=5)** | **0.93 (S2=0.90, S8=1.00, S13=0.90; N=3)** | **0.77 (S2=0.70, S8=0.80, S13=0.80; N=3)** | **—** |
+| **Mean (CPF stories)** | **0.88 (S2=0.90, S8=0.80, S9=0.80, S10=1.00, S11=pending, S13=0.90; N=5 confirmed + S11 pending)** | **0.93 (S2=0.90, S8=1.00, S13=0.90; N=3)** | **0.77 (S2=0.70, S8=0.80, S13=0.80; N=3)** | **—** |
 
 ## Context injection setup — S2–S7 (required before those runs)
 
@@ -777,6 +779,80 @@ _(Populated as runs are completed. One YAML entry per story per config. Format d
     Key finding: T-ELIG-005 (hardship fail-safe default to waiver when API unavailable) emerged
     from H2 review finding — this is the most legally significant test in the run, protecting
     KiwiSaver Act s.58 obligation under API failure conditions.
+
+- story: S11
+  config: A
+  date: 2026-05-17
+  model_discovery: claude-sonnet-4-6
+  model_definition: claude-sonnet-4-6
+  model_review: claude-sonnet-4-6
+  model_test_plan: claude-sonnet-4-6
+  model_dor: claude-sonnet-4-6
+  cpf_general: 1.00
+  cpf_regulated: 1.00
+  c5_surfaced: true
+  c5_surface_stage: /discovery
+  c5_surface_mechanism: >
+    Two-signal reasoning chain: OBCP-RISK-001 (HIGH risk, "Derived data — separate consent
+    scope assessment required before enabling; status: not yet commissioned") in EA registry
+    + OBCP-SRC-003 annotation ("Derived data — separate consent scope assessment required
+    before enabling") at the data source level. Model connected these signals to the brief's
+    "privacy team is comfortable" claim and identified that "not yet commissioned" directly
+    contradicts "comfortable with derived data sharing." Specific formulation: the privacy team's
+    review covered the raw-data consent model ("sharing customer data with consent"), not whether
+    enriched insights constitute a distinct processing activity under Privacy Act 2020 Principle 10
+    (use limitation) and Principle 11 (disclosure limitation). C5 elevated to [BLOCKER] at
+    /discovery and propagated through all five pipeline stages.
+  c5_surfacing_quality: partial
+  c5_surfacing_notes: >
+    Injection provides factual premise (OBCP-RISK-001 "not yet commissioned" status = PERMITTED
+    signal, missing sign-off category). Model provides the inferential step: "not yet commissioned"
+    contradicts "privacy team is comfortable"; raw-data consent does not extend to derived-data
+    processing activity. Neither injection source directly names the Principle 10 compliance gap
+    or states that the review was scoped to raw-data only. Classified as partial (injection-aided).
+    Compare with S13 full surface (three-signal composition, no single source names the gap).
+  aq: null
+  aq_status: requires_judge_scoring
+  aq_proposed: 0.90
+  aq_dimensions:
+    problem_framing: 2
+    scope_discipline: 2
+    story_testability: 1
+    nfr_specificity: 2
+    dor_gate_quality: 2
+  aq_overrides: []
+  aq_override_notes: >
+    story_testability scored 1 (not 2): Story 3.1 AC2 requires Privacy Counsel written
+    opinion and CPO sign-off — human-produced compliance documents, not automatable by
+    coding agent. Same rubric structural gap as Config A S13 and Config B S2. 22 of 25 tests
+    are fully automatable. dor_gate_quality scored 2: all 5 constraints have named responsible
+    parties (Compliance Officer C1, Privacy Officer C2, Platform Engineering Lead C3,
+    Data Architect C4, CPO + Privacy Counsel C5). C5 gate is most detailed: 4-condition release
+    requirement, automated deployment pipeline enforcement (privacy_act_assessment_reference
+    field), explicit rationale distinguishing raw-data consent from derived-data consent boundary.
+  dor_verdict: PROCEED
+  oversight_level: HIGH
+  review_findings: >
+    3 HIGH (H1: Story 1.2 AC3 — deletion confirmation gap, no mechanism to detect expired-deadline
+    records; resolved: scheduler at 30-minute minimum interval; H2: Story 2.1 AC3 — fail-closed
+    for DIA unavailability missing negative TTL cache; resolved: 30-second negative TTL prevents
+    thundering-herd; H3: Story 3.1 AC2 — 4-document gate is post-hoc rollback obligation, not
+    pre-deployment enforcement; resolved: deployment pipeline gate validates privacy_act_assessment_reference
+    field presence). 2 IMPORTANT (I1: consent expiry UTC/display timezone; I2: canonical field list versioning).
+    2 LOW (L1: analytics dashboard persona omission; L2: deletion handler idempotency — resolved with AC6 added).
+  artefacts_dir: runs/config-A-S11/
+  notes: >
+    Full outer-loop run with context injection active (2 files: S11-ea-registry-open-banking-consent-platform.md,
+    S11-privacy-act-cdr-policy-excerpt.md). Both injection files passed design test at /discovery Step 0.
+    All 5 constraints propagated (C1 Privacy Act granular consent, C2 CDR revocation/deletion,
+    C3 per-call accreditation validation, C4 field-level minimisation, C5 derived-data consent boundary).
+    cpf_regulated=1.00 (2/2 regulated constraints: C1 Privacy Act 2020, C2 NZ OBF).
+    cpf_general=1.00 (5/5 total constraints). DoR verdict: PROCEED. Oversight level: HIGH.
+    25 tests across T-CONSENT, T-DEL, T-ACC, T-MIN, T-C5, T-NFR series. T-C5 series (5 tests)
+    explicitly covers enriched insights gate: endpoint 404 response, data_type rejection,
+    deployment pipeline gate check (T-C5-003 adversarial: flag=true + empty reference = gate fails).
+    AQ pending judge scoring. Proposed {2,2,1,2,2}=0.90 consistent with Privacy Act compliance
+    pattern (regulatory human sign-off in ACs = story_testability scored 1).
 
 # Example entry template (for future runs):
 # - story: SX

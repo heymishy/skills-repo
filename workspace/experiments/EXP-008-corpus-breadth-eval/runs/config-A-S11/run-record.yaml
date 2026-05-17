@@ -1,0 +1,162 @@
+story: S11
+config: A
+date: 2026-05-17
+model_discovery: claude-sonnet-4-6
+model_definition: claude-sonnet-4-6
+model_review: claude-sonnet-4-6
+model_test_plan: claude-sonnet-4-6
+model_dor: claude-sonnet-4-6
+
+# CPF scores — overall
+cpf_general: 1.00
+cpf_regulated: 1.00
+c5_surfaced: true
+c5_surface_stage: /discovery
+c5_surface_mechanism: >
+  Two-signal reasoning chain: OBCP-RISK-001 (HIGH risk, "Derived data — separate consent
+  scope assessment required before enabling; status: not yet commissioned") in EA registry
+  + OBCP-SRC-003 annotation ("Derived data — separate consent scope assessment required
+  before enabling") at the data source level. The model connected these signals to the
+  brief's "the privacy team has reviewed and is comfortable" claim and identified that
+  "not yet commissioned" directly contradicts "comfortable with derived data sharing."
+  The model surfaced the specific formulation: the privacy team's review covered the
+  raw-data consent model ("sharing customer data with consent"), not whether enriched
+  insights constitute a distinct processing activity under Privacy Act 2020 Principle 10
+  (use limitation) and Principle 11 (disclosure limitation). C5 was elevated to [BLOCKER]
+  at /discovery and propagated through all five pipeline stages.
+c5_surfacing_quality: partial
+c5_surfacing_notes: >
+  Unlike S13 (full — three-signal inferential composition with no single source naming
+  the gap), S11 C5 surfacing is partial / injection-aided: OBCP-RISK-001 in the EA
+  registry provides the factual premise ("assessment not yet commissioned") and the
+  PERMITTED signal category (missing sign-off as a known system risk indicator) is
+  satisfied. However, the model still must reason from "not yet commissioned" to the
+  specific Principle 10 use-limitation gap and must connect the EA registry status to
+  the brief's "privacy team is comfortable" claim. The injection does not directly name
+  the compliance consequence or state that the privacy team's review was scoped to
+  raw-data only — that inference is the model's reasoning step. Classified as partial
+  (injection provides the factual premise; model provides the Principle 10 connection).
+
+# CPF sub-scores — regulatory constraint split
+constraint_propagation:
+  C1_privacy_act_granular_consent:
+    regulated: true
+    surface_stage: /discovery
+    propagated_through: [discovery, definition, review, test_plan, dor]
+    enforcement_stories: ["1.1"]
+    test_coverage: [T-CONSENT-001, T-CONSENT-002, T-CONSENT-003, T-CONSENT-004, T-CONSENT-005]
+    dor_gate: "Compliance Officer sign-off on consent form disclosure text"
+  C2_cdr_revocation_deletion:
+    regulated: true
+    surface_stage: /discovery
+    propagated_through: [discovery, definition, review, test_plan, dor]
+    enforcement_stories: ["1.2"]
+    test_coverage: [T-DEL-001, T-DEL-002, T-DEL-003, T-DEL-004, T-DEL-005, T-DEL-006, T-NFR-001, T-NFR-002]
+    dor_gate: "Privacy Officer sign-off on deletion escalation scheduler operational runbook"
+  C3_per_call_accreditation:
+    regulated: true
+    surface_stage: /discovery
+    propagated_through: [discovery, definition, review, test_plan, dor]
+    enforcement_stories: ["2.1"]
+    test_coverage: [T-ACC-001, T-ACC-002, T-ACC-003, T-ACC-004, T-ACC-005, T-NFR-003]
+    dor_gate: "Platform Engineering Lead accreditation cache TTL configuration review"
+  C4_field_minimisation:
+    regulated: true
+    surface_stage: /discovery
+    propagated_through: [discovery, definition, review, test_plan, dor]
+    enforcement_stories: ["2.2"]
+    test_coverage: [T-MIN-001, T-MIN-002, T-MIN-003, T-MIN-004]
+    dor_gate: "Data Architect canonical field list schema review"
+  C5_derived_data_consent_boundary:
+    regulated: true
+    hidden: true
+    surface_stage: /discovery
+    propagated_through: [discovery, definition, review, test_plan, dor]
+    enforcement_stories: ["3.1"]
+    test_coverage: [T-C5-001, T-C5-002, T-C5-003, T-C5-004, T-C5-005]
+    dor_gate: "CPO + Privacy Counsel — 4-condition release: (1) Privacy Counsel written opinion, (2) CPO written sign-off, (3) consent form updated, (4) privacy_act_assessment_reference in deployment manifest"
+    blocker_in_discovery: true
+
+# AQ scores
+aq: null
+aq_status: requires_judge_scoring
+aq_self_score_invalid: true
+aq_proposed: 0.90
+aq_dimensions:
+  problem_framing: 2
+  scope_discipline: 2
+  story_testability: 1
+  nfr_specificity: 2
+  dor_gate_quality: 2
+aq_overrides: []
+aq_override_notes: ""
+
+# AQ scoring table (for audit trail)
+# | Dimension         | Score | Justification |
+# |-------------------|-------|---------------|
+# | Problem framing   | 2 | Discovery frames all four regulatory layers (C1–C4) plus C5 derived-data
+# |                   |   | boundary gap as [BLOCKER]. 10 personas with scoped functional roles
+# |                   |   | including CPO and Privacy Counsel as C5 resolution owners. Success
+# |                   |   | indicators are specific and measurable. Problem statement correctly
+# |                   |   | distinguishes raw-data consent model from enriched-insights consent boundary.
+# | Scope discipline  | 2 | MVP scope explicitly bounded; enriched insights gated with ❌ pending C5
+# |                   |   | resolution. 6 explicit out-of-scope items. 5 stories proportionate to
+# |                   |   | 5-constraint discovery. Scope accumulator shows zero drift.
+# | Story testability | 1 | 22 of 25 tests are fully automatable. 3 tests require human-produced
+# |                   |   | compliance documents (Privacy Counsel written opinion, CPO sign-off letter,
+# |                   |   | four-document gate for Story 3.1 AC2) — inherent to Privacy Act compliance
+# |                   |   | scenarios. Gap is explicit and documented in dor.md.
+# | NFR specificity   | 2 | All NFRs carry specific thresholds with clause references: 10-min token
+# |                   |   | invalidation (NZ OBF s.2.1), 30-min escalation scheduler (NZ OBF s.2.2–2.3),
+# |                   |   | 300ms/800ms latency, 20-working-day subject access (Privacy Act 2020 Principle 6),
+# |                   |   | 99.9% availability.
+# | DoR gate quality  | 2 | All 5 constraints have named responsible parties. C5 gate is most detailed:
+# |                   |   | 4-condition release requirement, automated deployment pipeline enforcement
+# |                   |   | (privacy_act_assessment_reference field), explicit rationale distinguishing
+# |                   |   | raw-data consent from derived-data consent boundary.
+
+# Review findings summary
+review_findings:
+  high_count: 3
+  high_resolved: 3
+  important_count: 2
+  important_resolved: 2
+  low_count: 2
+  low_resolved: 2
+  high_findings:
+    - id: H1
+      story: "1.2"
+      ac: "AC3"
+      summary: "Deletion confirmation gap — no silent gaps constraint is untestable as stated; no mechanism specified to detect expired-deadline records"
+      resolution: "AC3 amended: scheduler must run at minimum every 30 minutes, scan for overdue unescalated deletion records, set diaEscalationRaised=true and dispatch"
+    - id: H2
+      story: "2.1"
+      ac: "AC3"
+      summary: "Fail-closed for accreditation check unavailability — downstream retry not specified; thundering-herd risk during DIA outage"
+      resolution: "AC3 amended: failed accreditation check cached as negative result with 30-second TTL; prevents thundering-herd timeouts"
+    - id: H3
+      story: "3.1"
+      ac: "AC2"
+      summary: "Enriched insights gate — 4-document workflow is post-hoc rollback obligation, not a pre-deployment enforcement mechanism"
+      resolution: "AC2 amended: deployment pipeline CI step must validate privacy_act_assessment_reference field before allowing flag=true; T-C5-003/T-C5-004 added"
+
+# Artefact paths
+artefacts:
+  discovery: workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-A-S11/discovery.md
+  definition: workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-A-S11/definition.md
+  review: workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-A-S11/review.md
+  test_plan: workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-A-S11/test-plan.md
+  dor: workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-A-S11/dor.md
+  aq_score: workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-A-S11/aq-score.md
+
+# Scenario metadata
+scenario:
+  name: "CDR Consent API — Open Banking Data Sharing with Privacy Act Compliance"
+  domain: "Open Banking / Financial Services Regulation"
+  jurisdiction: ["NZ"]
+  regulatory_framework: ["Privacy Act 2020 (NZ)", "NZ Open Banking Framework (CDR-equivalent)"]
+  difficulty: high
+  constraint_count: 5
+  regulated_constraint_count: 2
+  hidden_constraint_type: "derived-data consent boundary gap"
+  c5_description: "Enriched insights (derived inferences) require a separate Principle 10 (use limitation) assessment — the privacy team's comfort with raw-data consent does not extend to derived-data consent boundaries"
