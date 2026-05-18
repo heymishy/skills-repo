@@ -3215,6 +3215,20 @@
         }
       ],
       "updatedAt": "2026-05-16"
+    },
+    {
+      "slug": "2026-05-18-skill-robustness-improvements",
+      "name": "Skill Robustness Improvements (Consumer-Reported)",
+      "stage": "discovery",
+      "health": "green",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "discoveryStatus": "draft",
+      "sourceIssue": "https://github.com/heymishy/skills-repo/issues/344",
+      "sourceContributor": "abhijeet-qsofte",
+      "stories": [],
+      "updatedAt": "2026-05-18"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
