@@ -83,6 +83,26 @@ This MVP demonstrates the core proposition: gate enforcement is executable and t
 
 ---
 
+## Harness Integration Architecture
+
+The CLI's enforcement value depends on *who* calls it and whether the caller can be trusted to honour the exit code. Two integration modes are relevant.
+
+**Mode B — Developer-driven (VS Code terminal):** The developer runs `node bin/skills validate artefacts/.../discovery.md` directly in a terminal. The model receives the output if it is in context and can self-correct, but the developer can also act on it manually. This mode requires zero harness changes and works today. Phase 1 (validate only) operates entirely in Mode B.
+
+**Mode A — Harness-driven (automated enforcement):** Something calls the CLI as part of the agent loop, and the advance command is the only mechanism that can write state. In the current VS Code surface, the model could invoke `node bin/skills validate` via its Bash tool, read the exit code, and self-correct. This is technically possible today — Copilot agent mode can run Bash commands and read their output. However, if the model is calling the CLI via Bash, the model is still the orchestrator deciding when to call validate and whether to act on a non-zero exit. A model that skips the validate call or ignores the result is back to the same trust problem. Mode A with real enforcement requires the harness — not the model — to own the validate→advance call sequence.
+
+Three options for Phase 2 VS Code integration follow from this:
+
+**Option A — Model calls CLI via Bash, harness trusts model discipline.** Zero integration cost, better error messages and testable gate logic, but no compliance-grade enforcement boundary. The model could skip the validate call. This is an improvement but not a trust-gap closure.
+
+**Option B — A thin wrapper script becomes the VS Code harness.** A workflow script calls validate, invokes the model for the fill step, calls validate again, then calls advance. The model only fills artefacts — it does not decide when to advance. This closes the trust gap in VS Code but requires designing the wrapper harness.
+
+**Option C — VS Code surface is Mode B only; Mode A is the web UI.** The CLI's deterministic enforcement is fully realised in the web UI harness (a controlled server process that owns the subprocess call sequence without relying on model discipline). VS Code remains a developer-driven flow where validate is used manually. No trust-gap closure in VS Code, but the regulated compliance use case goes through the web UI where the call sequence can be enforced by construction.
+
+For a regulated enterprise rollout, Option C is the honest answer. The VS Code surface is where individual developers and tech leads work interactively — Mode B (run validate manually, act on output) is the right fit there. The web UI harness is where compliance-grade Mode A enforcement lives because it is a controlled server process. Phase 1 validate works in VS Code as Mode B with zero integration work. The H7.1 spike (web UI backend subprocess assessment) determines whether Phase 2 Mode A in the web UI harness is weeks or months of work.
+
+---
+
 ## Assumptions and Risks
 
 **Validated assumptions (from ideation evidence):**
@@ -95,7 +115,7 @@ This MVP demonstrates the core proposition: gate enforcement is executable and t
 
 **Risks requiring resolution before Phase 2:**
 
-- **[ASSUMPTION] The web UI backend can be adapted to invoke `skills validate` / `skills advance` as Node.js subprocesses without a structural rewrite of `src/web-ui/server.js` or the session management layer.** This is the H7.1 risk. If the backend is tightly coupled to direct state writes, Phase 2 integration may require architectural changes not scoped here. Resolution: `/spike` scoped to "assess web UI backend subprocess wiring cost", TTL 2 sessions.
+- **[ASSUMPTION] The web UI backend can be adapted to invoke `skills validate` / `skills advance` as Node.js subprocesses (Mode A, Option C) without a structural rewrite of `src/web-ui/server.js` or the session management layer.** This is the H7.1 risk. The VS Code surface does not have this constraint — Phase 1 validate runs as Mode B in VS Code with zero integration cost. The H7.1 spike applies specifically to the web UI harness: if the backend is tightly coupled to direct state writes, Phase 2 Mode A enforcement in the web UI may require architectural changes not scoped here. Resolution: `/spike` scoped to "assess web UI backend subprocess wiring cost for Mode A harness integration", TTL 2 sessions.
 
 - **[ASSUMPTION] The language model reliably converges to a clean-validate artefact in ≤3 correction loop iterations when receiving typed CLI exit codes as error feedback, after SKILL.md surgery has removed the duplicate prose.** This is the H7.2 risk. If convergence requires >3 iterations on any skill, the STUCK rate after surgery will be unacceptably high. Resolution: correction loop simulation experiment per surgically modified skill before Phase 3 merges.
 
