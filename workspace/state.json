@@ -43,7 +43,7 @@
     "pendingActions": [
       "trw.1 IMPLEMENTATION � Issue #351 open at https://github.com/heymishy/skills-repo/issues/351. Needs: scripts/write-ci-trace.js, modified .github/workflows/trace-commit.yml, tests/check-trw1-trace-writer.js.",
       "wsm.4 DISPATCH � Story dor-signed-off. DoR artefact moved to artefacts/archived/2026-05-07-web-ui-session-management/dor/wsm.4-dor.md. Decide whether to implement or close.",
-      "PR #155 WESTPAC � Delete PR at https://github.com/heymishy/skills-repo/pull/155 via GitHub web UI to purge remaining Westpac references from GitHub object store.",
+      "PR #155 � Delete PR at https://github.com/heymishy/skills-repo/pull/155 via GitHub web UI to purge remaining the enterprise references from GitHub object store.",
       "EXP-008 � Scaffolded in workspace/experiments/EXP-008-corpus-breadth-eval/. S2-S7 context injection files still needed before runs can proceed."
     ]
   }
