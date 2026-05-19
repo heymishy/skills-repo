@@ -326,7 +326,7 @@ queue.push(function() {
 // ---------------------------------------------------------------------------
 queue.push(function() {
   return test('T1.16: AC5 merge gate — context-yml-schema-inspection.md exists', function() {
-    var inspectionPath = path.resolve(__dirname, '../artefacts/2026-05-08-web-ui-copilot-chat-parity/reference/context-yml-schema-inspection.md');
+    var inspectionPath = path.resolve(__dirname, '../artefacts/archived/2026-05-08-web-ui-copilot-chat-parity/reference/context-yml-schema-inspection.md');
     assert.ok(
       fs.existsSync(inspectionPath),
       'AC5 merge gate FAILED: context-yml-schema-inspection.md does not exist at ' + inspectionPath + '. ' +
