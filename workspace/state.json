@@ -11,7 +11,7 @@
     {
       "slug": "2026-05-10-model-evaluation-capability",
       "stage": "definition",
-      "note": "Active — model evaluation capability, stories in definition phase."
+      "note": "Active ï¿½ model evaluation capability, stories in definition phase."
     },
     {
       "slug": "2026-05-16-trace-writer-fix",
@@ -21,18 +21,25 @@
     {
       "slug": "2026-05-18-skill-robustness-improvements",
       "stage": "benefit-metric",
-      "note": "Active — skill robustness improvements, benefit metric in progress."
+      "note": "Active ï¿½ skill robustness improvements, benefit metric in progress."
     }
   ],
+  "cycle": {
+    "discovery": {
+      "status": "complete",
+      "artefact": "artefacts/2026-05-18-skill-robustness-improvements/discovery.md",
+      "completedAt": "2026-05-18"
+    }
+  },
   "checkpoint": {
     "writtenAt": "2026-05-18T00:00:00.000Z",
     "contextAtWrite": "Post git-history scrub (all Westpac references removed from 2084 commits, master force-pushed). Archived 17 completed/orphaned feature artefact folders + 2 loose files to artefacts/archived/. Cleared workspace/state.json for new ideation phase. npm test passed (exit 0) on clean baseline.",
-    "resumeInstruction": "Start fresh ideation session. Run /workflow to see current pipeline state across 4 active features. For new feature work run /discovery or /ideate. Active in-flight items: (1) trw.1 coding agent — issue #351 open, awaiting VS Code agent. (2) skill-robustness-improvements — benefit-metric stage, needs definition. (3) non-technical-channel — stalled at ideation. (4) model-evaluation-capability — in definition stage. Advisory: PR #155 on GitHub still contains Westpac in body — delete via GitHub web UI at https://github.com/heymishy/skills-repo/pull/155 to fully purge.",
+    "resumeInstruction": "Start fresh ideation session. Run /workflow to see current pipeline state across 4 active features. For new feature work run /discovery or /ideate. Active in-flight items: (1) trw.1 coding agent ï¿½ issue #351 open, awaiting VS Code agent. (2) skill-robustness-improvements ï¿½ benefit-metric stage, needs definition. (3) non-technical-channel ï¿½ stalled at ideation. (4) model-evaluation-capability ï¿½ in definition stage. Advisory: PR #155 on GitHub still contains Westpac in body ï¿½ delete via GitHub web UI at https://github.com/heymishy/skills-repo/pull/155 to fully purge.",
     "pendingActions": [
-      "trw.1 IMPLEMENTATION — Issue #351 open at https://github.com/heymishy/skills-repo/issues/351. Needs: scripts/write-ci-trace.js, modified .github/workflows/trace-commit.yml, tests/check-trw1-trace-writer.js.",
-      "wsm.4 DISPATCH — Story dor-signed-off. DoR artefact moved to artefacts/archived/2026-05-07-web-ui-session-management/dor/wsm.4-dor.md. Decide whether to implement or close.",
-      "PR #155 WESTPAC — Delete PR at https://github.com/heymishy/skills-repo/pull/155 via GitHub web UI to purge remaining Westpac references from GitHub object store.",
-      "EXP-008 — Scaffolded in workspace/experiments/EXP-008-corpus-breadth-eval/. S2-S7 context injection files still needed before runs can proceed."
+      "trw.1 IMPLEMENTATION ï¿½ Issue #351 open at https://github.com/heymishy/skills-repo/issues/351. Needs: scripts/write-ci-trace.js, modified .github/workflows/trace-commit.yml, tests/check-trw1-trace-writer.js.",
+      "wsm.4 DISPATCH ï¿½ Story dor-signed-off. DoR artefact moved to artefacts/archived/2026-05-07-web-ui-session-management/dor/wsm.4-dor.md. Decide whether to implement or close.",
+      "PR #155 WESTPAC ï¿½ Delete PR at https://github.com/heymishy/skills-repo/pull/155 via GitHub web UI to purge remaining Westpac references from GitHub object store.",
+      "EXP-008 ï¿½ Scaffolded in workspace/experiments/EXP-008-corpus-breadth-eval/. S2-S7 context injection files still needed before runs can proceed."
     ]
   }
 }

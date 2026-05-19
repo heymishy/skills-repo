@@ -50,7 +50,7 @@ function fail(name, reason) {
 
 var smokeTestsPath  = path.join(__dirname, 'smoke-tests.md');
 var dcCheckPath     = path.join(__dirname, 'check-bitbucket-dc.js');
-var decisionsPath   = path.join(root, 'artefacts', '2026-04-14-skills-platform-phase3', 'decisions.md');
+var decisionsPath   = path.join(root, 'artefacts', 'archived', '2026-04-14-skills-platform-phase3', 'decisions.md');
 
 var AUTH_TEST_NAMES = ['app-password', 'OAuth', 'SSH key', 'PAT'];
 
