@@ -1,8 +1,13 @@
 {
   "currentPhase": "ideation",
-  "lastUpdated": "2026-05-18T00:00:00.000Z",
+  "lastUpdated": "2026-05-19T00:00:00.000Z",
   "activeFeature": null,
   "activeFeatures": [
+    {
+      "slug": "2026-05-19-cli-deterministic-governance",
+      "stage": "ideation",
+      "note": "Ideation complete. ideation.md saved at artefacts/2026-05-19-cli-deterministic-governance/research/ideation.md. 3 open questions before Phase 2: H7.1 (spike: web UI backend subprocess cost), H7.2 (experiment: correction loop convergence after skill surgery), H7.3 (decision: operator identity for trace events). Phase 1 validate-only CLI can start after /discovery + /definition."
+    },
     {
       "slug": "2026-04-23-non-technical-channel",
       "stage": "ideation",
@@ -32,9 +37,9 @@
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-05-18T00:00:00.000Z",
-    "contextAtWrite": "Post git-history scrub (all Westpac references removed from 2084 commits, master force-pushed). Archived 17 completed/orphaned feature artefact folders + 2 loose files to artefacts/archived/. Cleared workspace/state.json for new ideation phase. npm test passed (exit 0) on clean baseline.",
-    "resumeInstruction": "Start fresh ideation session. Run /workflow to see current pipeline state across 4 active features. For new feature work run /discovery or /ideate. Active in-flight items: (1) trw.1 coding agent � issue #351 open, awaiting VS Code agent. (2) skill-robustness-improvements � benefit-metric stage, needs definition. (3) non-technical-channel � stalled at ideation. (4) model-evaluation-capability � in definition stage. Advisory: PR #155 on GitHub still contains Westpac in body � delete via GitHub web UI at https://github.com/heymishy/skills-repo/pull/155 to fully purge.",
+    "writtenAt": "2026-05-19T00:00:00.000Z",
+    "contextAtWrite": "Ideation session for 2026-05-19-cli-deterministic-governance complete. Steps 1-5 produced: full 298-item skills audit (243 deterministic, 55 judgment), CLI 7-subcommand design, skill surgery spec (~670 lines removal across 8 skills), testing strategy (~60 unit + 7 integration + 1 E2E), DoR gate check (NOT READY: 3 HIGH findings become open questions). ideation.md written. pipeline-state.json + workspace/state.json updated.",
+    "resumeInstruction": "CLI deterministic governance ideation complete. Next: run /discovery for 2026-05-19-cli-deterministic-governance using ideation.md as primary input (opportunity clusters 1-3, assumption inventory, strategy framing). Before /definition run /spike for H7.1 (web UI backend subprocess wiring cost). Other active: (1) trw.1 coding agent — issue #351 open, awaiting VS Code agent. (2) skill-robustness-improvements — benefit-metric stage, needs definition. (3) non-technical-channel — stalled at ideation. (4) model-evaluation-capability — in definition stage.",
     "pendingActions": [
       "trw.1 IMPLEMENTATION � Issue #351 open at https://github.com/heymishy/skills-repo/issues/351. Needs: scripts/write-ci-trace.js, modified .github/workflows/trace-commit.yml, tests/check-trw1-trace-writer.js.",
       "wsm.4 DISPATCH � Story dor-signed-off. DoR artefact moved to artefacts/archived/2026-05-07-web-ui-session-management/dor/wsm.4-dor.md. Decide whether to implement or close.",
