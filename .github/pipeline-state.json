@@ -35,14 +35,15 @@
     {
       "slug": "2026-05-19-cli-deterministic-governance",
       "name": "CLI Deterministic Governance — Executable Gate Enforcement and Tamper-Evident Audit Trail",
-      "stage": "ideation",
+      "stage": "discovery",
       "health": "green",
       "track": "library",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "discoveryStatus": "not-started",
+      "discoveryStatus": "draft",
+      "discoveryArtefact": "artefacts/2026-05-19-cli-deterministic-governance/discovery.md",
       "ideationPath": "artefacts/2026-05-19-cli-deterministic-governance/research/ideation.md",
       "ideationSignal": "proceed",
       "updatedAt": "2026-05-19T00:00:00Z"

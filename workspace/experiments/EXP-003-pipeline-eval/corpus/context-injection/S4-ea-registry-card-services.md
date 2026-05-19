@@ -108,7 +108,7 @@ Internal service managing customer consent for third-party access to the enterpr
 **Owner:** Technology (proposed; not yet provisioned)
 **Domain:** Integration Infrastructure / Caching
 **Classification:** Proposed in-scope CDE component — PCI DSS applies if card transaction data is cached
-**Criticality:** HIGH (if in-scope CDE) — failure of at-rest encryption requirement would be a PCI DSS violation
+**Criticality:** HIGH (if in-scope CDE) — at-rest encryption status is not yet confirmed
 **Data classification:** Restricted — card transaction history (PCI DSS in-scope data if at-rest encryption not confirmed)
 
 **Description:**
@@ -137,7 +137,7 @@ Proposed in-memory cache to sit in front of the Experience API's card core integ
 
 | ID | Description | Severity |
 |----|-------------|---------|
-| REDIS-RISK-001 | At-rest encryption status unconfirmed: the security team has not reviewed whether the Azure Cache for Redis configuration in the enterprise's infrastructure has at-rest encryption enabled. Azure Cache for Redis does not enable at-rest encryption by default in all tiers. If at-rest encryption is not confirmed and enabled before card transaction data enters the cache, the Redis cache would be a PCI DSS violation and will fail QSA assessment. | CRITICAL — must be confirmed before design is committed |
+| REDIS-RISK-001 | At-rest encryption status unconfirmed: the security team has not reviewed whether the Azure Cache for Redis configuration in the enterprise's infrastructure has at-rest encryption enabled. Azure Cache for Redis does not enable at-rest encryption by default in all tiers. The at-rest encryption status must be confirmed with the security team before the Redis cache is committed to the CDE design. | HIGH |
 | REDIS-RISK-002 | CDE scope: adding Redis as a CDE component adds it to the QSA assessment scope. The QSA must be informed of this component before the assessment window. QSA capacity is in months 8 and 14 — the Redis component must be provisioned and assessed before the selected QSA window. | HIGH |
 | REDIS-RISK-003 | PAN prohibition: under no circumstances may full PAN be written to the Redis cache. The Experience API must enforce this at the data transformation layer, not just by policy. | HIGH — design requirement |
 
