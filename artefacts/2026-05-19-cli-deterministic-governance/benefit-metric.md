@@ -90,15 +90,15 @@ This initiative is a platform infrastructure improvement, not a user-facing prod
 
 ## Metric Coverage Matrix
 
-<!-- Populated by /definition once stories are created -->
+<!-- Populated by /definition — Phase 1 stories written 2026-05-19 -->
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1: CPF ≥ 0.90 | Phase 1 validate CLI + Phase 3 skill surgery stories | Gap — stories not yet written |
-| M2: Gate bypass rate = 0 | Phase 2 advance command + trace log stories | Gap — stories not yet written |
-| M3: ≥ 33 unit test fixtures | Phase 1 CLI story (direct exit condition) | Gap — stories not yet written |
-| M4: 0 schema violations | Phase 2 advance command stories | Gap — stories not yet written |
-| T3M1: Auditability met | Phase 2 trace emission stories | Gap — stories not yet written |
+| M1: CPF ≥ 0.90 | cdg.1 + cdg.2 (Phase 1 validate foundation) + Phase 3 skill surgery stories (follow-on feature) | Partial — Phase 1 establishes the validate CLI; M1 is measurable only after Phase 1 + Phase 3 are both deployed. Phase 3 stories are a follow-on feature. |
+| M2: Gate bypass rate = 0 | Phase 2 advance command + trace log stories (follow-on feature) | Gap — intentionally deferred to Phase 2 follow-on feature. Phase 1 validate does not write state; bypass rate cannot be measured until Phase 2 advance + trace are deployed. |
+| M3: ≥ 33 unit test fixtures | cdg.2 (direct exit condition) | Covered — cdg.2 implements all 33 H-priority DoR checks and ≥33 test fixtures. M3 is met at cdg.2 DoD. |
+| M4: 0 schema violations | Phase 2 advance command stories (follow-on feature) | Gap — intentionally deferred to Phase 2. Phase 1 validate command writes no state; M4 is only measurable when the `skills advance` command is deployed. |
+| T3M1: Auditability met | Phase 2 trace emission stories (follow-on feature) | Gap — intentionally deferred to Phase 2. Tamper-evident trace.jsonl requires the advance + emit-trace commands (Phase 2). |
 
 ---
 
