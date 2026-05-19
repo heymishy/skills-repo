@@ -35,18 +35,81 @@
     {
       "slug": "2026-05-19-cli-deterministic-governance",
       "name": "CLI Deterministic Governance — Executable Gate Enforcement and Tamper-Evident Audit Trail",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "track": "library",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "discoveryStatus": "draft",
+      "discoveryStatus": "approved",
       "discoveryArtefact": "artefacts/2026-05-19-cli-deterministic-governance/discovery.md",
       "ideationPath": "artefacts/2026-05-19-cli-deterministic-governance/research/ideation.md",
       "ideationSignal": "proceed",
-      "updatedAt": "2026-05-19T00:00:00Z"
+      "updatedAt": "2026-05-19T08:00:00Z",
+      "benefitMetricArtefact": "artefacts/2026-05-19-cli-deterministic-governance/benefit-metric.md",
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Regulated story composite pipeline fidelity score (CPF)",
+          "tier": 1,
+          "baseline": 0.675,
+          "target": 0.9,
+          "minimumSignal": 0.8,
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M2",
+          "name": "Gate bypass incident rate (undetected bypasses per quarter)",
+          "tier": 1,
+          "baseline": null,
+          "target": 0,
+          "minimumSignal": "baseline-established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M3",
+          "name": "Gate logic unit test fixtures (H1-H9 DoR deterministic items)",
+          "tier": 2,
+          "baseline": 0,
+          "target": 33,
+          "minimumSignal": 20,
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M4",
+          "name": "Schema violation rate on CLI-written pipeline-state.json writes",
+          "tier": 2,
+          "baseline": null,
+          "target": 0,
+          "minimumSignal": "zero-in-first-5-runs",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "T3M1",
+          "name": "Gate enforcement auditability — compliance reviewer can confirm deterministic enforcement from trace",
+          "tier": 3,
+          "baseline": "not-met",
+          "target": "met",
+          "minimumSignal": "one-complete-feature-delivery-with-validate-entries",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     },
     {
       "slug": "2026-04-23-non-technical-channel",

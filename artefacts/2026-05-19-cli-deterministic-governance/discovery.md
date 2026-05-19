@@ -1,8 +1,8 @@
 # Discovery: CLI Deterministic Governance — Executable Gate Enforcement and Tamper-Evident Audit Trail
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-05-19
-**Approved by:** Pending
+**Approved by:** Hamis — 2026-05-19
 **Author:** Copilot (GitHub Copilot — Claude Sonnet 4.6)
 
 ---
@@ -165,7 +165,7 @@ Baseline: 0 gate-logic test fixtures today (all gate checks are in SKILL.md pros
 
 ## Contributors
 
-- Hamis — Platform maintainer / operator
+- Hamish (@heymishy) — Platform maintainer / operator
 - Copilot (GitHub Copilot — Claude Sonnet 4.6) — Discovery facilitator / artefact author
 - Craig (@craigfo) — Peer review; shared mdpm, outer-loop, lite-sdlc, and homer-demo repositories for design input
 
@@ -175,4 +175,4 @@ Baseline: 0 gate-logic test fixtures today (all gate checks are in SKILL.md pros
 
 ## Approved By
 
-- Pending
+- Hamis — 2026-05-19
