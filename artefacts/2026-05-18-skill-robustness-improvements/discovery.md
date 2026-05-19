@@ -1,7 +1,8 @@
 # Discovery: Skill Robustness Improvements (Consumer-Reported)
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-05-18
+**Approved by:** Platform Operator — 2026-05-18
 **Source:** External contribution — issue #344 (abhijeet-qsofte, OrderHub delivery session 2026-05-10)
 **Author:** Platform Operator
 
@@ -72,4 +73,4 @@ The gaps were directly observed during a real delivery session (OrderHub s1-2, 2
 
 ## Approved By
 
-- [To be filled in after review]
+- Platform Operator — 2026-05-18

@@ -1,0 +1,129 @@
+{
+  "currentPhase": "model-evaluation-experiments",
+  "activeFeature": "2026-05-10-model-evaluation-capability",
+  "previousActiveFeature": "2026-05-08-web-ui-copilot-chat-parity",
+  "lastUpdated": "2026-05-16T00:00:00.000Z",
+  "lastDreamRun": "2026-05-11T00:44:17.279Z",
+  "cycle": {
+    "discovery": {
+      "status": "complete",
+      "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/discovery.md",
+      "completedAt": "2026-05-08"
+    },
+    "definition": {
+      "status": "complete",
+      "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/epics/wucp-runtime-capabilities.md",
+      "completedAt": "2026-05-09"
+    }
+  },
+  "wucp": {
+    "wucp.0": {
+      "status": "definition-complete",
+      "storyArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.0.md",
+      "type": "spike",
+      "dispatchable": true
+    },
+    "wucp.1": {
+      "status": "definition-complete",
+      "storyArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.1.md",
+      "reviewReady": true
+    },
+    "wucp.2": {
+      "status": "definition-complete",
+      "storyArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.2.md",
+      "reviewReady": true
+    },
+    "wucp.3": {
+      "status": "definition-complete",
+      "storyArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.3.md",
+      "reviewReady": false,
+      "blockedOn": "wucp.0 MM1 >= 60% (reference/prompt-validation-results.md)"
+    },
+    "wucp.4": {
+      "status": "definition-complete",
+      "storyArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/stories/wucp.4.md",
+      "reviewReady": true
+    }
+  },
+  "wsm": {
+    "wsm.1": {
+      "status": "dod-complete",
+      "prUrl": "https://github.com/heymishy/skills-repo/pull/336",
+      "dodArtefact": "artefacts/2026-05-07-web-ui-session-management/dod/wsm.1-dod.md"
+    },
+    "wsm.2": {
+      "status": "dod-complete-with-deviations",
+      "prUrl": "https://github.com/heymishy/skills-repo/pull/337",
+      "dodArtefact": "artefacts/2026-05-07-web-ui-session-management/dod/wsm.2-dod.md"
+    },
+    "wsm.3": {
+      "status": "dod-complete-with-deviations",
+      "prUrl": "https://github.com/heymishy/skills-repo/pull/338",
+      "dodArtefact": "artefacts/2026-05-07-web-ui-session-management/dod/wsm.3-dod.md"
+    },
+    "wsm.4": {
+      "status": "dor-signed-off",
+      "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.4-dor.md",
+      "testPlan": "artefacts/2026-05-07-web-ui-session-management/test-plans/wsm.4-test-plan.md"
+    }
+  },
+  "previousFeature": {
+    "slug": "2026-05-06-web-ui-guided-outer-loop",
+    "status": "dod-complete-released",
+    "prUrl": "https://github.com/heymishy/skills-repo/pull/320"
+  },
+  "evalProgramme": {
+    "EXP-006-review-rubric": {
+      "status": "complete",
+      "completedAt": "2026-05-15",
+      "result": "Haiku FDR_HIGH 1.00 (6/6 adversarial cases, 2 trials). Sonnet FDR_HIGH 1.00 (6/6, 2 trials). Both approved. Haiku default at 0.33x cost; Sonnet override for direct-author delivery.",
+      "routingUpdate": "routing-policy-framework.md updated — /review default changed to claude-haiku-4-5, measurement_backed: true, experiment_id: EXP-006-review-rubric",
+      "evalMdFix": "D4 anchor corrected: T4 category mapping was C(MEDIUM)+D(LOW), now D(MEDIUM)+C(LOW)+D(LOW)"
+    },
+    "EXP-007-testplan-rubric": {
+      "status": "complete",
+      "createdAt": "2026-05-15",
+      "completedAt": "2026-05-16",
+      "manifest": "workspace/experiments/EXP-007-testplan-rubric/manifest.md",
+      "evalMd": ".github/skills/test-plan/EVAL.md",
+      "corpus": ".github/skills/test-plan/corpus/",
+      "result": "Haiku TCF 1.00, zero categorical fails (5/5 cases × 2 trials). Sonnet TCF 1.00, zero categorical fails. Haiku approved for /test-plan non-regulated. Sonnet preferred for PCI/compliance stories (Haiku D3=0.7 on T5 — NFR scope-mixing, confirmed systematic). All outer-loop skills (/discovery, /definition, /review, /test-plan, /definition-of-ready) now evidence-backed.",
+      "routingUpdate": "routing-policy-framework.md updated — /test-plan split: Haiku default for non-regulated (measurement_backed: true); Sonnet for PCI/compliance pending SKILL.md NFR scope rule fix. After EXP-007R: both rows consolidated to Haiku.",
+      "skillMdFix": ".github/skills/test-plan/SKILL.md NFR scope rule added (EXP-007-testplan-rubric, 2026-05-16) — NFR tests must not include positive AC assertions alongside negative constraints",
+      "finalReport": "workspace/experiments/EXP-007-testplan-rubric/haiku-vs-sonnet-final.md"
+    },
+    "EXP-007R-testplan-nfr": {
+      "status": "complete",
+      "createdAt": "2026-05-16",
+      "completedAt": "2026-05-16",
+      "manifest": "workspace/experiments/EXP-007R-testplan-nfr/manifest.md",
+      "hypothesis": "NFR scope rule (commit a8e09c8) eliminates Haiku D3=0.7 scope-mixing on T5",
+      "result": "D3=1.0 confirmed. NFR-SEC-1 test body contains only negative-constraint assertions. No expect(mockGateway.processPayment).toHaveBeenCalledWith() in NFR block. Weighted score 0.925. Pass condition met.",
+      "runFile": "workspace/experiments/EXP-007-testplan-rubric/runs/haiku/T5-fix-validation-run-1.md",
+      "judgeFile": "workspace/experiments/EXP-007-testplan-rubric/runs/haiku/T5-fix-validation-run-1-judge.md",
+      "routingUpdate": "routing-policy-framework.md updated — /test-plan (PCI/compliance-classified stories) downgraded from claude-sonnet-4-6 to claude-haiku-4-5. Routing policy now fully Haiku-dominant across all 4 non-discovery skills."
+    }
+  },
+  "EXP-008": {
+    "status": "scaffolded",
+    "manifest": "workspace/experiments/EXP-008-corpus-breadth-eval/manifest.md",
+    "scaffoldCommit": "dad8b9a",
+    "committedAt": "2026-05-17",
+    "description": "S2-S13 corpus breadth evaluation — 12 stories x 4 model configs = 48 planned runs, context injection always-on",
+    "priority": "S2 Config A, S8 Config A, S13 Config A (first runs)",
+    "prerequisite": "S2-S7 context injection files must be created before S2-S7 runs"
+  },
+  "checkpoint": {
+    "writtenAt": "2026-05-17T00:00:00Z",
+    "contextAtWrite": "Session: EXP-008-corpus-breadth-eval scaffolded and committed (dad8b9a). 12 stories x 4 model configs = 48 planned runs. Context injection always-on. Run matrix initialised. npm test passes (exit 0). trw.1 dispatched as GitHub issue #351 (prior session). Next: create S2-S7 context injection files, then begin first EXP-008 runs (S2, S8, S13 — Config A).",
+    "resumeInstruction": "EXP-008 scaffold committed to master (dad8b9a). IMMEDIATE NEXT: (1) Create context injection files for S2-S7 — use existing S8-S13 files in workspace/experiments/EXP-003-pipeline-eval/corpus/context-injection/ as template, ~4-8KB each, synthetic content aligned to corpus scenarios. (2) Begin first EXP-008 runs: S2 Config A (fresh, with injection), S8 Config A, S13 Config A. (3) trw.1 implementation: issue #351 dispatched, awaiting VS Code coding agent. (4) wsm.4 still dor-signed-off and dispatchable.",
+    "pendingActions": [
+      "EXP-008 S2-S7 INJECTION — Create context injection files: S2 (EA registry lending origination + FMA responsible lending excerpt), S3 (EA registry RTP gateway + RTP scheme policy excerpt), S4 (EA registry experience API + PCI-DSS architecture guardrails), S5 (EA registry CRM platform + privacy policy excerpt), S6 (EA registry payment platform + DR policy excerpt), S7 (EA registry web app). Place in workspace/experiments/EXP-003-pipeline-eval/corpus/context-injection/ using S8-S13 files as format reference.",
+      "EXP-008 FIRST RUNS — After S2 injection file created: run S2 Config A (fresh, with injection). Also run S8 Config A and S13 Config A. Record CPF scores and C5 surfacing in workspace/experiments/EXP-008-corpus-breadth-eval/manifest.md run matrix.",
+      "trw.1 IMPLEMENTATION — Issue #351 open at https://github.com/heymishy/skills-repo/issues/351. Needs: scripts/write-ci-trace.js, modified .github/workflows/trace-commit.yml, tests/check-trw1-trace-writer.js.",
+      "wsm.4 DISPATCH — Story dor-signed-off. DoR artefact at artefacts/2026-05-07-web-ui-session-management/dor/wsm.4-dor.md.",
+      "P14 FIX — Story: add git fetch origin traces + checkout origin/traces -- workspace/traces/ step to improvement-agent-schedule.yml before agent run. See workspace/platform-audit/trace-gap-diagnosis-2026-05-16.md Option A.",
+      "PENDING EXP-003 Config D: Requires EXP-002a H5 confirmed (GPT-4o >= 0.70 on T1 and T3) before running."
+    ]
+  }
+}
