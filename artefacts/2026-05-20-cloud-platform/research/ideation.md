@@ -6,7 +6,7 @@
 | Date | 2026-05-20 |
 | Artefact path | artefacts/2026-05-20-cloud-platform/research/ideation.md |
 | Lenses run | Lens D — Product strategy framing (Cagan); Lens C — Market and competitive scan; Lens E — Jobs-to-be-Done; Lens B — Assumption inventory + commercial analysis |
-| Pipeline state signal | proceed (discovery recommended; three structural ACs required) |
+| Pipeline state signal | proceed — operator PMF assessment added 2026-05-21; three pre-/discovery conditions set (licence decision, magic moment definition, 5-person outreach experiment) |
 
 ---
 
@@ -469,14 +469,14 @@ LLM usage is included in the flat fee at reasonable volumes. Tenants exceeding ~
 
 | Cost component | Monthly estimate | Basis |
 |---------------|-----------------|-------|
-| LLM API cost per tenant | $1–3 | ~4 features/month × ~50K tokens/feature × $3/M tokens (Sonnet-class) |
+| LLM API cost per tenant | $8–12 | ~4 features/month × ~200K tokens/feature × $3/M tokens (Sonnet-class) — a full outer loop run (discovery → DoR) on a non-trivial feature is 150–300K tokens; 50K per feature significantly underestimates |
 | Infrastructure (compute, auth, storage) | $5–12 | Cloud hosting at scale; higher per-tenant until ~100 tenants |
 | Support time (async, early stage) | $8–15 | ~30 min/month per active tenant at $30/hour fully-loaded |
 | Payment processing | $5–6 | Stripe ~2.9% + $0.30 |
-| **Total marginal cost** | **~$19–36/month** | |
-| **Gross margin at $179/month** | **~$143–160/month (~80–85%)** | |
+| **Total marginal cost** | **~$26–45/month** | |
+| **Gross margin at $179/month** | **~$134–153/month (~75–85%)** | |
 
-80–85% gross margin is SaaS-standard and healthy. The model works at any scale above ~10 active tenants.
+75–85% gross margin (revised from original 80–85%) — still SaaS-standard and healthy. Break-even moves from 7 to 9–10 paying teams; not a meaningful strategic difference. The model works at any scale above ~10 active tenants.
 
 **Break-even and growth targets:**
 
@@ -523,7 +523,7 @@ In year 1, consultancy revenue is likely to exceed SaaS ARR by 3–5x. This is n
 2. **A3 (cdg dependency)** is not optional — it is a launch gate. No enforcement claim without a passing exit code. This is already in the pipeline.
 3. **A4 (GitHub/Microsoft)** cannot be controlled — only monitored and responded to. The strategic response (be the open standard) must be executed in parallel, not deferred.
 
-**Unit economics are not the problem.** At $179/month with ~85% gross margin, the model is financially sound at 25+ paying teams. The challenge is getting to 25 — which is entirely an A1/A6 onboarding problem, not a pricing or margin problem.
+**Unit economics are not the problem.** At $179/month with ~75–85% gross margin (revised: LLM cost is ~$10/month at 4 features × 200K tokens, not $1–3), the model is financially sound at 25+ paying teams. The challenge is getting to 25 — which is entirely an A1/A6 onboarding problem, not a pricing or margin problem.
 
 **The commercial analysis identifies one important pricing risk:** the team tier must feel like "infra pricing" (flat, predictable, no anxiety about LLM token spend) rather than "AI tool pricing" (per-query, unpredictable). Bundled LLM usage with a clear overage cliff is the correct pattern.
 
@@ -532,6 +532,86 @@ In year 1, consultancy revenue is likely to exceed SaaS ARR by 3–5x. This is n
 ---
 
 *Remaining lenses to run: none. All planned lenses (D, C, E, B) are complete. Proceed to "How this feeds the pipeline" and "Open questions" sections, then /discovery.*
+
+---
+
+## Operator product/market fit assessment — 2026-05-21
+
+*Written by the operator after all four lenses completed. A critical review of the ideation output intended to sharpen the /discovery scope before any stories are written. This is not a reversal of the PROCEED signal — it is a precision pass on that signal.*
+
+---
+
+### Where the fit is strong
+
+The team tier JTBD is the clearest signal. "Stop being the bottleneck" is a concrete, economically quantifiable pain that recurs every sprint. Tech leads actively seek solutions after a painful trigger event. That is a textbook high-PMF setup: specific person, specific pain, recurring trigger, measurable outcome.
+
+The open source → SaaS upgrade funnel is proven by Vercel, Supabase, Railway, and PlanetScale. All grew from developer communities via exactly this motion. The starting conditions are the same.
+
+---
+
+### Where the fit is uncertain — the cold onboarding gap
+
+The 90-minute activation target is ambitious. The outer loop is six stages. Even a well-designed cloud UI with AI assistance will struggle to get a cold user through discovery → benefit-metric → definition → review → test-plan → DoR in 90 minutes. Loveable gets to "working app" in minutes because code appears on screen immediately. The platform's output — a governed artefact chain — is less viscerally demonstrable. The magic moment is harder to reach.
+
+**This is the single biggest PMF risk and it is not addressed deeply enough in the ideation.** What does the user see at minute 10 that makes them think "this is worth continuing"? If the answer is "a partially completed discovery.md", that is not compelling enough to sustain 80 more minutes of effort.
+
+Lens E correctly identified that the most qualified customer is a tech lead who already runs skills-repo manually. But that population is currently small. The GitHub funnel math assumes 500–2,000 stars at launch — a community that does not yet exist at meaningful scale. The 12–50 paying teams in year 1 bottom-up estimate is realistic, but it means the SaaS product will be in a very small beta for a long time before it has enough signal to know whether A1 holds.
+
+---
+
+### The milestone that actually matters: renewal, not sign-up
+
+A tech lead who signs up and runs one feature has demonstrated interest. A tech lead who runs three features across two months and pays again has demonstrated value. The statistical threshold for PMF confidence is not 10 sign-ups — it is **3 teams who renewed after month 1**. Design the beta programme around capturing renewal signal, not volume signal.
+
+---
+
+### The consultancy/SaaS tension is real and under-modelled
+
+In year 1 with 10–30 SaaS teams and 2–3 consultancy engagements, the consultancy work will feel more important — it pays more per hour, it is more intellectually engaging, and the enterprise anchor relationship is personally meaningful. The SaaS product will feel like a side project.
+
+The structural discipline required is: **a fixed allocation of time to product work that is not negotiable regardless of consultancy demand.** Without it, the SaaS product atrophies. The consultancy revenue is valuable but must not become the identity of the business if SaaS is the strategic goal.
+
+---
+
+### Three gaps to close before /discovery
+
+#### Gap 1 — The magic moment definition
+
+What does a user see at minute 5, minute 15, and minute 30 that keeps them engaged? The 90-minute activation target needs to be decomposed into experience milestones. A candidate: **"a validated discovery artefact with real problem framing in under 20 minutes"** — the first gate the user clears and the first thing that feels genuinely useful. If that moment can be engineered, the rest of the pipeline has a foundation to build on. This milestone definition must appear as an explicit AC in the /discovery scope.
+
+#### Gap 2 — The competitive window quantification
+
+The A4 monitoring plan says "6–9 months to establish open standard positioning." That is a deadline, not a plan. What specifically must happen in 6–9 months? Candidates:
+- Publish SKILL.md schema as a versioned open specification (not just a repo file)
+- Publish the CPF benchmark methodology as an open standard with reproducibility guidance
+- Get cdg CLI on GitHub with documentation sufficient for another team to implement against it
+
+These are concrete deliverables with timelines. The /discovery artefact must name them as explicit parallel-track actions, not background surveillance activities.
+
+#### Gap 3 — The licence decision (pre-/discovery, not in /discovery)
+
+Open question 5 (licence choice) was listed as a /discovery decision. It should not be — it is a pre-/discovery blocker. Without a licence decision, the README cannot be instrumented with a beta interest link, the product cannot be discussed publicly, and there is no legal clarity on what "open-core" means in practice.
+
+**Recommended decision: BSL (Business Source Licence).** BSL allows community use and self-hosting freely, but prohibits competing SaaS offerings. This is the open-core standard used by CockroachDB, MariaDB, and (prior to SSPL migration) HashiCorp Vault. It gives the community use rights that maximise adoption while protecting the SaaS revenue model. This decision should be made before /discovery opens.
+
+---
+
+### The recommended pre-/discovery action
+
+Before writing a single discovery story — identify 5 tech leads who have cloned or starred skills-repo and send a personal message: "I'm building a hosted version, want early access?" Their response tells you more about A1 than any amount of ideation work. If 3 of 5 say yes immediately, there is enough signal to proceed with confidence. If 3 of 5 say "interesting but I'd need X first", that X is the /discovery scope.
+
+This is a 20-minute outreach experiment. It de-risks the entire initiative before the pipeline starts. Do it before opening /discovery.
+
+---
+
+### PMF verdict (post-assessment)
+
+**Strong directional signal, not yet validated.** The team tier job is real, the trigger is acute, the economics work at 75–85% gross margin. But the activation experience is unproven and the community is small. This is a product that needs a tight beta with the right 10 people before it needs anything else.
+
+The PROCEED signal stands. Three conditions are added:
+1. Licence decision (BSL) made before /discovery opens
+2. Magic moment milestone (validated discovery artefact < 20 minutes) defined as an explicit AC in /discovery
+3. 5-person outreach experiment completed before /discovery stories are written — results inform MVP scope
 
 ---
 
@@ -572,8 +652,8 @@ These remain open after all lenses and must be addressed in /discovery or flagge
 
 4. **cdg CLI distribution** — How does a cloud platform invoke cdg in a multi-tenant context? As a sidecar container? A serverless function? The architecture decision affects cost model and isolation guarantees. Must be resolved in /discovery technical design.
 
-5. **Open source licence** — skills-repo is currently unlicenced in the repo. For an open-core model, the licence choice matters: MIT/Apache-2 maximises community adoption; BSL (Business Source Licence) or AGPL can protect SaaS hosting exclusivity. This is a /discovery-phase decision with legal implications.
+5. **Open source licence** — ~~listed as a /discovery-phase decision, upgraded to pre-/discovery blocker by operator assessment 2026-05-21~~. Without a licence decision, the README cannot be instrumented with a beta interest link and there is no legal clarity on open-core. **Recommended: BSL.** Allows community use and self-hosting; prohibits competing SaaS. Decision must be made before /discovery opens.
 
 ---
 
-*Session reference: /ideate run 2026-05-20. Operator context: cdg as prerequisite; Craig as convergent peer (informed independent); known regulated enterprise anchor (unnamed). Lenses run this session: D, C, E, B. All planned lenses complete. Ideation signal: PROCEED to /discovery.*
+*Session reference: /ideate run 2026-05-20; operator PMF assessment added 2026-05-21. Operator context: cdg as prerequisite; Craig as convergent peer (informed independent); known regulated enterprise anchor (unnamed). Lenses run: D, C, E, B. All planned lenses complete. Operator assessment: PROCEED with three pre-/discovery conditions — (1) BSL licence decision, (2) magic moment milestone defined, (3) 5-person outreach experiment. Ideation signal: discovery-ready.*
