@@ -114,7 +114,6 @@
       "storyCount": 2,
       "epicCount": 1,
       "nfrProfileArtefact": "artefacts/2026-05-19-cli-deterministic-governance/nfr-profile.md",
-      "guardrails": [],
       "epics": [
         {
           "slug": "cdg-phase1-validate-cli",
@@ -3340,6 +3339,21 @@
       "sourceContributor": "abhijeet-qsofte",
       "stories": [],
       "updatedAt": "2026-05-18"
+    },
+    {
+      "slug": "2026-05-20-cloud-platform",
+      "name": "Cloud Platform — Multi-Tenant Governed Delivery Application",
+      "stage": "ideation",
+      "health": "amber",
+      "track": "product",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "discoveryStatus": "not-started",
+      "ideationPath": "artefacts/2026-05-20-cloud-platform/research/ideation.md",
+      "ideationSignal": "discovery-ready",
+      "ideationLensesComplete": ["D", "C", "E", "B"],
+      "stories": [],
+      "updatedAt": "2026-05-20T21:00:00Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
