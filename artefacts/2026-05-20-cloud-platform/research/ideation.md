@@ -5,8 +5,8 @@
 | Feature | 2026-05-20-cloud-platform |
 | Date | 2026-05-20 |
 | Artefact path | artefacts/2026-05-20-cloud-platform/research/ideation.md |
-| Lenses run | Lens D — Product strategy framing (Cagan); Lens C — Market and competitive scan; Lens E — Jobs-to-be-Done; Lens B — Assumption inventory + commercial analysis |
-| Pipeline state signal | proceed — operator PMF assessment added 2026-05-21; three pre-/discovery conditions set (licence decision, magic moment definition, 5-person outreach experiment) |
+| Lenses run | Lens D — Product strategy framing (Cagan); Lens C — Market and competitive scan; Lens E — Jobs-to-be-Done; Lens B — Assumption inventory + commercial analysis; Operator addenda 2026-05-21: end-to-end pipeline reframe + enterprise value modelling |
+| Pipeline state signal | proceed — operator PMF assessment + addenda added 2026-05-21; four pre-/discovery conditions: (1) BSL licence decision, (2) magic moment = complete feature run (outer + inner loop), (3) 5-person outreach experiment, (4) measure actual cycle time from pipeline-state.json actuals |
 
 ---
 
@@ -36,10 +36,10 @@
 | Q2 | For whom? | Three candidate segments. Enterprise regulated (high confidence): tech leads and delivery managers in regulated environments (financial services, healthcare, government) who need a traceable, auditable pipeline satisfying compliance review; a known regulated enterprise anchor confirms real demand. Team (medium confidence): tech leads in SMB/mid-market wanting consistent delivery standards without a compliance mandate; want the discipline, not the DIY overhead. Solo operator (uncertain): individuals wanting structure on personal projects; can clone the repo today; unclear whether they will pay for a cloud service. | Medium — enterprise is concrete; team/solo are hypotheses |
 | Q3 | How will we measure success? | Primary: tenant-delivered governed features per month (output — are tenants using it?). Secondary: time from first sign-up to first DoR-signed story (activation — do they reach the magic moment?). Enterprise: audit trail export completeness and CPF ≥ 0.90 across tenant features — the same threshold as the platform's own M1, ensuring the product performs as well as the internal pipeline. The CPF measurement infrastructure already exists from the eval harness. | High — measurement framework inherits directly from the existing eval harness |
 | Q4 | What alternatives do customers use today? | Loveable/v0/bolt.new: generates running code from prompts — zero delivery governance, no audit trail, no pipeline. Linear: issue tracking with good developer UX — no AI pipeline, no test plans, no gate enforcement. Atlassian Rovo + Jira: AI-assisted project management — mature tooling, no deterministic enforcement, no SKILL.md equivalent. GitHub Copilot Workspace: AI-assisted coding from issues — no delivery governance, no artefact chain. Manual + docs (what regulated enterprise teams do today): Confluence/Jira/manual review — high setup cost, inconsistent enforcement, no AI audit trail. DIY pipeline (what skills-repo is today): expert setup required, no tenancy, no persistence. | High — the governance gap is clear; no direct competitor in governed delivery |
-| Q5 | Why are we best suited? | (1) We own the methodology: 30+ SKILL.md files covering the full delivery lifecycle, battle-tested across multiple real features. (2) We have the evaluation harness: corpus T1–T5, EVAL.md specs, EXP-001 through EXP-007 — we can measure whether the product works. (3) We are building the CLI enforcement layer (cdg): deterministic gate enforcement that a tamper-evident audit trail can be built on top of. (4) Craig's mdpm/outer-loop is a convergent peer implementation proving the architecture from a different starting point (Go binary, different methodology set). No competitor has all four. "Governed feature definitions, not running code" is a distinct market position. | High on uniqueness of combination; medium on long-term defensibility |
+| Q5 | Why are we best suited? | (1) We own the methodology: 30+ SKILL.md files covering the full delivery lifecycle, battle-tested across multiple real features. (2) We have the evaluation harness: corpus T1–T5, EVAL.md specs, EXP-001 through EXP-007 — we can measure whether the product works. (3) We are building the CLI enforcement layer (cdg): deterministic gate enforcement that a tamper-evident audit trail can be built on top of. (4) Craig's mdpm/outer-loop is a convergent peer implementation proving the architecture from a different starting point (Go binary, different methodology set). No competitor has all four. "Governed end-to-end delivery pipeline — from raw idea to tested, traced implementation" is the distinct market position. No player covers all three loops: outer loop (discovery → DoR definition), inner loop (AI-assisted implementation), close-out (tamper-evident audit trail). | High on uniqueness of combination; medium on long-term defensibility |
 | Q6 | Why is now the right moment? | LLM threshold crossed: EXP-003 Config A/B CPF ≥ 0.90 for non-regulated stories — the pipeline produces measurable quality suitable for productisation. CLI enforcement in progress: cdg Phase 1 gives the audit trail foundation; without it a cloud product would still have model-controlled state, recreating the exact failure mode the platform is solving. Craig's convergent implementation reduces architecture risk from hypothesis to validated pattern. Loveable establishing market demand for AI-first development tools validates that "AI + delivery process" is credible to customers right now. | High on timing signals; medium on whether Loveable's customer profile is the right reference class |
 | Q7 | How will we reach customers? | Enterprise: direct relationship with known regulated enterprise anchor (known, concrete); the enterprise version is treated as a goodwill fork that will diverge and evolve separately — the SaaS product and the enterprise fork are parallel tracks, not the same product. Team: GitHub community / skills-repo star growth → upgrade funnel (hypothesised). Solo: open source → self-serve signup (revenue uncertain). | Medium — enterprise channel is concrete; team/solo GTM is early thinking only |
-| Q8 | What must MVP do to earn trust? | A new tenant creates their first governed feature — from rough idea to DoR-signed story with a clean, exportable audit trail — using only the cloud UI, in under one hour, with no local tooling required. This is the magic moment. Three sub-questions the MVP must answer: (a) Can the full outer loop (discovery → DoR) run as a cloud conversation with no local setup? (b) Can gate enforcement be deterministic in a multi-tenant cloud context (i.e. cdg integrated with cloud backend)? (c) Can the audit trail be exported for compliance review? | High on MVP definition; medium on delivery feasibility — requires cdg Phase 1 complete + cloud infrastructure |
+| Q8 | What must MVP do to earn trust? | The MVP must demonstrate the full governed pipeline — outer loop definition, inner loop AI-assisted implementation, and a tamper-evident audit trail — as a single coherent product. The magic moment is not at minute 10 of onboarding. It is the first time a team member opens a PR and can see — in the commit history, in the artefact chain, in the trace — the complete story of why that code exists, what problem it solves, what constraints it operates under, and what tests prove it works. And six months later, when someone asks "why did we build it this way?", the answer is a link, not a meeting. Three questions the MVP must answer: (a) Can the full outer loop (discovery → DoR) run as a cloud conversation with no local setup? (b) Can the inner loop (branch-setup → implementation-plan → subagent-execution → verify-completion → branch-complete) execute within the cloud product under a governed framework? (c) Does the complete trace — outer loop gate passes, inner loop execution, DoD sign-off — export as a tamper-evident audit record? | High on MVP definition; medium on delivery feasibility — requires cdg Phase 1 complete + cloud infrastructure |
 | Q9 | Central hypothesis and risks | (a) Methodology versioning: simplified — stable + dev/experimental, feature-toggled. Design task, not a risk. (b) SaaS vs consultancy+framework model: this is the central hypothesis this ideation is testing, not a blocker to it. The consultancy motion is already working (enterprise anchor). The question is whether a self-serve SaaS motion is also viable for team/solo segments, or whether the value model is purely expertise-led. Lenses C, E, and B are oriented toward answering this. (c) Craig's relationship: resolved — informed independent peer, no formal arrangement needed. (d) Solo/team tier viability: if the paying market is enterprise-only, the SaaS motion may not be the right model and consultancy+framework may be the answer to (b). This is the key dependency between (b) and (d). (e) cdg is a hard prerequisite: a cloud product without deterministic gate enforcement would recreate the exact failure mode this platform is solving; cdg Phase 1 must complete first regardless of which model wins. | High on (e); (b)/(d) are the central hypothesis being explored; (a)/(c) resolved |
 | Q10 | Proceed / Redesign / Defer? | PROCEED — on /discovery, not on build. The opportunity is real, differentiation is genuine, timing is right, and there is a known enterprise anchor customer. The three structural questions (internal vs commercial, Craig's role, tenancy/versioning model) are not blockers to ideation, but they must appear as explicit scope items in the /discovery artefact. Without those answers, any architecture designed in /discovery will be built on unvalidated structural assumptions. | High |
 
@@ -365,7 +365,7 @@ The job is the clearest and highest-stakes of the three tiers. Willingness to pa
 
 **Test design:**
 - Phase 1 (pre-product): Instrument skills-repo README with a "want a hosted version?" interest link (simple email capture). Measure: how many DIY users express interest without being asked explicitly?
-- Phase 2 (beta): Offer 10 early access slots to self-nominated tech leads from the GitHub community. Measure: time from first login to first DoR-signed story (activation metric). If median > 90 minutes, onboarding is broken.
+- Phase 2 (beta): Offer 10 early access slots to self-nominated tech leads from the GitHub community. Measure: completion rate (did the team complete a full feature — outer loop + inner loop + merged PR?) and return rate (did they voluntarily start a second feature?). A team that completes one feature and never returns has not validated A1. A team that completes one and starts a second has.
 - Invalidation threshold: If < 2% of README visitors click the interest link after 3 months, or if 0 of 10 beta users complete a feature in the first session, A1 is invalidated.
 - Fallback: Consultancy-only model. The SaaS product becomes a private tool for consultancy engagements, not a self-serve product.
 
@@ -447,17 +447,21 @@ The bottom-up model is the credible one for year 1. Top-down TAM is useful for i
 | Railway | $5/user/month + usage | Seat + usage | Developer infra with usage component |
 | Cortex (platform eng) | $500–1,500/user/year | Per seat, enterprise | Governance-adjacent |
 
-**Recommended pricing structure — team tier:**
+**Recommended pricing structure (revised Addendum 1 — 2026-05-21):**
 
-Per-seat pricing is unnatural for this product: not every team member interacts with the pipeline equally. Per-workspace (flat team plan) is better aligned with the job — the tech lead pays once, the whole team benefits.
+Per-seat pricing is unnatural for this product. Per-workspace (flat team plan) is better aligned with the job — the tech lead pays once, the whole team benefits. The tier structure maps to the pipeline's natural expansion path: teams start with outer loop only and expand to the full pipeline as trust builds.
 
-| Tier | Price | Seats included | Overage |
-|------|-------|---------------|---------|
-| Team Starter | $99/month | Up to 5 engineers | n/a |
-| Team | $179/month | Up to 15 engineers | $12/seat/month beyond 15 |
-| Team Plus | $299/month | Up to 40 engineers | $10/seat/month beyond 40 |
+| Tier | Price | Seats included | Scope | Overage |
+|------|-------|---------------|-------|--------|
+| Outer Loop | $99/month | Up to 8 engineers | Discovery → DoR (definition, gate checks, exportable artefact chain) | n/a |
+| Full Pipeline | $179/month | Up to 15 engineers | Outer loop + inner loop (AI-assisted implementation) + audit trail (DoD + trace export) | $12/seat/month beyond 15 |
+| Full Pipeline Plus | $299/month | Up to 40 engineers | Full pipeline, larger team | $10/seat/month beyond 40 |
 
-Annual pricing: 2 months free (effectively ~17% discount). This is the Vercel/Linear/Supabase pattern — incentivises annual commits, improves cash flow.
+**Outer Loop** is the entry point for teams who want governed definition discipline before adopting AI-assisted implementation. The outer loop alone — governed discovery, benefit-metric, stories, review, test-plan, DoR sign-off — is a distinct, marketable value proposition for teams not yet ready to run AI coding agents.
+
+**Full Pipeline** is the complete product: governed definition + AI-assisted implementation + tamper-evident audit trail. This is where the end-to-end value proposition — and the full magic moment — is realised.
+
+Annual pricing: 2 months free (~17% discount). This is the Vercel/Linear/Supabase pattern — incentivises annual commits, improves cash flow.
 
 LLM usage is included in the flat fee at reasonable volumes. Tenants exceeding ~20 features/month incur a small overage. This prevents abuse without charging by the token (which creates anxiety and suppresses usage).
 
@@ -515,6 +519,70 @@ In year 1, consultancy revenue is likely to exceed SaaS ARR by 3–5x. This is n
 
 ---
 
+### Enterprise value modelling (Addendum 2 — 2026-05-21)
+
+*A colleague with knowledge of a large regulated enterprise change portfolio has provided the following directional analysis. The enterprise is not named. The figure is directional, not audited.*
+
+---
+
+#### The $80M opportunity — value framework
+
+An enterprise running a $140M annual change portfolio with average feature lead time of 6–12 months could compress to 1–3 months using this pipeline. Directional opportunity: approximately $80M, composed of:
+
+| Value component | Mechanism | Materiality |
+|----------------|-----------|------------|
+| Capital efficiency | Same portfolio budget delivers 3–4× feature throughput, or same throughput for 25–35% of budget | High |
+| Revenue opportunity cost | Features sitting in a 9-month pipeline are not generating revenue. Compressing to 2 months means revenue starts 7 months earlier per feature. On a $140M portfolio this is material. | Very high |
+| Rework cost reduction | CPF improvement × average rework cost per story. The platform's measurement infrastructure makes this auditable, not estimated. | Medium-high |
+| Compliance cost reduction | Audit trail completeness reduces evidence collection cost and risk review cycle time in regulated environments. | Medium |
+
+#### What makes the value claim defensible
+
+The eval harness (CPF measurement), the cdg enforcement layer (tamper-evident trace), and pipeline-state.json (cycle time per feature) together form a **measurement system** that can baseline a client's delivery performance and measure improvement quantitatively. This separates the product from a methodology consultancy selling a framework on trust. The value delivered is auditable before and after.
+
+No competitor has this combination. Compliance tools collect security evidence. This platform generates delivery performance evidence — CPF, cycle time, rework rate — as a byproduct of the pipeline itself.
+
+#### Enterprise pricing implications
+
+If one enterprise can quantify $80M of opportunity, the consultancy engagement that delivers it is not priced at $15–40K. Value-based pricing anchored to measurable outcomes is the correct model.
+
+| Component | Indicative |
+|-----------|----------|
+| Engagement structure | Baseline measurement → pipeline implementation → outcome measurement → ongoing retainer |
+| Implementation engagement | $200–500K (provably compresses a large regulated portfolio from 9 months to 2 months average cycle time) |
+| Outcome-based retainer | $100–200K/year (measurement, SKILL.md updates, quarterly CPF review) |
+| Full engagement (2–3 years) | $500K–$2M per enterprise client |
+
+The $15–40K figure from the initial consultancy model should be treated as a floor for small pilots only — not the expected engagement size for a $140M-portfolio client.
+
+#### Revised commercial model framing
+
+The current ideation treats enterprise as a side revenue stream and SaaS as the primary growth hypothesis. The $80M figure inverts this:
+
+**Enterprise consultancy is the primary commercial engine.** One well-priced engagement ($500K–$2M) generates more revenue than years of SaaS growth at team-tier pricing. The SaaS product serves two strategic purposes:
+
+- **Community credibility**: proves the methodology works in public, builds the GitHub community, generates the tech lead network from which enterprise champions emerge
+- **Pipeline feeder**: tech leads using the team SaaS product become internal champions inside enterprises that eventually become consultancy clients
+
+SaaS is proof and pipeline. Enterprise consultancy is revenue. Both are necessary; neither should be treated as a side project or a fallback.
+
+**Updated Y1 revenue view (revised with enterprise value modelling):**
+
+| Revenue type | Y1 base case | Y1 upside |
+|-------------|-------------|----------|
+| SaaS ARR (team tier) | $18–54K | $54–180K |
+| Standard consultancy engagements | $50–120K | $80–200K |
+| Enterprise engagement — value-based (1 large regulated client) | $0–200K | $200–500K |
+| **Total** | **$68–374K** | **$334K–880K** |
+
+#### Cycle time claim — grounding required before commercial conversations
+
+The 6–12 months → 1–3 months compression claim is the anchor for the $80M opportunity. Before any commercial conversation with a regulated enterprise, this must be supported by actuals, not estimates.
+
+**Pre-/discovery action (added to the list):** Measure actual outer loop cycle time (discovery to DoR sign-off) and inner loop cycle time (DoR to merged PR) from pipeline-state.json actuals on already-completed features. If these measurements exist, they are the case study. If they do not yet exist, measuring them from the next 2–3 completed features is a pre-/discovery action alongside (1) BSL licence decision, (2) magic moment milestone, and (3) 5-person outreach experiment.
+
+---
+
 ### Lens B synthesis
 
 **Three P0 assumptions determine the shape of the business:**
@@ -527,7 +595,7 @@ In year 1, consultancy revenue is likely to exceed SaaS ARR by 3–5x. This is n
 
 **The commercial analysis identifies one important pricing risk:** the team tier must feel like "infra pricing" (flat, predictable, no anxiety about LLM token spend) rather than "AI tool pricing" (per-query, unpredictable). Bundled LLM usage with a clear overage cliff is the correct pattern.
 
-**Key number to carry into /discovery:** 25 paying teams at $179/month = break-even on a cash-flow basis. This is achievable from a 1,000-star GitHub community. The pilot validation question for /discovery is: can 10 beta users reach DoR-signed story in under 90 minutes? If yes, A1 and A6 are provisionally validated and the SaaS motion is worth building.
+**Key number to carry into /discovery:** 25 paying teams at $179/month = break-even on a cash-flow basis. This is achievable from a 1,000-star GitHub community. The pilot validation question for /discovery is: can 10 beta users complete a full feature (outer loop + inner loop + merged PR with trace) and voluntarily begin a second? If yes, A1 and A6 are provisionally validated and the SaaS motion is worth building. Time-to-completion is secondary to completion rate and return rate.
 
 ---
 
@@ -549,11 +617,13 @@ The open source → SaaS upgrade funnel is proven by Vercel, Supabase, Railway, 
 
 ---
 
-### Where the fit is uncertain — the cold onboarding gap
+### Where the fit is uncertain — activation framing
 
-The 90-minute activation target is ambitious. The outer loop is six stages. Even a well-designed cloud UI with AI assistance will struggle to get a cold user through discovery → benefit-metric → definition → review → test-plan → DoR in 90 minutes. Loveable gets to "working app" in minutes because code appears on screen immediately. The platform's output — a governed artefact chain — is less viscerally demonstrable. The magic moment is harder to reach.
+This buyer is not looking for speed or visual wow. They are looking for rigour and trust. They are the tech lead who has been burned by delivering the wrong thing correctly, or the right thing badly — a sprint where the acceptance criteria were right but the problem was misdiagnosed, or where the implementation was solid but the story was never properly scoped. They want a system they can stand behind — to their team, their stakeholders, and if necessary an auditor.
 
-**This is the single biggest PMF risk and it is not addressed deeply enough in the ideation.** What does the user see at minute 10 that makes them think "this is worth continuing"? If the answer is "a partially completed discovery.md", that is not compelling enough to sustain 80 more minutes of effort.
+The magic moment is not at minute 10 of onboarding. It is the first time a team member opens a PR and can see — in the commit history, in the artefact chain, in the trace — the complete story of why that code exists, what problem it solves, what constraints it operates under, and what tests prove it works. And six months later, when someone asks "why did we build it this way?", the answer is a link, not a meeting. That is a trust story, not a speed story. It requires a complete feature — outer loop and inner loop both run.
+
+The activation hurdle is therefore reframed: not "finish the outer loop in 90 minutes" but "complete a full feature and see the trace." That may take a full sprint for the first feature. The question for the beta is whether the experience of running the first complete feature is compelling enough that the team runs the second one.
 
 Lens E correctly identified that the most qualified customer is a tech lead who already runs skills-repo manually. But that population is currently small. The GitHub funnel math assumes 500–2,000 stars at launch — a community that does not yet exist at meaningful scale. The 12–50 paying teams in year 1 bottom-up estimate is realistic, but it means the SaaS product will be in a very small beta for a long time before it has enough signal to know whether A1 holds.
 
@@ -575,9 +645,9 @@ The structural discipline required is: **a fixed allocation of time to product w
 
 ### Three gaps to close before /discovery
 
-#### Gap 1 — The magic moment definition
+#### Gap 1 — The magic moment definition (updated by Addendum 1)
 
-What does a user see at minute 5, minute 15, and minute 30 that keeps them engaged? The 90-minute activation target needs to be decomposed into experience milestones. A candidate: **"a validated discovery artefact with real problem framing in under 20 minutes"** — the first gate the user clears and the first thing that feels genuinely useful. If that moment can be engineered, the rest of the pipeline has a foundation to build on. This milestone definition must appear as an explicit AC in the /discovery scope.
+The magic moment is now defined: the first time a team member opens a PR and can see — in the commit history, in the artefact chain, in the trace — the complete story of why that code exists. This is an end-of-feature milestone, not an onboarding milestone. The implication for /discovery is that the beta success metric must measure a complete feature run (outer loop + inner loop + trace), not just time to DoR sign-off. The pilot AC: **10 beta users complete at least one full feature (outer loop + inner loop + merged PR with trace) and voluntarily begin a second.** A feature stopped at DoR or before merged code is a partial run — it does not validate the full value proposition.
 
 #### Gap 2 — The competitive window quantification
 
@@ -625,10 +695,22 @@ This ideation is the input to `/discovery` for the `2026-05-20-cloud-platform` f
 - cdg Phase 1 is a hard prerequisite for any enforcement claim in the cloud product.
 - GitHub-native artefact storage (git) is the correct architecture — avoids the "second source of truth" problem with Jira.
 
+**Dual success metric framework (Addendum 1 — 2026-05-21):**
+- Metric 1 — Outer loop quality (CPF ≥ 0.90): did the team define the right thing? Measured by composite pipeline fidelity across six outer loop stages.
+- Metric 2 — Inner loop delivery (verify-completion pass rate, zero post-merge rework): did the team build it correctly? Measured by verify-completion success rate and post-merge rework incidents.
+- Combined — end-to-end trace completeness: can the team prove the whole chain? A complete, exportable, hash-verified trace covering outer loop gate passes, inner loop execution, and DoD sign-off.
+
+**Natural SaaS expansion model (Addendum 1 — 2026-05-21):**
+The pipeline structure maps to a staged adoption model — teams start where they are comfortable and expand as trust builds:
+- Outer Loop tier (discovery → DoR): for teams who want governed definition discipline before adopting AI-assisted implementation. Entry point.
+- Full Pipeline tier (outer loop + inner loop + audit trail): for teams ready for AI-assisted coding within a governed framework. The complete product.
+
+This two-tier structure is reflected in the revised pricing model and must be explicit in the MVP scope in /discovery.
+
 **Explicit /discovery inputs:**
-- Central question: what is the MVP that validates A1 (self-activation) with 10 beta users in under 90 minutes to first DoR-signed story?
-- Scope constraint: MVP does not require full multi-tenancy, billing, or enterprise features. It requires: (a) cloud-hosted outer loop UI, (b) cdg integration with verifiable exit codes, (c) exportable audit trail.
-- Success metric for /discovery phase: 10 beta users, 90-minute time-to-activation benchmark, CPF ≥ 0.90 on beta features.
+- Central question: what is the MVP that validates A1 (self-activation) — Outer Loop tier with 10 beta users completing a governed feature (discovery → DoR-signed story) and voluntarily beginning a second?
+- Scope constraint: Outer Loop MVP requires (a) cloud-hosted outer loop UI, (b) cdg integration with verifiable exit codes, (c) exportable artefact chain. Full Pipeline tier additionally requires inner loop AI-assisted implementation and tamper-evident trace (DoD + trace export).
+- Success metric for /discovery phase: 10 beta users complete at least one Outer Loop run (discovery → DoR-signed story); at least 5 voluntarily begin a second feature. CPF ≥ 0.90 on beta features. Full Pipeline tier validation requires at least one team completing outer loop + inner loop + trace.
 - cdg as a prerequisite must be reflected in the /discovery scope dependency section.
 
 **What /discovery does NOT need to re-open:**
@@ -656,4 +738,4 @@ These remain open after all lenses and must be addressed in /discovery or flagge
 
 ---
 
-*Session reference: /ideate run 2026-05-20; operator PMF assessment added 2026-05-21. Operator context: cdg as prerequisite; Craig as convergent peer (informed independent); known regulated enterprise anchor (unnamed). Lenses run: D, C, E, B. All planned lenses complete. Operator assessment: PROCEED with three pre-/discovery conditions — (1) BSL licence decision, (2) magic moment milestone defined, (3) 5-person outreach experiment. Ideation signal: discovery-ready.*
+*Session reference: /ideate run 2026-05-20; operator PMF assessment + addenda added 2026-05-21. Operator context: cdg as prerequisite; Craig as convergent peer (informed independent); known regulated enterprise anchor (unnamed). Lenses run: D, C, E, B. All planned lenses complete. Addenda 2026-05-21: (1) end-to-end pipeline reframe — product is governed full delivery pipeline, not artefact chain; magic moment redefined to first PR with complete trace; pricing revised to Outer Loop / Full Pipeline tiers; dual success metric framework added; (2) enterprise value modelling — $80M directional opportunity from a colleague's analysis; value-based pricing ($500K–$2M per enterprise engagement); revised commercial framing (enterprise = revenue engine, SaaS = proof + pipeline feeder). Pre-/discovery conditions: (1) BSL licence decision, (2) magic moment = complete feature run (outer + inner loop + trace), (3) 5-person outreach experiment, (4) measure actual cycle time from pipeline-state.json actuals. Ideation signal: discovery-ready.*
