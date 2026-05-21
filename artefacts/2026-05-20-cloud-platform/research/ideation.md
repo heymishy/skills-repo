@@ -744,7 +744,113 @@ Based on the above analysis, there is a natural evolution in where to invest:
 
 ---
 
-*Remaining lenses to run: none. All planned lenses (D, C, E, B) are complete. Proceed to "How this feeds the pipeline" and "Open questions" sections, then /discovery.*
+### Adoption barrier analysis — "already has AI tools" segment (operator request 2026-05-21)
+
+*The target audience for early SaaS adoption is lead engineers and senior engineers at small-to-mid companies. They already have a toolchain: GitHub, GitHub Copilot, Claude Code, Cursor, or similar. They are not AI-naive. They ship fast. What does the pitch look like for them — and what systematic barriers will kill it?*
+
+---
+
+#### Who this person is
+
+They are a lead engineer or senior engineer at a 5–100 person company. They own the delivery process informally — there is no delivery manager, no programme office, no compliance team. They chose GitHub Copilot (or switched to Claude Code) because they care about productivity. They use Linear or GitHub Issues because Jira felt too heavy. They define their own standards and they are proud of that. They do not think of themselves as having a governance problem; they think of themselves as shipping well. They are right, mostly. The gaps are invisible to them until something breaks.
+
+#### The pitch — what it is and what it is not
+
+**What it is NOT:**
+
+- "Replace your AI coding tools" — they won't. Copilot/Claude Code write code well. No pitch that positions this as better than those tools will land.
+- "Add governance to your process" — the word "governance" signals overhead and compliance to this audience. It is a non-starter.
+- "You're doing it wrong" — they are not. The platform must not imply that current practice is broken.
+
+**What it IS:**
+
+The platform is the **structured outer loop** that AI coding tools are missing. GitHub Copilot is excellent at writing code from a brief. The question it cannot answer is: what should the brief contain? Who validated the requirement? What does "done" mean, and how will you know when you've reached it? After six months, why was this built? Those are outer loop questions. The platform owns that layer.
+
+**One-sentence pitch for this segment:** "GitHub Copilot writes your implementation. This pipeline decides what to implement, why, and proves it was the right call."
+
+**The complementarity argument:** The platform makes AI coding tools more effective, not less. A governed outer loop (discovery → DoR-signed story with acceptance criteria) gives Copilot a better brief, which means fewer revision cycles, less rework, and better first-pass quality. The productivity gain is multiplicative, not additive. This is a claim that can be tested and measured with cycle time and CPF data — which the platform itself generates.
+
+#### The seven systematic barriers
+
+**Barrier 1: The "good enough" trap (latent pain)**
+
+Their current workflow delivers features. They don't feel the pain of missing definition discipline — until a regression exposes a feature that nobody can explain, or an audit asks for evidence of why a compliance-affecting change was made, or a new engineer joins and can't understand why the codebase is structured the way it is.
+
+The pain is latent and intermittent. It will not motivate adoption on its own. The product must sell on aspiration (what's possible) rather than problem (what hurts). The framing: "Do you want to ship 3x faster with half the rework?" not "Are you frustrated with your current process?"
+
+*What to validate:* Do lead engineers at 20–50 person companies, when shown their own CPF and cycle time data, feel surprise? Is there a gap between how good they think their process is and how it actually measures? If yes, that gap is the activation trigger. If no, the latent pain hypothesis is wrong.
+
+**Barrier 2: Integration anxiety**
+
+"Will this work alongside my existing tools?" is the first question. If the answer is ambiguous — if the product appears to replace any part of the existing stack — the conversation ends. The answer must be immediate and specific: this is the layer above your AI coding tools and below your project management. It produces artefacts that feed Copilot/Claude Code; it produces PR-linked evidence that feeds GitHub. It does not replace Jira, Linear, Copilot, or GitHub Issues. It occupies the space between "idea" and "ticket."
+
+*What to validate:* Show a lead engineer the platform's position in their stack explicitly (a diagram). Does the "where does this fit?" question disappear? Or does confusion persist even with the diagram? If confusion persists, the positioning is still unclear.
+
+**Barrier 3: Process overhead perception ("this adds steps")**
+
+Engineers who ship fast fear anything that adds steps. The outer loop — discovery, benefit-metric, stories, review, test-plan, DoR — looks like a lot of steps to someone who currently goes from Slack message to Jira ticket to PR in 30 minutes.
+
+The counter: these steps already exist in their process, just informally and inconsistently. The platform is not adding steps — it is making existing steps legible, repeatable, and faster because the AI does them. A discovery artefact that an AI generates in 15 minutes from a 3-sentence brief is faster than the 45-minute discussion that currently happens in Slack before work starts.
+
+*What to validate:* Time the full outer loop on a real feature with a real lead engineer. Does it take longer or shorter than their current ad hoc equivalent? The hypothesis: the structured path with AI assistance is faster than the unstructured path because decisions happen once, explicitly, rather than repeatedly and implicitly.
+
+**Barrier 4: Tool fatigue**
+
+Small/mid companies are drowning in SaaS tools. Every new tool requires a login, a credit card, a Slack integration, and someone to own it. The bar for adoption is "solves a problem I feel right now, not a problem I might feel later." This product solves a latent problem, which makes tool fatigue a particularly acute barrier.
+
+The mitigation: GitHub-native distribution. The platform runs where they already are. If the hosted SaaS can be deployed to a repo with a single `npm install` or GitHub App installation, the adoption friction disappears. The product must feel like a GitHub feature, not a new product. This is a strong design constraint for /discovery.
+
+*What to validate:* Can the onboarding path be reduced to: (1) install GitHub App or add workflow, (2) open a session, (3) run /discovery on a feature — all within 10 minutes? That is the tool fatigue test. If step 1 takes more than 2 minutes, adoption will be lower than projected.
+
+**Barrier 5: Lead engineer autonomy (the "I define standards here" response)**
+
+At small/mid companies, the lead engineer IS the governance function. Their coding standards, PR template, definition of done — these are theirs. They've earned the right to define them. A product that appears to impose standards will trigger rejection on principle, not on practicality.
+
+The pitch must be: **this amplifies and externalises the standards you already hold.** The SKILL.md files are not Microsoft's standards or anyone else's — they are configurable and the lead engineer can adapt them. The platform gives their informal judgment a repeatable, legible form. The first onboarding session should make this explicit: "Here are the defaults. What do you want to change for your team?"
+
+*What to validate:* When a lead engineer runs their first session, do they feel the platform is telling them what to do, or amplifying what they already do? The language in the SKILL.md files, the default ACs, the governance gates — all of these have autonomy implications. Small language changes can move this significantly. Test with 3–5 lead engineers and record their reaction to the default outputs.
+
+**Barrier 6: The "we're not regulated" objection**
+
+The enterprise framing — compliance, audit trail, tamper-evident trace — is a turn-off for a startup or scale-up. "I don't need an audit trail, I need to ship features." The compliance framing is correct for the enterprise segment; it is actively harmful for the small-team segment.
+
+The onboarding experience and the marketing copy must be segmented. For the small-team buyer: lead with delivery quality, speed, and definition clarity. The audit trail exists but it is positioned as a side benefit ("you always have a record of why decisions were made"), not the primary value. For the enterprise buyer: compliance and measurement are the primary pitch.
+
+This means two distinct landing pages, two distinct demo scripts, possibly two distinct product tiers that emphasise different features. **The Outer Loop tier (outer loop only, no inner loop, lower price) is the right entry point for the small-team audience** — it is scoped to the definition discipline problem, not the regulated delivery problem.
+
+*What to validate:* Present the product to five lead engineers with no enterprise framing — pure delivery quality pitch. Record whether they ask about compliance/audit unprompted. If they do: the signal is in the product. If they don't: the enterprise framing in the product is not visible to this audience (which is the intended result).
+
+**Barrier 7: The "AI will fix this" deflection**
+
+"We already use Copilot Workspace / Linear AI / Jira AI to generate our tickets and stories." This is the most sophisticated objection and requires the sharpest counter.
+
+The response: those tools generate content. This platform generates a **governed, traceable chain with quality gates and outcome measurement**. Copilot Workspace can write a GitHub Issue from a description; it cannot tell you whether the issue is correctly scoped, whether it meets a quality threshold, whether there is a passing test before any code is written, or whether the delivered implementation actually matches the definition. The CPF measurement, the governance gate chain, and the cycle time measurement are not available from any AI-native project management tool. They are a product of the pipeline, not a feature of content generation.
+
+*What to validate:* Present the CPF concept (percentage of ACs that were defined before implementation and are verifiably satisfied at merge) to a lead engineer who uses Copilot Workspace. Does the concept land as new and valuable, or do they believe their current tooling already produces this? If they believe their current tooling already does this, the differentiation is invisible — which means either the product is not differentiated or the concept needs a sharper articulation.
+
+#### What to test, explore, and validate before /discovery
+
+The barriers above yield a concrete validation plan that feeds the 5-person outreach experiment (pre-/discovery condition 3):
+
+| What to test | How to test | What a passing result looks like |
+|-------------|------------|----------------------------------|
+| Latent pain visibility | Show a lead engineer a mock CPF dashboard of their own repo | Surprise or recognition — "that gap is real" |
+| Integration clarity | One-diagram positioning (above AI tools, below PM) | No "where does this fit?" question after seeing the diagram |
+| Outer loop timing | Time a real outer loop run on a small feature | Faster or equal to their current unstructured equivalent |
+| Tool fatigue | Count steps from zero to first session | ≤10 minutes from a cold start |
+| Autonomy response | Record reactions to default SKILL.md outputs | "This is customisable" not "this is prescriptive" |
+| Enterprise framing leakage | Pitch without compliance language | Lead engineer does not ask about compliance unprompted |
+| AI deflection | Explain CPF to a Copilot Workspace user | They cannot describe an equivalent metric in their current tooling |
+
+**The critical question for the outreach experiment:** Present the platform to five lead engineers at small-mid companies who already use AI coding tools. After a 30-minute session (not a demo — a real run on their own codebase), ask: "Would you pay $99/month for this? What would stop you?" The blockers they name are the /discovery priorities, in order of frequency.
+
+#### Strategic implication for /discovery
+
+The "already has AI tools" segment is the right early adopter profile, not despite their existing toolchain — because of it. They understand AI-assisted development, they are GitHub-native, and they are actively looking for ways to get more structured output from their AI tools. The product's job is to position itself as the layer that makes their AI tools more effective, not as a competitor to them.
+
+The design constraint this generates for the platform: **every SKILL.md output must be usable as direct input to a GitHub Copilot / Claude Code prompt.** The discovery artefact becomes the brief for Copilot Workspace. The DoR-signed story becomes the context block for Claude Code. The audit trail is a side effect of structured inputs, not an extra step. If this design constraint is met, the barrier to adoption drops dramatically because the product accelerates the workflow the lead engineer already has rather than adding a parallel one.
+
+---
 
 ---
 
@@ -897,4 +1003,4 @@ These remain open after all lenses and must be addressed in /discovery or flagge
 
 ---
 
-*Session reference: /ideate run 2026-05-20; operator PMF assessment + addenda added 2026-05-21; open question responses added 2026-05-21; commercial viability deep dive added 2026-05-21 (Q6 operator request). Operator context: cdg as prerequisite; Craig as convergent peer (informed independent); known regulated enterprise anchor (unnamed). Lenses run: D, C, E, B. All planned lenses complete. Addenda 2026-05-21: (1) end-to-end pipeline reframe — product is governed full delivery pipeline, not artefact chain; magic moment redefined to first PR with complete trace; pricing revised to Outer Loop / Full Pipeline tiers; dual success metric framework added; (2) enterprise value modelling — $80M directional opportunity from a colleague's analysis; value-based pricing ($500K–$2M per enterprise engagement); revised commercial framing (enterprise = revenue engine, SaaS = proof + pipeline feeder). Open question resolutions 2026-05-21: Q1 onboarding = /definition → inner loop on one story, full outer loop optional; Q2 Jira/Linear = not for first release; Q3 LLM = threshold-gated model eligibility (CPF + artefact quality); Q4 cdg multi-tenant = architecture still open, spike required; Q5 BSL = operator unfamiliar, research required before unblocking; Q6 commercial viability = deep dive completed — solo ceiling ~$600K–1M/year consultancy; SaaS crossover at ~Year 3 base case; existential risk = A1 failure + no Y1 enterprise engagement; key pre-condition = platform proven on 3–5 completed features before commercial conversations. Pre-/discovery conditions still open: (1) BSL licence research + decision, (2) magic moment = complete feature run (outer + inner loop + trace), (3) 5-person outreach experiment, (4) measure actual cycle time from pipeline-state.json actuals, (5) commercial viability resolved. Ideation signal: discovery-ready pending condition resolution.*
+*Session reference: /ideate run 2026-05-20; operator PMF assessment + addenda added 2026-05-21; open question responses added 2026-05-21; commercial viability deep dive added 2026-05-21 (Q6); adoption barrier analysis for "already has AI tools" segment added 2026-05-21. Operator context: cdg as prerequisite; Craig as convergent peer (informed independent); known regulated enterprise anchor (unnamed). Lenses run: D, C, E, B. All planned lenses complete. Addenda 2026-05-21: (1) end-to-end pipeline reframe — product is governed full delivery pipeline, not artefact chain; magic moment redefined to first PR with complete trace; pricing revised to Outer Loop / Full Pipeline tiers; dual success metric framework added; (2) enterprise value modelling — $80M directional opportunity from a colleague's analysis; value-based pricing ($500K–$2M per enterprise engagement); revised commercial framing (enterprise = revenue engine, SaaS = proof + pipeline feeder). Open question resolutions 2026-05-21: Q1 onboarding = /definition → inner loop on one story, full outer loop optional; Q2 Jira/Linear = not for first release; Q3 LLM = threshold-gated model eligibility (CPF + artefact quality); Q4 cdg multi-tenant = architecture still open, spike required; Q5 BSL = operator unfamiliar, research required before unblocking; Q6 commercial viability = deep dive completed — solo ceiling ~$600K–1M/year consultancy; SaaS crossover at ~Year 3 base case; existential risk = A1 failure + no Y1 enterprise engagement; key pre-condition = platform proven on 3–5 completed features before commercial conversations. Adoption barrier analysis: 7 systematic barriers identified for "already has AI tools" segment; key design constraint = every SKILL.md output must be directly usable as a Copilot/Claude Code input; outreach experiment brief added (5-person test: 30-min real run, not demo). Pre-/discovery conditions still open: (1) BSL licence research + decision, (2) magic moment = complete feature run (outer + inner loop + trace), (3) 5-person outreach experiment (brief in adoption barrier analysis section), (4) measure actual cycle time from pipeline-state.json actuals. Ideation signal: discovery-ready pending condition resolution.*
