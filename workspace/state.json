@@ -1,12 +1,17 @@
 {
-  "currentPhase": "ideation",
-  "lastUpdated": "2026-05-19T00:00:00.000Z",
-  "activeFeature": null,
+  "currentPhase": "discovery",
+  "lastUpdated": "2026-05-21T00:00:00.000Z",
+  "activeFeature": "2026-05-21-execution-boundary",
   "activeFeatures": [
+    {
+      "slug": "2026-05-21-execution-boundary",
+      "stage": "discovery",
+      "note": "Discovery complete. P5 (Execution Boundary Separation) and P6 (Invocation Telemetry Spine) formalised. Reference doc at artefacts/2026-05-21-execution-boundary/reference/. Discovery artefact and benefit-metric written 2026-05-21. 4 unconfirmed assumptions flagged for /clarify before approval. Cloud platform feature (2026-05-20) depends on this for tamper-evident audit trail capability."
+    },
     {
       "slug": "2026-05-19-cli-deterministic-governance",
       "stage": "ideation",
-      "note": "Ideation complete. ideation.md saved at artefacts/2026-05-19-cli-deterministic-governance/research/ideation.md. 3 open questions before Phase 2: H7.1 (spike: web UI backend subprocess cost), H7.2 (experiment: correction loop convergence after skill surgery), H7.3 (decision: operator identity for trace events). Phase 1 validate-only CLI can start after /discovery + /definition."
+      "note": "Ideation complete. ideation.md at artefacts/2026-05-19-cli-deterministic-governance/research/ideation.md. 3 open questions: H7.1 (spike: web UI backend subprocess cost), H7.2 (experiment: correction loop convergence), H7.3 (decision: operator identity for trace events). Phase 1 validate-only CLI can start after /discovery + /definition."
     },
     {
       "slug": "2026-04-23-non-technical-channel",
@@ -16,7 +21,7 @@
     {
       "slug": "2026-05-10-model-evaluation-capability",
       "stage": "definition",
-      "note": "Active � model evaluation capability, stories in definition phase."
+      "note": "Active -- model evaluation capability, stories in definition phase."
     },
     {
       "slug": "2026-05-16-trace-writer-fix",
@@ -26,25 +31,59 @@
     {
       "slug": "2026-05-18-skill-robustness-improvements",
       "stage": "benefit-metric",
-      "note": "Active � skill robustness improvements, benefit metric in progress."
+      "note": "Active -- skill robustness improvements, benefit metric in progress."
     }
   ],
+  "execution_telemetry_discovery": {
+    "date": "2026-05-21",
+    "keyFindings": [
+      "Zero execution telemetry in current Web UI -- Anthropic path non-streaming, Copilot path text-only with thinking blocks stripped by proxy",
+      "Anthropic streaming marked not yet implemented in skill-turn-executor.js line 333 (_callAnthropic is non-streaming)",
+      "Existing JSONL (platform/traces/) is outcome-based gate records, not execution event streams -- different schema and semantic",
+      "Phase 5 WS1 (hook event schema) and WS2 (subagent isolation) directly map to P6 and P5 -- this discovery formalises existing roadmap intent",
+      "No @anthropic-ai/claude-agent-sdk dependency in repo -- Claude Agent SDK inner loop is Phase 5 WS2 scope, out of MVP",
+      "Cloud platform feature (2026-05-20) identifies tamper-evident audit trail as MVP capability -- depends on P6 telemetry being delivered first"
+    ],
+    "adrCandidates": [
+      "ADR-E1: outer-loop-provider-routing -- direct Anthropic API vs Copilot proxy telemetry depth implication",
+      "ADR-E2: execution-boundary-as-design-property -- P5 formal declaration in architecture-guardrails.md",
+      "ADR-E3: jsonl-execution-event-stream-schema -- P6 Tier 1/Tier 2 field definitions",
+      "ADR-E4: prompt-caching-strategy -- cache_control ephemeral for skill/standards content (60-70% cost reduction)",
+      "ADR-E5: inner-loop-max-iterations-guardrail -- Phase 5 WS2 prerequisite"
+    ],
+    "integrationPoints": [
+      "src/modules/skill-turn-executor.js _callAnthropic() -- primary P6 integration point; streaming implementation needed",
+      "src/web-ui/routes/execute.js -- outer loop entry point; session path provides JSONL write location",
+      ".github/workflows/assurance-gate.yml -- CI upload of JSONL as individually linkable artefact (completes 4.B.9)"
+    ],
+    "confirmedRisks": [
+      "Enterprise Copilot proxy path: thinking blocks stripped, Tier 2 telemetry unavailable -- Tier 1 only for that path",
+      "Data residency: direct Anthropic API path unsuitable for regulated consumers with data residency constraints"
+    ],
+    "recommendedNextAction": "Run /clarify to resolve 4 unconfirmed assumptions (SDK stability, Anthropic beta API stability, data residency scope, appendFileSync durability), then approve discovery. Phase 5 WS1 stories can begin /definition after approval."
+  },
   "cycle": {
     "discovery": {
       "status": "complete",
-      "artefact": "artefacts/2026-05-18-skill-robustness-improvements/discovery.md",
-      "completedAt": "2026-05-18"
+      "artefact": "artefacts/2026-05-21-execution-boundary/discovery.md",
+      "completedAt": "2026-05-21"
+    },
+    "benefit-metric": {
+      "status": "complete",
+      "artefact": "artefacts/2026-05-21-execution-boundary/benefit-metric.md",
+      "completedAt": "2026-05-21"
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-05-19T00:00:00.000Z",
-    "contextAtWrite": "Ideation session for 2026-05-19-cli-deterministic-governance complete. Steps 1-5 produced: full 298-item skills audit (243 deterministic, 55 judgment), CLI 7-subcommand design, skill surgery spec (~670 lines removal across 8 skills), testing strategy (~60 unit + 7 integration + 1 E2E), DoR gate check (NOT READY: 3 HIGH findings become open questions). ideation.md written. pipeline-state.json + workspace/state.json updated.",
-    "resumeInstruction": "CLI deterministic governance ideation complete. Next: run /discovery for 2026-05-19-cli-deterministic-governance using ideation.md as primary input (opportunity clusters 1-3, assumption inventory, strategy framing). Before /definition run /spike for H7.1 (web UI backend subprocess wiring cost). Other active: (1) trw.1 coding agent — issue #351 open, awaiting VS Code agent. (2) skill-robustness-improvements — benefit-metric stage, needs definition. (3) non-technical-channel — stalled at ideation. (4) model-evaluation-capability — in definition stage.",
+    "writtenAt": "2026-05-21T00:00:00.000Z",
+    "contextAtWrite": "Discovery session for 2026-05-21-execution-boundary complete. Produced: (1) reference doc P5/P6 at artefacts/2026-05-21-execution-boundary/reference/, (2) discovery.md with full problem statement, MVP scope, risk register, ADR candidates, and /clarify recommendation, (3) benefit-metric.md with M1-M4 metrics, economic baseline, and anti-metric. Key finding: telemetry gap is structural -- skill-turn-executor.js Anthropic path is non-streaming, existing JSONL is outcome-based not event-based. Integration point: _callAnthropic() in skill-turn-executor.js.",
+    "resumeInstruction": "Discovery + benefit-metric for 2026-05-21-execution-boundary complete and written to artefacts/. Next: (1) Operator approves or runs /clarify to resolve 4 unconfirmed assumptions -- see discovery.md /clarify Recommendation section. (2) After approval, run /definition to slice Epic 1 (P6 Tier 1: Anthropic streaming + JSONL commit) and Epic 3 (P5: boundary declaration + ADRs). Epic 2 (Tier 2 full trace) follows Epic 1. Epic 4 (Claude Agent SDK) requires separate spike. (3) Cloud platform feature (2026-05-20) can proceed to /discovery once this feature discovery is approved.",
     "pendingActions": [
-      "trw.1 IMPLEMENTATION � Issue #351 open at https://github.com/heymishy/skills-repo/issues/351. Needs: scripts/write-ci-trace.js, modified .github/workflows/trace-commit.yml, tests/check-trw1-trace-writer.js.",
-      "wsm.4 DISPATCH � Story dor-signed-off. DoR artefact moved to artefacts/archived/2026-05-07-web-ui-session-management/dor/wsm.4-dor.md. Decide whether to implement or close.",
-      "PR #155 � Delete PR at https://github.com/heymishy/skills-repo/pull/155 via GitHub web UI to purge remaining the enterprise references from GitHub object store.",
-      "EXP-008 � Scaffolded in workspace/experiments/EXP-008-corpus-breadth-eval/. S2-S7 context injection files still needed before runs can proceed."
+      "2026-05-21-execution-boundary DISCOVERY APPROVAL -- Operator to review discovery.md and run /clarify on 4 assumptions before approving. Artefact at artefacts/2026-05-21-execution-boundary/discovery.md.",
+      "trw.1 IMPLEMENTATION -- Issue #351 open at https://github.com/heymishy/skills-repo/issues/351. Needs: scripts/write-ci-trace.js, modified .github/workflows/trace-commit.yml, tests/check-trw1-trace-writer.js.",
+      "wsm.4 DISPATCH -- Story dor-signed-off. DoR artefact at artefacts/archived/2026-05-07-web-ui-session-management/dor/wsm.4-dor.md. Decide whether to implement or close.",
+      "PR #155 -- Delete PR at https://github.com/heymishy/skills-repo/pull/155 via GitHub web UI to purge remaining enterprise references from GitHub object store.",
+      "EXP-008 -- Scaffolded in workspace/experiments/EXP-008-corpus-breadth-eval/. S2-S7 context injection files still needed before runs can proceed."
     ]
   }
 }

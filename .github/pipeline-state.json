@@ -3354,6 +3354,24 @@
       "ideationLensesComplete": ["D", "C", "E", "B"],
       "stories": [],
       "updatedAt": "2026-05-20T21:00:00Z"
+    },
+    {
+      "slug": "2026-05-21-execution-boundary",
+      "name": "Execution Boundary Model and Invocation Telemetry (P5/P6)",
+      "stage": "discovery",
+      "health": "green",
+      "track": "platform",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discoveryStatus": "complete",
+      "benefitMetricStatus": "active",
+      "roadmapAlignment": ["Phase 5 WS1 - hook event schema", "Phase 5 WS2 - subagent isolation"],
+      "dependencies": ["2026-05-20-cloud-platform depends on this for tamper-evident audit trail MVP capability"],
+      "stories": [],
+      "guardrails": [],
+      "updatedAt": "2026-05-21"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -3387,5 +3405,5 @@
     ],
     "lastUpdated": "2026-05-06"
   },
-  "updatedAt": "2026-05-13"
+  "updatedAt": "2026-05-21"
 }
