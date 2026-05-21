@@ -599,6 +599,151 @@ The 6–12 months → 1–3 months compression claim is the anchor for the $80M 
 
 ---
 
+### Commercial viability deep dive (Q6 — operator request 2026-05-21)
+
+*Requested by operator: stress-test feasibility and viability of economics. Covers consultancy unit economics, utilisation ceiling, SaaS conversion sensitivity, cash flow timing, delivery partner scaling path, and the strategic crossover point.*
+
+---
+
+#### 1. Consultancy unit economics — cost side
+
+The revenue side is covered above ($200K–$500K per engagement). The cost side is rarely modelled for solo operators, but it matters for understanding true margin and cash sustainability.
+
+| Cost component | Per engagement | Basis |
+|----------------|---------------|-------|
+| LLM usage (analysis, artefact generation for client) | $100–300 | ~50 features × 200K tokens at $3/M. This is genuinely the bounded number. |
+| Infrastructure / tooling (client instance, storage, CI runs) | $200–500 | Isolated tenant + 3–6 months running |
+| Travel and in-person delivery | $0–5,000 | Depends on client expectation; regulated enterprises often require it for audit phases |
+| Admin, legal, contracts | $500–1,500 | Depending on complexity |
+| **Total direct cost per engagement** | **~$800–7,300** | |
+| **Gross margin at $300K engagement** | **~97%** | This is almost pure time. Consultancy has better gross margin than SaaS. |
+
+The margin is very high because the product is almost entirely the operator's time and the platform itself. The constraint is not cost — it is time and parallelism.
+
+#### 2. Utilisation ceiling — the solo operator hard limit
+
+The consultancy model hits a hard ceiling defined by one person's available time and the nature of enterprise delivery.
+
+**Engagement duration:** An implementation engagement for a large regulated enterprise (baseline → pipeline → outcome measurement) runs 3–6 months. A retainer is 12 months. Overlapping engagements require careful phase management.
+
+**Parallelism:** One operator can run 2–3 large engagements simultaneously, but only if they are at different phases (one in baseline measurement, one in implementation, one in outcome review). Running two in the same phase simultaneously is very high risk.
+
+| Scenario | Engagements/year | Annual revenue | Constraint |
+|----------|-----------------|---------------|-----------|
+| Conservative (solo, quality-first) | 1–2 | $200K–$600K | Deep engagement, high client satisfaction |
+| Moderate (solo, optimised delivery) | 2–3 | $400K–$1M | Requires templates, reusable playbooks, clear scope |
+| Aggressive (solo, unsustainable) | 4+ | $800K+ | Likely to compromise quality; not recommended |
+| Scaled (delivery partner network) | 6–12 | $1.2M–$3M+ | Requires partner certification model — covered below |
+
+**The ceiling in plain numbers:** A solo operator running this model to capacity can reach $600K–$1M/year in consultancy revenue. This is a good business. It is not a venture-scale business. Crossing the $1M ceiling requires either enterprise SaaS growth to 200+ teams, or a delivery partner model. Both are multi-year paths.
+
+#### 3. SaaS conversion funnel sensitivity
+
+The SaaS model depends on GitHub-native distribution. The conversion funnel is: stars → clones/forks → active users → paying teams. Each stage has a rate that drives the sensitivity analysis.
+
+**Funnel stage estimates (GitHub open-source SaaS):**
+
+| Stage | Rate assumption | Basis |
+|-------|----------------|-------|
+| Stars → clones (active exploration) | 20–30% | GitHub norm for tooling repos |
+| Clones → active users (ran at least once) | 30–50% of clones | High drop-off at install/setup |
+| Active users → trial (engaged ≥2 sessions) | 20–40% of active | The A1 onboarding question |
+| Trial → paying team | 10–20% of trials | B2B SaaS norm for genuinely useful tools |
+| **Stars → paying team (combined)** | **~0.5–3%** | Compound across all stages |
+
+**Stars-to-teams sensitivity table:**
+
+| GitHub stars | Paying teams (low: 0.5%) | Paying teams (mid: 1.5%) | Paying teams (high: 3%) |
+|-------------|--------------------------|--------------------------|------------------------|
+| 500 | 2–3 | 7–8 | 15 |
+| 1,000 | 5 | 15 | 30 |
+| 2,500 | 12–13 | 37–38 | 75 |
+| 5,000 | 25 | 75 | 150 |
+| 10,000 | 50 | 150 | 300 |
+
+**Key insight:** At low conversion (0.5%) you need 5,000 stars to break even. At mid conversion (1.5%) you need ~1,700 stars. At high conversion (3%) you need ~830 stars. The onboarding problem (A1) is not just a UX question — it determines whether you need 1,000 or 5,000 stars to sustain the business. Getting A1 right is worth months of product investment before launch.
+
+**What drives conversion up:** reducing time-to-magic-moment, eliminating setup friction, providing a hosted path (no self-install required), and a demo that shows the full pipeline in one session. These are all addressable product decisions.
+
+**Free tier question:** The current model has no explicit free tier — self-hosting is the implicit free tier. This is the open-source-to-SaaS pattern used by Supabase, Grafana, and PlanetScale. It works, but conversion is lower than a hosted free tier because self-hosting is friction in itself. A hosted free tier (e.g. 1 feature/month, no inner loop) would increase conversion rate at the cost of increased infrastructure spend per user. Decision: not required at launch, evaluate at 1,000 stars.
+
+#### 4. Cash flow timing — lumpiness risk
+
+A blended consultancy + SaaS model has an important cash flow dynamic that must be planned for:
+
+| Revenue type | Payment pattern | Predictability | Risk |
+|-------------|----------------|---------------|------|
+| SaaS (team tier) | Monthly subscription, recurring | High | Churn |
+| Standard consultancy | Milestone-based (30/30/40 or similar) | Medium | Scope creep, delayed sign-off |
+| Enterprise engagement (value-based) | Milestone-based, possibly outcome-linked | Low | Long sales cycle (6–18 months) |
+
+**The problem:** Enterprise engagements have 6–18 month sales cycles and 3–6 month delivery windows. You can have one prospect at proposal stage for 12 months before any revenue appears. In year 1, you may close zero enterprise engagements despite 3–4 active conversations.
+
+**Mitigation:**
+1. SaaS MRR is the cash flow floor — even $2–5K/month from 15–30 teams means costs are covered
+2. Standard consultancy (team onboarding advisory, $2–5K, shorter sales cycle) fills the gap between enterprise engagements
+3. Pre-pay enterprise retainers at contract signing (first milestone on signature, not on delivery start)
+
+**Cash flow reality check (year 1):**
+
+| Quarter | SaaS MRR | Consultancy collected | Cumulative cash | Notes |
+|---------|---------|----------------------|-----------------|-------|
+| Q1 | $0–500 | $0 | -$500 to $0 | Building, no revenue |
+| Q2 | $1–2K | $10–30K (1 standard advisory) | $12–32K | First paying teams; first small engagement |
+| Q3 | $2–4K | $0–50K (enterprise pipeline) | $18–80K | Enterprise conversations active |
+| Q4 | $3–5K | $20–100K (first milestone if enterprise closes) | $50–180K | Highly variable |
+
+**Year 1 outcome range: $50K–$180K collected** depending entirely on whether one enterprise engagement closes. This is not a concern for a solo operator with low fixed costs — but it informs how aggressively to invest in growth (answer: cheaply, community-first, until Q4 signals are clear).
+
+#### 5. Delivery partner model — scaling past the ceiling
+
+The solo utilisation ceiling (~$600K–$1M/year consultancy) is broken by a delivery partner network. This is how McKinsey, Thoughtworks, and methodology-based consultancies scale: they certify practitioners who can run the methodology independently, and take a fee or licence on their engagements.
+
+**Model design:**
+
+| Element | Description |
+|---------|-------------|
+| Partner certification | Practitioners complete a structured pathway (run 2 engagements with oversight, pass quality review) |
+| Revenue share | Partners price their own engagements; platform takes 15–25% licence fee per engagement |
+| Support structure | Operator provides SKILL.md updates, CPF quality assurance, measurement tooling; partners provide delivery time |
+| Partner incentive | Access to methodology, tooling, evaluation harness, and brand — credibility with regulated enterprise clients who have heard of the platform through community |
+
+**Economics at scale (10 certified partners, each running 2 engagements/year at $200K average):**
+
+- Total engagement revenue: 20 × $200K = $4M
+- Platform licence fee at 20%: $800K/year
+- Platform cost to support (SKILL.md, tooling, QA): ~$100–150K
+- Net platform revenue: ~$650–700K/year from the partner network alone
+
+This model takes 3–5 years to build (pipeline must be proven, community must exist, partner certification programme must be designed and run). It is not a Y1 ambition — but it is the answer to "how does this scale past $1M" and should be treated as the Y4–Y5 strategic horizon.
+
+#### 6. The strategic crossover — when does SaaS become the primary growth lever?
+
+Based on the above analysis, there is a natural evolution in where to invest:
+
+| Phase | Trigger | Primary lever | Investment priority |
+|-------|---------|--------------|-------------------|
+| Y1 pre-launch | — | Community building (GitHub) | OSS polish, onboarding, demo quality |
+| Y1 launch → Y2 | First 30 paying teams | Onboarding improvement + consultancy | A1 activation, first enterprise engagement |
+| Y2–Y3 | 50–100 teams, 2–3 enterprise engagements completed | SaaS product investment | Inner loop UX, integrations, billing self-serve |
+| Y3+ | 150+ teams, SaaS ARR > $300K | SaaS as primary | Paid acquisition experiments; partner certification design |
+| Y4–Y5 | Proven delivery partners | Partner network | Certification programme; partner success function |
+
+**The crossover point — when SaaS revenue exceeds consultancy revenue — is approximately Year 3 at base case (SaaS ~$324K, consultancy ~$150K). At upside case, this crosses in Year 2 (SaaS ~$216K, consultancy ~$150K).** Until that crossover, consultancy is what pays the bills and funds product development. This is a healthy model — but it means the founder must be comfortable doing both simultaneously and must not let one crowd out the other.
+
+#### 7. Summary verdict: is the economics viable?
+
+| Question | Answer |
+|----------|--------|
+| Is the gross margin healthy? | Yes — SaaS 75–85%, consultancy ~97%. Both are excellent. |
+| Is there a solo ceiling? | Yes — ~$600K–1M/year from consultancy alone. Requires SaaS growth or partner model to break through. |
+| What is the existential risk? | A1 failure (self-activation doesn't work) combined with no enterprise engagement in Y1. This puts the product in a "neither SaaS nor consultancy has traction" position — survivable, but requires a strategic pivot decision by end of Y1. |
+| What does break-even look like? | 7–10 paying teams OR 1 standard consultancy engagement. Both are achievable within 6 months of launch if community seeding starts now. |
+| Is the enterprise value-based pricing defensible? | Yes, if cycle time actuals can be measured and presented before the commercial conversation. Without actuals, it is a methodology claim. With actuals, it is an auditable ROI calculation. |
+| What is the key pre-condition for all of this? | The platform must demonstrably work on at least 3–5 completed features before any commercial claim is made. This repo is the living case study. |
+
+---
+
 *Remaining lenses to run: none. All planned lenses (D, C, E, B) are complete. Proceed to "How this feeds the pipeline" and "Open questions" sections, then /discovery.*
 
 ---
@@ -752,4 +897,4 @@ These remain open after all lenses and must be addressed in /discovery or flagge
 
 ---
 
-*Session reference: /ideate run 2026-05-20; operator PMF assessment + addenda added 2026-05-21; open question responses added 2026-05-21. Operator context: cdg as prerequisite; Craig as convergent peer (informed independent); known regulated enterprise anchor (unnamed). Lenses run: D, C, E, B. All planned lenses complete. Addenda 2026-05-21: (1) end-to-end pipeline reframe — product is governed full delivery pipeline, not artefact chain; magic moment redefined to first PR with complete trace; pricing revised to Outer Loop / Full Pipeline tiers; dual success metric framework added; (2) enterprise value modelling — $80M directional opportunity from a colleague's analysis; value-based pricing ($500K–$2M per enterprise engagement); revised commercial framing (enterprise = revenue engine, SaaS = proof + pipeline feeder). Open question resolutions 2026-05-21: Q1 onboarding = /definition → inner loop on one story, full outer loop optional; Q2 Jira/Linear = not for first release; Q3 LLM = threshold-gated model eligibility (CPF + artefact quality); Q4 cdg multi-tenant = architecture still open, spike required; Q5 BSL = operator unfamiliar, research required before unblocking; Q6 commercial viability = deeper analysis needed (new open question). Pre-/discovery conditions still open: (1) BSL licence research + decision, (2) magic moment = complete feature run (outer + inner loop + trace), (3) 5-person outreach experiment, (4) measure actual cycle time from pipeline-state.json actuals, (5) commercial viability unit economics analysis. Ideation signal: discovery-ready pending condition resolution.*
+*Session reference: /ideate run 2026-05-20; operator PMF assessment + addenda added 2026-05-21; open question responses added 2026-05-21; commercial viability deep dive added 2026-05-21 (Q6 operator request). Operator context: cdg as prerequisite; Craig as convergent peer (informed independent); known regulated enterprise anchor (unnamed). Lenses run: D, C, E, B. All planned lenses complete. Addenda 2026-05-21: (1) end-to-end pipeline reframe — product is governed full delivery pipeline, not artefact chain; magic moment redefined to first PR with complete trace; pricing revised to Outer Loop / Full Pipeline tiers; dual success metric framework added; (2) enterprise value modelling — $80M directional opportunity from a colleague's analysis; value-based pricing ($500K–$2M per enterprise engagement); revised commercial framing (enterprise = revenue engine, SaaS = proof + pipeline feeder). Open question resolutions 2026-05-21: Q1 onboarding = /definition → inner loop on one story, full outer loop optional; Q2 Jira/Linear = not for first release; Q3 LLM = threshold-gated model eligibility (CPF + artefact quality); Q4 cdg multi-tenant = architecture still open, spike required; Q5 BSL = operator unfamiliar, research required before unblocking; Q6 commercial viability = deep dive completed — solo ceiling ~$600K–1M/year consultancy; SaaS crossover at ~Year 3 base case; existential risk = A1 failure + no Y1 enterprise engagement; key pre-condition = platform proven on 3–5 completed features before commercial conversations. Pre-/discovery conditions still open: (1) BSL licence research + decision, (2) magic moment = complete feature run (outer + inner loop + trace), (3) 5-person outreach experiment, (4) measure actual cycle time from pipeline-state.json actuals, (5) commercial viability resolved. Ideation signal: discovery-ready pending condition resolution.*
