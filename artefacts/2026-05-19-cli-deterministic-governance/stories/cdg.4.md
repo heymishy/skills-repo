@@ -110,6 +110,12 @@ const { setValidate } = require('./routes/journey');
 setValidate(validate);
 ```
 
+## Non-Functional Requirements
+
+**Security:** Path traversal guard is mandatory (AC4 and Architecture Constraints) — dorArtefactPath resolved via `path.resolve()` and asserted to start with repoRoot before any file read or validate call. All session-derived inputs sanitised before use. No raw request data passed directly to validate(). These requirements are already encoded in ACs and Architecture Constraints; stated here for completeness.
+
+**Performance:** No SLA. Gate-confirm is an infrequent human action; validate() is a local file read with no network calls.
+
 ## Complexity
 
 **Rating:** 2 — The adapter injection pattern is established (mirrors `setPipelineStateWriter`). The main complexity is: (a) ensuring the `dorArtefactPath` is in session at gate-confirm time (requires tracing the journey flow to confirm where it is set), and (b) the 422 error response format — must include enough structured detail for the client and for cdg.5's trace emission to record.

@@ -23,6 +23,7 @@ So that **M2 (gate bypass rate) is measurable by construction and compliance sta
 - **Injectable adapter rule (D37):** `_writeTrace` is injected via `setWriteTrace(fn)` alongside the existing adapter pattern. Default stub throws. Production wiring in `server.js` injects the real trace writer.
 - **No gitignore of trace files in story branches (anti-pattern):** Trace files written to `workspace/traces/` are runtime artefacts — they must be added to `.gitignore` so CI branches do not commit them. This story adds `workspace/traces/` to `.gitignore` if not already present.
 - **`governance-package.writeTrace()` is the canonical implementation:** The existing `src/enforcement/governance-package.js` exports `writeTrace`. This story wires `writeTrace` into the gate-confirm handler — it does not reimplement trace logic.
+- **ADR-013 compatibility:** ADR-013 defines the Phase 4 enforcement package contract: `resolveAndVerifySkill`, `evaluateGateAndAdvance`, `writeVerifiedTrace`. Phase 2's `writeTrace` is the direct predecessor of Phase 4's `writeVerifiedTrace`. This story adds chain hashing that Phase 4 will extend (not replace). The approach taken here must not close off the Phase 4 extension path.
 
 ## Dependencies
 
@@ -70,7 +71,7 @@ Then `workspace/traces/` files do not appear as untracked files (they are git-ig
 **AC8 — npm test suite covers all AC paths:**
 Given the implementation is complete,
 When `npm test` runs,
-Then `tests/check-cdg5-trace-emission.js` exists and all its assertions pass, covering at minimum: AC1 (trace entry written on success), AC2 (chain hash correct for N>1 entries), AC3 (first entry uses empty prior hash), AC4 (no trace on validation failure), AC6 (default stub throws).
+Then `tests/check-cdg5-trace-emission.js` exists and all its assertions pass, covering at minimum: AC1 (trace entry written on success), AC2 (chain hash correct for N>1 entries), AC3 (first entry uses empty prior hash), AC4 (no trace on validation failure), AC5 (setWriteTrace injectable), AC6 (default stub throws).
 
 ## Out of Scope
 
@@ -111,6 +112,14 @@ const { writeTrace } = require('../enforcement/governance-package');
 const { setWriteTrace } = require('./routes/journey');
 setWriteTrace(writeTrace);
 ```
+
+## Non-Functional Requirements
+
+**Integrity:** Trace writer MUST use append-only file writes (`fs.appendFileSync` or O_APPEND flag). Overwriting the trace file is a defect regardless of content. This constraint is also stated in Architecture Constraints.
+
+**Test isolation:** Tests that write trace entries must use unique feature slugs and clean up `workspace/traces/<slug>.trace.jsonl` in teardown. Tests MUST NOT leave permanent artefacts in `workspace/traces/` that affect subsequent test runs or contaminate CI.
+
+**No external crypto dependency:** Chain hash uses Node.js built-in `crypto` module only.
 
 ## Complexity
 

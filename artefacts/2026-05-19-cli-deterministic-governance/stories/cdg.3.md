@@ -92,6 +92,10 @@ The handler calls `pipelineStateWriterFactory(repoRoot)` to get the writer funct
 
 Enum validation is already in `pipeline-state-writer.js`. The CLI advance handler does not duplicate it — it relies on the writer's built-in enum check.
 
+## Non-Functional Requirements
+
+None — confirmed. cdg.3 is a CLI utility. No latency SLA, no uptime requirement, no user-facing UI. Security: all arguments are operator-supplied from CI context; no external network calls; no untrusted input.
+
 ## Complexity
 
 **Rating:** 1 — Well-understood pattern. `pipeline-state-writer.js` exists and is tested. The CLI is a thin adapter. No new algorithms or external dependencies.

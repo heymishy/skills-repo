@@ -66,3 +66,22 @@
 **Rationale:** `cli-outer-loop.js` is a pure exportable function with no side effects. The established web UI pattern throughout `src/web-ui/` is `require()` for all internal module calls — `child_process` appears only in `cli-adapter.js` for `git fetch`, not in any route handler. Subprocess invocation from a route handler would introduce PATH resolution risk, shell injection surface, stdout/stderr parsing overhead, and subprocess lifecycle management, all of which are avoided by direct module import. Both surfaces (web UI and CI binary) exercising the same modules means a module-level test covers both callers.
 
 **Integration gap confirmed:** `handlePostGateConfirm` in `src/web-ui/routes/journey.js` currently writes pipeline state without first calling `cli-outer-loop.validate()`. Phase 2 closes this gap: the handler must call `validate(dorArtefactPath, 'definition-of-ready', repoRoot)` and only proceed to `_pipelineStateWriter()` if exit code is 0. Artefact disk write precedes validate (already the case — correct per disk canonicity rule ADR-023).
+
+---
+
+### RISK-ACCEPT-004 — MEDIUM review finding acknowledged: NFR section absent in cdg.3, cdg.4, cdg.5
+
+**Date:** 2026-05-24
+**Session phase:** review
+**Decision:** Proceed to /test-plan for cdg.3, cdg.4, cdg.5 after acknowledging finding 1-M1 (missing NFR section). Finding resolved inline during review session — NFR sections added to all three stories before review reports were written.
+
+**Context:** Review Run 1 for all three Phase 2 stories (cdg.3, cdg.4, cdg.5) surfaced the same MEDIUM finding: no `## Non-Functional Requirements` section. The review template requires either populated NFRs or an explicit "None — confirmed" statement. None of the three stories had this section.
+
+**Resolution:** The fix is trivial and was applied inline during this review session:
+- cdg.3: Added "None — confirmed — cdg.3 is a CLI utility. No latency SLA, no uptime requirement, no user-facing UI."
+- cdg.4: Added security NFR (path traversal guard, input sanitisation — already encoded in ACs and Architecture Constraints; stated here for completeness) and performance NFR (no SLA — infrequent human action).
+- cdg.5: Added integrity NFR (append-only file writes), test isolation NFR, and no-external-crypto-dependency NFR.
+
+All three stories now have an NFR section. The finding is resolved — no residual risk.
+
+**Decision:** RISK-ACCEPT moot — finding resolved inline. Stories ready for /test-plan.
