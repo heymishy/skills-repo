@@ -141,6 +141,9 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "prStatus": "none",
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/352",
+              "dispatchedAt": "2026-05-23T00:00:00Z",
+              "dispatchTarget": "vscode",
               "updatedAt": "2026-05-23T00:00:00Z"
             },
             {
