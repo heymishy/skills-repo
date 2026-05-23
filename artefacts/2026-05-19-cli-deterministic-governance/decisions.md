@@ -85,3 +85,17 @@
 All three stories now have an NFR section. The finding is resolved — no residual risk.
 
 **Decision:** RISK-ACCEPT moot — finding resolved inline. Stories ready for /test-plan.
+
+---
+
+### RISK-ACCEPT-005 — Verification scripts not independently reviewed (cdg.3, cdg.4, cdg.5 — W4)
+
+**Date:** 2026-05-24
+**Session phase:** definition-of-ready
+**Decision:** Acknowledge W4 for cdg.3, cdg.4, and cdg.5. Proceed to coding.
+
+**Context:** W4 applies to all three Phase 2 stories — the verification scripts for cdg.3 (`cdg.3-verification.md`), cdg.4 (`cdg.4-verification.md`), and cdg.5 (`cdg.5-verification.md`) have not been reviewed by a separate domain expert. On a solo personal project there is no separate domain expert available.
+
+**Rationale:** The operator (Hamis) is the sole platform maintainer and acts as the domain expert for all three scripts. The scripts were reviewed during authoring in this session. Misspecified behaviour would surface during coding (tests would not pass) or at PR review. The risk of undetected misspecification is low because the scripts map directly to story ACs which were written first.
+
+**Residual risk:** Low. Solo project context — no compliance obligation requiring independent verification.
