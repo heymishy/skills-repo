@@ -182,6 +182,247 @@ console.log('\n[cli-outer-loop] NFR3 — No new deps: package.json deps unchange
   assert(extraDevDeps.length === 0, `NFR3b: no extra entries in devDependencies (found: ${extraDevDeps.join(', ') || 'none'})`);
 }
 
+// ── T8 — H2: story with fewer than 3 ACs exits 2 ────────────────────────────
+console.log('\n[cli-outer-loop] T8 — H2: story with < 3 ACs → exit 2');
+{
+  const t8Dir = fs.mkdtempSync(path.join(ROOT, '.tmp-test-cdg2-t8-'));
+  try {
+    const storyPath = path.join(t8Dir, 'story-h2-few-acs.md');
+    fs.writeFileSync(storyPath, [
+      '## User Story',
+      'As a tester, I want to verify H2, So that the gate catches under-specified stories.',
+      '',
+      '## Acceptance Criteria',
+      '**AC1:** Given a baseline, When the check runs, Then it passes.',
+      'Given the baseline. When the check runs. Then it passes.',
+      '',
+      '**AC2:** Given another baseline, When the check runs, Then it also passes.',
+      'Given another baseline. When the check runs. Then it also passes.',
+      '',
+      '## Out of Scope',
+      'N/A',
+      '',
+      '## Benefit Linkage',
+      'M1 — test metric.',
+      '',
+      '## Complexity Rating',
+      'Rating: 2',
+      'Scope stability: Stable',
+      '',
+      '## Architecture Constraints',
+      'ADR-011 — pure function constraint.',
+    ].join('\n'), 'utf8');
+
+    const dorPath = path.join(t8Dir, 'dor.md');
+    fs.writeFileSync(dorPath, [
+      '## Definition of Ready',
+      '',
+      `**Story reference:** ${path.relative(ROOT, storyPath).replace(/\\/g, '/')}`,
+      `**Test plan reference:** ${path.relative(ROOT, storyPath).replace(/\\/g, '/')}`,
+      `**Review artefact:** ${path.relative(ROOT, storyPath).replace(/\\/g, '/')}`,
+    ].join('\n'), 'utf8');
+
+    const mod = loadModule();
+    let result = null;
+    if (mod) {
+      try { result = mod.validate(dorPath, 'definition-of-ready', ROOT); } catch (_) {}
+    }
+    assert(result !== null && result.exitCode === 2, 'T8a: exitCode === 2 for story with < 3 ACs');
+    assert(result !== null && typeof result.stderr === 'string' && result.stderr.includes('H2 FAIL'), 'T8b: stderr contains "H2 FAIL"');
+    assert(result !== null && typeof result.stderr === 'string' && result.stderr.includes('minimum 3 ACs required'), 'T8c: stderr contains "minimum 3 ACs required"');
+  } finally {
+    try { fs.rmSync(t8Dir, { recursive: true, force: true }); } catch (_) {}
+  }
+}
+
+// ── T9 — H2: story with 3 ACs but one missing GWT → exit 2 ──────────────────
+console.log('\n[cli-outer-loop] T9 — H2: story with AC missing Given/When/Then → exit 2');
+{
+  const t9Dir = fs.mkdtempSync(path.join(ROOT, '.tmp-test-cdg2-t9-'));
+  try {
+    const storyPath = path.join(t9Dir, 'story-h2-bad-gwt.md');
+    fs.writeFileSync(storyPath, [
+      '## User Story',
+      'As a tester, I want to verify H2 GWT, So that the gate catches malformed ACs.',
+      '',
+      '## Acceptance Criteria',
+      '**AC1:** Given a baseline, When the check runs, Then it passes.',
+      'Given a baseline. When the check runs. Then it passes.',
+      '',
+      '**AC2:** The system should work correctly.',
+      '',
+      '**AC3:** Given a third case, When tested, Then it works.',
+      'Given a third case. When tested. Then it works.',
+      '',
+      '## Out of Scope',
+      'N/A',
+      '',
+      '## Benefit Linkage',
+      'M1 — test metric.',
+      '',
+      '## Complexity Rating',
+      'Rating: 2',
+      'Scope stability: Stable',
+      '',
+      '## Architecture Constraints',
+      'ADR-011 — pure function constraint.',
+    ].join('\n'), 'utf8');
+
+    const dorPath = path.join(t9Dir, 'dor.md');
+    fs.writeFileSync(dorPath, [
+      '## Definition of Ready',
+      '',
+      `**Story reference:** ${path.relative(ROOT, storyPath).replace(/\\/g, '/')}`,
+      `**Test plan reference:** ${path.relative(ROOT, storyPath).replace(/\\/g, '/')}`,
+      `**Review artefact:** ${path.relative(ROOT, storyPath).replace(/\\/g, '/')}`,
+    ].join('\n'), 'utf8');
+
+    const mod = loadModule();
+    let result = null;
+    if (mod) {
+      try { result = mod.validate(dorPath, 'definition-of-ready', ROOT); } catch (_) {}
+    }
+    assert(result !== null && result.exitCode === 2, 'T9a: exitCode === 2 for story with AC2 missing GWT');
+    assert(result !== null && typeof result.stderr === 'string' && result.stderr.includes('H2 FAIL'), 'T9b: stderr contains "H2 FAIL"');
+    assert(result !== null && typeof result.stderr === 'string' && result.stderr.includes('AC2'), 'T9c: stderr identifies AC2 as the malformed AC');
+  } finally {
+    try { fs.rmSync(t9Dir, { recursive: true, force: true }); } catch (_) {}
+  }
+}
+
+// ── T10 — H5: story with disqualifying phrase in benefit linkage → exit 5 ────
+console.log('\n[cli-outer-loop] T10 — H5: disqualifying phrase in benefit linkage → exit 5');
+{
+  const t10Dir = fs.mkdtempSync(path.join(ROOT, '.tmp-test-cdg2-t10-'));
+  try {
+    const storyPath = path.join(t10Dir, 'story-h5-disqualify.md');
+    fs.writeFileSync(storyPath, [
+      '## User Story',
+      'As a tester, I want to verify H5, So that disqualifying phrases are caught.',
+      '',
+      '## Acceptance Criteria',
+      '**AC1:** Given a baseline, When the check runs, Then it passes.',
+      'Given a baseline. When the check runs. Then it passes.',
+      '',
+      '**AC2:** Given another case, When tested, Then it works.',
+      'Given another case. When tested. Then it works.',
+      '',
+      '**AC3:** Given a third case, When validated, Then it succeeds.',
+      'Given a third case. When validated. Then it succeeds.',
+      '',
+      '## Out of Scope',
+      'This is explicitly out of scope: widget integration.',
+      '',
+      '## Benefit Linkage',
+      'M1 — test metric. This story is needed for the next feature to proceed.',
+      '',
+      '## Complexity Rating',
+      'Rating: 2',
+      'Scope stability: Stable',
+      '',
+      '## Architecture Constraints',
+      'ADR-011 — pure function constraint.',
+    ].join('\n'), 'utf8');
+
+    const dorPath = path.join(t10Dir, 'dor.md');
+    fs.writeFileSync(dorPath, [
+      '## Definition of Ready',
+      '',
+      `**Story reference:** ${path.relative(ROOT, storyPath).replace(/\\/g, '/')}`,
+      `**Test plan reference:** ${path.relative(ROOT, storyPath).replace(/\\/g, '/')}`,
+      `**Review artefact:** ${path.relative(ROOT, storyPath).replace(/\\/g, '/')}`,
+    ].join('\n'), 'utf8');
+
+    const mod = loadModule();
+    let result = null;
+    if (mod) {
+      try { result = mod.validate(dorPath, 'definition-of-ready', ROOT); } catch (_) {}
+    }
+    assert(result !== null && result.exitCode === 5, 'T10a: exitCode === 5 for disqualifying phrase in benefit linkage');
+    assert(result !== null && typeof result.stderr === 'string' && result.stderr.includes('H5 FAIL'), 'T10b: stderr contains "H5 FAIL"');
+    assert(result !== null && typeof result.stderr === 'string' && result.stderr.includes('technical dependency'), 'T10c: stderr describes the disqualifying phrase type');
+  } finally {
+    try { fs.rmSync(t10Dir, { recursive: true, force: true }); } catch (_) {}
+  }
+}
+
+// ── T11 — clean DoR with all H-checks passing → exit 0 ──────────────────────
+console.log('\n[cli-outer-loop] T11 — clean DoR: all H-checks pass → exit 0');
+{
+  const t11Dir = fs.mkdtempSync(path.join(ROOT, '.tmp-test-cdg2-t11-'));
+  try {
+    const storyPath = path.join(t11Dir, 'story-clean.md');
+    fs.writeFileSync(storyPath, [
+      '## User Story',
+      'As a platform maintainer, I want the gate to pass clean stories, So that valid work proceeds.',
+      '',
+      '## Acceptance Criteria',
+      '**AC1:** Given a well-formed story, When the check runs, Then exit 0 is returned.',
+      'Given a well-formed story. When the check runs. Then exit 0 is returned.',
+      '',
+      '**AC2:** Given another AC, When validated, Then it also passes.',
+      'Given another AC. When validated. Then it also passes.',
+      '',
+      '**AC3:** Given a third AC, When the suite runs, Then all checks pass.',
+      'Given a third AC. When the suite runs. Then all checks pass.',
+      '',
+      '## Out of Scope',
+      'Widget integration and third-party API wiring are out of scope.',
+      '',
+      '## Benefit Linkage',
+      'M99 — dummy metric for test fixture validation.',
+      'This story implements the validation logic directly.',
+      '',
+      '## Complexity Rating',
+      'Rating: 2',
+      'Scope stability: Stable',
+      '',
+      '## Architecture Constraints',
+      'ADR-011 — pure function constraint applies. No state writes permitted.',
+    ].join('\n'), 'utf8');
+
+    const testPlanPath = path.join(t11Dir, 'test-plan-stub.md');
+    fs.writeFileSync(testPlanPath, [
+      '## Test Plan Stub',
+      '',
+      '## AC Coverage',
+      '',
+      '| AC | Tests |',
+      '|----|-------|',
+      '| AC1 | T1a |',
+      '| AC2 | T2a |',
+      '| AC3 | T3a |',
+    ].join('\n'), 'utf8');
+
+    const reviewPath = path.join(t11Dir, 'review-stub.md');
+    fs.writeFileSync(reviewPath, [
+      '## Review',
+      '',
+      '| Finding | Severity | Status |',
+      '|----|------|--------|',
+      '| No findings | LOW | resolved |',
+    ].join('\n'), 'utf8');
+
+    const dorPath = path.join(t11Dir, 'dor.md');
+    fs.writeFileSync(dorPath, [
+      '## Definition of Ready',
+      '',
+      `**Story reference:** ${path.relative(ROOT, storyPath).replace(/\\/g, '/')}`,
+      `**Test plan reference:** ${path.relative(ROOT, testPlanPath).replace(/\\/g, '/')}`,
+      `**Review artefact:** ${path.relative(ROOT, reviewPath).replace(/\\/g, '/')}`,
+    ].join('\n'), 'utf8');
+
+    const mod = loadModule();
+    let result = null;
+    if (mod) {
+      try { result = mod.validate(dorPath, 'definition-of-ready', ROOT); } catch (_) {}
+    }
+    assert(result !== null && result.exitCode === 0, 'T11a: exitCode === 0 for well-formed DoR');
+  } finally {
+    try { fs.rmSync(t11Dir, { recursive: true, force: true }); } catch (_) {}
+  }
+}
+
 // ── Cleanup ───────────────────────────────────────────────────────────────────
 try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch (_) {}
 
