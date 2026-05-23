@@ -123,7 +123,7 @@
             {
               "slug": "cdg.1",
               "name": "skills validate command: CLI entry point, exit code framework, and governance check",
-              "stage": "definition-of-ready",
+              "stage": "implementation",
               "health": "green",
               "reviewStatus": "passed",
               "reviewArtefact": "artefacts/2026-05-19-cli-deterministic-governance/review/cdg.1-review-1.md",
@@ -140,11 +140,12 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "prStatus": "none",
+              "prStatus": "draft",
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/352",
               "dispatchedAt": "2026-05-23T00:00:00Z",
               "dispatchTarget": "vscode",
-              "updatedAt": "2026-05-23T00:00:00Z"
+              "updatedAt": "2026-05-23T00:00:00Z",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/353"
             },
             {
               "slug": "cdg.2",
@@ -3371,7 +3372,12 @@
       "discoveryStatus": "not-started",
       "ideationPath": "artefacts/2026-05-20-cloud-platform/research/ideation.md",
       "ideationSignal": "discovery-ready",
-      "ideationLensesComplete": ["D", "C", "E", "B"],
+      "ideationLensesComplete": [
+        "D",
+        "C",
+        "E",
+        "B"
+      ],
       "stories": [],
       "updatedAt": "2026-05-20T21:00:00Z"
     },
@@ -3387,8 +3393,13 @@
       "sensitiveDataCategories": [],
       "discoveryStatus": "complete",
       "benefitMetricStatus": "active",
-      "roadmapAlignment": ["Phase 5 WS1 - hook event schema", "Phase 5 WS2 - subagent isolation"],
-      "dependencies": ["2026-05-20-cloud-platform depends on this for tamper-evident audit trail MVP capability"],
+      "roadmapAlignment": [
+        "Phase 5 WS1 - hook event schema",
+        "Phase 5 WS2 - subagent isolation"
+      ],
+      "dependencies": [
+        "2026-05-20-cloud-platform depends on this for tamper-evident audit trail MVP capability"
+      ],
       "stories": [],
       "guardrails": [],
       "updatedAt": "2026-05-21"
