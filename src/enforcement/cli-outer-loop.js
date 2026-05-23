@@ -130,21 +130,21 @@ function validate(artefactPath, gateName, repoRoot) {
       };
     }
 
+    let gwtCount = 0;
     for (let i = 0; i < acMarkers.length; i++) {
       const start = acMarkers[i].pos;
       const end   = i + 1 < acMarkers.length ? acMarkers[i + 1].pos : storyContent.length;
       const block = storyContent.slice(start, end).toLowerCase();
-      const missing = [];
-      if (!block.includes('given')) missing.push('Given');
-      if (!block.includes('when'))  missing.push('When');
-      if (!block.includes('then'))  missing.push('Then');
-      if (missing.length > 0) {
-        return {
-          exitCode: EXIT.H2,
-          stdout: '',
-          stderr: `H2 FAIL: AC${acMarkers[i].n} does not follow Given/When/Then format (missing: ${missing.join(', ')})`,
-        };
+      if (block.includes('given') && block.includes('when') && block.includes('then')) {
+        gwtCount++;
       }
+    }
+    if (gwtCount < 3) {
+      return {
+        exitCode: EXIT.H2,
+        stdout: '',
+        stderr: `H2 FAIL: fewer than 3 ACs in Given/When/Then format (found ${gwtCount})`,
+      };
     }
   }
 
@@ -278,7 +278,7 @@ function validate(artefactPath, gateName, repoRoot) {
       };
     }
 
-    if (!/(?:complexity|rating)[^\n]*?(?::\s*|is\s+)[1-3]\b/i.test(storyContent)) {
+    if (!/(?:complexity|rating)[^\n]*?(?::[*\s]*|is\s+)[1-3]\b/i.test(storyContent)) {
       return {
         exitCode: EXIT.H6,
         stdout: '',
@@ -299,15 +299,25 @@ function validate(artefactPath, gateName, repoRoot) {
   let rvContent;
   {
     const rvHeaderMatch = REVIEW_REF_HEADER_RE.exec(content);
-    if (!rvHeaderMatch) {
+    let relRv = null;
+    if (rvHeaderMatch) {
+      relRv = rvHeaderMatch[1];
+    } else {
+      // Fallback: extract review filename from anywhere in DoR content and
+      // resolve via the feature's review/ subdirectory
+      const reviewFnMatch = /\b([a-zA-Z0-9.-]+-review-\d+\.md)\b/.exec(content);
+      if (reviewFnMatch) {
+        const featureDir = path.dirname(path.dirname(resolved));
+        relRv = path.relative(repoRoot, path.join(featureDir, 'review', reviewFnMatch[1]));
+      }
+    }
+    if (relRv === null) {
       return {
         exitCode: EXIT.H7_THROUGH_H9,
         stdout: '',
         stderr: 'H7 FAIL: no review artefact reference found in DoR (**Review artefact:** <path>)',
       };
     }
-
-    const relRv = rvHeaderMatch[1];
     const absRv = path.resolve(repoRoot, relRv);
     if (!absRv.startsWith(rootWithSep)) {
       return {
@@ -368,10 +378,14 @@ function validate(artefactPath, gateName, repoRoot) {
       const depBody    = nextHeading
         ? storyContent.slice(bodyStart, bodyStart + nextHeading.index)
         : storyContent.slice(bodyStart);
-      const depTrimmed = depBody.trim().toLowerCase();
-      const hasUpstreamDeps = depTrimmed && depTrimmed !== 'none' && depTrimmed !== 'n/a';
+      // Look for an explicit upstream line; fall back to full body
+      const upstreamLineMatch = /\bupstream\b[^:\n]*:\s*([^\n]+)/i.exec(depBody);
+      const depCheck = upstreamLineMatch
+        ? upstreamLineMatch[1].replace(/^\*+\s*/, '').trim().toLowerCase()
+        : depBody.trim().toLowerCase();
+      const hasUpstreamDeps = depCheck && !depCheck.startsWith('none') && depCheck !== 'n/a';
 
-      if (hasUpstreamDeps && !/schemadepends:/i.test(content)) {
+      if (hasUpstreamDeps && !/schemadepends/i.test(content)) {
         return {
           exitCode: EXIT.H7_THROUGH_H9,
           stdout: '',

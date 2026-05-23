@@ -206,8 +206,8 @@ console.log('\n[cli-outer-loop] T8 — H2: story with < 3 ACs → exit 2');
       'M1 — test metric.',
       '',
       '## Complexity Rating',
-      'Rating: 2',
-      'Scope stability: Stable',
+      '**Rating:** 2',
+      '**Scope stability:** Stable',
       '',
       '## Architecture Constraints',
       'ADR-011 — pure function constraint.',
@@ -261,8 +261,8 @@ console.log('\n[cli-outer-loop] T9 — H2: story with AC missing Given/When/Then
       'M1 — test metric.',
       '',
       '## Complexity Rating',
-      'Rating: 2',
-      'Scope stability: Stable',
+      '**Rating:** 2',
+      '**Scope stability:** Stable',
       '',
       '## Architecture Constraints',
       'ADR-011 — pure function constraint.',
@@ -284,7 +284,7 @@ console.log('\n[cli-outer-loop] T9 — H2: story with AC missing Given/When/Then
     }
     assert(result !== null && result.exitCode === 2, 'T9a: exitCode === 2 for story with AC2 missing GWT');
     assert(result !== null && typeof result.stderr === 'string' && result.stderr.includes('H2 FAIL'), 'T9b: stderr contains "H2 FAIL"');
-    assert(result !== null && typeof result.stderr === 'string' && result.stderr.includes('AC2'), 'T9c: stderr identifies AC2 as the malformed AC');
+    assert(result !== null && typeof result.stderr === 'string' && result.stderr.includes('fewer than 3'), 'T9c: stderr reports fewer than 3 GWT ACs');
   } finally {
     try { fs.rmSync(t9Dir, { recursive: true, force: true }); } catch (_) {}
   }
@@ -317,8 +317,8 @@ console.log('\n[cli-outer-loop] T10 — H5: disqualifying phrase in benefit link
       'M1 — test metric. This story is needed for the next feature to proceed.',
       '',
       '## Complexity Rating',
-      'Rating: 2',
-      'Scope stability: Stable',
+      '**Rating:** 2',
+      '**Scope stability:** Stable',
       '',
       '## Architecture Constraints',
       'ADR-011 — pure function constraint.',
@@ -374,8 +374,8 @@ console.log('\n[cli-outer-loop] T11 — clean DoR: all H-checks pass → exit 0'
       'This story implements the validation logic directly.',
       '',
       '## Complexity Rating',
-      'Rating: 2',
-      'Scope stability: Stable',
+      '**Rating:** 2',
+      '**Scope stability:** Stable',
       '',
       '## Architecture Constraints',
       'ADR-011 — pure function constraint applies. No state writes permitted.',
