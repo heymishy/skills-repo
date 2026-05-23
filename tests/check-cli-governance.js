@@ -41,5 +41,30 @@ assert(fs.existsSync(MODULE), 'G1b: AC5 FAIL: src/enforcement/cli-outer-loop.js 
   assert(validateExported, "G1c: AC5 FAIL: src/enforcement/cli-outer-loop.js does not export a function named 'validate'");
 }
 
+console.log('\n[cli-governance] AC8 — fixture count and error map checks');
+
+// G2a — check-cli-outer-loop.js has at least 33 assert() calls
+{
+  let assertCount = 0;
+  try {
+    const src = fs.readFileSync(path.join(ROOT, 'tests', 'check-cli-outer-loop.js'), 'utf8');
+    const matches = src.match(/\bassert\(/g);
+    assertCount = matches ? matches.length : 0;
+  } catch (_) {}
+  assert(assertCount >= 33, `G2a: AC8 FAIL: check-cli-outer-loop.js has ${assertCount} assert() calls (need ≥33)`);
+}
+
+// G2b — cli-outer-loop.js defines EXIT constants (error code map)
+{
+  let hasExitMap = false;
+  if (fs.existsSync(MODULE)) {
+    try {
+      const src = fs.readFileSync(MODULE, 'utf8');
+      hasExitMap = /const\s+EXIT\s*=\s*\{/.test(src);
+    } catch (_) {}
+  }
+  assert(hasExitMap, 'G2b: AC8 FAIL: cli-outer-loop.js does not define EXIT constants map');
+}
+
 console.log(`\n=== check-cli-governance results: ${passed} passed, ${failed} failed ===\n`);
 if (failed > 0) process.exit(1);
