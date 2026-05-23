@@ -154,12 +154,23 @@
             {
               "slug": "cdg.2",
               "name": "H1-H9 DoR deterministic checks: complete coverage and >= 33 test fixtures",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "reviewArtefact": "artefacts/2026-05-19-cli-deterministic-governance/review/cdg.2-review-1.md",
               "dorStatus": "not-started",
-              "prStatus": "none"
+              "prStatus": "none",
+              "updatedAt": "2026-05-23",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-05-19-cli-deterministic-governance/test-plans/cdg.2-test-plan.md",
+                "totalTests": 12,
+                "passing": 0
+              },
+              "acTotal": 8,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
