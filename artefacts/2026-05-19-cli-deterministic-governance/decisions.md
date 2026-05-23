@@ -50,3 +50,19 @@
 **Risk accepted:** The operator is the domain expert for this CLI tooling. The verification script was checked against the AC definitions at DoR time. The primary risk (coding agent implements against misspecified behaviour) is partially mitigated by the unit test suite (T8-T11, G2a-G2b), which provides a second specification layer independent of the verification script prose.
 
 **Decision:** RISK-ACCEPT — proceed with DoR sign-off. Operator acts as sole domain expert reviewer.
+
+---
+
+### ADR-H7.1 — Module import over subprocess for web UI CLI integration
+
+**Date:** 2026-05-24
+**Session phase:** spike (H7.1)
+**Spike artefacts:** `artefacts/2026-05-19-cli-deterministic-governance/spikes/h7.1-web-ui-subprocess-outcome.md`
+
+**Context:** Phase 2 requires the web UI gate-confirm handler to enforce CLI structural checks before writing pipeline state. H7.1 investigated whether this should be done via subprocess invocation (`child_process.spawn('node bin/skills validate ...')`) or direct module import (`require('../enforcement/cli-outer-loop').validate(...)`).
+
+**Decision:** Phase 2 web UI integration uses direct module import (`require()`), not subprocess invocation. The `bin/skills advance` CLI binary (for CI use) also calls the same underlying modules directly — it is a thin wrapper, not a subprocess caller.
+
+**Rationale:** `cli-outer-loop.js` is a pure exportable function with no side effects. The established web UI pattern throughout `src/web-ui/` is `require()` for all internal module calls — `child_process` appears only in `cli-adapter.js` for `git fetch`, not in any route handler. Subprocess invocation from a route handler would introduce PATH resolution risk, shell injection surface, stdout/stderr parsing overhead, and subprocess lifecycle management, all of which are avoided by direct module import. Both surfaces (web UI and CI binary) exercising the same modules means a module-level test covers both callers.
+
+**Integration gap confirmed:** `handlePostGateConfirm` in `src/web-ui/routes/journey.js` currently writes pipeline state without first calling `cli-outer-loop.validate()`. Phase 2 closes this gap: the handler must call `validate(dorArtefactPath, 'definition-of-ready', repoRoot)` and only proceed to `_pipelineStateWriter()` if exit code is 0. Artefact disk write precedes validate (already the case — correct per disk canonicity rule ADR-023).
