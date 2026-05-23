@@ -80,9 +80,9 @@
           "baseline": 0,
           "target": 33,
           "minimumSignal": 20,
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "at-risk",
+          "lastMeasured": "2026-05-23",
+          "evidence": "26 fixtures passing in CI (23 in check-cli-outer-loop.js + 3 in check-cli-governance.js). Above minimum signal of 20. Below target of 33 — requires cdg.2 completion for H2-H9.",
           "contributingStories": []
         },
         {
@@ -128,10 +128,10 @@
               "reviewStatus": "passed",
               "reviewArtefact": "artefacts/2026-05-19-cli-deterministic-governance/review/cdg.1-review-1.md",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-05-19-cli-deterministic-governance/test-plans/cdg.1-test-plan.md",
-                "totalTests": 24,
-                "passing": 0
+                "totalTests": 26,
+                "passing": 26
               },
               "dorArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.1-dor.md",
               "dorContract": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.1-dor-contract.md",
@@ -144,9 +144,12 @@
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/352",
               "dispatchedAt": "2026-05-23T00:00:00Z",
               "dispatchTarget": "vscode",
-              "updatedAt": "2026-05-23T00:00:00Z",
+              "updatedAt": "2026-05-23",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/353",
-              "mergedAt": "2026-05-23"
+              "mergedAt": "2026-05-23",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "layoutGapsAtMerge": false
             },
             {
               "slug": "cdg.2",
