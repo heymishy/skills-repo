@@ -123,7 +123,7 @@
             {
               "slug": "cdg.1",
               "name": "skills validate command: CLI entry point, exit code framework, and governance check",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "reviewArtefact": "artefacts/2026-05-19-cli-deterministic-governance/review/cdg.1-review-1.md",
@@ -133,11 +133,13 @@
                 "totalTests": 24,
                 "passing": 0
               },
+              "dorArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.1-dor.md",
+              "dorContract": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.1-dor-contract.md",
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "not-started",
+              "dorStatus": "signed-off",
               "prStatus": "none",
               "updatedAt": "2026-05-23T00:00:00Z"
             },
