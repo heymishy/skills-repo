@@ -1,0 +1,27 @@
+#!/usr/bin/env node
+// bin/skills — CLI entry point for the skills platform
+// Usage: node bin/skills validate <artefact-path> <gate-name>
+
+'use strict';
+
+const path = require('path');
+const { validate } = require('../src/enforcement/cli-outer-loop');
+
+const [, , subcommand, ...args] = process.argv;
+
+if (subcommand === 'validate') {
+  if (args.length < 2) {
+    process.stderr.write('Usage: skills validate <artefact-path> <gate-name>\n');
+    process.exit(1);
+  }
+  const [artefactPath, gateName] = args;
+  const repoRoot = path.resolve(__dirname, '..');
+  const result = validate(artefactPath, gateName, repoRoot);
+  if (result.stdout) process.stdout.write(result.stdout + '\n');
+  if (result.stderr) process.stderr.write(result.stderr + '\n');
+  process.exit(result.exitCode);
+} else {
+  const cmd = subcommand || '(none)';
+  process.stderr.write(`Unknown subcommand: '${cmd}'\nUsage: skills validate <artefact-path> <gate-name>\n`);
+  process.exit(8);
+}
