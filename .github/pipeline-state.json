@@ -3316,7 +3316,7 @@
       "name": "CI Trace Writer Fix",
       "stage": "definition-of-ready",
       "health": "green",
-      "track": "platform",
+      "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "discoveryStatus": "approved",
@@ -3332,7 +3332,7 @@
           "artefact": "artefacts/2026-05-16-trace-writer-fix/stories/trw.1-ci-trace-writer.md",
           "testPlan": {
             "artefact": "artefacts/2026-05-16-trace-writer-fix/test-plans/trw.1-ci-trace-writer-test-plan.md",
-            "status": "complete"
+            "status": "all-passing"
           },
           "dor": {
             "artefact": "artefacts/2026-05-16-trace-writer-fix/dor/trw.1-dor.md",
@@ -3366,7 +3366,7 @@
       "name": "Cloud Platform — Multi-Tenant Governed Delivery Application",
       "stage": "ideation",
       "health": "amber",
-      "track": "product",
+      "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "discoveryStatus": "not-started",
@@ -3386,7 +3386,7 @@
       "name": "Execution Boundary Model and Invocation Telemetry (P5/P6)",
       "stage": "discovery",
       "health": "green",
-      "track": "platform",
+      "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
