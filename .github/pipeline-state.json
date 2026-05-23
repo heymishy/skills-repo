@@ -111,8 +111,8 @@
         }
       ],
       "slicingStrategy": "risk-first",
-      "storyCount": 2,
-      "epicCount": 1,
+      "storyCount": 5,
+      "epicCount": 2,
       "nfrProfileArtefact": "artefacts/2026-05-19-cli-deterministic-governance/nfr-profile.md",
       "epics": [
         {
@@ -177,6 +177,46 @@
               "dodStatus": "complete",
               "releaseReady": true,
               "layoutGapsAtMerge": false
+            }
+          ]
+        },
+        {
+          "slug": "cdg-phase2-advance-and-trace",
+          "name": "Phase 2 — skills advance, web UI gate enforcement, and chain-hash trace",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "cdg.3",
+              "id": "cdg.3",
+              "name": "skills advance CLI command: CI-facing state write with typed exit codes",
+              "stage": "definition",
+              "health": "green",
+              "reviewStatus": "not-started",
+              "dorStatus": "not-started",
+              "prStatus": "none",
+              "updatedAt": "2026-05-24"
+            },
+            {
+              "slug": "cdg.4",
+              "id": "cdg.4",
+              "name": "Web UI gate-confirm CLI validation integration",
+              "stage": "definition",
+              "health": "green",
+              "reviewStatus": "not-started",
+              "dorStatus": "not-started",
+              "prStatus": "none",
+              "updatedAt": "2026-05-24"
+            },
+            {
+              "slug": "cdg.5",
+              "id": "cdg.5",
+              "name": "Chain-hash trace emission on gate-confirm",
+              "stage": "definition",
+              "health": "green",
+              "reviewStatus": "not-started",
+              "dorStatus": "not-started",
+              "prStatus": "none",
+              "updatedAt": "2026-05-24"
             }
           ]
         }
