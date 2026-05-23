@@ -81,8 +81,8 @@
           "target": 33,
           "minimumSignal": 20,
           "signal": "on-track",
-          "lastMeasured": "2026-05-25",
-          "evidence": "33 fixtures passing in CI (33 in check-cli-outer-loop.js + 5 in check-cli-governance.js). At target of 33 — cdg.2 H2-H9 implementation complete, draft PR #354 open.",
+          "lastMeasured": "2026-05-24",
+          "evidence": "34 assert() calls in check-cli-outer-loop.js (≥33 target). 33 assertions passing in CI post-merge PR #354. Target achieved and locked by G2a governance check.",
           "contributingStories": []
         },
         {
@@ -118,7 +118,7 @@
         {
           "slug": "cdg-phase1-validate-cli",
           "name": "Phase 1 — skills validate CLI and gate logic coverage",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "cdg.1",
@@ -162,7 +162,7 @@
               "dorArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.2-dor.md",
               "prStatus": "merged",
               "prNumber": 354,
-              "updatedAt": "2026-05-25",
+              "updatedAt": "2026-05-24",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-05-19-cli-deterministic-governance/test-plans/cdg.2-test-plan.md",
@@ -173,7 +173,10 @@
               "acVerified": 8,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "mergedAt": "2026-05-24"
+              "mergedAt": "2026-05-24",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "layoutGapsAtMerge": false
             }
           ]
         }
