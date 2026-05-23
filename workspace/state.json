@@ -1,7 +1,7 @@
 {
-  "currentPhase": "discovery",
-  "lastUpdated": "2026-05-21T00:00:00.000Z",
-  "activeFeature": "2026-05-21-execution-boundary",
+  "currentPhase": "review",
+  "lastUpdated": "2026-05-23T00:00:00Z",
+  "activeFeature": "2026-05-19-cli-deterministic-governance",
   "activeFeatures": [
     {
       "slug": "2026-05-21-execution-boundary",
@@ -75,15 +75,27 @@
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-05-21T00:00:00.000Z",
-    "contextAtWrite": "Discovery session for 2026-05-21-execution-boundary complete. Produced: (1) reference doc P5/P6 at artefacts/2026-05-21-execution-boundary/reference/, (2) discovery.md with full problem statement, MVP scope, risk register, ADR candidates, and /clarify recommendation, (3) benefit-metric.md with M1-M4 metrics, economic baseline, and anti-metric. Key finding: telemetry gap is structural -- skill-turn-executor.js Anthropic path is non-streaming, existing JSONL is outcome-based not event-based. Integration point: _callAnthropic() in skill-turn-executor.js.",
-    "resumeInstruction": "Discovery + benefit-metric for 2026-05-21-execution-boundary complete and written to artefacts/. Next: (1) Operator approves or runs /clarify to resolve 4 unconfirmed assumptions -- see discovery.md /clarify Recommendation section. (2) After approval, run /definition to slice Epic 1 (P6 Tier 1: Anthropic streaming + JSONL commit) and Epic 3 (P5: boundary declaration + ADRs). Epic 2 (Tier 2 full trace) follows Epic 1. Epic 4 (Claude Agent SDK) requires separate spike. (3) Cloud platform feature (2026-05-20) can proceed to /discovery once this feature discovery is approved.",
+    "writtenAt": "2026-05-23",
+    "contextAtWrite": "Review complete for cdg.1 and cdg.2. Both PASS (0 HIGH). cdg.1: 2 MEDIUM (AC1 uninstructive example, AC3 exit code unspecified). cdg.2: 2 MEDIUM (33-item catalogue not on disk, exit code mapping H1-H9 to 1-7 not defined) + 2 LOW. Pipeline-state.json updated with reviewStatus: passed for both stories. Feature stage updated to review.",
+    "resumeInstruction": "Run /test-plan for cdg.1 and cdg.2 (in sequence — cdg.1 first). Before /test-plan: resolve MEDIUM findings 2-M1 (add 33-item catalogue reference artefact) and 2-M2 (define H-category to exit code mapping) from cdg.2-review-1.md. After /test-plan, run /definition-of-ready for each story, then dispatch to coding agent.",
     "pendingActions": [
-      "2026-05-21-execution-boundary DISCOVERY APPROVAL -- Operator to review discovery.md and run /clarify on 4 assumptions before approving. Artefact at artefacts/2026-05-21-execution-boundary/discovery.md.",
-      "trw.1 IMPLEMENTATION -- Issue #351 open at https://github.com/heymishy/skills-repo/issues/351. Needs: scripts/write-ci-trace.js, modified .github/workflows/trace-commit.yml, tests/check-trw1-trace-writer.js.",
-      "wsm.4 DISPATCH -- Story dor-signed-off. DoR artefact at artefacts/archived/2026-05-07-web-ui-session-management/dor/wsm.4-dor.md. Decide whether to implement or close.",
-      "PR #155 -- Delete PR at https://github.com/heymishy/skills-repo/pull/155 via GitHub web UI to purge remaining enterprise references from GitHub object store.",
-      "EXP-008 -- Scaffolded in workspace/experiments/EXP-008-corpus-breadth-eval/. S2-S7 context injection files still needed before runs can proceed."
+      "MEDIUM 2-M1: Add H1-H9 check catalogue reference (artefacts/2026-05-19-cli-deterministic-governance/reference/dor-h1-h9-check-catalogue.md) enumerating all 33 DoR sub-checks before cdg.2 /test-plan",
+      "MEDIUM 2-M2: Define exit code mapping (H1-H9 to codes 1-7) in cdg.1 or cdg.2 Architecture Constraints before /test-plan",
+      "Run /test-plan for cdg.1 (no blockers)",
+      "Run /test-plan for cdg.2 (after MEDIUM findings resolved)",
+      "Run /definition-of-ready for cdg.1 then cdg.2",
+      "Dispatch cdg.1 to coding agent (cdg.2 must wait for cdg.1 DoD)"
     ]
+  },
+  "cycles": {
+    "review": {
+      "status": "complete",
+      "artefacts": [
+        "artefacts/2026-05-19-cli-deterministic-governance/review/cdg.1-review-1.md",
+        "artefacts/2026-05-19-cli-deterministic-governance/review/cdg.2-review-1.md"
+      ],
+      "verdict": "PASS — 0 HIGH across both stories",
+      "completedAt": "2026-05-23T00:00:00Z"
+    }
   }
 }

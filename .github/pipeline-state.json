@@ -35,7 +35,7 @@
     {
       "slug": "2026-05-19-cli-deterministic-governance",
       "name": "CLI Deterministic Governance — Executable Gate Enforcement and Tamper-Evident Audit Trail",
-      "stage": "definition",
+      "stage": "review",
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -46,7 +46,7 @@
       "discoveryArtefact": "artefacts/2026-05-19-cli-deterministic-governance/discovery.md",
       "ideationPath": "artefacts/2026-05-19-cli-deterministic-governance/research/ideation.md",
       "ideationSignal": "proceed",
-      "updatedAt": "2026-05-19T09:00:00Z",
+      "updatedAt": "2026-05-23T00:00:00Z",
       "benefitMetricArtefact": "artefacts/2026-05-19-cli-deterministic-governance/benefit-metric.md",
       "metrics": [
         {
@@ -123,16 +123,20 @@
             {
               "slug": "cdg.1",
               "name": "skills validate command: CLI entry point, exit code framework, and governance check",
-              "stage": "definition",
+              "stage": "review",
               "health": "green",
+              "reviewStatus": "passed",
+              "reviewArtefact": "artefacts/2026-05-19-cli-deterministic-governance/review/cdg.1-review-1.md",
               "dorStatus": "not-started",
               "prStatus": "none"
             },
             {
               "slug": "cdg.2",
               "name": "H1-H9 DoR deterministic checks: complete coverage and >= 33 test fixtures",
-              "stage": "definition",
+              "stage": "review",
               "health": "green",
+              "reviewStatus": "passed",
+              "reviewArtefact": "artefacts/2026-05-19-cli-deterministic-governance/review/cdg.2-review-1.md",
               "dorStatus": "not-started",
               "prStatus": "none"
             }
