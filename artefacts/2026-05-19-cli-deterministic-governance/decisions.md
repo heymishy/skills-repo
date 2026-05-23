@@ -36,3 +36,17 @@
 **Risk accepted:** The operator is the domain expert for this CLI tooling. The verification script was checked against the AC definitions at DoR time. The primary risk (coding agent implements against misspecified behaviour) is partially mitigated by the test plan's unit and integration tests, which provide a second specification layer that is independent of the verification script prose.
 
 **Decision:** RISK-ACCEPT — proceed with DoR sign-off. Operator acts as sole domain expert reviewer.
+
+---
+
+### RISK-ACCEPT-003 — Verification script not independently reviewed (cdg.2, W4)
+
+**Date:** 2026-05-23
+**Session phase:** definition-of-ready
+**Decision:** Proceed to DoR sign-off with the cdg.2 verification script reviewed only by the operator (sole platform maintainer) acting as both author and domain expert.
+
+**Context:** The verification script (`artefacts/2026-05-19-cli-deterministic-governance/verification-scripts/cdg.2-verification.md`) was produced on 2026-05-23 and describes CLI behaviour for all 8 ACs across 6 verification scenarios. On a solo personal project with a single operator, independent domain expert review is not available. W4 was surfaced at DoR and the operator accepted the risk.
+
+**Risk accepted:** The operator is the domain expert for this CLI tooling. The verification script was checked against the AC definitions at DoR time. The primary risk (coding agent implements against misspecified behaviour) is partially mitigated by the unit test suite (T8-T11, G2a-G2b), which provides a second specification layer independent of the verification script prose.
+
+**Decision:** RISK-ACCEPT — proceed with DoR sign-off. Operator acts as sole domain expert reviewer.
