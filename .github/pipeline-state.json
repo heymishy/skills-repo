@@ -123,7 +123,7 @@
             {
               "slug": "cdg.1",
               "name": "skills validate command: CLI entry point, exit code framework, and governance check",
-              "stage": "implementation",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "reviewArtefact": "artefacts/2026-05-19-cli-deterministic-governance/review/cdg.1-review-1.md",
@@ -140,12 +140,13 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/352",
               "dispatchedAt": "2026-05-23T00:00:00Z",
               "dispatchTarget": "vscode",
               "updatedAt": "2026-05-23T00:00:00Z",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/353"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/353",
+              "mergedAt": "2026-05-23"
             },
             {
               "slug": "cdg.2",
