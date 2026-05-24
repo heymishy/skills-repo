@@ -1,102 +1,27 @@
 {
-  "currentPhase": "definition-of-done",
-  "lastUpdated": "2026-05-24T00:00:00Z",
-  "activeFeature": "2026-05-19-cli-deterministic-governance",
-  "activeFeatures": [
-    {
-      "slug": "2026-05-21-execution-boundary",
-      "stage": "discovery",
-      "note": "Discovery complete. P5 (Execution Boundary Separation) and P6 (Invocation Telemetry Spine) formalised. Reference doc at artefacts/2026-05-21-execution-boundary/reference/. Discovery artefact and benefit-metric written 2026-05-21. 4 unconfirmed assumptions flagged for /clarify before approval. Cloud platform feature (2026-05-20) depends on this for tamper-evident audit trail capability."
-    },
-    {
-      "slug": "2026-05-19-cli-deterministic-governance",
-      "stage": "ideation",
-      "note": "Ideation complete. ideation.md at artefacts/2026-05-19-cli-deterministic-governance/research/ideation.md. 3 open questions: H7.1 (spike: web UI backend subprocess cost), H7.2 (experiment: correction loop convergence), H7.3 (decision: operator identity for trace events). Phase 1 validate-only CLI can start after /discovery + /definition."
-    },
-    {
-      "slug": "2026-04-23-non-technical-channel",
-      "stage": "ideation",
-      "note": "Stalled at ideation. Resume with /discovery or /clarify."
-    },
-    {
-      "slug": "2026-05-10-model-evaluation-capability",
+  "currentPhase": "definition",
+  "lastUpdated": "2026-05-24T21:00:00Z",
+  "features": {
+    "2026-05-24-governance-platform-architecture": {
       "stage": "definition",
-      "note": "Active -- model evaluation capability, stories in definition phase."
-    },
-    {
-      "slug": "2026-05-16-trace-writer-fix",
-      "stage": "definition-of-ready",
-      "note": "trw.1 dispatched as GitHub issue #351. Awaiting VS Code coding agent."
-    },
-    {
-      "slug": "2026-05-18-skill-robustness-improvements",
-      "stage": "benefit-metric",
-      "note": "Active -- skill robustness improvements, benefit metric in progress."
-    }
-  ],
-  "execution_telemetry_discovery": {
-    "date": "2026-05-21",
-    "keyFindings": [
-      "Zero execution telemetry in current Web UI -- Anthropic path non-streaming, Copilot path text-only with thinking blocks stripped by proxy",
-      "Anthropic streaming marked not yet implemented in skill-turn-executor.js line 333 (_callAnthropic is non-streaming)",
-      "Existing JSONL (platform/traces/) is outcome-based gate records, not execution event streams -- different schema and semantic",
-      "Phase 5 WS1 (hook event schema) and WS2 (subagent isolation) directly map to P6 and P5 -- this discovery formalises existing roadmap intent",
-      "No @anthropic-ai/claude-agent-sdk dependency in repo -- Claude Agent SDK inner loop is Phase 5 WS2 scope, out of MVP",
-      "Cloud platform feature (2026-05-20) identifies tamper-evident audit trail as MVP capability -- depends on P6 telemetry being delivered first"
-    ],
-    "adrCandidates": [
-      "ADR-E1: outer-loop-provider-routing -- direct Anthropic API vs Copilot proxy telemetry depth implication",
-      "ADR-E2: execution-boundary-as-design-property -- P5 formal declaration in architecture-guardrails.md",
-      "ADR-E3: jsonl-execution-event-stream-schema -- P6 Tier 1/Tier 2 field definitions",
-      "ADR-E4: prompt-caching-strategy -- cache_control ephemeral for skill/standards content (60-70% cost reduction)",
-      "ADR-E5: inner-loop-max-iterations-guardrail -- Phase 5 WS2 prerequisite"
-    ],
-    "integrationPoints": [
-      "src/modules/skill-turn-executor.js _callAnthropic() -- primary P6 integration point; streaming implementation needed",
-      "src/web-ui/routes/execute.js -- outer loop entry point; session path provides JSONL write location",
-      ".github/workflows/assurance-gate.yml -- CI upload of JSONL as individually linkable artefact (completes 4.B.9)"
-    ],
-    "confirmedRisks": [
-      "Enterprise Copilot proxy path: thinking blocks stripped, Tier 2 telemetry unavailable -- Tier 1 only for that path",
-      "Data residency: direct Anthropic API path unsuitable for regulated consumers with data residency constraints"
-    ],
-    "recommendedNextAction": "Run /clarify to resolve 4 unconfirmed assumptions (SDK stability, Anthropic beta API stability, data residency scope, appendFileSync durability), then approve discovery. Phase 5 WS1 stories can begin /definition after approval."
-  },
-  "cycle": {
-    "discovery": {
-      "status": "complete",
-      "artefact": "artefacts/2026-05-21-execution-boundary/discovery.md",
-      "completedAt": "2026-05-21"
-    },
-    "benefit-metric": {
-      "status": "complete",
-      "artefact": "artefacts/2026-05-21-execution-boundary/benefit-metric.md",
-      "completedAt": "2026-05-21"
+      "commit": "f965588",
+      "epics": 2,
+      "stories": 7,
+      "nextAction": "Run /review for each story (start with SC-01 or SC-04 — complexity 1, no dependencies)"
     }
   },
   "checkpoint": {
     "writtenAt": "2026-05-24",
-    "contextAtWrite": "cdg.5 and cdg.6 both done-done. PR #357 (cdg.5 — chain-hash trace emission) merged at 6658ebd; DoD artefact written: artefacts/2026-05-19-cli-deterministic-governance/dod/cdg.5-dod.md, 8/8 ACs verified, 10/10 tests pass. PR #358 (cdg.6) merged at c3a3902; DoD complete. Worktrees removed. Master at c004dd2. cli-deterministic-governance feature fully complete. Next: trw.1 inner loop (2026-05-16-trace-writer-fix, dorStatus=signed-off).",
-    "resumeInstruction": "cdg.5 and cdg.6 are both done-done. All cli-deterministic-governance stories are complete. Start trw.1 inner loop: feature slug '2026-05-16-trace-writer-fix', story 'trw.1', dorStatus=signed-off, no branch yet — run /branch-setup then /implementation-plan.",
+    "contextAtWrite": "definition complete for governance-platform-architecture. 2 epics, 7 stories (SC-01 trace-contract, SC-04 test-output-format, SC-05 skills-init, SC-07 inline-js-extraction, SC-03 cli-validate-ci, SC-06 source-path-guard, SC-02 unified-gate-evaluator), NFR profile, decisions.md. All committed at f965588. Pipeline-state updated: stage=definition, 2 epics nested structure.",
+    "resumeInstruction": "Read artefacts/2026-05-24-governance-platform-architecture/stories/ — 7 story artefacts exist at definition stage. Next step is /review for each story. Start with SC-01 and SC-04 (complexity 1, no upstream dependencies). Wave 1 (SC-01, SC-04, SC-05) can be reviewed and dispatched in parallel. Wave 2 (SC-07, SC-03, SC-06) after Wave 1. SC-02 gated on Wave 2 stable + evaluateGate interface review with Hamis.",
     "pendingActions": [
-      "Start trw.1 inner loop: artefacts/2026-05-16-trace-writer-fix/, story trw.1, dorStatus=signed-off, no branch yet — run /branch-setup then /implementation-plan"
+      "Run /review for SC-01 (gpa-sc-01-trace-contract) — complexity 1, no deps",
+      "Run /review for SC-04 (gpa-sc-04-test-output-format) — complexity 1, no deps",
+      "Run /review for SC-05 (gpa-sc-05-skills-init) — complexity 2, no deps",
+      "Run /review for SC-07 (gpa-sc-07-inline-js-extraction) — complexity 2, no deps",
+      "Run /review for SC-03 (gpa-sc-03-cli-validate-ci) — complexity 2, depends on SC-01",
+      "Run /review for SC-06 (gpa-sc-06-source-path-guard) — complexity 2, depends on SC-07",
+      "Run /review for SC-02 (gpa-sc-02-unified-gate-evaluator) — complexity 3, Wave 3 gate: SC-07+SC-03+SC-06 all DoD-complete + evaluateGate interface review with Hamis required at DoR"
     ]
-  },
-  "cycles": {
-    "definition-of-done": {
-      "status": "complete",
-      "artefact": "artefacts/2026-05-19-cli-deterministic-governance/dod/cdg.4-dod.md",
-      "verdict": "COMPLETE — 8/8 ACs satisfied, 10/10 tests passing, M2 on-track, M3 updated",
-      "completedAt": "2026-05-24T00:00:00Z"
-    },
-    "review": {
-      "status": "complete",
-      "artefacts": [
-        "artefacts/2026-05-19-cli-deterministic-governance/review/cdg.1-review-1.md",
-        "artefacts/2026-05-19-cli-deterministic-governance/review/cdg.2-review-1.md"
-      ],
-      "verdict": "PASS — 0 HIGH across both stories",
-      "completedAt": "2026-05-23T00:00:00Z"
-    }
   }
 }

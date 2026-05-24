@@ -91,3 +91,8 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: pattern
   signal-text: "Model switcher + quality comparison idea raised during wucp /definition: a UI-configurable model switch for operators when multiple models are available, with lightweight per-session quality tagging (thumbs up/down per turn or per session) and a simple comparison view. Lighter weight and more UX-friendly than the /experiment skill (which operates via context.yml switching). Explicitly out of scope for wucp â€” candidate for a separate discovery artefact. Potential feature slug: 2026-05-XX-web-ui-model-switcher."
   source: agent-auto
+- date: 2026-05-24
+  session-phase: definition
+  signal-type: pattern
+  signal-text: Risk-first slicing with explicit wave gates (Wave 1 foundation ? Wave 2 CI enforcement ? Wave 3 ADR compliance) is effective for governance architecture features where high-value stories (M2, M4) have hard prerequisites. The wave structure must be called out explicitly in both the benefit-metric priority signal AND the epic goal — without this, teams naturally treat Wave 1 documentation stories as the deliverable rather than the enabler.
+  source: agent-auto
