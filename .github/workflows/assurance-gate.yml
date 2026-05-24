@@ -303,7 +303,14 @@ jobs:
                 }
               }
               if (artPath) {
-                try { acs = parseACs(fs.readFileSync(artPath, 'utf8')); } catch (_) {}
+                const absArtPath = path.join(process.env.GITHUB_WORKSPACE || path.resolve('.'), artPath);
+                console.log('[ac-extract] reading artefact:', absArtPath);
+                if (fs.existsSync(absArtPath)) {
+                  try { acs = parseACs(fs.readFileSync(absArtPath, 'utf8')); }
+                  catch (e) { console.error('[ac-extract] read failed:', artPath, e.message); }
+                } else {
+                  console.error('[ac-extract] artefact not found at:', absArtPath);
+                }
               }
               let issueBody = null;
               if (story.issueUrl) {
