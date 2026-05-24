@@ -3460,7 +3460,7 @@
           "name": "CI trace writer: guarantee one fresh JSONL record per master push",
           "status": "definition-of-ready",
           "dorStatus": "signed-off",
-          "prStatus": "none",
+          "prStatus": "draft",
           "artefact": "artefacts/2026-05-16-trace-writer-fix/stories/trw.1-ci-trace-writer.md",
           "testPlan": {
             "artefact": "artefacts/2026-05-16-trace-writer-fix/test-plans/trw.1-ci-trace-writer-test-plan.md",
@@ -3472,7 +3472,9 @@
           },
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/351",
           "dispatchedAt": "2026-05-16T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "stage": "branch-complete",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/359"
         }
       ],
       "updatedAt": "2026-05-16"
