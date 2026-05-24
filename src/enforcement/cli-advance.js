@@ -33,6 +33,7 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
   }
 
   // ── Parse field=value pairs ───────────────────────────────────────────────
+  var PROTO_BLOCKED = ['__proto__', 'constructor', 'prototype'];
   var stateUpdate = {};
   for (var i = 0; i < rawFields.length; i++) {
     var raw = rawFields[i];
@@ -45,6 +46,24 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
     }
     var field = raw.slice(0, eqIdx);
     var value = raw.slice(eqIdx + 1);
+
+    // ── Prototype pollution guard (OWASP A03) ─────────────────────────────
+    if (PROTO_BLOCKED.indexOf(field) !== -1) {
+      return { exitCode: 8, stdout: '', stderr: 'Rejected field name \'' + field + '\': prototype pollution risk.' };
+    }
+    // Validate dot-notation depth and segments
+    if (field.indexOf('.') !== -1) {
+      var parts = field.split('.');
+      if (parts.length > 2) {
+        return { exitCode: 8, stdout: '', stderr: 'Field \'' + field + '\': only single-level dot-notation (parent.child) is supported.' };
+      }
+      for (var pi = 0; pi < parts.length; pi++) {
+        if (PROTO_BLOCKED.indexOf(parts[pi]) !== -1) {
+          return { exitCode: 8, stdout: '', stderr: 'Rejected field segment \'' + parts[pi] + '\': prototype pollution risk.' };
+        }
+      }
+    }
+
     stateUpdate[field] = value;
   }
 
@@ -94,14 +113,40 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
   var story = feature.stories.find(function(s) {
     return s.id === storyId || s.slug === storyId;
   });
+  // If not in flat stories, search epic-nested stories
+  if (!story) {
+    var epics = feature.epics || [];
+    for (var ei = 0; ei < epics.length; ei++) {
+      var epicStories = epics[ei].stories || [];
+      var found = epicStories.find(function(s) {
+        return s.id === storyId || s.slug === storyId;
+      });
+      if (found) { story = found; break; }
+    }
+  }
+  // Still not found — create a new flat entry
   if (!story) {
     story = { id: storyId };
     feature.stories.push(story);
   }
 
-  // ── Apply all fields ──────────────────────────────────────────────────────
+  // ── Apply all fields (with integer coercion and single-level dot-notation) ─
   Object.keys(stateUpdate).forEach(function(key) {
-    story[key] = stateUpdate[key];
+    var val = stateUpdate[key];
+    // Integer coercion: bare digit strings become numbers
+    if (/^\d+$/.test(val)) { val = Number(val); }
+    // Dot-notation: parent.child → story[parent][child]
+    if (key.indexOf('.') !== -1) {
+      var segs = key.split('.');
+      var parent = segs[0];
+      var child  = segs[1];
+      if (typeof story[parent] !== 'object' || story[parent] === null) {
+        story[parent] = {};
+      }
+      story[parent][child] = val;
+    } else {
+      story[key] = val;
+    }
   });
 
   // ── Atomic write (temp-file rename) ──────────────────────────────────────
