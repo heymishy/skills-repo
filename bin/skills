@@ -28,13 +28,24 @@ if (subcommand === 'validate') {
   if (result.stdout) process.stdout.write(result.stdout + '\n');
   if (result.stderr) process.stderr.write(result.stderr + '\n');
   process.exit(result.exitCode);
+} else if (subcommand === 'init') {
+  const slug = args[0];
+  const descIdx = args.indexOf('--description');
+  const description = descIdx !== -1 ? args[descIdx + 1] : null;
+  const { init } = require('../src/enforcement/cli-init');
+  const repoRoot = process.cwd();
+  const result = init(slug, description, repoRoot);
+  if (result.stdout) process.stdout.write(result.stdout + '\n');
+  if (result.stderr) process.stderr.write(result.stderr + '\n');
+  process.exit(result.exitCode);
 } else {
   const cmd = subcommand || '(none)';
   process.stderr.write(
     `Unknown subcommand: '${cmd}'\n` +
     `Usage:\n` +
     `  skills validate <artefact-path> <gate-name>\n` +
-    `  skills advance <feature-slug> <story-id> <field>=<value>...\n`
+    `  skills advance <feature-slug> <story-id> <field>=<value>...\n` +
+    `  skills init <slug> [--description "..."]    Create a new discovery-stage feature stub\n`
   );
   process.exit(8);
 }

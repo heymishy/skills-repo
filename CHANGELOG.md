@@ -8,6 +8,8 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- **SC-05 gpa-sc-05-skills-init**: Add `skills init <slug>` CLI command; atomic feature stub creation with path guard, duplicate detection, exit codes 0/1/2; `src/enforcement/cli-init.js`, `bin/skills` updated with init dispatch and usage entry, tests in `tests/check-gpa-sc05-skills-init.js`
+
 - **SC-04 gpa-sc-04-test-output-format**: Add `standards/governance/test-output-format.md` documenting test output format convention; tests in `tests/check-gpa-sc04-test-output-format.js`
 
 - **SC-01 gpa-sc-01-trace-contract**: Add `standards/governance/trace-contract.md` documenting P01-P15 governance design principles; 27 tests in `tests/check-gpa-sc01-trace-contract.js`; `CONTRIBUTING.md` updated with Governance Standards section

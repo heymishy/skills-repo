@@ -63,6 +63,21 @@ const checkFiles = fs.readdirSync(testsDir)
   .filter(f => f.startsWith('check-') && f.endsWith('.js'))
   .sort();
 
+// ── Scan runner scripts (tests/run-*.js) for indirectly registered files ──────
+// Runner scripts consolidate multiple check files into one node invocation to
+// stay under the Windows 8191-char command-line limit. A check file is considered
+// registered if: (a) the runner is referenced in testCmd, AND (b) the runner
+// source contains a 'tests/check-<file>' reference.
+const runnerFilesInChain = fs.readdirSync(testsDir)
+  .filter(function(f) { return f.startsWith('run-') && f.endsWith('.js') && testCmd.includes('node tests/' + f); });
+
+const runnerRegistered = new Set();
+runnerFilesInChain.forEach(function(runner) {
+  const src = fs.readFileSync(path.join(testsDir, runner), 'utf8');
+  const refs = src.match(/tests\/check-[^\s'"`,)]+\.js/g) || [];
+  refs.forEach(function(ref) { runnerRegistered.add(path.basename(ref)); });
+});
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 console.log('[check-test-registration] Verifying all tests/check-*.js files are wired into npm test\n');
@@ -75,6 +90,8 @@ for (const file of checkFiles) {
   }
   if (testCmd.includes(expected)) {
     pass(file + ' — registered in npm test chain');
+  } else if (runnerRegistered.has(file)) {
+    pass(file + ' — registered via runner script in npm test chain');
   } else {
     fail(
       file + ' — NOT registered in npm test chain',
