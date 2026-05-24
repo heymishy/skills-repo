@@ -234,6 +234,21 @@ try {
   assert(result.length === 0, `T17: no AC section → [] (got ${result.length})`);
 }
 
+// T20: lowercase heading variant ('## Acceptance criteria') → parses ACs (regression guard for cdg.6/trw.1)
+{
+  const md = [
+    '## Acceptance criteria',
+    '',
+    '**AC1:** First criterion.',
+    '',
+    '**AC2:** Second criterion.',
+  ].join('\n');
+  const result = parseACs(md);
+  assert(result.length === 2,    `T20: lowercase heading → 2 ACs (got ${result.length})`);
+  assert(result[0].id === 'AC1', `T20b: first id AC1 (got ${JSON.stringify(result[0].id)})`);
+  assert(result[1].id === 'AC2', `T20c: second id AC2 (got ${JSON.stringify(result[1].id)})`);
+}
+
 // T18: empty string → []
 {
   const result = parseACs('');

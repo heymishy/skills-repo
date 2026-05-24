@@ -91,7 +91,7 @@ function classifyArtefact(sourcePath) {
 function parseACs(markdownContent) {
   try {
     const content = markdownContent || '';
-    const idx = content.indexOf('## Acceptance Criteria');
+    const idx = content.toLowerCase().indexOf('## acceptance criteria');
     if (idx === -1) return [];
     const section  = content.slice(idx);
     const nextH2   = section.indexOf('\n## ', 3);
