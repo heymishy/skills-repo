@@ -249,7 +249,7 @@
               "slug": "cdg.5",
               "id": "cdg.5",
               "name": "Chain-hash trace emission on gate-confirm",
-              "stage": "subagent-execution",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -257,48 +257,17 @@
                 "status": "written",
                 "artefact": "artefacts/2026-05-19-cli-deterministic-governance/test-plans/cdg.5-test-plan.md",
                 "totalTests": 10,
-                "passing": 0
+                "passing": 10
               },
               "acTotal": 8,
-              "acVerified": 0,
+              "acVerified": 8,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.5-dor.md",
-              "prStatus": "none",
-              "updatedAt": "2026-05-24",
-              "tasks": [
-                {
-                  "id": "cdg5.T1",
-                  "name": "RED: write 10 failing tests",
-                  "status": "complete"
-                },
-                {
-                  "id": "cdg5.T2",
-                  "name": "Extend governance-package.writeTrace",
-                  "status": "complete"
-                },
-                {
-                  "id": "cdg5.T3",
-                  "name": "Add setWriteTrace adapter to journey.js",
-                  "status": "complete"
-                },
-                {
-                  "id": "cdg5.T4",
-                  "name": "Wire production adapter in server.js (D37)",
-                  "status": "complete"
-                },
-                {
-                  "id": "cdg5.T5",
-                  "name": "Add workspace/traces/ to .gitignore",
-                  "status": "complete"
-                },
-                {
-                  "id": "cdg5.T6",
-                  "name": "npm test — all 10 tests GREEN",
-                  "status": "complete"
-                }
-              ]
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/357",
+              "updatedAt": "2026-05-25"
             }
           ]
         }
