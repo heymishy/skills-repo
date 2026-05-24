@@ -3563,13 +3563,72 @@
     {
       "slug": "2026-05-24-governance-platform-architecture",
       "title": "Governance Platform Architecture Review",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-05-24-governance-platform-architecture/discovery.md",
         "approvedAt": "2026-05-24"
       },
-      "stories": []
+      "stories": [],
+      "health": "green",
+      "updatedAt": "2026-05-24",
+      "benefit-metric": {
+        "status": "active",
+        "artefact": "artefacts/2026-05-24-governance-platform-architecture/benefit-metric.md",
+        "definedAt": "2026-05-24"
+      },
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Architecture documentation coverage",
+          "target": "0 undocumented principles",
+          "baseline": "15 undocumented",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "CI H-gate enforcement coverage",
+          "target": "9 of 9 H-checks wired to CI",
+          "baseline": "0 of 9",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Architecture blind-spot recurrence rate",
+          "target": "0 new entries in documented pattern categories (6 months)",
+          "baseline": "3 documented pattern categories",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m4",
+          "name": "ADR-013 compliance — shared gate authority",
+          "target": "Compliant",
+          "baseline": "Non-compliant",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m5",
+          "name": "Path traversal attack surface — CI comment path",
+          "target": "0 unguarded readFileSync calls with manifest-supplied paths",
+          "baseline": "1 confirmed",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

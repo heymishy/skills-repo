@@ -195,25 +195,34 @@ In the `assurance-gate.yml` inline JS, add a `sourcePath` allowlist check agains
 
 ## Story Candidates
 
-The following stories are proposed in implementation sequence. Dependencies are noted. All are `complexity: 2` unless stated.
+Stories are grouped into delivery waves. Wave 1 stories have no dependencies and can run in parallel. Waves 2 and 3 have explicit predecessor dependencies noted.
 
-### SC-01: Trace contract document (addresses G1) — complexity 1
-Write `standards/governance/trace-contract.md` defining record types, mandatory fields, writer assignments, naming conventions, and consumer rules. No code changes. Prerequisite for SC-02 and SC-03. Short-track eligible (no test plan required for documentation-only story).
+### Wave 1 — Documentation and standalone CLI (parallel, no code-change dependencies)
 
-### SC-02: Unified gate evaluator — promote governance-package to CI (addresses G2 + G6) — complexity 3
-Extend `evaluateGate` in `governance-package.js` to support a `structural` gate type (the 4 existing `runChecks`). Update `run-assurance-gate.js` to import `governance-package` and delegate. Update tests to verify the shared path. Risk: breaking change to `run-assurance-gate.js` — requires full CI pass before merge.
+**SC-01: Trace contract document (addresses G1) — complexity 1**
+Write `standards/governance/trace-contract.md` defining record types, mandatory fields, writer assignments, naming conventions, and consumer rules. No code changes. Short-track eligible. Prerequisite for SC-03 (which adds a CI step that must respect the trace contract).
 
-### SC-03: CLI validate wired to CI (addresses G3) — complexity 2
-Add a CI step to `assurance-gate.yml` that resolves the DoR artefact path from the PR and runs `node bin/skills validate`. Define DoR path resolution logic (from PR body, branch slug, or pipeline-state). Update test suite for the new step. Depends on SC-01 (trace contract must be clear before adding a new CI step).
+**SC-04: Test output format standard (addresses G4) — complexity 1**
+Write `standards/governance/test-output-format.md`. Update `CONTRIBUTING.md`. No code changes. Short-track eligible. No dependencies.
 
-### SC-04: Test output format standard (addresses G4) — complexity 1
-Write `standards/governance/test-output-format.md`. Update `CONTRIBUTING.md`. No code changes. Short-track eligible.
+**SC-05: `skills init` command (addresses G5) — complexity 2**
+Add `init` command to `bin/skills` backed by a `cli-init.js` module in `src/enforcement/`. Module creates a minimum schema-valid feature entry. Add tests in `tests/check-cli-init.js`. No dependencies. (G5 is also confirmed by the agent's own need to work around the gap when creating this feature's pipeline-state entry.)
 
-### SC-05: `skills init` command (addresses G5) — complexity 2
-Add `init` command to `bin/skills` backed by a `cli-init.js` module in `src/enforcement/`. Module creates a minimum schema-valid feature entry. Add tests in `tests/check-cli-init.js`. Depends on nothing.
+### Wave 2 — Incremental CI improvements (after Wave 1 or independently where noted)
 
-### SC-06: Manifest sourcePath path traversal guard (addresses G7) — complexity 2
-In `assurance-gate.yml` inline JS (or `scripts/ci-audit-comment.js` if extracted), add `sourcePath` prefix validation before any `fs.readFileSync`. Add test case to `tests/check-ci-audit-comment.js`. Can be done independently.
+**SC-07: Inline workflow JS extraction to tested modules (addresses R2 root cause) — complexity 2**
+Extract all inline `github-script` JS blocks from `assurance-gate.yml` into `scripts/` modules with exported functions. Each extracted module gets a corresponding test file. Prerequisite for SC-06 (the path traversal guard is more reliably implemented in a tested module than in inline YAML). Closes the structural blind spot that produced the asd.1 bug chain and the trw.1 test-format miss. Dependency: none — can run independently of Wave 1.
+
+**SC-06: Manifest sourcePath path traversal guard (addresses G7) — complexity 2**
+In `scripts/ci-audit-comment.js` (post-SC-07 extraction), add `sourcePath` prefix validation (`path.resolve(p).startsWith(repoRoot + path.sep)`) before any `fs.readFileSync`. Add test asserting both the guard exists and that a traversal path is rejected without blocking the comment. Confirmed finding: `assurance-gate.yml` line 260 `fs.readFileSync(sourcePath)` receives manifest-supplied paths with no traversal guard. Depends on SC-07.
+
+**SC-03: CLI validate wired to CI (addresses G3) — complexity 2**
+Add a CI step to `assurance-gate.yml` that resolves the DoR artefact path from the PR and runs `node bin/skills validate`. Define DoR path resolution logic (from PR body, branch slug, or pipeline-state). Update test suite for the new step. Depends on SC-01 (trace contract must be in place before adding a new CI step that writes to the trace).
+
+### Wave 3 — Architectural refactor (after A2 verified, after Wave 2 stable)
+
+**SC-02: Unified gate evaluator — promote governance-package to CI (addresses G2 + G6) — complexity 3**
+Extend `evaluateGate` in `governance-package.js` to support a `structural` gate type (the 4 existing `runChecks`). Update `run-assurance-gate.js` to import `governance-package` and delegate. Update tests to verify the shared path. Risk: breaking change to `run-assurance-gate.js` — requires full CI pass before merge. Gate: A2 must be resolved (execution-boundary scope confirmed non-overlapping) before this story is dispatched.
 
 ---
 
@@ -221,13 +230,13 @@ In `assurance-gate.yml` inline JS (or `scripts/ci-audit-comment.js` if extracted
 
 **A1:** The CDG feature (`2026-05-19-cli-deterministic-governance`) is at `stage: review` with no stories yet dispatched. Story candidates SC-02 through SC-06 should be sequenced after CDG review completes.
 
-**A2:** The `2026-05-21-execution-boundary` feature is at `stage: discovery`. Its scope may overlap with TA-02 (shared gate evaluator). This discovery should be shared with the execution-boundary team before SC-02 is defined.
+**A2:** The `2026-05-21-execution-boundary` feature is at `stage: discovery`. On reading that artefact: its scope is SSE streaming telemetry in `skill-turn-executor.js` (Anthropic direct API path, JSONL event capture, thinking blocks). It does not touch `governance-package.js`, `run-assurance-gate.js`, or the CI enforcement path. The overlap risk with TA-02 / SC-02 is therefore low — the two features are working on different modules. However, SC-02 is complexity 3 and modifies two high-churn files; it should not be dispatched until the execution-boundary benefit-metric is approved and confirms no shared module changes are planned. **Action before SC-02 dispatch:** confirm execution-boundary benefit-metric scope excludes `run-assurance-gate.js` and `governance-package.js`.
 
 **A3:** SC-03 (CLI validate in CI) requires the DoR artefact path to be resolvable from PR metadata. The extraction logic may need a new field in `pipeline-state.json` (a `dorArtefact` pointer per story). Any schema change triggers ADR-003 (schema-first) and requires `pipeline-state.schema.json` update in the same commit.
 
 **R1:** SC-02 modifies both `governance-package.js` and `run-assurance-gate.js` — two high-churn files that have seen the most bug fixes. Complexity 3 reflects this. A spike story is recommended to prototype the interface before writing the full story.
 
-**R2:** Inline JS in `assurance-gate.yml` remains the structural blind spot identified in the asd.1 post-merge audit (see user memory: ci-audit-comment-bugs.md). SC-06 addresses only one symptom. A broader story to extract all inline workflow JS to tested modules would address the root cause. This is not included in the current scope — it should be tracked as a separate improvement item.
+**R2:** Inline JS in `assurance-gate.yml` remains the structural blind spot identified in the asd.1 post-merge audit (see `workspace/learnings.md`, ci-audit-comment-bugs.md). SC-06 addresses one symptom. SC-07 (Wave 2) addresses the root cause — extraction of all inline workflow JS to tested modules. SC-07 is a prerequisite for SC-06; together they close the blind spot permanently. SC-07 complexity 2 reflects that the extraction itself is mechanical but the test coverage it enables is the real value.
 
 ---
 
