@@ -75,12 +75,14 @@
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-05-24",
-    "contextAtWrite": "cdg.4 Definition-of-Done complete. All 8 ACs satisfied. 10/10 tests passing (T1-T7 + IT1 + IT2 + NFR-SEC-1). DoD artefact written at artefacts/2026-05-19-cli-deterministic-governance/dod/cdg.4-dod.md. pipeline-state.json updated: dodStatus=complete, releaseReady=true, M2 signal=on-track, M3 evidence updated. Committed and pushed at 2d44fda. cdg.4 feature/branch worktree at .worktrees/cdg.4 — can be cleaned up. Next story: cdg.5 (chain-hash trace emission on gate-confirm), dorStatus=signed-off, stage=definition-of-ready.",
-    "resumeInstruction": "cdg.4 DoD is COMPLETE. Next: run /branch-setup for cdg.5 (Chain-hash trace emission on gate-confirm). DoR is signed-off. Read artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.5-dor.md and dor-contract.md before writing any code. Run npm test to confirm clean baseline before starting.",
+    "writtenAt": "2026-05-25",
+    "contextAtWrite": "cdg.5 /branch-complete done. Draft PR #357 opened at https://github.com/heymishy/skills-repo/pull/357. All 10 tests passing (T1-T7 + IT1 + NFR-INT-1 + NFR-ISO-1). All 8 ACs verified. Worktree: .worktrees/cdg.5. 8 commits: c31c9aa (plan) + 78e94dd (TDD red) + 3302b32 (governance-package) + b54efdc (journey.js) + 5372b04 (server.js) + c89f027 (.gitignore) + 19a5abe (test compatibility) + a71acf5 (pipeline-state). pipeline-state.json updated: stage=branch-complete, prStatus=draft, prUrl=PR#357, acVerified=8, passing=10.",
+    "resumeInstruction": "cdg.5 draft PR #357 is open at https://github.com/heymishy/skills-repo/pull/357. Next steps: (1) run /definition-of-done after PR merges, (2) clean up .worktrees/cdg.5 worktree (git worktree remove .worktrees/cdg.5), (3) check CI on PR — run 'gh pr view 357 --json changedFiles --jq .changedFiles' to confirm changes > 0.",
     "pendingActions": [
-      "Run /branch-setup for cdg.5 (Chain-hash trace emission on gate-confirm) — DoR signed-off, ready for implementation",
-      "Clean up .worktrees/cdg.4 worktree after cdg.5 branch is set up (git worktree remove .worktrees/cdg.4)"
+      "Monitor cdg.5 draft PR #357 CI — run 'gh pr view 357 --json changedFiles --jq .changedFiles' to confirm changedFiles > 0 before merge",
+      "Run /definition-of-done for cdg.5 after PR merges",
+      "Clean up .worktrees/cdg.5 worktree after PR merges (git worktree remove .worktrees/cdg.5)",
+      "Clean up .worktrees/cdg.4 worktree if still present (git worktree remove .worktrees/cdg.4)"
     ]
   },
   "cycles": {

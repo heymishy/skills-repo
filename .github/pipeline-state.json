@@ -244,7 +244,7 @@
               "slug": "cdg.5",
               "id": "cdg.5",
               "name": "Chain-hash trace emission on gate-confirm",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -252,16 +252,17 @@
                 "status": "written",
                 "artefact": "artefacts/2026-05-19-cli-deterministic-governance/test-plans/cdg.5-test-plan.md",
                 "totalTests": 10,
-                "passing": 0
+                "passing": 10
               },
               "acTotal": 8,
-              "acVerified": 0,
+              "acVerified": 8,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.5-dor.md",
-              "prStatus": "none",
-              "updatedAt": "2026-05-24"
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/357",
+              "updatedAt": "2026-05-25"
             }
           ]
         }
