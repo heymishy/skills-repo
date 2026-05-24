@@ -43,6 +43,12 @@ var _validate = function() {
 };
 function setValidate(fn) { _validate = fn; }
 
+// cdg.5: injectable writeTrace adapter -- gate-confirm chain-hash trace emission (D37)
+var _writeTrace = function() {
+  throw new Error('Adapter not wired: writeTrace. Call setWriteTrace() before use.');
+};
+function setWriteTrace(fn) { _writeTrace = fn; }
+
 // Adapter setters (used by tests)
 function setRegisterHtmlSession(fn) { _registerHtmlSession = fn; }
 function setLinkSessionToJourney(fn) { _linkSessionToJourney = fn; }
@@ -177,6 +183,7 @@ async function handlePostGateConfirm(req, res) {
   }
 
   // owle.6: notify pipeline-state writer (after disk write + completeStage)
+  var stateWriteSucceeded = false;
   try {
     var stateUpdate = {};
     if (session.skillName === 'discovery') {
@@ -192,8 +199,24 @@ async function handlePostGateConfirm(req, res) {
     var currentStory = journey.stories && journey.stories[journey.currentStoryIndex];
     var storyId = currentStory ? (currentStory.id || currentStory.slug || null) : null;
     _pipelineStateWriter(journey.featureSlug, storyId, stateUpdate);
+    stateWriteSucceeded = true;
   } catch (psErr) {
     console.error(JSON.stringify({ event: 'pipeline_state_write_failed', error: psErr.message }));
+  }
+
+  // cdg.5: chain-hash trace emission -- only after successful state write (ADR-023)
+  // If _writeTrace throws, exception propagates (state is already written and final)
+  if (session.skillName === 'definition-of-ready' && stateWriteSucceeded) {
+    var operatorEmail = '';
+    try { operatorEmail = require('child_process').execSync('git config user.email', { encoding: 'utf8' }).trim(); } catch (_) {}
+    _writeTrace({
+      timestamp: new Date().toISOString(),
+      featureSlug: journey.featureSlug,
+      storyId: storyId,
+      stage: session.skillName,
+      operatorEmail: operatorEmail,
+      exitCode: 0
+    });
   }
 
   // Build priorArtefacts from all completed stages (read authoritative disk content)
@@ -1570,6 +1593,7 @@ module.exports = {
   setRepoRoot,
   setPipelineStateWriter,
   setValidate,
+  setWriteTrace,
   // wucp.2 — slash command router
   SLASH_CAPABILITY_MAP,
   getAvailableSkills,
