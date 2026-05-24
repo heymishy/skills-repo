@@ -8,6 +8,8 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- **SC-04 gpa-sc-04-test-output-format**: Add `standards/governance/test-output-format.md` documenting test output format convention; tests in `tests/check-gpa-sc04-test-output-format.js`
+
 - **SC-01 gpa-sc-01-trace-contract**: Add `standards/governance/trace-contract.md` documenting P01-P15 governance design principles; 27 tests in `tests/check-gpa-sc01-trace-contract.js`; `CONTRIBUTING.md` updated with Governance Standards section
 
 - **SC-07 gpa-sc-07-inline-js-extraction**: Extract `sourceIntegrity` from inline assurance-gate.yml to `scripts/ci-audit-comment.js`; 8 unit tests in `tests/check-gpa-sc07-inline-js-extraction.js`
