@@ -61,7 +61,7 @@ This is a platform internal reliability and compliance initiative, not a user-fa
 | **Baseline** | 3 distinct bug pattern categories documented: (1) inline-JS blind spot (4 bugs), (2) path-resolution-without-guard, (3) DoR-contract-contradiction |
 | **Target** | 0 new entries in any of the three documented categories for 6 consecutive months after all Wave 1 and Wave 2 stories complete |
 | **Minimum signal** | No new inline-JS pattern bug (category 1, the most prolific) for 3 consecutive feature deliveries after SC-07 merges |
-| **Measurement method** | Platform maintainer at each `/improve` session: check learnings.md for new entries with matching pattern category |
+| **Measurement method** | **Proposed automated signal (to be added in SC-07 or as a standalone Wave 1 task):** extend `check-cli-governance.js` with a check that counts `workspace/learnings.md` entries matching existing pattern-category headings (inline-JS blind spot / path-resolution-without-guard / DoR-contract-contradiction) and emits an alert (non-blocking, exit 0) when a new entry appears in an existing category. This makes M3 observable without relying on human memory at `/improve` time. **Until that check is wired:** platform maintainer at each `/improve` session checks learnings.md for new entries in the three documented categories. |
 
 ---
 
@@ -108,9 +108,13 @@ Note: SC-05 (`skills init`) moves G5 (feature initialisation gap) which closes a
 
 ## Priority signal
 
-M2 (CI H-gate coverage, G3) and M4 (ADR-013 compliance, G2) are the highest governance value metrics. Together they represent the same structural gap: the assurance gate passes if four files exist, regardless of artefact quality. SC-02 and SC-03 are the stories that close this. Both are Wave 3 and Wave 2 respectively, gated behind prerequisites. Their priority relative to Wave 1 stories is clear: Wave 1 stories (SC-01, SC-04, SC-05) should be dispatched first as they unblock SC-03 and SC-02, but their own value does not exceed M2/M4.
+M2 (CI H-gate coverage, G3) and M4 (ADR-013 compliance, G2) are the highest governance value metrics. Together they represent the same structural gap: the assurance gate passes if four files exist, regardless of artefact quality. SC-02 and SC-03 are the stories that close this.
 
-M5 (path traversal, G7) is a confirmed security finding. SC-06 + SC-07 close it. These are Wave 2 and should follow SC-01/SC-04.
+**The wave structure is a sequencing constraint, not a priority inversion.** Wave 1 stories (SC-01, SC-04, SC-05) are documentation and a new CLI command — fast to ship, low risk, and prerequisites for the stories that matter. They are not the point. The point is M2 (Wave 2, SC-03: CI H-gate wiring — the real governance close) and M4 (Wave 3, SC-02: ADR-013 compliance). Definition must make this explicit in the story framing: Wave 1 stories deliver M1/M3 signal and exist primarily to unblock SC-03 and SC-02; they should not be treated as ends in themselves.
+
+M5 (path traversal, G7) is a confirmed security finding. SC-06 + SC-07 close it (Wave 2). **SC-07 is load-bearing:** it fixes the root cause (inline-JS blind spot, the source of 4 asd.1 bugs in a single PR), while SC-06 alone is a patch without the underlying module extraction. Both must ship as a unit.
+
+SC-07 was not in the original 6 story candidates — it was promoted from R2 (risk note) in the discovery after the asd.1 pattern analysis. Definition must produce SC-07 as an explicit, standalone story, not a dependency annotation on SC-06.
 
 ---
 
