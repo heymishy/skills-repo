@@ -249,7 +249,7 @@
               "slug": "cdg.5",
               "id": "cdg.5",
               "name": "Chain-hash trace emission on gate-confirm",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -269,34 +269,34 @@
               "updatedAt": "2026-05-24",
               "tasks": [
                 {
-                  "id": "task-1",
-                  "name": "TDD red: create failing tests + add to npm chain",
-                  "status": "not-started"
+                  "id": "cdg5.T1",
+                  "name": "RED: write 10 failing tests",
+                  "status": "complete"
                 },
                 {
-                  "id": "task-2",
-                  "name": "Extend governance-package.writeTrace for gate-confirm chain hash",
-                  "status": "not-started"
+                  "id": "cdg5.T2",
+                  "name": "Extend governance-package.writeTrace",
+                  "status": "complete"
                 },
                 {
-                  "id": "task-3",
-                  "name": "Add setWriteTrace adapter + trace write in journey.js (handler integration)",
-                  "status": "not-started"
+                  "id": "cdg5.T3",
+                  "name": "Add setWriteTrace adapter to journey.js",
+                  "status": "complete"
                 },
                 {
-                  "id": "task-4",
-                  "name": "Wire production writeTrace adapter in server.js (D37 mandatory)",
-                  "status": "not-started"
+                  "id": "cdg5.T4",
+                  "name": "Wire production adapter in server.js (D37)",
+                  "status": "complete"
                 },
                 {
-                  "id": "task-5",
+                  "id": "cdg5.T5",
                   "name": "Add workspace/traces/ to .gitignore",
-                  "status": "not-started"
+                  "status": "complete"
                 },
                 {
-                  "id": "task-6",
-                  "name": "Run npm test — verify all 10 new tests pass",
-                  "status": "not-started"
+                  "id": "cdg5.T6",
+                  "name": "npm test — all 10 tests GREEN",
+                  "status": "complete"
                 }
               ]
             }
