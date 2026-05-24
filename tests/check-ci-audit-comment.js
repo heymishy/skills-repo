@@ -26,6 +26,7 @@ const {
   loadPipelineStories,
   classifyArtefact,
   parseACs,
+  computeIssueAcCheck,
   buildAuditComment,
 } = require(path.resolve(__dirname, '../scripts/ci-audit-comment.js'));
 
@@ -248,6 +249,127 @@ try {
   assert(result[0].id === 'AC1', `T20b: first id AC1 (got ${JSON.stringify(result[0].id)})`);
   assert(result[1].id === 'AC2', `T20c: second id AC2 (got ${JSON.stringify(result[1].id)})`);
 }
+
+// T26: heading-style ACs (### AC1 — Title) → parses correctly (trw.1 format)
+{
+  const md = [
+    '## Acceptance criteria',
+    '',
+    '### AC1 — Fresh record per push',
+    '**Given** a repo **When** pushed **Then** a record is written.',
+    '',
+    '### AC2 — Correct content',
+    '**Given** the script runs **When** read **Then** all 7 fields present.',
+    '',
+    '## Implementation notes',
+    'other content',
+  ].join('\n');
+  const result = parseACs(md);
+  assert(result.length === 2,       `T26: 2 ACs parsed from heading style (got ${result.length})`);
+  assert(result[0].id === 'AC1',    `T26b: first id is AC1 (got ${JSON.stringify(result[0].id)})`);
+  assert(result[1].id === 'AC2',    `T26c: second id is AC2 (got ${JSON.stringify(result[1].id)})`);
+  assert(result[0].text.length > 0, `T26d: AC1 text is non-empty`);
+  assert(result[0].text.includes('Given'), `T26e: AC1 text contains body content`);
+}
+
+// T27: heading-style — bold format takes precedence when both styles present
+{
+  const md = [
+    '## Acceptance Criteria',
+    '',
+    '**AC1:** Bold style criterion.',
+    '',
+    '### AC2 — Heading style',
+    'Should not be reached.',
+  ].join('\n');
+  const result = parseACs(md);
+  assert(result.length === 1,       `T27: bold format takes precedence (got ${result.length})`);
+  assert(result[0].id === 'AC1',    `T27b: only AC1 extracted (got ${JSON.stringify(result[0].id)})`);
+}
+
+// T28: lone-bold format (**AC1** on its own line, text on next lines — i2.x style)
+{
+  const md = [
+    '## Acceptance Criteria',
+    '',
+    '**AC1**',
+    'Given a repo with no artefacts, When /orient runs, Then it routes to discovery.',
+    '',
+    '**AC2**',
+    'Given /orient has detected Entry C, Then the routing output distinguishes Entry C from Entry B.',
+    '',
+    '## Out of scope',
+  ].join('\n');
+  const result = parseACs(md);
+  assert(result.length === 2,       `T28: lone-bold → 2 ACs (got ${result.length})`);
+  assert(result[0].id === 'AC1',    `T28b: first id AC1 (got ${JSON.stringify(result[0].id)})`);
+  assert(result[1].id === 'AC2',    `T28c: second id AC2`);
+  assert(result[0].text.includes('Given'), `T28d: AC1 text contains body content`);
+}
+
+// ── T29–T35: computeIssueAcCheck ──────────────────────────────────────────────
+
+// T29: both issue (rich body) and artefact ACs present → shows both
+{
+  const issueBody = '## Acceptance Criteria\n\n**AC1:** criterion one.';
+  const acs = [{ id: 'AC1', text: 'criterion one.' }];
+  const result = computeIssueAcCheck(issueBody, acs);
+  assert(result.includes('ACs in issue'),     `T29: includes "ACs in issue"`);
+  assert(result.includes('ACs in artefact'),  `T29b: includes "ACs in artefact"`);
+  assert(result.includes('\u2705'),            `T29c: includes ✅`);
+  assert(!result.includes('\u26a0'),           `T29d: no warning icon when both present`);
+}
+
+// T30: issue body with AC1: pattern (vscode stub) and artefact ACs → both shown
+{
+  const issueBody = 'AC1: some criterion text in plain issue body';
+  const acs = [{ id: 'AC1', text: 'criterion one.' }];
+  const result = computeIssueAcCheck(issueBody, acs);
+  assert(result.includes('ACs in issue'),    `T30: AC1: pattern detected in issue body`);
+  assert(result.includes('ACs in artefact'), `T30b: artefact ACs still shown`);
+}
+
+// T31: issue body with ### AC1 heading pattern → detected as issue AC
+{
+  const issueBody = '### AC1 — Fresh record per push\nGiven...\n\n### AC2';
+  const acs = [];
+  const result = computeIssueAcCheck(issueBody, acs);
+  assert(result.includes('ACs in issue'),      `T31: ### AC1 heading detected in issue body`);
+  assert(!result.includes('ACs in artefact'),  `T31b: no artefact ACs shown (acs empty)`);
+}
+
+// T32: issue body with **AC1** lone-bold pattern → detected as issue AC
+{
+  const issueBody = '**AC1**\nGiven a repo...\n**AC2**\nGiven /orient...';
+  const acs = [];
+  const result = computeIssueAcCheck(issueBody, acs);
+  assert(result.includes('ACs in issue'), `T32: **ACN bold pattern detected in issue body`);
+}
+
+// T33: null issue body + artefact ACs → artefact-only annotation (no issue URL case)
+{
+  const result = computeIssueAcCheck(null, [{ id: 'AC1', text: 'criterion.' }]);
+  assert(!result.includes('ACs in issue'),   `T33: null issue body → no issue annotation`);
+  assert(result.includes('ACs in artefact'), `T33b: artefact annotation shown without issue`);
+}
+
+// T34: null issue body + empty acs → warning annotation
+{
+  const result = computeIssueAcCheck(null, []);
+  assert(result.includes('\u26a0'),              `T34: no ACs anywhere → warning icon`);
+  assert(result.includes('not found'),           `T34b: "not found" text present`);
+}
+
+// T35: issue body has no AC markers but artefact has ACs → only artefact shown
+{
+  const issueBody = 'trw.1 — CI Trace Writer\nFiles changed: scripts/write-ci-trace.js\nTests: 17/17 passing\nDoR: artefacts/.../dor/trw.1-dor.md (Proceed: YES)';
+  const acs = [{ id: 'AC1', text: 'criterion.' }, { id: 'AC2', text: 'criterion.' }];
+  const result = computeIssueAcCheck(issueBody, acs);
+  assert(!result.includes('ACs in issue'),   `T35: vscode stub body → no issue annotation`);
+  assert(result.includes('ACs in artefact'), `T35b: artefact ACs shown for vscode stub body`);
+  assert(!result.includes('\u26a0'),          `T35c: no warning — artefact provides coverage`);
+}
+
 
 // T18: empty string → []
 {

@@ -170,7 +170,7 @@ jobs:
             const path   = require('path');
             const crypto = require('crypto');
 
-            const { loadPipelineStories, classifyArtefact, parseACs, buildAuditComment } = require('./scripts/ci-audit-comment.js');
+            const { loadPipelineStories, classifyArtefact, parseACs, computeIssueAcCheck, buildAuditComment } = require('./scripts/ci-audit-comment.js');
             const { buildSlugSourceNote, extractStorySlug, buildDispatchNote } = require('./scripts/extract-pr-slug.js');
 
             // ── Resolved metadata ──
@@ -305,19 +305,17 @@ jobs:
               if (artPath) {
                 try { acs = parseACs(fs.readFileSync(artPath, 'utf8')); } catch (_) {}
               }
-              let issueAcCheck = '';
+              let issueBody = null;
               if (story.issueUrl) {
                 try {
                   const issueNum = parseInt(story.issueUrl.split('/').pop());
                   const { data: issue } = await github.rest.issues.get({
                     owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNum,
                   });
-                  const hasACs = !!(issue.body && (issue.body.includes('Acceptance Criteria') || issue.body.includes('AC1:')));
-                  issueAcCheck = hasACs ? ' · ACs in issue ✅'
-                    : (acs.length > 0) ? ' · ACs in artefact ✅'
-                    : ' · ⚠️ ACs not found in issue or artefact';
+                  issueBody = issue.body || null;
                 } catch (_) {}
               }
+              const issueAcCheck = computeIssueAcCheck(issueBody, acs);
               const suiteKey = (story.id || story.slug || '').replace(/\./g, '').replace(/-/g, '').toLowerCase();
               return { ...story, acs, issueAcCheck, suiteResult: testResultsByFile[suiteKey] };
             }));

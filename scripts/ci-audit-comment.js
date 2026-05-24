@@ -97,11 +97,20 @@ function parseACs(markdownContent) {
     const nextH2   = section.indexOf('\n## ', 3);
     const acBlock  = nextH2 > -1 ? section.slice(0, nextH2) : section;
     const results  = [];
-    // Matches both **AC1:** text  (cdg.1 style) and **AC1 — Title:** (cdg.4 style)
+    // Style 1: **AC1:** text  (cdg.1 style) and **AC1 — Title:** (cdg.4 style)
     const acRegex  = /\*\*(AC\d+)[^*]*\*\*:?\s*([\s\S]*?)(?=\*\*AC\d+|$)/g;
     let match;
     while ((match = acRegex.exec(acBlock)) !== null) {
       results.push({ id: match[1], text: match[2].replace(/\s+/g, ' ').trim() });
+    }
+    if (results.length > 0) return results;
+    // Style 2: ### AC1 — Title (heading format, e.g. trw.1)
+    const headingMatches = [...acBlock.matchAll(/^#{1,4}\s+(AC\d+)[^\n]*/gm)];
+    for (let i = 0; i < headingMatches.length; i++) {
+      const startIdx = headingMatches[i].index + headingMatches[i][0].length;
+      const endIdx   = i + 1 < headingMatches.length ? headingMatches[i + 1].index : acBlock.length;
+      const text     = acBlock.slice(startIdx, endIdx).replace(/\s+/g, ' ').trim();
+      results.push({ id: headingMatches[i][1], text });
     }
     return results;
   } catch (_) { return []; }
@@ -310,4 +319,37 @@ function buildAuditComment(data) {
   ].join('\n');
 }
 
-module.exports = { loadPipelineStories, classifyArtefact, parseACs, buildAuditComment };
+/**
+ * Compute the issueAcCheck annotation string for a story.
+ *
+ * Checks both the GitHub issue body AND the extracted artefact ACs independently,
+ * producing a combined status string. Either or both sources can contribute a ✅.
+ *
+ * Extracted from the assurance-gate.yml inline JS so it is unit-testable.
+ *
+ * @param {string|null} issueBody  The GitHub issue body text (null if no issue URL)
+ * @param {Array}       acs        Artefact ACs as returned by parseACs()
+ * @returns {string}  e.g. ' · ACs in issue ✅ · ACs in artefact ✅'
+ *                    or   ' · ACs in artefact ✅'
+ *                    or   ' · ⚠️ ACs not found in issue or artefact'
+ */
+function computeIssueAcCheck(issueBody, acs) {
+  // Detect ACs in the issue body across all known formats:
+  //   • 'Acceptance Criteria' heading (rich --target github-agent bodies)
+  //   • 'AC1:' inline (bold format in issue bodies)
+  //   • '### AC1' heading format
+  //   • '**AC1**' lone-bold format (i2.x series)
+  const hasIssueACs = !!(issueBody && (
+    issueBody.includes('Acceptance Criteria') ||
+    issueBody.includes('AC1:')               ||
+    /###\s+AC\d/.test(issueBody)             ||
+    /\*\*AC\d/.test(issueBody)
+  ));
+  const hasArtefactACs = Array.isArray(acs) && acs.length > 0;
+  const parts = [];
+  if (hasIssueACs)    parts.push(' \u00b7 ACs in issue \u2705');
+  if (hasArtefactACs) parts.push(' \u00b7 ACs in artefact \u2705');
+  return parts.length > 0 ? parts.join('') : ' \u00b7 \u26a0\ufe0f ACs not found in issue or artefact';
+}
+
+module.exports = { loadPipelineStories, classifyArtefact, parseACs, computeIssueAcCheck, buildAuditComment };
