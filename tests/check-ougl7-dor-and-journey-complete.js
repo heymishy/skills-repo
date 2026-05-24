@@ -189,6 +189,10 @@ queue.push(function() {
     journey.setRegisterHtmlSession(function() {});
     journey.setLinkSessionToJourney(function() {});
     journey.setRepoRoot(tmpdir);
+    // cdg.4: inject passing validate stub so DoR gate-confirm guard does not block routing test
+    if (typeof journey.setValidate === 'function') {
+      journey.setValidate(function() { return { exitCode: 0 }; });
+    }
     journey.setGetHtmlSession(function(sid) {
       if (sid === dorSid) {
         return {
@@ -237,6 +241,10 @@ queue.push(function() {
     journey.setRegisterHtmlSession(function() {});
     journey.setLinkSessionToJourney(function() {});
     journey.setRepoRoot(tmpdir);
+    // cdg.4: inject passing validate stub so DoR gate-confirm guard does not block routing test
+    if (typeof journey.setValidate === 'function') {
+      journey.setValidate(function() { return { exitCode: 0 }; });
+    }
     journey.setGetHtmlSession(function(sid) {
       if (sid === dorSid) {
         return {

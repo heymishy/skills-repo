@@ -458,11 +458,17 @@ queue.push(function() {
     var journey = freshRequireJourney();
     var store = getStore();
 
-    // Write a minimal invalid artefact (no AC section, no DoR structure — fails validation)
+    // Write a fixture that fails validation: references a non-existent story artefact (H1 fail)
     var failingRelPath = 'workspace/test-tmp-cdg4/failing-dor.md';
     var failingAbs = path.join(tmpRoot, failingRelPath);
     fs.mkdirSync(path.dirname(failingAbs), { recursive: true });
-    fs.writeFileSync(failingAbs, '# Empty\n\nThis artefact has no required sections.\n', 'utf8');
+    // Including a story reference that points to a non-existent file triggers H1 FAIL
+    fs.writeFileSync(failingAbs, [
+      '# DoR — non-existent story',
+      '',
+      '**Story reference:** artefacts/cdg-it2-feature/stories/nonexistent-story.md',
+      ''
+    ].join('\n'), 'utf8');
 
     var psWriterCalled = false;
     store._clear();

@@ -37,6 +37,12 @@ var _pipelineStateWriter = function() {
 };
 function setPipelineStateWriter(fn) { _pipelineStateWriter = fn; }
 
+// cdg.4: injectable validate adapter — gate-confirm DoR enforcement (D37)
+var _validate = function() {
+  throw new Error('Adapter not wired: validate. Call setValidate() before use.');
+};
+function setValidate(fn) { _validate = fn; }
+
 // Adapter setters (used by tests)
 function setRegisterHtmlSession(fn) { _registerHtmlSession = fn; }
 function setLinkSessionToJourney(fn) { _linkSessionToJourney = fn; }
@@ -152,6 +158,23 @@ async function handlePostGateConfirm(req, res) {
   }
   // Call completeStage to record this stage
   _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath);
+
+  // cdg.4: validate DoR artefact before state write (ADR-023: disk → validate → state)
+  if (session.skillName === 'definition-of-ready') {
+    var validateResult;
+    try {
+      validateResult = _validate(absPath, 'definition-of-ready', repoRoot);
+    } catch (validErr) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: validErr.message }));
+      return;
+    }
+    if (validateResult.exitCode !== 0) {
+      res.writeHead(422, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'validation-failed', exitCode: validateResult.exitCode, detail: validateResult.stderr || '' }));
+      return;
+    }
+  }
 
   // owle.6: notify pipeline-state writer (after disk write + completeStage)
   try {
@@ -1546,6 +1569,7 @@ module.exports = {
   setGetHtmlSession,
   setRepoRoot,
   setPipelineStateWriter,
+  setValidate,
   // wucp.2 — slash command router
   SLASH_CAPABILITY_MAP,
   getAvailableSkills,
