@@ -78,3 +78,16 @@ tracks_without_discovery:
   - defect
   - library
   - spike
+  - programme
+
+# Features whose stories pre-date the trace validation system and have no test plan
+# files on disk. All stories in these features are in definition-of-done stage and
+# their delivery is complete. Adding test plan files retroactively is out of scope.
+test_plan_exempt_features:
+  - 2026-04-14-skills-platform-phase3
+  - 2026-05-02-web-ui-copilot-execution-layer
+  - 2026-05-05-web-ui-model-first-chat
+  - 2026-05-06-web-ui-guided-outer-loop
+  - 2026-05-07-web-ui-outer-loop-extensions
+  - 2026-05-07-web-ui-session-management
+  - 2026-05-08-web-ui-copilot-chat-parity

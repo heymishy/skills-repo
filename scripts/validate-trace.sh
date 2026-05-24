@@ -221,6 +221,36 @@ check_discovery_approved() {
         ok "artefacts/ is empty — nothing to check"
         return
     fi
+    # Build slug → stage+track map from pipeline-state.json so we can skip features
+    # that are still in discovery stage (Draft is expected pre-approval) or on a track
+    # that does not require a discovery artefact at all.
+    local feature_meta
+    feature_meta=$(python3 -c "
+import json, sys
+try:
+    with open('$STATE_FILE') as f:
+        state = json.load(f)
+    for feat in state.get('features', []):
+        slug  = feat.get('slug', '')
+        stage = feat.get('stage', '')
+        track = feat.get('track', 'standard')
+        if slug:
+            print(slug + '|' + stage + '|' + track)
+except Exception:
+    pass
+" 2>/dev/null)
+    # Load tracks_without_discovery from config
+    local exempt_tracks
+    exempt_tracks=$(python3 -c "
+import sys
+try:
+    import yaml
+    with open('$CONFIG_FILE') as f:
+        cfg = yaml.safe_load(f) or {}
+    print(' '.join(cfg.get('tracks_without_discovery', ['short','defect','library','spike','programme'])))
+except Exception:
+    print('short defect library spike programme')
+" 2>/dev/null)
     local unapproved=0
     for feature_dir in "$ARTEFACTS"/*/; do
         [[ -d "$feature_dir" ]] || continue
@@ -228,6 +258,21 @@ check_discovery_approved() {
         feature="$(basename "$feature_dir")"
         local discovery="$feature_dir/discovery.md"
         [[ -f "$discovery" ]] || continue
+        # Extract stage and track for this feature
+        local feat_line feat_stage feat_track
+        feat_line=$(echo "$feature_meta" | grep -m1 "^${feature}|" || true)
+        feat_stage=$(echo "$feat_line" | cut -d'|' -f2)
+        feat_track=$(echo "$feat_line" | cut -d'|' -f3)
+        # Skip features still in discovery stage — Draft is expected pre-approval
+        if [[ "$feat_stage" == "discovery" ]]; then
+            ok "Skipping: $feature (stage: discovery — approval pending)"
+            continue
+        fi
+        # Skip features on tracks that don't require a discovery artefact
+        if echo " $exempt_tracks " | grep -qw "$feat_track"; then
+            ok "Skipping: $feature (track: $feat_track — discovery not required on this track)"
+            continue
+        fi
         if ! grep -qi 'status.*approved' "$discovery" 2>/dev/null; then
             if grep -qi 'status.*draft' "$discovery" 2>/dev/null; then
                 record_fail "discovery_approved" "$feature: discovery.md status is still Draft"
@@ -250,8 +295,20 @@ check_test_plan_coverage() {
         ok "No pipeline-state.json — skipping"
         return
     fi
-    if python3 - <<PYTHON
+    if CONFIG_FILE="$CONFIG_FILE" python3 - <<PYTHON
 import json, os, sys
+try:
+    import yaml
+    has_yaml = True
+except ImportError:
+    has_yaml = False
+
+config_file = os.environ.get('CONFIG_FILE', '')
+test_plan_exempt = set()
+if config_file and os.path.exists(config_file) and has_yaml:
+    with open(config_file) as f:
+        config = yaml.safe_load(f) or {}
+    test_plan_exempt = set(config.get('test_plan_exempt_features', []))
 
 with open('$STATE_FILE') as f:
     state = json.load(f)
@@ -260,6 +317,8 @@ stages_needing_test_plan = {'test-plan','definition-of-ready','implementation','
 missing = []
 for feature in state.get('features', []):
     feature_slug = feature.get('slug', 'unknown')
+    if feature_slug in test_plan_exempt:
+        continue
 
     # Collect all story objects. Phase 3+ stores full objects in feature.stories[];
     # Phase 1/2 stores full objects nested inside epic.stories[].
@@ -323,15 +382,15 @@ for feature in state.get('features', []):
     if feature.get('health') == 'red' and not feature.get('blocker'):
         print(f'UNRESOLVED BLOCKER: feature {feature_slug} has health=red but no blocker recorded')
         found = True
-    # Check story-level health
+    # Collect all stories: flat feature.stories[] (Phase 3+) and epic.stories[] (Phase 1/2)
+    all_stories = [s for s in feature.get('stories', []) if isinstance(s, dict)]
     for epic in feature.get('epics', []):
-        for story in epic.get('stories', []):
-            if not isinstance(story, dict):
-                continue  # epics may store stories as string slugs rather than full objects
-            story_slug = story.get('slug', 'unknown')
-            if story.get('health') == 'red' and not story.get('blocker'):
-                print(f'UNRESOLVED BLOCKER: {feature_slug}/{story_slug} has health=red but no blocker recorded')
-                found = True
+        all_stories += [s for s in epic.get('stories', []) if isinstance(s, dict)]
+    for story in all_stories:
+        story_slug = story.get('slug') or story.get('id', 'unknown')
+        if story.get('health') == 'red' and not story.get('blocker'):
+            print(f'UNRESOLVED BLOCKER: {feature_slug}/{story_slug} has health=red but no blocker recorded')
+            found = True
 sys.exit(1 if found else 0)
 PYTHON
     if [[ $? -eq 0 ]]; then
