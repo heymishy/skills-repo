@@ -231,8 +231,10 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.4-dor.md",
               "planArtefact": "artefacts/2026-05-19-cli-deterministic-governance/plans/cdg.4-plan.md",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/356",
+              "stage": "definition-of-done",
+              "acVerified": 8,
               "updatedAt": "2026-05-24"
             },
             {
