@@ -26,7 +26,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter, handleGetWizard, handlePostWizardSelection } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4
+const { handleGetJourney, handlePostJourney, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter, setValidate, handleGetWizard, handlePostWizardSelection } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 
@@ -145,6 +145,15 @@ if (process.env.NODE_ENV !== 'test') {
     setPipelineStateWriter(function() {}); // no-op in test mode
   } else {
     setPipelineStateWriter(pipelineStateWriterFactory(repoRootForAdapter));
+  }
+}
+
+// cdg.4: Wire validate adapter — DoR gate-confirm enforcement (D37 mandatory separate wiring)
+{
+  if (process.env.NODE_ENV === 'test') {
+    setValidate(function() { return { exitCode: 0 }; }); // no-op in test mode
+  } else {
+    setValidate(require('../enforcement/cli-outer-loop').validate);
   }
 }
 
