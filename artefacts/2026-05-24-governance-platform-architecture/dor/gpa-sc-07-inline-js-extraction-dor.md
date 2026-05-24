@@ -101,6 +101,12 @@ SC-07 touches `assurance-gate.yml` and `scripts/ci-audit-comment.js` — the CI 
 
 ### Before writing any code
 
+0. Verify the extraction assumption:
+   ```bash
+   grep -n "function sourceIntegrity" .github/workflows/assurance-gate.yml
+   ```
+   This must return **exactly one match**. If it returns zero matches, `sourceIntegrity` has already been extracted — stop and post a PR comment. If it returns more than one match, there are duplicates — stop and post a PR comment.
+
 1. Run `npm test` and confirm it exits 0 — this is your clean baseline.
 2. Run `bash scripts/validate-trace.sh --ci` — confirm 0 failures.
 3. Read the full story artefact: `artefacts/2026-05-24-governance-platform-architecture/stories/gpa-sc-07-inline-js-extraction.md`

@@ -140,7 +140,7 @@ Add a step to assurance-gate.yml that calls `node bin/skills validate --story <s
 - **ADR-013 compliance:** H-gate evaluation functions MUST be importable from `governance-package.js`. `bin/skills` and `cli-outer-loop.js` MUST NOT contain independent H-gate evaluation logic that is not exposed through `governance-package.js`.
 - **Output format:** `[skills-validate] Results: N passed, N failed` — this is the canonical format from SC-04. Do not vary the prefix or the `N passed, N failed` suffix.
 - **No external npm dependencies.**
-- **No merge-blocking:** If the H-gate step fails, CI should report it but NOT use `exit-code: 1` to fail the workflow job until the post-Wave-3 governance decision is made. Use a warning or annotation mechanism instead. (If the workflow framework requires exit 1 to report a failure, confirm with a PR comment before wiring it.)
+- **Non-merge-blocking:** The CI step that calls `skills validate --ci` must use `continue-on-error: true` in `assurance-gate.yml`. This means H-gate failures are reported in the CI summary and the audit comment but do not fail the workflow job or block merge. Do NOT use `exit-code: 1` at the workflow job level. The process exit code from `bin/skills` can be 1 (correct — AC3 requires it) — `continue-on-error: true` handles the workflow-level behaviour so the job continues and the audit comment captures the failure.
 - Do not modify any file under `artefacts/`. These are read-only pipeline inputs.
 - Open PRs as drafts only. Never mark ready for review. Never merge.
 

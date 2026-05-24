@@ -135,7 +135,11 @@ What to build:
        updatedAt: <today as ISO date string YYYY-MM-DD>
    - Append new feature to state.features[] — do not replace or sort the array.
    - Exit 0 with stdout message on success.
-   - Exit 1 (validation error) or 2 (conflict) on failure — consistent non-zero.
+   - Exit code contract (mandatory — tests must assert the specific code, not just non-zero):
+     - `0` — success
+     - `1` — validation error (invalid slug format, missing slug argument, path traversal guard fires)
+     - `2` — conflict (slug already exists in pipeline-state.json)
+   - T6 must assert `exitCode === 2`, not just `exitCode !== 0`. IT2 must also assert exit code 2.
 
 2. bin/skills — add init dispatch branch:
    if (subcommand === 'init') {

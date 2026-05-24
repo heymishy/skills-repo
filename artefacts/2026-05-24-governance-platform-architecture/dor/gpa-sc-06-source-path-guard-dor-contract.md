@@ -53,6 +53,14 @@ SC-06 has a code-level upstream dependency on SC-07 (the `sourceIntegrity` expor
 
 ---
 
+## Valid-Path Return Shape (read before writing T3)
+
+`sourceIntegrity` in `scripts/ci-audit-comment.js` has an existing return shape for valid (in-repo) paths. **The agent must read the function body to confirm the current return shape before writing T3 (valid path regression test).** Do not assume a specific return value — the actual return shape is the source of truth. The contract only mandates the traversal-guard return shape:
+- Traversal path: `{ traversal: true, sanitisedPath: '[REDACTED]' }` — mandatory, verbatim.
+- Valid path: whatever the existing function currently returns — confirm by reading the code.
+
+---
+
 ## Guard Implementation Pattern (mandatory — from copilot-instructions.md)
 
 ```js
