@@ -207,6 +207,27 @@ try {
   assert(result[0].text.length > 0, `T16d: AC1 text is non-empty`);
 }
 
+// T16b: AC section with title-in-heading style (**AC1 — Title:** text)
+{
+  const md = [
+    '## Acceptance Criteria',
+    '',
+    '**AC1 — First title:**',
+    'Given something, When something, Then something.',
+    '',
+    '**AC2 — Second title:**',
+    'Given other, When other, Then other.',
+    '',
+    '## Notes',
+    'other content',
+  ].join('\n');
+  const result = parseACs(md);
+  assert(result.length === 2,       `T16b-titled: 2 ACs parsed (got ${result.length})`);
+  assert(result[0].id === 'AC1',    `T16b-titled: first id is AC1 (got ${JSON.stringify(result[0].id)})`);
+  assert(result[1].id === 'AC2',    `T16b-titled: second id is AC2 (got ${JSON.stringify(result[1].id)})`);
+  assert(result[0].text.length > 0, `T16b-titled: AC1 text is non-empty`);
+}
+
 // T17: no AC section → []
 {
   const result = parseACs('## Overview\nSome content without ACs.');

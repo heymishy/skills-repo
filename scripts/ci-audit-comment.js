@@ -97,7 +97,8 @@ function parseACs(markdownContent) {
     const nextH2   = section.indexOf('\n## ', 3);
     const acBlock  = nextH2 > -1 ? section.slice(0, nextH2) : section;
     const results  = [];
-    const acRegex  = /\*\*(AC\d+):\*\*\s*([\s\S]*?)(?=\*\*AC\d+:\*\*|$)/g;
+    // Matches both **AC1:** text  (cdg.1 style) and **AC1 — Title:** (cdg.4 style)
+    const acRegex  = /\*\*(AC\d+)[^*]*\*\*:?\s*([\s\S]*?)(?=\*\*AC\d+|$)/g;
     let match;
     while ((match = acRegex.exec(acBlock)) !== null) {
       results.push({ id: match[1], text: match[2].replace(/\s+/g, ' ').trim() });

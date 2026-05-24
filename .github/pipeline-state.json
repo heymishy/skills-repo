@@ -197,7 +197,7 @@
                 "status": "written",
                 "artefact": "artefacts/2026-05-19-cli-deterministic-governance/test-plans/cdg.3-test-plan.md",
                 "totalTests": 9,
-                "passing": 0
+                "passing": 9
               },
               "acTotal": 8,
               "acVerified": 0,
