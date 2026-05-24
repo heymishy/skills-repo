@@ -3462,7 +3462,7 @@
     {
       "slug": "2026-05-16-trace-writer-fix",
       "name": "CI Trace Writer Fix",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "track": "standard",
       "regulated": false,
@@ -3474,9 +3474,9 @@
           "id": "trw.1",
           "slug": "trw.1",
           "name": "CI trace writer: guarantee one fresh JSONL record per master push",
-          "status": "definition-of-ready",
+          "status": "done",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "artefact": "artefacts/2026-05-16-trace-writer-fix/stories/trw.1-ci-trace-writer.md",
           "testPlan": {
             "artefact": "artefacts/2026-05-16-trace-writer-fix/test-plans/trw.1-ci-trace-writer-test-plan.md",
@@ -3486,14 +3486,20 @@
             "artefact": "artefacts/2026-05-16-trace-writer-fix/dor/trw.1-dor.md",
             "signedOffAt": "2026-05-16"
           },
+          "dod": {
+            "artefact": "artefacts/2026-05-16-trace-writer-fix/dod/trw.1-dod.md",
+            "outcome": "COMPLETE",
+            "completedAt": "2026-05-24"
+          },
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/351",
           "dispatchedAt": "2026-05-16T00:00:00Z",
           "dispatchTarget": "vscode",
-          "stage": "branch-complete",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/359"
+          "stage": "definition-of-done",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/359",
+          "mergedAt": "2026-05-24"
         }
       ],
-      "updatedAt": "2026-05-16"
+      "updatedAt": "2026-05-24"
     },
     {
       "slug": "2026-05-18-skill-robustness-improvements",
