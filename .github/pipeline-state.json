@@ -68,10 +68,10 @@
           "baseline": null,
           "target": 0,
           "minimumSignal": "baseline-established",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "signal": "on-track",
+          "lastMeasured": "2026-05-24",
+          "evidence": "cdg.4 makes gate bypass structurally impossible through the web UI definition-of-ready path. _pipelineStateWriter() cannot be called unless _validate() returns exitCode 0. Bypass rate for this path is 0 by construction post-merge PR #356. Baseline measurement requires cdg.5 trace emission.",
+          "contributingStories": ["cdg.4"]
         },
         {
           "id": "M3",
@@ -82,8 +82,8 @@
           "minimumSignal": 20,
           "signal": "on-track",
           "lastMeasured": "2026-05-24",
-          "evidence": "34 assert() calls in check-cli-outer-loop.js (≥33 target). 33 assertions passing in CI post-merge PR #354. Target achieved and locked by G2a governance check.",
-          "contributingStories": []
+          "evidence": "34 assert() calls in check-cli-outer-loop.js (≥33 target). 33 assertions passing in CI post-merge PR #354. Target achieved. cdg.4 adds 10 further tests in check-cdg4-gate-confirm-validation.js (web UI integration layer, complementary coverage).",
+          "contributingStories": ["cdg.2", "cdg.4"]
         },
         {
           "id": "M4",
@@ -214,7 +214,7 @@
               "slug": "cdg.4",
               "id": "cdg.4",
               "name": "Web UI gate-confirm CLI validation integration",
-              "stage": "subagent-execution",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -225,16 +225,19 @@
                 "passing": 10
               },
               "acTotal": 8,
-              "acVerified": 0,
+              "acVerified": 8,
               "hasLayoutDependentGaps": false,
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.4-dor.md",
               "planArtefact": "artefacts/2026-05-19-cli-deterministic-governance/plans/cdg.4-plan.md",
+              "dodArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dod/cdg.4-dod.md",
+              "dodStatus": "complete",
+              "releaseReady": true,
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/356",
-              "stage": "definition-of-done",
-              "acVerified": 8,
               "updatedAt": "2026-05-24"
             },
             {
