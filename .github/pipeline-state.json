@@ -3747,37 +3747,52 @@
               "slug": "gpa-sc-07-inline-js-extraction",
               "id": "gpa-sc-07-inline-js-extraction",
               "name": "Extract inline workflow JS to tested modules",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "reviewArtefact": "artefacts/2026-05-24-governance-platform-architecture/review/gpa-sc-07-inline-js-extraction-review-1.md",
               "reviewedAt": "2026-05-24",
               "dorStatus": "not-started",
-              "prStatus": "none"
+              "prStatus": "none",
+              "testPlan": {
+                "artefact": "artefacts/2026-05-24-governance-platform-architecture/test-plans/gpa-sc-07-inline-js-extraction-test-plan.md",
+                "writtenAt": "2026-05-25"
+              },
+              "updatedAt": "2026-05-25"
             },
             {
               "slug": "gpa-sc-03-cli-validate-ci",
               "id": "gpa-sc-03-cli-validate-ci",
               "name": "Wire CLI validate to CI assurance gate",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "reviewArtefact": "artefacts/2026-05-24-governance-platform-architecture/review/gpa-sc-03-cli-validate-ci-review-2.md",
               "reviewedAt": "2026-05-24",
               "dorStatus": "not-started",
-              "prStatus": "none"
+              "prStatus": "none",
+              "testPlan": {
+                "artefact": "artefacts/2026-05-24-governance-platform-architecture/test-plans/gpa-sc-03-cli-validate-ci-test-plan.md",
+                "writtenAt": "2026-05-25"
+              },
+              "updatedAt": "2026-05-25"
             },
             {
               "slug": "gpa-sc-06-source-path-guard",
               "id": "gpa-sc-06-source-path-guard",
               "name": "Add path traversal guard to manifest sourcePath reads",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "reviewArtefact": "artefacts/2026-05-24-governance-platform-architecture/review/gpa-sc-06-source-path-guard-review-1.md",
               "reviewedAt": "2026-05-24",
               "dorStatus": "not-started",
-              "prStatus": "none"
+              "prStatus": "none",
+              "testPlan": {
+                "artefact": "artefacts/2026-05-24-governance-platform-architecture/test-plans/gpa-sc-06-source-path-guard-test-plan.md",
+                "writtenAt": "2026-05-25"
+              },
+              "updatedAt": "2026-05-25"
             },
             {
               "slug": "gpa-sc-02-unified-gate-evaluator",
