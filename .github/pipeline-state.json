@@ -273,17 +273,18 @@
               "slug": "cdg.6",
               "id": "cdg.6",
               "title": "skills advance epic-nested lookup, dot-notation field writes, integer coercion, and harness wiring rule",
-              "stage": "definition-of-ready",
-              "prStatus": "none",
+              "stage": "branch-complete",
+              "prStatus": "draft",
               "dorStatus": "signed-off",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-05-19-cli-deterministic-governance/test-plans/cdg.6-test-plan.md"
               },
-              "passing": 0,
-              "totalTests": 13,
-              "acVerified": 0,
-              "updatedAt": "2026-05-24"
+              "passing": 34,
+              "totalTests": 34,
+              "acVerified": 7,
+              "updatedAt": "2026-05-24",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/358"
             }
           ]
         }
