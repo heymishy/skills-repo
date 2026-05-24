@@ -70,6 +70,9 @@ reference_dirs:
   - 2026-04-26-portfolio-sequencing
   - docs-only
   - 2026-05-03-pipeline-state-write-safety
+  - archived
+  - 2026-05-20-cloud-platform
+  - 2026-05-21-ideate-web-ux
 tracks_without_discovery:
   - short
   - defect
