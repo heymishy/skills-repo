@@ -293,5 +293,5 @@ if (failures.length) {
   console.log('Failures:');
   failures.forEach(function(f) { console.log('  ✘ ' + f.name + ': ' + (f.err && f.err.message || f.err)); });
 }
-console.log('=== check-trw1-trace-writer results: ' + passed + ' passed, ' + failed + ' failed ===');
+console.log('\n[trw1] results: ' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);
