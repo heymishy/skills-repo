@@ -76,13 +76,10 @@
   },
   "checkpoint": {
     "writtenAt": "2026-05-24",
-    "contextAtWrite": "cdg.6 definition-of-done complete. PR #358 merged at c3a3902. DoD artefact written: artefacts/2026-05-19-cli-deterministic-governance/dod/cdg.6-dod.md. 7/7 ACs verified. 34/34 tests pass. Pipeline-state updated: prStatus=merged, stage=definition-of-done (updated via skills advance epic-nested lookup — first production use of cdg.6 feature). Master at 6219afb. Worktree .worktrees/cdg.6 needs cleanup. trw.1 ready for inner loop.",
-    "resumeInstruction": "cdg.6 is fully done-done: PR #358 merged, DoD complete. Next: (1) clean up .worktrees/cdg.6 ('git worktree remove .worktrees/cdg.6'), (2) check if cdg.5 PR #357 is also merged and run DoD if so, (3) start trw.1 inner loop (2026-05-16-trace-writer-fix, dorStatus=signed-off).",
+    "contextAtWrite": "cdg.5 and cdg.6 both done-done. PR #357 (cdg.5 — chain-hash trace emission) merged at 6658ebd; DoD artefact written: artefacts/2026-05-19-cli-deterministic-governance/dod/cdg.5-dod.md, 8/8 ACs verified, 10/10 tests pass. PR #358 (cdg.6) merged at c3a3902; DoD complete. Worktrees removed. Master at c004dd2. cli-deterministic-governance feature fully complete. Next: trw.1 inner loop (2026-05-16-trace-writer-fix, dorStatus=signed-off).",
+    "resumeInstruction": "cdg.5 and cdg.6 are both done-done. All cli-deterministic-governance stories are complete. Start trw.1 inner loop: feature slug '2026-05-16-trace-writer-fix', story 'trw.1', dorStatus=signed-off, no branch yet — run /branch-setup then /implementation-plan.",
     "pendingActions": [
-      "Clean up .worktrees/cdg.6 worktree (git worktree remove .worktrees/cdg.6 from repo root)",
-      "Check cdg.5 PR #357 status — run DoD if merged (gh pr view 357 --json state --jq .state)",
-      "Clean up .worktrees/cdg.5 worktree after cdg.5 DoD is done",
-      "Start trw.1 inner loop: artefacts/2026-05-16-trace-writer-fix/, dorStatus=signed-off, no branch yet — run /branch-setup then /implementation-plan"
+      "Start trw.1 inner loop: artefacts/2026-05-16-trace-writer-fix/, story trw.1, dorStatus=signed-off, no branch yet — run /branch-setup then /implementation-plan"
     ]
   },
   "cycles": {
