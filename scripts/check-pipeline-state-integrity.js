@@ -30,11 +30,26 @@
  *     "AC: — / —" for every AC row. Fix: update the story entry on the feature
  *     branch to match master and push before the next CI run.
  *
+ * C6  Invalid testPlan.status enum value — testPlan.status must be one of
+ *     not-started | written | all-passing. Values like 'verified', 'passed', or
+ *     'done' are natural English synonyms that the agent writes but the schema
+ *     rejects. Caught in CI only (D29). Fix: change to 'all-passing'.
+ *
+ * C7  Feature stage not in schema enum — feature.stage must be one of the
+ *     pipeline stage identifiers defined in pipeline-state.schema.json (e.g.
+ *     'subagent-execution', not 'implementation'). Invalid values fail CI schema
+ *     validation (D10). Fix: replace with the nearest valid stage identifier.
+ *
+ * C8  Epic-nested story missing required slug — stories inside
+ *     feature.epics[].stories[] must have a 'slug' field (schema required[]). The
+ *     absence causes schema_valid: FAILED in CI (D22). Fix: add slug matching the
+ *     story id, or use a flat feature.stories[] array instead.
+ *
  * Severity: C1 is FAIL — prStatus=draft/open with testPlan.passing=0 means the
  *            audit comment will show 0/N passing for every story. Fix by updating
  *            testPlan.passing to the confirmed count in the branch-complete
  *            pipeline-state commit before the PR CI run completes.
- *            C2, C3, C4 are FAIL (data corruption — always wrong).
+ *            C2, C3, C4, C6, C7, C8 are FAIL (data corruption — always wrong).
  *            C5 is WARN — heuristic signal; update acVerified on the feature branch.
  *
  * Run:  node scripts/check-pipeline-state-integrity.js
@@ -68,7 +83,7 @@ function collectStories(state) {
     // flat stories array (Phase 3+)
     if (Array.isArray(feature.stories)) {
       for (const s of feature.stories) {
-        if (s && typeof s === 'object') stories.push({ featureSlug: feature.slug, story: s });
+        if (s && typeof s === 'object') stories.push({ featureSlug: feature.slug, story: s, isEpicNested: false });
       }
     }
     // epic-nested stories (Phase 1/2)
@@ -76,7 +91,7 @@ function collectStories(state) {
       for (const epic of feature.epics) {
         if (Array.isArray(epic.stories)) {
           for (const s of epic.stories) {
-            if (s && typeof s === 'object') stories.push({ featureSlug: feature.slug, story: s });
+            if (s && typeof s === 'object') stories.push({ featureSlug: feature.slug, story: s, isEpicNested: true });
           }
         }
       }
@@ -85,11 +100,57 @@ function collectStories(state) {
   return stories;
 }
 
-function checkStory(featureSlug, story) {
+const VALID_TP_STATUS      = ['not-started', 'written', 'all-passing'];
+const VALID_FEATURE_STAGES = [
+  'loop-design', 'token-optimization', 'org-mapping', 'scale-pipeline',
+  'ideation', 'discovery', 'benefit-metric', 'definition', 'review',
+  'test-plan', 'definition-of-ready',
+  'branch-setup', 'implementation-plan', 'subagent-execution',
+  'implementation-review', 'verify-completion', 'branch-complete',
+  'definition-of-done', 'trace', 'release-pending', 'released',
+  'spike', 'stalled',
+];
+
+function checkFeature(feature) {
+  const findings = [];
+  const slug = feature.slug || '(unknown)';
+  // C7: feature stage not in schema enum
+  if (feature.stage != null && !VALID_FEATURE_STAGES.includes(feature.stage)) {
+    findings.push({
+      level: 'fail',
+      code:  'C7',
+      message: `Feature ${slug}: stage="${feature.stage}" is not in the schema enum. ` +
+               `Valid values: ${VALID_FEATURE_STAGES.join(' | ')}`,
+    });
+  }
+  return findings;
+}
+
+function checkStory(featureSlug, story, isEpicNested) {
   const findings = [];
   const id        = story.id || story.slug || '(unknown)';
   const tp        = story.testPlan;
   const prStatus  = story.prStatus || 'none';
+
+  // C8: epic-nested story missing required slug
+  if (isEpicNested && !story.slug) {
+    findings.push({
+      level: 'fail',
+      code:  'C8',
+      message: `${featureSlug} / ${id}: epic-nested story is missing required "slug" field. ` +
+               `Add slug (same value as id), or use a flat feature.stories[] array instead.`,
+    });
+  }
+
+  // C6: invalid testPlan.status enum value — independent of totalTests
+  if (tp && tp.status != null && !VALID_TP_STATUS.includes(tp.status)) {
+    findings.push({
+      level: 'fail',
+      code:  'C6',
+      message: `${featureSlug} / ${id}: testPlan.status="${tp.status}" is not valid. ` +
+               `Must be one of: ${VALID_TP_STATUS.join(' | ')}`,
+    });
+  }
 
   // C4: task objects missing required tddState — independent of testPlan
   if (Array.isArray(story.tasks)) {
@@ -314,6 +375,112 @@ selfAssert(checkStory('f', { id: 's1', prStatus: 'open', testPlan: { totalTests:
   selfAssert(f.some(x => x.code === 'C5' && x.level === 'warn'), 'C5 level is warn');
 }
 
+// C6: invalid testPlan.status → fail
+{
+  const f = checkStory('f', { id: 's1', testPlan: { status: 'verified', totalTests: 5, passing: 5 } });
+  selfAssert(f.some(x => x.code === 'C6'), 'C6: testPlan.status=verified → fail');
+}
+
+// C6: other invalid synonyms
+{
+  const f1 = checkStory('f', { id: 's1', testPlan: { status: 'passed', totalTests: 5, passing: 5 } });
+  const f2 = checkStory('f', { id: 's1', testPlan: { status: 'done', totalTests: 5, passing: 5 } });
+  selfAssert(f1.some(x => x.code === 'C6'), 'C6: testPlan.status=passed → fail');
+  selfAssert(f2.some(x => x.code === 'C6'), 'C6: testPlan.status=done → fail');
+}
+
+// C6: valid status values → no C6
+{
+  const f1 = checkStory('f', { id: 's1', testPlan: { status: 'not-started' } });
+  const f2 = checkStory('f', { id: 's1', testPlan: { status: 'written' } });
+  const f3 = checkStory('f', { id: 's1', testPlan: { status: 'all-passing', totalTests: 5, passing: 5 } });
+  selfAssert(f1.every(x => x.code !== 'C6'), 'C6: status=not-started → no C6');
+  selfAssert(f2.every(x => x.code !== 'C6'), 'C6: status=written → no C6');
+  selfAssert(f3.every(x => x.code !== 'C6'), 'C6: status=all-passing → no C6');
+}
+
+// C6: testPlan absent → no C6
+{
+  const f = checkStory('f', { id: 's1' });
+  selfAssert(f.every(x => x.code !== 'C6'), 'C6: no testPlan → no C6');
+}
+
+// C6: testPlan.status absent → no C6
+{
+  const f = checkStory('f', { id: 's1', testPlan: { totalTests: 5, passing: 5 } });
+  selfAssert(f.every(x => x.code !== 'C6'), 'C6: testPlan.status absent → no C6');
+}
+
+// C6 level is fail
+{
+  const f = checkStory('f', { id: 's1', testPlan: { status: 'verified' } });
+  selfAssert(f.some(x => x.code === 'C6' && x.level === 'fail'), 'C6 level is fail');
+}
+
+// C7: feature stage not in enum → fail
+{
+  const f = checkFeature({ slug: 'feat1', stage: 'implementation' });
+  selfAssert(f.some(x => x.code === 'C7'), 'C7: stage=implementation → fail');
+}
+
+// C7: another invalid value
+{
+  const f = checkFeature({ slug: 'feat1', stage: 'in-progress' });
+  selfAssert(f.some(x => x.code === 'C7'), 'C7: stage=in-progress → fail');
+}
+
+// C7: valid stage values → no C7
+{
+  const f1 = checkFeature({ slug: 'feat1', stage: 'subagent-execution' });
+  const f2 = checkFeature({ slug: 'feat1', stage: 'branch-complete' });
+  const f3 = checkFeature({ slug: 'feat1', stage: 'released' });
+  selfAssert(f1.every(x => x.code !== 'C7'), 'C7: stage=subagent-execution → no C7');
+  selfAssert(f2.every(x => x.code !== 'C7'), 'C7: stage=branch-complete → no C7');
+  selfAssert(f3.every(x => x.code !== 'C7'), 'C7: stage=released → no C7');
+}
+
+// C7: stage absent → no C7
+{
+  const f = checkFeature({ slug: 'feat1' });
+  selfAssert(f.every(x => x.code !== 'C7'), 'C7: stage absent → no C7');
+}
+
+// C7 level is fail
+{
+  const f = checkFeature({ slug: 'feat1', stage: 'implementation' });
+  selfAssert(f.some(x => x.code === 'C7' && x.level === 'fail'), 'C7 level is fail');
+}
+
+// C8: epic-nested story missing slug → fail
+{
+  const f = checkStory('f', { id: 's1' }, true);
+  selfAssert(f.some(x => x.code === 'C8'), 'C8: epic-nested + no slug → fail');
+}
+
+// C8: epic-nested story with slug → no C8
+{
+  const f = checkStory('f', { id: 's1', slug: 's1' }, true);
+  selfAssert(f.every(x => x.code !== 'C8'), 'C8: epic-nested + slug present → no C8');
+}
+
+// C8: flat story missing slug → no C8 (not epic-nested)
+{
+  const f = checkStory('f', { id: 's1' }, false);
+  selfAssert(f.every(x => x.code !== 'C8'), 'C8: flat story + no slug → no C8');
+}
+
+// C8: isEpicNested undefined (legacy call) → no C8
+{
+  const f = checkStory('f', { id: 's1' });
+  selfAssert(f.every(x => x.code !== 'C8'), 'C8: isEpicNested undefined → no C8');
+}
+
+// C8 level is fail
+{
+  const f = checkStory('f', { id: 's1' }, true);
+  selfAssert(f.some(x => x.code === 'C8' && x.level === 'fail'), 'C8 level is fail');
+}
+
 if (selfFailed > 0) {
   process.stdout.write(`  ${selfFailed} self-test(s) FAILED — aborting integration check\n`);
   process.exit(1);
@@ -335,11 +502,16 @@ try {
   process.exit(1);
 }
 
-const allStories = collectStories(state);
+const allFeatures = (state && Array.isArray(state.features)) ? state.features : [];
+const allStories  = collectStories(state);
 const allFindings = [];
 
-for (const { featureSlug, story } of allStories) {
-  const findings = checkStory(featureSlug, story);
+for (const feature of allFeatures) {
+  allFindings.push(...checkFeature(feature));
+}
+
+for (const { featureSlug, story, isEpicNested } of allStories) {
+  const findings = checkStory(featureSlug, story, isEpicNested);
   allFindings.push(...findings);
 }
 
