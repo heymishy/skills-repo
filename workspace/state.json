@@ -1,21 +1,27 @@
 {
-  "currentPhase": "review",
-  "lastUpdated": "2026-05-24T22:00:00Z",
+  "currentPhase": "test-plan",
+  "lastUpdated": "2026-05-25T00:00:00Z",
   "features": {
     "2026-05-24-governance-platform-architecture": {
-      "stage": "review",
-      "commit": "bbe2508",
+      "stage": "test-plan",
+      "commit": "cd54f85",
       "epics": 2,
       "stories": 7,
       "reviewResults": {
-        "passed": 6,
-        "hasFindings": 1,
-        "blocked": [
-          "gpa-sc-03-cli-validate-ci"
-        ],
+        "passed": 7,
+        "hasFindings": 0,
         "reviewedAt": "2026-05-24"
       },
-      "nextAction": "SC-03 FAIL: 1 HIGH finding (1-H1). Fix story AC then re-run /review for SC-03. All other 6 stories passed."
+      "testPlanResults": {
+        "wave1Written": ["gpa-sc-01-trace-contract", "gpa-sc-04-test-output-format", "gpa-sc-05-skills-init"],
+        "wave2Pending": ["gpa-sc-07-inline-js-extraction", "gpa-sc-03-cli-validate-ci", "gpa-sc-06-path-traversal-guard"],
+        "wave3Pending": ["gpa-sc-02-unified-gate-evaluator"],
+        "writtenAt": "2026-05-25"
+      },
+      "decisions": {
+        "D4": "RISK-ACCEPT: SC-03 AC1 slug resolution via extractPRSlug — artefacts/2026-05-24-governance-platform-architecture/decisions.md"
+      },
+      "nextAction": "Wave 1 test plans written. Awaiting operator instruction to proceed to /definition-of-ready for Wave 1 (SC-01, SC-04, SC-05)."
     }
   },
   "cycle": {
@@ -30,21 +36,25 @@
       "completedAt": "2026-05-24"
     },
     "review": {
-      "status": "in-progress",
+      "status": "complete",
       "artefact": "artefacts/2026-05-24-governance-platform-architecture/review",
-      "completedAt": null
+      "completedAt": "2026-05-24"
+    },
+    "test-plan": {
+      "status": "in-progress",
+      "artefact": "artefacts/2026-05-24-governance-platform-architecture/test-plans",
+      "completedAt": null,
+      "notes": "Wave 1 (SC-01/SC-04/SC-05) written. Wave 2 and Wave 3 pending operator instruction."
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-05-24",
-    "contextAtWrite": "Review complete for governance-platform-architecture. 6 of 7 stories PASS. SC-03 FAIL: 1-H1 no AC for H-gate extraction to governance-package.js (ADR-013). SC-04 PASS with MEDIUM 1-M1 (AC4 not testable). SC-02 PASS with MEDIUM 1-M1 (graceful-degradation NFR impossible scenario). All 7 review artefacts written.",
-    "resumeInstruction": "SC-03 has HIGH finding 1-H1: add AC for H-gate logic extraction to governance-package.js per ADR-013 architecture constraint in story gpa-sc-03-cli-validate-ci.md, then re-run /review for SC-03 only. SC-04 and SC-02 MEDIUMs: acknowledge in /decisions or fix before /test-plan. Once all 7 stories pass review, proceed to /test-plan (Wave 1: SC-01, SC-04, SC-05).",
+    "writtenAt": "2026-05-25",
+    "contextAtWrite": "All 7 stories reviewStatus: passed (SC-03 review-2 PASS, commit f683ede). D4 RISK-ACCEPT added to decisions.md (SC-03 AC1 slug resolution). Wave 1 test plans written and committed (cd54f85): gpa-sc-01-trace-contract-test-plan.md, gpa-sc-04-test-output-format-test-plan.md, gpa-sc-05-skills-init-test-plan.md. Pipeline-state SC-01/SC-04/SC-05 stage=test-plan. 79 stories, 0 integrity failures.",
+    "resumeInstruction": "Wave 1 test plans complete. User instruction was: do not proceed to /dor without instruction. Next step when instructed: run /definition-of-ready for Wave 1 stories (SC-01, SC-04, SC-05). After Wave 1 DoR sign-off, run /test-plan for Wave 2 (SC-07, SC-03, SC-06). Wave 2 test plan prerequisite: D4 RISK-ACCEPT already logged. Wave 3 (SC-02) gates on Wave 2 DoD-complete + A2 gate confirmed.",
     "pendingActions": [
-      "BLOCKING: Fix SC-03 HIGH finding 1-H1 in artefacts/2026-05-24-governance-platform-architecture/stories/gpa-sc-03-cli-validate-ci.md — add AC: Given skills validate --ci evaluates H1-H9 for a story, when evaluation is complete, then H-gate evaluation functions are exported from governance-package.js and called through it — cli-outer-loop.js and bin/skills do not contain independent H-gate evaluation logic. A test asserts H1-H9 check functions are importable from governance-package.js.",
-      "Re-run /review for SC-03 (gpa-sc-03-cli-validate-ci) after fix to get reviewStatus: passed.",
-      "SC-04 MEDIUM 1-M1: rewrite AC4 to assert document content (conforming/non-conforming examples labelled). Fix in story or acknowledge via /decisions RISK-ACCEPT before /test-plan.",
-      "SC-02 MEDIUM 1-M1: reword graceful degradation NFR — governance-package is a local module, not an npm package; failure mode is require() error, not package not installed. Fix in story or acknowledge via /decisions RISK-ACCEPT before /test-plan.",
-      "Once SC-03 review passes: run /test-plan for Wave 1 (SC-01, SC-04, SC-05). Wave 2 (SC-07, SC-03, SC-06) after Wave 1."
+      "Awaiting operator instruction to run /definition-of-ready for Wave 1 (SC-01 gpa-sc-01-trace-contract, SC-04 gpa-sc-04-test-output-format, SC-05 gpa-sc-05-skills-init).",
+      "After Wave 1 DoR sign-off: run /test-plan for Wave 2 (SC-07 gpa-sc-07-inline-js-extraction, SC-03 gpa-sc-03-cli-validate-ci, SC-06 gpa-sc-06-path-traversal-guard).",
+      "Wave 3 gate: SC-07 + SC-03 + SC-06 all DoD-complete AND A2 gate (execution-boundary scope excludes run-assurance-gate.js and governance-package.js) confirmed before running /test-plan for SC-02 (gpa-sc-02-unified-gate-evaluator)."
     ]
   }
 }
