@@ -1,4 +1,6 @@
 'use strict';
+const fs     = require('fs');
+const crypto = require('crypto');
 /**
  * ci-audit-comment.js
  *
@@ -333,6 +335,23 @@ function buildAuditComment(data) {
  *                    or   ' · ACs in artefact ✅'
  *                    or   ' · ⚠️ ACs not found in issue or artefact'
  */
+/**
+ * Compare the SHA-256 hash of a source file against a manifest hash.
+ * Extracted verbatim from the inline github-script step in assurance-gate.yml (SC-07).
+ *
+ * @param {string} sourcePath    Path to the source file to hash
+ * @param {string} manifestHash  Expected SHA-256 hex string from manifest
+ * @returns {string}  '\u2705', '\u274c DRIFT', '\u26a0 not found', or '\u2014'
+ */
+function sourceIntegrity(sourcePath, manifestHash) {
+  if (!manifestHash) return '\u2014';
+  try {
+    const content  = fs.readFileSync(sourcePath);
+    const computed = crypto.createHash('sha256').update(content).digest('hex');
+    return computed === manifestHash ? '\u2705' : '\u274c DRIFT';
+  } catch (_) { return '\u26a0 not found'; }
+}
+
 function computeIssueAcCheck(issueBody, acs) {
   // Detect ACs in the issue body across all known formats:
   //   • 'Acceptance Criteria' heading (rich --target github-agent bodies)
@@ -352,4 +371,4 @@ function computeIssueAcCheck(issueBody, acs) {
   return parts.length > 0 ? parts.join('') : ' \u00b7 \u26a0\ufe0f ACs not found in issue or artefact';
 }
 
-module.exports = { loadPipelineStories, classifyArtefact, parseACs, computeIssueAcCheck, buildAuditComment };
+module.exports = { loadPipelineStories, classifyArtefact, parseACs, computeIssueAcCheck, buildAuditComment, sourceIntegrity };
