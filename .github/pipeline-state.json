@@ -273,8 +273,8 @@
               "slug": "cdg.6",
               "id": "cdg.6",
               "title": "skills advance epic-nested lookup, dot-notation field writes, integer coercion, and harness wiring rule",
-              "stage": "branch-complete",
-              "prStatus": "draft",
+              "stage": "definition-of-done",
+              "prStatus": "merged",
               "dorStatus": "signed-off",
               "testPlan": {
                 "status": "all-passing",
@@ -290,7 +290,8 @@
             }
           ]
         }
-      ]
+      ],
+      "stories": []
     },
     {
       "slug": "2026-04-23-non-technical-channel",
