@@ -3563,13 +3563,12 @@
     {
       "slug": "2026-05-24-governance-platform-architecture",
       "title": "Governance Platform Architecture Review",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-05-24-governance-platform-architecture/discovery.md",
         "approvedAt": "2026-05-24"
       },
-      "stories": [],
       "health": "green",
       "updatedAt": "2026-05-24",
       "benefit-metric": {
@@ -3586,7 +3585,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "gpa-sc-01-trace-contract",
+            "gpa-sc-04-test-output-format"
+          ]
         },
         {
           "id": "m2",
@@ -3596,7 +3598,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "gpa-sc-03-cli-validate-ci"
+          ]
         },
         {
           "id": "m3",
@@ -3606,7 +3610,12 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "gpa-sc-01-trace-contract",
+            "gpa-sc-04-test-output-format",
+            "gpa-sc-05-skills-init",
+            "gpa-sc-07-inline-js-extraction"
+          ]
         },
         {
           "id": "m4",
@@ -3616,7 +3625,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "gpa-sc-02-unified-gate-evaluator"
+          ]
         },
         {
           "id": "m5",
@@ -3626,7 +3637,103 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "gpa-sc-07-inline-js-extraction",
+            "gpa-sc-06-source-path-guard"
+          ]
+        }
+      ],
+      "slicingStrategy": "risk-first",
+      "guardrails": [],
+      "definition": {
+        "status": "complete",
+        "slicingStrategy": "risk-first",
+        "artefacts": {
+          "epics": [
+            "artefacts/2026-05-24-governance-platform-architecture/epics/gpa-epic-01-governance-foundation.md",
+            "artefacts/2026-05-24-governance-platform-architecture/epics/gpa-epic-02-ci-enforcement-compliance.md"
+          ],
+          "nfrProfile": "artefacts/2026-05-24-governance-platform-architecture/nfr-profile.md"
+        },
+        "definedAt": "2026-05-24"
+      },
+      "epics": [
+        {
+          "slug": "gpa-epic-01-governance-foundation",
+          "name": "Governance Observability Foundation",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "gpa-sc-01-trace-contract",
+              "id": "gpa-sc-01-trace-contract",
+              "name": "Write trace contract standards document",
+              "stage": "definition",
+              "health": "green",
+              "dorStatus": "not-started",
+              "prStatus": "none"
+            },
+            {
+              "slug": "gpa-sc-04-test-output-format",
+              "id": "gpa-sc-04-test-output-format",
+              "name": "Write test output format standards document",
+              "stage": "definition",
+              "health": "green",
+              "dorStatus": "not-started",
+              "prStatus": "none"
+            },
+            {
+              "slug": "gpa-sc-05-skills-init",
+              "id": "gpa-sc-05-skills-init",
+              "name": "Add skills init command for atomic feature initialisation",
+              "stage": "definition",
+              "health": "green",
+              "dorStatus": "not-started",
+              "prStatus": "none"
+            }
+          ]
+        },
+        {
+          "slug": "gpa-epic-02-ci-enforcement-compliance",
+          "name": "CI Enforcement, Security Hardening, and ADR-013 Compliance",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "gpa-sc-07-inline-js-extraction",
+              "id": "gpa-sc-07-inline-js-extraction",
+              "name": "Extract inline workflow JS to tested modules",
+              "stage": "definition",
+              "health": "green",
+              "dorStatus": "not-started",
+              "prStatus": "none"
+            },
+            {
+              "slug": "gpa-sc-03-cli-validate-ci",
+              "id": "gpa-sc-03-cli-validate-ci",
+              "name": "Wire CLI validate to CI assurance gate",
+              "stage": "definition",
+              "health": "green",
+              "dorStatus": "not-started",
+              "prStatus": "none"
+            },
+            {
+              "slug": "gpa-sc-06-source-path-guard",
+              "id": "gpa-sc-06-source-path-guard",
+              "name": "Add path traversal guard to manifest sourcePath reads",
+              "stage": "definition",
+              "health": "green",
+              "dorStatus": "not-started",
+              "prStatus": "none"
+            },
+            {
+              "slug": "gpa-sc-02-unified-gate-evaluator",
+              "id": "gpa-sc-02-unified-gate-evaluator",
+              "name": "Promote governance-package as single gate evaluator (ADR-013 compliance)",
+              "stage": "definition",
+              "health": "green",
+              "dorStatus": "not-started",
+              "prStatus": "none"
+            }
+          ]
         }
       ]
     }
