@@ -19,11 +19,23 @@
  * C3  Merged story with passing < totalTests — story is merged but passing count
  *     was never updated to reflect actual test results.
  *
+ * C4  Task object missing required `tddState` field — any entry in story.tasks[]
+ *     that lacks a tddState property will fail CI schema validation. Fastest fix:
+ *     remove the tasks array entirely (it is optional and adds no governance value
+ *     once a story reaches branch-complete).
+ *
+ * C5  Open/draft PR with passing tests but acVerified=0 — likely caused by a
+ *     master checkpoint updating pipeline-state.json while the feature branch still
+ *     carries the old pre-implementation values. The governance bot will show
+ *     "AC: — / —" for every AC row. Fix: update the story entry on the feature
+ *     branch to match master and push before the next CI run.
+ *
  * Severity: C1 is FAIL — prStatus=draft/open with testPlan.passing=0 means the
  *            audit comment will show 0/N passing for every story. Fix by updating
  *            testPlan.passing to the confirmed count in the branch-complete
  *            pipeline-state commit before the PR CI run completes.
- *            C2, C3 are FAIL (data corruption — always wrong).
+ *            C2, C3, C4 are FAIL (data corruption — always wrong).
+ *            C5 is WARN — heuristic signal; update acVerified on the feature branch.
  *
  * Run:  node scripts/check-pipeline-state-integrity.js
  * Used: npm test
@@ -79,6 +91,20 @@ function checkStory(featureSlug, story) {
   const tp        = story.testPlan;
   const prStatus  = story.prStatus || 'none';
 
+  // C4: task objects missing required tddState — independent of testPlan
+  if (Array.isArray(story.tasks)) {
+    story.tasks.forEach(function(task, idx) {
+      if (task && typeof task === 'object' && !('tddState' in task)) {
+        findings.push({
+          level: 'fail',
+          code:  'C4',
+          message: `${featureSlug} / ${id}: tasks[${idx}] is missing required field "tddState". ` +
+                   `Remove the tasks array or add tddState to every task object.`,
+        });
+      }
+    });
+  }
+
   if (!tp || tp.totalTests == null || tp.totalTests === 0) return findings;
 
   const total   = Number(tp.totalTests);
@@ -110,6 +136,18 @@ function checkStory(featureSlug, story) {
       code:  'C3',
       message: `${featureSlug} / ${id}: prStatus="merged" but testPlan.passing (${passing}) < testPlan.totalTests (${total}). ` +
                `Update testPlan.passing to the confirmed count in the post-merge pipeline-state commit.`,
+    });
+  }
+
+  // C5: open/draft PR with passing tests but acVerified=0 — likely stale branch values
+  if ((prStatus === 'draft' || prStatus === 'open') &&
+      story.acVerified != null && story.acVerified === 0 &&
+      passing > 0) {
+    findings.push({
+      level: 'warn',
+      code:  'C5',
+      message: `${featureSlug} / ${id}: prStatus="${prStatus}", testPlan.passing=${passing} but acVerified=0. ` +
+               `Branch pipeline-state.json may have stale values — update acVerified to the confirmed count.`,
     });
   }
 
@@ -202,6 +240,78 @@ selfAssert(checkStory('f', { id: 's1', prStatus: 'open', testPlan: { totalTests:
   const c2 = checkStory('f', { id: 's1', prStatus: 'merged', testPlan: { totalTests: 5, passing: 9 } });
   selfAssert(c1[0].level === 'fail', 'C1 level is fail');
   selfAssert(c2.some(x => x.level === 'fail'), 'C2 level is fail');
+}
+
+// C4: task missing tddState → fail
+{
+  const f = checkStory('f', { id: 's1', tasks: [{ name: 'T1' }] });
+  selfAssert(f.length === 1 && f[0].code === 'C4', 'C4: task missing tddState → fail');
+}
+
+// C4: task with tddState → no C4
+{
+  const f = checkStory('f', { id: 's1', tasks: [{ name: 'T1', tddState: 'green' }] });
+  selfAssert(f.every(x => x.code !== 'C4'), 'C4: task with tddState → no C4');
+}
+
+// C4: no tasks array → no C4
+{
+  const f = checkStory('f', { id: 's1' });
+  selfAssert(f.every(x => x.code !== 'C4'), 'C4: no tasks array → no C4');
+}
+
+// C4: empty tasks array → no C4
+{
+  const f = checkStory('f', { id: 's1', tasks: [] });
+  selfAssert(f.every(x => x.code !== 'C4'), 'C4: empty tasks array → no C4');
+}
+
+// C4: level is fail
+{
+  const f = checkStory('f', { id: 's1', tasks: [{ name: 'T1' }] });
+  selfAssert(f[0].level === 'fail', 'C4 level is fail');
+}
+
+// C5: draft PR, passing>0, acVerified=0 → warn
+{
+  const f = checkStory('f', { id: 's1', prStatus: 'draft', acVerified: 0, testPlan: { totalTests: 10, passing: 10 } });
+  selfAssert(f.some(x => x.code === 'C5'), 'C5: draft PR + passing>0 + acVerified=0 → warn');
+}
+
+// C5: open PR, passing>0, acVerified=0 → warn
+{
+  const f = checkStory('f', { id: 's1', prStatus: 'open', acVerified: 0, testPlan: { totalTests: 10, passing: 10 } });
+  selfAssert(f.some(x => x.code === 'C5'), 'C5: open PR + passing>0 + acVerified=0 → warn');
+}
+
+// C5: acVerified set to real count → no C5
+{
+  const f = checkStory('f', { id: 's1', prStatus: 'draft', acVerified: 8, testPlan: { totalTests: 10, passing: 10 } });
+  selfAssert(f.every(x => x.code !== 'C5'), 'C5: acVerified>0 → no C5');
+}
+
+// C5: merged PR → no C5
+{
+  const f = checkStory('f', { id: 's1', prStatus: 'merged', acVerified: 0, testPlan: { totalTests: 10, passing: 10 } });
+  selfAssert(f.every(x => x.code !== 'C5'), 'C5: merged prStatus → no C5');
+}
+
+// C5: acVerified absent → no C5
+{
+  const f = checkStory('f', { id: 's1', prStatus: 'draft', testPlan: { totalTests: 10, passing: 10 } });
+  selfAssert(f.every(x => x.code !== 'C5'), 'C5: acVerified absent → no C5');
+}
+
+// C5: passing=0 → no C5 (C1 fires instead)
+{
+  const f = checkStory('f', { id: 's1', prStatus: 'draft', acVerified: 0, testPlan: { totalTests: 10, passing: 0 } });
+  selfAssert(f.every(x => x.code !== 'C5'), 'C5: passing=0 → no C5');
+}
+
+// C5 level is warn
+{
+  const f = checkStory('f', { id: 's1', prStatus: 'draft', acVerified: 0, testPlan: { totalTests: 10, passing: 10 } });
+  selfAssert(f.some(x => x.code === 'C5' && x.level === 'warn'), 'C5 level is warn');
 }
 
 if (selfFailed > 0) {
