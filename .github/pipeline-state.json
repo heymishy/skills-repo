@@ -284,7 +284,9 @@
               "totalTests": 34,
               "acVerified": 7,
               "updatedAt": "2026-05-24",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/358"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/358",
+              "name": "skills advance epic-nested lookup, dot-notation field writes, integer coercion, and harness wiring rule",
+              "health": "green"
             }
           ]
         }
