@@ -3702,7 +3702,10 @@
               "dorStatus": "signed-off",
               "prStatus": "none",
               "updatedAt": "2026-05-25",
-              "dorArtefact": "artefacts/2026-05-24-governance-platform-architecture/dor/gpa-sc-01-trace-contract-dor.md"
+              "dorArtefact": "artefacts/2026-05-24-governance-platform-architecture/dor/gpa-sc-01-trace-contract-dor.md",
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/360",
+              "dispatchedAt": "2026-05-25T00:00:00Z",
+              "dispatchTarget": "vscode"
             },
             {
               "slug": "gpa-sc-04-test-output-format",
@@ -3718,7 +3721,10 @@
               "dorStatus": "signed-off",
               "prStatus": "none",
               "updatedAt": "2026-05-25",
-              "dorArtefact": "artefacts/2026-05-24-governance-platform-architecture/dor/gpa-sc-04-test-output-format-dor.md"
+              "dorArtefact": "artefacts/2026-05-24-governance-platform-architecture/dor/gpa-sc-04-test-output-format-dor.md",
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/361",
+              "dispatchedAt": "2026-05-25T00:00:00Z",
+              "dispatchTarget": "vscode"
             },
             {
               "slug": "gpa-sc-05-skills-init",
@@ -3734,7 +3740,10 @@
               "dorStatus": "signed-off",
               "prStatus": "none",
               "updatedAt": "2026-05-25",
-              "dorArtefact": "artefacts/2026-05-24-governance-platform-architecture/dor/gpa-sc-05-skills-init-dor.md"
+              "dorArtefact": "artefacts/2026-05-24-governance-platform-architecture/dor/gpa-sc-05-skills-init-dor.md",
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/362",
+              "dispatchedAt": "2026-05-25T00:00:00Z",
+              "dispatchTarget": "vscode"
             }
           ]
         },
