@@ -138,6 +138,8 @@ queue.push(function() {
     journey.setPipelineStateWriter(function() {
       callOrder.push('pipelineStateWriter');
     });
+    // cdg.5: wire no-op writeTrace so D37 stub doesn't throw
+    if (typeof journey.setWriteTrace === 'function') { journey.setWriteTrace(function() {}); }
 
     var req = authReq({ params: { journeyId: setup.journeyId } });
     var res = makeRes();
@@ -168,6 +170,8 @@ queue.push(function() {
     journey.setPipelineStateWriter(function() {
       psWriterCalled = true;
     });
+    // cdg.5: wire no-op writeTrace so D37 stub doesn't throw
+    if (typeof journey.setWriteTrace === 'function') { journey.setWriteTrace(function() {}); }
 
     var req = authReq({ params: { journeyId: setup.journeyId } });
     var res = makeRes();
@@ -197,6 +201,8 @@ queue.push(function() {
     journey.setPipelineStateWriter(function() {
       psWriterCalled = true;
     });
+    // cdg.5: wire no-op writeTrace so D37 stub doesn't throw
+    if (typeof journey.setWriteTrace === 'function') { journey.setWriteTrace(function() {}); }
 
     var req = authReq({ params: { journeyId: setup.journeyId } });
     var res = makeRes();

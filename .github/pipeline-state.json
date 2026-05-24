@@ -71,7 +71,9 @@
           "signal": "on-track",
           "lastMeasured": "2026-05-24",
           "evidence": "cdg.4 makes gate bypass structurally impossible through the web UI definition-of-ready path. _pipelineStateWriter() cannot be called unless _validate() returns exitCode 0. Bypass rate for this path is 0 by construction post-merge PR #356. Baseline measurement requires cdg.5 trace emission.",
-          "contributingStories": ["cdg.4"]
+          "contributingStories": [
+            "cdg.4"
+          ]
         },
         {
           "id": "M3",
@@ -83,7 +85,10 @@
           "signal": "on-track",
           "lastMeasured": "2026-05-24",
           "evidence": "34 assert() calls in check-cli-outer-loop.js (≥33 target). 33 assertions passing in CI post-merge PR #354. Target achieved. cdg.4 adds 10 further tests in check-cdg4-gate-confirm-validation.js (web UI integration layer, complementary coverage).",
-          "contributingStories": ["cdg.2", "cdg.4"]
+          "contributingStories": [
+            "cdg.2",
+            "cdg.4"
+          ]
         },
         {
           "id": "M4",

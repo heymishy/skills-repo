@@ -128,28 +128,36 @@ function advanceState({ current, next, declaration }) {
   return { current: next, previous: current };
 }
 
-// ── writeTrace ────────────────────────────────────────────────────────────────
+// ── writeTrace ────────────────────────────────────────────────────────────────────
 
 /**
- * Produce a validated trace entry object and optionally write it to outputPath.
+ * Produce a validated trace entry and optionally persist it.
  *
- * Required fields: skillHash, inputHash, outputRef, transitionTaken, surfaceType, timestamp.
- * Returns the entry object. If outputPath is provided, also writes as JSON to that file.
+ * Gate-confirm mode (cdg.5): called with entry.featureSlug present.
+ *   Appends a chain-hashed JSONL entry to workspace/traces/<featureSlug>.trace.jsonl.
+ *   options.tracePath overrides the default path (used by tests).
  *
- * @param {{
- *   skillId?: string,
- *   skillHash: string,
- *   inputHash: string,
- *   outputRef: string,
- *   transitionTaken: string,
- *   surfaceType: string,
- *   timestamp: string,
- *   outputPath?: string
- * }} opts
+ * Legacy Phase-4 skill mode: called without entry.featureSlug.
+ *   Returns { skillHash, inputHash, outputRef, transitionTaken, surfaceType, timestamp }.
+ *   If entry.outputPath is provided, also writes JSON to that file.
+ *
+ * @param {object} entry
+ * @param {object} [options]
  * @returns {object}
  */
-function writeTrace({ skillId, skillHash, inputHash, outputRef, transitionTaken, surfaceType, timestamp, outputPath }) {
-  const entry = {
+function writeTrace(entry, options) {
+  // cdg.5: gate-confirm chain-hash trace mode
+  if (entry && typeof entry.featureSlug === 'string') {
+    return _writeGateConfirmTrace(entry, options);
+  }
+
+  // Legacy Phase-4 skill trace mode — T8 backward compatibility
+  var skillId = entry.skillId, skillHash = entry.skillHash, inputHash = entry.inputHash,
+      outputRef = entry.outputRef, transitionTaken = entry.transitionTaken,
+      surfaceType = entry.surfaceType, timestamp = entry.timestamp,
+      outputPath = entry.outputPath;
+
+  var legacyEntry = {
     skillId:         skillId || null,
     skillHash:       skillHash,
     inputHash:       inputHash,
@@ -160,10 +168,51 @@ function writeTrace({ skillId, skillHash, inputHash, outputRef, transitionTaken,
   };
 
   if (outputPath) {
-    fs.writeFileSync(outputPath, JSON.stringify(entry, null, 2), 'utf8');
+    fs.writeFileSync(outputPath, JSON.stringify(legacyEntry, null, 2), 'utf8');
   }
 
-  return entry;
+  return legacyEntry;
+}
+
+/**
+ * Internal helper — gate-confirm chain-hash trace append (cdg.5).
+ *
+ * @param {object} entry  - { timestamp, featureSlug, storyId, stage, operatorEmail, exitCode }
+ * @param {object} [options] - { tracePath?: string }
+ * @returns {object} finalEntry with chainHash field added
+ */
+function _writeGateConfirmTrace(entry, options) {
+  var repoRoot = path.resolve(__dirname, '../..');
+  var tracePath = (options && options.tracePath) ||
+    path.join(repoRoot, 'workspace', 'traces', entry.featureSlug + '.trace.jsonl');
+
+  fs.mkdirSync(path.dirname(tracePath), { recursive: true });
+
+  var prevChainHash = '';
+  if (fs.existsSync(tracePath)) {
+    var raw = fs.readFileSync(tracePath, 'utf8');
+    var lines = raw.split('\n').filter(function(l) { return l.trim(); });
+    if (lines.length > 0) {
+      try { prevChainHash = JSON.parse(lines[lines.length - 1]).chainHash || ''; } catch (_) {}
+    }
+  }
+
+  var entryWithoutHash = {
+    timestamp:     entry.timestamp,
+    featureSlug:   entry.featureSlug,
+    storyId:       entry.storyId,
+    stage:         entry.stage,
+    operatorEmail: entry.operatorEmail,
+    exitCode:      entry.exitCode,
+  };
+
+  var chainHash = crypto.createHash('sha256')
+    .update(JSON.stringify(entryWithoutHash) + prevChainHash)
+    .digest('hex');
+
+  var finalEntry = Object.assign({}, entryWithoutHash, { chainHash: chainHash });
+  fs.appendFileSync(tracePath, JSON.stringify(finalEntry) + '\n', 'utf8');
+  return finalEntry;
 }
 
 // ── Exports ───────────────────────────────────────────────────────────────────

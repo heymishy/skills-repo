@@ -3,6 +3,8 @@ trace-validation-report.json
 .worktrees/
 .ci-artefact-staging/
 workspace/capture-log.md
+workspace/traces/
+workspace/test-tmp-cdg5/
 node_modules/
 test-results/
 
