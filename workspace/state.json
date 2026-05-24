@@ -1,10 +1,10 @@
 {
-  "currentPhase": "test-plan",
-  "lastUpdated": "2026-05-25T00:00:00Z",
+  "currentPhase": "definition-of-ready",
+  "lastUpdated": "2026-05-25T12:00:00Z",
   "features": {
     "2026-05-24-governance-platform-architecture": {
-      "stage": "test-plan",
-      "commit": "cd54f85",
+      "stage": "definition-of-ready",
+      "commit": "7944c51",
       "epics": 2,
       "stories": 7,
       "reviewResults": {
@@ -12,16 +12,18 @@
         "hasFindings": 0,
         "reviewedAt": "2026-05-24"
       },
-      "testPlanResults": {
-        "wave1Written": ["gpa-sc-01-trace-contract", "gpa-sc-04-test-output-format", "gpa-sc-05-skills-init"],
+      "dorResults": {
+        "wave1SignedOff": ["gpa-sc-01-trace-contract", "gpa-sc-04-test-output-format", "gpa-sc-05-skills-init"],
+        "wave1Oversight": "Low",
+        "wave1HardBlocks": "17/17 all passed",
         "wave2Pending": ["gpa-sc-07-inline-js-extraction", "gpa-sc-03-cli-validate-ci", "gpa-sc-06-path-traversal-guard"],
         "wave3Pending": ["gpa-sc-02-unified-gate-evaluator"],
-        "writtenAt": "2026-05-25"
+        "signedOffAt": "2026-05-25"
       },
       "decisions": {
         "D4": "RISK-ACCEPT: SC-03 AC1 slug resolution via extractPRSlug — artefacts/2026-05-24-governance-platform-architecture/decisions.md"
       },
-      "nextAction": "Wave 1 test plans written. Awaiting operator instruction to proceed to /definition-of-ready for Wave 1 (SC-01, SC-04, SC-05)."
+      "nextAction": "Wave 1 DoR sign-off complete. Awaiting operator instruction for next action (Wave 2 test plans, or dispatch Wave 1 stories to coding agent)."
     }
   },
   "cycle": {
@@ -41,20 +43,26 @@
       "completedAt": "2026-05-24"
     },
     "test-plan": {
-      "status": "in-progress",
+      "status": "complete",
       "artefact": "artefacts/2026-05-24-governance-platform-architecture/test-plans",
-      "completedAt": null,
+      "completedAt": "2026-05-25",
       "notes": "Wave 1 (SC-01/SC-04/SC-05) written. Wave 2 and Wave 3 pending operator instruction."
+    },
+    "definition-of-ready": {
+      "status": "in-progress",
+      "artefact": "artefacts/2026-05-24-governance-platform-architecture/dor",
+      "completedAt": null,
+      "notes": "Wave 1 (SC-01/SC-04/SC-05) signed off. Wave 2 and Wave 3 pending."
     }
   },
   "checkpoint": {
     "writtenAt": "2026-05-25",
-    "contextAtWrite": "All 7 stories reviewStatus: passed (SC-03 review-2 PASS, commit f683ede). D4 RISK-ACCEPT added to decisions.md (SC-03 AC1 slug resolution). Wave 1 test plans written and committed (cd54f85): gpa-sc-01-trace-contract-test-plan.md, gpa-sc-04-test-output-format-test-plan.md, gpa-sc-05-skills-init-test-plan.md. Pipeline-state SC-01/SC-04/SC-05 stage=test-plan. 79 stories, 0 integrity failures.",
-    "resumeInstruction": "Wave 1 test plans complete. User instruction was: do not proceed to /dor without instruction. Next step when instructed: run /definition-of-ready for Wave 1 stories (SC-01, SC-04, SC-05). After Wave 1 DoR sign-off, run /test-plan for Wave 2 (SC-07, SC-03, SC-06). Wave 2 test plan prerequisite: D4 RISK-ACCEPT already logged. Wave 3 (SC-02) gates on Wave 2 DoD-complete + A2 gate confirmed.",
+    "contextAtWrite": "Wave 1 DoR sign-off complete (commit 7944c51). SC-01 (trace-contract), SC-04 (test-output-format), SC-05 (skills-init): all 17/17 hard blocks passed, Low oversight, dorStatus=signed-off in pipeline-state.json. Verification scripts written for all 3. 6 DoR artefacts created (dor.md + dor-contract.md per story). 79 stories, 0 integrity failures. All hooks passed.",
+    "resumeInstruction": "Wave 1 DoR sign-off complete. Next operator instruction needed for one of: (a) dispatch Wave 1 stories to coding agent via /issue-dispatch, (b) run /test-plan for Wave 2 (SC-07 gpa-sc-07-inline-js-extraction, SC-03 gpa-sc-03-cli-validate-ci, SC-06 gpa-sc-06-path-traversal-guard), or (c) both in sequence. Do not proceed without instruction.",
     "pendingActions": [
-      "Awaiting operator instruction to run /definition-of-ready for Wave 1 (SC-01 gpa-sc-01-trace-contract, SC-04 gpa-sc-04-test-output-format, SC-05 gpa-sc-05-skills-init).",
-      "After Wave 1 DoR sign-off: run /test-plan for Wave 2 (SC-07 gpa-sc-07-inline-js-extraction, SC-03 gpa-sc-03-cli-validate-ci, SC-06 gpa-sc-06-path-traversal-guard).",
-      "Wave 3 gate: SC-07 + SC-03 + SC-06 all DoD-complete AND A2 gate (execution-boundary scope excludes run-assurance-gate.js and governance-package.js) confirmed before running /test-plan for SC-02 (gpa-sc-02-unified-gate-evaluator)."
+      "Awaiting operator instruction: dispatch Wave 1 stories to coding agent (SC-01/SC-04/SC-05 all dorStatus=signed-off) or run Wave 2 test plans first.",
+      "Wave 2 test plans: SC-07 (gpa-sc-07-inline-js-extraction), SC-03 (gpa-sc-03-cli-validate-ci), SC-06 (gpa-sc-06-path-traversal-guard). D4 RISK-ACCEPT already logged (SC-03 AC1).",
+      "Wave 3 gate: SC-07 + SC-03 + SC-06 all DoD-complete AND A2 gate confirmed before running /test-plan for SC-02 (gpa-sc-02-unified-gate-evaluator)."
     ]
   }
 }
