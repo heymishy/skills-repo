@@ -3559,6 +3559,17 @@
       "stories": [],
       "guardrails": [],
       "updatedAt": "2026-05-21"
+    },
+    {
+      "slug": "2026-05-24-governance-platform-architecture",
+      "title": "Governance Platform Architecture Review",
+      "stage": "discovery",
+      "discovery": {
+        "status": "approved",
+        "artefact": "artefacts/2026-05-24-governance-platform-architecture/discovery.md",
+        "approvedAt": "2026-05-24"
+      },
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
