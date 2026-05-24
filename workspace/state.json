@@ -76,13 +76,15 @@
   },
   "checkpoint": {
     "writtenAt": "2026-05-25",
-    "contextAtWrite": "cdg.5 /branch-complete done. Draft PR #357 opened at https://github.com/heymishy/skills-repo/pull/357. All 10 tests passing (T1-T7 + IT1 + NFR-INT-1 + NFR-ISO-1). All 8 ACs verified. Worktree: .worktrees/cdg.5. 8 commits: c31c9aa (plan) + 78e94dd (TDD red) + 3302b32 (governance-package) + b54efdc (journey.js) + 5372b04 (server.js) + c89f027 (.gitignore) + 19a5abe (test compatibility) + a71acf5 (pipeline-state). pipeline-state.json updated: stage=branch-complete, prStatus=draft, prUrl=PR#357, acVerified=8, passing=10.",
-    "resumeInstruction": "cdg.5 draft PR #357 is open at https://github.com/heymishy/skills-repo/pull/357. Next steps: (1) run /definition-of-done after PR merges, (2) clean up .worktrees/cdg.5 worktree (git worktree remove .worktrees/cdg.5), (3) check CI on PR — run 'gh pr view 357 --json changedFiles --jq .changedFiles' to confirm changes > 0.",
+    "contextAtWrite": "cdg.6 branch-complete. Draft PR #358 opened at https://github.com/heymishy/skills-repo/pull/358. All 34 tests passing (T1-T13, 34 assertions). All 7 ACs verified. Worktree: .worktrees/cdg.6. Commits: 90ec9c5 (implementation — cli-advance.js, CHANGELOG, package.json, copilot-instructions.md) + cff8222 (verify-completion + pipeline-state branch-complete). Master updated at cbe13b2 with prUrl. cdg.5 PR #357 still open — DoD needed after merge. Notes: commit hook exit-1 is the changelog-readme warning about skill-pipeline-instructions.md; pipeline-paths and governance-sync hooks produce exit-1 on success — false positive, not a failure.",
+    "resumeInstruction": "cdg.6 draft PR #358 is open at https://github.com/heymishy/skills-repo/pull/358. Next steps: (1) confirm changedFiles > 0 ('gh pr view 358 --json changedFiles --jq .changedFiles'), (2) monitor CI, (3) run /definition-of-done after PR merges, (4) also run /definition-of-done for cdg.5 PR #357 after that merges, (5) clean up worktrees after merges.",
     "pendingActions": [
-      "Monitor cdg.5 draft PR #357 CI — run 'gh pr view 357 --json changedFiles --jq .changedFiles' to confirm changedFiles > 0 before merge",
-      "Run /definition-of-done for cdg.5 after PR merges",
+      "Monitor cdg.6 draft PR #358 CI — run 'gh pr view 358 --json changedFiles --jq .changedFiles' to confirm changedFiles > 0 before merge",
+      "Run /definition-of-done for cdg.6 after PR #358 merges",
+      "Monitor cdg.5 draft PR #357 — also needs /definition-of-done after merge",
+      "Clean up .worktrees/cdg.6 worktree after PR merges (git worktree remove .worktrees/cdg.6)",
       "Clean up .worktrees/cdg.5 worktree after PR merges (git worktree remove .worktrees/cdg.5)",
-      "Clean up .worktrees/cdg.4 worktree if still present (git worktree remove .worktrees/cdg.4)"
+      "trw.1 (2026-05-16-trace-writer-fix) is at dorStatus=signed-off with no branch — ready to start inner loop when cdg work settles"
     ]
   },
   "cycles": {
