@@ -205,7 +205,10 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.3-dor.md",
-              "prStatus": "none",
+              "planArtefact": "artefacts/2026-05-19-cli-deterministic-governance/plans/cdg.3-plan.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/355",
+              "stage": "subagent-execution",
               "updatedAt": "2026-05-24"
             },
             {
