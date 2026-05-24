@@ -10,16 +10,34 @@ const { validate } = require('../src/enforcement/cli-outer-loop');
 const [, , subcommand, ...args] = process.argv;
 
 if (subcommand === 'validate') {
-  if (args.length < 2) {
-    process.stderr.write('Usage: skills validate <artefact-path> <gate-name>\n');
-    process.exit(1);
+  const hasCI = args.includes('--ci');
+  const storyIdx = args.indexOf('--story');
+  if (hasCI && storyIdx !== -1) {
+    // --story <slug> --ci mode: run H-gate check via governance-package
+    const storySlug = args[storyIdx + 1];
+    if (!storySlug || storySlug.startsWith('--')) {
+      process.stderr.write('Usage: skills validate --story <slug> --ci\n');
+      process.exit(1);
+    }
+    const { checkHGates } = require('../src/enforcement/governance-package');
+    const repoRoot = path.resolve(__dirname, '..');
+    const result = checkHGates(storySlug, repoRoot);
+    if (result.stdout) process.stdout.write(result.stdout + '\n');
+    if (result.stderr) process.stderr.write(result.stderr + '\n');
+    process.exit(result.exitCode);
+  } else {
+    // Original validate <artefact-path> <gate-name> mode
+    if (args.length < 2) {
+      process.stderr.write('Usage: skills validate <artefact-path> <gate-name>\n');
+      process.exit(1);
+    }
+    const [artefactPath, gateName] = args;
+    const repoRoot = path.resolve(__dirname, '..');
+    const result = validate(artefactPath, gateName, repoRoot);
+    if (result.stdout) process.stdout.write(result.stdout + '\n');
+    if (result.stderr) process.stderr.write(result.stderr + '\n');
+    process.exit(result.exitCode);
   }
-  const [artefactPath, gateName] = args;
-  const repoRoot = path.resolve(__dirname, '..');
-  const result = validate(artefactPath, gateName, repoRoot);
-  if (result.stdout) process.stdout.write(result.stdout + '\n');
-  if (result.stderr) process.stderr.write(result.stderr + '\n');
-  process.exit(result.exitCode);
 } else if (subcommand === 'advance') {
   const [featureSlug, storyId, ...rawFields] = args;
   const { advance } = require('../src/enforcement/cli-advance');
@@ -44,6 +62,7 @@ if (subcommand === 'validate') {
     `Unknown subcommand: '${cmd}'\n` +
     `Usage:\n` +
     `  skills validate <artefact-path> <gate-name>\n` +
+    `  skills validate --story <slug> --ci              Run H1-H9 gates for story by slug\n` +
     `  skills advance <feature-slug> <story-id> <field>=<value>...\n` +
     `  skills init <slug> [--description "..."]    Create a new discovery-stage feature stub\n`
   );

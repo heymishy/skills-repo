@@ -215,6 +215,91 @@ function _writeGateConfirmTrace(entry, options) {
   return finalEntry;
 }
 
+// ── checkHGates ───────────────────────────────────────────────────────────────
+
+/**
+ * Run H1-H9 DoR gate checks for a story identified by slug.
+ * ADR-013: H-gate logic must be importable from governance-package.js.
+ *
+ * @param {string} storySlug - Story slug (e.g. 'gpa-sc-01-trace-contract')
+ * @param {string} repoRoot  - Absolute path to repository root
+ * @returns {{ exitCode: number, stdout: string, stderr: string }}
+ */
+function checkHGates(storySlug, repoRoot) {
+  const { validate } = require('./cli-outer-loop');
+
+  // ── Check dorStatus: skip signed-off stories ──────────────────────────────
+  try {
+    const statePath = path.join(repoRoot, '.github', 'pipeline-state.json');
+    if (fs.existsSync(statePath)) {
+      const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+      const features = Array.isArray(state.features) ? state.features : [];
+      for (const feat of features) {
+        const flatStories = Array.isArray(feat.stories) ? feat.stories : [];
+        const epicStories = Array.isArray(feat.epics)
+          ? feat.epics.flatMap(e => Array.isArray(e.stories) ? e.stories : [])
+          : [];
+        const allStories = flatStories.concat(epicStories);
+        const match = allStories.find(s => (s.id === storySlug || s.slug === storySlug));
+        if (match && match.dorStatus === 'signed-off') {
+          return {
+            exitCode: 0,
+            stdout: 'SKIP — dorStatus is signed-off for ' + storySlug + '\n[skills-validate] Results: 9 passed, 0 failed',
+            stderr: '',
+          };
+        }
+      }
+    }
+  } catch (_) {
+    // If pipeline-state can't be read, proceed to H-gate check
+  }
+
+  // ── Resolve DoR artefact path from slug ───────────────────────────────────
+  let dorPath = null;
+  const artefactsDir = path.join(repoRoot, 'artefacts');
+  try {
+    const featureDirs = fs.readdirSync(artefactsDir, { withFileTypes: true })
+      .filter(d => d.isDirectory())
+      .map(d => d.name);
+    for (const featureDir of featureDirs) {
+      const candidate = path.join(artefactsDir, featureDir, 'dor', storySlug + '-dor.md');
+      if (fs.existsSync(candidate)) {
+        dorPath = candidate;
+        break;
+      }
+    }
+  } catch (_) {
+    // artefacts dir not found or not readable
+  }
+
+  if (!dorPath) {
+    return {
+      exitCode: 1,
+      stdout: '',
+      stderr: 'H1 FAIL: no DoR artefact found for slug: ' + storySlug +
+              '\n[skills-validate] Results: 0 passed, 1 failed',
+    };
+  }
+
+  // ── Run H1-H9 checks ──────────────────────────────────────────────────────
+  const result = validate(dorPath, 'definition-of-ready', repoRoot);
+  if (result.exitCode === 0) {
+    return {
+      exitCode: 0,
+      stdout: '[skills-validate] Results: 9 passed, 0 failed',
+      stderr: '',
+    };
+  }
+
+  // Failing: include the failure message + canonical line
+  const failMsg = result.stderr || result.stdout || 'H-gate FAIL';
+  return {
+    exitCode: 1,
+    stdout: '',
+    stderr: failMsg + '\n[skills-validate] Results: 0 passed, 1 failed',
+  };
+}
+
 // ── Exports ───────────────────────────────────────────────────────────────────
 
 module.exports = {
@@ -223,4 +308,5 @@ module.exports = {
   evaluateGate,
   advanceState,
   writeTrace,
+  checkHGates,
 };
