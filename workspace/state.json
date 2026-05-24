@@ -1,27 +1,50 @@
 {
-  "currentPhase": "definition",
-  "lastUpdated": "2026-05-24T21:00:00Z",
+  "currentPhase": "review",
+  "lastUpdated": "2026-05-24T22:00:00Z",
   "features": {
     "2026-05-24-governance-platform-architecture": {
-      "stage": "definition",
-      "commit": "f965588",
+      "stage": "review",
+      "commit": "bbe2508",
       "epics": 2,
       "stories": 7,
-      "nextAction": "Run /review for each story (start with SC-01 or SC-04 — complexity 1, no dependencies)"
+      "reviewResults": {
+        "passed": 6,
+        "hasFindings": 1,
+        "blocked": [
+          "gpa-sc-03-cli-validate-ci"
+        ],
+        "reviewedAt": "2026-05-24"
+      },
+      "nextAction": "SC-03 FAIL: 1 HIGH finding (1-H1). Fix story AC then re-run /review for SC-03. All other 6 stories passed."
+    }
+  },
+  "cycle": {
+    "discovery": {
+      "status": "approved",
+      "artefact": "artefacts/2026-05-24-governance-platform-architecture/discovery.md",
+      "completedAt": "2026-05-24"
+    },
+    "definition": {
+      "status": "complete",
+      "artefact": "artefacts/2026-05-24-governance-platform-architecture/stories",
+      "completedAt": "2026-05-24"
+    },
+    "review": {
+      "status": "in-progress",
+      "artefact": "artefacts/2026-05-24-governance-platform-architecture/review",
+      "completedAt": null
     }
   },
   "checkpoint": {
     "writtenAt": "2026-05-24",
-    "contextAtWrite": "definition complete for governance-platform-architecture. 2 epics, 7 stories (SC-01 trace-contract, SC-04 test-output-format, SC-05 skills-init, SC-07 inline-js-extraction, SC-03 cli-validate-ci, SC-06 source-path-guard, SC-02 unified-gate-evaluator), NFR profile, decisions.md. All committed at f965588. Pipeline-state updated: stage=definition, 2 epics nested structure.",
-    "resumeInstruction": "Read artefacts/2026-05-24-governance-platform-architecture/stories/ — 7 story artefacts exist at definition stage. Next step is /review for each story. Start with SC-01 and SC-04 (complexity 1, no upstream dependencies). Wave 1 (SC-01, SC-04, SC-05) can be reviewed and dispatched in parallel. Wave 2 (SC-07, SC-03, SC-06) after Wave 1. SC-02 gated on Wave 2 stable + evaluateGate interface review with Hamis.",
+    "contextAtWrite": "Review complete for governance-platform-architecture. 6 of 7 stories PASS. SC-03 FAIL: 1-H1 no AC for H-gate extraction to governance-package.js (ADR-013). SC-04 PASS with MEDIUM 1-M1 (AC4 not testable). SC-02 PASS with MEDIUM 1-M1 (graceful-degradation NFR impossible scenario). All 7 review artefacts written.",
+    "resumeInstruction": "SC-03 has HIGH finding 1-H1: add AC for H-gate logic extraction to governance-package.js per ADR-013 architecture constraint in story gpa-sc-03-cli-validate-ci.md, then re-run /review for SC-03 only. SC-04 and SC-02 MEDIUMs: acknowledge in /decisions or fix before /test-plan. Once all 7 stories pass review, proceed to /test-plan (Wave 1: SC-01, SC-04, SC-05).",
     "pendingActions": [
-      "Run /review for SC-01 (gpa-sc-01-trace-contract) — complexity 1, no deps",
-      "Run /review for SC-04 (gpa-sc-04-test-output-format) — complexity 1, no deps",
-      "Run /review for SC-05 (gpa-sc-05-skills-init) — complexity 2, no deps",
-      "Run /review for SC-07 (gpa-sc-07-inline-js-extraction) — complexity 2, no deps",
-      "Run /review for SC-03 (gpa-sc-03-cli-validate-ci) — complexity 2, depends on SC-01",
-      "Run /review for SC-06 (gpa-sc-06-source-path-guard) — complexity 2, depends on SC-07",
-      "Run /review for SC-02 (gpa-sc-02-unified-gate-evaluator) — complexity 3, Wave 3 gate: SC-07+SC-03+SC-06 all DoD-complete + evaluateGate interface review with Hamis required at DoR"
+      "BLOCKING: Fix SC-03 HIGH finding 1-H1 in artefacts/2026-05-24-governance-platform-architecture/stories/gpa-sc-03-cli-validate-ci.md — add AC: Given skills validate --ci evaluates H1-H9 for a story, when evaluation is complete, then H-gate evaluation functions are exported from governance-package.js and called through it — cli-outer-loop.js and bin/skills do not contain independent H-gate evaluation logic. A test asserts H1-H9 check functions are importable from governance-package.js.",
+      "Re-run /review for SC-03 (gpa-sc-03-cli-validate-ci) after fix to get reviewStatus: passed.",
+      "SC-04 MEDIUM 1-M1: rewrite AC4 to assert document content (conforming/non-conforming examples labelled). Fix in story or acknowledge via /decisions RISK-ACCEPT before /test-plan.",
+      "SC-02 MEDIUM 1-M1: reword graceful degradation NFR — governance-package is a local module, not an npm package; failure mode is require() error, not package not installed. Fix in story or acknowledge via /decisions RISK-ACCEPT before /test-plan.",
+      "Once SC-03 review passes: run /test-plan for Wave 1 (SC-01, SC-04, SC-05). Wave 2 (SC-07, SC-03, SC-06) after Wave 1."
     ]
   }
 }
