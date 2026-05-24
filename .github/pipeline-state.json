@@ -194,7 +194,7 @@
               "slug": "cdg.3",
               "id": "cdg.3",
               "name": "skills advance CLI command: CI-facing state write with typed exit codes",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -211,7 +211,7 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.3-dor.md",
               "planArtefact": "artefacts/2026-05-19-cli-deterministic-governance/plans/cdg.3-plan.md",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/355",
               "updatedAt": "2026-05-25"
             },
