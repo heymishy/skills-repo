@@ -287,6 +287,22 @@
               "prUrl": "https://github.com/heymishy/skills-repo/pull/358",
               "name": "skills advance epic-nested lookup, dot-notation field writes, integer coercion, and harness wiring rule",
               "health": "green"
+            },
+            {
+              "slug": "cdg.7",
+              "id": "cdg.7",
+              "name": "Gated advance: validate-before-write for stage transitions, and web UI adapter wiring",
+              "title": "Gated advance: validate-before-write for stage transitions, and web UI adapter wiring",
+              "stage": "dor-signed-off",
+              "prStatus": "none",
+              "dorStatus": "signed-off",
+              "testPlan": {
+                "artefact": "artefacts/2026-05-19-cli-deterministic-governance/test-plans/cdg.7-test-plan.md"
+              },
+              "dorArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.7-dor.md",
+              "dorContract": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.7-dor-contract.md",
+              "updatedAt": "2026-05-24",
+              "health": "green"
             }
           ]
         }
