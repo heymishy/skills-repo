@@ -152,6 +152,10 @@ async function main() {
     if (typeof r.j.setValidate === 'function') {
       r.j.setValidate(function() { return { exitCode: 0 }; });
     }
+    // cdg.5: wire no-op writeTrace so D37 stub doesn't throw in T2
+    if (typeof r.j.setWriteTrace === 'function') {
+      r.j.setWriteTrace(function() {});
+    }
 
     // For DoR stage, journey needs stories set up so it can advance/complete
     r.j.setRegisterHtmlSession(function() {});
