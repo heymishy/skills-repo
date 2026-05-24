@@ -3767,7 +3767,10 @@
                 "artefact": "artefacts/2026-05-24-governance-platform-architecture/test-plans/gpa-sc-07-inline-js-extraction-test-plan.md",
                 "writtenAt": "2026-05-25"
               },
-              "updatedAt": "2026-05-25"
+              "updatedAt": "2026-05-25",
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/363",
+              "dispatchedAt": "2026-05-25T00:00:00Z",
+              "dispatchTarget": "vscode"
             },
             {
               "slug": "gpa-sc-03-cli-validate-ci",
@@ -3784,7 +3787,10 @@
                 "artefact": "artefacts/2026-05-24-governance-platform-architecture/test-plans/gpa-sc-03-cli-validate-ci-test-plan.md",
                 "writtenAt": "2026-05-25"
               },
-              "updatedAt": "2026-05-25"
+              "updatedAt": "2026-05-25",
+              "issueUrl": "https://github.com/heymishy/skills-repo/issues/365",
+              "dispatchedAt": "2026-05-25T00:00:00Z",
+              "dispatchTarget": "vscode"
             },
             {
               "slug": "gpa-sc-06-source-path-guard",
@@ -3817,7 +3823,8 @@
             }
           ]
         }
-      ]
+      ],
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
