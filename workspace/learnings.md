@@ -2118,3 +2118,32 @@ audit:
 **Rule for future long-running experiment branches:** Any branch whose name does not encode a story-ID (e.g. eat/model-evaluation-capability, eat/some-long-running-experiment) MUST set udit.feature_slug in context.yml at branch-setup time, before the first PR opens. Remove or update the override when the branch is merged.
 
 **Prevention at branch-setup:** The /branch-setup skill should prompt: "Does your branch name contain a story ID (e.g. eat/wucp.3-...)? If not, set udit.feature_slug in context.yml now."
+
+
+---
+
+## D42 — Tasks written to pipeline-state.json without required `tddState` field cause schema failure in CI (cdg.5, 2026-05-24)
+
+**Symptom:** CI "Trace Validation" check fails with `'tddState' is a required property` at `features > N > epics > M > stories > K > tasks > 0-5`. Schema validation passes locally if the operator never runs the full schema check.
+
+**Root cause:** Tasks were manually added to the story entry in pipeline-state.json during implementation tracking without including the schema-required `tddState` field. The schema check only runs in CI, not at commit time. Nothing prevents a task object from being written without it.
+
+**Fix pattern:** Remove the tasks array entirely from the story entry. Tasks are implementation-tracking detail with no pipeline or governance value once a story reaches branch-complete. The minimal story entry (stage, acVerified, testPlan, prStatus, prUrl) is sufficient and schema-safe.
+
+**Rule:** Do not add a `tasks[]` array to a pipeline-state.json story entry unless every task object includes both `name` and `tddState` fields. When in doubt, omit the array.
+
+**Prevention:** At /checkpoint and /branch-complete time: if the story entry has a tasks array, verify every task has `name` and `tddState` before pushing, or remove the array.
+
+---
+
+## D43 — Feature branch pipeline-state.json diverges from master checkpoint; CI on PR reads stale branch values (cdg.5, 2026-05-24)
+
+**Symptom:** PR governance bot shows `AC: — / —` for all story ACs even though master has correct `acVerified`, `testPlan.passing`, and `stage` values from the session-end checkpoint commit.
+
+**Root cause:** The /checkpoint skill writes correct values to pipeline-state.json on master. The feature branch was not updated to match. CI on the PR checks out the merge commit of the branch — which carries the old branch values, not master's checkpoint values.
+
+**Fix pattern:** After a master checkpoint that updates pipeline-state.json, immediately update the feature branch to match: edit the story entry on the feature branch and push a fix commit. Or cherry-pick the checkpoint commit onto the branch.
+
+**Rule:** Whenever a /checkpoint or manual pipeline-state.json update is committed to master mid-implementation, the feature branch MUST also be updated before the next CI run on its PR.
+
+**Structural recommendation:** Avoid writing pipeline-state.json progress updates to master during active implementation. Write all updates (acVerified, stage, testPlan.passing) on the feature branch; let the PR merge carry them to master. Mid-session checkpoints should update only `workspace/state.json` — not `pipeline-state.json` — unless the story is fully complete and the PR is about to merge.
