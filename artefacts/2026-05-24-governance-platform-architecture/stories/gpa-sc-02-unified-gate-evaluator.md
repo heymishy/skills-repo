@@ -20,7 +20,11 @@ So that M4 (ADR-013 compliance — shared gate authority) moves from non-complia
 - **ADR-013 (Active — direct closure):** "All surface adapters call the shared governance package for resolveSkill, verifyHash, evaluateGate, advanceState, and writeTrace. No surface adapter reimplements governance logic independently." SC-02 directly closes this non-compliance.
 - ADR-009: no changes to workflow trigger separation, permission grants, or trigger events.
 - ADR-011: changes to `run-assurance-gate.js` (existing governance check script) — this story artefact satisfies artefact-first.
-- **DoR review requirement (M4):** The `evaluateGate` interface contract (input shape, verdict shape, error contract) must be reviewed with the platform maintainer (Hamis) before implementation begins. This is a hard-block at the SC-02 DoR — no coding without interface agreement.
+- **`evaluateGate` interface extension — specified here (not deferred to DoR):**
+  - Input: `evaluateGate({ gate: 'structural', context: { checks: Array<{ name: string, passed: boolean, reason?: string }> } })` — adds a `'structural'` case to the existing `gate` switch; `checks` is the verbatim output of `runChecks(root)` (the 4 file-existence checks already in `run-assurance-gate.js`).
+  - Return: `{ passed: boolean, findings: string[] }` — same shape as all existing gate cases. `passed` is `checks.every(c => c.passed)`. `findings` is failed-check `reason` strings.
+  - Error contract: unknown `gate` value falls through to the existing `default` branch, returning `{ passed: false, findings: ['Unknown gate: "<name>"'] }` — no change to existing behaviour.
+  - No breaking change: all existing callers using `gate: 'dor'|'review'|'test-plan'|'definition-of-done'` are unaffected.
 - **Functional equivalence mandatory:** All existing CI gate pass/fail behaviours must be preserved post-SC-02; functional equivalence must be demonstrated by the test suite.
 - Plain Node.js, CommonJS, no external npm dependencies.
 - Checked against `.github/architecture-guardrails.md`.
@@ -33,11 +37,11 @@ So that M4 (ADR-013 compliance — shared gate authority) moves from non-complia
 
 ## Acceptance Criteria
 
-**AC1:** Given `run-assurance-gate.js` is the CI enforcement adapter, when it evaluates the `structural` gate type (the 4 file-existence checks: workspace-state-valid, pipeline-state-valid, artefacts-dir-exists, governance-gates-exists), then it calls `governance-package.evaluateGate({ type: 'structural', checks: [...] })` — the existing independent `checkResults` function is either removed or replaced by a thin delegating wrapper that calls `evaluateGate`.
+**AC1:** Given `run-assurance-gate.js` is the CI enforcement adapter, when it evaluates the structural gate (the 4 file-existence checks: workspace-state-valid, pipeline-state-valid, artefacts-dir-exists, governance-gates-exists), then it calls `governance-package.evaluateGate({ gate: 'structural', context: { checks: runChecks(root) } })` — the inline verdict derivation logic that currently follows `runChecks(root)` is replaced by delegating to `evaluateGate`, with `runChecks` remaining as the check collector.
 
-**AC2:** Given `governance-package.evaluateGate` is now called from `run-assurance-gate.js` for the structural gate, when a CI run processes a PR that previously passed the gate, then the gate verdict (pass/fail/warn), the check names, and the check results are identical to what the previous independent implementation produced — functional equivalence verified by running the full test suite.
+**AC2:** Given `governance-package.evaluateGate` is now called from `run-assurance-gate.js` for the structural gate, when a CI run processes a PR that previously passed the gate, then the gate verdict (pass/fail), the check names, and the failed-check `reason` strings in `findings` are identical to what the previous inline implementation produced — functional equivalence verified by running the full test suite. Specifically: all 4 check names (`workspace-state-valid`, `pipeline-state-valid`, `artefacts-dir-exists`, `governance-gates-exists`) and their pass/fail outcomes must be preserved.
 
-**AC3:** Given a test imports both `run-assurance-gate.js` and `governance-package`, when the test calls the structural gate evaluation path, then it can assert: (a) `governance-package` is imported as a dependency of `run-assurance-gate.js`, and (b) the `structural` gate type is supported by `evaluateGate` and returns a valid verdict object containing `state` (one of `pass`, `fail`, `warn`) and `checks` (array of named check results with individual pass/fail outcomes).
+**AC3:** Given a test imports both `run-assurance-gate.js` and `governance-package`, when the test calls the structural gate evaluation path, then it can assert: (a) `governance-package` is imported as a dependency of `run-assurance-gate.js`, and (b) `governance-package.evaluateGate({ gate: 'structural', context: { checks: [{ name: 'workspace-state-valid', passed: true }, ...] } })` returns `{ passed: true, findings: [] }` and `evaluateGate({ gate: 'structural', context: { checks: [{ name: 'workspace-state-valid', passed: false, reason: 'not found' }] } })` returns `{ passed: false, findings: ['not found'] }`.
 
 **AC4:** Given SC-02 is merged and a future contributor adds a new surface adapter, when they read `run-assurance-gate.js`, then they find no independent gate evaluation logic — all gate verdicts trace through `governance-package.evaluateGate`, making it the unambiguous ADR-013-compliant reference pattern.
 
@@ -69,6 +73,6 @@ So that M4 (ADR-013 compliance — shared gate authority) moves from non-complia
 - [ ] Complexity rated
 - [ ] Wave 2 stable confirmed (SC-07, SC-03, SC-06 all DoD-complete)
 - [ ] A2 gate confirmed (execution-boundary scope excludes run-assurance-gate.js and governance-package.js)
-- [ ] evaluateGate interface contract reviewed with Hamis — hard-block before coding
+- [ ] evaluateGate interface extension confirmed as specified in Architecture Constraints (no interface review required — contract is fully specified in this story)
 - [ ] NFRs identified (or explicitly "None")
 - [ ] Human oversight level confirmed from parent epic
