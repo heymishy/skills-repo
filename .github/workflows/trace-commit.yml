@@ -94,6 +94,10 @@ jobs:
             core.setOutput('run_id', String(run.id));
             core.setOutput('found', 'true');
 
+      - name: Write fresh CI trace record
+        if: steps.precheck.outputs.skip != 'true'
+        run: node scripts/write-ci-trace.js
+
       - name: Download trace artifact
         if: steps.precheck.outputs.skip != 'true' && steps.find.outputs.found == 'true'
         uses: actions/download-artifact@v4
