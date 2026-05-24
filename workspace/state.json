@@ -75,16 +75,14 @@
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-05-25",
-    "contextAtWrite": "cdg.6 branch-complete. Draft PR #358 opened at https://github.com/heymishy/skills-repo/pull/358. All 34 tests passing (T1-T13, 34 assertions). All 7 ACs verified. Worktree: .worktrees/cdg.6. Commits: 90ec9c5 (implementation — cli-advance.js, CHANGELOG, package.json, copilot-instructions.md) + cff8222 (verify-completion + pipeline-state branch-complete). Master updated at cbe13b2 with prUrl. cdg.5 PR #357 still open — DoD needed after merge. Notes: commit hook exit-1 is the changelog-readme warning about skill-pipeline-instructions.md; pipeline-paths and governance-sync hooks produce exit-1 on success — false positive, not a failure.",
-    "resumeInstruction": "cdg.6 draft PR #358 is open at https://github.com/heymishy/skills-repo/pull/358. Next steps: (1) confirm changedFiles > 0 ('gh pr view 358 --json changedFiles --jq .changedFiles'), (2) monitor CI, (3) run /definition-of-done after PR merges, (4) also run /definition-of-done for cdg.5 PR #357 after that merges, (5) clean up worktrees after merges.",
+    "writtenAt": "2026-05-24",
+    "contextAtWrite": "cdg.6 definition-of-done complete. PR #358 merged at c3a3902. DoD artefact written: artefacts/2026-05-19-cli-deterministic-governance/dod/cdg.6-dod.md. 7/7 ACs verified. 34/34 tests pass. Pipeline-state updated: prStatus=merged, stage=definition-of-done (updated via skills advance epic-nested lookup — first production use of cdg.6 feature). Master at 6219afb. Worktree .worktrees/cdg.6 needs cleanup. trw.1 ready for inner loop.",
+    "resumeInstruction": "cdg.6 is fully done-done: PR #358 merged, DoD complete. Next: (1) clean up .worktrees/cdg.6 ('git worktree remove .worktrees/cdg.6'), (2) check if cdg.5 PR #357 is also merged and run DoD if so, (3) start trw.1 inner loop (2026-05-16-trace-writer-fix, dorStatus=signed-off).",
     "pendingActions": [
-      "Monitor cdg.6 draft PR #358 CI — run 'gh pr view 358 --json changedFiles --jq .changedFiles' to confirm changedFiles > 0 before merge",
-      "Run /definition-of-done for cdg.6 after PR #358 merges",
-      "Monitor cdg.5 draft PR #357 — also needs /definition-of-done after merge",
-      "Clean up .worktrees/cdg.6 worktree after PR merges (git worktree remove .worktrees/cdg.6)",
-      "Clean up .worktrees/cdg.5 worktree after PR merges (git worktree remove .worktrees/cdg.5)",
-      "trw.1 (2026-05-16-trace-writer-fix) is at dorStatus=signed-off with no branch — ready to start inner loop when cdg work settles"
+      "Clean up .worktrees/cdg.6 worktree (git worktree remove .worktrees/cdg.6 from repo root)",
+      "Check cdg.5 PR #357 status — run DoD if merged (gh pr view 357 --json state --jq .state)",
+      "Clean up .worktrees/cdg.5 worktree after cdg.5 DoD is done",
+      "Start trw.1 inner loop: artefacts/2026-05-16-trace-writer-fix/, dorStatus=signed-off, no branch yet — run /branch-setup then /implementation-plan"
     ]
   },
   "cycles": {
