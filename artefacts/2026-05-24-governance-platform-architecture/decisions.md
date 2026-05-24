@@ -33,3 +33,12 @@
 **Context:** SC-02 refactors `run-assurance-gate.js` to call `governance-package.evaluateGate`. The exact input/output shape of `evaluateGate` for the `structural` gate type is not fully specified in existing documentation.
 **Decision:** The `evaluateGate` interface contract (input shape, verdict shape, error contract) must be reviewed with the platform maintainer (Hamis) before SC-02 implementation begins. This is an explicit hard-block in the SC-02 DoR pre-check.
 **Rationale:** Writing SC-02 against an assumed interface and then discovering the interface is different creates rework that is more costly than a 30-minute interface review at DoR time. Functional equivalence (AC2) is only verifiable if both parties agree on the expected verdict shape before coding starts.
+
+---
+
+## D4 — SC-03 AC1 slug resolution mechanism (RISK-ACCEPT)
+
+**Date:** 2026-05-24
+**Context:** SC-03 review run-2 carried forward MEDIUM 2-M1: AC1 states CI calls `node bin/skills validate --story <story-slug> --ci` for each story in the PR's feature, but does not specify how CI identifies which feature and stories are associated with the PR. The feature slug resolution mechanism is not named in AC1.
+**Decision:** RISK-ACCEPT. The intended mechanism is the existing `extractPRSlug` function in `scripts/extract-pr-slug.js`. The test plan for SC-03 will assert that `extractPRSlug` output is used to locate the DoR artefact path before validate is called. No story change required.
+**Approved by:** Hamis — 2026-05-24.
