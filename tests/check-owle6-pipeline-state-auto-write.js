@@ -148,6 +148,10 @@ async function main() {
     r.j.setPipelineStateWriter(function(featureSlug, storyId, stateUpdate) {
       spyCalls.push({ featureSlug: featureSlug, storyId: storyId, stateUpdate: stateUpdate });
     });
+    // cdg.4: inject passing validate stub so T2 is not blocked by D37 default throw
+    if (typeof r.j.setValidate === 'function') {
+      r.j.setValidate(function() { return { exitCode: 0 }; });
+    }
 
     // For DoR stage, journey needs stories set up so it can advance/complete
     r.j.setRegisterHtmlSession(function() {});

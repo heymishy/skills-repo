@@ -189,7 +189,7 @@
               "slug": "cdg.3",
               "id": "cdg.3",
               "name": "skills advance CLI command: CI-facing state write with typed exit codes",
-              "stage": "definition-of-ready",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -208,7 +208,6 @@
               "planArtefact": "artefacts/2026-05-19-cli-deterministic-governance/plans/cdg.3-plan.md",
               "prStatus": "draft",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/355",
-              "stage": "subagent-execution",
               "updatedAt": "2026-05-24"
             },
             {
