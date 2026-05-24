@@ -58,7 +58,7 @@ So that M4 (ADR-013 compliance — shared gate authority) moves from non-complia
 
 - **Functional equivalence:** All existing CI gate pass/fail behaviours preserved post-merge.
 - **No external npm dependencies.**
-- **Graceful degradation:** If `governance-package` is not installed (e.g. development environment without `npm install`), `run-assurance-gate.js` must fall back to a printed warning rather than a hard crash that blocks all CI runs.
+- **Graceful degradation:** If `require('./governance-package')` throws at runtime, `run-assurance-gate.js` logs a warning to stderr and falls back to the existing four structural checks — gate does not fail on a require error.
 
 ## Complexity Rating
 

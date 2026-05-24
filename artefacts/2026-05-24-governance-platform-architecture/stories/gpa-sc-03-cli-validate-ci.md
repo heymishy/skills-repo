@@ -43,6 +43,8 @@ So that M2 (CI H-gate enforcement coverage) moves from 0 of 9 H-checks wired to 
 
 **AC6:** Given assumption A3 (DoR path resolution for multi-story features) produces false-positive rejections on more than 1 in 20 PRs, when the pattern is identified, then a RISK-ACCEPT entry is written to `artefacts/2026-05-24-governance-platform-architecture/decisions.md` and the H-check wiring scope is restricted to single-story features until A3 is resolved — the CI job does not silently discard the false-positive; it reports the path resolution failure.
 
+**AC7 — Given** `skills validate --ci` evaluates H1-H9 for a story artefact, **when** evaluation is complete, **then** the H-gate evaluation functions are exported from `governance-package.js` and called through it — `cli-outer-loop.js` and `bin/skills` do not contain independent H-gate evaluation logic. A test in `tests/check-gpa-sc03-cli-validate-ci.js` asserts that the H1-H9 check functions are importable from `governance-package.js`.
+
 ## Out of Scope
 
 - Re-evaluating H-checks for stories already DoD-complete (merged PRs) — historical stories are out of scope.

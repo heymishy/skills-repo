@@ -33,7 +33,7 @@ So that the test output format principle (currently implicit in assurance-gate.y
 
 **AC3:** Given test-output-format.md references the historical trw.1 prefix fix (context: the trw1 test had an incorrect prefix that caused silent skip), when the document is read by a contributor unfamiliar with trw.1, then they understand: (a) the fix that was applied, and (b) why the format matters for gate parsing — without needing to read the trw.1 PR history.
 
-**AC4:** Given the format standard exists, when a contributor writes a new governance check script and runs it locally, then they can verify format compliance by comparing their script's output against the examples in the standard before committing.
+**AC4 — Given** the test-output-format.md standards document exists, **when** a reviewer reads it, **then** it contains at least one labelled conforming example (showing the correct `[suite-name] Results: N passed, M failed` format) and at least one labelled non-conforming example (showing an incorrect format with explanation of why it fails parsing by the assurance gate).
 
 ## Out of Scope
 
