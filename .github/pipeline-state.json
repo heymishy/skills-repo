@@ -3644,7 +3644,32 @@
         }
       ],
       "slicingStrategy": "risk-first",
-      "guardrails": [],
+      "guardrails": [
+        {
+          "id": "ADR-011",
+          "label": "Artefact-first rule — new modules require story artefact before implementation",
+          "category": "adr",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-05-25"
+        },
+        {
+          "id": "NFR-sc05-atomicity",
+          "label": "SC-05 atomic write (tmp-then-rename)",
+          "category": "nfr",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-05-25"
+        },
+        {
+          "id": "NFR-sc05-path-guard",
+          "label": "SC-05 slug input validation and path traversal guard",
+          "category": "nfr",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-05-25"
+        }
+      ],
       "definition": {
         "status": "complete",
         "slicingStrategy": "risk-first",
@@ -3667,43 +3692,49 @@
               "slug": "gpa-sc-01-trace-contract",
               "id": "gpa-sc-01-trace-contract",
               "name": "Write trace contract standards document",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "reviewArtefact": "artefacts/2026-05-24-governance-platform-architecture/review/gpa-sc-01-trace-contract-review-1.md",
               "reviewedAt": "2026-05-24",
               "testPlanArtefact": "artefacts/2026-05-24-governance-platform-architecture/test-plans/gpa-sc-01-trace-contract-test-plan.md",
               "testPlanWrittenAt": "2026-05-25",
-              "dorStatus": "not-started",
-              "prStatus": "none"
+              "dorStatus": "signed-off",
+              "prStatus": "none",
+              "updatedAt": "2026-05-25",
+              "dorArtefact": "artefacts/2026-05-24-governance-platform-architecture/dor/gpa-sc-01-trace-contract-dor.md"
             },
             {
               "slug": "gpa-sc-04-test-output-format",
               "id": "gpa-sc-04-test-output-format",
               "name": "Write test output format standards document",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "reviewArtefact": "artefacts/2026-05-24-governance-platform-architecture/review/gpa-sc-04-test-output-format-review-1.md",
               "reviewedAt": "2026-05-24",
               "testPlanArtefact": "artefacts/2026-05-24-governance-platform-architecture/test-plans/gpa-sc-04-test-output-format-test-plan.md",
               "testPlanWrittenAt": "2026-05-25",
-              "dorStatus": "not-started",
-              "prStatus": "none"
+              "dorStatus": "signed-off",
+              "prStatus": "none",
+              "updatedAt": "2026-05-25",
+              "dorArtefact": "artefacts/2026-05-24-governance-platform-architecture/dor/gpa-sc-04-test-output-format-dor.md"
             },
             {
               "slug": "gpa-sc-05-skills-init",
               "id": "gpa-sc-05-skills-init",
               "name": "Add skills init command for atomic feature initialisation",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "reviewArtefact": "artefacts/2026-05-24-governance-platform-architecture/review/gpa-sc-05-skills-init-review-1.md",
               "reviewedAt": "2026-05-24",
               "testPlanArtefact": "artefacts/2026-05-24-governance-platform-architecture/test-plans/gpa-sc-05-skills-init-test-plan.md",
               "testPlanWrittenAt": "2026-05-25",
-              "dorStatus": "not-started",
-              "prStatus": "none"
+              "dorStatus": "signed-off",
+              "prStatus": "none",
+              "updatedAt": "2026-05-25",
+              "dorArtefact": "artefacts/2026-05-24-governance-platform-architecture/dor/gpa-sc-05-skills-init-dor.md"
             }
           ]
         },
