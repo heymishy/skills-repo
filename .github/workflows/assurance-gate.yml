@@ -170,7 +170,7 @@ jobs:
             const path   = require('path');
             const crypto = require('crypto');
 
-            const { loadPipelineStories, classifyArtefact, parseACs, computeIssueAcCheck, buildAuditComment } = require('./scripts/ci-audit-comment.js');
+            const { loadPipelineStories, classifyArtefact, parseACs, computeIssueAcCheck, buildAuditComment, sourceIntegrity } = require('./scripts/ci-audit-comment.js');
             const { buildSlugSourceNote, extractStorySlug, buildDispatchNote } = require('./scripts/extract-pr-slug.js');
 
             // ── Resolved metadata ──
@@ -251,16 +251,6 @@ jobs:
                   artefactFiles.push({ sourcePath: relPath, sha256: null, ...classifyArtefact(relPath) });
                 }
               })(`artefacts/${slug}`);
-            }
-
-            // ── Source integrity: compare manifest hash to live source file ──
-            function sourceIntegrity(sourcePath, manifestHash) {
-              if (!manifestHash) return '—';
-              try {
-                const content = fs.readFileSync(sourcePath);
-                const computed = crypto.createHash('sha256').update(content).digest('hex');
-                return computed === manifestHash ? '✅' : '❌ DRIFT';
-              } catch (_) { return '⚠ not found'; }
             }
 
             // ── Enrich artefact files with classification and integrity status ──
