@@ -1,7 +1,14 @@
 {
-  "currentPhase": "definition-of-done",
-  "lastUpdated": "2026-05-27T00:00:00Z",
-  "activeFeature": "2026-05-19-cli-deterministic-governance",
+  "currentPhase": "definition-of-ready",
+  "lastUpdated": "2026-05-27T10:00:00Z",
+  "activeFeature": "2026-05-27-cli-advance-boolean-coercion",
+  "cycle": {
+    "discovery": {
+      "completedAt": "N/A",
+      "artefact": "N/A — short-track defect fix, no discovery required",
+      "status": "short-track"
+    }
+  },
   "features": {
     "2026-05-19-cli-deterministic-governance": {
       "cdg.7": {
@@ -12,13 +19,22 @@
         "dod": "artefacts/2026-05-19-cli-deterministic-governance/dod/cdg.7-dod.md",
         "outcome": "COMPLETE WITH DEVIATIONS"
       }
+    },
+    "2026-05-27-cli-advance-boolean-coercion": {
+      "b3": {
+        "stage": "test-plan-complete",
+        "dorStatus": "signed-off",
+        "dor": "artefacts/2026-05-27-cli-advance-boolean-coercion/dor/b3-boolean-coercion-dor.md",
+        "testPlan": "artefacts/2026-05-27-cli-advance-boolean-coercion/test-plans/b3-boolean-coercion-test-plan.md"
+      }
     }
   },
   "checkpoint": {
     "writtenAt": "2026-05-27",
-    "contextAtWrite": "cdg.7 DoD artefact written and committed (00b858f). 6/6 ACs, 193/193 tests, 1 accepted deviation (W1 two-write). M2 and M4 metric signals updated to on-track.",
-    "resumeInstruction": "cdg.7 is fully done. Next: run /definition for skill-robustness-improvements (at benefit-metric stage). Optionally review further cdg phases.",
+    "contextAtWrite": "B3 short-track DoR complete. Story, test-plan, verification script, DoR artefact, and DoR contract all written. Feature initialized in pipeline-state.json. dorStatus=signed-off. Ready for branch-setup and implementation.",
+    "resumeInstruction": "B3 (cli-advance boolean coercion) is DoR-signed-off. Run /branch-setup for 2026-05-27-cli-advance-boolean-coercion/b3, then /implementation-plan, then implement. Test file to create: tests/check-b3-boolean-coercion.js. Files to modify: src/enforcement/cli-advance.js (add BOOLEAN_FIELDS), package.json (add test to chain).",
     "pendingActions": [
+      "B3 implementation: run /branch-setup then /implementation-plan for 2026-05-27-cli-advance-boolean-coercion/b3",
       "skill-robustness-improvements: run /definition to break down epics + stories (feature at benefit-metric stage)",
       "CDG feature: consider further phases (cdg.8+) for trace log and automated bypass audit"
     ]
