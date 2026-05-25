@@ -293,8 +293,8 @@
               "id": "cdg.7",
               "name": "Gated advance: validate-before-write for stage transitions, and web UI adapter wiring",
               "title": "Gated advance: validate-before-write for stage transitions, and web UI adapter wiring",
-              "stage": "branch-complete",
-              "prStatus": "draft",
+              "stage": "definition-of-done",
+              "prStatus": "merged",
               "dorStatus": "signed-off",
               "testPlan": {
                 "artefact": "artefacts/2026-05-19-cli-deterministic-governance/test-plans/cdg.7-test-plan.md"
