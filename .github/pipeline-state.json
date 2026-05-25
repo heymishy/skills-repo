@@ -3827,7 +3827,9 @@
           ]
         }
       ],
-      "stories": []
+      "stories": [],
+      "name": "Governance Platform Architecture",
+      "track": "standard"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
