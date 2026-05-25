@@ -284,5 +284,78 @@ try {
   }
 }
 
+// T15: default track is 'standard'
+{
+  let fakeRoot;
+  try {
+    const mod = require('../src/enforcement/cli-init');
+    fakeRoot = path.join(ROOT, 'tmp-test-root-sc05-t15-' + Date.now());
+    fs.mkdirSync(path.join(fakeRoot, '.github'), { recursive: true });
+    const fakePath = path.join(fakeRoot, '.github', 'pipeline-state.json');
+    fs.writeFileSync(fakePath, JSON.stringify({ features: [] }, null, 2), 'utf8');
+    mod.init('track-default-sc05', undefined, fakeRoot, undefined);
+    const stateAfter = JSON.parse(fs.readFileSync(fakePath, 'utf8'));
+    const newFeat = stateAfter.features.find(f => f.slug === 'track-default-sc05');
+    ok(newFeat && newFeat.track === 'standard', 'T15: default track is standard');
+    try { fs.rmSync(fakeRoot, { recursive: true }); } catch(_) {}
+  } catch (e) {
+    ok(false, 'T15: errored: ' + e.message);
+    if (fakeRoot) try { fs.rmSync(fakeRoot, { recursive: true }); } catch(_) {}
+  }
+}
+
+// T16: --track short → track is 'short'
+{
+  let fakeRoot;
+  try {
+    const mod = require('../src/enforcement/cli-init');
+    fakeRoot = path.join(ROOT, 'tmp-test-root-sc05-t16-' + Date.now());
+    fs.mkdirSync(path.join(fakeRoot, '.github'), { recursive: true });
+    const fakePath = path.join(fakeRoot, '.github', 'pipeline-state.json');
+    fs.writeFileSync(fakePath, JSON.stringify({ features: [] }, null, 2), 'utf8');
+    mod.init('track-short-sc05', undefined, fakeRoot, 'short');
+    const stateAfter = JSON.parse(fs.readFileSync(fakePath, 'utf8'));
+    const newFeat = stateAfter.features.find(f => f.slug === 'track-short-sc05');
+    ok(newFeat && newFeat.track === 'short', 'T16: track=short set correctly');
+    try { fs.rmSync(fakeRoot, { recursive: true }); } catch(_) {}
+  } catch (e) {
+    ok(false, 'T16: errored: ' + e.message);
+    if (fakeRoot) try { fs.rmSync(fakeRoot, { recursive: true }); } catch(_) {}
+  }
+}
+
+// T17: invalid track → exitCode 1
+{
+  try {
+    const mod = require('../src/enforcement/cli-init');
+    const result = mod.init('track-invalid-sc05', undefined, ROOT, 'bogus');
+    ok(result.exitCode === 1, 'T17: invalid track → exitCode 1');
+    ok((result.stderr || '').includes('bogus'), 'T17: stderr contains invalid track value');
+  } catch (e) {
+    ok(false, 'T17: errored: ' + e.message);
+  }
+}
+
+// T18: schema-valid stub (track field present, all required fields present)
+{
+  let fakeRoot;
+  try {
+    const mod = require('../src/enforcement/cli-init');
+    fakeRoot = path.join(ROOT, 'tmp-test-root-sc05-t18-' + Date.now());
+    fs.mkdirSync(path.join(fakeRoot, '.github'), { recursive: true });
+    const fakePath = path.join(fakeRoot, '.github', 'pipeline-state.json');
+    fs.writeFileSync(fakePath, JSON.stringify({ features: [] }, null, 2), 'utf8');
+    mod.init('schema-check-sc05', 'Schema Check Feature', fakeRoot, 'library');
+    const stateAfter = JSON.parse(fs.readFileSync(fakePath, 'utf8'));
+    const f = stateAfter.features.find(x => x.slug === 'schema-check-sc05');
+    ok(f && f.slug && f.name && f.track && f.stage && f.health, 'T18: stub has all required schema fields (slug/name/track/stage/health)');
+    ok(f && f.track === 'library', 'T18: track=library stored correctly');
+    try { fs.rmSync(fakeRoot, { recursive: true }); } catch(_) {}
+  } catch (e) {
+    ok(false, 'T18: errored: ' + e.message);
+    if (fakeRoot) try { fs.rmSync(fakeRoot, { recursive: true }); } catch(_) {}
+  }
+}
+
 console.log('\n[gpa-sc05] Results: ' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);

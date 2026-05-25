@@ -50,9 +50,11 @@ if (subcommand === 'validate') {
   const slug = args[0];
   const descIdx = args.indexOf('--description');
   const description = descIdx !== -1 ? args[descIdx + 1] : null;
+  const trackIdx = args.indexOf('--track');
+  const track = trackIdx !== -1 ? args[trackIdx + 1] : undefined;
   const { init } = require('../src/enforcement/cli-init');
   const repoRoot = process.cwd();
-  const result = init(slug, description, repoRoot);
+  const result = init(slug, description, repoRoot, track);
   if (result.stdout) process.stdout.write(result.stdout + '\n');
   if (result.stderr) process.stderr.write(result.stderr + '\n');
   process.exit(result.exitCode);
@@ -64,7 +66,7 @@ if (subcommand === 'validate') {
     `  skills validate <artefact-path> <gate-name>\n` +
     `  skills validate --story <slug> --ci              Run H1-H9 gates for story by slug\n` +
     `  skills advance <feature-slug> <story-id> <field>=<value>...\n` +
-    `  skills init <slug> [--description "..."]    Create a new discovery-stage feature stub\n`
+    `  skills init <slug> [--description "..."] [--track short|standard|programme-workstream|library]\n`
   );
   process.exit(8);
 }

@@ -12,6 +12,8 @@ var SLUG_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
 
 var PROTO_BLOCKED = ['__proto__', 'constructor', 'prototype'];
 
+var VALID_TRACKS = ['short', 'standard', 'programme-workstream', 'library'];
+
 function titleCase(slug) {
   return slug.replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
 }
@@ -22,12 +24,13 @@ function titleCase(slug) {
  * @param {string}        slug        — feature slug (e.g. "2026-05-25-my-feature")
  * @param {string|null}   description — optional human-readable name; if absent, title-cased from slug
  * @param {string}        repoRoot    — absolute path to repository root
+ * @param {string}        [track]     — pipeline track: short|standard|programme-workstream|library (default: standard)
  * @returns {{ exitCode: number, stdout: string, stderr: string }}
  *   exitCode 0 = success
  *   exitCode 1 = validation error (bad slug, missing arg, path traversal, read/write failure)
  *   exitCode 2 = conflict (slug already exists)
  */
-function init(slug, description, repoRoot) {
+function init(slug, description, repoRoot, track) {
   // ── Arg validation ────────────────────────────────────────────────────────
   if (!slug || typeof slug !== 'string') {
     return { exitCode: 1, stdout: '', stderr: 'Error: slug argument is required\nUsage: skills init <slug> [--description "..."]' };
@@ -41,6 +44,12 @@ function init(slug, description, repoRoot) {
   // ── Slug format validation ─────────────────────────────────────────────────
   if (!SLUG_RE.test(slug)) {
     return { exitCode: 1, stdout: '', stderr: 'Error: invalid slug \'' + slug + '\': must match /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/' };
+  }
+
+  // ── Track validation ──────────────────────────────────────────────────────
+  var resolvedTrack = track || 'standard';
+  if (VALID_TRACKS.indexOf(resolvedTrack) === -1) {
+    return { exitCode: 1, stdout: '', stderr: 'Error: invalid track \'' + resolvedTrack + '\': must be one of ' + VALID_TRACKS.join('|') };
   }
 
   // ── Path resolution + traversal guard (OWASP A01) ─────────────────────────
@@ -71,6 +80,7 @@ function init(slug, description, repoRoot) {
   var newFeature = {
     slug: slug,
     name: name,
+    track: resolvedTrack,
     stage: 'discovery',
     health: 'green',
     stories: [],
