@@ -3842,7 +3842,8 @@
         {
           "id": "b3",
           "dorStatus": "signed-off",
-          "stage": "test-plan-complete"
+          "stage": "branch-complete",
+          "prStatus": "draft"
         }
       ],
       "metrics": [],
