@@ -15,6 +15,16 @@ var ENUM_FIELDS = {
   health:       ['green', 'amber', 'red'],
 };
 
+// Known boolean fields — values must be 'true' or 'false' and are coerced to JS booleans.
+var BOOLEAN_FIELDS = [
+  'releaseReady',
+  'layoutGapsAtMerge',
+  'layoutGapsRiskAccepted',
+  'gateChecksumVerified',
+  'regulated',
+  'stalenessFlag',
+];
+
 var USAGE = 'Usage: skills advance <feature-slug> <story-id> <field>=<value>...';
 
 /**
@@ -61,6 +71,16 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
         if (PROTO_BLOCKED.indexOf(parts[pi]) !== -1) {
           return { exitCode: 8, stdout: '', stderr: 'Rejected field segment \'' + parts[pi] + '\': prototype pollution risk.' };
         }
+      }
+    }
+
+    // ── Boolean validation ─────────────────────────────────────────────────
+    if (BOOLEAN_FIELDS.indexOf(field) !== -1) {
+      if (value !== 'true' && value !== 'false') {
+        return {
+          exitCode: 8, stdout: '',
+          stderr: 'Invalid value \'' + value + '\' for boolean field \'' + field + '\'. Accepted values: true, false',
+        };
       }
     }
 
@@ -135,6 +155,9 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
     var val = stateUpdate[key];
     // Integer coercion: bare digit strings become numbers
     if (/^\d+$/.test(val)) { val = Number(val); }
+    // Boolean coercion: fields in BOOLEAN_FIELDS are coerced from 'true'/'false' strings to booleans.
+    // Values are already validated in the parsing loop — only 'true'/'false' can reach here.
+    if (BOOLEAN_FIELDS.indexOf(key) !== -1) { val = (val === 'true'); }
     // Dot-notation: parent.child → story[parent][child]
     if (key.indexOf('.') !== -1) {
       var segs = key.split('.');
