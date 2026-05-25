@@ -3,86 +3,24 @@
   "lastUpdated": "2026-05-27T00:00:00Z",
   "activeFeature": "2026-05-19-cli-deterministic-governance",
   "features": {
-    "2026-05-24-governance-platform-architecture": {
-      "stage": "definition-of-done",
-      "commit": "37b7768",
-      "epics": 2,
-      "stories": 7,
-      "allStoriesDoD": true,
-      "metrics": {
-        "m1": "not-yet-measured (lagging, 6-month window)",
-        "m2": "on-track",
-        "m3": "not-yet-measured (lagging, 6-month window)",
-        "m4": "on-track",
-        "m5": "on-track"
-      },
-      "dodComplete": "gpa-sc-02-unified-gate-evaluator DoD artefact: artefacts/2026-05-24-governance-platform-architecture/dod/gpa-sc-02-unified-gate-evaluator-dod.md"
-    },
     "2026-05-19-cli-deterministic-governance": {
-      "stage": "review",
-      "stories": 7,
-      "cdg1_to_6": "definition-of-done prStatus:merged",
       "cdg.7": {
         "stage": "definition-of-done",
         "prStatus": "merged",
         "pr": "https://github.com/heymishy/skills-repo/pull/373",
-        "commit": "acdc1d0",
-        "branch": "feat/cdg7-gate-advance",
-        "dorArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.7-dor.md",
-        "summary": "gate-advance command + pipeline-state-writer refactor. 193/193 tests pass. PR #373 merged."
-      },
-      "2026-05-18-skill-robustness-improvements": {
-        "stage": "benefit-metric",
-        "notes": "M1/M2/M3 metrics written and committed"
+        "commit": "c611f21",
+        "dod": "artefacts/2026-05-19-cli-deterministic-governance/dod/cdg.7-dod.md",
+        "outcome": "COMPLETE WITH DEVIATIONS"
       }
-    }
-  },
-  "cycle": {
-    "discovery": {
-      "status": "approved",
-      "artefact": "artefacts/2026-05-19-cli-deterministic-governance/discovery.md",
-      "completedAt": "2026-05-19"
-    },
-    "benefit-metric": {
-      "status": "complete",
-      "artefact": "artefacts/2026-05-19-cli-deterministic-governance/benefit-metric.md",
-      "completedAt": "2026-05-19"
-    },
-    "definition": {
-      "status": "complete",
-      "artefact": "artefacts/2026-05-19-cli-deterministic-governance/stories",
-      "completedAt": "2026-05-19"
-    },
-    "review": {
-      "status": "complete",
-      "artefact": "artefacts/2026-05-19-cli-deterministic-governance/review",
-      "completedAt": "2026-05-19"
-    },
-    "test-plan": {
-      "status": "complete",
-      "artefact": "artefacts/2026-05-19-cli-deterministic-governance/test-plans",
-      "completedAt": "2026-05-24"
-    },
-    "definition-of-ready": {
-      "status": "complete",
-      "artefact": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.7-dor.md",
-      "completedAt": "2026-05-24"
-    },
-    "improve": {
-      "status": "complete",
-      "artefact": "standards/governance/delivery-patterns.md",
-      "completedAt": "2026-05-26",
-      "commit": "37b7768",
-      "notes": "GPA /improve: delivery-patterns.md, test-output-format.md, copilot-instructions.md updates"
     }
   },
   "checkpoint": {
     "writtenAt": "2026-05-27",
-    "contextAtWrite": "cdg.7 merged (PR #373). pipeline-state.json advanced to definition-of-done/merged. Running verify-completion.",
-    "resumeInstruction": "cdg.7 PR #373 merged. Run /definition-of-done for cdg.7. Then consider advancing skill-robustness-improvements to /definition.",
+    "contextAtWrite": "cdg.7 DoD artefact written and committed (00b858f). 6/6 ACs, 193/193 tests, 1 accepted deviation (W1 two-write). M2 and M4 metric signals updated to on-track.",
+    "resumeInstruction": "cdg.7 is fully done. Next: run /definition for skill-robustness-improvements (at benefit-metric stage). Optionally review further cdg phases.",
     "pendingActions": [
-      "CDG cdg.7: run /definition-of-done to produce DoD artefact",
-      "skill-robustness-improvements: at benefit-metric — needs /definition to proceed"
+      "skill-robustness-improvements: run /definition to break down epics + stories (feature at benefit-metric stage)",
+      "CDG feature: consider further phases (cdg.8+) for trace log and automated bypass audit"
     ]
   }
 }
