@@ -50,6 +50,15 @@ module.exports = function pipelineStateWriterFactory(repoRoot) {
     // Validate before touching the file
     validateStateUpdate(stateUpdate);
 
+    // Prototype pollution guard (OWASP A03) — must run before any file operation
+    var PROTO_BLOCKED = ['__proto__', 'constructor', 'prototype'];
+    var updateKeys = Object.keys(stateUpdate);
+    for (var ki = 0; ki < updateKeys.length; ki++) {
+      if (PROTO_BLOCKED.indexOf(updateKeys[ki]) !== -1) {
+        throw new Error('Rejected field name \'' + updateKeys[ki] + '\': prototype pollution risk.');
+      }
+    }
+
     // Read current state
     var state;
     try {
@@ -80,41 +89,38 @@ module.exports = function pipelineStateWriterFactory(repoRoot) {
       }
     });
 
-    // Apply story-level fields if storyId provided
-    if (storyId) {
-      if (!Array.isArray(feature.stories)) {
-        feature.stories = [];
-      }
-      var story = feature.stories.find(function(s) {
-        return s.id === storyId || s.slug === storyId;
-      });
-      if (!story) {
-        story = { id: storyId };
-        feature.stories.push(story);
-      }
-      var storyLevelKeys = ['dorStatus', 'prStatus', 'prUrl', 'stage', 'updatedAt'];
-      storyLevelKeys.forEach(function(key) {
-        if (stateUpdate[key] !== undefined) {
-          story[key] = stateUpdate[key];
-        }
-      });
-    }
-
-    // Track which fields changed for log (never log accessToken or session data)
-    var fieldsChanged = Object.keys(stateUpdate).filter(function(k) {
-      return k !== 'accessToken';
-    });
-
-    // Atomic write: tmp then rename
+    // Atomic write of feature-level changes first, then advance() for story-level.
+    // advance() reads from disk, so the feature-level write must precede it.
     var content = JSON.stringify(state, null, 2) + '\n';
     fs.writeFileSync(tmpPath, content, 'utf8');
     fs.renameSync(tmpPath, statePath);
+
+    // Apply story-level fields if storyId provided — delegate to advance()
+    // advance() handles epic-nested story lookup, enum validation, proto guard,
+    // and atomic write. Feature-level write above must complete first so the
+    // feature entry exists when advance() reads the state.
+    if (storyId) {
+      var storyLevelKeys = ['dorStatus', 'prStatus', 'prUrl', 'stage', 'updatedAt'];
+      var rawFields = [];
+      storyLevelKeys.forEach(function(key) {
+        if (stateUpdate[key] !== undefined) {
+          rawFields.push(key + '=' + stateUpdate[key]);
+        }
+      });
+      if (rawFields.length > 0) {
+        var advanceFn = require('../../enforcement/cli-advance').advance;
+        var advResult = advanceFn(featureSlug, storyId, rawFields, repoRoot);
+        if (advResult.exitCode !== 0) {
+          throw new Error('pipeline-state advance failed: ' + advResult.stderr);
+        }
+      }
+    }
 
     console.info(JSON.stringify({
       event: 'pipeline_state_updated',
       featureSlug: featureSlug,
       storyId: storyId,
-      fieldsChanged: fieldsChanged
+      fieldsChanged: Object.keys(stateUpdate).filter(function(k) { return k !== 'accessToken'; })
     }));
   };
 };
