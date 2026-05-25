@@ -99,6 +99,14 @@ function evaluateGate({ gate, context }) {
       if (ctx.dodStatus !== 'complete') findings.push('dodStatus must be complete');
       break;
     }
+    case 'structural': {
+      const checks = (ctx.checks || []);
+      const failed = checks.filter(function (c) { return !c.passed; });
+      failed.forEach(function (c) {
+        findings.push(c.reason || ('Check failed: ' + c.name));
+      });
+      break;
+    }
     default: {
       findings.push(`Unknown gate: "${gate}"`);
     }
