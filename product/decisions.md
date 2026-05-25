@@ -327,3 +327,17 @@ The p11.3 story (H-GOV block in /definition-of-ready SKILL.md) requires a decisi
 - Post-MVP enhancement path: if stricter role validation is needed, a future story can add role detection on top of the presence check. That story would supersede this ADR with a new ADR documenting the authoritative role list.
 
 **Revisit trigger:** A future feature requires verifiable non-engineering approval (e.g. compliance requirement, audit finding, M3 baseline shows H-GOV is being gamed by engineers self-approving). At that point, revisit Option 1 or 2 with an explicit role taxonomy decision.
+
+---
+
+## RISK-ACCEPT — SC-02 NFR graceful-degradation wording corrected (2026-05-24) <!-- ADDED: 2026-05-24 -->
+
+**Status:** Accepted | **Date:** 2026-05-24 | **Context:** SC-02 (gpa-sc-02-unified-gate-evaluator), review finding 1-M1
+
+**Finding summary:** Review finding 1-M1 identified that the story's NFR "Graceful degradation: If `governance-package` is not installed, `run-assurance-gate.js` must fall back to a printed warning rather than a hard crash" describes an impossible failure scenario. `governance-package.js` is a local module in the same repository at `src/enforcement/governance-package.js` — it cannot be "not installed" in the npm-package sense. The original wording produces an NFR that can never be triggered and therefore can never be tested.
+
+**Decision:** Accept the risk of proceeding with the corrected NFR interpretation rather than rewriting the story artefact. The story artefact under `artefacts/` is read-only once authored; the test plan and DoR are the authoritative implementation contracts.
+
+**Corrected NFR (binding for test-plan and implementation):** If the `require('../../src/enforcement/governance-package')` call in `run-assurance-gate.js` throws at module load time (e.g. due to a file-not-found error, syntax error in the module, or bad relative path from a merge), `run-assurance-gate.js` must catch the error, write a warning to stderr, and fall back to the existing inline structural check verdict logic. The implementation pattern is a `try/catch` block wrapping the `require` call at module scope. This is fully testable by reading the source for the try/catch guard (structural verification) and by integration test with `evaluateGateRunner: null` to confirm the fallback path still derives the correct verdict.
+
+**Risk:** Low. The story's intent is unambiguous; only the trigger condition description was wrong. The corrected implementation guard (try/catch on require) is strictly more robust than no guard at all and adds no new complexity.
