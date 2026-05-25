@@ -35,22 +35,42 @@
     }
   },
   "cycle": {
-    "2026-05-24-governance-platform-architecture": {
-      "discovery": "approved",
-      "definition": "complete",
-      "review": "complete",
-      "test-plan": "complete",
-      "definition-of-ready": "complete",
-      "definition-of-done": "complete",
-      "improve": "complete (2026-05-26, commit 37b7768)"
+    "discovery": {
+      "status": "approved",
+      "artefact": "artefacts/2026-05-19-cli-deterministic-governance/discovery.md",
+      "completedAt": "2026-05-19"
     },
-    "2026-05-19-cli-deterministic-governance": {
-      "discovery": "approved",
-      "definition": "complete",
-      "review": "complete",
-      "test-plan": "complete (cdg.7 included)",
-      "definition-of-ready": "complete (cdg.7 signed-off 2026-05-24)",
-      "inner-loop": "cdg.7 ready to dispatch — branch setup next"
+    "benefit-metric": {
+      "status": "complete",
+      "artefact": "artefacts/2026-05-19-cli-deterministic-governance/benefit-metric.md",
+      "completedAt": "2026-05-19"
+    },
+    "definition": {
+      "status": "complete",
+      "artefact": "artefacts/2026-05-19-cli-deterministic-governance/stories",
+      "completedAt": "2026-05-19"
+    },
+    "review": {
+      "status": "complete",
+      "artefact": "artefacts/2026-05-19-cli-deterministic-governance/review",
+      "completedAt": "2026-05-19"
+    },
+    "test-plan": {
+      "status": "complete",
+      "artefact": "artefacts/2026-05-19-cli-deterministic-governance/test-plans",
+      "completedAt": "2026-05-24"
+    },
+    "definition-of-ready": {
+      "status": "complete",
+      "artefact": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.7-dor.md",
+      "completedAt": "2026-05-24"
+    },
+    "improve": {
+      "status": "complete",
+      "artefact": "standards/governance/delivery-patterns.md",
+      "completedAt": "2026-05-26",
+      "commit": "37b7768",
+      "notes": "GPA /improve: delivery-patterns.md, test-output-format.md, copilot-instructions.md updates"
     }
   },
   "checkpoint": {
