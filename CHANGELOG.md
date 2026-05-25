@@ -8,6 +8,8 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- **improve(GPA): delivery patterns standards + epic-nested state rule (2026-05-25):** `standards/governance/delivery-patterns.md` created — four patterns extracted from GPA feature delivery: wave-gate delivery (A1), inline JS extraction (A4), documents-first wave ordering (C1), and epic-nested story state bookkeeping (B2/D1). `standards/governance/test-output-format.md` — anti-pattern test section (A2) appended: pattern for proving old verdict path is dead in consolidation/extraction stories. `.github/copilot-instructions.md` — epic-nested state bookkeeping rule added alongside cdg.6 `skills advance` harness rule; strengthened from advisory note to hard negative rule with correct procedure, failure mode explanation, and cross-reference to delivery-patterns.md.
+
 - **SC-02 (gpa-sc-02-unified-gate-evaluator):** `governance-package.evaluateGate` extended with a `structural` gate case; `run-assurance-gate.js` wired to call it for structural gate evaluation, fulfilling ADR-013 (shared gate authority). Falls back gracefully if governance-package is unavailable at module load.
 
 - **gpa-sc-06** — Path traversal guard added to `sourceIntegrity()` in `scripts/ci-audit-comment.js`; adversarial paths return `{ traversal: true, sanitisedPath: '[REDACTED]' }` without file read or raw path logging

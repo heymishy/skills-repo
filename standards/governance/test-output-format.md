@@ -90,3 +90,49 @@ This incident established the requirement to document the format explicitly. New
 - [ ] `suite-name` starts with a lowercase letter and contains only `[a-z0-9-]` (hyphens allowed as a suffix after the base key)
 - [ ] Test file is registered in `package.json` test script
 - [ ] PR audit comment shows the correct test coverage row after first CI run
+
+---
+
+## Test Strategy: Anti-Pattern Test for Consolidation/Extraction Stories (A2)
+
+**Context:** A story that consolidates, extracts, or unifies logic from an inline implementation into a shared module (e.g. moving inline verdict logic into `governance-package.evaluateGate`).
+
+**Problem:** A positive-path integration test (all checks pass → result is pass) does not verify that the verdict derives from the new module rather than the old inline path. Both the old and new paths can produce the same passing result, making the test blind to the consolidation actually having occurred.
+
+**Pattern: Include a test that proves the old path is dead.**
+
+The test injects a hook that returns a known result, while arranging all direct check inputs to produce the *opposite* result. If the verdict matches the hook's return — not the direct inputs — then the verdict is genuinely derived from the module, not the old inline logic.
+
+**Template (injectable evaluator hook):**
+
+```javascript
+// IT3: verdict derived from evaluateGateRunner return, not inline checks
+{
+  // All checks fail individually
+  const checks = [
+    { name: 'check-a', passed: false, reason: 'deliberate failure' },
+    { name: 'check-b', passed: false, reason: 'deliberate failure' },
+  ];
+  // But the injected runner returns pass
+  const result = evaluateGate({
+    gate: 'structural',
+    context: {
+      checks,
+      evaluateGateRunner: (_ctx) => ({ passed: true, findings: [] }),
+    },
+  });
+  // Verdict must be pass — derived from the runner, not the checks
+  assert(result.passed === true, 'IT3: verdict derived from evaluateGateRunner return, not inline checks');
+}
+```
+
+**When to use this pattern:**
+- Any story whose AC includes "replaces inline verdict logic" or "delegates to shared module"
+- Any story that extracts a function from a workflow action into a `scripts/` module
+- Any story that consolidates two or more independent implementations behind a single interface
+
+**When not to use this pattern:**
+- Stories that add new behaviour (no old path to prove dead)
+- Stories that only add tests, documentation, or standards files
+
+**Source:** SC-02 IT3 (gpa-sc-02-unified-gate-evaluator). Established during GPA feature /improve 2026-05-25.
