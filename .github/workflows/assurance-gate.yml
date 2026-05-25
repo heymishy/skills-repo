@@ -151,6 +151,36 @@ jobs:
         if: steps.ci_attach_cfg.outputs.ci_attachment == 'true' && steps.resolve_feature.outputs.slug != ''
         run: node scripts/trace-report.js --collect --feature ${{ steps.resolve_feature.outputs.slug }}
 
+      - name: Run H-gate CLI validate for feature stories
+        continue-on-error: true
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const child = require('child_process');
+            const slug = process.env.FEATURE_SLUG;
+            if (!slug) { console.log('No feature slug — skipping H-gate CLI validate'); process.exit(0); }
+            let state;
+            try { state = JSON.parse(fs.readFileSync('.github/pipeline-state.json', 'utf8')); } catch(e) { console.log('Cannot read pipeline-state.json: ' + e.message); process.exit(0); }
+            const feat = (state.features||[]).find(f => f.slug === slug);
+            if (!feat) { console.log('Feature not found: ' + slug + ' — skipping H-gate validate'); process.exit(0); }
+            const flatStories = feat.stories || [];
+            const epicStories = (feat.epics||[]).flatMap(e => e.stories||[]);
+            const allStories = flatStories.concat(epicStories);
+            let anyFail = false;
+            for (const s of allStories) {
+              const storySlug = s.id || s.slug;
+              if (!storySlug) continue;
+              const r = child.spawnSync('node', ['bin/skills', 'validate', '--story', storySlug, '--ci'], { encoding: 'utf8' });
+              if (r.stdout) process.stdout.write(r.stdout);
+              if (r.stderr) process.stderr.write(r.stderr);
+              if (r.status !== 0) anyFail = true;
+            }
+            process.exit(anyFail ? 1 : 0);
+          "
+        env:
+          FEATURE_SLUG: ${{ steps.resolve_feature.outputs.slug }}
+
       - name: Upload governed artefact bundle
         id: upload_bundle
         if: steps.ci_attach_cfg.outputs.ci_attachment == 'true'
