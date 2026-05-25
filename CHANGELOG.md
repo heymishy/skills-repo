@@ -8,6 +8,8 @@ All notable changes to this repository will be documented in this file.
 
 ### Added
 
+- **SC-02 (gpa-sc-02-unified-gate-evaluator):** `governance-package.evaluateGate` extended with a `structural` gate case; `run-assurance-gate.js` wired to call it for structural gate evaluation, fulfilling ADR-013 (shared gate authority). Falls back gracefully if governance-package is unavailable at module load.
+
 - **gpa-sc-06** — Path traversal guard added to `sourceIntegrity()` in `scripts/ci-audit-comment.js`; adversarial paths return `{ traversal: true, sanitisedPath: '[REDACTED]' }` without file read or raw path logging
 
 - **SC-03 gpa-sc-03-cli-validate-ci**: Wire `skills validate --story <slug> --ci` to CI assurance gate; `checkHGates(storySlug, repoRoot)` exported from `src/enforcement/governance-package.js` — checks dorStatus (skip if signed-off), scans for DoR artefact, runs H1-H9 gates via `cli-outer-loop.validate()`, returns canonical `[skills-validate] Results: N passed, N failed` output; `bin/skills` validate block extended with `--story --ci` dispatch path (no inline H-gate logic); `.github/workflows/assurance-gate.yml` gains a `continue-on-error: true` step that iterates flat and epic-nested stories and calls the CLI per story; 13 tests in `tests/check-gpa-sc03-cli-validate-ci.js`

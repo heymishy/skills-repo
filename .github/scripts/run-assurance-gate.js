@@ -25,6 +25,13 @@ const crypto = require('crypto');
 const DEFAULT_TRACES_DIR = path.join(__dirname, '..', '..', 'workspace', 'traces');
 const DEFAULT_ROOT       = path.join(__dirname, '..', '..');
 
+var _gp = null;
+try {
+  _gp = require('../../src/enforcement/governance-package');
+} catch (e) {
+  process.stderr.write('[run-assurance-gate] WARNING: governance-package not available, falling back to inline verdict derivation\n');
+}
+
 // ── Remediation hints map ────────────────────────────────────────────────────
 // Maps check names to human-readable hint + remediation action.
 // Populated in completedEntry on fail verdict only.
@@ -229,6 +236,7 @@ function runGate(ctx) {
     root         = DEFAULT_ROOT,
     checksRunner = null,
     runId        = buildRunId(trigger),
+    evaluateGateRunner = null,
     regulated         = false,
     standardsInjected = undefined,
     watermarkResult   = undefined,
@@ -281,8 +289,15 @@ function runGate(ctx) {
     );
   }
 
-  const allPassed = checks.every(function (c) { return c.passed; });
-  const verdict   = allPassed ? 'pass' : 'fail';
+  var _egFn = evaluateGateRunner || (_gp && _gp.evaluateGate) || null;
+  var verdict;
+  if (_egFn) {
+    var egResult = _egFn({ gate: 'structural', context: { checks: checks } });
+    verdict = egResult.passed ? 'pass' : 'fail';
+  } else {
+    var allPassed = checks.every(function (c) { return c.passed; });
+    verdict = allPassed ? 'pass' : 'fail';
+  }
   const failurePattern = verdict === 'fail' ? deriveFailurePattern(checks) : null;
 
   // Compute remediation hints for failing checks
