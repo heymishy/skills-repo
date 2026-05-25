@@ -46,6 +46,14 @@ if (subcommand === 'validate') {
   if (result.stdout) process.stdout.write(result.stdout + '\n');
   if (result.stderr) process.stderr.write(result.stderr + '\n');
   process.exit(result.exitCode);
+} else if (subcommand === 'gate-advance') {
+  const [featureSlug, storyId, gateName, artefactPath, ...rawFields] = args;
+  const { gateAdvance } = require('../src/enforcement/cli-gate-advance');
+  const repoRoot = path.resolve(__dirname, '..');
+  const result = gateAdvance(featureSlug, storyId, gateName, artefactPath, rawFields, repoRoot);
+  if (result.stdout) process.stdout.write(result.stdout + '\n');
+  if (result.stderr) process.stderr.write(result.stderr + '\n');
+  process.exit(result.exitCode);
 } else if (subcommand === 'init') {
   const slug = args[0];
   const descIdx = args.indexOf('--description');
@@ -64,6 +72,7 @@ if (subcommand === 'validate') {
     `  skills validate <artefact-path> <gate-name>\n` +
     `  skills validate --story <slug> --ci              Run H1-H9 gates for story by slug\n` +
     `  skills advance <feature-slug> <story-id> <field>=<value>...\n` +
+    `  skills gate-advance <feature-slug> <story-id> <gate-name> <artefact-path> [field=value...]\n` +
     `  skills init <slug> [--description "..."]    Create a new discovery-stage feature stub\n`
   );
   process.exit(8);
