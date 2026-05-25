@@ -69,8 +69,8 @@
           "target": 0,
           "minimumSignal": "baseline-established",
           "signal": "on-track",
-          "lastMeasured": "2026-05-24",
-          "evidence": "cdg.4 makes gate bypass structurally impossible through the web UI definition-of-ready path. _pipelineStateWriter() cannot be called unless _validate() returns exitCode 0. Bypass rate for this path is 0 by construction post-merge PR #356. Baseline measurement requires cdg.5 trace emission.",
+          "lastMeasured": "2026-05-27",
+          "evidence": "gate-advance command deployed on master; mandate in copilot-instructions.md enforces validate-first for stage transitions. Automated trace audit pending (Phase 3 follow-on).",
           "contributingStories": [
             "cdg.4"
           ]
@@ -97,9 +97,9 @@
           "baseline": null,
           "target": 0,
           "minimumSignal": "zero-in-first-5-runs",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-05-27",
+          "evidence": "pipeline-state-writer.js delegates story-level writes to advance(); T9-T12 confirm enum validation and proto-pollution guard applied to web UI write path. 0 schema violations in test suite.",
           "contributingStories": []
         },
         {
