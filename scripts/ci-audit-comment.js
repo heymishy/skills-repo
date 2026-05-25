@@ -1,5 +1,6 @@
 'use strict';
 const fs     = require('fs');
+const path   = require('path');
 const crypto = require('crypto');
 /**
  * ci-audit-comment.js
@@ -344,9 +345,14 @@ function buildAuditComment(data) {
  * @returns {string}  '\u2705', '\u274c DRIFT', '\u26a0 not found', or '\u2014'
  */
 function sourceIntegrity(sourcePath, manifestHash) {
+  const repoRoot = path.resolve(__dirname, '..');
+  const resolvedPath = path.resolve(sourcePath);
+  if (!resolvedPath.startsWith(repoRoot + path.sep)) {
+    return { traversal: true, sanitisedPath: '[REDACTED]' };
+  }
   if (!manifestHash) return '\u2014';
   try {
-    const content  = fs.readFileSync(sourcePath);
+    const content  = fs.readFileSync(resolvedPath);
     const computed = crypto.createHash('sha256').update(content).digest('hex');
     return computed === manifestHash ? '\u2705' : '\u274c DRIFT';
   } catch (_) { return '\u26a0 not found'; }

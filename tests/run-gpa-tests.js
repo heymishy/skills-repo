@@ -8,6 +8,7 @@ var GPA_TESTS = [
   'tests/check-gpa-sc07-inline-js-extraction.js',
   'tests/check-gpa-sc01-trace-contract.js',
   'tests/check-gpa-sc05-skills-init.js',
+  'tests/check-gpa-sc06-source-path-guard.js',
 ];
 
 var failed = false;

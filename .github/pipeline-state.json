@@ -3796,13 +3796,13 @@
               "slug": "gpa-sc-06-source-path-guard",
               "id": "gpa-sc-06-source-path-guard",
               "name": "Add path traversal guard to manifest sourcePath reads",
-              "stage": "definition-of-ready",
+              "stage": "implementation",
               "health": "green",
               "reviewStatus": "passed",
               "reviewArtefact": "artefacts/2026-05-24-governance-platform-architecture/review/gpa-sc-06-source-path-guard-review-1.md",
               "reviewedAt": "2026-05-24",
               "dorStatus": "signed-off",
-              "prStatus": "none",
+              "prStatus": "draft",
               "testPlan": {
                 "artefact": "artefacts/2026-05-24-governance-platform-architecture/test-plans/gpa-sc-06-source-path-guard-test-plan.md",
                 "writtenAt": "2026-05-25"
