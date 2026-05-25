@@ -1,68 +1,66 @@
 {
-  "currentPhase": "definition-of-ready",
-  "lastUpdated": "2026-05-25T12:00:00Z",
+  "currentPhase": "improve",
+  "lastUpdated": "2026-05-26T00:00:00Z",
+  "activeFeature": "2026-05-19-cli-deterministic-governance",
   "features": {
     "2026-05-24-governance-platform-architecture": {
-      "stage": "definition-of-ready",
-      "commit": "7944c51",
+      "stage": "definition-of-done",
+      "commit": "37b7768",
       "epics": 2,
       "stories": 7,
-      "reviewResults": {
-        "passed": 7,
-        "hasFindings": 0,
-        "reviewedAt": "2026-05-24"
+      "allStoriesDoD": true,
+      "metrics": {
+        "m1": "not-yet-measured (lagging, 6-month window)",
+        "m2": "on-track",
+        "m3": "not-yet-measured (lagging, 6-month window)",
+        "m4": "on-track",
+        "m5": "on-track"
       },
-      "dorResults": {
-        "wave1SignedOff": ["gpa-sc-01-trace-contract", "gpa-sc-04-test-output-format", "gpa-sc-05-skills-init"],
-        "wave1Oversight": "Low",
-        "wave1HardBlocks": "17/17 all passed",
-        "wave2Pending": ["gpa-sc-07-inline-js-extraction", "gpa-sc-03-cli-validate-ci", "gpa-sc-06-path-traversal-guard"],
-        "wave3Pending": ["gpa-sc-02-unified-gate-evaluator"],
-        "signedOffAt": "2026-05-25"
+      "dodComplete": "gpa-sc-02-unified-gate-evaluator DoD artefact: artefacts/2026-05-24-governance-platform-architecture/dod/gpa-sc-02-unified-gate-evaluator-dod.md"
+    },
+    "2026-05-19-cli-deterministic-governance": {
+      "stage": "review",
+      "stories": 7,
+      "cdg1_to_6": "definition-of-done prStatus:merged",
+      "cdg.7": {
+        "stage": "dor-signed-off",
+        "prStatus": "none",
+        "dorArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.7-dor.md",
+        "summary": "gate-advance command + pipeline-state-writer refactor. 6 ACs, 14 tests (T1-T14). Tasks: gate-map.js, cli-gate-advance.js, bin/skills gate-advance, pipeline-state-writer.js refactor, copilot-instructions mandate, package.json wiring."
       },
-      "decisions": {
-        "D4": "RISK-ACCEPT: SC-03 AC1 slug resolution via extractPRSlug — artefacts/2026-05-24-governance-platform-architecture/decisions.md"
-      },
-      "nextAction": "Wave 1 DoR sign-off complete. Awaiting operator instruction for next action (Wave 2 test plans, or dispatch Wave 1 stories to coding agent)."
+      "2026-05-18-skill-robustness-improvements": {
+        "stage": "benefit-metric",
+        "notes": "M1/M2/M3 metrics written and committed"
+      }
     }
   },
   "cycle": {
-    "discovery": {
-      "status": "approved",
-      "artefact": "artefacts/2026-05-24-governance-platform-architecture/discovery.md",
-      "completedAt": "2026-05-24"
+    "2026-05-24-governance-platform-architecture": {
+      "discovery": "approved",
+      "definition": "complete",
+      "review": "complete",
+      "test-plan": "complete",
+      "definition-of-ready": "complete",
+      "definition-of-done": "complete",
+      "improve": "complete (2026-05-26, commit 37b7768)"
     },
-    "definition": {
-      "status": "complete",
-      "artefact": "artefacts/2026-05-24-governance-platform-architecture/stories",
-      "completedAt": "2026-05-24"
-    },
-    "review": {
-      "status": "complete",
-      "artefact": "artefacts/2026-05-24-governance-platform-architecture/review",
-      "completedAt": "2026-05-24"
-    },
-    "test-plan": {
-      "status": "complete",
-      "artefact": "artefacts/2026-05-24-governance-platform-architecture/test-plans",
-      "completedAt": "2026-05-25",
-      "notes": "Wave 1 (SC-01/SC-04/SC-05) written. Wave 2 and Wave 3 pending operator instruction."
-    },
-    "definition-of-ready": {
-      "status": "in-progress",
-      "artefact": "artefacts/2026-05-24-governance-platform-architecture/dor",
-      "completedAt": null,
-      "notes": "Wave 1 (SC-01/SC-04/SC-05) signed off. Wave 2 and Wave 3 pending."
+    "2026-05-19-cli-deterministic-governance": {
+      "discovery": "approved",
+      "definition": "complete",
+      "review": "complete",
+      "test-plan": "complete (cdg.7 included)",
+      "definition-of-ready": "complete (cdg.7 signed-off 2026-05-24)",
+      "inner-loop": "cdg.7 ready to dispatch — branch setup next"
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-05-25",
-    "contextAtWrite": "Wave 1 DoR sign-off complete (commit 7944c51). SC-01 (trace-contract), SC-04 (test-output-format), SC-05 (skills-init): all 17/17 hard blocks passed, Low oversight, dorStatus=signed-off in pipeline-state.json. Verification scripts written for all 3. 6 DoR artefacts created (dor.md + dor-contract.md per story). 79 stories, 0 integrity failures. All hooks passed.",
-    "resumeInstruction": "Wave 1 DoR sign-off complete. Next operator instruction needed for one of: (a) dispatch Wave 1 stories to coding agent via /issue-dispatch, (b) run /test-plan for Wave 2 (SC-07 gpa-sc-07-inline-js-extraction, SC-03 gpa-sc-03-cli-validate-ci, SC-06 gpa-sc-06-path-traversal-guard), or (c) both in sequence. Do not proceed without instruction.",
+    "writtenAt": "2026-05-26",
+    "contextAtWrite": "GPA feature fully complete: all 7 stories DoD, both epics complete, m2+m4+m5 on-track, improve commit 37b7768 pushed. CDG feature: cdg.1-6 DoD, cdg.7 dor-signed-off and ready for inner loop. Next: /branch-setup for cdg.7.",
+    "resumeInstruction": "GPA complete. CDG cdg.7 DoR signed off. Run /branch-setup for cdg.7 to start inner loop: create worktree, install deps, confirm baseline passes, then /implementation-plan from cdg.7-dor.md.",
     "pendingActions": [
-      "Awaiting operator instruction: dispatch Wave 1 stories to coding agent (SC-01/SC-04/SC-05 all dorStatus=signed-off) or run Wave 2 test plans first.",
-      "Wave 2 test plans: SC-07 (gpa-sc-07-inline-js-extraction), SC-03 (gpa-sc-03-cli-validate-ci), SC-06 (gpa-sc-06-path-traversal-guard). D4 RISK-ACCEPT already logged (SC-03 AC1).",
-      "Wave 3 gate: SC-07 + SC-03 + SC-06 all DoD-complete AND A2 gate confirmed before running /test-plan for SC-02 (gpa-sc-02-unified-gate-evaluator)."
+      "CDG cdg.7: run /branch-setup then /implementation-plan — 6 ACs, 14 tests, 7 file touchpoints",
+      "skill-robustness-improvements: at benefit-metric — needs /definition to proceed",
+      "Push workspace/state.json and pipeline-state.json to origin after commit"
     ]
   }
 }

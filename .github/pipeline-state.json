@@ -3563,7 +3563,7 @@
     {
       "slug": "2026-05-24-governance-platform-architecture",
       "title": "Governance Platform Architecture Review",
-      "stage": "review",
+      "stage": "definition-of-done",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-05-24-governance-platform-architecture/discovery.md",
@@ -3595,9 +3595,9 @@
           "name": "CI H-gate enforcement coverage",
           "target": "9 of 9 H-checks wired to CI",
           "baseline": "0 of 9",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-05-25",
+          "evidence": "SC-03 merged 2026-05-25: checkHGates() exported from governance-package.js, wired to assurance-gate.yml for every story (flat and epic-nested). 9/9 H-gates enforced in CI per story run. Target: 9 of 9 H-checks wired to CI — Compliant.",
           "contributingStories": [
             "gpa-sc-03-cli-validate-ci"
           ]
@@ -3634,9 +3634,9 @@
           "name": "Path traversal attack surface — CI comment path",
           "target": "0 unguarded readFileSync calls with manifest-supplied paths",
           "baseline": "1 confirmed",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-05-25",
+          "evidence": "SC-07 merged: sourceIntegrity() extracted from inline YAML to scripts/ci-audit-comment.js. SC-06 merged: path traversal guard added — adversarial paths return redacted result without file read or raw path logging. 0 unguarded readFileSync calls with manifest-supplied paths. Target: Compliant.",
           "contributingStories": [
             "gpa-sc-07-inline-js-extraction",
             "gpa-sc-06-source-path-guard"
