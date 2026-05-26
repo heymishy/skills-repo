@@ -3,6 +3,9 @@
 **Epic reference:** artefacts/2026-05-26-bsr-workforce-planner/epics/wfp-reconciliation-engine.md
 **Discovery reference:** artefacts/2026-05-26-bsr-workforce-planner/discovery.md
 **Benefit-metric reference:** artefacts/2026-05-26-bsr-workforce-planner/benefit-metric.md
+**Last revised:** 2026-05-27
+
+**Data model correction applied:** AC1 updated (profile-match now operates at team level first — finds teams whose collective member skills cover all `requiredTags`; individual person matching within a matched team is a secondary drill-down).
 
 ## User Story
 
@@ -30,7 +33,7 @@ So that planning conversations are grounded in real available capacity rather th
 
 ## Acceptance Criteria
 
-**AC1:** Given an `allocation-input.json` entry for an initiative specifies `allocationMode: "profile-match"` and a `requiredTags` array (e.g. `["java", "platform", "chapter-lead"]`), when I invoke `workforce-map`, then the skill searches `workforce/roster.json` for people whose `skills[]` array contains all required tags AND who are not already present in the direct-allocation entry for that same initiative in the current invocation. A person may still be profile-matched to initiative Y even if they appear in a direct-allocation for a different initiative X — cross-initiative allocation is permitted. Matched people are added to the initiative entry in `initiative-map.json` with `allocationMode: "profile-match"`.
+**AC1:** Given an `allocation-input.json` entry for an initiative specifies `allocationMode: "profile-match"` and a `requiredTags` array (e.g. `["java", "platform", "chapter-lead"]`), when I invoke `workforce-map`, then the skill searches `workforce/teams.json` for teams whose collective member skill union covers all required tags (i.e. the union of all `skills` arrays across the team's non-retired roster members contains every tag in `requiredTags`). A team may still be profile-matched to initiative Y even if it appears in a direct-allocation for a different initiative X — cross-initiative allocation is permitted. The initiative entry in `initiative-map.json` is written with `allocationMode: "profile-match"` and an `allocatedTeams` array listing all matching team entries from `teams.json`. For each matched team, an `allocatedPeople` sub-array lists all roster members of that team whose individual `skills` array contains at least one required tag — this is the secondary drill-down, not the primary match criteria. A person who is not already present in the direct-allocation entry for that same initiative in the current invocation may still be profile-matched via a team.
 
 **AC2:** Given a profile-match search for an initiative returns zero matching people (nobody satisfies all required tags or all matches are already allocated), when I invoke `workforce-map`, then the initiative entry in `initiative-map.json` includes `profileMatchResult: "no-match"` and a `hiringGap: true` flag, and the gap report output includes the initiative slug and the required tags that found no match.
 

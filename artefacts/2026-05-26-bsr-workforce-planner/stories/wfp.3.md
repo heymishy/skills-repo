@@ -3,6 +3,9 @@
 **Epic reference:** artefacts/2026-05-26-bsr-workforce-planner/epics/wfp-reconciliation-engine.md
 **Discovery reference:** artefacts/2026-05-26-bsr-workforce-planner/discovery.md
 **Benefit-metric reference:** artefacts/2026-05-26-bsr-workforce-planner/benefit-metric.md
+**Last revised:** 2026-05-27
+
+**Data model correction applied:** Input Format updated (`teamId` is now the primary allocation field for direct mode; `people` is an optional override); AC1 updated (`allocatedTeam` replaces `allocatedPeople` as the primary output field; `computedFTE` derived from team member count by default unless a `people` override is supplied).
 
 ## User Story
 
@@ -39,6 +42,7 @@ So that I can identify over-claimed or under-resourced initiatives in a single i
       "slug": "initiative-slug",
       "productGroup": "Product Group Name",
       "allocationMode": "direct",
+      "teamId": "platform-api",
       "people": ["Person A", "Person B"]
     },
     {
@@ -58,11 +62,11 @@ So that I can identify over-claimed or under-resourced initiatives in a single i
 }
 ```
 
-Field rules: `slug` (required — must match a portfolio file slug or a warning is issued); `productGroup` (required — used by the dashboard group filter in wfp.7); `allocationMode` (required — one of `"direct"`, `"profile-match"`, `"net-new"`); `people` (required for `direct` — array of person name strings matching roster `name` field); `requiredTags` (required for `profile-match` and `net-new` — array of tag strings); `requiredRole` (required for `net-new` — string matching a role in cost-model.json). An entry may not have `allocationMode: "direct"` and `allocationMode: "profile-match"` simultaneously — use separate entries with the same slug if an initiative needs both. `parentSlug` (optional — see wfp.8): groups this entry under a parent initiative slug for multi-team budget rollup; when set, this entry is written as a scope item within the parent's `scopeItems` array in `initiative-map.json` rather than as a standalone top-level entry. `scopeLabel` (optional — see wfp.8): human-readable label for this scope item used in the rollup dashboard view (e.g. `"API Layer"`, `"Data Migration"`); falls back to `slug` for display if absent.
+Field rules: `slug` (required — must match a portfolio file slug or a warning is issued); `productGroup` (required — used by the dashboard group filter in wfp.7); `allocationMode` (required — one of `"direct"`, `"profile-match"`, `"net-new"`); `teamId` (required for `direct` — string matching a `teamId` in `workforce/teams.json`; the team's current non-retired members are used to compute FTE); `people` (optional override for `direct` — array of person name strings; when supplied, only the named people are counted rather than the full team membership; useful when only a subset of the team is assigned to the initiative); `requiredTags` (required for `profile-match` and `net-new` — array of tag strings); `requiredRole` (required for `net-new` — string matching a role in cost-model.json). An entry may not have `allocationMode: "direct"` and `allocationMode: "profile-match"` simultaneously — use separate entries with the same slug if an initiative needs both. `parentSlug` (optional — see wfp.8): groups this entry under a parent initiative slug for multi-team budget rollup; when set, this entry is written as a scope item within the parent's `scopeItems` array in `initiative-map.json` rather than as a standalone top-level entry. `scopeLabel` (optional — see wfp.8): human-readable label for this scope item used in the rollup dashboard view (e.g. `"API Layer"`, `"Data Migration"`); falls back to `slug` for display if absent.
 
 ## Acceptance Criteria
 
-**AC1:** Given `workforce/roster.json` exists, `workforce/cost-model.json` exists, and a `workforce/allocation-input.json` file specifies direct allocation entries (see Input Format section above), when I invoke `workforce-map`, then `workforce/initiative-map.json` is created or updated. Each initiative entry contains: `slug`, `allocationMode: "direct"`, `allocatedPeople` (array of matched person records from roster), `computedFTE` (count of allocated non-retired people), `computedCostPerQuarterNZD` (sum of cost-model.json lookups by person role), `claimedFTE` (read from `portfolio/[slug].json` `people.fte_demand` field if the portfolio file exists, else `null`), `claimedCostNZD` (read from portfolio if present, else `null`), and `fteDelta` (`computedFTE` minus `claimedFTE`, or `null` if claimedFTE is null).
+**AC1:** Given `workforce/roster.json` exists, `workforce/teams.json` exists, `workforce/cost-model.json` exists, and a `workforce/allocation-input.json` file specifies direct allocation entries (see Input Format section above), when I invoke `workforce-map`, then `workforce/initiative-map.json` is created or updated. Each initiative entry contains: `slug`, `allocationMode: "direct"`, `allocatedTeam` (the full teams.json entry for the referenced `teamId`, or `null` if the `teamId` is not found in teams.json with a warning printed to stderr), `allocatedPeople` (array of person records for all non-retired members of the allocated team as listed in `teams.json`; when a `people` override array is supplied in the allocation entry, only the named people are included instead of the full team membership), `computedFTE` (count of persons in `allocatedPeople` — i.e. the team's non-retired member count by default, or the count of the `people` override array when supplied), `computedCostPerQuarterNZD` (sum of cost-model.json lookups by person role for every person in `allocatedPeople`), `claimedFTE` (read from `portfolio/[slug].json` `people.fte_demand` field if the portfolio file exists, else `null`), `claimedCostNZD` (read from portfolio if present, else `null`), and `fteDelta` (`computedFTE` minus `claimedFTE`, or `null` if claimedFTE is null).
 
 **AC2:** Given an initiative slug in the allocation input has no corresponding `portfolio/[slug].json` file, when I run `workforce-map`, then the skill prints a warning to stderr naming the missing portfolio slug, sets `claimedFTE: null` and `claimedCostNZD: null` for that initiative, and continues processing remaining initiatives without halting.
 

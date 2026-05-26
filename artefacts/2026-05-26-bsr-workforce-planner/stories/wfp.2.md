@@ -3,6 +3,9 @@
 **Epic reference:** artefacts/2026-05-26-bsr-workforce-planner/epics/wfp-data-foundation.md
 **Discovery reference:** artefacts/2026-05-26-bsr-workforce-planner/discovery.md
 **Benefit-metric reference:** artefacts/2026-05-26-bsr-workforce-planner/benefit-metric.md
+**Last revised:** 2026-05-27
+
+**Data model correction applied:** AC6 added (team record add to teams.json); AC7 added (team record edit and retire in teams.json); AC8 added (referential integrity — person assignment to non-existent teamId is rejected).
 
 ## User Story
 
@@ -38,6 +41,12 @@ So that the workforce roster stays current between planning cycles — for examp
 **AC4:** Given I invoke `workforce-update` with any action and a `--name` value that does not match any record in the specified product group, then the skill exits with a non-zero code and prints an error message naming the unmatched person. No file is modified.
 
 **AC5:** Given I invoke `workforce-update --action add` with a person record that has the same `name` and `productGroup` as an existing record in the roster, then the skill exits with a non-zero code and prints a conflict message. The operator must use `--action edit` to modify an existing record; `add` does not silently overwrite.
+
+**AC6 (team add):** Given `workforce/teams.json` exists, when I invoke `workforce-update --action add-team --record '{"teamId":"...","name":"...","productGroup":"...","lead":null,"type":null,"members":[]}'`, then the team entry is appended to `workforce/teams.json` atomically and the updated file remains valid JSON. If a team with the same `teamId` already exists, the skill exits with a non-zero code and prints a conflict message naming the duplicate `teamId`. The `teamId` field is required; if absent the skill exits with a non-zero code.
+
+**AC7 (team edit and retire):** Given a team entry with the specified `teamId` exists in `workforce/teams.json`, when I invoke `workforce-update --action edit-team --teamId [id] --fields '{"lead":"Alice","type":"stream-aligned"}'`, then only the specified fields are updated on the matching entry and `workforce/teams.json` is written atomically. When I invoke `workforce-update --action retire-team --teamId [id]`, then the matching team entry has `retired: true` added and is not deleted. Given no entry with the specified `teamId` exists, the skill exits with a non-zero code and prints: "Team not found: [id]".
+
+**AC8 (referential integrity):** Given I invoke `workforce-update --action add` or `--action edit` with a person record that specifies a `teamId` value, when the skill processes the record, then it first checks whether that `teamId` exists as an entry in `workforce/teams.json`. If no matching team entry exists, the skill exits with a non-zero code and prints: "Referential integrity error: teamId '[id]' does not exist in workforce/teams.json. Create the team first with --action add-team." No person record is written when this check fails.
 
 ## Out of Scope
 
