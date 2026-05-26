@@ -1,12 +1,17 @@
 {
-  "currentPhase": "definition-of-ready",
-  "lastUpdated": "2026-05-27T10:00:00Z",
+  "currentPhase": "definition-of-done",
+  "lastUpdated": "2026-05-27T12:00:00Z",
   "activeFeature": "2026-05-27-cli-advance-boolean-coercion",
   "cycle": {
     "discovery": {
       "completedAt": "N/A",
       "artefact": "N/A — short-track defect fix, no discovery required",
       "status": "short-track"
+    },
+    "definition-of-done": {
+      "completedAt": "2026-05-27",
+      "artefact": "artefacts/2026-05-27-cli-advance-boolean-coercion/dod/b3-boolean-coercion-dod.md",
+      "status": "COMPLETE"
     }
   },
   "features": {
@@ -22,21 +27,26 @@
     },
     "2026-05-27-cli-advance-boolean-coercion": {
       "b3": {
-        "stage": "test-plan-complete",
+        "stage": "definition-of-done",
+        "prStatus": "merged",
         "dorStatus": "signed-off",
+        "pr": "https://github.com/heymishy/skills-repo/pull/374",
+        "commit": "2619630",
         "dor": "artefacts/2026-05-27-cli-advance-boolean-coercion/dor/b3-boolean-coercion-dor.md",
-        "testPlan": "artefacts/2026-05-27-cli-advance-boolean-coercion/test-plans/b3-boolean-coercion-test-plan.md"
+        "testPlan": "artefacts/2026-05-27-cli-advance-boolean-coercion/test-plans/b3-boolean-coercion-test-plan.md",
+        "dod": "artefacts/2026-05-27-cli-advance-boolean-coercion/dod/b3-boolean-coercion-dod.md",
+        "outcome": "COMPLETE"
       }
     }
   },
   "checkpoint": {
     "writtenAt": "2026-05-27",
-    "contextAtWrite": "B3 short-track DoR complete. Story, test-plan, verification script, DoR artefact, and DoR contract all written. Feature initialized in pipeline-state.json. dorStatus=signed-off. Ready for branch-setup and implementation.",
-    "resumeInstruction": "B3 (cli-advance boolean coercion) is DoR-signed-off. Run /branch-setup for 2026-05-27-cli-advance-boolean-coercion/b3, then /implementation-plan, then implement. Test file to create: tests/check-b3-boolean-coercion.js. Files to modify: src/enforcement/cli-advance.js (add BOOLEAN_FIELDS), package.json (add test to chain).",
+    "contextAtWrite": "B3 (cli-advance boolean coercion + track enum validation) complete. PR #374 merged as squash commit 2619630. 26/26 test assertions pass (T1-T7). DoD artefact written. pipeline-state.json advanced to stage=definition-of-done. B3 feature is fully closed.",
+    "resumeInstruction": "B3 is COMPLETE. Next: (1) run /definition for 2026-05-18-skill-robustness-improvements (feature at benefit-metric stage, needs stories broken down); (2) consider cdg.8+ for trace log and automated bypass audit; (3) clean up .worktrees/b3 and .worktrees/cdg.7 if not already removed.",
     "pendingActions": [
-      "B3 implementation: run /branch-setup then /implementation-plan for 2026-05-27-cli-advance-boolean-coercion/b3",
       "skill-robustness-improvements: run /definition to break down epics + stories (feature at benefit-metric stage)",
-      "CDG feature: consider further phases (cdg.8+) for trace log and automated bypass audit"
+      "CDG feature: consider cdg.8+ for trace log and automated bypass audit (lower priority)",
+      "Worktree cleanup: git worktree remove .worktrees/b3 --force && git worktree remove .worktrees/cdg.7 --force"
     ]
   }
 }

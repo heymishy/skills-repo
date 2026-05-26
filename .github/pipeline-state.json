@@ -3843,8 +3843,8 @@
         {
           "id": "b3",
           "dorStatus": "signed-off",
-          "stage": "branch-complete",
-          "prStatus": "draft"
+          "stage": "definition-of-done",
+          "prStatus": "merged"
         }
       ],
       "metrics": [],
