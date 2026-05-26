@@ -1,21 +1,42 @@
 {
-  "currentPhase": "definition-of-done",
-  "lastUpdated": "2026-05-27T12:00:00Z",
-  "activeFeature": "2026-05-27-cli-advance-boolean-coercion",
+  "currentPhase": "definition",
+  "lastUpdated": "2026-05-26T14:00:00Z",
+  "activeFeature": "2026-05-26-bsr-workforce-planner",
   "cycle": {
     "discovery": {
-      "completedAt": "N/A",
-      "artefact": "N/A — short-track defect fix, no discovery required",
-      "status": "short-track"
+      "completedAt": "2026-05-26",
+      "artefact": "artefacts/2026-05-26-bsr-workforce-planner/discovery.md",
+      "status": "approved",
+      "approvedBy": "Hamish King"
     },
-    "definition-of-done": {
-      "completedAt": "2026-05-27",
-      "artefact": "artefacts/2026-05-27-cli-advance-boolean-coercion/dod/b3-boolean-coercion-dod.md",
-      "status": "COMPLETE"
+    "benefit-metric": {
+      "completedAt": "2026-05-26",
+      "artefact": "artefacts/2026-05-26-bsr-workforce-planner/benefit-metric.md",
+      "status": "active",
+      "metrics": ["M1: Workforce + Initiative Reconciliation Time", "M2: Pre-GM Initiative FTE Cross-Check Coverage", "M3: Hiring Gap Specificity Rate"]
+    },
+    "definition": {
+      "completedAt": "2026-05-26",
+      "artefact": "artefacts/2026-05-26-bsr-workforce-planner/epics/",
+      "status": "complete",
+      "slicingStrategy": "User journey",
+      "epics": ["wfp-data-foundation", "wfp-reconciliation-engine", "wfp-planning-dashboard"],
+      "stories": ["wfp.1", "wfp.2", "wfp.3", "wfp.4", "wfp.5", "wfp.6", "wfp.7"]
     }
+  },
+  "checkpoint": {
+    "writtenAt": "2026-05-26",
+    "contextAtWrite": "/definition complete for bsr-workforce-planner. 3 epics, 7 stories written and committed at f8f28ac. pipeline-state.json at stage=definition, schema valid (0 errors). Tests: 90 stories checked, 0 fail; 14 artefact paths OK.",
+    "resumeInstruction": "Run /review on bsr-workforce-planner stories. Start with wfp.1 (intake) as the root dependency. Per-story /review runs in sequence: wfp.1 → wfp.2 → wfp.3 → wfp.4 → wfp.5 → wfp.6 → wfp.7. After review passes (no HIGH findings), run /test-plan per story, then /definition-of-ready per story.",
+    "pendingActions": [
+      "Name a Finance/planning lead reviewer for benefit-metric.md before DoR sign-off (non-engineering reviewer required — currently listed as TO BE NAMED)",
+      "Run /review on wfp.1 through wfp.7 — next pipeline step"
+    ]
   },
   "features": {
     "2026-05-19-cli-deterministic-governance": {
+      "status": "complete",
+      "note": "All 7 stories (cdg.1-cdg.7) merged. Phase 1 (validate CLI) + Phase 2 (advance, gate-confirm, chain-hash) complete.",
       "cdg.7": {
         "stage": "definition-of-done",
         "prStatus": "merged",
@@ -29,24 +50,38 @@
       "b3": {
         "stage": "definition-of-done",
         "prStatus": "merged",
-        "dorStatus": "signed-off",
         "pr": "https://github.com/heymishy/skills-repo/pull/374",
         "commit": "2619630",
-        "dor": "artefacts/2026-05-27-cli-advance-boolean-coercion/dor/b3-boolean-coercion-dor.md",
-        "testPlan": "artefacts/2026-05-27-cli-advance-boolean-coercion/test-plans/b3-boolean-coercion-test-plan.md",
         "dod": "artefacts/2026-05-27-cli-advance-boolean-coercion/dod/b3-boolean-coercion-dod.md",
         "outcome": "COMPLETE"
+      }
+    },
+    "2026-05-18-skill-robustness-improvements": {
+      "status": "benefit-metric-active",
+      "phase": "Phase 1 — 3 consumer-reported gaps (sri.1/sri.2/sri.3)",
+      "note": "SEPARATE from cli-deterministic-governance. CDG = machine-enforceable CLI governance. SRI = SKILL.md human-facing text/flow fixes reported by OrderHub team (issue #344).",
+      "benefitMetric": "artefacts/2026-05-18-skill-robustness-improvements/benefit-metric.md",
+      "nextAction": "run /definition to break down sri.1 (git fetch timeout), sri.2 (DoD entry message), sri.3 (DoD Step 6 infra gate) into story artefacts"
+    },
+    "2026-05-24-governance-platform-architecture": {
+      "gpa-sc-02": {
+        "stage": "definition-of-done",
+        "prStatus": "merged",
+        "branch": "feat/gpa-sc02-unified-gate-evaluator",
+        "note": "advanced via node bin/skills advance"
       }
     }
   },
   "checkpoint": {
     "writtenAt": "2026-05-27",
-    "contextAtWrite": "B3 (cli-advance boolean coercion + track enum validation) complete. PR #374 merged as squash commit 2619630. 26/26 test assertions pass (T1-T7). DoD artefact written. pipeline-state.json advanced to stage=definition-of-done. B3 feature is fully closed.",
-    "resumeInstruction": "B3 is COMPLETE. Next: (1) run /definition for 2026-05-18-skill-robustness-improvements (feature at benefit-metric stage, needs stories broken down); (2) consider cdg.8+ for trace log and automated bypass audit; (3) clean up .worktrees/b3 and .worktrees/cdg.7 if not already removed.",
+    "contextAtWrite": "Session: clarified that skill-robustness-improvements (2026-05-18) is a SEPARATE feature from cli-deterministic-governance (2026-05-19). CDG covers machine-enforceable CLI governance tooling (all 7 stories complete). SRI covers human-facing SKILL.md robustness fixes (3 gaps reported by OrderHub/abhijeet-qsofte via issue #344). SRI is at benefit-metric-active stage. Current branch feat/gpa-sc02-unified-gate-evaluator had gpa-sc-02 advanced to definition-of-done. npm test passing.",
+    "resumeInstruction": "Run /definition for 2026-05-18-skill-robustness-improvements. Stories to write: sri.1 (git fetch timeout+fallback in branch-complete/implementation-plan/subagent-execution), sri.2 (DoD entry condition message expansion with 3 required elements), sri.3 (DoD Step 6 measurement-ready gate for infrastructure stories). Future phases scoped: Phase 2 = YAML frontmatter in test plan templates (deferred from Phase 1 due to template schema risk); Phase 3 = systematic consumer gap intake mechanism.",
     "pendingActions": [
-      "skill-robustness-improvements: run /definition to break down epics + stories (feature at benefit-metric stage)",
-      "CDG feature: consider cdg.8+ for trace log and automated bypass audit (lower priority)",
-      "Worktree cleanup: git worktree remove .worktrees/b3 --force && git worktree remove .worktrees/cdg.7 --force"
+      "skill-robustness-improvements: run /definition to write sri.1/sri.2/sri.3 story artefacts",
+      "skill-robustness-improvements Phase 2 backlog: YAML frontmatter in test plan templates (test count mismatch detection — Issue #5 in #344, deferred from Phase 1)",
+      "skill-robustness-improvements Phase 2 candidate: commit message template generation (Issue #8 in #344, rejected Phase 1 — low value; revisit with more evidence)",
+      "CDG: consider cdg.8+ for automated trace log and bypass audit (Phase 3 follow-on per M2 evidence comment)",
+      "Worktrees already removed: .worktrees/b3 and .worktrees/cdg.7"
     ]
   }
 }
