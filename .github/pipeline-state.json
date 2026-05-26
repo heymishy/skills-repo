@@ -3893,7 +3893,7 @@
       "name": "BSR Workforce Planner",
       "track": "library",
       "health": "green",
-      "stage": "definition",
+      "stage": "review",
       "discovery": "artefacts/2026-05-26-bsr-workforce-planner/discovery.md",
       "benefitMetric": "artefacts/2026-05-26-bsr-workforce-planner/benefit-metric.md",
       "epics": [
@@ -3913,6 +3913,7 @@
               "health": "green",
               "prStatus": "none",
               "dorStatus": "not-started",
+              "reviewStatus": "passed",
               "traceStatus": "not-run",
               "tasks": []
             },
@@ -3927,6 +3928,7 @@
               "health": "green",
               "prStatus": "none",
               "dorStatus": "not-started",
+              "reviewStatus": "passed",
               "traceStatus": "not-run",
               "tasks": []
             }
@@ -3948,6 +3950,7 @@
               "health": "green",
               "prStatus": "none",
               "dorStatus": "not-started",
+              "reviewStatus": "passed",
               "traceStatus": "not-run",
               "tasks": []
             },
@@ -3962,6 +3965,7 @@
               "health": "green",
               "prStatus": "none",
               "dorStatus": "not-started",
+              "reviewStatus": "passed",
               "traceStatus": "not-run",
               "tasks": []
             }
@@ -3983,6 +3987,7 @@
               "health": "green",
               "prStatus": "none",
               "dorStatus": "not-started",
+              "reviewStatus": "passed",
               "traceStatus": "not-run",
               "tasks": []
             },
@@ -3997,6 +4002,7 @@
               "health": "green",
               "prStatus": "none",
               "dorStatus": "not-started",
+              "reviewStatus": "passed",
               "traceStatus": "not-run",
               "tasks": []
             },
@@ -4011,6 +4017,7 @@
               "health": "green",
               "prStatus": "none",
               "dorStatus": "not-started",
+              "reviewStatus": "passed",
               "traceStatus": "not-run",
               "tasks": []
             }

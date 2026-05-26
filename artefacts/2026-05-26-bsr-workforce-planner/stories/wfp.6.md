@@ -36,15 +36,14 @@ So that I can identify over-claimed or under-resourced initiatives at a glance d
 
 **AC3:** Given an initiative entry has `gap: true` (as set by wfp.3), when I view the matrix, then the row displays a "Gap" badge or label in the initiative slug column in addition to the red delta colouring.
 
-**AC4:** Given I click on a person's name in the "allocated people" cell of the allocation matrix, then the dashboard switches to the Roster tab and the clicked person's row is visually highlighted (e.g. background colour change or scroll-into-view with a temporary highlight).
-
-**AC5:** Given `workforce/initiative-map.json` cannot be fetched (file not found or invalid JSON), when I navigate to the Allocation Matrix tab, then a visible error message is shown: "Initiative map not found — run workforce-map to generate workforce/initiative-map.json". The tab does not display an empty table silently.
+**AC4:** Given `workforce/initiative-map.json` cannot be fetched (file not found or invalid JSON), when I navigate to the Allocation Matrix tab, then a visible error message is shown: "Initiative map not found — run workforce-map to generate workforce/initiative-map.json". The tab does not display an empty table silently.
 
 ## Out of Scope
 
 - Editing allocation entries from the browser — the dashboard is read-only; changes go through `workforce-map` (wfp.3/wfp.4).
 - Showing the full list of allocated people names inline in the matrix table — only the count is shown in the default view. An expandable detail panel or tooltip showing names is a Phase 2 consideration.
 - Sorting or column-reordering — rows are sorted by initiative slug alphabetically; no dynamic sorting for Phase 1.
+- Cross-navigation from the allocation matrix to a specific person's row in the Roster view (clicking a person's name in the matrix to jump to their roster row) — Phase 2 consideration; depends on the names-inline feature (expandable detail panel or tooltip) also deferred to Phase 2.
 - Hiring gap view and leadership coverage view — covered in wfp.7.
 
 ## NFRs

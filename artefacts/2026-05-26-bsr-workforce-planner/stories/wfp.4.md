@@ -21,7 +21,7 @@ So that planning conversations are grounded in real available capacity rather th
 - No external npm dependencies not already in `package.json`.
 - Profile-match is tag-intersection only. The operator supplies the required-tags list; the skill does not infer tags from squad composition or any other source. This is explicitly resolved in the discovery artefact.
 - Portfolio files (`portfolio/[slug].json`) are read-only — the skill must not write to them.
-- Output appends to or merges with `workforce/initiative-map.json` produced by wfp.3. Running wfp.3 and wfp.4 as part of the same `workforce-map` invocation is the expected flow.
+- Writes all allocation modes (direct, profile-match, net-new) to `workforce/initiative-map.json` in a single invocation. The file is overwritten atomically at the end of the run — it is not appended to between invocations. Running wfp.3 and wfp.4 logic as part of the same `workforce-map` invocation is the expected flow.
 
 ## Dependencies
 
