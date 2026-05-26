@@ -3968,6 +3968,36 @@
               "reviewStatus": "passed",
               "traceStatus": "not-run",
               "tasks": []
+            },
+            {
+              "id": "wfp.9",
+              "slug": "wfp.9",
+              "name": "Author and maintain workforce-to-initiative allocation assignments",
+              "artefact": "artefacts/2026-05-26-bsr-workforce-planner/stories/wfp.9.md",
+              "complexity": 3,
+              "scopeStability": "Stable",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "prStatus": "none",
+              "dorStatus": "signed-off",
+              "reviewStatus": "passed",
+              "traceStatus": "not-run",
+              "tasks": []
+            },
+            {
+              "id": "wfp.10",
+              "slug": "wfp.10",
+              "name": "Skill-tag matching for auto-derive allocation mode",
+              "artefact": "artefacts/2026-05-26-bsr-workforce-planner/stories/wfp.10.md",
+              "complexity": 2,
+              "scopeStability": "Stable",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "prStatus": "none",
+              "dorStatus": "signed-off",
+              "reviewStatus": "passed",
+              "traceStatus": "not-run",
+              "tasks": []
             }
           ]
         },

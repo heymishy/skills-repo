@@ -41,6 +41,13 @@ None — no regulatory clauses apply to this internal workforce planning tool (n
 | wfp.7 | Performance | Both views render <2s for 50 initiatives | ✅ | E2E (Playwright render timing) |
 | wfp.7 | Accessibility | Gap badges and leadership gap indicators use colour + text label; `<th>` headers | ✅ | Unit (structure check) |
 | wfp.7 | Security | No network calls to external origins | ✅ | Unit (static analysis) |
+| wfp.9 | Performance | File import processes 500-row xlsx in <10s; auto-derive across 30 portfolio slugs and 200-person roster completes in <15s | ✅ | Unit (timing — large fixture only; skip in normal CI) |
+| wfp.9 | Security | No PII written to stdout or logs beyond names already present in input file or roster | ✅ | Unit (stdout capture) |
+| wfp.9 | Integrity | All three modes use atomic file write (temp file + rename); interrupted write does not corrupt existing allocation-input.json | ✅ | Unit (temp-rename verification) |
+| wfp.9 | Usability | Guided mode prompts display initiative slug, claimed FTE, and product group before each question; operator never asked to recall context from memory | Partial | Unit (prompt string content) + Manual |
+| wfp.10 | Performance | Tag scoring runs within the wfp.9 auto-derive budget (under 15s total for 30 slugs and 200-person roster) | ✅ | Unit (timing — covered by wfp.9 budget) |
+| wfp.10 | Correctness | Coverage score formula: coveredTags.length / requiredTags.length where coveredTags = intersection(requiredTags, union of all squad member skills arrays); score = 0.0 when requiredTags non-empty and no squad member has any matching skill | ✅ | Unit (arithmetic verification) |
+| wfp.10 | Observability | Every tag-scored entry includes _matchScore (0.0–1.0); net-new entries below threshold include _suggestedSquad; product-group fallback entries carry neither field | ✅ | Unit (field presence checks) |
 
 ---
 
