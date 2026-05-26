@@ -99,7 +99,7 @@ The Web UI does not have these constraints. It is the harness. The full stream i
 For a skill execution such as `/discovery`, the JSONL records the complete execution trace in sequence:
 
 ```jsonl
-{"ts":"...","event":"skill_invoked","skill":"discovery","version":"2.1.0","model":"claude-sonnet-4-6","input_tokens":14240,"team":"T42","repo":"westpac-nz/payments-api","git_sha":"d4f8a2..."}
+{"ts":"...","event":"skill_invoked","skill":"discovery","version":"2.1.0","model":"claude-sonnet-4-6","input_tokens":14240,"team":"T42","repo":"acme-corp/payments-api","git_sha":"d4f8a2..."}
 {"ts":"...","event":"thinking","content":"I need to understand the bounded context boundaries before I can assess risk areas. Let me start with the domain folder structure..."}
 {"ts":"...","event":"tool_use","tool":"read_file","input":{"path":"src/domain/payments/index.ts"}}
 {"ts":"...","event":"tool_result","tool":"read_file","size_bytes":2840,"latency_ms":12}

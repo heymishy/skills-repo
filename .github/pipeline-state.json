@@ -4099,7 +4099,88 @@
           ]
         }
       ],
-      "stories": []
+      "stories": [
+        {
+          "id": "wfp.12",
+          "slug": "wfp.12",
+          "name": "Skill coverage heat map — intelligence server",
+          "artefact": "artefacts/2026-05-26-bsr-workforce-planner/stories/wfp.12.md",
+          "complexity": 2,
+          "scopeStability": "Stable",
+          "stage": "review",
+          "health": "green",
+          "prStatus": "none",
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "traceStatus": "not-run",
+          "updatedAt": "2026-05-27"
+        },
+        {
+          "id": "wfp.13",
+          "slug": "wfp.13",
+          "name": "Cross-portfolio bottleneck analysis — intelligence server",
+          "artefact": "artefacts/2026-05-26-bsr-workforce-planner/stories/wfp.13.md",
+          "complexity": 2,
+          "scopeStability": "Stable",
+          "stage": "review",
+          "health": "green",
+          "prStatus": "none",
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "traceStatus": "not-run",
+          "updatedAt": "2026-05-27"
+        },
+        {
+          "id": "wfp.14",
+          "slug": "wfp.14",
+          "name": "Temporal coverage risk — intelligence server",
+          "artefact": "artefacts/2026-05-26-bsr-workforce-planner/stories/wfp.14.md",
+          "complexity": 2,
+          "scopeStability": "Stable",
+          "stage": "review",
+          "health": "green",
+          "prStatus": "none",
+          "dorStatus": "not-started",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "traceStatus": "not-run",
+          "updatedAt": "2026-05-27"
+        },
+        {
+          "id": "wfp.15",
+          "slug": "wfp.15",
+          "name": "Scenario modelling — intelligence server",
+          "artefact": "artefacts/2026-05-26-bsr-workforce-planner/stories/wfp.15.md",
+          "complexity": 3,
+          "scopeStability": "Stable",
+          "stage": "review",
+          "health": "amber",
+          "prStatus": "none",
+          "dorStatus": "not-started",
+          "reviewStatus": "has-findings",
+          "highFindings": 1,
+          "traceStatus": "not-run",
+          "updatedAt": "2026-05-27"
+        },
+        {
+          "id": "wfp.16",
+          "slug": "wfp.16",
+          "name": "Natural-language workforce query via GPT-4o — intelligence server",
+          "artefact": "artefacts/2026-05-26-bsr-workforce-planner/stories/wfp.16.md",
+          "complexity": 3,
+          "scopeStability": "Stable",
+          "stage": "review",
+          "health": "amber",
+          "prStatus": "none",
+          "dorStatus": "not-started",
+          "reviewStatus": "has-findings",
+          "highFindings": 0,
+          "traceStatus": "not-run",
+          "updatedAt": "2026-05-27"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
