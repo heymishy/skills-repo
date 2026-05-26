@@ -4065,6 +4065,36 @@
               "reviewStatus": "passed",
               "traceStatus": "not-run",
               "tasks": []
+            },
+            {
+              "id": "wfp.11a",
+              "slug": "wfp.11a",
+              "name": "Interactive allocation assignment UI — server routes and initiative-centric view",
+              "artefact": "artefacts/2026-05-26-bsr-workforce-planner/stories/wfp.11a.md",
+              "complexity": 3,
+              "scopeStability": "Stable",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "prStatus": "none",
+              "dorStatus": "signed-off",
+              "reviewStatus": "passed",
+              "traceStatus": "not-run",
+              "tasks": []
+            },
+            {
+              "id": "wfp.11b",
+              "slug": "wfp.11b",
+              "name": "Interactive allocation assignment UI — Story B: person-centric and squad-centric views",
+              "artefact": "artefacts/2026-05-26-bsr-workforce-planner/stories/wfp.11b.md",
+              "complexity": 2,
+              "scopeStability": "Stable",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "prStatus": "none",
+              "dorStatus": "signed-off",
+              "reviewStatus": "passed",
+              "traceStatus": "not-run",
+              "tasks": []
             }
           ]
         }

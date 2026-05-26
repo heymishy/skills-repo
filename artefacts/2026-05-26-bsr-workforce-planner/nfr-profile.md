@@ -48,6 +48,14 @@ None — no regulatory clauses apply to this internal workforce planning tool (n
 | wfp.10 | Performance | Tag scoring runs within the wfp.9 auto-derive budget (under 15s total for 30 slugs and 200-person roster) | ✅ | Unit (timing — covered by wfp.9 budget) |
 | wfp.10 | Correctness | Coverage score formula: coveredTags.length / requiredTags.length where coveredTags = intersection(requiredTags, union of all squad member skills arrays); score = 0.0 when requiredTags non-empty and no squad member has any matching skill | ✅ | Unit (arithmetic verification) |
 | wfp.10 | Observability | Every tag-scored entry includes _matchScore (0.0–1.0); net-new entries below threshold include _suggestedSquad; product-group fallback entries carry neither field | ✅ | Unit (field presence checks) |
+| wfp.11a | Performance | GET /workforce/data responds within 2s for a local-disk fixture (30 portfolio slugs, 200-person roster) | ❌ | Integration/E2E (response timing assertion) |
+| wfp.11a | Scale | Initiative-centric view renders 200 persons / 40 squads / 40 initiatives without browser jank (no forced reflow on filter change) | ❌ | Manual smoke (B2 rule — automated layout check not feasible) |
+| wfp.11a | Security | GET /workforce/data: portfolio slug filenames validated against `/^[a-z0-9-]+$/` allowlist; invalid slugs omitted and logged to stderr. POST /workforce/allocations: request body capped at 1MB (413 on oversize). POST body path: `workforce/allocation-input.json` is a fixed write path (no user-supplied filename) — no path traversal vector. | ✅ | Unit (T10, T11 for slug allowlist; T9 for 413; T6–T8 for write path) |
+| wfp.11a | Compatibility | 1280px viewport — no horizontal scroll in Chrome and Firefox across all three view tabs | ❌ | Manual smoke (B2 rule — RISK-ACCEPT) |
+| wfp.11b | Scale | Person-centric view: renders 200-person roster; keystroke filter is synchronous (no debounce required at this scale) | ❌ | Manual smoke |
+| wfp.11b | Scale | Squad-centric view: renders up to 40 squads without jank; bulk-assign iterates up to 20 members per squad without perceptible lag | ❌ | Manual smoke |
+| wfp.11b | Performance | Navigating between initiative / person / squad tabs does not trigger an additional GET /workforce/data call | ✅ | E2E (E15 — network request monitor) |
+| wfp.11b | Compatibility | 1280px viewport — no horizontal scroll across all three view tabs (person and squad panels included) | ❌ | Manual smoke (B2 rule — RISK-ACCEPT, shared with wfp.11a) |
 
 ---
 
