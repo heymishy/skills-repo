@@ -3836,13 +3836,15 @@
     {
       "slug": "2026-05-27-cli-advance-boolean-coercion",
       "name": "Fix cli-advance boolean coercion defect",
+      "track": "short",
       "stage": "discovery",
       "health": "green",
       "stories": [
         {
           "id": "b3",
           "dorStatus": "signed-off",
-          "stage": "test-plan-complete"
+          "stage": "branch-complete",
+          "prStatus": "draft"
         }
       ],
       "metrics": [],
