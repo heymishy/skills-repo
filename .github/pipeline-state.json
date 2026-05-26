@@ -3891,9 +3891,132 @@
       "id": "2026-05-26-bsr-workforce-planner",
       "slug": "2026-05-26-bsr-workforce-planner",
       "name": "BSR Workforce Planner",
-      "stage": "benefit-metric",
+      "track": "library",
+      "health": "green",
+      "stage": "definition",
       "discovery": "artefacts/2026-05-26-bsr-workforce-planner/discovery.md",
       "benefitMetric": "artefacts/2026-05-26-bsr-workforce-planner/benefit-metric.md",
+      "epics": [
+        {
+          "slug": "wfp-data-foundation",
+          "name": "Workforce Data Ingestion and Maintenance",
+          "artefact": "artefacts/2026-05-26-bsr-workforce-planner/epics/wfp-data-foundation.md",
+          "stories": [
+            {
+              "id": "wfp.1",
+              "slug": "wfp.1",
+              "name": "Ingest workforce roster from per-group xlsx files",
+              "artefact": "artefacts/2026-05-26-bsr-workforce-planner/stories/wfp.1.md",
+              "complexity": 2,
+              "scopeStability": "Stable",
+              "stage": "definition",
+              "health": "green",
+              "prStatus": "none",
+              "dorStatus": "not-started",
+              "traceStatus": "not-run",
+              "tasks": []
+            },
+            {
+              "id": "wfp.2",
+              "slug": "wfp.2",
+              "name": "Update individual roster records without full re-ingestion",
+              "artefact": "artefacts/2026-05-26-bsr-workforce-planner/stories/wfp.2.md",
+              "complexity": 1,
+              "scopeStability": "Stable",
+              "stage": "definition",
+              "health": "green",
+              "prStatus": "none",
+              "dorStatus": "not-started",
+              "traceStatus": "not-run",
+              "tasks": []
+            }
+          ]
+        },
+        {
+          "slug": "wfp-reconciliation-engine",
+          "name": "Initiative Reconciliation Engine",
+          "artefact": "artefacts/2026-05-26-bsr-workforce-planner/epics/wfp-reconciliation-engine.md",
+          "stories": [
+            {
+              "id": "wfp.3",
+              "slug": "wfp.3",
+              "name": "Map workforce to initiatives with direct allocation, FTE delta, and cost inference",
+              "artefact": "artefacts/2026-05-26-bsr-workforce-planner/stories/wfp.3.md",
+              "complexity": 2,
+              "scopeStability": "Stable",
+              "stage": "definition",
+              "health": "green",
+              "prStatus": "none",
+              "dorStatus": "not-started",
+              "traceStatus": "not-run",
+              "tasks": []
+            },
+            {
+              "id": "wfp.4",
+              "slug": "wfp.4",
+              "name": "Extended workforce-map modes — profile-match and net-new gap",
+              "artefact": "artefacts/2026-05-26-bsr-workforce-planner/stories/wfp.4.md",
+              "complexity": 2,
+              "scopeStability": "Stable",
+              "stage": "definition",
+              "health": "green",
+              "prStatus": "none",
+              "dorStatus": "not-started",
+              "traceStatus": "not-run",
+              "tasks": []
+            }
+          ]
+        },
+        {
+          "slug": "wfp-planning-dashboard",
+          "name": "Planning and Visibility Dashboard",
+          "artefact": "artefacts/2026-05-26-bsr-workforce-planner/epics/wfp-planning-dashboard.md",
+          "stories": [
+            {
+              "id": "wfp.5",
+              "slug": "wfp.5",
+              "name": "Roster view — filterable and searchable workforce table",
+              "artefact": "artefacts/2026-05-26-bsr-workforce-planner/stories/wfp.5.md",
+              "complexity": 1,
+              "scopeStability": "Stable",
+              "stage": "definition",
+              "health": "green",
+              "prStatus": "none",
+              "dorStatus": "not-started",
+              "traceStatus": "not-run",
+              "tasks": []
+            },
+            {
+              "id": "wfp.6",
+              "slug": "wfp.6",
+              "name": "Initiative allocation matrix and FTE delta view",
+              "artefact": "artefacts/2026-05-26-bsr-workforce-planner/stories/wfp.6.md",
+              "complexity": 1,
+              "scopeStability": "Stable",
+              "stage": "definition",
+              "health": "green",
+              "prStatus": "none",
+              "dorStatus": "not-started",
+              "traceStatus": "not-run",
+              "tasks": []
+            },
+            {
+              "id": "wfp.7",
+              "slug": "wfp.7",
+              "name": "Hiring gap view and leadership coverage view",
+              "artefact": "artefacts/2026-05-26-bsr-workforce-planner/stories/wfp.7.md",
+              "complexity": 1,
+              "scopeStability": "Stable",
+              "stage": "definition",
+              "health": "green",
+              "prStatus": "none",
+              "dorStatus": "not-started",
+              "traceStatus": "not-run",
+              "tasks": []
+            }
+          ]
+        }
+      ],
       "stories": []
     }
   ],
