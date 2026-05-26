@@ -28,6 +28,7 @@ The Head of Engineering and product group leads can open a single static HTML fi
 - [ ] wfp.5 — Roster view: filterable and searchable workforce table
 - [ ] wfp.6 — Initiative allocation matrix and FTE delta view
 - [ ] wfp.7 — Hiring gap view and leadership coverage view
+- [ ] wfp.8 — Multi-team initiative scope decomposition and rollup view (Tab 5)
 
 ## Human Oversight Level
 

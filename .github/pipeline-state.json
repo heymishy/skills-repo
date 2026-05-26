@@ -4020,6 +4020,21 @@
               "reviewStatus": "passed",
               "traceStatus": "not-run",
               "tasks": []
+            },
+            {
+              "id": "wfp.8",
+              "slug": "wfp.8",
+              "name": "Multi-team initiative scope decomposition and rollup view",
+              "artefact": "artefacts/2026-05-26-bsr-workforce-planner/stories/wfp.8.md",
+              "complexity": 2,
+              "scopeStability": "Stable",
+              "stage": "definition",
+              "health": "green",
+              "prStatus": "none",
+              "dorStatus": "not-started",
+              "reviewStatus": "passed",
+              "traceStatus": "not-run",
+              "tasks": []
             }
           ]
         }

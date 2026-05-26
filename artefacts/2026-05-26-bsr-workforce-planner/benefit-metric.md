@@ -60,8 +60,8 @@ This is an operational planning tool. There is no tooling-process hypothesis bei
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1: Reconciliation time | wfp.1 (roster ingest), wfp.2 (roster update), wfp.3 (workforce-map core), wfp.5 (roster view), wfp.6 (allocation matrix) | Covered |
-| M2: Pre-GM FTE coverage | wfp.3 (map core — produces initiative-map.json), wfp.4 (profile-match extends coverage), wfp.6 (allocation matrix — the visual confirmation surface) | Covered |
+| M1: Reconciliation time | wfp.1 (roster ingest), wfp.2 (roster update), wfp.3 (workforce-map core), wfp.5 (roster view), wfp.6 (allocation matrix), wfp.8 (multi-team rollup — eliminates manual aggregation for cross-team initiatives) | Covered |
+| M2: Pre-GM FTE coverage | wfp.3 (map core — produces initiative-map.json), wfp.4 (profile-match extends coverage), wfp.6 (allocation matrix — the visual confirmation surface), wfp.8 (rollup view — confirms parent-level FTE coverage for multi-team initiatives before GM session) | Covered |
 | M3: Hiring gap specificity | wfp.4 (net-new mode structurally enforces role + tags on every gap), wfp.7 (hiring gap view — the measurement surface) | Covered |
 
 ---
