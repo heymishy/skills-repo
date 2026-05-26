@@ -3886,6 +3886,15 @@
       ],
       "metrics": [],
       "updatedAt": "2026-05-25"
+    },
+    {
+      "id": "2026-05-26-bsr-workforce-planner",
+      "slug": "2026-05-26-bsr-workforce-planner",
+      "name": "BSR Workforce Planner",
+      "stage": "benefit-metric",
+      "discovery": "artefacts/2026-05-26-bsr-workforce-planner/discovery.md",
+      "benefitMetric": "artefacts/2026-05-26-bsr-workforce-planner/benefit-metric.md",
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
