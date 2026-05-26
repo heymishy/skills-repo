@@ -1,15 +1,15 @@
 # Discovery: BSR Workforce Planner
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-05-26
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Hamish King — 2026-05-26
 **Author:** Copilot / Hamish Ward
 
 ---
 
 ## Problem Statement
 
-Workforce data for approximately 200 people across 5 product groups is maintained in separate per-group xlsx files with no unified view and no connection to the initiative portfolio. At financial year planning time, answering questions like "which initiatives are under-resourced?", "who is ending contract before Q3?", or "which squad has capacity for a new initiative?" requires manually cross-referencing up to 5 files with no tooling support.
+Workforce data for ~200 people across 5 product groups is maintained in separate per-group xlsx files with no unified view and no connection to the initiative portfolio. At financial year planning time, answering questions like "which initiatives are under-resourced?", "who is ending contract before Q3?", or "which squad has capacity for a new initiative?" requires manually cross-referencing up to 5 files with no tooling support.
 
 The FTE and cost figures submitted in initiative proposals (via the `initiative-intake` skill in the enterprise fork) cannot be validated against actual roster data without significant manual effort. There is no mechanism to quickly identify hiring gaps by role or skill, or to flag when an initiative requires a squad profile that is already fully committed on a higher-priority initiative. Leadership overhead roles — Product Owners, leads, people leaders — that are required at scale across groups are also untracked against initiative demand.
 
@@ -35,7 +35,7 @@ Financial year planning is the immediate forcing function. The `initiative-intak
 
 **`workforce-map`** — the core reconciliation skill. Links people and teams to initiative slugs from `portfolio/[slug].json` (output of the `initiative-intake` skill in the enterprise fork) using three allocation modes:
 - **Direct**: named squad or individual person assigned explicitly to an initiative slug.
-- **Profile match**: initiative requires "a squad with capabilities similar to squad X" but squad X is committed elsewhere — the skill finds available roster capacity matching the required role/skill profile.
+- **Profile match**: initiative requires capabilities similar to a known squad type, but that squad is fully committed. Matching is tag-intersection based: the operator specifies the required role-tag set at invocation time (not derived automatically from squad X's composition); the skill identifies people in the roster whose `skills[]` array satisfies all required tags and who are not already at full allocation. "Similar to squad X" is not inferred — it is an explicit required-tags list the operator provides when invoking `workforce-map`.
 - **Net new**: no current squad or roster capacity matches the initiative's requirements — flagged as a hiring need with the required role, skill, and squad type specified.
 
 `workforce-map` reads `workforce/cost-model.json` to infer cost per person per quarter/year from their role, computes actual FTE and cost per initiative from the allocation, and diffs against the `people.fte_demand` and `financial_metrics` fields in the corresponding `portfolio/[slug].json`. Produces `workforce/initiative-map.json` and a human-readable gap report.
@@ -53,7 +53,7 @@ Financial year planning is the immediate forcing function. The `initiative-intak
 - **Initiative allocation matrix**: rows = initiatives, columns = squads/people. Shows allocation mode (direct / profile-match / net-new gap) and computed vs claimed FTE delta per initiative.
 - **FTE and cost delta view**: per initiative — claimed FTE and cost from `portfolio/[slug].json` vs actual allocated FTE and cost from the roster mapping. Surfaces over-claims and under-resourcing.
 - **Hiring gap view**: net-new gaps expressed as named role/skill requirements per initiative slug. Grouped by product group and squad type needed.
-- **Leadership coverage view**: shows Product Owners, leads, and people leaders across groups. Flags initiatives at scale that lack the required leadership overhead.
+- **Leadership coverage view**: shows Product Owners, Engineering Chapter Leads, and People Leaders (anyone with direct reports in the roster) across groups. A flag is raised when an initiative with a direct or profile-match allocation of 3 or more FTE across multiple squads has no identified Product Owner or Engineering Lead in its allocation. These three role types — Product Owner, Engineering Chapter Lead, People Leader — are the defined leadership overhead roles for this purpose.
 
 ## Out of Scope
 
@@ -67,18 +67,19 @@ Financial year planning is the immediate forcing function. The `initiative-intak
 
 - **Initiative slug stability**: initiative slugs in `portfolio/[slug].json` are stable identifiers. If a slug changes post-intake, the workforce mapping breaks silently. Mitigation: `workforce-map` warns when a mapped slug has no corresponding portfolio file.
 - **xlsx schema variation**: the 5 product group sheets vary in column naming. A per-group `workforce/schema-map/[group].json` config file will capture the mapping. This config must be maintained when group sheets change structure.
-- **Cost model staleness**: role-rate assumptions in `cost-model.json` become stale if not updated at FY boundaries. The web UI will display the `lastUpdated` date of the cost model prominently.
+- **Cost model staleness**: role-rate assumptions in `cost-model.json` become stale if not updated at FY boundaries. Named owner: Head of Engineering (Hamish King), with Finance input at each FY boundary review. The web UI will display the `lastUpdated` date of the cost model prominently as a data-freshness indicator.
 - **Enterprise fork skill prerequisite**: `workforce-map` requires `portfolio/[slug].json` files to exist (produced by `initiative-intake` in the enterprise fork) before reconciliation can run. If the enterprise fork's portfolio is not current, the delta output will be misleading.
-- **Profile match accuracy**: "similar squad" matching depends on role/skill tags being applied consistently in the roster. Inconsistent tagging produces false matches or missed gaps.
+- **Profile match accuracy**: matching is tag-intersection based against the person's `skills[]` array in the roster; the operator supplies the required tag set at invocation time. Accuracy depends on role/skill tags being applied consistently during intake and updates. Inconsistent tagging produces false positives (matched person lacks the actual capability) or missed capacity (capable person is not matched). The required-tag set the operator specifies at invocation time is the primary control point.
 - **PII boundary**: roster data includes personal information. The repo is private and sits behind IAM roles and a development proxy. This constraint must be reviewed before the repo access model changes.
 
 ## Directional Success Indicators
 
-- Before a GM planning session, FTE and cost claimed across all reviewable initiative submissions can be diffed against actual roster capacity in a single `workforce-map` invocation.
-- Contract endings within the next two quarters are visible in the roster view without additional filtering or manual spreadsheet work.
-- Hiring gaps are expressed as named role/skill requirements attached to specific initiative slugs — not as an undifferentiated headcount number.
-- The initiative allocation matrix in the web UI can answer "is squad X over-committed?" without opening any xlsx file.
-- The cost delta view surfaces any initiative claiming FTE significantly above or below what the actual mapped allocation implies, before the GM session.
+The FY planning outcome if this works: the Head of Engineering can commit to initiative FTE and cost numbers at the GM review session with evidence from the actual roster — not assumption. Over-commitment of scarce people across competing high-priority initiatives is identified before it becomes a mid-year delivery failure, not after.
+
+- **Hiring decisions are evidence-based, not negotiated.** Named role/skill gaps attached to specific initiative slugs replace a negotiated headcount number derived from past years' patterns. The decision — hire N engineers of type X for initiative Y — is grounded in a specific identified gap, not a round-number estimate.
+- **Contract ending risk is priced into planning before the GM review.** Renewals and endings within the planning horizon are visible in the roster view, so headcount risk is a known input to resourcing decisions, not a surprise mid-year.
+- **FTE over-claims in initiative submissions are challenged at the right moment.** Submissions that claim FTE not supported by available roster capacity are identified before the GM session, when it is still possible to resize or defer an initiative — not after budget is committed.
+- **The "can we take on initiative Z?" question is answerable in one tool invocation.** The Head of Engineering does not need to open an xlsx file or ask a product group lead to manually check squad capacity.
 
 ## Constraints
 
@@ -99,4 +100,4 @@ Financial year planning is the immediate forcing function. The `initiative-intak
 
 ## Approved By
 
-- [Name — date — to be filled before progression to /benefit-metric]
+- Hamish King — 2026-05-26
