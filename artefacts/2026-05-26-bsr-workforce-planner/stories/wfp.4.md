@@ -25,12 +25,12 @@ So that planning conversations are grounded in real available capacity rather th
 
 ## Dependencies
 
-- **Upstream:** wfp.3 (workforce-map core) must be DoD-complete — this story's extended modes run in the same `workforce-map` invocation and write to the same `initiative-map.json` that wfp.3 produces.
+- **Upstream:** wfp.3 (workforce-map core) must be DoD-complete — this story's extended modes run in the same `workforce-map` invocation and write to the same `initiative-map.json` that wfp.3 produces. **Implementation note:** wfp.4 extends the same `workforce-map` script file — it does not produce a separate script. wfp.3 implements direct-allocation processing; wfp.4 adds the profile-match and net-new branches to the same entrypoint. The DoD dependency means wfp.3 code must be merged before wfp.4 development begins, not that they run as separate commands.
 - **Downstream:** wfp.7 (dashboard hiring gap view) reads the net-new entries from initiative-map.json.
 
 ## Acceptance Criteria
 
-**AC1:** Given an `allocation-input.json` entry for an initiative specifies `allocationMode: "profile-match"` and a `requiredTags` array (e.g. `["java", "platform", "chapter-lead"]`), when I invoke `workforce-map`, then the skill searches `workforce/roster.json` for people whose `skills[]` array contains all required tags AND who do not appear in any direct-allocation entry in the same invocation. Matched people are added to the initiative entry in `initiative-map.json` with `allocationMode: "profile-match"`.
+**AC1:** Given an `allocation-input.json` entry for an initiative specifies `allocationMode: "profile-match"` and a `requiredTags` array (e.g. `["java", "platform", "chapter-lead"]`), when I invoke `workforce-map`, then the skill searches `workforce/roster.json` for people whose `skills[]` array contains all required tags AND who are not already present in the direct-allocation entry for that same initiative in the current invocation. A person may still be profile-matched to initiative Y even if they appear in a direct-allocation for a different initiative X — cross-initiative allocation is permitted. Matched people are added to the initiative entry in `initiative-map.json` with `allocationMode: "profile-match"`.
 
 **AC2:** Given a profile-match search for an initiative returns zero matching people (nobody satisfies all required tags or all matches are already allocated), when I invoke `workforce-map`, then the initiative entry in `initiative-map.json` includes `profileMatchResult: "no-match"` and a `hiringGap: true` flag, and the gap report output includes the initiative slug and the required tags that found no match.
 

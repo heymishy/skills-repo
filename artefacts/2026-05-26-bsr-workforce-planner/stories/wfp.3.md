@@ -28,13 +28,45 @@ So that I can identify over-claimed or under-resourced initiatives in a single i
 - **Upstream:** wfp.1 (workforce-intake) must be DoD-complete — this story depends on `workforce/roster.json` and the `workforce/cost-model.json` seed file.
 - **Downstream:** wfp.4 (workforce-map extended modes) appends profile-match and net-new entries to the initiative-map.json produced by this story. wfp.6 (dashboard allocation matrix) reads initiative-map.json.
 
+## Input Format
+
+`workforce/allocation-input.json` is the operator-supplied file that drives every `workforce-map` run. It must exist before invoking the skill. The file is a JSON object with a single `allocations` array. Each entry represents one initiative and specifies its allocation mode and the inputs for that mode:
+
+```json
+{
+  "allocations": [
+    {
+      "slug": "initiative-slug",
+      "productGroup": "Product Group Name",
+      "allocationMode": "direct",
+      "people": ["Person A", "Person B"]
+    },
+    {
+      "slug": "initiative-slug-2",
+      "productGroup": "Product Group Name",
+      "allocationMode": "profile-match",
+      "requiredTags": ["java", "platform", "chapter-lead"]
+    },
+    {
+      "slug": "initiative-slug-3",
+      "productGroup": "Product Group Name",
+      "allocationMode": "net-new",
+      "requiredRole": "Senior Engineer",
+      "requiredTags": ["react", "frontend"]
+    }
+  ]
+}
+```
+
+Field rules: `slug` (required — must match a portfolio file slug or a warning is issued); `productGroup` (required — used by the dashboard group filter in wfp.7); `allocationMode` (required — one of `"direct"`, `"profile-match"`, `"net-new"`); `people` (required for `direct` — array of person name strings matching roster `name` field); `requiredTags` (required for `profile-match` and `net-new` — array of tag strings); `requiredRole` (required for `net-new` — string matching a role in cost-model.json). An entry may not have `allocationMode: "direct"` and `allocationMode: "profile-match"` simultaneously — use separate entries with the same slug if an initiative needs both.
+
 ## Acceptance Criteria
 
-**AC1:** Given `workforce/roster.json` exists, `workforce/cost-model.json` exists, and a `workforce/allocation-input.json` file specifies direct allocation entries (initiative slug → array of person names or squad names), when I invoke `workforce-map`, then `workforce/initiative-map.json` is created or updated. Each initiative entry contains: `slug`, `allocationMode: "direct"`, `allocatedPeople` (array of matched person records from roster), `computedFTE` (count of allocated non-retired people), `computedCostPerQuarterGBP` (sum of cost-model.json lookups by person role), `claimedFTE` (read from `portfolio/[slug].json` `people.fte_demand` field if the portfolio file exists, else `null`), `claimedCostGBP` (read from portfolio if present, else `null`), and `fteDelta` (`computedFTE` minus `claimedFTE`, or `null` if claimedFTE is null).
+**AC1:** Given `workforce/roster.json` exists, `workforce/cost-model.json` exists, and a `workforce/allocation-input.json` file specifies direct allocation entries (see Input Format section below), when I invoke `workforce-map`, then `workforce/initiative-map.json` is created or updated. Each initiative entry contains: `slug`, `allocationMode: "direct"`, `allocatedPeople` (array of matched person records from roster), `computedFTE` (count of allocated non-retired people), `computedCostPerQuarterNZD` (sum of cost-model.json lookups by person role), `claimedFTE` (read from `portfolio/[slug].json` `people.fte_demand` field if the portfolio file exists, else `null`), `claimedCostNZD` (read from portfolio if present, else `null`), and `fteDelta` (`computedFTE` minus `claimedFTE`, or `null` if claimedFTE is null).
 
-**AC2:** Given an initiative slug in the allocation input has no corresponding `portfolio/[slug].json` file, when I run `workforce-map`, then the skill prints a warning to stderr naming the missing portfolio slug, sets `claimedFTE: null` and `claimedCostGBP: null` for that initiative, and continues processing remaining initiatives without halting.
+**AC2:** Given an initiative slug in the allocation input has no corresponding `portfolio/[slug].json` file, when I run `workforce-map`, then the skill prints a warning to stderr naming the missing portfolio slug, sets `claimedFTE: null` and `claimedCostNZD: null` for that initiative, and continues processing remaining initiatives without halting.
 
-**AC3:** Given `workforce/cost-model.json` has a role entry with a non-null `quarterlyRateGBP`, when I run `workforce-map` and a person with that role is in the direct allocation, then their quarterly cost contribution is included in `computedCostPerQuarterGBP`. Given a person's role is not present in `cost-model.json`, then their cost contribution is treated as 0 and a warning is printed to stderr naming the unmapped role.
+**AC3:** Given `workforce/cost-model.json` has a role entry with a non-null `quarterlyRateNZD`, when I run `workforce-map` and a person with that role is in the direct allocation, then their quarterly cost contribution is included in `computedCostPerQuarterNZD`. Given a person's role is not present in `cost-model.json`, then their cost contribution is treated as 0 and a warning is printed to stderr naming the unmapped role.
 
 **AC4:** Given an initiative's `fteDelta` is negative (computedFTE < claimedFTE), then the initiative entry in `initiative-map.json` includes `gap: true`. Given `fteDelta` is zero or positive, then `gap` is `false` or absent.
 

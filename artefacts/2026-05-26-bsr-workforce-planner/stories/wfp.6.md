@@ -30,7 +30,7 @@ So that I can identify over-claimed or under-resourced initiatives at a glance d
 
 ## Acceptance Criteria
 
-**AC1:** Given `workforce/initiative-map.json` exists and contains entries, when I navigate to the "Allocation Matrix" tab in `dashboards/workforce.html`, then each initiative is shown as a row with columns: initiative slug, allocation mode(s), allocated people count, computed FTE, claimed FTE (or "—" if null), FTE delta (or "—" if null), computed cost per quarter (GBP), and claimed cost (or "—" if null).
+**AC1:** Given `workforce/initiative-map.json` exists and contains entries, when I navigate to the "Allocation Matrix" tab in `dashboards/workforce.html`, then each initiative is shown as a row with columns: initiative slug, allocation mode(s), allocated people count, computed FTE, claimed FTE (or "—" if null), FTE delta (or "—" if null), computed cost per quarter (NZD), and claimed cost (or "—" if null).
 
 **AC2:** Given an initiative entry has `fteDelta` < 0 (actual FTE below claimed), when I view the matrix, then the FTE delta cell for that row is rendered in red and the row has a visual indicator (e.g. a border or background tint) distinguishing it from neutral or surplus rows. Given `fteDelta` ≥ 0 or is null, then no red colouring is applied to that row.
 

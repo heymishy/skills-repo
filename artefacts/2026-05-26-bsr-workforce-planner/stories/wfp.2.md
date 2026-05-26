@@ -33,7 +33,7 @@ So that the workforce roster stays current between planning cycles — for examp
 
 **AC2:** Given a person record exists in the roster, when I invoke `workforce-update --action edit --group [name] --name '[person name]' --fields '{"endDate":"2026-09-30"}'`, then the specified fields are updated in both `workforce/[group].json` and `workforce/roster.json` atomically — either both files are updated or neither is (the skill rolls back if either write fails).
 
-**AC3:** Given a person record exists in the roster with no `endDate` set, when I invoke `workforce-update --action retire --group [name] --name '[person name]'`, then the person's record in both files has `endDate` set to the current date (ISO 8601, e.g. `2026-05-26`) and `retired: true` added. The record is not deleted from either file.
+**AC3:** Given a person record exists in the roster, when I invoke `workforce-update --action retire --group [name] --name '[person name]' --endDate [ISO-date]`, then the person's record in both files has `endDate` set to the supplied `--endDate` value and `retired: true` added. The record is not deleted from either file. Given I invoke `--action retire` without supplying `--endDate`, then the skill exits with a non-zero code and prints an error: "--endDate is required for retire action (use ISO 8601 format, e.g. 2026-09-30)". The end date is not defaulted to today — the person's actual contractual end date is not the same as the date the skill is run.
 
 **AC4:** Given I invoke `workforce-update` with any action and a `--name` value that does not match any record in the specified product group, then the skill exits with a non-zero code and prints an error message naming the unmatched person. No file is modified.
 

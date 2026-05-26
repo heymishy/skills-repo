@@ -17,7 +17,7 @@ So that I can quickly answer headcount and availability questions during plannin
 
 ## Architecture Constraints
 
-- Static HTML only — `dashboards/workforce.html` must load directly from `file://` with no server and no build step. Consistent with existing `dashboards/` convention (architecture-guardrails.md).
+- Static HTML only — `dashboards/workforce.html` must be served by a local static file server (`npx serve .` from the repo root, or `python -m http.server`, or equivalent). Direct `file://` loading is not supported: modern browsers (Chrome, Edge, Firefox) block `fetch()` from `file://` origins due to CORS restrictions, which silently prevents roster data from loading. No build step or backend is required — any static file server running locally is sufficient. Consistent with existing `dashboards/` convention (architecture-guardrails.md).
 - No external CSS or JS libraries (Bootstrap, React, Vue, etc.) — all styles and scripts inline in the single HTML file.
 - CSS custom properties for all colours and spacing values — consistent with `dashboards/pipeline-viz.html` style guide.
 - The dashboard reads `workforce/roster.json` using `fetch()` from a relative path. It does not call any external API or backend service.
@@ -29,7 +29,7 @@ So that I can quickly answer headcount and availability questions during plannin
 
 ## Acceptance Criteria
 
-**AC1:** Given `workforce/roster.json` exists at the expected relative path, when I open `dashboards/workforce.html` in a browser, then all non-retired person records are displayed in a table with columns: name, team, squad, product group, role, employment type, end date, and a skills tag list.
+**AC1:** Given `workforce/roster.json` exists at the expected relative path, when I open `dashboards/workforce.html` via a local static server (e.g. `npx serve .` from the repo root; navigate to `http://localhost:[port]/dashboards/workforce.html`), then all non-retired person records are displayed in a table with columns: name, team, squad, product group, role, employment type, end date, and a skills tag list.
 
 **AC2:** Given the dashboard is open, when I select a product group from the group filter dropdown, then only records whose `productGroup` matches the selection are shown; when I clear the filter, all records are shown again. When I select an employment type from the type filter, then only records of that type are shown. Both filters can be active simultaneously.
 

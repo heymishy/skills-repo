@@ -37,7 +37,9 @@ So that I have a consolidated, machine-readable workforce dataset that downstrea
 
 **AC4:** Given a person record in the xlsx has no end date (permanent employee), when I ingest the file, then the `endDate` field in the output JSON is `null` (not omitted, not an empty string).
 
-**AC5:** Given a successful ingestion, when I inspect the output, then a `workforce/cost-model.json` file is created if it does not already exist. The seed file contains one entry per unique `role` value found in the roster, each with a placeholder structure: `{ "role": "[role name]", "quarterlyRateGBP": null, "annualRateGBP": null }`. If `cost-model.json` already exists it is not overwritten.
+**AC5:** Given a successful ingestion, when I inspect the output, then a `workforce/cost-model.json` file is created if it does not already exist. The seed file contains one entry per unique `role` value found in the roster, each with a placeholder structure: `{ "role": "[role name]", "quarterlyRateNZD": null, "annualRateNZD": null }`. If `cost-model.json` already exists it is not overwritten.
+
+> **Operator prerequisite:** The seed file is created with `null` rates. Before running `workforce-map` for the first time, the operator must edit `workforce/cost-model.json` and populate each role's `quarterlyRateNZD` value. Any role with a `null` rate will contribute $0 to computed cost totals and generate a warning. Running `workforce-map` with an unpopulated cost model is valid but will produce zero-cost outputs for all roles until rates are filled in.
 
 **AC6:** Given an xlsx file has rows with no value in the name column (blank rows), when I ingest the file, then those rows are silently skipped and do not appear in the output JSON.
 

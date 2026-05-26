@@ -34,11 +34,11 @@ So that hiring conversations and initiative scoping decisions are grounded in sp
 
 **AC2:** Given I select a product group in the group filter (the same filter control used in the Roster view), when I view the Hiring Gaps tab, then only gap entries associated with initiatives belonging to the selected product group are shown. Given the initiative-map entry does not have a `productGroup` field, the entry remains visible under all filter selections (not hidden).
 
-**AC3:** Given `workforce/initiative-map.json` contains direct and profile-match allocations for initiatives, when I navigate to the "Leadership Coverage" tab, then each initiative with a total computed FTE of 3 or more (counting direct + profile-match only) is shown with a list of allocated people's roles and a flag indicating whether at least one person's `role` value matches a value in the `LEADERSHIP_ROLES` list.
+**AC3:** Given `workforce/initiative-map.json` contains direct and profile-match allocations for initiatives, when I navigate to the "Leadership Coverage" tab, then each initiative with a total computed FTE of 3 or more (counting direct + profile-match allocations only, not net-new) is shown with a list of allocated people's roles and a flag indicating whether at least one person's `role` value matches a value in the `LEADERSHIP_ROLES` list.
 
-**AC4:** Given an initiative has 3 or more FTE in its direct + profile-match allocation AND no allocated person has a role in `LEADERSHIP_ROLES`, when I view the Leadership Coverage tab, then that initiative is highlighted with a "Leadership gap" badge in a visually distinct colour (amber or red, supplemented with the text label — not colour only).
+**AC4:** Given an initiative has a total computed FTE of 3 or more (direct + profile-match only) AND no allocated person has a role in `LEADERSHIP_ROLES`, when I view the Leadership Coverage tab, then that initiative is highlighted with a "Leadership gap" badge in a visually distinct colour (amber or red, supplemented with the text label — not colour only).
 
-**AC5:** Given an initiative has fewer than 3 FTE in its allocation, when I view the Leadership Coverage tab, then that initiative is shown without a leadership gap badge (the threshold is 3+ FTE across multiple squads; below-threshold initiatives do not trigger the flag).
+**AC5:** Given an initiative has a total computed FTE below 3 (direct + profile-match only), when I view the Leadership Coverage tab, then that initiative is shown without a leadership gap badge. The threshold is 3 or more total FTE — no cross-squad check is performed. The Leadership Coverage tab shows all sub-threshold initiatives for visibility but does not flag them.
 
 **AC6:** Given `workforce/initiative-map.json` has no entries with `hiringGap: true`, when I navigate to the Hiring Gaps tab, then the tab displays the message "No hiring gaps recorded — all initiatives have capacity or are not yet mapped" rather than an empty table.
 

@@ -60,9 +60,9 @@ This is an operational planning tool. There is no tooling-process hypothesis bei
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1: Reconciliation time | TBD — populated by /definition | Gap until stories written |
-| M2: Pre-GM FTE coverage | TBD — populated by /definition | Gap until stories written |
-| M3: Hiring gap specificity | TBD — populated by /definition | Gap until stories written |
+| M1: Reconciliation time | wfp.1 (roster ingest), wfp.2 (roster update), wfp.3 (workforce-map core), wfp.5 (roster view), wfp.6 (allocation matrix) | Covered |
+| M2: Pre-GM FTE coverage | wfp.3 (map core — produces initiative-map.json), wfp.4 (profile-match extends coverage), wfp.6 (allocation matrix — the visual confirmation surface) | Covered |
+| M3: Hiring gap specificity | wfp.4 (net-new mode structurally enforces role + tags on every gap), wfp.7 (hiring gap view — the measurement surface) | Covered |
 
 ---
 
