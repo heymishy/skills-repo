@@ -13,6 +13,7 @@ var ENUM_FIELDS = {
   prStatus:     ['none', 'draft', 'open', 'merged'],
   reviewStatus: ['not-started', 'passed', 'has-findings'],
   health:       ['green', 'amber', 'red'],
+  track:        ['short', 'standard', 'programme-workstream', 'library'],
 };
 
 // Known boolean fields — values must be 'true' or 'false' and are coerced to JS booleans.

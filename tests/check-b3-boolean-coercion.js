@@ -205,6 +205,47 @@ console.log('\n[b3-boolean-coercion] T6 \u2014 check-pipeline-state-integrity pa
   fs.rmSync(tmpDir, { recursive: true, force: true });
 }
 
+// ── T7 — track field enum validation ──────────────────────────────────────────
+console.log('\n[b3-boolean-coercion] T7 \u2014 track field enum validation (prevents track=defect/spike slip-through)');
+{
+  const tmpDir = makeTmpDir('t7');
+
+  // T7a: track=defect → exit 8 (not a valid schema enum)
+  writeFixture(tmpDir, [makeFeature(FEAT, [makeStory(STORY)])]);
+  const mod = loadModule();
+  let resultDefect = null;
+  if (mod) {
+    try { resultDefect = mod.advance(FEAT, STORY, ['track=defect'], tmpDir); } catch (_) {}
+  }
+  assert(resultDefect !== null && resultDefect.exitCode === 8,
+         'T7a: track=defect → exitCode 8');
+  assert(resultDefect !== null && typeof resultDefect.stderr === 'string' &&
+         resultDefect.stderr.includes('track'),
+         'T7b: stderr references the field name "track"');
+
+  // T7c: track=short → exit 0 (valid, in schema enum and trace-exempt)
+  let resultShort = null;
+  if (mod) {
+    try { resultShort = mod.advance(FEAT, STORY, ['track=short'], tmpDir); } catch (_) {}
+  }
+  assert(resultShort !== null && resultShort.exitCode === 0,
+         'T7c: track=short → exitCode 0');
+  const afterShort = readFixture(tmpDir);
+  const storyShort = (afterShort.features[0].stories || []).find(s => s.id === STORY || s.slug === STORY);
+  assert(storyShort !== undefined && storyShort.track === 'short',
+         'T7d: story.track written as "short"');
+
+  // T7e: track=standard → exit 0 (valid schema enum)
+  let resultStd = null;
+  if (mod) {
+    try { resultStd = mod.advance(FEAT, STORY, ['track=standard'], tmpDir); } catch (_) {}
+  }
+  assert(resultStd !== null && resultStd.exitCode === 0,
+         'T7e: track=standard → exitCode 0');
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+}
+
 // ── Summary ────────────────────────────────────────────────────────────────────
 console.log(`\n[b3-boolean-coercion] ${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);
