@@ -94,6 +94,40 @@ No Phase 2 story writes to any `workforce/` or `portfolio/` file.
 
 ---
 
+## Shared Layout Convention — Nav Links
+
+All intelligence HTML views served by `src/workforce-ui/server.js` must include the following nav links in the page header, regardless of which story introduces the view:
+
+```html
+<nav>
+  <a href="/intelligence/heat-map">Heat Map</a>
+  <a href="/intelligence/bottlenecks">Bottlenecks</a>
+  <a href="/intelligence/temporal-risk">Temporal Risk</a>
+  <a href="/intelligence/scenarios">Scenarios</a>
+  <a href="/workforce-chat">Ask a question</a>
+</nav>
+```
+
+This is a **server-side convention, not just an AC per story**. Each story that introduces a new route adds its own link to the nav block and is responsible for ensuring all other existing views also include the new link. The shared nav is updated in the same PR as the new route. Future intelligence views follow the same pattern — the nav block grows with each story and is always complete on all pages.
+
+This convention is why wfp.16 AC10 (nav link on all intelligence pages) tests all four existing pages — it acts as the integration gate ensuring the convention was applied consistently. Any new Phase 3 intelligence story must add a corresponding AC that checks its nav link appears on all existing pages.
+
+---
+
+## Pure Function Naming Convention — Scenario Refactor Target
+
+wfp.15 requires the computation logic from wfp.12, wfp.13, and wfp.14 to be factored into reusable pure functions so the scenario POST handler can re-execute them against an in-memory overlay. To avoid ambiguity during the wfp.15 refactor, the exported pure function names are established here as the authoritative contract:
+
+| Story | Route handler | Pure function exported from module |
+|-------|--------------|------------------------------------|
+| wfp.12 | `GET /api/intelligence/heat-map-data` | `computeHeatMapData(teams, roster, initiativeMap, portfolioFiles)` |
+| wfp.13 | `GET /api/intelligence/bottlenecks-data` | `computeBottlenecksData(teams, roster, initiativeMap)` |
+| wfp.14 | `GET /api/intelligence/temporal-risk-data` | `computeTemporalRiskData(teams, roster, initiativeMap, nowDate)` |
+
+The route handlers in wfp.12/13/14 load data from disk and call these pure functions. The scenario handler in wfp.15 builds the overlay data in memory and calls the same pure functions directly — no disk reads during scenario evaluation. All three pure functions must be named exactly as above across all three stories so wfp.15 has unambiguous import targets.
+
+---
+
 ## Delivery Order
 
 wfp.12 → wfp.13 → wfp.14 → wfp.15 → wfp.16.

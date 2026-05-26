@@ -45,7 +45,7 @@ So that I can answer "what would happen if…" questions before making or reques
 
 **AC6 (scenario banner — client-side):** Given the `GET /intelligence/scenarios` page is loaded and the operator has submitted at least one scenario via the form, when the updated intelligence views render with the scenario overlay applied, then a "Scenario mode active" banner is visible at the top of all three intelligence view panels showing: "Scenario mode active — [N] person(s) and [N] team(s) affected. Scenario data is not saved." The banner remains until the operator clicks "Clear scenario" or reloads the page.
 
-**AC7 (combined overlay — multiple scenarios in a single request):** Given a `POST /api/intelligence/scenario` body with a `scenarios` array (plural) containing 1 or more scenario objects (any mix of the 4 types), when the server evaluates the request, then all scenario overlays are applied in array order to the same in-memory data copy, and a single updated response is returned. The `type` field at the root level is ignored when a `scenarios` array is present. An empty `scenarios` array returns the unmodified intelligence payloads (valid, not an error).
+**AC7 (combined overlay — multiple scenarios in a single request):** Given a `POST /api/intelligence/scenario` body with a `scenarios` array (plural) containing 1 or more scenario objects (any mix of the 4 types), when the server evaluates the request, then all scenario overlays are applied in array order to the same in-memory data copy, and a single updated response is returned. The `type` field at the root level is ignored when a `scenarios` array is present. An empty `scenarios` array returns the unmodified intelligence payloads (valid, not an error). Each scenario in the array is applied independently against the same unmodified on-disk baseline — a hire in `scenarios[0]` is NOT visible to a reallocation in `scenarios[1]` (see Out of Scope for chaining).
 
 **AC8 (read-only guarantee):** Given any `POST /api/intelligence/scenario` request with any valid or invalid body, when the server handles the request, then no file in `workforce/`, `portfolio/`, or any other directory is created, modified, or deleted as a side effect. The on-disk JSON files are unchanged before and after the request.
 
@@ -53,7 +53,7 @@ So that I can answer "what would happen if…" questions before making or reques
 
 - Persisting scenarios to disk or session storage — all overlays are request-scoped and discarded after the response.
 - More than 4 scenario types.
-- Scenario branching (what-if chains where the output of one scenario is fed as the baseline to another) — all scenarios in a combined `scenarios` array share the same unmodified on-disk data as baseline, not the output of previous scenarios in the array.
+- Scenario branching (what-if chains where the output of one scenario is fed as the baseline to another) — all scenarios in a combined `scenarios` array are applied independently against the same unmodified on-disk baseline. A hire in `scenarios[0]` does NOT affect the team composition visible to a reallocation in `scenarios[1]`. This is intentional for Phase 2 simplicity; chained what-if evaluation is a Phase 3 candidate if operator demand warrants it.
 - Undoing individual scenarios — the operator clears all scenarios at once.
 - Sharing or exporting a scenario configuration.
 - Modifying `src/web-ui/server.js` or any file under `src/web-ui/`.
