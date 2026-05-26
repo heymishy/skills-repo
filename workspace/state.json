@@ -1,6 +1,6 @@
 {
-  "currentPhase": "definition",
-  "lastUpdated": "2026-05-26T14:00:00Z",
+  "currentPhase": "definition-of-ready",
+  "lastUpdated": "2026-05-27T00:00:00Z",
   "activeFeature": "2026-05-26-bsr-workforce-planner",
   "cycle": {
     "discovery": {
@@ -21,16 +21,34 @@
       "status": "complete",
       "slicingStrategy": "User journey",
       "epics": ["wfp-data-foundation", "wfp-reconciliation-engine", "wfp-planning-dashboard"],
-      "stories": ["wfp.1", "wfp.2", "wfp.3", "wfp.4", "wfp.5", "wfp.6", "wfp.7"]
+      "stories": ["wfp.1","wfp.2","wfp.3","wfp.4","wfp.5","wfp.6","wfp.7","wfp.8","wfp.9","wfp.10","wfp.11a","wfp.11b","wfp.12","wfp.13","wfp.14","wfp.15","wfp.16"]
+    },
+    "review": {
+      "completedAt": "2026-05-27",
+      "status": "passed",
+      "notes": "All 17 stories PASS. Phase 2 stories wfp.12-wfp.16 reviewed at commits 566020d + 7458b0d."
+    },
+    "test-plan": {
+      "completedAt": "2026-05-27",
+      "status": "complete",
+      "artefacts": ["artefacts/2026-05-26-bsr-workforce-planner/test-plans/wfp.12-test-plan.md","artefacts/2026-05-26-bsr-workforce-planner/test-plans/wfp.13-test-plan.md","artefacts/2026-05-26-bsr-workforce-planner/test-plans/wfp.14-test-plan.md","artefacts/2026-05-26-bsr-workforce-planner/test-plans/wfp.15-test-plan.md","artefacts/2026-05-26-bsr-workforce-planner/test-plans/wfp.16-test-plan.md"]
+    },
+    "definition-of-ready": {
+      "completedAt": "2026-05-27",
+      "status": "signed-off",
+      "stories": ["wfp.12","wfp.13","wfp.14","wfp.15","wfp.16"],
+      "artefacts": "artefacts/2026-05-26-bsr-workforce-planner/dor/"
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-05-26",
-    "contextAtWrite": "/definition complete for bsr-workforce-planner. 3 epics, 7 stories written and committed at f8f28ac. pipeline-state.json at stage=definition, schema valid (0 errors). Tests: 90 stories checked, 0 fail; 14 artefact paths OK.",
-    "resumeInstruction": "Run /review on bsr-workforce-planner stories. Start with wfp.1 (intake) as the root dependency. Per-story /review runs in sequence: wfp.1 → wfp.2 → wfp.3 → wfp.4 → wfp.5 → wfp.6 → wfp.7. After review passes (no HIGH findings), run /test-plan per story, then /definition-of-ready per story.",
+    "writtenAt": "2026-05-27",
+    "contextAtWrite": "Phase 2 (intelligence layer) DoR complete for bsr-workforce-planner. All 5 Phase 2 stories (wfp.12 heat-map, wfp.13 bottlenecks, wfp.14 temporal-risk, wfp.15 scenarios, wfp.16 workforce-chat) signed off at commit 3c872c8. pipeline-state.json has all 5 at stage=definition-of-ready, dorStatus=signed-off, health=green. Tests: 194 passed, 0 failed.",
+    "resumeInstruction": "All Phase 2 stories wfp.12-wfp.16 are DoR signed-off. Next step: /branch-setup for each story, then /implementation-plan, then /subagent-execution. Start with wfp.12 (heat-map) as the foundation — it produces computeHeatMapData() which has no upstream code dependencies. wfp.13 (bottlenecks) and wfp.14 (temporal-risk) can follow in parallel. wfp.15 (scenarios) depends on wfp.12/13/14 data shapes. wfp.16 (workforce-chat) depends on server.js routes from all prior stories. DoR contracts at artefacts/2026-05-26-bsr-workforce-planner/dor/.",
     "pendingActions": [
-      "Name a Finance/planning lead reviewer for benefit-metric.md before DoR sign-off (non-engineering reviewer required — currently listed as TO BE NAMED)",
-      "Run /review on wfp.1 through wfp.7 — next pipeline step"
+      "Name a Finance/planning lead reviewer for benefit-metric.md (non-engineering reviewer required — currently listed as TO BE NAMED)",
+      "Run /branch-setup then /implementation-plan for wfp.12 (heat-map) — first Phase 2 story to implement (no upstream code dependencies)",
+      "wfp.13 (bottlenecks) and wfp.14 (temporal-risk) can be implemented in parallel after wfp.12 is complete",
+      "wfp.15 (scenarios) and wfp.16 (workforce-chat) depend on earlier Phase 2 routes being live in server.js"
     ]
   },
   "features": {
