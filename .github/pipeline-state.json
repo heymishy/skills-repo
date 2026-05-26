@@ -3504,7 +3504,7 @@
     {
       "slug": "2026-05-18-skill-robustness-improvements",
       "name": "Skill Robustness Improvements (Consumer-Reported)",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "track": "short",
       "regulated": false,
@@ -3514,8 +3514,45 @@
       "benefitMetricArtefact": "artefacts/2026-05-18-skill-robustness-improvements/benefit-metric.md",
       "sourceIssue": "https://github.com/heymishy/skills-repo/issues/344",
       "sourceContributor": "abhijeet-qsofte",
-      "stories": [],
-      "updatedAt": "2026-05-18"
+      "stories": [
+        {
+          "id": "sri.1",
+          "title": "Add git fetch timeout and fallback in inner-loop skills",
+          "stage": "definition",
+          "complexity": 1,
+          "scopeStability": "stable",
+          "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.1.md",
+          "prStatus": "none",
+          "dorStatus": "not-started",
+          "traceStatus": "not-run",
+          "health": "green"
+        },
+        {
+          "id": "sri.2",
+          "title": "Expand DoD entry condition message with actionable guidance",
+          "stage": "definition",
+          "complexity": 1,
+          "scopeStability": "stable",
+          "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.2.md",
+          "prStatus": "none",
+          "dorStatus": "not-started",
+          "traceStatus": "not-run",
+          "health": "green"
+        },
+        {
+          "id": "sri.3",
+          "title": "Add measurement-ready gate to DoD Step 6 for infrastructure stories",
+          "stage": "definition",
+          "complexity": 1,
+          "scopeStability": "stable",
+          "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.3.md",
+          "prStatus": "none",
+          "dorStatus": "not-started",
+          "traceStatus": "not-run",
+          "health": "green"
+        }
+      ],
+      "updatedAt": "2026-05-26"
     },
     {
       "slug": "2026-05-20-cloud-platform",
