@@ -5,6 +5,7 @@
 **Benefit-metric reference:** artefacts/2026-05-26-bsr-workforce-planner/benefit-metric.md
 **Phase:** 2 (Intelligence Layer)
 **Prerequisite stories:** wfp.12 DoD-complete, wfp.13 DoD-complete, wfp.14 DoD-complete.
+**Prerequisite DoD entry conditions (pure-function exports required):** wfp.12 DoD-complete must include `computeHeatMapData(teams, roster, initiativeMap, portfolioFiles)` exported from a shared module; wfp.13 DoD-complete must include `computeBottlenecksData(teams, roster, initiativeMap)` exported; wfp.14 DoD-complete must include `computeTemporalRiskData(teams, roster, initiativeMap, nowDate)` exported. These are DoD entry-condition requirements, not implementation suggestions. The scenario POST handler reuses these pure functions directly — if they are not exported, wfp.15 implementation will fail. (See `phase2-intelligence-intent.md` for the naming convention.)
 
 ## User Story
 
@@ -67,7 +68,7 @@ So that I can answer "what would happen if…" questions before making or reques
 ## Complexity Rating
 
 **Rating:** 3
-**Rationale:** The scenario endpoint must re-execute all three intelligence computations (heat-map, bottlenecks, temporal risk) against an in-memory overlay of the underlying data. This requires the computation logic from wfp.12, wfp.13, and wfp.14 to be factored into reusable pure functions (not embedded in route handlers). The refactor of existing route handlers into pure functions is the structural risk. The 4 scenario types are well-specified but the overlay semantics for combined scenarios add implementation complexity. Client-side live update of 3 view panels from a single POST response is non-trivial in vanilla JS.
+**Rationale:** The scenario endpoint must re-execute all three intelligence computations (heat-map, bottlenecks, temporal risk) against an in-memory overlay of the underlying data. This requires the computation logic from wfp.12, wfp.13, and wfp.14 to be factored into reusable pure functions (not embedded in route handlers). The refactor of existing route handlers into pure functions is the structural risk. The 4 scenario types are well-specified but the overlay semantics for combined scenarios add implementation complexity: multiple scenarios are each applied independently against a fresh copy of the on-disk baseline — not chained sequentially against a single accumulated in-memory state. Client-side live update of 3 view panels from a single POST response is non-trivial in vanilla JS.
 **Scope stability:** Stable. Dependencies are DoD-complete before this story starts (per prerequisite constraint). The 4 scenario types and their contracts are fully specified in the ACs.
 
 ## Definition of Ready Pre-check

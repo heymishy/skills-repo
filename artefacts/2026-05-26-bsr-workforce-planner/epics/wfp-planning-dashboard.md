@@ -30,6 +30,14 @@ The Head of Engineering and product group leads can open a single static HTML fi
 - [ ] wfp.7 — Hiring gap view and leadership coverage view
 - [ ] wfp.8 — Multi-team initiative scope decomposition and rollup view (Tab 5)
 
+## Phase 2 — Intelligence Layer Stories (src/workforce-ui/server.js)
+
+- [ ] wfp.12 — Skill coverage heat map — intelligence server
+- [ ] wfp.13 — Cross-portfolio bottleneck analysis — intelligence server
+- [ ] wfp.14 — Temporal coverage risk — intelligence server
+- [ ] wfp.15 — Scenario modelling — intelligence server
+- [ ] wfp.16 — Natural-language workforce query via GPT-4o — intelligence server
+
 ## Human Oversight Level
 
 **Oversight:** Low
