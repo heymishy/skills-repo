@@ -50,8 +50,9 @@
       "expectedStoryCount": 10,
       "confidence": "low",
       "assumptions": "None noted by operator",
-      "gaugeAtStart": "7% (525/7000 — Copilot Pro billing changed June 1: new monthly limit 7,000 premium requests, up from 1,500)",
-      "premiumRequestsForecast": null
+      "gaugeAtStart": "7% (525/7000 display units — billing changed June 1 to AI Credits (token-based); Copilot Pro = $10/month included; gauge % is the reliable signal; at E3 record $ AI Credits consumed, not request count; 7% ≈ $0.70 of $10 consumed at feature start)",
+      "premiumRequestsForecast": null,
+      "billingModel": "ai-credits-token-based (effective 2026-06-01)"
     }
   },
   "features": {
