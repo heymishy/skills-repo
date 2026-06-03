@@ -3598,6 +3598,21 @@
       "updatedAt": "2026-05-21"
     },
     {
+      "slug": "2026-05-21-ideate-web-ux",
+      "name": "/ideate Web UX — Structured Session Interface",
+      "stage": "discovery",
+      "health": "green",
+      "updatedAt": "2026-06-03",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discovery": {
+        "status": "draft",
+        "artefact": "artefacts/2026-05-21-ideate-web-ux/discovery.md"
+      }
+    },
+    {
       "slug": "2026-05-24-governance-platform-architecture",
       "title": "Governance Platform Architecture Review",
       "stage": "definition-of-done",

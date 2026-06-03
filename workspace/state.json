@@ -1,5 +1,5 @@
 {
-  "currentPhase": "spike-complete",
+  "currentPhase": "discovery",
   "lastUpdated": "2026-06-03T00:00:00Z",
   "activeFeature": "2026-05-21-ideate-web-ux",
   "cycle": {
@@ -21,14 +21,20 @@
       "outcome": "PROCEED",
       "commit": "e087c44",
       "finding": "SSE streaming architecture (handlePostTurnStreamHtml) supports assumption cards as new event type — no structural rewrite needed. Three implementation choices made: (1) JSON protocol markers, (2) dedicated confirm endpoint, (3) two-section right panel layout."
+    },
+    "discovery": {
+      "status": "draft",
+      "artefact": "artefacts/2026-05-21-ideate-web-ux/discovery.md",
+      "completedAt": "2026-06-03"
     }
   },
   "checkpoint": {
     "writtenAt": "2026-06-03",
-    "contextAtWrite": "ideate-web-ux: All 3 ideation lenses complete (A, D, B) at commit f592fb0. Spike A1 (SSE architecture feasibility) complete at commit e087c44 — PROCEED verdict. ADR-018 written to product/decisions.md. Blocking assumption A1 resolved. Feature is now unblocked for /discovery.",
-    "resumeInstruction": "Run /discovery for 2026-05-21-ideate-web-ux. MVP scope: Clusters 1 (context manifest), 2 (assumption cards), 4 (live artefact panel). Architecture decisions in ADR-018 and spike artefact. New SSE events: assumptionCard, conditionItem. Right panel: two sections (#assumption-cards top, #draft-content below). Confirm endpoint pattern established in ADR-018.",
+    "contextAtWrite": "ideate-web-ux: /discovery artefact written at artefacts/2026-05-21-ideate-web-ux/discovery.md. MVP scope: Clusters 1 (context manifest), 2 (assumption cards), 4 (live artefact panel). Pipeline-state.json updated with stage:discovery, health:green. Awaiting operator approval of discovery artefact before /benefit-metric.",
+    "resumeInstruction": "Discovery artefact written for 2026-05-21-ideate-web-ux and saved at artefacts/2026-05-21-ideate-web-ux/discovery.md. Review and approve the discovery (update Status field to Approved + name/date), then run /benefit-metric. If running /clarify first: two unconfirmed assumptions flagged in discovery.md.",
     "pendingActions": [
-      "Run /discovery for 2026-05-21-ideate-web-ux — all blocking spikes resolved, proceed to discovery artefact",
+      "OPERATOR REVIEW REQUIRED: review artefacts/2026-05-21-ideate-web-ux/discovery.md and approve — update Status field to 'Approved' + add approver name and date before /benefit-metric",
+      "OPTIONAL: run /clarify to resolve the 2 unconfirmed assumptions in discovery.md before /benefit-metric",
       "bsr-workforce-planner Phase 2 (wfp.12-wfp.16): all DoR signed-off — run /branch-setup for wfp.12 (heat-map, no upstream deps) as first story",
       "2026-05-18-skill-robustness-improvements: still at benefit-metric-active — run /definition to write sri.1/sri.2/sri.3 story artefacts",
       "Finance/planning lead reviewer required for bsr-workforce-planner benefit-metric.md (non-engineering approver TO BE NAMED)"
