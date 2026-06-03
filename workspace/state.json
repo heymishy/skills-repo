@@ -50,7 +50,7 @@
       "expectedStoryCount": 10,
       "confidence": "low",
       "assumptions": "None noted by operator",
-      "gaugeAtStart": "7% (525/7000 display units — billing changed June 1 to AI Credits (token-based); Copilot Pro = $10/month included; gauge % is the reliable signal; at E3 record $ AI Credits consumed, not request count; 7% ≈ $0.70 of $10 consumed at feature start)",
+      "gaugeAtStart": "7.5% (525/7000 AI credits — Copilot Pro Plus = 7,000 AI credits/month included + $11 additional overage budget; credit rate: ~$0.00957/credit (observed actuals Jun 1-3: 580 credits = $5.55); at E3 record aiCreditsConsumedCount = (endCredits - 525) and aiCreditsConsumedUSD = count × 0.00957)",
       "premiumRequestsForecast": null,
       "billingModel": "ai-credits-token-based (effective 2026-06-01)"
     }
