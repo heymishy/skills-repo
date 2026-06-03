@@ -362,3 +362,21 @@ The p11.3 story (H-GOV block in /definition-of-ready SKILL.md) requires a decisi
 - `session.assumptionCards = []` is a new field on the in-memory session object — no Map/schema change.
 - Stories using `handleGetChatHtml` / `handlePostTurnStreamHtml` are the only files that need modification.
 - The conditions sidebar (Lens A Cluster 6) uses the identical extension pattern with `conditionItem` events and `session.conditions[]` — no confirm endpoint needed for MVP (conditions are display-only until end of session).
+---
+
+## ADR-019 — ideate-web-ux: in-memory session TTL on browser disconnect
+
+**Status:** Accepted | **Date:** 2026-06-04 | **Context:** Open Architecture Decision 3 from artefacts/2026-05-21-ideate-web-ux/discovery.md
+
+**Decision:** In-memory `/ideate` sessions are kept alive for 30 minutes after the last SSE keepalive ping before being cleared from `_sessionStore`. The TTL is enforced by a `lastSeen` timestamp updated on each SSE keepalive ping (every 15 seconds). A cleanup sweep runs every 5 minutes and removes sessions where `Date.now() - session.lastSeen > 30 * 60 * 1000`.
+
+The `POST /api/skills/:name/sessions/:id/assumption/:cardId/confirm` endpoint must return HTTP 404 (not 500) when the session has expired. This is the only reconnect-facing error condition that needs explicit handling — clients that reconnect within 30 minutes find the session intact; those who reconnect after TTL expiry see a 404 and must start a new session.
+
+30 minutes is consistent with the existing OAuth session inactivity window and is the shortest interval that accommodates a typical operator distraction (step away, return) without breaking the session.
+
+**Alternatives rejected:** Immediate clear on SSE disconnect (too aggressive — a network hiccup kills the session); no TTL / keep alive indefinitely (server memory leak at scale); session disk persistence (out of scope for MVP — Cluster 3 deferred; Postgres session store committed to Increment 2).
+
+**Consequences:**
+- `session.lastSeen: number` is a new field on the in-memory session object (epoch ms).
+- The confirm endpoint adds a `session not found` HTTP 404 path alongside the existing auth guard.
+- Every story that modifies `_sessionStore` or the SSE handler must include the 30-minute TTL and the cleanup sweep as explicit ACs.

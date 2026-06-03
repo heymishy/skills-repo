@@ -3572,7 +3572,9 @@
         "B"
       ],
       "stories": [],
-      "updatedAt": "2026-05-20T21:00:00Z"
+      "updatedAt": "2026-05-20T21:00:00Z",
+      "ideationRerun": true,
+      "ideationRerunNote": "Re-run triggered: 7 adoption barriers (Cluster 5) were not visible mid-Lens-A. Required an additional research pass before Lens D. Discovery artefact produced on the second run."
     },
     {
       "slug": "2026-05-21-execution-boundary",
@@ -3608,9 +3610,13 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "discovery": {
-        "status": "draft",
-        "artefact": "artefacts/2026-05-21-ideate-web-ux/discovery.md"
-      }
+        "status": "approved",
+        "artefact": "artefacts/2026-05-21-ideate-web-ux/discovery.md",
+        "approvedAt": "2026-06-04",
+        "approvedBy": "Hamish King"
+      },
+      "ideationRerun": true,
+      "ideationRerunNote": "Re-run triggered: 12 unconfirmed Lens B assumptions were invisible during Lenses A+D. Required Spike A1 (SSE architecture feasibility) before /discovery could proceed to approval."
     },
     {
       "slug": "2026-05-24-governance-platform-architecture",

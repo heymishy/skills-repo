@@ -1,8 +1,8 @@
 # Discovery: /ideate Web UX — Structured Session Interface
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-06-03
-**Approved by:** Pending
+**Approved by:** Hamish King — Platform operator / tech lead — 2026-06-04
 **Author:** Copilot (GitHub Copilot — Claude Sonnet 4.6) — informed by Lens A (opportunity mapping), Lens D (Cagan strategy framing), Lens B (assumption inventory) in artefacts/2026-05-21-ideate-web-ux/research/ideation.md, and Spike A1 artefacts/2026-05-21-ideate-web-ux/spikes/a1-sse-architecture-feasibility.md
 
 ---
@@ -168,4 +168,4 @@ Assumption 1 is a design risk (affects Increment 2 scope, not MVP). Assumption 2
 - (none at draft stage)
 
 **Approved By:**
-- Pending
+- Hamish King — Platform operator / tech lead — 2026-06-04
