@@ -23,9 +23,7 @@ The result: operators discover scoping gaps and unconfirmed assumptions only aft
 
 **Primary — Platform operator (developer / tech lead)** running `/ideate` sessions for feature discovery. This persona uses `/ideate` at the start of any new feature, typically 1–3 times per quarter per feature. The problem compounds on features where context is loaded from multiple reference files and assumptions build up across multiple lenses. The operator is also the author — they have no external view of what the model is assembling.
 
-**Secondary — Platform operator receiving a completed ideation artefact from another session.** When a handoff occurs (e.g. operator A runs Lens A, operator B reviews Lens B), the invisible-assumption problem is worse: operator B has no record of the assumptions that formed during the lenses they weren't present for.
-
-The personas affected are explicitly the same as the platform's primary Developer / Engineer and Tech Lead / Squad Lead personas (product/mission.md) — this feature serves the platform's own daily operators.
+**Secondary — Platform operator receiving a completed ideation artefact from a session they did not attend.** When operator A runs Lenses A and D and operator B takes over for Lens B, operator B works with assumptions they never saw form. The context manifest tells them what was loaded, but without the assumption cards from the earlier lenses, they're pattern-matching against a thread they cannot scroll back to reconstruct. The invisible-assumption problem is worse for this persona than for the primary, because the operator who built the context is no longer in the room to fill the gaps. This compound problem becomes the default case, not an edge case, as soon as the platform is used by teams rather than solo operators — and it is precisely the case that surfaces in commercial contexts where the discovery operator and the delivery team are different people. Building for this persona explicitly shapes the design: the context manifest and assumption cards must be legible to someone who wasn't present at session start, not just a live feed for the operator who opened the browser.
 
 ## Why Now
 
@@ -84,10 +82,10 @@ The MVP delivers these three clusters as an enhancement to the existing `/skills
 Baseline: 0 assumptions visible mid-session today (no web UI). Target: 100% of model-emitted `assumptionCard` SSE events produce a visible card in the right panel within 500ms of emission. Measured via: automated test asserting SSE event → DOM card render pipeline; manual operator session observation.
 
 **2. Downstream rework rate from unconfirmed assumptions**
-Baseline: ~40% of ideation sessions require a subsequent re-run or downstream correction in /definition due to unconfirmed assumptions (operator-estimated from Lens D delivery signal). Target: <15% of sessions require correction after MVP ships. Measured via: delivery actuals in pipeline-state.json — stories tagged to ideation re-runs or scoping corrections identified at /review.
+Baseline: ~40% of ideation sessions require a subsequent re-run or downstream correction in /definition due to unconfirmed assumptions. **This is a directional estimate from Lens D operator signal, not a measured baseline.** The figure is plausible but unverified; before /definition locks this metric, pipeline-state.json must be instrumented to capture ideation re-run events at source, otherwise the post-ship delta cannot be calculated. Pre-condition: add `session.ideationRerun: boolean` to pipeline-state.json story tracking and surface re-run count per feature in the governance check output. Target: <15% of sessions require correction after MVP ships. Measured via: delivery actuals in pipeline-state.json — stories tagged to ideation re-runs or scoping corrections identified at /review.
 
 **3. Session completion rate**
-Baseline: [UNKNOWN BASELINE] — no web UI session telemetry exists yet. Target: 75% of started `/ideate` sessions (where the operator submits at least one answer) result in a committed artefact. Measured via: `session.done = true` signal frequency in server-side session logs.
+Baseline: [TO BE ESTABLISHED in first 30 days post-ship] — no web UI session telemetry exists yet. Target: 75% of started `/ideate` sessions (where the operator submits at least one answer) result in a committed artefact. Reasoning behind 75%: structured, intentionally-initiated wizard flows (where the user opted in rather than being interrupted) typically achieve 70–85% completion. `/ideate` is operator-initiated — the person who opens it is already committed to the task. 75% is a reasonable floor for this intent profile. If actuals in the first 30 days fall substantially below this, the likely causes are: session interruption from browser close (Cluster 3 deferred — expected), unclear onboarding for first-time users (first-run UX deferred — expected), or model emission failures preventing session progress (Cluster 2 risk). The 30-day actuals lock the real baseline; the 75% target is then evaluated against it. Measured via: `session.done = true` signal frequency in server-side session logs.
 
 ## Constraints
 
@@ -103,6 +101,45 @@ Baseline: [UNKNOWN BASELINE] — no web UI session telemetry exists yet. Target:
 
 ---
 
+## Open Architecture Decisions — Required Before /definition
+
+These are design questions that must be answered before story ACs can be written. They are documented here rather than deferred to /definition to avoid under-specified ACs being written against unresolved behaviour.
+
+**1. cardId generation and cardinality**
+The `POST /api/skills/:name/sessions/:id/assumption/:cardId/confirm` endpoint requires `cardId` to be a server-side concept assigned at parse time (when the SSE handler parses the `---ASSUMPTION-JSON---` marker from the stream). The discovery does not address what happens if the model emits the same assumption text twice in a session — whether that produces one card (de-duplication by content hash) or two cards (cardinality = emission count). Decision required: de-duplicate by content hash or allow duplicates and surface them? Recommendation: assign `cardId` as `sha256(sessionId + emittedText)[0:8]`; duplicate emission produces the same `cardId`; the confirm endpoint is idempotent. This decision must appear as an explicit AC in the assumption cards story.
+
+**2. Panel layout — collapsible assumption cards section**
+The `max-height:40%` constraint from ADR-018 implies `overflow-y: auto` but does not require a collapsible header. For sessions that accumulate many assumption cards (Lens B of a complex feature), a fixed 40% max-height panel will fill with scrollable cards and obscure the artefact draft. The definition story must explicitly require: a collapsible toggle on the `#assumption-cards` section header; collapsed state persists in `sessionStorage` per session. This is a definition-level AC, not a discovery constraint — but it must be named here so it is not omitted at story writing.
+
+**3. Session lifecycle on browser close**
+The in-memory session is accepted as a deliberate MVP constraint. However, the definition story must specify the session's server-side TTL after the browser disconnects: is the session kept alive for N minutes (allowing a reconnect to resume the same session), or is it cleared immediately on disconnect? If a TTL-based keepalive is implemented, the confirm endpoint must handle the case where an operator reconnects and the session is still server-side alive. Decision required before the confirm endpoint story is written: recommended approach is 30-minute TTL in `_sessionStore` with a `lastSeen` timestamp updated on each SSE keepalive ping; session cleared on TTL expiry. This is consistent with the existing auth session TTL. Must be documented as an ADR entry before /definition.
+
+**4. SKILL.md story sequencing and feature flag**
+The web UI assumption cards stories depend on the model actually emitting `---ASSUMPTION-JSON---` markers. If the SKILL.md tuning story is delivered after the UI stories, assumption cards will render empty during testing. /definition must establish explicit delivery sequencing: the SKILL.md tuning story is either (a) delivered first and merged to master before the UI stories begin, or (b) delivered in parallel with the UI stories but the card display is gated behind a `session.assumptionCardsEnabled` feature flag that defaults to `false` until the SKILL.md story merges. Option (b) allows parallel delivery without blocking. Decision: use option (b) with a feature flag. This sequencing constraint must appear in every UI story's Dependencies block.
+
+---
+
+## Commercialisation Context
+
+This discovery was initiated as a precursor to commercialisation (the "5-person outreach experiment" from the May ideation session). The current scope is internally coherent, but the commercialisation framing requires three additional considerations that are not part of the MVP implementation scope — they must be explicitly named and deferred rather than omitted.
+
+**The live session demo moment**
+The live artefact draft panel (Cluster 4) is not just a convenience feature for the operator. It is the first moment in the platform's history where governance can be *watched happening* rather than read in its outputs after the fact. A live `/ideate` session — context loaded, assumptions surfacing as cards, artefact drafting in the right panel — is a product demo moment that does not require the observer to understand the inner workings of the pipeline. The discovery should be read with this dual purpose in mind: Cluster 4 is a productivity feature for the operator and a legibility surface for an external evaluator. The definition stories must not treat the draft panel as purely functional; the visual quality and layout of what an external observer sees during a live session is commercially relevant.
+
+**Read-only observer view — explicitly deferred to Increment 2**
+For the demo moment to be reliably reproducible, the platform needs a read-only view of a live session that a stakeholder can watch without being the operator. This is not MVP scope — it requires a separate auth surface (share link or ephemeral read-only token) and session state broadcasting beyond what the current SSE architecture provides. It is explicitly deferred to Increment 2. The Increment 2 backlog should include: `GET /sessions/:id/observe` — read-only SSE stream of current assumption cards and draft content, no confirmation capability, no auth from operator's OAuth session. If this view is not named here, it will not make Increment 2.
+
+**First-run onboarding UX — explicitly deferred to Increment 2**
+The MVP assumes the operator already understands what assumption cards are, what the context manifest means, and how to interpret the artefact draft panel. For commercial use — especially with the outreach cohort — the web UI must be self-explanatory without narration. Empty-state labels, panel tooltips, and a first-run guidance overlay are not MVP scope but they must be named as Increment 2 delivery items. The definition stories for MVP should include: at minimum, static labels on each panel section (`#assumption-cards` header: "Assumptions — flagged by the model as this session runs"; `#draft-content` header: "Artefact draft — building in real time"; `#context-manifest` header: "Context loaded at session start"). These labels are low-cost and make the MVP session legible to a first-time observer without a full onboarding overlay.
+
+**Assumption card emission reliability — commercial risk**
+The second unconfirmed assumption (that the `/ideate` SKILL.md can be tuned to emit `---ASSUMPTION-JSON---` markers consistently) is not just a technical risk — it is the commercial viability gate for Cluster 2. Unreliable assumption card emission (below 70% of actual assumptions surfaced) produces a UI that "sometimes shows things" rather than a reliable surface. For commercial use, inconsistent capture is worse than no capture: it creates false confidence in the completeness of the assumption list. **Resolution required before /benefit-metric, not after:** run a single instrumented `/ideate` session with the SKILL.md tuning applied and measure marker emission against the expected assumption count from Lens B. If emission is below 70%, Cluster 2 must move to Increment 2 and MVP becomes Clusters 1 and 4 only.
+
+**Session persistence as a commercial trust signal — Postgres in Increment 2**
+The in-memory-only MVP is the correct engineering decision for the first increment. However, for commercial use, a 45–90 minute ideation session that loses all state on browser refresh is a trust-breaking experience. Session persistence must be committed to Increment 2 with a named architecture: Postgres session store (the decision from the May 21 session, now referenced here for forward traceability). Operators running commercial client evaluations on the platform must be able to close a browser and resume. This is not negotiable for Increment 2; deferring it further risks the commercial launch timeline.
+
+---
+
 ## /clarify recommendation
 
 This discovery contains 2 unconfirmed assumptions that affect scope and benefit measurement. Before proceeding to `/benefit-metric`, consider running `/clarify` to resolve:
@@ -110,7 +147,15 @@ This discovery contains 2 unconfirmed assumptions that affect scope and benefit 
 - [ASSUMPTION] Operators prefer reviewing and acting on assumption cards during the session rather than reviewing the full assumption list in the final Lens B output — unconfirmed, requires validation with at least one real operator session observation before Increment 2 scope is locked.
 - [ASSUMPTION] The `/ideate` SKILL.md system prompt can be tuned to emit `---ASSUMPTION-JSON---` markers reliably and consistently during model generation — technically feasible per Spike A1, but emission consistency at scale is untested.
 
-Both assumptions are contained within the feature's own delivery. Assumption 1 is a design risk (affects Increment 2 scope, not MVP). Assumption 2 is a technical risk with a clear test design (instrument the /ideate SKILL.md in a dev session and observe marker emission rate). If the operator is comfortable accepting these as named risks, `/clarify` can be skipped and `/benefit-metric` can proceed directly.
+Assumption 1 is a design risk (affects Increment 2 scope, not MVP). Assumption 2 is a commercial viability gate — see the Commercialisation Context section above. **Resolution required before /benefit-metric:** run the SKILL.md marker emission experiment (one instrumented session) and record the result in a spike artefact. If emission is ≥70%: proceed to /benefit-metric with Cluster 2 in scope. If emission is <70%: MVP scope reverts to Clusters 1 and 4, Cluster 2 moves to Increment 2.
+
+**Additional pre-/benefit-metric actions:**
+
+1. **Instrument pipeline-state.json for rework rate baseline.** The Indicator 2 baseline (~40%) is directional. Add `ideationRerun` tracking to the pipeline state schema and back-fill the two known re-run events (cloud-platform and ideate-web-ux) to seed a real baseline before /definition locks the metric.
+
+2. **Document the session lifecycle TTL decision as an ADR** (see Open Architecture Decisions section above, item 3) before /definition begins. This is a one-decision ADR entry in `product/decisions.md` and takes 10 minutes.
+
+3. **Populate the Approved By field.** The H-GOV hard block at DoR requires a named approver with role and date. A non-engineering approver is expected for M3 measurement.
 
 ---
 
