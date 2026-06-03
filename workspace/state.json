@@ -40,6 +40,20 @@
       "Finance/planning lead reviewer required for bsr-workforce-planner benefit-metric.md (non-engineering approver TO BE NAMED)"
     ]
   },
+  "estimate": {
+    "e1": {
+      "date": "2026-06-04",
+      "expectedCalendarDays": 2,
+      "engagementFraction": 0.25,
+      "outerLoopFocusH": "1.0 (derived: 2 × 2 × 0.25)",
+      "innerLoopHuman": 1,
+      "expectedStoryCount": 10,
+      "confidence": "low",
+      "assumptions": "None noted by operator",
+      "gaugeAtStart": "7% (525/7000 — Copilot Pro billing changed June 1: new monthly limit 7,000 premium requests, up from 1,500)",
+      "premiumRequestsForecast": null
+    }
+  },
   "features": {
     "2026-05-21-ideate-web-ux": {
       "status": "discovery-ready",
