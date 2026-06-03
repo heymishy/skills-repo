@@ -1,60 +1,61 @@
 {
-  "currentPhase": "definition-of-ready",
-  "lastUpdated": "2026-05-27T00:00:00Z",
-  "activeFeature": "2026-05-26-bsr-workforce-planner",
+  "currentPhase": "spike-complete",
+  "lastUpdated": "2026-06-03T00:00:00Z",
+  "activeFeature": "2026-05-21-ideate-web-ux",
   "cycle": {
-    "discovery": {
-      "completedAt": "2026-05-26",
-      "artefact": "artefacts/2026-05-26-bsr-workforce-planner/discovery.md",
-      "status": "approved",
-      "approvedBy": "Hamish King"
-    },
-    "benefit-metric": {
-      "completedAt": "2026-05-26",
-      "artefact": "artefacts/2026-05-26-bsr-workforce-planner/benefit-metric.md",
-      "status": "active",
-      "metrics": ["M1: Workforce + Initiative Reconciliation Time", "M2: Pre-GM Initiative FTE Cross-Check Coverage", "M3: Hiring Gap Specificity Rate"]
-    },
-    "definition": {
-      "completedAt": "2026-05-26",
-      "artefact": "artefacts/2026-05-26-bsr-workforce-planner/epics/",
+    "ideation": {
+      "completedAt": "2026-06-03",
+      "artefact": "artefacts/2026-05-21-ideate-web-ux/research/ideation.md",
       "status": "complete",
-      "slicingStrategy": "User journey",
-      "epics": ["wfp-data-foundation", "wfp-reconciliation-engine", "wfp-planning-dashboard"],
-      "stories": ["wfp.1","wfp.2","wfp.3","wfp.4","wfp.5","wfp.6","wfp.7","wfp.8","wfp.9","wfp.10","wfp.11a","wfp.11b","wfp.12","wfp.13","wfp.14","wfp.15","wfp.16"]
+      "lenses": [
+        "A (opportunity mapping)",
+        "D (Cagan strategy — PROCEED)",
+        "B (assumption inventory — 12 assumptions A1–A12)"
+      ],
+      "commit": "f592fb0"
     },
-    "review": {
-      "completedAt": "2026-05-27",
-      "status": "passed",
-      "notes": "All 17 stories PASS. Phase 2 stories wfp.12-wfp.16 reviewed at commits 566020d + 7458b0d."
-    },
-    "test-plan": {
-      "completedAt": "2026-05-27",
+    "spike-a1": {
+      "completedAt": "2026-06-03",
+      "artefact": "artefacts/2026-05-21-ideate-web-ux/spikes/a1-sse-architecture-feasibility.md",
       "status": "complete",
-      "artefacts": ["artefacts/2026-05-26-bsr-workforce-planner/test-plans/wfp.12-test-plan.md","artefacts/2026-05-26-bsr-workforce-planner/test-plans/wfp.13-test-plan.md","artefacts/2026-05-26-bsr-workforce-planner/test-plans/wfp.14-test-plan.md","artefacts/2026-05-26-bsr-workforce-planner/test-plans/wfp.15-test-plan.md","artefacts/2026-05-26-bsr-workforce-planner/test-plans/wfp.16-test-plan.md"]
-    },
-    "definition-of-ready": {
-      "completedAt": "2026-05-27",
-      "status": "signed-off",
-      "stories": ["wfp.12","wfp.13","wfp.14","wfp.15","wfp.16"],
-      "artefacts": "artefacts/2026-05-26-bsr-workforce-planner/dor/"
+      "outcome": "PROCEED",
+      "commit": "e087c44",
+      "finding": "SSE streaming architecture (handlePostTurnStreamHtml) supports assumption cards as new event type — no structural rewrite needed. Three implementation choices made: (1) JSON protocol markers, (2) dedicated confirm endpoint, (3) two-section right panel layout."
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-05-27",
-    "contextAtWrite": "Phase 2 (intelligence layer) DoR complete for bsr-workforce-planner. All 5 Phase 2 stories (wfp.12 heat-map, wfp.13 bottlenecks, wfp.14 temporal-risk, wfp.15 scenarios, wfp.16 workforce-chat) signed off at commit 3c872c8. pipeline-state.json has all 5 at stage=definition-of-ready, dorStatus=signed-off, health=green. Tests: 194 passed, 0 failed.",
-    "resumeInstruction": "All Phase 2 stories wfp.12-wfp.16 are DoR signed-off. Next step: /branch-setup for each story, then /implementation-plan, then /subagent-execution. Start with wfp.12 (heat-map) as the foundation — it produces computeHeatMapData() which has no upstream code dependencies. wfp.13 (bottlenecks) and wfp.14 (temporal-risk) can follow in parallel. wfp.15 (scenarios) depends on wfp.12/13/14 data shapes. wfp.16 (workforce-chat) depends on server.js routes from all prior stories. DoR contracts at artefacts/2026-05-26-bsr-workforce-planner/dor/.",
+    "writtenAt": "2026-06-03",
+    "contextAtWrite": "ideate-web-ux: All 3 ideation lenses complete (A, D, B) at commit f592fb0. Spike A1 (SSE architecture feasibility) complete at commit e087c44 — PROCEED verdict. ADR-018 written to product/decisions.md. Blocking assumption A1 resolved. Feature is now unblocked for /discovery.",
+    "resumeInstruction": "Run /discovery for 2026-05-21-ideate-web-ux. MVP scope: Clusters 1 (context manifest), 2 (assumption cards), 4 (live artefact panel). Architecture decisions in ADR-018 and spike artefact. New SSE events: assumptionCard, conditionItem. Right panel: two sections (#assumption-cards top, #draft-content below). Confirm endpoint pattern established in ADR-018.",
     "pendingActions": [
-      "Name a Finance/planning lead reviewer for benefit-metric.md (non-engineering reviewer required — currently listed as TO BE NAMED)",
-      "Run /branch-setup then /implementation-plan for wfp.12 (heat-map) — first Phase 2 story to implement (no upstream code dependencies)",
-      "wfp.13 (bottlenecks) and wfp.14 (temporal-risk) can be implemented in parallel after wfp.12 is complete",
-      "wfp.15 (scenarios) and wfp.16 (workforce-chat) depend on earlier Phase 2 routes being live in server.js"
+      "Run /discovery for 2026-05-21-ideate-web-ux — all blocking spikes resolved, proceed to discovery artefact",
+      "bsr-workforce-planner Phase 2 (wfp.12-wfp.16): all DoR signed-off — run /branch-setup for wfp.12 (heat-map, no upstream deps) as first story",
+      "2026-05-18-skill-robustness-improvements: still at benefit-metric-active — run /definition to write sri.1/sri.2/sri.3 story artefacts",
+      "Finance/planning lead reviewer required for bsr-workforce-planner benefit-metric.md (non-engineering approver TO BE NAMED)"
     ]
   },
   "features": {
+    "2026-05-21-ideate-web-ux": {
+      "status": "discovery-ready",
+      "ideationComplete": true,
+      "spikeA1": "PROCEED",
+      "nextAction": "run /discovery — scoped to Clusters 1 (context manifest), 2 (assumption cards), 4 (live artefact panel)"
+    },
+    "2026-05-26-bsr-workforce-planner": {
+      "status": "definition-of-ready",
+      "phase": "Phase 2 — intelligence layer (wfp.12–wfp.16)",
+      "dorSignedOff": [
+        "wfp.12",
+        "wfp.13",
+        "wfp.14",
+        "wfp.15",
+        "wfp.16"
+      ],
+      "nextAction": "run /branch-setup for wfp.12 (heat-map) — no upstream code dependencies"
+    },
     "2026-05-19-cli-deterministic-governance": {
       "status": "complete",
-      "note": "All 7 stories (cdg.1-cdg.7) merged. Phase 1 (validate CLI) + Phase 2 (advance, gate-confirm, chain-hash) complete.",
+      "note": "All 7 stories (cdg.1-cdg.7) merged.",
       "cdg.7": {
         "stage": "definition-of-done",
         "prStatus": "merged",
@@ -77,29 +78,15 @@
     "2026-05-18-skill-robustness-improvements": {
       "status": "benefit-metric-active",
       "phase": "Phase 1 — 3 consumer-reported gaps (sri.1/sri.2/sri.3)",
-      "note": "SEPARATE from cli-deterministic-governance. CDG = machine-enforceable CLI governance. SRI = SKILL.md human-facing text/flow fixes reported by OrderHub team (issue #344).",
       "benefitMetric": "artefacts/2026-05-18-skill-robustness-improvements/benefit-metric.md",
-      "nextAction": "run /definition to break down sri.1 (git fetch timeout), sri.2 (DoD entry message), sri.3 (DoD Step 6 infra gate) into story artefacts"
+      "nextAction": "run /definition to write sri.1/sri.2/sri.3 story artefacts"
     },
     "2026-05-24-governance-platform-architecture": {
       "gpa-sc-02": {
         "stage": "definition-of-done",
         "prStatus": "merged",
-        "branch": "feat/gpa-sc02-unified-gate-evaluator",
-        "note": "advanced via node bin/skills advance"
+        "branch": "feat/gpa-sc02-unified-gate-evaluator"
       }
     }
-  },
-  "checkpoint": {
-    "writtenAt": "2026-05-27",
-    "contextAtWrite": "Session: clarified that skill-robustness-improvements (2026-05-18) is a SEPARATE feature from cli-deterministic-governance (2026-05-19). CDG covers machine-enforceable CLI governance tooling (all 7 stories complete). SRI covers human-facing SKILL.md robustness fixes (3 gaps reported by OrderHub/abhijeet-qsofte via issue #344). SRI is at benefit-metric-active stage. Current branch feat/gpa-sc02-unified-gate-evaluator had gpa-sc-02 advanced to definition-of-done. npm test passing.",
-    "resumeInstruction": "Run /definition for 2026-05-18-skill-robustness-improvements. Stories to write: sri.1 (git fetch timeout+fallback in branch-complete/implementation-plan/subagent-execution), sri.2 (DoD entry condition message expansion with 3 required elements), sri.3 (DoD Step 6 measurement-ready gate for infrastructure stories). Future phases scoped: Phase 2 = YAML frontmatter in test plan templates (deferred from Phase 1 due to template schema risk); Phase 3 = systematic consumer gap intake mechanism.",
-    "pendingActions": [
-      "skill-robustness-improvements: run /definition to write sri.1/sri.2/sri.3 story artefacts",
-      "skill-robustness-improvements Phase 2 backlog: YAML frontmatter in test plan templates (test count mismatch detection — Issue #5 in #344, deferred from Phase 1)",
-      "skill-robustness-improvements Phase 2 candidate: commit message template generation (Issue #8 in #344, rejected Phase 1 — low value; revisit with more evidence)",
-      "CDG: consider cdg.8+ for automated trace log and bypass audit (Phase 3 follow-on per M2 evidence comment)",
-      "Worktrees already removed: .worktrees/b3 and .worktrees/cdg.7"
-    ]
   }
 }

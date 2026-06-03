@@ -341,3 +341,24 @@ The p11.3 story (H-GOV block in /definition-of-ready SKILL.md) requires a decisi
 **Corrected NFR (binding for test-plan and implementation):** If the `require('../../src/enforcement/governance-package')` call in `run-assurance-gate.js` throws at module load time (e.g. due to a file-not-found error, syntax error in the module, or bad relative path from a merge), `run-assurance-gate.js` must catch the error, write a warning to stderr, and fall back to the existing inline structural check verdict logic. The implementation pattern is a `try/catch` block wrapping the `require` call at module scope. This is fully testable by reading the source for the try/catch guard (structural verification) and by integration test with `evaluateGateRunner: null` to confirm the fallback path still derives the correct verdict.
 
 **Risk:** Low. The story's intent is unambiguous; only the trigger condition description was wrong. The corrected implementation guard (try/catch on require) is strictly more robust than no guard at all and adds no new complexity.
+
+---
+
+## ADR-018 — ideate-web-ux: assumption cards via SSE event extension, not new streaming layer <!-- ADDED: 2026-06-03 -->
+
+**Status:** Accepted | **Date:** 2026-06-03 | **Context:** Spike A1 (artefacts/2026-05-21-ideate-web-ux/spikes/a1-sse-architecture-feasibility.md)
+
+**Decision:** Assumption cards and a conditions sidebar in the /ideate web UX are implemented as new SSE event types (`assumptionCard`, `conditionItem`) within the existing `handlePostTurnStreamHtml` / SSE streaming architecture. Not a new streaming layer, not a page-reload pattern, not a parallel architecture.
+
+**Three binding implementation choices made:**
+1. **Protocol marker format**: single-line JSON marker `---ASSUMPTION-JSON: {...}---` embedded in the model's text output. Parsed mid-stream without ambiguity from partial chunk boundaries. Stripped from the visible chat thread via `stripArtefactBlock()` extension.
+2. **Card confirmation**: dedicated `POST /api/skills/:name/sessions/:id/assumption/:cardId/confirm` endpoint. Updates `session.assumptionCards[cardId].status` in-memory. Follows the existing auth/session guard pattern. No confirmation data is embedded in the next turn answer payload.
+3. **Right panel layout**: two named sections — `#assumption-cards` (top, flex-grow:0, overflow-y:auto) and `#draft-content` (below, flex-grow:1). The `updateDraftPanel()` function and `#draft-content` div are unchanged. The `appendAssumptionCard()` function appends to `#assumption-cards`; no wholesale innerHTML replacement.
+
+**Alternatives rejected:** Page-reload pattern for assumption cards (loses real-time feel, inconsistent with the streaming chat UX); Option B (embed confirmations in next turn) — loses persistence if session drops before next turn; New streaming endpoint per panel type — unnecessary complexity.
+
+**Consequences:**
+- The existing `chunk`, `draftChunk`, and `done` SSE event handling in `sendTurn()` is unchanged.
+- `session.assumptionCards = []` is a new field on the in-memory session object — no Map/schema change.
+- Stories using `handleGetChatHtml` / `handlePostTurnStreamHtml` are the only files that need modification.
+- The conditions sidebar (Lens A Cluster 6) uses the identical extension pattern with `conditionItem` events and `session.conditions[]` — no confirm endpoint needed for MVP (conditions are display-only until end of session).
