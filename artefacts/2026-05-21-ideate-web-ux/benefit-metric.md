@@ -105,15 +105,15 @@ Record is written to `artefacts/2026-05-21-ideate-web-ux/outreach-log.md` after 
 
 ## Metric Coverage Matrix
 
-*(Populated by /definition after stories are created.)*
+*(Populated by /definition — 2026-06-04. Slicing strategy: user journey. 2 epics, 6 stories.)*
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1: Assumption card render reliability | TBD — assumption cards UI story | Gap — pending /definition |
-| M2: Downstream rework rate | TBD — all ideate-web-ux stories (indirect); SKILL.md tuning story (direct via emission) | Gap — pending /definition |
-| M3: Session completion rate | TBD — context manifest + assumption cards + live draft stories (together enable the full session UX) | Gap — pending /definition |
-| MM1: Marker emission consistency | SKILL.md tuning story (DoD entry condition) | Gap — pending /definition |
-| MM2: Commercial legibility | Cluster 4 live draft story (enables the demo moment) | Gap — pending /definition |
+| M1: Assumption card render reliability | iwu.2 (right panel DOM container), iwu.3 (marker→card pipeline), iwu.4 (confirm/flag terminal state), iwu.5 (nudge prompts review), iwu.6 (SKILL.md — production emission enabler) | Covered |
+| M2: Downstream rework rate from invisible assumptions | iwu.1 (context gaps visible before lens 1), iwu.3 (assumptions visible mid-session), iwu.4 (assumptions actionable), iwu.5 (nudge at lens boundary reduces end-of-session surprise), iwu.6 (SKILL.md emission rate — root cause fix) | Covered |
+| M3: Session completion rate | iwu.2 (two-section layout prevents context-switch abandonment), iwu.5 (live artefact draft coexistence enables operator to stay in session) | Covered |
+| MM1: Marker emission consistency under multi-turn context pressure | iwu.6 (AC3 is the DoD entry condition — real multi-turn session verification) | Covered — human-in-the-loop gate |
+| MM2: Commercial legibility — live-session demo moment | iwu.5 (live artefact draft visible in real time; combined with cards this is the demo moment that drives QFU) | Covered |
 
 ---
 

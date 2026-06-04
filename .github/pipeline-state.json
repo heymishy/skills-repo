@@ -3603,7 +3603,7 @@
     {
       "slug": "2026-05-21-ideate-web-ux",
       "name": "/ideate Web UX — Structured Session Interface",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "updatedAt": "2026-06-04",
       "regulated": false,
@@ -3623,7 +3623,123 @@
       },
       "ideationRerun": true,
       "ideationRerunCause": "invisible-assumptions",
-      "ideationRerunNote": "Re-run triggered: 12 unconfirmed Lens B assumptions were invisible during Lenses A+D. Required Spike A1 (SSE architecture feasibility) before /discovery could proceed to approval."
+      "ideationRerunNote": "Re-run triggered: 12 unconfirmed Lens B assumptions were invisible during Lenses A+D. Required Spike A1 (SSE architecture feasibility) before /discovery could proceed to approval.",
+      "epics": [
+        {
+          "slug": "iwu-web-session-surface",
+          "name": "Operators can see, act on, and review assumptions during a live /ideate session",
+          "artefact": "artefacts/2026-05-21-ideate-web-ux/epics/iwu-web-session-surface.md",
+          "stories": [
+            {
+              "id": "iwu.1",
+              "slug": "iwu.1",
+              "title": "Render context manifest panel with chip layout in the /ideate session shell",
+              "artefact": "artefacts/2026-05-21-ideate-web-ux/stories/iwu.1.md",
+              "status": "not-started",
+              "complexity": 2,
+              "prStatus": "none",
+              "reviewStatus": "not-started",
+              "dorStatus": "not-started",
+              "dodStatus": "not-started",
+              "tasks": [],
+              "name": "Render context manifest panel with chip layout in the /ideate session shell",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "id": "iwu.2",
+              "slug": "iwu.2",
+              "title": "Restructure right panel layout for two-section coexistence",
+              "artefact": "artefacts/2026-05-21-ideate-web-ux/stories/iwu.2.md",
+              "status": "not-started",
+              "complexity": 1,
+              "prStatus": "none",
+              "reviewStatus": "not-started",
+              "dorStatus": "not-started",
+              "dodStatus": "not-started",
+              "tasks": [],
+              "name": "Restructure right panel layout for two-section coexistence",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "id": "iwu.3",
+              "slug": "iwu.3",
+              "title": "Stream assumption cards from SSE marker events into #assumption-cards",
+              "artefact": "artefacts/2026-05-21-ideate-web-ux/stories/iwu.3.md",
+              "status": "not-started",
+              "complexity": 2,
+              "prStatus": "none",
+              "reviewStatus": "not-started",
+              "dorStatus": "not-started",
+              "dodStatus": "not-started",
+              "tasks": [],
+              "name": "Stream assumption cards from SSE marker events into #assumption-cards",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "id": "iwu.4",
+              "slug": "iwu.4",
+              "title": "Confirm or flag assumption cards via POST endpoint with in-session state persistence",
+              "artefact": "artefacts/2026-05-21-ideate-web-ux/stories/iwu.4.md",
+              "status": "not-started",
+              "complexity": 1,
+              "prStatus": "none",
+              "reviewStatus": "not-started",
+              "dorStatus": "not-started",
+              "dodStatus": "not-started",
+              "tasks": [],
+              "name": "Confirm or flag assumption cards via POST endpoint with in-session state persistence",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "id": "iwu.5",
+              "slug": "iwu.5",
+              "title": "Emit lensComplete SSE event and render lens-transition nudge bar",
+              "artefact": "artefacts/2026-05-21-ideate-web-ux/stories/iwu.5.md",
+              "status": "not-started",
+              "complexity": 2,
+              "prStatus": "none",
+              "reviewStatus": "not-started",
+              "dorStatus": "not-started",
+              "dodStatus": "not-started",
+              "tasks": [],
+              "name": "Emit lensComplete SSE event and render lens-transition nudge bar",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        },
+        {
+          "slug": "iwu-skillmd-tuning",
+          "name": "/ideate skill emits assumption markers consistently across full multi-turn sessions",
+          "artefact": "artefacts/2026-05-21-ideate-web-ux/epics/iwu-skillmd-tuning.md",
+          "stories": [
+            {
+              "id": "iwu.6",
+              "slug": "iwu.6",
+              "title": "Add ---ASSUMPTION-JSON--- marker emission instruction to ideate/SKILL.md",
+              "artefact": "artefacts/2026-05-21-ideate-web-ux/stories/iwu.6.md",
+              "status": "not-started",
+              "complexity": 2,
+              "humanOversight": "high",
+              "governedFile": true,
+              "dodEntryCondition": "human-in-the-loop: real multi-turn session (>=6 turns) emission verification required at artefacts/2026-05-21-ideate-web-ux/verification/iwu.6-emission-verification.md",
+              "prStatus": "none",
+              "reviewStatus": "not-started",
+              "dorStatus": "not-started",
+              "dodStatus": "not-started",
+              "tasks": [],
+              "name": "Add ---ASSUMPTION-JSON--- marker emission instruction to ideate/SKILL.md",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        }
+      ],
+      "track": "standard"
     },
     {
       "slug": "2026-05-24-governance-platform-architecture",
