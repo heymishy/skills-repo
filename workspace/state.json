@@ -1,6 +1,6 @@
 {
-  "currentPhase": "test-plan",
-  "lastUpdated": "2026-06-04T16:00:00Z",
+  "currentPhase": "definition-of-ready",
+    "lastUpdated": "2026-06-04T18:30:00Z",
   "activeFeature": "2026-05-21-ideate-web-ux",
   "cycle": {
     "ideation": {
@@ -62,13 +62,14 @@
   },
   "checkpoint": {
     "writtenAt": "2026-06-04",
-    "contextAtWrite": "ideate-web-ux: /test-plan complete for all 6 stories (iwu.1-iwu.6). 12 artefacts created (6 test plans + 6 verification scripts). pipeline-state.json updated — all 6 stories at stage=test-plan, feature stage=test-plan. 193/194 npm tests pass (pre-existing ps1 encoding failure). Commit 899f02d.",
-    "resumeInstruction": "Run /definition-of-ready for 2026-05-21-ideate-web-ux in delivery order: iwu.1 → iwu.2 → iwu.3 → iwu.4 → iwu.5 → iwu.6. All 6 have reviewStatus=passed and testPlan.status=written. Notes for DoR: (1) iwu.2 has e2eToolingRequired=true (Playwright spec at tests/e2e/iwu2-right-panel-layout.spec.js must be written before coding); (2) iwu.6 has humanOversight=high and dodEntryCondition blocking DoD until emission evidence file committed.",
+    "contextAtWrite": "ideate-web-ux: /definition-of-ready complete for all 6 stories (iwu.1-iwu.6). 12 DoR artefacts created (6 dor.md + 6 dor-contract.md). Also created nfr-profile.md and iwu.6-emission-verification.md stub. pipeline-state.json: all 6 stories at stage=definition-of-ready, dorStatus=signed-off, health=green. Schema: 0 errors. Commit 2a06916.",
+    "resumeInstruction": "All 6 iwu stories are DoR-signed-off. Next step: run /branch-setup for iwu.1 (context manifest panel) — it has no upstream story dependencies and can begin immediately. Delivery order: iwu.1 → iwu.2 → iwu.3 → iwu.4 → iwu.5 → iwu.6. Key constraints: (1) iwu.2 must merge before iwu.3/iwu.5 E2E tests can run; (2) iwu.3+iwu.4+iwu.5 must all merge before iwu.6 AC3 DoD gate can be completed; (3) iwu.6 requires a real multi-turn session and emission verification stub completion before DoD-complete; (4) iwu.6 SKILL.md change must go via PR reviewed by Hamish King (High oversight, governed file).",
     "pendingActions": [
-      "Run /definition-of-ready for iwu.1 through iwu.6 in delivery order",
-      "bsr-workforce-planner Phase 2 (wfp.12-wfp.16): all DoR signed-off — run /branch-setup for wfp.12 (heat-map, no upstream deps) as first story",
+      "Run /branch-setup for iwu.1 (context manifest panel) — no upstream dependencies, ready to implement",
+      "bsr-workforce-planner Phase 2 (wfp.12-wfp.16): all DoR signed-off — run /branch-setup for wfp.12 (heat-map, no upstream code dependencies) as first story",
       "2026-05-18-skill-robustness-improvements: still at benefit-metric-active — run /definition to write sri.1/sri.2/sri.3 story artefacts",
-      "Finance/planning lead reviewer required for bsr-workforce-planner benefit-metric.md (non-engineering approver TO BE NAMED)"
+      "Finance/planning lead reviewer required for bsr-workforce-planner benefit-metric.md (non-engineering approver TO BE NAMED)",
+      "iwu.6 DoD gate (AC3): complete emission verification stub at artefacts/2026-05-21-ideate-web-ux/verification/iwu.6-emission-verification.md after iwu.3/iwu.4/iwu.5 merge — requires real >=6-turn ideate session with >=70% marker emission rate"
     ]
   },
   "estimate": {
