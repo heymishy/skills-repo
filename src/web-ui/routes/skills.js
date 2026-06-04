@@ -1277,14 +1277,16 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
 function registerHtmlSession(sessionId, sessionPath, skillName) {
   var systemPrompt = buildSystemPrompt(skillName, sessionPath);
   _sessionStore.set(sessionId, {
-    skillName:       skillName,
-    sessionPath:     sessionPath,
-    systemPrompt:    systemPrompt,
-    turns:           [],
-    artefactContent: null,
-    artefactPath:    null,
-    done:            false,
-    journeyId:       null
+    skillName:              skillName,
+    sessionPath:            sessionPath,
+    systemPrompt:           systemPrompt,
+    turns:                  [],
+    artefactContent:        null,
+    artefactPath:           null,
+    done:                   false,
+    journeyId:              null,
+    // iwu.6 — assumption cards enabled by default for all sessions
+    assumptionCardsEnabled: true
   });
 }
 
