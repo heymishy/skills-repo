@@ -1120,21 +1120,26 @@ async function handleGetResultHtml(req, res) {
  * @param {string}  [repoRoot]  — override repo root (defaults to _getRepoPath(); pass process.cwd() in tests)
  * @returns {string}
  */
-function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, sessionContext) {
+function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, sessionContext, _outContextFiles) {
   var root = repoRoot || _getRepoPath();
   var ctx = sessionContext || {};
   var parts = [];
+  var _cf = _outContextFiles || null;
 
   // 1. copilot-instructions.md
   var ciPath = path.join(root, '.github', 'copilot-instructions.md');
   if (fs.existsSync(ciPath)) {
     parts.push(fs.readFileSync(ciPath, 'utf8'));
+    if (_cf) _cf.push({ path: '.github/copilot-instructions.md', status: 'ok' });
   }
 
   // 2. SKILL.md
   var skillMdPath = path.join(root, '.github', 'skills', skillName, 'SKILL.md');
   if (fs.existsSync(skillMdPath)) {
     parts.push('--- SKILL: ' + skillName + ' ---\n\n' + fs.readFileSync(skillMdPath, 'utf8'));
+    if (_cf) _cf.push({ path: '.github/skills/' + skillName + '/SKILL.md', status: 'ok' });
+  } else {
+    if (_cf) _cf.push({ path: '.github/skills/' + skillName + '/SKILL.md', status: 'warn' });
   }
 
   // 3. Product context files
@@ -1148,6 +1153,7 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
     var pfPath = path.join(root, 'product', pf.name);
     if (fs.existsSync(pfPath)) {
       parts.push('--- ' + pf.label + ' ---\n\n' + fs.readFileSync(pfPath, 'utf8'));
+      if (_cf) _cf.push({ path: 'product/' + pf.name, status: 'ok' });
     }
   });
 
@@ -1275,11 +1281,13 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
  * @param {string} skillName
  */
 function registerHtmlSession(sessionId, sessionPath, skillName) {
-  var systemPrompt = buildSystemPrompt(skillName, sessionPath);
+  var contextFiles = [];
+  var systemPrompt = buildSystemPrompt(skillName, sessionPath, undefined, undefined, undefined, contextFiles);
   _sessionStore.set(sessionId, {
     skillName:              skillName,
     sessionPath:            sessionPath,
     systemPrompt:           systemPrompt,
+    contextFiles:           contextFiles,
     turns:                  [],
     artefactContent:        null,
     artefactPath:           null,
