@@ -34,7 +34,7 @@ So that I can signal which assumptions are accepted versus require investigation
 
 **AC1:** Given an assumption card in default state, when the operator activates the "confirm" button (click or keyboard), then the card transitions to confirmed visual state — confirmed styling applied and "✓ confirmed" indicator replaces the confirm button — and a `POST /api/skills/:name/sessions/:id/assumption/:cardId/confirm` request is sent with `{ "action": "confirm" }`.
 
-**AC2:** Given an assumption card in default or confirmed state, when the operator activates the "flag" button, then the card transitions to flagged visual state — flagged styling applied and flagged indicator replaces the flag button — and a `POST .../confirm` request is sent with `{ "action": "flag" }`.
+**AC2:** Given an assumption card in default state, when the operator activates the "flag" button, then the card transitions to flagged visual state — flagged styling applied and flagged indicator replaces the flag button — and a `POST .../confirm` request is sent with `{ "action": "flag" }`.
 
 **AC3:** Given a `POST .../assumption/:cardId/confirm` request where the session exists and the `cardId` is found in `session.assumptionCards[]`, when the request is received, then the server returns HTTP 200 and the card's state in `session.assumptionCards[]` is updated to the requested action.
 

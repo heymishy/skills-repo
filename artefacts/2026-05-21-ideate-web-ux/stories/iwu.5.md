@@ -34,7 +34,7 @@ So that I am prompted to review accumulated cards at the natural pause point rat
 
 **AC2:** Given at least one card in default state is present when the `lensComplete` event fires, then a nudge bar appears in the left panel above the chat input displaying "Lens [name] complete — [N] unconfirmed assumption[s]" and a "review now" button.
 
-**AC3:** Given the nudge bar is visible, when the operator activates the "review now" button (click or keyboard), then the nudge bar is dismissed and the first unconfirmed card in `#assumption-cards` is scrolled into view and receives focus.
+**AC3:** Given the nudge bar is visible, when the operator activates the "review now" button (click or keyboard), then the nudge bar is dismissed and the first unconfirmed card in `#assumption-cards` is scrolled into view; focus is transferred to the card only if the chat input does not currently hold focus — if the operator is mid-typing in the chat input, the card is scrolled into view but focus remains on the chat input.
 
 **AC4:** Given zero cards in default state when the `lensComplete` event fires, then no nudge bar is shown.
 
