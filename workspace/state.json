@@ -1,6 +1,6 @@
 {
-  "currentPhase": "review",
-  "lastUpdated": "2026-06-04T12:00:00Z",
+  "currentPhase": "test-plan",
+  "lastUpdated": "2026-06-04T16:00:00Z",
   "activeFeature": "2026-05-21-ideate-web-ux",
   "cycle": {
     "ideation": {
@@ -43,17 +43,29 @@
       "epicsCreated": ["iwu-web-session-surface", "iwu-skillmd-tuning"],
       "slicingStrategy": "user journey",
       "scopeAccumulator": "6 stories for 4 MVP scope clusters (Cluster 1, 2, 4, cross-cutting SKILL.md). iwu.2 (right panel layout restructure) is a definition-discovered prerequisite — not scope expansion. No drift."
+    },
+    "test-plan": {
+      "status": "complete",
+      "completedAt": "2026-06-04",
+      "commit": "899f02d",
+      "storiesWithTestPlans": ["iwu.1", "iwu.2", "iwu.3", "iwu.4", "iwu.5", "iwu.6"],
+      "artefacts": [
+        "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.1-test-plan.md",
+        "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.2-test-plan.md",
+        "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.3-test-plan.md",
+        "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.4-test-plan.md",
+        "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.5-test-plan.md",
+        "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.6-test-plan.md"
+      ],
+      "notes": "iwu.2 AC4 requires Playwright E2E test (CSS max-height constraint — jsdom cannot verify). iwu.6 AC2+AC3 are manually verified (probabilistic AI emission — untestable by automation). AC3 is a blocking DoD gate requiring committed evidence file."
     }
   },
   "checkpoint": {
     "writtenAt": "2026-06-04",
-    "contextAtWrite": "ideate-web-ux: /review complete for all 6 stories (iwu.1-iwu.6). All PASS, 0 HIGH findings. 3 MEDIUM findings across iwu.4/iwu.5/iwu.6 — all require resolution or RISK-ACCEPT before /test-plan. pipeline-state.json reviewStatus set to 'passed' for all 6 stories.",
-    "resumeInstruction": "Run /test-plan for 2026-05-21-ideate-web-ux. Three MEDIUM findings must be resolved first (or RISK-ACCEPT'd in /decisions): (1) iwu.4 finding 1-M1 — AC2 vs Out of Scope inconsistency on whether confirmed card is a terminal state; (2) iwu.5 finding 1-M1 — M3 and MM2 metrics not named in benefit linkage; (3) iwu.6 finding 1-M1 — M2 metric not named in benefit linkage. After resolving, run /test-plan for each story in delivery order: iwu.1 → iwu.2 → iwu.3 → iwu.4 → iwu.5 → iwu.6.",
+    "contextAtWrite": "ideate-web-ux: /test-plan complete for all 6 stories (iwu.1-iwu.6). 12 artefacts created (6 test plans + 6 verification scripts). pipeline-state.json updated — all 6 stories at stage=test-plan, feature stage=test-plan. 193/194 npm tests pass (pre-existing ps1 encoding failure). Commit 899f02d.",
+    "resumeInstruction": "Run /definition-of-ready for 2026-05-21-ideate-web-ux in delivery order: iwu.1 → iwu.2 → iwu.3 → iwu.4 → iwu.5 → iwu.6. All 6 have reviewStatus=passed and testPlan.status=written. Notes for DoR: (1) iwu.2 has e2eToolingRequired=true (Playwright spec at tests/e2e/iwu2-right-panel-layout.spec.js must be written before coding); (2) iwu.6 has humanOversight=high and dodEntryCondition blocking DoD until emission evidence file committed.",
     "pendingActions": [
-      "RESOLVE or RISK-ACCEPT: iwu.4 finding 1-M1 — AC2 says flag is applicable from 'default or confirmed state' but Out of Scope says 'confirm and flag are terminal states'. Choose and reconcile before /test-plan writes state-machine tests.",
-      "RESOLVE or RISK-ACCEPT: iwu.5 finding 1-M1 — add M3 (Session completion rate) and MM2 (baseline) to benefit linkage; add nudge-bar mechanism sentence explaining how it reduces session abandonment at lens boundaries.",
-      "RESOLVE or RISK-ACCEPT: iwu.6 finding 1-M1 — add M2 (Rework rate reduction) to benefit linkage; add mechanism sentence about reliable marker emission reducing invisible-assumption re-runs.",
-      "THEN: run /test-plan for iwu.1-iwu.6 in delivery order",
+      "Run /definition-of-ready for iwu.1 through iwu.6 in delivery order",
       "bsr-workforce-planner Phase 2 (wfp.12-wfp.16): all DoR signed-off — run /branch-setup for wfp.12 (heat-map, no upstream deps) as first story",
       "2026-05-18-skill-robustness-improvements: still at benefit-metric-active — run /definition to write sri.1/sri.2/sri.3 story artefacts",
       "Finance/planning lead reviewer required for bsr-workforce-planner benefit-metric.md (non-engineering approver TO BE NAMED)"
