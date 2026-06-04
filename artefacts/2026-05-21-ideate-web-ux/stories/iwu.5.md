@@ -25,7 +25,7 @@ So that I am prompted to review accumulated cards at the natural pause point rat
 
 ## Dependencies
 
-- **Upstream:** iwu.3 — card DOM and default state tracking must exist for the nudge bar to interrogate the count of unconfirmed cards; iwu.4 — card state transitions (confirmed / flagged) must work correctly for auto-dismiss to detect the all-confirmed condition
+- **Upstream:** iwu.2 — `#assumption-cards` DOM section must exist (created by the right panel layout restructure) for the nudge bar's card-count query to resolve correctly; iwu.3 — card DOM and default state tracking must exist for the nudge bar to interrogate the count of unconfirmed cards; iwu.4 — card state transitions (confirmed / flagged) must work correctly for auto-dismiss to detect the all-confirmed condition
 - **Downstream:** iwu.6 (SKILL.md tuning) provides the real `lensComplete` trigger in production sessions; iwu.5 is fully testable against synthetic events before iwu.6 merges
 
 ## Acceptance Criteria
