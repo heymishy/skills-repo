@@ -42,7 +42,7 @@ This feature also validates a hypothesis about tooling: that structured session 
 | **Baseline** | ~40% directional estimate (Lens D operator signal). Empirical data: 2 confirmed re-run events in `pipeline-state.json` (`ideationRerun: true` — cloud-platform and ideate-web-ux). Sample size is too small for a statistical baseline; the directional figure is used. The real baseline will be established from delivery actuals over the first 30 days post-ship, using `ideationRerun` tracking now in pipeline-state.json. |
 | **Target** | <15% of sessions require correction after MVP ships |
 | **Minimum validation signal** | ≤25% — if actuals in the first 30 days are above 25%, Cluster 2 (assumption cards) is not moving the metric and root cause must be investigated before Increment 2 |
-| **Measurement method** | `ideationRerun` boolean field in `pipeline-state.json` per story. Re-run count surfaces in governance check output. Measured per feature delivery. Metric owner reviews actuals at each /definition-of-done for ideation-touching stories. |
+| **Measurement method** | `ideationRerun: true` boolean field in `pipeline-state.json` per story — signals that a re-run occurred. `ideationRerunCause` string field (set alongside the boolean) — attribution category. Valid values: `invisible-assumptions` (what Cluster 2 is designed to fix), `scope-change` (MVP scope shifted externally), `stakeholder-input` (late stakeholder requirement that post-dated ideation), `model-quality` (model output was poor quality independent of assumption visibility). At the 30-day review, M2 actuals are analysed by cause: only `invisible-assumptions` re-runs are counted toward the Cluster 2 effectiveness signal. Re-runs with other causes are noted but excluded from the Cluster 2 verdict. Metric owner sets `ideationRerunCause` at the point of recording each re-run. Governance check output surfaces the boolean count; cause breakdown is a manual review step. |
 | **Feedback loop** | >25% at 30-day review: investigate whether assumption cards are being seen and acted on (operator behaviour, not just render rate). ≤15% at 90-day review: Increment 2 scope confirmed. >15% at 90-day review: Increment 2 must include structured assumption review step (Cluster 5 candidate). |
 
 ---
@@ -85,6 +85,21 @@ This feature also validates a hypothesis about tooling: that structured session 
 | **Target** | ≥3 qualified follow-up conversations from the 5-person outreach cohort |
 | **Minimum signal** | ≥1 qualified follow-up — below this the demo framing needs rework before a broader outreach round |
 | **Measurement method** | Qualitative: operator (Hamish King) records outcome of each outreach session (follow-up / no follow-up / declined). Measured after each session, summarised at end of outreach experiment. Not automated. |
+
+**Outreach protocol (pre-session — locked 2026-06-04):**
+
+The following definitions apply to all five outreach sessions and must not be revised after the first session.
+
+**Qualified follow-up (QFU):** A follow-up conversation counts as qualified if, during or within 48 hours of the demo session, the evaluator either: (a) asks a specific question about using the platform for their own delivery context (not a general question about AI or tooling), or (b) requests a second demo or a trial access. Social reactions, polite compliments, and "that's interesting" statements are not QFUs. If ambiguous: apply the "would they email about this unprompted?" test — if yes, QFU; if no, not QFU.
+
+**Session record fields per outreach session:**
+- `date`: session date
+- `evaluator`: role/org (anonymised if needed)
+- `demo_clusters_shown`: which Clusters were live during the demo
+- `outcome`: `qfu` / `no-follow-up` / `declined`
+- `notes`: one sentence on what they asked or why it didn't land
+
+Record is written to `artefacts/2026-05-21-ideate-web-ux/outreach-log.md` after each session. |
 
 ---
 

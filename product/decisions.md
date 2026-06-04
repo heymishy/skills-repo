@@ -380,3 +380,20 @@ The `POST /api/skills/:name/sessions/:id/assumption/:cardId/confirm` endpoint mu
 - `session.lastSeen: number` is a new field on the in-memory session object (epoch ms).
 - The confirm endpoint adds a `session not found` HTTP 404 path alongside the existing auth guard.
 - Every story that modifies `_sessionStore` or the SSE handler must include the 30-minute TTL and the cleanup sweep as explicit ACs.
+
+---
+
+## ADR-020 — ideate-web-ux: assumption card interaction model — accumulate during generation, prompt review at lens transition <!-- ADDED: 2026-06-04 -->
+
+**Status:** Accepted | **Date:** 2026-06-04 | **Context:** Open Architecture Decision D-3 from `artefacts/2026-05-21-ideate-web-ux/discovery.md` — flagged high-risk guess: "operators will act mid-session rather than ignore." Resolution required before /definition to avoid an underdefined UX contract in story ACs.
+
+**Decision:** Assumption cards accumulate in the right panel during model generation without requiring immediate operator action. At each lens transition (model finishes generating a lens and before it begins the next), the UI surfaces a nudge: "N assumptions need review" with a single CTA that scrolls the operator to the unconfirmed cards in the panel. The operator reviews and confirms/dismisses cards at the lens boundary, then continues. No auto-dismissal; unconfirmed cards persist across the session.
+
+**Rationale:** Two interaction models were considered. Immediate-action: card appears mid-generation, operator must respond before reading continues. Post-lens review (this decision): cards accumulate silently, operator sweeps at the natural pause between lenses. Immediate-action breaks reading flow for operators in deep-reading mode and creates friction during high-density lenses (Lens B typically emits 8–12 cards). Post-lens review preserves flow state during generation — the lens boundary is already a cognitive pause point. The lens-transition nudge makes the review moment explicit and persistent (not easy to miss) without being interruptive. The "mid-session visibility" benefit of M2/Cluster 2 is preserved: assumptions are visible before the session ends, not just in the artefact output.
+
+**Assumption D-3 status:** Changed from "high-risk guess" to "design decision." The story ACs for Cluster 2 stories must specify the lens-transition nudge as the primary review entry point. D-3 is no longer an open unknown requiring a spike — it is a design constraint the implementation must satisfy.
+
+**Consequences:**
+- Cluster 2 UI story ACs must include: (a) unconfirmed card count badge visible in panel header during generation, (b) lens-transition nudge rendered when `lensComplete` SSE event fires with unconfirmed cards present, (c) nudge dismissed automatically when all cards for that lens are confirmed.
+- A `lensComplete` SSE event type must be defined (or the existing turn-complete event extended) so the client knows a lens boundary has been crossed.
+- The assume-cards-are-low-priority-during-generation pattern is baked in: card entry animation must be subtle (slide-in, no sound, no focus steal).

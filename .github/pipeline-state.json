@@ -3574,6 +3574,7 @@
       "stories": [],
       "updatedAt": "2026-05-20T21:00:00Z",
       "ideationRerun": true,
+      "ideationRerunCause": "invisible-assumptions",
       "ideationRerunNote": "Re-run triggered: 7 adoption barriers (Cluster 5) were not visible mid-Lens-A. Required an additional research pass before Lens D. Discovery artefact produced on the second run."
     },
     {
@@ -3621,6 +3622,7 @@
         "definedAt": "2026-06-04"
       },
       "ideationRerun": true,
+      "ideationRerunCause": "invisible-assumptions",
       "ideationRerunNote": "Re-run triggered: 12 unconfirmed Lens B assumptions were invisible during Lenses A+D. Required Spike A1 (SSE architecture feasibility) before /discovery could proceed to approval."
     },
     {
