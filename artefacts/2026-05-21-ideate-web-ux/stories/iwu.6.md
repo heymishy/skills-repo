@@ -15,6 +15,8 @@ So that assumption cards appear reliably in the web UI regardless of session len
 **Metric moved:** MM1 — Marker emission rate in real multi-turn sessions (≥70% target); M1 — Assumption card render reliability
 **How:** Without this instruction, the SKILL.md does not explicitly direct the model to emit markers, and emission in multi-turn sessions is unreliable (model context drift is the known risk at turn 6+). Spike A2 confirmed 100% emission in clean-context single-turn; this story adds the production instruction and verifies multi-turn reliability. MM1 (≥70% in a real ≥6-turn session) is the DoD entry condition.
 
+Additional metric moved: M2 — Downstream rework rate. This story is the production activation gate for assumption card emission — without it assumptionCardsEnabled remains false and no cards surface regardless of the UI being present. M2 cannot move until this story merges.
+
 ## Architecture Constraints
 
 - **GOVERNED FILE — ADR-011 (Artefact-first rule):** `.github/skills/ideate/SKILL.md` is a governed file under `.github/skills/`. Changes require a PR reviewed by the operator. This story must follow the full pipeline chain (story → test-plan → DoR) before implementation. This story artefact satisfies the artefact-first requirement.

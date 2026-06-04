@@ -15,6 +15,8 @@ So that I am prompted to review accumulated cards at the natural pause point rat
 **Metric moved:** M1 — Assumption card render reliability (reviewed-and-actioned count) and M2 — Rework rate reduction
 **How:** The nudge bar addresses D-3 (the high-risk UX assumption from discovery): operators are most likely to act on assumptions at a lens boundary rather than mid-stream. ADR-020 resolves D-3 as a design decision — accumulate during generation, nudge at lens transition. Without this story, cards accumulate silently and the operator may not notice them until session end, increasing re-run risk (M2).
 
+Additional metrics moved: M3 — Session completion rate. The nudge bar at lens boundaries reduces mid-session abandonment by prompting operators to act at natural pause points rather than losing context; this directly supports session completion. MM2 — the lens-transition interaction pattern is the primary demo moment that will be observed during the 5-person outreach experiment.
+
 ## Architecture Constraints
 
 - `lensComplete` is a new SSE event type added to the stream handler — it must not be piggy-backed onto `turn-complete` or any other existing event type (ADR-018 extension pattern); it carries a `lensName` field (e.g. `{ type: "lensComplete", lensName: "Lens B" }`)
