@@ -3603,7 +3603,7 @@
     {
       "slug": "2026-05-21-ideate-web-ux",
       "name": "/ideate Web UX — Structured Session Interface",
-      "stage": "test-plan",
+      "stage": "branch-setup",
       "health": "green",
       "updatedAt": "2026-06-04",
       "regulated": false,
@@ -3643,7 +3643,7 @@
               "dodStatus": "not-started",
               "tasks": [],
               "name": "Render context manifest panel with chip layout in the /ideate session shell",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "acTotal": 5,
               "testPlan": {
@@ -3651,7 +3651,8 @@
                 "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.1-test-plan.md",
                 "totalTests": 11,
                 "passing": 0
-              }
+              },
+              "updatedAt": "2026-06-04"
             },
             {
               "id": "iwu.2",
@@ -3666,7 +3667,7 @@
               "dodStatus": "not-started",
               "tasks": [],
               "name": "Restructure right panel layout for two-section coexistence",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "acTotal": 5,
               "testPlan": {
@@ -3674,7 +3675,8 @@
                 "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.2-test-plan.md",
                 "totalTests": 8,
                 "passing": 0
-              }
+              },
+              "updatedAt": "2026-06-04"
             },
             {
               "id": "iwu.3",
