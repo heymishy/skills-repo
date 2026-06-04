@@ -94,5 +94,16 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
 - date: 2026-05-24
   session-phase: definition
   signal-type: pattern
-  signal-text: Risk-first slicing with explicit wave gates (Wave 1 foundation ? Wave 2 CI enforcement ? Wave 3 ADR compliance) is effective for governance architecture features where high-value stories (M2, M4) have hard prerequisites. The wave structure must be called out explicitly in both the benefit-metric priority signal AND the epic goal � without this, teams naturally treat Wave 1 documentation stories as the deliverable rather than the enabler.
+  signal-text: Risk-first slicing with explicit wave gates (Wave 1 foundation ? Wave 2 CI enforcement ? Wave 3 ADR compliance) is effective for governance architecture features where high-value stories (M2, M4) have hard prerequisites. The wave structure must be called out explicitly in both the benefit-metric priority signal AND the epic goal � without this, teams naturally treat Wave 1 documentation stories as the deliverable rather than the enabler.
   source: agent-auto
+- date: 2026-05-25
+  session-phase: improve
+  signal-type: pattern
+  signal-text: "STORY-PROPOSAL-1 cli-advance boolean coercion (B3): cli-advance.js should coerce \"true\"/\"false\" strings to boolean for fields the pipeline-state.schema.json defines as boolean type. Short-track (test-plan → DoR → implement, no discovery). Evidence: releaseReady field written as \"true\" string by advance harness; schema requires boolean; recurring schema validation errors across multiple features whenever a boolean field is advanced via CLI."
+  source: operator-manual
+
+- date: 2026-05-25
+  session-phase: improve
+  signal-type: pattern
+  signal-text: "STORY-PROPOSAL-2 check-suite.js orchestrator (B1): replace raw &&-joined npm test chain in package.json with a check-suite.js orchestrator that reads the test list from package.json dynamically and runs each test, resolving the Windows MAX_PATH command-line length limit. Full outer loop (discovery → definition → implement). Evidence: npm test fails on Windows when test chain exceeds ~2000 chars; node wrapper workaround is unofficial and must be used manually each session."
+  source: operator-manual

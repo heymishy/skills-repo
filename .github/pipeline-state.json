@@ -3603,7 +3603,7 @@
     {
       "slug": "2026-05-21-ideate-web-ux",
       "name": "/ideate Web UX — Structured Session Interface",
-      "stage": "definition",
+      "stage": "test-plan",
       "health": "green",
       "updatedAt": "2026-06-04",
       "regulated": false,
@@ -3643,8 +3643,15 @@
               "dodStatus": "not-started",
               "tasks": [],
               "name": "Render context manifest panel with chip layout in the /ideate session shell",
-              "stage": "definition",
-              "health": "green"
+              "stage": "test-plan",
+              "health": "green",
+              "acTotal": 5,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.1-test-plan.md",
+                "totalTests": 11,
+                "passing": 0
+              }
             },
             {
               "id": "iwu.2",
@@ -3659,8 +3666,15 @@
               "dodStatus": "not-started",
               "tasks": [],
               "name": "Restructure right panel layout for two-section coexistence",
-              "stage": "definition",
-              "health": "green"
+              "stage": "test-plan",
+              "health": "green",
+              "acTotal": 5,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.2-test-plan.md",
+                "totalTests": 8,
+                "passing": 0
+              }
             },
             {
               "id": "iwu.3",
@@ -3675,8 +3689,15 @@
               "dodStatus": "not-started",
               "tasks": [],
               "name": "Stream assumption cards from SSE marker events into #assumption-cards",
-              "stage": "definition",
-              "health": "green"
+              "stage": "test-plan",
+              "health": "green",
+              "acTotal": 6,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.3-test-plan.md",
+                "totalTests": 14,
+                "passing": 0
+              }
             },
             {
               "id": "iwu.4",
@@ -3691,8 +3712,15 @@
               "dodStatus": "not-started",
               "tasks": [],
               "name": "Confirm or flag assumption cards via POST endpoint with in-session state persistence",
-              "stage": "definition",
-              "health": "green"
+              "stage": "test-plan",
+              "health": "green",
+              "acTotal": 7,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.4-test-plan.md",
+                "totalTests": 13,
+                "passing": 0
+              }
             },
             {
               "id": "iwu.5",
@@ -3707,8 +3735,15 @@
               "dodStatus": "not-started",
               "tasks": [],
               "name": "Emit lensComplete SSE event and render lens-transition nudge bar",
-              "stage": "definition",
-              "health": "green"
+              "stage": "test-plan",
+              "health": "green",
+              "acTotal": 6,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.5-test-plan.md",
+                "totalTests": 14,
+                "passing": 0
+              }
             }
           ]
         },
@@ -3733,13 +3768,21 @@
               "dodStatus": "not-started",
               "tasks": [],
               "name": "Add ---ASSUMPTION-JSON--- marker emission instruction to ideate/SKILL.md",
-              "stage": "definition",
-              "health": "green"
+              "stage": "test-plan",
+              "health": "green",
+              "acTotal": 4,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.6-test-plan.md",
+                "totalTests": 2,
+                "passing": 0
+              }
             }
           ]
         }
       ],
-      "track": "standard"
+      "track": "standard",
+      "stories": []
     },
     {
       "slug": "2026-05-24-governance-platform-architecture",
