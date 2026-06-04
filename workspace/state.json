@@ -1,6 +1,6 @@
 {
-  "currentPhase": "discovery",
-  "lastUpdated": "2026-06-03T00:00:00Z",
+  "currentPhase": "definition",
+  "lastUpdated": "2026-06-04T00:00:00Z",
   "activeFeature": "2026-05-21-ideate-web-ux",
   "cycle": {
     "ideation": {
@@ -23,18 +23,35 @@
       "finding": "SSE streaming architecture (handlePostTurnStreamHtml) supports assumption cards as new event type — no structural rewrite needed. Three implementation choices made: (1) JSON protocol markers, (2) dedicated confirm endpoint, (3) two-section right panel layout."
     },
     "discovery": {
-      "status": "draft",
+      "status": "approved",
       "artefact": "artefacts/2026-05-21-ideate-web-ux/discovery.md",
-      "completedAt": "2026-06-03"
+      "completedAt": "2026-06-04",
+      "approvedAt": "2026-06-04",
+      "approvedBy": "Hamish King"
+    },
+    "benefit-metric": {
+      "status": "active",
+      "artefact": "artefacts/2026-05-21-ideate-web-ux/benefit-metric.md",
+      "definedAt": "2026-06-04"
+    },
+    "definition": {
+      "status": "complete",
+      "artefact": "artefacts/2026-05-21-ideate-web-ux/epics/iwu-web-session-surface.md",
+      "completedAt": "2026-06-04",
+      "commit": "c86f706",
+      "storiesCreated": ["iwu.1", "iwu.2", "iwu.3", "iwu.4", "iwu.5", "iwu.6"],
+      "epicsCreated": ["iwu-web-session-surface", "iwu-skillmd-tuning"],
+      "slicingStrategy": "user journey",
+      "scopeAccumulator": "6 stories for 4 MVP scope clusters (Cluster 1, 2, 4, cross-cutting SKILL.md). iwu.2 (right panel layout restructure) is a definition-discovered prerequisite — not scope expansion. No drift."
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-06-03",
-    "contextAtWrite": "ideate-web-ux: /discovery artefact written at artefacts/2026-05-21-ideate-web-ux/discovery.md. MVP scope: Clusters 1 (context manifest), 2 (assumption cards), 4 (live artefact panel). Pipeline-state.json updated with stage:discovery, health:green. Awaiting operator approval of discovery artefact before /benefit-metric.",
-    "resumeInstruction": "Discovery artefact written for 2026-05-21-ideate-web-ux and saved at artefacts/2026-05-21-ideate-web-ux/discovery.md. Review and approve the discovery (update Status field to Approved + name/date), then run /benefit-metric. If running /clarify first: two unconfirmed assumptions flagged in discovery.md.",
+    "writtenAt": "2026-06-04",
+    "contextAtWrite": "ideate-web-ux: /definition complete. 2 epics, 6 stories (iwu.1-iwu.6) created and committed at c86f706. benefit-metric.md metric coverage matrix populated. pipeline-state.json stage advanced to definition. Schema validated (0 errors). All hooks passed.",
+    "resumeInstruction": "Run /review for 2026-05-21-ideate-web-ux. Review each story (iwu.1-iwu.6) for HIGH findings before /test-plan. Start with iwu.1 (context manifest) and work in delivery order: iwu.1 → iwu.2 → iwu.3 → iwu.4 → iwu.5 → iwu.6. iwu.6 (SKILL.md tuning) is a governed file — review must flag the ADR-011 artefact-first rule constraint explicitly.",
     "pendingActions": [
-      "OPERATOR REVIEW REQUIRED: review artefacts/2026-05-21-ideate-web-ux/discovery.md and approve — update Status field to 'Approved' + add approver name and date before /benefit-metric",
-      "OPTIONAL: run /clarify to resolve the 2 unconfirmed assumptions in discovery.md before /benefit-metric",
+      "NEXT: run /review for iwu.1-iwu.6 stories (2026-05-21-ideate-web-ux) before /test-plan",
+      "iwu.6 review: note ADR-011 artefact-first rule — ideate/SKILL.md is a governed file; change requires separate pipeline chain entry (story iwu.6 is that chain entry — this is correct)",
       "bsr-workforce-planner Phase 2 (wfp.12-wfp.16): all DoR signed-off — run /branch-setup for wfp.12 (heat-map, no upstream deps) as first story",
       "2026-05-18-skill-robustness-improvements: still at benefit-metric-active — run /definition to write sri.1/sri.2/sri.3 story artefacts",
       "Finance/planning lead reviewer required for bsr-workforce-planner benefit-metric.md (non-engineering approver TO BE NAMED)"
