@@ -571,6 +571,23 @@ Save to `artefacts/[feature-slug]/research/ideation.md`.
 One file per session. If this is the second ideation session for the same
 feature, create `ideation-2.md` and note what changed from the first.
 
+### Assumption card markers (ADR-018)
+
+When emitting any assumption during a session (Lens B, or any point where an assumption is named explicitly), emit an inline machine-readable marker on its own line immediately after the human-readable assumption text. Use **exactly** this format — no whitespace variation, no line breaks within the JSON:
+
+```
+---ASSUMPTION-JSON: {"id":"<unique-id>","text":"<assumption text>","type":"<desirability|viability|feasibility|ethical>","risk":"<high|medium|low>","knowness":"<known-unknown|unknown-unknown>"}---
+```
+
+Rules:
+- `id`: short kebab-case slug unique within the session (e.g. `user-pays`, `api-stable`)
+- `text`: the assumption as a plain declarative sentence (no markdown)
+- `type`: one of `desirability`, `viability`, `feasibility`, `ethical`
+- `risk`: one of `high`, `medium`, `low`
+- `knowness`: one of `known-unknown`, `unknown-unknown`
+- Emit a marker for every named assumption — do not batch or omit
+- Do not alter the format — the web UI parser is strict
+
 ---
 
 ## How this feeds the pipeline
