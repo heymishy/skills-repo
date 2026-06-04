@@ -1315,6 +1315,34 @@ async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token) {
 }
 
 /**
+ * Build the #context-manifest section HTML for the /ideate session shell.
+ * @param {Array<{path:string,status:string}|string>} files
+ * @returns {string}
+ */
+function buildContextManifestHtml(files) {
+  var items = (files || []).map(function(f) {
+    var p = (typeof f === 'string') ? f : f.path;
+    var status = (typeof f === 'string') ? 'ok' : (f.status || 'ok');
+    var basename = path.basename(p);
+    var safeBasename = escHtml(basename);
+    if (status === 'warn') {
+      return '<span class="chip-warn" aria-label="' + safeBasename + ' \u2014 missing">' +
+        safeBasename + ' <span aria-hidden="true" style="font-size:11px">\u26a0</span>' +
+        ' <span style="font-size:10px">missing</span></span>';
+    }
+    return '<span class="chip-ok" aria-label="' + safeBasename + ' \u2014 loaded">' +
+      safeBasename + ' <span aria-hidden="true" style="font-size:11px">\u2713</span>' +
+      ' <span style="font-size:10px">loaded</span></span>';
+  });
+  var inner = items.length > 0
+    ? items.join('\n  ')
+    : '<span id="context-manifest-empty" style="font-size:12px;color:var(--muted)">no context loaded</span>';
+  return '<div id="context-manifest" role="region" aria-label="Loaded context files"' +
+    ' style="padding:6px 16px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:var(--bg)">' +
+    '\n  ' + inner + '\n</div>';
+}
+
+/**
  * Render the single-page chat UI HTML.
  * @param {string} skillName
  * @param {string} sessionId
@@ -1515,7 +1543,8 @@ function _renderChatPage(skillName, sessionId, session) {
     draftSections:     draftSections,
     pendingConfirmation: false,
     userInitial:       'M',
-    modelLabel:        getActiveModel()
+    modelLabel:        getActiveModel(),
+    contextManifestHtml: buildContextManifestHtml(session.contextFiles || [])
   }) + script;
 
   // ougl.4 — journey-aware gate-confirm button
@@ -2019,5 +2048,7 @@ module.exports = {
   setNextQuestionExecutorAdapter,
   setSectionDraftExecutorAdapter,
   // dsq.3 — complete page
-  htmlGetCompletePage
+  htmlGetCompletePage,
+  // iwu.1 — context manifest builder (exported for testing)
+  buildContextManifestHtml
 };
