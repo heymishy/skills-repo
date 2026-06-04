@@ -3637,20 +3637,20 @@
               "artefact": "artefacts/2026-05-21-ideate-web-ux/stories/iwu.1.md",
               "status": "not-started",
               "complexity": 2,
-              "prStatus": "draft",
+              "prStatus": "merged",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
               "dodStatus": "not-started",
               "tasks": [],
               "name": "Render context manifest panel with chip layout in the /ideate session shell",
-              "stage": "subagent-execution",
+              "stage": "definition-of-done",
               "health": "green",
               "acTotal": 5,
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.1-test-plan.md",
                 "totalTests": 11,
-                "passing": 0
+                "passing": 11
               },
               "updatedAt": "2026-06-04"
             },
@@ -3661,20 +3661,20 @@
               "artefact": "artefacts/2026-05-21-ideate-web-ux/stories/iwu.2.md",
               "status": "not-started",
               "complexity": 1,
-              "prStatus": "draft",
+              "prStatus": "merged",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
               "dodStatus": "not-started",
               "tasks": [],
               "name": "Restructure right panel layout for two-section coexistence",
-              "stage": "subagent-execution",
+              "stage": "definition-of-done",
               "health": "green",
               "acTotal": 5,
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.2-test-plan.md",
                 "totalTests": 8,
-                "passing": 0
+                "passing": 8
               },
               "updatedAt": "2026-06-04"
             },
@@ -3685,20 +3685,20 @@
               "artefact": "artefacts/2026-05-21-ideate-web-ux/stories/iwu.3.md",
               "status": "not-started",
               "complexity": 2,
-              "prStatus": "draft",
+              "prStatus": "merged",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
               "dodStatus": "not-started",
               "tasks": [],
               "name": "Stream assumption cards from SSE marker events into #assumption-cards",
-              "stage": "subagent-execution",
+              "stage": "definition-of-done",
               "health": "green",
               "acTotal": 6,
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.3-test-plan.md",
                 "totalTests": 14,
-                "passing": 0
+                "passing": 14
               }
             },
             {
@@ -3708,20 +3708,20 @@
               "artefact": "artefacts/2026-05-21-ideate-web-ux/stories/iwu.4.md",
               "status": "not-started",
               "complexity": 1,
-              "prStatus": "draft",
+              "prStatus": "merged",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
               "dodStatus": "not-started",
               "tasks": [],
               "name": "Confirm or flag assumption cards via POST endpoint with in-session state persistence",
-              "stage": "subagent-execution",
+              "stage": "definition-of-done",
               "health": "green",
               "acTotal": 7,
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.4-test-plan.md",
                 "totalTests": 13,
-                "passing": 0
+                "passing": 13
               }
             },
             {
@@ -3731,20 +3731,20 @@
               "artefact": "artefacts/2026-05-21-ideate-web-ux/stories/iwu.5.md",
               "status": "not-started",
               "complexity": 2,
-              "prStatus": "draft",
+              "prStatus": "merged",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
               "dodStatus": "not-started",
               "tasks": [],
               "name": "Emit lensComplete SSE event and render lens-transition nudge bar",
-              "stage": "subagent-execution",
+              "stage": "definition-of-done",
               "health": "green",
               "acTotal": 6,
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.5-test-plan.md",
                 "totalTests": 14,
-                "passing": 0
+                "passing": 14
               }
             }
           ]
@@ -3764,20 +3764,20 @@
               "humanOversight": "high",
               "governedFile": true,
               "dodEntryCondition": "human-in-the-loop: real multi-turn session (>=6 turns) emission verification required at artefacts/2026-05-21-ideate-web-ux/verification/iwu.6-emission-verification.md",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
               "dodStatus": "not-started",
               "tasks": [],
               "name": "Add ---ASSUMPTION-JSON--- marker emission instruction to ideate/SKILL.md",
-              "stage": "subagent-execution",
+              "stage": "definition-of-done",
               "health": "green",
               "acTotal": 4,
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.6-test-plan.md",
                 "totalTests": 2,
-                "passing": 0
+                "passing": 2
               }
             }
           ]
