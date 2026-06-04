@@ -1555,6 +1555,9 @@ function _renderChatPage(skillName, sessionId, session) {
     '                partialDraft += evt.draftChunk;',
     '                updateDraftPanel(partialDraft);',
     '              }',
+    '              if(evt.assumptionCard) {',
+    '                appendAssumptionCard(evt.assumptionCard);',
+    '              }',
     '              if(evt.done !== undefined) {',
     '                if(evt.artefactContent) { partialDraft = ""; updateDraftPanel(evt.artefactContent); }',
     '                if(evt.done) {',
@@ -1580,6 +1583,66 @@ function _renderChatPage(skillName, sessionId, session) {
     '      appendBubble("assistant", \'<em style="color:var(--error,red)">Error — please try again.</em>\');',
     '      if(submitBtn) submitBtn.disabled = false;',
     '    });',
+    '  }',
+    '',
+    '  // iwu.4 — assumption card confirm/flag',
+    '  var SKILL_NAME_ENC = "' + encodeURIComponent(skillName) + '";',
+    '  var SESSION_ID_ENC = "' + encodeURIComponent(sessionId) + '";',
+    '  function assumptionConfirmUrl(cardId) {',
+    '    return "/api/skills/" + SKILL_NAME_ENC + "/sessions/" + SESSION_ID_ENC + "/assumption/" + encodeURIComponent(cardId) + "/confirm";',
+    '  }',
+    '  function attachCardHandlers(cardEl) {',
+    '    var confirmBtn = cardEl.querySelector(".btn-confirm");',
+    '    var flagBtn    = cardEl.querySelector(".btn-flag");',
+    '    function doAction(action) {',
+    '      var cardId = cardEl.getAttribute("data-card-id");',
+    '      fetch(assumptionConfirmUrl(cardId), {',
+    '        method: "POST",',
+    '        headers: {"Content-Type": "application/json"},',
+    '        body: JSON.stringify({action: action})',
+    '      }).then(function(r) {',
+    '        if(!r.ok) throw new Error("Request failed: " + r.status);',
+    '        return r.json();',
+    '      }).then(function(data) {',
+    '        cardEl.setAttribute("data-state", data.state);',
+    '        if(confirmBtn) confirmBtn.setAttribute("aria-label", data.state === "confirmed" ? "Confirmed" : "Confirm assumption");',
+    '        if(flagBtn)    flagBtn.setAttribute("aria-label", data.state === "flagged"   ? "Flagged"   : "Flag assumption");',
+    '        var existingErr = cardEl.querySelector(".card-error");',
+    '        if(existingErr) existingErr.remove();',
+    '      }).catch(function(err) {',
+    '        var existingErr = cardEl.querySelector(".card-error");',
+    '        if(existingErr) existingErr.remove();',
+    '        var errDiv = document.createElement("div");',
+    '        errDiv.className = "card-error";',
+    '        errDiv.style.cssText = "font-size:12px;color:var(--error,red);margin-top:4px";',
+    '        errDiv.textContent = "Could not update — please try again.";',
+    '        cardEl.appendChild(errDiv);',
+    '      });',
+    '    }',
+    '    if(confirmBtn) confirmBtn.addEventListener("click", function(){ doAction("confirm"); });',
+    '    if(flagBtn)    flagBtn.addEventListener("click",    function(){ doAction("flag"); });',
+    '  }',
+    '  function appendAssumptionCard(card) {',
+    '    var container = document.getElementById("assumption-cards");',
+    '    if(!container) return;',
+    '    var placeholder = container.querySelector("p");',
+    '    if(placeholder) placeholder.remove();',
+    '    var cardEl = document.createElement("div");',
+    '    cardEl.className = "assumption-card";',
+    '    cardEl.setAttribute("data-card-id", card.cardId || "");',
+    '    cardEl.setAttribute("data-state", "default");',
+    '    cardEl.innerHTML =',
+    '      \'<div class="assumption-card-text">\' + escHtmlClient(card.text || "") + \'</div>\' +',
+    '      \'<div class="assumption-card-meta">\' +',
+    '        \'<span class="assumption-type">Type: \' + escHtmlClient(card.type || "") + \'</span> \' +',
+    '        \'<span class="assumption-risk">Risk: \' + escHtmlClient(card.risk || "") + \'</span>\' +',
+    '      \'</div>\' +',
+    '      \'<div class="assumption-card-actions">\' +',
+    '        \'<button class="btn-confirm" type="button" aria-label="Confirm assumption">Confirm</button> \' +',
+    '        \'<button class="btn-flag"    type="button" aria-label="Flag assumption">Flag</button>\' +',
+    '      \'</div>\';',
+    '    attachCardHandlers(cardEl);',
+    '    container.appendChild(cardEl);',
     '  }',
     '',
     '  form.addEventListener("submit", function(e){',
@@ -2131,6 +2194,54 @@ async function htmlCommitSession(skillName, sessionId, token, identity) {
   return { artefactPath: preview.artefactPath };
 }
 
+/**
+ * POST /api/skills/:name/sessions/:id/assumption/:cardId/confirm
+ * Confirms or flags an assumption card in the session.
+ * Returns 200 { cardId, state } on success.
+ * Returns 400 if cardId format is invalid (path traversal guard) or action is invalid.
+ * Returns 401 if not authenticated.
+ * Returns 404 if session not found, or cardId not in session.assumptionCards.
+ * SECURITY: error response bodies must not contain session state fields.
+ */
+async function handlePostAssumptionConfirm(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    _json(res, 401, { error: 'Not authenticated' });
+    return;
+  }
+
+  var cardId    = (req.params && req.params.cardId) || '';
+  var sessionId = (req.params && req.params.id)     || '';
+
+  // cardId path traversal / format guard (MANDATORY — OWASP)
+  if (!/^[0-9a-f]{8}$/.test(cardId)) {
+    _json(res, 400, { error: 'INVALID_CARD_ID' });
+    return;
+  }
+
+  var session = _sessionStore.get(sessionId);
+  if (!session) {
+    _json(res, 404, { error: 'SESSION_NOT_FOUND' });
+    return;
+  }
+
+  var cards = session.assumptionCards;
+  if (!cards || !cards[cardId]) {
+    _json(res, 404, { error: 'CARD_NOT_FOUND' });
+    return;
+  }
+
+  var body   = await _readBody(req);
+  var action = body && body.action;
+  if (action !== 'confirm' && action !== 'flag') {
+    _json(res, 400, { error: 'INVALID_ACTION' });
+    return;
+  }
+
+  cards[cardId].state = action === 'confirm' ? 'confirmed' : 'flagged';
+
+  _json(res, 200, { cardId: cardId, state: cards[cardId].state });
+}
+
 module.exports = {
   handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState,
   handleCommitArtefact, handleResumeSession, setLogger, NO_LICENCE_MSG,
@@ -2165,5 +2276,7 @@ module.exports = {
   buildContextManifestHtml,
   // iwu.3 — assumption card helpers
   parseAssumptionMarker,
-  buildAssumptionCardHtml
+  buildAssumptionCardHtml,
+  // iwu.4 — confirm/flag endpoint
+  handlePostAssumptionConfirm
 };
