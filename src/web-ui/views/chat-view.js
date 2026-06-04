@@ -169,19 +169,22 @@ function renderChat(data) {
         '</footer>',
       '</section>',
 
-      // RIGHT: live draft
-      '<section class="sw-chat-pane">',
+      // RIGHT: live draft (two named sections: assumption cards + artefact draft)
+      '<section class="sw-chat-pane" style="display:flex;flex-direction:column">',
         '<header class="sw-chat-head">',
           '<div>',
             '<div class="sw-chat-title">Live draft · ' + escHtml(data.featureSlug || '') + '</div>',
             '<div class="sw-chat-sub">Updates as you answer</div>',
           '</div>',
         '</header>',
-        '<div id="draft-content" style="flex:1;overflow:auto;padding:24px 28px">',
+        '<div id="assumption-cards" role="region" aria-label="Assumption cards" style="flex:0 0 auto;max-height:42%;overflow-y:auto;padding:16px 20px;border-bottom:1px solid var(--line)">',
+          '<p style="margin:0;font-size:13px;color:var(--muted)">No assumptions identified yet</p>',
+        '</div>',
+        '<div id="draft-content" role="region" aria-label="Artefact draft" style="flex:1 1 auto;overflow-y:auto;padding:24px 28px">',
           '<div style="font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;font-weight:500">Draft</div>',
           '<h1 style="font-family:var(--serif);font-size:24px;font-weight:600;margin:0 0 24px;letter-spacing:-0.3px">' +
             escHtml(data.skillLabel + ' — ' + (data.featureSlug || '')) + '</h1>',
-          (draftSections || '<p style="color:var(--muted);font-size:13px">The draft will build up here as you answer.</p>'),
+          (draftSections || '<p style="color:var(--muted);font-size:13px">The artefact draft will build up here as you answer questions.</p>'),
         '</div>',
       '</section>',
 
