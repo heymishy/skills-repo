@@ -136,7 +136,14 @@ function renderChat(data) {
       '.sw-dot:nth-child(1) { animation-delay:0s; }',
       '.sw-dot:nth-child(2) { animation-delay:0.2s; }',
       '.sw-dot:nth-child(3) { animation-delay:0.4s; }',
+      '.chip-ok   { display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:#DCFCE7;color:#166534;border-radius:10px;font-size:12px;font-weight:500;border:1px solid #BBF7D0; }',
+      '.chip-warn { display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:#FEF9C3;color:#713F12;border-radius:10px;font-size:12px;font-weight:500;border:1px solid #FDE68A; }',
     '</style>',
+    (data.contextManifestHtml ||
+      '<div id="context-manifest" role="region" aria-label="Loaded context files"' +
+      ' style="padding:6px 16px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:var(--bg)">' +
+      '<span id="context-manifest-empty" style="font-size:12px;color:var(--muted)">no context loaded</span>' +
+      '</div>'),
     '<div class="sw-chat">',
 
       // LEFT: chat thread
