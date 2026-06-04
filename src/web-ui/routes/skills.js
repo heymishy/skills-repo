@@ -15,8 +15,9 @@
  *   handleGetSkills, handlePostSession, handlePostAnswer
  */
 
-const path = require('path');
-const fs   = require('fs');
+const path   = require('path');
+const fs     = require('fs');
+const crypto = require('crypto');
 
 const sessionStore = require('../../session-store');
 
@@ -486,6 +487,69 @@ function simpleMarkdownToHtml(md) {
   if (inList) out.push('</' + listTag + '>');
   if (inCode) out.push('</code></pre>');
   return out.join('\n');
+}
+
+// ---------------------------------------------------------------------------
+// Assumption card helpers — iwu.3 (ADR-018 marker format)
+// ---------------------------------------------------------------------------
+
+/**
+ * Parse a single ---ASSUMPTION-JSON: {...}--- marker from text.
+ * Returns the parsed payload object, or null if no valid marker is found.
+ * @param {string} text
+ * @returns {{ id: string, text: string, type: string, risk: string, knowness: string }|null}
+ */
+function parseAssumptionMarker(text) {
+  var MARKER_RE = /---ASSUMPTION-JSON:\s*(\{[\s\S]*?\})\s*---/;
+  var match = String(text).match(MARKER_RE);
+  if (!match) { return null; }
+  try {
+    return JSON.parse(match[1]);
+  } catch (_) {
+    return null;
+  }
+}
+
+/**
+ * Build an assumption card HTML fragment.
+ * All payload fields are XSS-escaped. Card includes data-card-id and data-state attributes.
+ * @param {{ id?: string, text?: string, type?: string, risk?: string, knowness?: string }} payload
+ * @param {string} cardId — 8-char hex cardId derived from sha256(sessionId + emittedText)
+ * @returns {string} HTML
+ */
+function buildAssumptionCardHtml(payload, cardId) {
+  var safeCardId  = escHtml(String(cardId  || ''));
+  var safeText    = escHtml(String(payload && payload.text     || ''));
+  var safeType    = escHtml(String(payload && payload.type     || ''));
+  var safeRisk    = escHtml(String(payload && payload.risk     || ''));
+  var safeKnowness = escHtml(String(payload && payload.knowness || ''));
+  return [
+    '<div class="assumption-card" data-card-id="' + safeCardId + '" data-state="default">',
+    '  <div class="assumption-card-text">' + safeText + '</div>',
+    '  <div class="assumption-card-meta">',
+    '    <span class="assumption-type">Type: ' + safeType + '</span>',
+    '    <span class="assumption-risk">Risk: ' + safeRisk + '</span>',
+    '    <span class="assumption-knowness">Knowness: ' + safeKnowness + '</span>',
+    '  </div>',
+    '  <div class="assumption-card-actions">',
+    '    <button class="btn-confirm" type="button" aria-label="Confirm assumption">Confirm</button>',
+    '    <button class="btn-flag"    type="button" aria-label="Flag assumption">Flag</button>',
+    '  </div>',
+    '</div>'
+  ].join('\n');
+}
+
+/**
+ * Derive an 8-character hex cardId from sessionId + emittedText (SHA-256, first 8 hex chars).
+ * @param {string} sessionId
+ * @param {string} markerText — the full marker text (used for uniqueness per card)
+ * @returns {string}
+ */
+function _deriveCardId(sessionId, markerText) {
+  return crypto.createHash('sha256')
+    .update(String(sessionId) + String(markerText))
+    .digest('hex')
+    .slice(0, 8);
 }
 
 // Injectable adapters for testing — default to production adapter functions.
@@ -1669,6 +1733,7 @@ async function handlePostTurnHtml(req, res) {
  * Streaming variant: sends SSE chunks as the model generates text.
  * Each SSE event is `data: {"chunk":"..."}\n\n`.
  * Final event: `data: {"done":bool, "artefactContent":"..."}\n\n`.
+ * iwu.3: also emits `data: {"assumptionCard":{...}}\n\n` for each ADR-018 marker found.
  */
 async function handlePostTurnStreamHtml(req, res) {
   if (!req.session || !req.session.accessToken) {
@@ -1697,6 +1762,11 @@ async function handlePostTurnStreamHtml(req, res) {
   var historySnapshot = session.turns.slice();
   session.turns.push({ role: 'user', content: userContent });
 
+  // iwu.3: assumption marker buffer — accumulates text to detect cross-chunk markers
+  var _assumptionBuf = '';
+  var _ASSMP_START   = '---ASSUMPTION-JSON:';
+  var _ASSMP_END     = '---';
+
   var fullText = '';
   try {
     var _artefactAccum  = '';
@@ -1710,6 +1780,48 @@ async function handlePostTurnStreamHtml(req, res) {
       req.session.accessToken,
       function onChunk(chunk) {
         res.write('data: ' + JSON.stringify({ chunk: chunk }) + '\n\n');
+
+        // iwu.3: scan for assumption markers in the accumulated buffer
+        _assumptionBuf += chunk;
+        var _scanBuf = _assumptionBuf;
+        var _cleanBuf = '';
+        var _startIdx;
+        while ((_startIdx = _scanBuf.indexOf(_ASSMP_START)) !== -1) {
+          // Possible marker found — look for closing ---
+          var _afterStart = _scanBuf.indexOf(_ASSMP_END, _startIdx + _ASSMP_START.length);
+          if (_afterStart === -1) { break; } // incomplete marker — wait for more chunks
+          // Extract full marker including both ---
+          var _markerFull = _scanBuf.slice(_startIdx, _afterStart + _ASSMP_END.length);
+          _cleanBuf += _scanBuf.slice(0, _startIdx);
+          _scanBuf = _scanBuf.slice(_afterStart + _ASSMP_END.length);
+          // Parse and emit if feature flag is enabled
+          if (session.assumptionCardsEnabled !== false) {
+            var _jsonStr = _markerFull.slice(_ASSMP_START.length).trim();
+            if (_jsonStr.endsWith(_ASSMP_END)) {
+              _jsonStr = _jsonStr.slice(0, -_ASSMP_END.length).trim();
+            }
+            try {
+              var _payload = JSON.parse(_jsonStr);
+              var _cardId  = _deriveCardId(sessionId, _markerFull);
+              if (!session.assumptionCards) { session.assumptionCards = {}; }
+              session.assumptionCards[_cardId] = Object.assign({}, _payload, { cardId: _cardId, state: 'default' });
+              res.write('data: ' + JSON.stringify({
+                assumptionCard: {
+                  id:       _payload.id       || '',
+                  text:     _payload.text     || '',
+                  type:     _payload.type     || '',
+                  risk:     _payload.risk     || '',
+                  knowness: _payload.knowness || '',
+                  cardId:   _cardId
+                }
+              }) + '\n\n');
+            } catch (_parseErr) {
+              // Malformed JSON inside marker — strip silently, no SSE event
+            }
+          }
+        }
+        _assumptionBuf = _cleanBuf + _scanBuf;
+
         _artefactAccum += chunk;
         if (!_inArtefactMode) {
           var startIdx = _artefactAccum.indexOf(_DRAFT_START);
@@ -2050,5 +2162,8 @@ module.exports = {
   // dsq.3 — complete page
   htmlGetCompletePage,
   // iwu.1 — context manifest builder (exported for testing)
-  buildContextManifestHtml
+  buildContextManifestHtml,
+  // iwu.3 — assumption card helpers
+  parseAssumptionMarker,
+  buildAssumptionCardHtml
 };
