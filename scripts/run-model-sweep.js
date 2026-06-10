@@ -18,6 +18,18 @@
  *   node scripts/run-model-sweep.js --experiment EXP-002 --dry-run
  *   node scripts/run-model-sweep.js --list-skills
  *
+ * Batch mode (Anthropic Messages Batches API — generation only; judge calls remain live):
+ *   node scripts/run-model-sweep.js --experiment EXP-010 --skills discovery --models m1,m2 --cases T1,T2 --batch
+ *   node scripts/run-model-sweep.js --experiment EXP-010 --skills discovery --models m1,m2 --cases T1,T2 --batch --batch-no-wait
+ *   node scripts/run-model-sweep.js --batch-retrieve msgbatch_xxx --experiment EXP-010
+ *   node scripts/run-model-sweep.js --experiment EXP-010 --batch --batch-poll-interval 120
+ *
+ * Batch flags:
+ *   --batch                   Enable Batch API mode (default: false; live mode unchanged)
+ *   --batch-no-wait           Submit batch and exit, printing batch ID. Do not poll.
+ *   --batch-retrieve ID       Retrieve and score a completed batch by ID. Requires --experiment.
+ *   --batch-poll-interval N   Polling interval in seconds (default: 60)
+ *
  * Environment:
  *   ANTHROPIC_API_KEY      — required for direct Anthropic API calls (claude-* models)
  *   OPENAI_API_KEY         — required for direct OpenAI API calls (gpt-* models)
@@ -187,12 +199,11 @@ function getProvider(modelId, providerOverride) {
           'Content-Length': Buffer.byteLength(body),
           'x-api-key': apiKey,
           'anthropic-version': ANTHROPIC_API_VERSION,
+          'anthropic-beta': 'prompt-caching-2024-07-31',
         };
       },
       buildBody(model, messages, maxTokens, systemPrompt) {
-        const body = { model, max_tokens: maxTokens, messages };
-        if (systemPrompt) body.system = systemPrompt;
-        return JSON.stringify(body);
+        return JSON.stringify(buildAnthropicMessageBody(model, messages, maxTokens, systemPrompt));
       },
       parseResponse(parsed) {
         const content = (parsed.content || []).map(b => b.text || '').join('');
@@ -343,9 +354,12 @@ const MODEL_ROUTING = {
 // Source: api.anthropic.com/pricing + platform.openai.com/pricing
 const PRICING = {
   // Anthropic
-  'claude-sonnet-4-6': { inputPerM: 3.00, outputPerM: 15.00 },
-  'claude-opus-4-7':   { inputPerM: 5.00, outputPerM: 25.00 },   // NOTE: claude-opus-4-6 also remains valid as a direct API string (SDK-confirmed 2026-05-12)
-  'claude-haiku-4-5':  { inputPerM: 1.00, outputPerM: 5.00 },
+  'claude-fable-5-20260609':      { inputPerM: 10.00, outputPerM: 50.00 },  // Fable 5 — string verified via GET /v1/models (see EXP-010 manifest Deviations if string differs)
+  'claude-sonnet-4-6':            { inputPerM: 3.00,  outputPerM: 15.00 },
+  'claude-sonnet-3-7-20250219':   { inputPerM: 3.00,  outputPerM: 15.00 },
+  'claude-opus-4-7':              { inputPerM: 5.00,  outputPerM: 25.00 },
+  'claude-opus-4-6':              { inputPerM: 5.00,  outputPerM: 25.00 },  // claude-opus-4-6 also valid — same pricing as 4-7 (SDK-confirmed 2026-05-12)
+  'claude-haiku-4-5':             { inputPerM: 1.00,  outputPerM: 5.00 },
   // OpenAI — TODO: verify current rates at platform.openai.com/pricing before running
   'gpt-4o':            { inputPerM: 2.50, outputPerM: 10.00 },   // TODO: verify current rate
   'gpt-4o-mini':       { inputPerM: 0.15, outputPerM: 0.60 },    // TODO: verify current rate
@@ -356,7 +370,7 @@ const PRICING = {
 // ─── CLI argument parsing ───────────────────────────────────────────────────
 
 function parseArgs(argv) {
-  const args = { skills: null, models: null, trials: DEFAULT_TRIALS, dryRun: false, listSkills: false, experiment: null, contextFiles: null, pass2: false, cases: null, delay: 0, provider: null, policy: false, routing: false, conversation: null };
+  const args = { skills: null, models: null, trials: DEFAULT_TRIALS, dryRun: false, listSkills: false, experiment: null, contextFiles: null, pass2: false, cases: null, delay: 0, provider: null, policy: false, routing: false, conversation: null, batch: false, batchNoWait: false, batchRetrieve: null, batchPollInterval: 60 };
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--dry-run') { args.dryRun = true; continue; }
@@ -364,6 +378,8 @@ function parseArgs(argv) {
     if (arg === '--pass2') { args.pass2 = true; continue; }
     if (arg === '--policy') { args.policy = true; continue; }
     if (arg === '--routing') { args.routing = true; continue; }
+    if (arg === '--batch') { args.batch = true; continue; }
+    if (arg === '--batch-no-wait') { args.batchNoWait = true; continue; }
     if (arg === '--experiment' && argv[i + 1]) { args.experiment = argv[++i]; continue; }
     if (arg === '--skills' && argv[i + 1]) { args.skills = argv[++i].split(',').map(s => s.trim()); continue; }
     if (arg === '--models' && argv[i + 1]) { args.models = argv[++i].split(',').map(s => s.trim()); continue; }
@@ -373,6 +389,8 @@ function parseArgs(argv) {
     if (arg === '--delay' && argv[i + 1]) { args.delay = parseInt(argv[++i], 10); continue; }
     if (arg === '--provider' && argv[i + 1]) { args.provider = argv[++i]; continue; }
     if (arg === '--conversation' && argv[i + 1]) { args.conversation = argv[++i]; continue; }
+    if (arg === '--batch-retrieve' && argv[i + 1]) { args.batchRetrieve = argv[++i]; continue; }
+    if (arg === '--batch-poll-interval' && argv[i + 1]) { args.batchPollInterval = parseInt(argv[++i], 10); continue; }
   }
   return args;
 }
@@ -611,7 +629,7 @@ function discoverCorpusCases(corpusDir) {
   const cases = [];
   for (const file of fs.readdirSync(corpusDir)) {
     if (!file.endsWith('.md')) continue;
-    if (!/^(T\d+|case-)/.test(file)) continue;
+    if (!/^(T\d+|S\d+|case-)/.test(file)) continue;
     const caseId = file.replace(/\.md$/, '').split('-')[0];
     cases.push({
       caseId,
@@ -755,6 +773,345 @@ function generateScorecard(experimentId, matrix, allResults) {
 
   lines.push('', '## Notes', '', '- Compliant=NO: categorical fail triggered regardless of weighted score', '- Use this scorecard to update workspace/proposals/proposed-update-token-optimization-measurement.md');
   return lines.join('\n');
+}
+
+// ─── Shared Anthropic message body builder ──────────────────────────────────
+
+/**
+ * Builds the Anthropic Messages API body object (NOT serialised).
+ * Applies cache_control to the system prompt when present — reduces cost by 90%
+ * on cache hits for prompts that are identical across trials (e.g. SKILL.md).
+ * Called by both the live Anthropic provider and the batch request builder.
+ */
+function buildAnthropicMessageBody(model, messages, maxTokens, systemPrompt) {
+  const body = { model, max_tokens: maxTokens, messages };
+  if (systemPrompt) {
+    body.system = [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }];
+  }
+  return body;
+}
+
+// ─── Batch mode implementation ───────────────────────────────────────────────
+
+/** Convert a model ID to a dash-safe string safe for use in custom_id fields. */
+function modelToDashed(modelId) {
+  return modelId.replace(/[./]/g, '-');
+}
+
+/** Parse a batch custom_id back to its component parts. */
+function parseBatchCustomId(customId) {
+  // Format: {experimentId}__{skillName}__{caseId}__{modelIdDashed}__trial{N}
+  const parts = customId.split('__');
+  if (parts.length < 5) throw new Error(`Cannot parse batch custom_id: ${customId}`);
+  const [experimentId, skillName, caseId, modelIdDashed, trialStr] = parts;
+  const trialN = parseInt(trialStr.replace(/^trial/i, ''), 10);
+  return { experimentId, skillName, caseId, modelIdDashed, trialN };
+}
+
+/**
+ * Generic HTTPS helper for api.anthropic.com.
+ * Adds auth + beta headers automatically.
+ */
+function anthropicRequest(method, urlPath, bodyStr) {
+  return new Promise((resolve, reject) => {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return reject(new Error('ANTHROPIC_API_KEY environment variable is not set'));
+    const headers = {
+      'x-api-key': apiKey,
+      'anthropic-version': ANTHROPIC_API_VERSION,
+      'anthropic-beta': 'prompt-caching-2024-07-31',
+      'Content-Type': 'application/json',
+    };
+    if (bodyStr) headers['Content-Length'] = Buffer.byteLength(bodyStr);
+    const options = { hostname: 'api.anthropic.com', path: urlPath, method, headers };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => { data += chunk; });
+      res.on('end', () => {
+        const ok = (method === 'POST') ? (res.statusCode === 200 || res.statusCode === 201) : res.statusCode === 200;
+        if (!ok) return reject(new Error(`API error ${res.statusCode}: ${data.slice(0, 300)}`));
+        resolve(data);
+      });
+    });
+    req.on('error', reject);
+    if (bodyStr) req.write(bodyStr);
+    req.end();
+  });
+}
+
+/** Submit a generation batch. Returns the Anthropic batch object with .id. */
+async function submitGenerationBatch(requests) {
+  const body = JSON.stringify({ requests });
+  const data = await anthropicRequest('POST', '/v1/messages/batches', body);
+  return JSON.parse(data);
+}
+
+/** Get the current status of a batch. */
+async function fetchBatchStatus(batchId) {
+  const data = await anthropicRequest('GET', `/v1/messages/batches/${batchId}`, null);
+  return JSON.parse(data);
+}
+
+/**
+ * Poll until processing_status === 'ended'. Logs progress each interval.
+ * Returns the final batch status object.
+ */
+async function pollBatchUntilDone(batchId, intervalSecs) {
+  let status = await fetchBatchStatus(batchId);
+  while (status.processing_status !== 'ended') {
+    const c = status.request_counts || {};
+    console.log(`  [batch] ${batchId}: processing=${c.processing || 0} succeeded=${c.succeeded || 0} errored=${c.errored || 0} expired=${c.expired || 0}`);
+    await new Promise(r => setTimeout(r, intervalSecs * 1000));
+    status = await fetchBatchStatus(batchId);
+  }
+  return status;
+}
+
+/**
+ * Download and parse batch results.
+ * Returns array of { custom_id, result: { type, message? } } objects.
+ */
+async function downloadBatchResultLines(batchId) {
+  const data = await anthropicRequest('GET', `/v1/messages/batches/${batchId}/results`, null);
+  return data.trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
+}
+
+/**
+ * Score batch results: write run files, run live judge calls, write result files,
+ * return allResults in the same shape as live mode.
+ */
+async function scoreBatchResults(resultLines, matrix, experimentDir, effectiveJudgeModel, effectiveProvider, evalOutputPath) {
+  const allResults = {};
+  let succeeded = 0, errored = 0, expired = 0;
+  let totalJudgeInputTokens = 0, totalJudgeOutputTokens = 0;
+
+  // Build lookups from matrix
+  const skillsByName = {};
+  const casesByKey = {};
+  for (const cell of matrix) {
+    skillsByName[cell.skill.skillName] = cell.skill;
+    casesByKey[`${cell.skill.skillName}__${cell.corpusCase.caseId}`] = cell.corpusCase;
+  }
+
+  for (const item of resultLines) {
+    const { custom_id, result } = item;
+
+    if (result.type === 'errored') {
+      errored++;
+      const err = result.error?.message || 'unknown error';
+      console.log(`  ERRORED: ${custom_id} — ${err}`);
+      let meta;
+      try { meta = parseBatchCustomId(custom_id); } catch (_) { continue; }
+      const cellKey = `${meta.skillName}__${meta.caseId}__${meta.modelIdDashed}`;
+      if (!allResults[cellKey]) allResults[cellKey] = [];
+      allResults[cellKey].push({ meta: { skillName: meta.skillName, caseId: meta.caseId, modelLabel: meta.modelIdDashed, trial: meta.trialN }, score: null, cost: null, error: err });
+      continue;
+    }
+    if (result.type === 'expired') {
+      expired++;
+      console.log(`  EXPIRED: ${custom_id}`);
+      continue;
+    }
+
+    succeeded++;
+    const message = result.message;
+    const runContent = (message.content || []).map(b => b.text || '').join('');
+    const runInputTokens = message.usage?.input_tokens || 0;
+    const runOutputTokens = message.usage?.output_tokens || 0;
+
+    let parsed;
+    try { parsed = parseBatchCustomId(custom_id); } catch (e) { console.warn(`  Skipping unparseable custom_id: ${custom_id}`); continue; }
+    const { skillName, caseId, modelIdDashed, trialN } = parsed;
+
+    // Recover the original model ID from the matrix
+    const cell = matrix.find(c => c.skill.skillName === skillName && c.corpusCase.caseId === caseId && modelToDashed(c.model) === modelIdDashed);
+    const modelId = cell ? cell.model : modelIdDashed;
+
+    const skill = skillsByName[skillName];
+    const corpusCase = casesByKey[`${skillName}__${caseId}`];
+    if (!skill || !corpusCase) {
+      console.warn(`  Warning: no matrix entry for ${custom_id} — skipping`);
+      continue;
+    }
+
+    const runFilePath = writeRunFile(experimentDir, skillName, caseId, modelId, trialN, runContent);
+    console.log(`\n  Run saved: ${path.relative(path.resolve(__dirname, '..'), runFilePath)}`);
+
+    // Live judge call
+    const judgePromptTemplate = extractJudgePrompt(skill.evalContent);
+    const judgeContext = extractJudgeContext(corpusCase.content);
+    let scoreJson = null;
+
+    if (judgePromptTemplate) {
+      const judgePromptFilled = judgePromptTemplate
+        .replace('{CASE_ID}', caseId)
+        .replace('{CASE_CONTEXT}', judgeContext)
+        .replace('{OUTPUT}', runContent);
+      try {
+        const judgeResult = await callModel(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024, undefined, effectiveProvider);
+        totalJudgeInputTokens += judgeResult.inputTokens;
+        totalJudgeOutputTokens += judgeResult.outputTokens;
+        const jsonMatch = judgeResult.content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          scoreJson = JSON.parse(jsonMatch[0]);
+          scoreJson.model_label = modelId;
+        } else {
+          console.warn(`  Warning: judge returned no JSON for ${custom_id}`);
+        }
+      } catch (err) {
+        console.warn(`  Judge error for ${custom_id}: ${err.message}`);
+      }
+    }
+
+    writeEvalRunResult(evalOutputPath, { skill: skillName, caseId, model: modelId, trial: trialN, completedAt: new Date().toISOString(), artefactPath: runFilePath, dimensionsScored: scoreJson ? Object.keys(scoreJson.scores || {}).length : null, verdict: scoreJson ? (scoreJson.pass ? 'pass' : 'fail') : null });
+
+    const cost = estimateCost(modelId, runInputTokens, runOutputTokens);
+    const resultData = scoreJson || { error: 'judge failed', model_label: modelId };
+    const resultFilePath = writeResultFile(experimentDir, skillName, caseId, modelId, trialN, resultData);
+    console.log(`  Result: ${path.relative(path.resolve(__dirname, '..'), resultFilePath)}`);
+
+    const cellKey = `${skillName}__${caseId}__${modelId}`;
+    if (!allResults[cellKey]) allResults[cellKey] = [];
+    allResults[cellKey].push({ meta: { skillName, caseId, modelLabel: modelId, trial: trialN }, score: scoreJson, cost, runFilePath, resultFilePath });
+
+    if (scoreJson) {
+      const passStr = scoreJson.pass ? 'PASS' : 'FAIL';
+      const compliantStr = scoreJson.compliant === false ? ' [NON-COMPLIANT]' : '';
+      console.log(`  Score: ${scoreJson.weighted_score?.toFixed(3) || 'N/A'} — ${passStr}${compliantStr}`);
+    }
+  }
+
+  return { allResults, succeeded, errored, expired, totalJudgeInputTokens, totalJudgeOutputTokens };
+}
+
+/**
+ * Main batch mode orchestrator.
+ * Handles Steps 1–7: build requests, submit batch, poll, download, score, scorecard.
+ */
+async function runBatchMode(args, matrix, contextFilesData, evalConfig, experimentDir, effectiveProvider) {
+  const evalOutputPath = evalConfig.outputPath;
+  const effectiveJudgeModel = evalConfig.judgeModel || JUDGE_MODEL;
+
+  let batchId = args.batchRetrieve || null;
+  let allBatchRequests = [];
+
+  if (!args.batchRetrieve) {
+    // Step 1 — Build request array
+    for (const cell of matrix) {
+      const { skill, corpusCase, model } = cell;
+      const operatorInput = extractOperatorInput(corpusCase.content);
+      if (!operatorInput) {
+        console.warn(`Warning: no operator input in ${corpusCase.fileName} — skipping`);
+        continue;
+      }
+
+      for (let trial = 1; trial <= args.trials; trial++) {
+        let systemPrompt, userContent;
+
+        if (contextFilesData) {
+          const skillMdPath = path.join(SKILLS_DIR, skill.skillName, 'SKILL.md');
+          const skillMdContent = fs.existsSync(skillMdPath)
+            ? fs.readFileSync(skillMdPath, 'utf8')
+            : `You are running the /${skill.skillName} pipeline skill.`;
+          systemPrompt = buildContextSystemPrompt(contextFilesData, skillMdContent, args.pass2);
+          userContent = operatorInput;
+        } else if (evalConfig.mode) {
+          systemPrompt = [
+            'EVALUATION MODE ACTIVE. Run in non-interactive mode. Skip all confirmation prompts.',
+            'Produce the complete artefact in a single pass. Apply all substantive skill logic.',
+            'Append <!-- eval-mode: true --> as the final line of the artefact.',
+            `Write the eval result to ${evalOutputPath} on completion.`,
+          ].join(' ');
+          userContent = `You are running the /${skill.skillName} pipeline skill. ${operatorInput}`;
+        } else {
+          userContent = `You are running the /${skill.skillName} pipeline skill. ${operatorInput}`;
+        }
+
+        const customId = [args.experiment, skill.skillName, corpusCase.caseId, modelToDashed(model), `trial${trial}`].join('__');
+        const params = buildAnthropicMessageBody(model, [{ role: 'user', content: userContent }], 4096, systemPrompt);
+        allBatchRequests.push({ custom_id: customId, params });
+      }
+    }
+
+    console.log(`\nBuilt ${allBatchRequests.length} batch requests.`);
+
+    // Step 2 — Submit batch
+    console.log('Submitting generation batch to POST /v1/messages/batches ...');
+    const batchResponse = await submitGenerationBatch(allBatchRequests);
+    batchId = batchResponse.id;
+
+    const manifestData = {
+      batchId,
+      submittedAt: new Date().toISOString(),
+      experimentId: args.experiment,
+      cellCount: allBatchRequests.length,
+      requests: allBatchRequests,
+    };
+    const manifestPath = safeExperimentsPath(experimentDir, 'batch-gen-manifest.json');
+    fs.writeFileSync(manifestPath, JSON.stringify(manifestData, null, 2), 'utf8');
+    console.log(`Batch ID:  ${batchId}`);
+    console.log(`Manifest:  ${path.relative(path.resolve(__dirname, '..'), manifestPath)}`);
+
+    if (args.batchNoWait) {
+      console.log('\n--batch-no-wait: exiting. Batch is processing asynchronously.');
+      console.log(`To retrieve results when ready:`);
+      console.log(`  node scripts/run-model-sweep.js --batch-retrieve ${batchId} --experiment ${args.experiment}`);
+      return;
+    }
+
+    // Step 3 — Poll
+    console.log(`\nPolling every ${args.batchPollInterval}s until batch ends...`);
+    const finalStatus = await pollBatchUntilDone(batchId, args.batchPollInterval);
+    const c = finalStatus.request_counts || {};
+    console.log(`Batch ended. succeeded=${c.succeeded || 0} errored=${c.errored || 0} expired=${c.expired || 0}`);
+
+  } else {
+    // --batch-retrieve mode: load manifest to reconstruct request list
+    console.log(`\nRetrieving completed batch: ${batchId}`);
+    const manifestPath = safeExperimentsPath(experimentDir, 'batch-gen-manifest.json');
+    if (!fs.existsSync(manifestPath)) {
+      throw new Error(`batch-gen-manifest.json not found in experiment directory. Required for --batch-retrieve.`);
+    }
+    const manifestData = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    allBatchRequests = manifestData.requests || [];
+    console.log(`Loaded ${allBatchRequests.length} requests from manifest.`);
+  }
+
+  // Step 4 — Download results
+  console.log('\nDownloading batch results (JSONL)...');
+  const resultLines = await downloadBatchResultLines(batchId);
+  console.log(`Downloaded ${resultLines.length} result lines.`);
+
+  // Step 5 — Score
+  console.log('\nScoring results (live judge calls)...');
+  const { allResults, succeeded, errored, expired, totalJudgeInputTokens, totalJudgeOutputTokens } = await scoreBatchResults(resultLines, matrix, experimentDir, effectiveJudgeModel, effectiveProvider, evalOutputPath);
+
+  // Step 6 — Scorecard
+  const scorecard = generateScorecard(args.experiment, matrix, allResults);
+  const scorecardPath = safeExperimentsPath(experimentDir, 'scorecard.md');
+  fs.writeFileSync(scorecardPath, scorecard, 'utf8');
+  console.log(`\nScorecard: ${path.relative(path.resolve(__dirname, '..'), scorecardPath)}`);
+
+  // Write batch-result-summary.json
+  const candidateCost = Object.values(allResults).flat().reduce((a, t) => a + (t.cost || 0), 0);
+  const judgeCost = estimateCost(effectiveJudgeModel, totalJudgeInputTokens, totalJudgeOutputTokens) || 0;
+  const summary = {
+    generationBatchId: batchId,
+    judgeModel: effectiveJudgeModel,
+    completedAt: new Date().toISOString(),
+    totalCells: allBatchRequests.length,
+    succeeded,
+    errored,
+    expired,
+    estimatedCostUsd: parseFloat((candidateCost + judgeCost).toFixed(4)),
+    judgeInputTokens: totalJudgeInputTokens,
+    judgeOutputTokens: totalJudgeOutputTokens,
+  };
+  const summaryPath = safeExperimentsPath(experimentDir, 'batch-result-summary.json');
+  fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2), 'utf8');
+  console.log(`Summary:   ${path.relative(path.resolve(__dirname, '..'), summaryPath)}`);
+  console.log(`\nBatch sweep complete. Succeeded: ${succeeded}  Errored: ${errored}  Expired: ${expired}`);
+  console.log(`Estimated total cost: $${summary.estimatedCostUsd}`);
 }
 
 // ─── Main execution ─────────────────────────────────────────────────────────
@@ -985,7 +1342,8 @@ async function main() {
   }
 
   if (args.dryRun) {
-    console.log('\nDry run — no API calls. Matrix:');
+    const batchNote = (args.batch || args.batchRetrieve) ? ' (batch mode)' : '';
+    console.log(`\nDry run — no API calls. Matrix${batchNote}:`);
     for (const cell of matrix) {
       console.log(`  ${cell.skill.skillName} × ${cell.corpusCase.caseId} × ${cell.model} × ${args.trials} trials`);
     }
@@ -998,10 +1356,38 @@ async function main() {
       }
       if (args.pass2) console.log('  [Pass 2 regulatory injection: enabled]');
     }
+    if (args.batch || args.batchRetrieve) {
+      const totalRuns = matrix.length * args.trials;
+      console.log(`\nBatch mode: would submit ${totalRuns} requests to POST /v1/messages/batches`);
+      // Rough cost estimate for dry-run awareness (assumes ~900 input, ~2000 output tokens per run)
+      const EST_IN = 900, EST_OUT = 2000;
+      let estTotal = 0;
+      const modelCosts = {};
+      for (const cell of matrix) {
+        const p = PRICING[cell.model];
+        if (!p) continue;
+        const perRun = (EST_IN / 1e6) * p.inputPerM + (EST_OUT / 1e6) * p.outputPerM;
+        modelCosts[cell.model] = (modelCosts[cell.model] || 0) + perRun * args.trials;
+        estTotal += perRun * args.trials;
+      }
+      const judgeP = PRICING[JUDGE_MODEL];
+      const judgeEst = judgeP ? ((2800 / 1e6) * judgeP.inputPerM + (400 / 1e6) * judgeP.outputPerM) * matrix.length * args.trials : 0;
+      console.log('\nEstimated cost (rough — assumes 900 input / 2000 output tokens per candidate run):');
+      for (const [m, cost] of Object.entries(modelCosts)) console.log(`  ${m}: $${cost.toFixed(3)}`);
+      console.log(`  Judge (${JUDGE_MODEL}): $${judgeEst.toFixed(3)}`);
+      console.log(`  Total estimate: $${(estTotal + judgeEst).toFixed(3)}`);
+      if (estTotal + judgeEst > 30) console.log('  WARNING: estimate exceeds $30 ceiling — review before running live');
+    }
     return;
   }
 
-  // Execute matrix
+  // Batch mode branch (non-dry-run)
+  if (args.batch || args.batchRetrieve) {
+    await runBatchMode(args, matrix, contextFilesData, evalConfig, experimentDir, effectiveProvider);
+    return;
+  }
+
+  // Execute matrix (live mode)
   const allResults = {};
   let totalInputTokens = 0;
   let totalOutputTokens = 0;
