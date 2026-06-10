@@ -1,0 +1,17 @@
+{
+  "case_id": "S10",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.1,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.5
+  },
+  "weighted_score": 0.5305,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong problem framing and risk register, but critically fails on MVP bounding (no explicit bounded scope with deferrals), out-of-scope discipline (no named deferred items with reasons), persona specificity (roles described generically without named personas, timing, or cost), missing RBNZ BS11 notification constraint and PPSR legal opinion assumption, and success indicators lack baseline anchors — the response reads as a thorough risk/question catalogue rather than a discovery artefact with defined scope boundaries."
+}

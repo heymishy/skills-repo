@@ -1,0 +1,17 @@
+{
+  "case_id": "T3",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.85,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.9,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 0.85
+  },
+  "weighted_score": 0.878,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong on structuring risk, audit trail, FCA obligation, and explicit out-of-scope deferral; slightly penalised on problem framing (opens solution-adjacent) and persona specificity (MLRO named but without full role/cost context for a second persona)."
+}

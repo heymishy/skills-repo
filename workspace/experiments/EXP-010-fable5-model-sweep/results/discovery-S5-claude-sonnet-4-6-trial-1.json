@@ -1,0 +1,17 @@
+{
+  "case_id": "S5",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.55,
+    "d3_mvp_bounding": 0.75,
+    "d4_out_of_scope_discipline": 0.75,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.65,
+    "d7_constraint_completeness": 0.8
+  },
+  "weighted_score": 0.76,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong on constraint identification and assumption quality with genuine blockers flagged (PIA backlog, Azure DPA, rollout undefined), but loses points on persona specificity — no named personas with role-specific timing/cost detail — and MVP bounding is mostly implied rather than explicitly stating pilot-only scope with named deferrals."
+}

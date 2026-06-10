@@ -1,0 +1,17 @@
+{
+  "case_id": "S11",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.693,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong on out-of-scope discipline, deletion protocol risk, and accreditation validation architecture, but personas are generic roles rather than named individuals with costs, success indicators lack measurable anchored targets, and the response leans solution-framed (component tables, architecture options) rather than centering the problem as consent-integrity vs. data-portability tension."
+}

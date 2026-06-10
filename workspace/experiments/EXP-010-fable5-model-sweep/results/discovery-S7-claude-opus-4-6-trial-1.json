@@ -1,0 +1,17 @@
+{
+  "case_id": "S7",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.9,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.9,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.8
+  },
+  "weighted_score": 0.842,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong, well-bounded discovery artefact with clear problem framing, explicit out-of-scope deferrals with reasons, and a correctly flagged data retention open question; minor gaps include personas lacking named roles with quantified cost impact, success indicators that are directional but lack a baseline anchor, and the data residency constraint (C2: Australia East/Southeast only) is not explicitly called out as a hard constraint."
+}

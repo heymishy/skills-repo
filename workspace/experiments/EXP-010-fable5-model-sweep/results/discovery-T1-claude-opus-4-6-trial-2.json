@@ -1,0 +1,17 @@
+{
+  "case_id": "T1",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.95,
+    "d2_persona_specificity": 0.75,
+    "d3_mvp_bounding": 0.92,
+    "d4_out_of_scope_discipline": 0.9,
+    "d5_assumption_quality": 0.95,
+    "d6_success_observability": 0.55,
+    "d7_constraint_completeness": 0.75
+  },
+  "weighted_score": 0.878,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong on assumption quality and MVP bounding with explicit deferrals and risk-flagged uncertainties; slightly weak on success observability as triage time and auto-processing rate targets are directional but lack baseline anchors, and persona specificity names roles but stops short of attaching explicit cost figures per persona."
+}

@@ -1,0 +1,17 @@
+{
+  "case_id": "S9",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.672,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong regulatory risk identification and assumption quality, but problem framing drifts into solution description early, personas are generic roles rather than named with cost context, and success indicators lack a baseline anchor tied to the current 10–15 day processing metric."
+}

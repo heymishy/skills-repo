@@ -1,0 +1,17 @@
+{
+  "case_id": "S12",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.1,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.3
+  },
+  "weighted_score": 0.4135,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is technically competent and raises useful clarifying questions but fundamentally fails on problem framing — it accepts the operator's solution framing ('retrain and deploy') rather than surfacing the regulated-credit-decisioning problem bounded by FMA fairness methodology, CCCFA obligations, and 2023 MRM independent validation requirements; critical constraints (C1 FMA prescribed methodology, C2 independent validation requirement, C3 CCCFA, C4 plain-language explainability) are either absent or mentioned only obliquely, no named personas with role/cost context appear, there is no bounded MVP with explicit deferrals, and the out-of-scope section is entirely absent."
+}

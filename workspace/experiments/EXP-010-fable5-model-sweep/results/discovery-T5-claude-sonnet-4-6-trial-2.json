@@ -1,0 +1,17 @@
+{
+  "case_id": "T5",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.6
+  },
+  "weighted_score": 0,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — the Phase 1–3 pipeline and 'If build: MVP scope with clear success metrics' framing, combined with the implicit enumeration of note-taking features (text capture, attachments, SSO, transcripts, action items), constitutes a feature list appearing in the output, triggering categorical fail regardless of the otherwise strong enterprise-context questioning around compliance, tooling duplication, and data residency."
+}

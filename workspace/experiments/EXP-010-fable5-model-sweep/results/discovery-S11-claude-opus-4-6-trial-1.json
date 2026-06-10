@@ -1,0 +1,17 @@
+{
+  "case_id": "S11",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.6,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.636,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong assumption quality and detailed investigation of enriched insights risk, but lacks named personas with role/timing/cost context, does not explicitly bound an MVP with named deferrals (instead offers phasing recommendations), and success indicators are directional but lack measurable targets or baseline anchors."
+}

@@ -1,0 +1,17 @@
+{
+  "case_id": "S13",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.55,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.8,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.55
+  },
+  "weighted_score": 0.612,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong problem framing and assumption quality with good AUSTRAC/travel-rule risk identification, but critical gaps undermine the score: personas are generic roles rather than named stakeholders (no DIA, JPMorgan Chase correspondent RM, RBNZ AML/CFT team explicitly named with cost/timing context), MVP scope is not explicitly bounded with stated deferrals (no clear $10k ceiling commitment, NZ-to-AU-only direction, or SWIFT fallback retention stated as bounded design), out-of-scope items lack named items with reasons, the hidden C5 SWIFT correspondent bank agreement breach risk is entirely absent, and success indicators lack anchored baselines."
+}

@@ -1,0 +1,17 @@
+{
+  "case_id": "S7",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.549,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response correctly identifies the core problem and covers key constraints (Azure AD SSO, data residency, Privacy Act retention gap), but significantly over-engineers the MVP scope — adding waitlists, reminder emails, OTP verification, role hierarchies, and a staff dashboard — without explicit deferral reasoning, and personas lack named roles with cost/time context."
+}

@@ -1,0 +1,17 @@
+{
+  "case_id": "S2",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.75,
+    "d4_out_of_scope_discipline": 0.55,
+    "d5_assumption_quality": 0.9,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.85
+  },
+  "weighted_score": 0.76,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptional constraint and assumption handling — especially the undisclosed FMA bias finding treated as an independent organisational blocker — but out-of-scope items are not explicitly named and deferred with reasons, and personas lack quantified cost/timing context to reach the top tier."
+}

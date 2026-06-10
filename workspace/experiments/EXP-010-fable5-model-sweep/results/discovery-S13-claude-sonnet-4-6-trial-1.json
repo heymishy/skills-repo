@@ -1,0 +1,17 @@
+{
+  "case_id": "S13",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.5,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.6
+  },
+  "weighted_score": 0.622,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong on regulatory assumption surfacing and problem framing (correctly identifies AML/CFT dual-jurisdiction gap, FX settlement risk, and SWIFT channel dependency), but critically weak on persona specificity (no named personas such as RBNZ compliance team, AUSTRAC, DIA, JPMorgan Chase RM), MVP bounding is vague and lacks explicit deferral of out-of-scope items, and the C5 SWIFT correspondent bank agreement constraint — the most hidden and consequential — is only obliquely referenced rather than named as a hard constraint requiring prior written notification."
+}

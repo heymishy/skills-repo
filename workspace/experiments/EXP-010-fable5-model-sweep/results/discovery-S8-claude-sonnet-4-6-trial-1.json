@@ -1,0 +1,17 @@
+{
+  "case_id": "S8",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.95,
+    "d2_persona_specificity": 0.55,
+    "d3_mvp_bounding": 0.85,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.85,
+    "d7_constraint_completeness": 0.75
+  },
+  "weighted_score": 0.84,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong problem framing, out-of-scope discipline, and assumption quality; main weakness is persona specificity — analysts, compliance officer, RBNZ relationship manager, and CFO/signatory are not individually named or given cost/timing context, reducing that dimension materially."
+}

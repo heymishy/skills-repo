@@ -798,6 +798,12 @@ function modelToDashed(modelId) {
   return modelId.replace(/[./]/g, '-');
 }
 
+/** Shorten an experiment ID to its EXP-NNN prefix so custom_ids stay ≤ 64 chars. */
+function shortExperimentId(experimentId) {
+  const m = experimentId.match(/^(EXP-\d+)/i);
+  return m ? m[1] : experimentId.slice(0, 10);
+}
+
 /** Parse a batch custom_id back to its component parts. */
 function parseBatchCustomId(customId) {
   // Format: {experimentId}__{skillName}__{caseId}__{modelIdDashed}__trial{N}
@@ -1027,7 +1033,7 @@ async function runBatchMode(args, matrix, contextFilesData, evalConfig, experime
           userContent = `You are running the /${skill.skillName} pipeline skill. ${operatorInput}`;
         }
 
-        const customId = [args.experiment, skill.skillName, corpusCase.caseId, modelToDashed(model), `trial${trial}`].join('__');
+        const customId = [shortExperimentId(args.experiment), skill.skillName, corpusCase.caseId, modelToDashed(model), `trial${trial}`].join('__');
         const params = buildAnthropicMessageBody(model, [{ role: 'user', content: userContent }], 4096, systemPrompt);
         allBatchRequests.push({ custom_id: customId, params });
       }

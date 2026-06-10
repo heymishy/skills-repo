@@ -1,0 +1,17 @@
+{
+  "case_id": "S10",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.3,
+    "d4_out_of_scope_discipline": 0.1,
+    "d5_assumption_quality": 0.6,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.5
+  },
+  "weighted_score": 0.463,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response demonstrates strong technical depth in risk identification and gap analysis but fails critically on MVP bounding (no explicit scope boundary or deferral list), lacks named personas with cost context, omits out-of-scope discipline almost entirely, and misses the RBNZ BS11 notification status as a blocking assumption — the most critical regulatory risk flagged in the corpus."
+}

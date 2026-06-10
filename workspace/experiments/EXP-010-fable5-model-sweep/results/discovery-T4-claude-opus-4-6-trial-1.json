@@ -1,0 +1,17 @@
+{
+  "case_id": "T4",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0.17,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — the model produced a full discovery artefact including a root-cause taxonomy table, ranked next steps, and implementation offers instead of asking the minimum necessary clarifying questions before scoping."
+}

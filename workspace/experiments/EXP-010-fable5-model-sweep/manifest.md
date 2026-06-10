@@ -8,7 +8,7 @@
 | experiment_type | model-sweep |
 | created | 2026-06-11 |
 | operator | Hamish King |
-| status | in-progress |
+| status | complete (partial — see scorecard Deviations) |
 
 ## Sweep configuration
 
@@ -63,18 +63,18 @@ Total cells: 16 cases × 4 models × 2 trials = **128 generation runs + 128 judg
 
 | Skill | Model | Avg score | Pass rate | Compliant | Est. cost |
 |-------|-------|-----------|-----------|-----------|-----------|
-| discovery | claude-fable-5-20260609 | — | — | — | — |
-| discovery | claude-opus-4-6 | — | — | — | — |
-| discovery | claude-sonnet-4-6 | — | — | — | — |
-| discovery | claude-sonnet-3-7-20250219 | — | — | — | — |
+| discovery | claude-fable-5-20260609 | N/A (model error) | 0/32 | — | $0 |
+| discovery | claude-opus-4-6 | 0.540 (14 judged) | 5/14 (36%) | yes | $1.59 |
+| discovery | claude-sonnet-4-6 | 0.445 (12 judged) | 3/12 (25%) | yes | $1.18 |
+| discovery | claude-sonnet-3-7-20250219 | N/A (model error) | 0/32 | — | $0 |
 
 ## Findings
 
 *Populated after analysis.*
 
-**Recommendation:** _pending_
+**Recommendation:** DEFERRED — primary Fable 5 question unanswered due to model string errors. Provisional: Sonnet 4.6 cost-equivalent to Opus 4.6 on /discovery with no evidence of quality deficit. EXP-010b required.
 
-**Evidence:** Experiment ID `EXP-010-fable5-model-sweep` with 2 trials per cell. Scorecard at `workspace/experiments/EXP-010-fable5-model-sweep/scorecard.md`.
+**Evidence:** Experiment ID `EXP-010-fable5-model-sweep` with 2 trials per cell; 64/128 generation runs errored (Fable 5 + Sonnet 3.7); 38/64 judge calls rate-limited. Scorecard at `workspace/experiments/EXP-010-fable5-model-sweep/scorecard.md`.
 
 ## Next actions
 
