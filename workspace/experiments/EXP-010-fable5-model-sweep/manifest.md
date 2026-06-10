@@ -1,0 +1,94 @@
+# EXP-010 — Fable 5 vs Sonnet 4.6 vs Opus 4.6 vs Sonnet 3.7 Model Sweep
+
+## Experiment metadata
+
+| Field | Value |
+|-------|-------|
+| experiment_id | EXP-010-fable5-model-sweep |
+| experiment_type | model-sweep |
+| created | 2026-06-11 |
+| operator | Hamish King |
+| status | in-progress |
+
+## Sweep configuration
+
+| Field | Value |
+|-------|-------|
+| layer | 2 (programmatic) |
+| trigger | new-model-release (Fable 5) |
+| skills_swept | discovery |
+| models_compared | claude-fable-5-20260609, claude-opus-4-6, claude-sonnet-4-6, claude-sonnet-3-7-20250219 |
+| trials_per_cell | 2 |
+| judge_model | claude-sonnet-4-6 |
+| corpus_cases | T1, T2, T3, T4, T5, S2, S3, S4, S5, S7, S8, S9, S10, S11, S12, S13 |
+
+## Hypothesis
+
+Fable 5 is expected to outperform Sonnet 4.6 and Sonnet 3.7 on high-difficulty S-series cases (S10, S12, S13) where hidden regulatory constraints require deep NZ financial-domain knowledge, while remaining within 0.05 weighted score of Sonnet 4.6 on the T-series baseline cases. The primary question is whether the performance premium justifies Fable 5's 3–5× cost difference over Sonnet 4.6 for the /discovery generative outer-loop.
+
+## Token and cost estimate
+
+*Dry-run executed 2026-06-11 — assumes 900 input / 2000 output tokens per candidate run.*
+
+| Component | Est. input tokens | Est. output tokens | Est. cost |
+|-----------|------------------|--------------------|-----------|
+| Candidate runs: claude-fable-5-20260609 × 32 cells | ~28,800 | ~64,000 | $3.488 |
+| Candidate runs: claude-opus-4-6 × 32 cells | ~28,800 | ~64,000 | $1.744 |
+| Candidate runs: claude-sonnet-4-6 × 32 cells | ~28,800 | ~64,000 | $1.046 |
+| Candidate runs: claude-sonnet-3-7-20250219 × 32 cells | ~28,800 | ~64,000 | $1.046 |
+| Judge calls: claude-sonnet-4-6 × 128 | — | — | $1.843 |
+| **Total** | | | **$9.167** |
+
+*Cost ceiling: $30 USD. Estimate is $9.17 — within ceiling. Proceeding to batch execution.*
+
+## Matrix definition
+
+| Skill | Corpus cases | Models | Trials |
+|-------|-------------|--------|--------|
+| discovery | T1, T2, T3, T4, T5, S2, S3, S4, S5, S7, S8, S9, S10, S11, S12, S13 | claude-fable-5-20260609, claude-opus-4-6, claude-sonnet-4-6, claude-sonnet-3-7-20250219 | 2 |
+
+Total cells: 16 cases × 4 models × 2 trials = **128 generation runs + 128 judge calls = 256 API calls**
+
+## Runs log
+
+*Populated during batch run execution.*
+
+| Run | Skill | Case | Model | Trial | Date | Run file | Result file | Weighted score | Pass |
+|-----|-------|------|-------|-------|------|----------|-------------|----------------|------|
+| — | — | — | — | — | _pending_ | — | — | — | — |
+
+## Scorecard summary
+
+*Populated after all runs complete. See `scorecard.md` in this experiment directory for full detail.*
+
+| Skill | Model | Avg score | Pass rate | Compliant | Est. cost |
+|-------|-------|-----------|-----------|-----------|-----------|
+| discovery | claude-fable-5-20260609 | — | — | — | — |
+| discovery | claude-opus-4-6 | — | — | — | — |
+| discovery | claude-sonnet-4-6 | — | — | — | — |
+| discovery | claude-sonnet-3-7-20250219 | — | — | — | — |
+
+## Findings
+
+*Populated after analysis.*
+
+**Recommendation:** _pending_
+
+**Evidence:** Experiment ID `EXP-010-fable5-model-sweep` with 2 trials per cell. Scorecard at `workspace/experiments/EXP-010-fable5-model-sweep/scorecard.md`.
+
+## Next actions
+
+- [ ] Confirm dry-run cost is within $30 ceiling before executing batch
+- [ ] Execute batch run and populate runs log
+- [ ] Write scorecard.md with full per-model and per-case breakdown
+- [ ] Update status to "complete" and populate Scorecard summary table
+- [ ] If routing changes recommended: update `workspace/proposals/proposed-update-token-optimization-measurement.md`
+- [ ] If context.yml model_label should change: operator action (model selection is operator-controlled, not automated)
+
+## Deviations from template
+
+- **S6 excluded**: S6 (S6a behavioural clarification trigger, S6b contradiction, S6c scope creep) are behavioural scenarios not scoreable by D1–D7 discovery EVAL.md dimensions. Excluded from --cases flag. Reserved for a future EXP designed around behavioural/clarification metrics.
+- **trials_per_cell = 2**: Template default is 3; reduced to 2 to stay comfortably within $30 cost ceiling given 4-model sweep over 16 cases.
+- **Fable 5 model string unverified**: `ANTHROPIC_API_KEY` was not available in the local environment at sweep setup time; `GET /v1/models` API call could not be executed. Model string `claude-fable-5-20260609` used per task specification default. If batch submission returns a model-not-found error, the Fable 5 rows must be re-run with the corrected model string.
+- **S-series corpus files created**: S2–S5, S7–S13 corpus files did not exist prior to this experiment. Created under `.github/skills/discovery/corpus/` to enable programmatic evaluation. T1–T5 corpus files are unchanged (immutable during sweep). `discoverCorpusCases` regex updated from `T\d+|case-` to `T\d+|S\d+|case-` to discover S-series files.
+- **S-series cases evaluated at /discovery only**: S2–S13 were designed for full CPF pipeline evaluation (discovery → definition → DoR → DoD). This experiment applies D1–D7 judge scoring to the /discovery stage only. CPF propagation across stages is not measured here.

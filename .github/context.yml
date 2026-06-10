@@ -55,12 +55,12 @@ skills_upstream:
     - docs/skill-pipeline-instructions.md
   strategy: merge
 
-# Instrumentation — Model Evaluation Capability pilot: EXP-001 (discovery, Layer 1)
-# Run: Layer 1 semi-manual via VS Code model selector against corpus T1-T5
-# See: workspace/experiments/EXP-001-discovery-phase4-5/manifest.md
+# Instrumentation — EXP-010: Fable 5 vs Sonnet 4.6 vs Opus 4.6 vs Sonnet 3.7 model sweep
+# Run: Layer 2 programmatic via run-model-sweep.js --batch against corpus T1-T5 + S2-S13
+# See: workspace/experiments/EXP-010-fable5-model-sweep/manifest.md
 instrumentation:
   enabled: true
-  experiment_id: "EXP-001-discovery-phase4-5"
+  experiment_id: "EXP-010-fable5-model-sweep"
   model_label: "claude-sonnet-4-6"
   cost_tier: "fast"
 
