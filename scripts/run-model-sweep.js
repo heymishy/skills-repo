@@ -1145,22 +1145,26 @@ async function runBatchMode(args, matrix, contextFilesData, evalConfig, experime
 // ─── Judge-only mode ─────────────────────────────────────────────────────────
 
 /**
- * Rescore existing run files without re-generating.
- * Reads all *.md files from {experimentDir}/runs/, checks corresponding result files,
- * re-judges any run with a missing or errored score, then regenerates the scorecard.
+ * Rescore existing result files without re-generating.
+ * Scans ALL *.json files in {experimentDir}/results/ as the authoritative source,
+ * re-judges any result with a missing or errored score (using the matching run file),
+ * then regenerates the scorecard from the complete set.
+ *
+ * Scanning results/ (not runs/) ensures every model's results are included
+ * regardless of which Node.js process originally wrote the run files.
  */
 async function runJudgeOnlyMode(args, evalConfig, experimentDir, effectiveProvider) {
   const effectiveJudgeModel = evalConfig.judgeModel || JUDGE_MODEL;
 
   const runsDir = path.join(experimentDir, 'runs');
-  const resultsDir = safeExperimentsPath(experimentDir, 'results');
+  const resultsDir = path.join(experimentDir, 'results');
   ensureDir(resultsDir);
 
-  if (!fs.existsSync(runsDir)) {
-    throw new Error(`No runs/ directory at ${runsDir} — nothing to judge`);
+  if (!fs.existsSync(resultsDir) || fs.readdirSync(resultsDir).filter(f => f.endsWith('.json')).length === 0) {
+    throw new Error(`No result files found in ${resultsDir} — nothing to aggregate`);
   }
 
-  // Discover skills and corpus cases so we can rebuild judge prompts
+  // Discover skills and corpus cases (needed only when rejudging)
   const allSkills = discoverSkills(null);
   const skillsByName = {};
   const casesByKey = {};
@@ -1171,36 +1175,34 @@ async function runJudgeOnlyMode(args, evalConfig, experimentDir, effectiveProvid
     }
   }
 
-  const runFiles = fs.readdirSync(runsDir).filter(f => f.endsWith('.md')).sort();
-  console.log(`Found ${runFiles.length} run files. Checking for missing or errored judge scores...\n`);
+  // Scan ALL result JSON files — authoritative aggregation source
+  const resultFiles = fs.readdirSync(resultsDir).filter(f => f.endsWith('.json')).sort();
+  console.log(`Found ${resultFiles.length} result files across all models. Checking scores...\n`);
 
   const allResults = {};
   let judgeCount = 0, skipCount = 0, errorCount = 0;
   let totalJudgeInputTokens = 0, totalJudgeOutputTokens = 0;
 
-  for (const runFile of runFiles) {
-    // Parse filename: {skillName}-{caseId}-{modelLabel}-trial-{N}.md
-    const m = runFile.match(/^(.+?)-([TS]\d+|case-[\w-]+)-(.+)-trial-(\d+)\.md$/);
-    if (!m) { console.warn(`  Skipping unparseable filename: ${runFile}`); continue; }
+  for (const resultFile of resultFiles) {
+    // Parse filename: {skillName}-{caseId}-{modelLabel}-trial-{N}.json
+    const m = resultFile.match(/^(.+?)-([TS]\d+|case-[\w-]+)-(.+)-trial-(\d+)\.json$/);
+    if (!m) { console.warn(`  Skipping unparseable result filename: ${resultFile}`); continue; }
     const [, skillName, caseId, modelLabel, trialNStr] = m;
     const trialN = parseInt(trialNStr, 10);
 
     const cellKey = `${skillName}__${caseId}__${modelLabel}`;
     if (!allResults[cellKey]) allResults[cellKey] = [];
 
-    const resultFileName = `${skillName}-${caseId}-${modelLabel}-trial-${trialN}.json`;
-    const resultFilePath = path.join(resultsDir, resultFileName);
+    const resultFilePath = path.join(resultsDir, resultFile);
 
-    // Check whether existing result already has a valid score
+    // Load and check this result
     let existingScore = null;
-    if (fs.existsSync(resultFilePath)) {
-      try {
-        const parsed = JSON.parse(fs.readFileSync(resultFilePath, 'utf8'));
-        if (!parsed.error && typeof parsed.weighted_score === 'number') {
-          existingScore = parsed;
-        }
-      } catch (_) {}
-    }
+    try {
+      const parsed = JSON.parse(fs.readFileSync(resultFilePath, 'utf8'));
+      if (!parsed.error && typeof parsed.weighted_score === 'number') {
+        existingScore = parsed;
+      }
+    } catch (_) {}
 
     if (existingScore !== null) {
       skipCount++;
@@ -1208,17 +1210,25 @@ async function runJudgeOnlyMode(args, evalConfig, experimentDir, effectiveProvid
       continue;
     }
 
-    // Needs judging — look up skill and corpus case
-    const skill = skillsByName[skillName];
-    const corpusCase = casesByKey[`${skillName}__${caseId}`];
-    if (!skill || !corpusCase) {
-      console.warn(`  No skill/case found for ${runFile} — skipping`);
+    // Needs (re)judging — locate the corresponding run file
+    const runFilePath = path.join(runsDir, `${skillName}-${caseId}-${modelLabel}-trial-${trialN}.md`);
+    if (!fs.existsSync(runFilePath)) {
+      console.warn(`  No run file for ${resultFile} — cannot rejudge, skipping`);
       errorCount++;
       allResults[cellKey].push({ meta: { skillName, caseId, modelLabel, trial: trialN }, score: null, cost: null });
       continue;
     }
 
-    const runContent = fs.readFileSync(path.join(runsDir, runFile), 'utf8');
+    const skill = skillsByName[skillName];
+    const corpusCase = casesByKey[`${skillName}__${caseId}`];
+    if (!skill || !corpusCase) {
+      console.warn(`  No skill/case found for ${resultFile} — skipping`);
+      errorCount++;
+      allResults[cellKey].push({ meta: { skillName, caseId, modelLabel, trial: trialN }, score: null, cost: null });
+      continue;
+    }
+
+    const runContent = fs.readFileSync(runFilePath, 'utf8');
     const judgePromptTemplate = extractJudgePrompt(skill.evalContent);
     const judgeContext = extractJudgeContext(corpusCase.content);
 
@@ -1245,10 +1255,10 @@ async function runJudgeOnlyMode(args, evalConfig, experimentDir, effectiveProvid
           scoreJson = JSON.parse(jsonMatch[0]);
           scoreJson.model_label = modelLabel;
         } else {
-          console.warn(`    Warning: judge returned no JSON for ${runFile}`);
+          console.warn(`    Warning: judge returned no JSON for ${resultFile}`);
         }
       } catch (err) {
-        console.warn(`    Judge error for ${runFile}: ${err.message}`);
+        console.warn(`    Judge error for ${resultFile}: ${err.message}`);
         errorCount++;
       }
     }
