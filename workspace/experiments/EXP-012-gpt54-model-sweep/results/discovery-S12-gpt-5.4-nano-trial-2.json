@@ -1,0 +1,18 @@
+{
+  "case_id": "S12",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0.4,
+  "pass": false,
+  "compliant": false,
+  "notes": "The response is primarily a solution/process plan framed as 'readiness validation' rather than a problem statement describing the gap, affected parties, and cost; it omits all regulatory constraints (FMA, CCCFA, MRM 2023 policy independent validation requirement), has no named personas, no out-of-scope section, and treats critical uncertainties (FMA prescribed fairness methodology, independent validation requirement under 2023 policy) as non-issues rather than genuine risks — compounded by D1=0.0-level framing that makes the output non-compliant.",
+  "context_injection": false
+}

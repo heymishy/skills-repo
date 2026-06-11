@@ -1,0 +1,18 @@
+{
+  "case_id": "S8",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.295,
+  "pass": false,
+  "compliant": false,
+  "notes": "D1=0.0 categorical fail: the response IS the solution (a detailed architecture blueprint with ETL pipeline, normalisation layer, audit trail data model, and workflow states), with no problem statement describing the gap, cost, or affected party; personas are entirely absent; out-of-scope section is absent; assumptions are buried as clarifying questions rather than stated uncertainties; and RBNZ/FMA/C3/C4 constraints are referenced only as implementation requirements rather than sourced hard constraints.",
+  "context_injection": false
+}

@@ -1,0 +1,18 @@
+{
+  "case_id": "S2",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.634,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong regulatory risk identification (FMA disparity, CCCFA) and baseline-anchored success indicators, but the response is structured as a build plan and target-state description rather than a problem framing, personas are generic (no named roles with timing/cost), and there is no explicit out-of-scope section listing ≥2 deferred items with reasons.",
+  "context_injection": false
+}

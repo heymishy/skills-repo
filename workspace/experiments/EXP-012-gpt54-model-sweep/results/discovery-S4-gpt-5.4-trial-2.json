@@ -1,0 +1,18 @@
+{
+  "case_id": "S4",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.581,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is a comprehensive discovery canvas with strong constraint and assumption coverage, but fails on D1 (problem statement is partially solution-framed — 'We need to introduce a stable, versioned Experience API'), D3 (no bounded MVP with explicit deferrals; section 3 lists nearly all capabilities as in-scope), D2 (consumers listed by channel type rather than named personas with role/timing/cost), and D6 (no baseline-anchored success indicators — no quantified migration milestone or QSA pass criterion).",
+  "context_injection": false
+}

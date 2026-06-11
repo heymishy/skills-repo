@@ -1,0 +1,18 @@
+{
+  "case_id": "S8",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.567,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is well-structured and rich in operational detail but fails on three critical dimensions: the 'proposed_state' framing in the summary partially solution-frames the problem (D1), personas are listed as generic role categories without per-persona timing or cost context (D2), there is no bounded MVP section with explicit deferrals — instead the full opportunity scope including normalisation layer and both RBNZ and FMA returns is treated as in-scope (D3), and assumptions are surfaced only as 'delivery dependencies/risks' rather than genuine uncertainties with risk-if-wrong statements — critically missing the normalisation logic change-control governance flag and treasury API unavailability that the corpus requires (D5).",
+  "context_injection": false
+}

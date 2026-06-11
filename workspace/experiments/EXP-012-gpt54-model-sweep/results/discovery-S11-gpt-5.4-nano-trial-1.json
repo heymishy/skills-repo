@@ -1,0 +1,18 @@
+{
+  "case_id": "S11",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.259,
+  "pass": false,
+  "compliant": false,
+  "notes": "The response is a comprehensive solution-design document (requirements, data model, API endpoints, enforcement logic) rather than a discovery artefact — it includes enriched insights in launch scope without deferral, contains no named personas with cost/timing, has no out-of-scope section, no measurable success indicators, and critically treats enriched insights as in-scope from day one rather than flagging the derived-data consent boundary as a blocking assumption, violating the MVP bounding rule categorically.",
+  "context_injection": false
+}

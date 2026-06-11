@@ -1,0 +1,18 @@
+{
+  "case_id": "S12",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.38,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response is primarily a project management checklist and delivery plan rather than a discovery artefact: it frames the work as 'what to do' (retraining pipeline, MRM submission, staging integration) rather than surfacing the underlying problem, fails to name or describe regulated personas (credit card customers' right to explanation, MRM team's independent validation requirement), produces no bounded MVP with explicit deferrals, has no out-of-scope section at all, and critically omits all key regulatory constraints (FMA prescribed fairness methodology, CCCFA, 2023 MRM policy independent validation requirement, explainability standard) — treating these as background notes rather than hard constraints that challenge the operator's framing.",
+  "context_injection": false
+}

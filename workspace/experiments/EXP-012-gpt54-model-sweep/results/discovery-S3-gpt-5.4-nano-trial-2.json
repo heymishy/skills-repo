@@ -1,0 +1,18 @@
+{
+  "case_id": "S3",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.366,
+  "pass": false,
+  "compliant": false,
+  "notes": "D1=0.0 categorical fail: the response is structured entirely as a solution design (architecture, options, message flows, project plan) rather than a problem statement describing the gap/cost/affected party; no named personas appear anywhere; no explicit out-of-scope section exists; the scheme deadline and penalty are mentioned but framed as a project constraint rather than as the core problem experienced by an affected party.",
+  "context_injection": false
+}

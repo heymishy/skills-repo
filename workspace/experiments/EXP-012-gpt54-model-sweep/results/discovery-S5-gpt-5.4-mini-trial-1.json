@@ -1,0 +1,18 @@
+{
+  "case_id": "S5",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.463,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — the response is structured primarily as a solution specification (functional requirements, workflow steps, Azure AI Speech + LLM feature description) rather than a problem-framed discovery artefact; D1 is borderline but the dominant framing throughout is 'here is what to build' rather than 'here is the gap and its cost'; MVP is not bounded with explicit deferrals (no pilot scope vs full rollout delineation, no explicit capability deferred); out-of-scope section is absent as a named section; personas are generic role labels without cost/timing context; success indicators reference the 340 incidents baseline but provide no target or pilot gate criterion.",
+  "context_injection": false
+}

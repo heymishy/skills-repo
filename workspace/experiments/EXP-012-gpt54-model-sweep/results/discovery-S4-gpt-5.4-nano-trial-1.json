@@ -1,0 +1,18 @@
+{
+  "case_id": "S4",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.356,
+  "pass": false,
+  "compliant": false,
+  "notes": "D1 categorical fail: the entire response is solution-framed ('Build an Experience API layer') rather than describing the forced-migration problem with its costs and affected parties; no named personas appear anywhere; out-of-scope section is absent; problem IS the solution.",
+  "context_injection": false
+}

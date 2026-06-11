@@ -1,0 +1,18 @@
+{
+  "case_id": "S4",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.275,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — the response is a comprehensive solution design document (API capability matrix, authorization model, caching strategy, migration roadmap) rather than a bounded discovery artefact; no MVP scope is defined with explicit deferrals, no out-of-scope section exists, no success indicators are present, and the problem is framed primarily as 'build a better API layer' rather than as a forced migration under vendor deprecation with PCI DSS compliance complexity.",
+  "context_injection": false
+}

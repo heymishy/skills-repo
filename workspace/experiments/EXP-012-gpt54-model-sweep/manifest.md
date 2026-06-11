@@ -8,7 +8,7 @@
 | experiment_type | model-sweep |
 | created | 2026-06-11 |
 | operator | Hamish King |
-| status | pending |
+| status | complete |
 
 ## Sweep configuration
 

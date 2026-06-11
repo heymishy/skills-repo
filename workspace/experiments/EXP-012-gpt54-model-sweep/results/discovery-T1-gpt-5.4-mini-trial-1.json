@@ -1,0 +1,5 @@
+{
+  "error": "judge failed",
+  "model_label": "gpt-5.4-mini",
+  "context_injection": false
+}

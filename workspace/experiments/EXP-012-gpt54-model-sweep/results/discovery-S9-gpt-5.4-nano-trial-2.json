@@ -1,0 +1,18 @@
+{
+  "case_id": "S9",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.381,
+  "pass": false,
+  "compliant": false,
+  "notes": "The response is primarily a solution-framing and feature/question list that accepts the March 31 deadline uncritically, completely omits the FMA 30-day Significant Event Notice as a hard regulatory constraint that makes the deadline non-compliant, fails to name any out-of-scope items with reasons, surfaces no genuine uncertainty about the hardship fee waiver obligation (treating $15 as universally applicable), and never frames the problem as a competitive member experience gap bounded by statutory obligations — making it non-compliant on D1 (problem IS essentially the solution delivery plan) and triggering a cascade of dimension failures.",
+  "context_injection": false
+}

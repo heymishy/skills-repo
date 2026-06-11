@@ -1,0 +1,18 @@
+{
+  "case_id": "T3",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.508,
+  "pass": false,
+  "compliant": true,
+  "notes": "Success observability is strong (anchored baseline to target), but the response critically omits all out-of-scope items (SAR filing, upstream screening changes, threshold rule changes), has no assumptions section (no mention of structuring risk or Slack compliance), and constraints are thin — missing FCA regulatory obligation framing and audit trail requirement.",
+  "context_injection": false
+}

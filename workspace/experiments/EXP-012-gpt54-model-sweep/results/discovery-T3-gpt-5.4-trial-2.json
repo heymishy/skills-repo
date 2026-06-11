@@ -1,0 +1,18 @@
+{
+  "case_id": "T3",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.535,
+  "pass": false,
+  "compliant": true,
+  "notes": "Success observability is strong (anchored 18h→15min baseline/target) and MVP is reasonably bounded, but the response has no out-of-scope section at all, no assumptions section (missing structuring risk, compliance routing validity), and constraint completeness omits the audit trail requirement and FCA near-real-time obligation as hard regulatory constraints rather than soft framing.",
+  "context_injection": false
+}

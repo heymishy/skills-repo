@@ -1,0 +1,18 @@
+{
+  "case_id": "S2",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.528,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong risk escalation on the FMA disparity finding and CCCFA compliance gap, but the response is structured as a solution blueprint (current/target state, capability scope, delivery plan) rather than a bounded discovery artefact — no explicit out-of-scope section, personas are absent as named roles with cost/timing, and the 'MVP scope' is a large unbounded feature list without explicit deferrals.",
+  "context_injection": false
+}

@@ -1,0 +1,18 @@
+{
+  "case_id": "S9",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.18,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: problem IS the solution — the entire response is a delivery and solution outline describing what to build, with no problem statement identifying the gap, cost, or affected party; FMA SEN 30-day constraint is treated as a documentation task rather than a hard schedule constraint that invalidates the March 31 date, no named personas appear, and no out-of-scope section exists.",
+  "context_injection": false
+}

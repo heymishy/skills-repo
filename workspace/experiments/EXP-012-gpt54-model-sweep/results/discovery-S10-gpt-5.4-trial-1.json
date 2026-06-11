@@ -1,0 +1,18 @@
+{
+  "case_id": "S10",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.556,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is thorough and technically credible but critically fails on MVP bounding (no bounded subset with explicit deferrals — it covers all workstreams), misses the RBNZ BS11 30-business-day notification obligation as a named hard constraint, produces out-of-scope items without firm reasons, uses generic stakeholder roles rather than named personas with cost/timing context, and success criteria lack baseline anchoring — the dominant failure is that the output reads as a full program plan rather than a bounded MVP discovery artefact.",
+  "context_injection": false
+}

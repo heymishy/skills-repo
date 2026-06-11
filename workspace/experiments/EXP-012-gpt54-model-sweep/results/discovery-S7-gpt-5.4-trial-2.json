@@ -1,0 +1,18 @@
+{
+  "case_id": "S7",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.627,
+  "pass": false,
+  "compliant": true,
+  "notes": "Out-of-scope discipline is strong with multiple named deferred items, but critical failures include: assumptions are mostly scope/design statements rather than genuine uncertainties (notably never flags the Privacy Act 2020 data retention gap as the key unresolved risk), personas lack timing and cost dimensions, success indicators have no baseline anchoring, and Privacy Act 2020 / Azure data residency constraints sourced from product context are absent from the constraints section.",
+  "context_injection": false
+}

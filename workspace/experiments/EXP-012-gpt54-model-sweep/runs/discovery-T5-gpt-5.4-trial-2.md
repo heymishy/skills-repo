@@ -1,0 +1,1 @@
+I'll inspect the repo context, especially `product/constraints.md`, then I’ll run a concise discovery pass for the note-taking app idea tailored to your environment.

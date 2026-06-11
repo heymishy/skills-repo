@@ -1,0 +1,18 @@
+{
+  "case_id": "S8",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.498,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is thorough on operational detail and risk narrative but fails across nearly every structured dimension: it presents the problem partially solution-framed (opportunity summary leads with the proposed pipeline), personas are generic role labels without timing or cost-per-persona, there is no bounded MVP with explicit deferrals (only a broad in-scope process list), out-of-scope items lack reasons, assumptions are discovery questions rather than genuine uncertainties with stated risk-if-wrong, success metrics lack baseline anchoring to the stated 6–8 day / 1 missed deadline baseline, and the four hard regulatory constraints (RBNZ deadline, FMA audit trail, human sign-off, normalisation disclosure requirement) are noted qualitatively but never captured as sourced hard constraints.",
+  "context_injection": false
+}

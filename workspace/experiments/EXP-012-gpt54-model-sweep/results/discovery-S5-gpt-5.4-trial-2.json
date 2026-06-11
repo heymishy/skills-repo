@@ -1,0 +1,18 @@
+{
+  "case_id": "S5",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.737,
+  "pass": true,
+  "compliant": true,
+  "notes": "Comprehensive discovery with strong out-of-scope discipline and constraint coverage, but D1 is partially solution-framed (section 1 describes the proposed feature architecture before completing problem framing), D2 lacks per-persona cost/timing specificity, D3's MVP section (section 23) lists guardrails rather than a crisp bounded scope with explicit deferrals, D5 assumptions are mostly present but some are low-uncertainty technical statements rather than genuine business/regulatory uncertainties with stated risk-if-wrong, and D6 references the 340-incident baseline but lacks an explicit numerical target reduction.",
+  "context_injection": false
+}

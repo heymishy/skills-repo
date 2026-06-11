@@ -1,0 +1,18 @@
+{
+  "case_id": "T5",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0,
+  "pass": false,
+  "compliant": false,
+  "notes": "Model produced no artefact content whatsoever — the response is a single procedural sentence with no problem framing, no enterprise context questions, no clarifying questions, and no discovery content of any kind; while it avoided a feature list, it also failed every other dimension by producing nothing evaluable.",
+  "context_injection": false
+}

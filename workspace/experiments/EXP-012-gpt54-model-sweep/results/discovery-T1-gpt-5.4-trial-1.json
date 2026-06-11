@@ -1,0 +1,18 @@
+{
+  "case_id": "T1",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 1,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0.6835,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong problem framing and success observability anchored to baseline, but out-of-scope items lack stated reasons, PCI-DSS and idempotency constraints are entirely absent from a dedicated constraints section, and personas lack explicit cost/frequency data beyond the triage hours.",
+  "context_injection": false
+}
