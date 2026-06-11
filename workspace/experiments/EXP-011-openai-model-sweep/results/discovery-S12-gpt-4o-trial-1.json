@@ -1,0 +1,18 @@
+{
+  "case_id": "S12",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0.149,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — response treats the 12-week deployment as a solved execution problem, producing a full project plan with zero problem framing, no regulatory constraints (FMA fairness methodology, CCCFA, MRM independent validation), no genuine assumptions flagged, no out-of-scope discipline, and no measurable success anchors; D1=0.0 triggers categorical fail.",
+  "context_injection": false
+}

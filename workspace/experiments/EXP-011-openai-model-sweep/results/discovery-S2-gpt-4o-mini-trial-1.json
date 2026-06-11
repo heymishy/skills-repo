@@ -1,0 +1,18 @@
+{
+  "case_id": "S2",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.4,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is almost entirely solution-framed (a project plan with timelines and features) rather than a discovery artefact; it never surfaces the undisclosed FMA disparity as a go-live blocker, treats CCCFA and Centrix DSA uncertainties as manageable to-dos rather than genuine blockers, names no personas with cost context, and provides no baseline/target success metrics anchored to the 3–5 day decision-time problem.",
+  "context_injection": false
+}

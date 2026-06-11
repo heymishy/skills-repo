@@ -1,0 +1,18 @@
+{
+  "case_id": "S3",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.309,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response is almost entirely solution-framed (a task list of what to build), lacks any named personas with cost context, explicitly defers nothing out of scope, and treats genuine uncertainties (fraud vendor API capacity, AML P99 at 4x load) as straightforward action items rather than flagged risks.",
+  "context_injection": false
+}

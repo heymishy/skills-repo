@@ -1,0 +1,18 @@
+{
+  "case_id": "S2",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.6,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.5,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.588,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response captures key risks and constraints reasonably well but is partially solution-framed (goals section reads as a feature list), lacks named personas with role/cost context, has weak out-of-scope discipline (no explicit deferrals with reasons), and assumptions are stated as risks rather than genuine uncertainties with risk-if-wrong framing.",
+  "context_injection": false
+}

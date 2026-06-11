@@ -1,0 +1,18 @@
+{
+  "case_id": "T1",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.2
+  },
+  "weighted_score": 0.362,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response jumps directly into solution steps (retry mechanism, queue management, logging) without establishing problem framing around triage cost or merchant uncertainty, has no named personas, omits out-of-scope items entirely, and lacks key constraints like PCI-DSS and idempotency requirements.",
+  "context_injection": false
+}

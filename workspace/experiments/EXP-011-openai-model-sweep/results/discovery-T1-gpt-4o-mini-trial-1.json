@@ -1,0 +1,18 @@
+{
+  "case_id": "T1",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.535,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is partially solution-framed from the outset and lacks any out-of-scope items with reasons, missing idempotency/PCI-DSS constraints, and treats personas generically without named roles and associated costs.",
+  "context_injection": false
+}

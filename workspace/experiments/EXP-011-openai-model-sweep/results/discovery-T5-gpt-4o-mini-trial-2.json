@@ -1,0 +1,18 @@
+{
+  "case_id": "T5",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.2
+  },
+  "weighted_score": 0.01,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — the response immediately delivers a comprehensive feature list (rich text formatting, tagging, search, templates, mobile, version history, export) with no clarifying questions, no enterprise context questions on data residency, retention, tooling duplication, access control, or FCA compliance classification, representing a categorical fail on all key dimensions.",
+  "context_injection": false
+}

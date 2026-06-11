@@ -1,0 +1,18 @@
+{
+  "case_id": "S5",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.367,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is overwhelmingly solution-framed (build the feature, implement steps, rollout plan) rather than a discovery artefact defining the problem space — no named personas with costs, no explicit out-of-scope items with reasons, no real uncertainties with risk-if-wrong, and no baseline metric anchor, making it fall well short on nearly every discovery dimension.",
+  "context_injection": false
+}

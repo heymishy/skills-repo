@@ -1,0 +1,18 @@
+{
+  "case_id": "S10",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.459,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is largely solution-framed (artifacts, next steps, deliverables) rather than a discovery framing document; it names no specific personas with role/cost context, defines no explicit MVP boundary with deferrals, lists zero out-of-scope items with reasons, omits the critical RBNZ BS11 notification status assumption and PPSR legal opinion uncertainty, and lacks anchored success metrics or the regulatory constraint specificity (BS11 30-day window, CCCFA 7-year retention) required by the corpus.",
+  "context_injection": false
+}

@@ -1,0 +1,18 @@
+{
+  "case_id": "S10",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.369,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is almost entirely solution-framed (a project plan with phases, team structure, and timelines) rather than a discovery artefact that surfaces the problem, constraints, assumptions, and bounded MVP scope; critical elements like RBNZ BS11 notification status uncertainty, CCCFA retention obligations, PPSR legal risk, out-of-scope items with reasons, and named personas with cost context are largely absent.",
+  "context_injection": false
+}

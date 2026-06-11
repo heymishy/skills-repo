@@ -1,0 +1,18 @@
+{
+  "case_id": "T2",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0.148,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response correctly asks clarifying questions before proceeding, avoiding the categorical fail, but it offers solution-framed prompt suggestions (e.g., 'faster onboarding, higher satisfaction') rather than purely probing the unknown problem, and produces no discovery artefact substance — leaving most dimensions scoreless.",
+  "context_injection": false
+}

@@ -1,0 +1,18 @@
+{
+  "case_id": "S7",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.268,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response jumps immediately into a solution architecture without framing the manual-registration scaling problem, omits named personas with cost context, names no out-of-scope items with reasons, surfaces no genuine assumptions (e.g. undefined data retention period under Privacy Act 2020), and provides no measurable success indicators or baseline anchors.",
+  "context_injection": false
+}

@@ -1,0 +1,18 @@
+{
+  "case_id": "T3",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.2,
+    "d6_success_observability": 0.9,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.5655,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response correctly frames the detection-lag problem and anchors success metrics to the 18-hour baseline, but critically omits any out-of-scope section, fails to flag structuring risk as an assumption about the £10k threshold, and lacks the audit trail and SAR filing context required for constraint completeness.",
+  "context_injection": false
+}

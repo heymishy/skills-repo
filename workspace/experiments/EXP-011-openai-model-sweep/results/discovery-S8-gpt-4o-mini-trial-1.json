@@ -1,0 +1,18 @@
+{
+  "case_id": "S8",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.307,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response immediately dives into a comprehensive solution blueprint with no problem framing, no named personas, no out-of-scope deferrals, no flagged assumptions or risks, and an unbounded scope that includes normalisation encoding and submission facilitation — both of which should have been explicitly deferred pending governance review.",
+  "context_injection": false
+}

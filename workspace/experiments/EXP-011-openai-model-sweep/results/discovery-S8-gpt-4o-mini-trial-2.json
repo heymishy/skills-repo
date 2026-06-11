@@ -1,0 +1,18 @@
+{
+  "case_id": "S8",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.281,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is almost entirely solution-framed (a 12-phase implementation blueprint), names no specific personas with role/cost context, defines no bounded MVP with explicit deferrals, identifies zero out-of-scope items with reasons, raises no genuine uncertainties or risks-if-wrong, provides no measurable baseline or target indicators, and only superficially references RBNZ/FMA constraints without sourcing or completeness.",
+  "context_injection": false
+}

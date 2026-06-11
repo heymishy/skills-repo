@@ -1,0 +1,18 @@
+{
+  "case_id": "S12",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.1,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.1
+  },
+  "weighted_score": 0.4,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is predominantly solution-framed (retraining pipeline ready, 12-week timeline feasible), fatally misrepresents the regulatory and governance landscape by dismissing FMA prescribed fairness methodology, independent validation under 2023 MRM policy, and CCCFA obligations as non-issues, and names no specific personas with role/cost context while failing to surface any genuine uncertainties or out-of-scope items.",
+  "context_injection": false
+}

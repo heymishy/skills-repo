@@ -1,0 +1,18 @@
+{
+  "case_id": "S2",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.424,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response is almost entirely solution-framed (a delivery plan with milestones), lacks named personas with context/cost, treats the undisclosed FMA disparity finding as a routine bias audit rather than a go-live blocker, never flags the Centrix DSA scope uncertainty or CCCFA automated inquiry sign-off as genuine uncertainties with risk-if-wrong, and provides no explicit out-of-scope deferrals with reasons beyond the >$30k routing note.",
+  "context_injection": false
+}

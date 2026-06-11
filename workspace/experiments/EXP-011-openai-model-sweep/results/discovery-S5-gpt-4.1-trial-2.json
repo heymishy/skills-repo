@@ -1,0 +1,18 @@
+{
+  "case_id": "S5",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.55,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.55,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.55,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.55
+  },
+  "weighted_score": 0.502,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response surfaces relevant questions and risks but is predominantly solution-framed (current/target state walkthrough, recommended discovery steps with prototyping) rather than problem-bounded discovery artefact; personas are generic roles without timing or cost context, MVP scope is implied but not explicitly bounded with named deferrals, and constraints lack the specificity of C1–C4 hard governance blockers from the corpus.",
+  "context_injection": false
+}

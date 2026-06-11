@@ -1,0 +1,18 @@
+{
+  "case_id": "T1",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.85,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.2,
+    "d6_success_observability": 0.85,
+    "d7_constraint_completeness": 0.2
+  },
+  "weighted_score": 0.694,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong out-of-scope discipline and measurable success metrics with baseline anchors, but critical assumptions (idempotency, failure code taxonomy stability) are entirely absent and hard constraints like PCI-DSS compliance are missing, dragging down the overall score.",
+  "context_injection": false
+}

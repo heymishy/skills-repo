@@ -1,0 +1,18 @@
+{
+  "case_id": "T5",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.5
+  },
+  "weighted_score": 0.17,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — response enumerates solution features (encryption at rest, SSO integration, audit logging, tagging/classification, calendar integration, mobile/offline access) regardless of enterprise constraint framing, triggering categorical fail; no /clarify recommendation made and gold-standard enterprise context questions (UK GDPR data residency, FCA/MiFID II compliance classification, build-vs-configure justification) are largely absent or only gestured at.",
+  "context_injection": false
+}

@@ -1,0 +1,18 @@
+{
+  "case_id": "T2",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0.14,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — the model asked multiple scatter-shot questions rather than a single focused clarifying question targeting the most impactful unknown (which step is broken), and produced no bounded discovery artefact while also failing to defer scope, leaving all dimensions essentially empty or fabricated.",
+  "context_injection": false
+}

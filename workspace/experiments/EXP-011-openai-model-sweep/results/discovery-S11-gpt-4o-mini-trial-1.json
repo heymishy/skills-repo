@@ -1,0 +1,18 @@
+{
+  "case_id": "S11",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.2,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.1,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.5
+  },
+  "weighted_score": 0.298,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is almost entirely solution-framed, includes enriched insights in the launch scope (directly contradicting the critical deferral requirement), names no specific personas with context or cost, identifies no out-of-scope items with reasons, and raises no genuine uncertainties about derived-data consent or deletion enforcement mechanisms.",
+  "context_injection": false
+}

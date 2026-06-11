@@ -1,0 +1,18 @@
+{
+  "case_id": "S9",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.372,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is predominantly solution-framed (feature list, delivery timeline, next steps) rather than problem-framed; it critically fails to surface the FMA 30-day SEN constraint as a genuine blocker that invalidates the March 31 mandate, treats the board deadline as immovable rather than challenging it, names no distinct personas with role/timing/cost, lists no out-of-scope items with reasons, and frames the hardship fee waiver and SEN timeline as minor edge cases rather than material uncertainties with risk-if-wrong consequences.",
+  "context_injection": false
+}

@@ -1,0 +1,18 @@
+{
+  "case_id": "S12",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0.107,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — response treats the problem as solved and launches directly into a deployment plan, with no problem framing, no personas, no constraints (FMA, CCCFA, independent validation), no assumptions flagged, and no out-of-scope discipline; the response IS the solution.",
+  "context_injection": false
+}

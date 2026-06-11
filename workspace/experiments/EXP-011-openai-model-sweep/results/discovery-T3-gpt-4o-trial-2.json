@@ -1,0 +1,18 @@
+{
+  "case_id": "T3",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.1,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.408,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response identifies key stakeholders including MLRO and compliance officers and anchors the detection lag metric correctly, but fails critically on out-of-scope discipline (no named exclusions with reasons), conflates MVP scope with broad solution exploration (ML engines, Kafka, SMS, training plans), treats the £10k threshold as fixed without noting structuring risk, and omits the FCA regulatory obligation as a hard constraint and audit trail as a compliance requirement rather than a best practice.",
+  "context_injection": false
+}

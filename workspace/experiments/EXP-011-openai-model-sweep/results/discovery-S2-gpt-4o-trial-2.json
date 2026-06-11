@@ -1,0 +1,18 @@
+{
+  "case_id": "S2",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.4,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is almost entirely solution-framed as a generic 10-step implementation plan, lacks named personas with cost context, treats MVP as all-of-the-above, names only one out-of-scope item without reasons, treats regulatory risks (FMA disparity, CCCFA sign-off, Centrix DSA) as confirmed action items rather than genuine uncertainties, and provides no baseline-anchored success metrics.",
+  "context_injection": false
+}

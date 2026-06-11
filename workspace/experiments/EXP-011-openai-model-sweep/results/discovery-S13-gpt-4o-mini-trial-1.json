@@ -1,0 +1,18 @@
+{
+  "case_id": "S13",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.2
+  },
+  "weighted_score": 0.242,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — the response is entirely a solution-delivery feature list with no problem framing, no named personas, no genuine assumptions with risk-if-wrong, no out-of-scope discipline, and critically omits the key regulatory constraints (AUSTRAC, DIA, SWIFT correspondent agreement) that define the actual discovery challenge.",
+  "context_injection": false
+}
