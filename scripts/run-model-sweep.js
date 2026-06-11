@@ -716,6 +716,17 @@ function extractJudgePrompt(evalContent) {
   return match ? match[1].trim() : null;
 }
 
+function extractJudgeRubric(evalContent) {
+  // Returns the full grading-dimensions section (everything before ## Judge prompt) to use
+  // as a cached system prompt on Anthropic judge calls. At ~3000 tokens this exceeds the
+  // 1024-token Anthropic prompt-cache minimum, so the rubric is cached after the first call
+  // and subsequent calls pay the 90%-discounted read rate instead of full input price.
+  const idx = evalContent.indexOf('## Judge prompt');
+  if (idx === -1) return null;
+  const rubric = evalContent.slice(0, idx).trim();
+  return rubric.length >= 500 ? `You are an expert evaluator. Use the following evaluation specification when scoring model responses:\n\n${rubric}` : null;
+}
+
 // ─── Anthropic API call ─────────────────────────────────────────────────────
 
 // ─── Cost tracking ──────────────────────────────────────────────────────────
@@ -983,8 +994,10 @@ async function scoreBatchResults(resultLines, matrix, experimentDir, effectiveJu
         .replace('{CASE_CONTEXT}', judgeContext)
         .replace('{OUTPUT}', runContent);
       await new Promise(r => setTimeout(r, 500));
+      const judgeRubric = extractJudgeRubric(skill.evalContent);
+      const judgeProvider = effectiveProvider === 'copilot' ? 'copilot' : null;
       try {
-        const judgeResult = await callModelWithRetry(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024, undefined, effectiveProvider);
+        const judgeResult = await callModelWithRetry(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024, judgeRubric, judgeProvider);
         totalJudgeInputTokens += judgeResult.inputTokens;
         totalJudgeOutputTokens += judgeResult.outputTokens;
         const jsonMatch = judgeResult.content.match(/\{[\s\S]*\}/);
@@ -1250,11 +1263,13 @@ async function runJudgeOnlyMode(args, evalConfig, experimentDir, effectiveProvid
         .replace('{OUTPUT}', runContent);
 
       await new Promise(r => setTimeout(r, 500));
+      const judgeRubric = extractJudgeRubric(skill.evalContent);
+      const judgeProvider = effectiveProvider === 'copilot' ? 'copilot' : null;
       try {
         const judgeResult = await callModelWithRetry(
           effectiveJudgeModel,
           [{ role: 'user', content: judgePromptFilled }],
-          1024, undefined, effectiveProvider
+          1024, judgeRubric, judgeProvider
         );
         totalJudgeInputTokens += judgeResult.inputTokens;
         totalJudgeOutputTokens += judgeResult.outputTokens;
@@ -1684,8 +1699,10 @@ async function main() {
           .replace('{OUTPUT}', runContent);
 
         await new Promise(r => setTimeout(r, 500));
+        const judgeRubric = extractJudgeRubric(skill.evalContent);
+        const judgeProvider = effectiveProvider === 'copilot' ? 'copilot' : null;
         try {
-          const judgeResult = await callModelWithRetry(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024, undefined, effectiveProvider);
+          const judgeResult = await callModelWithRetry(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024, judgeRubric, judgeProvider);
           totalInputTokens += judgeResult.inputTokens;
           totalOutputTokens += judgeResult.outputTokens;
           // Parse JSON from judge output (strip any surrounding text)
