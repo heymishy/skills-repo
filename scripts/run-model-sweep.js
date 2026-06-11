@@ -380,11 +380,11 @@ const PRICING = {
   'claude-opus-4-7':              { inputPerM: 5.00,  outputPerM: 25.00 },
   'claude-opus-4-6':              { inputPerM: 5.00,  outputPerM: 25.00 },  // claude-opus-4-6 also valid — same pricing as 4-7 (SDK-confirmed 2026-05-12)
   'claude-haiku-4-5':             { inputPerM: 1.00,  outputPerM: 5.00 },
-  // OpenAI — TODO: verify current rates at platform.openai.com/pricing before running
-  'gpt-4o':            { inputPerM: 2.50, outputPerM: 10.00 },   // TODO: verify current rate
-  'gpt-4o-mini':       { inputPerM: 0.15, outputPerM: 0.60 },    // TODO: verify current rate
-  'gpt-4.1':           { inputPerM: 2.00, outputPerM: 8.00 },    // TODO: verify current rate — estimate only
-  'gpt-5-mini':        { inputPerM: 0.15, outputPerM: 0.60 },    // TODO: verify current rate — estimate only
+  // OpenAI — rates per platform.openai.com/pricing (last checked 2026-06-11)
+  'gpt-4o':            { inputPerM: 2.50, outputPerM: 10.00 },   // verified 2026-06-11
+  'gpt-4o-mini':       { inputPerM: 0.15, outputPerM: 0.60 },    // verified 2026-06-11
+  'gpt-4.1':           { inputPerM: 2.00, outputPerM: 8.00 },    // verified 2026-06-11
+  'gpt-5-mini':        { inputPerM: 0.15, outputPerM: 0.60 },    // TODO: verify — estimate based on mini-tier pattern
 };
 
 // ─── CLI argument parsing ───────────────────────────────────────────────────
