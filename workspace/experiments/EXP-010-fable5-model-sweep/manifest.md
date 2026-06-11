@@ -1,4 +1,4 @@
-# EXP-010 — Fable 5 vs Sonnet 4.6 vs Opus 4.6 vs Sonnet 3.7 Model Sweep
+# EXP-010 — Fable 5 vs Sonnet 4.6 vs Opus 4.6 Model Sweep (three-model)
 
 ## Experiment metadata
 
@@ -17,7 +17,7 @@
 | layer | 2 (programmatic) |
 | trigger | new-model-release (Fable 5) |
 | skills_swept | discovery |
-| models_compared | claude-fable-5-20260609, claude-opus-4-6, claude-sonnet-4-6, claude-sonnet-3-7-20250219 |
+| models_compared | claude-fable-5, claude-opus-4-6, claude-sonnet-4-6 |
 | trials_per_cell | 2 |
 | judge_model | claude-sonnet-4-6 |
 | corpus_cases | T1, T2, T3, T4, T5, S2, S3, S4, S5, S7, S8, S9, S10, S11, S12, S13 |
@@ -45,9 +45,9 @@ Fable 5 is expected to outperform Sonnet 4.6 and Sonnet 3.7 on high-difficulty S
 
 | Skill | Corpus cases | Models | Trials |
 |-------|-------------|--------|--------|
-| discovery | T1, T2, T3, T4, T5, S2, S3, S4, S5, S7, S8, S9, S10, S11, S12, S13 | claude-fable-5-20260609, claude-opus-4-6, claude-sonnet-4-6, claude-sonnet-3-7-20250219 | 2 |
+| discovery | T1, T2, T3, T4, T5, S2, S3, S4, S5, S7, S8, S9, S10, S11, S12, S13 | claude-fable-5, claude-opus-4-6, claude-sonnet-4-6 | 2 |
 
-Total cells: 16 cases × 4 models × 2 trials = **128 generation runs + 128 judge calls = 256 API calls**
+Total cells: 16 cases × 3 models × 2 trials = **96 generation runs + 96 judge calls = 192 API calls**
 
 ## Runs log
 
@@ -88,7 +88,9 @@ Total cells: 16 cases × 4 models × 2 trials = **128 generation runs + 128 judg
 ## Deviations from template
 
 - **S6 excluded**: S6 (S6a behavioural clarification trigger, S6b contradiction, S6c scope creep) are behavioural scenarios not scoreable by D1–D7 discovery EVAL.md dimensions. Excluded from --cases flag. Reserved for a future EXP designed around behavioural/clarification metrics.
-- **trials_per_cell = 2**: Template default is 3; reduced to 2 to stay comfortably within $30 cost ceiling given 4-model sweep over 16 cases.
-- **Fable 5 model string unverified**: `ANTHROPIC_API_KEY` was not available in the local environment at sweep setup time; `GET /v1/models` API call could not be executed. Model string `claude-fable-5-20260609` used per task specification default. If batch submission returns a model-not-found error, the Fable 5 rows must be re-run with the corrected model string.
+- **trials_per_cell = 2**: Template default is 3; reduced to 2 to stay comfortably within $30 cost ceiling given 3-model sweep over 16 cases.
+- **Fable 5 model string corrected**: Initial run used `claude-fable-5-20260609` (unverified). Confirmed via `GET /v1/models` on 2026-06-11 that the correct string is `claude-fable-5` (no date suffix). PRICING map updated; Fable 5 generation rows re-run as Phase 2 batch after model string fix.
+- **Sonnet 3.7 removed**: `claude-sonnet-3-7-20250219` and `claude-3-7-sonnet-20250219` are both absent from `GET /v1/models` for this API account. Sonnet 3.7 removed from the experiment entirely. Experiment is a **three-model comparison**: `claude-fable-5`, `claude-opus-4-6`, `claude-sonnet-4-6`.
+- **Judge rate-limit recovery via --judge-only**: Initial batch judging hit org limit (30 000 input tokens/min); 38/64 judge calls returned 429. Fixed by adding `callModelWithRetry` with exponential backoff (retries=5, base=2s) and a 500ms inter-call gap. Re-scored missing results using `--judge-only` flag (Phase 1) without re-generating.
 - **S-series corpus files created**: S2–S5, S7–S13 corpus files did not exist prior to this experiment. Created under `.github/skills/discovery/corpus/` to enable programmatic evaluation. T1–T5 corpus files are unchanged (immutable during sweep). `discoverCorpusCases` regex updated from `T\d+|case-` to `T\d+|S\d+|case-` to discover S-series files.
 - **S-series cases evaluated at /discovery only**: S2–S13 were designed for full CPF pipeline evaluation (discovery → definition → DoR → DoD). This experiment applies D1–D7 judge scoring to the /discovery stage only. CPF propagation across stages is not measured here.

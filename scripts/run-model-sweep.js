@@ -29,6 +29,10 @@
  *   --batch-no-wait           Submit batch and exit, printing batch ID. Do not poll.
  *   --batch-retrieve ID       Retrieve and score a completed batch by ID. Requires --experiment.
  *   --batch-poll-interval N   Polling interval in seconds (default: 60)
+ *   --judge-only              Rescore existing run files without re-generating. Skips batch
+ *                             submission; reads runs/ dir; judges any run with missing or errored
+ *                             score (with exponential backoff); regenerates scorecard.
+ *                             Recovery path for 429 rate-limit failures. Requires --experiment.
  *
  * Environment:
  *   ANTHROPIC_API_KEY      — required for direct Anthropic API calls (claude-* models)
@@ -328,6 +332,23 @@ function callModel(modelId, messages, maxTokens = 4096, systemPrompt, providerOv
   });
 }
 
+async function callModelWithRetry(modelId, messages, maxTokens = 4096, systemPrompt, providerOverride, retries = 5, baseDelayMs = 2000) {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      return await callModel(modelId, messages, maxTokens, systemPrompt, providerOverride);
+    } catch (err) {
+      const is429 = err.message?.includes('429') || err.message?.includes('rate_limit') || err.message?.includes('rate limit');
+      if (is429 && attempt < retries - 1) {
+        const delay = baseDelayMs * Math.pow(2, attempt) + Math.random() * 1000;
+        console.log(`  [judge] Rate limited (attempt ${attempt + 1}/${retries}). Retrying in ${Math.round(delay / 1000)}s...`);
+        await new Promise(r => setTimeout(r, delay));
+      } else {
+        throw err;
+      }
+    }
+  }
+}
+
 // ─── Model routing policy ───────────────────────────────────────────────────
 
 /**
@@ -354,9 +375,8 @@ const MODEL_ROUTING = {
 // Source: api.anthropic.com/pricing + platform.openai.com/pricing
 const PRICING = {
   // Anthropic
-  'claude-fable-5-20260609':      { inputPerM: 10.00, outputPerM: 50.00 },  // Fable 5 — string verified via GET /v1/models (see EXP-010 manifest Deviations if string differs)
+  'claude-fable-5':               { inputPerM: 10.00, outputPerM: 50.00 },  // confirmed via GET /v1/models 2026-06-11
   'claude-sonnet-4-6':            { inputPerM: 3.00,  outputPerM: 15.00 },
-  'claude-sonnet-3-7-20250219':   { inputPerM: 3.00,  outputPerM: 15.00 },
   'claude-opus-4-7':              { inputPerM: 5.00,  outputPerM: 25.00 },
   'claude-opus-4-6':              { inputPerM: 5.00,  outputPerM: 25.00 },  // claude-opus-4-6 also valid — same pricing as 4-7 (SDK-confirmed 2026-05-12)
   'claude-haiku-4-5':             { inputPerM: 1.00,  outputPerM: 5.00 },
@@ -370,7 +390,7 @@ const PRICING = {
 // ─── CLI argument parsing ───────────────────────────────────────────────────
 
 function parseArgs(argv) {
-  const args = { skills: null, models: null, trials: DEFAULT_TRIALS, dryRun: false, listSkills: false, experiment: null, contextFiles: null, pass2: false, cases: null, delay: 0, provider: null, policy: false, routing: false, conversation: null, batch: false, batchNoWait: false, batchRetrieve: null, batchPollInterval: 60 };
+  const args = { skills: null, models: null, trials: DEFAULT_TRIALS, dryRun: false, listSkills: false, experiment: null, contextFiles: null, pass2: false, cases: null, delay: 0, provider: null, policy: false, routing: false, conversation: null, batch: false, batchNoWait: false, batchRetrieve: null, batchPollInterval: 60, judgeOnly: false };
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--dry-run') { args.dryRun = true; continue; }
@@ -391,6 +411,7 @@ function parseArgs(argv) {
     if (arg === '--conversation' && argv[i + 1]) { args.conversation = argv[++i]; continue; }
     if (arg === '--batch-retrieve' && argv[i + 1]) { args.batchRetrieve = argv[++i]; continue; }
     if (arg === '--batch-poll-interval' && argv[i + 1]) { args.batchPollInterval = parseInt(argv[++i], 10); continue; }
+    if (arg === '--judge-only') { args.judgeOnly = true; continue; }
   }
   return args;
 }
@@ -953,8 +974,9 @@ async function scoreBatchResults(resultLines, matrix, experimentDir, effectiveJu
         .replace('{CASE_ID}', caseId)
         .replace('{CASE_CONTEXT}', judgeContext)
         .replace('{OUTPUT}', runContent);
+      await new Promise(r => setTimeout(r, 500));
       try {
-        const judgeResult = await callModel(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024, undefined, effectiveProvider);
+        const judgeResult = await callModelWithRetry(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024, undefined, effectiveProvider);
         totalJudgeInputTokens += judgeResult.inputTokens;
         totalJudgeOutputTokens += judgeResult.outputTokens;
         const jsonMatch = judgeResult.content.match(/\{[\s\S]*\}/);
@@ -1120,6 +1142,154 @@ async function runBatchMode(args, matrix, contextFilesData, evalConfig, experime
   console.log(`Estimated total cost: $${summary.estimatedCostUsd}`);
 }
 
+// ─── Judge-only mode ─────────────────────────────────────────────────────────
+
+/**
+ * Rescore existing run files without re-generating.
+ * Reads all *.md files from {experimentDir}/runs/, checks corresponding result files,
+ * re-judges any run with a missing or errored score, then regenerates the scorecard.
+ */
+async function runJudgeOnlyMode(args, evalConfig, experimentDir, effectiveProvider) {
+  const effectiveJudgeModel = evalConfig.judgeModel || JUDGE_MODEL;
+
+  const runsDir = path.join(experimentDir, 'runs');
+  const resultsDir = safeExperimentsPath(experimentDir, 'results');
+  ensureDir(resultsDir);
+
+  if (!fs.existsSync(runsDir)) {
+    throw new Error(`No runs/ directory at ${runsDir} — nothing to judge`);
+  }
+
+  // Discover skills and corpus cases so we can rebuild judge prompts
+  const allSkills = discoverSkills(null);
+  const skillsByName = {};
+  const casesByKey = {};
+  for (const skill of allSkills) {
+    skillsByName[skill.skillName] = skill;
+    for (const c of discoverCorpusCases(skill.corpusDir)) {
+      casesByKey[`${skill.skillName}__${c.caseId}`] = c;
+    }
+  }
+
+  const runFiles = fs.readdirSync(runsDir).filter(f => f.endsWith('.md')).sort();
+  console.log(`Found ${runFiles.length} run files. Checking for missing or errored judge scores...\n`);
+
+  const allResults = {};
+  let judgeCount = 0, skipCount = 0, errorCount = 0;
+  let totalJudgeInputTokens = 0, totalJudgeOutputTokens = 0;
+
+  for (const runFile of runFiles) {
+    // Parse filename: {skillName}-{caseId}-{modelLabel}-trial-{N}.md
+    const m = runFile.match(/^(.+?)-([TS]\d+|case-[\w-]+)-(.+)-trial-(\d+)\.md$/);
+    if (!m) { console.warn(`  Skipping unparseable filename: ${runFile}`); continue; }
+    const [, skillName, caseId, modelLabel, trialNStr] = m;
+    const trialN = parseInt(trialNStr, 10);
+
+    const cellKey = `${skillName}__${caseId}__${modelLabel}`;
+    if (!allResults[cellKey]) allResults[cellKey] = [];
+
+    const resultFileName = `${skillName}-${caseId}-${modelLabel}-trial-${trialN}.json`;
+    const resultFilePath = path.join(resultsDir, resultFileName);
+
+    // Check whether existing result already has a valid score
+    let existingScore = null;
+    if (fs.existsSync(resultFilePath)) {
+      try {
+        const parsed = JSON.parse(fs.readFileSync(resultFilePath, 'utf8'));
+        if (!parsed.error && typeof parsed.weighted_score === 'number') {
+          existingScore = parsed;
+        }
+      } catch (_) {}
+    }
+
+    if (existingScore !== null) {
+      skipCount++;
+      allResults[cellKey].push({ meta: { skillName, caseId, modelLabel, trial: trialN }, score: existingScore, cost: null });
+      continue;
+    }
+
+    // Needs judging — look up skill and corpus case
+    const skill = skillsByName[skillName];
+    const corpusCase = casesByKey[`${skillName}__${caseId}`];
+    if (!skill || !corpusCase) {
+      console.warn(`  No skill/case found for ${runFile} — skipping`);
+      errorCount++;
+      allResults[cellKey].push({ meta: { skillName, caseId, modelLabel, trial: trialN }, score: null, cost: null });
+      continue;
+    }
+
+    const runContent = fs.readFileSync(path.join(runsDir, runFile), 'utf8');
+    const judgePromptTemplate = extractJudgePrompt(skill.evalContent);
+    const judgeContext = extractJudgeContext(corpusCase.content);
+
+    console.log(`  Judging: ${skillName} × ${caseId} × ${modelLabel} trial ${trialN}`);
+
+    let scoreJson = null;
+    if (judgePromptTemplate) {
+      const judgePromptFilled = judgePromptTemplate
+        .replace('{CASE_ID}', caseId)
+        .replace('{CASE_CONTEXT}', judgeContext)
+        .replace('{OUTPUT}', runContent);
+
+      await new Promise(r => setTimeout(r, 500));
+      try {
+        const judgeResult = await callModelWithRetry(
+          effectiveJudgeModel,
+          [{ role: 'user', content: judgePromptFilled }],
+          1024, undefined, effectiveProvider
+        );
+        totalJudgeInputTokens += judgeResult.inputTokens;
+        totalJudgeOutputTokens += judgeResult.outputTokens;
+        const jsonMatch = judgeResult.content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          scoreJson = JSON.parse(jsonMatch[0]);
+          scoreJson.model_label = modelLabel;
+        } else {
+          console.warn(`    Warning: judge returned no JSON for ${runFile}`);
+        }
+      } catch (err) {
+        console.warn(`    Judge error for ${runFile}: ${err.message}`);
+        errorCount++;
+      }
+    }
+
+    judgeCount++;
+    const resultData = scoreJson || { error: 'judge failed', model_label: modelLabel };
+    fs.writeFileSync(resultFilePath, JSON.stringify(resultData, null, 2), 'utf8');
+    console.log(`    ${path.relative(REPO_ROOT, resultFilePath)}`);
+    if (scoreJson) {
+      const passStr = scoreJson.pass ? 'PASS' : 'FAIL';
+      const compliantStr = scoreJson.compliant === false ? ' [NON-COMPLIANT]' : '';
+      console.log(`    Score: ${scoreJson.weighted_score?.toFixed(3) || 'N/A'} — ${passStr}${compliantStr}`);
+    }
+
+    allResults[cellKey].push({ meta: { skillName, caseId, modelLabel, trial: trialN }, score: scoreJson, cost: null });
+  }
+
+  console.log(`\nJudge-only complete. Re-judged: ${judgeCount}  Already scored (skipped): ${skipCount}  Errors: ${errorCount}`);
+
+  // Regenerate scorecard from all results (scored + newly judged)
+  const scorecard = generateScorecard(args.experiment, [], allResults);
+  const scorecardPath = safeExperimentsPath(experimentDir, 'scorecard.md');
+  fs.writeFileSync(scorecardPath, scorecard, 'utf8');
+  console.log(`\nScorecard: ${path.relative(REPO_ROOT, scorecardPath)}`);
+
+  // Append judge token costs to batch-result-summary.json
+  const judgeCost = estimateCost(effectiveJudgeModel, totalJudgeInputTokens, totalJudgeOutputTokens) || 0;
+  const summaryPath = path.join(experimentDir, 'batch-result-summary.json');
+  if (fs.existsSync(summaryPath)) {
+    try {
+      const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
+      summary.judgeInputTokens = (summary.judgeInputTokens || 0) + totalJudgeInputTokens;
+      summary.judgeOutputTokens = (summary.judgeOutputTokens || 0) + totalJudgeOutputTokens;
+      summary.estimatedCostUsd = parseFloat(((summary.estimatedCostUsd || 0) + judgeCost).toFixed(4));
+      summary.judgeOnlyRescoredAt = new Date().toISOString();
+      fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2), 'utf8');
+      console.log(`Summary updated: ${path.relative(REPO_ROOT, summaryPath)}`);
+    } catch (_) {}
+  }
+}
+
 // ─── Main execution ─────────────────────────────────────────────────────────
 
 async function main() {
@@ -1252,6 +1422,17 @@ async function main() {
   } else if (!['anthropic', 'openai'].includes(effectiveProvider)) {
     console.error(`Error: unknown --provider value '${effectiveProvider}'. Valid values: anthropic, openai, copilot`);
     process.exit(1);
+  }
+
+  // --judge-only mode: rescore existing run files, skip generation entirely
+  if (args.judgeOnly) {
+    if (!args.experiment) {
+      console.error('Error: --experiment EXP-XXX is required with --judge-only');
+      process.exit(1);
+    }
+    const experimentDir = path.join(EXPERIMENTS_DIR, args.experiment);
+    await runJudgeOnlyMode(args, evalConfig, experimentDir, effectiveProvider);
+    return;
   }
 
   // Discover skills
@@ -1478,8 +1659,9 @@ async function main() {
           .replace('{CASE_CONTEXT}', judgeContext)
           .replace('{OUTPUT}', runContent);
 
+        await new Promise(r => setTimeout(r, 500));
         try {
-          const judgeResult = await callModel(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024, undefined, effectiveProvider);
+          const judgeResult = await callModelWithRetry(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024, undefined, effectiveProvider);
           totalInputTokens += judgeResult.inputTokens;
           totalOutputTokens += judgeResult.outputTokens;
           // Parse JSON from judge output (strip any surrounding text)
