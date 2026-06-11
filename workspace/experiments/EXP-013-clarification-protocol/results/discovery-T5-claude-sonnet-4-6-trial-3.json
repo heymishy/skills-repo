@@ -1,0 +1,17 @@
+{
+  "case_id": "T5",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.9,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 1,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 1
+  },
+  "weighted_score": 0.82,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exemplary refusal to produce a feature list; surfaces all five enterprise context questions (data residency, retention, tooling duplication, access control, compliance) and recommends deferral before spec — the main weakness is absence of named personas with role/cost context and only one partially-reasoned out-of-scope item."
+}

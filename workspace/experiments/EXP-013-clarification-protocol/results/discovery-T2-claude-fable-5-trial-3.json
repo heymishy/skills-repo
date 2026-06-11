@@ -1,0 +1,17 @@
+{
+  "case_id": "T2",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.55,
+  "pass": false,
+  "compliant": true,
+  "notes": "Model correctly withholds artefact and asks structured clarifying questions, but partially scores on dimensions because the questions themselves embed generic role names, vague success framing, and no out-of-scope section — though the core clarification-first behaviour is sound and avoids the categorical fail."
+}

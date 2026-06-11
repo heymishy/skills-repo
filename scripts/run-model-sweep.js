@@ -1428,9 +1428,11 @@ async function main() {
   const effectiveJudgeModel = evalConfig.judgeModel || JUDGE_MODEL;
   const evalOutputPath = evalConfig.outputPath;
 
+  // Always log the active judge model — non-default configurations (e.g. EXP-014 Fable 5 judge) are
+  // otherwise invisible and can silently invalidate other experiments if context.yml isn't restored.
+  console.log(`[sweep] judge model: ${effectiveJudgeModel}`);
   if (evalConfig.mode) {
     console.log(`[eval] evaluation.mode: true — non-interactive mode active`);
-    console.log(`[eval] judge model: ${effectiveJudgeModel}`);
     console.log(`[eval] output path: ${evalOutputPath}`);
   }
 

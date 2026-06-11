@@ -1,0 +1,17 @@
+{
+  "case_id": "T2",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.568,
+  "pass": false,
+  "compliant": true,
+  "notes": "Model correctly refuses to fabricate a discovery artefact and asks multiple specific clarifying questions before proceeding, but the response itself contains no completed artefact sections — D3/D4/D5/D6/D7 scores reflect the skeletal/absent state of those dimensions rather than fabrication, resulting in a low weighted score despite correct process behaviour."
+}
