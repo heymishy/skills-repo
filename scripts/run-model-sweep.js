@@ -380,11 +380,19 @@ const PRICING = {
   'claude-opus-4-7':              { inputPerM: 5.00,  outputPerM: 25.00 },
   'claude-opus-4-6':              { inputPerM: 5.00,  outputPerM: 25.00 },  // claude-opus-4-6 also valid — same pricing as 4-7 (SDK-confirmed 2026-05-12)
   'claude-haiku-4-5':             { inputPerM: 1.00,  outputPerM: 5.00 },
-  // OpenAI — rates per platform.openai.com/pricing (last checked 2026-06-11)
-  'gpt-4o':            { inputPerM: 2.50, outputPerM: 10.00 },   // verified 2026-06-11
-  'gpt-4o-mini':       { inputPerM: 0.15, outputPerM: 0.60 },    // verified 2026-06-11
-  'gpt-4.1':           { inputPerM: 2.00, outputPerM: 8.00 },    // verified 2026-06-11
-  'gpt-5-mini':        { inputPerM: 0.15, outputPerM: 0.60 },    // TODO: verify — estimate based on mini-tier pattern
+  // OpenAI 4.x — rates per platform.openai.com/pricing (verified 2026-06-11)
+  'gpt-4o':            { inputPerM: 2.50,  outputPerM: 10.00 },
+  'gpt-4o-mini':       { inputPerM: 0.15,  outputPerM: 0.60 },
+  'gpt-4.1':           { inputPerM: 2.00,  outputPerM: 8.00 },
+  // OpenAI 5.x — rates per platform.openai.com/pricing + pricepertoken.com (verified 2026-06-11)
+  'gpt-5':             { inputPerM: 5.00,  outputPerM: 30.00 },  // standard (uncached) rate — "starts at" cached $0.625/$5.00 reflects 8× cache discount
+  'gpt-5-mini':        { inputPerM: 0.125, outputPerM: 1.00 },   // released 2025-08-07
+  'gpt-5.2':           { inputPerM: 1.75,  outputPerM: 14.00 },  // previous frontier (superseded by 5.4)
+  'gpt-5.4':           { inputPerM: 2.50,  outputPerM: 15.00 },  // released 2026-03-05; 1.1M context
+  'gpt-5.4-mini':      { inputPerM: 0.75,  outputPerM: 4.50 },   // released 2026-03-17
+  'gpt-5.4-nano':      { inputPerM: 0.20,  outputPerM: 1.25 },   // released 2026-03-17; smallest 5.4 tier
+  'gpt-5.4-pro':       { inputPerM: 30.00, outputPerM: 180.00 }, // extended-thinking tier — not for sweeps
+  'gpt-5.5':           { inputPerM: 5.00,  outputPerM: 30.00 },  // current flagship (2026); same price tier as gpt-5
 };
 
 // ─── CLI argument parsing ───────────────────────────────────────────────────
@@ -1411,13 +1419,19 @@ async function main() {
 
   // Pre-flight: need at least one usable credential
   const apiKey = process.env.ANTHROPIC_API_KEY;
+  const openaiKey = process.env.OPENAI_API_KEY;
   const githubToken = process.env.GITHUB_TOKEN || process.env.GITHUB_COPILOT_TOKEN;
-  if (!apiKey && !githubToken && !args.dryRun) {
+  if (!apiKey && !openaiKey && !githubToken && !args.dryRun) {
     console.error('Error: no API credentials found.');
     console.error('  Direct API:     set ANTHROPIC_API_KEY (claude-* models) or OPENAI_API_KEY (gpt-* models)');
     console.error('  Copilot proxy:  set GITHUB_TOKEN or GITHUB_COPILOT_TOKEN (and use --provider copilot)');
     console.error('  Dry run:        use --dry-run');
     process.exit(1);
+  }
+  // Warn early if judge needs Anthropic but ANTHROPIC_API_KEY is absent
+  if (!apiKey && !githubToken && effectiveJudgeModel.startsWith('claude-') && !args.dryRun) {
+    console.warn(`Warning: ANTHROPIC_API_KEY not set but judge model is ${effectiveJudgeModel} — judge calls will fail at runtime.`);
+    console.warn('  Set ANTHROPIC_API_KEY to enable judging, or override judge_model in context.yml to a gpt-* model.');
   }
 
   // Provider resolution: explicit flag > auto-detect from env vars > model-prefix routing
