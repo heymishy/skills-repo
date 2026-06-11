@@ -237,7 +237,9 @@ function getProvider(modelId, providerOverride) {
         const allMessages = systemPrompt
           ? [{ role: 'system', content: systemPrompt }, ...messages]
           : messages;
-        return JSON.stringify({ model, max_tokens: maxTokens, messages: allMessages });
+        // gpt-5.x and o-series models require max_completion_tokens; older models use max_tokens
+        const tokenKey = /^(o[0-9]|gpt-5)/.test(model) ? 'max_completion_tokens' : 'max_tokens';
+        return JSON.stringify({ model, [tokenKey]: maxTokens, messages: allMessages });
       },
       parseResponse(parsed) {
         const content = parsed.choices?.[0]?.message?.content || '';
