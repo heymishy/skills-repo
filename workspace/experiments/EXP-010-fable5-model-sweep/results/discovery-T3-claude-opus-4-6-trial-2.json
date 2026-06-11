@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-opus-4-6"
+  "case_id": "T3",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 1,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.9,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 0.9
+  },
+  "weighted_score": 0.897,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong on assumption quality (structuring risk explicitly flagged), success observability (18+ hours → <15 minutes anchored), and constraint completeness (FCA obligation, audit trail, false positive rate all present); slightly penalised on persona specificity (MLRO named but without explicit POCA 2002/MLR 2017 obligation framing) and out-of-scope discipline (SAR filing automation and upstream screening changes noted implicitly but not listed as explicit named exclusions with reasons)."
 }

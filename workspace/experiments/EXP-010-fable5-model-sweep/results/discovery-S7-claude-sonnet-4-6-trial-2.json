@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "S7",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.85,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.6,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.791,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong out-of-scope discipline and MVP bounding with explicit deferrals; however, assumption quality is weakened by treating the data retention gap (a genuine Privacy Act 2020 risk-if-wrong uncertainty) as a minor low-impact risk rather than a flagged unresolved constraint, and success indicators lack baseline anchors beyond the 8,000/year capacity figure."
 }

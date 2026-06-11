@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "S2",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.82,
+    "d4_out_of_scope_discipline": 0.85,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.9
+  },
+  "weighted_score": 0.766,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptional constraint handling and assumption quality — especially the FMA disparity escalation — but personas are entirely absent as named entities with role/cost context, and success observability lacks a baseline anchor for decision turnaround time despite the corpus expecting a 3–5 day baseline vs same-day target."
 }

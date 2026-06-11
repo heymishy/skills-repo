@@ -1,0 +1,17 @@
+{
+  "case_id": "S3",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.9,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.9,
+    "d4_out_of_scope_discipline": 0.85,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.6,
+    "d7_constraint_completeness": 0.9
+  },
+  "weighted_score": 0.838,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally thorough discovery artefact with strong constraint sourcing, real assumption uncertainties with risk-if-wrong, and disciplined MVP bounding with explicit outbound deferral; minor deductions for persona section lacking cost-per-role specificity and success indicators being directional but not fully anchored to baselines."
+}

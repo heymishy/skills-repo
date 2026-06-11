@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-opus-4-6"
+  "case_id": "S2",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.9,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.85,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.85
+  },
+  "weighted_score": 0.812,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong on blocker identification, assumption quality, and constraint completeness — particularly the escalation of the undisclosed FMA bias finding as a go-live blocker — but loses points on persona specificity (no named personas with costs attached) and out-of-scope discipline (explicit deferral list with reasons is thin despite the phased delivery proposal)."
 }

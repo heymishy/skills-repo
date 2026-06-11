@@ -1,0 +1,17 @@
+{
+  "case_id": "S9",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.5,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.5
+  },
+  "weighted_score": 0.587,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong assumption-challenging and conduct-risk analysis, but the response is solution-framed in structure (it reads as a pre-build risk audit rather than a discovery problem framing), lacks named personas with role/cost context, does not surface the FMA Significant Event Notice as a named statutory constraint (C2) or the KiwiSaver Act s.45 breach risk (C1) with precision, omits the hardship fee-waiver obligation as a named assumption, and provides no anchored success metrics baseline vs. target."
+}

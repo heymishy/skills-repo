@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-opus-4-6"
+  "case_id": "S10",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.549,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is technically thorough and surfaces real risks, but it never frames the RBNZ BS11 notification status as a blocking assumption, fails to name the required personas with role/cost context (RBNZ relationship team, CTO/CRO, retail lending ops are absent or unnamed), produces no explicit MVP boundary with named deferrals, and lacks anchored success indicators — reading more like an engineering risk review than a discovery artefact."
 }

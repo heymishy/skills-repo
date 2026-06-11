@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-opus-4-6"
+  "case_id": "S5",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.85,
+    "d3_mvp_bounding": 0.62,
+    "d4_out_of_scope_discipline": 0.55,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.75,
+    "d7_constraint_completeness": 0.85
+  },
+  "weighted_score": 0.7707,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong on assumption quality and constraint coverage, but the MVP bounding is weakened by the absence of an explicit exclusions list (no section naming deferred items like automated updates, vulnerability-status suggestions, or full 280-agent rollout as out-of-scope), and out-of-scope discipline lacks a dedicated enumeration with stated reasons."
 }

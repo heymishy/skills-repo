@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "T1",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.8,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.8,
+    "d7_constraint_completeness": 0.9
+  },
+  "weighted_score": 0.737,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong on assumption quality and constraint completeness (network retry rules, idempotency, PCI framing), but personas are generic — payment ops, merchants, and finance are referenced only implicitly without named roles, timing, or quantified cost, and the problem framing leans toward interrogating the solution rather than anchoring the gap and affected parties first."
 }

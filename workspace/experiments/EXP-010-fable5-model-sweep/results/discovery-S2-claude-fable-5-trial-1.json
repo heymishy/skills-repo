@@ -1,0 +1,17 @@
+{
+  "case_id": "S2",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.92,
+    "d4_out_of_scope_discipline": 0.85,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.85,
+    "d7_constraint_completeness": 0.9
+  },
+  "weighted_score": 0.856,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong constraint identification and blocker framing — particularly the escalation-independent treatment of the FMA disparity finding — with the main gap being personas lacking explicit cost/timing context for credit analysts and compliance roles."
+}

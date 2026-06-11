@@ -1,0 +1,17 @@
+{
+  "case_id": "T4",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.5,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.5
+  },
+  "weighted_score": 0.5535,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong process compliance — correctly refuses to produce an artefact and asks multiple targeted clarifying questions — but drifts into partial solution-mode by listing probable root causes and instrumentation recommendations, and entirely lacks any persona specificity."
+}

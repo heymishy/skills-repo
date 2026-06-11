@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-opus-4-6"
+  "case_id": "S12",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.1,
+    "d5_assumption_quality": 0.5,
+    "d6_success_observability": 0.5,
+    "d7_constraint_completeness": 0.2
+  },
+  "weighted_score": 0.369,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response largely accepts the operator's framing and treats this as a well-scoped execution problem, failing to surface the critical regulatory constraints (FMA prescribed fairness methodology, CCCFA obligations, 2023 MRM independent validation requirement) or challenge the 12-week timeline, resulting in a solution-framing bias, absent personas with regulatory stakes, no out-of-scope discipline, and materially incomplete constraint identification."
 }

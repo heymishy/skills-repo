@@ -1,0 +1,17 @@
+{
+  "case_id": "S7",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.95,
+    "d2_persona_specificity": 0.75,
+    "d3_mvp_bounding": 0.88,
+    "d4_out_of_scope_discipline": 0.92,
+    "d5_assumption_quality": 0.8,
+    "d6_success_observability": 0.45,
+    "d7_constraint_completeness": 0.75
+  },
+  "weighted_score": 0.84,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong problem framing, well-bounded MVP with explicit deferrals, and good out-of-scope discipline; main weaknesses are success indicators lacking baseline anchors (no 'zero manual emails' or '8,000 registrations/year' capacity target stated as measurable outcomes) and persona cost/timing context is partial rather than fully quantified."
+}

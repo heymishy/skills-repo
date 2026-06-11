@@ -1,0 +1,17 @@
+{
+  "case_id": "S11",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.641,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong analytical depth on enriched insights risk and deletion enforcement gaps, but personas are generic role-types without named actors, costs, or timing context, and success indicators lack measurable baselines or targets despite the corpus expecting defined metrics like zero consent incidents and 10 partners onboarded."
+}

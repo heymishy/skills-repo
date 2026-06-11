@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-opus-4-6"
+  "case_id": "S8",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.55,
+    "d3_mvp_bounding": 0.65,
+    "d4_out_of_scope_discipline": 0.55,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.75
+  },
+  "weighted_score": 0.71,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong problem framing and assumption quality with genuine uncertainties and risks flagged, but personas lack named role context and cost specificity, MVP scope is partially bounded without explicit deferral statements, and out-of-scope items (notably auto-submission and normalisation without governance) are addressed only implicitly rather than as named exclusions with reasons."
 }

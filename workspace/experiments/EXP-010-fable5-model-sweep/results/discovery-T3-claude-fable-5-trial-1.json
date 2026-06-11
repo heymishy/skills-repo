@@ -1,0 +1,17 @@
+{
+  "case_id": "T3",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.55,
+    "d3_mvp_bounding": 0.75,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.9,
+    "d6_success_observability": 0.9,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.737,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong on assumption quality and constraint surfacing (structuring risk, audit trail, pipeline failure), but loses points on persona specificity (MLRO mentioned but without role cost/timing detail) and out-of-scope discipline (SAR filing automation, upstream threshold changes, and upstream screening are never explicitly named and deferred with reasons)."
+}

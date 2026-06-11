@@ -1,0 +1,17 @@
+{
+  "case_id": "S13",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.3,
+    "d3_mvp_bounding": 0.6,
+    "d4_out_of_scope_discipline": 0.3,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.5
+  },
+  "weighted_score": 0.566,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong assumption quality and regulatory analysis (especially AML/CFT mechanics and structuring risk) but critically fails on persona specificity (no named stakeholders like RBNZ, AUSTRAC, DIA, or JPMorgan Chase correspondent RM), omits the hidden C5 SWIFT correspondent bank agreement constraint entirely, lacks explicit out-of-scope deferrals with reasons, and success indicators are vague and unanchored."
+}

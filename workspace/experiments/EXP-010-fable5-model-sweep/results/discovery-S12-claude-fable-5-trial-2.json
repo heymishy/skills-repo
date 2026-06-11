@@ -1,0 +1,17 @@
+{
+  "case_id": "S12",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.55,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.75,
+    "d6_success_observability": 0.55,
+    "d7_constraint_completeness": 0.55
+  },
+  "weighted_score": 0.627,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response identifies multiple genuine risks and frames the problem well as more than a deployment exercise, but critically misses the NZ-specific regulatory context (FMA prescribed fairness methodology, CCCFA, MRM 2023 independent validation requirement), names no specific personas with role/cost context, provides no bounded MVP with explicit deferrals, and conflates generic jurisdictional risk (GDPR, EU AI Act, ECOA) with the actual constraint set — weakening precision across constraint, persona, and MVP dimensions."
+}

@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-opus-4-6"
+  "case_id": "T5",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — the Jobs-to-Be-Done table explicitly enumerates features (capture notes, search, immutable records, action item tracking) and the success metrics table contains feature descriptions, triggering the categorical D3=0.0 fail regardless of the strong enterprise framing elsewhere."
 }

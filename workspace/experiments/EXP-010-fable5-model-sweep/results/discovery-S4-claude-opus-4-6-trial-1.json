@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-opus-4-6"
+  "case_id": "S4",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.55,
+    "d3_mvp_bounding": 0.45,
+    "d4_out_of_scope_discipline": 0.3,
+    "d5_assumption_quality": 0.75,
+    "d6_success_observability": 0.3,
+    "d7_constraint_completeness": 0.75
+  },
+  "weighted_score": 0.61,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong problem framing and assumption/risk quality, but the response fails to bound an MVP with explicit deferrals, has no named out-of-scope items with reasons, lacks measurable success indicators with baseline anchors, and personas are generic role labels rather than named actors with timing and cost context."
 }

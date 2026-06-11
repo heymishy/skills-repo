@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "S11",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.85,
+    "d4_out_of_scope_discipline": 0.85,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.8
+  },
+  "weighted_score": 0.776,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong problem framing, risk identification, and constraint coverage with explicit enriched-insights deferral, but personas are described by role category rather than named with timing/cost context, and success indicators lack anchored measurable targets (e.g., no explicit '10 accredited partners' or '90-day zero incidents' framing)."
 }

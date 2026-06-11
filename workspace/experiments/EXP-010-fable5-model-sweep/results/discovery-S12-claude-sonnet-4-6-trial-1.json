@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "S12",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.55,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.576,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response surfaces genuine risks around fairness methodology adequacy and regulatory position, but fails to name key personas (MRM team, FMA, external validator, head of retail credit) with role-specific costs, does not flag the critical 2023 MRM policy independent validation requirement as a named assumption with risk-if-wrong, conflates SR 11-7 (US) with the FMA/CCCFA NZ regulatory context, provides only one explicit out-of-scope item (retraining/offline evaluation) without reasons for deferral, and lacks anchored success indicators tied to FMA prescribed fairness methodology absolute thresholds."
 }

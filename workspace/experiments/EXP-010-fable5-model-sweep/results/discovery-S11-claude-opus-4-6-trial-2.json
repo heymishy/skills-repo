@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-opus-4-6"
+  "case_id": "S11",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.2,
+    "d4_out_of_scope_discipline": 0.1,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.358,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is largely solution-framed (describing what will be built rather than the compliance gap and its costs), includes no named personas with role/timing/cost, critically fails MVP bounding by including enriched insights at launch without deferral despite this being the core compliance risk the corpus expects to be explicitly deferred, has no out-of-scope section with reasoned deferrals, and provides no success indicators — though assumption quality is reasonably strong with genuine uncertainties and risk-if-wrong framing."
 }

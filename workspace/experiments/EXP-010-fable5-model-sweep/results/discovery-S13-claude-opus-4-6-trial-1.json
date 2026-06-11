@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-opus-4-6"
+  "case_id": "S13",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.5,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.5
+  },
+  "weighted_score": 0.572,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong analytical depth on FX risk and AML/CFT gaps, but the response fails to frame the core problem correctly (missing the SWIFT correspondent bank agreement as the central constraint, C5), personas are generic roles rather than named stakeholders with specific obligations (RBNZ compliance team, AUSTRAC, DIA, JPMorgan Chase RM are absent), MVP bounding is weak with no explicit deferral of out-of-scope items, and the constraint inventory omits the critical correspondent bank notification obligation entirely."
 }

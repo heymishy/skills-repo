@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "T1",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.85,
+    "d4_out_of_scope_discipline": 0.85,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.9
+  },
+  "weighted_score": 0.7595,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong on assumption quality and constraint completeness (idempotency, scheme rules, PCI-adjacent concerns all explicitly named with risk-if-wrong), but loses ground on persona specificity — payment ops engineer, merchant, and finance team are implied through context but never named or given explicit cost/timing anchors, and D1 is partially solution-framed given the title and structure lean toward 'automated retry mechanism' rather than leading with triage cost and merchant uncertainty as the core problem."
 }

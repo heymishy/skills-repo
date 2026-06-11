@@ -1,0 +1,17 @@
+{
+  "case_id": "T5",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.75,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.4845,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — Section 3 question 8 explicitly describes 'capture (writing notes)' vs 'retrieval (finding decisions)' as candidate product scopes and calls a 'decision log' a bounded product, constituting a feature/scope description that triggers the categorical T5 fail condition despite strong enterprise constraint framing elsewhere."
+}

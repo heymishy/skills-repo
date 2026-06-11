@@ -1,0 +1,17 @@
+{
+  "case_id": "S5",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.9,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.9,
+    "d7_constraint_completeness": 0.9
+  },
+  "weighted_score": 0.809,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong assumption quality and constraint coverage with well-anchored success metrics; minor gaps in persona specificity (personas named by role but lack individual cost/timing detail) and MVP bounding (explicit deferral list is implied across risk/gap sections rather than consolidated as a named out-of-scope section)."
+}

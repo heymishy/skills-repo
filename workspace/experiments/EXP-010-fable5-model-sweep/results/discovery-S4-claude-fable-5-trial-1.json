@@ -1,0 +1,17 @@
+{
+  "case_id": "S4",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.65,
+    "d4_out_of_scope_discipline": 0.85,
+    "d5_assumption_quality": 0.6,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.8
+  },
+  "weighted_score": 0.738,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong constraint and out-of-scope discipline with good problem framing around the forced migration deadline, but MVP scope is somewhat over-broad (five capability domains including spend categories and dispute initiation vs. the corpus-expected three-domain bounded MVP with explicit deferrals), and assumptions lack explicit risk-if-wrong articulation and miss key corpus flags such as Redis PCI at-rest encryption unconfirmed and QSA capacity windows."
+}

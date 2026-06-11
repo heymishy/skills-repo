@@ -1,0 +1,17 @@
+{
+  "case_id": "T4",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.5,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.358,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — the model correctly refuses to fabricate a solution and asks good clarifying questions, but then produces a full discovery artefact (hypothesis tree, artifact checklist, root-cause taxonomy) without first receiving any answers, which constitutes a categorical fail for T4."
+}

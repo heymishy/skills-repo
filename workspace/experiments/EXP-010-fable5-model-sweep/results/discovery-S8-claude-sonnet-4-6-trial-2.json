@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "S8",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.9,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.75,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.9,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.8
+  },
+  "weighted_score": 0.728,
+  "pass": true,
+  "compliant": true,
+  "notes": "Excellent problem framing and assumption quality with strong constraint coverage, but personas are generic role-types rather than named individuals with timing and cost context, and success indicators lack the baseline anchor (6–8 days/cycle, 1 missed deadline/quarter) and explicit numeric targets needed for full observability."
 }

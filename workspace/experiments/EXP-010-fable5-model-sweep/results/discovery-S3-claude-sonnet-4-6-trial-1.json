@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "S3",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.95,
+    "d2_persona_specificity": 0.55,
+    "d3_mvp_bounding": 0.9,
+    "d4_out_of_scope_discipline": 0.85,
+    "d5_assumption_quality": 0.95,
+    "d6_success_observability": 0.65,
+    "d7_constraint_completeness": 0.9
+  },
+  "weighted_score": 0.83,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong on problem framing, assumption quality, and constraint completeness, but personas are implied through spike ownership labels rather than explicitly named with role+timing+cost context, which limits D2; success indicators are directional but lack explicit baseline anchors."
 }

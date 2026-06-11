@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-opus-4-6"
+  "case_id": "S8",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.55,
+    "d3_mvp_bounding": 0.65,
+    "d4_out_of_scope_discipline": 0.75,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.45,
+    "d7_constraint_completeness": 0.6
+  },
+  "weighted_score": 0.71,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong assumption quality and risk register with genuine uncertainties and risk-if-wrong articulation, but persona specificity lacks cost anchoring and named individuals, MVP scope is partially unbounded (normalisation layer encoded without flagging governance prerequisite as a blocker), success indicators omit the baseline anchor of 6–8 days and missed deadline frequency, and regulatory constraints C1–C4 are addressed implicitly rather than explicitly sourced."
 }

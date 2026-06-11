@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "S4",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.92,
+    "d2_persona_specificity": 0.55,
+    "d3_mvp_bounding": 0.62,
+    "d4_out_of_scope_discipline": 0.85,
+    "d5_assumption_quality": 0.88,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.82
+  },
+  "weighted_score": 0.74,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong problem framing, assumption quality, and constraint coverage, but persona specificity lacks named individuals with cost/timing context (e.g., QSA, PCI DSS compliance officer are absent as distinct personas), MVP scope is larger than the corpus anchor's bounded set with no explicit deferral of Redis caching or QSA window planning, and success indicators are directional but lack baseline anchors or quantified targets."
 }

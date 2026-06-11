@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-opus-4-6"
+  "case_id": "T5",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.2,
+    "d5_assumption_quality": 0.75,
+    "d6_success_observability": 0.1,
+    "d7_constraint_completeness": 0.65
+  },
+  "weighted_score": 0.57,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong problem-framing and hypothesis-driven discovery with no feature list, but fails on out-of-scope discipline, success observability, and persona specificity, dragging the weighted score below threshold."
 }

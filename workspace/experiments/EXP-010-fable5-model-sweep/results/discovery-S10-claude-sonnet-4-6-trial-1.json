@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "S10",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.75,
+    "d4_out_of_scope_discipline": 0.85,
+    "d5_assumption_quality": 0.75,
+    "d6_success_observability": 0.5,
+    "d7_constraint_completeness": 0.65
+  },
+  "weighted_score": 0.726,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong problem framing, scope discipline, and out-of-scope reasoning, but personas are largely generic role-types without named individuals, cost dimensions, or timing context, and RBNZ BS11 notification is treated as an open question rather than a hard named constraint, slightly weakening constraint completeness and assumption specificity."
 }

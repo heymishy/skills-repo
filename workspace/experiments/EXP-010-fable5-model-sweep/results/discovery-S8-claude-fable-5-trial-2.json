@@ -1,0 +1,17 @@
+{
+  "case_id": "S8",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 1,
+    "d2_persona_specificity": 0.85,
+    "d3_mvp_bounding": 0.85,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 0.9
+  },
+  "weighted_score": 0.926,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptional breadth and depth across all dimensions — problem is framed as operational and regulatory risk rather than a build task, personas are named with role context (though cost-per-persona is implicit rather than explicit), MVP is well-bounded with explicit deferrals, out-of-scope items carry substantive reasons, assumptions surface genuine uncertainties with risk-if-wrong framing (especially R1 on normalisation governance), success metrics are anchored with baseline and targets, and hard constraints (RBNZ deadline, audit trail, human sign-off, normalisation disclosure) are all present and sourced."
+}

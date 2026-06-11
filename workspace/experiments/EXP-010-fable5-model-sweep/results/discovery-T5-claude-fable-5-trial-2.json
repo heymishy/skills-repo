@@ -1,0 +1,17 @@
+{
+  "case_id": "T5",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.8,
+    "d6_success_observability": 0.2,
+    "d7_constraint_completeness": 0.75
+  },
+  "weighted_score": 0.648,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong enterprise constraint surfacing (data residency, retention, tooling duplication, compliance) and correct build-vs-buy reframe, but no feature list appears; however, the response stops short of recommending /clarify explicitly, lacks anchored success metrics, omits named personas with cost context, and does not enumerate out-of-scope items with reasons — dragging the weighted score below threshold."
+}

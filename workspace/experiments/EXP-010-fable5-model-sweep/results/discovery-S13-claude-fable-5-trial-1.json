@@ -1,0 +1,17 @@
+{
+  "case_id": "S13",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.5,
+    "d4_out_of_scope_discipline": 0.1,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.5
+  },
+  "weighted_score": 0.52,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong assumption challenge quality (RBNZ/FIU distinction, AUSTRAC gap, SLA screening conflict) but the response is truncated, lacks any out-of-scope discipline section, omits the critical SWIFT correspondent bank agreement constraint (C5), and fails to enumerate named personas beyond generic references."
+}

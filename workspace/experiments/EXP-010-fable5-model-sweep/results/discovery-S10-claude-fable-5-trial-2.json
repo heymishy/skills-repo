@@ -1,0 +1,17 @@
+{
+  "case_id": "S10",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.2,
+    "d5_assumption_quality": 0.75,
+    "d6_success_observability": 0.55,
+    "d7_constraint_completeness": 0.55
+  },
+  "weighted_score": 0.5595,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong problem framing and risk identification, but the response lacks explicit MVP bounding with named deferrals, has no named personas with cost/timing context (only role categories implied), omits explicit out-of-scope items with reasons, and critically undersells the RBNZ BS11 30-business-day notification constraint and parallel operation sign-off as hard regulatory blockers."
+}

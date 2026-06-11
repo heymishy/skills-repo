@@ -1,0 +1,17 @@
+{
+  "case_id": "S3",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 1,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 1,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.9,
+    "d7_constraint_completeness": 1
+  },
+  "weighted_score": 0.922,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptional framing of the problem as a mandatory compliance deadline with penalty exposure and a latency budget crisis; persona enumeration is functional and contextually accurate but lacks named individuals and explicit cost attribution per role, slightly limiting D2."
+}

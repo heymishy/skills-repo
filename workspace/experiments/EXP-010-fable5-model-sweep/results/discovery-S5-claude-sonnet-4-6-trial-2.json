@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "S5",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.55,
+    "d3_mvp_bounding": 0.75,
+    "d4_out_of_scope_discipline": 0.8,
+    "d5_assumption_quality": 0.8,
+    "d6_success_observability": 0.9,
+    "d7_constraint_completeness": 0.85
+  },
+  "weighted_score": 0.789,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong constraint identification, assumption quality, and success metrics anchored to the 340 incident baseline, but persona specificity is a notable gap — roles like privacy team, contact centre manager, and vulnerable customers are mentioned functionally but never named as distinct personas with role-timing-cost framing, and the MVP scope, while largely correct, lacks an explicit deferral statement ruling out rollout to all 280 agents before pilot confirmation."
 }

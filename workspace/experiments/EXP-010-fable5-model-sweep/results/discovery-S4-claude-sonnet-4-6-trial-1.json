@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "S4",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.55,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.636,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong problem framing and assumption quality with genuine uncertainties and risks-if-wrong, but the response lacks named personas with role/cost context, fails to bound an explicit MVP with named deferrals, and does not surface measurable success indicators anchored to baselines."
 }

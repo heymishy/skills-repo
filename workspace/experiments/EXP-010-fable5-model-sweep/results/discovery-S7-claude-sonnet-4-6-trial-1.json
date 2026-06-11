@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "S7",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.95,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.95,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.75,
+    "d6_success_observability": 0.5,
+    "d7_constraint_completeness": 0.75
+  },
+  "weighted_score": 0.857,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong MVP bounding with explicit deferrals and well-reasoned out-of-scope items; main weakness is success observability lacks a baseline anchor for the zero-manual-emails metric, and the data retention assumption is flagged as an open question rather than being elevated as a specific risk-if-wrong uncertainty tied to Privacy Act 2020 obligations."
 }

@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-opus-4-6"
+  "case_id": "S13",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.2,
+    "d3_mvp_bounding": 0.5,
+    "d4_out_of_scope_discipline": 0.2,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.497,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response surfaces genuine regulatory risks and assumption gaps (especially AUSTRAC dual-jurisdiction and structuring controls) with good depth, but critically omits named personas (RBNZ compliance team, DIA, JPMorgan Chase correspondent RM, AU treasury counterpart), never identifies the SWIFT correspondent bank agreement breach risk (C5) as a hard constraint, has no explicit out-of-scope deferrals with reasons, and frames much of the output as solution design critique rather than a bounded discovery artefact."
 }

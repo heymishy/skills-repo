@@ -1,0 +1,17 @@
+{
+  "case_id": "S12",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.537,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response demonstrates strong analytical depth on fairness and timeline risks but critically misses the NZ-specific regulatory framing (FMA prescribed methodology, CCCFA, MRM 2023 policy with independent validation requirement), lacks named personas with role/cost specificity, does not bound an MVP with explicit deferrals, and cites generic/international constraints (SR 11-7, EU AI Act, ECOA) rather than the applicable FMA/CCCFA/MRM governance constraints central to the corpus case."
+}

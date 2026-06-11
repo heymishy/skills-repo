@@ -1,0 +1,17 @@
+{
+  "case_id": "S10",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.6,
+    "d3_mvp_bounding": 0.55,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.6,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.6
+  },
+  "weighted_score": 0.634,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is technically thorough and well-structured but critically misses the BS11 30-business-day advance notification constraint as a hard blocker, under-flags the RBNZ notification status as an unknown assumption with project-stopping risk, conflates solution execution with problem framing in several sections, and includes new loan originations on the new platform as in-scope (which the corpus explicitly excludes from MVP), weakening both problem framing and MVP bounding."
+}

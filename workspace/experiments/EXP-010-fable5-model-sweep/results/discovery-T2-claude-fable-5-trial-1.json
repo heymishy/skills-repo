@@ -1,0 +1,17 @@
+{
+  "case_id": "T2",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.85,
+    "d4_out_of_scope_discipline": 0.2,
+    "d5_assumption_quality": 0.75,
+    "d6_success_observability": 0.55,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.636,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong clarifying question structure that correctly refuses to bound scope before evidence is gathered, but loses points on persona specificity (no named personas), out-of-scope discipline (no named deferred items with reasons), and only partially anchored success metrics — the response asks good questions but does not itself provide the discipline artefacts the rubric requires."
+}

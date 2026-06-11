@@ -1,0 +1,17 @@
+{
+  "case_id": "S9",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.75,
+    "d2_persona_specificity": 0.35,
+    "d3_mvp_bounding": 0.55,
+    "d4_out_of_scope_discipline": 0.65,
+    "d5_assumption_quality": 0.8,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.6
+  },
+  "weighted_score": 0.609,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong assumption-surfacing and regulatory risk analysis (especially FMA SEN and fee disclosure), but critically fails to name or characterise the key personas (ops team, compliance officer, board), lacks a bounded MVP with explicit deferrals, omits the statutory s.45 switch processing timeline breach as a named constraint, and provides no anchored success metrics with baseline/target pairing."
+}

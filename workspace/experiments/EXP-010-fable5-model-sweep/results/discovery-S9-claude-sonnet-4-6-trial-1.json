@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "S9",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.55,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.55,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.648,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong assumption surfacing and regulatory risk identification, but personas are generic roles without named individuals or cost-of-delay framing, MVP scope is described as a 'standard pattern' without explicit deferral of named out-of-scope items, and the FMA SEN is correctly flagged as a 30-day pre-notification constraint but never named as a Significant Event Notice nor is the s.45 statutory processing breach risk named precisely, weakening constraint completeness and MVP bounding scores."
 }

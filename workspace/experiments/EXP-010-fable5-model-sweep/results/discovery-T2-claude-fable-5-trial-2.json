@@ -1,0 +1,17 @@
+{
+  "case_id": "T2",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.611,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response correctly refuses to fabricate the problem and asks strong clarifying questions before proceeding, but it lists multiple clarifying questions across all dimensions rather than focusing on the single most impactful unknown (which step of onboarding is broken), and it offers a 'proceed with assumptions' escape hatch that partially undermines the discovery discipline required by T2."
+}

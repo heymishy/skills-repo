@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-opus-4-6"
+  "case_id": "T1",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.9,
+    "d2_persona_specificity": 0.55,
+    "d3_mvp_bounding": 0.85,
+    "d4_out_of_scope_discipline": 0.75,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.55,
+    "d7_constraint_completeness": 0.8
+  },
+  "weighted_score": 0.793,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong problem framing, idempotency and compliance risks well-surfaced, and MVP scope is cleanly bounded with explicit deferrals; however, personas lack named roles with cost specificity (no payment ops engineer / merchant / finance team distinction) and success indicators are directional but lack baseline anchors."
 }

@@ -1,0 +1,17 @@
+{
+  "case_id": "S8",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.9,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.85,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.85
+  },
+  "weighted_score": 0.812,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong problem framing and assumption quality with excellent risk identification on the normalisation governance issue, but persona specificity lacks named individuals with explicit cost/time ownership and out-of-scope section is truncated with only one confirmed item stated before cut-off."
+}

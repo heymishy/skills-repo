@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "S2",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.95,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.92,
+    "d4_out_of_scope_discipline": 0.85,
+    "d5_assumption_quality": 0.8,
+    "d6_success_observability": 0.75,
+    "d7_constraint_completeness": 0.95
+  },
+  "weighted_score": 0.871,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong constraint handling and MVP bounding with explicit deferral rationale; minor gap is that personas are referenced by role (analyst, legal, FMA) without named individuals, timing specifics, or quantified costs, falling just short of full persona richness."
 }

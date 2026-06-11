@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "T5",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.75,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.8,
+    "d6_success_observability": 0.2,
+    "d7_constraint_completeness": 0.75
+  },
+  "weighted_score": 0.703,
+  "pass": true,
+  "compliant": true,
+  "notes": "Response correctly avoids any feature list and surfaces key enterprise context questions (data residency, tooling duplication, compliance obligations, build-vs-buy) with a genuine /clarify posture, but personas are generic and success observability is nearly absent."
 }

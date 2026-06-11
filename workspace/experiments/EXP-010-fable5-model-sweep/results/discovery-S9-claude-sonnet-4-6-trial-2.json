@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "S9",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.55,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.6
+  },
+  "weighted_score": 0.638,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong assumption quality and regulatory risk identification, but the response lacks named personas with role/cost context, does not explicitly bound the MVP with named deferrals, omits measurable success indicators with baseline anchors, and misidentifies the primary FMA constraint as a potential trust deed/FMCA s.100 variation issue rather than correctly naming the KiwiSaver Act s.45 processing obligation and FMA Significant Event Notice 30-day pre-notification requirement as the governing constraints."
 }

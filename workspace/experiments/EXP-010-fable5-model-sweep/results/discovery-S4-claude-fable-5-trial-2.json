@@ -1,0 +1,17 @@
+{
+  "case_id": "S4",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.72,
+    "d4_out_of_scope_discipline": 0.85,
+    "d5_assumption_quality": 0.65,
+    "d6_success_observability": 0.85,
+    "d7_constraint_completeness": 0.75
+  },
+  "weighted_score": 0.775,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong problem framing, phasing, and out-of-scope discipline, but assumptions lean toward open questions rather than explicitly flagging risk-if-wrong uncertainties (e.g., Redis PCI at-rest encryption unconfirmed, consent extensibility unconfirmed), and personas lack named cost context (e.g., QSA as a distinct gating persona is absorbed into a generic 'Security/PCI compliance' grouping rather than called out as a certification bottleneck)."
+}

@@ -1,0 +1,17 @@
+{
+  "case_id": "S7",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.95,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.9,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.85,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.868,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong problem framing, well-bounded MVP with explicit deferrals, and excellent out-of-scope discipline; slight gaps in persona cost quantification and missing explicit Azure AD SSO/data residency constraints as named hard constraints rather than open questions."
+}

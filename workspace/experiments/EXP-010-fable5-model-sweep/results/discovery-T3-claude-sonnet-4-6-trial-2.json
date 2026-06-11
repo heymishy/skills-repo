@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "T3",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 1,
+    "d2_persona_specificity": 0.9,
+    "d3_mvp_bounding": 1,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 1
+  },
+  "weighted_score": 0.9985,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exemplary discovery artefact: surfaces MLRO persona with personal liability framing, explicitly defers SAR automation with reasons, flags structuring risk against the £10k threshold, anchors the 18-hour → <15-minute baseline/target, and names audit trail and FCA obligation as hard constraints throughout."
 }

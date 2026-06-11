@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-opus-4-6"
+  "case_id": "S12",
+  "model_label": "claude-opus-4-6",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.1,
+    "d5_assumption_quality": 0.5,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.3
+  },
+  "weighted_score": 0.476,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response asks useful clarifying questions but critically fails to surface the two material regulatory constraints (FMA prescribed fairness methodology vs. internal disparity comparison, and 2023 MRM policy independent validation requirement), treats the 12-week timeline as plausible rather than challenging it, names no specific personas with role/cost context, has no explicit out-of-scope items with reasons, and does not flag CCCFA or FMA explainability as hard constraints — resulting in a discovery artefact that would proceed on false assumptions."
 }

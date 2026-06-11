@@ -1,4 +1,17 @@
 {
-  "error": "judge failed",
-  "model_label": "claude-sonnet-4-6"
+  "case_id": "S3",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.95,
+    "d2_persona_specificity": 0.55,
+    "d3_mvp_bounding": 0.92,
+    "d4_out_of_scope_discipline": 0.9,
+    "d5_assumption_quality": 0.88,
+    "d6_success_observability": 0.72,
+    "d7_constraint_completeness": 0.88
+  },
+  "weighted_score": 0.84,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong problem framing, constraint articulation, and blocker identification, but persona specificity is the main weakness — personas are referenced by functional label (Architecture Lead, Compliance) without named roles, timing context, or cost exposure per persona as expected by the corpus anchor."
 }
