@@ -1,6 +1,6 @@
 # Routing Policy Framework
 
-**Status:** Measurement-backed for all outer-loop skills (discovery, definition, review, test-plan, DoR); provisional for /benefit-metric and /definition-of-done (no experiment)
+**Status:** Measurement-backed for all outer-loop skills (discovery, definition, review, test-plan, DoR, definition-of-done); provisional for /benefit-metric only (no experiment)
 **Governed by:** Platform change policy — changes to this document require a pipeline story + PR + platform team review
 **Measurement_backed updates:** Any routing table update must cite the `experiment_id` that produced the evidence. Undocumented routing changes are out-of-process.
 
@@ -82,7 +82,7 @@ EXP-003 Config C run 3 (2026-05-16) validated that Haiku maintains regulated CPF
 | /definition-of-ready | claude-haiku-4-5 | EXP-004: GF 1.00 trials 1+2, 0 categorical fails, all 4 adversarial traps defeated. Default at 0.33× Sonnet cost. | true (`experiment_id: EXP-004-dor-rubric`, 2026-05-14) | Corpus expansion or categorical fail trigger |
 | /definition-of-ready (fallback) | claude-sonnet-4-6 | EXP-004: GF 1.00 trials 1+2. Escalate on categorical fail trigger only. | true (`experiment_id: EXP-004-dor-rubric`, 2026-05-14) | Corpus expansion |
 | /benefit-metric | claude-sonnet-4-6 | Provisional | After EXP-LOCAL-001 if L1 local model available |
-| /definition-of-done | claude-sonnet-4-6 | Provisional | After EXP-LOCAL-001 if L1 local model available |
+| /definition-of-done | claude-haiku-4-5 | EXP-015: H1 effectively confirmed — 21/21 valid trials PASS (WS 0.840–1.000), gate_fidelity_correct=true on all trials, zero false positives. T2 D1 avg 0.867 (thin evidence verbosity, not missed defect). 0.33× Sonnet cost. | true (`experiment_id: EXP-015-dod-calibration`, 2026-06-12) | EXP-016: per-AC evidence citation + metric-signal confirmation improvement |
 
 ---
 
