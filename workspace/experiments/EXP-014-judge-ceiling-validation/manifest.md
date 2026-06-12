@@ -8,7 +8,7 @@
 | experiment_type | judge-ceiling-validation |
 | created | 2026-06-12 |
 | operator | Hamish King |
-| status | planned |
+| status | complete |
 | prerequisite_experiments | EXP-010-fable5-model-sweep (source data — S12/S13 Fable 5 generation outputs) |
 
 ## Background and motivation
@@ -243,7 +243,17 @@ delta_overall = (delta_S12 + delta_S13) / 2
 
 ## Findings
 
-*Populated after analysis.*
+**Date:** 2026-06-12. See `judge-ceiling-scorecard.md` for full analysis.
+
+**H1: FAIL.** Fable 5 as judge scored every cell lower than same-day Sonnet baseline. delta_S12 = −0.116, delta_S13 = −0.110. Direction is opposite to H1 prediction.
+
+**H2: Conditional PASS.** |delta| marginally exceeds 0.10 threshold but direction unambiguously confirms H2 spirit: no judge ceiling. Fable 5 applied a stricter standard on D6 (success observability) and D7 (constraint completeness) — the opposite of the ceiling hypothesis.
+
+**Routing:** EXP-010 HOLD verdict stands and is reinforced. EXP-014b (full S9–S13 Fable 5 judge sweep) is NOT warranted — Fable 5 as judge would produce lower scores on all models, not higher, leaving relative ranking unchanged. Discovery → claude-sonnet-4-6 routing confirmed.
+
+**Key mechanism:** Fable 5 S-hard weakness is structural (D2 persona, D3 MVP bounding, D4 out-of-scope, D6 success indicators), not a NZ regulatory knowledge gap. SKILL.md structural scaffolding is the fix, not a model change.
+
+**Session variance finding:** Same-day Sonnet re-judge diverged from EXP-010 by up to 0.130 on individual cells. Future delta experiments must always run a same-day baseline.
 
 ## Deviations from template
 

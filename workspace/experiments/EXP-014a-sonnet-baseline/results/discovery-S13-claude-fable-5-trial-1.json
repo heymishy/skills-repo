@@ -1,0 +1,17 @@
+{
+  "case_id": "S13",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.539,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response demonstrates exceptional assumption quality — surfacing AUSTRAC obligations, SWIFT correspondent agreement risk, and AML/CFT programme gaps with specific risks-if-wrong — but is structurally incomplete: no out-of-scope section, no named personas with cost/timing context, and the MVP is not bounded with explicit deferrals, meaning the response fails the bounding and scope discipline dimensions despite its strong regulatory challenge posture."
+}

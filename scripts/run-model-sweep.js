@@ -999,7 +999,7 @@ async function scoreBatchResults(resultLines, matrix, experimentDir, effectiveJu
       const judgeRubric = extractJudgeRubric(skill.evalContent);
       const judgeProvider = effectiveProvider === 'copilot' ? 'copilot' : null;
       try {
-        const judgeResult = await callModelWithRetry(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024, judgeRubric, judgeProvider);
+        const judgeResult = await callModelWithRetry(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 4096, judgeRubric, judgeProvider);
         totalJudgeInputTokens += judgeResult.inputTokens;
         totalJudgeOutputTokens += judgeResult.outputTokens;
         const jsonMatch = judgeResult.content.match(/\{[\s\S]*\}/);
@@ -1271,7 +1271,7 @@ async function runJudgeOnlyMode(args, evalConfig, experimentDir, effectiveProvid
         const judgeResult = await callModelWithRetry(
           effectiveJudgeModel,
           [{ role: 'user', content: judgePromptFilled }],
-          1024, judgeRubric, judgeProvider
+          4096, judgeRubric, judgeProvider
         );
         totalJudgeInputTokens += judgeResult.inputTokens;
         totalJudgeOutputTokens += judgeResult.outputTokens;
@@ -1706,7 +1706,7 @@ async function main() {
         const judgeRubric = extractJudgeRubric(skill.evalContent);
         const judgeProvider = effectiveProvider === 'copilot' ? 'copilot' : null;
         try {
-          const judgeResult = await callModelWithRetry(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024, judgeRubric, judgeProvider);
+          const judgeResult = await callModelWithRetry(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 4096, judgeRubric, judgeProvider);
           totalInputTokens += judgeResult.inputTokens;
           totalOutputTokens += judgeResult.outputTokens;
           // Parse JSON from judge output (strip any surrounding text)

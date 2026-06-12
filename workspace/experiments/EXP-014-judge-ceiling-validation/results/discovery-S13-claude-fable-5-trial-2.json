@@ -1,0 +1,17 @@
+{
+  "case_id": "S13",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.8,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.552,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong risk-rated assumptions register that correctly challenges 'compliance is comfortable', but the response misses the hidden SWIFT correspondent bank agreement (C5), DIA registration, and RBNZ FX reporting constraints, has no personas, out-of-scope, or success indicators sections, and appears truncated mid-artefact."
+}

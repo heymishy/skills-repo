@@ -1,0 +1,17 @@
+{
+  "case_id": "S12",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.413,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong critical analysis of fairness scope and MRM timeline risk, but the response is an assessment memo rather than a discovery artefact — it lacks personas, MVP bounding, out-of-scope items, and success indicators, and substitutes fabricated US/EU regulatory regimes (SR 11-7, EU AI Act, ECOA) for the actual FMA/CCCFA/MRM constraints in the operator context."
+}

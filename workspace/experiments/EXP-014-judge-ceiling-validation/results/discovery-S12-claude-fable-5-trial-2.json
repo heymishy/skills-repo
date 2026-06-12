@@ -1,0 +1,17 @@
+{
+  "case_id": "S12",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0.425,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response correctly challenges the deploy-only framing, the insufficient relative-baseline fairness assessment, and the 12-week timeline, but fabricates wrong-jurisdiction constraints (ECOA, EU AI Act, GDPR, UK rules) instead of the case's NZ FMA prescribed fairness methodology, CCCFA responsible lending, and 2023 MRM independent-validation requirement, and omits required artefact sections (personas, MVP scope, out-of-scope, anchored success indicators)."
+}

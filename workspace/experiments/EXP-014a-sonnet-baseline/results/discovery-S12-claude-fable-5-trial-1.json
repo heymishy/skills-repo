@@ -1,0 +1,17 @@
+{
+  "case_id": "S12",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.572,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong on surfacing regulatory and fairness risks (D5, D6, D7 partial), but fails to produce a structured discovery artefact with named personas, explicit MVP bounding with deferrals, or an out-of-scope section — the response is a gap/risk review rather than a discovery document."
+}
