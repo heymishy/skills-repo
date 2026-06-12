@@ -1,0 +1,162 @@
+# context-regulated.yml — Regulated NZ financial services operator context
+# Use with: --context-files .github/context-regulated.yml
+# Purpose: Inject NZ financial regulatory framework knowledge into the system prompt
+#          to test whether explicit regulatory context raises constraint detection scores
+#          on S-hard corpus cases (EXP-020 context injection experiment).
+#
+# NOTE: This file is not a substitute for SKILL.md — it is injected before the skill prompt
+#       to give the model authoritative domain context. Content is synthetic/illustrative
+#       only; it is not legal advice and does not reflect any specific institution's policy.
+
+meta:
+  regulated: true
+  jurisdiction: NZ
+  secondary_jurisdiction: AU
+  operator_type: registered_bank
+  regulator_primary: RBNZ
+  regulator_secondary: FMA
+
+# ─── NZ Financial Regulatory Frameworks ──────────────────────────────────────
+#
+# When producing a discovery artefact for a registered bank operating in
+# New Zealand, the following frameworks apply. Constraints from these
+# frameworks must be surfaced regardless of whether the operator brief
+# mentions them — the bank carries ongoing regulatory obligations that
+# do not lapse between projects.
+
+regulatory_frameworks:
+
+  rbnz_bs11:
+    name: "RBNZ BS11 — Outsourcing Policy"
+    authority: "Reserve Bank of New Zealand"
+    scope: "Material changes to core banking systems and outsourced services"
+    key_obligations:
+      - "Registered banks must notify RBNZ at least 30 business days before implementing
+         any material change to a core banking system, payment system, or outsourcing arrangement."
+      - "Migration, decommission, or replacement of a core banking system (loan ledger,
+         deposits platform, payment rails) is a material change under BS11."
+      - "Notification must be filed before any irreversible project activity begins —
+         not just before go-live. Starting infrastructure provisioning or data migration
+         toolchain work counts as a material step."
+      - "If the notification window has not been opened, it must be opened immediately
+         upon project initiation. The clock starts from RBNZ acknowledgement."
+    discovery_trigger:
+      - "Migration or decommission of a core banking system"
+      - "Replacement of a core platform (loan ledger, deposits, payments)"
+      - "Any project where 'RBNZ reporting' or 'RBNZ relationship team' is mentioned"
+      - "Any 12-month or similar hard-deadline migration driven by vendor end-of-life"
+
+  rbnz_amlcft:
+    name: "AML/CFT Act 2009 (NZ) — Anti-Money Laundering and Countering Financing of Terrorism"
+    authority: "Reserve Bank of New Zealand (primary supervisor for registered banks)"
+    scope: "All payment channels and transaction flows where the bank acts as reporting entity"
+    key_obligations:
+      - "Threshold reporting: transactions ≥ NZD $10,000 cash or equivalent must be
+         reported to the NZ Police Financial Intelligence Unit (FIU)."
+      - "Suspicious transaction reports (STR) must be filed within 3 business days of
+         the bank forming a suspicion."
+      - "Originator information: cross-border payment messages must carry full originator
+         details regardless of payment channel (SWIFT, proprietary intra-group, or API)."
+      - "AML/CFT liability follows the reporting entity, not the payment channel.
+         Using a proprietary intra-group routing channel does not transfer or reduce
+         the bank's AML/CFT obligations — the bank remains the reporting entity on the NZ leg."
+      - "Dual-jurisdiction payments: NZ AML/CFT obligations cover the NZ leg only.
+         Counterpart jurisdiction obligations (e.g. AUSTRAC for the AU leg) must be
+         confirmed separately with the counterpart entity — the bank cannot assume its
+         own AML/CFT screening satisfies the counterpart's regulatory requirements."
+    discovery_trigger:
+      - "Any new or modified payment channel"
+      - "International or cross-border payment features"
+      - "Intra-group treasury settlement used for retail payment routing"
+      - "Proprietary payment rails bypassing SWIFT or existing correspondent arrangements"
+
+  rbnz_fx_reporting:
+    name: "RBNZ FX Transaction Reporting"
+    authority: "Reserve Bank of New Zealand"
+    scope: "Foreign currency transactions settled by registered banks"
+    key_obligations:
+      - "Intra-group net settlement of foreign currency positions is an FX transaction
+         reportable to RBNZ, even if no external FX market transaction occurs."
+      - "Using a group treasury netting arrangement for retail payment settlement does
+         not exempt the underlying FX transactions from reporting requirements."
+      - "FX reporting format, threshold, and frequency requirements must be confirmed
+         with RBNZ before launching any new cross-currency payment channel."
+    discovery_trigger:
+      - "Cross-border or cross-currency payment features"
+      - "Intra-group FX settlement mechanisms"
+      - "Any feature where NZD/foreign-currency conversion or net settlement is involved"
+
+  cccfa:
+    name: "Credit Contracts and Consumer Finance Act 2003 (CCCFA)"
+    authority: "Commerce Commission"
+    scope: "Consumer credit: personal loans, home loans, credit cards, buy-now-pay-later"
+    key_obligations:
+      - "Full credit contract terms must be disclosed to the borrower before contract formation."
+      - "Credit records and all credit contract documents must be retained for 7 years
+         from the date the contract ends (not from the date of origination)."
+      - "Responsible lending assessments must be retained and auditable for the same period."
+      - "Data migration projects that touch consumer credit records must verify 7-year
+         retention is maintained across the migration — source system decommission
+         cannot happen until retention compliance is confirmed on the destination system."
+    discovery_trigger:
+      - "Personal loan, home loan, credit card, or consumer credit lifecycle features"
+      - "Core banking system migration that includes loan accounts"
+      - "Data decommission or archiving of credit contract records"
+
+  swift_correspondent:
+    name: "SWIFT Correspondent Bank Agreement — notification obligations"
+    authority: "Contractual — bilateral agreement with correspondent bank"
+    scope: "All payment routing that uses a correspondent bank relationship as its clearing mechanism"
+    key_obligations:
+      - "The bilateral correspondent bank agreement (e.g. with JPMorgan Chase, Deutsche Bank,
+         or equivalent) requires prior written notification before routing any live transaction
+         volume outside the SWIFT channel covered by the agreement."
+      - "Non-SWIFT routing without prior notification is a contractual breach of the
+         correspondent agreement, regardless of whether the routing is technically functional
+         and regulatory-compliant."
+      - "This notification obligation is independent of and in addition to any RBNZ,
+         AUSTRAC, or DIA regulatory notifications — both sets of notifications are required."
+      - "A bank must confirm with its Treasury team whether the SWIFT correspondent agreement
+         permits non-SWIFT routing and what the notification procedure is before treating
+         an intra-group or proprietary channel as available for live transaction routing."
+    discovery_trigger:
+      - "Proprietary or intra-group payment routing channels proposed as alternatives to SWIFT"
+      - "Any scenario where retail payments are routed outside the existing SWIFT correspondent arrangement"
+      - "International payment speed improvements using internal settlement or treasury channels"
+      - "Any mention of an existing correspondent bank relationship (JPMorgan, Deutsche, etc.)"
+
+  cpg_220:
+    name: "CPG 220 — Risk Management (APRA Prudential Practice Guide)"
+    authority: "Australian Prudential Regulation Authority (APRA)"
+    scope: "Applies directly to APRA-regulated entities. For NZ banks: relevant when operating
+           AU group entities or where RBNZ expects CPG 220 as the benchmark for model risk
+           management (RBNZ BS2B is forthcoming; CPG 220 is the current de facto standard)."
+    key_obligations:
+      - "AI and ML models used in credit decisioning must undergo independent model risk
+         validation before being activated in production."
+      - "Model risk management requirements: challenger model testing, periodic backtesting,
+         complete model documentation, and full audit trail."
+      - "Board-level accountability: model validation sign-off for material credit models
+         cannot be delegated below Chief Risk Officer level."
+      - "A model that has not completed validation must not be used in live customer-facing
+         credit decisions — this is a hard go-live gate, not a documentation preference."
+    discovery_trigger:
+      - "AI or ML models in credit decisioning, fraud detection, AML/CFT screening,
+         or customer risk scoring"
+      - "Credit model replacement or upgrade"
+      - "Automated decisioning for loan approval, limit setting, or collections"
+
+  dia_payment_services:
+    name: "Payment Services Regulations 2021 (DIA)"
+    authority: "Department of Internal Affairs (NZ)"
+    scope: "New payment service types that may require registration or licensing"
+    key_obligations:
+      - "Launching a new payment service type that does not fall under an existing
+         registered service may require DIA registration before going live."
+      - "Proprietary intra-group retail payment channels may constitute a new payment
+         service type if they are customer-facing and outside the existing licensed scope."
+      - "DIA registration must be assessed and confirmed (or exemption confirmed) before
+         piloting with real customers."
+    discovery_trigger:
+      - "New customer-facing payment channels or services not covered by existing licences"
+      - "Proprietary retail payment routing that is new to the bank's licensed service types"

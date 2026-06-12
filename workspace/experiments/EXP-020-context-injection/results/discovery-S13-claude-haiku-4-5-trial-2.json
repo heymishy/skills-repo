@@ -1,0 +1,26 @@
+{
+  "case_id": "S13",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.3915,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response excels at surfacing genuine regulatory assumptions (correspondent bank agreement, RBNZ FX reporting, DIA registration, AUSTRAC dual-jurisdiction) with real risks-if-wrong, but never produces a bounded MVP, out-of-scope section, success indicators, or named personas — the extended regulatory briefing replaces rather than supports the discovery artefact structure.",
+  "context_injection": true,
+  "pass2": false,
+  "context_files_meta": [
+    {
+      "relPath": ".github/context-regulated.yml",
+      "bytes": 10223,
+      "sha256": "c1c0e5bf9b4a73ddee78535c7a652e0dabb802b19222c9f6a56cc1d78aef822d"
+    }
+  ]
+}

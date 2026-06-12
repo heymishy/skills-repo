@@ -1,0 +1,26 @@
+{
+  "case_id": "S13",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 1,
+    "d2_persona_specificity": 0.9,
+    "d3_mvp_bounding": 1,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 1
+  },
+  "weighted_score": 0.99,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptional output: problem is framed as a competitive and regulatory gap (not a solution), all critical constraints including the SWIFT correspondent agreement breach risk and AUSTRAC AU-leg gap are explicitly surfaced with go/no-go framing, assumptions are genuine uncertainties each with stated risk-if-wrong, MVP is tightly bounded with explicit deferrals, and success indicators are anchored to baselines from operator input; minor deduction on D2 as the AUSTRAC and DIA personas are described as obligations rather than fully characterised role+timing+cost personas.",
+  "context_injection": true,
+  "pass2": false,
+  "context_files_meta": [
+    {
+      "relPath": ".github/context-regulated.yml",
+      "bytes": 10223,
+      "sha256": "c1c0e5bf9b4a73ddee78535c7a652e0dabb802b19222c9f6a56cc1d78aef822d"
+    }
+  ]
+}
