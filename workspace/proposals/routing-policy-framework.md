@@ -82,7 +82,7 @@ EXP-003 Config C run 3 (2026-05-16) validated that Haiku maintains regulated CPF
 | /definition-of-ready | claude-haiku-4-5 | EXP-004: GF 1.00 trials 1+2, 0 categorical fails, all 4 adversarial traps defeated. Default at 0.33× Sonnet cost. | true (`experiment_id: EXP-004-dor-rubric`, 2026-05-14) | Corpus expansion or categorical fail trigger |
 | /definition-of-ready (fallback) | claude-sonnet-4-6 | EXP-004: GF 1.00 trials 1+2. Escalate on categorical fail trigger only. | true (`experiment_id: EXP-004-dor-rubric`, 2026-05-14) | Corpus expansion |
 | /benefit-metric | claude-sonnet-4-6 | Provisional | After EXP-LOCAL-001 if L1 local model available |
-| /definition-of-done | claude-haiku-4-5 | EXP-015: H1 effectively confirmed — 21/21 valid trials PASS (WS 0.840–1.000), gate_fidelity_correct=true on all trials, zero false positives. T2 D1 avg 0.867 (thin evidence verbosity, not missed defect). 0.33× Sonnet cost. EXP-016: C2 safety gate cleared — T5+T6 (C2-present cases) 4/4 PASS, gate_fidelity_correct=true, 0 fabricated governance gates, no categorical fails. Unconditional — no routing split required for regulated banking stories. | true (`experiment_id: EXP-015-dod-calibration + EXP-016-dod-c2-validation`, 2026-06-12) | EXP-017: per-AC evidence citation + metric-signal confirmation improvement (T2 D1/D5 quality gap) |
+| /definition-of-done | claude-haiku-4-5 | EXP-015: H1 effectively confirmed — 21/21 valid trials PASS (WS 0.840–1.000), gate_fidelity_correct=true on all trials, zero false positives. T2 D1 avg 0.867 (thin evidence verbosity, not missed defect). 0.33× Sonnet cost. EXP-016: C2 safety gate cleared — T5+T6 (C2-present cases) 4/4 PASS, gate_fidelity_correct=true, 0 fabricated governance gates, no categorical fails. Unconditional — no routing split required for regulated banking stories. EXP-019: Pipeline fidelity confirmed — DoD gate correctly parsed real pipeline-format bundle (S5 crm.2 story), evaluated all 5 ACs against test plan, verified vulnerability policy NFR, returned COMPLETE with no fabricated governance gates. Bundle format compatible: `>` operator trigger, `###` inner headings, fenced PR description, `##` terminator. | true (`experiment_id: EXP-015-dod-calibration + EXP-016-dod-c2-validation + EXP-019-pipeline-fidelity`, 2026-06-12) | EXP-017: per-AC evidence citation + metric-signal confirmation improvement (T2 D1/D5 quality gap) |
 
 ---
 
@@ -238,6 +238,7 @@ This is a manual mitigation for the T5 gap. It is not a permanent fix — it is 
 | Config recommendation for regulated inputs | EXP-003 | _pending_ | _pending_ | _pending_ |
 | Config C regulated CPF assessment | EXP-003 | _pending_ | _pending_ | _pending_ |
 | Local model L1 approval (structured skills) | EXP-LOCAL-001 | _pending_ | _pending_ | _pending_ |
+| /definition-of-done pipeline fidelity — format compatibility | EXP-019 | Haiku DoD gate parsed real pipeline bundle (S5 crm.2) without structural errors. COMPLETE verdict, all 5 ACs evidenced, vulnerability policy NFR verified, zero fabricated gates. Bundle format validated: `>` trigger, `###` inner headings, fenced PR description, `##` terminator. | Added EXP-019 evidence to /definition-of-done routing entry; pipeline fidelity confirmed | 2026-06-12 |
 
 ---
 

@@ -187,6 +187,8 @@ No model passes S9 (KiwiSaver hardship waiver), S12 (MRM version mismatch), or S
 
 5. **Cost data**: Phase 2 Fable 5 costs use actual batch token counts. Opus/Sonnet costs are estimated from standard rates at 900 input / 2000 output tokens. Actual Opus/Sonnet costs would require token-level data from Phase 1 batch.
 
+6. **Token ceiling confound (S-hard cases — Fable 5 scores may be understated)**: The sweep ran with the default `max_tokens=4096` generation budget. Post-hoc inspection of run files found that **10 result files contain judge notes explicitly citing truncation or incomplete output**. Fable 5 writes more densely than Sonnet 4.6; on S13 trial-1, the Fable 5 run file is 34 lines vs Sonnet's 203 lines — a 6× gap. The judge confirmed truncation in scoring notes and docked marks for missing sections. This means S-hard scores for Fable 5 are based on **partial outputs** while Sonnet scores are based on substantially complete ones. The HOLD conclusion is most exposed on S12 (Fable 5 0.582 — narrowly best) and S13 (Fable 5 0.543 vs Sonnet 0.617). On S12, Fable 5 appears to win; on S13, the gap over Fable 5 could be an artefact of truncation rather than a genuine quality difference. **Action required**: Re-run Fable 5 on S12 and S13 with `--max-tokens 8192` to produce non-truncated outputs. If Fable 5 scores rise to within 0.05 of Sonnet on both cases, the S-hard conclusion requires revision. The HOLD recommendation is directionally robust (T3 deficit of 0.131 and 5.8× cost gap stand regardless), but the degree to which Sonnet leads on S-hard is not confirmed.
+
 ---
 
 ## Section 10 — Recommended next steps

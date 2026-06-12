@@ -1,0 +1,5 @@
+{
+  "error": "judge failed",
+  "model_label": "claude-haiku-4-5",
+  "context_injection": false
+}

@@ -1,0 +1,18 @@
+{
+  "case_id": "{CASE_ID}",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_c2_identification": 0,
+    "d2_c2_propagation": 0,
+    "d3_c2_specificity": 0,
+    "d4_no_fabrication": 1,
+    "d5_decomposition_completeness": 0
+  },
+  "weighted_score": 0.1,
+  "cpf_c2_score": 0,
+  "cpf_pass": false,
+  "pass": false,
+  "compliant": false,
+  "notes": "regulated_cpf_fail: C2 dropped — both the discovery artefact ({INPUT} placeholder unfilled) and the model decomposition output are absent/empty, making it impossible to score C2 identification, propagation, or decomposition completeness; D4 scores 1.0 only because no fabrication occurred in a null output.",
+  "context_injection": false
+}
