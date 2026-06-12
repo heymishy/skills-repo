@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "T3",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 0.7,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.885,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Correctly identifies PCI DSS 3.4 NFR-2 log sanitization as unverified and issues a conditional/incomplete verdict, but omits the out-of-scope check phase explicitly and silently skips metric signal recording rather than confirming no applicable metric."
+}

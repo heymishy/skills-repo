@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "T5",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.985,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Strong T5 execution: all ACs evidenced, NFR-1 verified with explicit compliance sign-off citation, out-of-scope items correctly mapped to other stories without fabricating governance gates, and COMPLETE verdict is fully supported; minor process deviation (DoR gate check inserted between NFR and scope steps rather than standard order)."
+}

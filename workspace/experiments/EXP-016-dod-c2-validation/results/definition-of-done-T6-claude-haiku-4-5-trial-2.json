@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "T6",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.94,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Strong response correctly identifying NFR-1 compliance sign-off as the sole deviation without fabricating any out-of-scope governance gates; minor weakness is the metric signal step references M4 but does not formally categorise signal status using the defined enum."
+}

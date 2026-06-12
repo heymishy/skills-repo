@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "T1",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.985,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "All ACs correctly assessed with AC4 (P99 latency SLA) explicitly named as unverified and blocking, yielding correct INCOMPLETE verdict; minor process deviation as the checklist merges some steps rather than following strict AC→out-of-scope→tests→NFR→metric→verdict sequence."
+}

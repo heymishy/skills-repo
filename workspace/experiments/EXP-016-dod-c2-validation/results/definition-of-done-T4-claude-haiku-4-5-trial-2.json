@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "T4",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.8
+  },
+  "weighted_score": 0.955,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Correct COMPLETE verdict with all ACs, NFRs, and scope deviations properly assessed; metric signal step present but signal status not categorised using the defined enum (on-track/at-risk/off-track/not-yet-measured)."
+}

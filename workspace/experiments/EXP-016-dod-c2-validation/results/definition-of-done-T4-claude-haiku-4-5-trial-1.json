@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "T4",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.985,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "All ACs correctly assessed with specific evidence cited, no false deviations added, metric signal correctly recorded as not-yet-measured with post-merge schedule, and COMPLETE verdict is accurate; minor process compliance deduction as the checklist merges phases into a table format rather than strictly sequential AC→out-of-scope→tests→NFR→metric→verdict steps."
+}

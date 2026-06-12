@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "T5",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 1
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Model correctly returns COMPLETE with full AC/NFR evidence cited and treats all out-of-scope governance items (AUSTRAC, DIA registration, correspondent bank notification) as segregated scope — not as deviations or blocking conditions — which is precisely what T5 requires."
+}

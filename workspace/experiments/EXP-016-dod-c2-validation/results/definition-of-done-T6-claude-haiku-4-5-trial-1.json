@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "T6",
+  "scores": {
+    "d1_ac_coverage_accuracy": 0.8,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 0.7,
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.845,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Correct COMPLETE WITH DEVIATIONS verdict with NFR-1 compliance sign-off explicitly named as the gap; out-of-scope items correctly noted as non-deviations; minor process reordering and thin per-AC evidence citation reduces scores slightly."
+}

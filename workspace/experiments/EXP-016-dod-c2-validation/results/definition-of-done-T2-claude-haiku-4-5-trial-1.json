@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "T2",
+  "scores": {
+    "d1_ac_coverage_accuracy": 0.5,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": "N/A",
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 0.7,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.737,
+  "pass": false,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "The model correctly identifies the avatar upload scope violation and names it specifically, but D1 is weak because ACs are marked ✅ with only a summary assertion ('All 5 tests passing; AC1–AC3 fully covered') rather than per-AC evidence, and the verdict 'CONDITIONAL PASS' is non-standard (should be 'COMPLETE WITH DEVIATIONS'), with metric signal and NFR steps silently omitted rather than explicitly confirmed as not applicable."
+}
