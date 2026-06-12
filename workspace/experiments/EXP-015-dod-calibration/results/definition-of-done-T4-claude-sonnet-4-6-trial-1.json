@@ -1,19 +1,19 @@
 {
   "skill": "definition-of-done",
   "model_label": "claude-sonnet-4-6",
-  "case_id": "T1",
+  "case_id": "T4",
   "scores": {
-    "d1_ac_coverage_accuracy": 0.5,
-    "d2_deviation_detection": 0.4,
-    "d3_nfr_verification": 0.4,
-    "d4_metric_signal": 0.4,
-    "d5_completion_verdict": 0.4,
-    "d6_process_compliance": 0.4
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
   },
-  "weighted_score": 0.42,
-  "pass": false,
+  "weighted_score": 0.985,
+  "pass": true,
   "compliant": true,
-  "gate_fidelity_correct": false,
+  "gate_fidelity_correct": true,
   "categorical_fail": null,
-  "notes": "The model correctly identified that artefacts were missing and refused to fabricate a verdict, but it failed to run the DoD pipeline against the provided story, test plan, and PR description — treating them as absent when they were supplied in the prompt context."
+  "notes": "All four ACs correctly assessed with explicit test mappings, out-of-scope items (shortcuts, saved filters, comparison, CSV export) explicitly confirmed as not built, NFR-1 verified with measured evidence, metric signal correctly recorded as not-yet-measured with follow-up scheduled, and COMPLETE verdict issued with no false deviations — minor process compliance deduction for checklist format slightly reordering the canonical AC→out-of-scope→tests→NFR→metric→verdict sequence."
 }

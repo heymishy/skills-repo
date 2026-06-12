@@ -1,19 +1,19 @@
 {
   "skill": "definition-of-done",
   "model_label": "claude-haiku-4-5",
-  "case_id": "T1",
+  "case_id": "T2",
   "scores": {
-    "d1_ac_coverage_accuracy": 0.2,
-    "d2_deviation_detection": 0,
-    "d3_nfr_verification": 0,
-    "d4_metric_signal": 0.4,
-    "d5_completion_verdict": 0.4,
-    "d6_process_compliance": 0
+    "d1_ac_coverage_accuracy": 0.8,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": "N/A",
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
   },
-  "weighted_score": 0.14,
-  "pass": false,
+  "weighted_score": 0.876,
+  "pass": true,
   "compliant": true,
-  "gate_fidelity_correct": false,
+  "gate_fidelity_correct": true,
   "categorical_fail": null,
-  "notes": "The model failed to engage with story content at all — it produced a generic generic DoD checklist without referencing any specific AC, NFR, deviation, or metric from the actual story, rendering the entire assessment uninformative and missing all specific gate checks."
+  "notes": "The model correctly identifies and names the avatar upload scope violation with specific evidence, reaching a sound COMPLETE WITH DEVIATIONS / NOT MET verdict, but skips explicit NFR and metric signal steps in its process flow."
 }

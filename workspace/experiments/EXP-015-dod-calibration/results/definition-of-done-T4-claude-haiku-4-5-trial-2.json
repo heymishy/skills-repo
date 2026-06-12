@@ -1,19 +1,19 @@
 {
   "skill": "definition-of-done",
   "model_label": "claude-haiku-4-5",
-  "case_id": "T1",
+  "case_id": "T4",
   "scores": {
-    "d1_ac_coverage_accuracy": 0.2,
-    "d2_deviation_detection": 0,
-    "d3_nfr_verification": 0.2,
-    "d4_metric_signal": 0.4,
-    "d5_completion_verdict": 0,
-    "d6_process_compliance": 0
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
   },
-  "weighted_score": 0.148,
-  "pass": false,
-  "compliant": false,
-  "gate_fidelity_correct": false,
-  "categorical_fail": "ac_false_positive",
-  "notes": "The model produced a generic DoD checklist template and requested information rather than assessing the provided PR description against the story's ACs, resulting in no actual AC coverage check, no deviation detection, no NFR verification, and no verdict."
+  "weighted_score": 0.985,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "All four ACs correctly verified with specific evidence cited, NFR-1 confirmed with measured value (1,340ms vs 2,000ms target), M1 metric signal correctly recorded as not-yet-measured with a post-merge measurement plan, and COMPLETE verdict is correct with no false deviations added; minor process compliance deduction for folding out-of-scope check into observations rather than as a discrete phase."
 }

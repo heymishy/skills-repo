@@ -3,17 +3,17 @@
   "model_label": "claude-sonnet-4-6",
   "case_id": "T1",
   "scores": {
-    "d1_ac_coverage_accuracy": 0.5,
-    "d2_deviation_detection": 0.4,
-    "d3_nfr_verification": 0.7,
-    "d4_metric_signal": 0.4,
-    "d5_completion_verdict": 0.4,
-    "d6_process_compliance": 0.4
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": "N/A",
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 1
   },
-  "weighted_score": 0.47,
-  "pass": false,
+  "weighted_score": 1,
+  "pass": true,
   "compliant": true,
-  "gate_fidelity_correct": false,
+  "gate_fidelity_correct": true,
   "categorical_fail": null,
-  "notes": "The model correctly identifies missing artefacts and raises domain-specific risk flags for webhooks, but it failed to run the actual DoD pipeline against the provided story, test plan, and PR description — it never assessed any AC, named any specific deviation, confirmed no applicable metric, or produced a COMPLETE/INCOMPLETE verdict, making the response a process failure rather than a useful gate evaluation."
+  "notes": "Model correctly identified AC4 (P99 ≤ 500ms under 100 concurrent transitions) as unverified with zero PR evidence, named the DoR commitment gap explicitly, issued an INCOMPLETE verdict with specific required actions, and confirmed no out-of-scope deviations were introduced."
 }

@@ -3,17 +3,17 @@
   "model_label": "claude-haiku-4-5",
   "case_id": "T1",
   "scores": {
-    "d1_ac_coverage_accuracy": 0.2,
-    "d2_deviation_detection": 0,
-    "d3_nfr_verification": 0.4,
-    "d4_metric_signal": 0.4,
-    "d5_completion_verdict": 0,
-    "d6_process_compliance": 0
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 0.7,
+    "d3_nfr_verification": 0.7,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
   },
-  "weighted_score": 0.145,
-  "pass": false,
+  "weighted_score": 0.84,
+  "pass": true,
   "compliant": true,
-  "gate_fidelity_correct": false,
+  "gate_fidelity_correct": true,
   "categorical_fail": null,
-  "notes": "The model ignored the story's specific ACs, NFRs, metrics, and PR evidence entirely, instead producing a generic checklist and requesting information it already had, failing to produce any verdict or surface the specific performance SLA AC gap."
+  "notes": "The model correctly identifies AC4's P99 latency SLA as the unverified gap and issues an INCOMPLETE verdict, but NFR verification, metric signal, and out-of-scope checks are handled implicitly or vaguely rather than as discrete enumerated steps."
 }

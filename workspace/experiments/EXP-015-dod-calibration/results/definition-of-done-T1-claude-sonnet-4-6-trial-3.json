@@ -3,17 +3,17 @@
   "model_label": "claude-sonnet-4-6",
   "case_id": "T1",
   "scores": {
-    "d1_ac_coverage_accuracy": 0.5,
-    "d2_deviation_detection": 0.4,
-    "d3_nfr_verification": 0.4,
-    "d4_metric_signal": 0.4,
-    "d5_completion_verdict": 0.4,
-    "d6_process_compliance": 0
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 1
   },
-  "weighted_score": 0.375,
-  "pass": false,
+  "weighted_score": 1,
+  "pass": true,
   "compliant": true,
-  "gate_fidelity_correct": false,
+  "gate_fidelity_correct": true,
   "categorical_fail": null,
-  "notes": "The model correctly refused to issue a false-positive COMPLETE verdict but blocked the pipeline entirely without running any AC, deviation, NFR, or metric assessment against the available artefacts, failing the required process order and producing no actionable gate output."
+  "notes": "Exemplary T1 assessment: AC4 (P99 ≤ 500ms performance SLA) correctly identified as untested with zero PR evidence, GAP-1 disposition audited thoroughly, DoR commitment accountability tracked, verdict correctly INCOMPLETE with specific AC and gap named."
 }

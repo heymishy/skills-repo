@@ -1,19 +1,19 @@
 {
   "skill": "definition-of-done",
   "model_label": "claude-sonnet-4-6",
-  "case_id": "T1",
+  "case_id": "T2",
   "scores": {
-    "d1_ac_coverage_accuracy": 0.2,
-    "d2_deviation_detection": 0,
-    "d3_nfr_verification": 0,
-    "d4_metric_signal": 0.4,
-    "d5_completion_verdict": 0,
-    "d6_process_compliance": 0
+    "d1_ac_coverage_accuracy": 0.8,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
   },
-  "weighted_score": 0.09,
-  "pass": false,
-  "compliant": false,
-  "gate_fidelity_correct": false,
+  "weighted_score": 0.885,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
   "categorical_fail": null,
-  "notes": "The model refused to run any DoD evaluation steps despite story, test plan, and PR artefacts being present in the prompt, instead blocking the pipeline and requesting missing artefacts that were already supplied — producing no AC assessment, no verdict, and no gap identification."
+  "notes": "Excellent detection and specific naming of the avatar upload scope violation with actionable remediation paths, though the process order deviated (AC coverage was not walked individually per AC with evidence cited, and metric signal was silently omitted rather than confirmed as not applicable)."
 }

@@ -1,19 +1,19 @@
 {
   "skill": "definition-of-done",
   "model_label": "claude-sonnet-4-6",
-  "case_id": "T1",
+  "case_id": "T4",
   "scores": {
-    "d1_ac_coverage_accuracy": 0,
-    "d2_deviation_detection": 0,
-    "d3_nfr_verification": 0,
-    "d4_metric_signal": 0.4,
-    "d5_completion_verdict": 0,
-    "d6_process_compliance": 0
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 1
   },
-  "weighted_score": 0.06,
-  "pass": false,
-  "compliant": false,
-  "gate_fidelity_correct": false,
-  "categorical_fail": "ac_false_positive",
-  "notes": "The model refused to run the DoD pipeline entirely, claiming missing artefacts despite the story, test plan, and PR description all being present in the prompt, resulting in no AC assessment, no verdict, and complete process failure."
+  "weighted_score": 1,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Clean T4 COMPLETE case handled with full evidence citations for all four ACs, correct NFR verification with measured headroom, explicit confirmation that all deferred items are absent, and a properly categorised 'not-yet-measured' metric signal with a scheduled review date — no false deviations added."
 }

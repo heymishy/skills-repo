@@ -1,19 +1,19 @@
 {
   "skill": "definition-of-done",
   "model_label": "claude-sonnet-4-6",
-  "case_id": "T1",
+  "case_id": "T4",
   "scores": {
-    "d1_ac_coverage_accuracy": 0,
-    "d2_deviation_detection": 0,
-    "d3_nfr_verification": 0,
-    "d4_metric_signal": 0.4,
-    "d5_completion_verdict": 0,
-    "d6_process_compliance": 0
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
   },
-  "weighted_score": 0,
-  "pass": false,
-  "compliant": false,
-  "gate_fidelity_correct": false,
-  "categorical_fail": "ac_false_positive",
-  "notes": "The model refused to run any DoD assessment by claiming all artefacts were missing, despite story, test plan, and PR description being provided in the prompt — resulting in zero AC coverage, no deviation detection, no NFR verification, no verdict, and complete process failure."
+  "weighted_score": 0.985,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Strong T4 case: all ACs evidenced with named tests, NFR verified with measured value, out-of-scope deferred items explicitly confirmed absent, metric signal correctly recorded as not-yet-measured with follow-up scheduled; minor process deviation (DoR pre-conditions check inserted between PR completeness and metric steps, and test plan coverage not surfaced as a discrete phase)."
 }

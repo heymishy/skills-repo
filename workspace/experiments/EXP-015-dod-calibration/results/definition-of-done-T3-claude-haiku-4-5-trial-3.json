@@ -1,19 +1,19 @@
 {
   "skill": "definition-of-done",
   "model_label": "claude-haiku-4-5",
-  "case_id": "T1",
+  "case_id": "T3",
   "scores": {
-    "d1_ac_coverage_accuracy": 0.2,
-    "d2_deviation_detection": 0.2,
-    "d3_nfr_verification": 0.4,
-    "d4_metric_signal": 0.4,
-    "d5_completion_verdict": 0.4,
-    "d6_process_compliance": 0
+    "d1_ac_coverage_accuracy": 0.8,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
   },
-  "weighted_score": 0.255,
-  "pass": false,
+  "weighted_score": 0.88,
+  "pass": true,
   "compliant": true,
-  "gate_fidelity_correct": false,
+  "gate_fidelity_correct": true,
   "categorical_fail": null,
-  "notes": "The model failed to run any structured DoD assessment — it acknowledged missing information rather than working with the provided artefacts, did not assess individual ACs, NFRs, deviations, or metrics, and produced no valid COMPLETE/INCOMPLETE verdict."
+  "notes": "Strong response that correctly identifies PCI DSS 3.4 log sanitization as an unverified compliance NFR and issues a CONDITIONAL/INCOMPLETE-equivalent verdict with the specific gap named; AC coverage is assessed as passing with thin consolidated evidence rather than per-AC citation, and metric signal is noted but lacks enum classification."
 }

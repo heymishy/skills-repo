@@ -1,19 +1,19 @@
 {
   "skill": "definition-of-done",
   "model_label": "claude-haiku-4-5",
-  "case_id": "T1",
+  "case_id": "T3",
   "scores": {
-    "d1_ac_coverage_accuracy": 0.2,
-    "d2_deviation_detection": 0,
-    "d3_nfr_verification": 0.4,
-    "d4_metric_signal": 0.4,
-    "d5_completion_verdict": 0,
-    "d6_process_compliance": 0
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 0.7,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
   },
-  "weighted_score": 0.17,
-  "pass": false,
-  "compliant": false,
-  "gate_fidelity_correct": false,
-  "categorical_fail": "ac_false_positive",
-  "notes": "The model produced a generic checklist with unknown/unclear statuses rather than assessing each AC against PR evidence, failed to reach any verdict, and did not name any specific AC, deviation, NFR, or metric signal — rendering the DoD assessment entirely non-functional."
+  "weighted_score": 0.88,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Model correctly identifies PCI DSS 3.4 (NFR-2) log scrubbing as unverified and holds the story INCOMPLETE, but out-of-scope deviation detection is vague (mentions apk.5/apk.6 without surfacing any specific out-of-scope implementation in the PR), metric signal step is silently omitted rather than explicitly confirmed as not applicable, and the process order folds NFR check into the checklist rather than following the discrete AC→out-of-scope→tests→NFR→metric→verdict sequence."
 }

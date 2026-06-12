@@ -1,19 +1,19 @@
 {
   "skill": "definition-of-done",
   "model_label": "claude-sonnet-4-6",
-  "case_id": "T1",
+  "case_id": "T3",
   "scores": {
-    "d1_ac_coverage_accuracy": 0,
-    "d2_deviation_detection": 0,
-    "d3_nfr_verification": 0,
-    "d4_metric_signal": 0.4,
-    "d5_completion_verdict": 0,
-    "d6_process_compliance": 0
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
   },
-  "weighted_score": 0,
-  "pass": false,
-  "compliant": false,
-  "gate_fidelity_correct": false,
-  "categorical_fail": "ac_false_positive",
-  "notes": "The model refused to run the DoD assessment entirely, claiming missing artefacts despite the story, test plan, and PR description being provided in the prompt, resulting in no AC coverage, no deviation detection, no NFR verification, no metric signal, no verdict, and no process compliance."
+  "weighted_score": 0.955,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Excellent assessment with PCI DSS 3.4 NFR gap precisely named and blocked, all ACs correctly evidenced, and out-of-scope integrity confirmed; minor deductions for silently omitting metric signal step and slight process order deviation (security checks before out-of-scope check)."
 }

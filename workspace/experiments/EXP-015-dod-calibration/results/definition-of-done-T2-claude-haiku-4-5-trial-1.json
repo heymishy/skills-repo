@@ -1,19 +1,19 @@
 {
   "skill": "definition-of-done",
   "model_label": "claude-haiku-4-5",
-  "case_id": "T1",
+  "case_id": "T2",
   "scores": {
-    "d1_ac_coverage_accuracy": 0,
-    "d2_deviation_detection": 0,
-    "d3_nfr_verification": 0,
-    "d4_metric_signal": 0.4,
-    "d5_completion_verdict": 0,
-    "d6_process_compliance": 0
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": "N/A",
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
   },
-  "weighted_score": 0,
-  "pass": false,
-  "compliant": false,
-  "gate_fidelity_correct": false,
-  "categorical_fail": "ac_false_positive",
-  "notes": "The model produced a generic checklist with all items marked ✅ without referencing any specific AC, NFR, deviation, metric, or PR evidence, constituting a blanket false positive across every evaluation dimension."
+  "weighted_score": 0.9371,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "The model correctly identified the avatar upload scope violation by name and issued a COMPLETE WITH DEVIATIONS-equivalent verdict; the main gap is that metric signal was not explicitly categorised using the defined enum and the NFR/metric steps were not visibly separated in process order."
 }

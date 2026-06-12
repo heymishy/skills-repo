@@ -1,19 +1,19 @@
 {
   "skill": "definition-of-done",
   "model_label": "claude-sonnet-4-6",
-  "case_id": "T1",
+  "case_id": "T2",
   "scores": {
-    "d1_ac_coverage_accuracy": 0.5,
-    "d2_deviation_detection": 0.4,
-    "d3_nfr_verification": 0.4,
-    "d4_metric_signal": 0.4,
-    "d5_completion_verdict": 0,
-    "d6_process_compliance": 0
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.8
   },
-  "weighted_score": 0.335,
-  "pass": false,
+  "weighted_score": 0.955,
+  "pass": true,
   "compliant": true,
-  "gate_fidelity_correct": false,
+  "gate_fidelity_correct": true,
   "categorical_fail": null,
-  "notes": "The model refused to execute the DoD pipeline citing missing artefacts, but artefacts were present in the prompt; this resulted in no AC assessment, no verdict, no NFR check, no deviation detection, and no metric signal — a complete process failure."
+  "notes": "Strong deviation detection — avatar upload out-of-scope addition explicitly named and thoroughly analysed; minor gaps are silent omission of metric signal confirmation step and a slight process reordering (test plan checked before out-of-scope review)."
 }

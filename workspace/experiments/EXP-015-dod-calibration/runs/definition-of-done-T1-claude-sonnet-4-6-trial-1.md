@@ -1,63 +1,119 @@
-# Definition of Done Pipeline — `/definition-of-done`
+# /definition-of-done — ham.9 · Payment status webhook delivery
 
-**Story:** ham.9 | **Feature:** Hamilton Core Banking — Webhook Notifications | **PR:** #214 (merged)
-
----
-
-## ⚠️ BLOCKED — Insufficient Artefacts to Complete Assessment
-
-Before I can run a meaningful DoD evaluation, I need to flag that the story artefact provided is **critically incomplete**. I have a Story ID, Feature name, and Epic — but I'm missing the substance required to assess completion.
+**DoD assessed:** 2026-05-14
+**PR:** #214 (merged)
+**Assessor:** Definition-of-Done pipeline skill
+**Prior DoR verdict:** PROCEED (W1 acknowledged — load test to be added before DoD)
 
 ---
 
-## 📋 Missing Artefacts Checklist
+## Pre-flight: DoR commitment check
 
-The following are required to run this pipeline:
+At DoR, the operator acknowledged **W1 (GAP-1)**: AC4 had no load test, and the explicit commitment was to add one before DoD. That commitment is now due for resolution. It is the primary issue in this assessment.
 
-| # | Missing Item | Why It's Needed |
+---
+
+## AC-by-AC Verdict
+
+### AC1 — Settled transition triggers HTTPS POST within 500ms, correct body and HMAC header
+
+| Element | Status |
+|---|---|
+| T1: settled transition triggers HTTPS POST | ✅ Covered |
+| T2: HMAC header present and valid | ✅ Covered |
+| Test plan coverage declared | Full |
+| PR implements HMAC-SHA256 signing | ✅ Confirmed in PR description |
+| Tests pass | ✅ 5/5 |
+
+**Verdict: ✅ PASS**
+
+---
+
+### AC2 — Retry up to 3× with exponential backoff; dead-letter on third failure
+
+| Element | Status |
+|---|---|
+| T3: dead-letter entry written on third failure | ✅ Covered |
+| T4: backoff spy confirms 1s/2s/4s delays | ✅ Covered |
+| Test plan coverage declared | Full |
+| Tests pass | ✅ 5/5 |
+
+**Verdict: ✅ PASS**
+
+---
+
+### AC3 — Filtered subscriber does not receive non-matching status
+
+| Element | Status |
+|---|---|
+| T5: filtered subscriber does not receive non-matching status | ✅ Covered |
+| Test plan coverage declared | Full |
+| Tests pass | ✅ 5/5 |
+
+**Verdict: ✅ PASS**
+
+---
+
+### AC4 — P99 delivery latency ≤ 500ms under 100 concurrent transitions (integration environment)
+
+| Element | Status |
+|---|---|
+| Load test implemented | ❌ None |
+| P99 latency measured | ❌ None |
+| Test plan coverage | **None — GAP-1 (HIGH RISK), Open** |
+| DoR commitment to resolve before DoD | ❌ **Not fulfilled** |
+| RISK-ACCEPT recorded in /decisions | ❌ Absent |
+
+**Verdict: ❌ FAIL**
+
+This is a blocking finding. AC4 is a measurable performance SLA — P99 ≤ 500ms under 100 concurrent transitions — not a qualitative statement. It cannot be satisfied by inference from unit tests. The DoR explicitly deferred this on the condition it would be resolved before DoD. It has not been resolved, and no RISK-ACCEPT decision record exists.
+
+---
+
+## Supporting artefact checks
+
+| Check | Status | Notes |
 |---|---|---|
-| 1 | **Acceptance Criteria (ACs)** | Cannot verify functional completeness without them |
-| 2 | **Story description / user story statement** | Need to understand scope and intent |
-| 3 | **PR #214 diff or summary** | Need to assess what was actually shipped |
-| 4 | **Test evidence** | Unit, integration, contract tests — pass/fail status |
-| 5 | **Webhook specification** | Payload schema, event types, retry logic, auth mechanism |
-| 6 | **Non-functional requirements** | Latency SLAs, delivery guarantees (at-least-once/exactly-once), ordering |
-| 7 | **API/contract documentation** | Updated or newly created for consumers |
-| 8 | **Security review notes** | Webhook endpoints are a common attack surface (HMAC signing, TLS, etc.) |
-| 9 | **Observability/alerting config** | Delivery failures, dead-letter queues, dashboards |
-| 10 | **Sign-off records** | PO acceptance, QA sign-off |
+| Test plan present and versioned | ✅ | ham.9-test-plan.md |
+| All ACs mapped to tests | ⚠️ | AC4 explicitly unmapped — GAP-1 |
+| GAP-1 status at DoD | ❌ Open | Was Open at DoR; remains Open; no closure action |
+| PR description consistent with story scope | ✅ | Dispatcher, registry, and tests all per spec |
+| Out-of-scope items not introduced | ✅ | In-memory Map used as specified; no DB-backed registry |
+| WEBHOOK_SECRET injection noted | ✅ | Read at dispatch time — acceptable for MVP |
+| /decisions RISK-ACCEPT for GAP-1 | ❌ Absent | Required if deferral is to be formalised |
 
 ---
 
-## 🔍 Preliminary Risk Flags (Webhook-Specific)
+## Overall Verdict
 
-Even without full artefacts, I can flag **domain-specific DoD risks** typical for webhook notification stories in core banking:
+> **❌ NOT DONE**
 
-### 🔴 High Risk — Must Verify
-- [ ] **Payload signing** — Are outbound webhooks HMAC-signed? Is the signing secret rotatable?
-- [ ] **Sensitive data leakage** — Does the payload contain PII or account data that violates data minimisation principles?
-- [ ] **Retry & idempotency** — Is there a retry policy with exponential backoff? Are payloads idempotent (event ID included)?
-- [ ] **mTLS / TLS enforcement** — Are consumer endpoints required to be HTTPS only?
+AC1, AC2, and AC3 are satisfied. AC4 is not. The performance SLA is a first-class acceptance criterion, not an NFR footnote. The prior DoR warning (W1) was acknowledged with an explicit commitment to close GAP-1 before DoD; that commitment has not been honoured, and no RISK-ACCEPT decision record has been raised to formally defer it.
 
-### 🟡 Medium Risk — Should Verify
-- [ ] **Consumer documentation** — Have downstream teams received webhook schema docs?
-- [ ] **Dead-letter / failure alerting** — Is there monitoring for repeated delivery failures?
-- [ ] **Schema versioning** — Is there a `version` field or `Content-Type` versioning strategy?
-- [ ] **Ordering guarantees** — Are consumers aware of potential out-of-order delivery?
-
-### 🔵 Process Risk
-- [ ] **PR merged without DoD gate** — PR #214 was merged before this assessment was completed. This is a process concern worth raising with the team.
+The PR was merged before DoD was assessed. That does not change the DoD verdict.
 
 ---
 
-## ▶️ How to Proceed
+## Required actions to reach DONE
 
-Please provide **one or more** of the following and I'll re-run the full assessment:
+**RQ-1 (Blocking — AC4)**
+Implement and execute a load test against the integration environment simulating 100 concurrent payment status transitions. Capture P99 delivery latency. The test must demonstrate P99 ≤ 500ms or surface a breach for triage.
 
-1. **Acceptance Criteria** *(minimum required)*
-2. Story description
-3. PR diff / summary of changes
-4. Test results / CI output
-5. Any supporting design docs
+**RQ-2 (Blocking — GAP-1 closure)**
+Close GAP-1 in the test plan artefact (`ham.9-test-plan.md`) with one of:
+- (a) Test results confirming P99 ≤ 500ms — GAP-1 marked CLOSED, and DoD re-run; or
+- (b) A RISK-ACCEPT decision record in `/decisions` signed by an authorised owner, documenting the residual risk, rationale for deferral, and a concrete resolution date — GAP-1 marked RISK-ACCEPTED, DoD re-run proceeds against the remaining ACs.
 
-> 💬 *If you can share even just the ACs, I can give you a partial but structured DoD verdict with clear pass/fail/needs-evidence status per criterion.*
+> Note on RQ-2(b): RISK-ACCEPT is available but should be used deliberately. A 500ms P99 SLA under concurrency is an integration partner commitment, not an internal quality preference. The risk owner should be aware that partners may be relying on this behaviour.
+
+---
+
+## Recommended next steps
+
+1. **Do not re-merge or re-release** under a DoD claim until RQ-1 or RQ-2(b) is satisfied.
+2. Assign RQ-1 to the engineer who owns `webhook-dispatcher.js` — a k6 or Artillery load test script against the integration environment is the straightforward path.
+3. If timeline pressure exists, escalate RQ-2(b) to the tech lead or product owner for a conscious RISK-ACCEPT decision — do not allow GAP-1 to age silently into the next sprint without a formal record.
+
+---
+
+*Pipeline: /definition-of-done · Story: ham.9 · Assessed against merged PR #214 · 2026-05-14*

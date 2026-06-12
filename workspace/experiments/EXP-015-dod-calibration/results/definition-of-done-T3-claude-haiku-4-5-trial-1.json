@@ -1,19 +1,19 @@
 {
   "skill": "definition-of-done",
   "model_label": "claude-haiku-4-5",
-  "case_id": "T1",
+  "case_id": "T3",
   "scores": {
-    "d1_ac_coverage_accuracy": 0,
-    "d2_deviation_detection": 0,
-    "d3_nfr_verification": 0,
-    "d4_metric_signal": 0.4,
-    "d5_completion_verdict": 0,
-    "d6_process_compliance": 0
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 0.7,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
   },
-  "weighted_score": 0,
-  "pass": false,
-  "compliant": false,
-  "gate_fidelity_correct": false,
-  "categorical_fail": "ac_false_positive",
-  "notes": "The model produced a generic checklist template rather than performing any evidence-based AC coverage review, deviation detection, NFR verification, or metric signal assessment against the actual story and PR description, marking all categories ✅ with no evidence and providing no verdict."
+  "weighted_score": 0.895,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Strong response: correctly identifies PCI DSS 3.4 log scrubbing (NFR-2) as unverified with zero evidence and issues COMPLETE WITH DEVIATIONS (framed as CONDITIONAL DONE), naming the specific compliance gap; minor deductions for no explicit out-of-scope section, silent omission of metric signal step, and AC→NFR ordering that skips a discrete out-of-scope check phase."
 }
