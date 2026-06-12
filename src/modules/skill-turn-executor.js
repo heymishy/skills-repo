@@ -158,7 +158,20 @@ function _callCopilotStream(systemPrompt, history, currentInput, token, onChunk,
       let fullText = '';
       let buffer   = '';
 
+      // Idle-stream watchdog: if no chunk arrives for STREAM_IDLE_MS after the response
+      // headers land, abort. This catches stalled streams that never error or close.
+      const STREAM_IDLE_MS = parseInt(process.env.WUCE_STREAM_IDLE_MS || '60000', 10);
+      let _idleTimer = setTimeout(function() {
+        res.destroy(new Error('Copilot API stream idle for ' + STREAM_IDLE_MS + 'ms — aborting'));
+      }, STREAM_IDLE_MS);
+
       res.on('data', function(chunk) {
+        // Reset idle watchdog on every incoming chunk
+        clearTimeout(_idleTimer);
+        _idleTimer = setTimeout(function() {
+          res.destroy(new Error('Copilot API stream idle for ' + STREAM_IDLE_MS + 'ms — aborting'));
+        }, STREAM_IDLE_MS);
+
         buffer += chunk.toString();
         const lines = buffer.split('\n');
         buffer = lines.pop(); // last line may be incomplete
@@ -180,7 +193,13 @@ function _callCopilotStream(systemPrompt, history, currentInput, token, onChunk,
       });
 
       res.on('end', function() {
+        clearTimeout(_idleTimer);
         resolve(fullText);
+      });
+
+      res.on('error', function(err) {
+        clearTimeout(_idleTimer);
+        reject(new Error('Copilot API stream failed: ' + (err && err.message ? err.message : 'unknown error')));
       });
     });
 

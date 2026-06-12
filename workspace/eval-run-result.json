@@ -1,9 +1,10 @@
 {
-  "skill": "definition-of-ready",
-  "caseId": "S1",
+  "skill": "discovery",
+  "caseId": "S13",
   "model": "claude-haiku-4-5",
-  "completedAt": "2026-05-14T00:00:00Z",
-  "artefactPath": "workspace/experiments/EXP-003-pipeline-eval/runs/config-C-run-2/dor.md",
-  "dimensionsScored": null,
-  "verdict": "Eval mode complete — review FAIL (H1, H2, H3); test-plan and DOR produced for CPF measurement"
+  "trial": 2,
+  "completedAt": "2026-06-12T19:48:25.537Z",
+  "artefactPath": "C:\\Users\\Hamis\\code\\skills repo\\workspace\\experiments\\EXP-020-context-injection\\runs\\discovery-S13-claude-haiku-4-5-trial-2.md",
+  "dimensionsScored": 7,
+  "verdict": "fail"
 }
