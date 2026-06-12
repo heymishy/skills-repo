@@ -71,9 +71,10 @@ EXP-003 Config C run 3 (2026-05-16) validated that Haiku maintains regulated CPF
 
 | Skill | Current model | Evidence basis | measurement_backed | Review trigger |
 |-------|--------------|----------------|--------------------|----------------|
-| /discovery (non-regulated input) | claude-sonnet-4-6 | EXP-002a: T1+T3 avg 0.807, 6/6 pass rate — highest performer; 1x Layer 1 cost | true (`experiment_id: EXP-002a`) | EXP-002b (T5 mitigation) |
-| /discovery (non-regulated, T1-class, cost-optimised) | claude-haiku-4-5 | EXP-002a: T1+T3 avg 0.759, 5/6 pass rate; 0.33x Layer 1 cost — one-in-six T3 failure risk accepted | true (`experiment_id: EXP-002a`) | EXP-002b |
-| /discovery (regulated input) | claude-sonnet-4-6 | EXP-002a: D7 T3 = 0.900 (above 0.80 regulated threshold) — outperforms Opus (0.700) at 1/15th the cost | true (`experiment_id: EXP-002a`) | EXP-003 (CPF validation) |
+| /discovery (non-regulated input) | claude-sonnet-4-6 | EXP-002a: T1+T3 avg 0.807, 6/6 pass rate. EXP-010 S-series extension (13 cases, 2 trials): avg 0.617, cost frontier at ~$0.059/passing trial. Sonnet is the Pareto frontier — no tested model is both cheaper and higher quality. | true (`experiment_id: EXP-002a, EXP-010-fable5-model-sweep`) | EXP-021 (Haiku S-series — tiered routing candidate) |
+| /discovery (non-regulated, easy/medium cases, cost-optimised) | claude-haiku-4-5 | EXP-002a: T1+T3 avg 0.759, 5/6 pass rate; 0.33x Layer 1 cost. **EXP-021 PENDING**: Haiku has not been tested on the S-series corpus (S1-S13). T1/T3 approval stands until EXP-021 either confirms or redefines the easy/medium boundary. | true (`experiment_id: EXP-002a`) — S-series validation PENDING | EXP-021 (Haiku S-series frontier) |
+| /discovery (regulated input, non-S-hard) | claude-sonnet-4-6 | EXP-002a: D7 T3 = 0.900 (above 0.80 regulated threshold). EXP-010: Sonnet remains frontier on S-series regulated cases. | true (`experiment_id: EXP-002a, EXP-010-fable5-model-sweep`) | EXP-003 (CPF validation) |
+| /discovery (regulated input, S-hard — S9-S13 class) | claude-sonnet-4-6 + context-regulated.yml | EXP-020: Sonnet S13 with regulated context injection scored 0.995 (+0.378 vs no-context baseline of 0.617, 2/2 pass). Context injection is the mechanism — not model change. EXP-025 pending for S9/S11/S12 breadth. Haiku+context remains NON-COMPLIANT on S-hard (EXP-020: S13 0.306). | true (`experiment_id: EXP-020-context-injection`) | EXP-025 (context injection breadth for S9/S11/S12) |
 | /definition | claude-haiku-4-5 | EXP-005: all 4 cases pass at 0.33× Sonnet cost; measurement_backed: true | true (`experiment_id: EXP-005`, 2026-05-14) | Corpus expansion or categorical fail |
 | /review (default) | claude-haiku-4-5 | EXP-006: FDR_HIGH 1.00 across T1–T3 both trials (6/6 adversarial cases); zero phantom HIGHs on T5; avg weighted 0.98; no categorical fails. Approved at 0.33× Sonnet cost. | true (`experiment_id: EXP-006-review-rubric`, 2026-05-14) | Corpus expansion or categorical fail trigger |
 | /review (direct-author override) | claude-sonnet-4-6 | EXP-006: FDR_HIGH 1.00 both trials; identical gate performance to Haiku but adds causal chain reasoning, explicit fix text, and downstream impact articulation — higher value when review output is delivered directly to story author or compliance reviewer. | true (`experiment_id: EXP-006-review-rubric`, 2026-05-14) | Default if direct-author context confirmed |
@@ -183,6 +184,32 @@ A local model is PROHIBITED when:
 
 ---
 
+## Cost-performance frontier
+
+**Full analysis:** `workspace/proposals/cost-performance-frontier.md`
+
+The eval programme (EXP-010 through EXP-020) has established routing policy per skill. The frontier analysis determines whether cheaper models can meet the quality threshold — specifically: which models are on the Pareto frontier (no tested model is both cheaper AND higher quality)?
+
+### Discovery frontier positions (Layer 2, cost/passing trial)
+
+| Model | Avg score | Cost/passing trial | Frontier position |
+|-------|-----------|-------------------|-------------------|
+| claude-haiku-4-5 | UNTESTED (S-series) | ~$0.013 est. | **UNTESTED** — EXP-021 |
+| claude-sonnet-4-6 | 0.617 | ~$0.059 | **FRONTIER** (cost-quality) |
+| claude-fable-5 | 0.712* | $0.340 | **FRONTIER** (quality peak) |
+| claude-opus-4-6 | 0.571 | $0.145 | DOMINATED by Sonnet |
+| gpt-5.4 | 0.480 | $0.516 | DOMINATED by Sonnet |
+| gpt-4.1 | 0.419 | $0.513 | DOMINATED by Sonnet |
+
+\* Fable 5 S-hard scores may be understated due to 4096 token truncation (EXP-010 scorecard Section 9). EXP-024 will produce corrected scores.
+
+**Key frontier unknowns:**
+- Haiku S-series (EXP-021): if Haiku passes S1-S8 at ≥0.70, it enters as the easy/medium frontier at ~$0.013-$0.017/passing trial
+- GPT format-neutral (EXP-022): if any GPT model passes with format-neutral SKILL.md, it enters as the 0x Layer 1 frontier
+- Regulated context injection default (EXP-025): whether `.github/context-regulated.yml` injection should be the default for all S-hard regulated discovery (not model-specific)
+
+---
+
 ## Multi-provider routing
 
 **GPT models — EXP-002a finding (2026-05-12):** Both GPT models fail all discovery evaluation cases.
@@ -206,7 +233,9 @@ Until EXP-002b resolves the context gap vs model gap question, the following int
 
 > "Before writing the discovery artefact, identify any constraints in this domain that may not be explicit in the problem statement — including regulatory obligations, data residency requirements, and cross-system dependencies. List them as open questions before proceeding to the problem statement."
 
-This is a manual mitigation for the T5 gap. It is not a permanent fix — it is a workaround until EXP-002b determines the correct structural intervention (context files, SKILL.md change, or explicit regulatory framing in system context).
+This is a manual mitigation for the T5 gap. It is not a permanent fix — it is a workaround until EXP-002b determines the correct structural intervention.
+
+**EXP-020 update (2026-06-13):** For NZ financial regulated inputs specifically, context-file injection (`.github/context-regulated.yml`) is confirmed as the structural intervention — not operator-manual prepend. EXP-020 S13 Sonnet+context scored 0.995 vs no-context baseline of 0.617. The operator-manual workaround above remains valid for non-financial or non-NZ regulated cases where `context-regulated.yml` is not applicable. For NZ financial regulated discovery on S-hard cases, use `--context-files .github/context-regulated.yml` (or the pipeline equivalent) instead of the manual prepend.
 
 ---
 
@@ -239,6 +268,8 @@ This is a manual mitigation for the T5 gap. It is not a permanent fix — it is 
 | Config C regulated CPF assessment | EXP-003 | _pending_ | _pending_ | _pending_ |
 | Local model L1 approval (structured skills) | EXP-LOCAL-001 | _pending_ | _pending_ | _pending_ |
 | /definition-of-done pipeline fidelity — format compatibility | EXP-019 | Haiku DoD gate parsed real pipeline bundle (S5 crm.2) without structural errors. COMPLETE verdict, all 5 ACs evidenced, vulnerability policy NFR verified, zero fabricated gates. Bundle format validated: `>` trigger, `###` inner headings, fenced PR description, `##` terminator. | Added EXP-019 evidence to /definition-of-done routing entry; pipeline fidelity confirmed | 2026-06-12 |
+| /discovery S-series corpus extension — Sonnet frontier confirmed | EXP-010 | S-series (13 cases, 2 trials): Sonnet avg 0.617, ~$0.059/passing trial. Fable 5 avg 0.712, $0.340/passing trial. Opus avg 0.571, $0.145/passing trial. Sonnet is the Pareto frontier — Opus and Fable 5 both dominated on cost. Haiku S-series not tested. | Updated /discovery routing entry to cite EXP-010 alongside EXP-002a | 2026-06-13 |
+| /discovery S-hard regulated — context injection as quality lever | EXP-020 | Sonnet S13 with context-regulated.yml: 0.995 (+0.378 delta vs no-context 0.617), 2/2 pass. S10 judge failures (infrastructure artifact). Haiku NON-COMPLIANT on S-hard under context injection (S13 0.306, S10 0.018). Gap of 0.689 far exceeds falsification threshold — routing unchanged. Context injection is the quality lever, not model switch. | Added /discovery (regulated S-hard) routing row with context injection default; added EXP-025 as pending breadth confirmation | 2026-06-13 |
 
 ---
 
