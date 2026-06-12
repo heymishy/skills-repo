@@ -149,3 +149,20 @@ Unlike /discovery and /definition where the judge compares against a ground-trut
 - **Reference B** (worse): Generic output with correct structure but no scenario-specific content.
 
 The judge prompt for /ideate includes both references and asks: "Is the model output (a) closer to Reference A, (b) between A and B, or (c) closer to Reference B?" Each dimension is then scored on this comparative scale rather than an absolute 0.0–1.0 rubric. This prevents the judge from rewarding generic-but-well-structured output.
+
+**Absolute quality floor (required):** Comparative ranking alone is insufficient — it cannot detect when both reference outputs and the model output are all weak (reference pair quality failure), or when the model produces something worse than Reference B. Before comparative scoring, the judge applies a per-dimension floor check:
+
+| Dimension | Minimum floor (must pass before comparative scoring) |
+|-----------|------------------------------------------------------|
+| I1 | At least one scenario-specific constraint named by name (not just "regulatory risk") |
+| I2 | At least one opportunity or assumption not present verbatim in the input |
+| I3 | At least one assumption has a type classification (desirability/viability/feasibility/ethical) |
+| I4 | At least 8 of 10 Cagan questions answered (Lens D only) |
+| I5 | At least one assumption marker present if any assumptions are named |
+
+If the model output fails a dimension's floor check, that dimension scores 0.0 and comparative scoring does not apply. This handles three failure modes the comparative judge alone cannot catch:
+1. **Model worse than Reference B** — fails floor check → 0.0
+2. **Both references weak** — floor check is independent of references; a floor failure is absolute regardless of whether Reference A is also weak
+3. **Generic output closer to Reference A only because Reference A is also generic** — floor check catches the absence of scenario-specific content before reference comparison
+
+The comparative scale maps to scores only after the floor passes: closer to A = ≥ 0.70, between A and B = 0.40–0.65, closer to B = ≤ 0.35.

@@ -104,11 +104,13 @@ Binary pre-score checks. If any fail, the run is non-compliant and scoring is ab
 
 ## 4. Pass threshold
 
-**Weighted pass score:** ≥ 0.80
+**Weighted pass score:** ≥ 0.80 (provisional — see calibration caveat below)
 
 Formula: `Σ(dimension_score × weight)` across all scored dimensions.
 
 Justification: DoD is a gate skill — its false positive failure mode (calling COMPLETE when an AC was not evidenced) propagates as pipeline corruption. A 0.80 threshold matches the existing DoR threshold and the /definition threshold for regulated inputs. Any run where D1 = 0.0 (categorical fail) is non-compliant regardless of weighted score.
+
+**Calibration caveat:** The 0.80 threshold has not been validated against the existing corpus. EXP-015 will provide the first empirical data. Before EXP-016 runs, check the T4 (genuinely complete story) mean score across all trials and models. If T4 mean < 0.80, the threshold must recalibrate to `floor(T4_mean - 0.03)` — a threshold set above the clean-case mean means no run can ever pass, which invalidates all subsequent sweeps. The threshold must not be raised above T4 mean regardless of gate-skill arguments. Record the calibration decision and adjusted threshold in the EXP-015 scorecard before proceeding.
 
 **response_type flag:** DoD produces a structured verdict artefact only. Response type is always `artefact`. Clarification is not a valid response for DoD — if the PR description is ambiguous, the model must mark the AC as ⚠️ (unverifiable) rather than requesting clarification. If the PR is wholly absent or the story has no ACs, the structural gate will catch this before scoring.
 
