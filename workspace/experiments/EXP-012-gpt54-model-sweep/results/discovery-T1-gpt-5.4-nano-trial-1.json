@@ -1,0 +1,18 @@
+{
+  "case_id": "T1",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 1,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0.559,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong persona specificity and success observability with baseline anchoring, but critically missing assumptions (no idempotency risk flagged), no constraints (PCI-DSS absent), only one named out-of-scope item (circuit breaker mentioned inline but no dedicated section with reasons), and the problem framing is partially solution-framed by leading with the proposed mechanism.",
+  "context_injection": false
+}

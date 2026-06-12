@@ -1,0 +1,17 @@
+{
+  "case_id": "T5",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 1,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 1
+  },
+  "weighted_score": 0.739,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong constraint surfacing (records retention, eDiscovery, information barriers, tooling duplication) and genuine assumption quality with build-vs-configure framing; penalised on persona specificity (no named roles with cost) and out-of-scope discipline (no explicit named deferrals with reasons), and problem framing is partially solution-adjacent via the hypothesis table."
+}

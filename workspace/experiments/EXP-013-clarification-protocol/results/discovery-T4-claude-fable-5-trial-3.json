@@ -1,0 +1,17 @@
+{
+  "case_id": "T4",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.366,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — model asks good targeted questions but also produces partial artefact sections (hypotheses, common culprits, architecture context framing) from thin input, violating the clarification gate; d3 and d4 score 0.0 because no bounded MVP or out-of-scope items exist, and d1 is partially penalised because the 'Common culprits' section edges into solution framing from unverified assumptions."
+}

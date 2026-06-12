@@ -1,0 +1,18 @@
+{
+  "case_id": "S9",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.1,
+    "d6_success_observability": 0.2,
+    "d7_constraint_completeness": 0.2
+  },
+  "weighted_score": 0.121,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: problem IS the solution — the response is entirely a solution delivery plan with no problem framing, no named personas, no out-of-scope discipline, and critically accepts the March 31 deadline unchallenged while treating FMA SEN as a documentation formality and ignoring hardship fee waiver obligations entirely.",
+  "context_injection": false
+}

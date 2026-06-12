@@ -1,0 +1,18 @@
+{
+  "case_id": "S11",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.22,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: problem IS the solution — the entire response is a solution design/API specification with zero problem framing, enriched insights are included in launch scope contrary to corpus requirements (D3=0.0 categorical), no Privacy Act/CDR constraints named explicitly, no success indicators, and no genuine assumption about derived-data consent scope.",
+  "context_injection": false
+}

@@ -237,7 +237,9 @@ function getProvider(modelId, providerOverride) {
         const allMessages = systemPrompt
           ? [{ role: 'system', content: systemPrompt }, ...messages]
           : messages;
-        return JSON.stringify({ model, max_tokens: maxTokens, messages: allMessages });
+        // gpt-5.x and o-series models require max_completion_tokens; older models use max_tokens
+        const tokenKey = /^(o[0-9]|gpt-5)/.test(model) ? 'max_completion_tokens' : 'max_tokens';
+        return JSON.stringify({ model, [tokenKey]: maxTokens, messages: allMessages });
       },
       parseResponse(parsed) {
         const content = parsed.choices?.[0]?.message?.content || '';
@@ -380,11 +382,19 @@ const PRICING = {
   'claude-opus-4-7':              { inputPerM: 5.00,  outputPerM: 25.00 },
   'claude-opus-4-6':              { inputPerM: 5.00,  outputPerM: 25.00 },  // claude-opus-4-6 also valid — same pricing as 4-7 (SDK-confirmed 2026-05-12)
   'claude-haiku-4-5':             { inputPerM: 1.00,  outputPerM: 5.00 },
-  // OpenAI — TODO: verify current rates at platform.openai.com/pricing before running
-  'gpt-4o':            { inputPerM: 2.50, outputPerM: 10.00 },   // TODO: verify current rate
-  'gpt-4o-mini':       { inputPerM: 0.15, outputPerM: 0.60 },    // TODO: verify current rate
-  'gpt-4.1':           { inputPerM: 2.00, outputPerM: 8.00 },    // TODO: verify current rate — estimate only
-  'gpt-5-mini':        { inputPerM: 0.15, outputPerM: 0.60 },    // TODO: verify current rate — estimate only
+  // OpenAI 4.x — rates per platform.openai.com/pricing (verified 2026-06-11)
+  'gpt-4o':            { inputPerM: 2.50,  outputPerM: 10.00 },
+  'gpt-4o-mini':       { inputPerM: 0.15,  outputPerM: 0.60 },
+  'gpt-4.1':           { inputPerM: 2.00,  outputPerM: 8.00 },
+  // OpenAI 5.x — rates per platform.openai.com/pricing + pricepertoken.com (verified 2026-06-11)
+  'gpt-5':             { inputPerM: 5.00,  outputPerM: 30.00 },  // standard (uncached) rate — "starts at" cached $0.625/$5.00 reflects 8× cache discount
+  'gpt-5-mini':        { inputPerM: 0.125, outputPerM: 1.00 },   // released 2025-08-07
+  'gpt-5.2':           { inputPerM: 1.75,  outputPerM: 14.00 },  // previous frontier (superseded by 5.4)
+  'gpt-5.4':           { inputPerM: 2.50,  outputPerM: 15.00 },  // released 2026-03-05; 1.1M context
+  'gpt-5.4-mini':      { inputPerM: 0.75,  outputPerM: 4.50 },   // released 2026-03-17
+  'gpt-5.4-nano':      { inputPerM: 0.20,  outputPerM: 1.25 },   // released 2026-03-17; smallest 5.4 tier
+  'gpt-5.4-pro':       { inputPerM: 30.00, outputPerM: 180.00 }, // extended-thinking tier — not for sweeps
+  'gpt-5.5':           { inputPerM: 5.00,  outputPerM: 30.00 },  // current flagship (2026); same price tier as gpt-5
 };
 
 // ─── CLI argument parsing ───────────────────────────────────────────────────
@@ -708,6 +718,17 @@ function extractJudgePrompt(evalContent) {
   return match ? match[1].trim() : null;
 }
 
+function extractJudgeRubric(evalContent) {
+  // Returns the full grading-dimensions section (everything before ## Judge prompt) to use
+  // as a cached system prompt on Anthropic judge calls. At ~3000 tokens this exceeds the
+  // 1024-token Anthropic prompt-cache minimum, so the rubric is cached after the first call
+  // and subsequent calls pay the 90%-discounted read rate instead of full input price.
+  const idx = evalContent.indexOf('## Judge prompt');
+  if (idx === -1) return null;
+  const rubric = evalContent.slice(0, idx).trim();
+  return rubric.length >= 500 ? `You are an expert evaluator. Use the following evaluation specification when scoring model responses:\n\n${rubric}` : null;
+}
+
 // ─── Anthropic API call ─────────────────────────────────────────────────────
 
 // ─── Cost tracking ──────────────────────────────────────────────────────────
@@ -975,8 +996,10 @@ async function scoreBatchResults(resultLines, matrix, experimentDir, effectiveJu
         .replace('{CASE_CONTEXT}', judgeContext)
         .replace('{OUTPUT}', runContent);
       await new Promise(r => setTimeout(r, 500));
+      const judgeRubric = extractJudgeRubric(skill.evalContent);
+      const judgeProvider = effectiveProvider === 'copilot' ? 'copilot' : null;
       try {
-        const judgeResult = await callModelWithRetry(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024, undefined, effectiveProvider);
+        const judgeResult = await callModelWithRetry(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024, judgeRubric, judgeProvider);
         totalJudgeInputTokens += judgeResult.inputTokens;
         totalJudgeOutputTokens += judgeResult.outputTokens;
         const jsonMatch = judgeResult.content.match(/\{[\s\S]*\}/);
@@ -1242,11 +1265,13 @@ async function runJudgeOnlyMode(args, evalConfig, experimentDir, effectiveProvid
         .replace('{OUTPUT}', runContent);
 
       await new Promise(r => setTimeout(r, 500));
+      const judgeRubric = extractJudgeRubric(skill.evalContent);
+      const judgeProvider = effectiveProvider === 'copilot' ? 'copilot' : null;
       try {
         const judgeResult = await callModelWithRetry(
           effectiveJudgeModel,
           [{ role: 'user', content: judgePromptFilled }],
-          1024, undefined, effectiveProvider
+          1024, judgeRubric, judgeProvider
         );
         totalJudgeInputTokens += judgeResult.inputTokens;
         totalJudgeOutputTokens += judgeResult.outputTokens;
@@ -1403,21 +1428,29 @@ async function main() {
   const effectiveJudgeModel = evalConfig.judgeModel || JUDGE_MODEL;
   const evalOutputPath = evalConfig.outputPath;
 
+  // Always log the active judge model — non-default configurations (e.g. EXP-014 Fable 5 judge) are
+  // otherwise invisible and can silently invalidate other experiments if context.yml isn't restored.
+  console.log(`[sweep] judge model: ${effectiveJudgeModel}`);
   if (evalConfig.mode) {
     console.log(`[eval] evaluation.mode: true — non-interactive mode active`);
-    console.log(`[eval] judge model: ${effectiveJudgeModel}`);
     console.log(`[eval] output path: ${evalOutputPath}`);
   }
 
   // Pre-flight: need at least one usable credential
   const apiKey = process.env.ANTHROPIC_API_KEY;
+  const openaiKey = process.env.OPENAI_API_KEY;
   const githubToken = process.env.GITHUB_TOKEN || process.env.GITHUB_COPILOT_TOKEN;
-  if (!apiKey && !githubToken && !args.dryRun) {
+  if (!apiKey && !openaiKey && !githubToken && !args.dryRun) {
     console.error('Error: no API credentials found.');
     console.error('  Direct API:     set ANTHROPIC_API_KEY (claude-* models) or OPENAI_API_KEY (gpt-* models)');
     console.error('  Copilot proxy:  set GITHUB_TOKEN or GITHUB_COPILOT_TOKEN (and use --provider copilot)');
     console.error('  Dry run:        use --dry-run');
     process.exit(1);
+  }
+  // Warn early if judge needs Anthropic but ANTHROPIC_API_KEY is absent
+  if (!apiKey && !githubToken && effectiveJudgeModel.startsWith('claude-') && !args.dryRun) {
+    console.warn(`Warning: ANTHROPIC_API_KEY not set but judge model is ${effectiveJudgeModel} — judge calls will fail at runtime.`);
+    console.warn('  Set ANTHROPIC_API_KEY to enable judging, or override judge_model in context.yml to a gpt-* model.');
   }
 
   // Provider resolution: explicit flag > auto-detect from env vars > model-prefix routing
@@ -1670,8 +1703,10 @@ async function main() {
           .replace('{OUTPUT}', runContent);
 
         await new Promise(r => setTimeout(r, 500));
+        const judgeRubric = extractJudgeRubric(skill.evalContent);
+        const judgeProvider = effectiveProvider === 'copilot' ? 'copilot' : null;
         try {
-          const judgeResult = await callModelWithRetry(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024, undefined, effectiveProvider);
+          const judgeResult = await callModelWithRetry(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 1024, judgeRubric, judgeProvider);
           totalInputTokens += judgeResult.inputTokens;
           totalOutputTokens += judgeResult.outputTokens;
           // Parse JSON from judge output (strip any surrounding text)

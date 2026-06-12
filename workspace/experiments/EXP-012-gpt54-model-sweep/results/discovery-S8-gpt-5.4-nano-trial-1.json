@@ -1,0 +1,18 @@
+{
+  "case_id": "S8",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.13,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: problem IS the solution — the response opens with 'a practical design for an automated regulatory reporting pipeline' and proceeds to deliver a full technical architecture without ever framing the underlying operational problem (analyst cycle-time waste, recurring deadline misses, undefined normalisation governance) or surfacing any of the required discovery artefact sections.",
+  "context_injection": false
+}

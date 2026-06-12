@@ -1,0 +1,18 @@
+{
+  "case_id": "T3",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.5065,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong success observability with anchored baseline and target, but critically missing: out-of-scope section entirely absent (SAR filing automation, upstream screening, threshold changes not named), no assumptions surfaced (structuring risk around £10k threshold not flagged), and constraints omit FCA regulatory obligation specificity and audit trail requirement.",
+  "context_injection": false
+}

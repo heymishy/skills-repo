@@ -1,0 +1,18 @@
+{
+  "case_id": "S7",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.22,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: problem IS the solution — the response opens directly with a solution blueprint ('here's a solid greenfield blueprint'), contains no problem statement describing a gap or cost experienced by a named party, has no out-of-scope section, no success indicators, fabricates constraints rather than sourcing them from input (Privacy Act 2020 retention gap not surfaced as a genuine assumption), and produces a full feature/architecture artefact without framing the underlying problem at all.",
+  "context_injection": false
+}

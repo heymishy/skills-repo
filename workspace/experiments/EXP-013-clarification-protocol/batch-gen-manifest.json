@@ -1,0 +1,242 @@
+{
+  "batchId": "msgbatch_017wXFfQT7D8anCQoDaayZ8A",
+  "submittedAt": "2026-06-11T19:16:28.915Z",
+  "experimentId": "EXP-013-clarification-protocol",
+  "cellCount": 18,
+  "requests": [
+    {
+      "custom_id": "EXP-013__discovery__T2__claude-fable-5__trial1",
+      "params": {
+        "model": "claude-fable-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. **What's the problem or opportunity you want to explore?**\r\n\nImprove the onboarding experience for new business customers.\r\n\r\n*(That is the entire input.)*"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-013__discovery__T2__claude-fable-5__trial2",
+      "params": {
+        "model": "claude-fable-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. **What's the problem or opportunity you want to explore?**\r\n\nImprove the onboarding experience for new business customers.\r\n\r\n*(That is the entire input.)*"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-013__discovery__T2__claude-fable-5__trial3",
+      "params": {
+        "model": "claude-fable-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. **What's the problem or opportunity you want to explore?**\r\n\nImprove the onboarding experience for new business customers.\r\n\r\n*(That is the entire input.)*"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-013__discovery__T2__claude-sonnet-4-6__trial1",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. **What's the problem or opportunity you want to explore?**\r\n\nImprove the onboarding experience for new business customers.\r\n\r\n*(That is the entire input.)*"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-013__discovery__T2__claude-sonnet-4-6__trial2",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. **What's the problem or opportunity you want to explore?**\r\n\nImprove the onboarding experience for new business customers.\r\n\r\n*(That is the entire input.)*"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-013__discovery__T2__claude-sonnet-4-6__trial3",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. **What's the problem or opportunity you want to explore?**\r\n\nImprove the onboarding experience for new business customers.\r\n\r\n*(That is the entire input.)*"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-013__discovery__T4__claude-fable-5__trial1",
+      "params": {
+        "model": "claude-fable-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. Make the API faster.\r\n\r\n*(That is the entire input.)*"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-013__discovery__T4__claude-fable-5__trial2",
+      "params": {
+        "model": "claude-fable-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. Make the API faster.\r\n\r\n*(That is the entire input.)*"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-013__discovery__T4__claude-fable-5__trial3",
+      "params": {
+        "model": "claude-fable-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. Make the API faster.\r\n\r\n*(That is the entire input.)*"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-013__discovery__T4__claude-sonnet-4-6__trial1",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. Make the API faster.\r\n\r\n*(That is the entire input.)*"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-013__discovery__T4__claude-sonnet-4-6__trial2",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. Make the API faster.\r\n\r\n*(That is the entire input.)*"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-013__discovery__T4__claude-sonnet-4-6__trial3",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. Make the API faster.\r\n\r\n*(That is the entire input.)*"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-013__discovery__T5__claude-fable-5__trial1",
+      "params": {
+        "model": "claude-fable-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. We should build a note-taking app so our teams can capture meeting notes and decisions in one place.\r\n\r\n*(The operator is from a regulated financial services firm with 500+ employees. Read `product/constraints.md` for platform context.)*"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-013__discovery__T5__claude-fable-5__trial2",
+      "params": {
+        "model": "claude-fable-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. We should build a note-taking app so our teams can capture meeting notes and decisions in one place.\r\n\r\n*(The operator is from a regulated financial services firm with 500+ employees. Read `product/constraints.md` for platform context.)*"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-013__discovery__T5__claude-fable-5__trial3",
+      "params": {
+        "model": "claude-fable-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. We should build a note-taking app so our teams can capture meeting notes and decisions in one place.\r\n\r\n*(The operator is from a regulated financial services firm with 500+ employees. Read `product/constraints.md` for platform context.)*"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-013__discovery__T5__claude-sonnet-4-6__trial1",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. We should build a note-taking app so our teams can capture meeting notes and decisions in one place.\r\n\r\n*(The operator is from a regulated financial services firm with 500+ employees. Read `product/constraints.md` for platform context.)*"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-013__discovery__T5__claude-sonnet-4-6__trial2",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. We should build a note-taking app so our teams can capture meeting notes and decisions in one place.\r\n\r\n*(The operator is from a regulated financial services firm with 500+ employees. Read `product/constraints.md` for platform context.)*"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-013__discovery__T5__claude-sonnet-4-6__trial3",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. We should build a note-taking app so our teams can capture meeting notes and decisions in one place.\r\n\r\n*(The operator is from a regulated financial services firm with 500+ employees. Read `product/constraints.md` for platform context.)*"
+          }
+        ]
+      }
+    }
+  ]
+}

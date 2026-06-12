@@ -1,0 +1,18 @@
+{
+  "case_id": "S12",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0.281,
+  "pass": false,
+  "compliant": false,
+  "notes": "D1=0.0 categorical fail triggered: the response treats 'retrain and deploy the model' as the framing throughout, never surfaces the regulatory constraint violations (FMA prescribed methodology not applied, 2023 MRM independent validation requirement unscoped, CCCFA obligations unaddressed) as the actual problem; additionally, no personas are named, no genuine assumptions about policy version or FMA methodology are surfaced, and constraints (FMA algorithmic fairness methodology, CCCFA, independent validation requirement) are entirely absent or misrepresented as non-issues.",
+  "context_injection": false
+}

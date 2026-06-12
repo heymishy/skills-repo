@@ -1,0 +1,18 @@
+{
+  "case_id": "T3",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.1,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.497,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response names MLRO and frames the detection lag well, but critically fails on out-of-scope discipline (no named deferred items with reasons), lacks structuring risk assumption for the £10k threshold, omits audit trail as a hard constraint, and does not flag SAR filing automation as explicitly out of scope despite mentioning SAR filing in the stakeholder context.",
+  "context_injection": false
+}

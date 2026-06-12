@@ -1,0 +1,18 @@
+{
+  "case_id": "T5",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.3
+  },
+  "weighted_score": 0.015,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — response is an unbounded feature/requirements list (real-time collaboration, MFA, rich text, decision-tracking, audit trails, etc.) with zero enterprise context questions, no /clarify recommendation, no problem framing, no personas, and no bounded MVP.",
+  "context_injection": false
+}

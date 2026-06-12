@@ -1,0 +1,18 @@
+{
+  "case_id": "S9",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.714,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong out-of-scope discipline and rich assumption list, but problem framing is partially solution-framed (Section 1 describes what members will do rather than the competitive member experience gap and compliance breach risk), personas are generic role categories without named individuals or per-persona cost/frequency detail, and the critical FMA SEN 30-day statutory requirement is raised only as a soft concern rather than a hard constraint sourced explicitly from the KiwiSaver Act.",
+  "context_injection": false
+}

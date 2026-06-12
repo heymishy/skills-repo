@@ -1,0 +1,18 @@
+{
+  "case_id": "S13",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.558,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong regulatory sensitivity and risk framing, but problem statement drifts into solution description, personas are generic categories without role/timing/cost specificity, MVP is not bounded with explicit deferrals, out-of-scope items lack named reasons, and success indicators mention targets (sub-$5, 2-hour) without baseline anchoring in the artefact structure — critically, the hidden SWIFT correspondent bank constraint (C5) is raised only obliquely as a contractual question rather than surfaced as a hard constraint from the operator input.",
+  "context_injection": false
+}

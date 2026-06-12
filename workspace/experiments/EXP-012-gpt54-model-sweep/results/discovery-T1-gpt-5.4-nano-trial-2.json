@@ -1,0 +1,18 @@
+{
+  "case_id": "T1",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0.559,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong problem context and measurable success indicators, but the response lacks any out-of-scope section with named/reasoned deferrals, omits PCI-DSS and idempotency as hard constraints, and the assumptions section is absent (only hinted at in a trailing offer), resulting in critical gaps in D4, D5, and D7.",
+  "context_injection": false
+}

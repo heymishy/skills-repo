@@ -1,0 +1,18 @@
+{
+  "case_id": "S5",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.511,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response surfaces real privacy and vulnerability constraints and genuine uncertainties, but is structured as a feature overview rather than a discovery artefact — lacking bounded MVP scope, any named out-of-scope items with reasons, named personas with cost/timing context, or a baseline-anchored success indicator.",
+  "context_injection": false
+}

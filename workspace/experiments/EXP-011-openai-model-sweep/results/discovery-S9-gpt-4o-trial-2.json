@@ -1,0 +1,18 @@
+{
+  "case_id": "S9",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0.1,
+    "d2_persona_specificity": 0.2,
+    "d3_mvp_bounding": 0.3,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.1,
+    "d6_success_observability": 0.2,
+    "d7_constraint_completeness": 0.2
+  },
+  "weighted_score": 0.169,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — the response immediately produces a full project plan and feature list without any discovery framing, ignores the FMA SEN 30-day constraint entirely, treats March 31 as a fixed go-live date rather than challenging it, and frames the entire engagement as a delivery task rather than a problem to be investigated.",
+  "context_injection": false
+}

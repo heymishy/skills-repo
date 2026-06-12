@@ -1,0 +1,18 @@
+{
+  "case_id": "S2",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 1
+  },
+  "weighted_score": 0.657,
+  "pass": false,
+  "compliant": true,
+  "notes": "Constraints are excellently sourced (CCCFA, FMA bias finding, Centrix DSA, $30k ceiling) and assumptions flag genuine go-live blockers, but the response is heavily solution-framed from the opening summary and phases through Section 8-9, personas are never named with role/timing/cost specificity, and out-of-scope items lack structured reasons rather than being embedded discursively in risk narrative.",
+  "context_injection": false
+}

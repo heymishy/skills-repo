@@ -1,0 +1,18 @@
+{
+  "case_id": "S4",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.4,
+  "pass": false,
+  "compliant": false,
+  "notes": "D1 categorical fail: the response is primarily a solution design document (target-state goals, domain model, security architecture, migration plan) rather than a problem statement describing a forced-migration gap under a vendor deprecation deadline — problem IS the solution; additionally D3 and D4 fail as the response lists an expansive feature set without bounding deferral and has no out-of-scope section, triggering compliant=false.",
+  "context_injection": false
+}

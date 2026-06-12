@@ -1,0 +1,18 @@
+{
+  "case_id": "S13",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.55,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.55,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.35,
+    "d6_success_observability": 0.55,
+    "d7_constraint_completeness": 0.25
+  },
+  "weighted_score": 0.463,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response identifies the competitive gap and MVP direction but critically misframes compliance as a non-blocker ('not blockers'), misses the hidden SWIFT correspondent bank agreement constraint (C5) entirely, conflates NZ-side and AU-side AML/CFT obligations as a single solved problem, omits key personas (DIA, RBNZ AML/CFT team, JPMorgan Chase RM, AUSTRAC), and fails to surface genuine regulatory uncertainties with risk-if-wrong framing — the result is a commercially framed feature roadmap rather than a rigorous discovery artefact.",
+  "context_injection": false
+}

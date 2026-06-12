@@ -1,0 +1,18 @@
+{
+  "case_id": "S7",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.487,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response jumps almost entirely into solution design (architecture, feature tables, tech stack) without framing the manual registration overhead as a business problem, names no personas with role/cost context, omits the critical Privacy Act 2020 data-retention assumption, never identifies out-of-scope items with explicit deferral reasons, and lacks anchored success metrics — resulting in a shallow discovery artefact that reads as a lightweight spec.",
+  "context_injection": false
+}

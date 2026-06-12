@@ -1,0 +1,18 @@
+{
+  "case_id": "S3",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.371,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is almost entirely solution-framed as a project plan with generic roles, no explicit MVP deferral of outbound RTP, no named out-of-scope items with reasons, and assumptions are treated as tasks rather than genuine uncertainties with risk-if-wrong consequences.",
+  "context_injection": false
+}

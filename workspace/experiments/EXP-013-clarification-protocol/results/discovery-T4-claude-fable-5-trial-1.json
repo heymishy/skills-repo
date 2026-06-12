@@ -1,0 +1,17 @@
+{
+  "case_id": "T4",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 1,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 1,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.7115,
+  "pass": true,
+  "compliant": true,
+  "notes": "Model correctly refuses to fabricate a discovery artefact from a thin input, asks multiple specific and targeted clarifying questions covering scope, evidence, architecture, and constraints — strong process compliance with no persona invention."
+}

@@ -1,0 +1,17 @@
+{
+  "case_id": "T5",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 1,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.617,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong compliance gate behaviour — correctly challenged 'build a note-taking app' as a solution and surfaced the critical enterprise context questions (tooling duplication, data classification, retention, access control, regulatory obligations) before proceeding, but fails on out-of-scope discipline (no named deferred items with reasons) and lacks persona specificity, dragging the weighted score below threshold."
+}

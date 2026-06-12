@@ -1,0 +1,18 @@
+{
+  "case_id": "S7",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.281,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is almost entirely a solution specification (architecture, feature list, technology choices) with no problem statement, no named assumptions, no out-of-scope discipline, and critically omits the Privacy Act 2020 data retention gap — the single most important constraint surfaced by the corpus case.",
+  "context_injection": false
+}

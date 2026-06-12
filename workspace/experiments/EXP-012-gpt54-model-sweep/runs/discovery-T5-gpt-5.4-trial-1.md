@@ -1,0 +1,1 @@
+I'll inspect the platform constraints first, then frame the discovery output for the note-taking app idea.

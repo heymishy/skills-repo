@@ -1,0 +1,18 @@
+{
+  "case_id": "S12",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0.149,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — response jumps directly to a deployment execution plan without framing the problem, missing all regulatory constraints (FMA fairness methodology, CCCFA, 2023 MRM independent validation requirement), no genuine assumptions flagged, no out-of-scope items named, and the problem IS treated as the solution (a 12-week rollout plan).",
+  "context_injection": false
+}

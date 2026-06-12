@@ -1,0 +1,18 @@
+{
+  "case_id": "S7",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.627,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong out-of-scope discipline with multiple named deferred items, but the response is largely solution-framed (opens with 'build a simple web application'), personas lack cost/timing context, assumptions are mostly facts or low-risk statements rather than genuine uncertainties (critically missing the Privacy Act 2020 retention period gap as a flagged assumption), success measures are vague and directional without baseline anchoring, and key hard constraints (Azure data residency, Privacy Act 2020 retention undefined for this data type) are mentioned only lightly in open questions rather than as sourced constraints.",
+  "context_injection": false
+}

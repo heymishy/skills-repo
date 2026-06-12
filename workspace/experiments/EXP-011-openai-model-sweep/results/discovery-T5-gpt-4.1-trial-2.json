@@ -1,0 +1,18 @@
+{
+  "case_id": "T5",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — response embeds implicit feature descriptions (searchability, auditability, SSO, integration with Outlook/Teams/SharePoint, access permissions, encryption) and solution-framed objectives rather than surfacing the required enterprise context questions (data residency, retention policy, tooling duplication, access control, FCA/MiFID II compliance classification) and recommending /clarify before proceeding.",
+  "context_injection": false
+}

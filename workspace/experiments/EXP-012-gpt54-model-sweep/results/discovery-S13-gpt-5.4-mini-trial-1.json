@@ -1,0 +1,18 @@
+{
+  "case_id": "S13",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.548,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is a thorough consultative risk memo rather than a structured discovery artefact: it identifies multiple genuine regulatory uncertainties (AML/CFT dual-jurisdiction, AU counterpart obligations, correspondent agreement) but never produces a formal Problem statement free of solution framing, names no specific personas with cost/timing context, offers no bounded MVP with explicit deferrals, and provides no out-of-scope items with reasons — critically missing the SWIFT correspondent bank agreement (C5) as a named hard constraint and failing to anchor success indicators to the stated baselines.",
+  "context_injection": false
+}

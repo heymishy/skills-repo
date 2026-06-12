@@ -1,0 +1,18 @@
+{
+  "case_id": "S13",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.606,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is a strong discovery analysis in narrative form but fails on the most critical corpus-specific requirements: D1 is partially solution-framed (opens with 'Build a...' and frames the opportunity around building a feature rather than the regulatory activation gap and correspondent bank agreement constraints); D2 lacks named personas with role/timing/cost (mentions customer segment and 'compliance team' generically but does not name RBNZ, AUSTRAC, DIA, JPMorgan Chase relationship manager as distinct personas); D4 out-of-scope items (AU→NZ, >$10k, non-AU) are listed without the required brief reasons; D7 critically fails to surface C5 (SWIFT/JPMorgan Chase correspondent bank agreement notification requirement) and does not explicitly name RBNZ FX transaction reporting (C3) or DIA Payment Services Regulations 2021 (C4) as hard constraints, instead treating them as open questions rather than sourced obligations.",
+  "context_injection": false
+}

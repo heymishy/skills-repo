@@ -1,0 +1,18 @@
+{
+  "case_id": "S4",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.336,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is predominantly solution-architecture framing (API design principles, caching decisions, migration milestones) with no named personas, no explicit MVP boundary with deferrals, no out-of-scope section, and assumptions are buried as risks/design decisions rather than stated uncertainties with risk-if-wrong; PCI DSS and CDR constraints are partially surfaced but the forced-migration deadline problem framing is absent.",
+  "context_injection": false
+}

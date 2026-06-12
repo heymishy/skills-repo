@@ -1,0 +1,18 @@
+{
+  "case_id": "S7",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.494,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response jumps almost entirely into solution/feature framing with no explicit problem statement, misses the critical Privacy Act 2020 retention-period assumption, incorrectly specifies NZ data residency instead of Azure Australia East/Southeast, lacks named personas with costs, and provides no out-of-scope items with reasons.",
+  "context_injection": false
+}

@@ -1,0 +1,18 @@
+{
+  "case_id": "T5",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.12,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — model asks clarifying questions but immediately announces it will produce a feature-scoped discovery artefact ('personas, workflows, user stories, data model, information architecture, search, MVP vs phase 2, screen set, API/domain model'), embedding a feature list in the scope description ('rich text editing, tagging, search, collaborative editing' implied by 'Create meeting note, decision capture, list/search, detail view'); the enterprise constraint questions (data residency, retention policy, tooling duplication, FCA compliance classification) were partially surfaced but framing was solution-first throughout.",
+  "context_injection": false
+}

@@ -1,0 +1,18 @@
+{
+  "case_id": "S12",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.311,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is primarily solution-framed ('proceed to MRM review pathway') and fails to surface the critical regulatory risks — FMA prescribed fairness methodology requirement, 2023 MRM policy independent validation obligation, CCCFA responsible lending obligations, and explainability standard — treating the retrain as a routine governance exercise rather than framing the problem as a potential compliance gap with material timeline and regulatory exposure.",
+  "context_injection": false
+}

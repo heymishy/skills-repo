@@ -1,0 +1,18 @@
+{
+  "case_id": "S8",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.55,
+    "d2_persona_specificity": 0.55,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.55,
+    "d6_success_observability": 0.55,
+    "d7_constraint_completeness": 0.55
+  },
+  "weighted_score": 0.499,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response mixes problem framing with a full solution architecture and future-state pipeline design, lacks explicit MVP deferral of named out-of-scope items (e.g., auto-submission, normalisation governance), does not surface the critical assumption about normalisation change-control status or treasury API unavailability with risk-if-wrong framing, and personas are named but lack cost/timing anchors — the overall output reads as a pre-scoped build brief rather than a discovery artefact.",
+  "context_injection": false
+}

@@ -1,0 +1,18 @@
+{
+  "case_id": "S12",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.308,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response accepts the user's framing uncritically and produces a deployment roadmap without flagging any regulatory constraints (FMA fairness methodology, CCCFA, MRM 2023 independent validation requirement), identifying no genuine assumptions or risks, naming no specific personas with context or cost, and deferring nothing out of scope.",
+  "context_injection": false
+}

@@ -1,0 +1,18 @@
+{
+  "case_id": "T5",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.12,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — the response lists 'search, audit trail, approvals, export, tagging, reminders, action items' as candidate capabilities and promises to produce 'discovery artifacts: scope, user stories, decision model, non-functional requirements, and an MVP vs later phases plan', treating the input as ready to proceed rather than recommending /clarify first; no problem framing, no personas, no bounded MVP, and no out-of-scope discipline are present.",
+  "context_injection": false
+}

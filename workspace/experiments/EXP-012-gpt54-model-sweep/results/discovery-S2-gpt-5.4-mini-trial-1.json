@@ -1,0 +1,18 @@
+{
+  "case_id": "S2",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 1
+  },
+  "weighted_score": 0.613,
+  "pass": false,
+  "compliant": true,
+  "notes": "Constraints are excellently sourced and the red flags around FMA non-disclosure and CCCFA are well-surfaced, but the response critically lacks any named out-of-scope items with reasons, personas are generic role labels without timing or cost context, and the problem statement is partially solution-framed ('Design and launch a compliant digital...flow').",
+  "context_injection": false
+}

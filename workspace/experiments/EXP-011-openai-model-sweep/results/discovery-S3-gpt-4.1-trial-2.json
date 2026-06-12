@@ -1,0 +1,18 @@
+{
+  "case_id": "S3",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.55,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.598,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response demonstrates solid gap analysis and risk identification but loses marks for weak persona specificity (roles referenced generically without named teams and cost context), limited out-of-scope discipline (outbound RTP mentioned but not explicitly deferred with reasoning, and no other named exclusions), and MVP scope that blurs into a broad feature list rather than a tightly bounded inbound-only perimeter with explicit deferrals.",
+  "context_injection": false
+}

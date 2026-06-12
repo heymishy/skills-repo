@@ -1,0 +1,18 @@
+{
+  "case_id": "T2",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — model produced a minimal artefact by directly echoing the vague input as a problem/opportunity statement without asking any clarifying question, constituting a categorical fail for case T2.",
+  "context_injection": false
+}

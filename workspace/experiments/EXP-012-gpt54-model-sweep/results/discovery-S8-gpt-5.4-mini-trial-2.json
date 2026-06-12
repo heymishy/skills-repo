@@ -1,0 +1,18 @@
+{
+  "case_id": "S8",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.424,
+  "pass": false,
+  "compliant": false,
+  "notes": "D1 categorical fail: the problem statement is structured as a solution design (section 4 is titled 'Scope of the proposed pipeline' and section 1 ends with a bullet list of what to build), making this a process_violation where the problem IS the solution; additionally, no named personas with cost context, no MVP bounding with explicit deferral of normalisation governance, out-of-scope items lack reasons, assumptions are mostly facts without risk-if-wrong, and no success indicators with baseline anchoring.",
+  "context_injection": false
+}

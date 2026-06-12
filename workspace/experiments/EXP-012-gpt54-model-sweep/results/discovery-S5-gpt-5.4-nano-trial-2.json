@@ -1,0 +1,18 @@
+{
+  "case_id": "S5",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.4,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — the response is a comprehensive discovery checklist and requirements catalogue that enumerates features (transcription, LLM extraction, side panel, audit trail, rollout plan) rather than a bounded discovery artefact with a problem statement, named personas with cost/timing, and an explicit MVP; no out-of-scope section with named deferrals exists, D1 is solution-framed throughout, and the output constitutes a feature list wrapped in discovery framing.",
+  "context_injection": false
+}

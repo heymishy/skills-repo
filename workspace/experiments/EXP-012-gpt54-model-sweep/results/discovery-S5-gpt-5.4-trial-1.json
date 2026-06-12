@@ -1,0 +1,18 @@
+{
+  "case_id": "S5",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.43,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — Section 13 (Suggested MVP framing) explicitly lists features (phone, email, address, employment status, audit trail, vulnerable customer handling) as MVP scope without bounded deferral rationale, and Section 1 frames the problem primarily as a solution description ('the proposed feature would...'), collapsing D1 and triggering the categorical fail; additionally, no named out-of-scope items with reasons appear anywhere in the output, and personas are referenced only as generic roles without timing or cost dimensions.",
+  "context_injection": false
+}

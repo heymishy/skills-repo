@@ -1,0 +1,18 @@
+{
+  "case_id": "S13",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.49,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response produces a high-quality regulatory risk narrative with genuine assumption-surfacing (AML/CFT adequacy, AU counterpart obligations, regulatory classification), but fails to deliver a structured discovery artefact: no named personas with cost/timing, no bounded MVP with explicit deferrals, no out-of-scope section with reasons, no success indicators with baseline anchors, and key hard constraints (SWIFT correspondent agreement notification requirement C5, DIA registration, RBNZ FX reporting, AUSTRAC originator info) are touched on narratively but not surfaced as discrete, sourced constraints.",
+  "context_injection": false
+}

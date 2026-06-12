@@ -1,0 +1,18 @@
+{
+  "case_id": "S9",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.598,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response surfaces important regulatory and cut-off risks but fails on multiple dimensions: problem statement is partially solution-framed (section 2 ends with capability requirements), personas are generic stakeholder lists without role/timing/cost specificity, assumptions treat the FMA SEN 30-day notice period and hardship fee waiver obligation as unknowns-to-chase rather than flagging them as genuine material risks-if-wrong, success indicators lack baseline anchoring, and constraints section conflates hard regulatory obligations (KiwiSaver Act s.45, FMA SEN) with soft delivery constraints without sourcing or naming them precisely.",
+  "context_injection": false
+}

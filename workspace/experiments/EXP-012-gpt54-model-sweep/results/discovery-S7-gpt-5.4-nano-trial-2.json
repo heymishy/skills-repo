@@ -1,0 +1,18 @@
+{
+  "case_id": "S7",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.22,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: problem IS the solution — the response opens with 'what we will build' and delivers a full technical architecture and API spec with no problem framing, no named personas with cost/timing, no out-of-scope section, no observable success indicators, and ignores the Privacy Act 2020 data retention gap that is the key compliance assumption to flag.",
+  "context_injection": false
+}

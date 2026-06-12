@@ -1,0 +1,18 @@
+{
+  "case_id": "S8",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.464,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response partially frames the operational problem with a cost/baseline, but fails on persona specificity (no named personas with role/timing/cost), produces an unbounded feature list as 'functional scope' rather than a bounded MVP with explicit deferrals, lacks genuine assumptions with risk-if-wrong framing, and omits the critical regulatory constraints (RBNZ/FMA statutory obligations, normalisation change-control governance requirement, FCA-equivalent disclosure requirements).",
+  "context_injection": false
+}

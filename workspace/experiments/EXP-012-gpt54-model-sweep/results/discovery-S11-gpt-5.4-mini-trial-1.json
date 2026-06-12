@@ -1,0 +1,18 @@
+{
+  "case_id": "S11",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.287,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: the response is a solution description presenting enriched insights as in-scope from day one without deferral, contains no out-of-scope section, no structured assumptions with risk-if-wrong, and frames the entire output as a proposed system rather than a discovered problem — D3=0.0 categorical fail as MVP includes the full feature set with no explicit deferrals.",
+  "context_injection": false
+}

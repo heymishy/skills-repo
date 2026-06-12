@@ -1,0 +1,18 @@
+{
+  "case_id": "S10",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.369,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is almost entirely solution-framed (a project plan), never articulates the forcing-function problem or regulatory risk clearly, names no specific personas with costs, identifies no out-of-scope items, and omits critical constraints such as BS11 30-day notification, CCCFA 7-year retention, and the 3 missing RBNZ report types.",
+  "context_injection": false
+}

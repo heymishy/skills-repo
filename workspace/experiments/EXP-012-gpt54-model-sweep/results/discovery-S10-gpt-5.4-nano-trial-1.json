@@ -1,0 +1,18 @@
+{
+  "case_id": "S10",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.503,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response demonstrates strong technical depth on migration risks and constraints but fails to produce a structured discovery artefact — no named personas with cost/timing, no bounded MVP with explicit deferrals, no out-of-scope section, and no anchored success indicators; the output reads as a technical discovery workshop guide rather than a discovery artefact.",
+  "context_injection": false
+}

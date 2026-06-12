@@ -1,0 +1,18 @@
+{
+  "case_id": "S10",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.519,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is a comprehensive project-initiation document rather than a bounded discovery artefact: it lacks named personas with cost/timing, fails to surface the critical RBNZ BS11 notification obligation and CCCFA as explicit hard constraints, presents an unbounded MVP scope (all loan products, full toolchain, plus originations on new platform), assumptions are mostly plausible-sounding facts or low-uncertainty statements rather than genuine uncertainties (e.g. the BS11 notification status and the three missing RBNZ report types are never flagged), and out-of-scope items lack specific reasons tied to deferral rationale.",
+  "context_injection": false
+}

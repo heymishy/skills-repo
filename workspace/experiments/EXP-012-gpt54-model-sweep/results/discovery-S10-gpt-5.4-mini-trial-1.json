@@ -1,0 +1,18 @@
+{
+  "case_id": "S10",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.4855,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is a well-structured situation analysis and risk summary rather than a discovery artefact: it lacks named personas with cost/timing, has no explicit out-of-scope section, frames assumptions as open questions rather than genuine uncertainties with risk-if-wrong, omits the critical RBNZ BS11 30-business-day advance notification constraint, and produces no bounded MVP with explicit deferrals — collapsing instead into a comprehensive migration scope.",
+  "context_injection": false
+}

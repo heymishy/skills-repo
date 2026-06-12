@@ -1,0 +1,18 @@
+{
+  "case_id": "S10",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.431,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response competently summarises the migration context and surfaces useful questions, but fails to produce a structured discovery artefact: no MVP bounding with explicit deferrals, no out-of-scope section, no measurable success indicators, no genuine assumption register with risk-if-wrong statements, and personas are referenced only generically (RBNZ relationship team, engineers) without role/timing/cost specificity — critically missing the BS11 notification status and PPSR legal opinion as explicit uncertainties.",
+  "context_injection": false
+}

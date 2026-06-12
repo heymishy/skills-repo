@@ -1,0 +1,18 @@
+{
+  "case_id": "S13",
+  "model_label": "gpt-5.4-nano",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.504,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is a thorough technical discovery checklist but frames the problem as a feature build opportunity rather than surfacing the core regulatory and contractual constraint gap (SWIFT correspondent agreement, AUSTRAC originator obligations, DIA registration); personas are generic roles without cost/timing context; the critical C5 SWIFT correspondent bank notification constraint is entirely absent; assumptions are presented as questions-to-answer rather than genuine uncertainties with risk-if-wrong framing.",
+  "context_injection": false
+}

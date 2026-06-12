@@ -1,0 +1,18 @@
+{
+  "case_id": "T3",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.9,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.1,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.5455,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong problem framing and success observability, but critically fails on out-of-scope discipline (no items named or deferred), assumption quality (£10k threshold treated as fixed fact with no mention of structuring risk, no genuine uncertainties surfaced), and constraint completeness (audit trail requirement absent, FCA obligation mentioned but not as a hard constraint).",
+  "context_injection": false
+}

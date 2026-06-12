@@ -1,0 +1,18 @@
+{
+  "case_id": "S9",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.508,
+  "pass": false,
+  "compliant": true,
+  "notes": "The suggested problem statement IS the solution ('Build a compliant online fund-switching capability…'), D1 is near-fail; personas are generic operational roles without cost/timing specificity; critically, the model treats the FMA 30-day SEN requirement as an open question rather than a hard constraint that invalidates the March 31 deadline, and never surfaces the hardship fee waiver obligation as a genuine assumption with risk-if-wrong.",
+  "context_injection": false
+}

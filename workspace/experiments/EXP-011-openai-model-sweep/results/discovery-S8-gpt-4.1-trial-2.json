@@ -1,0 +1,18 @@
+{
+  "case_id": "S8",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.55,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.2,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.4485,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response pivots quickly to solution framing (pipeline architecture, feature tables) rather than problem framing; personas are generic role labels without cost/timing context; MVP scope is unbounded with no explicit deferrals; out-of-scope items are absent; assumptions lack risk-if-wrong framing; and hard regulatory constraints (RBNZ/FMA/C1–C4) are mentioned only superficially without being surfaced as binding discovery constraints.",
+  "context_injection": false
+}

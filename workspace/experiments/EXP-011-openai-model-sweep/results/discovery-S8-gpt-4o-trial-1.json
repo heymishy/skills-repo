@@ -1,0 +1,18 @@
+{
+  "case_id": "S8",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.358,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is almost entirely solution-framed (a 10-step implementation plan) with no problem statement, no named personas with costs, no explicit out-of-scope items with reasons, no genuine uncertainties flagged, no baseline/target metrics, and only surface-level constraint acknowledgment — it reads as a generic implementation checklist rather than a discovery artefact.",
+  "context_injection": false
+}

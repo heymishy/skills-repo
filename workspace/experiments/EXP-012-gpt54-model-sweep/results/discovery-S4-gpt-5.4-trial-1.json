@@ -1,0 +1,18 @@
+{
+  "case_id": "S4",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.48,
+  "pass": false,
+  "compliant": false,
+  "notes": "D1 categorical fail: the Problem Summary immediately frames the response as 'the proposed solution is to introduce an Experience API' making the problem statement IS the solution, triggering compliant=false; additionally D3 fails because no bounded MVP is ever defined — the scope section lists nearly the full opportunity with no explicit deferral of Redis caching or QSA assessment window, and D2 lists stakeholder categories rather than named personas with timing and cost.",
+  "context_injection": false
+}

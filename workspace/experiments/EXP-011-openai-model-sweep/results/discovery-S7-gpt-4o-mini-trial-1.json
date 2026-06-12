@@ -1,0 +1,18 @@
+{
+  "case_id": "S7",
+  "model_label": "gpt-4o-mini",
+  "scores": {
+    "d1_problem_framing": 0.1,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.2
+  },
+  "weighted_score": 0.167,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — the response is entirely a solution blueprint (tech stack, API routes, DB schema, deployment steps) with no problem framing, no named assumptions with risk-if-wrong, no out-of-scope items, no measurable success indicators, and no meaningful constraint coverage.",
+  "context_injection": false
+}

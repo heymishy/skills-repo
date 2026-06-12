@@ -1,0 +1,18 @@
+{
+  "case_id": "S12",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.2,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.2
+  },
+  "weighted_score": 0.322,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response accepts the submitter's framing uncritically — affirming that regulatory engagement is not required, that MRM committee review alone is sufficient, and that the 12-week timeline is 'realistic and appropriate' — without surfacing the FMA prescribed fairness methodology gap, the 2023 MRM policy independent validation requirement, or the CCCFA/explainability constraints, resulting in a solution-oriented validation of a materially incomplete and potentially non-compliant plan rather than a proper discovery artefact.",
+  "context_injection": false
+}

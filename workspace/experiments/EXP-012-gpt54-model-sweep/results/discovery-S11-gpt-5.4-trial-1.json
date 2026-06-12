@@ -1,0 +1,18 @@
+{
+  "case_id": "S11",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.463,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is a thorough discovery landscape document with strong assumption surfacing and risk articulation, but fails on core structural requirements: the problem statement in section 13 describes the proposed solution shape rather than a gap/cost/affected-party framing, personas are generic role lists without timing or cost dimensions, MVP scope is never bounded with explicit deferrals (enriched insights remain in scope throughout), success indicators are entirely absent, and Privacy Act 2020/CDR hard constraints are not named as regulatory obligations — only treated as implementation questions.",
+  "context_injection": false
+}

@@ -1,0 +1,17 @@
+{
+  "case_id": "T2",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0.15,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — model produced an extensive full discovery artefact from the thin input 'improve the onboarding experience for new business customers' without asking a single clarifying question first, fabricating problem framing, generic personas, unbounded solution directions, and no MVP, out-of-scope, or constraint sections."
+}

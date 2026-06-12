@@ -1,0 +1,17 @@
+{
+  "case_id": "S4",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.477,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response partially frames the forced-migration problem but lacks explicit out-of-scope deferrals with reasons, names no personas with role/timing/cost context, and the MVP scope is broad and unbounded rather than tightly constrained with explicit deferrals (e.g., Redis caching, QSA window planning)."
+}

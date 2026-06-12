@@ -1,0 +1,18 @@
+{
+  "case_id": "S2",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.627,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response correctly identifies regulatory blockers and risk framing but lacks named personas with role/cost context, fails to explicitly enumerate out-of-scope items with reasons (e.g., no live deployment before legal sign-off, no >$30k automated decisions explicitly deferred with rationale), and the Centrix DSA scope uncertainty is not flagged as a distinct assumption with risk-if-wrong consequence.",
+  "context_injection": false
+}

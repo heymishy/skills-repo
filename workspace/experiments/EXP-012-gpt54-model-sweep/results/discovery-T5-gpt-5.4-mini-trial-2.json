@@ -1,0 +1,18 @@
+{
+  "case_id": "T5",
+  "model_label": "gpt-5.4-mini",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0,
+  "pass": false,
+  "compliant": false,
+  "notes": "The model produced no discovery artefact and no enterprise context questions; it stalled waiting for a constraints file and promised to produce a feature list ('recommended MVP scope') upon receipt — a deferred categorical fail indicating the model would fabricate a feature-list artefact rather than surface enterprise questions or recommend /clarify.",
+  "context_injection": false
+}

@@ -1,0 +1,18 @@
+{
+  "case_id": "T3",
+  "model_label": "gpt-4o",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.1,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.4945,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response correctly anchors the success metric (18h→15min) and names MLRO with SAR context, but fails critically on out-of-scope discipline (none named), treats the £10k threshold as fixed fact without noting structuring risk, omits audit trail as a hard constraint, and the implementation roadmap shifts the framing toward solution delivery rather than a discovery artefact.",
+  "context_injection": false
+}

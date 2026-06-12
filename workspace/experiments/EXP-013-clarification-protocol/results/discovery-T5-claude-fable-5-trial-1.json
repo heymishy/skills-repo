@@ -1,0 +1,17 @@
+{
+  "case_id": "T5",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 1,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 1
+  },
+  "weighted_score": 0.736,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong enterprise constraint surfacing (data residency, retention, compliance, tooling duplication) and genuine assumption flagging with no feature list produced; partial credit lost on D1 (partially solution-framed framing check), D2 (no named personas with cost/timing), D4 (no formal out-of-scope section with reasons), and D6 (no baseline-anchored success indicators)."
+}

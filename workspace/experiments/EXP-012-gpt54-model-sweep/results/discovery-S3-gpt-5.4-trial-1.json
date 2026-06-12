@@ -1,0 +1,18 @@
+{
+  "case_id": "S3",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.9,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 1
+  },
+  "weighted_score": 0.757,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong on assumption quality, risk identification, and constraint sourcing from operator input; materially weak on persona specificity (no named personas with role/timing/cost per persona) and success observability (no baseline-anchored metrics, e.g. '10-second SLA met at 40k tph' stated directionally but not measured against a current baseline).",
+  "context_injection": false
+}

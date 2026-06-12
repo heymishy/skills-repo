@@ -1,0 +1,18 @@
+{
+  "case_id": "T3",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 1,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.814,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong MVP bounding, out-of-scope discipline, and success observability anchored to the 18+hr→<15min baseline; partially solution-framed in the opportunity/desired-state sections and assumptions lack explicit 'risk if wrong' statements for structuring risk and channel compliance, and the audit trail and FCA obligation appear in discovery questions rather than a dedicated constraints section.",
+  "context_injection": false
+}

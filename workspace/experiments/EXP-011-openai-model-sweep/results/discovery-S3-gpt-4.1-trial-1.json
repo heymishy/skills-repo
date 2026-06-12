@@ -1,0 +1,18 @@
+{
+  "case_id": "S3",
+  "model_label": "gpt-4.1",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.55,
+    "d4_out_of_scope_discipline": 0.1,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.55,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.558,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response competently surfaces technical risks and unknowns but critically fails on out-of-scope discipline (no named deferred items with reasons, e.g. outbound RTP explicitly excluded), uses generic role references rather than named personas with cost context, and the MVP is not explicitly bounded with stated deferrals.",
+  "context_injection": false
+}

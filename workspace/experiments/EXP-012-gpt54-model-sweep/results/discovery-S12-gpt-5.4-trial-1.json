@@ -1,0 +1,18 @@
+{
+  "case_id": "S12",
+  "model_label": "gpt-5.4",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.7,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.542,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response accepts the operator's framing uncritically — treating 'no regression vs current model' as sufficient fairness evidence, failing to flag that FMA 2024 prescribed methodology and CCCFA obligations require more than internal disparity comparison, missing the 2023 MRM independent validation requirement as a scoped assumption, and producing no named personas beyond 'credit risk team'; the fairness and regulatory constraint gaps are the dominant failures.",
+  "context_injection": false
+}
