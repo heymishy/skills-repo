@@ -1,0 +1,320 @@
+{
+  "batchId": "msgbatch_01DjR8ByaGJBVqed61y9n88U",
+  "submittedAt": "2026-06-12T08:47:42.189Z",
+  "experimentId": "EXP-015-dod-calibration",
+  "cellCount": 24,
+  "requests": [
+    {
+      "custom_id": "EXP-015__definition-of-done__T1__claude-sonnet-4-6__trial1",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #214 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** ham.9\r\n**Feature:** Hamilton Core Banking — Webhook Notifications\r\n**Epic:** Notification and Reporting\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T1__claude-sonnet-4-6__trial2",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #214 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** ham.9\r\n**Feature:** Hamilton Core Banking — Webhook Notifications\r\n**Epic:** Notification and Reporting\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T1__claude-sonnet-4-6__trial3",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #214 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** ham.9\r\n**Feature:** Hamilton Core Banking — Webhook Notifications\r\n**Epic:** Notification and Reporting\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T1__claude-haiku-4-5__trial1",
+      "params": {
+        "model": "claude-haiku-4-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #214 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** ham.9\r\n**Feature:** Hamilton Core Banking — Webhook Notifications\r\n**Epic:** Notification and Reporting\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T1__claude-haiku-4-5__trial2",
+      "params": {
+        "model": "claude-haiku-4-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #214 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** ham.9\r\n**Feature:** Hamilton Core Banking — Webhook Notifications\r\n**Epic:** Notification and Reporting\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T1__claude-haiku-4-5__trial3",
+      "params": {
+        "model": "claude-haiku-4-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #214 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** ham.9\r\n**Feature:** Hamilton Core Banking — Webhook Notifications\r\n**Epic:** Notification and Reporting\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T2__claude-sonnet-4-6__trial1",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #227 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** prf.3\r\n**Feature:** User Profile Management\r\n**Epic:** Profile and Account Settings\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T2__claude-sonnet-4-6__trial2",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #227 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** prf.3\r\n**Feature:** User Profile Management\r\n**Epic:** Profile and Account Settings\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T2__claude-sonnet-4-6__trial3",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #227 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** prf.3\r\n**Feature:** User Profile Management\r\n**Epic:** Profile and Account Settings\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T2__claude-haiku-4-5__trial1",
+      "params": {
+        "model": "claude-haiku-4-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #227 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** prf.3\r\n**Feature:** User Profile Management\r\n**Epic:** Profile and Account Settings\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T2__claude-haiku-4-5__trial2",
+      "params": {
+        "model": "claude-haiku-4-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #227 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** prf.3\r\n**Feature:** User Profile Management\r\n**Epic:** Profile and Account Settings\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T2__claude-haiku-4-5__trial3",
+      "params": {
+        "model": "claude-haiku-4-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #227 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** prf.3\r\n**Feature:** User Profile Management\r\n**Epic:** Profile and Account Settings\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T3__claude-sonnet-4-6__trial1",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #231 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** apk.2\r\n**Feature:** API Key Management\r\n**Epic:** Developer Platform — Security\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T3__claude-sonnet-4-6__trial2",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #231 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** apk.2\r\n**Feature:** API Key Management\r\n**Epic:** Developer Platform — Security\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T3__claude-sonnet-4-6__trial3",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #231 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** apk.2\r\n**Feature:** API Key Management\r\n**Epic:** Developer Platform — Security\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T3__claude-haiku-4-5__trial1",
+      "params": {
+        "model": "claude-haiku-4-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #231 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** apk.2\r\n**Feature:** API Key Management\r\n**Epic:** Developer Platform — Security\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T3__claude-haiku-4-5__trial2",
+      "params": {
+        "model": "claude-haiku-4-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #231 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** apk.2\r\n**Feature:** API Key Management\r\n**Epic:** Developer Platform — Security\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T3__claude-haiku-4-5__trial3",
+      "params": {
+        "model": "claude-haiku-4-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #231 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** apk.2\r\n**Feature:** API Key Management\r\n**Epic:** Developer Platform — Security\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T4__claude-sonnet-4-6__trial1",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #238 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** dash.6\r\n**Feature:** Analytics Dashboard\r\n**Epic:** Reporting and Filtering\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T4__claude-sonnet-4-6__trial2",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #238 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** dash.6\r\n**Feature:** Analytics Dashboard\r\n**Epic:** Reporting and Filtering\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T4__claude-sonnet-4-6__trial3",
+      "params": {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #238 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** dash.6\r\n**Feature:** Analytics Dashboard\r\n**Epic:** Reporting and Filtering\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T4__claude-haiku-4-5__trial1",
+      "params": {
+        "model": "claude-haiku-4-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #238 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** dash.6\r\n**Feature:** Analytics Dashboard\r\n**Epic:** Reporting and Filtering\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T4__claude-haiku-4-5__trial2",
+      "params": {
+        "model": "claude-haiku-4-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #238 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** dash.6\r\n**Feature:** Analytics Dashboard\r\n**Epic:** Reporting and Filtering\r\n\r\n---"
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-015__definition-of-done__T4__claude-haiku-4-5__trial3",
+      "params": {
+        "model": "claude-haiku-4-5",
+        "max_tokens": 4096,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /definition-of-done pipeline skill. **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #238 has been merged.\r\n\r\n---\r\n\r\n### Story artefact\r\n\r\n**Story ID:** dash.6\r\n**Feature:** Analytics Dashboard\r\n**Epic:** Reporting and Filtering\r\n\r\n---"
+          }
+        ]
+      }
+    }
+  ]
+}

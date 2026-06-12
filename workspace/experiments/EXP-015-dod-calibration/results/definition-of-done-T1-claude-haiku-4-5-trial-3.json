@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "T1",
+  "scores": {
+    "d1_ac_coverage_accuracy": 0.2,
+    "d2_deviation_detection": 0,
+    "d3_nfr_verification": 0,
+    "d4_metric_signal": 0.4,
+    "d5_completion_verdict": 0.7,
+    "d6_process_compliance": 0
+  },
+  "weighted_score": 0.155,
+  "pass": false,
+  "compliant": true,
+  "gate_fidelity_correct": false,
+  "categorical_fail": null,
+  "notes": "The model produced a generic DoD checklist template entirely ignoring the story's specific ACs, NFRs, deviations, and metrics — the only saving grace is that the verdict is INCOMPLETE, but it is not grounded in any specific evidence or AC gap from the actual story."
+}

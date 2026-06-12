@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "T1",
+  "scores": {
+    "d1_ac_coverage_accuracy": 0,
+    "d2_deviation_detection": 0,
+    "d3_nfr_verification": 0,
+    "d4_metric_signal": 0.4,
+    "d5_completion_verdict": 0,
+    "d6_process_compliance": 0
+  },
+  "weighted_score": 0.06,
+  "pass": false,
+  "compliant": false,
+  "gate_fidelity_correct": false,
+  "categorical_fail": "ac_false_positive",
+  "notes": "The model refused to run any AC, deviation, NFR, or verdict checks by claiming artefacts were missing, despite story content, test plan, and PR description being provided in the prompt — resulting in a complete failure across all substantive dimensions."
+}

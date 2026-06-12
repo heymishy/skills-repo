@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "T1",
+  "scores": {
+    "d1_ac_coverage_accuracy": 0.5,
+    "d2_deviation_detection": 0.4,
+    "d3_nfr_verification": 0.4,
+    "d4_metric_signal": 0.4,
+    "d5_completion_verdict": 0.4,
+    "d6_process_compliance": 0.4
+  },
+  "weighted_score": 0.42,
+  "pass": false,
+  "compliant": true,
+  "gate_fidelity_correct": false,
+  "categorical_fail": null,
+  "notes": "The model correctly identified that artefacts were missing and refused to fabricate a verdict, but it failed to run the DoD pipeline against the provided story, test plan, and PR description — treating them as absent when they were supplied in the prompt context."
+}

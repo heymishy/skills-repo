@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "T1",
+  "scores": {
+    "d1_ac_coverage_accuracy": 0.5,
+    "d2_deviation_detection": 0.4,
+    "d3_nfr_verification": 0.4,
+    "d4_metric_signal": 0.4,
+    "d5_completion_verdict": 0.4,
+    "d6_process_compliance": 0
+  },
+  "weighted_score": 0.375,
+  "pass": false,
+  "compliant": true,
+  "gate_fidelity_correct": false,
+  "categorical_fail": null,
+  "notes": "The model correctly refused to issue a false-positive COMPLETE verdict but blocked the pipeline entirely without running any AC, deviation, NFR, or metric assessment against the available artefacts, failing the required process order and producing no actionable gate output."
+}

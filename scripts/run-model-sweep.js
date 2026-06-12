@@ -680,13 +680,15 @@ function extractOperatorInput(caseContent) {
   const lines = caseContent.split('\n');
   let inSection = false;
   let collecting = false;
+  let inCodeFence = false;
   const inputLines = [];
   for (const line of lines) {
     if (/^##\s+Operator input/i.test(line)) { inSection = true; continue; }
-    if (inSection && /^##[^#]/.test(line)) break;
     if (inSection) {
-      if (line.startsWith('>')) { collecting = true; }
-      if (collecting) { inputLines.push(line.replace(/^>\s?/, '')); }
+      if (/^```/.test(line)) inCodeFence = !inCodeFence;
+      if (!inCodeFence && /^##[^#]/.test(line)) break;
+      if (line.startsWith('>')) collecting = true;
+      if (collecting) inputLines.push(line.replace(/^>\s?/, ''));
     }
   }
   return inputLines.join('\n').trim();

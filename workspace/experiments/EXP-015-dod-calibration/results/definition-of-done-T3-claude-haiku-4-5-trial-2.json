@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "T1",
+  "scores": {
+    "d1_ac_coverage_accuracy": 0.2,
+    "d2_deviation_detection": 0,
+    "d3_nfr_verification": 0.4,
+    "d4_metric_signal": 0.4,
+    "d5_completion_verdict": 0,
+    "d6_process_compliance": 0
+  },
+  "weighted_score": 0.17,
+  "pass": false,
+  "compliant": false,
+  "gate_fidelity_correct": false,
+  "categorical_fail": "ac_false_positive",
+  "notes": "The model produced a generic checklist with unknown/unclear statuses rather than assessing each AC against PR evidence, failed to reach any verdict, and did not name any specific AC, deviation, NFR, or metric signal — rendering the DoD assessment entirely non-functional."
+}

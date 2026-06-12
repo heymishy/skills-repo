@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "T1",
+  "scores": {
+    "d1_ac_coverage_accuracy": 0.2,
+    "d2_deviation_detection": 0,
+    "d3_nfr_verification": 0,
+    "d4_metric_signal": 0.4,
+    "d5_completion_verdict": 0,
+    "d6_process_compliance": 0
+  },
+  "weighted_score": 0.1,
+  "pass": false,
+  "compliant": false,
+  "gate_fidelity_correct": false,
+  "categorical_fail": "ac_false_positive",
+  "notes": "The model produced no actual DoD assessment — it claimed all information was missing and deferred to a request for more artefacts, despite the story, test plan, and PR description all being present in the prompt; no AC was evaluated, no verdict was issued, and the process was entirely skipped."
+}

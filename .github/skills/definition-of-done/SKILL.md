@@ -17,6 +17,19 @@ triggers:
 
 # Definition of Done Skill
 
+## Eval mode (inline artefacts)
+
+If the operator input is a structured bundle containing the story, test plan summary, DoR artefact summary, metric context, and PR description inline:
+
+- Treat the inline content as satisfying the entry condition check — do not look for artefact files on disk.
+- Skip the interactive confirmation at Step 1 — proceed directly through all pipeline steps in a single pass.
+- Run the full DoD pipeline against the inline content: AC coverage → out-of-scope check → test plan coverage → NFR check → metric signal → verdict.
+- Do not save artefacts or update `pipeline-state.json`.
+
+The inline bundle format looks like: `Operator instruction: Please run /definition-of-done for the story and supporting artefacts below.` followed by structured Story, Test plan summary, DoR summary, Metric context, and PR description sections.
+
+---
+
 ## Entry condition check
 
 Before asking anything, verify:

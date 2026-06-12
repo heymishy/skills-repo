@@ -127,7 +127,27 @@ Unexpected finding. DoD SKILL.md and EVAL.md require review. Check whether the p
 
 ---
 
-## Scorecard summary (to be populated)
+## Run 1 — INVALID (corpus extraction bug)
+
+Run 1 completed (batch `msgbatch_01DjR8ByaGJBVqed61y9n88U`, 2026-06-12) but all 24 trials failed with 0.0–0.5 weighted scores and the majority NON-COMPLIANT. Root cause: **corpus extraction bug**, not model weakness.
+
+Two bugs combined to truncate the operator input before the model received the full artefact bundle:
+
+1. **Level-2 headings inside `## Operator input`** — The corpus files used `## Story:`, `## Acceptance Criteria`, `## Out of Scope`, `## NFRs`, `## Complexity` (level-2 headings) inside the operator input section. `extractOperatorInput` broke on the first `## Story:` heading and cut off all AC/test-plan/PR content. The model received only the Story ID/Feature/Epic stub.
+
+2. **No code-fence tracking** — Even after fixing story headings to `###`, the PR description sections contain `## Summary`, `## Changes`, `## Test results` inside fenced code blocks (` ``` `). Without code-fence awareness, `extractOperatorInput` also broke on these.
+
+### Fixes applied (2026-06-12, before Run 2)
+
+- **Corpus files** (`T1`–`T4`): Changed `## Story:`, `## Acceptance Criteria`, `## Out of Scope`, `## NFRs`, `## Complexity` → `###` in all 4 corpus files.
+- **`scripts/run-model-sweep.js` `extractOperatorInput`**: Added `inCodeFence` state variable; break condition guarded by `!inCodeFence`.
+- **DoD SKILL.md**: Added `## Eval mode (inline artefacts)` section instructing models to use inline content rather than looking for files on disk.
+
+Run 1 results are invalid and will be overwritten by Run 2.
+
+---
+
+## Scorecard summary (to be populated after Run 2)
 
 | Case | Trial | Sonnet WS | Sonnet D1 | Sonnet compliant | Haiku WS | Haiku D1 | Haiku compliant |
 |------|-------|-----------|-----------|-----------------|----------|----------|-----------------|
@@ -138,8 +158,8 @@ Unexpected finding. DoD SKILL.md and EVAL.md require review. Check whether the p
 
 ## Findings
 
-*Populated after analysis.*
+*Populated after Run 2 analysis.*
 
 ## Deviations from template
 
-*None anticipated.*
+Run 1 invalid due to corpus extraction bugs — see above. Run 2 is the valid sweep.

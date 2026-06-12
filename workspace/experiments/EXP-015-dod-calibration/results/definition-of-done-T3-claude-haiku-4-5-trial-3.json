@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "T1",
+  "scores": {
+    "d1_ac_coverage_accuracy": 0.2,
+    "d2_deviation_detection": 0.2,
+    "d3_nfr_verification": 0.4,
+    "d4_metric_signal": 0.4,
+    "d5_completion_verdict": 0.4,
+    "d6_process_compliance": 0
+  },
+  "weighted_score": 0.255,
+  "pass": false,
+  "compliant": true,
+  "gate_fidelity_correct": false,
+  "categorical_fail": null,
+  "notes": "The model failed to run any structured DoD assessment — it acknowledged missing information rather than working with the provided artefacts, did not assess individual ACs, NFRs, deviations, or metrics, and produced no valid COMPLETE/INCOMPLETE verdict."
+}

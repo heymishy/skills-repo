@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "T1",
+  "scores": {
+    "d1_ac_coverage_accuracy": 0.5,
+    "d2_deviation_detection": 0.4,
+    "d3_nfr_verification": 0.4,
+    "d4_metric_signal": 0.4,
+    "d5_completion_verdict": 0,
+    "d6_process_compliance": 0
+  },
+  "weighted_score": 0.335,
+  "pass": false,
+  "compliant": true,
+  "gate_fidelity_correct": false,
+  "categorical_fail": null,
+  "notes": "The model refused to execute the DoD pipeline citing missing artefacts, but artefacts were present in the prompt; this resulted in no AC assessment, no verdict, no NFR check, no deviation detection, and no metric signal — a complete process failure."
+}

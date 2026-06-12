@@ -34,13 +34,13 @@
 
 ---
 
-## Story: Read-only user profile view
+### Story: Read-only user profile view
 
 **As a** registered platform user,
 **I want** to view my profile information (name, email, role, account created date) on a dedicated profile page,
 **So that** I can confirm my account details without having to navigate to account settings.
 
-## Acceptance Criteria
+### Acceptance Criteria
 
 **AC1:** Given I am authenticated, when I navigate to `/profile`, then I see a read-only display of my name, email address, role label, and account creation date. No edit controls are visible.
 
@@ -48,18 +48,18 @@
 
 **AC3:** Given I am not authenticated, when I navigate to `/profile`, then I am redirected to `/login` with `?returnTo=/profile` as a query parameter.
 
-## Out of Scope
+### Out of Scope
 
 - Profile photo / avatar upload — deferred to prf.4.
 - Profile editing (name, email change) — deferred to prf.5.
 - Email verification flow for changed addresses — out of scope for this feature entirely.
 - Notification preferences section — separate story under account settings epic.
 
-## NFRs
+### NFRs
 
 NFRs: None — reviewed 2026-05-11
 
-## Complexity
+### Complexity
 
 Complexity: 1 (well understood; simple display component with auth guard)
 

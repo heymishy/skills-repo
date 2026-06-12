@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "T1",
+  "scores": {
+    "d1_ac_coverage_accuracy": 0,
+    "d2_deviation_detection": 0,
+    "d3_nfr_verification": 0,
+    "d4_metric_signal": 0.4,
+    "d5_completion_verdict": 0,
+    "d6_process_compliance": 0
+  },
+  "weighted_score": 0.06,
+  "pass": false,
+  "compliant": false,
+  "gate_fidelity_correct": false,
+  "categorical_fail": "ac_false_positive — model refused to assess any ACs and produced no verdict, meaning zero AC coverage and no process compliance; however no AC was falsely marked satisfied so the categorical fail is triggered by complete absence of assessment rather than a positive misclassification",
+  "notes": "The model refused to perform the DoD assessment and instead requested missing artefacts, producing no AC coverage, no deviation detection, no NFR check, no metric signal step, and no verdict — a complete pipeline failure for every scored dimension."
+}

@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "T1",
+  "scores": {
+    "d1_ac_coverage_accuracy": 0.2,
+    "d2_deviation_detection": 0,
+    "d3_nfr_verification": 0.2,
+    "d4_metric_signal": 0.4,
+    "d5_completion_verdict": 0,
+    "d6_process_compliance": 0
+  },
+  "weighted_score": 0.148,
+  "pass": false,
+  "compliant": false,
+  "gate_fidelity_correct": false,
+  "categorical_fail": "ac_false_positive",
+  "notes": "The model produced a generic DoD checklist template and requested information rather than assessing the provided PR description against the story's ACs, resulting in no actual AC coverage check, no deviation detection, no NFR verification, and no verdict."
+}

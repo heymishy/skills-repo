@@ -34,13 +34,13 @@
 
 ---
 
-## Story: Payment status webhook delivery
+### Story: Payment status webhook delivery
 
 **As a** Hamilton integration partner,
 **I want** webhook notifications delivered to my registered endpoint when a payment changes status,
 **So that** my downstream systems react to payment events without polling.
 
-## Acceptance Criteria
+### Acceptance Criteria
 
 **AC1:** Given a payment transitions to "settled", when the webhook dispatcher fires, then an HTTPS POST is sent to the subscriber within 500ms of the transition event, with body `{ paymentRef, status, timestamp }` and header `X-Hamilton-Signature` correctly computed from HMAC-SHA256.
 
@@ -50,17 +50,17 @@
 
 **AC4:** Given 100 concurrent payment status transitions under normal load, when all are dispatched, then P99 delivery latency to registered subscribers is ≤ 500ms as measured by a load test against the integration environment.
 
-## Out of Scope
+### Out of Scope
 
 - Persistent subscriber registry (database-backed) — in-memory Map for MVP.
 - Replay of historical events for newly registered subscribers.
 - Webhook signature verification on the subscriber side.
 
-## NFRs
+### NFRs
 
 NFRs: None — reviewed 2026-05-09
 
-## Complexity
+### Complexity
 
 Complexity: 2
 

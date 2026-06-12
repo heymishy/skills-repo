@@ -1,0 +1,19 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "T1",
+  "scores": {
+    "d1_ac_coverage_accuracy": 0.2,
+    "d2_deviation_detection": 0,
+    "d3_nfr_verification": 0,
+    "d4_metric_signal": 0.4,
+    "d5_completion_verdict": 0,
+    "d6_process_compliance": 0
+  },
+  "weighted_score": 0.09,
+  "pass": false,
+  "compliant": false,
+  "gate_fidelity_correct": false,
+  "categorical_fail": null,
+  "notes": "The model refused to run any DoD evaluation steps despite story, test plan, and PR artefacts being present in the prompt, instead blocking the pipeline and requesting missing artefacts that were already supplied — producing no AC assessment, no verdict, and no gap identification."
+}

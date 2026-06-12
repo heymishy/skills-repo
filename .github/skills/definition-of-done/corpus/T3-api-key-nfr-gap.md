@@ -35,13 +35,13 @@
 
 ---
 
-## Story: API key rotation endpoint
+### Story: API key rotation endpoint
 
 **As a** platform API consumer,
 **I want** to rotate my API key via a POST to `/api/keys/rotate`,
 **So that** I can invalidate a potentially compromised key without revoking API access entirely.
 
-## Acceptance Criteria
+### Acceptance Criteria
 
 **AC1:** Given I am authenticated and POST to `/api/keys/rotate`, when the request is valid, then a new API key is generated, the old key is invalidated, and the response body contains `{ newKey: string, rotatedAt: ISO8601 }`. The old key is rejected on any subsequent API call within 5 seconds of rotation.
 
@@ -49,20 +49,20 @@
 
 **AC3:** Given the key rotation is atomic, when a concurrent request uses the old key during the rotation window, then the request either succeeds (old key still valid) or fails with HTTP 401 (new key required) — no request succeeds with a revoked key that is past the 5-second grace period.
 
-## Out of Scope
+### Out of Scope
 
 - Key expiry date configuration — all keys are non-expiring at MVP.
 - Multiple active keys per consumer — single active key per consumer for MVP.
 - Key rotation notifications (email/webhook) — deferred to apk.5.
 - Admin-initiated forced rotation — deferred to apk.6.
 
-## NFRs
+### NFRs
 
 **NFR-1:** Key rotation endpoint is rate-limited to 3 requests per 60 seconds per consumer to prevent key-cycling attacks. (Security — brute force protection)
 
 **NFR-2:** After key rotation, the old key value MUST NOT appear in server access logs at INFO level or above. New key values MUST NOT be logged at any level. (Compliance — PCI DSS 3.4: Render PAN unreadable anywhere it is stored; interpreted here as: cryptographic material must not appear in logs)
 
-## Complexity
+### Complexity
 
 Complexity: 2 (concurrency window and atomic invalidation require careful implementation)
 

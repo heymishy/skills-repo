@@ -35,13 +35,13 @@
 
 ---
 
-## Story: Dashboard date range filter
+### Story: Dashboard date range filter
 
 **As a** dashboard user,
 **I want** to filter the metrics view by a custom date range (start date, end date),
 **So that** I can analyse data for a specific period without being limited to preset time windows.
 
-## Acceptance Criteria
+### Acceptance Criteria
 
 **AC1:** Given I am on the dashboard, when I select a start date and end date using the date picker and click Apply, then all metrics panels update to show data for the selected range only, and the active filter is displayed in the filter bar as "From [start] to [end]".
 
@@ -51,18 +51,18 @@
 
 **AC4:** Given the date range filter is applied, when the page is refreshed, then the selected date range is preserved in the URL as query parameters (`?from=YYYY-MM-DD&to=YYYY-MM-DD`) and the filter is reapplied on page load.
 
-## Out of Scope
+### Out of Scope
 
 - Preset date range shortcuts (Last 7 days, Last 90 days, etc.) — deferred to dash.7.
 - Saved/named date filters — deferred to dash.8.
 - Date range comparison (current period vs prior period) — deferred to dash.9.
 - Export filtered data to CSV — deferred to export epic.
 
-## NFRs
+### NFRs
 
 **NFR-1:** Applying the date filter must complete (metrics panels updated) within 2 seconds for date ranges up to 12 months. Measured as time from Apply click to last panel render complete.
 
-## Complexity
+### Complexity
 
 Complexity: 1 (well understood; URL param sync is the only non-trivial element)
 
