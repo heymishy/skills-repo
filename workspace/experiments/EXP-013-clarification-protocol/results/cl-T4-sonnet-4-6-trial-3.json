@@ -1,0 +1,15 @@
+{
+  "case_id": "T4",
+  "file": "blind/T4-ModelB-trial-3.md",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "cl1_gate_compliance": 0.0,
+    "cl2_question_specificity": 0.0,
+    "cl3_gap_diagnosis_accuracy": 0.0,
+    "cl4_protocol_discipline": 0.0
+  },
+  "weighted_score": 0.0,
+  "pass": false,
+  "compliant": false,
+  "notes": "Produces 5-phase technical optimization framework with code examples spanning common culprits, quick wins, and instrumentation guides; TL;DR closing question after full framework output does not satisfy CL1."
+}

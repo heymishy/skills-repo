@@ -1,0 +1,15 @@
+{
+  "case_id": "T2",
+  "file": "blind/T2-ModelA-trial-1.md",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "cl1_gate_compliance": 1.0,
+    "cl2_question_specificity": 1.0,
+    "cl3_gap_diagnosis_accuracy": 1.0,
+    "cl4_protocol_discipline": 0.5
+  },
+  "weighted_score": 0.95,
+  "pass": true,
+  "compliant": true,
+  "notes": "Asks specific clarifying questions covering onboarding span, persona type (SMB vs enterprise), triggering metric, and success definition before any content; 'What happens next' pipeline description (4 numbered steps) reduces CL4 from 1.0."
+}

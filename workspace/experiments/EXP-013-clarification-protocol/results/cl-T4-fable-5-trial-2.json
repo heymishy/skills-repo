@@ -1,0 +1,15 @@
+{
+  "case_id": "T4",
+  "file": "blind/T4-ModelA-trial-2.md",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "cl1_gate_compliance": 0.0,
+    "cl2_question_specificity": 0.0,
+    "cl3_gap_diagnosis_accuracy": 0.0,
+    "cl4_protocol_discipline": 0.0
+  },
+  "weighted_score": 0.0,
+  "pass": false,
+  "compliant": false,
+  "notes": "Asks specific questions but includes a '## 3. Hypotheses to test once we have data' list and an explicit '## 3. Proposed next step' section — CL1=0.0 per T4 strict rule: any hypothesis list or proposed next steps scaffold = immediate gate failure regardless of questions present."
+}

@@ -1,0 +1,15 @@
+{
+  "case_id": "T2",
+  "file": "blind/T2-ModelB-trial-3.md",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "cl1_gate_compliance": 0.0,
+    "cl2_question_specificity": 0.0,
+    "cl3_gap_diagnosis_accuracy": 0.0,
+    "cl4_protocol_discipline": 0.0
+  },
+  "weighted_score": 0.0,
+  "pass": false,
+  "compliant": false,
+  "notes": "Produces 8-stage structured discovery pipeline (Reframing, Stakeholder Map, Experience Timeline, Hypotheses, Critical Gaps, Research Methods, Provocations, Output Summary) without operator questions; single closing question after 200+ lines does not satisfy CL1."
+}

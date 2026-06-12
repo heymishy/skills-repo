@@ -1,0 +1,15 @@
+{
+  "case_id": "T5",
+  "file": "blind/T5-ModelB-trial-3.md",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "cl1_gate_compliance": 1.0,
+    "cl2_question_specificity": 1.0,
+    "cl3_gap_diagnosis_accuracy": 1.0,
+    "cl4_protocol_discipline": 0.5
+  },
+  "weighted_score": 0.95,
+  "pass": true,
+  "compliant": true,
+  "notes": "Explicitly declines spec ('I'm intentionally not starting a spec yet. Starting a spec now would be building confidence in the wrong direction.') and names regulated-firm constraints including data residency, audit trail obligations, and eDiscovery requirements; CL1=1.0 for both conditions met. Process description reduces CL4."
+}

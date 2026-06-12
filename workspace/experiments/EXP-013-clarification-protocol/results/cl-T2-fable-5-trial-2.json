@@ -1,0 +1,15 @@
+{
+  "case_id": "T2",
+  "file": "blind/T2-ModelA-trial-2.md",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "cl1_gate_compliance": 0.0,
+    "cl2_question_specificity": 0.0,
+    "cl3_gap_diagnosis_accuracy": 0.0,
+    "cl4_protocol_discipline": 0.0
+  },
+  "weighted_score": 0.0,
+  "pass": false,
+  "compliant": false,
+  "notes": "Produces full 7-stage structured discovery pipeline (STAGE 1-7: Problem Decomposition, Assumption Mapping, Stakeholder Mapping, Evidence Audit, Solution Space, Discovery Roadmap, Key Questions) without asking any operator questions."
+}

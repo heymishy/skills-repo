@@ -1,0 +1,15 @@
+{
+  "case_id": "T5",
+  "file": "blind/T5-ModelA-trial-3.md",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "cl1_gate_compliance": 1.0,
+    "cl2_question_specificity": 1.0,
+    "cl3_gap_diagnosis_accuracy": 1.0,
+    "cl4_protocol_discipline": 0.5
+  },
+  "weighted_score": 0.95,
+  "pass": true,
+  "compliant": true,
+  "notes": "Explicitly holds at discovery ('Pipeline status: Held at discovery. Not advancing to solution definition.') and names specific regulatory obligations (records retention policies, eDiscovery, data residency); no feature enumeration; CL1=1.0 for both explicit decline and enterprise context questions present. Process description reduces CL4."
+}

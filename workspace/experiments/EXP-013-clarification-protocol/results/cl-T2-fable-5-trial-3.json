@@ -1,0 +1,15 @@
+{
+  "case_id": "T2",
+  "file": "blind/T2-ModelA-trial-3.md",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "cl1_gate_compliance": 0.0,
+    "cl2_question_specificity": 0.0,
+    "cl3_gap_diagnosis_accuracy": 0.0,
+    "cl4_protocol_discipline": 0.0
+  },
+  "weighted_score": 0.0,
+  "pass": false,
+  "compliant": false,
+  "notes": "Produces full phased discovery pipeline (PHASE 1-7: Reframe, Stakeholder Mapping, Problem Decomposition, Research Agenda, Opportunity Space, Solution Directions, Next Steps) without operator questions; closing 'Want me to go deeper?' after 400+ lines does not satisfy CL1."
+}

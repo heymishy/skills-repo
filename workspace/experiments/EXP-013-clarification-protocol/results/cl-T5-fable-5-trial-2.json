@@ -1,0 +1,15 @@
+{
+  "case_id": "T5",
+  "file": "blind/T5-ModelA-trial-2.md",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "cl1_gate_compliance": 0.5,
+    "cl2_question_specificity": 1.0,
+    "cl3_gap_diagnosis_accuracy": 1.0,
+    "cl4_protocol_discipline": 0.5
+  },
+  "weighted_score": 0.75,
+  "pass": true,
+  "compliant": true,
+  "notes": "Names regulatory obligations (eDiscovery, records management) and asks enterprise context questions (procurement path, stakeholders, data classification); a 'Hypothesis opportunity' table adds structure but no feature enumeration; CL1 at 0.5 for not explicitly declining the feature list."
+}

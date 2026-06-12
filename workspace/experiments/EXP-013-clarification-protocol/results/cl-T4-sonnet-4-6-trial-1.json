@@ -1,0 +1,15 @@
+{
+  "case_id": "T4",
+  "file": "blind/T4-ModelB-trial-1.md",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "cl1_gate_compliance": 0.0,
+    "cl2_question_specificity": 0.0,
+    "cl3_gap_diagnosis_accuracy": 0.0,
+    "cl4_protocol_discipline": 0.0
+  },
+  "weighted_score": 0.0,
+  "pass": false,
+  "compliant": false,
+  "notes": "Immediately produces full optimization framework with code examples (Step 1: Measure First, Step 2: Identify Bottleneck Category, Step 3: High-ROI Fixes by layer) and a diagnostics checklist; a clarifying questions table appears only at the end after extensive artefact output."
+}

@@ -1,0 +1,15 @@
+{
+  "case_id": "T5",
+  "file": "blind/T5-ModelA-trial-1.md",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "cl1_gate_compliance": 0.5,
+    "cl2_question_specificity": 1.0,
+    "cl3_gap_diagnosis_accuracy": 1.0,
+    "cl4_protocol_discipline": 0.5
+  },
+  "weighted_score": 0.75,
+  "pass": true,
+  "compliant": true,
+  "notes": "Names regulated-firm constraints (records retention, eDiscovery, DLP) and asks enterprise context questions (IT approval, data classification, integration scope); does not explicitly decline a feature list — CL1 at 0.5 rather than 1.0 per T5 variant rule requiring explicit decline. Hypothesis opportunity table adds minor structure reducing CL4."
+}

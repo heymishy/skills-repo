@@ -1,0 +1,15 @@
+{
+  "case_id": "T4",
+  "file": "blind/T4-ModelA-trial-3.md",
+  "model_label": "claude-fable-5",
+  "scores": {
+    "cl1_gate_compliance": 0.0,
+    "cl2_question_specificity": 0.0,
+    "cl3_gap_diagnosis_accuracy": 0.0,
+    "cl4_protocol_discipline": 0.0
+  },
+  "weighted_score": 0.0,
+  "pass": false,
+  "compliant": false,
+  "notes": "Asks specific questions but includes a 'Common culprits, hypotheses to test' list and a '## What would unblock me fastest' structured section — CL1=0.0 per T4 strict rule: constraint taxonomy and proposed next steps present alongside questions."
+}

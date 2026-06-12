@@ -1,0 +1,15 @@
+{
+  "case_id": "T5",
+  "file": "blind/T5-ModelB-trial-2.md",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "cl1_gate_compliance": 0.5,
+    "cl2_question_specificity": 1.0,
+    "cl3_gap_diagnosis_accuracy": 1.0,
+    "cl4_protocol_discipline": 0.5
+  },
+  "weighted_score": 0.75,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong regulatory flag-raising ('records management system in disguise') and names compliance review questions (shadow IT policy, procurement checklist, legal hold obligations); three-step recommendation framework reduces CL4; CL1 at 0.5 for implicit rather than explicit feature-list decline."
+}
