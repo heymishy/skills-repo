@@ -1,0 +1,125 @@
+story: S4
+config: A
+date: 2026-05-18
+model_discovery: claude-sonnet-4-6
+model_definition: claude-sonnet-4-6
+model_review: claude-sonnet-4-6
+model_test_plan: claude-sonnet-4-6
+model_dor: claude-sonnet-4-6
+
+# CPF results
+cpf_general: 1.00
+cpf_regulated: 1.00
+cpf_general_detail: "5/5 constraints propagated (C1, C2, C3, C4, C5)"
+cpf_regulated_detail: "3/3 regulated constraints propagated (C1 PCI DSS QSA assessment gate, C2 CDR-equivalent consent obligation, C4 PAN/SAD prohibition)"
+
+# C5 results
+c5_surfaced: true
+c5_surface_stage: /discovery
+c5_surface_mechanism: "EA registry (REDIS-RISK-001 at-rest encryption status: not confirmed; Application Profile 3 at-rest encryption status: not yet confirmed) + PCI DSS policy excerpt (Part B Section 4.2 UNCONFIRMED markers for enterprise Redis) + brief-level signal ('security team has not reviewed whether Redis-at-rest encryption meets PCI DSS requirements') → model composed: Redis caching is architecturally intended but encryption status is unconfirmed → if encryption is not enabled, caching card data is a CDE control deficiency → Redis must be treated as a conditional component, not an assumed one → discovery [PRECONDITION] section surfaced explicitly: 'Story 2.1 must resolve this as a hard prerequisite before the caching design is committed'; C5 propagated through all five pipeline stages"
+c5_surfacing_quality: full
+c5_surfacing_notes: "Injection design test FAIL pre-fix → PASS post-fix. EA registry REDIS-RISK-001 enforcement consequence ('the Redis cache would be a PCI DSS violation and will fail QSA assessment') and Application Profile 3 Criticality enforcement consequence ('failure of at-rest encryption requirement would be a PCI DSS violation') removed before run. Post-fix: model surfaced C5 through multi-signal compositional inference from permitted factual status indicators only. Brief-level signal ('security team has not reviewed') is a permitted fact; injection files provide system risk indicator (status: unconfirmed) without naming consequence. Classified as FULL — not injection-aided. Valid for EXP-008 H3 validation. C5 propagated correctly through all five pipeline stages as: /discovery [PRECONDITION] → /definition Story 2.1 HARD PREREQUISITE + Story 1.3 gated → /review H1 structural finding (story dependency label insufficient; hard deployment block required) → /test-plan T-REDIS-GATE (blocking CI gate + human verification protocol) → /dor H-REG-3 hard block with named gate owner (Head of Security Architecture) and four explicit confirmation criteria."
+
+# Injection design test
+injection_design_test:
+  ea_registry: FAIL_then_PASS
+  ea_registry_reason_fail: "REDIS-RISK-001 stated 'the Redis cache would be a PCI DSS violation and will fail QSA assessment' (enforcement consequence — prohibited per CONVENTIONS.md). Application Profile 3 Criticality stated 'HIGH (if in-scope CDE) — failure of at-rest encryption requirement would be a PCI DSS violation' (enforcement consequence — prohibited per CONVENTIONS.md)."
+  ea_registry_fix_applied: "REDIS-RISK-001: removed enforcement consequence; changed severity from CRITICAL to HIGH; replacement text states 'at-rest encryption status must be confirmed with the security team before the Redis cache is committed to the CDE design'. Application Profile 3 Criticality: removed enforcement consequence clause; replacement text states 'HIGH (if in-scope CDE) — at-rest encryption status is not yet confirmed'."
+  ea_registry_reason_pass: "Post-fix: REDIS-RISK-001 severity (HIGH), risk description, and Application Profile 3 Criticality all state factual status indicators (PERMITTED — encryption status not confirmed; unconfirmed markers); model must reason to precondition framing without injection file naming enforcement consequence or QSA failure outcome."
+  pci_dss_excerpt: PASS
+  pci_dss_excerpt_reason_pass: "Part A general regulatory text (PCI DSS v4.0 Requirements 3.1–3.5) is permitted regulatory framework context. Section 3.5.1.1 note that Basic/Standard tiers are insufficient for CDE is general policy consequence — not org-specific enforcement. Part B Section 4.2 UNCONFIRMED markers for enterprise Redis are permitted factual status indicators. No file states 'your Redis will fail QSA' or names the enforcement consequence for the enterprise's specific Redis instance."
+  overall: PASS_after_ea_registry_fix
+  consequence: "C5 surfaced as full, not injection-aided; valid for EXP-008 H3 validation; both injection files PASS post-fix; PCI DSS excerpt was clean (PASS without modification)"
+
+# AQ results (judge scoring required)
+aq: null
+aq_status: requires_judge_scoring
+aq_judge_date: null
+aq_judge_model: null
+aq_dimensions:
+  problem_framing: null
+  scope_discipline: null
+  story_testability: null
+  nfr_specificity: null
+  dor_gate_quality: null
+aq_overrides: []
+aq_override_notes: >
+  AQ scoring deferred. Same-session self-scoring is invalid per EXP-008 CONVENTIONS.md.
+  Judge must read artefacts cold in a separate session. See aq-score.md for instructions.
+
+# Pipeline execution summary
+dor_verdict: PROCEED
+oversight_level: HIGH
+review_high_findings: 3
+review_high_all_resolved: true
+review_medium_findings: 2
+review_low_findings: 1
+test_count: 14
+stories: 12
+epics: 4
+
+# Deployment gate fields (all required for production deployment)
+deployment_gates:
+  - redis_encryption_confirmation_reference   # Head of Security Architecture written confirmation — Story 2.1 AC1-AC5, T-REDIS-GATE
+  - pan_truncation_test_reference             # T-PAN-001 and T-PAN-002 must pass — Story 2.2, H-REG-4
+  - qsa_engagement_confirmation_reference     # QSA notified and window selected — Story 2.4 AC6, T-PCI-001
+  - consent_management_feasibility_reference  # Consent management extensibility confirmed — Story 3.1 AC1, T-CONSENT-002
+  - month_12_milestone_vendor_agreement_reference  # Vendor agreed milestone definition — Story 4.2 AC3, T-VENDOR-001
+
+# Constraint propagation detail
+constraint_propagation:
+  C1:
+    name: "PCI DSS — Experience API is a new CDE component; QSA assessment required before go-live; QSA windows months 8 and 14 only"
+    classification: REGULATED_PCI_DSS_OBLIGATION
+    surfaced_at: /discovery
+    propagated_to: ["Story 2.4 AC1-AC6 (QSA assessment package)", "T-PCI-001 (QSA engagement gate)", "T-PCI-002 (QSA package completeness)", "/dor H-REG-1 (QSA window selection hard block)"]
+    gate_field: qsa_engagement_confirmation_reference
+    responsible_party: "Chief Risk Officer (window selection); Head of Security Compliance (QSA engagement)"
+    test_coverage: [T-PCI-001, T-PCI-002]
+    propagated: true
+  C2:
+    name: "CDR-equivalent consent required before external partner (fintech) access; consent management service extensibility unconfirmed"
+    classification: REGULATED_CONSENT_OBLIGATION
+    surfaced_at: /discovery
+    propagated_to: ["Story 3.1 AC1-AC4 (feasibility confirmation + DPA)", "Story 3.2 AC1-AC3 (consent enforcement)", "T-CONSENT-001 (consent gate automated)", "T-CONSENT-002 (feasibility process gate)", "/dor H-REG-2 (month 3 deadline hard block)"]
+    gate_field: consent_management_feasibility_reference
+    responsible_party: "Open Banking Programme Lead"
+    test_coverage: [T-CONSENT-001, T-CONSENT-002]
+    propagated: true
+  C3:
+    name: "Card core vendor deprecation — 18-month hard deadline; 6-month extension available if month-12 migration milestone demonstrated"
+    classification: VENDOR_CONTRACTUAL_DEADLINE
+    surfaced_at: /discovery
+    propagated_to: ["Stories 4.1 AC1-AC3 (migration per consumer team)", "Story 4.2 AC1-AC4 (final migration + account revocation)", "T-VENDOR-001 (milestone package submission gate)", "/dor H-REG-5 (vendor milestone agreement hard block)"]
+    gate_field: month_12_milestone_vendor_agreement_reference
+    responsible_party: "Programme Director"
+    test_coverage: [T-VENDOR-001, T-MIGRATION-001]
+    propagated: true
+  C4:
+    name: "PCI DSS — raw PAN must never be cached; truncated PAN (last 4 digits) only; CVV/CVC (SAD) must never be stored post-authorisation"
+    classification: REGULATED_PCI_DSS_OBLIGATION
+    surfaced_at: /discovery
+    propagated_to: ["Story 2.2 AC1-AC3 (PAN truncation at transformation layer)", "Story 1.2 AC3 (no full PAN in response)", "Story 1.3 AC3 (no full PAN in cache)", "T-PAN-001 (full PAN prohibition automated)", "T-PAN-002 (CVV/CVC prohibition automated)", "/dor H-REG-4 (PAN truncation design hard block)"]
+    gate_field: pan_truncation_test_reference
+    responsible_party: "Head of Security Architecture; QSA scope lead"
+    test_coverage: [T-PAN-001, T-PAN-002]
+    propagated: true
+  C5:
+    name: "Redis at-rest encryption not confirmed — enterprise Redis configuration has not been reviewed by the security team; if at-rest encryption is not enabled, caching card data is a PCI DSS CDE control deficiency"
+    classification: HIDDEN_CONSTRAINT_BLOCKER
+    surfaced_at: /discovery
+    c5_surfaced: true
+    c5_surfacing_quality: full
+    injection_aided: false
+    excluded_from_h3: false
+    injection_design_test_result: "PASS (post-fix) — enforcement consequences removed from EA registry injection file; model surfaced precondition framing through status-indicator reasoning (unconfirmed markers + brief-level signal)"
+    propagated_to: ["Story 2.1 AC1-AC5 (HARD PREREQUISITE — Redis encryption confirmation workstream)", "Story 1.3 (gated behind Story 2.1 AC1-AC4 sign-off for real-data testing)", "T-REDIS-GATE (blocking CI gate + human verification protocol)", "/dor H-REG-3 hard block (Head of Security Architecture; 4 explicit criteria)"]
+    gate_field: redis_encryption_confirmation_reference
+    responsible_party: "Head of Security Architecture (non-delegable)"
+    test_coverage: [T-REDIS-GATE]
+    c5_propagation_chain: >
+      /discovery [PRECONDITION] section (not injection-aided; model framed as conditional prerequisite from brief + injection status indicators)
+      → /definition Story 2.1 HARD PREREQUISITE (Redis encryption confirmation as first workstream) + Story 1.3 gated dependency
+      → /review H1 structural finding (dependency label insufficient; hard deployment block required; resolved: T-REDIS-GATE added)
+      → /test-plan T-REDIS-GATE (blocking CI gate with 4 explicit confirmation criteria; human verification + programmatic enforcement)
+      → /dor H-REG-3 hard block (named gate owner: Head of Security Architecture; 4 explicit criteria: (a) Premium/Enterprise tier, (b) at-rest encryption explicitly enabled, (c) key management meets PCI DSS, (d) private endpoint deployed)

@@ -1,0 +1,44 @@
+Optimized tool selection
+
+Read skill [definition-of-ready](file:///c%3A/Users/Hamis/code/skills%20repo/.github/skills/definition-of-ready/SKILL.md?vscodeLinkType%3Dskill#1-1), lines 1 to 150
+
+Read skill [definition-of-ready](file:///c%3A/Users/Hamis/code/skills%20repo/.github/skills/definition-of-ready/SKILL.md?vscodeLinkType%3Dskill#150-150), lines 150 to 300
+
+## Answer
+
+The skill is **/definition-of-ready** — your final gate check before handing the story to a coding agent. It's specifically designed to catch AC ambiguity and unreadiness before any implementation begins.
+
+### Hard Blocks (all must pass — no exceptions)
+
+**Core clarity blocks:**
+- **H1–H2**: User story format (persona, As/Want/So) and ≥3 ACs in Given/When/Then
+- **H3**: Every AC has ≥1 test in the test plan
+- **H4**: Out-of-scope section is populated (boundary clarity)
+- **H5–H6**: Benefit linkage and complexity rating
+- **H7**: No unresolved HIGH findings from review
+- **H8**: No uncovered ACs (or gaps explicitly acknowledged)
+- **H9**: Architecture constraints populated
+
+**Specialised checks:**
+- **H-E2E**: If any AC needs CSS-layout verification but no E2E test exists, must have explicit RISK-ACCEPT in decisions
+- **H-NFR / H-NFR2 / H-NFR3**: NFR profile exists, compliance sign-offs documented, data classification set
+- **H-GOV**: Discovery has ≥1 non-engineer approver (governance gate)
+- **H-ADAPTER**: Any injectable adapter has production wiring AC + throw defaults + separate wiring task
+- **H8-ext**: Schema dependency declarations validated against `pipeline-state.schema.json`
+
+### Minimum Inputs
+
+1. **Story artefact** — `artefacts/[feature]/stories/[story-slug].md`
+2. **Review report** — showing PASS (no unresolved HIGHs)
+3. **Test plan** — `artefacts/[feature]/test-plans/[story-slug]-test-plan.md`
+4. **AC verification script** — `artefacts/[feature]/verification-scripts/[story-slug]-verification.md`
+5. **Discovery artefact** — for H-GOV (Approved By check)
+6. **NFR profile** (if story has NFRs) — `artefacts/[feature]/nfr-profile.md`
+
+### What It Produces
+
+- **Contract Proposal** — negotiated implementation contract reviewed before coding starts
+- **DoR artefact** — definition-of-ready-checklist.md saved to `artefacts/[feature]/dor/[story-slug]-dor.md`
+- **Coding Agent Instructions block** — ready-to-hand-off spec with standards injection
+
+**Key guarantee:** If all hard blocks pass, the story is unambiguous enough for autonomous agent implementation. If any block fails, you stop immediately — no "warnings only" proceed path for hard blocks.

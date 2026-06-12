@@ -1,0 +1,196 @@
+I'll investigate the relationship between pipeline-state.json and assurance-gate.yml by reading both files and the related governance infrastructure.   
+
+Searched for files matching `**/assurance-gate.yml`, 1 match
+
+Searched for files matching `**/pipeline-state.schema.json`, 1 match
+
+Read [](file:///c%3A/Users/Hamis/code/skills%20repo/.github)
+
+Read [](file:///c%3A/Users/Hamis/code/skills%20repo/.github/workflows/assurance-gate.yml#1-1), lines 1 to 300
+
+Read [](file:///c%3A/Users/Hamis/code/skills%20repo/.github/pipeline-state.schema.json#1-1), lines 1 to 150
+
+Read [](file:///c%3A/Users/Hamis/code/skills%20repo/.github/workflows/assurance-gate.yml#300-300), lines 300 to 379
+
+Read [](file:///c%3A/Users/Hamis/code/skills%20repo/.github/pipeline-state.schema.json#150-150), lines 150 to 295
+
+Searched for files matching `**/loadPipelineStories`, no matches
+
+Read [](file:///c%3A/Users/Hamis/code/skills%20repo/scripts/ci-audit-comment.js#1-1), lines 1 to 150
+
+Read [](file:///c%3A/Users/Hamis/code/skills%20repo/scripts/ci-audit-comment.js#150-150), lines 150 to 350
+
+Read [](file:///c%3A/Users/Hamis/code/skills%20repo/scripts/ci-audit-comment.js#350-350), lines 350 to 381
+
+Searched for files matching `**/run-assurance-gate.js`, 1 match
+
+Read [](file:///c%3A/Users/Hamis/code/skills%20repo/.github/scripts/run-assurance-gate.js#1-1), lines 1 to 200
+
+Now I'll create a comprehensive explanation of the relationship between pipeline-state.json and the CDG assurance gate workflow.
+
+## Relationship Between pipeline-state.json and assurance-gate.yml
+
+The assurance-gate workflow is a **read-only CI gate** that validates pipeline artefacts and delivery governance on every PR. It reads specific fields from `pipeline-state.json` to determine which feature and stories are being delivered, and what governance rules should apply.
+
+### Pipeline-State Fields Read by assurance-gate.yml
+
+The workflow queries `pipeline-state.json` in four distinct stages:
+
+#### **Stage 1: Regulated flag derivation** (`Derive regulated flag from pipeline-state`)
+```javascript
+// Compares PR URL against story.prUrl entries
+const prUrl = process.argv[1];  // Extracted from $GITHUB_REF
+let regulated = false;
+(state.features || []).forEach(function(f) {
+  (f.stories || []).forEach(function(s) {
+    if (s.prUrl === prUrl && s.regulated === true) 
+      regulated = true;
+  });
+});
+```
+**Read fields:**
+- `features[].slug`
+- `features[].stories[].prUrl` — matches against the PR URL to identify the story
+- `features[].stories[].regulated` — boolean flag; when true, triggers **T3M1 regulated audit fields** requirement in trace validation
+
+**Condition for blocking:** If `regulated: true` but the trace is missing any of the four T3M1 fields (`standardsInjected`, `watermarkResult`, `stalenessFlag`, `sessionIdentity`), the gate posts a blocking audit comment: `"T3M1-fields-valid: FAIL"`.
+
+#### **Stage 2: Feature slug resolution** (`Resolve active feature for artefact collection`)
+The workflow attempts to resolve the feature slug using a three-tier fallback:
+1. Explicit override from `context.yml` (`audit.feature_slug`)
+2. Extracted from PR body (via `extractStorySlug()`)
+3. Extracted from branch name
+4. **Auto-resolved from pipeline-state:** selects the most recently active feature:
+   ```javascript
+   const DONE = new Set(['archived','definition-of-done','released']);
+   const inProgress = s.features.filter(f => !DONE.has(f.stage));
+   const pick = inProgress.length > 0
+     ? inProgress[inProgress.length - 1]
+     : s.features.filter(f => f.stage !== 'archived').slice(-1)[0];
+   ```
+
+**Read fields:**
+- `features[].slug`
+- `features[].stage` — filters out archived/done stages to find the active workstream
+
+#### **Stage 3: Load pipeline stories for artefact classification** (`Post governed artefact chain comment`)
+```javascript
+const pipelineStories = loadPipelineStories(stateObj, slug);
+// Function: handles both flat stories[] and epic-nested epics[].stories[]
+const flatStories = feat.stories || [];
+const epicStories = (feat.epics||[]).flatMap(e => e.stories||[]);
+const allStories = flatStories.concat(epicStories);
+```
+
+**Read fields (per story):**
+- `stories[].id` or `stories[].slug` — used as storyId in audit comments
+- `stories[].title` — displayed in AC section
+- `stories[].issueUrl` — fetched to extract AC list from issue body
+- `stories[].testPlan.totalTests` / `.passing` — displayed in test coverage section
+- `stories[].artefact` — fallback to locate story markdown if not already loaded
+- `epics[].slug` — for epic-nested stories
+- `epics[].stories[]` — concatenated with flat stories for full scope
+
+#### **Stage 4: H-gate CLI validation** (`Run H-gate CLI validate for feature stories`)
+```javascript
+// Iterate all stories and run: node bin/skills validate --story <id>
+const flatStories = feat.stories || [];
+const epicStories = (feat.epics||[]).flatMap(e => e.stories||[]);
+const allStories = flatStories.concat(epicStories);
+for (const s of allStories) {
+  const storySlug = s.id || s.slug;
+  if (!storySlug) continue;
+  child.spawnSync('node', ['bin/skills', 'validate', '--story', storySlug, '--ci']);
+}
+```
+
+**Read fields:**
+- `stories[].id` — passed to the governance validation CLI
+- `stories[].slug` — fallback when `id` is not set
+- `epics[].stories[].id` / `.slug` — same for nested stories
+
+---
+
+### Blocking Audit Comment Conditions
+
+The workflow posts a **blocking audit comment** when any of these conditions fail:
+
+#### **Hard Structural Failures** (prevent AC parsing and story enrichment):
+| Check | Condition | Posted as |
+|-------|-----------|-----------|
+| `workspace-state-valid` | state.json missing or invalid JSON | ❌ Assurance Gate verdict: FAIL |
+| `pipeline-state-valid` | pipeline-state.json missing or invalid JSON | ❌ Assurance Gate verdict: FAIL |
+| `artefacts-dir-exists` | artefacts directory not found | ❌ Assurance Gate verdict: FAIL |
+| `governance-gates-exists` | governance-gates.yml missing | ❌ Assurance Gate verdict: FAIL |
+
+#### **Regulated Feature Violations** (when `regulated: true` but T3M1 fields absent):
+```
+t3m1-fields-valid: FAIL
+Reason: A T3M1 mandatory field is null or absent in a regulated story trace.
+Required fields: standardsInjected, watermarkResult, stalenessFlag, sessionIdentity
+```
+
+#### **Story Slug Resolution Failures**:
+- If a story in `stories[]` has neither `id` nor `slug`, the story is silently skipped (not included in AC verification section)
+- The audit comment displays `(_no stories found_)` in the AC section if no resolvable stories exist
+
+---
+
+### What Happens When a story is 'dor-signed-off' but Has No Artefact Path
+
+When a story is marked with `dorStatus: "signed-off"` in `pipeline-state.json` but has **no `artefact` or `dorArtefact` field set**:
+
+#### **Fallback Path Resolution** (in the audit comment script):
+```javascript
+let artPath = story.artefact;
+if (!artPath && slug) {
+  const storiesDir = `artefacts/${slug}/stories`;
+  const storySlug = story.slug || story.id || '';
+  if (storySlug && fs.existsSync(storiesDir)) {
+    const storyFile = fs.readdirSync(storiesDir).find(
+      f => f.startsWith(storySlug + '-') || f === storySlug + '.md'
+    );
+    if (storyFile) artPath = `${storiesDir}/${storyFile}`;
+  }
+}
+```
+
+**Outcomes:**
+1. **If the file exists on disk at the fallback location** — ACs are extracted and the story is included in the AC verification section with ✅ status (if tests pass)
+2. **If the file does NOT exist on disk** — logs `[ac-extract] artefact not found at: <path>` to workflow logs, but **does not block the gate**. The story appears in the AC section with `(_no ACs extracted_)` and **⚠️ status** (warning icon)
+3. **If `story.id` or `story.slug` is also missing** — the story is skipped entirely (not included in AC verification)
+
+#### **Is it a Blocking Error?**
+**No.** Missing `artefact` + missing dorArtefact + file not found on disk does not cause the gate to fail. Instead:
+- The audit comment reflects the missing data with visual warnings (⚠️)
+- The story is still listed but marked as unverified
+- The gate verdict remains based on other checks (structural validity, T3M1 fields)
+
+This is a **reporting gap, not a gate block** — the intended signal is: *"you signed off this story, but I can't find its artefact file to verify ACs"*. A human reviewer should see this warning and either:
+1. Add the missing `artefact` field to `pipeline-state.json` + push, which re-triggers the gate
+2. Push the missing artefact file to `artefacts/[slug]/stories/` + push
+3. Acknowledge the gap as acceptable and merge anyway
+
+---
+
+### Cross-Check Example: Dispatch Verification (asd.1)
+
+The workflow includes a **dispatch cross-check** that validates the story referenced in the PR body matches pipeline-state:
+```javascript
+const prBody = context.payload.pull_request.body;
+const crossCheckStoryId = extractStorySlug(prBody, slug);  // e.g., "p4.1"
+const crossCheckStoryFound = pipelineStories.find(s => (s.id || s.slug) === crossCheckStoryId);
+
+if (crossCheckStoryFound && crossCheckStoryFound.issueUrl) {
+  // Story exists and was dispatched from an issue
+  crossCheckDispatchNote = '✅ Dispatch verified: story found in pipeline-state';
+} else if (crossCheckStoryId && !crossCheckStoryFound) {
+  // Story mentioned in PR but not in pipeline-state
+  crossCheckDispatchNote = '⚠️ Dispatch cross-check: story [id] not found in pipeline-state';
+} else {
+  // No story slug in PR body (not a dispatched story PR)
+  crossCheckDispatchNote = '';
+}
+```
+
+If a story is `dor-signed-off` but missing from the PR body entirely, this cross-check catches it and posts a warning.

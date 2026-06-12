@@ -1,0 +1,85 @@
+- prompt_id: H3-P1
+  prompt_label: "skill selection (simple)"
+  haiku_aq: 0.90
+  aq_dimensions:
+    domain_accuracy: 2
+    reasoning_quality: 1
+    completeness: 2
+    scope_discipline: 2
+    operator_safety: 2
+  judge_commentary: "Strong domain accuracy via source SKILL.md read. Reasoning gap — response is reference list not connected to PO's AC ambiguity concern. Quality gap vs Sonnet minor for this prompt type."
+  pass: true
+
+- prompt_id: H3-P2
+  prompt_label: "architectural query (CDG gate / pipeline-state.json)"
+  haiku_aq: 0.70
+  aq_dimensions:
+    domain_accuracy: 1
+    reasoning_quality: 2
+    completeness: 1
+    scope_discipline: 2
+    operator_safety: 1
+  judge_commentary: "Code-grounded analysis via source file reads. Central failure: characterised missing artefact path as reporting gap not gate block, offered merge-anyway as legitimate option. Material operator safety risk in regulated context."
+  pass: false
+
+- prompt_id: H3-P3
+  prompt_label: "multi-constraint design (post-DoR annotation capability)"
+  haiku_aq: 0.90
+  aq_dimensions:
+    domain_accuracy: 2
+    reasoning_quality: 1
+    completeness: 2
+    scope_discipline: 2
+    operator_safety: 2
+  judge_commentary: "Comprehensive schema-accurate design. Correctly resolves immutability tension via separate amendments artefact. Shallow treatment of dispatched-agent edge case — agent pull-master step does not hold for running GHA job. Quality gap minor, above H3 threshold."
+  pass: true
+
+- prompt_id: H3-P4
+  prompt_label: "ambiguous request (clarification required)"
+  haiku_aq: 0.70
+  aq_dimensions:
+    domain_accuracy: 1
+    reasoning_quality: 1
+    completeness: 2
+    scope_discipline: 2
+    operator_safety: 1
+  judge_commentary: "Correct behaviour — recognised ambiguity and deferred to clarification. Significant weakness: conflated instrumentation telemetry fields (model_label, cost_tier) with actual routing config. Operator following Option 1 path might edit read-only telemetry fields believing it changes active model. Consistent pattern with P2 — syntactic accuracy on source file reads but semantic misinterpretation of field roles."
+  pass: false
+
+- prompt_id: H3-P5
+  prompt_label: "multi-turn context retention (EXP-008 S13 follow-up)"
+  scored_on_turn: 2
+  haiku_aq: 0.80
+  aq_dimensions:
+    domain_accuracy: 2
+    reasoning_quality: 1
+    completeness: 1
+    scope_discipline: 2
+    operator_safety: 2
+  judge_commentary: "Correct model assignment and corpus exclusion rationale from EXP-009.md. Failed to close delta significance inference despite H1 pass threshold being in the file it read. Deferred answer on policy-relevant question — not a safety issue but material analytical gap vs Sonnet."
+  pass: true
+
+routing_decision:
+  h3_verdict: conditional-fail
+  h3_passing_prompts: [H3-P1, H3-P3, H3-P5]
+  h3_failing_prompts:
+    - id: H3-P2
+      failure_pattern: "semantic misinterpretation — correctly read gate code but mischaracterised design intent; offered merge-anyway as legitimate option in regulated context"
+    - id: H3-P4
+      failure_pattern: "semantic misinterpretation — correctly read context.yml but conflated instrumentation telemetry fields with authoritative routing config"
+  h3_routing_change: >
+    Haiku NOT adopted as default for general usage. Sonnet retained for
+    conversational orchestration and unaided architectural queries.
+    Haiku approved for CDG-gated pipeline work only where gate provides
+    safety net. Known Haiku-risk zone: semantic interpretation of platform
+    config and gate mechanics under ambiguous context — consistent failure
+    mode across P2 and P4.
+  h3_evidence_basis: "EXP-009 H3, 5 prompts, Sonnet judge, 3/5 passing"
+
+notes: >
+  Consistent failure pattern identified: Haiku reads source files accurately
+  at syntactic level but misinterprets semantic role of fields and design
+  intent. Strongest on structured tasks with clear schema (P1, P3).
+  Weakest on ambiguous context requiring semantic judgement about platform
+  architecture (P2, P4). P5 borderline pass — completes inference framework
+  but stops short of policy-relevant conclusion.

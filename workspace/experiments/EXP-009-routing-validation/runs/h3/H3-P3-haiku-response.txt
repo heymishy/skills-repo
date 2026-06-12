@@ -1,0 +1,260 @@
+This is a critical design problem in regulated delivery. Post-sign-off constraint discovery is real — but the gap between sign-off and PR open is precisely when scope creep disguises itself as "compliance". Let me map the core constraints, artefact changes, and guardrails.
+
+## Core Design Constraints
+
+**1. Phase Lock — No Regression**
+- The story remains at `dorStatus: "signed-off"` and `prStatus: "draft"` (once PR opens)
+- Post-sign-off annotations do NOT trigger re-entry to `/definition-of-ready`
+- Rationale: The original sign-off decision (that the known scope was ready) is not invalidated. The annotation is *additive*, not corrective
+
+**2. Immutability of Original DoR**
+- The original `[story-slug]-dor.md` is never modified after sign-off
+- Post-sign-off regulatory constraints live in a separate artefact: `[story-slug]-dor-amendments.md`
+- The amendments file has a versioned history (timestamp, author, constraint text, justification, regulatory source)
+- Rationale: Audit trail requires the original decision visible unchanged; amendments append, never rewrite
+
+**3. Scope Boundary Protection — Hard Gate**
+- A regulatory amendment can ONLY specify **verification** (tests, acceptance criteria additions) or **non-functional constraints** (performance, security, data retention)
+- It CANNOT specify new **feature scope** (new user workflows, API endpoints, data model extensions)
+- Red-line rule: if the amendment requires code in a file not already touched by the original story's test plan, it is scope, not constraint, and is rejected
+- Rationale: Scope additions disguised as regulatory requirements bypass the definition and test-plan gates
+
+**4. Audit Trail — Immutable Record**
+- Every amendment recorded in `pipeline-state.json` with: annotation timestamp, annotator identity, regulatory source (reference number or notice URL), constraint category, and link to amendments artefact version
+- Amendments do not modify the story's AC list — they appear as a separate `regulatoryAmendments[]` array on the story object
+- The entire pipeline trace must include both the original DoR approval timestamp and the amendment timeline
+- Rationale: Compliance audits require a visible chain showing when the constraint entered the system and who added it
+
+---
+
+## Pipeline State Schema Changes
+
+Add to each story object (Phase 3+):
+
+```json
+{
+  "id": "story-id",
+  "slug": "story-slug",
+  "dorStatus": "signed-off",
+  "prStatus": "draft",
+  "dorSignedOffAt": "2026-06-07T09:00:00Z",
+  "regulatoryAmendments": [
+    {
+      "id": "amendment-001",
+      "annotatedAt": "2026-06-07T14:30:00Z",
+      "annotatorId": "compliance-officer@example.com",
+      "annotatorRole": "compliance",
+      "regulatorySource": "RBNZ/2026/SN-0847",
+      "constraint": "Data retention: transaction records must be archived after 7 years, not 5",
+      "category": "data-retention-nfr",
+      "affectedACs": ["AC7: Archival process completes within SLA"],
+      "testPlanModified": false,
+      "amendmentsArtefactVersion": "dor-amendments.md#v1",
+      "scopeCheckResult": {
+        "status": "pass",
+        "filesRequired": ["src/archival.js", "tests/archival.test.js"],
+        "filesAlreadyInTestPlan": true,
+        "scopeAdditionRisk": "none"
+      },
+      "mergeBlockRisk": "none"
+    }
+  ],
+  "regulatoryAmendmentsSummary": {
+    "totalCount": 1,
+    "lastAmendedAt": "2026-06-07T14:30:00Z",
+    "blockingAmendments": 0,
+    "scopeViolations": 0
+  }
+}
+```
+
+---
+
+## DoR Artefact Format Changes
+
+### Original DoR (unchanged after sign-off)
+`[story-slug]-dor.md` — remains exactly as approved, with sign-off timestamp block at the end.
+
+### New Post-Sign-Off Amendment Artefact
+**File:** `[story-slug]-dor-amendments.md`
+
+```markdown
+# Regulatory Amendments to [Story Title]
+
+**Story ID:** story-slug  
+**Original DoR Signed Off:** 2026-06-07T09:00:00Z  
+**Amendment Timeline:** [auto-maintained]
+
+---
+
+## Amendment #1
+
+**Date:** 2026-06-07T14:30:00Z  
+**Annotator:** Compliance Officer Name (compliance-officer@example.com)  
+**Authority:** RBNZ Supervisory Notice 2026/SN-0847 — "Data Retention and Archive Governance"  
+**Constraint Category:** Non-Functional Requirement (Data Retention)  
+
+**Regulatory Requirement:**  
+Transaction records must be retained in the hot archive for a maximum of 5 years per Section 4.2 of the revised notice (previously 5 years, now 7 years, effective 2026-07-01).
+
+**Implication on This Story:**  
+Acceptance Criterion 7 (Archival process completes within 60-day SLA) becomes: "Archival process completes within 60-day SLA AND transitions records older than 7 years to cold storage per RBNZ/2026/SN-0847 Section 4.2."
+
+**Scope Impact Assessment:**  
+- Required files already in test plan: `src/archival.js`, `tests/archival.test.js` ✓
+- No new files required
+- No feature scope addition — constraint applies to existing archival handler
+- **Scope Violation Risk:** NONE
+
+**Test Plan Impact:**  
+- Original test plan remains valid
+- Proposed test addition: "Verify records > 7 years old are transitioned to cold storage on archival trigger"
+- Test file: same as original (`tests/archival.test.js`)
+- **Test Plan Modification:** YES, test case addition only
+
+**Implementation Implication:**  
+Code change required in `src/archival.js` to update the cutoff date from 5 to 7 years. No new API contract, no new data model. **Estimated task time: 2 hours (1 hour code + 1 hour test).**
+
+**Approver Attestation:**  
+- [ ] Compliance officer attests: this constraint is authentic, non-negotiable, and discovered post-sign-off due to regulatory notice received 2026-06-07
+- [ ] Tech lead attests: scope is contained, files are in scope, no phase regression required
+- [ ] (Optional) Story owner attests: workload impact understood
+
+---
+
+## Amendment #2
+
+[Next amendment follows same format...]
+
+---
+
+## Amendment Timeline Summary
+
+| Amendment | Date | Source | Category | Scope Risk | Merge Blocker |
+|-----------|------|--------|----------|-----------|--------------|
+| #1 | 2026-06-07 | RBNZ/SN-0847 | Data Retention NFR | None | No |
+| (none yet) | — | — | — | — | — |
+```
+
+---
+
+## Guardrails — Preventing Misuse
+
+### **G1: Authorship Restriction**
+- Only users with `compliance` or `security` role (as defined in `context.yml: personas.*`) can create amendments
+- Amendment must include a reference to an external regulatory source (regulatory notice number, statute section, or compliance framework document URL)
+- No bare annotations like "add password hashing" without a specific regulatory or audit finding reference
+- **Implementation:** A CLI command `node bin/skills amend-dor <story-id> --source <ref> --constraint <text>` that validates the source format and role before writing
+
+### **G2: Scope Boundary Gate**
+- Before writing the amendment to disk, run a static check:
+  ```
+  filesTouchedByAmendment = [extract from constraint description]
+  filesInOriginalTestPlan = [parse from test-plan.md]
+  if NOT filesTouchedByAmendment ⊆ filesInOriginalTestPlan:
+    REJECT "Constraint requires files not in original scope: [list]"
+  ```
+- Constraint text is scanned for patterns like "add endpoint", "new field", "new service" — if found, require explicit override signature from both compliance officer AND tech lead
+- **Implementation:** Automated regex check in the amend-dor command; suspicious patterns trigger a "scope flag" requiring dual approval
+
+### **G3: Merge Blocking Rules**
+- **Non-blocking amendments:** NFRs (data retention, encryption, performance, audit logging) where implementation does not change the original story's AC verification logic
+- **Blocking amendments:** Any amendment that requires a test plan rewrite (new ACs, new test cases that check different behaviour than original, new user workflows)
+- A blocking amendment does NOT reset the story to `/definition-of-ready` — instead, it creates a `mergeBlockRisk: "yes"` flag in pipeline-state.json
+- PR can still open and reviewers can still review, but merge is blocked until the amendment is marked as "implemented" in the PR
+- **Implementation:** A required check in the PR merge gate (`scripts/check-merge-blockers.js`) that queries pipeline-state and blocks if `mergeBlockRisk: true` and no "amendment implemented" commit message tag is found
+
+### **G4: Immutability of Original ACs**
+- Original DoR ACs are never modified after sign-off
+- If an amendment changes the *meaning* of an original AC (e.g., AC7 originally said "5 years", now means "7 years"), the amendment must introduce a *new* AC for the regulatory version
+- Original AC7 remains as-is in the DoR; the amendment introduces AC7-REG-2026-SN-0847 in the amendments artefact
+- Tests verify both the original scope AND the regulatory addition
+- **Implementation:** The test-plan amendments section (if any tests are added) must explicitly reference which amendment justifies the new test
+
+### **G5: Author Attestation**
+- Every amendment requires a checkbox attestation from the compliance officer: "I attest this constraint was discovered post-sign-off and is not a disguised scope addition"
+- The checkbox is programmatically verified before the amendment is saved
+- A second attestation from the tech lead is **recommended** (but not mandatory) confirming scope containment
+- Both attestations are recorded with timestamp and recorded in pipeline-state.json
+- **Implementation:** The amend-dor command requires `--attest` flag; if not passed, amendment is drafted but not saved
+
+### **G6: Regulatory Source Validation**
+- Amendments must cite a specific external source: RBNZ notice number, legislation section, audit finding reference, or compliance framework document
+- The source cannot be internal ("discovered during sprint planning", "tech lead requested")
+- A known-sources registry (`product/known-regulatory-sources.md`) maintains a list of recent notices/requirements to prevent duplicates
+- If an amendment references a source already cited in another story's amendments, a warning is raised: "This source is already cited in [story-1, story-2]. Coordinate amendments?"
+- **Implementation:** A regex validator for source format + a cross-feature check in the amend-dor command
+
+### **G7: Audit Trail Immutability**
+- Once an amendment is recorded in pipeline-state.json, its fields cannot be edited (except for merge-block status and implementation-confirmation tags)
+- Corrections to amendment text require a **new amendment** (Amendment #2) that explicitly references Amendment #1: "Correction to Amendment #1: the retention period is 7 years (not 5 years, per the full reading of Section 4.2)"
+- The full history of all amendments — including corrections — is visible in the amendments artefact and pipeline-state.json
+- **Implementation:** A validation check on `skills advance` that rejects attempts to modify `regulatoryAmendments[N]` entries once they exist (only allows append, not edit)
+
+### **G8: CI/CD Pipeline Checkpoint**
+- Before a PR can be merged, `scripts/check-dor-amendments.js` runs and verifies:
+  1. All amendments in pipeline-state.json have matching entries in the dor-amendments.md artefact
+  2. No scope violations (all touched files are in original test plan)
+  3. All attestations are present and timestamps are valid
+  4. If merge-blocking amendments exist, PR has a commit message tag `[amendment-impl]` naming which amendment it addresses
+- Failure of any check blocks merge
+- **Implementation:** Required CI check in assurance-gate.yml
+
+---
+
+## Workflow Implications
+
+**Scenario: Amendment Arrives Pre-PR**
+
+```
+[DoR signed off] ──→ [Dispatch to agent] ──→ [Agent opens draft PR]
+                              ↓
+                  [Compliance notice arrives]
+                              ↓
+                   [Amendment filed: AC7 expanded for 7-year retention]
+                              ↓
+                  [Amendment flagged as non-blocking]
+                              ↓
+         [Agent PR already open; agent pulls master, sees amendment]
+                              ↓
+        [Agent adds archival handler update in same PR commit]
+                              ↓
+         [PR reviewer verifies: amendment implemented, all ACs pass]
+                              ↓
+                         [PR merges]
+```
+
+**Scenario: Amendment Arrives Post-PR, Blocking**
+
+```
+         [PR open and in review] ──→ [Compliance notice arrives]
+                                             ↓
+                            [Amendment filed: NEW AC8 for audit logging]
+                                             ↓
+                        [Amendment flagged as BLOCKING]
+                                             ↓
+              [PR merge gate blocks: "Amendment requires implementation"]
+                                             ↓
+         [Author rebases, adds audit logging handler + test]
+                                             ↓
+              [PR updated; merge gate verifies amendment-impl tag]
+                                             ↓
+                              [PR merges with both AC7 and AC8 verified]
+```
+
+---
+
+## Key Points for Governance
+
+| Aspect | Constraint |
+|--------|-----------|
+| **Phase Lock** | Story stays at DoR-signed-off; no regression to definition |
+| **Immutability** | Original DoR untouched; amendments in separate artefact |
+| **Scope Protection** | Amendment files must be subset of original test-plan files |
+| **Audit** | Every amendment timestamped, attributed, source-cited in pipeline-state.json |
+| **Misuse Prevention** | Scope flag with dual-approval gate; regulatory source validation; known-sources registry check |
+| **Merge Gate** | Non-blocking amendments permitted; blocking amendments require explicit PR tag and verification |
+| **Corrections** | Mistakes corrected via new amendment (Amendment #2), not edits to Amendment #1 |
+| **CI Validation** | Automated check: amendments ⊆ test-plan files; all attestations present; no scope leakage |
+
+This design preserves the DoR decision as immutable, prevents scope creep, maintains auditability, and allows genuine regulatory constraints discovered post-sign-off to be integrated without phase regression.

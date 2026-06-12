@@ -1,0 +1,80 @@
+---
+experiment: EXP-009-routing-validation
+hypothesis: H2
+config: C
+story: S8
+stage: definition
+run_date: 2026-06-07
+mai_model_string_confirmed: MAI-Code-1-Flash
+
+model_config:
+  discovery_model: "none — using EXP-008 Config A S8 discovery artefact"
+  definition_model: MAI-Code-1-Flash
+  review_model: claude-sonnet-4-6
+  test_plan_model: claude-sonnet-4-6
+  dor_model: claude-sonnet-4-6
+  judge_model: "not reached — format compliance failure"
+
+extended_thinking_disabled: true
+discovery_artefact_source: workspace/experiments/EXP-008-corpus-breadth-eval/runs/config-A-S8/discovery.md
+
+format_compliance_check:
+  skill_sections_present:
+    step_1_scope_confirmation: ABSENT
+    step_1_5_architecture_constraints_scan: ABSENT
+    step_2_slicing_strategy_choice: ABSENT
+    step_5_benefit_coverage_matrix: ABSENT
+    step_6_scope_accumulator: ABSENT
+    step_7_nfr_profile: ABSENT
+    pipeline_state_json_update: ABSENT
+  hallucinated_fields: false
+  structural_conformance: fail
+  format_compliance_verdict: fail
+  format_compliance_notes: >
+    MAI bypassed all interactive confirmation steps and produced artefacts
+    directly without operator input. Slicing strategy not chosen. ACs not
+    in Given/When/Then format. No scope accumulator. No NFR profile.
+    No pipeline-state.json update. Additionally wrote to production artefact
+    directory without being asked — uncontrolled side effect. Production
+    artefact directory reverted manually post-run.
+    Failure mode is distinct from GPT-4o schema drift — MAI understood the
+    output format but ignored the process discipline entirely.
+
+cpf_definition_stage: "not scored — format compliance failure"
+aq: "not scored — format compliance failure"
+
+routing_decision:
+  h2_verdict: format-compliance-fail
+  h2_routing_change: >
+    MAI-Code-1-Flash ruled out for all definition-tier pipeline work.
+    Failure mode: process compliance failure — bypassed all mandatory
+    interactive SKILL.md steps and operator confirmation gates.
+    Distinct from GPT-4o schema drift but equally disqualifying.
+    Production artefact directory contamination noted as additional risk.
+  h2_next_step: >
+    MAI not adopted for any pipeline role. No EXP-010 required for MAI.
+    Proceed to Phase 4 H1 S8 Haiku orchestrator run.
+  h2_evidence_basis: "EXP-009 H2, S8 definition stage, format compliance check only"
+
+deviation_log:
+  - date: 2026-06-07
+    phase: P3-H2
+    deviation: >
+      MAI wrote files directly to production artefact directory
+      artefacts/2026-05-17-regulatory-reporting-pipeline-automation/
+      without being instructed to. Directory reverted manually before
+      Phase 4 commenced.
+    impact: >
+      Potential corpus contamination if not caught. No permanent damage —
+      reverted successfully.
+    resolution: Manual revert via git before Phase 4.
+
+estimated_credits_consumed: ~
+actual_credits_consumed: ~
+notes: >
+  MAI-Code-1-Flash is a code-specialist model that appears optimised for
+  direct artefact production rather than interactive governed workflows.
+  This makes it unsuitable for SKILL.md-governed pipelines where operator
+  confirmation steps are mandatory process gates, not optional UX patterns.
+  The uncontrolled file write to production directories is an additional
+  safety concern for any future testing in a governed repo context.

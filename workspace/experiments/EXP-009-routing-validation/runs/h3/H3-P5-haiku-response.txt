@@ -1,0 +1,35 @@
+I need to read the EXP-008 design artefact and Config B specification to answer this precisely. Let me pull those.  
+
+Searched for files matching `**/EXP-008.md`, no matches
+
+Searched for files matching `**/artefacts/2026-05-*/eval-config.md`, no matches
+
+Read [](file:///c%3A/Users/Hamis/code/skills%20repo/eval-config)
+
+Searched for text `EXP-008|Config B|Config C|Config D`, 20 results
+
+Read [](file:///c%3A/Users/Hamis/code/skills%20repo/eval-config/EXP-009.md#1-1), lines 1 to 150
+
+I need to clarify the experimental design before answering. I found **EXP-009.md** (which is the active routing validation experiment), but I don't have the EXP-008 design file itself. Let me work from what EXP-009 specifies and flag the gap.
+
+**For Config B as defined in EXP-009 (H1 — Haiku orchestrator):**
+- **/discovery:** `claude-haiku-4-5`
+- **/definition:** `claude-haiku-4-5`
+- /review, /test-plan, /definition-of-ready: all Haiku 4.5
+
+However, **EXP-009 specifies Config B corpus as S8 + S2 (conditional), not S13.** S13 is explicitly excluded from the H1 primary run because "S13 has multi-jurisdiction scoring complexity that would add overhead without adding signal for the H1 routing question."
+
+**Three critical questions:**
+
+1. **Are you extending the Config B corpus to include S13**, or are you running a different experimental design (perhaps EXP-008 Config D or a variant)?
+
+2. **Interpreting a hypothetical AQ = 0.90 vs Config C = 0.80 (delta +0.10):**
+   - That delta is **significant and positive** — it signals the new model or rubric variant improved story clarity
+   - But the decision depends on context: 
+     - If this is Config B (Haiku everywhere) and AQ improved vs Config C (mixed), that's a strong signal H1 hypothesis is solid
+     - If this is a rubric change (not a model change), the delta measures rubric quality, not model quality
+     - **What changed between Config C and Config B besides the model?** Rubric, injection context, or model only?
+
+3. **What was the Config C design on S13?** (E.g., what models, what was the explicit hypothesis?) I can't find the EXP-008 document to cross-reference.
+
+**Pull the EXP-008 design artefact and share it, and I'll give you a precise answer on model selection and delta significance.** Without knowing what Config C tested, I can't interpret the 0.10 delta correctly.

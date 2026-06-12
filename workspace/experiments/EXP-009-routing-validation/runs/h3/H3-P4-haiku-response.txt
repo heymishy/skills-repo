@@ -1,0 +1,26 @@
+I need to understand your model routing goals better. Let me ask a few clarifying questions: 
+
+Analyzing your answers...
+
+Let me read what you currently have open to understand the context better:  
+
+Read [](file:///c%3A/Users/Hamis/code/skills%20repo/workspace/experiments/EXP-009-routing-validation/runs/h3/H3-P4-haiku-response.txt)
+
+Read [](file:///c%3A/Users/Hamis/code/skills%20repo/.github/context.yml#1-1), lines 1 to 80
+
+I see context.yml with model routing currently set to:
+- **Active model:** `claude-sonnet-4-6` (Sonnet, cost tier: "fast")
+- **Routing strategy:** `default_model_class: "balanced"` with `escalation_model_class: "deep-reasoning"`
+- **Active experiment:** EXP-001-discovery-phase4-5
+
+To give you the most useful help, can you clarify what you'd like to update?
+
+**Option 1:** Change the **active model** (e.g., switch to Opus for higher reasoning, or Haiku for cost savings)
+
+**Option 2:** Refine the **routing strategy** — decide which skills/phases use which model (e.g., discovery→Opus, testing→Haiku)
+
+**Option 3:** Run the **`/token-optimization` skill** to design a new library-wide routing policy
+
+**Option 4:** Set up **EXP-009** (I see the folder is ready) to validate new routing rules
+
+Which would be most helpful?
