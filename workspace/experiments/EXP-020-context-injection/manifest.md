@@ -8,7 +8,7 @@
 | experiment_type | model-sweep (context-injection variant) |
 | created | 2026-06-13 |
 | operator | Hamish King |
-| status | pending |
+| status | in-progress (S13 complete; S10 judge failure — see Findings) |
 | motivation | Close 2 — test whether injecting explicit NZ financial regulatory context raises D1/CPF scores on S-hard cases and whether Haiku becomes competitive with Sonnet under regulated context injection |
 
 ## Hypothesis
@@ -117,7 +117,23 @@ After scoring, compare:
 
 ## Findings
 
-*Populated after analysis.*
+### S13 — Context injection dramatically raises Sonnet score
+
+Sonnet 4.6 on S13 (SWIFT correspondent agreement, dual-AML/CFT) under regulated context: **0.995 weighted score, 2/2 pass**. No-context baseline from EXP-010: 0.617, 0/2 pass. Delta: +0.378. This is the largest single-context-injection score improvement observed. The regulated context appears to have enabled the model to correctly surface the SWIFT correspondent bank notification requirement (the hidden constraint) in both trials.
+
+Haiku 4.5 on S13 under regulated context: 0.306, NON-COMPLIANT. Constraint was partially detected but process violation triggered (produced structured sections without a clarifying question).
+
+### S10 — Judge failures; model output was high quality
+
+Both Sonnet S10 trials returned `"error": "judge failed"` (score: 0.000). This is an infrastructure artifact — same parse-error pattern as EXP-015/016/019. The Sonnet S10 run file shows the model correctly identified RBNZ BS11 notification as the primary hard constraint and stopped to ask a clarifying question before proceeding (correct protocol). Score 0.000 is not a quality signal.
+
+Haiku on S10: NON-COMPLIANT. D7 = 0.7 (correctly surfaced RBNZ BS11, CCCFA, reporting constraints from context), but triggered the no-clarifying-question process violation by producing ≥3 enumerated regulatory sections as structured output before asking first.
+
+### Preliminary routing implication
+
+S13: Sonnet+context at 0.995 vs Haiku+context at 0.306 — gap is 0.689, far outside the 0.05 falsification threshold. **Routing is not changed by context injection.** The regulated context raises Sonnet's absolute score substantially but does not close the Sonnet/Haiku gap. S10 judge failures need to be re-run before S10 conclusions can be drawn.
+
+**S10 re-run required**: Use `--judge-only` after confirming judge model is available, or re-run generation + judge on S10 cells only.
 
 ## Next actions
 
