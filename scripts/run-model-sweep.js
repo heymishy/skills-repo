@@ -683,7 +683,7 @@ function extractOperatorInput(caseContent) {
   const inputLines = [];
   for (const line of lines) {
     if (/^##\s+Operator input/i.test(line)) { inSection = true; continue; }
-    if (inSection && /^##/.test(line)) break;
+    if (inSection && /^##[^#]/.test(line)) break;
     if (inSection) {
       if (line.startsWith('>')) { collecting = true; }
       if (collecting) { inputLines.push(line.replace(/^>\s?/, '')); }

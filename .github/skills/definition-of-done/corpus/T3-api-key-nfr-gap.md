@@ -21,7 +21,7 @@
 
 ---
 
-## Input bundle
+## Operator input
 
 > **Operator instruction:** Please run /definition-of-done for the story and supporting artefacts below. PR #231 has been merged.
 
