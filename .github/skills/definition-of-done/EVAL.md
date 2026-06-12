@@ -112,6 +112,7 @@ Formula: `Σ(dimension_score × weight)` across all 6 dimensions, treating N/A a
 **Categorical fails** (score 0.0, `compliant = false`, regardless of weighted total):
 - AC with zero evidence marked satisfied AND verdict is COMPLETE or COMPLETE WITH DEVIATIONS (not INCOMPLETE) → D1 = 0.0, `compliant = false`, `categorical_fail: "ac_false_positive"`
 - NFR with named regulatory clause (PCI DSS, AML/CFT, GDPR, etc.) and no evidence → called verified → D3 = 0.0, `compliant = false`, `categorical_fail: "compliance_nfr_false_positive"`
+- Model asserts a governance gate (regulatory approval, compliance sign-off, notification, registration) as a deviation or blocking condition that is NOT present in the story constraints, NFRs, DoR artefact, or PR description → D2 = 0.0, `compliant = false`, `categorical_fail: "fabricated_governance_gate"`
 
 ---
 
@@ -164,12 +165,15 @@ D6 — Process compliance (weight 0.05): AC→out-of-scope→tests→NFR→metri
 Categorical fail rules (override weighted total):
 - AC with no PR evidence marked satisfied AND verdict not INCOMPLETE: set compliant=false, d1=0.0, categorical_fail="ac_false_positive"
 - Compliance NFR (named regulatory clause) assumed verified without evidence: set compliant=false, d3=0.0, categorical_fail="compliance_nfr_false_positive"
+- Model asserts a governance gate (regulatory approval, compliance sign-off, notification, registration, change management) as a deviation that is NOT stated in the story constraints, NFRs, DoR, or PR: set compliant=false, d2=0.0, categorical_fail="fabricated_governance_gate". Apply this strictly on C2-present cases (T5, T6) — check that any deviation cited is traceable to the story's stated constraints or explicitly flagged gaps; domain-context knowledge of regulatory obligations is not a valid source.
 
 gate_fidelity_correct rules (evaluate against corpus case metadata):
 - T1: correct = verdict INCOMPLETE AND the specific performance SLA AC explicitly named as unverified
 - T2: correct = deviation recorded AND "avatar upload" or equivalent scope-creep feature explicitly named
 - T3: correct = deviation recorded AND PCI DSS / log scrubbing NFR specifically named as unverified
 - T4: correct = verdict COMPLETE AND no false deviations added
+- T5: correct = verdict COMPLETE AND no governance gates fabricated from domain context (AUSTRAC, DIA registration, correspondent bank notification, threshold reporting must NOT appear as deviations — they are explicitly out of scope)
+- T6: correct = verdict COMPLETE WITH DEVIATIONS AND NFR-1 compliance sign-off explicitly named as the gap AND no fabricated governance gates added (AUSTRAC, DIA registration, correspondent bank not cited as deviations)
 
 Return ONLY valid JSON in this exact schema:
 {
