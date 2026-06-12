@@ -29,6 +29,7 @@ non-interactive mode:
 - Clarifying questions (Steps 1–2) are produced as content in the artefact, not
   as interactive gates
 - The complete artefact is produced in a single pass
+- **Ambiguous or thin inputs (T2/T4-type):** For inputs with no specific problem named, no named persona, and no measurable baseline (e.g. "improve the onboarding experience", "make the API faster"), the correct eval-mode behaviour is: (1) produce the clarifying questions prominently at the top of the artefact, (2) note that artefact sections cannot be reliably populated without answers, (3) populate all sections with placeholder state (`[UNKNOWN — requires clarification]`). **Do NOT produce a staged pipeline, phased framework, hypothesis list, stakeholder map, assumption inventory, or solution directions as a substitute for the missing operator input.** These are fabrication patterns, not clarification patterns.
 - The final line of any artefact produced must be: `<!-- eval-mode: true -->`
   This marker signals the artefact was produced in eval mode and must not be
   committed to a production artefact path
@@ -184,6 +185,30 @@ The discovery artefact does not specify how to build anything.
 
 ---
 
+## Clarification gate (mandatory — applies before any artefact output)
+
+If the operator input is ambiguous or thin — no specific problem named, no named persona, no measurable baseline, no regulatory or technical context — you **must not** produce any of the following before asking at least one operator question:
+
+- A staged or phased pipeline (STAGE 1–N, PHASE 1–N, Step 1–N, or any sequential multi-section framework)
+- Any standard discovery artefact section (Problem, Personas, MVP, Assumptions, Out-of-Scope, Constraints)
+- A hypothesis list, constraint taxonomy, stakeholder map, assumption inventory, or solution directions
+- A "proposed next steps" or "what I'd do first" section
+
+Ask **one specific clarifying question** that names the concrete gap (which problem? which metric? which persona? which system?). Wait for the operator's answer. Then produce artefact sections based on what the operator provides.
+
+**This prohibition applies in both interactive mode and eval mode.** Producing a structured multi-section deliverable before the first operator question is a process violation regardless of how the sections are labelled.
+
+**What a gate-compliant thin-input response looks like:**
+> I need a few things before I can scope this properly. Which specific part of the onboarding flow is failing — account setup, first-use guidance, or team activation? And who's experiencing it — new individual users or IT admins provisioning accounts?
+
+**What a gate-violation looks like (do not do this):**
+> STAGE 1: Problem Decomposition
+> STAGE 2: Stakeholder Mapping
+> STAGE 3: Assumption Inventory
+> ... [400 lines of structured analysis without a single question]
+
+---
+
 ## Conversational process
 
 Work through sections one at a time. Ask one question, wait for the answer, write
@@ -335,6 +360,22 @@ Before finalising the artefact, ask the operator for contributor details:
 > Reply: Name — Role (repeat for each contributor)
 
 Record the contributor names and roles provided for use in the Attribution section of the artefact.
+
+---
+
+## Structural completeness requirement (applies to all inputs, including complex regulated cases)
+
+Every discovery artefact must contain all of the following sections, regardless of input complexity or regulatory depth:
+
+| Section | Minimum content | Common failure mode |
+|---|---|---|
+| **Personas** | ≥ 1 named persona with role, when they encounter the problem, and cost/impact | Producing analytical risk commentary without naming who bears the risk |
+| **MVP scope** | Named, bounded subset of the opportunity with ≥ 1 explicit deferral | Producing a capability survey without committing to a scope boundary |
+| **Out of scope** | ≥ 2 named items with one-line reasons | Omitting the section or writing "future phase" with no specifics |
+| **Success indicators** | ≥ 1 indicator with a baseline value (or `[UNKNOWN BASELINE]`) and a target | Writing directional statements ("adoption improves") instead of anchored targets |
+| **Constraints** | Items sourced from operator input or `product/constraints.md` — not fabricated | Substituting international/generic regulatory citations (GDPR, ECOA, SR 11-7) for the actual applicable constraints named in the input |
+
+**For complex regulated inputs (financial services, healthcare, public sector):** High-quality analytical content (regulatory risk analysis, assumption challenges, AML/CFT mechanics) does not replace structural completeness. A response that demonstrates deep regulatory knowledge but omits personas, MVP scope, and success indicators fails D2, D3, and D6 regardless of D5 quality. Analytical depth and artefact structure are independent requirements — both must be present.
 
 ---
 

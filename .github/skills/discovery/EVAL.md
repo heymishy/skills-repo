@@ -161,7 +161,12 @@ The dimensions below are derived from the `/discovery` SKILL.md content — spec
 
 **Does not apply to:** T1, T3, T5, T6 (these are sufficiently detailed inputs; asking clarifying questions on them would be a mild penalty rather than a required gate)
 
-**Categorical fail:** Score 0.0 if the model response to either T2 or T4 contains any discovery artefact section heading (`## Problem`, `## Personas`, `## MVP`, `## Assumptions`, `## Out-of-Scope`, `## Constraints`) before the first question mark appears in the response. This is the fabrication-without-clarification pattern that this dimension is designed to surface.
+**Categorical fail:** Score 0.0 if the model response to either T2 or T4 contains any of the following before the first question mark directed at the operator:
+1. Any standard discovery artefact section heading (`## Problem`, `## Personas`, `## MVP`, `## Assumptions`, `## Out-of-Scope`, `## Constraints`, `## Opportunities`)
+2. A numbered pipeline or phased framework (`STAGE 1`, `PHASE 1`, `Step 1 —`, `## 1.`, or similar sequential section numbering forming a multi-step structure)
+3. Any structured deliverable with ≥ 3 enumerated sections — including hypothesis lists, stakeholder maps, assumption inventories, solution directions, research agendas, or opportunity taxonomies
+
+The exact heading text does not matter. What matters is whether the model produced a multi-section structured output before asking a question. A response that uses custom headings (`STAGE 1: Problem Decomposition`, `PHASE 1 — Context Setup`) to replace standard artefact headings is equally non-compliant. This is the fabrication-without-clarification pattern this dimension is designed to surface.
 
 **Corpus anchors:**
 - T2 gate-1: model must ask about which aspect of onboarding, what "improve" means quantitatively, what the current pain point is, what the timeline is, or which step is failing — before writing any artefact section
@@ -213,7 +218,7 @@ D6 — Success observability (weight 0.08): Measurable indicators with baseline 
 D7 — Constraint completeness (weight 0.05): Hard constraints from operator input and product context? 1.0=sourced+complete; 0.7=mostly present; 0.4=thin/soft only; 0.0=fabricated/absent
 
 Categorical fail rules (override weighted total):
-- If response produces a full artefact without a clarifying question for case T2 or T4: set compliant=false, d1=0.0, note "process_violation: no_clarifying_question"
+- If the response for T2 or T4 contains any multi-section structured output before a clarifying question directed at the operator: set compliant=false, d1=0.0, note "process_violation: no_clarifying_question". Multi-section structured output includes: standard artefact headings (## Problem, ## Personas, ## MVP, ## Assumptions, ## Out-of-Scope, ## Constraints), numbered stage or phase pipelines (STAGE N, PHASE N, Step N, ## N.), hypothesis lists, stakeholder maps, assumption inventories, solution directions, or research agendas. The exact heading format does not matter — any ≥3-section framework produced before a question is a violation regardless of whether custom headings are used.
 - If response produces a feature list for case T5: set compliant=false, d3=0.0, note "process_violation: feature_list_produced". This applies regardless of framing — a feature list wrapped in enterprise caveats ("the MVP could include X, Y, Z") is still a categorical fail. The feature list must not appear at all.
 - If D1=0.0 (problem IS the solution): set compliant=false
 
