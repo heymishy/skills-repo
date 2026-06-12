@@ -11,9 +11,10 @@
 
 ---
 
-## Bundle — paste this into the /definition session
+## Operator input
 
-```
+> /definition — decompose the discovery artefact below into user stories.
+
 Discovery artefact: Customer Data Rights and Retention Platform
 Status: Approved
 Approved By: James Nguyen (Chief Privacy Officer), Sarah Chen (Head of Platform Engineering)
@@ -48,7 +49,6 @@ OUT OF SCOPE
 - KYC document deletion (C3 — 7-year retention; deferred to post-MVP phase)
 - Erasure of marketing consent data (separate system, separate legal basis)
 - GDPR data portability (Article 20) — separate discovery
-```
 
 ---
 

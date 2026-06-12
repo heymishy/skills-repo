@@ -11,9 +11,10 @@
 
 ---
 
-## Bundle — paste this into the /definition session
+## Operator input
 
-```
+> /definition — decompose the discovery artefact below into user stories.
+
 Discovery artefact: Real-Time Payment Limits Upgrade
 Status: Approved
 Approved By: Marcus Webb (CTO), Lisa Park (Head of Retail Banking)
@@ -47,7 +48,6 @@ MVP SCOPE
 OUT OF SCOPE
 - Fraud detection rule changes (blocked on risk team approval — separate discovery)
 - Reporting changes (tracked separately)
-```
 
 ---
 

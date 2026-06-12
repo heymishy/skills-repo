@@ -11,9 +11,10 @@
 
 ---
 
-## Bundle — paste this into the /definition session
+## Operator input
 
-```
+> /definition — decompose the discovery artefact below into user stories.
+
 Discovery artefact: Payment Card Tokenisation
 Status: Approved
 Approved By: Jane Smith (Head of Payments Compliance), Tom Jones (CTO)
@@ -65,7 +66,6 @@ Measurement: Count of systems assessed by QSA at next annual audit cycle after g
 Metric M2: Annual QSA cost
 Target: ≤ £60k per audit cycle (from £180k baseline)
 Measurement: Invoice total from next QSA engagement after go-live
-```
 
 ---
 

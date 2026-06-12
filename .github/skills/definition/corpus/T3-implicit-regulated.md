@@ -12,9 +12,10 @@
 
 ---
 
-## Bundle — paste this into the /definition session
+## Operator input
 
-```
+> /definition — decompose the discovery artefact below into user stories.
+
 Discovery artefact: Cross-Border Payment Corridor Expansion — NZD/PHP via FastPay
 Status: Approved
 Approved By: Mike Thompson (Head of International Payments), Anna Lee (CTO)
@@ -68,7 +69,6 @@ Measurement: Payment completion timestamps; sampled daily from monitoring dashbo
 Metric M2: SME international payment volume
 Target: +10% within 90 days of go-live
 Measurement: Monthly payments volume report comparing pre/post go-live 90-day windows
-```
 
 ---
 

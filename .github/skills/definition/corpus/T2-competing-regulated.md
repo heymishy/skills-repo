@@ -12,9 +12,10 @@
 
 ---
 
-## Bundle — paste this into the /definition session
+## Operator input
 
-```
+> /definition — decompose the discovery artefact below into user stories.
+
 Discovery artefact: AML Transaction Monitoring Module
 Status: Approved
 Approved By: Sarah Chen (Chief Compliance Officer), Raj Patel (CTO)
@@ -67,7 +68,6 @@ Measurement: Monitoring dashboard; sampled weekly in first 60 days post-go-live
 Metric M2: Regulatory sign-off
 Target: FMA model risk sign-off obtained (binary milestone)
 Measurement: Receipt of sign-off document from FMA-registered assessor
-```
 
 ---
 

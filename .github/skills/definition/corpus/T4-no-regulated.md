@@ -14,9 +14,10 @@
 
 ---
 
-## Bundle — paste this into the /definition session
+## Operator input
 
-```
+> /definition — decompose the discovery artefact below into user stories.
+
 Discovery artefact: Automated Dependency Security Scanning
 Status: Approved
 Approved By: Chris Walker (Head of Engineering)
@@ -67,7 +68,6 @@ Measurement: Security team monthly audit; sampled from NVD disclosure dates vs c
 Metric M2: High-severity CVE merge rate
 Target: Zero CVSS ≥ 7.0 merges without a recorded exception
 Measurement: Automated pipeline audit log; reviewed monthly by security engineer
-```
 
 ---
 

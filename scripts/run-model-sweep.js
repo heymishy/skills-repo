@@ -400,7 +400,7 @@ const PRICING = {
 // ─── CLI argument parsing ───────────────────────────────────────────────────
 
 function parseArgs(argv) {
-  const args = { skills: null, models: null, trials: DEFAULT_TRIALS, dryRun: false, listSkills: false, experiment: null, contextFiles: null, pass2: false, cases: null, delay: 0, provider: null, policy: false, routing: false, conversation: null, batch: false, batchNoWait: false, batchRetrieve: null, batchPollInterval: 60, judgeOnly: false };
+  const args = { skills: null, models: null, trials: DEFAULT_TRIALS, dryRun: false, listSkills: false, experiment: null, contextFiles: null, pass2: false, cases: null, delay: 0, provider: null, policy: false, routing: false, conversation: null, batch: false, batchNoWait: false, batchRetrieve: null, batchPollInterval: 60, judgeOnly: false, maxTokens: 4096 };
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--dry-run') { args.dryRun = true; continue; }
@@ -422,6 +422,7 @@ function parseArgs(argv) {
     if (arg === '--batch-retrieve' && argv[i + 1]) { args.batchRetrieve = argv[++i]; continue; }
     if (arg === '--batch-poll-interval' && argv[i + 1]) { args.batchPollInterval = parseInt(argv[++i], 10); continue; }
     if (arg === '--judge-only') { args.judgeOnly = true; continue; }
+    if (arg === '--max-tokens' && argv[i + 1]) { args.maxTokens = parseInt(argv[++i], 10); continue; }
   }
   return args;
 }
@@ -1680,7 +1681,7 @@ async function main() {
         } else {
           userContent = `You are running the /${skill.skillName} pipeline skill. ${operatorInput}`;
         }
-        const result = await callModel(model, [{ role: 'user', content: userContent }], 4096, systemPrompt, effectiveProvider);
+        const result = await callModel(model, [{ role: 'user', content: userContent }], args.maxTokens, systemPrompt, effectiveProvider);
         runContent = result.content;
         runInputTokens = result.inputTokens;
         runOutputTokens = result.outputTokens;
