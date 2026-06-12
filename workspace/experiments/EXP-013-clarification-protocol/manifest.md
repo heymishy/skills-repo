@@ -8,7 +8,7 @@
 | experiment_type | clarification-protocol-investigation |
 | created | 2026-06-12 |
 | operator | Hamish King |
-| status | planned |
+| status | complete |
 | prerequisite_experiments | EXP-010-fable5-model-sweep (source of the T2 clarification signal) |
 
 ## Background and motivation
@@ -284,33 +284,33 @@ Phase 3 is conditional on Phase 2 producing a clear signal. If H1/H2 both fail i
 
 ---
 
-## Scorecard summary (to be populated)
+## Scorecard summary
 
 ### D1-D7 reference (script output — secondary analysis)
 
 | Model | T2 avg | T4 avg | T5 avg | NC count |
 |-------|--------|--------|--------|----------|
-| claude-fable-5 | — | — | — | — |
-| claude-sonnet-4-6 | — | — | — | — |
+| claude-fable-5 | 0.552 | 0.483 | 0.748 | 0 (narrow NC trigger) |
+| claude-sonnet-4-6 | 0.080 | 0.000 | 0.726 | 0 (T4: false negatives — custom format escaped heading match) |
 
-*Expected from EXP-010 replication: Fable 5 T2 ≈ 0.636, Sonnet T2 = 0.000 NC*
+*Note: D1-D7 NC trigger was too narrow — custom STAGE/PHASE formats escaped detection. See Section 5 of clarification-scorecard.md. EVAL.md was updated in commit `d17b41e` to catch these.*
 
 ### CL1-CL4 scores (primary analysis)
 
 | Model | T2 CL avg | T4 CL avg | T5 CL avg | CL-compliant count |
 |-------|-----------|-----------|-----------|-------------------|
-| claude-fable-5 | — | — | — | —/9 |
-| claude-sonnet-4-6 | — | — | — | —/9 |
+| claude-fable-5 | 0.317 | 0.317 | 0.817 | 5/9 |
+| claude-sonnet-4-6 | 0.000 | 0.000 | 0.817 | 3/9 |
 
 ### Per-dimension comparison (CL1-CL4 across all T2+T4+T5 trials)
 
 | Dimension | Weight | Fable 5 avg | Sonnet 4.6 avg | Delta |
 |-----------|--------|-------------|----------------|-------|
-| CL1 gate compliance | 0.40 | — | — | — |
-| CL2 question specificity | 0.30 | — | — | — |
-| CL3 gap diagnosis accuracy | 0.20 | — | — | — |
-| CL4 protocol discipline | 0.10 | — | — | — |
-| **Weighted CL avg** | | — | — | — |
+| CL1 gate compliance | 0.40 | 0.444 | 0.222 | +0.222 |
+| CL2 question specificity | 0.30 | 0.556 | 0.333 | +0.222 |
+| CL3 gap diagnosis accuracy | 0.20 | 0.556 | 0.333 | +0.222 |
+| CL4 protocol discipline | 0.10 | 0.278 | 0.167 | +0.111 |
+| **Weighted CL avg** | | **0.483** | **0.272** | **+0.211** |
 
 ---
 
@@ -338,7 +338,37 @@ Phase 3 is conditional on Phase 2 producing a clear signal. If H1/H2 both fail i
 
 ## Findings
 
-*Populated after analysis.*
+### All three hypotheses failed
+
+H1 (Fable 5 CL-compliant ≥ 4/6 T2 trials): **FAIL** — 1/6 T2 outputs with CL1 > 0.0. Fable 5's EXP-010 T2 advantage was 2-trial variance, not a reliable model signal.
+
+H2 (Fable 5 CL-compliant > Sonnet on both T4 and T5): **FAIL** — T4: Fable 5 leads (1/3 vs 0/3), but T5 is tied (3/3 each). Both conditions required; T5 tie breaks the hypothesis.
+
+H3 (Fable 5 CL2 avg ≥ 0.70 on T2+T4): **FAIL** — Fable 5 CL2 avg = 0.333 on both T2 and T4.
+
+Per manifest routing: "Fable 5's EXP-010 T2 behaviour was 2-trial variance. Signal does not replicate. No routing action. SKILL.md clarification protocol improvement remains the correct lever — model selection is not the solution."
+
+### T5 is structurally different from T2/T4
+
+Both models score 3/3 compliant on T5 (enterprise context recognition pattern), WS avg 0.817. The deceptive completeness pattern — recognising that a superficially reasonable spec is missing critical enterprise constraints — is handled well by both models without instruction. T5 is not a clarification problem; it is a constraint-elicitation problem, and both models handle it.
+
+T2/T4 failure is different: these inputs contain zero problem context (no system, no metric, no persona). The default model behaviour is to fabricate scope from the vague hint and produce a complete artefact. This is the behaviour the clarification gate must prevent.
+
+### Root cause: default artefact instinct dominates
+
+Sonnet 4.6: 0/6 T2+T4 compliant. No trial asked a clarifying question before producing artefact sections. The discovery framework instinct is absolute — the model interprets its role as "produce a discovery artefact" and does so regardless of how thin the input is. The only trials where any model asked first were Fable 5 trial-1 on T2 and trial-1 on T4 (both CL1=1.0, WS=0.95) and Fable 5 T5 trials (CL1=0.5–1.0). The successful Fable 5 trials show the model range is there; the 2/3 failure rate on T2/T4 shows it is not stable across temperature variation.
+
+### Applied fix — SKILL.md hard clarification gate
+
+**Status: Applied (commit `d17b41e`, 2026-06-12 20:22).** No post-fix validation sweep has been run.
+
+SKILL.md `## Clarification gate` section added with an explicit hard prohibition: the model **must not** produce staged pipelines, artefact sections, hypothesis lists, constraint taxonomies, stakeholder maps, or solution directions before asking at least one operator question on any ambiguous/thin input. The prohibition applies in both interactive mode and eval mode. The specific T4 failure mode (questions present but accompanied by a "hypotheses to test" list) is named explicitly as a prohibited variant.
+
+EVAL.md D8 categorical fail rule was also broadened: NC trigger now catches custom STAGE/PHASE formats (not just standard heading strings) — fixes the false-negative NC detection from EXP-013 Phase 1.
+
+### Open gap — post-fix validation sweep not run
+
+The SKILL.md fix has not been validated with a re-run against T2/T4. Sonnet 4.6 had 0/6 T2+T4 compliance before the fix — we do not know whether the instruction change closes this gap. A targeted 9-cell sweep (Sonnet 4.6 × T2/T4/T5 × 3 trials, CL1-CL4 judge) would confirm or refute the fix effectiveness. This is scoped as **EXP-018** if validation is needed before the clarification gate is fully trusted in production.
 
 ## Generalizable finding — D1-D7 inversion on clarification-type cases
 
