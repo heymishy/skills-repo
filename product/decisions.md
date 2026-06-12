@@ -397,3 +397,23 @@ The `POST /api/skills/:name/sessions/:id/assumption/:cardId/confirm` endpoint mu
 - Cluster 2 UI story ACs must include: (a) unconfirmed card count badge visible in panel header during generation, (b) lens-transition nudge rendered when `lensComplete` SSE event fires with unconfirmed cards present, (c) nudge dismissed automatically when all cards for that lens are confirmed.
 - A `lensComplete` SSE event type must be defined (or the existing turn-complete event extended) so the client knows a lens boundary has been crossed.
 - The assume-cards-are-low-priority-during-generation pattern is baked in: card entry animation must be subtle (slide-in, no sound, no focus steal).
+
+---
+
+## ADR-021 — Eval response_type flag and rubric family selection <!-- ADDED: 2026-06-12 -->
+
+**Status:** Accepted | **Date:** 2026-06-12 | **Source experiment:** EXP-013-clarification-protocol
+
+**Context:** The eval framework uses a D1-D7 rubric family calibrated for artefact quality. D1-D7 systematically misjudges corpus cases where the correct model output is NOT an artefact — it penalises absent artefact sections, so the best possible response (a targeted clarifying question) scores the lowest. EXP-013 confirmed this empirically: T2-ModelA-trial-1 scored CL1-CL4 WS=0.95 (PASS — correct clarification behaviour) and D1-D7 avg ~0.55 (FAIL — no artefact). The inverse also holds: a model that produces a fabricated 7-phase structured pipeline without asking a single question can score higher on D1-D7 than one that correctly refuses to produce an artefact. D1-D7 is not just uninformative for clarification cases — it is inverted.
+
+**Decision:** All eval corpus cases declare a `response_type` field in their metadata. The field determines which rubric family the judge applies:
+
+- `response_type: artefact` — correct output is a structured deliverable; use D1-D7. Default for T1, T3, S-series.
+- `response_type: clarification` — correct output is a targeted operator question before any artefact; use CL1-CL4 (gate compliance, question specificity, gap diagnosis accuracy, protocol discipline). Default for T2, T4.
+- `response_type: conditional` — correct output is either artefact or clarification depending on enterprise context; apply both rubric families. Default for T5.
+
+When `run-model-sweep.js` reads a corpus case with `response_type: clarification`, it uses the CL1-CL4 judge prompt as the primary score and records D1-D7 as a secondary reference only. `compliant` is derived from CL1-CL4.
+
+**Alternatives rejected:** Adding D8 to D1-D7 to detect gate violations post-hoc (does not reward correct clarification behaviour, only detects exact heading-string violations — EXP-013 showed custom formats escape the trigger); removing T2/T4 from corpus (removes the ability to measure clarification gate effectiveness in production).
+
+**Open items:** Integrate CL1-CL4 into `run-model-sweep.js`; backfill `response_type` metadata on T1–T5; define in corpus case authoring template. EXP-018 (post-fix Sonnet T2/T4 validation) should use `response_type: clarification` as primary signal.
