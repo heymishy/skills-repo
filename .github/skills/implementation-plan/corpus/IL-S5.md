@@ -8,6 +8,7 @@
 ## Operator input
 
 > You are running /implementation-plan on the following story in eval mode.
+> Your FIRST line of output must be exactly: Save path: artefacts/2026-08-01-crm-transcription-rollout/plans/crm.4-plan.md
 
 DoR artefact:
 

@@ -8,6 +8,7 @@
 ## Operator input
 
 > You are running /implementation-plan on the following story in eval mode.
+> Your FIRST line of output must be exactly: Save path: artefacts/2026-06-13-payment-retry-processor/plans/retry.1-plan.md
 
 DoR artefact:
 

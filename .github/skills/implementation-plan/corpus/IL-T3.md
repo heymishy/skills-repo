@@ -8,6 +8,7 @@
 ## Operator input
 
 > You are running /implementation-plan on the following story in eval mode.
+> Your FIRST line of output must be exactly: Save path: artefacts/2026-06-13-aml-threshold-monitoring/plans/aml.2-plan.md
 
 DoR artefact:
 

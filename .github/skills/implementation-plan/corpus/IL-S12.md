@@ -9,6 +9,7 @@
 ## Operator input
 
 > You are running /implementation-plan on the following story in eval mode.
+> Your FIRST line of output must be exactly: Save path: artefacts/2026-07-01-credit-model-refresh/plans/credit.fairness-eval-1-plan.md
 
 DoR artefact:
 

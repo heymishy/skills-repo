@@ -9,6 +9,7 @@
 ## Operator input
 
 > You are running /implementation-plan on the following story in eval mode.
+> Your FIRST line of output must be exactly: Save path: artefacts/2026-09-01-trans-tasman-payments/plans/payments.aml-screener-1-plan.md
 
 DoR artefact:
 

@@ -12,11 +12,13 @@ const { validateArtefactPath } = require('./artefact-path-validator');
 function checkImplementationPlanGates(outputText) {
   const checks = [];
 
+  // Strip markdown code fences before checking — model may wrap output in ```markdown ... ```
+  const strippedOutput = outputText.replace(/^```[\w]*\n/gm, '').replace(/^```$/gm, '');
+
   // Gate 1: Artefact path
-  // Plan output must reference a path matching artefacts/[feature]/plans/[story-slug]-plan.md
-  // Story slugs may include dots (e.g. credit.fairness-eval-1), so [\w.-]+ for the plan filename.
-  const pathMatch = outputText.match(
-    /artefacts\/[\w-]+\/plans\/[\w.-]+-plan\.md/
+  // Feature dirs and story slugs may include dots (e.g. retry.1, credit.fairness-eval-1).
+  const pathMatch = strippedOutput.match(
+    /artefacts\/[\w.-]+\/plans\/[\w.-]+-plan\.md/
   );
   const validPath = pathMatch ? validateArtefactPath(pathMatch[0]) : false;
   checks.push({
@@ -29,7 +31,7 @@ function checkImplementationPlanGates(outputText) {
   // Gate 2: TDD RED step
   // At least one task must have a failing test step before the implementation step
   const hasRedStep = /\bRED\b|run.*confirm.*fail|watch.*fail|failing test/i
-    .test(outputText);
+    .test(strippedOutput);
   checks.push({
     name: 'implementation-plan-tdd-red-step',
     passed: hasRedStep,
