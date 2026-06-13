@@ -660,8 +660,9 @@ function discoverCorpusCases(corpusDir) {
   const cases = [];
   for (const file of fs.readdirSync(corpusDir)) {
     if (!file.endsWith('.md')) continue;
-    if (!/^(T\d+|S\d+|case-)/.test(file)) continue;
-    const caseId = file.replace(/\.md$/, '').split('-')[0];
+    if (!/^(IL-[TS]\d+|T\d+|S\d+|case-)/.test(file)) continue;
+    const m = file.replace(/\.md$/, '').match(/^(IL-[TS]\d+|[TS]\d+|case-[\w-]+)/);
+    const caseId = m ? m[1] : file.replace(/\.md$/, '');
     cases.push({
       caseId,
       fileName: file,
@@ -1288,7 +1289,7 @@ async function runJudgeOnlyMode(args, evalConfig, experimentDir, effectiveProvid
 
   for (const resultFile of resultFiles) {
     // Parse filename: {skillName}-{caseId}-{modelLabel}-trial-{N}.json
-    const m = resultFile.match(/^(.+?)-([TS]\d+|case-[\w-]+)-(.+)-trial-(\d+)\.json$/);
+    const m = resultFile.match(/^(.+?)-(IL-[TS]\d+|[TS]\d+|case-[\w-]+)-(.+)-trial-(\d+)\.json$/);
     if (!m) { console.warn(`  Skipping unparseable result filename: ${resultFile}`); continue; }
     const [, skillName, caseId, modelLabel, trialNStr] = m;
     const trialN = parseInt(trialNStr, 10);
