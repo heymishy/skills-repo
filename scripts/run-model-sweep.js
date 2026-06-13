@@ -769,9 +769,10 @@ function extractFirstJson(text) {
  * Catches formats that escaped the original EVAL.md NC trigger (EXP-013 Issue 1):
  *   - "PHASE 1: Context Setup" or "PHASE 1 — Problem Decomposition"
  *   - "STAGE 1: Analysis" or "STAGE 1 — Stakeholder Mapping"
- *   - "**Problem Statement**" (bold heading as a standalone line — colon excluded
- *     so metadata like "**Feature:**" and task headers like "**Task 1: ...**" do not match)
- *   - "1. Problem" (numbered heading as a standalone line — single Title Case word)
+ *   - "**Problem Statement**" (bold heading — discovery skill only; artefact-producing
+ *     skills like implementation-plan always output content, never clarification responses,
+ *     so closing markers like "**End of Plan**" must not trigger)
+ *   - "1. Problem" (numbered heading — discovery skill only, same rationale)
  *
  * Start-of-line anchors (`^` with multiline flag) prevent false positives on prose
  * sentences that happen to contain these words mid-paragraph.
@@ -779,13 +780,20 @@ function extractFirstJson(text) {
  * Only overrides `compliant: false` — never promotes a non-compliant judge result to compliant.
  * Returns { detected: boolean, matchedPattern: string|null }.
  */
-function detectProcessViolationPatterns(text) {
+function detectProcessViolationPatterns(text, skillName) {
   const patterns = [
-    { re: /^PHASE \d+\s*[:—]/m,          label: 'PHASE N: / PHASE N —' },
-    { re: /^STAGE \d+\s*[:—]/m,          label: 'STAGE N: / STAGE N —' },
-    { re: /^\*\*[A-Z][^\n*:]+\*\*\s*$/m,      label: '**Bold heading** as standalone line (no colon — excludes metadata fields like **Feature:** and task headers like **Task 1: ...**)' },
-    { re: /^\d+\.\s+[A-Z][a-z]+\s*$/m,        label: 'N. HeadingWord as standalone line' },
+    { re: /^PHASE \d+\s*[:—]/m,  label: 'PHASE N: / PHASE N —' },
+    { re: /^STAGE \d+\s*[:—]/m,  label: 'STAGE N: / STAGE N —' },
   ];
+  // Bold heading and N. HeadingWord are discovery-clarification-gate patterns only.
+  // Artefact-producing skills (implementation-plan, definition-of-done, etc.) legitimately
+  // emit bold closing markers and numbered section labels — do not apply these checks there.
+  if (skillName === 'discovery') {
+    patterns.push(
+      { re: /^\*\*[A-Z][^\n*:]+\*\*\s*$/m, label: '**Bold heading** as standalone line' },
+      { re: /^\d+\.\s+[A-Z][a-z]+\s*$/m,   label: 'N. HeadingWord as standalone line' },
+    );
+  }
   for (const { re, label } of patterns) {
     if (re.test(text)) return { detected: true, matchedPattern: label };
   }
@@ -797,9 +805,9 @@ function detectProcessViolationPatterns(text) {
  * If NC patterns are detected in the model output and the judge did not already
  * flag compliant=false, sets compliant=false and appends a note.
  */
-function applyProcessViolationOverride(scoreJson, runContent) {
+function applyProcessViolationOverride(scoreJson, runContent, skillName) {
   if (!scoreJson || scoreJson.compliant === false) return; // judge already flagged NC — nothing to do
-  const { detected, matchedPattern } = detectProcessViolationPatterns(runContent);
+  const { detected, matchedPattern } = detectProcessViolationPatterns(runContent, skillName);
   if (detected) {
     scoreJson.compliant = false;
     scoreJson.pass = false;
@@ -1093,7 +1101,7 @@ async function scoreBatchResults(resultLines, matrix, experimentDir, effectiveJu
     }
 
     // Programmatic NC override — catches structured-pipeline headings the judge may miss
-    applyProcessViolationOverride(scoreJson, runContent);
+    applyProcessViolationOverride(scoreJson, runContent, skillName);
 
     writeEvalRunResult(evalOutputPath, { skill: skillName, caseId, model: modelId, trial: trialN, completedAt: new Date().toISOString(), artefactPath: runFilePath, dimensionsScored: scoreJson ? Object.keys(scoreJson.scores || {}).length : null, verdict: scoreJson ? (scoreJson.pass ? 'pass' : 'fail') : null });
 
@@ -1845,7 +1853,7 @@ async function main() {
       }
 
       // Programmatic NC override — catches structured-pipeline headings the judge may miss
-      applyProcessViolationOverride(scoreJson, runContent);
+      applyProcessViolationOverride(scoreJson, runContent, skill.skillName);
 
       // Write eval-run-result.json for this case
       writeEvalRunResult(evalOutputPath, {

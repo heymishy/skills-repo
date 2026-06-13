@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "IL-S3",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 0.7,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs are explicitly mapped in the AC table: AC1→T1 (pacs.002 ACCEPTED with fake timers), AC2→T2 (Promise.race timeout fires before 10,000ms), AC3→T3/T4 (receiptTimestamp, ackTimestamp, elapsedMs validated in specific assertions).",
+    "ip2": "No out-of-scope items (fraud vendor API, outbound RTP, AML load testing, batch reconciliation) appear in any task; C3 is reflected as `SLA_THRESHOLD_MS = 9500` hard-coded constant explicitly noted as non-configurable.",
+    "ip3": "Every task names specific files (`tests/payments/rtp-sla-timer.test.js`, `src/payments/rtp-sla-timer.js`, `src/payments/rtp-message-handler.js`) with concrete function signatures (`withSlaTimeout`, `processInboundMessage`) and precise assertion conditions (e.g. `elapsedMs === 250`, `reason: 'SCHEME_SLA_EXCEEDED'`).",
+    "ip4": "Test-first order is preserved throughout (Task 1 writes all failing tests before Task 2 implements), but the plan's 'Test Execution Order' section labels Task 2 and 3 as GREEN without an explicit 'run tests to confirm RED before implementing' step between Task 1 and Task 2.",
+    "ip5": "NFR-1 has a dedicated T_NFR_1 integration test asserting `p99 < 9000` at 200 messages/40 tps; C3 is enforced at task level as `const SLA_THRESHOLD_MS = 9500` (compiled constant, not a parameter), and the checklist explicitly verifies 'No configurable SLA threshold (C3 compliance)'."
+  },
+  "weighted_score": 0.955,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exceptionally thorough plan with specific assertions, correct constant handling, and a real-timer NFR-1 performance test; minor deduction for omitting an explicit 'run suite to confirm RED' instruction between Task 1 and Task 2.",
+  "context_injection": false
+}

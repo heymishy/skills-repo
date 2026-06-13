@@ -39,6 +39,10 @@ agent:
     test_plan: claude-haiku-4-5
     definition_of_ready: claude-haiku-4-5
     definition_of_done: claude-haiku-4-5
+    implementation_plan: claude-haiku-4-5   # EXP-036/037: Haiku avg 0.955, 12/12 pass including HIGH regulated;
+                                            # quality delta −0.045 vs Sonnet baseline 1.000; ~37% cost saving;
+                                            # regulated constraint handling confirmed (IL-S12 T7 hardcoded threshold,
+                                            # IL-S13 T6 Promise.all violation both correctly caught)
     benefit_metric: claude-sonnet-4-6       # provisional — no calibration experiment run
 
   context_injection:
@@ -70,7 +74,8 @@ optimization:
     per_story_budget: 120000
     per_feature_budget: 800000
   max_tokens_per_skill:
-    discovery: 8192      # S-hard regulated inputs require near-full budget for complete artefacts
+    discovery: 8192            # S-hard regulated inputs require near-full budget for complete artefacts
+    implementation_plan: 8192  # EXP-036/037: 4096 truncates; 8192 required for full task plans
     definition: 4096
     review: 4096
     test_plan: 4096

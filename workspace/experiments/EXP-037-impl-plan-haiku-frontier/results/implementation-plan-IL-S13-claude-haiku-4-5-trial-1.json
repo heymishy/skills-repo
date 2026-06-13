@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "IL-S13",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 1,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs have distinct, concrete failing test scenarios: T1/T2 cover AC1 (RBNZ match → blocked, AUSTRAC not called), T3 covers AC2 (RBNZ clear + AUSTRAC match → 'AUSTRAC_WATCHLIST'), and T4/T5 cover AC3 (both clear → { blocked: false, blockedBy: null } with audit log).",
+    "ip2": "The plan explicitly scopes to `src/aml/dual-aml-screener.js` and `tests/aml/dual-aml-screener.test.js` only, and the Protocol Compliance section confirms '✅ Scope Adherence: No payment routing, SWIFT notification, AUSTRAC reporting, FX, DIA.'",
+    "ip3": "Every test names exact files (`tests/aml/dual-aml-screener.test.js`, `src/aml/dual-aml-screener.js`), specific functions (`screenCrossBorder`, `rbnzClient.screen`, `austracClient.screen`, `auditLogger.log`), and concrete assertions (e.g. `expect(result).toEqual({ blocked: true, blockedBy: 'RBNZ_SANCTIONED' })`).",
+    "ip4": "The plan is structured with a named RED Phase (full test suite written first) followed by a GREEN Phase (implementation), with execution instructions explicitly stating 'Run tests (expect failures)' before 'Create implementation', and all 8 tests are marked 'RED: test fails without impl ✅' in the coverage matrix.",
+    "ip5": "NFR-1 (C7 sequential order) is enforced by T6 using a call-order array to detect `Promise.all` parallelisation, NFR-2 (C8 audit logging) is enforced by T5/T7/T8 on all outcome paths including `austracResult: null` on RBNZ early exit, and the implementation comment explicitly annotates 'No Promise.all(). Sequential await only.'"
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exemplary plan: all ACs, NFRs, and architecture constraints are precisely reflected in named tests and implementation steps, with T6 specifically engineered to detect the C7 Promise.all categorical-fail anti-pattern.",
+  "context_injection": false
+}
