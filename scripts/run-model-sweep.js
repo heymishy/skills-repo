@@ -59,6 +59,8 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const crypto = require('crypto');
+const { runGate } = require('../.github/scripts/run-assurance-gate');
+const { checkImplementationPlanGates } = require('../src/skill-output-gates');
 
 // ─── Configuration ─────────────────────────────────────────────────────────
 
@@ -1777,6 +1779,41 @@ async function main() {
       // Save raw run output
       const runFilePath = writeRunFile(experimentDir, skill.skillName, corpusCase.caseId, model, trial, runContent);
       console.log(`  Run saved: ${path.relative(REPO_ROOT, runFilePath)}`);
+
+      // Step 1.5: Structural gates (skill-specific — implementation-plan only for now)
+      if (skill.skillName === 'implementation-plan') {
+        const gateResult = runGate({
+          trigger: 'eval-sweep',
+          prRef: args.experiment,
+          commitSha: corpusCase.caseId,
+          checksRunner: () => checkImplementationPlanGates(runContent),
+          tracesDir: path.join(experimentDir, 'traces'),
+        });
+        if (gateResult.verdict !== 'pass') {
+          const failedReasons = gateResult.checks
+            .filter(c => !c.passed)
+            .map(c => c.reason)
+            .join('; ');
+          console.log(`  Gate FAIL: ${failedReasons}`);
+          const gateFailResult = {
+            compliant: false,
+            gate_failed: failedReasons,
+            weighted_score: null,
+            pass: false,
+            model_label: model,
+          };
+          const gateResultFilePath = writeResultFile(experimentDir, skill.skillName, corpusCase.caseId, model, trial, gateFailResult);
+          console.log(`  Result saved: ${path.relative(REPO_ROOT, gateResultFilePath)}`);
+          allResults[cellKey].push({
+            meta: { skillName: skill.skillName, caseId: corpusCase.caseId, modelLabel: model, trial },
+            score: gateFailResult,
+            cost: effectiveProvider === 'copilot' ? null : estimateCost(model, runInputTokens, runOutputTokens),
+            runFilePath,
+            resultFilePath: gateResultFilePath,
+          });
+          continue;
+        }
+      }
 
       // Step 2: Judge the output
       let scoreJson = null;

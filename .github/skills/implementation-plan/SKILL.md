@@ -87,8 +87,9 @@ Ask for confirmation before writing tasks:
 
 ## Step 3 — Write the plan
 
+Save this plan to `artefacts/[feature]/plans/[story-slug]-plan.md`.
+
 Conforms to `.github/templates/implementation-plan.md`.
-Save to `artefacts/[feature]/plans/[story-slug]-plan.md`.
 
 Populate one Task block per AC (or per logical behaviour if an AC is broad).
 Follow the file map produced in Step 2. Every task must have:
