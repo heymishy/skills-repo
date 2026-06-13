@@ -769,7 +769,8 @@ function extractFirstJson(text) {
  * Catches formats that escaped the original EVAL.md NC trigger (EXP-013 Issue 1):
  *   - "PHASE 1: Context Setup" or "PHASE 1 — Problem Decomposition"
  *   - "STAGE 1: Analysis" or "STAGE 1 — Stakeholder Mapping"
- *   - "**Problem Statement**" (bold heading as a standalone line)
+ *   - "**Problem Statement**" (bold heading as a standalone line — colon excluded
+ *     so metadata like "**Feature:**" and task headers like "**Task 1: ...**" do not match)
  *   - "1. Problem" (numbered heading as a standalone line — single Title Case word)
  *
  * Start-of-line anchors (`^` with multiline flag) prevent false positives on prose
@@ -782,7 +783,7 @@ function detectProcessViolationPatterns(text) {
   const patterns = [
     { re: /^PHASE \d+\s*[:—]/m,          label: 'PHASE N: / PHASE N —' },
     { re: /^STAGE \d+\s*[:—]/m,          label: 'STAGE N: / STAGE N —' },
-    { re: /^\*\*[A-Z][^\n*]+\*\*\s*$/m,       label: '**Bold heading** as standalone line' },
+    { re: /^\*\*[A-Z][^\n*:]+\*\*\s*$/m,      label: '**Bold heading** as standalone line (no colon — excludes metadata fields like **Feature:** and task headers like **Task 1: ...**)' },
     { re: /^\d+\.\s+[A-Z][a-z]+\s*$/m,        label: 'N. HeadingWord as standalone line' },
   ];
   for (const { re, label } of patterns) {
