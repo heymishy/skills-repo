@@ -107,3 +107,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: pattern
   signal-text: "STORY-PROPOSAL-2 check-suite.js orchestrator (B1): replace raw &&-joined npm test chain in package.json with a check-suite.js orchestrator that reads the test list from package.json dynamically and runs each test, resolving the Windows MAX_PATH command-line length limit. Full outer loop (discovery → definition → implement). Evidence: npm test fails on Windows when test chain exceeds ~2000 chars; node wrapper workaround is unofficial and must be used manually each session."
   source: operator-manual
+
+- date: 2026-06-05
+  session-phase: ideate-web-ux (post-merge live testing)
+  signal-type: decision
+  signal-text: Beating GitHub Copilot chat UX is a critical success criterion for the web UI skill runner. The current turn-by-turn Q&A pattern feels clunky and slow compared to free-form conversation in VS Code — the web UI must feel more dynamic and less structured to justify itself as the preferred surface for skill execution.
+  source: operator-manual

@@ -1,13 +1,17 @@
 {
-  "error": "judge failed",
+  "case_id": "S10",
   "model_label": "claude-sonnet-4-6",
-  "context_injection": true,
-  "pass2": false,
-  "context_files_meta": [
-    {
-      "relPath": ".github/context-regulated.yml",
-      "bytes": 10223,
-      "sha256": "c1c0e5bf9b4a73ddee78535c7a652e0dabb802b19222c9f6a56cc1d78aef822d"
-    }
-  ]
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.7,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — the model produced two named structured sections (Section 1 — Problem statement, Section 2 — Who it affects) with substantive content before asking any clarifying question, constituting a multi-section structured output prior to clarification; personas, MVP, out-of-scope, assumptions, and success indicators are entirely absent, leaving most dimensions unscorable at 0.0."
 }

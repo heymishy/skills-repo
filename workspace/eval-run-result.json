@@ -1,10 +1,10 @@
 {
   "skill": "discovery",
-  "caseId": "S13",
-  "model": "claude-haiku-4-5",
-  "trial": 2,
-  "completedAt": "2026-06-12T19:48:25.537Z",
-  "artefactPath": "C:\\Users\\Hamis\\code\\skills repo\\workspace\\experiments\\EXP-020-context-injection\\runs\\discovery-S13-claude-haiku-4-5-trial-2.md",
+  "caseId": "S9",
+  "model": "claude-sonnet-4-6",
+  "trial": 1,
+  "completedAt": "2026-06-13T07:57:05.338Z",
+  "artefactPath": "C:\\Users\\Hamis\\code\\skills repo\\workspace\\experiments\\EXP-025c-regulated-context-s9-s12\\runs\\discovery-S9-claude-sonnet-4-6-trial-1.md",
   "dimensionsScored": 7,
-  "verdict": "fail"
+  "verdict": "pass"
 }

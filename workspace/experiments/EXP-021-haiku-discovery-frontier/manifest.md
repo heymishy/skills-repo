@@ -51,12 +51,14 @@ If H1 holds, Haiku cost/passing trial on S1-S8 is lower than Sonnet's ~$0.059 es
 | models_compared | claude-haiku-4-5 |
 | trials_per_cell | 2 |
 | judge_model | claude-sonnet-4-6 |
-| corpus_cases | S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13 |
+| corpus_cases | S2, S3, S4, S5, S7, S8, S9, S10, S11, S12, S13 |
 | context_files | none |
 | max_tokens | 8192 |
 | batch_mode | true |
 
-Total cells: 13 cases × 1 model × 2 trials = **26 generation runs + 26 judge calls = 52 API calls**
+Total cells: 11 cases × 1 model × 2 trials = **22 generation runs + 22 judge calls = 44 API calls**
+
+**Note:** S1 and S6 are absent from the discovery corpus — confirmed 2026-06-13. S1 never existed; S6 (behavioural clarification scenarios) was excluded as not scoreable by D1-D7 dimensions. Safe case list: S2–S13 excluding S1 and S6.
 
 **Two-pass note:** Phase 2 (Haiku + regulated context on S10/S13) is already addressed by EXP-020. EXP-021 focuses exclusively on the no-context baseline, which is the missing data for frontier positioning. Cross-reference EXP-020 results after this experiment completes to compute the context injection delta for Haiku.
 
@@ -69,7 +71,7 @@ node scripts/run-model-sweep.js \
   --experiment EXP-021-haiku-discovery-frontier \
   --skills discovery \
   --models claude-haiku-4-5 \
-  --cases S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12,S13 \
+  --cases S2,S3,S4,S5,S7,S8,S9,S10,S11,S12,S13 \
   --trials 2 \
   --batch \
   --max-tokens 8192
@@ -84,11 +86,11 @@ node scripts/run-model-sweep.js \
 
 | Component | Runs | Est. input tokens | Est. output tokens | Est. cost |
 |-----------|------|------------------|--------------------|-----------|
-| Haiku 4.5 generation × 26 cells | 26 | ~91,000 | ~52,000 | **~$0.351** |
-| Judge (Sonnet) × 26 cells | 26 | ~130,000 | ~13,000 | **~$0.585** |
-| **Total** | | | | **~$0.94** |
+| Haiku 4.5 generation × 22 cells | 22 | ~77,000 | ~44,000 | **~$0.297** |
+| Judge (Sonnet) × 22 cells | 22 | ~110,000 | ~11,000 | **~$0.495** |
+| **Total** | | | | **~$0.79** |
 
-*Cost ceiling: $2 USD. Estimate $0.94 — within ceiling.*
+*Cost ceiling: $2 USD. Estimate $0.79 — within ceiling. Reduced from ~$0.94 (26 cells) after removing absent S1 and S6 corpus cases.*
 
 *Layer 1 cost: 26 runs × 0.33× AI Credit multiplier. Layer 2 cost is the $0.94 estimate above.*
 
@@ -98,12 +100,10 @@ node scripts/run-model-sweep.js \
 
 | Skill | Case | Model | Context | Trials |
 |-------|------|-------|---------|--------|
-| discovery | S1 | claude-haiku-4-5 | none | 2 |
 | discovery | S2 | claude-haiku-4-5 | none | 2 |
 | discovery | S3 | claude-haiku-4-5 | none | 2 |
 | discovery | S4 | claude-haiku-4-5 | none | 2 |
 | discovery | S5 | claude-haiku-4-5 | none | 2 |
-| discovery | S6 | claude-haiku-4-5 | none | 2 |
 | discovery | S7 | claude-haiku-4-5 | none | 2 |
 | discovery | S8 | claude-haiku-4-5 | none | 2 |
 | discovery | S9 | claude-haiku-4-5 | none | 2 |
@@ -120,12 +120,10 @@ Primary comparison: EXP-021 Haiku vs EXP-010 Sonnet (both no-context; token ceil
 
 | Case | Difficulty | Haiku avg (EXP-021) | Sonnet avg (EXP-010) | Gap | H1/H2 verdict |
 |------|------------|---------------------|----------------------|-----|----------------|
-| S1 | easy | TBD | — | TBD | — |
 | S2 | easy | TBD | — | TBD | — |
 | S3 | easy | TBD | — | TBD | — |
 | S4 | easy | TBD | — | TBD | — |
 | S5 | medium | TBD | — | TBD | — |
-| S6 | medium | TBD | — | TBD | — |
 | S7 | medium | TBD | — | TBD | — |
 | S8 | medium | TBD | — | TBD | — |
 | S9 | hard | TBD | — | TBD | — |
@@ -133,9 +131,9 @@ Primary comparison: EXP-021 Haiku vs EXP-010 Sonnet (both no-context; token ceil
 | S11 | hard | TBD | — | TBD | — |
 | S12 | hard | TBD | — | TBD | — |
 | S13 | hard | TBD | 0.617 | TBD | — |
-| **Easy/med avg** | | TBD | — | TBD | — |
-| **S-hard avg** | | TBD | — | TBD | — |
-| **Overall avg** | | TBD | 0.617 | TBD | — |
+| **Easy/med avg (S2–S8)** | | TBD | — | TBD | — |
+| **S-hard avg (S9–S13)** | | TBD | — | TBD | — |
+| **Overall avg** | | TBD | — | TBD | — |
 
 **Routing change triggers:**
 - H1 confirmed (≥6/8 S1-S8 pass): update routing table to add Haiku for easy/medium discovery. Schedule EXP-026 (tiered routing validation).
