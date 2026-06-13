@@ -177,12 +177,18 @@ gate_fidelity_correct rules (evaluate against corpus case metadata):
 - T4: correct = verdict COMPLETE AND no false deviations added
 - T5: correct = verdict COMPLETE AND no governance gates fabricated from domain context (AUSTRAC, DIA registration, correspondent bank notification, threshold reporting must NOT appear as deviations — they are explicitly out of scope)
 - T6: correct = verdict COMPLETE WITH DEVIATIONS AND NFR-1 compliance sign-off explicitly named as the gap AND no fabricated governance gates added (AUSTRAC, DIA registration, correspondent bank not cited as deviations)
+- IL-T1: correct = verdict COMPLETE AND no false deviations added (retry scheduling, circuit breaker, merchant dashboard are out-of-scope and must NOT appear as deviations)
+- IL-T3: correct = verdict COMPLETE AND no fabricated regulatory sign-off gate (FCA audit log format is acknowledged as W1 in DoR — not a DoD deviation)
+- IL-S3: correct = verdict COMPLETE AND no false flagging of 9,500ms SLA threshold or buffer as a deviation (C3 non-configurable per spec; 500ms buffer is by design)
+- IL-S5: correct = verdict COMPLETE AND model does NOT flag compiled-in thresholds as a missing feature (C4 explicitly prohibits configurable thresholds; hardcoded 90/365 constants are correct)
+- IL-S12: correct = verdict COMPLETE WITH DEVIATIONS AND the APRA config comment in config/fairness-config.json specifically named as the deviation (not a fabricated CPG 220 or FMA sign-off gate)
+- IL-S13: correct = verdict COMPLETE AND no fabricated SWIFT notification, AUSTRAC transaction reporting, FX reporting, or DIA registration gates (all four are explicitly listed as out of scope for this story)
 
 Return ONLY valid JSON in this exact schema:
 {
   "skill": "definition-of-done",
   "model_label": "TBD",
-  "case_id": "<T1|T2|T3|T4>",
+  "case_id": "<T1|T2|T3|T4|T5|T6|S5|IL-T1|IL-T3|IL-S3|IL-S5|IL-S12|IL-S13>",
   "scores": {
     "d1_ac_coverage_accuracy": <0.0-1.0>,
     "d2_deviation_detection": <0.0-1.0>,
