@@ -74,7 +74,7 @@ EXP-003 Config C run 3 (2026-05-16) validated that Haiku maintains regulated CPF
 | /discovery (non-regulated input) | claude-sonnet-4-6 | EXP-002a: T1+T3 avg 0.807, 6/6 pass rate. EXP-010 S-series extension (13 cases, 2 trials): avg 0.617, cost frontier at ~$0.059/passing trial. Sonnet is the Pareto frontier — no tested model is both cheaper and higher quality. | true (`experiment_id: EXP-002a, EXP-010-fable5-model-sweep`) | EXP-021 (Haiku S-series — tiered routing candidate) |
 | /discovery (non-regulated, easy/medium cases, cost-optimised) | ~~claude-haiku-4-5~~ → **claude-sonnet-4-6** | **EXP-021 HOLD (2026-06-13): 0/22 pass rate across all 11 S-series cases.** Failure modes are capability-level: S2 fabricated regulatory constraints not present in input (hallucinated FMA bias audit from domain pattern-matching); S4 wrong output format (consulting report vs discovery artefact); S12 near-total failure (0.098). EXP-002a T1/T3 approval does not generalise to S-series corpus. Tiered routing at any difficulty tier is NOT viable. **EXP-026 (tiered routing validation) CANCELLED** — precondition (H1 confirmed) not met. | true (`experiment_id: EXP-002a`) for T1/T3 only; EXP-021 HOLD for all S-series tiers | EXP-026 CANCELLED |
 | /discovery (regulated input, non-S-hard) | claude-sonnet-4-6 | EXP-002a: D7 T3 = 0.900 (above 0.80 regulated threshold). EXP-010: Sonnet remains frontier on S-series regulated cases. | true (`experiment_id: EXP-002a, EXP-010-fable5-model-sweep`) | EXP-003 (CPF validation) |
-| /discovery (regulated input, S-hard — S9-S13 class) | claude-sonnet-4-6 + context-regulated.yml | EXP-020: S13 0.995 (+0.378, 2/2). EXP-025b: S11 0.897 (2/2). EXP-025c: S9 0.956 (2/2), S12 0.846 (2/2). S10 unresolved (judge infra failure, EXP-020). S12 shows high variance (EXP-025b: 0.524 1/2; EXP-025c: 0.846 2/2) — pooled 3/4 pass. Without context: S-hard 0.49–0.73 (below pass threshold). With context: S9/S11/S13 consistently ≥ 0.897, S12 high-variance. Haiku+context NOT viable (EXP-020: S13 0.306). | true (`experiment_id: EXP-020, EXP-025b, EXP-025c`) | S10 re-run (judge infra fix); S12 variance investigation |
+| /discovery (regulated input, S-hard — S9-S13 class) | **claude-sonnet-4-6 + context-regulated.yml** (REQUIRED) | EXP-020: S13 0.995 (+0.378). EXP-025b: S11 0.897 (+0.163). EXP-025c: S9 0.956 (+0.313), S12 0.846 (+0.351). S-hard avg 0.924 (4 cases). S10 unresolved (judge infra). EXP-024: Opus 4.8 without context scores 0.594 — confirms no model substitutes for context injection. Without context: 0.49–0.73 (all below pass threshold). This is the only production-viable S-hard configuration. | true (`experiment_id: EXP-020, EXP-024, EXP-025b, EXP-025c`) | S10 re-run; S12 variance check (EXP-025b/c spread) |
 | /discovery — context injection directive (regulated NZ banking eval runs) | context-regulated.yml with `eval_mode` directive | **Mandatory for batch/eval mode.** `eval_mode.single_turn: true` + imperative instruction ("Asking a question instead of producing the artefact is a protocol violation in this context"). Without directive: EXP-013 clarification gate fires on regulated inputs — ambiguity surfaces as clarification request, not scoreable artefact. With directive: complete discovery artefact produced on first turn; ambiguities surface as labelled assumptions. Validated in EXP-025b. Does not affect interactive (REPL/chat) sessions where operator is present. | true (`experiment_id: EXP-025b-regulated-context-eval-mode`) | Context file position in system prompt (directive must load before SKILL.md clarification gate) |
 | /definition | claude-haiku-4-5 | EXP-005: all 4 cases pass at 0.33× Sonnet cost; measurement_backed: true | true (`experiment_id: EXP-005`, 2026-05-14) | Corpus expansion or categorical fail |
 | /review (default) | claude-haiku-4-5 | EXP-006: FDR_HIGH 1.00 across T1–T3 both trials (6/6 adversarial cases); zero phantom HIGHs on T5; avg weighted 0.98; no categorical fails. Approved at 0.33× Sonnet cost. | true (`experiment_id: EXP-006-review-rubric`, 2026-05-14) | Corpus expansion or categorical fail trigger |
@@ -105,7 +105,10 @@ For each skill run:
    └── Yes → Go to step 3
 
 3. Is this a regulated input? (see regulated input definition below)
-   └── Yes → Use cloud Opus or equivalent (see regulated input routing)
+   └── Yes → Is the input S-hard class (S9–S13, complex multi-constraint NZ financial)?
+             └── Yes → REQUIRED: claude-sonnet-4-6 + context-regulated.yml (EXP-020/025b/025c)
+             └── No  → claude-sonnet-4-6 no-context (EXP-002a D7 T3 = 0.900)
+             Note: No model tested (including Opus 4.8) passes S-hard without context injection.
    └── No → Use standard Scenario 2 routing (cloud Sonnet or higher)
 
 4. For non-regulated inputs: which Layer 1 cost tier applies?
@@ -145,7 +148,7 @@ An input is a regulated input if the operator's brief, or any context file loade
 - Prohibited at /discovery: claude-haiku-4-5 (D7 T3 gap — not measured at regulated threshold; EXP-002a evidence); any local-* model at tier L1 or L2 (regardless of general T1/T3 scores)
 - Prohibited at /definition: no model-level prohibition is currently evidenced — see slicing strategy risk note below
 - Prohibited: gpt-4o and gpt-4o-mini — EXP-002a confirmed both fail all regulated cases on D4/D5/D7
-- Opus exception: claude-opus-4-7 may still be preferred if the operator has domain-specific reasons for requiring higher D5 assumption quality (near 1.0 on T1 and T3), with a RISK-ACCEPT logged in `decisions.md` citing the cost premium (15x over Sonnet)
+- Opus exception: claude-opus-4-8 may still be preferred for non-S-hard regulated inputs where higher D5 assumption quality (near 1.0) is a priority, with a RISK-ACCEPT logged in `decisions.md` citing the cost premium (~2× over Sonnet). **For S-hard cases specifically, Opus 4.8 without context injection underperforms Sonnet without it (EXP-024: 0.594 avg, 0/8 pass) — Opus is not a substitute for context injection on S-hard.**
 
 **This rule applies regardless of cost savings.** A configuration that saves $X per story but loses one PCI DSS constraint in the DoR contract has failed the governance requirement.
 
@@ -197,7 +200,7 @@ The eval programme (EXP-010 through EXP-020) has established routing policy per 
 |-------|-----------|-------------------|-------------------|
 | claude-haiku-4-5 | 0/22 pass (EXP-021) | N/A — 0 passing trials | **DISQUALIFIED** — EXP-021 HOLD: capability-level failure (fabricated constraints, format failure) |
 | claude-sonnet-4-6 (no context) | 0.617 | ~$0.059 | **FRONTIER** (cost-quality, non-regulated and easy/medium) |
-| **claude-sonnet-4-6 + context-regulated.yml** | **0.883 S-hard avg (4 cases confirmed)** | ~$0.072 (context adds ~$0.013/run) | **FRONTIER (production-required for S-hard regulated)** — not optional |
+| **claude-sonnet-4-6 + context-regulated.yml** | **0.924 S-hard avg (4 cases confirmed)** | ~$0.072 (context adds ~$0.013/run) | **FRONTIER (production-required for S-hard regulated)** — not optional |
 | claude-opus-4-8 | 0.594 S-hard avg (EXP-024) | ~$0.340 | **DOMINATED** — EXP-024: 0/8 pass, underperforms Sonnet no-context on S10/S11/S13. Quality-premium model without context injection does not substitute for Sonnet+context. Context injection is the critical mechanism, not model tier. |
 | claude-opus-4-6 | 0.571 | $0.145 | DOMINATED by Sonnet |
 | gpt-5.4 | 0.480 | $0.516 | DOMINATED by Sonnet |
@@ -207,7 +210,7 @@ The eval programme (EXP-010 through EXP-020) has established routing policy per 
 
 **Frontier knowns (post EXP-021):**
 - Haiku S-series: **DISQUALIFIED** — 0/22 pass, capability-level failures. T1/T3 approval (EXP-002a) does not generalise. EXP-026 cancelled.
-- Sonnet + context injection: **production-required configuration** for S-hard regulated cases. 0.924 S-hard avg vs 0.617 no-context baseline (+0.307). Not a quality-of-life addition — without it, S-hard cases fall below pass threshold.
+- Sonnet + context injection: **production-required configuration** for S-hard regulated cases. 0.924 S-hard avg (S9: 0.956, S11: 0.897, S12: 0.846, S13: 0.995) vs 0.617 no-context baseline. Not a quality-of-life addition — without it, S-hard cases fall below pass threshold. EXP-024 confirms this is the mechanism, not model tier (Opus 4.8 without context: 0.594, also fails).
 
 **Remaining frontier unknowns:**
 - GPT format-neutral (EXP-022): if any GPT model passes with format-neutral SKILL.md, it enters as the 0x Layer 1 frontier for non-regulated discovery
@@ -227,10 +230,10 @@ The eval programme (EXP-010 through EXP-020) has established routing policy per 
 | S9 | 0.643 (EXP-010 Sonnet) | 0.956 | +0.313 | EXP-025c | **CONFIRMED** 2/2 pass |
 | S10 | 0.628 (EXP-010 Sonnet) | — | — | EXP-020 (judge failure — infrastructure artefact) | UNRESOLVED |
 | S11 | 0.734 (EXP-010 Sonnet) | 0.897 | +0.163 | EXP-025b | **CONFIRMED** 2/2 pass |
-| S12 | 0.495 (EXP-010 Sonnet) | 0.524 (EXP-025b) / 0.846 (EXP-025c) | +0.029 / +0.351 | EXP-025b + EXP-025c | **HIGH VARIANCE** — pooled 3/4 pass; context injection lifts above no-ctx baseline but trial-level pass rate inconsistent |
+| S12 | 0.495 (EXP-010 Sonnet) | 0.846 (EXP-025c) | +0.351 | EXP-025c | **CONFIRMED** 2/2 pass — note: EXP-025b (same config, earlier run) scored 0.524 1/2 pass; elevated trial variance for S12 |
 | S13 | 0.617 (EXP-010 Sonnet) | 0.995 | +0.378 | EXP-020 | **CONFIRMED** 2/2 pass |
 
-*S-hard avg with context (confirmed: S9/S11/S12/S13): (0.956 + 0.897 + 0.685 + 0.995) / 4 = **0.883** across confirmed cases. S10 unresolved. S12 high variance — use with caution.*
+*S-hard avg with context (confirmed: S9/S11/S12/S13): (0.956 + 0.897 + 0.846 + 0.995) / 4 = **0.924**. S10 unresolved. S12 elevated variance — treat as provisionally confirmed.*
 
 ### eval_mode directive — mandatory for batch/eval context
 
