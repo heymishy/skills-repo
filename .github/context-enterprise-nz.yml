@@ -1,0 +1,141 @@
+# context-enterprise-nz.yml — Production regulated NZ banking operator context
+# Use with: --context-files .github/context-enterprise-nz.yml
+# Purpose: Production configuration for the enterprise's SDLC skills pipeline deployment.
+#          Establishes model routing, context injection, and audit requirements for
+#          regulated NZ financial services story generation.
+#
+# NOTE: This file contains no institution-specific identifiers. All references are
+#       to "the enterprise" as the regulated operator. Do not add institution names,
+#       system names, or internal identifiers to this file — those belong in operator
+#       session context, not in a committed context file.
+
+meta:
+  name: "Enterprise NZ Banking — Production SDLC Skills Pipeline"
+  regulated: true
+  jurisdiction: NZ
+  secondary_jurisdiction: AU
+  operator_type: registered_bank
+  regulator_primary: RBNZ
+  regulator_secondary: FMA
+  applicable_frameworks:
+    - rbnz_bs11          # Outsourcing Policy — material change notification
+    - rbnz_amlcft        # Anti-Money Laundering and Countering Financing of Terrorism
+    - rbnz_fx_reporting  # Foreign currency transaction reporting
+    - cccfa              # Credit Contracts and Consumer Finance Act — 7-year retention
+    - swift_correspondent # Correspondent bank agreement — routing notification obligations
+    - cpg_220            # APRA CPG 220 — model risk management (credit/AI/ML models)
+    - dia_payment_services # Payment Services Regulations 2021 — new service registration
+
+# ─── Agent routing ────────────────────────────────────────────────────────────
+
+agent:
+  model_routing:
+    discovery:
+      regulated_s_hard: claude-sonnet-4-6   # context injection required — see constraints below
+      regulated_standard: claude-sonnet-4-6
+      non_regulated: claude-sonnet-4-6
+    definition: claude-haiku-4-5
+    review: claude-haiku-4-5
+    test_plan: claude-haiku-4-5
+    definition_of_ready: claude-haiku-4-5
+    definition_of_done: claude-haiku-4-5
+    benefit_metric: claude-sonnet-4-6       # provisional — no calibration experiment run
+
+  context_injection:
+    # Context injection is REQUIRED for S-hard regulated discovery (S9-S13 class inputs).
+    # EXP-020/025b/025c: Sonnet+context-regulated.yml avg 0.924 vs Sonnet no-context 0.618.
+    # No tested model (including Opus 4.8) passes S-hard without context injection.
+    s_hard_context_file: .github/context-regulated.yml
+    trigger_conditions:
+      - Multi-constraint NZ financial input referencing RBNZ BS11, AML/CFT dual-jurisdiction,
+        CCCFA 7-year retention, SWIFT correspondent obligations, or CPG 220 model risk
+      - Any input involving core banking system migration or decommission
+      - Any input involving new or modified payment channels with cross-border exposure
+      - Any input involving AI/ML models in credit decisioning, fraud detection, or AML/CFT screening
+
+# ─── Source control ───────────────────────────────────────────────────────────
+
+source_control:
+  platform: github
+  base_branch: main
+  merge_request_term: "pull request"
+  pr_command: "gh pr create --draft"
+  artefact_root: ".github"
+
+# ─── Optimisation ─────────────────────────────────────────────────────────────
+
+optimization:
+  token_policy:
+    per_turn_soft_budget: 12000
+    per_story_budget: 120000
+    per_feature_budget: 800000
+  max_tokens_per_skill:
+    discovery: 8192      # S-hard regulated inputs require near-full budget for complete artefacts
+    definition: 4096
+    review: 4096
+    test_plan: 4096
+    definition_of_ready: 4096
+    definition_of_done: 4096
+
+# ─── Constraints ──────────────────────────────────────────────────────────────
+
+constraints:
+  prohibited_models:
+    - model: claude-haiku-4-5
+      prohibited_at: [discovery]
+      reason: >
+        EXP-021: 0/22 pass at all difficulty tiers. Capability-level failures — hallucinated
+        regulatory constraints (fabricated FMA bias audit finding on S2), wrong output format,
+        near-total failure on S-hard (S12: 0.098). Haiku artefacts pass structural gates
+        (Compliant=yes) while containing fabricated content; automated pipelines cannot detect this.
+    - model: gpt-4o
+      prohibited_at: [discovery]
+      reason: >
+        EXP-002a: 0/6 pass. D4/D5/D7 collapse across all cases including non-regulated.
+    - model: gpt-4o-mini
+      prohibited_at: [discovery]
+      reason: EXP-002a: same result as gpt-4o. GPT models are prohibited at /discovery.
+    - model: claude-opus-4-8
+      prohibited_at: [discovery]
+      reason: >
+        EXP-024: 0/8 pass on S-hard at 8192 tokens without context injection (avg 0.594).
+        Underperforms Sonnet no-context (avg 0.618). Quality-premium model slot remains HOLD.
+        Context injection is the critical mechanism, not model tier — Opus 4.8 with context
+        injection would likely perform similarly to Sonnet+context but at ~2x cost with no
+        quality gain. Do not use at /discovery until EXP-024 follow-up validates this.
+
+  required_context_injection:
+    # All data flowing through the pipeline must pass this check before any cloud model call.
+    data_classification_check:
+      approved_for_external_api: true   # must be confirmed before sending to any cloud API
+    # Unclassified or unapproved data requires local model routing (not yet calibrated).
+    # No local model is currently qualified — EXP-LOCAL-001 pending.
+
+# ─── Audit ────────────────────────────────────────────────────────────────────
+
+audit:
+  tamper_evident: true
+  sha256_chain: true        # artefact bundles include sha256 chain from discovery through DoD
+  cpg220_compliant: true    # model risk management audit trail requirement (APRA CPG 220)
+  ci_attachment: true       # governed artefact bundles attached to each PR in CI
+  ci_platform: github-actions
+  artifact_retention_days: 2555  # 7 years in days (CCCFA retention obligation for credit records)
+  regulated_artefact_path: artefacts/regulated/  # separate path for compliance-gated artefacts
+
+# ─── Eval mode directive ──────────────────────────────────────────────────────
+#
+# When this context file is injected during a programmatic eval run, the model
+# must produce a complete single-turn artefact. Clarifying questions cannot be
+# answered in batch or automated eval mode.
+#
+# This directive is read by the model as part of the injected system context.
+# It does not affect interactive sessions where the operator is present.
+# See also: context-regulated.yml eval_mode for the S-hard regulated configuration.
+
+eval_mode:
+  single_turn: true
+  clarification_behaviour: surface_as_assumptions
+  instruction: "You MUST produce a complete discovery artefact in this response. Do not hold
+    sections pending clarification. Surface all regulatory ambiguities, unknowns, and risks
+    in the Assumptions and Constraints sections of the artefact. Asking a question instead
+    of producing the artefact is a protocol violation in this context."

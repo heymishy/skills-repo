@@ -5,6 +5,9 @@
 **Corpus path:** `.github/skills/definition/corpus/`
 **Last calibrated:** 2026-05-15
 **Calibration model:** claude-sonnet-4-6
+**Response type:** artefact — the correct output is always a story decomposition, never a clarification question
+
+> **Clarification gate note:** If response_type is hybrid: see clarification-scorecard.md for the CL1-CL4 rubric. D1-D7 must not be applied to clarification responses. (Not applicable to /definition — this skill always produces artefact output.)
 
 ---
 

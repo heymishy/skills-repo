@@ -757,6 +757,53 @@ function extractFirstJson(text) {
   return null;
 }
 
+// ─── Process-violation detection ────────────────────────────────────────────
+
+/**
+ * Detects structured-pipeline heading patterns that indicate a process violation
+ * (producing a multi-section framework before asking a clarifying question).
+ *
+ * Catches formats that escaped the original EVAL.md NC trigger (EXP-013 Issue 1):
+ *   - "PHASE 1: Context Setup" or "PHASE 1 — Problem Decomposition"
+ *   - "STAGE 1: Analysis" or "STAGE 1 — Stakeholder Mapping"
+ *   - "**Problem Statement**" (bold heading as a standalone line)
+ *   - "1. Problem" (numbered heading as a standalone line — single Title Case word)
+ *
+ * Start-of-line anchors (`^` with multiline flag) prevent false positives on prose
+ * sentences that happen to contain these words mid-paragraph.
+ *
+ * Only overrides `compliant: false` — never promotes a non-compliant judge result to compliant.
+ * Returns { detected: boolean, matchedPattern: string|null }.
+ */
+function detectProcessViolationPatterns(text) {
+  const patterns = [
+    { re: /^PHASE \d+\s*[:—]/m,          label: 'PHASE N: / PHASE N —' },
+    { re: /^STAGE \d+\s*[:—]/m,          label: 'STAGE N: / STAGE N —' },
+    { re: /^\*\*[A-Z][^\n*]+\*\*\s*$/m,       label: '**Bold heading** as standalone line' },
+    { re: /^\d+\.\s+[A-Z][a-z]+\s*$/m,        label: 'N. HeadingWord as standalone line' },
+  ];
+  for (const { re, label } of patterns) {
+    if (re.test(text)) return { detected: true, matchedPattern: label };
+  }
+  return { detected: false, matchedPattern: null };
+}
+
+/**
+ * Applies process-violation override to a judge scoreJson in-place.
+ * If NC patterns are detected in the model output and the judge did not already
+ * flag compliant=false, sets compliant=false and appends a note.
+ */
+function applyProcessViolationOverride(scoreJson, runContent) {
+  if (!scoreJson || scoreJson.compliant === false) return; // judge already flagged NC — nothing to do
+  const { detected, matchedPattern } = detectProcessViolationPatterns(runContent);
+  if (detected) {
+    scoreJson.compliant = false;
+    scoreJson.pass = false;
+    scoreJson.notes = (scoreJson.notes ? scoreJson.notes + '; ' : '') +
+      `process_violation_override: structured heading detected before clarifying question (pattern: ${matchedPattern})`;
+  }
+}
+
 // ─── Anthropic API call ─────────────────────────────────────────────────────
 
 // ─── Cost tracking ──────────────────────────────────────────────────────────
@@ -1040,6 +1087,9 @@ async function scoreBatchResults(resultLines, matrix, experimentDir, effectiveJu
         console.warn(`  Judge error for ${custom_id}: ${err.message}`);
       }
     }
+
+    // Programmatic NC override — catches structured-pipeline headings the judge may miss
+    applyProcessViolationOverride(scoreJson, runContent);
 
     writeEvalRunResult(evalOutputPath, { skill: skillName, caseId, model: modelId, trial: trialN, completedAt: new Date().toISOString(), artefactPath: runFilePath, dimensionsScored: scoreJson ? Object.keys(scoreJson.scores || {}).length : null, verdict: scoreJson ? (scoreJson.pass ? 'pass' : 'fail') : null });
 
@@ -1754,6 +1804,9 @@ async function main() {
           console.warn(`  Judge error: ${err.message}`);
         }
       }
+
+      // Programmatic NC override — catches structured-pipeline headings the judge may miss
+      applyProcessViolationOverride(scoreJson, runContent);
 
       // Write eval-run-result.json for this case
       writeEvalRunResult(evalOutputPath, {

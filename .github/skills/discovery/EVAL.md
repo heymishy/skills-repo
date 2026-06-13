@@ -5,6 +5,9 @@
 **Corpus path:** `.github/skills/discovery/corpus/`
 **Last calibrated:** 2026-05-10
 **Calibration model:** claude-sonnet-4-6
+**Response type:** hybrid — artefact when input is sufficient; clarification when input is ambiguous or thin (T2/T4-type)
+
+> **Clarification gate note:** When response_type is hybrid, D1–D7 must not be applied to clarification responses. Use the CL1-CL4 rubric instead — see `workspace/experiments/EXP-013-clarification-protocol/manifest.md`. Applying D1–D7 to a clarification response produces inverted scores (correct clarification behaviour scores lowest on artefact-quality dimensions).
 
 ---
 

@@ -5,6 +5,9 @@
 **Corpus path:** `.github/skills/definition-of-ready/corpus/` *(to be populated — see note below)*
 **Last calibrated:** 2026-05-10
 **Calibration model:** claude-sonnet-4-6
+**Response type:** artefact — the correct output is always a DoR checklist result, never a clarification question
+
+> **Clarification gate note:** If response_type is hybrid: see clarification-scorecard.md for the CL1-CL4 rubric. D1-D7 must not be applied to clarification responses. (Not applicable to /definition-of-ready — this skill always produces artefact output.)
 
 > **Corpus note:** DoR corpus cases require realistic story+test-plan+review-report input bundles. These are larger than discovery corpus cases. Seed cases from `artefacts/*/dor/*.md` in the first sweep run rather than creating synthetic cases. The corpus directory is created but empty — populate it with the first EXP-002 sweep output.
 
