@@ -30,6 +30,11 @@ meta:
 eval_mode:
   single_turn: true
   clarification_behaviour: surface_as_assumptions
+  instruction: "You MUST produce a complete discovery artefact in this
+    response. Do not hold sections pending clarification. Surface all
+    regulatory ambiguities, unknowns, and risks in the Assumptions and
+    Constraints sections of the artefact. Asking a question instead of
+    producing the artefact is a protocol violation in this context."
 
 # ─── NZ Financial Regulatory Frameworks ──────────────────────────────────────
 #
