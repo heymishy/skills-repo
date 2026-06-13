@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-S12",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 1,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "AC1 is tested by TestAC1OutputSchema with assertions on each required key and field type; AC2 by TestAC2ExitCode1 asserting returncode==1 with a fixture engineered for gap=0.20/0.30 > threshold 0.05; AC3 by TestAC3ExitCode0 asserting returncode==0 with threshold=1.0.",
+    "ip2": "No out-of-scope items (CCCFA, Gini/ROC-AUC, retraining, database) appear anywhere; C1 is enforced by reading threshold from fairness-config.json with FAIRNESS_CONFIG_PATH env var as test-injection only; C2 is enforced with concrete stderr assertions.",
+    "ip3": "Every task names specific files (scripts/evaluate_fairness.py, tests/test_evaluate_fairness.py, config/fairness-config.json) and provides complete code with concrete assertions like 'abs(eth_entry[\"gap\"] - 0.75) < 1e-9'.",
+    "ip4": "Task 2 writes the complete test file before the script exists with an explicit RED confirmation step ('Run pytest … before proceeding. All tests must fail') and Task 3 implements only after RED is confirmed.",
+    "ip5": "NFR-1 is tested in TestNFR1FMAFormula with exact numerical verification (expected_gap = 1.00 - 0.25 = 0.75) and a test distinguishing max-min from mean-deviation; NFR-2 tested by TestNFR2Determinism running two subprocess calls and asserting identical stdout; C1 threshold is never hardcoded."
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exemplary plan: complete test code with engineered fixtures and numerical precision assertions, explicit RED confirmation, all constraints enforced at task level, and no out-of-scope scope creep.",
+  "context_injection": false
+}

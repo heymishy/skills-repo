@@ -1,0 +1,17 @@
+{
+  "case_id": "S10",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 1,
+    "d2_persona_specificity": 1,
+    "d3_mvp_bounding": 1,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 1
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exemplary artefact: problem is framed entirely as a forced migration under a hard vendor deadline with compounding regulatory risk (not a solution), six named personas with role/timing/cost detail, a tightly bounded MVP with explicit deferrals (new loan products, AI/ML, payment channels), five or more out-of-scope items each with clear reasons, genuine regulatory uncertainties (BS11 notification status, CCCFA retention confirmation on destination, schema mapping gaps) with stated risk-if-wrong, success indicators anchored to baselines (280,000 accounts, legacy report formats, T+6/T+12 deadlines), and ten constraints all sourced from operator input and injected regulatory context."
+}

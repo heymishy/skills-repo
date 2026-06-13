@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "IL-S12",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 0.7,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs have specific failing tests: T1 asserts exact JSON schema fields and types for AC1, T2 asserts 'result.returncode == 1' for AC2, and T4 asserts 'result.returncode == 0' for AC3.",
+    "ip2": "No out-of-scope items (CCCFA, retraining, Gini/ROC-AUC) appear; C1 is reflected in T7 via behavioral config-swap test, and C2 is enforced in T3 with a stderr assertion — all within the Contract Proposal boundary.",
+    "ip3": "Every task explicitly names files ('scripts/evaluate_fairness.py', 'tests/test_evaluate_fairness.py', 'config/fairness-config.json') and provides concrete assertions such as 'abs(result[\"gap\"] - 0.50) < 0.0001' and specific exit codes.",
+    "ip4": "Test-first order is preserved across all tasks, but T4 and T5 write tests for behavior already implemented in T2 and T1 respectively, meaning those tests will not actually be RED when first run — violating strict TDD RED confirmation.",
+    "ip5": "NFR-1 has T5 with exact gap value assertion (0.50), NFR-2 has T6 comparing byte-identical stdout, C1 has T7 with a config-swap behavioral test, and C2 has T3 asserting non-empty stderr — all with numeric thresholds tested explicitly."
+  },
+  "weighted_score": 0.955,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exceptionally thorough plan with specific file names, concrete assertions, and behavioral constraint tests; minor TDD discipline issue where T4 and T5 tests are written for already-implemented behavior and cannot genuinely be RED.",
+  "context_injection": false
+}

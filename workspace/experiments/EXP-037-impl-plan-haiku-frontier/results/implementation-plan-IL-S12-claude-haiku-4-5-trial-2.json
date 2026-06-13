@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "IL-S12",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 0.7,
+    "ip4_tdd_discipline": 0.7,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs have concrete failing test scenarios: T1 asserts specific JSON keys and types for AC1, T2 asserts exit code 1 for AC2, T3 asserts stderr content for AC2's audit requirement, and T4 asserts exit code 0 for AC3.",
+    "ip2": "No out-of-scope items (CCCFA, Gini/ROC-AUC, retraining) appear; C1 is reflected in `load_fairness_config()` reading `config/fairness-config.json` and T7 tests config-driven threshold switching; C2 is enforced in T3 and T8.",
+    "ip3": "All tests name specific files (`scripts/evaluate_fairness.py`, `tests/test_evaluate_fairness.py`, `config/fairness-config.json`) with concrete assertions, but the `evaluate_fairness.py` implementation body is truncated mid-function, leaving the core `evaluate_demographic_parity` logic unspecified for the subagent.",
+    "ip4": "The entire test suite is defined in a RED phase block before the implementation section, preserving test-first order throughout, but there is no explicit per-test 'run pytest to confirm RED' confirmation step between writing tests and writing implementation.",
+    "ip5": "NFR-1 is tested in T5 with calculated expected values (gender gap ~0.50, ethnicity gap ~0.25); NFR-2 is tested in T6 via byte-for-byte stdout comparison; C1 is enforced via file-read `load_fairness_config()` with no hardcoded threshold constant."
+  },
+  "weighted_score": 0.895,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Strong plan with all ACs and NFRs covered by specific tests, correct C1 config-file architecture, and no fabricated scope; main weakness is the truncated implementation body which a subagent would need to complete by inference.",
+  "context_injection": false
+}

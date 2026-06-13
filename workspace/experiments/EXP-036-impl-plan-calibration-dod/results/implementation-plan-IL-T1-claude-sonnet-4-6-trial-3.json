@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-T1",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 0.7,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs have specific failing test scenarios: AC1 covered by T1/T2 (TIMEOUT and ISSUER_TEMP_UNAVAIL → retryable/retryCount:0), AC2 by T3/T4/T5 (permanent codes), and AC3 by T6/T7 (unknown code → permanent + console.warn with the unknown code value).",
+    "ip2": "No tasks implement retry scheduling, exponential backoff, queue persistence, or network calls — the overview explicitly states 'No retry scheduling, queue persistence, or network calls are in scope,' and Task 3 verification checklist confirms 'src/payments/queue.js is unchanged.'",
+    "ip3": "Every task names specific files (`tests/payments/failure-classifier.test.js` and `src/payments/failure-classifier.js`), provides concrete test assertions (e.g. `expect(result.status).toBe('retryable')`, `expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('SOME_WEIRD_CODE'))`), and specifies the exact implementation behaviour.",
+    "ip4": "Test-first order is preserved throughout — Task 1 writes the full failing test suite before Task 2 implements the function — but the plan omits an explicit 'run tests to see RED' step between Task 1 and Task 2; the expected state note ('All tests fail with Cannot find module') acknowledges RED but there is no explicit run-and-confirm step.",
+    "ip5": "The DoR specifies no NFRs or architecture constraints (pure function, no constraints), and the plan correctly reflects this with no fabricated constraint tasks; the design notes appropriately document the immutability and module export choices as implementation decisions rather than external constraints."
+  },
+  "weighted_score": 0.955,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exceptionally thorough plan with precise test assertions covering all three ACs, clean constraint adherence, and good design rationale; the only minor gap is the absence of an explicit 'run npm test to confirm RED' step between Task 1 and Task 2.",
+  "context_injection": false
+}

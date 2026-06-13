@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-T1",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 1,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs have distinct, concrete failing test scenarios: AC1 covered by T1/T2 (asserting `status='retryable'` and `retryCount=0`), AC2 by T3–T5 (asserting `status='permanent'` for each named code), and AC3 by T6/T7 (asserting `status='permanent'` plus `expect(warnSpy).toHaveBeenCalledWith('ANOTHER_UNKNOWN')`).",
+    "ip2": "The plan explicitly lists out-of-scope items in the 'Scope Boundary Confirmation' section and implements nothing beyond the `classifyFailure` pure function in `src/payments/failure-classifier.js` — no retry scheduling, queue modifications, or network calls appear anywhere in the task sequence.",
+    "ip3": "Every task names specific files (`tests/payments/failure-classifier.test.js` and `src/payments/failure-classifier.js`), provides full concrete code with named functions, specific assertion values, and describes the precise expected state after each task.",
+    "ip4": "Task 1 writes all failing tests first with an explicit expected RED state ('All tests fail with `Cannot find module`'), and Task 2 implements only after RED is confirmed, with the expected GREEN state stated as 'All tests pass; `npm test` exits 0'.",
+    "ip5": "The DoR specifies no NFRs and no architecture constraints ('Architecture Constraints: None. Pure function.'), so there is nothing to inherit; the plan correctly reflects this and adds no spurious constraints or configurable parameters."
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exemplary plan: comprehensive test coverage with precise assertions for all three ACs, strict RED-before-GREEN TDD discipline, fully specified files, and clean scope boundary enforcement.",
+  "context_injection": false
+}

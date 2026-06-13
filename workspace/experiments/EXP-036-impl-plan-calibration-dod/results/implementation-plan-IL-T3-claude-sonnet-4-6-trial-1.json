@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-T3",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 1,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs have distinct, specific failing test scenarios: AC1 covered by T1 (channel '#aml-alerts') and T2 (alertId/amount in message), AC2 by T3 (correct to/subject) and T4 (alertId in body), AC3 by T5 (slack fail → {slack:'failed',email:'sent'}) and T6 (both fail → resolves, never throws).",
+    "ip2": "No tasks implement SAR filing, MLRO escalation, alert deduplication, threshold detection, or compliance UI; the architecture constraint to use 'src/audit/audit-logger.js' (not console.log) is explicitly enforced via the factory injection pattern and documented as a tech lead review gate.",
+    "ip3": "Every task names specific files ('tests/compliance/alert-router.test.js', 'src/compliance/alert-router.js'), concrete function signatures ('createAlertRouter(slackClient, emailTransport, auditLog)', 'routeAlert(payload)'), and precise test assertions (e.g. 'expect(slack.chat.postMessage).toHaveBeenCalledWith(expect.objectContaining({ channel: '#aml-alerts' }))') leaving no ambiguity for a subagent.",
+    "ip4": "TASK 1 creates all 8 failing tests before any implementation exists ('No implementation file exists yet, so every require will fail — confirming RED'), TASK 2 then writes the minimum implementation to GREEN, with explicit RED and GREEN state confirmations stated after each task.",
+    "ip5": "NFR-1 (audit logging) generates two dedicated test scenarios T7 (auditLog.log called exactly once) and T8 (log entry contains alertId, timestamp, channel statuses), and the architecture constraint ('MUST use src/audit/audit-logger.js — NOT console.log') is enforced as an explicit task-level implementation rule via the factory pattern with a tech lead checkpoint."
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exemplary plan: all ACs have precise failing test scenarios, the audit-logger constraint is enforced structurally via dependency injection rather than just documented, and the TDD RED→GREEN flow is unambiguous throughout.",
+  "context_injection": false
+}

@@ -1,10 +1,10 @@
 {
-  "skill": "discovery",
-  "caseId": "S9",
-  "model": "claude-sonnet-4-6",
-  "trial": 1,
-  "completedAt": "2026-06-13T07:57:05.338Z",
-  "artefactPath": "C:\\Users\\Hamis\\code\\skills repo\\workspace\\experiments\\EXP-025c-regulated-context-s9-s12\\runs\\discovery-S9-claude-sonnet-4-6-trial-1.md",
-  "dimensionsScored": 7,
+  "skill": "implementation-plan",
+  "caseId": "IL-T3",
+  "model": "claude-haiku-4-5",
+  "trial": 2,
+  "completedAt": "2026-06-13T22:45:27.997Z",
+  "artefactPath": "C:\\Users\\Hamis\\code\\skills repo\\workspace\\experiments\\EXP-037-impl-plan-haiku-frontier\\runs\\implementation-plan-IL-T3-claude-haiku-4-5-trial-2.md",
+  "dimensionsScored": 5,
   "verdict": "pass"
 }

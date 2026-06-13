@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "IL-S3",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 0.7,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs have distinct, specific failing test scenarios: T1 asserts 'positive pacs.002 when processing completes in 100ms' (AC1), T2 asserts 'SCHEME_SLA_EXCEEDED before 10,000ms when processing stalls past 9,500ms' (AC2), and T3/T4 assert receipt timestamp, ack timestamp, and elapsedMs present in every log entry (AC3).",
+    "ip2": "No tasks implement any item from the 'What will NOT be built' list (fraud vendor API, outbound RTP, AML load testing, batch reconciliation); C3's hard 9,500ms threshold is reflected as a named constant `SLA_THRESHOLD_MS = 9500` in the implementation task with a checklist note 'C3 (HARD scheme rule implementation)'.",
+    "ip3": "Every task names specific files (`tests/payments/rtp-sla-timer.test.js`, `src/payments/rtp-sla-timer.js`, `src/payments/rtp-message-handler.js`, `tests/payments/rtp-sla-timer.performance.test.js`) and provides concrete code with explicit assertions such as `expect(ackCall.args[0]).to.deep.include({ type: 'pacs.002', status: 'REJECTED', reason: 'SCHEME_SLA_EXCEEDED' })`.",
+    "ip4": "Test-first order is preserved throughout — Task 1 writes the full failing test suite before Task 2 writes any implementation — but the plan does not include an explicit step to run the tests and confirm RED state before proceeding to Task 2.",
+    "ip5": "NFR-1 is addressed by a dedicated Task 5 (`T_NFR_1`) that asserts `expect(p99).to.be.lessThan(9000)` across 200 messages at 40 tps; C3's compiled-in-constant is correctly implemented as `const SLA_THRESHOLD_MS = 9500` (not a configurable parameter)."
+  },
+  "weighted_score": 0.955,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exceptionally thorough plan with complete AC coverage, correct hard-constant enforcement for C3, and a dedicated T_NFR_1 performance test; minor deduction only for omitting an explicit 'run tests → confirm RED' execution step between Task 1 and Task 2.",
+  "context_injection": false
+}

@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-S13",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 1,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs have distinct, specific failing test scenarios: AC1 covered by T1 ('expect(result).toEqual({ blocked: true, blockedBy: \"RBNZ_SANCTIONED\" })') and T2 (AUSTRAC not called), AC2 by T3, and AC3 by T4 and T5 with precise assertions on the returned shape and audit log content.",
+    "ip2": "The plan creates only the two files specified in the DoR ('src/aml/dual-aml-screener.js' and 'tests/aml/dual-aml-screener.test.js'), explicitly lists routing, SWIFT notification, AUSTRAC reporting, FX reporting, and DIA registration as NOT implemented, and no task touches any of those out-of-scope items.",
+    "ip3": "Every task names specific files, functions, and concrete assertions — e.g. Task 1 names 'tests/aml/dual-aml-screener.test.js' with line-level mock setup and exact expect calls; Task 2 names 'src/aml/dual-aml-screener.js' with the full implementation; Task 3 provides a grep-based static checklist tied to exact patterns.",
+    "ip4": "Task 1 writes all 8 failing tests first and explicitly states 'All tests must fail at this point because src/aml/dual-aml-screener.js does not yet exist' (confirming RED), and Task 2 writes the implementation only after, with 'Expected state after Task 2: All 8 tests pass (GREEN)' confirming GREEN.",
+    "ip5": "NFR-1/C7 sequential ordering is enforced by T6 (call-order array test that would catch Promise.all) and by code using sequential awaits; NFR-2/C8 audit logging on every path is enforced by T5, T7, and T8 with specific assertions including 'austracResult: null' on RBNZ early exit, and C8 console prohibition is enforced by the Task 3 grep checklist."
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exemplary plan: all ACs have precise failing test scenarios, C7 sequential ordering is enforced by a call-order test that explicitly catches Promise.all, NFR-2 audit logging is tested in all three outcome paths, and no out-of-scope work appears anywhere in the plan.",
+  "context_injection": false
+}

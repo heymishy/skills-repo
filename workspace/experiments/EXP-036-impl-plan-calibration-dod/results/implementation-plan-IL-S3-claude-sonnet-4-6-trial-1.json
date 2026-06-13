@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-S3",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 1,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs have distinct, specific failing test scenarios: T1 asserts `sendAckMock` called with `status: 'ACCEPTED'` (AC1), T2 asserts `status: 'REJECTED', reason: 'SCHEME_SLA_EXCEEDED'` with `elapsedMs < 10,000ms` (AC2), and T3/T4 assert specific `receiptTimestamp`, `ackTimestamp`, and `elapsedMs` properties in the log (AC3).",
+    "ip2": "No out-of-scope items (fraud vendor API, outbound RTP, AML load testing, batch reconciliation) appear in any task; the plan explicitly notes 'fraud vendor stub — full integration is out of scope', and all tasks map directly to the Contract Proposal's named files and behaviours.",
+    "ip3": "Every task names specific files (`tests/payments/rtp-sla-timer.test.js`, `src/payments/rtp-sla-timer.js`, `src/payments/rtp-message-handler.js`), concrete function names (`createSlaTimer`, `timedInboundHandler`), and precise test assertions (e.g. `expect(sendAckMock).toHaveBeenCalledWith(expect.objectContaining({type: 'pacs.002', status: 'REJECTED', reason: 'SCHEME_SLA_EXCEEDED', messageId: 'msg-002'}))`).",
+    "ip4": "Every task follows strict RED-GREEN order: TASK 1 writes all failing tests first with explicit 'Expected state after TASK 1: All four tests fail' RED confirmation before TASK 2 implements the module; TASK 3 writes the failing performance test before TASK 4 wires the integration environment to achieve GREEN.",
+    "ip5": "NFR-1 has a concrete performance test (T_NFR_1) asserting `p99 < P99_CEILING_MS` (9,000ms) over 200 messages at 40 tps; constraint C3 is enforced as `const SLA_THRESHOLD_MS = 9_500` (a non-configurable compiled constant, not a parameter), with the acceptance checklist explicitly noting 'Code review: `SLA_THRESHOLD_MS = 9_500` is a `const`, not a param'."
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exemplary plan: every AC has a concrete failing test, C3 is correctly implemented as a compiled constant, NFR-1 has a real-timer P99 performance test, all tasks name specific files and assertions, and TDD RED-GREEN ordering is maintained throughout with explicit state confirmations.",
+  "context_injection": false
+}

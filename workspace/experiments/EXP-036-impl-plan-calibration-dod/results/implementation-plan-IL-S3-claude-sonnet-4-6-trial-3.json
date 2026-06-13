@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-S3",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 1,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs have distinct, concrete failing test scenarios: T1/T2 cover AC1 (positive ACK) and AC2 (negative ACK with 'SCHEME_SLA_EXCEEDED' at exactly 9,500ms), and T3/T4 cover AC3 with specific assertions on 'receiptTimestamp', 'ackTimestamp', and 'elapsedMs' fields.",
+    "ip2": "No tasks implement any out-of-scope item (fraud vendor API, outbound RTP, AML load testing, batch reconciliation are absent); C3 hardcoded threshold is explicitly enforced as 'const SLA_THRESHOLD_MS = 9500' with a comment 'NOT configurable'.",
+    "ip3": "Every task names specific files ('src/payments/rtp-sla-timer.js', 'tests/payments/rtp-sla-timer.test.js', 'src/payments/rtp-message-handler.js'), specifies concrete function signatures ('withSlaTimer', 'handleInboundMessage'), and describes exact assertion conditions (e.g., 'sendAck called with { type: pacs.002, status: REJECTED, reason: SCHEME_SLA_EXCEEDED }').",
+    "ip4": "Every task strictly follows RED-GREEN-REFACTOR order: TASK 1 writes all failing tests first with 'Cannot find module' as the expected RED state, TASK 2 implements to GREEN, TASK 3 refactors without behaviour change, TASK 4 writes a new failing performance test, TASK 6 writes a failing integration test before TASK 7 implements the handler change.",
+    "ip5": "NFR-1 (P99 < 9,000ms at 40 tps / 200 messages) is addressed by a dedicated performance test in TASK 4 with 'expect(p99).toBeLessThan(P99_THRESHOLD_MS)' where 'P99_THRESHOLD_MS = 9000'; C3 is enforced as a hardcoded constant 'SLA_THRESHOLD_MS = 9500' in the implementation with explicit tech lead sign-off checklist confirming 'not env-var, not configurable'."
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exemplary plan: all ACs, NFRs, and the hard-coded C3 constraint are precisely reflected at task level with specific file names, concrete test assertions, and strict RED-GREEN-REFACTOR sequencing throughout.",
+  "context_injection": false
+}

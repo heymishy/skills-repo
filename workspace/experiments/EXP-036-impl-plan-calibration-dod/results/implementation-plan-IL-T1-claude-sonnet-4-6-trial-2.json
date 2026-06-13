@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-T1",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 1,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs have distinct, concrete failing test scenarios: AC1 covered by T1/T2 asserting `status: 'retryable'` and `retryCount: 0`; AC2 covered by T3/T4/T5 asserting `status: 'permanent'`; AC3 covered by T6/T7 asserting `status: 'permanent'` and `expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('SOME_UNKNOWN_CODE'))`.",
+    "ip2": "No tasks reference retry scheduling, backoff, queue persistence, or network calls — the plan explicitly confirms in Task 3 that implementation contains 'no `require`/`import` of external modules', does 'not import or reference `queue.js`', and does 'not implement scheduling, backoff, or timers'.",
+    "ip3": "Every task names specific files (`tests/payments/failure-classifier.test.js`, `src/payments/failure-classifier.js`), and tests specify exact assertions such as `expect(result.status).toBe('retryable')` and `expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('SOME_UNKNOWN_CODE'))`.",
+    "ip4": "Task 1 writes all 10 failing tests first and explicitly states 'All 10 tests fail with `Cannot find module` — confirming RED state'; Task 2 then provides the implementation and states 'All 10 tests pass — GREEN state achieved', preserving strict RED-GREEN order.",
+    "ip5": "The DoR specifies no NFRs and no architecture constraints (pure function); the plan enforces the pure-function constraint at task level through Task 3's static checklist ('Mutates nothing — always returns a shallow copy via spread') and the AC coverage map confirms all behavioural constraints are tested."
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exemplary plan: all three ACs have specific, verifiable failing tests; scope is perfectly bounded to the Contract Proposal with an explicit static-check task to confirm no out-of-scope elements; TDD RED-GREEN sequence is explicit and unambiguous.",
+  "context_injection": false
+}

@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-T3",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 1,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs and NFR-1 have distinct, specific failing test scenarios: T1/T2 cover AC1 (channel '#aml-alerts' and payload content), T3/T4 cover AC2 (correct 'to' and subject 'AML Threshold Breach — ALERT_001'), T5/T6 cover AC3 (partial failure returns and never-throws), and T7/T8 cover NFR-1 (audit.log called once with alertId, timestamp, and channel statuses).",
+    "ip2": "The plan implements exactly the Contract Proposal scope — `createAlertRouter`, `routeAlert`, Slack, email, and audit log — and the Scope Boundary table explicitly marks SAR filing, MLRO escalation, threshold detection, alert deduplication, and compliance UI as out of scope with no corresponding tasks.",
+    "ip3": "Every task names specific files (`tests/compliance/alert-router.test.js`, `src/compliance/alert-router.js`), names specific functions (`createAlertRouter`, `routeAlert`, `slackClient.chat.postMessage`, `sendMail`, `audit.log`), and provides concrete assertions with exact argument matchers (e.g., `expect.objectContaining({ channel: '#aml-alerts' })`).",
+    "ip4": "TASK 1 writes all 8 failing tests before any implementation exists and includes an explicit RED gate ('All 8 tests must fail with `Cannot find module`'); TASK 2 implements only after RED is confirmed and has a GREEN gate; TASK 3 is refactor-only with a final GREEN verification — strict RED-GREEN-REFACTOR order throughout.",
+    "ip5": "NFR-1 has two dedicated tests (T7: `audit.log called exactly once`, T8: log entry contains alertId, timestamp, channel statuses) and the architecture constraint (MUST use `audit-logger.js`, NOT `console.log`) is enforced in the implementation with an explicit comment 'Do NOT replace with console.log' and the `logger` variable bound to `audit-logger.js`."
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exemplary plan: all ACs mapped to concrete, specific test assertions with named mocks and exact argument matchers, full RED-GREEN-REFACTOR structure with explicit gate verifications, and the architecture constraint against console.log is enforced both in code and documentation.",
+  "context_injection": false
+}

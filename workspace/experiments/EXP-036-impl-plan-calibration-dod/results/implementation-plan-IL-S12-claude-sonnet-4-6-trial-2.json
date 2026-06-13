@@ -1,0 +1,5 @@
+{
+  "error": "judge failed",
+  "model_label": "claude-sonnet-4-6",
+  "context_injection": false
+}

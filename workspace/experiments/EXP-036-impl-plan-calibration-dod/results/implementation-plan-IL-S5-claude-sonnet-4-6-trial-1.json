@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-S5",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 0.7,
+    "ip5_nfr_inheritance": 0.7
+  },
+  "justifications": {
+    "ip1": "All three ACs have concrete failing test scenarios: AC1 covered by T1/T2/T3 asserting exact '[REDACTED]' values and 89-day untouched; AC2 by T4/T5 asserting `findById` returns null at 365 and non-null at 364; AC3 by T6/T7/T8 asserting specific `action`, `recordId`, `timestamp`, and `triggerAgeDays` fields.",
+    "ip2": "No out-of-scope items (consent workflow, attachment redaction, configurable thresholds, Azure DPA, cron scheduling) appear in any task; the plan explicitly notes 'Scheduling/cron wiring is out of scope (crm.5)' and 'Thresholds are hard legal constants per C4 / PIA-2026-14 — not configurable', and all constraints map directly to task-level implementation.",
+    "ip3": "Every task names specific files (`tests/crm/transcript-retention.test.js`, `src/crm/retention-audit-store.js`, `src/crm/transcript-retention.js`), provides complete code with concrete assertions (e.g. `expect(record.customerName).toBe('[REDACTED]')`), and the GREEN step specifies exact test command `npm test -- --testPathPattern=tests/crm/transcript-retention`.",
+    "ip4": "Task 1 writes all failing tests first with a protocol checkpoint ('All tests above must be committed and confirmed RED before Task 2 begins'), and Task 4 confirms GREEN, but the plan does not include an explicit step to run the test suite and observe the RED failure state before moving to Task 2 implementation — the checkpoint is a prose note rather than a runnable command step.",
+    "ip5": "NFR-1 boundary tests at all six required ages (89/90/91/364/365/366) are present in the test file and summarised in the Boundary Verification Matrix; `REDACT_AFTER_DAYS = 90` and `PURGE_AFTER_DAYS = 365` are implemented as compiled-in `const` values with a comment citing C4/PIA-2026-14, though the architecture constraint is described in the notes table rather than appearing as an explicit enforcement rule within a task's step-by-step instructions."
+  },
+  "weighted_score": 0.925,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exceptional plan with complete AC and NFR boundary coverage, zero out-of-scope leakage, and fully concrete executable tasks; minor deductions for the absence of an explicit 'run tests → observe RED' command step and C4 constraint appearing primarily in a notes table rather than as a task-step rule.",
+  "context_injection": false
+}

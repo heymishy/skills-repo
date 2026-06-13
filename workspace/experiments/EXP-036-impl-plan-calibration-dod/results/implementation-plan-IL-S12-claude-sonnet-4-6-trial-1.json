@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-S12",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 1,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "AC1 covered by T1 with specific field assertions ('group', 'dimension', 'gap', 'threshold', 'pass'), AC2 by T2 (exit 1 with threshold=0.05 vs gap=1.0) and T3 (stderr contains threshold value and dimension names), AC3 by T4 including boundary test (gap==threshold exits 0).",
+    "ip2": "No out-of-scope items implemented; 'What will NOT be built' list (retraining, CCCFA, Gini/ROC-AUC/KS, real-time inference, database) is entirely absent from the plan, and all three mandated files (evaluate_fairness.py, test_evaluate_fairness.py, fairness-config.json) are present.",
+    "ip3": "Every task names specific files and provides complete code with concrete assertions — e.g. T5 asserts 'abs(entry[\"gap\"] - 0.50) < 1e-9' for gender gap, T7 uses exact threshold values 0.05 and 0.10 to detect hardcoding.",
+    "ip4": "TASK 1 writes all failing tests first with explicit RED verification ('Run pytest... all tests must fail with FileNotFoundError or ModuleNotFoundError'); TASK 3 explicitly states 'Tests must already exist and be failing before this task is started.'",
+    "ip5": "NFR-1 has T5 verifying exact max-min formula (gender gap=0.50, ethnicity gap=0.00); NFR-2 has T6 (identical stdout across runs); C1 is enforced by T7 (two-run test with different config thresholds) and by CONFIG_PATH constant with no hardcoded numeric threshold anywhere in the implementation; C2 has T3 verifying stderr on every run."
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exemplary plan: all ACs have precise numerical test scenarios, T7 provides a definitive C1 (no-hardcoding) test by varying the config threshold between runs, and the implementation correctly reads the threshold from fairness-config.json at runtime with no hardcoded numeric values.",
+  "context_injection": false
+}

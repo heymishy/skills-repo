@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-S5",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 1,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs have specific failing test scenarios: AC1 covered by T1–T3 (PII fields set to '[REDACTED]', non-PII preserved, 89-day untouched), AC2 by T5–T7 (365-day deleted, 364-day redacted not deleted), AC3 by T8–T14 (audit entries with correct fields per acted-upon record).",
+    "ip2": "No out-of-scope items are implemented — the plan explicitly excludes cron/scheduling ('Scheduling/cron wiring is out of scope'), consent workflow, attachment redaction, Azure DPA, and configurable thresholds; C4 is directly reflected with REDACT_AFTER_DAYS and PURGE_AFTER_DAYS as local compiled-in constants.",
+    "ip3": "Every task names specific files (`tests/crm/transcript-retention.test.js`, `src/crm/transcript-retention.js`, `src/crm/retention-audit-store.js`), concrete function names (`enforceRetention`, `transcriptStore.findById`, `retentionAuditStore.append`), and exact assertion values (`'[REDACTED]'`, `toBeNull()`).",
+    "ip4": "Task 1 writes all failing tests first with an explicit RED confirmation ('All tests fail with Cannot find module'), and Task 3 is gated with 'Only write this file after Task 1 tests are committed and confirmed RED', preserving strict test-first order throughout.",
+    "ip5": "NFR-1's full 89/90/91/364/365/366-day boundary matrix is covered by both individual tests (T4–T7) and a parameterised boundary suite; C4 constants are local, unexported, and annotated 'Do NOT extract to config or accept as parameters', with a note explaining why they are not exported."
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exemplary plan: every AC has precise failing-test assertions, C4 compiled-in constants are correctly local and unexported, NFR-1 boundary matrix is exhaustive, and TDD RED-before-GREEN gating is explicit and enforced.",
+  "context_injection": false
+}

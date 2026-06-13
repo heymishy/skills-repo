@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-S13",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 1,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs are covered by distinct failing test scenarios: T1/T2 cover AC1 (RBNZ match → blocked, AUSTRAC not called), T3 covers AC2 (RBNZ clear + AUSTRAC match → blocked by AUSTRAC), and T4 covers AC3 (both clear → not blocked, with T5 verifying audit log written).",
+    "ip2": "The plan creates only `src/aml/dual-aml-screener.js` and its test file, explicitly lists routing, SWIFT notification, AUSTRAC reporting, FX reporting, and DIA registration as NOT touched, and the constraint compliance checklist maps every constraint to a concrete implementation mechanism.",
+    "ip3": "Every task names specific files (`tests/aml/dual-aml-screener.test.js`, `src/aml/dual-aml-screener.js`), provides full concrete test code with exact assertion expressions (e.g. `expect(result).toEqual({ blocked: true, blockedBy: 'RBNZ_SANCTIONED' })`), and specifies the exact implementation code to write.",
+    "ip4": "TASK 1 writes all 7 failing tests before any implementation exists and documents the expected RED outcome ('7 tests collected, all fail with Cannot find module'); TASK 2 is explicitly gated on TASK 1 ('tests must already exist and be failing') and produces the GREEN outcome.",
+    "ip5": "NFR-1 (sequential ordering) has a dedicated test T6 using a `callOrder` array to assert `['rbnz', 'austrac']`; NFR-2 (audit on every path with `austracResult: null` on early exit) has tests T5 and T7; C7 (`Promise.all` prohibition) is enforced structurally in the implementation with an inline comment, and C8 (audit-logger only) is reflected in both implementation and constraint checklist."
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exemplary plan: every AC, NFR, and architecture constraint maps to a specific test (including a call-order array test for C7 sequential ordering), no out-of-scope items are present, and TDD discipline is rigorously maintained throughout.",
+  "context_injection": false
+}

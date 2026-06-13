@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-T3",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 1,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs and NFR-1 have dedicated, named failing tests: T1/T2 assert `channel === '#aml-alerts'` and alertId/amount in body (AC1), T3/T4 assert exact `to` address and subject `'AML Threshold Breach — ALERT_001'` (AC2), T5/T6 assert `{ slack: 'failed', email: 'sent' }` return and no throw (AC3), and T7/T8 assert `auditLog.log` called once with alertId, timestamp, and channel statuses (NFR-1).",
+    "ip2": "The 'Scope Boundary Confirmation' section explicitly excludes SAR filing, MLRO escalation, threshold detection, deduplication, and UI; no task touches any of those items, and all tasks are bounded to `src/compliance/alert-router.js` and `tests/compliance/alert-router.test.js` as specified in the Contract Proposal.",
+    "ip3": "Every task names exact file paths (`tests/compliance/alert-router.test.js`, `src/compliance/alert-router.js`), concrete function names (`createAlertRouter`, `routeAlert`, `dispatchSlack`, `dispatchEmail`), and specific assertion values (e.g. `expect(callArg.channel).toBe('#aml-alerts')`).",
+    "ip4": "Task 1 writes all eight tests before any implementation exists and mandates confirming 'Cannot find module' RED failures before proceeding; Task 2 creates the implementation only after Task 1 is committed, with an explicit GREEN gate ('all 8 tests pass').",
+    "ip5": "NFR-1 generates two dedicated test scenarios (T7 and T8) that assert `audit.log` is called with alertId, timestamp, and channel statuses; the architecture constraint is enforced at task level with the comment 'MANDATORY compliance audit trail; MUST use auditLog, not console.log', and the production wiring in Task 3 injects the real `src/audit/audit-logger.js`."
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exemplary plan: every AC and NFR has a precisely specified failing test, files are named throughout, TDD RED-GREEN gates are explicit, no out-of-scope work is introduced, and the architecture constraint (audit-logger, not console.log) is enforced at the code comment level as well as in the production wiring task.",
+  "context_injection": false
+}

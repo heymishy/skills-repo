@@ -1,0 +1,17 @@
+{
+  "case_id": "S10",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 1,
+    "d2_persona_specificity": 1,
+    "d3_mvp_bounding": 1,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 1
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exemplary response: problem is framed as a forced vendor-deadline migration with regulatory risk (not a solution), personas are named with role/timing/cost, MVP is tightly bounded with explicit deferrals, five named out-of-scope items with reasons, ten genuine uncertainties with risk-if-wrong stated, success indicators anchored to baselines including 100% record count and BS11 notification date, and all hard constraints (BS11, CCCFA, vendor deadline, RBNZ reporting, PPSR) are sourced from the operator input and regulatory context."
+}

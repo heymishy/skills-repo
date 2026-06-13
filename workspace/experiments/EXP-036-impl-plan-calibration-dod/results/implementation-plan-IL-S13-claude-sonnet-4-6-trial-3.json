@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-S13",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 1,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs have distinct, concrete failing test scenarios: T1/T2 cover AC1 (RBNZ match → blocked, AUSTRAC not called), T3 covers AC2 (RBNZ clear + AUSTRAC match → blocked by AUSTRAC), and T4/T5 cover AC3 (both clear → not blocked, audit log written).",
+    "ip2": "The plan creates only the two mandated files (`src/aml/dual-aml-screener.js` and `tests/aml/dual-aml-screener.test.js`), explicitly lists routing, SWIFT notification, AUSTRAC reporting, FX reporting, and DIA registration as items not touched, and every constraint (C7, C8, NFR-1, NFR-2) is reflected in a constraints checklist enforced across both implementation tasks.",
+    "ip3": "Every task names specific files, function names (`screenCrossBorder`), and concrete assertions (e.g. `expect(austracClient.screen).not.toHaveBeenCalled()`, `expect(callOrder).toEqual(['rbnz', 'austrac'])`) leaving no ambiguity for a subagent executor.",
+    "ip4": "Task 1 writes all 8 failing tests before `src/aml/dual-aml-screener.js` exists, includes an explicit RED verification step ('all 8 tests fail with `Cannot find module`'), and Task 2 then implements and verifies GREEN — strict RED-GREEN-REFACTOR order throughout.",
+    "ip5": "NFR-1 is enforced by T6 (call-order array test), NFR-2 is enforced by T5/T7/T8 (audit log assertions on all three paths including `austracResult: null` on RBNZ early exit), and C7/C8 appear as explicit prohibited-pattern rules in the constraints checklist and implementation step comments."
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exemplary plan: every AC, NFR, and architecture constraint is traceable to a specific test scenario, `Promise.all` is explicitly prohibited with a categorical-fail callout, and the TDD protocol is enforced with a 'Protocol Violation Guard' section preventing any future reordering.",
+  "context_injection": false
+}

@@ -1,0 +1,25 @@
+{
+  "compliant": true,
+  "skill": "implementation-plan",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "IL-S5",
+  "scores": {
+    "ip1_ac_coverage": 1,
+    "ip2_constraint_adherence": 1,
+    "ip3_task_executability": 1,
+    "ip4_tdd_discipline": 0.7,
+    "ip5_nfr_inheritance": 1
+  },
+  "justifications": {
+    "ip1": "All three ACs have explicit, specific failing test scenarios: AC1 covered by T1/T2/T3/T3b (asserting '[REDACTED]' and 89-day untouched), AC2 by T4/T5/T5b (asserting null on delete and redacted-only at 364), AC3 by T6/T7/T8/T8b (asserting exact action strings 'REDACTED'/'PURGED', timestamp, and triggerAgeDays values).",
+    "ip2": "The plan implements no out-of-scope items — no consent workflow, no attachment redaction, no configurable thresholds, no Azure DPA, no cron scheduling — and explicitly notes 'Cron scheduling (crm.5 responsibility)' in the Architecture Compliance section; C4 constants are hard-coded as module-level constants, not parameters.",
+    "ip3": "Every test and implementation step names specific files ('tests/crm/transcript-retention.test.js', 'src/crm/transcript-retention.js'), specific functions ('enforceRetention()', 'transcriptStore.findById()'), and concrete assertions (e.g., 'assert.strictEqual(updated.customerName, \"[REDACTED]\")').",
+    "ip4": "The plan presents the full test suite (RED phase) before the implementation file (GREEN phase), preserving test-first order throughout, but does not include an explicit 'run tests to confirm RED' command step between writing the tests and writing the implementation — the RED confirmation is implicit rather than an explicit execution step.",
+    "ip5": "NFR-1 boundary tests at all six required values (89/90/91/364/365/366 days) are implemented as explicit test cases NFR-1a through NFR-1f, and C4 is enforced with module-level constants 'const REDACT_AFTER_DAYS = 90' and 'const PURGE_AFTER_DAYS = 365' annotated with 'LEGAL CONSTANTS — Privacy Act 2020 (PIA-2026-14)' and 'C4: Non-configurable thresholds confirmed by Legal.'"
+  },
+  "weighted_score": 0.955,
+  "pass": true,
+  "categorical_fail": null,
+  "notes": "Exceptionally thorough plan with comprehensive boundary coverage, strict C4 compliance via module-level constants, and concrete test assertions throughout; minor deduction on IP4 only because no explicit 'npm test' RED-confirmation step appears between the test file and the implementation file.",
+  "context_injection": false
+}
