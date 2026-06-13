@@ -19,7 +19,7 @@ DoR artefact:
 **Oversight level:** Medium (scheme compliance story — tech lead awareness required)
 **Warnings:** W1 acknowledged (NFR-1 load test at full 40,000 tph requires production-like infrastructure; risk accepted — integration environment test at 40 tps is the pre-production evidence)
 
-## Contract Proposal
+### Contract Proposal
 
 **What will be built:**
 An SLA timer wrapper around the existing `handleInboundMessage(message)` function in `src/payments/rtp-message-handler.js`. The wrapper:
@@ -49,7 +49,7 @@ An SLA timer wrapper around the existing `handleInboundMessage(message)` functio
 - Create: `src/payments/rtp-sla-timer.js` (the timer module)
 - Create: `tests/payments/rtp-sla-timer.test.js`
 
-## Coding Agent Instructions
+### Coding Agent Instructions
 
 **Goal:** Wrap the existing `handleInboundMessage` with a 9,500ms SLA timer. Negative ACK on timeout, positive ACK on completion. Always log receipt/ack timestamps.
 
@@ -77,7 +77,7 @@ Definition artefact:
 **Feature:** 2026-09-01-rtp-inbound-integration
 **Story slug:** rtp.3
 
-## Story: rtp.3 — Enforce 10-second acknowledgement SLA
+### Story: rtp.3 — Enforce 10-second acknowledgement SLA
 
 **AC1:** Given an inbound `pacs.008` message, when all processing completes within window, then a `pacs.002` positive acknowledgement is sent within 10 seconds.
 

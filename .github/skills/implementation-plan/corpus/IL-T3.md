@@ -18,7 +18,7 @@ DoR artefact:
 **DoR verdict:** Proceed: Yes
 **Oversight level:** Medium (compliance story — tech lead awareness required)
 
-## Contract Proposal
+### Contract Proposal
 
 **What will be built:**
 A `routeAlert(payload)` function exported from `src/compliance/alert-router.js`. The function:
@@ -46,7 +46,7 @@ A `routeAlert(payload)` function exported from `src/compliance/alert-router.js`.
 - Create: `src/compliance/alert-router.js`
 - Create: `tests/compliance/alert-router.test.js`
 
-## Coding Agent Instructions
+### Coding Agent Instructions
 
 **Goal:** Implement `routeAlert(payload)` in `src/compliance/alert-router.js` that sends Slack + email and logs every dispatch attempt.
 
@@ -77,7 +77,7 @@ Definition artefact:
 **Feature:** 2026-06-13-aml-threshold-monitoring
 **Story slug:** aml.2
 
-## Story: aml.2 — Route threshold breach alerts to compliance channels
+### Story: aml.2 — Route threshold breach alerts to compliance channels
 
 **AC1:** Given a threshold breach alert payload `{ alertId, amount, customerId, breachTimestamp }`, when `routeAlert(payload)` is called, then a Slack message is sent to `#aml-alerts` and returns `{ slack: 'sent', email: 'sent' }`.
 

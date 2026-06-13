@@ -20,7 +20,7 @@ DoR artefact:
 **H-ADAPTER check:** PASS — retention logic operates on the transcript store directly, not via the CRM adapter
 **Warnings:** W1 acknowledged (Privacy Commissioner assessment ongoing; Azure DPA status unconfirmed; however, 90-day and 365-day thresholds are legally certain per PIA-2026-14)
 
-## Contract Proposal
+### Contract Proposal
 
 **What will be built:**
 A retention enforcement job for the transcript store:
@@ -51,7 +51,7 @@ Scheduling (cron wiring) is out of scope — the job is exported as a callable f
 - Create: `src/crm/transcript-retention.js`
 - Create: `tests/crm/transcript-retention.test.js`
 
-## Coding Agent Instructions
+### Coding Agent Instructions
 
 **Goal:** Create a retention enforcement function. Redact PII after 90 days, purge records after 365 days. Write failing tests first.
 
@@ -78,7 +78,7 @@ Definition artefact:
 **Feature:** 2026-08-01-crm-transcription-rollout
 **Story slug:** crm.4
 
-## Story: crm.4 — Enforce transcript PII retention policy
+### Story: crm.4 — Enforce transcript PII retention policy
 
 **AC1:** Given a transcript record > 90 days old, when the retention job runs, then `customerName`, `accountNumber`, `rawTranscript` are set to `[REDACTED]`; non-PII fields (`caseId`, `agentId`, `callDate`, `durationSeconds`, `sentimentScore`) are preserved.
 

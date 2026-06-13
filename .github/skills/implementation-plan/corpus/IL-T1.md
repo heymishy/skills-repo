@@ -19,7 +19,7 @@ DoR artefact:
 **Oversight level:** Low
 **Hard blocks:** 13/13 passed
 
-## Contract Proposal
+### Contract Proposal
 
 **What will be built:**
 A `classifyFailure(payment)` function exported from `src/payments/failure-classifier.js`. The function reads `payment.failureCode` and returns a modified payment object with:
@@ -44,7 +44,7 @@ A `classifyFailure(payment)` function exported from `src/payments/failure-classi
 - Create: `src/payments/failure-classifier.js`
 - Create: `tests/payments/failure-classifier.test.js`
 
-## Coding Agent Instructions
+### Coding Agent Instructions
 
 **Goal:** Implement the `classifyFailure` function that maps payment failure codes to retryable/permanent status.
 
@@ -74,7 +74,7 @@ Definition artefact:
 **Feature:** 2026-06-13-payment-retry-processor
 **Story slug:** retry.1
 
-## Story: retry.1 — Classify and route failed payments
+### Story: retry.1 — Classify and route failed payments
 
 **AC1:** Given a failed payment with a retryable failure code (TIMEOUT, ISSUER_TEMP_UNAVAIL), when the classifier processes the payment, then the payment is marked `status: "retryable"` and `retryCount` is set to 0.
 

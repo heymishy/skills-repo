@@ -23,7 +23,7 @@ DoR artefact:
 **H-C1 (Configurable threshold):** PASS — C1 prohibits hardcoding; NZ FMA and AU APRA use different threshold values
 **Warnings:** W1 — `config/fairness-config.json` must be reviewed by compliance before merge
 
-## Contract Proposal
+### Contract Proposal
 
 **What will be built:**
 
@@ -42,7 +42,7 @@ A standalone Python script `scripts/evaluate_fairness.py` that:
 - Create: `tests/test_evaluate_fairness.py`
 - Create: `config/fairness-config.json`
 
-## Coding Agent Instructions
+### Coding Agent Instructions
 
 **Branch:** `feature/credit.fairness-eval-1`
 **Test command:** `pytest tests/test_evaluate_fairness.py -v`
@@ -67,7 +67,7 @@ Definition artefact:
 **Feature:** 2026-07-01-credit-model-refresh
 **Story slug:** credit.fairness-eval-1
 
-## Story: credit.fairness-eval-1 — Implement demographic parity evaluation script
+### Story: credit.fairness-eval-1 — Implement demographic parity evaluation script
 
 **AC1:** Given a JSON file of model predictions, when `evaluate_fairness.py --input <file>` runs, then it outputs `{ "groups": [{ "group": str, "dimension": str, "gap": float, "threshold": float, "pass": bool }] }` to stdout.
 

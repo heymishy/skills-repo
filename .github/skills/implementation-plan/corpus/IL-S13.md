@@ -23,7 +23,7 @@ DoR artefact:
 **H-C7 (RBNZ ordering):** PASS — `Promise.all` parallelisation is prohibited
 **Warnings:** W1 — `rbnzClient` and `austracClient` are existing modules; mock them in tests; do not modify them
 
-## Contract Proposal
+### Contract Proposal
 
 **What will be built:**
 
@@ -41,7 +41,7 @@ A screener module `src/aml/dual-aml-screener.js` exporting `screenCrossBorder(pa
 - Create: `src/aml/dual-aml-screener.js`
 - Create: `tests/aml/dual-aml-screener.test.js`
 
-## Coding Agent Instructions
+### Coding Agent Instructions
 
 **Branch:** `feature/payments.aml-screener-1`
 **Test command:** `npm test -- tests/aml/dual-aml-screener.test.js`
@@ -65,7 +65,7 @@ Definition artefact:
 **Feature:** 2026-09-01-trans-tasman-payments
 **Story slug:** payments.aml-screener-1
 
-## Story: payments.aml-screener-1 — Implement dual-AML screener for trans-Tasman payment channel
+### Story: payments.aml-screener-1 — Implement dual-AML screener for trans-Tasman payment channel
 
 **AC1:** Given `rbnzClient.screen()` returns `{ match: true }`, when `screenCrossBorder(payment)` is called, then it returns `{ blocked: true, blockedBy: 'RBNZ_SANCTIONED' }` and does NOT call `austracClient.screen()`.
 
