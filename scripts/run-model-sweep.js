@@ -732,6 +732,32 @@ function extractJudgeRubric(evalContent) {
   return rubric.length >= 500 ? `You are an expert evaluator. Use the following evaluation specification when scoring model responses:\n\n${rubric}` : null;
 }
 
+/**
+ * Extracts the first balanced JSON object from a string.
+ * Handles {…} inside string values and avoids the greedy-regex trap where
+ * trailing {…} tokens in judge commentary cause JSON.parse to receive a
+ * superset of the actual JSON object.
+ * Returns null if no complete object is found.
+ */
+function extractFirstJson(text) {
+  const start = text.indexOf('{');
+  if (start === -1) return null;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (escaped) { escaped = false; continue; }
+    if (ch === '\\' && inString) { escaped = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (!inString) {
+      if (ch === '{') depth++;
+      else if (ch === '}' && --depth === 0) return text.slice(start, i + 1);
+    }
+  }
+  return null;
+}
+
 // ─── Anthropic API call ─────────────────────────────────────────────────────
 
 // ─── Cost tracking ──────────────────────────────────────────────────────────
@@ -1005,10 +1031,10 @@ async function scoreBatchResults(resultLines, matrix, experimentDir, effectiveJu
         const judgeResult = await callModelWithRetry(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 4096, judgeRubric, judgeProvider);
         totalJudgeInputTokens += judgeResult.inputTokens;
         totalJudgeOutputTokens += judgeResult.outputTokens;
-        const jsonMatch = judgeResult.content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          scoreJson = JSON.parse(jsonMatch[0]);
-          scoreJson.model_label = modelId;
+        const jsonStr = extractFirstJson(judgeResult.content);
+        if (jsonStr) {
+          try { scoreJson = JSON.parse(jsonStr); scoreJson.model_label = modelId; }
+          catch (e) { console.warn(`  Warning: judge JSON parse error for ${custom_id}: ${e.message}`); }
         } else {
           console.warn(`  Warning: judge returned no JSON for ${custom_id}`);
         }
@@ -1070,19 +1096,22 @@ async function runBatchMode(args, matrix, contextFilesData, evalConfig, experime
           systemPrompt = buildContextSystemPrompt(contextFilesData, skillMdContent, args.pass2);
           userContent = operatorInput;
         } else if (evalConfig.mode) {
-          systemPrompt = [
+          // Load SKILL.md as system prompt — enables prompt caching across all trials since
+          // the system prompt is identical for every cell in the sweep (~6k tokens > 1024 min).
+          const skillMdPath = path.join(SKILLS_DIR, skill.skillName, 'SKILL.md');
+          systemPrompt = fs.existsSync(skillMdPath) ? fs.readFileSync(skillMdPath, 'utf8') : null;
+          const evalHeader = [
             'EVALUATION MODE ACTIVE. Run in non-interactive mode. Skip all confirmation prompts.',
             'Produce the complete artefact in a single pass. Apply all substantive skill logic.',
             'Append <!-- eval-mode: true --> as the final line of the artefact.',
-            `Write the eval result to ${evalOutputPath} on completion.`,
           ].join(' ');
-          userContent = `You are running the /${skill.skillName} pipeline skill. ${operatorInput}`;
+          userContent = `${evalHeader}\n\n${operatorInput}`;
         } else {
           userContent = `You are running the /${skill.skillName} pipeline skill. ${operatorInput}`;
         }
 
         const customId = [shortExperimentId(args.experiment), skill.skillName, corpusCase.caseId, modelToDashed(model), `trial${trial}`].join('__');
-        const params = buildAnthropicMessageBody(model, [{ role: 'user', content: userContent }], 4096, systemPrompt);
+        const params = buildAnthropicMessageBody(model, [{ role: 'user', content: userContent }], args.maxTokens, systemPrompt);
         allBatchRequests.push({ custom_id: customId, params });
       }
     }
@@ -1278,10 +1307,10 @@ async function runJudgeOnlyMode(args, evalConfig, experimentDir, effectiveProvid
         );
         totalJudgeInputTokens += judgeResult.inputTokens;
         totalJudgeOutputTokens += judgeResult.outputTokens;
-        const jsonMatch = judgeResult.content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          scoreJson = JSON.parse(jsonMatch[0]);
-          scoreJson.model_label = modelLabel;
+        const jsonStr = extractFirstJson(judgeResult.content);
+        if (jsonStr) {
+          try { scoreJson = JSON.parse(jsonStr); scoreJson.model_label = modelLabel; }
+          catch (e) { console.warn(`    Warning: judge JSON parse error for ${resultFile}: ${e.message}`); }
         } else {
           console.warn(`    Warning: judge returned no JSON for ${resultFile}`);
         }
@@ -1670,14 +1699,17 @@ async function main() {
             }
           }
         } else if (evalConfig.mode) {
-          // Standard eval mode: non-interactive prefix in system prompt
-          systemPrompt = [
+          // Load SKILL.md as system prompt — enables prompt caching across all trials since
+          // the system prompt is identical for every cell in the sweep (~6k tokens > 1024 min).
+          const skillMdPath = path.join(SKILLS_DIR, skill.skillName, 'SKILL.md');
+          systemPrompt = fs.existsSync(skillMdPath) ? fs.readFileSync(skillMdPath, 'utf8') : null;
+          const evalHeader = [
             'EVALUATION MODE ACTIVE. Run in non-interactive mode. Skip all confirmation prompts.',
             'Produce the complete artefact in a single pass. Apply all substantive skill logic.',
             'Append <!-- eval-mode: true --> as the final line of the artefact.',
             `Write the eval result to ${evalOutputPath} on completion.`,
           ].join(' ');
-          userContent = `You are running the /${skill.skillName} pipeline skill. ${operatorInput}`;
+          userContent = `${evalHeader}\n\n${operatorInput}`;
         } else {
           userContent = `You are running the /${skill.skillName} pipeline skill. ${operatorInput}`;
         }
@@ -1712,11 +1744,11 @@ async function main() {
           const judgeResult = await callModelWithRetry(effectiveJudgeModel, [{ role: 'user', content: judgePromptFilled }], 4096, judgeRubric, judgeProvider);
           totalInputTokens += judgeResult.inputTokens;
           totalOutputTokens += judgeResult.outputTokens;
-          // Parse JSON from judge output (strip any surrounding text)
-          const jsonMatch = judgeResult.content.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            scoreJson = JSON.parse(jsonMatch[0]);
-            scoreJson.model_label = model;
+          // Parse JSON from judge output (balanced-brace extraction avoids greedy-regex trap)
+          const jsonStr = extractFirstJson(judgeResult.content);
+          if (jsonStr) {
+            try { scoreJson = JSON.parse(jsonStr); scoreJson.model_label = model; }
+            catch (e) { console.warn(`  Warning: judge JSON parse error: ${e.message}`); }
           } else {
             console.warn(`  Warning: judge did not return valid JSON`);
           }
