@@ -1,0 +1,17 @@
+{
+  "case_id": "S13",
+  "model_label": "claude-opus-4-8",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.606,
+  "pass": false,
+  "compliant": true,
+  "notes": "Assumption quality is the standout strength — the model surfaces genuine high-risk uncertainties (AU licensing perimeter, intra-group agreement coverage, AML/CFT channel-specific risk) with risk-if-wrong; however, no named personas with cost/timing are provided, MVP scope is not bounded (no explicit deferrals named, NZ→AU only and $10k cap are mentioned but not structured as a bounded MVP), out-of-scope items lack the required enumeration with reasons, and success indicators lack baseline anchoring — together these gaps prevent a pass."
+}

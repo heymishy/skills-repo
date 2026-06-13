@@ -1,0 +1,17 @@
+{
+  "case_id": "S10",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.22,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — model produced a multi-section structured output (risk taxonomy, phased action plan, stakeholder questions) without first asking a clarifying question; additionally, no named personas, no bounded MVP with explicit deferrals, no out-of-scope section, no success indicators, and RBNZ BS11 30-business-day notification obligation is not surfaced as a hard constraint."
+}

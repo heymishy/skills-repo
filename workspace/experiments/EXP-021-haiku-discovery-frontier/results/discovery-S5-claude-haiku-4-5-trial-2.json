@@ -1,0 +1,17 @@
+{
+  "case_id": "S5",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.388,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — the response produces a multi-phase rollout framework and deliverable feature list (real-time transcription, agent review workflow, pilot, full rollout) without a bounded MVP that explicitly defers anything; the problem is framed as 'high potential value' for a feature rather than as a data quality gap with named costs and affected parties; no named personas with role/timing/cost; D3=0.0 categorical fail triggered."
+}

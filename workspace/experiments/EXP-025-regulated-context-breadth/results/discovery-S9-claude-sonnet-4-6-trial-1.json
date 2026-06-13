@@ -1,0 +1,17 @@
+{
+  "case_id": "S9",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 1,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 1,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 1
+  },
+  "weighted_score": 0.938,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptionally strong artefact that correctly frames the problem as a member experience and regulatory compliance gap, surfaces all material regulatory risks (FMA SEN, PDS amendment, fee scheme amendment, unit registry settlement), produces a tightly bounded MVP with explicit deferrals, and names six genuine uncertainties with risk-if-wrong consequences; minor deductions for D2 (hardship cohort members and compliance officer/board personas named in the spec are absent or only gestured at) and D6 (attrition and operations baselines are unknown, reducing two of five indicators to directional-only)."
+}

@@ -1,0 +1,17 @@
+{
+  "case_id": "S8",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.4,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — the response is a fully elaborated multi-phase implementation framework (Executive Summary, Opportunity Assessment, Critical Design Requirements, Compliance Risks, Recommended Approach, Phase 1–4 pipeline) produced without a single clarifying question directed at the operator, and frames the engagement as 'a go project' with a solution architecture rather than surfacing the underlying problem, missing personas, and making no explicit MVP bounding or out-of-scope declarations."
+}

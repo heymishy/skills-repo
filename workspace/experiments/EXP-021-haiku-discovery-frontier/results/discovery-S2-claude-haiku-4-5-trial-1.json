@@ -1,0 +1,17 @@
+{
+  "case_id": "S2",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.43,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response admirably surfaces real compliance risks (FMA bias finding, CCCFA gap, Centrix DSA scope) and references a baseline/target for decision time, but it functions as a risk advisory and phased delivery roadmap rather than a discovery artefact — the problem is partially solution-framed as a compliance remediation plan, no named personas with role/timing/cost are present, the MVP is a broad phase description rather than a bounded testable scope, and there is no explicit out-of-scope section with named items and reasons."
+}

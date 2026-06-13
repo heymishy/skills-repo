@@ -1,0 +1,17 @@
+{
+  "case_id": "S4",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.22,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — the model produced a large multi-section structured output (discovery roadmap, compliance questions, architecture tables, deliverable list) before directing any clarifying question at the operator, and failed to produce any of the required discovery artefact sections (personas, bounded MVP, out-of-scope items, success indicators), instead substituting a research agenda framework."
+}

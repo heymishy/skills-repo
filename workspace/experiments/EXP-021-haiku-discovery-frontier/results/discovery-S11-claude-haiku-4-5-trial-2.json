@@ -1,0 +1,17 @@
+{
+  "case_id": "S11",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.463,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is primarily a strategic advisory/risk analysis document rather than a discovery artefact — it lacks a structured problem statement naming affected parties with costs, has zero named personas, and frames the output as solution sequencing ('proceed with phased approach') rather than surfacing the underlying consent-boundary problem; MVP bounding is partially present (enriched insights deferred) but never formalised as a bounded scope statement with explicit deferrals."
+}

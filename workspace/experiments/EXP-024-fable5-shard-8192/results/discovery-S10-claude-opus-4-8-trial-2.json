@@ -1,0 +1,17 @@
+{
+  "case_id": "S10",
+  "model_label": "claude-opus-4-8",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.595,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response demonstrates exceptional assumption-surfacing and risk analysis (particularly on timeline math, calculation fidelity, and RBNZ BS11 notification), but fails to produce a structured discovery artefact with named personas, bounded MVP scope, explicit out-of-scope items, or anchored success indicators — functioning as a critical review/clarifying document rather than a completed discovery output."
+}

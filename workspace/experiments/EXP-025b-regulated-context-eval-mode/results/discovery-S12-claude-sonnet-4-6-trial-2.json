@@ -1,0 +1,17 @@
+{
+  "case_id": "S12",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.74,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong out-of-scope discipline and risk-flagging on MRM independence; however, the model substitutes CPG 220 (Australian APRA standard) for the NZ-specific FMA algorithmic fairness methodology and MRM 2023 policy constraints called for by the corpus, resulting in fabricated/misattributed regulatory constraints (D7) and missed FMA-prescribed fairness methodology assumptions (D5), while the problem framing is partially solution-oriented (governance/deployment framing) rather than purely cost-and-gap framing."
+}

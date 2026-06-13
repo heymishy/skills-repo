@@ -1,0 +1,17 @@
+{
+  "case_id": "S11",
+  "model_label": "claude-opus-4-8",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.7,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.622,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong assumption surfacing (especially on enriched insights consent scope, deletion enforceability, and accreditation dependency) but the output lacks named personas with cost/timing, omits a formal out-of-scope section with ≥2 named items and reasons, and provides no measurable success indicators with baseline anchoring."
+}

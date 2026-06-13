@@ -1,0 +1,17 @@
+{
+  "case_id": "S9",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.304,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — response is an advisory risk brief rather than a structured discovery artefact; no problem statement, no named personas, no bounded MVP, no success indicators, and D3=0.0 because scope is never defined (only risks and recommended actions enumerated across multiple sections)."
+}

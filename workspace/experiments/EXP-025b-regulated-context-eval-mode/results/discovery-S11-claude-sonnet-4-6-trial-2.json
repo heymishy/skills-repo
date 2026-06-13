@@ -1,0 +1,17 @@
+{
+  "case_id": "S11",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 1,
+    "d2_persona_specificity": 1,
+    "d3_mvp_bounding": 1,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 1,
+    "d7_constraint_completeness": 1
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptional artefact: problem framed as a genuine data portability and consent integrity gap with named affected parties; four specific personas with role, timing, and cost; MVP tightly bounded to raw data types with enriched insights explicitly deferred under a hard regulatory rationale (CPG 220); six named out-of-scope items with reasons; eight genuine uncertainties flagged with risk-if-wrong; five success indicators anchored to baselines and targets; constraints sourced from NZ regulatory frameworks and product context with no fabrication."
+}

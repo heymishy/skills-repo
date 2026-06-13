@@ -1,0 +1,112 @@
+{
+  "batchId": "msgbatch_01WKsc1XsCsm6dFZJzyhcqgQ",
+  "submittedAt": "2026-06-13T07:30:43.968Z",
+  "experimentId": "EXP-024-fable5-shard-8192",
+  "cellCount": 8,
+  "requests": [
+    {
+      "custom_id": "EXP-024__discovery__S10__claude-opus-4-8__trial1",
+      "params": {
+        "model": "claude-opus-4-8",
+        "max_tokens": 8192,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. /discovery — We are decommissioning the enterprise's legacy loan ledger system, which has been in production for 18 years. Approximately 280,000 active loan accounts — personal loans, home loans, and commercial lending — are currently managed by this system. We have been running a new core banking platform for deposit accounts for 14 months and it is working well. We want to migrate all loan accounts to the same platform so we can retire the legacy system and operate a single core.\r\n\nThe legacy system vendor has confirmed that their support contract ends in 12 months. After that date, the system receives no patches, no security updates, and no vendor support. Extending the contract is not an option — the vendor is withdrawing the product from the market. The 12-month window is our hard cutover deadline.\r\n\nOur migration plan calls for a 6-month parallel operation period. During this period both systems will run simultaneously: new loan originations go onto the new platform from day one, while existing accounts run on the legacy system in shadow mode with all transactions mirrored to the new platform. At the 6-month mark we will validate data integrity, run a reconciliation pass, and if the results are satisfactory, cut over remaining legacy accounts in a staged weekend migration. We have 6 months from cutover to decommission and formally retire the legacy infrastructure.\r\n\nData integrity is the primary technical risk. We must migrate all 280,000 loan records with full history — original loan terms, drawdown history, repayment schedules, arrears status, and any associated security registrations. No loan record can be lost or corrupted in migration. Our legal team has confirmed that credit contract records must be retained for 7 years under applicable consumer finance legislation, so even records for closed loans that were migrated need to be preserved.\r\n\nWe will need to ensure the new platform produces all RBNZ regulatory reports that the legacy system currently generates. The format and field definitions of these reports are prescribed. Our RBNZ relationship team will need to be involved in confirming the reports produced by the new platform meet RBNZ requirements.\r\n\nThe project will be run in-house with the new platform vendor providing a migration toolset. We anticipate the project team will be six engineers, one data architect, and a project manager."
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-024__discovery__S10__claude-opus-4-8__trial2",
+      "params": {
+        "model": "claude-opus-4-8",
+        "max_tokens": 8192,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. /discovery — We are decommissioning the enterprise's legacy loan ledger system, which has been in production for 18 years. Approximately 280,000 active loan accounts — personal loans, home loans, and commercial lending — are currently managed by this system. We have been running a new core banking platform for deposit accounts for 14 months and it is working well. We want to migrate all loan accounts to the same platform so we can retire the legacy system and operate a single core.\r\n\nThe legacy system vendor has confirmed that their support contract ends in 12 months. After that date, the system receives no patches, no security updates, and no vendor support. Extending the contract is not an option — the vendor is withdrawing the product from the market. The 12-month window is our hard cutover deadline.\r\n\nOur migration plan calls for a 6-month parallel operation period. During this period both systems will run simultaneously: new loan originations go onto the new platform from day one, while existing accounts run on the legacy system in shadow mode with all transactions mirrored to the new platform. At the 6-month mark we will validate data integrity, run a reconciliation pass, and if the results are satisfactory, cut over remaining legacy accounts in a staged weekend migration. We have 6 months from cutover to decommission and formally retire the legacy infrastructure.\r\n\nData integrity is the primary technical risk. We must migrate all 280,000 loan records with full history — original loan terms, drawdown history, repayment schedules, arrears status, and any associated security registrations. No loan record can be lost or corrupted in migration. Our legal team has confirmed that credit contract records must be retained for 7 years under applicable consumer finance legislation, so even records for closed loans that were migrated need to be preserved.\r\n\nWe will need to ensure the new platform produces all RBNZ regulatory reports that the legacy system currently generates. The format and field definitions of these reports are prescribed. Our RBNZ relationship team will need to be involved in confirming the reports produced by the new platform meet RBNZ requirements.\r\n\nThe project will be run in-house with the new platform vendor providing a migration toolset. We anticipate the project team will be six engineers, one data architect, and a project manager."
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-024__discovery__S11__claude-opus-4-8__trial1",
+      "params": {
+        "model": "claude-opus-4-8",
+        "max_tokens": 8192,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. /discovery — We want to build a consent management API that allows accredited third parties to access customer financial data. This is part of the enterprise's open banking programme. The aim is to give customers meaningful control over their data while enabling fintechs, comparison services, and financial aggregators to build on top of our data with customer permission.\r\n\nThe API will expose the following data types that customers can consent to share: transaction history (up to 12 months), current account balances and available credit, credit card summaries (statement balances, payment due dates, utilisation), and enriched insights — which are spending category breakdowns, estimated monthly income, and a 90-day projected balance. These enriched insights are generated by the enterprise's internal analytics engine and are not raw data from our core banking system. We believe they provide significantly more value to third parties than raw transactions alone, and we are keen to include them in the launch scope.\r\n\nCustomers will consent to data sharing through the member portal. Consent will be granular: customers can select which data types to share and with which accredited third party. Consent grants are time-limited — up to 12 months — and customers can revoke consent at any time. On revocation, the third party must delete all data received under that consent.\r\n\nThird parties must be accredited by a designated accreditation authority before receiving any data. We will validate accreditation status on each API call — not just at onboarding. Third parties who lose accreditation will be blocked from new data access immediately.\r\n\nWe take our Privacy Act obligations seriously. Customer data will only be shared with a third party if the customer has granted explicit consent for that data type and that third party. We will not share more data than was consented. Our privacy team has reviewed the overall consent model and is comfortable with the approach.\r\n\nWe want to launch the API to an initial cohort of 10 accredited partners within 6 months, with the enriched insights tier available from day one of launch."
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-024__discovery__S11__claude-opus-4-8__trial2",
+      "params": {
+        "model": "claude-opus-4-8",
+        "max_tokens": 8192,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. /discovery — We want to build a consent management API that allows accredited third parties to access customer financial data. This is part of the enterprise's open banking programme. The aim is to give customers meaningful control over their data while enabling fintechs, comparison services, and financial aggregators to build on top of our data with customer permission.\r\n\nThe API will expose the following data types that customers can consent to share: transaction history (up to 12 months), current account balances and available credit, credit card summaries (statement balances, payment due dates, utilisation), and enriched insights — which are spending category breakdowns, estimated monthly income, and a 90-day projected balance. These enriched insights are generated by the enterprise's internal analytics engine and are not raw data from our core banking system. We believe they provide significantly more value to third parties than raw transactions alone, and we are keen to include them in the launch scope.\r\n\nCustomers will consent to data sharing through the member portal. Consent will be granular: customers can select which data types to share and with which accredited third party. Consent grants are time-limited — up to 12 months — and customers can revoke consent at any time. On revocation, the third party must delete all data received under that consent.\r\n\nThird parties must be accredited by a designated accreditation authority before receiving any data. We will validate accreditation status on each API call — not just at onboarding. Third parties who lose accreditation will be blocked from new data access immediately.\r\n\nWe take our Privacy Act obligations seriously. Customer data will only be shared with a third party if the customer has granted explicit consent for that data type and that third party. We will not share more data than was consented. Our privacy team has reviewed the overall consent model and is comfortable with the approach.\r\n\nWe want to launch the API to an initial cohort of 10 accredited partners within 6 months, with the enriched insights tier available from day one of launch."
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-024__discovery__S12__claude-opus-4-8__trial1",
+      "params": {
+        "model": "claude-opus-4-8",
+        "max_tokens": 8192,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. /discovery — Our credit risk team wants to retrain the model we use for automatic credit limit increase recommendations on existing the enterprise credit card accounts. The model was built approximately two years ago. It analyses a customer's transaction behaviour, repayment history, and utilisation patterns and generates a recommendation for whether to offer the customer a credit limit increase, and if so, by how much.\r\n\nModel performance has drifted since training. The Gini coefficient has declined from 0.71 at deployment to 0.63 on a recent holdout evaluation, which the credit team attributes to post-COVID changes in spending and repayment behaviour. Retraining on a fresh 24-month transaction window is expected to restore performance to approximately 0.71 or better, based on offline evaluation.\r\n\nWe have completed a demographic disparity assessment on the retrained model before bringing this to discovery. The retrained model shows no regression relative to the current production model on our standard internal disparity metric — approval rate differences across demographic groups are within the same range as the current model. We are satisfied that the fairness profile is comparable.\r\n\nOur internal model governance process requires a Model Risk Management (MRM) committee review before any model change goes to production. The MRM committee meets bi-monthly. We plan to submit the retrained model to the next MRM committee slot, which is approximately 8 weeks away. The committee review typically takes one meeting cycle. We anticipate no issues — we have put models through this process three times in the past two years.\r\n\nNo regulatory approval is anticipated. This is a model update, not a new product. The credit limit recommendation capability exists today; we are improving the model that powers it. We are not changing the decision thresholds or the lending product terms.\r\n\nWe would like to have the retrained model in production within 12 weeks. The retraining and offline evaluation work is complete. Remaining steps are the MRM review, a brief integration test in staging, and deployment."
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-024__discovery__S12__claude-opus-4-8__trial2",
+      "params": {
+        "model": "claude-opus-4-8",
+        "max_tokens": 8192,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. /discovery — Our credit risk team wants to retrain the model we use for automatic credit limit increase recommendations on existing the enterprise credit card accounts. The model was built approximately two years ago. It analyses a customer's transaction behaviour, repayment history, and utilisation patterns and generates a recommendation for whether to offer the customer a credit limit increase, and if so, by how much.\r\n\nModel performance has drifted since training. The Gini coefficient has declined from 0.71 at deployment to 0.63 on a recent holdout evaluation, which the credit team attributes to post-COVID changes in spending and repayment behaviour. Retraining on a fresh 24-month transaction window is expected to restore performance to approximately 0.71 or better, based on offline evaluation.\r\n\nWe have completed a demographic disparity assessment on the retrained model before bringing this to discovery. The retrained model shows no regression relative to the current production model on our standard internal disparity metric — approval rate differences across demographic groups are within the same range as the current model. We are satisfied that the fairness profile is comparable.\r\n\nOur internal model governance process requires a Model Risk Management (MRM) committee review before any model change goes to production. The MRM committee meets bi-monthly. We plan to submit the retrained model to the next MRM committee slot, which is approximately 8 weeks away. The committee review typically takes one meeting cycle. We anticipate no issues — we have put models through this process three times in the past two years.\r\n\nNo regulatory approval is anticipated. This is a model update, not a new product. The credit limit recommendation capability exists today; we are improving the model that powers it. We are not changing the decision thresholds or the lending product terms.\r\n\nWe would like to have the retrained model in production within 12 weeks. The retraining and offline evaluation work is complete. Remaining steps are the MRM review, a brief integration test in staging, and deployment."
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-024__discovery__S13__claude-opus-4-8__trial1",
+      "params": {
+        "model": "claude-opus-4-8",
+        "max_tokens": 8192,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. /discovery — We want to build a trans-Tasman payment feature for the enterprise retail customers that allows them to send money to any Australian bank account quickly and cheaply. This is a competitive gap we feel keenly: most of our customers with family or business connections in Australia are using TransferWise (Wise) or third-party remittance services because our current SWIFT-based international payment takes 1–2 business days and costs $18–25 per transaction. We lose approximately NZD $4.2M in annual payment revenue to these alternative services.\r\n\nThe mechanism we want to use is a proprietary internal routing channel between the enterprise and the enterprise's Australian counterpart. We have a close relationship with our Australian counterpart — shared group infrastructure and a reciprocal payment routing agreement already in place for internal treasury flows. Using this channel, a NZ customer's payment instruction would be processed at the NZ end and settled via the enterprise group treasury books, with the enterprise's Australian counterpart crediting the Australian recipient's account on the AU end. Net positions between the enterprise and the enterprise's Australian counterpart would be settled at end of day in the treasury books. The customer-facing experience would show settlement within 2 hours.\r\n\nTarget pricing is under $5 per transaction for payments up to $10,000. Above $10,000 payments would go through the standard SWIFT channel with existing pricing.\r\n\nWe are aware that international payments carry AML/CFT obligations. Our current SWIFT-based international payment flow already includes sanctions screening and RBNZ AML/CFT threshold reporting. We plan to extend the same AML/CFT screening logic to the new channel. Our compliance team is comfortable that the existing AML/CFT process covers the requirements.\r\n\nWe anticipate some regulatory notifications will be required before launch — we are used to this. Our regulatory team will manage the standard notifications process. We see this as a 6-month build, with a pilot to a small cohort of customers before full rollout.\r\n\nThe feature would initially be available for NZ-to-Australia payments only (not the reverse direction). We would expand to AU-to-NZ in a future phase if the pilot performs well."
+          }
+        ]
+      }
+    },
+    {
+      "custom_id": "EXP-024__discovery__S13__claude-opus-4-8__trial2",
+      "params": {
+        "model": "claude-opus-4-8",
+        "max_tokens": 8192,
+        "messages": [
+          {
+            "role": "user",
+            "content": "You are running the /discovery pipeline skill. /discovery — We want to build a trans-Tasman payment feature for the enterprise retail customers that allows them to send money to any Australian bank account quickly and cheaply. This is a competitive gap we feel keenly: most of our customers with family or business connections in Australia are using TransferWise (Wise) or third-party remittance services because our current SWIFT-based international payment takes 1–2 business days and costs $18–25 per transaction. We lose approximately NZD $4.2M in annual payment revenue to these alternative services.\r\n\nThe mechanism we want to use is a proprietary internal routing channel between the enterprise and the enterprise's Australian counterpart. We have a close relationship with our Australian counterpart — shared group infrastructure and a reciprocal payment routing agreement already in place for internal treasury flows. Using this channel, a NZ customer's payment instruction would be processed at the NZ end and settled via the enterprise group treasury books, with the enterprise's Australian counterpart crediting the Australian recipient's account on the AU end. Net positions between the enterprise and the enterprise's Australian counterpart would be settled at end of day in the treasury books. The customer-facing experience would show settlement within 2 hours.\r\n\nTarget pricing is under $5 per transaction for payments up to $10,000. Above $10,000 payments would go through the standard SWIFT channel with existing pricing.\r\n\nWe are aware that international payments carry AML/CFT obligations. Our current SWIFT-based international payment flow already includes sanctions screening and RBNZ AML/CFT threshold reporting. We plan to extend the same AML/CFT screening logic to the new channel. Our compliance team is comfortable that the existing AML/CFT process covers the requirements.\r\n\nWe anticipate some regulatory notifications will be required before launch — we are used to this. Our regulatory team will manage the standard notifications process. We see this as a 6-month build, with a pilot to a small cohort of customers before full rollout.\r\n\nThe feature would initially be available for NZ-to-Australia payments only (not the reverse direction). We would expand to AU-to-NZ in a future phase if the pilot performs well."
+          }
+        ]
+      }
+    }
+  ]
+}

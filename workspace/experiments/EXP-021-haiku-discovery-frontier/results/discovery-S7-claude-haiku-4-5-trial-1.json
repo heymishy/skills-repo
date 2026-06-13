@@ -1,0 +1,17 @@
+{
+  "case_id": "S7",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.4,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — the response is a 10-section structured pipeline (Discovery Findings, Technical Architecture, Data Model, MVP Breakdown, Risks, Compliance, Effort/Cost, Success Metrics, Next Steps, Alternatives) produced without any clarifying question directed at the operator, constituting a categorical multi-section fabrication before clarification; additionally the output frames the engagement as a technical architecture and build specification rather than a discovery artefact, with no problem statement, generic 'Users: Customers + Staff' personas lacking role/timing/cost context, an unbounded MVP that includes Phase 1 and Phase 2 feature lists, out-of-scope items absent or implicit only, assumptions presented as a question table rather than genuine uncertainties with risk-if-wrong, success metrics lacking baseline anchors, and constraints missing the Privacy Act 2020 data retention gap and explicit Azure data residency region specification."
+}

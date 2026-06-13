@@ -1,0 +1,17 @@
+{
+  "case_id": "S13",
+  "model_label": "claude-opus-4-8",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0.4,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.617,
+  "pass": false,
+  "compliant": true,
+  "notes": "Assumption quality is exceptional — genuinely surfacing dual-regulator risk, travel-rule data flow, and correspondent bank notification as fragile unknowns — but the response lacks named personas with cost/timing context, produces no bounded MVP with explicit deferrals, and names no out-of-scope items with reasons, leaving the artefact structurally incomplete despite strong analytical depth."
+}

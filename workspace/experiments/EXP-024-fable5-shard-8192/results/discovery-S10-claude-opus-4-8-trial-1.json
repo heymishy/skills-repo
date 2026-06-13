@@ -1,0 +1,17 @@
+{
+  "case_id": "S10",
+  "model_label": "claude-opus-4-8",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.489,
+  "pass": false,
+  "compliant": true,
+  "notes": "Strong assumption quality and constraint surfacing (especially mirroring feasibility, RBNZ engagement timing, data profiling gap), but the response defers all artefact sections — MVP, personas, out-of-scope, success indicators — to a second turn, producing a challenge/questioning structure rather than a discovery artefact, resulting in near-zero scores on bounding, scope discipline, and observability dimensions."
+}

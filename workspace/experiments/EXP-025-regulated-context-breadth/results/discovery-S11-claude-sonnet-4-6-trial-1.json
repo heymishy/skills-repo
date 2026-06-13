@@ -1,0 +1,17 @@
+{
+  "case_id": "S11",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — the model held the artefact but produced a multi-section structured framework (numbered regulatory questions, enumerated constraints list, phased reasoning structure) before asking its clarifying question, constituting fabrication-without-clarification; no discovery artefact sections were scored as the gate was not cleanly passed."
+}

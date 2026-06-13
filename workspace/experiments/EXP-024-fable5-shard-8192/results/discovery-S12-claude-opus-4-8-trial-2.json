@@ -1,0 +1,17 @@
+{
+  "case_id": "S12",
+  "model_label": "claude-opus-4-8",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.7,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is an incisive critical review of the brief's weak claims (fairness baseline, regulatory determination) and surfaces genuine assumptions and risks, but it is not a discovery artefact: no personas are named, no MVP scope is defined or bounded, no out-of-scope items are listed with reasons, and constraints are referenced only obliquely — making it structurally non-compliant with discovery output requirements despite its analytical quality."
+}

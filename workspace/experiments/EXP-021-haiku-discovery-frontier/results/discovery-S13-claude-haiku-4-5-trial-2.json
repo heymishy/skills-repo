@@ -1,0 +1,17 @@
+{
+  "case_id": "S13",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.4
+  },
+  "weighted_score": 0.4,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response is structured as an advisory checklist of open questions and action items rather than a formal discovery artefact — it partially surfaces assumptions and regulatory gaps (D5 strength) but lacks a bounded problem statement, named personas with cost/timing, a scoped MVP with explicit deferrals, an out-of-scope section, and critically misses the SWIFT correspondent bank agreement (C5) as a hard constraint, making it incomplete across nearly all structured dimensions."
+}

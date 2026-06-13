@@ -1,0 +1,17 @@
+{
+  "case_id": "S12",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 1,
+    "d2_persona_specificity": 0.9,
+    "d3_mvp_bounding": 0.85,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.85,
+    "d7_constraint_completeness": 1
+  },
+  "weighted_score": 0.955,
+  "pass": true,
+  "compliant": true,
+  "notes": "Exceptional regulatory depth — surfaces CPG 220 independence gap, CCCFA audit trail continuity, and FMA fairness methodology limitations as genuine unconfirmed uncertainties with risk-if-wrong articulated; minor gap is the FMA prescribed methodology (vs internal disparity metric) and SHAP explainability standard are not flagged as strongly as the corpus expects."
+}

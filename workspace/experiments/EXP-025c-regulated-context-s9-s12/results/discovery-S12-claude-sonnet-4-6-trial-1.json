@@ -1,0 +1,17 @@
+{
+  "case_id": "S12",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.85,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.55,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.737,
+  "pass": true,
+  "compliant": true,
+  "notes": "Strong regulatory surface work (CPG 220, CCCFA, BS11) and disciplined out-of-scope section, but MVP scope partially fails by deferring the FMA prescribed fairness methodology confirmation and independent validation requirement (2023 MRM policy) rather than naming them as required in-scope items, and assumptions section flags CPG 220 CRO path but misses the FMA plain-language explainability standard and the 2023 MRM policy independent validation gap as distinct critical uncertainties."
+}

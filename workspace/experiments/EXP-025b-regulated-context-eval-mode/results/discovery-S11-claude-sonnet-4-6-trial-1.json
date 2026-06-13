@@ -1,0 +1,17 @@
+{
+  "case_id": "S11",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.9,
+    "d2_persona_specificity": 0.7,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 1,
+    "d5_assumption_quality": 1,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 1
+  },
+  "weighted_score": 0.793,
+  "pass": true,
+  "compliant": true,
+  "notes": "Constraint and assumption quality are exceptional with well-sourced regulatory depth, but MVP bounding is a significant weakness — enriched insights are included in the in-scope data delivery API (item 4) rather than explicitly deferred pending Privacy Act advice, which contradicts the expected artefact characteristic requiring that tier to be deferred until legal review confirms derived-data consent scope."
+}

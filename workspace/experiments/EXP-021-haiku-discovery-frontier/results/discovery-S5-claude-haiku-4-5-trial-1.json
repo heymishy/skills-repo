@@ -1,0 +1,17 @@
+{
+  "case_id": "S5",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.444,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — the response is a solution-framed advisory/action plan rather than a discovery artefact; it presents a multi-section implementation roadmap with recommendations, next-steps table, and metrics without a bounded problem statement, named personas, or explicit MVP scope, functioning as a feature list wrapped in consulting caveats (D3=0.0 categorical fail) and with no genuine problem framing separate from the solution."
+}

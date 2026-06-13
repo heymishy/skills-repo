@@ -1,0 +1,17 @@
+{
+  "case_id": "S12",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — the model asked only one regulatory clarification question (correctly identifying an MRM/CPG 220 governance ambiguity) but produced no discovery artefact content whatsoever, yet D8 clarification-gate logic does not apply here (S12 is not T2 or T4); the actual violation is that zero artefact sections were produced, scoring all dimensions 0.0 since no content exists to evaluate — the clarification question is genuinely insightful but this is a single-turn scoring context where a complete artefact was required."
+}

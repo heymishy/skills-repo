@@ -1,0 +1,17 @@
+{
+  "case_id": "S12",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.308,
+  "pass": false,
+  "compliant": true,
+  "notes": "The model correctly identifies the CPG 220 independent validation gap and asks a sharp clarifying question before producing the artefact, but because it defers the full artefact pending reply, D2 (no personas), D3 (no MVP), and D4 (no out-of-scope items) are unscored or near-zero, collapsing the weighted total well below the 0.70 threshold — this is a gate-1 response that scores well on process discipline but cannot be evaluated as a complete discovery artefact."
+}

@@ -1,0 +1,13 @@
+{
+  "generationBatchId": "msgbatch_01DZvUFwAdjCvLwc4GvyKjac",
+  "judgeModel": "claude-sonnet-4-6",
+  "completedAt": "2026-06-13T06:50:35.088Z",
+  "totalCells": 6,
+  "succeeded": 6,
+  "errored": 0,
+  "expired": 0,
+  "estimatedCostUsd": 0.316,
+  "judgeInputTokens": 30061,
+  "judgeOutputTokens": 2809,
+  "judgeOnlyRescoredAt": "2026-06-13T07:35:28.201Z"
+}

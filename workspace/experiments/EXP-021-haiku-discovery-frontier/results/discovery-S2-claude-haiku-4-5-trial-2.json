@@ -1,0 +1,17 @@
+{
+  "case_id": "S2",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.7,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0.4,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.7,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.502,
+  "pass": false,
+  "compliant": true,
+  "notes": "Response correctly identifies and prioritises the three material compliance risks (FMA bias disclosure, CCCFA s60 digital gap, threshold logic) and surfaces genuine uncertainties, but fails to produce a structured discovery artefact: no named personas with cost/timing, no bounded MVP with explicit deferrals, no out-of-scope section, and success indicators lack baseline anchoring — the output reads as a risk advisory memo rather than a discovery document."
+}

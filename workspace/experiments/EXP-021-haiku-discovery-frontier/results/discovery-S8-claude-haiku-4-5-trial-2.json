@@ -1,0 +1,17 @@
+{
+  "case_id": "S8",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0.4,
+    "d2_persona_specificity": 0.4,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0.4,
+    "d6_success_observability": 0.7,
+    "d7_constraint_completeness": 0.7
+  },
+  "weighted_score": 0.329,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: feature_list_produced — the response is primarily a full-stack solution design (8-phase build roadmap, technical architecture, normalisation registry schema) rather than a bounded discovery artefact; D3=0.0 because the 'MVP' is an unbounded multi-phase delivery of the complete pipeline with no capability explicitly deferred, and the output as a whole functions as a feature list wrapped in enterprise framing."
+}

@@ -1,0 +1,17 @@
+{
+  "case_id": "S12",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_problem_framing": 0,
+    "d2_persona_specificity": 0,
+    "d3_mvp_bounding": 0,
+    "d4_out_of_scope_discipline": 0,
+    "d5_assumption_quality": 0,
+    "d6_success_observability": 0.4,
+    "d7_constraint_completeness": 0
+  },
+  "weighted_score": 0.032,
+  "pass": false,
+  "compliant": false,
+  "notes": "process_violation: no_clarifying_question — the model produced a multi-section structured implementation advisory (Strengths, Pre-Submission Questions, MRM Submission checklist, Risk Level) that treats the proposal as sound and low-risk, entirely bypassing discovery: there is no problem statement, no personas, no MVP bounding, no out-of-scope items, no genuine assumptions (only pre-submission operational questions), and critically no mention of the FMA prescribed fairness methodology gap, CCCFA obligations, or 2023 MRM independent validation requirement — the most consequential regulatory risks in the input."
+}
