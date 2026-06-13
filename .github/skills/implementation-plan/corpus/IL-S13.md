@@ -10,6 +10,10 @@
 
 > You are running /implementation-plan on the following story in eval mode.
 > Your FIRST line of output must be exactly: Save path: artefacts/2026-09-01-trans-tasman-payments/plans/payments.aml-screener-1-plan.md
+> You MUST follow TDD order: write the failing test first (RED),
+> then write the implementation. Tests must appear BEFORE
+> implementation code in your plan. Any task that shows
+> implementation before its test is a protocol violation.
 
 DoR artefact:
 

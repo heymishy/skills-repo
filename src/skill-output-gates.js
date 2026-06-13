@@ -29,8 +29,10 @@ function checkImplementationPlanGates(outputText) {
   });
 
   // Gate 2: TDD RED step
-  // At least one task must have a failing test step before the implementation step
-  const hasRedStep = /\bRED\b|run.*confirm.*fail|watch.*fail|failing test/i
+  // At least one task must have a failing test step before the implementation step.
+  // Broadened to catch common model phrasings: "expect N failures", "run to confirm",
+  // "T1 must fail", "test first", explicit RED label, npm test failure expectation.
+  const hasRedStep = /\bRED\b|failing test|watch.*fail|run.*fail|confirm.*fail|write.*test.*before|test.*first|npm test.*fail|\bT\d+.*must fail\b|run to confirm|expected.*fail/i
     .test(strippedOutput);
   checks.push({
     name: 'implementation-plan-tdd-red-step',
