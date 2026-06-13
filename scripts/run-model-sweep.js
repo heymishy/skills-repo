@@ -203,7 +203,6 @@ function getProvider(modelId, providerOverride) {
           'Content-Length': Buffer.byteLength(body),
           'x-api-key': apiKey,
           'anthropic-version': ANTHROPIC_API_VERSION,
-          'anthropic-beta': 'prompt-caching-2024-07-31',
         };
       },
       buildBody(model, messages, maxTokens, systemPrompt) {
@@ -896,7 +895,6 @@ function anthropicRequest(method, urlPath, bodyStr) {
     const headers = {
       'x-api-key': apiKey,
       'anthropic-version': ANTHROPIC_API_VERSION,
-      'anthropic-beta': 'prompt-caching-2024-07-31',
       'Content-Type': 'application/json',
     };
     if (bodyStr) headers['Content-Length'] = Buffer.byteLength(bodyStr);
