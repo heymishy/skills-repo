@@ -273,6 +273,57 @@ This is a manual mitigation for the T5 gap. It is not a permanent fix — it is 
 
 ---
 
+## Inner loop skill routing
+
+**Status:** PROVISIONAL — no calibration experiments completed. EXP-036 and EXP-037 will establish measurement-backed routing. All inner loop skills are currently provisionally routed at Sonnet 4.6.
+
+### Inner loop routing table (provisional)
+
+| Skill | Current model | Evidence basis | measurement_backed | Review trigger |
+|-------|--------------|----------------|--------------------|----------------|
+| /implementation-plan (LOW difficulty — T-series) | claude-sonnet-4-6 | Provisional — EXP-036 pending | false — EXP-036 will establish baseline | EXP-037 (Haiku frontier) |
+| /implementation-plan (MEDIUM difficulty — S3-class) | claude-sonnet-4-6 | Provisional — EXP-036 pending | false — EXP-036 will establish baseline | EXP-037 |
+| /implementation-plan (HIGH difficulty — regulated, S12/S13-class) | claude-sonnet-4-6 | Provisional — regulated constraint; HIGH difficulty requires IP2 and IP5 discipline; Haiku risk unquantified | false — EXP-036 + EXP-037 pending | EXP-037 (Haiku HIGH cases expected to fail IP2) |
+| /verify-completion (all difficulties) | claude-sonnet-4-6 | Provisional — EXP-038 pending. Iron Law requirement (VG1–VG5 gates) suggests gate-skilled model needed | false — EXP-038 will establish VG gate pass rate | EXP-038 (gate fidelity) |
+| /subagent-execution (task execution) | Per-task routing (see subagent-execution SKILL.md) | Defined in subagent-execution SKILL.md: fast/cheap for mechanical, standard for integration, most capable for review/architecture | N/A — not a single-model routing decision | SKILL.md update when inner loop eval results available |
+
+**EXP-036 routing trigger:** If Sonnet 4.6 achieves ≥ 0.85 on LOW cases (IL-T1/T3) and ≥ 0.75 on MEDIUM cases (IL-S3/S5) in EXP-036, Haiku frontier testing (EXP-037) is confirmed as the next step. If Sonnet fails LOW cases (< 0.75), the inner loop requires prompt engineering before any model routing decision.
+
+**EXP-037 routing trigger:** If Haiku achieves ≥ 0.75 on LOW cases with no IP2=0.0 instances, Haiku routing for LOW difficulty /implementation-plan will be approved with measurement backing. HIGH cases: Haiku approval requires 100% pass rate (no partial credit for regulated stories).
+
+---
+
+### Constraint propagation chain table
+
+The inner loop constraint propagation chain runs from Discovery constraint → Implementation plan → Verify-completion → DoD. A constraint that drops at any link invalidates the downstream quality signal.
+
+| Chain link | Skill | State field / output | Drop-point risk | Mitigation |
+|-----------|-------|----------------------|-----------------|-----------|
+| 1 | /discovery → /definition | Constraint named in discovery artefact (assumption or out-of-scope flag) | Constraint not named as an AC or NFR at /definition | Step 4a regulated constraint check in /definition SKILL.md (verified EXP-003 Config C run 3) |
+| 2 | /definition → /definition-of-ready | Architecture Constraint C* named in story | Constraint in definition not elevated to H-NFR* or H-GOV in DoR | H-GOV and H-NFR* hard blocks in DoR SKILL.md |
+| 3 | /definition-of-ready → /implementation-plan | Architecture Constraint C* + Contract Proposal "What will NOT be built" | Model fabricates out-of-scope scope (IP2 categorical fail) | IP2 dimension + categorical fail rule in eval rubric |
+| 4 | /implementation-plan → /subagent-execution | Compiled-in constant constraint (e.g. C4 REDACT_AFTER_DAYS, C6 FAIRNESS_THRESHOLD_PCT, C7 sequential ordering) | Model makes constant configurable or parallelises sequential operation | IP5 dimension + NFR inheritance fail rule in eval rubric |
+| 5 | /subagent-execution → /verify-completion | AC verification script scenarios; test run evidence | Model claims PASSED without citing specific test evidence (VG4 gate failure) | VG1–VG5 binary gates; Iron Law in SKILL.md |
+| 6 | /verify-completion → /definition-of-done | verifyStatus="passed"; acVerified count; testPlan.passing | DoD fabricates governance gate not in AC verification results | DoD D2 out-of-scope gate; EXP-016 fabricated_governance_gate check |
+
+**Primary risk link:** Chain link 3 (implementation-plan IP2) is the highest consequence drop-point. A plan with fabricated scope causes cascading test failures in subagent-execution that are expensive to detect and fix. IP2=0.0 at EXP-036 for HIGH cases would be a blocking finding.
+
+**Secondary risk link:** Chain link 5 (verify-completion VG4) is the pipeline integrity gate. EXP-038 will quantify the VG4 pass rate. If VG4 fails more than 5% of trials, the Iron Law implementation in /verify-completion SKILL.md requires strengthening.
+
+---
+
+### Inner loop integrated experiment sequencing note
+
+EXP-036 through EXP-040 are sequenced by dependency. The earliest runnable experiments are EXP-036 and EXP-037 (both require only corpus bundles and eval rubric — both now available). EXP-038 depends on EXP-036 completion for plan outputs to use as verify-completion inputs. EXP-039 and EXP-040 depend on EXP-036 and EXP-038.
+
+Proposed run order:
+1. EXP-036 + EXP-037 in parallel (independent model sets)
+2. EXP-038 (after EXP-036 Phase A complete — needs plan outputs)
+3. EXP-039 (after EXP-036 + EXP-038)
+4. EXP-040 (after EXP-039 — uses learnings from E2E to design adversarial prompts)
+
+---
+
 ## token-optimization SKILL.md update gate
 
 Changes to the model routing guidance in `.github/skills/token-optimization/SKILL.md` are governed by:
