@@ -16,6 +16,21 @@ meta:
   regulator_primary: RBNZ
   regulator_secondary: FMA
 
+# ─── Eval mode directive ──────────────────────────────────────────────────────
+#
+# When this context file is injected during a programmatic eval run, the model
+# must produce a complete single-turn artefact. Clarifying questions cannot be
+# answered in batch or automated eval mode — surface ambiguities as labelled
+# assumptions in the artefact instead of holding for operator clarification.
+#
+# This directive is read by the model as part of the injected system context.
+# It does not affect interactive (REPL/chat) sessions where the operator is
+# present and clarification is available.
+
+eval_mode:
+  single_turn: true
+  clarification_behaviour: surface_as_assumptions
+
 # ─── NZ Financial Regulatory Frameworks ──────────────────────────────────────
 #
 # When producing a discovery artefact for a registered bank operating in
