@@ -1,63 +1,57 @@
 // Existing codebase context for IL-S13
-// File: src/payments/payment-router.js (existing — payments.11 MODIFIES this)
+// payments.aml-screener-1 creates src/aml/dual-aml-screener.js using these existing modules
 
 'use strict';
 
-const nzDomesticGateway = require('../gateways/nz-domestic-gateway');
-const swiftGateway = require('../gateways/swift-gateway'); // existing, handles MT103 formatting
-const rbnzClient = require('../aml/rbnz-client');          // existing: RBNZ sanctioned party list screening
-const austracClient = require('../aml/austrac-client');    // existing: AUSTRAC watchlist client
-
-/**
- * Routes a payment to the appropriate gateway.
- * Currently supports NZ domestic payments only.
- *
- * payments.11 adds:
- *   - Trans-Tasman routing branch for { destinationCountry: 'AU', paymentType: 'INTRAGROUP' }
- *   - Dual-AML screening (RBNZ then AUSTRAC) for all cross-border payments
- *   - SWIFT notification artefact production (C5 — JPMorgan Chase correspondent agreement)
- */
-async function routePayment(payment) {
-  const { destinationCountry, paymentType, amount, creditorAccount, debtorAccount } = payment;
-
-  // Existing NZ domestic routing
-  if (destinationCountry === 'NZ') {
-    return nzDomesticGateway.forward({ amount, creditorAccount, debtorAccount });
-  }
-
-  // TODO payments.11: Add AU intragroup routing branch
-  // TODO payments.11: Dual-AML screening (RBNZ first per C7, then AUSTRAC)
-  // TODO payments.11: SWIFT notification artefact (C5)
-
-  throw new Error(`Unsupported routing: destinationCountry=${destinationCountry}`);
-}
-
-module.exports = { routePayment };
-
 // ─────────────────────────────────────────────────────────────────────────────
-// File: src/aml/rbnz-client.js (existing — do NOT modify)
+// src/aml/rbnz-client.js  (existing — do NOT modify)
 // ─────────────────────────────────────────────────────────────────────────────
-//
-// async function screen({ creditorAccount, debtorAccount, amount }) {
-//   // Returns { match: boolean, listName: 'RBNZ_SANCTIONED' | null }
+
+// async function screen({ paymentId, creditorAccount, debtorAccount, amount }) {
+//   // Screens payment against RBNZ sanctioned party list
+//   // Returns: { match: boolean, listName: 'RBNZ_SANCTIONED' | null }
 // }
+// module.exports = { screen };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// File: src/aml/austrac-client.js (existing — do NOT modify)
+// src/aml/austrac-client.js  (existing — do NOT modify)
 // ─────────────────────────────────────────────────────────────────────────────
-//
-// async function screen({ creditorAccount, debtorAccount, amount }) {
-//   // Returns { match: boolean, listName: 'AUSTRAC_WATCHLIST' | null }
+
+// async function screen({ paymentId, creditorAccount, debtorAccount, amount }) {
+//   // Screens payment against AUSTRAC watchlist
+//   // Returns: { match: boolean, listName: 'AUSTRAC_WATCHLIST' | null }
 // }
+// module.exports = { screen };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Files to be created by payments.11:
+// src/audit/audit-logger.js  (existing — do NOT modify)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// function log(entry) {
+//   // Writes structured audit log entry to compliance audit stream
+//   // entry: { paymentId, rbnzResult, austracResult, blocked, timestamp }
+//   //   - rbnzResult:   { match: boolean, listName: string | null }
+//   //   - austracResult: { match: boolean, listName: string | null } | null
+//   //                    (null when RBNZ blocked early — AUSTRAC not called per C7)
+//   //   - timestamp:    Date.now() at time of screening
+// }
+// module.exports = { log };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// src/aml/dual-aml-screener.js  (to be CREATED by payments.aml-screener-1)
 // ─────────────────────────────────────────────────────────────────────────────
 //
-// src/payments/trans-tasman-router.js
-//   Handles AU intragroup routing logic; calls dual-aml-screener then swift gateway.
-//   Produces SWIFT notification artefact on first call (C5).
+// Must export: screenCrossBorder(payment) → Promise<{ blocked: boolean, blockedBy: string | null }>
 //
-// src/aml/dual-aml-screener.js
-//   Sequential screening: rbnzClient.screen() then austracClient.screen() (C7 ordering).
-//   Returns { blocked: boolean, blockedBy: string | null }
+// Sequential flow (C7 — RBNZ before AUSTRAC; NO Promise.all):
+//   1. await rbnzClient.screen(payment)  — RBNZ first (domestic regulator obligation)
+//   2. if match → return { blocked: true, blockedBy: 'RBNZ_SANCTIONED' }
+//   3. await austracClient.screen(payment)  — AUSTRAC second
+//   4. if match → return { blocked: true, blockedBy: 'AUSTRAC_WATCHLIST' }
+//   5. return { blocked: false, blockedBy: null }
+//   6. On every call: auditLogger.log({ paymentId, rbnzResult, austracResult, blocked, timestamp })
+//
+// tests/aml/dual-aml-screener.test.js  (to be CREATED by payments.aml-screener-1)
+//
+// Jest test suite covering T1–T7 (see C-test-plan.md)
+// Mock: jest.mock('../../src/aml/rbnz-client'), jest.mock('../../src/aml/austrac-client'), jest.mock('../../src/audit/audit-logger')

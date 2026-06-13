@@ -1,23 +1,23 @@
-# IL-S13 DoD Input Bundle — payments.11 Trans-Tasman Routing
+# IL-S13 DoD Input Bundle — payments.aml-screener-1 Dual-AML Screener
 
-**Story:** payments.11 — Trans-Tasman intra-group routing with dual-AML screening
-**PR:** #263
-**Expected DoD verdict:** COMPLETE WITH DEVIATIONS
-**Difficulty:** HIGH
+**Story:** payments.aml-screener-1 — Implement dual-AML screener for trans-Tasman payment channel
+**PR:** #264
+**Expected DoD verdict:** COMPLETE
+**Difficulty:** LOW
 
 ---
 
 ## Definition artefact (inline)
 
-Story: payments.11 — Trans-Tasman intra-group routing with dual-AML screening
+Story: payments.aml-screener-1 — Implement dual-AML screener for trans-Tasman payment channel
 
-AC1: AU intragroup payments routed via SWIFT gateway (not NZ domestic); NZ domestic payments unaffected.
-AC2: All cross-border payments screened against RBNZ + AUSTRAC; match on either → `DUAL_AML_HOLD`.
-AC3: SWIFT notification artefact written to `artefacts/swift/routing-notification-draft.md` on first routing call with JPMorgan Chase details and 24h deadline.
-NFR-1 (RBNZ AML/CFT): Sequential dual screening — RBNZ first, AUSTRAC second. No parallelisation.
-NFR-2 (SWIFT Correspondent Agreement): Notification artefact includes `deadlineTimestamp` = event time + 24 hours.
+AC1: RBNZ match → `{ blocked: true, blockedBy: 'RBNZ_SANCTIONED' }`; AUSTRAC not called.
+AC2: RBNZ clear + AUSTRAC match → `{ blocked: true, blockedBy: 'AUSTRAC_WATCHLIST' }`.
+AC3: Both clear → `{ blocked: false, blockedBy: null }` + audit log entry written.
+NFR-1 (RBNZ AML/CFT Act): Sequential RBNZ-then-AUSTRAC. No `Promise.all`. C7 ordering.
+NFR-2 (Audit trail): `auditLogger.log()` called on every screening call (C8).
 
-Out of scope: FX reporting, AUSTRAC transaction reporting, DIA registration renewal, inbound AU-to-NZ routing, SWIFT MT103 formatting.
+Out of scope: Payment routing, SWIFT notification artefact, AUSTRAC transaction reporting, FX reporting, DIA registration.
 
 ---
 
@@ -25,37 +25,33 @@ Out of scope: FX reporting, AUSTRAC transaction reporting, DIA registration rene
 
 | Test | AC/NFR | Status |
 |------|--------|--------|
-| T1 — AU intragroup → SWIFT gateway | AC1 | PASS |
-| T2 — NZ domestic → domestic gateway, not SWIFT | AC1 | PASS |
-| T3 — RBNZ match → DUAL_AML_HOLD | AC2 | PASS |
-| T4 — AUSTRAC match (RBNZ clear) → DUAL_AML_HOLD | AC2 | PASS |
-| T5 — Both clear → payment forwarded | AC2 | PASS |
-| T6 — SWIFT artefact written on first routing call | AC3, NFR-2 | PASS |
-| T7 — SWIFT artefact has all required fields | AC3 | PASS |
-| T8 — RBNZ called before AUSTRAC (call order) | NFR-1, C7 | PASS |
-| T9 — deadlineTimestamp = event + 24h | NFR-2 | PASS |
+| T1 — RBNZ match → `{ blocked: true, blockedBy: 'RBNZ_SANCTIONED' }` | AC1 | PASS |
+| T2 — AUSTRAC not called when RBNZ blocks | AC1 | PASS |
+| T3 — RBNZ clear + AUSTRAC match → blocked by AUSTRAC | AC2 | PASS |
+| T4 — Both clear → `{ blocked: false, blockedBy: null }` | AC3 | PASS |
+| T5 — Audit log written on clear result with correct fields | AC3, NFR-2 | PASS |
+| T6 — RBNZ called before AUSTRAC (call order verified) | NFR-1, C7 | PASS |
+| T7 — Audit log written on RBNZ block; austracResult null | NFR-2, C8 | PASS |
 
-**All 9 tests passing. Test suite command:** `npm test`
+**All 7 tests passing. Test suite command:** `npm test -- tests/aml/dual-aml-screener.test.js`
 
 ---
 
 ## Test run evidence
 
 ```
-PASS tests/payments/trans-tasman-router.test.js
-  Trans-Tasman routing — payments.11
-    ✓ AU intragroup payment routed via SWIFT gateway (6 ms)
-    ✓ NZ domestic payment does not use SWIFT path (4 ms)
-    ✓ RBNZ match blocks payment with DUAL_AML_HOLD (5 ms)
-    ✓ AUSTRAC match blocks payment when RBNZ clears (4 ms)
-    ✓ Both watchlists clear — payment forwarded via SWIFT (5 ms)
-    ✓ SWIFT notification artefact written on first routing call (8 ms)
-    ✓ SWIFT artefact contains all required fields (6 ms)
-    ✓ RBNZ screening called before AUSTRAC (call order verified) (4 ms)
-    ✓ deadlineTimestamp is 24 hours after routing event (3 ms)
+PASS tests/aml/dual-aml-screener.test.js
+  Dual-AML screener — payments.aml-screener-1
+    ✓ RBNZ match returns blocked with RBNZ_SANCTIONED (4 ms)
+    ✓ AUSTRAC not called when RBNZ blocks (3 ms)
+    ✓ RBNZ clear + AUSTRAC match returns blocked by AUSTRAC (4 ms)
+    ✓ Both clear returns not blocked (3 ms)
+    ✓ audit log written on clear result with correct fields (4 ms)
+    ✓ RBNZ called before AUSTRAC — call order verified (3 ms)
+    ✓ audit log written on RBNZ block; austracResult is null (3 ms)
 
 Test Suites: 1 passed, 1 total
-Tests:       9 passed, 9 total
+Tests:       7 passed, 7 total
 ```
 
 ---
@@ -64,52 +60,46 @@ Tests:       9 passed, 9 total
 
 | Scenario | Result |
 |----------|--------|
-| S1 — AU intragroup routing via SWIFT (AC1) | PASS |
-| S2 — Dual-AML blocks RBNZ and AUSTRAC matches (AC2) | PASS |
-| S3 — SWIFT notification artefact with 24h deadline (AC3 + NFR-2) | PASS — `artefacts/swift/routing-notification-draft.md` present with `correspondentBank`, `notificationEmail`, `deadlineTimestamp` |
-| S4 — RBNZ called before AUSTRAC (C7 ordering) | PASS — sequential calls confirmed by mock call index tracking |
-| S5 — No FX reporting / AUSTRAC reporting / DIA / inbound routing in diff | PASS — diff contains only `trans-tasman-router.js`, `dual-aml-screener.js`, `payment-router.js` extension, and test file |
+| S1 — RBNZ match blocks; AUSTRAC not invoked (AC1) | PASS — returns `{ blocked: true, blockedBy: 'RBNZ_SANCTIONED' }`; T2 confirms `austracClient.screen` not called |
+| S2 — AUSTRAC match blocks when RBNZ clears (AC2) | PASS — returns `{ blocked: true, blockedBy: 'AUSTRAC_WATCHLIST' }` |
+| S3 — Both clear → not blocked; audit log written (AC3) | PASS — returns `{ blocked: false, blockedBy: null }`; `auditLogger.log` called with correct fields |
+| S4 — Sequential order: RBNZ before AUSTRAC (C7) | PASS — T6 call-order array is `['rbnz', 'austrac']`; sequential `await` confirmed; no `Promise.all` |
+| S5 — Audit log on every call (C8) | PASS — T5 (clear), T7 (RBNZ block): `auditLogger.log` called in both paths |
 
 ---
 
 ## PR diff summary
 
 **Files changed:**
-- `src/aml/dual-aml-screener.js` — new module; `screenCrossBorder(payment)` calls `rbnzClient.screen()` then `austracClient.screen()` sequentially (NOT `Promise.all`); returns `{ blocked, blockedBy }`
-- `src/payments/trans-tasman-router.js` — new module; AU intragroup routing + dual-AML + SWIFT notification artefact production on first call
-- `src/payments/payment-router.js` — modified; added AU intragroup routing branch delegating to `trans-tasman-router`
-- `tests/payments/trans-tasman-router.test.js` — new file; T1–T9 tests
-
-**Artefact produced at runtime:**
-- `artefacts/swift/routing-notification-draft.md` — written by `routeTransTasman()` on first production call; contains JPMorgan Chase notification draft with 24-hour deadline
+- `src/aml/dual-aml-screener.js` — new module; exports `screenCrossBorder(payment)`; sequential RBNZ-then-AUSTRAC (C7 — no `Promise.all`); `auditLogger.log()` called in all outcome paths (C8)
+- `tests/aml/dual-aml-screener.test.js` — new file; T1–T7 Jest tests with `jest.mock` for rbnzClient, austracClient, auditLogger
 
 ---
 
 ## Out-of-scope check
 
-No FX reporting API calls. No AUSTRAC transaction report submissions. No DIA registration. No inbound AU-to-NZ routing. No SWIFT MT103 formatting (delegated to existing gateway adapter). Sequential screening confirmed — no `Promise.all` parallelisation.
+No routing logic. No SWIFT notification artefact. No AUSTRAC transaction reporting. No FX reporting. No DIA registration. Module is a pure AML screening component — 2 files only.
 
 ---
 
 ## NFR check
 
-NFR-1 (Dual-AML sequential): RBNZ called before AUSTRAC — T8 PASS. `await rbnzClient.screen()` completes before `await austracClient.screen()` is called. C7 ordering enforced.
+NFR-1 (Sequential): `await rbnzClient.screen(payment)` resolves before `austracClient.screen()` is called. T6 verifies call order deterministically. No `Promise.all`.
 
-NFR-2 (SWIFT notification artefact): `routing-notification-draft.md` written with `deadlineTimestamp = routingEventTime + 86400000`. T9 PASS. Physical transmission pending compliance officer action.
+NFR-2 (Audit trail): `auditLogger.log()` called in all three outcome paths — RBNZ block (T7), AUSTRAC block, both-clear (T5). `austracResult: null` when RBNZ blocks early.
 
 ---
 
 ## Expected DoD verdict
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
-Deviation recorded:
-- D1: SWIFT notification artefact (`artefacts/swift/routing-notification-draft.md`) produced and correct. Physical transmission to JPMorgan Chase (`swiftcorrespondent@jpmorgan.com`) is pending compliance officer action. 24-hour contractual deadline has started. This is an expected and accepted deviation — transmission is a compliance officer action per the agreed Contract Proposal scope. The coding deliverable (artefact production) is complete.
+No deviations. All ACs verified. NFR-1 sequential ordering confirmed by T6. NFR-2 audit trail confirmed by T5 and T7. No out-of-scope elements in diff. Both required files created.
 
 Gate conditions:
 - D1 (AC coverage): 3/3 ACs verified ✓
-- D2 (out-of-scope): No FX reporting, no AUSTRAC transaction reporting, no DIA, no inbound routing ✓
-- D3 (test plan): 9/9 tests pass ✓
-- D4 (NFR): NFR-1 sequential screening enforced; NFR-2 artefact with deadline produced ✓
-- D5 (metric signal): All watchlist screening results, routing decisions, artefact write confirmations in test output ✓
-- D6 (verdict): COMPLETE WITH DEVIATIONS — SWIFT transmission pending (accepted; not a story defect)
+- D2 (out-of-scope): No routing, SWIFT notification, AUSTRAC reporting, FX reporting, DIA ✓
+- D3 (test plan): 7/7 tests pass ✓
+- D4 (NFR): NFR-1 sequential order enforced; NFR-2 audit log in all paths ✓
+- D5 (C7 compliance): No `Promise.all`; RBNZ-first ordering verified by T6 ✓
+- D6 (verdict): COMPLETE — no deviations

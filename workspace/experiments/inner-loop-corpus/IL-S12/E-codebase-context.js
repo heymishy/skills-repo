@@ -1,68 +1,60 @@
 // Existing codebase context for IL-S12
-// File: src/models/credit-model-pipeline.js (existing — credit.7 MODIFIES this)
-
-'use strict';
-
-const modelTrainer = require('./model-trainer');       // existing: gradient boosting retrain
-const modelEvaluator = require('./model-evaluator');   // existing: Gini, ROC-AUC, KS statistic
-const dataLoader = require('./training-data-loader');  // existing: loads origination data from data warehouse
-
-/**
- * Retrains the credit limit model.
- * Currently: trains + evaluates, but does NOT produce MRM validation artefact
- * and does NOT compute FMA demographic parity metrics.
- *
- * credit.7 adds:
- *   - Fairness metric computation (see src/models/fairness-metrics.js — new file)
- *   - MRM validation report writing to artefacts/credit-model/model-validation-report.md
- */
-async function runRetrainPipeline(config) {
-  const { trainingPeriodMonths = 24, holdoutFraction = 0.2 } = config;
-
-  // Step 1: Load origination data
-  const { trainSet, holdoutSet } = await dataLoader.load({
-    periodMonths: trainingPeriodMonths,
-    holdoutFraction,
-  });
-
-  // Step 2: Retrain model
-  const model = await modelTrainer.train(trainSet);
-
-  // Step 3: Evaluate on holdout
-  const metrics = await modelEvaluator.evaluate(model, holdoutSet);
-  // metrics = { gini, rocAuc, ksStat }
-
-  // TODO credit.7: compute demographic parity metrics (fairness-metrics.js)
-  // TODO credit.7: write model-validation-report.md (C5 — mandatory MRM artefact)
-  // TODO credit.7: flag FAIRNESS_THRESHOLD_EXCEEDED if gap > 5pp (C6 — FMA methodology)
-
-  return { model, metrics };
-}
-
-module.exports = { runRetrainPipeline };
+// File: scripts/evaluate_model.py (existing — credit.fairness-eval-1 does NOT modify this)
+// credit.fairness-eval-1 creates evaluate_fairness.py in the same directory
 
 // ─────────────────────────────────────────────────────────────────────────────
-// File: src/models/model-evaluator.js (existing — do NOT modify)
+// scripts/evaluate_model.py  (existing — do NOT modify)
 // ─────────────────────────────────────────────────────────────────────────────
-//
-// async function evaluate(model, holdoutSet) {
-//   // Returns { gini, rocAuc, ksStat }
-//   // gini: Gini coefficient (0 to 1, higher is better)
-//   // rocAuc: area under ROC curve
-//   // ksStat: Kolmogorov-Smirnov statistic
+
+/*
+import json
+import sys
+
+def load_predictions(filepath):
+    """Load model prediction results from JSON file produced by the retrain pipeline."""
+    with open(filepath) as f:
+        data = json.load(f)
+    # Returns list of: { 'approved': bool, 'gender': str, 'ethnicity': str }
+    return data['predictions']
+
+def load_fairness_config():
+    """Load fairness evaluation configuration from config/fairness-config.json."""
+    with open('config/fairness-config.json') as f:
+        return json.load(f)
+    # Returns: {
+    #   "fairness_threshold": 0.05,           # read from here — do NOT hardcode
+    #   "dimensions": ["gender", "ethnicity"],
+    #   "groups": { "gender": ["Male", "Female"],
+    #               "ethnicity": ["Maori", "Pacific", "Other"] }
+    # }
+
+def write_json_output(data, dest=sys.stdout):
+    """Write JSON result to dest (stdout by default)."""
+    dest.write(json.dumps(data, indent=2) + '\n')
+*/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// config/fairness-config.json  (to be CREATED by credit.fairness-eval-1)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// {
+//   "fairness_threshold": 0.05,
+//   "dimensions": ["gender", "ethnicity"],
+//   "groups": {
+//     "gender": ["Male", "Female"],
+//     "ethnicity": ["Maori", "Pacific", "Other"]
+//   }
 // }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Fairness metrics module to be created by credit.7:
-// src/models/fairness-metrics.js
+// scripts/evaluate_fairness.py  (to be CREATED by credit.fairness-eval-1)
 // ─────────────────────────────────────────────────────────────────────────────
 //
-// const FAIRNESS_THRESHOLD_PCT = 5; // FMA Algorithmic Fairness Methodology — NOT configurable
+// CLI usage: python scripts/evaluate_fairness.py --input <predictions.json>
+// Exit code: 0 (all groups pass), 1 (one or more groups exceed threshold)
+// Stdout:    JSON: { "groups": [{ "group", "dimension", "gap", "threshold", "pass" }] }
+// Stderr:    Audit log — threshold used and gap values per dimension (C2 requirement)
 //
-// function computeDemographicParityGap(predictions, demographicField) {
-//   // predictions: [{ approved: bool, gender: 'M'|'F', ethnicity: 'Māori'|'Pacific'|'Other' }]
-//   // demographicField: 'gender' | 'ethnicity'
-//   // Returns: { gap: number (percentage points), cohortRates: { [cohort]: number } }
-// }
+// tests/test_evaluate_fairness.py  (to be CREATED by credit.fairness-eval-1)
 //
-// module.exports = { computeDemographicParityGap, FAIRNESS_THRESHOLD_PCT };
+// pytest test suite covering T1–T7 (see C-test-plan.md)

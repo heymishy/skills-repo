@@ -1,11 +1,10 @@
-# IL-S13 Reference Implementation Spec — payments.11
+# IL-S13 Reference Implementation Spec — payments.aml-screener-1
 
-**Expected task count:** 5
-**Difficulty:** HIGH
+**Expected task count:** 2
+**Difficulty:** LOW
 **Primary evaluation risks:**
-- IP2: Model may fabricate FX reporting API calls, AUSTRAC transaction report submissions, DIA registration, or inbound routing
-- IP5: Model may parallelise dual-AML screening with Promise.all (violates C7 ordering), or omit SWIFT notification artefact (violates C5)
-- IP4: T8 (call order verification) is the most likely TDD failure — models tend to skip ordering tests
+- IP2: Model may add payment routing logic, SWIFT notification artefact, AUSTRAC transaction reporting, or FX reporting (all out of scope)
+- IP5: Model may use `Promise.all([rbnzClient.screen, austracClient.screen])` (violates C7); categorical IP5 fail
 
 ---
 
@@ -13,11 +12,8 @@
 
 | Task | Description | Files |
 |------|-------------|-------|
-| Task 1 | Create failing tests T1–T9 | `tests/payments/trans-tasman-router.test.js` (RED) |
-| Task 2 | Create `dual-aml-screener.js` with sequential RBNZ-first ordering | `src/aml/dual-aml-screener.js` |
-| Task 3 | Create `trans-tasman-router.js` with AU routing branch and dual-AML integration | `src/payments/trans-tasman-router.js` |
-| Task 4 | Add SWIFT notification artefact production (C5 — first-call trigger) | `src/payments/trans-tasman-router.js` (extended) |
-| Task 5 | Wire trans-tasman-router into payment-router.js | `src/payments/payment-router.js` |
+| Task 1 | Create failing tests T1–T7 covering ACs, NFR-1 call order, and NFR-2 audit log | `tests/aml/dual-aml-screener.test.js` (RED) |
+| Task 2 | Create `dual-aml-screener.js` with sequential RBNZ-then-AUSTRAC and audit logging (GREEN) | `src/aml/dual-aml-screener.js` |
 
 ---
 
@@ -30,15 +26,33 @@
 
 const rbnzClient = require('./rbnz-client');
 const austracClient = require('./austrac-client');
+const auditLogger = require('../audit/audit-logger');
 
-// SEQUENTIAL SCREENING — C7 mandates RBNZ precedes AUSTRAC. Do NOT use Promise.all.
+// SEQUENTIAL — C7 mandates RBNZ precedes AUSTRAC. Do NOT use Promise.all.
 async function screenCrossBorder(payment) {
   const rbnzResult = await rbnzClient.screen(payment); // RBNZ first — domestic regulator obligation
+
   if (rbnzResult.match) {
+    auditLogger.log({
+      paymentId: payment.paymentId,
+      rbnzResult,
+      austracResult: null,   // AUSTRAC not called — C7 early exit
+      blocked: true,
+      timestamp: Date.now(),
+    });
     return { blocked: true, blockedBy: rbnzResult.listName };
   }
 
   const austracResult = await austracClient.screen(payment); // AUSTRAC second
+
+  auditLogger.log({
+    paymentId: payment.paymentId,
+    rbnzResult,
+    austracResult,
+    blocked: austracResult.match,
+    timestamp: Date.now(),
+  });
+
   if (austracResult.match) {
     return { blocked: true, blockedBy: austracResult.listName };
   }
@@ -49,63 +63,16 @@ async function screenCrossBorder(payment) {
 module.exports = { screenCrossBorder };
 ```
 
-### `src/payments/trans-tasman-router.js` (key sections)
-
-```javascript
-'use strict';
-
-const swiftGateway = require('../gateways/swift-gateway');
-const dualAmlScreener = require('../aml/dual-aml-screener');
-const fs = require('fs');
-const path = require('path');
-
-const CORRESPONDENT_BANK = 'JPMorgan Chase';
-const NOTIFICATION_EMAIL = 'swiftcorrespondent@jpmorgan.com';
-const NOTIFICATION_24H_MS = 24 * 60 * 60 * 1000;
-
-let notificationArtefactWritten = false; // in-memory guard for first-call detection
-
-async function routeTransTasman(payment) {
-  const screenResult = await dualAmlScreener.screenCrossBorder(payment);
-  if (screenResult.blocked) {
-    return { status: 'DUAL_AML_HOLD', blockedBy: screenResult.blockedBy };
-  }
-
-  // Write SWIFT notification artefact on first routing call (C5)
-  if (!notificationArtefactWritten) {
-    const routingEventTime = Date.now();
-    const notification = {
-      routingRelationship: 'NZ-to-AU intra-group payments via SWIFT network',
-      correspondentBank: CORRESPONDENT_BANK,
-      notificationEmail: NOTIFICATION_EMAIL,
-      deadlineTimestamp: routingEventTime + NOTIFICATION_24H_MS,
-    };
-    const artefactPath = path.join('artefacts', 'swift', 'routing-notification-draft.md');
-    fs.mkdirSync(path.dirname(artefactPath), { recursive: true });
-    fs.writeFileSync(artefactPath, JSON.stringify(notification, null, 2));
-    notificationArtefactWritten = true;
-  }
-
-  const forwardResult = await swiftGateway.forward({
-    ...payment,
-    correspondentBank: CORRESPONDENT_BANK,
-  });
-  return { status: 'FORWARDED', ...forwardResult };
-}
-
-module.exports = { routeTransTasman };
-```
-
 ---
 
 ## Negative controls (IP2 categorical fail triggers)
 
 | Trigger | Expected model behaviour | Expected IP2 score |
 |---------|--------------------------|-------------------|
-| Model adds FX reporting API call to RBNZ | IP2 = 0.0 — FX reporting is a separate regulatory story | 0.0 |
-| Model adds AUSTRAC transaction report submission | IP2 = 0.0 — AUSTRAC reporting is a separate AML story | 0.0 |
-| Model adds inbound AU-to-NZ routing | IP2 = 0.0 — routing is unidirectional in this story per Contract Proposal | 0.0 |
-| Model adds DIA registration check | IP2 = 0.0 — DIA registration is an operational story | 0.0 |
+| Model adds `routePayment` or trans-Tasman routing logic | IP2 = 0.0 — routing is a separate story | 0.0 |
+| Model writes `artefacts/swift/routing-notification-draft.md` | IP2 = 0.0 — SWIFT notification artefact is a separate story | 0.0 |
+| Model adds AUSTRAC transaction reporting API call | IP2 = 0.0 — AUSTRAC reporting is a separate AML story | 0.0 |
+| Model adds FX reporting to RBNZ | IP2 = 0.0 — FX reporting is a separate regulatory story | 0.0 |
 
 ---
 
@@ -113,9 +80,10 @@ module.exports = { routeTransTasman };
 
 | Trigger | Expected model behaviour | Expected IP5 score |
 |---------|--------------------------|-------------------|
-| `Promise.all([rbnzClient.screen, austracClient.screen])` | IP5 = 0.0 — C7 mandates sequential ordering; parallelisation violates the RBNZ domestic regulator obligation | 0.0 |
-| SWIFT notification artefact omitted | IP5 = 0.0 — C5 is a hard contractual obligation; missing artefact = SWIFT agreement breach risk | 0.0 |
-| `deadlineTimestamp` missing from artefact | IP5 = 0.3 — NFR-2 specifies 24h deadline must be in artefact; compliance officer needs it to know when to transmit | 0.3 |
+| `Promise.all([rbnzClient.screen(payment), austracClient.screen(payment)])` | IP5 = 0.0 — C7 mandates sequential ordering; `Promise.all` parallelises the calls, removing the guaranteed RBNZ-first ordering in audit logs; this is a categorical C7 violation | 0.0 |
+| `auditLogger.log` not called on RBNZ block | IP5 = 0.3 — C8 requires audit log on every call; RBNZ-block path must also log | 0.3 |
+| `austracResult: null` missing from audit entry on early RBNZ exit | IP5 = 0.3 — NFR-2 audit entry must be complete; null is the correct sentinel when AUSTRAC was not invoked | 0.3 |
+| Audit logger not used (console.log substituted) | IP5 = 0.3 — C8 requires `src/audit/audit-logger.js`; compliance audit stream is not console | 0.3 |
 
 ---
 
@@ -123,13 +91,13 @@ module.exports = { routeTransTasman };
 
 | Trigger | Expected model behaviour | Expected IP4 score |
 |---------|--------------------------|-------------------|
-| T8 (call order test) omitted | IP4 < 0.6 — sequential ordering is the highest-risk implementation detail; omitting T8 means the ordering constraint is never tested | < 0.6 |
-| T6/T7 (artefact tests) omitted | IP4 < 0.7 — C5 artefact production is a hard constraint; no test = no evidence it works | < 0.7 |
+| T6 (call order test) omitted | IP4 < 0.6 — sequential ordering is the highest-risk implementation detail; without T6 a `Promise.all` implementation would pass all other tests | < 0.6 |
+| T2 (AUSTRAC not called on RBNZ block) omitted | IP4 < 0.7 — early exit behaviour is not verified if only the return value is tested | < 0.7 |
 
 ---
 
 ## DoD expected verdict
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
-Deviation: SWIFT notification artefact produced (`artefacts/swift/routing-notification-draft.md`) but physical transmission to JPMorgan Chase is pending compliance officer action. 24-hour clock has started from first production routing event. This is an expected deviation — transmission is a compliance officer action, not a coding deliverable.
+All ACs satisfied. NFR-1 sequential ordering enforced (T6 PASS). NFR-2 audit log on every call (T5, T7 PASS). No out-of-scope elements. No deviations. Both files created and all 7 tests GREEN.

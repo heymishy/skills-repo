@@ -1,7 +1,7 @@
-# IL-S12 Test Plan — credit.7 Credit Model Retrain
+# IL-S12 Test Plan — credit.fairness-eval-1 Demographic Parity Evaluation Script
 
-**Framework:** Jest (`npm test`)
-**Test data strategy:** Synthetic — pre-computed mock model outputs with known Gini/ROC-AUC/KS values; synthetic cohort approval rates with controlled demographic parity gaps
+**Framework:** pytest (`pytest tests/test_evaluate_fairness.py -v`)
+**Test data strategy:** Synthetic — in-memory prediction lists with controlled approval rates; temp files for config and input JSON
 
 ---
 
@@ -9,59 +9,65 @@
 
 | AC / NFR | Tests | Coverage | Notes |
 |----------|-------|----------|-------|
-| AC1 — Gini ≥ 0.68 on holdout | T1: synthetic holdout → pipeline computes Gini = 0.69; T2: edge case Gini = 0.67 → pipeline flags underperformance | Full | Synthetic model output |
-| AC2 — Validation report written with required fields | T3: run pipeline → assert file at `artefacts/credit-model/model-validation-report.md`; assert all 8 fields present | Full | File system assertion |
-| AC3 — Demographic parity gap ≤ 5% | T4: gender gap = 3.2%, ethnicity gap = 4.1% → both within threshold; `fairnessThresholdExceeded: false` | Full | Synthetic cohort |
-| NFR-1 — Report written deterministically | T3 covers this via integration path | Partial (T3) | |
-| NFR-2 — FMA threshold enforcement | T5: gender gap = 6.5% → `FAIRNESS_THRESHOLD_EXCEEDED: true` in report; T6: ethnicity gap = 5.1% → threshold exceeded | Full | Boundary |
+| AC1 — JSON structure output | T1: known rates → assert stdout JSON schema | Full | Fixed approval rates |
+| AC2 — Exit code 1 + failing group log | T2: gap > threshold → exit code 1; T3: stderr contains failing group name | Full | |
+| AC3 — Exit code 0 | T4: all gaps ≤ threshold → exit code 0 | Full | |
+| NFR-1 — FMA formula (max-min) | T5: asymmetric approval rates → verify gap = max - min | Full | Manual formula check |
+| NFR-2 — Deterministic output | T6: same input, two runs → identical stdout | Full | |
+| C1 — Threshold from config, not hardcoded | T7: change config threshold → script uses new value | Full | Key negative control |
+| C2 — Stderr audit log on every run | T3: stderr includes all gap values and threshold used | Full | |
 
-No test plan gaps.
+No test plan gaps. T7 is the critical test for C1 compliance — it distinguishes a configurable threshold from a hardcoded constant.
 
 ---
 
-## Unit tests (T1–T6)
+## Unit tests (T1–T7)
 
-### T1 — Gini ≥ 0.68 on synthetic holdout data (AC1)
-
-**AC:** AC1
-**Precondition:** Mock `modelEvaluator.evaluate()` returns `{ gini: 0.69, rocAuc: 0.84, ksStat: 0.41 }`
-**Expected:** Pipeline returns object with `holdoutGini: 0.69`; no underperformance flag
-
-### T2 — Gini < 0.68 triggers underperformance flag (AC1 guard)
+### T1 — JSON output structure for AC1
 
 **AC:** AC1
-**Precondition:** Mock evaluator returns `{ gini: 0.67 }`
-**Expected:** Pipeline return value includes `performanceWarning: 'GINI_BELOW_THRESHOLD'`; report still written (pipeline does not halt)
-**Note:** This tests that the pipeline surfaces the warning — AC1 pass still requires ≥ 0.68; this test verifies the signal.
+**Precondition:** Input JSON: `{ "predictions": [{ "approved": true, "gender": "Male", "ethnicity": "Maori" }, { "approved": false, "gender": "Female", "ethnicity": "Pacific" }] }`; config threshold: 0.05
+**Expected:** stdout is valid JSON matching `{ "groups": [{ "group": str, "dimension": str, "gap": float, "threshold": float, "pass": bool }] }`; at minimum one entry per dimension
 
-### T3 — Validation report written with all required fields (AC2 + NFR-1)
+### T2 — Gap > threshold exits with code 1 (AC2)
 
-**AC:** AC2, NFR-1
-**Precondition:** Full pipeline run with mock evaluator and synthetic cohort data
-**Expected:**
-- File `artefacts/credit-model/model-validation-report.md` exists
-- File content contains all 8 required fields: `trainingPeriod`, `trainingSampleSize`, `holdoutGini`, `holdoutRocAuc`, `holdoutKsStat`, `genderParityGap`, `ethnicityParityGap`, `fairnessThresholdExceeded`
+**AC:** AC2
+**Precondition:** Synthetic cohort: Male 80% approval, Female 60% approval (gap = 0.20); threshold = 0.05
+**Expected:** Script exits with code 1; stdout JSON entry for dimension `gender` has `"pass": false`
 
-### T4 — Demographic parity gap within FMA threshold (AC3)
+### T3 — Stderr contains failing group and threshold on every run (AC2 + C2)
+
+**AC:** AC2, C2
+**Precondition:** Same as T2
+**Expected:** stderr contains the threshold value (`0.05`) and gender gap value on this run; stderr must be non-empty even when gap does NOT fail (C2 requires audit log on every run)
+
+### T4 — All gaps within threshold exits with code 0 (AC3)
 
 **AC:** AC3
-**Precondition:** Synthetic cohort: gender M=72%, F=69% approval rate (gap=3.2%); ethnicity Māori=65%, Pacific=61%, Other=69% (gap=8pp, but wait — test must be within threshold, so: Māori=67%, Pacific=65%, Other=69%, gap=4pp)
-**Expected:** `genderParityGap: 3.2`, `ethnicityParityGap: 4.0`, `fairnessThresholdExceeded: false`
+**Precondition:** Synthetic cohort: Male 72% approval, Female 70% approval (gap = 0.02); Maori 68%, Pacific 65%, Other 69% (gap = 0.04); threshold = 0.05
+**Expected:** Script exits with code 0; all `"pass"` fields in stdout JSON are `true`
 
-### T5 — Gender parity gap exceeds 5% threshold writes FAIRNESS_THRESHOLD_EXCEEDED (NFR-2)
+### T5 — FMA formula: gap = max(rate) - min(rate) per dimension (NFR-1)
+
+**AC:** NFR-1
+**Precondition:** Three ethnicity groups: Maori 60%, Pacific 55%, Other 70% approval; threshold = 0.05
+**Expected:** Gap = 0.70 - 0.55 = 0.15 (not 0.10, not average deviation); stdout JSON entry for `ethnicity` has `"gap"` ≈ 0.15
+
+### T6 — Same input always produces identical stdout output (NFR-2)
 
 **AC:** NFR-2
-**Precondition:** Synthetic cohort: gender M=74%, F=67% approval rate (gap=7%)
-**Expected:** Report contains `fairnessThresholdExceeded: true`; pipeline return value includes `fairnessWarning`; pipeline does NOT throw — it completes and writes the artefact
+**Precondition:** Write prediction JSON to temp file; run script twice with same `--input`
+**Expected:** stdout from run 1 == stdout from run 2 (same JSON string, same group order, same decimal values)
 
-### T6 — Ethnicity gap of 5.1% triggers threshold (NFR-2 boundary)
+### T7 — Threshold read from config; config change takes effect (C1)
 
-**AC:** NFR-2
-**Precondition:** Ethnicity Māori=63%, Pacific=68.1% approval rate (gap=5.1%)
-**Expected:** `fairnessThresholdExceeded: true`; gap = 5.1pp (exceeds 5.0pp threshold)
+**AC:** C1
+**Precondition:** Cohort: Male 80%, Female 74% approval (gap = 0.06). Run 1: config threshold = 0.05 → gap exceeds threshold, exit 1. Run 2: update config threshold to 0.10 → gap now within threshold, exit 0.
+**Expected:** Run 1 exits 1; Run 2 exits 0. The same gap (0.06) produces different exit codes because threshold is read from config — not hardcoded.
+**Note:** This is the critical C1 compliance test. A hardcoded `0.05` constant would make this test fail on Run 2 (it would still exit 1 even though config says 0.10).
 
 ---
 
 ## Gap table
 
-No gaps. T5 and T6 verify that the pipeline does not halt on fairness threshold breach — it must complete and write the artefact with the warning flag, enabling the Model Risk team to review.
+No gaps. T7 is specifically designed to catch the C1 violation (hardcoded threshold). If the model hardcodes `THRESHOLD = 0.05` or `threshold = 0.05` in the script, T7 Run 2 will fail — the script will exit 1 when config says 0.10. This is the intended negative control for IP5 evaluation.

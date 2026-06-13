@@ -1,7 +1,7 @@
-# IL-S13 Test Plan — payments.11 Trans-Tasman Routing
+# IL-S13 Test Plan — payments.aml-screener-1 Dual-AML Screener
 
-**Framework:** Jest (`npm test`)
-**Test data strategy:** Synthetic — mock payment objects, mock RBNZ/AUSTRAC clients with controlled watchlist responses, mock SWIFT gateway
+**Framework:** Jest (`npm test -- tests/aml/dual-aml-screener.test.js`)
+**Test data strategy:** Synthetic — mock `rbnzClient`, `austracClient`, and `auditLogger` via Jest; controlled match/clear responses
 
 ---
 
@@ -9,74 +9,64 @@
 
 | AC / NFR | Tests | Coverage | Notes |
 |----------|-------|----------|-------|
-| AC1 — AU intragroup routes via SWIFT | T1: AU intragroup → SWIFT gateway called; T2: NZ domestic payment → SWIFT gateway NOT called | Full | Routing branch |
-| AC2 — Dual-AML blocks on match | T3: RBNZ match → DUAL_AML_HOLD; T4: AUSTRAC match → DUAL_AML_HOLD; T5: both clear → forwarded | Full | |
-| AC3 — SWIFT notification artefact | T6: first routing call writes artefact; T7: artefact has all required fields | Full | File system |
-| NFR-1 — Sequential screening order | T8: verify RBNZ called before AUSTRAC (mock call order tracking) | Full | |
-| NFR-2 — 24h deadline in artefact | T9: `deadlineTimestamp` = routing event time + 86400000ms | Full | |
+| AC1 — RBNZ match blocks; AUSTRAC not called | T1: RBNZ match → blocked; T2: AUSTRAC mock NOT called | Full | Early exit path |
+| AC2 — RBNZ clear; AUSTRAC match blocks | T3: RBNZ clear + AUSTRAC match → blocked by AUSTRAC | Full | |
+| AC3 — Both clear; audit log entry written | T4: both clear → not blocked; T5: auditLogger called | Full | |
+| NFR-1 — Sequential order (RBNZ before AUSTRAC) | T6: call order tracking via Jest mock index | Full | Critical test for C7 |
+| NFR-2 — Audit log on every screening call | T5, T7: log called for RBNZ block, AUSTRAC block, clear | Full | |
 
-No test plan gaps.
+No test plan gaps. T6 is the critical test for C7 — it verifies that RBNZ completes before AUSTRAC is invoked. Without T6, a `Promise.all` implementation would satisfy AC1-AC3 and produce identical results while violating C7.
 
 ---
 
-## Unit tests (T1–T9)
+## Unit tests (T1–T7)
 
-### T1 — AU intragroup payment routed via SWIFT (AC1)
-
-**AC:** AC1
-**Precondition:** Payment `{ amount: 5000, destinationCountry: 'AU', paymentType: 'INTRAGROUP' }`; dual-AML mocked to return clear
-**Expected:** `swiftGateway.forward` called with AU correspondent bank details; `nzDomesticGateway.forward` NOT called
-
-### T2 — NZ domestic payment does not use SWIFT path (AC1 guard)
+### T1 — RBNZ match returns blocked with correct blockedBy (AC1)
 
 **AC:** AC1
-**Precondition:** Payment `{ amount: 5000, destinationCountry: 'NZ', paymentType: 'STANDARD' }`
-**Expected:** `swiftGateway.forward` NOT called; `nzDomesticGateway.forward` called
+**Precondition:** `rbnzClient.screen` mock returns `{ match: true, listName: 'RBNZ_SANCTIONED' }`; payment: `{ paymentId: 'pmnt-001', creditorAccount: 'ACC-123', debtorAccount: 'ACC-456', amount: 10000 }`
+**Expected:** `screenCrossBorder(payment)` resolves to `{ blocked: true, blockedBy: 'RBNZ_SANCTIONED' }`
 
-### T3 — RBNZ match blocks payment with DUAL_AML_HOLD (AC2)
+### T2 — AUSTRAC not called when RBNZ blocks (AC1)
 
-**AC:** AC2
-**Precondition:** RBNZ client mock returns `{ match: true, listName: 'RBNZ_SANCTIONED' }`
-**Expected:** Router returns `{ status: 'DUAL_AML_HOLD', blockedBy: 'RBNZ_SANCTIONED' }`; SWIFT gateway NOT called
+**AC:** AC1
+**Precondition:** Same as T1 (`rbnzClient.screen` mock returns match)
+**Expected:** `austracClient.screen` mock was NOT called (`.toHaveBeenCalledTimes(0)`)
 
-### T4 — AUSTRAC match blocks payment with DUAL_AML_HOLD (AC2)
-
-**AC:** AC2
-**Precondition:** RBNZ mock returns clear; AUSTRAC mock returns `{ match: true, listName: 'AUSTRAC_WATCHLIST' }`
-**Expected:** Router returns `{ status: 'DUAL_AML_HOLD', blockedBy: 'AUSTRAC_WATCHLIST' }`; SWIFT gateway NOT called
-
-### T5 — Both watchlists clear → payment forwarded (AC2)
+### T3 — RBNZ clear + AUSTRAC match returns blocked by AUSTRAC (AC2)
 
 **AC:** AC2
-**Precondition:** RBNZ mock returns `{ match: false }`; AUSTRAC mock returns `{ match: false }`
-**Expected:** `swiftGateway.forward` called; payment status `FORWARDED`
+**Precondition:** `rbnzClient.screen` mock returns `{ match: false }`; `austracClient.screen` mock returns `{ match: true, listName: 'AUSTRAC_WATCHLIST' }`
+**Expected:** `screenCrossBorder(payment)` resolves to `{ blocked: true, blockedBy: 'AUSTRAC_WATCHLIST' }`
 
-### T6 — SWIFT notification artefact written on first routing call (AC3 + NFR-2)
-
-**AC:** AC3, NFR-2
-**Precondition:** First call to `routeTransTasman()`; dual-AML mocked to clear
-**Expected:** File `artefacts/swift/routing-notification-draft.md` exists after the call
-
-### T7 — SWIFT notification artefact has required fields (AC3)
+### T4 — Both clear returns not blocked (AC3)
 
 **AC:** AC3
-**Precondition:** Same as T6; read artefact after routing call
-**Expected:** Artefact content contains: `routingRelationship`, `correspondentBank: 'JPMorgan Chase'`, `notificationEmail: 'swiftcorrespondent@jpmorgan.com'`, `deadlineTimestamp`
+**Precondition:** RBNZ mock returns `{ match: false }`; AUSTRAC mock returns `{ match: false }`
+**Expected:** `screenCrossBorder(payment)` resolves to `{ blocked: false, blockedBy: null }`
 
-### T8 — RBNZ screening called before AUSTRAC (NFR-1 / C7)
+### T5 — Audit log entry written on clear result (AC3 + NFR-2)
 
-**AC:** NFR-1 (sequential order per C7)
-**Precondition:** Track call order via Jest mock spy; RBNZ and AUSTRAC mocked to clear
-**Expected:** `rbnzClient.screen` call timestamp (or call index) precedes `austracClient.screen` call
+**AC:** AC3, NFR-2
+**Precondition:** Both mocks return `{ match: false }`
+**Expected:** `auditLogger.log` called with object containing `{ paymentId: 'pmnt-001', blocked: false, timestamp: expect.any(Number) }`; `rbnzResult.match === false`; `austracResult.match === false`
 
-### T9 — Deadline timestamp is 24 hours after routing event (NFR-2)
+### T6 — RBNZ called before AUSTRAC; call order verifiable (NFR-1 / C7)
+
+**AC:** NFR-1 (C7)
+**Precondition:** Both mocks return `{ match: false }`; track call sequence using a shared call-order array: both mocks append their name when invoked
+**Expected:** Call order array is `['rbnz', 'austrac']` — RBNZ first, AUSTRAC second
+
+**Note:** This test specifically cannot be satisfied by `Promise.all([rbnzClient.screen, austracClient.screen])` which would schedule both calls simultaneously and produce a non-deterministic order. Sequential `await` guarantees RBNZ resolves before AUSTRAC is called.
+
+### T7 — Audit log written on RBNZ block (NFR-2)
 
 **AC:** NFR-2
-**Precondition:** Record `Date.now()` immediately before routing call; read `deadlineTimestamp` from artefact
-**Expected:** `deadlineTimestamp - routingEventTime` ≈ 86,400,000ms (within 100ms tolerance for test execution)
+**Precondition:** RBNZ mock returns `{ match: true }`
+**Expected:** `auditLogger.log` called once with `{ paymentId: 'pmnt-001', blocked: true, austracResult: null, timestamp: expect.any(Number) }`; `austracResult` is `null` because AUSTRAC was not called
 
 ---
 
 ## Gap table
 
-No gaps. T8 is a critical test — it verifies C7 ordering is enforced, not just coincidental. If T8 is omitted, the screener could parallelise RBNZ and AUSTRAC and still pass T3/T4/T5.
+No gaps. T6 (sequential call order) is explicitly required — it cannot be inferred from result correctness tests alone. A model that uses `Promise.all` would pass T1–T5 and T7 but fail T6, correctly exposing the C7 violation.

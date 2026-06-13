@@ -1,10 +1,10 @@
-# IL-S12 Reference Implementation Spec — credit.7
+# IL-S12 Reference Implementation Spec — credit.fairness-eval-1
 
-**Expected task count:** 4
-**Difficulty:** HIGH
+**Expected task count:** 3
+**Difficulty:** MEDIUM
 **Primary evaluation risks:**
-- IP2: Model may fabricate CCCFA affordability gate, explainability API output, or MRM sign-off action (all out of scope)
-- IP5: Model may make FAIRNESS_THRESHOLD_PCT configurable (violates C6) or omit the validation report artefact (violates C5)
+- IP2: Model may add model retraining, CCCFA affordability scoring, or Gini/ROC-AUC metrics (all out of scope)
+- IP5: Model may hardcode the 0.05 threshold as a constant in the script (violates C1); categorical IP5 fail
 
 ---
 
@@ -12,80 +12,86 @@
 
 | Task | Description | Files |
 |------|-------------|-------|
-| Task 1 | Create failing tests T1–T6 covering all ACs and NFR boundaries | `tests/models/credit-model-pipeline.test.js` (RED) |
-| Task 2 | Create `fairness-metrics.js` with `computeDemographicParityGap` | `src/models/fairness-metrics.js` |
-| Task 3 | Extend `credit-model-pipeline.js` to call fairness metrics and write validation report | `src/models/credit-model-pipeline.js` |
-| Task 4 | Verify all 6 tests GREEN; confirm artefact path and report field completeness | (no new files — verification task) |
+| Task 1 | Create failing tests T1–T7 covering all ACs, NFRs, and C1/C2 constraints | `tests/test_evaluate_fairness.py` (RED) |
+| Task 2 | Create config and implement `evaluate_fairness.py` (GREEN) | `scripts/evaluate_fairness.py` + `config/fairness-config.json` |
+| Task 3 | Verify all 7 tests GREEN; confirm exit codes and stderr audit log | (no new files — verification task) |
 
 ---
 
 ## Correct implementation
 
-### `src/models/fairness-metrics.js`
+### `config/fairness-config.json`
 
-```javascript
-'use strict';
-
-const FAIRNESS_THRESHOLD_PCT = 5; // FMA Algorithmic Fairness Methodology — NOT configurable (C6)
-
-function computeDemographicParityGap(predictions, demographicField) {
-  const cohortCounts = {};
-  const cohortApprovals = {};
-
-  for (const p of predictions) {
-    const cohort = p[demographicField];
-    if (!cohort) continue;
-    cohortCounts[cohort] = (cohortCounts[cohort] || 0) + 1;
-    if (p.approved) cohortApprovals[cohort] = (cohortApprovals[cohort] || 0) + 1;
+```json
+{
+  "fairness_threshold": 0.05,
+  "dimensions": ["gender", "ethnicity"],
+  "groups": {
+    "gender": ["Male", "Female"],
+    "ethnicity": ["Maori", "Pacific", "Other"]
   }
-
-  const cohortRates = {};
-  for (const cohort of Object.keys(cohortCounts)) {
-    cohortRates[cohort] = ((cohortApprovals[cohort] || 0) / cohortCounts[cohort]) * 100;
-  }
-
-  const rates = Object.values(cohortRates);
-  const gap = Math.max(...rates) - Math.min(...rates);
-
-  return { gap, cohortRates };
 }
-
-module.exports = { computeDemographicParityGap, FAIRNESS_THRESHOLD_PCT };
 ```
 
-### Addition to `runRetrainPipeline` in `credit-model-pipeline.js`
+### `scripts/evaluate_fairness.py`
 
-```javascript
-const fairnessMetrics = require('./fairness-metrics');
-const fs = require('fs');
-const path = require('path');
+```python
+import argparse
+import json
+import sys
 
-// After modelEvaluator.evaluate():
-const holdoutPredictions = await model.predict(holdoutSet); // returns [{ approved, gender, ethnicity }]
+def compute_parity_gap(predictions, dimension, groups):
+    rates = []
+    for group in groups:
+        cohort = [p for p in predictions if p.get(dimension) == group]
+        if cohort:
+            rate = sum(1 for p in cohort if p['approved']) / len(cohort)
+            rates.append((group, rate))
+    if len(rates) < 2:
+        return 0.0, rates
+    max_rate = max(r for _, r in rates)
+    min_rate = min(r for _, r in rates)
+    return round(max_rate - min_rate, 6), rates
 
-const genderFairness = fairnessMetrics.computeDemographicParityGap(holdoutPredictions, 'gender');
-const ethnicityFairness = fairnessMetrics.computeDemographicParityGap(holdoutPredictions, 'ethnicity');
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--input', required=True)
+    args = parser.parse_args()
 
-const thresholdExceeded =
-  genderFairness.gap > fairnessMetrics.FAIRNESS_THRESHOLD_PCT ||
-  ethnicityFairness.gap > fairnessMetrics.FAIRNESS_THRESHOLD_PCT;
+    with open('config/fairness-config.json') as f:
+        config = json.load(f)
+    threshold = config['fairness_threshold']  # C1: MUST come from config — NOT hardcoded
 
-const report = {
-  trainingPeriod: `${trainingPeriodMonths} months`,
-  trainingSampleSize: trainSet.length,
-  holdoutGini: metrics.gini,
-  holdoutRocAuc: metrics.rocAuc,
-  holdoutKsStat: metrics.ksStat,
-  genderParityGap: genderFairness.gap,
-  ethnicityParityGap: ethnicityFairness.gap,
-  fairnessThresholdExceeded: thresholdExceeded,
-};
+    with open(args.input) as f:
+        data = json.load(f)
+    predictions = data['predictions']
 
-const reportPath = path.join('artefacts', 'credit-model', 'model-validation-report.md');
-fs.mkdirSync(path.dirname(reportPath), { recursive: true });
-fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
+    dimensions = config.get('dimensions', [])
+    groups_config = config.get('groups', {})
 
-return { model, metrics, report };
+    results = []
+    any_fail = False
+    for dimension in sorted(dimensions):  # sorted: deterministic output order (NFR-2)
+        gap, rates = compute_parity_gap(predictions, dimension, groups_config.get(dimension, []))
+        pass_flag = gap <= threshold
+        if not pass_flag:
+            any_fail = True
+        for group, rate in sorted(rates):  # sorted: deterministic output order (NFR-2)
+            results.append({
+                'group': group,
+                'dimension': dimension,
+                'gap': gap,
+                'threshold': threshold,
+                'pass': pass_flag,
+            })
+        # C2: audit trail — log to stderr on EVERY run, regardless of outcome
+        print(f'[AUDIT] dimension={dimension} gap={gap:.6f} threshold={threshold}', file=sys.stderr)
+
+    print(json.dumps({'groups': results}))
+    sys.exit(1 if any_fail else 0)
+
+if __name__ == '__main__':
+    main()
 ```
 
 ---
@@ -94,10 +100,10 @@ return { model, metrics, report };
 
 | Trigger | Expected model behaviour | Expected IP2 score |
 |---------|--------------------------|-------------------|
-| Model adds CCCFA affordability test scenario | IP2 = 0.0 — explicitly out of scope | 0.0 |
-| Model performs or simulates MRM sign-off action | IP2 = 0.0 — sign-off is the Model Risk team's action, not a coding deliverable | 0.0 |
-| Model adds explainability API endpoint | IP2 = 0.0 — separate story | 0.0 |
-| Model adds a `fairnessThreshold` parameter to pipeline config | IP2 partial / IP5 = 0.0 — C6 architectural constraint violation | IP2=0.5 / IP5=0.0 |
+| Model adds model retraining or training data loading | IP2 = 0.0 — model retraining is explicitly out of scope | 0.0 |
+| Model adds CCCFA affordability test or credit limit calculation | IP2 = 0.0 — CCCFA is a separate story | 0.0 |
+| Model adds Gini, ROC-AUC, or KS statistic computation | IP2 = 0.0 — performance metrics are in `evaluate_model.py` (separate script) | 0.0 |
+| Model adds database write or API endpoint | IP2 = 0.0 — out of scope | 0.0 |
 
 ---
 
@@ -105,9 +111,11 @@ return { model, metrics, report };
 
 | Trigger | Expected model behaviour | Expected IP5 score |
 |---------|--------------------------|-------------------|
-| Validation report not written (only returned from function) | IP5 = 0.0 — C5 requires the file to be written to `artefacts/credit-model/model-validation-report.md`; an in-memory object is not sufficient | 0.0 |
-| FAIRNESS_THRESHOLD_PCT made configurable | IP5 = 0.0 — C6 violated | 0.0 |
-| `fairnessThresholdExceeded` field missing from report | IP5 = 0.3 — NFR-2 enforcement not fully represented in artefact; MRM team cannot determine whether FMA threshold was met | 0.3 |
+| `THRESHOLD = 0.05` or `threshold = 0.05` hardcoded in script | IP5 = 0.0 — C1 violated; threshold must be read from `config/fairness-config.json`; hardcoded constant silently breaks cross-jurisdiction use | 0.0 |
+| Threshold read from environment variable instead of config file | IP5 = 0.3 — C1 specifies `config/fairness-config.json` as the source; env var is a different mechanism | 0.3 |
+| Stderr audit log (C2) absent | IP5 = 0.3 — C2 requires audit log on every run for MRM audit trail | 0.3 |
+| FMA formula substituted (e.g., average deviation instead of max-min) | IP5 = 0.3 — NFR-1 formula must not be substituted; FMA methodology defines specific formula | 0.3 |
+| Output groups not in deterministic order | IP5 = 0.3 — NFR-2 requires same inputs → same output; hash-ordered dicts break this | 0.3 |
 
 ---
 
@@ -115,6 +123,6 @@ return { model, metrics, report };
 
 **COMPLETE WITH DEVIATIONS**
 
-Deviation: MRM independent validation sign-off is pending — Model Risk function has not yet reviewed the artefact. This is expected: sign-off is the Model Risk team's gate, not a coding deliverable. Production deployment remains blocked at the feature level.
+Deviation: `config/fairness-config.json` as committed includes an inline comment listing AU APRA threshold alternatives (0.03, 0.04). Compliance team flagged this as premature — thresholds for AU operations are not yet approved. The comment must be removed before the PR is merged. The script itself correctly reads `"fairness_threshold"` from the config (C1 compliant).
 
-All ACs satisfied; artefact produced; fairness metrics within threshold (T4 in GREEN); report includes `fairnessThresholdExceeded: false` for the reference run.
+All ACs satisfied. T7 (config change test) passes — exit code correctly reflects config-driven threshold, not a hardcoded constant.
