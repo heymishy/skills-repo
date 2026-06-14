@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-S13",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.955,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Model correctly calls COMPLETE, explicitly confirms all four out-of-scope items (SWIFT notification, AUSTRAC transaction reporting, FX reporting, DIA registration) are not present, and provides strong evidence-backed AC and NFR assessments; minor deductions for no explicit metric signal confirmation step and slight process reordering (test coverage before NFR check).",
+  "context_injection": false
+}

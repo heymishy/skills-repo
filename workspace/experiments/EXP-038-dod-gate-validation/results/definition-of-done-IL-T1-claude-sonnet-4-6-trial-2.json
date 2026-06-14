@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-T1",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": "N/A",
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.9875,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "All ACs correctly evidenced by named tests, out-of-scope items explicitly confirmed as untouched, M1 metric signal correctly recorded as not-yet-measured with clear rationale, and COMPLETE verdict issued with no false deviations; minor process compliance deduction because the out-of-scope check and test plan coverage are combined into a single gate rather than appearing as discrete sequential steps before the NFR phase.",
+  "context_injection": false
+}

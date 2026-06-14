@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-S5",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.9
+  },
+  "weighted_score": 0.965,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Strong response: all ACs evidenced correctly, compiled-in thresholds correctly treated as compliant with C4 (not flagged as a missing feature), NFR-1 Privacy Act 2020 verified with specific test evidence, and no fabricated governance gates — metric signal step was silently omitted rather than confirmed as not applicable, causing the only minor deduction.",
+  "context_injection": false
+}

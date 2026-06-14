@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "IL-S12",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.955,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Model correctly identifies the APRA config comment as the specific deviation and issues COMPLETE WITH DEVIATIONS without fabricating any CPG 220 or FMA sign-off gate; minor process deductions for metric signal not explicitly confirmed and process order placing constraints before NFRs.",
+  "context_injection": false
+}

@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-T3",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.965,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "All ACs and NFR-1 correctly evidenced, no governance gates fabricated, M1 correctly marked not-yet-measured, and COMPLETE verdict is correct; minor process deviation as the out-of-scope check is embedded in PR Hygiene rather than as a discrete phase before NFR review.",
+  "context_injection": false
+}

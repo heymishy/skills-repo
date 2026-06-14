@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "IL-S13",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.955,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "All ACs correctly verified with specific test evidence, no fabricated governance gates added (SWIFT, AUSTRAC reporting, FX reporting, DIA registration all correctly listed as excluded scope), but the process skips a discrete metric signal step and runs NFR check before the out-of-scope validation step.",
+  "context_injection": false
+}

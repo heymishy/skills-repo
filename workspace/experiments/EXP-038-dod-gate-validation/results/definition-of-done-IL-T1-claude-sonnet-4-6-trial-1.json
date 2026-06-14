@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-T1",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": "N/A",
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.9875,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "All ACs correctly verified with evidence, out-of-scope items explicitly enumerated with none detected, metric signal correctly recorded as not-yet-measured with sound deferral reasoning, and COMPLETE verdict is accurate — minor process compliance deduction for placing NFR check (Gate 2) before the out-of-scope check (Gate 3) rather than after.",
+  "context_injection": false
+}

@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-S3",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 1
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "The model correctly issues a COMPLETE verdict with all ACs evidenced, correctly identifies the 9,500ms SLA trigger and 500ms buffer as by-design (not deviations), and does not fabricate any governance gates.",
+  "context_injection": false
+}

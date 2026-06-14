@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "IL-S5",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.955,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "All ACs correctly assessed with evidence, hardcoded thresholds correctly identified as spec-compliant (not flagged as a missing feature per C4), out-of-scope items explicitly listed, and no fabricated governance gates — metric signal step is silently absent (minor gap) and process order places NFR check before test coverage.",
+  "context_injection": false
+}

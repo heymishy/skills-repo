@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "IL-T1",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": "N/A",
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.9875,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "All ACs correctly verified with test evidence, out-of-scope boundaries explicitly confirmed, metric signal correctly recorded as not-yet-measured with appropriate rationale, and no false deviations added; minor process compliance deduction for presenting results in a consolidated checklist table rather than the discrete sequential AC→scope→tests→NFR→metric→verdict order.",
+  "context_injection": false
+}
