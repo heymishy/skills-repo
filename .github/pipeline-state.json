@@ -6,27 +6,27 @@
     "spikes": {
       "spike-a": {
         "verdict": "PROCEED",
-        "verdictAt": "2026-04-19T23:59:00.000Z",
+        "verdictAt": "2026-04-19T23:59:00Z",
         "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-a-output.md"
       },
       "spike-b1": {
         "verdict": "PROCEED",
-        "verdictAt": "2026-04-20T12:00:00.000Z",
+        "verdictAt": "2026-04-20T12:00:00Z",
         "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b1-output.md"
       },
       "spike-b2": {
         "verdict": "PROCEED",
-        "verdictAt": "2026-04-19T23:59:00.000Z",
+        "verdictAt": "2026-04-19T23:59:00Z",
         "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b2-output.md"
       },
       "spike-c": {
         "verdict": "PROCEED",
-        "verdictAt": "2026-04-20T14:00:00.000Z",
+        "verdictAt": "2026-04-20T14:00:00Z",
         "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-c-output.md"
       },
       "spike-d": {
         "verdict": "PROCEED",
-        "verdictAt": "2026-04-20T16:00:00.000Z",
+        "verdictAt": "2026-04-20T16:00:00Z",
         "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-d-output.md"
       }
     }
@@ -2344,9 +2344,9 @@
           "acVerified": 7,
           "stage": "released",
           "health": "green",
-          "updatedAt": "2026-05-05T00:00:00.000Z",
+          "updatedAt": "2026-05-05T00:00:00Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/304",
-          "dispatchedAt": "2026-05-05T00:00:00.000Z",
+          "dispatchedAt": "2026-05-05T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/309",
           "dodStatus": "passed"
@@ -2371,9 +2371,9 @@
           "acVerified": 5,
           "stage": "released",
           "health": "green",
-          "updatedAt": "2026-05-05T00:00:00.000Z",
+          "updatedAt": "2026-05-05T00:00:00Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/303",
-          "dispatchedAt": "2026-05-05T00:00:00.000Z",
+          "dispatchedAt": "2026-05-05T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/308",
           "dodStatus": "passed"
@@ -2397,9 +2397,9 @@
           "acVerified": 9,
           "stage": "released",
           "health": "green",
-          "updatedAt": "2026-05-05T00:00:00.000Z",
+          "updatedAt": "2026-05-05T00:00:00Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/305",
-          "dispatchedAt": "2026-05-05T00:00:00.000Z",
+          "dispatchedAt": "2026-05-05T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/310",
           "dodStatus": "passed"
@@ -2423,9 +2423,9 @@
           "acVerified": 6,
           "stage": "released",
           "health": "green",
-          "updatedAt": "2026-05-05T00:00:00.000Z",
+          "updatedAt": "2026-05-05T00:00:00Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/306",
-          "dispatchedAt": "2026-05-05T00:00:00.000Z",
+          "dispatchedAt": "2026-05-05T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/311",
           "dodStatus": "passed"
@@ -2449,9 +2449,9 @@
           "acVerified": 6,
           "stage": "released",
           "health": "green",
-          "updatedAt": "2026-05-05T00:00:00.000Z",
+          "updatedAt": "2026-05-05T00:00:00Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/307",
-          "dispatchedAt": "2026-05-05T00:00:00.000Z",
+          "dispatchedAt": "2026-05-05T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/312",
           "dodStatus": "passed"
@@ -2629,7 +2629,7 @@
           "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-1-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/313",
-          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchedAt": "2026-05-07T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
           "dodStatus": "complete",
@@ -2660,7 +2660,7 @@
           "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-2-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/314",
-          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchedAt": "2026-05-07T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
           "dodStatus": "complete",
@@ -2691,7 +2691,7 @@
           "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-3-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/315",
-          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchedAt": "2026-05-07T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
           "dodStatus": "complete",
@@ -2722,7 +2722,7 @@
           "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-4-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/316",
-          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchedAt": "2026-05-07T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
           "dodStatus": "complete",
@@ -2753,7 +2753,7 @@
           "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-5-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/317",
-          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchedAt": "2026-05-07T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
           "dodStatus": "complete",
@@ -2784,7 +2784,7 @@
           "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-6-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/318",
-          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchedAt": "2026-05-07T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
           "dodStatus": "complete",
@@ -2815,7 +2815,7 @@
           "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-7-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/319",
-          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchedAt": "2026-05-07T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
           "dodStatus": "complete",
@@ -2909,7 +2909,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.1-dor.md",
           "updatedAt": "2026-05-09",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/321",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode"
         },
         {
@@ -2932,7 +2932,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.2-dor.md",
           "updatedAt": "2026-05-09",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/322",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode"
         },
         {
@@ -2955,7 +2955,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.3-dor.md",
           "updatedAt": "2026-05-09",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/323",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode"
         },
         {
@@ -2978,7 +2978,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.4-dor.md",
           "updatedAt": "2026-05-09",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/324",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode"
         },
         {
@@ -3001,7 +3001,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.5-dor.md",
           "updatedAt": "2026-05-09",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/325",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode"
         },
         {
@@ -3024,7 +3024,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.6-dor.md",
           "updatedAt": "2026-05-09",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/326",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode"
         }
       ]
@@ -3063,7 +3063,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.1-dor.md",
           "updatedAt": "2026-05-08",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/327",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode",
           "dodStatus": "complete",
           "releaseReady": true,
@@ -3089,7 +3089,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.2-dor.md",
           "updatedAt": "2026-05-08",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/328",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode",
           "dodStatus": "complete-with-deviations",
           "releaseReady": false,
@@ -3116,7 +3116,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.3-dor.md",
           "updatedAt": "2026-05-08",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/329",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode",
           "dodStatus": "complete-with-deviations",
           "releaseReady": false,
@@ -4373,6 +4373,99 @@
           "updatedAt": "2026-05-27"
         }
       ]
+    },
+    {
+      "discoveryArtefact": "artefacts/2026-06-14-web-ui-pm-flow/discovery.md",
+      "track": "standard",
+      "metrics": [
+        {
+          "name": "WIP visibility — all active features visible on board without scrolling (up to 12 features)",
+          "evidence": null,
+          "minimumSignal": "board renders correctly with real pipeline-state.json",
+          "target": "all active features visible at /features?view=board without scrolling",
+          "lastMeasured": null,
+          "tier": 2,
+          "contributingStories": [
+            "pmf.1"
+          ],
+          "id": "M1",
+          "signal": "not-yet-measured",
+          "baseline": "not visible (list view only)"
+        },
+        {
+          "name": "Idea capture rate — ideas captured in workspace/ideas.json within 14 days of pmf.2 DoD",
+          "evidence": null,
+          "minimumSignal": "at least 1 idea captured",
+          "target": "3+ ideas captured within 14 days of pmf.2 DoD",
+          "lastMeasured": null,
+          "tier": 2,
+          "contributingStories": [
+            "pmf.2"
+          ],
+          "id": "M2",
+          "signal": "not-yet-measured",
+          "baseline": "0 ideas (file initialised empty 2026-06-14)"
+        },
+        {
+          "name": "Session start click-count — operator reaches correct skill session in 2 clicks or fewer",
+          "evidence": null,
+          "minimumSignal": "pmf.3 orientation wizard implemented and DoD complete",
+          "target": "2 clicks or fewer from homepage to skill session for returning user",
+          "lastMeasured": null,
+          "tier": 2,
+          "contributingStories": [
+            "pmf.3"
+          ],
+          "id": "M3",
+          "signal": "not-yet-measured",
+          "baseline": "3-4 clicks (manual navigate /features to feature to skill)"
+        }
+      ],
+      "discoveryStatus": "draft",
+      "complianceFrameworks": [],
+      "regulated": false,
+      "stage": "discovery",
+      "storyCount": 3,
+      "sensitiveDataCategories": [],
+      "health": "green",
+      "name": "Web UI Product Management Flow — Kanban Board, Ideas Backlog, and Context-Aware Session Start",
+      "slug": "2026-06-14-web-ui-pm-flow",
+      "updatedAt": "2026-06-14T00:00:00Z",
+      "epics": [
+        {
+          "name": "Product Management Flow — Web UI",
+          "slug": "pmf-epic-1",
+          "status": "in-progress",
+          "stories": [
+            {
+              "updatedAt": "2026-06-14",
+              "slug": "pmf.1",
+              "notes": "Implemented in commit 7c42380 ahead of formal artefacts — process exception. Requires test-plan artefact, review artefact, DoR, and DoD to complete.",
+              "stage": "review",
+              "health": "green",
+              "name": "Kanban board view at /features?view=board"
+            },
+            {
+              "updatedAt": "2026-06-14",
+              "slug": "pmf.2",
+              "notes": "Implemented in commit 7c42380 ahead of formal artefacts — process exception. Requires test-plan artefact, review artefact, DoR, and DoD to complete.",
+              "stage": "review",
+              "health": "green",
+              "name": "Ideas backlog — workspace/ideas.json and /api/ideas CRUD"
+            },
+            {
+              "updatedAt": "2026-06-14",
+              "slug": "pmf.3",
+              "notes": "Planned only. Must not be implemented until discovery approved, benefit-metric complete, definition stories written, and DoR signed off.",
+              "stage": "discovery",
+              "health": "green",
+              "name": "Context-aware orientation wizard — three-step session start"
+            }
+          ]
+        }
+      ],
+      "complianceProfile": "standard",
+      "epicCount": 1
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
