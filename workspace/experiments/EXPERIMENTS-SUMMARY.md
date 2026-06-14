@@ -413,19 +413,65 @@ _Costs in USD. NZD ×1.65 approx._
 
 ### Human equivalent comparison
 
-| Task | Human estimate | AI cost | Saving |
-|------|---------------|---------|--------|
-| Requirements gathering + story writing (analyst, 0.5 day) | NZD $288 | NZD $0.05 | >99% |
-| Story review (senior engineer, 1 hour) | NZD $72 | NZD $0.01 | >99% |
-| Test plan (QA lead, 1–2 hours) | NZD $100 | NZD $0.01 | >99% |
-| DoR gate check (scrum master/lead, 0.5 hour) | NZD $36 | NZD $0.01 | >99% |
-| Implementation plan (senior engineer, 2–4 hours) | NZD $200 | NZD $0.03 | >99% |
-| DoD check (QA/lead, 0.5 hour) | NZD $36 | NZD $0.01 | >99% |
-| **Full pipeline (1–2 days of human work)** | **NZD $600–$1,200** | **NZD $0.13** | **>99%** |
+#### What the discovery process actually costs
 
-_Human rates based on NZD 150,000/year ($575/day, $72/hour at 260 working days)._
+The table below compares AI pipeline cost against the *mechanical drafting* time only — a single analyst spending half a day writing a document. That comparison dramatically understates the real picture.
 
-**What this means in practice:** A team running 50 features per year through the full AI pipeline saves roughly NZD $30,000–$60,000 in analyst/engineer time — money that can be redirected to design, architecture, or delivery. The AI does not replace judgment; it removes the mechanical drafting work.
+In practice, the /discovery stage does not happen in isolation. It is the output of a process that typically looks like this:
+
+- **2–20 weeks of elapsed time** depending on feature complexity and stakeholder count
+- **Multiple workshops** — requirements gathering, constraint identification, regulatory alignment, architecture scoping
+- **Stakeholder coordination** — product owners, tech leads, compliance/legal, operations, sometimes external auditors or scheme participants (in payments contexts)
+- **Refinement and clarification rounds** — typically 3–8 back-and-forth sessions before a discovery artefact is stable enough for definition
+- **Document production** — the artefact itself, which takes 1–4 days of analyst time once the inputs are clear
+
+A realistic people-cost for a single feature discovery in a regulated financial services context:
+
+| Participant | Typical commitment | Hours | Cost at $72/hr |
+|-------------|-------------------|-------|----------------|
+| Business analyst (lead) | 2–4 weeks | 60–120 hrs | $4,300–$8,600 |
+| Product owner | Weekly + workshops | 10–20 hrs | $720–$1,440 |
+| Senior engineer | Architecture input + review | 8–20 hrs | $575–$1,440 |
+| Compliance/legal | Constraint validation | 4–12 hrs | $290–$865 |
+| Stakeholder workshops (3–8 people × 3–6 sessions × 2 hrs) | — | 18–96 person-hrs | $1,300–$6,900 |
+| **Total (realistic, single feature)** | **2–20 weeks elapsed** | **100–270 person-hrs** | **NZD $7,200–$19,200** |
+
+_Conservative end assumes a small, well-aligned team and a straightforward feature. High end assumes a regulated feature touching multiple domains (e.g. real-time payments onboarding with AML, scheme compliance, and downstream system impacts)._
+
+#### What the AI changes — and what it does not
+
+The AI pipeline does not eliminate workshops, stakeholder alignment, or regulatory input. People who hold the constraints in their heads still need to surface them. What changes:
+
+- **Drafting time collapses.** The structured discovery artefact that takes an analyst 1–4 days to write is produced in 5 minutes from the inputs gathered in the sessions. Iteration on the document (review → revise → review cycles) is minutes, not days.
+- **Clarification loops shorten.** The AI immediately surfaces ambiguities, asks structured questions, and flags missing constraints. Human clarification sessions that would run over weeks can often be compressed because the AI's structured questions give stakeholders a concrete document to react to rather than a blank page.
+- **The constraint-capture problem is much harder to miss.** Without AI, constraints buried in a stakeholder conversation often don't make it into the specification — they rely on the analyst's memory and diligence. The AI extracts and structures them explicitly. EXP-020 demonstrated this: Sonnet with a regulatory context file achieved a perfect score on a multi-jurisdiction AML/CFT discovery case (S10 = 1.000) that would require significant domain expertise and careful drafting from a human analyst.
+
+A conservative estimate is that the AI pipeline reduces the **elapsed human effort for document production and iteration** by 60–80%, while leaving stakeholder alignment and domain input largely unchanged. Applied to the realistic cost range above:
+
+| Scenario | Human-only cost | AI-assisted cost (people + API) | Saving |
+|----------|----------------|--------------------------------|--------|
+| Simple feature (2–4 weeks discovery) | NZD $7,200 | NZD $2,900–4,300 | ~$4,000+ |
+| Complex regulated feature (8–20 weeks) | NZD $13,000–19,200 | NZD $3,500–6,500 | ~$10,000–13,000 |
+
+_API cost is negligible (~NZD $0.13 per full pipeline run). The remaining cost is human time for workshops, stakeholder sessions, and review — which the AI does not eliminate but does substantially compress._
+
+#### Full pipeline stage-by-stage comparison
+
+The table below shows the AI cost against the minimal human drafting time only — not the full discovery process described above.
+
+| Task | Minimal human drafting estimate | AI cost | Notes |
+|------|--------------------------------|---------|-------|
+| Requirements gathering + story writing | NZD $2,000–8,000 (full process) | NZD $0.05 | AI produces artefact; humans still run workshops |
+| Story review | NZD $145–$290 (2–4 hrs, senior engineer) | NZD $0.01 | AI flags defects; human makes judgment calls on borderline findings |
+| Test plan | NZD $215–$575 (3–8 hrs, QA lead) | NZD $0.01 | AI produces full test plan including k6 load scripts and NFR assertions |
+| DoR gate check | NZD $72–$145 (1–2 hrs, lead) | NZD $0.01 | AI runs 17-point checklist; human signs off READY verdict |
+| Implementation plan | NZD $575–$1,150 (8–16 hrs, senior engineer) | NZD $0.03 | AI produces scaffolded code plan with architecture decisions |
+| DoD check | NZD $72–$145 (1–2 hrs, QA/lead) | NZD $0.01 | AI traces each AC to evidence; human approves DONE verdict |
+| **Full pipeline** | **NZD $3,100–$10,300 per feature** | **NZD $0.13** | **AI produces all artefacts; human judgment on each gate** |
+
+_Human rates: NZD 150,000/year = $575/day, $72/hour at 260 working days._
+
+**At 50 features per year**, the drafting and gate-checking cost savings alone are NZD **$155,000–$515,000** — before counting the elapsed-time savings from compressing 2–20-week discovery processes. At 100 features per year, those numbers double. In a delivery team where the constraint is the senior engineering and analytical capacity available, the AI pipeline effectively multiplies throughput without adding headcount.
 
 ### The regulated constraint risk
 
