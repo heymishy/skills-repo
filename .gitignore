@@ -8,6 +8,9 @@ workspace/test-tmp-cdg5/
 node_modules/
 test-results/
 
+# Excel / Office temp lock files
+~$*
+
 # Local dev secrets
 .env
 
