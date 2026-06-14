@@ -26,7 +26,7 @@
 
 ---
 
-## Definition artefact (inline)
+### Definition artefact (inline)
 
 Story: rtp.3 — Enforce 10-second acknowledgement SLA
 
@@ -39,7 +39,7 @@ Out of scope: fraud vendor API integration, outbound RTP, AML load testing infra
 
 ---
 
-## Test plan summary
+### Test plan summary
 
 | Test | AC/NFR | Status |
 |------|--------|--------|
@@ -53,7 +53,7 @@ Out of scope: fraud vendor API integration, outbound RTP, AML load testing infra
 
 ---
 
-## Test run evidence
+### Test run evidence
 
 ```
 PASS tests/payments/rtp-sla-timer.test.js
@@ -73,7 +73,7 @@ Tests:       5 passed, 5 total
 
 ---
 
-## AC verification results
+### AC verification results
 
 | Scenario | Result |
 |----------|--------|
@@ -84,7 +84,7 @@ Tests:       5 passed, 5 total
 
 ---
 
-## PR diff summary
+### PR diff summary
 
 **Files changed:**
 - `src/payments/rtp-sla-timer.js` — new module; `withSlaTimer` wrapper using `Promise.race` with 9,500ms `setTimeout`; always logs `receiptTimestamp`, `ackTimestamp`, `elapsedMs`
@@ -94,12 +94,12 @@ Tests:       5 passed, 5 total
 
 ---
 
-## Out-of-scope check
+### Out-of-scope check
 
 No scope outside the Contract Proposal. Fraud vendor integration not touched. AML screening stub unchanged. No SWIFT paths, no batch reconciliation, no outbound RTP processing.
 
 ---
 
-## NFR check
+### NFR check
 
 NFR-1: P99 < 9,000ms verified at 40 tps (T_NFR_1 PASS). SLA trigger threshold is 9,500ms (500ms buffer before 10,000ms hard deadline). Evidence present.

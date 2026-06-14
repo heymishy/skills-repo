@@ -27,7 +27,7 @@
 
 ---
 
-## Definition artefact (inline)
+### Definition artefact (inline)
 
 Story: payments.aml-screener-1 — Implement dual-AML screener for trans-Tasman payment channel
 
@@ -41,7 +41,7 @@ Out of scope: Payment routing, SWIFT notification artefact, AUSTRAC transaction 
 
 ---
 
-## Test plan summary
+### Test plan summary
 
 | Test | AC/NFR | Status |
 |------|--------|--------|
@@ -57,7 +57,7 @@ Out of scope: Payment routing, SWIFT notification artefact, AUSTRAC transaction 
 
 ---
 
-## Test run evidence
+### Test run evidence
 
 ```
 PASS tests/aml/dual-aml-screener.test.js
@@ -76,7 +76,7 @@ Tests:       7 passed, 7 total
 
 ---
 
-## AC verification results
+### AC verification results
 
 | Scenario | Result |
 |----------|--------|
@@ -88,7 +88,7 @@ Tests:       7 passed, 7 total
 
 ---
 
-## PR diff summary
+### PR diff summary
 
 **Files changed:**
 - `src/aml/dual-aml-screener.js` — new module; exports `screenCrossBorder(payment)`; sequential RBNZ-then-AUSTRAC (C7 — no `Promise.all`); `auditLogger.log()` called in all outcome paths (C8)
@@ -96,13 +96,13 @@ Tests:       7 passed, 7 total
 
 ---
 
-## Out-of-scope check
+### Out-of-scope check
 
 No routing logic. No SWIFT notification artefact. No AUSTRAC transaction reporting. No FX reporting. No DIA registration. Module is a pure AML screening component — 2 files only.
 
 ---
 
-## NFR check
+### NFR check
 
 NFR-1 (Sequential): `await rbnzClient.screen(payment)` resolves before `austracClient.screen()` is called. T6 verifies call order deterministically. No `Promise.all`.
 

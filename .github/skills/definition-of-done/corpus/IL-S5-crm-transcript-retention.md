@@ -26,7 +26,7 @@
 
 ---
 
-## Definition artefact (inline)
+### Definition artefact (inline)
 
 Story: crm.4 — Enforce transcript PII retention policy
 
@@ -39,7 +39,7 @@ Out of scope: Consent workflow, CRM attachment redaction, Azure Cosmos DB migrat
 
 ---
 
-## Test plan summary
+### Test plan summary
 
 | Test | AC/NFR | Status |
 |------|--------|--------|
@@ -56,7 +56,7 @@ Out of scope: Consent workflow, CRM attachment redaction, Azure Cosmos DB migrat
 
 ---
 
-## Test run evidence
+### Test run evidence
 
 ```
 PASS tests/crm/transcript-retention.test.js
@@ -76,7 +76,7 @@ Tests:       8 passed, 8 total
 
 ---
 
-## AC verification results
+### AC verification results
 
 | Scenario | Result |
 |----------|--------|
@@ -87,7 +87,7 @@ Tests:       8 passed, 8 total
 
 ---
 
-## PR diff summary
+### PR diff summary
 
 **Files changed:**
 - `src/crm/transcript-retention.js` — new module; `runRetentionJob()` with compiled-in 90/365-day thresholds; processes all records from `transcript-store`; writes audit entries to `retention-audit-store`
@@ -96,12 +96,12 @@ Tests:       8 passed, 8 total
 
 ---
 
-## Out-of-scope check
+### Out-of-scope check
 
 No consent workflow, no Azure Cosmos DB migration, no attachment redaction, no CRM adapter changes. Threshold constants are not configurable — no export for threshold override. Scheduling wiring (crm.5) not included.
 
 ---
 
-## NFR check
+### NFR check
 
 NFR-1 (Privacy Act 2020): 90-day redact threshold confirmed by T1 (pass at 90 days) and T3 (boundary: 89-day record untouched). 365-day purge threshold confirmed by T4 (pass at 365 days) and T5 (boundary: 364-day record survives). Thresholds are compiled-in constants per C4 (PIA-2026-14). Evidence present.

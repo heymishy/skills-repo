@@ -26,7 +26,7 @@
 
 ---
 
-## Definition artefact (inline)
+### Definition artefact (inline)
 
 Story: credit.fairness-eval-1 — Implement demographic parity evaluation script
 
@@ -42,7 +42,7 @@ Out of scope: Model retraining, CCCFA affordability, Gini/ROC-AUC/KS metrics, re
 
 ---
 
-## Test plan summary
+### Test plan summary
 
 | Test | AC/NFR | Status |
 |------|--------|--------|
@@ -58,7 +58,7 @@ Out of scope: Model retraining, CCCFA affordability, Gini/ROC-AUC/KS metrics, re
 
 ---
 
-## Test run evidence
+### Test run evidence
 
 ```
 tests/test_evaluate_fairness.py::test_json_output_schema PASSED
@@ -74,7 +74,7 @@ tests/test_evaluate_fairness.py::test_config_threshold_drives_exit_code PASSED
 
 ---
 
-## AC verification results
+### AC verification results
 
 | Scenario | Result |
 |----------|--------|
@@ -86,7 +86,7 @@ tests/test_evaluate_fairness.py::test_config_threshold_drives_exit_code PASSED
 
 ---
 
-## PR diff summary
+### PR diff summary
 
 **Files changed:**
 - `scripts/evaluate_fairness.py` — new script; reads threshold from config/fairness-config.json (C1 compliant); computes FMA max-min gap per dimension; outputs JSON to stdout; logs audit trail to stderr (C2); exits 0 or 1
@@ -95,13 +95,13 @@ tests/test_evaluate_fairness.py::test_config_threshold_drives_exit_code PASSED
 
 ---
 
-## Out-of-scope check
+### Out-of-scope check
 
 No model retraining. No CCCFA affordability scoring. No Gini, ROC-AUC, or KS computation. No database writes. No API endpoints. No real-time inference. Threshold is NOT a constant in the script — it is read from `config/fairness-config.json` on every invocation.
 
 ---
 
-## NFR check
+### NFR check
 
 NFR-1 (FMA formula): `gap = max(group_approval_rate) - min(group_approval_rate)` per dimension. T5 verifies formula on three-group ethnicity case (max 0.70, min 0.55 → gap 0.15). Correct.
 
@@ -109,6 +109,6 @@ NFR-2 (Reproducibility): T6 runs script twice with identical input; stdout strin
 
 ---
 
-## Deviation record
+### Deviation record
 
 **D1:** `config/fairness-config.json` as committed includes a JSON comment listing AU APRA threshold alternatives (0.03, 0.04). Compliance team flagged this as premature — AU APRA thresholds are not yet approved for use. The comment must be removed before the PR is merged to avoid compliance confusion. The script itself correctly reads `"fairness_threshold"` from config (C1 compliant — no hardcoded constant in script). This deviation is minor and does not affect AC pass/fail.
