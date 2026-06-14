@@ -1,0 +1,17 @@
+{
+  "skill": "definition-of-ready",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "g1_hard_block_accuracy": 0.5,
+    "g2_warning_identification": 0.4,
+    "g3_coding_agent_instructions": 0,
+    "g4_contract_proposal_quality": 0,
+    "g5_oversight_calibration": 0.4,
+    "g6_process_compliance": 0
+  },
+  "weighted_score": 0.215,
+  "pass": false,
+  "compliant": false,
+  "notes": "categorical_fail: no_hard_blocks_run — the response produces a ready sign-off and recommendations without executing the defined H1–H13/H-GOV/H-NFR/H-ADAPTER hard block checklist, omits the Contract Proposal and Contract Review phases entirely, has no Coding Agent Instructions block, and shows no oversight level identification with protocol, making the output structurally non-compliant with the DoR skill process.",
+  "context_injection": false
+}
