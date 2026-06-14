@@ -4421,16 +4421,15 @@
           "baseline": "3-4 clicks (manual navigate /features to feature to skill)"
         }
       ],
-      "discoveryStatus": "draft",
       "complianceFrameworks": [],
       "regulated": false,
-      "stage": "discovery",
+      "stage": "definition-of-ready",
       "storyCount": 3,
       "sensitiveDataCategories": [],
       "health": "green",
       "name": "Web UI Product Management Flow — Kanban Board, Ideas Backlog, and Context-Aware Session Start",
       "slug": "2026-06-14-web-ui-pm-flow",
-      "updatedAt": "2026-06-14T00:00:00Z",
+      "updatedAt": "2026-06-15T00:00:00Z",
       "epics": [
         {
           "name": "Product Management Flow — Web UI",
@@ -4438,34 +4437,83 @@
           "status": "in-progress",
           "stories": [
             {
-              "updatedAt": "2026-06-14",
+              "updatedAt": "2026-06-15",
               "slug": "pmf.1",
               "notes": "Implemented in commit 7c42380 ahead of formal artefacts — process exception. Requires test-plan artefact, review artefact, DoR, and DoD to complete.",
-              "stage": "review",
+              "stage": "definition-of-done",
               "health": "green",
-              "name": "Kanban board view at /features?view=board"
+              "name": "Kanban board view at /features?view=board",
+              "hasLayoutDependentGaps": false,
+              "reviewStatus": "passed",
+              "dorStatus": "signed-off",
+              "reviewArtefact": "artefacts/2026-06-14-web-ui-pm-flow/review/pmf.1-review-1.md",
+              "dorArtefact": "artefacts/2026-06-14-web-ui-pm-flow/dor/pmf.1-dor.md",
+              "dorContract": "artefacts/2026-06-14-web-ui-pm-flow/dor/pmf.1-dor-contract.md",
+              "testPlan": {
+                "status": "all-passing",
+                "artefact": "artefacts/2026-06-14-web-ui-pm-flow/test-plans/pmf.1-test-plan.md",
+                "totalTests": 30,
+                "passing": 30
+              },
+              "dodStatus": "complete",
+              "highFindings": 0,
+              "acTotal": 5,
+              "acVerified": 5
             },
             {
-              "updatedAt": "2026-06-14",
+              "updatedAt": "2026-06-15",
               "slug": "pmf.2",
               "notes": "Implemented in commit 7c42380 ahead of formal artefacts — process exception. Requires test-plan artefact, review artefact, DoR, and DoD to complete.",
-              "stage": "review",
+              "stage": "definition-of-done",
               "health": "green",
-              "name": "Ideas backlog — workspace/ideas.json and /api/ideas CRUD"
+              "name": "Ideas backlog — workspace/ideas.json and /api/ideas CRUD",
+              "hasLayoutDependentGaps": false,
+              "reviewStatus": "passed",
+              "dorStatus": "signed-off",
+              "reviewArtefact": "artefacts/2026-06-14-web-ui-pm-flow/review/pmf.2-review-1.md",
+              "dorArtefact": "artefacts/2026-06-14-web-ui-pm-flow/dor/pmf.2-dor.md",
+              "dorContract": "artefacts/2026-06-14-web-ui-pm-flow/dor/pmf.2-dor-contract.md",
+              "testPlan": {
+                "status": "all-passing",
+                "artefact": "artefacts/2026-06-14-web-ui-pm-flow/test-plans/pmf.2-test-plan.md",
+                "totalTests": 10,
+                "passing": 10
+              },
+              "dodStatus": "complete",
+              "highFindings": 0,
+              "acTotal": 7,
+              "acVerified": 7
             },
             {
-              "updatedAt": "2026-06-14",
+              "updatedAt": "2026-06-15",
               "slug": "pmf.3",
-              "notes": "Planned only. Must not be implemented until discovery approved, benefit-metric complete, definition stories written, and DoR signed off.",
-              "stage": "discovery",
+              "notes": "DoR signed off 2026-06-15. Ready for implementation.",
+              "stage": "definition-of-ready",
               "health": "green",
-              "name": "Context-aware orientation wizard — three-step session start"
+              "name": "Context-aware orientation wizard — three-step session start",
+              "reviewStatus": "passed",
+              "dorStatus": "signed-off",
+              "reviewArtefact": "artefacts/2026-06-14-web-ui-pm-flow/review/pmf.3-review-1.md",
+              "dorArtefact": "artefacts/2026-06-14-web-ui-pm-flow/dor/pmf.3-dor.md",
+              "dorContract": "artefacts/2026-06-14-web-ui-pm-flow/dor/pmf.3-dor-contract.md",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-14-web-ui-pm-flow/test-plans/pmf.3-test-plan.md",
+                "totalTests": 8,
+                "passing": 0
+              },
+              "highFindings": 0,
+              "acTotal": 9,
+              "acVerified": 0
             }
           ]
         }
       ],
       "complianceProfile": "standard",
-      "epicCount": 1
+      "epicCount": 1,
+      "discoveryStatus": "approved",
+      "benefitMetricArtefact": "artefacts/2026-06-14-web-ui-pm-flow/benefit-metric.md",
+      "nfrProfileArtefact": "artefacts/2026-06-14-web-ui-pm-flow/nfr-profile.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

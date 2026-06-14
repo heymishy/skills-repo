@@ -1352,6 +1352,18 @@ function _setHtmlSession(sessionId, data) {
 }
 
 /**
+ * List all entries in the session store — used by pmf.3 orientation wizard Step 3.
+ * @returns {Array<{sessionId: string, session: object}>}
+ */
+function _listHtmlSessions() {
+  var result = [];
+  _sessionStore.forEach(function(session, id) {
+    result.push({ sessionId: id, session: session });
+  });
+  return result;
+}
+
+/**
  * Process one user turn in the model-first chat flow.
  * Appends user turn, calls _skillTurnExecutor once, parses artefact signal, appends assistant turn.
  *
@@ -2387,7 +2399,7 @@ module.exports = {
   handleGetChatHtml, handlePostTurnHtml,
   htmlSubmitTurn, buildSystemPrompt,
   // wuce.26 — test helpers + skill-turn executor adapter setter
-  _getHtmlSession, _setHtmlSession, setSkillTurnExecutorAdapter,
+  _getHtmlSession, _setHtmlSession, _listHtmlSessions, setSkillTurnExecutorAdapter,
   // wsm.1 — disk session writer injectable
   setSessionStore,
   // ougl.2 — journey session link

@@ -1,6 +1,7 @@
 # Discovery: Web UI Product Management Flow
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
+**Approved by:** Hamish King — Platform operator / tech lead — 2026-06-14
 **Created:** 2026-06-14
 **Author:** Hamish King (Platform operator / tech lead) + Copilot (Claude Sonnet 4.6)
 **Attribution:** Hamish King — Platform operator / tech lead
