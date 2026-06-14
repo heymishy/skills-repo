@@ -167,6 +167,17 @@ function renderChat(data) {
       '.btn-flag:hover    { background:#FFF1F2;color:#991B1B;border-color:#FCA5A5; }',
       '.btn-confirmed-state { background:#DCFCE7;color:#166534;border-color:#6EE7B7; }',
       '.btn-flagged-state   { background:#FFF1F2;color:#991B1B;border-color:#FCA5A5; }',
+      /* inc2.1 — condition card styles */
+      '.ci-section-head { display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--line-2);flex-shrink:0; }',
+      '.ci-section-label { font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted); }',
+      '.condition-card { border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--surface);display:flex;flex-direction:column;gap:5px; }',
+      '.condition-card-meta { display:flex;align-items:center;gap:6px;flex-wrap:wrap; }',
+      '.ci-type-tag { font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:1px 6px;border-radius:3px; }',
+      '.ci-type-constraint  { background:#FEE2E2;color:#991B1B; }',
+      '.ci-type-dependency  { background:#DBEAFE;color:#1E40AF; }',
+      '.ci-type-outcome     { background:#DCFCE7;color:#166534; }',
+      '.ci-source { font-size:10px;color:var(--muted); }',
+      '.condition-card-text { font-size:12px;line-height:1.5;color:var(--ink); }',
     '</style>',
     (data.contextManifestHtml ||
       '<div id="context-manifest" role="region" aria-label="Loaded context files"' +
@@ -198,8 +209,15 @@ function renderChat(data) {
         '</footer>',
       '</section>',
 
-      // RIGHT: live draft (two named sections: assumption cards + artefact draft)
+      // RIGHT: live draft (three sections: condition items + assumption cards + artefact draft)
       '<section class="sw-chat-pane" style="display:flex;flex-direction:column">',
+        // inc2.1 — conditions section
+        '<div class="ci-section-head">',
+          '<span class="ci-section-label">Conditions</span>',
+        '</div>',
+        '<div id="condition-items" role="region" aria-label="Condition items" style="flex:0 0 auto;max-height:30%;overflow-y:auto;padding:10px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px">',
+          '<p style="margin:0;font-size:12px;color:var(--muted)">No conditions identified yet</p>',
+        '</div>',
         '<div class="ac-section-head">',
           '<span class="ac-section-label">Assumptions</span>',
           '<div class="ac-badges" id="ac-badges">',
@@ -221,12 +239,27 @@ function renderChat(data) {
       '</section>',
 
     '</div>',
-    // Cmd/Ctrl+Enter to submit (one tiny inline script — kept here so the
-    // chat keystroke lives next to the form it acts on)
+    // Cmd/Ctrl+Enter to submit + inc2.1 condition-item client rendering
     '<script>',
+      'function escHtmlClient(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}',
+      'function appendConditionItem(item){',
+        'var container=document.getElementById("condition-items");',
+        'if(!container)return;',
+        'var p=container.querySelector("p");if(p)p.remove();',
+        'var typeKey=(item.type||"").toLowerCase().replace(/[^a-z]/g,"");',
+        'var typeClass=["constraint","dependency","outcome"].indexOf(typeKey)>=0?typeKey:"constraint";',
+        'var cardEl=document.createElement("div");',
+        'cardEl.className="condition-card";',
+        'cardEl.innerHTML=\'<div class="condition-card-meta">\'+',
+          '\'<span class="ci-type-tag ci-type-\'+typeClass+\'">\'+escHtmlClient(item.type||"constraint")+\'</span>\'+',
+          '\'<span class="ci-source">\'+escHtmlClient(item.source||"model")+\'</span>\'+',
+          '\'</div><div class="condition-card-text">\'+escHtmlClient(item.text||"")+\'</div>\';',
+        'container.appendChild(cardEl);',
+      '}',
+      '// SSE pump wires: if(evt.conditionItem){appendConditionItem(evt.conditionItem);}',
       'document.addEventListener("keydown",function(e){',
         'if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){',
-          'var f=document.getElementById("chat-form");if(f)f.submit();',,
+          'var f=document.getElementById("chat-form");if(f)f.submit();',
         '}',
       '});',
     '</script>'

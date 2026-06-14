@@ -540,6 +540,29 @@ function buildAssumptionCardHtml(payload, cardId) {
 }
 
 /**
+ * inc2.1: Parse a single ---CONDITION-JSON: {...}--- marker from text.
+ * Validates type against allowlist; normalises source to 'model' if absent/invalid.
+ * Returns parsed payload or null on any parse/validation failure.
+ * @param {string} text
+ * @returns {{ id: string, text: string, type: string, source: string }|null}
+ */
+function parseConditionMarker(text) {
+  var MARKER_RE = /---CONDITION-JSON:\s*(\{[\s\S]*?\})\s*---/;
+  var match = String(text).match(MARKER_RE);
+  if (!match) { return null; }
+  var TYPE_ALLOW   = ['constraint', 'dependency', 'outcome'];
+  var SOURCE_ALLOW = ['operator', 'model'];
+  try {
+    var parsed = JSON.parse(match[1]);
+    if (TYPE_ALLOW.indexOf(String(parsed.type || '')) === -1) { return null; }
+    if (SOURCE_ALLOW.indexOf(String(parsed.source || '')) === -1) { parsed.source = 'model'; }
+    return parsed;
+  } catch (_) {
+    return null;
+  }
+}
+
+/**
  * Derive an 8-character hex cardId from sessionId + emittedText (SHA-256, first 8 hex chars).
  * @param {string} sessionId
  * @param {string} markerText — the full marker text (used for uniqueness per card)
@@ -1604,6 +1627,9 @@ function _renderChatPage(skillName, sessionId, session) {
     '              if(evt.assumptionCard) {',
     '                appendAssumptionCard(evt.assumptionCard);',
     '              }',
+    '              if(evt.conditionItem) {',
+    '                appendConditionItem(evt.conditionItem);',
+    '              }',
     '              if(evt.done !== undefined) {',
     '                if(evt.artefactContent) { partialDraft = ""; updateDraftPanel(evt.artefactContent); }',
     '                if(evt.done) {',
@@ -1716,6 +1742,24 @@ function _renderChatPage(skillName, sessionId, session) {
     '    attachCardHandlers(cardEl);',
     '    container.appendChild(cardEl);',
     '    updateAssumptionBadges();',
+    '  }',
+    '  // inc2.1 — condition item append',
+    '  function appendConditionItem(item) {',
+    '    var container = document.getElementById("condition-items");',
+    '    if(!container) return;',
+    '    var placeholder = container.querySelector("p");',
+    '    if(placeholder) placeholder.remove();',
+    '    var typeKey = (item.type || "").toLowerCase().replace(/[^a-z]/g,"");',
+    '    var typeClass = ["constraint","dependency","outcome"].indexOf(typeKey) >= 0 ? typeKey : "constraint";',
+    '    var cardEl = document.createElement("div");',
+    '    cardEl.className = "condition-card";',
+    '    cardEl.innerHTML =',
+    '      \'<div class="condition-card-meta">\' +',
+    '        \'<span class="ci-type-tag ci-type-\' + typeClass + \'">\' + escHtmlClient(item.type || "constraint") + \'</span>\' +',
+    '        \'<span class="ci-source">\' + escHtmlClient(item.source || "model") + \'</span>\' +',
+    '      \'</div>\' +',
+    '      \'<div class="condition-card-text">\' + escHtmlClient(item.text || "") + \'</div>\';',
+    '    container.appendChild(cardEl);',
     '  }',
     '  // iwu.5 — nudge bar on lensComplete',
     '  function countUnconfirmedCards() {',
@@ -1962,6 +2006,11 @@ async function handlePostTurnStreamHtml(req, res) {
   var _assumptionBuf = '';
   var _ASSMP_START   = '---ASSUMPTION-JSON:';
   var _ASSMP_END     = '---';
+  // inc2.1: condition marker buffer
+  var _conditionBuf  = '';
+  var _COND_START    = '---CONDITION-JSON:';
+  var _COND_END      = '---';
+  var _COND_STRIP_RE = /---CONDITION-JSON:[\s\S]*?---/g;
 
   var fullText = '';
   try {
@@ -2018,6 +2067,31 @@ async function handlePostTurnStreamHtml(req, res) {
         }
         _assumptionBuf = _cleanBuf + _scanBuf;
 
+        // inc2.1: scan for condition markers — same buffer pattern as assumption markers
+        _conditionBuf += chunk;
+        var _cScanBuf = _conditionBuf;
+        var _cCleanBuf = '';
+        var _cStartIdx;
+        while ((_cStartIdx = _cScanBuf.indexOf(_COND_START)) !== -1) {
+          var _cAfterEnd = _cScanBuf.indexOf(_COND_END, _cStartIdx + _COND_START.length);
+          if (_cAfterEnd === -1) { break; }
+          var _cMarkerFull = _cScanBuf.slice(_cStartIdx, _cAfterEnd + _COND_END.length);
+          _cCleanBuf += _cScanBuf.slice(0, _cStartIdx);
+          _cScanBuf = _cScanBuf.slice(_cAfterEnd + _COND_END.length);
+          var _cParsed = parseConditionMarker(_cMarkerFull);
+          if (_cParsed) {
+            if (!session.conditionItems) { session.conditionItems = {}; }
+            session.conditionItems[_cParsed.id] = _cParsed;
+            res.write('data: ' + JSON.stringify({ conditionItem: {
+              id:     _cParsed.id     || '',
+              text:   _cParsed.text   || '',
+              type:   _cParsed.type   || '',
+              source: _cParsed.source || 'model'
+            } }) + '\n\n');
+          }
+        }
+        _conditionBuf = _cCleanBuf + _cScanBuf;
+
         _artefactAccum += chunk;
         if (!_inArtefactMode) {
           var startIdx = _artefactAccum.indexOf(_DRAFT_START);
@@ -2026,15 +2100,17 @@ async function handlePostTurnStreamHtml(req, res) {
             var afterStart = _artefactAccum.slice(startIdx + _DRAFT_START.length).replace(/^\r?\n/, '');
             var endIdx = afterStart.indexOf(_DRAFT_END);
             var draftText = endIdx !== -1 ? afterStart.slice(0, endIdx) : afterStart;
-            if (draftText) {
-              res.write('data: ' + JSON.stringify({ draftChunk: draftText }) + '\n\n');
+            var cleanDraftText = draftText.replace(_COND_STRIP_RE, '');
+            if (cleanDraftText) {
+              res.write('data: ' + JSON.stringify({ draftChunk: cleanDraftText }) + '\n\n');
             }
           }
         } else {
           var endIdx2 = chunk.indexOf(_DRAFT_END);
           var draftChunk2 = endIdx2 !== -1 ? chunk.slice(0, endIdx2) : chunk;
-          if (draftChunk2) {
-            res.write('data: ' + JSON.stringify({ draftChunk: draftChunk2 }) + '\n\n');
+          var cleanDraftChunk2 = draftChunk2.replace(_COND_STRIP_RE, '');
+          if (cleanDraftChunk2) {
+            res.write('data: ' + JSON.stringify({ draftChunk: cleanDraftChunk2 }) + '\n\n');
           }
         }
       }
@@ -2416,6 +2492,8 @@ module.exports = {
   // iwu.3 — assumption card helpers
   parseAssumptionMarker,
   buildAssumptionCardHtml,
+  // inc2.1 — condition marker parser
+  parseConditionMarker,
   // iwu.4 — confirm/flag endpoint
   handlePostAssumptionConfirm
 };
