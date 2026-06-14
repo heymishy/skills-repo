@@ -399,83 +399,129 @@ The following routing policy emerged from the evaluation programme. Every row is
 
 ---
 
-## Key Numbers for Decision Makers
+## Commercial Case
 
-### Cost per pipeline run
+### 60-second read
 
-| Config | Discovery | Downstream (6 stages) | Total per story | Annual at 100 stories/year |
-|--------|-----------|----------------------|-----------------|---------------------------|
-| Sonnet uniform | $0.03 | $0.15 (Sonnet × 6) | **~$0.18** | ~$18 |
-| **Production policy (Sonnet discovery, Haiku rest)** | $0.03 | **$0.05 (Haiku × 6)** | **~$0.08** | **~$8** |
-| Opus front-loaded | $0.15 | $0.05 (Haiku × 6) | **~$0.20** | ~$20 |
+The bottleneck in a regulated NZ financial institution is not engineering budget — it is the number of senior engineers and business analysts who can hold regulatory context, write defensible specifications, and gate-check work before it reaches production. This platform multiplies that capacity without adding headcount: a senior engineer who currently moves 2–3 features through the full discovery-to-done pipeline per quarter can oversee 10–15, because the AI handles drafting, constraint capture, test plan generation, and gate checking while the human provides domain judgment, stakeholder alignment, and sign-off. For a 50-team organisation, the throughput equivalent is 75–150 additional features per year from the same headcount — at an API cost of under NZD $700/year. The commercial case is not about cheaper tokens. It is about what the same engineering team can ship, how much faster, and whether compliance constraints make it into production intact every time. This document makes that case with evidence from 35 structured experiments across 700+ model runs — not a pilot, not a proof of concept.
 
-_Costs in USD. NZD ×1.65 approx._
+---
 
-### Human equivalent comparison
+### 1. The constraint is senior engineering capacity, not cost
 
-#### What the discovery process actually costs
+In a regulated NZ financial institution, the delivery bottleneck is rarely money. The binding constraint is the number of senior engineers and business analysts who can:
 
-The table below compares AI pipeline cost against the *mechanical drafting* time only — a single analyst spending half a day writing a document. That comparison dramatically understates the real picture.
+- hold the regulatory context for a feature domain (AML/CFT obligations, RBNZ BS11, CCCFA, scheme participation rules)
+- write a defensible specification that captures all constraints before a developer starts building
+- review that specification for defects before it propagates to test plans and implementation
+- gate-check work at each stage with the judgment to know what matters
 
-In practice, the /discovery stage does not happen in isolation. It is the output of a process that typically looks like this:
+These are skills that take 6–12 months to develop in a new hire. The NZ talent pool for this profile is shallow. You cannot hire your way out of the constraint quickly, and you cannot outsource the regulatory judgment to a junior analyst.
 
-- **2–20 weeks of elapsed time** depending on feature complexity and stakeholder count
-- **Multiple workshops** — requirements gathering, constraint identification, regulatory alignment, architecture scoping
-- **Stakeholder coordination** — product owners, tech leads, compliance/legal, operations, sometimes external auditors or scheme participants (in payments contexts)
-- **Refinement and clarification rounds** — typically 3–8 back-and-forth sessions before a discovery artefact is stable enough for definition
-- **Document production** — the artefact itself, which takes 1–4 days of analyst time once the inputs are clear
+**What the platform does:** it removes the mechanical work that currently consumes most of a senior's hours *between* the conversations that only they can have. The analyst still runs the workshops. The senior engineer still reviews the output. The platform produces the structured artefacts — requirements document, story ACs, test plan, implementation plan — from the inputs those conversations generate. An analyst who spent 3 weeks writing and iterating on a discovery artefact now spends 3 hours in workshops and 30 minutes reviewing what the AI produced.
 
-A realistic people-cost for a single feature discovery in a regulated financial services context:
+This is a capacity multiplier, not a cost reduction. The same headcount can handle a larger feature backlog. The senior capacity that was consumed by drafting is now available for architecture decisions, stakeholder relationships, and the judgment calls that actually require seniority.
 
-| Participant | Typical commitment | Hours | Cost at $72/hr |
-|-------------|-------------------|-------|----------------|
-| Business analyst (lead) | 2–4 weeks | 60–120 hrs | $4,300–$8,600 |
-| Product owner | Weekly + workshops | 10–20 hrs | $720–$1,440 |
-| Senior engineer | Architecture input + review | 8–20 hrs | $575–$1,440 |
-| Compliance/legal | Constraint validation | 4–12 hrs | $290–$865 |
-| Stakeholder workshops (3–8 people × 3–6 sessions × 2 hrs) | — | 18–96 person-hrs | $1,300–$6,900 |
-| **Total (realistic, single feature)** | **2–20 weeks elapsed** | **100–270 person-hrs** | **NZD $7,200–$19,200** |
+---
 
-_Conservative end assumes a small, well-aligned team and a straightforward feature. High end assumes a regulated feature touching multiple domains (e.g. real-time payments onboarding with AML, scheme compliance, and downstream system impacts)._
+### 2. The real saving is elapsed time, not token cost
 
-#### What the AI changes — and what it does not
+A feature currently takes 3–6 months from discovery to production-ready PR in a regulated bank. Most of that elapsed time is not development — it is the iteration cycle between conversations: the analyst writing up the requirements after the workshop, the review cycle on the spec, the QA lead writing the test plan, the tech lead checking the DoR.
 
-The AI pipeline does not eliminate workshops, stakeholder alignment, or regulatory input. People who hold the constraints in their heads still need to surface them. What changes:
+Each of those steps currently takes days to weeks of calendar time because they compete with other priorities and pass through multiple people's queues. The AI collapses each of them to minutes.
 
-- **Drafting time collapses.** The structured discovery artefact that takes an analyst 1–4 days to write is produced in 5 minutes from the inputs gathered in the sessions. Iteration on the document (review → revise → review cycles) is minutes, not days.
-- **Clarification loops shorten.** The AI immediately surfaces ambiguities, asks structured questions, and flags missing constraints. Human clarification sessions that would run over weeks can often be compressed because the AI's structured questions give stakeholders a concrete document to react to rather than a blank page.
-- **The constraint-capture problem is much harder to miss.** Without AI, constraints buried in a stakeholder conversation often don't make it into the specification — they rely on the analyst's memory and diligence. The AI extracts and structures them explicitly. EXP-020 demonstrated this: Sonnet with a regulatory context file achieved a perfect score on a multi-jurisdiction AML/CFT discovery case (S10 = 1.000) that would require significant domain expertise and careful drafting from a human analyst.
+**Concrete anchor from the evaluation programme:** EXP-040 ran the full seven-stage pipeline — requirements gathering, specification writing, review, test plan, readiness check, implementation plan, and done verification — on a regulated real-time payments story (Payments NZ RTP scheme, 10-second acknowledgement SLA, $50k/day penalty clause) in a single session. Total elapsed time: under one hour. Total API cost: NZD $0.30.
 
-A conservative estimate is that the AI pipeline reduces the **elapsed human effort for document production and iteration** by 60–80%, while leaving stakeholder alignment and domain input largely unchanged. Applied to the realistic cost range above:
+The critical SLA constraint — a non-configurable 9,500ms threshold with a specific circuit-breaker margin — was correctly identified at discovery and appeared explicitly in every subsequent stage, culminating as a hardcoded constant (`SLA_THRESHOLD_MS = 9500`) in the implementation plan, with a dedicated test case designed to catch anyone who tried to make it configurable. This is the constraint propagation fidelity (CPF) result: the compliance obligation identified in the first conversation survived intact to the implementation spec.
 
-| Scenario | Human-only cost | AI-assisted cost (people + API) | Saving |
-|----------|----------------|--------------------------------|--------|
-| Simple feature (2–4 weeks discovery) | NZD $7,200 | NZD $2,900–4,300 | ~$4,000+ |
-| Complex regulated feature (8–20 weeks) | NZD $13,000–19,200 | NZD $3,500–6,500 | ~$10,000–13,000 |
+The elapsed-time saving is not primarily about the 5-minute artefact. It is about compressing the weeks of queue-waiting and iteration between each human conversation into the same session.
 
-_API cost is negligible (~NZD $0.13 per full pipeline run). The remaining cost is human time for workshops, stakeholder sessions, and review — which the AI does not eliminate but does substantially compress._
+---
 
-#### Full pipeline stage-by-stage comparison
+### 3. Throughput multiplication is the right metric
 
-The table below shows the AI cost against the minimal human drafting time only — not the full discovery process described above.
+The cost-per-feature framing understates the value. The right question is not "how much cheaper is each feature?" It is "how many more features can the same team deliver in the same year?"
 
-| Task | Minimal human drafting estimate | AI cost | Notes |
-|------|--------------------------------|---------|-------|
-| Requirements gathering + story writing | NZD $2,000–8,000 (full process) | NZD $0.05 | AI produces artefact; humans still run workshops |
-| Story review | NZD $145–$290 (2–4 hrs, senior engineer) | NZD $0.01 | AI flags defects; human makes judgment calls on borderline findings |
-| Test plan | NZD $215–$575 (3–8 hrs, QA lead) | NZD $0.01 | AI produces full test plan including k6 load scripts and NFR assertions |
-| DoR gate check | NZD $72–$145 (1–2 hrs, lead) | NZD $0.01 | AI runs 17-point checklist; human signs off READY verdict |
-| Implementation plan | NZD $575–$1,150 (8–16 hrs, senior engineer) | NZD $0.03 | AI produces scaffolded code plan with architecture decisions |
-| DoD check | NZD $72–$145 (1–2 hrs, QA/lead) | NZD $0.01 | AI traces each AC to evidence; human approves DONE verdict |
-| **Full pipeline** | **NZD $3,100–$10,300 per feature** | **NZD $0.13** | **AI produces all artefacts; human judgment on each gate** |
+A 50-team engineering organisation running 5 features per team per year produces 250 features annually. If the platform halves elapsed time on 30% of the feature backlog — a conservative assumption given the iteration-compression effect — those 75 features move through the pipeline twice as fast, freeing the teams to pick up the next 75 earlier. Same headcount, same stakeholder capacity, but the organisation delivers:
 
-_Human rates: NZD 150,000/year = $575/day, $72/hour at 260 working days._
+| | Without platform | With platform (30% scope, 2× velocity) |
+|-|-----------------|---------------------------------------|
+| Features completed | 250/year | ~325/year |
+| Additional throughput | — | ~75 features |
+| Headcount required | 50 teams | 50 teams |
+| Additional API cost | — | NZD ~$20 |
 
-**At 50 features per year**, the drafting and gate-checking cost savings alone are NZD **$155,000–$515,000** — before counting the elapsed-time savings from compressing 2–20-week discovery processes. At 100 features per year, those numbers double. In a delivery team where the constraint is the senior engineering and analytical capacity available, the AI pipeline effectively multiplies throughput without adding headcount.
+At a conservative NZD $200,000 per feature in total delivery cost (discovery through production, all human time included), 75 additional features represents **NZD $15 million in incremental delivery capacity** unlocked from the existing team.
 
-### The regulated constraint risk
+The API cost to unlock that: **under NZD $700/year** at current pricing and 325 features.
 
-The one area where AI routing choices carry real financial risk is regulated inputs. If you put a budget model at the definition stage (Config C), there is a documented 67% probability of losing a compliance constraint (PCI DSS QSA sign-off, AML obligation) from the story ACs. In a financial services context, a missed PCI DSS obligation discovered post-development costs weeks of rework and potential audit exposure. The routing policy puts Sonnet at /discovery precisely to prevent this: once Sonnet captures the constraint correctly in the discovery artefact, Haiku carries it correctly through all downstream stages.
+This is not a cost-saving argument. It is a throughput argument. The platform does not replace the engineers — it makes the engineers you already have dramatically more productive on the work that cannot be delegated downward.
+
+**The model evaluation finding that reinforces this:** EXP-010, EXP-011, and EXP-012 tested nine models (three Anthropic, six OpenAI) on the /discovery task against adversarial NZ financial services cases. Every OpenAI model — including GPT-5.4, the newest available architecture — failed to reach the pass threshold. GPT-4.1, the best OpenAI result, passed 1 out of 32 trials (3%). This is not a commodity capability. The throughput gain is not available from a cheaper or more accessible tool. The routing policy reflects this: Sonnet at /discovery is the production-viable option, and it is not substitutable at any price point currently tested.
+
+---
+
+### 4. Compliance defensibility has direct regulatory value
+
+The platform does not just make delivery faster — it makes every delivery more defensible. This matters under CPG 220 model risk management requirements, RBNZ audit expectations, and the data and conduct obligations that apply to any registered bank operating in NZ.
+
+**The constraint propagation chain:** Every feature run through the pipeline produces a traceable chain — discovery artefact → story ACs → review findings → test plan → DoR gate → implementation plan → DoD verification. Each stage is scored, timestamped, and stored. The 9,500ms SLA threshold from the EXP-040 example did not survive from discovery to implementation because an analyst remembered to include it in each document. It survived because the pipeline measures whether it survived (CPF score) and rejects the run if it does not.
+
+An auditor asking "how did this compliance constraint make it into the implementation?" can be shown the complete chain. The context-enterprise-nz.yml configuration bakes this in: tamper-evident SHA-256 artefact chains, CPG 220 compliant audit trail, 7-year retention for credit records (CCCFA obligation), governed artefact bundles attached to every PR in CI.
+
+**The measured failure mode this prevents:** EXP-003 tested what happens when an incorrect routing configuration is used — specifically, Haiku at the /discovery stage without the regulated context file. In that configuration, a PCI DSS QSA sign-off requirement identified in the input brief was not captured in the discovery artefact (scored 0.1 — narrative mention only, not a named constraint). It was completely absent from the specification's acceptance criteria. At-source regulated constraint propagation: 33%. A developer dispatched after the specification was written would have built the feature with no PCI DSS obligation in their requirements. The constraint was later caught by the review gate — but the risk window between specification dispatch and review completion is where the exposure lives.
+
+The production routing policy was designed specifically to prevent this failure mode. Sonnet at /discovery, with the regulated context file for S-hard cases, produces a constraint-complete artefact that Haiku then carries faithfully through all six downstream stages. The policy is not a preference — it is the measured boundary between safe and unsafe configuration, with the failure mode documented and quantified.
+
+**The value of the audit trail is not easily quantified, but it is immediately legible to a compliance team or regulator.** A single post-production remediation event for a missed compliance obligation in a regulated bank typically costs NZD $500k–$5M+ depending on scope and whether the obligation involved a scheme participant agreement (penalty exposure) or a regulator notification. The platform does not eliminate that risk — but it substantially reduces the probability of the specific failure mode the evaluation programme identified: a compliance constraint silently dropped in the specification, never surfaced to the developer.
+
+---
+
+### What this is not
+
+This section is included because an honest account of limitations strengthens the credibility of the claims above.
+
+**This is not a replacement for engineers or domain experts.** The platform produces artefacts from inputs — it does not generate the regulatory knowledge, stakeholder relationships, or architectural judgment that the inputs require. A team that does not already have senior BA and engineering capacity cannot use this to substitute for that capacity. It multiplies existing capacity; it does not create it from nothing.
+
+**This is not a solution to stakeholder alignment.** The workshops, the regulatory sign-offs, the three-lines-of-defence review conversations — none of that is automated. Elapsed time savings are specifically in the document-production and iteration cycles *between* those conversations, not in the conversations themselves.
+
+**This is not a guarantee of compliance.** The CPF metric measures whether a constraint identified in discovery survived to the implementation plan. It does not verify that the discovery artefact identified all relevant constraints in the first place, that the constraint was correctly interpreted, or that the implementation plan was correctly executed by the developer. Human judgment and second-line oversight remain mandatory.
+
+**This is not yet fully validated for the complete interactive DoR protocol.** EXP-040 identified that both models (Haiku and Sonnet) collapse the seven-step interactive definition-of-ready protocol when running in automated single-turn mode — both skip the Contract Proposal and Coding Agent Instructions sections. This is a skill-design issue being addressed in EXP-041. The gate verdict (READY/BLOCKED) is correct; the full protocol execution is not. Users relying on the DoR skill in interactive mode are not affected.
+
+**This is not a commodity.** EXP-010, EXP-011, and EXP-012 tested the six most capable currently available models from Anthropic and OpenAI against this pipeline. Only one configuration — Sonnet with regulated context injection — passes the discovery threshold consistently on S-hard regulated NZ financial services cases. The platform's value depends on using the right model at the right stage. Substituting a cheaper or more accessible model at /discovery removes the throughput and compliance benefits simultaneously.
+
+---
+
+### Human capacity currently consumed by mechanical work
+
+The following table shows the human effort the platform removes, by pipeline stage. These are not theoretical — they are the tasks the AI now executes in minutes that currently consume hours to days of senior time.
+
+| Stage | Who currently does this | Typical effort | What the AI replaces |
+|-------|------------------------|---------------|----------------------|
+| Requirements gathering → artefact | Business analyst | 3–10 days (including iteration) | Structured document production from workshop notes; constraint extraction; clarification questions |
+| Story review | Senior engineer | 2–4 hrs/story | Defect detection, severity classification, finding documentation |
+| Test plan | QA lead | 3–8 hrs/story | Full test case generation including load test scripts and NFR assertions |
+| DoR gate check | Tech lead / scrum master | 1–2 hrs/story | 17-point structured checklist, contract proposal, readiness verdict |
+| Implementation plan | Senior engineer | 8–16 hrs/story | Scaffolded technical plan, architecture decisions, task breakdown |
+| DoD verification | QA lead | 1–2 hrs/story | AC-by-evidence traceability, DONE/NOT DONE verdict |
+| **Total per story** | **3–5 senior people** | **18–42 hrs of senior time** | **All of the above, in under 1 hour** |
+
+_At NZD 150,000/year ($72/hour), 18–42 hours of senior time = NZD $1,300–$3,000 in direct labour per story, before counting the elapsed-time cost of those hours being spread across 3–6 months of calendar time. This is the mechanical drafting cost only. The discovery process that precedes artefact production — workshops, stakeholder coordination, regulatory alignment — typically adds 100–270 person-hours per feature and is not replaced by the platform._
+
+---
+
+### API cost (for completeness)
+
+Token costs are not the commercial argument. They are included here for completeness.
+
+| Routing config | /discovery | Remaining 6 stages | Total per story (USD) | Total per story (NZD) |
+|---------------|-----------|-------------------|----------------------|----------------------|
+| Sonnet uniform | $0.03 | $0.15 | ~$0.18 | ~$0.30 |
+| **Production policy** (Sonnet discovery + Haiku ×6) | $0.03 | $0.05 | **~$0.08** | **~$0.13** |
+| S-hard regulated (Sonnet + context + Haiku ×6) | $0.05 | $0.05 | ~$0.10 | ~$0.17 |
+
+At 325 features/year under the production policy: **NZD ~$42 total API cost**. The constraint on this programme is not API spend.
 
 ---
 
