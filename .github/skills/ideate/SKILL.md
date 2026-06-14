@@ -590,6 +590,32 @@ Rules:
 
 ---
 
+### Condition markers (inc2.1)
+
+When you identify a hard constraint, dependency, or condition of satisfaction during ideation,
+emit a condition marker on its own line:
+
+```
+---CONDITION-JSON: {"id":"<kebab-slug>","text":"<condition as a plain declarative sentence>","type":"<constraint|dependency|outcome>","source":"model"}---
+```
+
+Type definitions:
+- `constraint`: a hard technical or platform constraint that bounds the solution
+- `dependency`: something this solution requires that is not yet in place or owned externally
+- `outcome`: a condition of satisfaction — what "done" looks like for this opportunity
+
+Example:
+```
+---CONDITION-JSON: {"id":"no-disk-write","text":"Session state must remain in-memory only — no disk writes permitted for MVP.","type":"constraint","source":"model"}---
+```
+
+When to emit: emit a condition marker when you identify a definite constraint, dependency, or
+outcome condition — not for assumptions (use `---ASSUMPTION-JSON---` for those). Emit at the point
+of identification, not batched at end of lens. Do not emit conditions about things you are uncertain
+about — those are assumptions, not conditions.
+
+---
+
 ## How this feeds the pipeline
 
 | Lens output | Feeds |
