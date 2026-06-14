@@ -65,7 +65,7 @@
               "slug": "inc2.1",
               "title": "Conditions panel: parse ---CONDITION-JSON--- markers and render condition cards in the /ideate session shell",
               "artefact": "artefacts/2026-06-15-ideate-web-ux-inc2/stories/inc2.1.md",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -80,7 +80,11 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/dor/inc2.1-dor.md",
               "dorContract": "artefacts/2026-06-15-ideate-web-ux-inc2/dor/inc2.1-dor-contract.md",
-              "updatedAt": "2026-06-15"
+              "updatedAt": "2026-06-15",
+              "dodStatus": "complete",
+              "dodDate": "2026-06-15",
+              "dodArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/dod/inc2.1-dod.md",
+              "commitRef": "34a9022"
             },
             {
               "id": "inc2.2",
@@ -105,7 +109,9 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/dor/inc2.2-dor.md",
               "dorContract": "artefacts/2026-06-15-ideate-web-ux-inc2/dor/inc2.2-dor-contract.md",
-              "schemaDepends": ["inc2.1"],
+              "schemaDepends": [
+                "inc2.1"
+              ],
               "updatedAt": "2026-06-15"
             }
           ]
