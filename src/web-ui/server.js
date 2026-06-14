@@ -14,7 +14,7 @@ const { handleSignOff, handleArtefactRead }                             = requir
 const { healthCheckHandler }                                         = require('./routes/health');
 const { validateRequiredEnvVars }                                    = require('./config/validate-env');
 const { handleGetActions, handleDashboard, handleGetActionsHtml }                          = require('./routes/dashboard');
-const { handleGetFeatures, handleGetFeatureArtefacts }               = require('./routes/features');
+const { handleGetFeatures, handleGetFeatureArtefacts, handleGetIdeas, handlePostIdea, handleDeleteIdea } = require('./routes/features');
 const { handleGetStatus, handleGetStatusExport }                     = require('./routes/status');
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
@@ -288,6 +288,16 @@ async function router(req, res) {
 
   } else if (pathname === '/health') {
     healthCheckHandler(req, res);
+
+  } else if (pathname === '/api/ideas' && req.method === 'GET') {
+    authGuard(req, res, () => handleGetIdeas(req, res));
+
+  } else if (pathname === '/api/ideas' && req.method === 'POST') {
+    authGuard(req, res, async () => { await handlePostIdea(req, res); });
+
+  } else if (pathname.match(/^\/api\/ideas\/[^/]+$/) && req.method === 'DELETE') {
+    const ideaId = decodeURIComponent(pathname.slice('/api/ideas/'.length));
+    authGuard(req, res, () => handleDeleteIdea(req, res, ideaId));
 
   } else if (pathname === '/features' && req.method === 'GET') {
     authGuard(req, res, async () => {
