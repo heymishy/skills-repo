@@ -57,7 +57,7 @@ The only difference is whether it pauses for a reply before producing output.
 
 ## Entry condition
 
-No prerequisites. First step in the pipeline.
+No prerequisites. First step in the pipeline. At session start, prompt for contributor names and roles — ask who is contributing to this discovery before producing the artefact. This populates the Attribution section.
 
 ---
 

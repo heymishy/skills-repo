@@ -199,9 +199,11 @@ function Check-TestPlanCoverage {
 
     $stagesNeedingTestPlan = @('test-plan','definition-of-ready','implementation','done','definition-of-done')
     $missing = [System.Collections.Generic.List[string]]::new()
+    $testPlanExempt = Read-TraceConfigList 'test_plan_exempt_features'
 
     foreach ($feature in $state.features) {
         $featureSlug = Get-JsonProp $feature 'slug' "unknown"
+        if ($testPlanExempt.Contains($featureSlug)) { continue }
 
         # Collect story objects from feature.stories[] and epic.stories[]
         $stories = [System.Collections.Generic.List[object]]::new()

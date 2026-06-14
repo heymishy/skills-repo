@@ -1,8 +1,8 @@
 # Discovery: Execution Boundary Model and Invocation Telemetry
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-05-21
-**Approved by:** Pending
+**Approved by:** Hamish King — Engineering Lead — 2026-06-14
 **Author:** Copilot (discovery session 2026-05-21 — driven by reference document P5/P6 and repo assessment)
 **Feature slug:** `2026-05-21-execution-boundary`
 **Artefact path:** `artefacts/2026-05-21-execution-boundary/discovery.md`
