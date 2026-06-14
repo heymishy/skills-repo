@@ -196,11 +196,8 @@ You are evaluating a model's response to the /review skill prompt against corpus
 
 Your task is to score the response on 6 dimensions and return a JSON object only — no prose, no explanation outside the JSON.
 
-Story artefact input:
-{STORY_CONTENT}
-
-Planted defect for this case (ground truth):
-{PLANTED_DEFECT}
+Case context (expected output characteristics / scoring note from corpus case):
+{CASE_CONTEXT}
 
 Model review output to evaluate:
 {OUTPUT}
