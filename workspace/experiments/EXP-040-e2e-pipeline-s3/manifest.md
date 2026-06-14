@@ -10,7 +10,7 @@
 | experiment_type | end-to-end-pipeline |
 | created | 2026-06-14 |
 | operator | Hamish King |
-| status | in-progress |
+| status | complete |
 
 ## Scenario
 
@@ -26,7 +26,7 @@
 | 2 | /definition | claude-haiku-4-5 | standard |
 | 3 | /review | claude-haiku-4-5 | standard |
 | 4 | /test-plan | claude-haiku-4-5 | standard |
-| 5 | /definition-of-ready | claude-haiku-4-5 | standard |
+| 5 | /definition-of-ready | claude-sonnet-4-6 | standard — **routing deviation: haiku used initially, replaced with sonnet** |
 | 6 | /implementation-plan | claude-haiku-4-5 | standard (max-tokens 8192) |
 | 7 | /definition-of-done | claude-haiku-4-5 | standard (uses IL-S3 pre-written bundle) |
 
@@ -90,17 +90,27 @@ node scripts/run-model-sweep.js --experiment EXP-040-e2e-pipeline-s3 --skills im
 node scripts/run-model-sweep.js --experiment EXP-040-e2e-pipeline-s3 --skills definition-of-done --models claude-haiku-4-5 --cases IL-S3 --trials 1 --max-tokens 4096
 ```
 
+## Routing deviation — Phase 5 (DoR)
+
+**DoR Phase: claude-sonnet-4-6 used (not Haiku per routing policy) — Haiku single-turn DoR compliance issue; see EXP-041 for routing calibration. Does not affect CPF trace validity.**
+
+Haiku-4-5 was run twice on `case-EXP040-S3-dor` and produced a condensed readiness-assessment table on both attempts, skipping the Contract Proposal, H1-H13 hard block checks, warnings, and Coding Agent Instructions block (G3=0, G4=0, score 0.215/0.060). The DoR SKILL.md protocol has 7 sequential interactive steps with "Reply: go" checkpoints — Haiku collapses this to a summary format in single-turn eval mode. Sonnet-4-6 used for Phase 5 as it was the calibration model for the DoR EVAL.md.
+
 ## Runs log
 
 | Phase | Skill | Case | Model | Trial | Date | Weighted score | Pass | CPF-C3 present |
 |-------|-------|------|-------|-------|------|----------------|------|----------------|
-| 2 | discovery | S3 | sonnet-4-6 | 1 | _pending_ | | | |
-| 3 | definition | EXP-040-S3-definition | haiku-4-5 | 1 | _pending_ | | | |
-| 4 | review | EXP-040-S3-review | haiku-4-5 | 1 | _pending_ | | | |
-| 5 | test-plan | EXP-040-S3-test-plan | haiku-4-5 | 1 | _pending_ | | | |
-| 6 | definition-of-ready | EXP-040-S3-dor | haiku-4-5 | 1 | _pending_ | | | |
-| 7 | implementation-plan | EXP-040-S3-impl-plan | haiku-4-5 | 1 | _pending_ | | | |
-| 8 | definition-of-done | IL-S3 | haiku-4-5 | 1 | _pending_ | | | |
+| 1 | discovery | S3 | sonnet-4-6 | 1 | 2026-06-14 | 1.000¹ | NC¹ | ✓ |
+| 2 | definition | case-EXP040-S3-definition | haiku-4-5 | 1 | 2026-06-14 | 1.000 | YES | ✓ |
+| 3 | review | case-EXP040-S3-review | haiku-4-5 | 1 | 2026-06-14 | — ² | — | ✓ |
+| 4 | test-plan | case-EXP040-S3-test-plan | haiku-4-5 | 1 | 2026-06-14 | — ² | — | ✓ |
+| 5 | definition-of-ready | case-EXP040-S3-dor | **sonnet-4-6** | 1 | 2026-06-14 | 0.370 | NO (G3/G4 absent⁴) | ✓ |
+| 6 | implementation-plan | IL-S3 | haiku-4-5 | 1 | 2026-06-14 | 0.955 | YES | ✓ |
+| 7 | definition-of-done | IL-S3 | haiku-4-5 | 1 | 2026-06-14 | 0.880 | YES | ✓ |
+
+¹ `process_violation_override` false positive on bold heading in closing /clarify section — judge score 1.000, marked NON-COMPLIANT by gate.
+² Judge valid JSON confirmed after F1 fix (review 0.070, test-plan 0.780), but adversarial rubric applied to pipeline-fidelity cases — scores are rubric-mismatch noise. CPF confirmed from run files.
+⁴ Sonnet-4-6 produced a structured checklist+flags format (G1=0.8) but also skipped Contract Proposal and Coding Agent Instructions (G3=0, G4=0). Both haiku and sonnet fail to follow the full DoR protocol in single-turn eval mode. This is a skill design issue (interactive multi-turn protocol), not a model capability issue. See EXP-041 for routing calibration against T1-T6 adversarial corpus.
 
 ## Findings
 

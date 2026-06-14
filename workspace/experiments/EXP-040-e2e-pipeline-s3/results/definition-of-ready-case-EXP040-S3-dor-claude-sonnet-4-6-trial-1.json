@@ -1,0 +1,17 @@
+{
+  "skill": "definition-of-ready",
+  "model_label": "claude-sonnet-4-6",
+  "scores": {
+    "g1_hard_block_accuracy": 0.8,
+    "g2_warning_identification": 0.4,
+    "g3_coding_agent_instructions": 0,
+    "g4_contract_proposal_quality": 0,
+    "g5_oversight_calibration": 0.4,
+    "g6_process_compliance": 0.4
+  },
+  "weighted_score": 0.37,
+  "pass": false,
+  "compliant": true,
+  "notes": "The response correctly identifies most hard blocks and surfaces meaningful warnings, but critically omits the Coding Agent Instructions block, Contract Proposal section, and explicit oversight level determination, making it structurally incomplete as a DoR gate artefact.",
+  "context_injection": false
+}

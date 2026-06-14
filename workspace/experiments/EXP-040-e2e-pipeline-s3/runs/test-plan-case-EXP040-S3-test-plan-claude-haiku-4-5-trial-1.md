@@ -2,174 +2,210 @@
 
 ## 1. Test Plan Overview
 
-**Objective:** Verify that the enterprise generates and returns ISO 20022 pacs.002.003.08 acknowledgement messages within 10 seconds (P99) at 40,000 tph sustained load, in compliance with Payments NZ scheme requirements.
+**Objective:** Verify that the enterprise generates and returns ISO 20022 pacs.002.003.08 acknowledgement messages within 10 seconds (P99) at 40,000 tph sustained load, with correct transaction status determination and comprehensive latency observability.
 
-**Scope:** ACK generation logic, queuing to outbound API, end-to-end latency measurement, and operational alerting.
+**Scope:**
+- ACK message generation with scheme-mandated fields
+- Transaction status determination (accepted/pending/rejected)
+- End-to-end latency measurement (receipt → ACK sent)
+- Latency breakdown logging per processing stage
+- Operational alerting at 9.5s threshold
+- Performance under 40,000 tph sustained peak load
 
-**Out of Scope:** Fraud vendor APIs, AML system internals, core banking ledger logic, pacs.001 validation logic.
+**Out of Scope:**
+- Internal fraud vendor API behavior
+- Internal AML system behavior
+- Core banking ledger logic
 
 ---
 
 ## 2. Test Categories & Test Cases
 
-### 2.1 Functional Tests — ACK Message Structure (AC1, AC2)
+### 2.1 Functional Testing — ACK Message Generation (AC1)
 
-| Test ID | Test Case | Acceptance Criteria | Pass Criteria |
-|---------|-----------|-------------------|---------------|
-| FT-001 | ACK generated for accepted transaction | ISO 20022 pacs.002.003.08 format; includes unique transaction ref, debtor/creditor, amount, original message ID, status=accepted | Message structure validates against ISO 20022 schema; all mandated fields present |
-| FT-002 | ACK generated for pending transaction | Status = pending; ISO error code absent | Message generated without error code |
-| FT-003 | ACK generated for rejected transaction | Status = rejected; ISO error code included | Appropriate ISO error code populated per rejection reason |
-| FT-004 | Transaction reference uniqueness | Each ACK has unique transaction reference | No duplicate references in batch of 1,000 ACKs |
-| FT-005 | Debtor/creditor fields populated | ACK contains correct debtor/creditor details from inbound message | Debtor/creditor match source pacs.001 |
-| FT-006 | Amount field accuracy | ACK amount matches inbound transaction amount | Amount in ACK = original pacs.001 amount |
-| FT-007 | Original message ID linkage | ACK references original pacs.001 message ID | OrigMsgId field correctly populated |
-| FT-008 | Scheme-mandated fields completeness | All Payments NZ scheme-mandated fields present | Validation against scheme specification document passes |
+| Test ID | Description | Inputs | Expected Output | Pass Criteria |
+|---------|-------------|--------|-----------------|----------------|
+| F-ACK-001 | Valid pacs.002.003.08 structure | ISO 20022 inbound message | pacs.002.003.08 XML envelope | Message conforms to ISO 20022 schema |
+| F-ACK-002 | Unique transaction reference included | Inbound payment message | ACK with unique txn ref | Ref field populated and unique per message |
+| F-ACK-003 | Debtor/creditor details mirrored | Inbound with debtor/creditor | ACK contains original debtor/creditor | Fields match inbound message |
+| F-ACK-004 | Amount field populated | Inbound with amount=NZD 100.00 | ACK with amount=NZD 100.00 | Amount matches and formatted correctly |
+| F-ACK-005 | Original message ID referenced | Inbound MsgId=ABC123 | ACK with OrigMsgId=ABC123 | Original message ID correctly linked |
+| F-ACK-006 | All scheme-mandated fields present | Valid inbound message | Complete pacs.002 | All 6 mandatory fields (ref, debtor, creditor, amount, orig ID, status) present |
 
 ---
 
-### 2.2 Functional Tests — Status Determination Logic (AC2)
+### 2.2 Functional Testing — Transaction Status Determination (AC2)
 
-| Test ID | Test Case | Acceptance Criteria | Pass Criteria |
-|---------|-----------|-------------------|---------------|
-| FT-009 | Status = accepted when fraud+AML+credit all passed | Transaction passes fraud check, AML check, and credit posting succeeds | ACK status field = "accepted" |
-| FT-010 | Status = pending when held for manual review | Transaction flagged for manual review (e.g., high-risk profile, mid-processing review) | ACK status field = "pending" |
-| FT-011 | Status = rejected with fraud block | Transaction blocked by fraud detection | ACK status = "rejected"; ISO error code = fraud-related code |
-| FT-012 | Status = rejected with AML block | Transaction blocked by AML check | ACK status = "rejected"; ISO error code = AML-related code |
-| FT-013 | Status = rejected with credit failure | Credit posting fails (insufficient funds, account blocked) | ACK status = "rejected"; ISO error code = credit-related code |
-| FT-014 | Status = rejected with ISO validation error | Inbound message fails ISO schema validation | ACK status = "rejected"; ISO error code = validation error code |
-
----
-
-### 2.3 Latency Tests — Queuing Deadline (AC3)
-
-| Test ID | Test Case | Acceptance Criteria | Pass Criteria |
-|---------|-----------|-------------------|---------------|
-| LT-001 | ACK queued within 500ms of credit posting | Time from credit posting confirmation → ACK queued to outbound API ≤ 500ms | P50, P95, P99 latencies ≤ 500ms; no outliers > 600ms |
-| LT-002 | Latency measured for accepted transactions | Measure credit posting → queue time for accepted status | P99 ≤ 500ms |
-| LT-003 | Latency measured for pending transactions | Measure decision → queue time for pending status | P99 ≤ 500ms |
-| LT-004 | Latency measured for rejected transactions | Measure rejection decision → queue time for rejected status | P99 ≤ 500ms |
-| LT-005 | Queuing latency under baseline load (1,000 tph) | Measure at low load | P99 ≤ 300ms (demonstrates headroom) |
-| LT-006 | Queuing latency under sustained peak load (40,000 tph) | Measure under spec load | P99 ≤ 500ms |
+| Test ID | Description | Scenario | Expected Status | Pass Criteria |
+|---------|-------------|----------|-----------------|----------------|
+| F-STS-001 | Status = ACCEPTED | Fraud PASS + AML PASS + credit POST success | Accepted | ACK status = "ACCC" (AcceptedCustomerCredit) |
+| F-STS-002 | Status = PENDING | Fraud or AML returns hold/review flag | Pending | ACK status = "ACWC" (AcceptedWithChange) or "PEND" |
+| F-STS-003 | Status = REJECTED | Fraud FAIL or AML FAIL or credit FAIL | Rejected | ACK status = "RJCT" with ISO error code |
+| F-STS-004 | ISO error code on rejection (fraud fail) | Fraud validation fails | Rejected + error code | Error code field populated (e.g., "AG01", "CUST", "NOAS") |
+| F-STS-005 | ISO error code on rejection (AML fail) | AML validation fails | Rejected + error code | Error code field populated |
+| F-STS-006 | ISO error code on rejection (credit fail) | Ledger posting fails | Rejected + error code | Error code field populated |
+| F-STS-007 | Status consistency | Multiple messages processed | All statuses deterministic | Same input → same status output |
 
 ---
 
-### 2.4 End-to-End Latency Tests (AC4)
+### 2.3 Functional Testing — ACK Queueing (AC3)
 
-| Test ID | Test Case | Acceptance Criteria | Pass Criteria |
-|---------|-----------|-------------------|---------------|
-| E2E-001 | E2E latency: message receipt → ACK sent at baseline load | 1,000 tph sustained | P99 E2E latency ≤ 5 seconds |
-| E2E-002 | E2E latency at moderate load | 10,000 tph sustained | P99 E2E latency ≤ 8 seconds |
-| E2E-003 | **E2E latency at peak load (CRITICAL)** | **40,000 tph sustained for ≥5 minutes** | **P99 E2E latency ≤ 10.0 seconds** |
-| E2E-004 | E2E latency percentile distribution | 40,000 tph sustained | P50 ≤ 2s, P95 ≤ 7s, P99 ≤ 10s, P99.9 ≤ 11s |
-| E2E-005 | E2E latency with mixed statuses | 40,000 tph mix of 70% accepted, 20% pending, 10% rejected | P99 E2E latency ≤ 10.0 seconds across all statuses |
-| E2E-006 | Latency consistency over sustained duration | 40,000 tph for ≥10 minutes | P99 latency does not degrade over time; max variance ≤ 0.5s between 5min & 10min windows |
-| E2E-007 | Latency under burst traffic (spike test) | Burst to 50,000 tph for 30 seconds, then return to 40,000 tph | P99 E2E latency ≤ 11 seconds during burst; recovers to ≤ 10 seconds within 2 minutes |
-
----
-
-### 2.5 Latency Breakdown & Logging Tests (AC5)
-
-| Test ID | Test Case | Acceptance Criteria | Pass Criteria |
-|---------|-----------|-------------------|---------------|
-| LOG-001 | Parsing stage latency logged | Time from message receipt → parsing complete | Latency value recorded per transaction with correlation ID |
-| LOG-002 | AML stage latency logged | Time from parsing complete → AML decision | Latency value recorded per transaction with correlation ID |
-| LOG-003 | Fraud stage latency logged | Time from AML decision → fraud decision | Latency value recorded per transaction with correlation ID |
-| LOG-004 | Credit posting stage latency logged | Time from fraud decision → credit posted | Latency value recorded per transaction with correlation ID |
-| LOG-005 | ACK generation stage latency logged | Time from credit posted → ACK generated | Latency value recorded per transaction with correlation ID |
-| LOG-006 | Queuing stage latency logged | Time from ACK generated → ACK queued to outbound API | Latency value recorded per transaction with correlation ID |
-| LOG-007 | Correlation ID present in all logs | Every inbound message, ACK, and intermediate decision has correlation ID | Correlation ID matches across all stages; can reconstruct full transaction timeline |
-| LOG-008 | Latency breakdown aggregation | Aggregate breakdown per stage over 1-minute window at 40,000 tph | P50/P95/P99 latencies per stage queryable; sum of stages ≤ E2E P99 |
-| LOG-009 | Outlier transaction investigation | Enable drill-down on any transaction with E2E latency > 9 seconds | Stage-by-stage breakdown available via correlation ID |
+| Test ID | Description | Inputs | Expected Behavior | Pass Criteria |
+|---------|-------------|--------|-------------------|----------------|
+| F-QUEUE-001 | ACK queued within 500ms of credit post | Credit post completes at T=100ms | ACK in outbound queue by T=600ms | Latency credit-post → queue ≤ 500ms |
+| F-QUEUE-002 | ACK queued for accepted transactions | Status = ACCEPTED | Message reaches outbound API queue | Queue entry visible in logs |
+| F-QUEUE-003 | ACK queued for pending transactions | Status = PENDING | Message reaches outbound API queue | Queue entry visible in logs |
+| F-QUEUE-004 | ACK queued for rejected transactions | Status = REJECTED | Message reaches outbound API queue | Queue entry visible in logs |
+| F-QUEUE-005 | No duplicate ACKs | Single inbound message | Single ACK queued | Only one ACK per inbound message |
+| F-QUEUE-006 | Outbound API reachability | Outbound API available | ACK successfully sent | HTTP 2xx response from Payments NZ API |
 
 ---
 
-### 2.6 Alerting Tests (AC6, NFR-2)
+### 2.4 Performance Testing — End-to-End Latency (AC4, NFR-1)
 
-| Test ID | Test Case | Acceptance Criteria | Pass Criteria |
-|---------|-----------|-------------------|---------------|
-| ALERT-001 | Alert triggered when P99 ACK latency ≥ 9.5s | Operational alert fired at 9.5s threshold | Alert fires within 60 seconds of P99 crossing 9.5s |
-| ALERT-002 | Alert includes metric value and timestamp | Alert contains P99 latency value, measurement window, timestamp | Alert message readable; ops can identify root cause context |
-| ALERT-003 | Alert does not trigger when P99 ≤ 9.5s | Baseline condition (compliant) | No false positives when latency is within limits |
-| ALERT-004 | Alert clear/recovery notification | Alert clears when P99 drops back to ≤ 9.4s | Recovery notification sent; no stale alerts |
-| ALERT-005 | Alert triggered before hard 10s limit breach | Alert at 9.5s provides 500ms buffer before scheme violation | Alert provides actionable lead time |
-| ALERT-006 | Alert escalation if P99 exceeds 10.0s (CRITICAL) | Hard scheme limit breached | Critical alert + page on-call team; escalation confirmed received |
-
----
-
-### 2.7 Load & Stress Tests (NFR-1, C1)
-
-| Test ID | Test Case | Acceptance Criteria | Pass Criteria |
-|---------|-----------|-------------------|---------------|
-| LOAD-001 | Sustained load: 40,000 tph for 10 minutes | Scheme peak sustained load requirement | P99 E2E latency ≤ 10.0s maintained throughout; zero dropped messages |
-| LOAD-002 | Sustained load: 40,000 tph at mixed message sizes | Variable inbound message sizes (1KB–10KB) | P99 E2E latency ≤ 10.0s; no correlation with message size |
-| LOAD-003 | Sustained load: 40,000 tph with queue depth monitoring | Monitor queue depth at each stage (parsing, AML, fraud, credit, ACK) | Max queue depth does not exceed system capacity; no backlog growth over time |
-| LOAD-004 | Stress test: 50,000 tph (125% of spec load) | Exceed peak load by 25% | System handles gracefully; P99 E2E latency < 15 seconds; recovery ≤ 2 minutes to baseline |
-| LOAD-005 | Stress test: 60,000 tph (150% of spec load) | 50% load overage | System does not crash; controlled degradation; errors logged; recovery confirmed |
-| LOAD-006 | Concurrent transaction processing | Multiple transactions processed simultaneously at 40,000 tph | No cross-transaction contamination; isolation verified; no race conditions |
-| LOAD-007 | Memory & CPU utilization at 40,000 tph | Monitor resource consumption at peak load | CPU ≤ 80%, Memory ≤ 85% of capacity; no memory leaks detected over 10-minute run |
-| LOAD-008 | Garbage collection pause analysis | Monitor GC pauses during 40,000 tph load | Max GC pause < 500ms; full GC frequency ≤ once per 2 minutes |
+| Test ID | Description | Load | Measurement Point | Target | Pass Criteria |
+|---------|-------------|------|-------------------|--------|----------------|
+| P-E2E-001 | P99 latency at 40k tph | 40,000 tph sustained | Message receipt → ACK sent | ≤ 10s P99 | Measured P99 ≤ 10.00s |
+| P-E2E-002 | P95 latency at 40k tph | 40,000 tph sustained | Message receipt → ACK sent | Baseline only | Recorded (no hard limit) |
+| P-E2E-003 | P50 latency at 40k tph | 40,000 tph sustained | Message receipt → ACK sent | Baseline only | Recorded (no hard limit) |
+| P-E2E-004 | Max latency at 40k tph | 40,000 tph sustained | Message receipt → ACK sent | < 10s | No single transaction exceeds 10s |
+| P-E2E-005 | Latency stability over time | 40,000 tph for 30 min | P99 ACK latency per 5-min window | Consistent ≤ 10s | P99 remains stable, no degradation |
+| P-E2E-006 | Latency under spike load | 50,000 tph for 2 min | P99 ACK latency during spike | ≤ 12s (degraded acceptable) | Recovers to ≤ 10s post-spike |
 
 ---
 
-### 2.8 Reliability & Error Handling Tests
+### 2.5 Performance Testing — Latency Breakdown Logging (AC5)
 
-| Test ID | Test Case | Acceptance Criteria | Pass Criteria |
-|---------|-----------|-------------------|---------------|
-| REL-001 | ACK generation under AML system latency | AML system response time = 4 seconds (high latency) | E2E P99 latency still ≤ 10 seconds |
-| REL-002 | ACK generation under fraud system latency | Fraud system response time = 3 seconds | E2E P99 latency still ≤ 10 seconds |
-| REL-003 | ACK generation with credit posting delays | Credit posting latency = 2 seconds | E2E P99 latency still ≤ 10 seconds |
-| REL-004 | Outbound API queue unavailable | Outbound API temporarily unreachable for 30 seconds | ACKs queued locally; no messages lost; resume sending when API available |
-| REL-005 | Duplicate inbound message handling | Receive same pacs.001 twice (same message ID) | Only one ACK generated; idempotency confirmed |
-| REL-006 | Malformed inbound message | Send ISO-invalid pacs.001 | Reject status ACK generated within 500ms; no cascade failures |
-| REL-007 | Missing required fields in inbound | Omit mandatory pacs.001 field | Reject status ACK with appropriate ISO error code within 500ms |
-
----
-
-### 2.9 Integration & Regression Tests
-
-| Test ID | Test Case | Acceptance Criteria | Pass Criteria |
-|---------|-----------|-------------------|---------------|
-| INT-001 | ACK integration with Payments NZ outbound API | Send ACK to real/mock Payments NZ API endpoint | ACK received and acknowledged by API; no format errors |
-| INT-002 | Correlation ID end-to-end traceability | Trace inbound pacs.001 → ACK generation → outbound ACK | Correlation ID maintained across all system boundaries |
-| INT-003 | Latency metric ingestion to monitoring backend | Latency values exported to monitoring system | Metrics visible in dashboards; P99 calculation verified correct |
-| INT-004 | Alert integration with incident management | Alert fires → incident system notified | Incident created in ticketing system; alert linked to incident |
-| INT-005 | Regression: existing payment functionality unaffected | Run full payment processing suite alongside ACK generation | Existing tests pass; no degradation in other metrics |
+| Test ID | Description | Scenario | Expected Output | Pass Criteria |
+|---------|-------------|----------|-----------------|----------------|
+| P-LOG-001 | Parsing latency logged | Message receipt → validation complete | Latency value in ms | Parsing stage latency recorded |
+| P-LOG-002 | AML latency logged | AML check start → completion | Latency value in ms | AML stage latency recorded |
+| P-LOG-003 | Fraud latency logged | Fraud check start → completion | Latency value in ms | Fraud stage latency recorded |
+| P-LOG-004 | Crediting latency logged | Credit post start → completion | Latency value in ms | Crediting stage latency recorded |
+| P-LOG-005 | ACK generation latency logged | ACK build start → queue push | Latency value in ms | ACK generation stage latency recorded |
+| P-LOG-006 | Correlation ID links all stages | All 5 stages for one message | Single correlation ID in all logs | Correlation ID matches across parsing, AML, fraud, credit, ACK logs |
+| P-LOG-007 | Breakdown sums to total latency | 5 stage latencies + overhead | Sum ≈ total end-to-end latency | Breakdown accounts for ≥95% of total latency |
+| P-LOG-008 | Latency logs queryable | Run test + query logs | Retrieve latency by correlation ID | Logs searchable by txn ID or correlation ID |
 
 ---
 
-## 3. Test Execution Strategy
+### 2.6 Alerting Testing (AC6, NFR-2)
 
-### 3.1 Test Environment
-- **Dev:** Unit & integration tests (FT, LOG tests)
-- **Staging:** Load tests, latency measurement, alerting verification (LOAD, E2E, ALERT tests)
-- **Production smoke test:** Post-deployment ACK verification (sample 1,000 transactions)
+| Test ID | Description | Scenario | Expected Alert | Pass Criteria |
+|---------|-------------|----------|-----------------|----------------|
+| A-ALERT-001 | Alert triggered at P99 ≥ 9.5s | Sustained 40k tph with P99 = 9.5s | Alert fired | Alert raised within 30s of threshold breach |
+| A-ALERT-002 | Alert NOT triggered at P99 < 9.5s | Sustained 40k tph with P99 = 9.4s | No alert | Alert not raised |
+| A-ALERT-003 | Alert content includes metric | P99 threshold breach | Alert message states "P99 ACK latency = Xs" | Alert message includes P99 value |
+| A-ALERT-004 | Alert content includes context | P99 threshold breach | Alert message includes load/tph | Alert shows current throughput |
+| A-ALERT-005 | Alert routable to ops team | Alert triggered | Message sent to configured channel | Alert visible in monitoring dashboard / Slack / PagerDuty |
+| A-ALERT-006 | Alert recovers when latency drops below 9.5s | P99 drops to 9.0s | Alert cleared/resolved | Alert status changes to OK |
+
+---
+
+### 2.7 Integration Testing — End-to-End Workflow
+
+| Test ID | Description | Scenario | Expected Flow | Pass Criteria |
+|---------|-------------|----------|----------------|----------------|
+| I-E2E-001 | Full workflow: inbound → ACK sent | Valid payment inbound | Parse → AML → Fraud → Credit → ACK → Queue → Send | All stages complete, ACK reaches Payments NZ |
+| I-E2E-002 | Workflow with rejection | Fraud check fails | Parse → AML → Fraud (FAIL) → ACK (REJECTED) → Queue → Send | ACK with rejection status sent within 10s |
+| I-E2E-003 | Workflow with pending | Manual review triggered | Parse → AML → Fraud → Credit (PENDING) → ACK (PENDING) → Queue → Send | ACK with pending status sent within 10s |
+| I-E2E-004 | Multiple concurrent workflows | 100 messages in parallel | All 100 messages processed concurrently | All ACKs generated and queued; no blocking |
+
+---
+
+### 2.8 Load & Stress Testing
+
+| Test ID | Description | Ramp Profile | Duration | Target Metric | Pass Criteria |
+|---------|-------------|--------------|----------|----------------|----------------|
+| L-LOAD-001 | Sustained load at 40k tph | Ramp to 40k over 2 min, hold 30 min | 30 minutes | P99 ACK ≤ 10s | Sustained P99 ≤ 10s throughout |
+| L-LOAD-002 | Peak spike handling | Ramp to 50k over 1 min, hold 5 min, ramp down | 7 minutes | P99 during peak ≤ 12s, recovery to ≤ 10s | P99 recovers within 5 min post-spike |
+| L-LOAD-003 | Message queue depth monitoring | 40k tph sustained | 30 minutes | Queue depth ≤ 5,000 messages | No unbounded queue growth |
+| L-LOAD-004 | Error rate at peak load | 40k–50k tph | 10 minutes | Error rate < 0.1% | <0.1% of messages fail ACK generation |
+| L-LOAD-005 | CPU/memory utilization | 40k tph sustained | 30 minutes | CPU < 80%, memory stable | No resource exhaustion |
+
+---
+
+### 2.9 Compliance & Audit Testing
+
+| Test ID | Description | Audit Point | Expected Evidence | Pass Criteria |
+|---------|-------------|-------------|-------------------|----------------|
+| C-COMP-001 | ACK message conforms to Payments NZ scheme | ISO 20022 schema validation | pacs.002.003.08 passes XSD validation | Schema compliance confirmed |
+| C-COMP-002 | All scheme-mandated fields present | Scheme specification reference | All 6 fields documented in logs | Field checklist passed |
+| C-COMP-003 | Error codes conform to ISO standards | ISO 20022 codelist reference | Error codes match ISO 20022 list | All error codes valid per ISO |
+| C-COMP-004 | Latency measurement methodology documented | Test plan / runbook | Measurement method described | Methodology peer-reviewed |
+| C-COMP-005 | Latency measurement reproducible | Repeat test 3x | P99 variance < 5% across runs | Results consistent within tolerance |
+
+---
+
+## 3. Test Environment & Setup
+
+### 3.1 Test Environment Specs
+- **Load generation tool:** JMeter / Gatling / custom NZ RTP traffic simulator
+- **Message format:** ISO 20022 XML (pacs.008 inbound, pacs.002 outbound)
+- **Database:** Production-like NZ schema with test accounts
+- **External APIs:** Mock Payments NZ outbound endpoint (or staging)
+- **Monitoring:** Prometheus metrics, ELK stack for latency logging, correlation IDs
 
 ### 3.2 Test Data
-- **Inbound pacs.001 messages:** 100 templates covering all debtor/creditor/amount combinations
-- **Load generation:** Constant-rate traffic injector (40,000 tph ± variance <5%)
-- **Message correlation IDs:** Unique UUID per test transaction
+- **Valid inbound messages:** 100 templates covering all debtor/creditor scenarios
+- **Fraud/AML scenarios:** 20 test cases (pass, fail, hold)
+- **Edge cases:** Maximum amounts, special characters, leap seconds
+- **Load profiles:** Ramped, sustained, spike, plateau patterns
 
-### 3.3 Success Criteria (All Tests)
-- ✅ All functional tests (FT-001 to FT-014): **Pass**
-- ✅ ACK queuing latency (LT-001 to LT-006): P99 ≤ 500ms
-- ✅ **E2E latency at 40,000 tph (E2E-003): P99 ≤ 10.0 seconds — CRITICAL**
-- ✅ Latency breakdown logging (LOG-001 to LOG-009): All stages logged with correlation IDs
-- ✅ Alerting (ALERT-001 to ALERT-006): Alert fires at 9.5s; clears when P99 ≤ 9.4s
-- ✅ Load tests (LOAD-001 to LOAD-008): Sustained 40,000 tph with zero dropped messages
-- ✅ Reliability tests (REL-001 to REL-007): All error scenarios handled gracefully
-- ✅ Integration tests (INT-001 to INT-005): ACK delivered to Payments NZ API; no regressions
-
-### 3.4 Defect Thresholds
-- **Blocker:** Any test failure in E2E-003 or ALERT-001 (scheme compliance/alerting)
-- **Critical:** Load test failures, correlation ID missing, alert false positives
-- **High:** Functional message structure issues, logging gaps, recovery failures
-- **Medium:** Edge case status handling, latency variance > 15% between runs
+### 3.3 Observability Setup
+- Correlation ID generation: UUIDv4 per inbound message
+- Latency measurement: Microsecond precision (system clock or NTP-synced)
+- Logging framework: Structured JSON logs with timestamp, correlation ID, latency fields
+- Metrics export: Prometheus histogram for P50/P95/P99 percentiles
 
 ---
 
-## 4. Traceability Matrix
+## 4. Test Execution & Acceptance
 
-| Story AC / NFR | Test Case(s) | Risk Level |
-|---|---|---|
-| AC1 (pacs.002 structure) | FT-001, FT-005, FT-006, FT-007 | Medium |
-| AC2 
+### 4.1 Phase 1: Functional Verification (Dev Environment)
+- **Scope:** F-ACK-*, F-STS-*, F-QUEUE-*, P-LOG-*, I-E2E-*
+- **Timeline:** 3 days
+- **Success criteria:** 100% pass rate
+- **Owner:** Dev team + QA
+
+### 4.2 Phase 2: Performance Baseline (Staging Environment)
+- **Scope:** P-E2E-*, L-LOAD-001–003
+- **Timeline:** 5 days (including ramp-down, root cause for any issues)
+- **Success criteria:** P99 ≤ 10s at 40k tph; latency breakdown logged
+- **Owner:** Performance engineering + QA
+
+### 4.3 Phase 3: Compliance & Alerting (Staging/Pre-prod)
+- **Scope:** A-ALERT-*, C-COMP-*, P-E2E-005–006
+- **Timeline:** 3 days
+- **Success criteria:** 100% alert coverage; scheme compliance confirmed
+- **Owner:** QA + Compliance + Ops
+
+### 4.4 Phase 4: Production Readiness (Production Canary)
+- **Scope:** Repeat P-E2E-001, 004–005 in production with 1% traffic
+- **Timeline:** 2 days
+- **Success criteria:** P99 ≤ 10s confirmed in production; no scheme violations
+- **Owner:** Ops + Platform
+
+---
+
+## 5. Reporting & Metrics
+
+### 5.1 Key Test Results to Report
+- **P99/P95/P50 ACK latency** at 40,000 tph with 95% confidence interval
+- **Latency breakdown** (parsing, AML, fraud, credit, ACK generation) as % of total
+- **Alert threshold validation:** Confirm 9.5s threshold fires before 10s hard limit
+- **Error rate & retry count** during load testing
+- **System resource utilization** (CPU, memory, disk I/O) at peak
+
+### 5.2 Test Summary Template
+```
+Test Run: ACK-001 Functional & Performance Suite
+Date: [DATE]
+Environment: Staging
+Load: 40,000 tph
+Duration: 30 minutes sustained
+
+Results:
+├─ Functional Tests: 24/24 PASS
+├─ Performance Tests: 6/6 PASS
+│   └─ P99 ACK Latency: 8.32s (target: ≤10s

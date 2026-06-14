@@ -1,10 +1,10 @@
 {
-  "skill": "implementation-plan",
-  "caseId": "IL-T3",
-  "model": "claude-haiku-4-5",
-  "trial": 2,
-  "completedAt": "2026-06-13T22:45:27.997Z",
-  "artefactPath": "C:\\Users\\Hamis\\code\\skills repo\\workspace\\experiments\\EXP-037-impl-plan-haiku-frontier\\runs\\implementation-plan-IL-T3-claude-haiku-4-5-trial-2.md",
-  "dimensionsScored": 5,
-  "verdict": "pass"
+  "skill": "definition-of-ready",
+  "caseId": "case-EXP040-S3-dor",
+  "model": "claude-sonnet-4-6",
+  "trial": 1,
+  "completedAt": "2026-06-14T07:26:21.837Z",
+  "artefactPath": "C:\\Users\\Hamis\\code\\skills repo\\workspace\\experiments\\EXP-040-e2e-pipeline-s3\\runs\\definition-of-ready-case-EXP040-S3-dor-claude-sonnet-4-6-trial-1.md",
+  "dimensionsScored": 6,
+  "verdict": "fail"
 }

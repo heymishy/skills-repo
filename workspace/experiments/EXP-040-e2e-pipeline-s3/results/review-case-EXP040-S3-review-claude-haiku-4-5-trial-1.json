@@ -1,5 +1,19 @@
 {
-  "error": "judge failed",
+  "case_id": "case-EXP040-S3-review",
   "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_high_detection": "N/A",
+    "d2_severity_calibration": 0,
+    "d3_medium_detection": "N/A",
+    "d4_category_attribution": 0,
+    "d5_finding_specificity": 0.4,
+    "d6_output_structure": 0
+  },
+  "weighted_score": 0.07,
+  "fdr_high_score": "N/A",
+  "fdr_pass": false,
+  "pass": false,
+  "compliant": false,
+  "notes": "Model fabricated multiple HIGH and BLOCKER findings on a clean baseline that should PASS, including phantom gaps for a missing FRAUD-001 story and latency budget issues; categorical fail triggered by phantom HIGH findings on clean story.",
   "context_injection": false
 }
