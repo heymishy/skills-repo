@@ -33,6 +33,87 @@
   },
   "features": [
     {
+      "slug": "2026-06-15-ideate-web-ux-inc2",
+      "name": "/ideate Web UX — Increment 2 (Conditions Sidebar)",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "updatedAt": "2026-06-15",
+      "discovery": {
+        "status": "approved",
+        "artefact": "artefacts/2026-06-15-ideate-web-ux-inc2/discovery.md",
+        "approvedAt": "2026-06-15",
+        "approvedBy": "Hamish King"
+      },
+      "benefit-metric": {
+        "status": "active",
+        "artefact": "artefacts/2026-06-15-ideate-web-ux-inc2/benefit-metric.md",
+        "definedAt": "2026-06-15"
+      },
+      "nfrProfileArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/nfr-profile.md",
+      "epics": [
+        {
+          "slug": "inc2-conditions-sidebar",
+          "name": "Cluster 6 — Conditions sidebar",
+          "stories": [
+            {
+              "id": "inc2.1",
+              "slug": "inc2.1",
+              "title": "Conditions panel: parse ---CONDITION-JSON--- markers and render condition cards in the /ideate session shell",
+              "artefact": "artefacts/2026-06-15-ideate-web-ux-inc2/stories/inc2.1.md",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "reviewArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/review/inc2.1-review-1.md",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-15-ideate-web-ux-inc2/test-plans/inc2.1-test-plan.md",
+                "totalTests": 11
+              },
+              "acTotal": 9,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/dor/inc2.1-dor.md",
+              "dorContract": "artefacts/2026-06-15-ideate-web-ux-inc2/dor/inc2.1-dor-contract.md",
+              "updatedAt": "2026-06-15"
+            },
+            {
+              "id": "inc2.2",
+              "slug": "inc2.2",
+              "title": "Add ---CONDITION-JSON--- marker emission instruction to ideate/SKILL.md",
+              "artefact": "artefacts/2026-06-15-ideate-web-ux-inc2/stories/inc2.2.md",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "complexity": 1,
+              "humanOversight": "high",
+              "governedFile": true,
+              "dodEntryCondition": "human-in-the-loop: real multi-turn session (>=4 turns) emission verification required at artefacts/2026-06-15-ideate-web-ux-inc2/verification/inc2.2-emission-verification.md",
+              "reviewStatus": "passed",
+              "reviewArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/review/inc2.2-review-1.md",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-15-ideate-web-ux-inc2/test-plans/inc2.2-test-plan.md",
+                "totalTests": 5
+              },
+              "acTotal": 6,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/dor/inc2.2-dor.md",
+              "dorContract": "artefacts/2026-06-15-ideate-web-ux-inc2/dor/inc2.2-dor-contract.md",
+              "schemaDepends": ["inc2.1"],
+              "updatedAt": "2026-06-15"
+            }
+          ]
+        }
+      ],
+      "stories": []
+    },
+    {
       "slug": "2026-05-19-cli-deterministic-governance",
       "name": "CLI Deterministic Governance — Executable Gate Enforcement and Tamper-Evident Audit Trail",
       "stage": "definition-of-done",
