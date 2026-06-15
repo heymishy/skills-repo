@@ -1584,7 +1584,7 @@ function _renderChatPage(skillName, sessionId, session) {
     '  }',
     '',
     '  function updateDraftPanel(artefactContent) {',
-    '    var panel = document.getElementById("draft-content");',
+    '    var panel = document.getElementById("canvas-panel");',
     '    if(!panel) return;',
     '    panel.innerHTML = \'<div style="font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;font-weight:500">Draft</div>\'',
     '      + \'<div class="sw-draft-section"><div class="sw-draft-head"><h2>Artefact</h2></div>\'',

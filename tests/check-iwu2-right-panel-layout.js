@@ -40,8 +40,8 @@ const html = renderChat(baseData);
 // AC1: #assumption-cards section exists
 assert('AC1: HTML contains id="assumption-cards"', html.includes('id="assumption-cards"'));
 
-// AC2: #draft-content section still exists (backwards compatibility)
-assert('AC2: HTML contains id="draft-content"', html.includes('id="draft-content"'));
+// AC2: #canvas-panel section exists
+assert('AC2: HTML contains id="canvas-panel"', html.includes('id="canvas-panel"'));
 
 // AC3: #assumption-cards has placeholder text
 assert('AC3: #assumption-cards contains "No assumptions identified yet"', html.includes('No assumptions identified yet'));
@@ -53,24 +53,24 @@ assert('AC4: #assumption-cards has max-height:42%', html.includes('max-height:42
 assert('AC5: #assumption-cards has role="region"', html.includes('role="region"'));
 assert('AC5: #assumption-cards has aria-label="Assumption cards"', html.includes('aria-label="Assumption cards"'));
 
-// AC6: #draft-content has role="region" and aria-label
-assert('AC6: #draft-content has role="region"', html.includes('role="region"'));
-assert('AC6: #draft-content has aria-label="Artefact draft"', html.includes('aria-label="Artefact draft"'));
+// AC6: #canvas-panel has role="region" and aria-label
+assert('AC6: #canvas-panel has role="region"', html.includes('role="region"'));
+assert('AC6: #canvas-panel has aria-label="Canvas"', html.includes('aria-label="Canvas"'));
 
-// AC7: #draft-content has flex:1 (flex:1 1 auto) in inline style
-assert('AC7: #draft-content has flex:1 in inline style', html.includes('flex:1 1 auto'));
+// AC7: #canvas-panel has flex:1 (flex:1 1 auto) in inline style
+assert('AC7: #canvas-panel has flex:1 in inline style', html.includes('flex:1 1 auto'));
 
-// AC8: #assumption-cards appears before #draft-content in document order
+// AC8: #assumption-cards appears before #canvas-panel in document order
 const assumptionPos = html.indexOf('id="assumption-cards"');
-const draftPos      = html.indexOf('id="draft-content"');
-assert('AC8: #assumption-cards appears before #draft-content', assumptionPos < draftPos && assumptionPos !== -1);
+const canvasPos     = html.indexOf('id="canvas-panel"');
+assert('AC8: #assumption-cards appears before #canvas-panel', assumptionPos < canvasPos && assumptionPos !== -1);
 
 // AC9: right panel section has explicit flex column layout
 assert('AC9: right section has display:flex;flex-direction:column inline', html.includes('display:flex;flex-direction:column'));
 
-// AC10: empty draftSections renders artefact draft placeholder (not the old text)
-assert('AC10: placeholder text is updated draft-specific copy',
-  html.includes('artefact draft will build up here'));
+// AC10: empty draftSections renders canvas placeholder text
+assert('AC10: placeholder text is canvas-specific copy',
+  html.includes('Lens output will appear here'));
 
 // With draftSections — verify content still renders inside #draft-content
 const dataWithDraft = Object.assign({}, baseData, {

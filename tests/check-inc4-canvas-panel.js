@@ -120,7 +120,20 @@ async function runT4T5() {
 }
 
 // ── T6 — #canvas-panel in renderChat ─────────────────────────────────────────
-// (appended in Task 3)
+console.log('\n  T6 — #canvas-panel in renderChat output');
+{
+  const baseData = {
+    skillName: 'ideate', skillLabel: 'Ideate', featureSlug: '', sessionId: 'test',
+    questionIndex: 1, totalQuestions: 1, currentQuestion: 'Hello?',
+    priorQA: [], draftSections: [], pendingConfirmation: false,
+    userInitial: 'M', modelLabel: 'test-model'
+  };
+  const cvHtml = renderChat(baseData);
+  ok(cvHtml.includes('id="canvas-panel"'), 'T6: #canvas-panel present in renderChat output');
+  ok(cvHtml.includes('role="region"'), 'T6: role="region" present');
+  ok(cvHtml.includes('aria-label="Canvas"'), 'T6: aria-label="Canvas" present');
+  ok(!cvHtml.includes('id="draft-content"'), 'T6: #draft-content no longer present');
+}
 
 // ── T7/T8/T9 — renderCanvasBlock ─────────────────────────────────────────────
 // (appended in Task 4)

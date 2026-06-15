@@ -182,9 +182,9 @@ assert('T11: source=operator is preserved', po && po.source === 'operator');
   // T9 — three-section right panel layout order
   var condIdx  = html.indexOf('id="condition-items"');
   var assmpIdx = html.indexOf('id="assumption-cards"');
-  var draftIdx = html.indexOf('id="draft-content"');
+  var canvasIdx = html.indexOf('id="canvas-panel"');
   assert('T9: #condition-items appears before #assumption-cards', condIdx < assmpIdx);
-  assert('T9: #assumption-cards appears before #draft-content', assmpIdx < draftIdx);
+  assert('T9: #assumption-cards appears before #canvas-panel', assmpIdx < canvasIdx);
   assert('T9: #condition-items style includes max-height', (function() {
     var sectionText = html.slice(condIdx - 200, condIdx + 100);
     return sectionText.indexOf('max-height') !== -1;
