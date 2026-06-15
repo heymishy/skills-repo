@@ -1,8 +1,8 @@
 # Discovery: Web Server Observability
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-06-15
-**Approved by:** Pending
+**Approved by:** Hamish King — 2026-06-16
 **Author:** Hamish King + Claude Sonnet 4.6
 
 ---
@@ -102,7 +102,7 @@ Measured via: Log output inspection during a test session.
 - Pending
 
 **Approved By:**
-- Pending
+- Hamish King — Product Lead — 2026-06-16
 
 ---
 

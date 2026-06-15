@@ -4748,14 +4748,14 @@
     {
       "slug": "2026-06-15-web-observability",
       "title": "Web server observability (structured logging + correlation IDs)",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
-      "updatedAt": "2026-06-15",
+      "updatedAt": "2026-06-16",
       "discovery": {
-        "status": "draft",
+        "status": "approved",
         "artefact": "artefacts/2026-06-15-web-observability/discovery.md",
-        "approvedBy": null,
-        "approvedDate": null
+        "approvedBy": "Hamish King",
+        "approvedDate": "2026-06-16"
       },
       "epics": []
     }
