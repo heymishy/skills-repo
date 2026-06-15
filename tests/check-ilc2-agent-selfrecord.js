@@ -107,10 +107,11 @@ test('self-recording-no-new-npm-dependencies — package.json has no new depende
   const pkg = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'package.json'), 'utf8'));
   // ILC (self-recording) must not add new npm dependencies.
   // Pre-existing devDeps added by the wuce feature (ADR-018) are permitted.
-  const PERMITTED_DEV_DEPS = new Set(['@playwright/test', 'jsdom']);
-  const depCount = Object.keys(pkg.dependencies || {}).length;
-  const unknownDevDeps = Object.keys(pkg.devDependencies || {}).filter(k => !PERMITTED_DEV_DEPS.has(k));
-  assert.strictEqual(depCount, 0, `Expected 0 dependencies, found ${depCount}`);
+  const PERMITTED_DEV_DEPS  = new Set(['@playwright/test', 'jsdom']);
+  const PERMITTED_PROD_DEPS = new Set(['pino']); // pino added by obs-1 for server logging
+  const unknownProdDeps = Object.keys(pkg.dependencies || {}).filter(k => !PERMITTED_PROD_DEPS.has(k));
+  const unknownDevDeps  = Object.keys(pkg.devDependencies || {}).filter(k => !PERMITTED_DEV_DEPS.has(k));
+  assert.deepStrictEqual(unknownProdDeps, [], `Unexpected production dependencies added by ILC: [${unknownProdDeps.join(', ')}]`);
   assert.deepStrictEqual(unknownDevDeps, [], `Unexpected devDependencies added: [${unknownDevDeps.join(', ')}]`);
 });
 

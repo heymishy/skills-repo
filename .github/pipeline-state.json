@@ -4748,9 +4748,9 @@
     {
       "slug": "2026-06-15-web-observability",
       "title": "Web server observability (structured logging + correlation IDs)",
-      "stage": "definition",
+      "stage": "subagent-execution",
       "health": "green",
-      "updatedAt": "2026-06-16",
+      "updatedAt": "2026-06-15T20:47:28.634Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-15-web-observability/discovery.md",
@@ -4761,13 +4761,61 @@
         {
           "slug": "obs-core",
           "name": "Engineers can diagnose web server SSE issues from structured logs alone",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "obs-1",
               "name": "Add pino structured logging with turn correlation IDs and timing to the web server",
-              "stage": "definition",
-              "health": "green"
+              "stage": "verify-completion",
+              "health": "green",
+              "reviewStatus": "passed",
+              "reviewRun": 1,
+              "highFindings": 0,
+              "mediumFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-15-web-observability/review/obs-1-review-1.md",
+              "reviewDate": "2026-06-16",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 14,
+                "passing": 14
+              },
+              "acTotal": 6,
+              "acVerified": 6,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "updatedAt": "2026-06-15T20:47:28.634Z",
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "pino dependency + logger module + JSON format tests (AC5)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-06-15-web-observability/plans/obs-1-plan.md",
+                  "sha": "673caca"
+                },
+                {
+                  "id": "task-2",
+                  "name": "correlationId generation + SSE lifecycle events (AC1, AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-06-15-web-observability/plans/obs-1-plan.md",
+                  "sha": "95ebbbb"
+                },
+                {
+                  "id": "task-3",
+                  "name": "LLM call timing - llm_complete with llm_duration_ms (AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-06-15-web-observability/plans/obs-1-plan.md",
+                  "sha": "a060da9"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Secrets verification tests (AC4, NFR-SEC-1) + full suite (AC6)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-06-15-web-observability/plans/obs-1-plan.md",
+                  "sha": "3cc01e4"
+                }
+              ],
+              "verifyStatus": "passed"
             }
           ]
         }
@@ -4811,7 +4859,32 @@
         }
       ],
       "slicingStrategy": "vertical-slice",
-      "guardrails": []
+      "guardrails": [
+        {
+          "id": "ARCH-COMMONJS",
+          "category": "mandatory-constraint",
+          "label": "Plain Node.js/CommonJS no TypeScript or transpilation",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-16"
+        },
+        {
+          "id": "NFR-PERF-LOG-LATENCY",
+          "category": "nfr",
+          "label": "Log emission must not add more than 5ms to SSE stream open time",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-16"
+        },
+        {
+          "id": "NFR-SEC-NO-SECRETS",
+          "category": "nfr",
+          "label": "No API keys, OAuth tokens, or session secrets in any log line",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-16"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

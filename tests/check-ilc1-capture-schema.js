@@ -155,12 +155,14 @@ console.log('\n[ilc1-capture-schema] NFR — no new dependencies');
 
 {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-  const deps = Object.keys(pkg.dependencies || {}).length;
+  const deps = Object.keys(pkg.dependencies || {});
   const devDeps = Object.keys(pkg.devDependencies || {}).length;
-  // ilc.1 adds zero deps — total should be <= known baseline (0 prod, any devDeps present)
+  // ilc.1 adds zero deps. Baseline: only pino (added by obs-1 for server logging).
+  const ALLOWED_PROD_DEPS = ['pino'];
+  const unexpected = deps.filter(d => !ALLOWED_PROD_DEPS.includes(d));
   assert(
-    deps === 0,
-    `capture-append-no-parser-dependency: no production dependencies added (found ${deps})`
+    unexpected.length === 0,
+    `capture-append-no-parser-dependency: unexpected production dependencies added by ilc.1 (found ${unexpected.join(', ')})`
   );
 }
 
