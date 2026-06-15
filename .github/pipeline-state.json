@@ -90,7 +90,7 @@
               "slug": "inc4",
               "title": "Canvas output panel for lens structured content",
               "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/stories/inc4.md",
-              "stage": "subagent-execution",
+              "stage": "verify-completion",
               "health": "green",
               "complexity": 3,
               "reviewStatus": "passed",
@@ -111,34 +111,35 @@
                 {
                   "id": "task-1",
                   "name": "parseCanvasBlock (AC1)",
-                  "tddState": "not-started",
+                  "tddState": "green",
                   "file": "artefacts/2026-06-15-ideate-web-ux-inc3/plans/inc4-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Canvas buffer + canvasBlock SSE (AC2)",
-                  "tddState": "not-started",
+                  "tddState": "green",
                   "file": "artefacts/2026-06-15-ideate-web-ux-inc3/plans/inc4-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "#canvas-panel HTML + iwu2 update (AC3 AC6)",
-                  "tddState": "not-started",
+                  "tddState": "green",
                   "file": "artefacts/2026-06-15-ideate-web-ux-inc3/plans/inc4-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "renderCanvasBlock + appendCanvasBlock (AC4 AC5)",
-                  "tddState": "not-started",
+                  "tddState": "green",
                   "file": "artefacts/2026-06-15-ideate-web-ux-inc3/plans/inc4-plan.md"
                 },
                 {
                   "id": "task-5",
                   "name": "Register test + regression gate (AC7)",
-                  "tddState": "not-started",
+                  "tddState": "green",
                   "file": "artefacts/2026-06-15-ideate-web-ux-inc3/plans/inc4-plan.md"
                 }
-              ]
+              ],
+              "prStatus": "merged"
             }
           ],
           "status": "in-progress"
