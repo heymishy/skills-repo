@@ -2032,11 +2032,15 @@ async function handlePostTurnStreamHtml(req, res) {
   var _COND_START    = '---CONDITION-JSON:';
   var _COND_END      = '---';
   var _COND_STRIP_RE = /---CONDITION-JSON:[\s\S]*?---/g;
+  // inc4: canvas block buffer
+  var _canvasBuf    = '';
+  var _CANVAS_START = '---CANVAS-JSON:';
+  var _CANVAS_END   = '---';
   // Display buffer — strips markers from chat bubble display, handles cross-chunk markers
   // by holding back text from the marker start until the closing --- arrives.
   var _displayBuf = '';
-  var _DISPLAY_STRIP_RE   = /---(?:ASSUMPTION|CONDITION)-JSON:[\s\S]*?---/g;
-  var _DISPLAY_PARTIAL_RE = /---(?:ASSUMPTION|CONDITION)-JSON:/;
+  var _DISPLAY_STRIP_RE   = /---(?:ASSUMPTION|CONDITION|CANVAS)-JSON:[\s\S]*?---/g;
+  var _DISPLAY_PARTIAL_RE = /---(?:ASSUMPTION|CONDITION|CANVAS)-JSON:/;
 
   var fullText = '';
   try {
@@ -2065,7 +2069,7 @@ async function handlePostTurnStreamHtml(req, res) {
           var lt = s.lastIndexOf('---');
           if (lt !== -1) {
             var after = s.slice(lt + 3);
-            if ('ASSUMPTION-JSON:'.indexOf(after) === 0 || 'CONDITION-JSON:'.indexOf(after) === 0) {
+            if ('ASSUMPTION-JSON:'.indexOf(after) === 0 || 'CONDITION-JSON:'.indexOf(after) === 0 || 'CANVAS-JSON:'.indexOf(after) === 0) {
               return lt;
             }
           }
@@ -2150,6 +2154,30 @@ async function handlePostTurnStreamHtml(req, res) {
           }
         }
         _conditionBuf = _cCleanBuf + _cScanBuf;
+
+        // inc4: scan for canvas block markers
+        _canvasBuf += chunk;
+        var _cvScanBuf  = _canvasBuf;
+        var _cvCleanBuf = '';
+        var _cvStartIdx;
+        while ((_cvStartIdx = _cvScanBuf.indexOf(_CANVAS_START)) !== -1) {
+          var _cvAfterEnd   = _cvScanBuf.indexOf(_CANVAS_END, _cvStartIdx + _CANVAS_START.length);
+          if (_cvAfterEnd === -1) { break; }
+          var _cvMarkerFull = _cvScanBuf.slice(_cvStartIdx, _cvAfterEnd + _CANVAS_END.length);
+          _cvCleanBuf += _cvScanBuf.slice(0, _cvStartIdx);
+          _cvScanBuf   = _cvScanBuf.slice(_cvAfterEnd + _CANVAS_END.length);
+          var _cvParsed = parseCanvasBlock(_cvMarkerFull);
+          if (_cvParsed) {
+            if (!session.canvasBlocks) { session.canvasBlocks = []; }
+            session.canvasBlocks.push(_cvParsed);
+            res.write('data: ' + JSON.stringify({ canvasBlock: {
+              type:    _cvParsed.type    || '',
+              title:   _cvParsed.title   || '',
+              content: _cvParsed.content || {}
+            } }) + '\n\n');
+          }
+        }
+        _canvasBuf = _cvCleanBuf + _cvScanBuf;
 
         _artefactAccum += chunk;
         if (!_inArtefactMode) {

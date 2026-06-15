@@ -65,7 +65,59 @@ console.log('\n  T3 — parseCanvasBlock: unknown type → null');
 }
 
 // ── T4/T5 — SSE pipeline ─────────────────────────────────────────────────────
-// (appended in Task 2)
+console.log('\n  T4/T5 — SSE: canvasBlock emitted + stripped from chunk');
+const SESSION_CV = 'test-inc4-canvas-session';
+_setHtmlSession(SESSION_CV, {
+  skillName: 'ideate', sessionPath: '/tmp/test', systemPrompt: 'test',
+  turns: [], artefactContent: null, artefactPath: null, done: false,
+  journeyId: null, assumptionCardsEnabled: true
+});
+
+const CV_MARKER = '---CANVAS-JSON: {"type":"cluster-tree","title":"Opp Map","content":{"clusters":["C1","C2"]}}---';
+const CV_STREAM  = 'Text before. ' + CV_MARKER + ' Text after.';
+
+setSkillTurnExecutorStreamAdapter(function(sp, hist, content, token, onChunk) {
+  onChunk(CV_STREAM);
+  return Promise.resolve(CV_STREAM);
+});
+
+const cvReq = {
+  session: { accessToken: 'test-token' },
+  params:  { id: SESSION_CV, name: 'ideate' },
+  on: function(event, cb) {
+    if (event === 'data')  { cb(Buffer.from(JSON.stringify({ answer: 'hi' }))); }
+    if (event === 'end')   { cb(); }
+    if (event === 'error') {}
+  }
+};
+const cvRes = {
+  writtenData: [],
+  writeHead: function() {},
+  write: function(d) { this.writtenData.push(d); },
+  end:   function() {}
+};
+
+async function runT4T5() {
+  await handlePostTurnStreamHtml(cvReq, cvRes);
+
+  const canvasEvents = cvRes.writtenData.filter(function(d) { return d.includes('"canvasBlock"'); });
+  ok(canvasEvents.length >= 1, 'T4: canvasBlock SSE event emitted');
+
+  var firstCanvas = null;
+  try { firstCanvas = JSON.parse(canvasEvents[0].replace(/^data: /, '').trim()); } catch (_) {}
+  eq(firstCanvas && firstCanvas.canvasBlock && firstCanvas.canvasBlock.type, 'cluster-tree', 'T4: canvasBlock.type correct');
+  eq(firstCanvas && firstCanvas.canvasBlock && firstCanvas.canvasBlock.title, 'Opp Map', 'T4: canvasBlock.title correct');
+
+  const sess = _getHtmlSession(SESSION_CV);
+  ok(sess && sess.canvasBlocks && sess.canvasBlocks.length >= 1, 'T4: session.canvasBlocks populated');
+
+  // T5: chunk events must not contain the raw CANVAS-JSON marker text
+  const chunkEvents = cvRes.writtenData.filter(function(d) { return d.includes('"chunk"'); });
+  const allChunkText = chunkEvents.map(function(d) {
+    try { return JSON.parse(d.replace(/^data: /, '')).chunk || ''; } catch (_) { return ''; }
+  }).join('');
+  ok(!allChunkText.includes('---CANVAS-JSON:'), 'T5: CANVAS-JSON marker stripped from chunk display events');
+}
 
 // ── T6 — #canvas-panel in renderChat ─────────────────────────────────────────
 // (appended in Task 3)
@@ -74,5 +126,10 @@ console.log('\n  T3 — parseCanvasBlock: unknown type → null');
 // (appended in Task 4)
 
 // ── Report ───────────────────────────────────────────────────────────────────
-console.log('\n[inc4-canvas-panel] Results: ' + passed + ' passed, ' + failed + ' failed\n');
-if (failed > 0) { process.exit(1); }
+runT4T5().then(function() {
+  console.log('\n[inc4-canvas-panel] Results: ' + passed + ' passed, ' + failed + ' failed\n');
+  if (failed > 0) { process.exit(1); }
+}).catch(function(err) {
+  console.error('[inc4] Unexpected error:', err.message);
+  process.exit(1);
+});
