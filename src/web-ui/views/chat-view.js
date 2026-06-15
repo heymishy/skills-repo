@@ -112,7 +112,7 @@ function renderChat(data) {
       '.sw-chat-system { align-self: center; font-size: 12px; color: var(--muted); padding: 4px 12px; background: var(--line-2); border-radius: 12px; }',
       '.sw-chat-msg { display: flex; gap: 10px; align-items: flex-start; }',
       '.sw-chat-msg .sw-avatar { flex: 0 0 24px; width: 24px; height: 24px; }',
-      '.sw-avatar--assistant { background: var(--ink) !important; color: #fff !important; }',
+      '.sw-avatar--assistant { background: var(--ink) !important; color: var(--bg) !important; }',
       '.sw-chat-body { flex: 1; min-width: 0; }',
       '.sw-chat-from { font-size: 12px; color: var(--muted); margin-bottom: 3px; }',
       '.sw-chat-text { font-size: 14px; color: var(--ink); line-height: 1.6; }',
