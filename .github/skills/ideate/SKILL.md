@@ -47,6 +47,17 @@ discovery, or before starting any formal pipeline stage.
 
 ---
 
+## Conversation cadence
+
+Move with the user — do not ask for confirmation before making progress.
+
+- **Infer, then state:** When context makes an answer inferable, state your inference explicitly ("I'm assuming X — correct me if wrong") and proceed. Do not ask a question when a sensible default exists.
+- **One question per step:** If genuine ambiguity exists that materially affects the lens output, ask exactly one focused question. Do not ask multiple questions in the same turn.
+- **Proceed after one answer:** Once the user answers a clarifying question, proceed to substantive output immediately. Do not re-confirm.
+- **Questions are for genuine forks only:** Reserve clarifying questions for cases where two plausible interpretations would lead to meaningfully different lens outputs. Everything else is an inference.
+
+---
+
 ## Step 1 — Load context
 
 Before asking anything, check what artefacts exist for the current feature or
