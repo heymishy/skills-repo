@@ -2059,6 +2059,7 @@ async function handlePostTurnStreamHtml(req, res) {
     var _inArtefactMode = false;
     var _DRAFT_START = '---ARTEFACT-START---';
     var _DRAFT_END   = '---ARTEFACT-END---';
+    var _llmStart = Date.now();
     fullText = await _skillTurnExecutorStream(
       session.systemPrompt,
       historySnapshot,
@@ -2222,6 +2223,8 @@ async function handlePostTurnStreamHtml(req, res) {
     }
     _displayBuf = '';
   }
+  var _llmDuration = Date.now() - _llmStart;
+  _turnLog.info({ event: 'llm_complete', llm_duration_ms: _llmDuration }, 'LLM call complete');
   } catch (err) {
     clearInterval(_keepaliveInterval);
     _turnLog.error({ event: 'sse_error', error_message: (err && err.message) ? err.message : 'unknown' }, 'SSE stream error');

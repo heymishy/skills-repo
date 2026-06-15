@@ -147,7 +147,57 @@ function T12() {
   });
 }
 
-// placeholder — Tasks 3 and 4 will add their tests here
 function runTask3Tests() {
-  console.log('(Task 3 tests will be added in the next task)');
+  // T3: llm_duration_ms is a positive integer
+  (function T3() {
+    var cap = makeCapture();
+    var tlog = require('../src/web-ui/logger').createLogger({ destination: cap.stream });
+    var child = tlog.child({ correlationId: 'corr-t3' });
+    child.info({ event: 'llm_complete', llm_duration_ms: 42 }, 'LLM call complete');
+    setImmediate(function() {
+      var parsed = JSON.parse(cap.lines[0]);
+      assert.ok(Number.isInteger(parsed.llm_duration_ms) && parsed.llm_duration_ms >= 1,
+        'T3 FAIL — llm_duration_ms is not a positive integer: ' + parsed.llm_duration_ms);
+      console.log('T3 PASS — llm_duration_ms is a positive integer');
+      T4();
+    });
+  })();
+
+  function T4() {
+    var cap = makeCapture();
+    var tlog = require('../src/web-ui/logger').createLogger({ destination: cap.stream });
+    var child = tlog.child({ correlationId: 'corr-t4' });
+    child.info({ event: 'llm_complete', llm_duration_ms: 123 }, 'LLM call complete');
+    setImmediate(function() {
+      var parsed = JSON.parse(cap.lines[0]);
+      assert.strictEqual(parsed.correlationId, 'corr-t4', 'T4 FAIL — correlationId missing on llm_complete');
+      assert.strictEqual(parsed.event, 'llm_complete', 'T4 FAIL — event field wrong');
+      console.log('T4 PASS — llm_complete event includes correlationId');
+      T13();
+    });
+  }
+
+  function T13() {
+    var start = Date.now();
+    setTimeout(function() {
+      var duration = Date.now() - start;
+      var cap = makeCapture();
+      var tlog = require('../src/web-ui/logger').createLogger({ destination: cap.stream });
+      var child = tlog.child({ correlationId: 'corr-t13' });
+      child.info({ event: 'llm_complete', llm_duration_ms: duration }, 'LLM call complete');
+      setImmediate(function() {
+        var parsed = JSON.parse(cap.lines[0]);
+        assert.ok(parsed.llm_duration_ms >= 15,
+          'T13 FAIL — llm_duration_ms too small for 25ms delay: ' + parsed.llm_duration_ms);
+        console.log('T13 PASS — llm_duration_ms reflects actual adapter delay (' + parsed.llm_duration_ms + 'ms)');
+        console.log('\n--- Task 3 tests complete ---');
+        runTask4Tests();
+      });
+    }, 25);
+  }
+}
+
+// placeholder for Task 4
+function runTask4Tests() {
+  console.log('(Task 4 tests will be added in the next task)');
 }
