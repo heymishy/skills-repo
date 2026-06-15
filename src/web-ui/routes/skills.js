@@ -30,6 +30,9 @@ const { validateArtefactPath } = require('../../artefact-path-validator');
 const { commitArtefact }       = require('../../scm-adapter');
 const _journeyStore            = require('../modules/journey-store'); // ougl.4
 
+var { createLogger: _createPinoLogger } = require('../logger');
+var _pinoLogger = _createPinoLogger();
+
 const MAX_ANSWER_LENGTH = 1000;
 
 // AC5 — exact message returned to client when licence is absent
@@ -1999,6 +2002,9 @@ async function handlePostTurnStreamHtml(req, res) {
     return;
   }
   var sessionId = (req.params && req.params.id) || '';
+  var correlationId = crypto.randomUUID();
+  var turnId = crypto.randomUUID();
+  var _turnLog = _pinoLogger.child({ correlationId: correlationId, sessionId: sessionId, turnId: turnId });
   var body = await _readBody(req);
   var rawAnswer = (body && typeof body.answer === 'string') ? body.answer : '';
 
@@ -2014,6 +2020,7 @@ async function handlePostTurnStreamHtml(req, res) {
     'Cache-Control': 'no-cache',
     'Connection':    'keep-alive'
   });
+  _turnLog.info({ event: 'sse_open' }, 'SSE stream opened');
 
   // SSE keepalive — send a comment every 15s so browsers/proxies don't drop the connection
   // during long model responses where no chunks are emitted for extended periods.
@@ -2025,6 +2032,7 @@ async function handlePostTurnStreamHtml(req, res) {
   var historySnapshot = session.turns.slice();
   session.turns.push({ role: 'user', content: userContent });
 
+  var _chunkCount = 0;
   // iwu.3: assumption marker buffer — accumulates text to detect cross-chunk markers
   var _assumptionBuf = '';
   var _ASSMP_START   = '---ASSUMPTION-JSON:';
@@ -2057,6 +2065,7 @@ async function handlePostTurnStreamHtml(req, res) {
       userContent,
       req.session.accessToken,
       function onChunk(chunk) {
+        _chunkCount++;
         // Display buffer: accumulate, strip complete markers, hold back partial markers.
         // This handles markers that span multiple streaming chunks.
         _displayBuf += chunk;
@@ -2215,12 +2224,13 @@ async function handlePostTurnStreamHtml(req, res) {
   }
   } catch (err) {
     clearInterval(_keepaliveInterval);
-    _logger.warn('handlePostTurnStreamHtml executor error: ' + (err && err.message ? err.message : 'unknown'));
+    _turnLog.error({ event: 'sse_error', error_message: (err && err.message) ? err.message : 'unknown' }, 'SSE stream error');
     res.write('data: ' + JSON.stringify({ error: 'Model error — please try again.' }) + '\n\n');
     res.end();
     return;
   }
   clearInterval(_keepaliveInterval);
+  _turnLog.info({ event: 'sse_close', chunk_count: _chunkCount }, 'SSE stream closed');
 
   var artefactMatch = fullText.match(/---ARTEFACT-START---\s*([\s\S]+?)\s*---ARTEFACT-END---/);
   var slugMatch     = fullText.match(/---SLUG---\s*\n?([\w-]+)/);
