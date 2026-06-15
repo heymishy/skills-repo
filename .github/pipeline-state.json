@@ -4757,7 +4757,39 @@
         "approvedBy": "Hamish King",
         "approvedDate": "2026-06-16"
       },
-      "epics": []
+      "epics": [],
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Time to diagnose a hung SSE connection",
+          "target": "le60s from logs alone",
+          "baseline": "Not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M2",
+          "name": "LLM call duration recorded per turn",
+          "target": "100pct of completing turns have llm_duration_ms",
+          "baseline": "0pct",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M3",
+          "name": "Correlation trace completeness",
+          "target": "100pct of SSE turns share correlationId across open/call/close",
+          "baseline": "0pct",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
