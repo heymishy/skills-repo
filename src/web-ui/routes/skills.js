@@ -2040,7 +2040,25 @@ async function handlePostTurnStreamHtml(req, res) {
         // This handles markers that span multiple streaming chunks.
         _displayBuf += chunk;
         var _dispClean = _displayBuf.replace(_DISPLAY_STRIP_RE, '');
-        var _partialIdx = _dispClean.search(_DISPLAY_PARTIAL_RE);
+        // Find the earliest position to hold back from. Three cases:
+        //   1. Complete prefix already in buffer (e.g. '---ASSUMPTION-JSON: {' open, no closing --- yet)
+        //   2. '---' at tail of clean text, with suffix being a prefix of a marker body
+        //      (e.g. buffer ends with '---ASSUMP' or just '---')
+        //   3. Trailing '-' or '--' that could be the start of '---'
+        var _partialIdx = (function _findPartialStart(s) {
+          var full = s.search(_DISPLAY_PARTIAL_RE);
+          if (full !== -1) return full;
+          var lt = s.lastIndexOf('---');
+          if (lt !== -1) {
+            var after = s.slice(lt + 3);
+            if ('ASSUMPTION-JSON:'.indexOf(after) === 0 || 'CONDITION-JSON:'.indexOf(after) === 0) {
+              return lt;
+            }
+          }
+          var dm = s.match(/-{1,2}$/);
+          if (dm) { return dm.index; }
+          return -1;
+        }(_dispClean));
         var _safeDisplay;
         if (_partialIdx === -1) {
           _safeDisplay = _dispClean;
