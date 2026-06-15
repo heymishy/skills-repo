@@ -115,6 +115,19 @@ if (process.env.NODE_ENV !== 'test') {
   });
 
   setFetchPipelineState(async (owner, repo, token) => {
+    // Local-first: read from disk when running locally so in-flight branch work is visible.
+    const _fs        = require('fs');
+    const _repoRoot  = process.env.COPILOT_REPO_PATH || _path.resolve(__dirname, '../..');
+    const _localPath = _path.join(_repoRoot, '.github', 'pipeline-state.json');
+    if (_fs.existsSync(_localPath)) {
+      try {
+        return JSON.parse(_fs.readFileSync(_localPath, 'utf8'));
+      } catch (e) {
+        console.warn('[feature-list] local pipeline-state parse error, falling back to GitHub API', e.message);
+      }
+    }
+
+    // Remote fallback: fetch from GitHub API (used in production / remote repos)
     const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/.github/pipeline-state.json`;
     let response;
     try {
