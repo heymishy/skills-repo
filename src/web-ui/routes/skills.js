@@ -2006,11 +2006,14 @@ async function handlePostTurnStreamHtml(req, res) {
   var _assumptionBuf = '';
   var _ASSMP_START   = '---ASSUMPTION-JSON:';
   var _ASSMP_END     = '---';
+  var _ASSMP_STRIP_RE = /---ASSUMPTION-JSON:[\s\S]*?---/g;
   // inc2.1: condition marker buffer
   var _conditionBuf  = '';
   var _COND_START    = '---CONDITION-JSON:';
   var _COND_END      = '---';
   var _COND_STRIP_RE = /---CONDITION-JSON:[\s\S]*?---/g;
+  // Combined strip regex for display chunk — strips both marker types before sending to chat bubble
+  var _DISPLAY_STRIP_RE = /---(?:ASSUMPTION|CONDITION)-JSON:[\s\S]*?---/g;
 
   var fullText = '';
   try {
@@ -2024,7 +2027,10 @@ async function handlePostTurnStreamHtml(req, res) {
       userContent,
       req.session.accessToken,
       function onChunk(chunk) {
-        res.write('data: ' + JSON.stringify({ chunk: chunk }) + '\n\n');
+        var _displayChunk = chunk.replace(_DISPLAY_STRIP_RE, '');
+        if (_displayChunk) {
+          res.write('data: ' + JSON.stringify({ chunk: _displayChunk }) + '\n\n');
+        }
 
         // iwu.3: scan for assumption markers in the accumulated buffer
         _assumptionBuf += chunk;
