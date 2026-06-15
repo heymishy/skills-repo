@@ -4748,7 +4748,7 @@
     {
       "slug": "2026-06-15-web-observability",
       "title": "Web server observability (structured logging + correlation IDs)",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "updatedAt": "2026-06-16",
       "discovery": {
@@ -4757,7 +4757,21 @@
         "approvedBy": "Hamish King",
         "approvedDate": "2026-06-16"
       },
-      "epics": [],
+      "epics": [
+        {
+          "slug": "obs-core",
+          "name": "Engineers can diagnose web server SSE issues from structured logs alone",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "obs-1",
+              "name": "Add pino structured logging with turn correlation IDs and timing to the web server",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        }
+      ],
       "metrics": [
         {
           "id": "M1",
@@ -4767,7 +4781,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "obs-1"
+          ]
         },
         {
           "id": "M2",
@@ -4777,7 +4793,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "obs-1"
+          ]
         },
         {
           "id": "M3",
@@ -4787,9 +4805,13 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "obs-1"
+          ]
         }
-      ]
+      ],
+      "slicingStrategy": "vertical-slice",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

@@ -60,9 +60,9 @@ This is engineering infrastructure — operational observability for the web ser
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1 — Hung connection diagnosability | TBD at /definition | Gap — awaiting story definition |
-| M2 — LLM call duration per turn | TBD at /definition | Gap — awaiting story definition |
-| M3 — Correlation trace completeness | TBD at /definition | Gap — awaiting story definition |
+| M1 — Hung connection diagnosability | obs-1 (SSE lifecycle events + correlationId) | Covered |
+| M2 — LLM call duration per turn | obs-1 (llm_duration_ms field on LLM completion) | Covered |
+| M3 — Correlation trace completeness | obs-1 (correlationId at request ingress, all events) | Covered |
 
 ---
 
