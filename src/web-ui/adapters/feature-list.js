@@ -68,7 +68,10 @@ async function listFeatures(token) {
     for (const feature of state.features) {
       results.push({
         slug:             feature.slug || feature.id || '',
+        title:            feature.title || feature.name || feature.slug || feature.id || '',
         stage:            deriveStage(feature),
+        health:           feature.health || '',
+        owner:            feature.owner || '',
         lastUpdated:      feature.updatedAt || feature.lastUpdated || '',
         artefactIndexUrl: `/features/${feature.slug || feature.id || ''}`
       });
