@@ -4750,7 +4750,7 @@
       "title": "Web server observability (structured logging + correlation IDs)",
       "stage": "subagent-execution",
       "health": "green",
-      "updatedAt": "2026-06-15T20:47:28.634Z",
+      "updatedAt": "2026-06-15T21:02:46.015Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-15-web-observability/discovery.md",
@@ -4766,7 +4766,7 @@
             {
               "slug": "obs-1",
               "name": "Add pino structured logging with turn correlation IDs and timing to the web server",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "reviewRun": 1,
@@ -4783,7 +4783,7 @@
               "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "updatedAt": "2026-06-15T20:47:28.634Z",
+              "updatedAt": "2026-06-15T21:02:46.015Z",
               "dorStatus": "signed-off",
               "tasks": [
                 {
@@ -4815,7 +4815,9 @@
                   "sha": "3cc01e4"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/381"
             }
           ]
         }
