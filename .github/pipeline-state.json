@@ -140,6 +140,16 @@
                 }
               ],
               "prStatus": "merged"
+            },
+            {
+              "id": "inc5",
+              "slug": "inc5",
+              "title": "Canvas-JSON marker instruction in /ideate SKILL.md",
+              "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/stories/inc5.md",
+              "stage": "discovery",
+              "health": "green",
+              "complexity": 1,
+              "updatedAt": "2026-06-15"
             }
           ],
           "status": "in-progress"
@@ -4734,6 +4744,20 @@
       "nfrProfileArtefact": "artefacts/2026-06-14-web-ui-pm-flow/nfr-profile.md",
       "dodStatus": "complete",
       "dodDate": "2026-06-15"
+    },
+    {
+      "slug": "2026-06-15-web-observability",
+      "title": "Web server observability (structured logging + correlation IDs)",
+      "stage": "discovery",
+      "health": "green",
+      "updatedAt": "2026-06-15",
+      "discovery": {
+        "status": "draft",
+        "artefact": "artefacts/2026-06-15-web-observability/discovery.md",
+        "approvedBy": null,
+        "approvedDate": null
+      },
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
