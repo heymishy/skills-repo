@@ -562,6 +562,20 @@ function parseConditionMarker(text) {
   }
 }
 
+function parseCanvasBlock(text) {
+  var MARKER_RE = /---CANVAS-JSON:\s*(\{[\s\S]*?\})\s*---/;
+  var match = String(text).match(MARKER_RE);
+  if (!match) { return null; }
+  var TYPE_ALLOW = ['cluster-tree', 'table', 'text'];
+  try {
+    var parsed = JSON.parse(match[1]);
+    if (TYPE_ALLOW.indexOf(String(parsed.type || '')) === -1) { return null; }
+    return parsed;
+  } catch (_) {
+    return null;
+  }
+}
+
 /**
  * Derive an 8-character hex cardId from sessionId + emittedText (SHA-256, first 8 hex chars).
  * @param {string} sessionId
@@ -2549,6 +2563,8 @@ module.exports = {
   buildAssumptionCardHtml,
   // inc2.1 — condition marker parser
   parseConditionMarker,
+  // inc4 — canvas output panel
+  parseCanvasBlock,
   // iwu.4 — confirm/flag endpoint
   handlePostAssumptionConfirm
 };
