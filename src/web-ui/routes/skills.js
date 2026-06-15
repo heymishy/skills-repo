@@ -1998,6 +1998,12 @@ async function handlePostTurnStreamHtml(req, res) {
     'Connection':    'keep-alive'
   });
 
+  // SSE keepalive — send a comment every 15s so browsers/proxies don't drop the connection
+  // during long model responses where no chunks are emitted for extended periods.
+  var _keepaliveInterval = setInterval(function() {
+    try { res.write(':\n\n'); } catch (_) {}
+  }, 15000);
+
   var userContent     = sanitiseAnswer(rawAnswer);
   var historySnapshot = session.turns.slice();
   session.turns.push({ role: 'user', content: userContent });
@@ -2012,8 +2018,11 @@ async function handlePostTurnStreamHtml(req, res) {
   var _COND_START    = '---CONDITION-JSON:';
   var _COND_END      = '---';
   var _COND_STRIP_RE = /---CONDITION-JSON:[\s\S]*?---/g;
-  // Combined strip regex for display chunk — strips both marker types before sending to chat bubble
-  var _DISPLAY_STRIP_RE = /---(?:ASSUMPTION|CONDITION)-JSON:[\s\S]*?---/g;
+  // Display buffer — strips markers from chat bubble display, handles cross-chunk markers
+  // by holding back text from the marker start until the closing --- arrives.
+  var _displayBuf = '';
+  var _DISPLAY_STRIP_RE   = /---(?:ASSUMPTION|CONDITION)-JSON:[\s\S]*?---/g;
+  var _DISPLAY_PARTIAL_RE = /---(?:ASSUMPTION|CONDITION)-JSON:/;
 
   var fullText = '';
   try {
@@ -2027,9 +2036,21 @@ async function handlePostTurnStreamHtml(req, res) {
       userContent,
       req.session.accessToken,
       function onChunk(chunk) {
-        var _displayChunk = chunk.replace(_DISPLAY_STRIP_RE, '');
-        if (_displayChunk) {
-          res.write('data: ' + JSON.stringify({ chunk: _displayChunk }) + '\n\n');
+        // Display buffer: accumulate, strip complete markers, hold back partial markers.
+        // This handles markers that span multiple streaming chunks.
+        _displayBuf += chunk;
+        var _dispClean = _displayBuf.replace(_DISPLAY_STRIP_RE, '');
+        var _partialIdx = _dispClean.search(_DISPLAY_PARTIAL_RE);
+        var _safeDisplay;
+        if (_partialIdx === -1) {
+          _safeDisplay = _dispClean;
+          _displayBuf  = '';
+        } else {
+          _safeDisplay = _dispClean.slice(0, _partialIdx);
+          _displayBuf  = _dispClean.slice(_partialIdx);
+        }
+        if (_safeDisplay) {
+          res.write('data: ' + JSON.stringify({ chunk: _safeDisplay }) + '\n\n');
         }
 
         // iwu.3: scan for assumption markers in the accumulated buffer
@@ -2121,12 +2142,22 @@ async function handlePostTurnStreamHtml(req, res) {
         }
       }
     );
+  // Flush any remaining display buffer content (e.g. text after last marker was held back)
+  if (_displayBuf) {
+    var _finalDisplay = _displayBuf.replace(_DISPLAY_STRIP_RE, '');
+    if (_finalDisplay && !_DISPLAY_PARTIAL_RE.test(_finalDisplay)) {
+      res.write('data: ' + JSON.stringify({ chunk: _finalDisplay }) + '\n\n');
+    }
+    _displayBuf = '';
+  }
   } catch (err) {
+    clearInterval(_keepaliveInterval);
     _logger.warn('handlePostTurnStreamHtml executor error: ' + (err && err.message ? err.message : 'unknown'));
     res.write('data: ' + JSON.stringify({ error: 'Model error — please try again.' }) + '\n\n');
     res.end();
     return;
   }
+  clearInterval(_keepaliveInterval);
 
   var artefactMatch = fullText.match(/---ARTEFACT-START---\s*([\s\S]+?)\s*---ARTEFACT-END---/);
   var slugMatch     = fullText.match(/---SLUG---\s*\n?([\w-]+)/);
