@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lens Canvas — inc4 design spec</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lora:ital,wght@0,400;0,600;1,400&family=Overpass+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Design tokens — mirror existing web-ui vars ───────────────── */
+    :root {
+      --bg:         #0B0C0E;
+      --surface:    #141518;
+      --surface-hi: #1C1D21;
+      --ink:        #F0F0F0;
+      --muted:      #666870;
+      --line:       #26272C;
+      --line-hi:    #34353C;
+
+      /* Lens accent palette */
+      --a: #F5C842;   /* Opportunity — amber */
+      --b: #A78BFA;   /* Assumptions — violet */
+      --c: #34D399;   /* Market — emerald */
+      --d: #F472B6;   /* Strategy — rose */
+      --e: #60A5FA;   /* JTBD — blue */
+      --s: #FB923C;   /* Synthesis — coral */
+
+      --font-display: 'Bebas Neue', 'Impact', sans-serif;
+      --font-body:    'Lora', 'Georgia', serif;
+      --font-mono:    'Overpass Mono', 'Courier New', monospace;
+
+      --radius: 6px;
+      --radius-lg: 10px;
+
+      --card-anim-dur: 380ms;
+    }
+
+    /* ── Page shell (simulates the narrow right panel at ~420px) ────── */
+    body {
+      background: #050507;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 32px 20px;
+      min-height: 100vh;
+      font-family: var(--font-body);
+    }
+
+    .panel-shell {
+      width: 420px;
+      height: 780px;
+      background: var(--bg);
+      border: 1px solid var(--line-hi);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,.8);
+    }
+
+    /* ── Section header (matches existing .ac-section-head style) ───── */
+    .canvas-section-head {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 12px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .canvas-section-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── Progress track ─────────────────────────────────────────────── */
+    .lens-track {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+    .lens-pip {
+      width: 18px;
+      height: 5px;
+      border-radius: 3px;
+      background: var(--line-hi);
+      transition: background 0.4s, width 0.3s;
+      cursor: default;
+    }
+    .lens-pip.done   { background: var(--a); }
+    .lens-pip.active { background: var(--a); opacity: 0.45; width: 26px; }
+    .lens-pip[data-lens="b"].done   { background: var(--b); }
+    .lens-pip[data-lens="b"].active { background: var(--b); opacity: 0.45; }
+    .lens-pip[data-lens="c"].done   { background: var(--c); }
+    .lens-pip[data-lens="c"].active { background: var(--c); opacity: 0.45; }
+    .lens-pip[data-lens="d"].done   { background: var(--d); }
+    .lens-pip[data-lens="d"].active { background: var(--d); opacity: 0.45; }
+    .lens-pip[data-lens="e"].done   { background: var(--e); }
+    .lens-pip[data-lens="e"].active { background: var(--e); opacity: 0.45; }
+
+    /* ── Canvas scroll area ─────────────────────────────────────────── */
+    #lens-canvas {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      padding: 14px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      /* Dot grid background */
+      background-image: radial-gradient(circle, #2A2B30 1px, transparent 1px);
+      background-size: 20px 20px;
+      background-color: var(--bg);
+      scrollbar-width: thin;
+      scrollbar-color: var(--line-hi) transparent;
+    }
+    #lens-canvas::-webkit-scrollbar { width: 4px; }
+    #lens-canvas::-webkit-scrollbar-thumb { background: var(--line-hi); border-radius: 2px; }
+
+    /* ── Lens card ──────────────────────────────────────────────────── */
+    .lens-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.18s;
+      cursor: pointer;
+
+      /* Entrance animation */
+      animation: cardIn var(--card-anim-dur) cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .lens-card:hover {
+      border-color: var(--line-hi);
+      box-shadow: 0 6px 28px rgba(0,0,0,.45);
+      transform: translateY(-1px);
+    }
+
+    /* Top accent stripe per lens */
+    .lens-card::before {
+      content: '';
+      display: block;
+      height: 2px;
+      background: var(--lens-color, var(--a));
+    }
+
+    /* Card header */
+    .card-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px 8px;
+      border-bottom: 1px solid var(--line);
+    }
+    .card-lensid {
+      font-family: var(--font-display);
+      font-size: 22px;
+      line-height: 1;
+      color: var(--lens-color, var(--a));
+      flex-shrink: 0;
+      letter-spacing: 0.5px;
+    }
+    .card-meta {
+      flex: 1;
+      min-width: 0;
+    }
+    .card-title {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+    .card-summary {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.4;
+      font-style: italic;
+    }
+    .card-chevron {
+      flex-shrink: 0;
+      font-size: 10px;
+      color: var(--muted);
+      transition: transform 0.25s;
+    }
+    .lens-card.open .card-chevron { transform: rotate(180deg); }
+
+    /* Card body (collapsible) */
+    .card-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .lens-card.open .card-body { max-height: 600px; }
+    .card-body-inner { padding: 12px; }
+
+    /* ── A-lens: opportunity tree ───────────────────────────────────── */
+    .opp-statement {
+      font-family: var(--font-body);
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--ink);
+      margin-bottom: 12px;
+      padding-left: 10px;
+      border-left: 2px solid var(--a);
+    }
+    .opp-clusters {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .opp-cluster {
+      background: var(--surface-hi);
+      border-radius: var(--radius);
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+    }
+    .opp-cluster-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--a);
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+    .opp-cluster-items {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .opp-cluster-items li {
+      font-size: 11.5px;
+      color: var(--ink);
+      line-height: 1.45;
+      padding-left: 10px;
+      position: relative;
+    }
+    .opp-cluster-items li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--a);
+      opacity: 0.7;
+    }
+
+    /* ── B-lens: assumption quadrant ────────────────────────────────── */
+    .quad-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1.15;
+      margin-bottom: 10px;
+    }
+    .quad-svg { width: 100%; height: 100%; }
+    .quad-label {
+      font-family: var(--font-mono);
+      font-size: 8px;
+      fill: var(--muted);
+      letter-spacing: 0.6px;
+    }
+    .quad-axis { stroke: var(--line-hi); stroke-width: 1; }
+    .quad-dot {
+      transition: r 0.2s;
+      cursor: pointer;
+    }
+    .quad-dot:hover { r: 6; }
+    .quad-dot-label {
+      font-family: var(--font-body);
+      font-size: 9px;
+      fill: var(--ink);
+      pointer-events: none;
+    }
+    .assumption-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .assumption-row {
+      display: flex;
+      gap: 6px;
+      align-items: flex-start;
+      font-size: 11px;
+      color: var(--ink);
+      line-height: 1.4;
+    }
+    .assumption-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+
+    /* ── D-lens: strategy verdict ───────────────────────────────────── */
+    .verdict-banner {
+      background: linear-gradient(135deg, rgba(244, 114, 182, 0.12) 0%, rgba(244, 114, 182, 0.04) 100%);
+      border: 1px solid rgba(244, 114, 182, 0.25);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .verdict-label {
+      font-family: var(--font-display);
+      font-size: 30px;
+      line-height: 1;
+      color: var(--d);
+      letter-spacing: 1px;
+      flex-shrink: 0;
+    }
+    .verdict-rationale {
+      font-size: 11.5px;
+      color: var(--ink);
+      line-height: 1.5;
+      font-style: italic;
+    }
+    .criteria-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .criterion-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .criterion-name {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--muted);
+      flex: 1;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+    }
+    .criterion-bar {
+      width: 60px;
+      height: 4px;
+      background: var(--line-hi);
+      border-radius: 2px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .criterion-fill {
+      height: 100%;
+      background: var(--d);
+      border-radius: 2px;
+      transition: width 0.6s ease;
+    }
+    .criterion-score {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--d);
+      width: 20px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* ── E-lens: JTBD ───────────────────────────────────────────────── */
+    .jtbd-job {
+      font-family: var(--font-body);
+      font-size: 12.5px;
+      line-height: 1.65;
+      color: var(--ink);
+      padding: 10px 12px;
+      background: rgba(96, 165, 250, 0.07);
+      border-left: 2px solid var(--e);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin-bottom: 10px;
+      font-style: italic;
+    }
+    .forces-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .force-col-head {
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+    .force-col-head.push { color: var(--c); }
+    .force-col-head.pull { color: var(--d); }
+    .force-item {
+      font-size: 10.5px;
+      color: var(--ink);
+      line-height: 1.45;
+      padding: 4px 6px;
+      background: var(--surface-hi);
+      border-radius: var(--radius);
+      margin-bottom: 4px;
+      border: 1px solid var(--line);
+    }
+
+    /* ── Synthesis block ────────────────────────────────────────────── */
+    .synthesis-card {
+      background: linear-gradient(135deg, rgba(251, 146, 60, 0.06) 0%, transparent 60%);
+      border-color: rgba(251, 146, 60, 0.2);
+    }
+    .synthesis-card::before { background: var(--s); }
+    .synthesis-card .card-lensid { color: var(--s); }
+    .synthesis-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .synthesis-row:last-child { border-bottom: none; }
+    .synthesis-tag {
+      font-family: var(--font-mono);
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 2px 5px;
+      border-radius: 3px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .synthesis-tag.signal    { background: rgba(245,200,66,.15); color: var(--a); }
+    .synthesis-tag.risk      { background: rgba(167,139,250,.15); color: var(--b); }
+    .synthesis-tag.bet       { background: rgba(52,211,153,.15); color: var(--c); }
+    .synthesis-text {
+      font-size: 11.5px;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+
+    /* ── Empty / loading states ─────────────────────────────────────── */
+    .canvas-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 8px;
+      opacity: 0.35;
+    }
+    .canvas-empty-icon { font-size: 28px; }
+    .canvas-empty-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── Skeleton / in-progress state ───────────────────────────────── */
+    .lens-card.in-progress { opacity: 0.55; }
+    .skeleton {
+      height: 10px;
+      background: linear-gradient(90deg, var(--line) 25%, var(--line-hi) 50%, var(--line) 75%);
+      background-size: 200% 100%;
+      border-radius: 3px;
+      animation: shimmer 1.6s infinite;
+      margin-bottom: 6px;
+    }
+    .skeleton.short { width: 55%; }
+    .skeleton.medium { width: 80%; }
+
+    /* ── Animations ─────────────────────────────────────────────────── */
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(14px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ── Demo controls (spec only, not in production) ───────────────── */
+    .demo-bar {
+      margin-top: 20px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .demo-btn {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 5px 11px;
+      border-radius: 4px;
+      border: 1px solid var(--line-hi);
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .demo-btn:hover { color: var(--ink); border-color: var(--line-hi); }
+
+    /* ── Spec annotation overlay ─────────────────────────────────────── */
+    .spec-note {
+      width: 420px;
+      margin-top: 16px;
+      padding: 12px 14px;
+      background: rgba(245, 200, 66, 0.05);
+      border: 1px solid rgba(245, 200, 66, 0.15);
+      border-radius: var(--radius);
+    }
+    .spec-note-head {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--a);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .spec-note ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .spec-note li {
+      font-size: 11px;
+      color: #B0B2B8;
+      line-height: 1.5;
+      padding-left: 12px;
+      position: relative;
+    }
+    .spec-note li::before {
+      content: '·';
+      position: absolute;
+      left: 0;
+      color: var(--a);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─────────────────────────────────────────────────────────────────
+       PANEL SHELL — mirrors the right pane of the chat split layout.
+       inc4 replaces only the #draft-content section (flex:1 below
+       the conditions + assumptions panels).
+  ──────────────────────────────────────────────────────────────────── -->
+  <div class="panel-shell">
+
+    <!-- Section header (same style as existing condition/assumption heads) -->
+    <div class="canvas-section-head">
+      <span class="canvas-section-label">Lens canvas</span>
+      <div class="lens-track" id="lens-track">
+        <div class="lens-pip done"  data-lens="a" title="Opportunity mapping — complete"></div>
+        <div class="lens-pip done"  data-lens="b" title="Assumption inventory — complete"></div>
+        <div class="lens-pip"       data-lens="c" title="Market scan — not started"></div>
+        <div class="lens-pip active" data-lens="d" title="Strategy — in progress"></div>
+        <div class="lens-pip"       data-lens="e" title="JTBD — not started"></div>
+      </div>
+    </div>
+
+    <!-- Canvas scroll area (replaces #draft-content) -->
+    <div id="lens-canvas">
+
+      <!-- ── A — Opportunity mapping ──────────────────────────────── -->
+      <div class="lens-card open" style="--lens-color: var(--a); animation-delay: 0ms" data-id="a">
+        <div class="card-head" onclick="toggleCard(this.closest('.lens-card'))">
+          <span class="card-lensid">A</span>
+          <div class="card-meta">
+            <div class="card-title">Opportunity mapping</div>
+            <div class="card-summary">Post-workshop insight loss — facilitators, PMs</div>
+          </div>
+          <span class="card-chevron">▾</span>
+        </div>
+        <div class="card-body">
+          <div class="card-body-inner">
+            <p class="opp-statement">
+              Facilitate impact/effort prioritisation workshops without losing the debate — so every participant's reasoning is captured and reusable.
+            </p>
+            <div class="opp-clusters">
+              <div class="opp-cluster">
+                <div class="opp-cluster-label">Pain — write-up loss</div>
+                <ul class="opp-cluster-items">
+                  <li>Facilitator spends 2–4h after every session on manual write-up</li>
+                  <li>Debate context (why an item landed where it did) is lost by next day</li>
+                  <li>Participants unsure if their input was captured or weighted</li>
+                </ul>
+              </div>
+              <div class="opp-cluster">
+                <div class="opp-cluster-label">Desire — reuse + feed-forward</div>
+                <ul class="opp-cluster-items">
+                  <li>Structured export that can seed a pipeline run directly</li>
+                  <li>Searchable record of every workshop session</li>
+                  <li>AI-matched transcript segments as evidence layer</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── B — Assumption inventory ─────────────────────────────── -->
+      <div class="lens-card open" style="--lens-color: var(--b); animation-delay: 60ms" data-id="b">
+        <div class="card-head" onclick="toggleCard(this.closest('.lens-card'))">
+          <span class="card-lensid">B</span>
+          <div class="card-meta">
+            <div class="card-title">Assumption inventory</div>
+            <div class="card-summary">6 assumptions — 3 high-risk unknowns</div>
+          </div>
+          <span class="card-chevron">▾</span>
+        </div>
+        <div class="card-body">
+          <div class="card-body-inner">
+            <!-- 2×2 quadrant: X = knowness (unknown→known), Y = risk (low→high) -->
+            <svg class="quad-svg" viewBox="0 0 260 220" xmlns="http://www.w3.org/2000/svg">
+              <!-- Quadrant grid lines -->
+              <line x1="130" y1="10" x2="130" y2="205" class="quad-axis"/>
+              <line x1="15"  y1="110" x2="250" y2="110" class="quad-axis"/>
+              <!-- Quadrant labels -->
+              <text x="17"  y="22"  class="quad-label">HIGH RISK</text>
+              <text x="17"  y="200" class="quad-label">LOW RISK</text>
+              <text x="17"  y="115" class="quad-label">UNKNOWN</text>
+              <text x="188" y="115" class="quad-label">KNOWN</text>
+              <!-- Quadrant shading -->
+              <rect x="15" y="10" width="115" height="100" fill="rgba(244,114,182,0.05)" rx="3"/>
+              <text x="22" y="90" class="quad-label" fill="rgba(244,114,182,0.4)">TEST FIRST</text>
+              <!-- Assumption dots — plotted by estimated risk vs knowness -->
+              <!-- A1: workshops continue — high risk, known-unknown -->
+              <circle cx="80" cy="42" r="5" fill="var(--b)" class="quad-dot" opacity="0.9">
+                <title>Workshops continue to happen</title>
+              </circle>
+              <text x="88" y="46" class="quad-dot-label">1</text>
+              <!-- A2: transcript available — medium risk, known-unknown -->
+              <circle cx="72" cy="72" r="5" fill="var(--b)" class="quad-dot" opacity="0.8">
+                <title>Teams record and have transcripts</title>
+              </circle>
+              <text x="80" y="76" class="quad-dot-label">2</text>
+              <!-- A3: timestamp matching works — high risk, unknown -->
+              <circle cx="38" cy="38" r="5" fill="var(--d)" class="quad-dot" opacity="0.95">
+                <title>Transcript timestamps reliably match topics</title>
+              </circle>
+              <text x="46" y="42" class="quad-dot-label">3</text>
+              <!-- A4: AI matching sufficient — high risk, unknown -->
+              <circle cx="52" cy="58" r="5" fill="var(--d)" class="quad-dot" opacity="0.9">
+                <title>AI matches segments accurately enough</title>
+              </circle>
+              <text x="60" y="62" class="quad-dot-label">4</text>
+              <!-- A5: transcript quality — medium risk, unknown -->
+              <circle cx="45" cy="85" r="5" fill="var(--b)" class="quad-dot" opacity="0.75">
+                <title>Transcript audio quality sufficient</title>
+              </circle>
+              <text x="53" y="89" class="quad-dot-label">5</text>
+              <!-- A6: export format understood — low risk, known -->
+              <circle cx="195" cy="148" r="5" fill="var(--c)" class="quad-dot" opacity="0.8">
+                <title>Structured export format well understood</title>
+              </circle>
+              <text x="203" y="152" class="quad-dot-label">6</text>
+            </svg>
+
+            <!-- Legend -->
+            <div class="assumption-list">
+              <div class="assumption-row">
+                <div class="assumption-dot" style="background:var(--d)"></div>
+                <span><strong style="color:var(--d);font-size:10px">TEST FIRST</strong> &mdash; AI transcript matching (3, 4): spike needed before any MVP build</span>
+              </div>
+              <div class="assumption-row">
+                <div class="assumption-dot" style="background:var(--b)"></div>
+                <span>Monitor in beta: workshop continuity (1), transcript availability (2), audio quality (5)</span>
+              </div>
+              <div class="assumption-row">
+                <div class="assumption-dot" style="background:var(--c)"></div>
+                <span>Low risk: export format definition (6)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── D — Strategy (in-progress skeleton) ───────────────────── -->
+      <div class="lens-card in-progress" style="--lens-color: var(--d); animation-delay: 120ms" data-id="d">
+        <div class="card-head" onclick="toggleCard(this.closest('.lens-card'))">
+          <span class="card-lensid">D</span>
+          <div class="card-meta">
+            <div class="card-title">Product strategy</div>
+            <div class="card-summary" style="color:var(--muted)">Assessing now…</div>
+          </div>
+          <span class="card-chevron" style="color:var(--d)">⟳</span>
+        </div>
+        <div class="card-body" style="max-height: 140px">
+          <div class="card-body-inner">
+            <div class="skeleton medium"></div>
+            <div class="skeleton short"></div>
+            <div class="skeleton medium"></div>
+            <div class="skeleton" style="width:70%"></div>
+            <div class="skeleton short"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /#lens-canvas -->
+
+  </div><!-- /.panel-shell -->
+
+  <!-- Demo controls (spec only) -->
+  <div class="demo-bar">
+    <button class="demo-btn" onclick="addStrategyCard()">+ Strategy (D) complete</button>
+    <button class="demo-btn" onclick="addJTBDCard()">+ JTBD (E) complete</button>
+    <button class="demo-btn" onclick="addSynthesisCard()">+ Synthesis (S)</button>
+    <button class="demo-btn" onclick="resetDemo()">Reset</button>
+  </div>
+
+  <!-- Design spec notes -->
+  <div class="spec-note">
+    <div class="spec-note-head">inc4 — implementation contract</div>
+    <ul>
+      <li><strong>Replaces:</strong> <code>#draft-content</code> (flex:1 below conditions + assumptions panels). Section header label changes from "Artefact draft" → "Lens canvas".</li>
+      <li><strong>Data source:</strong> Lens blocks build from <code>draftChunk</code> SSE events — same stream already parsed for artefact content. Each lens section (A1–E4) becomes a canvas block when its text arrives.</li>
+      <li><strong>Block types:</strong> Detected by first heading in draftChunk text (e.g. <code>## Opportunity mapping</code> → type A). Default block = plain text card with lens ID inferred from heading.</li>
+      <li><strong>Progress track:</strong> Five pips A–E; pip turns solid when the corresponding lens heading has arrived, active (faded) while that section is streaming.</li>
+      <li><strong>Collapse:</strong> All cards collapsed by default except the most-recently-completed one. Click to expand. State preserved in session.</li>
+      <li><strong>Synthesis (S):</strong> Auto-generated when all selected lenses complete. Produced by a final prompt turn that distils key signals, risks, and strategic bets into 3–5 rows. Always shown expanded, pinned at bottom of canvas.</li>
+      <li><strong>Assumption quadrant:</strong> Pulls from existing <code>session.assumptionCards</code> — no new data. Risk axis from <code>risk</code> field (high/medium/low); knowness axis from <code>knowness</code> field (unknown-unknown → known-unknown → known-known).</li>
+      <li><strong>Export:</strong> Canvas state serialised as structured markdown at commit-preview (same path as today). Canvas blocks become named H2 sections.</li>
+      <li><strong>Fonts used:</strong> Bebas Neue (lens IDs), Lora (body), Overpass Mono (labels/meta) — load via Google Fonts in <code>&lt;head&gt;</code>.</li>
+    </ul>
+  </div>
+
+  <script>
+    function toggleCard(card) {
+      card.classList.toggle('open');
+    }
+
+    function addStrategyCard() {
+      var canvas = document.getElementById('lens-canvas');
+
+      // Update in-progress card to complete
+      var dCard = canvas.querySelector('[data-id="d"]');
+      if (dCard) {
+        dCard.classList.remove('in-progress');
+        dCard.querySelector('.card-summary').textContent = 'PROCEED — 7/10 criteria met';
+        dCard.querySelector('.card-summary').style.color = '';
+        dCard.querySelector('.card-chevron').textContent = '▾';
+        dCard.querySelector('.card-chevron').style.color = '';
+
+        // Replace skeleton with real content
+        var bodyInner = dCard.querySelector('.card-body-inner');
+        bodyInner.innerHTML = `
+          <div class="verdict-banner">
+            <div class="verdict-label">PROCEED</div>
+            <div class="verdict-rationale">Strong market pull, clear job-to-be-done, AI matching is the only technical unknown that warrants a spike before committing to MVP.</div>
+          </div>
+          <div class="criteria-grid">
+            ${[
+              ['Market size', 85],
+              ['Customer segment clarity', 90],
+              ['Problem urgency', 80],
+              ['Competitive gap', 70],
+              ['Technical feasibility', 50],
+              ['Business model fit', 75],
+              ['Team capability', 65],
+              ['Regulatory risk', 90],
+              ['Time-to-value', 60],
+              ['Strategic alignment', 85],
+            ].map(([name, score]) => `
+              <div class="criterion-row">
+                <span class="criterion-name">${name}</span>
+                <div class="criterion-bar"><div class="criterion-fill" style="width:${score}%"></div></div>
+                <span class="criterion-score">${score}</span>
+              </div>`).join('')}
+          </div>`;
+        dCard.classList.add('open');
+      }
+
+      // Update D pip
+      var pip = document.querySelector('.lens-pip[data-lens="d"]');
+      if (pip) { pip.classList.remove('active'); pip.classList.add('done'); }
+    }
+
+    function addJTBDCard() {
+      var canvas = document.getElementById('lens-canvas');
+      var card = document.createElement('div');
+      card.className = 'lens-card open';
+      card.style.cssText = '--lens-color: var(--e); animation-delay: 0ms';
+      card.setAttribute('data-id', 'e');
+      card.innerHTML = `
+        <div class="card-head" onclick="toggleCard(this.closest('.lens-card'))">
+          <span class="card-lensid">E</span>
+          <div class="card-meta">
+            <div class="card-title">Jobs-to-be-done</div>
+            <div class="card-summary">Help me turn a workshop into an artefact that works</div>
+          </div>
+          <span class="card-chevron">▾</span>
+        </div>
+        <div class="card-body">
+          <div class="card-body-inner">
+            <div class="jtbd-job">
+              "When I facilitate a prioritisation workshop, help me turn the live debate into a structured artefact my team can act on — so I don't have to choose between being present in the room and capturing the reasoning that drives every decision."
+            </div>
+            <div class="forces-grid">
+              <div>
+                <div class="force-col-head push">Push — away from old</div>
+                <div class="force-item">Hours of post-session write-up feel like admin, not value</div>
+                <div class="force-item">Participants ask "was my input counted?" — undermines trust</div>
+                <div class="force-item">Context degrades overnight; rationale irretrievably lost</div>
+              </div>
+              <div>
+                <div class="force-col-head pull">Pull — toward new</div>
+                <div class="force-item">Instant structured export feeds the pipeline directly</div>
+                <div class="force-item">Transcript-backed evidence layer makes every decision auditable</div>
+                <div class="force-item">Participants see their words reflected → higher engagement</div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      canvas.appendChild(card);
+
+      var pip = document.querySelector('.lens-pip[data-lens="e"]');
+      if (pip) pip.classList.add('done');
+    }
+
+    function addSynthesisCard() {
+      var canvas = document.getElementById('lens-canvas');
+      var card = document.createElement('div');
+      card.className = 'lens-card synthesis-card open';
+      card.style.cssText = 'animation-delay: 0ms';
+      card.setAttribute('data-id', 's');
+      card.innerHTML = `
+        <div class="card-head" onclick="toggleCard(this.closest('.lens-card'))">
+          <span class="card-lensid" style="color:var(--s)">S</span>
+          <div class="card-meta">
+            <div class="card-title" style="color:var(--s)">Session synthesis</div>
+            <div class="card-summary">3 signals · 2 risks · 1 strategic bet</div>
+          </div>
+          <span class="card-chevron">▾</span>
+        </div>
+        <div class="card-body">
+          <div class="card-body-inner">
+            <div class="synthesis-row">
+              <span class="synthesis-tag signal">Signal</span>
+              <span class="synthesis-text">Participants <em>already record</em> sessions — the raw material for AI matching exists today. No behaviour change required from the audience.</span>
+            </div>
+            <div class="synthesis-row">
+              <span class="synthesis-tag signal">Signal</span>
+              <span class="synthesis-text">The job is "help me be present AND capture" — the AI layer removes a trade-off, not just friction. That's a strong JTBD frame.</span>
+            </div>
+            <div class="synthesis-row">
+              <span class="synthesis-tag risk">Risk</span>
+              <span class="synthesis-text">AI transcript-to-topic matching is the load-bearing technical bet. Accuracy below ~80% makes the export less trustworthy than manual notes. <strong>Spike before committing to MVP.</strong></span>
+            </div>
+            <div class="synthesis-row">
+              <span class="synthesis-tag risk">Risk</span>
+              <span class="synthesis-text">If this framework replaces the workshop format itself (rather than augmenting it), the core value proposition disappears.</span>
+            </div>
+            <div class="synthesis-row">
+              <span class="synthesis-tag bet">Bet</span>
+              <span class="synthesis-text">Build the transcript-matching spike as the first deliverable. If accuracy hits threshold, PROCEED to MVP. If not, the 2×2 grid as a standalone tool (no AI) still has value as a lighter product.</span>
+            </div>
+          </div>
+        </div>`;
+      canvas.appendChild(card);
+    }
+
+    function resetDemo() {
+      // Reload page to reset state
+      window.location.reload();
+    }
+  </script>
+</body>
+</html>

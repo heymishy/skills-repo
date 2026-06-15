@@ -100,9 +100,9 @@
                 "totalTests": 10
               },
               "acTotal": 7,
-              "dorStatus": "blocked",
+              "dorStatus": "design-review",
               "dorArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/dor/inc4-dor.md",
-              "dorBlocker": "design-gate: /frontend-design artefact required",
+              "designArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/design/inc4-canvas-panel.html",
               "updatedAt": "2026-06-15"
             }
           ]
