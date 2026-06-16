@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "IL-S3",
+  "scores": {
+    "d1_ac_coverage_accuracy": 0.8,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.88,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Correctly calls COMPLETE and treats the 9,500ms trigger/500ms buffer as by-design rather than a deviation; AC evidence is summary-level rather than per-AC, and metric signal step is silently omitted, but no false positives or fabricated gates are introduced.",
+  "context_injection": false
+}

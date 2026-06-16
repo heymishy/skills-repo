@@ -170,7 +170,7 @@ console.log('\n[cli-outer-loop] NFR2 — Portability: bin/skills first line is #
 // ── NFR3 — no new deps in package.json ───────────────────────────────────────
 console.log('\n[cli-outer-loop] NFR3 — No new deps: package.json deps unchanged from baseline');
 {
-  const BASELINE_DEPS     = [];
+  const BASELINE_DEPS     = ['pino']; // pino added by obs-1 for server logging
   const BASELINE_DEV_DEPS = ['@playwright/test', 'jsdom'];
   let pkg = null;
   try { pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')); } catch (_) {}

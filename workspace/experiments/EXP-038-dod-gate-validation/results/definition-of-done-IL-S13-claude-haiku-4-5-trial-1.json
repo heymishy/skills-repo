@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "IL-S13",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.9
+  },
+  "weighted_score": 0.965,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "All three ACs correctly verified with specific test evidence, all four out-of-scope items (SWIFT notification, AUSTRAC transaction reporting, FX reporting, DIA registration) correctly excluded as deviations, NFRs thoroughly verified with sequential pattern and audit log coverage confirmed — minor deduction for D4 as no explicit metric signal step or confirmation of 'no applicable metric' was included, and D6 slightly off for skipping a discrete metric step.",
+  "context_injection": false
+}

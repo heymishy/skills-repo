@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "T5",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.985,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "All ACs correctly verified with evidence, no fabricated governance gates (AUSTRAC/DIA/correspondent bank absent), out-of-scope boundaries explicitly confirmed, metric deferred appropriately; minor process deviation as NFR check precedes explicit test-plan-coverage phase.",
+  "context_injection": false
+}

@@ -73,6 +73,7 @@ reference_dirs:
   - archived
   - 2026-05-20-cloud-platform
   - 2026-05-21-ideate-web-ux
+  - 2026-05-17-regulatory-reporting-pipeline-automation
 tracks_without_discovery:
   - short
   - defect

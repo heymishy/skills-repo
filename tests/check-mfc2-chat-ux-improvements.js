@@ -105,11 +105,11 @@ queue.push(function runT2_2() {
   });
 });
 
-// ── T2.3 — AC3: Draft panel element has id="draft-content" ───────────────────
+// ── T2.3 — AC3: Canvas panel element has id="canvas-panel" ───────────────────
 
 queue.push(function runT2_3() {
-  console.log('\n── T2.3 — AC3: right panel has id="draft-content" for live JS update');
-  return test('T2.3 (AC3): rendered HTML includes element with id="draft-content"', function() {
+  console.log('\n── T2.3 — AC3: right panel has id="canvas-panel" for live JS update');
+  return test('T2.3 (AC3): rendered HTML includes element with id="canvas-panel"', function() {
     const { renderChat } = freshRequire(CHAT_VIEW_PATH);
     const html = renderChat({
       skillName:   'discovery',
@@ -125,17 +125,17 @@ queue.push(function runT2_3() {
       userInitial: 'M'
     });
     assert.ok(
-      html.includes('id="draft-content"'),
-      'HTML must include an element with id="draft-content" for the live draft panel'
+      html.includes('id="canvas-panel"'),
+      'HTML must include an element with id="canvas-panel" for the live canvas panel'
     );
   });
 });
 
-// ── T2.4 — AC3: artefactContent populates draft-content on server render ─────
+// ── T2.4 — AC3: artefactContent populates canvas-panel on server render ─────
 
 queue.push(function runT2_4() {
-  console.log('\n── T2.4 — AC3: draftSections renders inside draft-content element');
-  return test('T2.4 (AC3): when draftSections is provided, its content appears inside #draft-content', function() {
+  console.log('\n── T2.4 — AC3: draftSections renders inside canvas-panel element');
+  return test('T2.4 (AC3): when draftSections is provided, its content appears inside #canvas-panel', function() {
     const { renderChat } = freshRequire(CHAT_VIEW_PATH);
     const html = renderChat({
       skillName:   'discovery',
@@ -150,10 +150,10 @@ queue.push(function runT2_4() {
       pendingConfirmation: false,
       userInitial: 'M'
     });
-    const draftIdx = html.indexOf('id="draft-content"');
+    const canvasIdx = html.indexOf('id="canvas-panel"');
     const contentIdx = html.indexOf('A real problem');
-    assert.ok(draftIdx !== -1, 'draft-content element must exist');
-    assert.ok(contentIdx > draftIdx, 'draft section content must appear after (inside) draft-content element');
+    assert.ok(canvasIdx !== -1, 'canvas-panel element must exist');
+    assert.ok(contentIdx > canvasIdx, 'draft section content must appear after (inside) canvas-panel element');
   });
 });
 
@@ -197,17 +197,17 @@ queue.push(function runT2_6() {
   });
 });
 
-// ── T2.7 — AC3: client script updates draft-content on artefactContent ───────
+// ── T2.7 — AC3: client script updates canvas-panel on artefactContent ───────
 
 queue.push(function runT2_7() {
-  console.log('\n── T2.7 — AC3: client script updates #draft-content when data.artefactContent present');
-  return test('T2.7 (AC3): skills.js client script references draft-content element', function() {
+  console.log('\n── T2.7 — AC3: client script updates #canvas-panel when data.artefactContent present');
+  return test('T2.7 (AC3): skills.js client script references canvas-panel element', function() {
     const fs = require('fs');
     const ROUTES_PATH = path.resolve(__dirname, '../src/web-ui/routes/skills.js');
     const src = fs.readFileSync(ROUTES_PATH, 'utf8');
     assert.ok(
-      src.includes('draft-content'),
-      'skills.js client script must reference "draft-content" to update the live draft panel'
+      src.includes('canvas-panel'),
+      'skills.js client script must reference "canvas-panel" to update the live canvas panel'
     );
   });
 });

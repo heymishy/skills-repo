@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "T5",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.94,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Strong response: all ACs correctly verified with evidence, out-of-scope items (SAR filing, MLRO escalation, deduplication, threshold detection) explicitly named as excluded, NFR-1 correctly assessed, no fabricated governance gates (AUSTRAC/DIA/correspondent bank not cited), and metric M1 noted as not-yet-measured with appropriate reasoning; minor deduction for metric signal enum not explicitly categorised and process order placing NFRs before out-of-scope check.",
+  "context_injection": false
+}

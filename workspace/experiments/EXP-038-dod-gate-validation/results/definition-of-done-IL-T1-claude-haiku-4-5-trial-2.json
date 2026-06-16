@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "IL-T1",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": "N/A",
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.9875,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "All ACs correctly verified with test evidence, out-of-scope items (retry scheduling, circuit breaker, dashboard) explicitly confirmed as excluded, metric M1 correctly recorded as not-yet-measured with clear rationale, and COMPLETE verdict is accurate — minor process compliance deduction for presenting results in a merged table rather than discrete sequential phases (AC→out-of-scope→tests→NFR→metric→verdict).",
+  "context_injection": false
+}

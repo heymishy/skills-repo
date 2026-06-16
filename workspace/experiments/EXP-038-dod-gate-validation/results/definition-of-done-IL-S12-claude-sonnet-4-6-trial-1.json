@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-S12",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 0.4,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.88,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": false,
+  "categorical_fail": null,
+  "notes": "Model correctly identifies the APRA config comment as the sole deviation and names it specifically, but misclassifies the verdict as INCOMPLETE/CONDITIONAL requiring a new remediation commit rather than COMPLETE WITH DEVIATIONS, which is one tier off and would incorrectly hold the story open.",
+  "context_injection": false
+}

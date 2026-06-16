@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-haiku-4-5",
+  "case_id": "IL-S5",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.9
+  },
+  "weighted_score": 0.965,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Model correctly verifies all ACs with evidence, confirms hardcoded thresholds as compliant per C4 (no false flagging of compiled-in constants), surfaces out-of-scope adherence, and calls COMPLETE — only minor gaps are the metric signal step lacking an explicit enum status and slight process reordering.",
+  "context_injection": false
+}

@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-S13",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 0.8,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.8
+  },
+  "weighted_score": 0.905,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "Strong AC and out-of-scope coverage with no fabricated governance gates; minor deductions for NFR-2 audit path flagged as a gap without explicit evidence of the AUSTRAC-block path test assertion, metric signal step silently omitted, and NFR section appearing after the out-of-scope check rather than integrated into the standard process order.",
+  "context_injection": false
+}

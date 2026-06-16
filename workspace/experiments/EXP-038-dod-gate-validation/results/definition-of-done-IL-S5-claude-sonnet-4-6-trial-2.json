@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-S5",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.9
+  },
+  "weighted_score": 0.965,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "The model correctly verifies COMPLETE with hardcoded thresholds treated as correct per C4 (no false flagging of non-configurable constants as a deviation), all ACs and the Privacy Act NFR verified with specific test evidence, and the configurable-thresholds out-of-scope item explicitly confirmed absent; minor deduction for D4 (metric signal step not explicitly confirmed as not-applicable, only silently omitted) and D6 (test plan coverage step not discretely separated from AC assessment before NFR check).",
+  "context_injection": false
+}

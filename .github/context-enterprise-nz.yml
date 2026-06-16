@@ -38,7 +38,9 @@ agent:
     review: claude-haiku-4-5
     test_plan: claude-haiku-4-5
     definition_of_ready: claude-haiku-4-5
-    definition_of_done: claude-haiku-4-5
+    definition_of_done: claude-haiku-4-5    # EXP-038: Haiku 12/12 pass, avg 0.932–0.988 across 6 IL cases (2 trials each)
+                                            # incl. HIGH difficulty (IL-S12 APRA config comment, IL-S13 fabricated-gate trap);
+                                            # Haiku >= Sonnet on 4/6 cases; ~4x cost saving vs Sonnet at DoD gate.
     implementation_plan: claude-haiku-4-5   # EXP-036/037: Haiku avg 0.955, 12/12 pass including HIGH regulated;
                                             # quality delta −0.045 vs Sonnet baseline 1.000; ~37% cost saving;
                                             # regulated constraint handling confirmed (IL-S12 T7 hardcoded threshold,

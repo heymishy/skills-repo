@@ -173,11 +173,11 @@ Use the following prompt to evaluate each model output. Replace `[CORPUS CASE]` 
 ```
 You are evaluating a /test-plan skill output against the EXP-007-testplan-rubric EVAL.md specification.
 
-CORPUS CASE:
-[CORPUS CASE]
+CASE CONTEXT (expected output characteristics / scoring note from corpus case):
+{CASE_CONTEXT}
 
 MODEL OUTPUT:
-[MODEL OUTPUT]
+{OUTPUT}
 
 Score the output on each of the following dimensions. Return a JSON object with this structure:
 

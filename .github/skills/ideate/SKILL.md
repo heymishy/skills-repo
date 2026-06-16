@@ -47,6 +47,17 @@ discovery, or before starting any formal pipeline stage.
 
 ---
 
+## Conversation cadence
+
+Move with the user — do not ask for confirmation before making progress.
+
+- **Infer, then state:** When context makes an answer inferable, state your inference explicitly ("I'm assuming X — correct me if wrong") and proceed. Do not ask a question when a sensible default exists.
+- **One question per step:** If genuine ambiguity exists that materially affects the lens output, ask exactly one focused question. Do not ask multiple questions in the same turn.
+- **Proceed after one answer:** Once the user answers a clarifying question, proceed to substantive output immediately. Do not re-confirm.
+- **Questions are for genuine forks only:** Reserve clarifying questions for cases where two plausible interpretations would lead to meaningfully different lens outputs. Everything else is an inference.
+
+---
+
 ## Step 1 — Load context
 
 Before asking anything, check what artefacts exist for the current feature or
@@ -587,6 +598,32 @@ Rules:
 - `knowness`: one of `known-unknown`, `unknown-unknown`
 - Emit a marker for every named assumption — do not batch or omit
 - Do not alter the format — the web UI parser is strict
+
+---
+
+### Condition markers (inc2.1)
+
+When you identify a hard constraint, dependency, or condition of satisfaction during ideation,
+emit a condition marker on its own line:
+
+```
+---CONDITION-JSON: {"id":"<kebab-slug>","text":"<condition as a plain declarative sentence>","type":"<constraint|dependency|outcome>","source":"model"}---
+```
+
+Type definitions:
+- `constraint`: a hard technical or platform constraint that bounds the solution
+- `dependency`: something this solution requires that is not yet in place or owned externally
+- `outcome`: a condition of satisfaction — what "done" looks like for this opportunity
+
+Example:
+```
+---CONDITION-JSON: {"id":"no-disk-write","text":"Session state must remain in-memory only — no disk writes permitted for MVP.","type":"constraint","source":"model"}---
+```
+
+When to emit: emit a condition marker when you identify a definite constraint, dependency, or
+outcome condition — not for assumptions (use `---ASSUMPTION-JSON---` for those). Emit at the point
+of identification, not batched at end of lens. Do not emit conditions about things you are uncertain
+about — those are assumptions, not conditions.
 
 ---
 

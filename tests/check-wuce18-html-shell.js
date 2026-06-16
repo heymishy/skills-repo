@@ -133,7 +133,9 @@ console.log('\nT5 — escHtml escapes all five special characters');
 console.log('\nT6 — XSS: script tag in user login is escaped');
 {
   const output = renderShell({ title: 'T', bodyContent: '', user: { login: '<script>alert(1)</script>' } });
-  ok(!output.includes('<script>'), 'T6.1: raw <script> tag must not appear');
+  // Tightened: renderShell now emits legitimate inline <script> blocks (anti-flash,
+  // theme toggle). The XSS check must target the user-supplied payload specifically.
+  ok(!output.includes('<script>alert(1)'), 'T6.1: raw XSS payload must not appear unescaped');
   ok(output.includes('&lt;script&gt;'), 'T6.2: escaped version must appear');
 }
 

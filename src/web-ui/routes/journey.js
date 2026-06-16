@@ -10,6 +10,7 @@ var _journeyStore = require('../modules/journey-store');
 var _registerHtmlSession = null;
 var _linkSessionToJourney = null;
 var _getHtmlSessionFn = null;
+var _listHtmlSessionsFn = null;
 var _repoRoot = null;
 
 function getRegisterHtmlSession() {
@@ -54,6 +55,7 @@ function setRegisterHtmlSession(fn) { _registerHtmlSession = fn; }
 function setLinkSessionToJourney(fn) { _linkSessionToJourney = fn; }
 function setJourneyStoreModule(mod) { _journeyStore = mod; }
 function setGetHtmlSession(fn) { _getHtmlSessionFn = fn; }
+function setListHtmlSessions(fn) { _listHtmlSessionsFn = fn; }
 function setRepoRoot(root) { _repoRoot = root; }
 
 /**
@@ -1500,37 +1502,153 @@ function handleGetWizard(req, res) {
     res.end();
     return;
   }
-  var features = _readPipelineFeatures(_repoRoot);
-  var active = [];
-  if (features !== null) {
-    active = features.filter(function(f) { return f.stage !== 'released' && f.stage !== 'archived'; });
+  var view = (req.query && req.query.view) || '';
+
+  // Step 2: feature card picker
+  if (view === 'existing') {
+    var features2 = _readPipelineFeatures(_repoRoot);
+    var active2 = [];
+    if (features2 !== null) {
+      active2 = features2.filter(function(f) { return f.stage !== 'released' && f.stage !== 'archived'; });
+    }
+    var listHtml2;
+    if (features2 === null || active2.length === 0) {
+      listHtml2 = '<p>No active projects found. <a href="/journey/wizard">Back to options</a></p>';
+    } else {
+      var dotColour = function(h) {
+        if (h === 'green') return '#2da44e';
+        if (h === 'red') return '#cf222e';
+        if (h === 'amber') return '#fb8f44';
+        return '#888';
+      };
+      listHtml2 = '<div class="wiz-feature-cards">' +
+        active2.map(function(f) {
+          return '<div class="wiz-feature-card">' +
+            '<span class="health-dot" style="background:' + escHtml(dotColour(f.health || '')) + '"></span> ' +
+            '<strong>' + escHtml(f.name || f.slug) + '</strong> ' +
+            '<code>' + escHtml(f.slug) + '</code> &mdash; ' + escHtml(f.stage || '') +
+            '</div>';
+        }).join('\n') + '</div>';
+    }
+    var body2 = '<h1>Continue an existing feature</h1>\n' +
+      '<a href="/journey/wizard">← Back to options</a>\n' +
+      '<form method="POST" action="/journey/wizard">\n' +
+      listHtml2 + '\n';
+    if (features2 !== null && active2.length > 0) {
+      body2 += '<select name="featureSlug">' +
+        active2.map(function(f) {
+          return '<option value="' + escHtml(f.slug) + '">' + escHtml(f.name || f.slug) + '</option>';
+        }).join('') +
+        '</select>\n' +
+        '<button type="submit">Continue with this feature</button>\n';
+    }
+    body2 += '</form>';
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(renderShell({ title: 'Continue a feature', bodyContent: body2 }));
+    return;
   }
-  var listHtml;
-  if (features === null) {
-    listHtml = '<p>No pipeline state found. Start a new project below.</p>';
-  } else if (active.length === 0) {
-    listHtml = '<p>No active projects found. Start a new project below.</p>';
-  } else {
-    listHtml = '<ul>' + active.map(function(f) {
-      return '<li>' + escHtml(f.slug) + ' — ' + escHtml(f.stage || '') + '</li>';
-    }).join('\n') + '\n</ul>';
+
+  // Step 3: active session resume list
+  if (view === 'resume') {
+    var listFn = _listHtmlSessionsFn || require('./skills')._listHtmlSessions;
+    var allSessions = listFn ? listFn() : [];
+    var now = Date.now();
+    var twentyFourH = 24 * 60 * 60 * 1000;
+    var activeSessions = allSessions.filter(function(s) {
+      if (!s || !s.session) return false;
+      if (s.session.done === true) return false;
+      var la = s.session.lastActivity;
+      if (la === undefined || la === null) return true;
+      return (now - la) <= twentyFourH;
+    });
+    var sessionListHtml;
+    if (activeSessions.length === 0) {
+      sessionListHtml = '<p>No active sessions within the last 24 hours.</p>';
+    } else {
+      sessionListHtml = '<ul>' +
+        activeSessions.map(function(s) {
+          return '<li><code>' + escHtml(s.sessionId) + '</code> &mdash; ' + escHtml(s.session.skillName || '') + '</li>';
+        }).join('\n') +
+        '</ul>';
+    }
+    var body3 = '<h1>Resume a session</h1>\n' +
+      '<a href="/journey/wizard">← Back to options</a>\n' +
+      sessionListHtml;
+    if (activeSessions.length > 0) {
+      body3 += '\n<form method="POST" action="/journey/wizard">\n' +
+        '<input type="hidden" name="selection" value="resume-session">\n' +
+        '<select name="sessionId">' +
+        activeSessions.map(function(s) {
+          return '<option value="' + escHtml(s.sessionId) + '">' +
+            escHtml(s.session.skillName || '') + ' — ' + escHtml(s.sessionId) + '</option>';
+        }).join('') +
+        '</select>\n' +
+        '<select name="skillName">' +
+        activeSessions.map(function(s) {
+          return '<option value="' + escHtml(s.session.skillName || '') + '">' + escHtml(s.session.skillName || '') + '</option>';
+        }).join('') +
+        '</select>\n' +
+        '<button type="submit">Resume this session</button>\n' +
+        '</form>';
+    }
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(renderShell({ title: 'Resume a session', bodyContent: body3 }));
+    return;
   }
-  var body = '<h1>Project selection</h1>\n' +
+
+  // Step 1: default — three option cards
+  var body = '<h1>What would you like to do?</h1>\n' +
+    '<div class="wiz-options">\n' +
+    '<div class="wiz-option">\n' +
+    '<h2>Start something new</h2>\n' +
     '<form method="POST" action="/journey/wizard">\n' +
-    '<h2>Existing projects</h2>\n' +
-    listHtml + '\n' +
-    '<h2>Start a new project</h2>\n' +
-    '<button type="submit" name="selection" value="new">New project</button>\n' +
-    '</form>';
-  var html = renderShell({ title: 'Project selection', bodyContent: body });
+    '<button type="submit" name="selection" value="new">Start a new feature</button>\n' +
+    '</form>\n' +
+    '</div>\n' +
+    '<div class="wiz-option">\n' +
+    '<h2>Continue an existing feature</h2>\n' +
+    '<a href="/journey/wizard?view=existing" class="wiz-btn">Continue an existing feature →</a>\n' +
+    '</div>\n' +
+    '<div class="wiz-option">\n' +
+    '<h2>Resume active session</h2>\n' +
+    '<a href="/journey/wizard?view=resume" class="wiz-btn">Resume active session →</a>\n' +
+    '</div>\n' +
+    '</div>';
   res.writeHead(200, { 'Content-Type': 'text/html' });
-  res.end(html);
+  res.end(renderShell({ title: 'Project selection', bodyContent: body }));
 }
 
 function handlePostWizardSelection(req, res) {
   var reqBody = (req && req.body) || {};
   var featureSlug = reqBody.featureSlug;
   var selection = reqBody.selection;
+  var ideaId = reqBody.ideaId;
+  var sessionId = reqBody.sessionId;
+  var skillName = reqBody.skillName;
+
+  // 'from-idea': redirect to discovery with idea as query param (AC3)
+  // ideaId is URL query param only — never used as file path
+  if (selection === 'from-idea') {
+    var safeIdeaId = encodeURIComponent(String(ideaId || ''));
+    res.writeHead(302, { Location: '/skills/discovery/sessions?idea=' + safeIdeaId });
+    res.end();
+    return;
+  }
+
+  // 'resume-session': validate slug-safe chars then redirect to chat (AC7)
+  if (selection === 'resume-session') {
+    var slugSafe = /^[a-z0-9-]+$/;
+    var safeSkill = slugSafe.test(String(skillName || '')) ? String(skillName) : null;
+    var safeSession = slugSafe.test(String(sessionId || '')) ? String(sessionId) : null;
+    if (!safeSkill || !safeSession) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid session parameters' }));
+      return;
+    }
+    res.writeHead(302, { Location: '/skills/' + safeSkill + '/sessions/' + safeSession + '/chat' });
+    res.end();
+    return;
+  }
 
   // 'new' selection or no slug — reset to start, do NOT set activeFeatureSlug
   if (!featureSlug || (selection && (selection === 'new' || selection.startsWith('new')))) {
@@ -1590,6 +1708,7 @@ module.exports = {
   setLinkSessionToJourney,
   setJourneyStoreModule,
   setGetHtmlSession,
+  setListHtmlSessions,
   setRepoRoot,
   setPipelineStateWriter,
   setValidate,

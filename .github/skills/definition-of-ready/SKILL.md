@@ -56,11 +56,11 @@ Read `.github/context.yml` before evaluating oversight:
 
 ---
 
-## Step 2 — Contract proposal
+## Step 2 — Contract proposal *(REQUIRED — do not skip)*
 
 Before running the checklist, the coding agent must produce a Contract Proposal. This shifts DoR from a self-certification gate to a negotiated contract reviewed before any implementation begins.
 
-Present the following to the story author for review:
+**REQUIRED:** Output the Contract Proposal block below before proceeding to any checklist items. Present the following to the story author for review:
 
 > **Contract Proposal — [story title]**
 >
@@ -102,7 +102,8 @@ If no mismatches:
 
 The hard blocks (H1–H13) run after contract review passes, not instead of it.
 
-Output format: **CONTRACT PROPOSAL → CONTRACT REVIEW → CHECKLIST → READY/BLOCKED**
+**REQUIRED output format (all four sections are mandatory — do not skip any):**
+**CONTRACT PROPOSAL → CONTRACT REVIEW → CHECKLIST → READY/BLOCKED → CODING AGENT INSTRUCTIONS**
 
 ---
 
@@ -262,7 +263,9 @@ Surface what was found:
 
 ---
 
-## Coding agent instructions block
+## Coding agent instructions block *(REQUIRED when hard blocks pass — do not skip)*
+
+**REQUIRED:** When all hard blocks pass, you MUST output a `## Coding Agent Instructions` block as part of your response. Do not end your output without producing this block.
 
 Produced when all hard blocks pass. Written into the DoR artefact.
 

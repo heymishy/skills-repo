@@ -30,6 +30,9 @@ const { validateArtefactPath } = require('../../artefact-path-validator');
 const { commitArtefact }       = require('../../scm-adapter');
 const _journeyStore            = require('../modules/journey-store'); // ougl.4
 
+var { createLogger: _createPinoLogger } = require('../logger');
+var _pinoLogger = _createPinoLogger();
+
 const MAX_ANSWER_LENGTH = 1000;
 
 // AC5 — exact message returned to client when licence is absent
@@ -537,6 +540,43 @@ function buildAssumptionCardHtml(payload, cardId) {
     '  </div>',
     '</div>'
   ].join('\n');
+}
+
+/**
+ * inc2.1: Parse a single ---CONDITION-JSON: {...}--- marker from text.
+ * Validates type against allowlist; normalises source to 'model' if absent/invalid.
+ * Returns parsed payload or null on any parse/validation failure.
+ * @param {string} text
+ * @returns {{ id: string, text: string, type: string, source: string }|null}
+ */
+function parseConditionMarker(text) {
+  var MARKER_RE = /---CONDITION-JSON:\s*(\{[\s\S]*?\})\s*---/;
+  var match = String(text).match(MARKER_RE);
+  if (!match) { return null; }
+  var TYPE_ALLOW   = ['constraint', 'dependency', 'outcome'];
+  var SOURCE_ALLOW = ['operator', 'model'];
+  try {
+    var parsed = JSON.parse(match[1]);
+    if (TYPE_ALLOW.indexOf(String(parsed.type || '')) === -1) { return null; }
+    if (SOURCE_ALLOW.indexOf(String(parsed.source || '')) === -1) { parsed.source = 'model'; }
+    return parsed;
+  } catch (_) {
+    return null;
+  }
+}
+
+function parseCanvasBlock(text) {
+  var MARKER_RE = /---CANVAS-JSON:\s*(\{[\s\S]*?\})\s*---/;
+  var match = String(text).match(MARKER_RE);
+  if (!match) { return null; }
+  var TYPE_ALLOW = ['cluster-tree', 'table', 'text'];
+  try {
+    var parsed = JSON.parse(match[1]);
+    if (TYPE_ALLOW.indexOf(String(parsed.type || '')) === -1) { return null; }
+    return parsed;
+  } catch (_) {
+    return null;
+  }
 }
 
 /**
@@ -1352,6 +1392,18 @@ function _setHtmlSession(sessionId, data) {
 }
 
 /**
+ * List all entries in the session store — used by pmf.3 orientation wizard Step 3.
+ * @returns {Array<{sessionId: string, session: object}>}
+ */
+function _listHtmlSessions() {
+  var result = [];
+  _sessionStore.forEach(function(session, id) {
+    result.push({ sessionId: id, session: session });
+  });
+  return result;
+}
+
+/**
  * Process one user turn in the model-first chat flow.
  * Appends user turn, calls _skillTurnExecutor once, parses artefact signal, appends assistant turn.
  *
@@ -1535,7 +1587,7 @@ function _renderChatPage(skillName, sessionId, session) {
     '  }',
     '',
     '  function updateDraftPanel(artefactContent) {',
-    '    var panel = document.getElementById("draft-content");',
+    '    var panel = document.getElementById("canvas-panel");',
     '    if(!panel) return;',
     '    panel.innerHTML = \'<div style="font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;font-weight:500">Draft</div>\'',
     '      + \'<div class="sw-draft-section"><div class="sw-draft-head"><h2>Artefact</h2></div>\'',
@@ -1591,6 +1643,12 @@ function _renderChatPage(skillName, sessionId, session) {
     '              }',
     '              if(evt.assumptionCard) {',
     '                appendAssumptionCard(evt.assumptionCard);',
+    '              }',
+    '              if(evt.conditionItem) {',
+    '                appendConditionItem(evt.conditionItem);',
+    '              }',
+    '              if(evt.canvasBlock) {',
+    '                appendCanvasBlock(evt.canvasBlock);',
     '              }',
     '              if(evt.done !== undefined) {',
     '                if(evt.artefactContent) { partialDraft = ""; updateDraftPanel(evt.artefactContent); }',
@@ -1704,6 +1762,24 @@ function _renderChatPage(skillName, sessionId, session) {
     '    attachCardHandlers(cardEl);',
     '    container.appendChild(cardEl);',
     '    updateAssumptionBadges();',
+    '  }',
+    '  // inc2.1 — condition item append',
+    '  function appendConditionItem(item) {',
+    '    var container = document.getElementById("condition-items");',
+    '    if(!container) return;',
+    '    var placeholder = container.querySelector("p");',
+    '    if(placeholder) placeholder.remove();',
+    '    var typeKey = (item.type || "").toLowerCase().replace(/[^a-z]/g,"");',
+    '    var typeClass = ["constraint","dependency","outcome"].indexOf(typeKey) >= 0 ? typeKey : "constraint";',
+    '    var cardEl = document.createElement("div");',
+    '    cardEl.className = "condition-card";',
+    '    cardEl.innerHTML =',
+    '      \'<div class="condition-card-meta">\' +',
+    '        \'<span class="ci-type-tag ci-type-\' + typeClass + \'">\' + escHtmlClient(item.type || "constraint") + \'</span>\' +',
+    '        \'<span class="ci-source">\' + escHtmlClient(item.source || "model") + \'</span>\' +',
+    '      \'</div>\' +',
+    '      \'<div class="condition-card-text">\' + escHtmlClient(item.text || "") + \'</div>\';',
+    '    container.appendChild(cardEl);',
     '  }',
     '  // iwu.5 — nudge bar on lensComplete',
     '  function countUnconfirmedCards() {',
@@ -1926,6 +2002,9 @@ async function handlePostTurnStreamHtml(req, res) {
     return;
   }
   var sessionId = (req.params && req.params.id) || '';
+  var correlationId = crypto.randomUUID();
+  var turnId = crypto.randomUUID();
+  var _turnLog = _pinoLogger.child({ correlationId: correlationId, sessionId: sessionId, turnId: turnId });
   var body = await _readBody(req);
   var rawAnswer = (body && typeof body.answer === 'string') ? body.answer : '';
 
@@ -1941,15 +2020,38 @@ async function handlePostTurnStreamHtml(req, res) {
     'Cache-Control': 'no-cache',
     'Connection':    'keep-alive'
   });
+  _turnLog.info({ event: 'sse_open' }, 'SSE stream opened');
+
+  // SSE keepalive — send a comment every 15s so browsers/proxies don't drop the connection
+  // during long model responses where no chunks are emitted for extended periods.
+  var _keepaliveInterval = setInterval(function() {
+    try { res.write(':\n\n'); } catch (_) {}
+  }, 15000);
 
   var userContent     = sanitiseAnswer(rawAnswer);
   var historySnapshot = session.turns.slice();
   session.turns.push({ role: 'user', content: userContent });
 
+  var _chunkCount = 0;
   // iwu.3: assumption marker buffer — accumulates text to detect cross-chunk markers
   var _assumptionBuf = '';
   var _ASSMP_START   = '---ASSUMPTION-JSON:';
   var _ASSMP_END     = '---';
+  var _ASSMP_STRIP_RE = /---ASSUMPTION-JSON:[\s\S]*?---/g;
+  // inc2.1: condition marker buffer
+  var _conditionBuf  = '';
+  var _COND_START    = '---CONDITION-JSON:';
+  var _COND_END      = '---';
+  var _COND_STRIP_RE = /---CONDITION-JSON:[\s\S]*?---/g;
+  // inc4: canvas block buffer
+  var _canvasBuf    = '';
+  var _CANVAS_START = '---CANVAS-JSON:';
+  var _CANVAS_END   = '---';
+  // Display buffer — strips markers from chat bubble display, handles cross-chunk markers
+  // by holding back text from the marker start until the closing --- arrives.
+  var _displayBuf = '';
+  var _DISPLAY_STRIP_RE   = /---(?:ASSUMPTION|CONDITION|CANVAS)-JSON:[\s\S]*?---/g;
+  var _DISPLAY_PARTIAL_RE = /---(?:ASSUMPTION|CONDITION|CANVAS)-JSON:/;
 
   var fullText = '';
   try {
@@ -1957,13 +2059,48 @@ async function handlePostTurnStreamHtml(req, res) {
     var _inArtefactMode = false;
     var _DRAFT_START = '---ARTEFACT-START---';
     var _DRAFT_END   = '---ARTEFACT-END---';
+    var _llmStart = Date.now();
     fullText = await _skillTurnExecutorStream(
       session.systemPrompt,
       historySnapshot,
       userContent,
       req.session.accessToken,
       function onChunk(chunk) {
-        res.write('data: ' + JSON.stringify({ chunk: chunk }) + '\n\n');
+        _chunkCount++;
+        // Display buffer: accumulate, strip complete markers, hold back partial markers.
+        // This handles markers that span multiple streaming chunks.
+        _displayBuf += chunk;
+        var _dispClean = _displayBuf.replace(_DISPLAY_STRIP_RE, '');
+        // Find the earliest position to hold back from. Three cases:
+        //   1. Complete prefix already in buffer (e.g. '---ASSUMPTION-JSON: {' open, no closing --- yet)
+        //   2. '---' at tail of clean text, with suffix being a prefix of a marker body
+        //      (e.g. buffer ends with '---ASSUMP' or just '---')
+        //   3. Trailing '-' or '--' that could be the start of '---'
+        var _partialIdx = (function _findPartialStart(s) {
+          var full = s.search(_DISPLAY_PARTIAL_RE);
+          if (full !== -1) return full;
+          var lt = s.lastIndexOf('---');
+          if (lt !== -1) {
+            var after = s.slice(lt + 3);
+            if ('ASSUMPTION-JSON:'.indexOf(after) === 0 || 'CONDITION-JSON:'.indexOf(after) === 0 || 'CANVAS-JSON:'.indexOf(after) === 0) {
+              return lt;
+            }
+          }
+          var dm = s.match(/-{1,2}$/);
+          if (dm) { return dm.index; }
+          return -1;
+        }(_dispClean));
+        var _safeDisplay;
+        if (_partialIdx === -1) {
+          _safeDisplay = _dispClean;
+          _displayBuf  = '';
+        } else {
+          _safeDisplay = _dispClean.slice(0, _partialIdx);
+          _displayBuf  = _dispClean.slice(_partialIdx);
+        }
+        if (_safeDisplay) {
+          res.write('data: ' + JSON.stringify({ chunk: _safeDisplay }) + '\n\n');
+        }
 
         // iwu.3: scan for assumption markers in the accumulated buffer
         _assumptionBuf += chunk;
@@ -2006,6 +2143,55 @@ async function handlePostTurnStreamHtml(req, res) {
         }
         _assumptionBuf = _cleanBuf + _scanBuf;
 
+        // inc2.1: scan for condition markers — same buffer pattern as assumption markers
+        _conditionBuf += chunk;
+        var _cScanBuf = _conditionBuf;
+        var _cCleanBuf = '';
+        var _cStartIdx;
+        while ((_cStartIdx = _cScanBuf.indexOf(_COND_START)) !== -1) {
+          var _cAfterEnd = _cScanBuf.indexOf(_COND_END, _cStartIdx + _COND_START.length);
+          if (_cAfterEnd === -1) { break; }
+          var _cMarkerFull = _cScanBuf.slice(_cStartIdx, _cAfterEnd + _COND_END.length);
+          _cCleanBuf += _cScanBuf.slice(0, _cStartIdx);
+          _cScanBuf = _cScanBuf.slice(_cAfterEnd + _COND_END.length);
+          var _cParsed = parseConditionMarker(_cMarkerFull);
+          if (_cParsed) {
+            if (!session.conditionItems) { session.conditionItems = {}; }
+            session.conditionItems[_cParsed.id] = _cParsed;
+            res.write('data: ' + JSON.stringify({ conditionItem: {
+              id:     _cParsed.id     || '',
+              text:   _cParsed.text   || '',
+              type:   _cParsed.type   || '',
+              source: _cParsed.source || 'model'
+            } }) + '\n\n');
+          }
+        }
+        _conditionBuf = _cCleanBuf + _cScanBuf;
+
+        // inc4: scan for canvas block markers
+        _canvasBuf += chunk;
+        var _cvScanBuf  = _canvasBuf;
+        var _cvCleanBuf = '';
+        var _cvStartIdx;
+        while ((_cvStartIdx = _cvScanBuf.indexOf(_CANVAS_START)) !== -1) {
+          var _cvAfterEnd   = _cvScanBuf.indexOf(_CANVAS_END, _cvStartIdx + _CANVAS_START.length);
+          if (_cvAfterEnd === -1) { break; }
+          var _cvMarkerFull = _cvScanBuf.slice(_cvStartIdx, _cvAfterEnd + _CANVAS_END.length);
+          _cvCleanBuf += _cvScanBuf.slice(0, _cvStartIdx);
+          _cvScanBuf   = _cvScanBuf.slice(_cvAfterEnd + _CANVAS_END.length);
+          var _cvParsed = parseCanvasBlock(_cvMarkerFull);
+          if (_cvParsed) {
+            if (!session.canvasBlocks) { session.canvasBlocks = []; }
+            session.canvasBlocks.push(_cvParsed);
+            res.write('data: ' + JSON.stringify({ canvasBlock: {
+              type:    _cvParsed.type    || '',
+              title:   _cvParsed.title   || '',
+              content: _cvParsed.content || {}
+            } }) + '\n\n');
+          }
+        }
+        _canvasBuf = _cvCleanBuf + _cvScanBuf;
+
         _artefactAccum += chunk;
         if (!_inArtefactMode) {
           var startIdx = _artefactAccum.indexOf(_DRAFT_START);
@@ -2014,25 +2200,40 @@ async function handlePostTurnStreamHtml(req, res) {
             var afterStart = _artefactAccum.slice(startIdx + _DRAFT_START.length).replace(/^\r?\n/, '');
             var endIdx = afterStart.indexOf(_DRAFT_END);
             var draftText = endIdx !== -1 ? afterStart.slice(0, endIdx) : afterStart;
-            if (draftText) {
-              res.write('data: ' + JSON.stringify({ draftChunk: draftText }) + '\n\n');
+            var cleanDraftText = draftText.replace(_COND_STRIP_RE, '');
+            if (cleanDraftText) {
+              res.write('data: ' + JSON.stringify({ draftChunk: cleanDraftText }) + '\n\n');
             }
           }
         } else {
           var endIdx2 = chunk.indexOf(_DRAFT_END);
           var draftChunk2 = endIdx2 !== -1 ? chunk.slice(0, endIdx2) : chunk;
-          if (draftChunk2) {
-            res.write('data: ' + JSON.stringify({ draftChunk: draftChunk2 }) + '\n\n');
+          var cleanDraftChunk2 = draftChunk2.replace(_COND_STRIP_RE, '');
+          if (cleanDraftChunk2) {
+            res.write('data: ' + JSON.stringify({ draftChunk: cleanDraftChunk2 }) + '\n\n');
           }
         }
       }
     );
+  // Flush any remaining display buffer content (e.g. text after last marker was held back)
+  if (_displayBuf) {
+    var _finalDisplay = _displayBuf.replace(_DISPLAY_STRIP_RE, '');
+    if (_finalDisplay && !_DISPLAY_PARTIAL_RE.test(_finalDisplay)) {
+      res.write('data: ' + JSON.stringify({ chunk: _finalDisplay }) + '\n\n');
+    }
+    _displayBuf = '';
+  }
+  var _llmDuration = Date.now() - _llmStart;
+  _turnLog.info({ event: 'llm_complete', llm_duration_ms: _llmDuration }, 'LLM call complete');
   } catch (err) {
-    _logger.warn('handlePostTurnStreamHtml executor error: ' + (err && err.message ? err.message : 'unknown'));
+    clearInterval(_keepaliveInterval);
+    _turnLog.error({ event: 'sse_error', error_message: (err && err.message) ? err.message : 'unknown' }, 'SSE stream error');
     res.write('data: ' + JSON.stringify({ error: 'Model error — please try again.' }) + '\n\n');
     res.end();
     return;
   }
+  clearInterval(_keepaliveInterval);
+  _turnLog.info({ event: 'sse_close', chunk_count: _chunkCount }, 'SSE stream closed');
 
   var artefactMatch = fullText.match(/---ARTEFACT-START---\s*([\s\S]+?)\s*---ARTEFACT-END---/);
   var slugMatch     = fullText.match(/---SLUG---\s*\n?([\w-]+)/);
@@ -2387,7 +2588,7 @@ module.exports = {
   handleGetChatHtml, handlePostTurnHtml,
   htmlSubmitTurn, buildSystemPrompt,
   // wuce.26 — test helpers + skill-turn executor adapter setter
-  _getHtmlSession, _setHtmlSession, setSkillTurnExecutorAdapter,
+  _getHtmlSession, _setHtmlSession, _listHtmlSessions, setSkillTurnExecutorAdapter,
   // wsm.1 — disk session writer injectable
   setSessionStore,
   // ougl.2 — journey session link
@@ -2404,6 +2605,10 @@ module.exports = {
   // iwu.3 — assumption card helpers
   parseAssumptionMarker,
   buildAssumptionCardHtml,
+  // inc2.1 — condition marker parser
+  parseConditionMarker,
+  // inc4 — canvas output panel
+  parseCanvasBlock,
   // iwu.4 — confirm/flag endpoint
   handlePostAssumptionConfirm
 };

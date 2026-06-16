@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "T5",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 1,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 1
+  },
+  "weighted_score": 1,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "All ACs verified with direct test evidence, NFR-1 correctly confirmed via T7/T8, out-of-scope items (SAR filing, MLRO escalation, deduplication) explicitly confirmed absent, no fabricated governance gates (AUSTRAC, DIA registration, correspondent bank), and M1 signal correctly recorded as not-yet-measured with appropriate rationale.",
+  "context_injection": false
+}

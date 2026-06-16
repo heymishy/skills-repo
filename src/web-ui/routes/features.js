@@ -1,8 +1,15 @@
 'use strict';
 
 // features.js — route handlers for feature navigation (AC1–AC5)
-// GET /features       → feature list (JSON or HTML via content-type negotiation)
-// GET /features/:slug → artefact index for a feature (wuce.20: HTML + JSON)
+// GET /features            → feature list (JSON or HTML via content-type negotiation)
+// GET /features?view=board → Kanban board (HTML only)
+// GET /features/:slug      → artefact index for a feature (wuce.20: HTML + JSON)
+// GET  /api/ideas          → ideas backlog (JSON)
+// POST /api/ideas          → create idea (JSON body: { title, notes? })
+// DELETE /api/ideas/:id    → remove idea
+
+const fs   = require('fs');
+const path = require('path');
 
 const {
   listFeatures,
@@ -17,6 +24,21 @@ const { renderShell, escHtml } = require('../utils/html-shell');
 const shellEscHtml = escHtml; // internal alias used by artefact-index handlers
 const { getLabel } = require('../utils/artefact-labels');
 const { renderFeaturesList } = require('../views/features-view');
+const { renderKanban } = require('../views/kanban-view');
+
+const IDEAS_PATH = path.join(__dirname, '..', '..', '..', 'workspace', 'ideas.json');
+
+function _readIdeas() {
+  try {
+    return JSON.parse(fs.readFileSync(IDEAS_PATH, 'utf8'));
+  } catch (_) {
+    return { ideas: [] };
+  }
+}
+
+function _writeIdeas(data) {
+  fs.writeFileSync(IDEAS_PATH, JSON.stringify(data, null, 2) + '\n', 'utf8');
+}
 
 // listArtefacts dependency — replaceable in tests via setListArtefacts()
 let _listArtefacts = _listArtefactsDefault;
@@ -108,18 +130,26 @@ async function handleGetFeatures(req, res) {
   });
 
   if (accept.includes('text/html')) {
-    // HTML path: use new design-system view
     const viewFeatures = features.map(function(f) {
       return {
-        slug:         f.slug,
-        title:        f.title || f.slug,
-        stage:        f.stage || '',
-        updated:      f.lastUpdated || '',
-        owner:        f.owner || '',
+        slug:          f.slug,
+        title:         f.title || f.slug,
+        stage:         f.stage || '',
+        updated:       f.lastUpdated || '',
+        health:        f.health || '',
+        owner:         f.owner || '',
         artefactCount: f.artefactCount || 0
       };
     });
-    const bodyContent = renderFeaturesList({ features: viewFeatures, repoCount: 0 });
+
+    const view = (req.query && req.query.view) || '';
+    let bodyContent;
+    if (view === 'board') {
+      const { ideas } = _readIdeas();
+      bodyContent = renderKanban({ features: viewFeatures, ideas });
+    } else {
+      bodyContent = renderFeaturesList({ features: viewFeatures, repoCount: 0 });
+    }
     const html = renderShell({ title: 'Features', bodyContent, user: { login }, active: 'features' });
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -220,9 +250,69 @@ async function handleGetFeatureArtefacts(req, res, featureSlug) {
   res.end(JSON.stringify({ featureSlug, artefacts, grouped }));
 }
 
+/**
+ * GET /api/ideas — return the ideas backlog as JSON.
+ */
+function handleGetIdeas(req, res) {
+  const data = _readIdeas();
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(data));
+}
+
+/**
+ * POST /api/ideas — create a new idea.
+ * Body: { title: string, notes?: string }
+ */
+async function handlePostIdea(req, res) {
+  let body = '';
+  await new Promise(function(resolve) {
+    req.on('data', function(chunk) { body += chunk; });
+    req.on('end', resolve);
+  });
+  let parsed;
+  try { parsed = JSON.parse(body); } catch (_) { parsed = {}; }
+  const title = (parsed.title || '').toString().slice(0, 120).trim();
+  if (!title) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'title is required' }));
+    return;
+  }
+  const data = _readIdeas();
+  const idea = {
+    id:        'idea-' + Date.now(),
+    title,
+    notes:     (parsed.notes || '').toString().slice(0, 500).trim(),
+    createdAt: new Date().toISOString()
+  };
+  data.ideas.push(idea);
+  _writeIdeas(data);
+  res.writeHead(201, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(idea));
+}
+
+/**
+ * DELETE /api/ideas/:id — remove an idea by id.
+ */
+function handleDeleteIdea(req, res, ideaId) {
+  const data  = _readIdeas();
+  const before = data.ideas.length;
+  data.ideas   = data.ideas.filter(function(i) { return i.id !== ideaId; });
+  if (data.ideas.length === before) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'not found' }));
+    return;
+  }
+  _writeIdeas(data);
+  res.writeHead(204);
+  res.end();
+}
+
 module.exports = {
   handleGetFeatures,
   handleGetFeatureArtefacts,
+  handleGetIdeas,
+  handlePostIdea,
+  handleDeleteIdea,
   setAuditLogger,
   setListArtefacts,
   renderFeatureList,

@@ -1,0 +1,20 @@
+{
+  "skill": "definition-of-done",
+  "model_label": "claude-sonnet-4-6",
+  "case_id": "IL-S3",
+  "scores": {
+    "d1_ac_coverage_accuracy": 1,
+    "d2_deviation_detection": 1,
+    "d3_nfr_verification": 1,
+    "d4_metric_signal": 0.7,
+    "d5_completion_verdict": 1,
+    "d6_process_compliance": 0.7
+  },
+  "weighted_score": 0.94,
+  "pass": true,
+  "compliant": true,
+  "gate_fidelity_correct": true,
+  "categorical_fail": null,
+  "notes": "All ACs and the NFR are correctly verified with explicit evidence cited, no scope deviations fabricated, and the COMPLETE verdict is appropriate; minor deductions for no metric signal step (silently skipped rather than confirmed not-applicable) and process order places NFR before out-of-scope/test-run phases.",
+  "context_injection": false
+}

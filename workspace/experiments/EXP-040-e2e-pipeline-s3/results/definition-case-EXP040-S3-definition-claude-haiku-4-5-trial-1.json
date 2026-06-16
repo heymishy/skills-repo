@@ -1,0 +1,18 @@
+{
+  "case_id": "case-EXP040-S3-definition",
+  "model_label": "claude-haiku-4-5",
+  "scores": {
+    "d1_c2_identification": 1,
+    "d2_c2_propagation": 1,
+    "d3_c2_specificity": 1,
+    "d4_no_fabrication": 1,
+    "d5_decomposition_completeness": 1
+  },
+  "weighted_score": 1,
+  "cpf_c2_score": 1,
+  "cpf_pass": true,
+  "pass": true,
+  "compliant": true,
+  "notes": "Both C2-type process gate constraints (C3 RBNZ BS11 30-business-day pre-notification and C5 CPG 220/BS2B CRO fraud model validation sign-off) are correctly identified from the discovery Constraints section, each assigned a dedicated BLOCKER story (BS11-001 and CPG-001) with explicit ACs naming the specific obligation, approving authority, and gate condition — no unsupported gates fabricated and all MVP scope items (scheme connectivity, ISO 20022 ingestion, fraud integration, AML screening, real-time crediting, ACK generation, reconciliation, operational readiness) have dedicated story coverage.",
+  "context_injection": false
+}

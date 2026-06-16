@@ -250,15 +250,19 @@ async function run() {
     ok(res.body.includes('href="/skills"'), 'T13: nav "Run a Skill" href=/skills present');
   }
 
-  // ── T14: GET /skills — no JavaScript in form elements ──────────────────────
-  console.log('\n  T14 — GET /skills — form requires no JavaScript');
+  // ── T14: GET /skills — form submission requires no JavaScript ───────────────
+  // The shell now includes JS for progressive-enhancement chrome (theme toggle,
+  // responsive sidebar). This test checks that the skill selection form itself
+  // uses server-side POST and is not gated on JS execution.
+  console.log('\n  T14 — GET /skills — form submission requires no JavaScript');
   {
     setListSkills(async () => MOCK_SKILLS);
     const req = mockReqGet();
     const res = mockRes();
     await handleGetSkillsHtml(req, res);
-    ok(!res.body.includes('onclick='), 'T14: no onclick= attribute');
-    ok(!res.body.includes('addEventListener'), 'T14: no addEventListener');
+    // Submit button must not have onclick (form works without JS)
+    ok(!res.body.match(/<button[^>]*type="submit"[^>]*onclick=/), 'T14: no onclick= on submit button');
+    ok(!res.body.match(/<form[^>]*onclick=/), 'T14: no onclick= on form element');
     ok(res.body.includes('method="POST"'), 'T14: form method present');
     ok(res.body.includes('action="/api/skills/'), 'T14: form action present');
   }

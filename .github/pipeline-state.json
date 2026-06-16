@@ -6,36 +6,268 @@
     "spikes": {
       "spike-a": {
         "verdict": "PROCEED",
-        "verdictAt": "2026-04-19T23:59:00.000Z",
+        "verdictAt": "2026-04-19T23:59:00Z",
         "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-a-output.md"
       },
       "spike-b1": {
         "verdict": "PROCEED",
-        "verdictAt": "2026-04-20T12:00:00.000Z",
+        "verdictAt": "2026-04-20T12:00:00Z",
         "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b1-output.md"
       },
       "spike-b2": {
         "verdict": "PROCEED",
-        "verdictAt": "2026-04-19T23:59:00.000Z",
+        "verdictAt": "2026-04-19T23:59:00Z",
         "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-b2-output.md"
       },
       "spike-c": {
         "verdict": "PROCEED",
-        "verdictAt": "2026-04-20T14:00:00.000Z",
+        "verdictAt": "2026-04-20T14:00:00Z",
         "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-c-output.md"
       },
       "spike-d": {
         "verdict": "PROCEED",
-        "verdictAt": "2026-04-20T16:00:00.000Z",
+        "verdictAt": "2026-04-20T16:00:00Z",
         "outputArtefact": "artefacts/2026-04-19-skills-platform-phase4/spikes/spike-d-output.md"
       }
     }
   },
   "features": [
     {
+      "slug": "2026-06-15-ideate-web-ux-inc3",
+      "title": "ideate web UX Increment 3 (skill cadence + canvas output)",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "updatedAt": "2026-06-15",
+      "discovery": {
+        "status": "approved",
+        "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/discovery.md",
+        "approvedBy": "Hamish King",
+        "approvedDate": "2026-06-15"
+      },
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Session turn efficiency",
+          "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/benefit-metric.md"
+        },
+        {
+          "id": "M2",
+          "name": "Canvas block render fidelity",
+          "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/benefit-metric.md"
+        }
+      ],
+      "epics": [
+        {
+          "id": "inc3-inc4",
+          "title": "Skill cadence + canvas output",
+          "stories": [
+            {
+              "id": "inc3",
+              "slug": "inc3",
+              "title": "Reduce clarifying question frequency in /ideate",
+              "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/stories/inc3.md",
+              "stage": "definition-of-done",
+              "health": "green",
+              "complexity": 1,
+              "reviewStatus": "passed",
+              "reviewArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/review/inc3-review-1.md",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/test-plans/inc3-test-plan.md",
+                "totalTests": 5
+              },
+              "acTotal": 5,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/dor/inc3-dor.md",
+              "dorContract": "artefacts/2026-06-15-ideate-web-ux-inc3/dor/inc3-dor-contract.md",
+              "updatedAt": "2026-06-15",
+              "verifyStatus": "passed",
+              "verifyArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/verification/inc3-cadence-verification.md",
+              "name": "Reduce clarifying question frequency in /ideate"
+            },
+            {
+              "id": "inc4",
+              "slug": "inc4",
+              "title": "Canvas output panel for lens structured content",
+              "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/stories/inc4.md",
+              "stage": "verify-completion",
+              "health": "green",
+              "complexity": 3,
+              "reviewStatus": "passed",
+              "reviewArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/review/inc4-review-1.md",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/test-plans/inc4-test-plan.md",
+                "totalTests": 10
+              },
+              "acTotal": 7,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/dor/inc4-dor.md",
+              "designArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/design/inc4-canvas-panel.html",
+              "updatedAt": "2026-06-15",
+              "dorContract": "artefacts/2026-06-15-ideate-web-ux-inc3/dor/inc4-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "parseCanvasBlock (AC1)",
+                  "tddState": "green",
+                  "file": "artefacts/2026-06-15-ideate-web-ux-inc3/plans/inc4-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Canvas buffer + canvasBlock SSE (AC2)",
+                  "tddState": "green",
+                  "file": "artefacts/2026-06-15-ideate-web-ux-inc3/plans/inc4-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "#canvas-panel HTML + iwu2 update (AC3 AC6)",
+                  "tddState": "green",
+                  "file": "artefacts/2026-06-15-ideate-web-ux-inc3/plans/inc4-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "renderCanvasBlock + appendCanvasBlock (AC4 AC5)",
+                  "tddState": "green",
+                  "file": "artefacts/2026-06-15-ideate-web-ux-inc3/plans/inc4-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Register test + regression gate (AC7)",
+                  "tddState": "green",
+                  "file": "artefacts/2026-06-15-ideate-web-ux-inc3/plans/inc4-plan.md"
+                }
+              ],
+              "prStatus": "merged",
+              "name": "Canvas output panel for lens structured content"
+            },
+            {
+              "id": "inc5",
+              "slug": "inc5",
+              "title": "Canvas-JSON marker instruction in /ideate SKILL.md",
+              "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/stories/inc5.md",
+              "stage": "discovery",
+              "health": "green",
+              "complexity": 1,
+              "updatedAt": "2026-06-15",
+              "name": "Canvas-JSON marker instruction in /ideate SKILL.md"
+            }
+          ],
+          "status": "in-progress",
+          "slug": "inc3-inc4",
+          "name": "Skill cadence + canvas output"
+        }
+      ],
+      "name": "ideate web UX Increment 3 (skill cadence + canvas output)",
+      "track": "standard"
+    },
+    {
+      "slug": "2026-06-15-ideate-web-ux-inc2",
+      "name": "/ideate Web UX — Increment 2 (Conditions Sidebar)",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "updatedAt": "2026-06-15",
+      "discovery": {
+        "status": "approved",
+        "artefact": "artefacts/2026-06-15-ideate-web-ux-inc2/discovery.md",
+        "approvedAt": "2026-06-15",
+        "approvedBy": "Hamish King"
+      },
+      "benefit-metric": {
+        "status": "active",
+        "artefact": "artefacts/2026-06-15-ideate-web-ux-inc2/benefit-metric.md",
+        "definedAt": "2026-06-15"
+      },
+      "nfrProfileArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/nfr-profile.md",
+      "epics": [
+        {
+          "slug": "inc2-conditions-sidebar",
+          "name": "Cluster 6 — Conditions sidebar",
+          "stories": [
+            {
+              "id": "inc2.1",
+              "slug": "inc2.1",
+              "title": "Conditions panel: parse ---CONDITION-JSON--- markers and render condition cards in the /ideate session shell",
+              "artefact": "artefacts/2026-06-15-ideate-web-ux-inc2/stories/inc2.1.md",
+              "stage": "definition-of-done",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "reviewArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/review/inc2.1-review-1.md",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-15-ideate-web-ux-inc2/test-plans/inc2.1-test-plan.md",
+                "totalTests": 11
+              },
+              "acTotal": 9,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/dor/inc2.1-dor.md",
+              "dorContract": "artefacts/2026-06-15-ideate-web-ux-inc2/dor/inc2.1-dor-contract.md",
+              "updatedAt": "2026-06-15",
+              "dodStatus": "complete",
+              "dodDate": "2026-06-15",
+              "dodArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/dod/inc2.1-dod.md",
+              "commitRef": "34a9022",
+              "name": "Conditions panel: parse ---CONDITION-JSON--- markers and render condition cards in the /ideate session shell"
+            },
+            {
+              "id": "inc2.2",
+              "slug": "inc2.2",
+              "title": "Add ---CONDITION-JSON--- marker emission instruction to ideate/SKILL.md",
+              "artefact": "artefacts/2026-06-15-ideate-web-ux-inc2/stories/inc2.2.md",
+              "stage": "definition-of-done",
+              "health": "green",
+              "complexity": 1,
+              "humanOversight": "high",
+              "governedFile": true,
+              "dodEntryCondition": "human-in-the-loop: real multi-turn session (>=4 turns) emission verification required at artefacts/2026-06-15-ideate-web-ux-inc2/verification/inc2.2-emission-verification.md",
+              "reviewStatus": "passed",
+              "reviewArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/review/inc2.2-review-1.md",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-15-ideate-web-ux-inc2/test-plans/inc2.2-test-plan.md",
+                "totalTests": 5
+              },
+              "acTotal": 6,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/dor/inc2.2-dor.md",
+              "dorContract": "artefacts/2026-06-15-ideate-web-ux-inc2/dor/inc2.2-dor-contract.md",
+              "schemaDepends": [
+                "inc2.1"
+              ],
+              "updatedAt": "2026-06-15",
+              "dodStatus": "complete",
+              "dodDate": "2026-06-15",
+              "dodArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/dod/inc2.2-dod.md",
+              "verifyStatus": "passed",
+              "verifyArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/verification/inc2.2-emission-verification.md",
+              "commitRef": "0f36923",
+              "name": "Add ---CONDITION-JSON--- marker emission instruction to ideate/SKILL.md"
+            }
+          ]
+        }
+      ],
+      "stories": []
+    },
+    {
       "slug": "2026-05-19-cli-deterministic-governance",
       "name": "CLI Deterministic Governance — Executable Gate Enforcement and Tamper-Evident Audit Trail",
-      "stage": "review",
+      "stage": "definition-of-done",
+      "dodStatus": "complete",
+      "dodDate": "2026-06-15",
+      "dodArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dod/cdg-feature-dod.md",
+      "reviewStatus": "passed",
+      "reviewArtefact": "artefacts/2026-05-19-cli-deterministic-governance/review/cdg-feature-review-1.md",
+      "highFindings": 0,
       "health": "green",
       "track": "library",
       "regulated": false,
@@ -2344,9 +2576,9 @@
           "acVerified": 7,
           "stage": "released",
           "health": "green",
-          "updatedAt": "2026-05-05T00:00:00.000Z",
+          "updatedAt": "2026-05-05T00:00:00Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/304",
-          "dispatchedAt": "2026-05-05T00:00:00.000Z",
+          "dispatchedAt": "2026-05-05T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/309",
           "dodStatus": "passed"
@@ -2371,9 +2603,9 @@
           "acVerified": 5,
           "stage": "released",
           "health": "green",
-          "updatedAt": "2026-05-05T00:00:00.000Z",
+          "updatedAt": "2026-05-05T00:00:00Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/303",
-          "dispatchedAt": "2026-05-05T00:00:00.000Z",
+          "dispatchedAt": "2026-05-05T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/308",
           "dodStatus": "passed"
@@ -2397,9 +2629,9 @@
           "acVerified": 9,
           "stage": "released",
           "health": "green",
-          "updatedAt": "2026-05-05T00:00:00.000Z",
+          "updatedAt": "2026-05-05T00:00:00Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/305",
-          "dispatchedAt": "2026-05-05T00:00:00.000Z",
+          "dispatchedAt": "2026-05-05T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/310",
           "dodStatus": "passed"
@@ -2423,9 +2655,9 @@
           "acVerified": 6,
           "stage": "released",
           "health": "green",
-          "updatedAt": "2026-05-05T00:00:00.000Z",
+          "updatedAt": "2026-05-05T00:00:00Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/306",
-          "dispatchedAt": "2026-05-05T00:00:00.000Z",
+          "dispatchedAt": "2026-05-05T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/311",
           "dodStatus": "passed"
@@ -2449,9 +2681,9 @@
           "acVerified": 6,
           "stage": "released",
           "health": "green",
-          "updatedAt": "2026-05-05T00:00:00.000Z",
+          "updatedAt": "2026-05-05T00:00:00Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/307",
-          "dispatchedAt": "2026-05-05T00:00:00.000Z",
+          "dispatchedAt": "2026-05-05T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/312",
           "dodStatus": "passed"
@@ -2629,7 +2861,7 @@
           "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-1-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/313",
-          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchedAt": "2026-05-07T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
           "dodStatus": "complete",
@@ -2660,7 +2892,7 @@
           "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-2-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/314",
-          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchedAt": "2026-05-07T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
           "dodStatus": "complete",
@@ -2691,7 +2923,7 @@
           "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-3-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/315",
-          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchedAt": "2026-05-07T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
           "dodStatus": "complete",
@@ -2722,7 +2954,7 @@
           "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-4-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/316",
-          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchedAt": "2026-05-07T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
           "dodStatus": "complete",
@@ -2753,7 +2985,7 @@
           "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-5-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/317",
-          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchedAt": "2026-05-07T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
           "dodStatus": "complete",
@@ -2784,7 +3016,7 @@
           "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-6-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/318",
-          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchedAt": "2026-05-07T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
           "dodStatus": "complete",
@@ -2815,7 +3047,7 @@
           "updatedAt": "2026-05-07",
           "dorArtefact": "artefacts/2026-05-06-web-ui-guided-outer-loop/dor/ougl-7-dor.md",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/319",
-          "dispatchedAt": "2026-05-07T00:00:00.000Z",
+          "dispatchedAt": "2026-05-07T00:00:00Z",
           "dispatchTarget": "vscode",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/320",
           "dodStatus": "complete",
@@ -2909,7 +3141,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.1-dor.md",
           "updatedAt": "2026-05-09",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/321",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode"
         },
         {
@@ -2932,7 +3164,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.2-dor.md",
           "updatedAt": "2026-05-09",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/322",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode"
         },
         {
@@ -2955,7 +3187,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.3-dor.md",
           "updatedAt": "2026-05-09",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/323",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode"
         },
         {
@@ -2978,7 +3210,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.4-dor.md",
           "updatedAt": "2026-05-09",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/324",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode"
         },
         {
@@ -3001,7 +3233,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.5-dor.md",
           "updatedAt": "2026-05-09",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/325",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode"
         },
         {
@@ -3024,7 +3256,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.6-dor.md",
           "updatedAt": "2026-05-09",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/326",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode"
         }
       ]
@@ -3063,7 +3295,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.1-dor.md",
           "updatedAt": "2026-05-08",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/327",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode",
           "dodStatus": "complete",
           "releaseReady": true,
@@ -3089,7 +3321,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.2-dor.md",
           "updatedAt": "2026-05-08",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/328",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode",
           "dodStatus": "complete-with-deviations",
           "releaseReady": false,
@@ -3116,7 +3348,7 @@
           "dorArtefact": "artefacts/2026-05-07-web-ui-session-management/dor/wsm.3-dor.md",
           "updatedAt": "2026-05-08",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/329",
-          "dispatchedAt": "2026-05-08T00:00:00.000Z",
+          "dispatchedAt": "2026-05-08T00:00:00Z",
           "dispatchTarget": "vscode",
           "dodStatus": "complete-with-deviations",
           "releaseReady": false,
@@ -3603,9 +3835,12 @@
     {
       "slug": "2026-05-21-ideate-web-ux",
       "name": "/ideate Web UX — Structured Session Interface",
-      "stage": "branch-setup",
+      "stage": "definition-of-done",
+      "dodStatus": "complete",
+      "dodDate": "2026-06-15",
+      "dodArtefact": "artefacts/2026-05-21-ideate-web-ux/dod/iwu-feature-dod.md",
       "health": "green",
-      "updatedAt": "2026-06-04",
+      "updatedAt": "2026-06-15",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -4373,6 +4608,296 @@
           "updatedAt": "2026-05-27"
         }
       ]
+    },
+    {
+      "discoveryArtefact": "artefacts/2026-06-14-web-ui-pm-flow/discovery.md",
+      "track": "standard",
+      "metrics": [
+        {
+          "name": "WIP visibility — all active features visible on board without scrolling (up to 12 features)",
+          "evidence": null,
+          "minimumSignal": "board renders correctly with real pipeline-state.json",
+          "target": "all active features visible at /features?view=board without scrolling",
+          "lastMeasured": null,
+          "tier": 2,
+          "contributingStories": [
+            "pmf.1"
+          ],
+          "id": "M1",
+          "signal": "not-yet-measured",
+          "baseline": "not visible (list view only)"
+        },
+        {
+          "name": "Idea capture rate — ideas captured in workspace/ideas.json within 14 days of pmf.2 DoD",
+          "evidence": null,
+          "minimumSignal": "at least 1 idea captured",
+          "target": "3+ ideas captured within 14 days of pmf.2 DoD",
+          "lastMeasured": null,
+          "tier": 2,
+          "contributingStories": [
+            "pmf.2"
+          ],
+          "id": "M2",
+          "signal": "not-yet-measured",
+          "baseline": "0 ideas (file initialised empty 2026-06-14)"
+        },
+        {
+          "name": "Session start click-count — operator reaches correct skill session in 2 clicks or fewer",
+          "evidence": null,
+          "minimumSignal": "pmf.3 orientation wizard implemented and DoD complete",
+          "target": "2 clicks or fewer from homepage to skill session for returning user",
+          "lastMeasured": null,
+          "tier": 2,
+          "contributingStories": [
+            "pmf.3"
+          ],
+          "id": "M3",
+          "signal": "not-yet-measured",
+          "baseline": "3-4 clicks (manual navigate /features to feature to skill)"
+        }
+      ],
+      "complianceFrameworks": [],
+      "regulated": false,
+      "stage": "definition-of-done",
+      "storyCount": 3,
+      "sensitiveDataCategories": [],
+      "health": "green",
+      "name": "Web UI Product Management Flow — Kanban Board, Ideas Backlog, and Context-Aware Session Start",
+      "slug": "2026-06-14-web-ui-pm-flow",
+      "updatedAt": "2026-06-15T00:00:00Z",
+      "epics": [
+        {
+          "name": "Product Management Flow — Web UI",
+          "slug": "pmf-epic-1",
+          "status": "in-progress",
+          "stories": [
+            {
+              "updatedAt": "2026-06-15",
+              "slug": "pmf.1",
+              "notes": "Implemented in commit 7c42380 ahead of formal artefacts — process exception. Requires test-plan artefact, review artefact, DoR, and DoD to complete.",
+              "stage": "definition-of-done",
+              "health": "green",
+              "name": "Kanban board view at /features?view=board",
+              "hasLayoutDependentGaps": false,
+              "reviewStatus": "passed",
+              "dorStatus": "signed-off",
+              "reviewArtefact": "artefacts/2026-06-14-web-ui-pm-flow/review/pmf.1-review-1.md",
+              "dorArtefact": "artefacts/2026-06-14-web-ui-pm-flow/dor/pmf.1-dor.md",
+              "dorContract": "artefacts/2026-06-14-web-ui-pm-flow/dor/pmf.1-dor-contract.md",
+              "testPlan": {
+                "status": "all-passing",
+                "artefact": "artefacts/2026-06-14-web-ui-pm-flow/test-plans/pmf.1-test-plan.md",
+                "totalTests": 30,
+                "passing": 30
+              },
+              "dodStatus": "complete",
+              "highFindings": 0,
+              "acTotal": 5,
+              "acVerified": 5
+            },
+            {
+              "updatedAt": "2026-06-15",
+              "slug": "pmf.2",
+              "notes": "Implemented in commit 7c42380 ahead of formal artefacts — process exception. Requires test-plan artefact, review artefact, DoR, and DoD to complete.",
+              "stage": "definition-of-done",
+              "health": "green",
+              "name": "Ideas backlog — workspace/ideas.json and /api/ideas CRUD",
+              "hasLayoutDependentGaps": false,
+              "reviewStatus": "passed",
+              "dorStatus": "signed-off",
+              "reviewArtefact": "artefacts/2026-06-14-web-ui-pm-flow/review/pmf.2-review-1.md",
+              "dorArtefact": "artefacts/2026-06-14-web-ui-pm-flow/dor/pmf.2-dor.md",
+              "dorContract": "artefacts/2026-06-14-web-ui-pm-flow/dor/pmf.2-dor-contract.md",
+              "testPlan": {
+                "status": "all-passing",
+                "artefact": "artefacts/2026-06-14-web-ui-pm-flow/test-plans/pmf.2-test-plan.md",
+                "totalTests": 10,
+                "passing": 10
+              },
+              "dodStatus": "complete",
+              "highFindings": 0,
+              "acTotal": 7,
+              "acVerified": 7
+            },
+            {
+              "updatedAt": "2026-06-15",
+              "slug": "pmf.3",
+              "notes": "DoR signed off 2026-06-15. Ready for implementation.",
+              "stage": "definition-of-done",
+              "health": "green",
+              "name": "Context-aware orientation wizard — three-step session start",
+              "reviewStatus": "passed",
+              "dorStatus": "signed-off",
+              "reviewArtefact": "artefacts/2026-06-14-web-ui-pm-flow/review/pmf.3-review-1.md",
+              "dorArtefact": "artefacts/2026-06-14-web-ui-pm-flow/dor/pmf.3-dor.md",
+              "dorContract": "artefacts/2026-06-14-web-ui-pm-flow/dor/pmf.3-dor-contract.md",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-14-web-ui-pm-flow/test-plans/pmf.3-test-plan.md",
+                "totalTests": 8,
+                "passing": 8
+              },
+              "highFindings": 0,
+              "acTotal": 9,
+              "dodStatus": "complete",
+              "dodArtefact": "artefacts/2026-06-14-web-ui-pm-flow/dod/pmf.3-dod.md",
+              "acVerified": 9
+            }
+          ]
+        }
+      ],
+      "complianceProfile": "standard",
+      "epicCount": 1,
+      "discoveryStatus": "approved",
+      "benefitMetricArtefact": "artefacts/2026-06-14-web-ui-pm-flow/benefit-metric.md",
+      "nfrProfileArtefact": "artefacts/2026-06-14-web-ui-pm-flow/nfr-profile.md",
+      "dodStatus": "complete",
+      "dodDate": "2026-06-15"
+    },
+    {
+      "slug": "2026-06-15-web-observability",
+      "title": "Web server observability (structured logging + correlation IDs)",
+      "stage": "subagent-execution",
+      "health": "green",
+      "updatedAt": "2026-06-15T21:02:46.015Z",
+      "discovery": {
+        "status": "approved",
+        "artefact": "artefacts/2026-06-15-web-observability/discovery.md",
+        "approvedBy": "Hamish King",
+        "approvedDate": "2026-06-16"
+      },
+      "epics": [
+        {
+          "slug": "obs-core",
+          "name": "Engineers can diagnose web server SSE issues from structured logs alone",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "obs-1",
+              "name": "Add pino structured logging with turn correlation IDs and timing to the web server",
+              "stage": "branch-complete",
+              "health": "green",
+              "reviewStatus": "passed",
+              "reviewRun": 1,
+              "highFindings": 0,
+              "mediumFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-15-web-observability/review/obs-1-review-1.md",
+              "reviewDate": "2026-06-16",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 14,
+                "passing": 14
+              },
+              "acTotal": 6,
+              "acVerified": 6,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "updatedAt": "2026-06-15T21:02:46.015Z",
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "pino dependency + logger module + JSON format tests (AC5)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-06-15-web-observability/plans/obs-1-plan.md",
+                  "sha": "673caca"
+                },
+                {
+                  "id": "task-2",
+                  "name": "correlationId generation + SSE lifecycle events (AC1, AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-06-15-web-observability/plans/obs-1-plan.md",
+                  "sha": "95ebbbb"
+                },
+                {
+                  "id": "task-3",
+                  "name": "LLM call timing - llm_complete with llm_duration_ms (AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-06-15-web-observability/plans/obs-1-plan.md",
+                  "sha": "a060da9"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Secrets verification tests (AC4, NFR-SEC-1) + full suite (AC6)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-06-15-web-observability/plans/obs-1-plan.md",
+                  "sha": "3cc01e4"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/381"
+            }
+          ]
+        }
+      ],
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Time to diagnose a hung SSE connection",
+          "target": "le60s from logs alone",
+          "baseline": "Not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "obs-1"
+          ]
+        },
+        {
+          "id": "M2",
+          "name": "LLM call duration recorded per turn",
+          "target": "100pct of completing turns have llm_duration_ms",
+          "baseline": "0pct",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "obs-1"
+          ]
+        },
+        {
+          "id": "M3",
+          "name": "Correlation trace completeness",
+          "target": "100pct of SSE turns share correlationId across open/call/close",
+          "baseline": "0pct",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "obs-1"
+          ]
+        }
+      ],
+      "slicingStrategy": "vertical-slice",
+      "guardrails": [
+        {
+          "id": "ARCH-COMMONJS",
+          "category": "mandatory-constraint",
+          "label": "Plain Node.js/CommonJS no TypeScript or transpilation",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-16"
+        },
+        {
+          "id": "NFR-PERF-LOG-LATENCY",
+          "category": "nfr",
+          "label": "Log emission must not add more than 5ms to SSE stream open time",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-16"
+        },
+        {
+          "id": "NFR-SEC-NO-SECRETS",
+          "category": "nfr",
+          "label": "No API keys, OAuth tokens, or session secrets in any log line",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-16"
+        }
+      ],
+      "name": "Web server observability (structured logging + correlation IDs)",
+      "track": "standard"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
