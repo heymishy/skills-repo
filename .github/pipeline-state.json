@@ -148,17 +148,26 @@
               "slug": "inc5",
               "title": "Canvas-JSON marker instruction in /ideate SKILL.md",
               "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/stories/inc5.md",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-06-16T09:22:30.356Z",
+              "updatedAt": "2026-06-16T09:38:58.575Z",
               "name": "Canvas-JSON marker instruction in /ideate SKILL.md",
               "reviewStatus": "passed",
               "highFindings": 0,
               "mediumFindings": 0,
               "reviewArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/review/inc5-review-2.md",
               "reviewDate": "2026-06-16",
-              "reviewRun": 2
+              "reviewRun": 2,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ],
           "status": "in-progress",

@@ -113,3 +113,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: decision
   signal-text: Beating GitHub Copilot chat UX is a critical success criterion for the web UI skill runner. The current turn-by-turn Q&A pattern feels clunky and slow compared to free-form conversation in VS Code — the web UI must feel more dynamic and less structured to justify itself as the preferred surface for skill execution.
   source: operator-manual
+
+- date: 2026-06-16
+  session-phase: inc5 /test-plan
+  signal-type: gap
+  signal-text: "inc5 (Canvas-JSON marker instruction in /ideate SKILL.md) is instruction-only — there is no code-level way to unit test whether the model actually follows a SKILL.md instruction at inference time, only whether the instruction text itself is present and well-formed. AC1 (Lens A cluster-tree marker), AC2 (Lens D table marker), and AC6 (one-marker-per-lens cadence) were all classified gap type Untestable-by-nature and pushed to manual verification scenarios in the AC verification script; AC1 and AC2 are a blocking DoD gate per the story's own entry condition, AC6 is not. This is a recurring shape for any story that adds model-instruction text rather than code: the test plan can only ever cover 'the instruction exists and is well-formed', never 'the model reliably obeys it' — that gap is permanent for this class of story, not a one-off oversight. Pattern worth reusing verbatim for any future SKILL.md-instruction-only story (e.g. inc3's question-cadence story already had the same shape with its T5 manual scenario)."
+  source: agent-auto
