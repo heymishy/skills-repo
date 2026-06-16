@@ -148,10 +148,10 @@
               "slug": "inc5",
               "title": "Canvas-JSON marker instruction in /ideate SKILL.md",
               "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/stories/inc5.md",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-06-16T09:38:58.575Z",
+              "updatedAt": "2026-06-16T10:03:59.114Z",
               "name": "Canvas-JSON marker instruction in /ideate SKILL.md",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -167,7 +167,11 @@
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/dor/inc5-dor.md",
+              "dorContractArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/dor/inc5-dor-contract.md",
+              "dorSignedOffAt": "2026-06-16T10:03:59.114Z"
             }
           ],
           "status": "in-progress",
@@ -176,7 +180,41 @@
         }
       ],
       "name": "ideate web UX Increment 3 (skill cadence + canvas output)",
-      "track": "standard"
+      "track": "standard",
+      "guardrails": [
+        {
+          "id": "NFR-canvas-render-perf",
+          "category": "nfr",
+          "label": "canvasBlock SSE parse/render within <=200ms of receipt",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-16T10:03:59.114Z"
+        },
+        {
+          "id": "NFR-canvas-html-escape",
+          "category": "nfr",
+          "label": "canvasBlock JSON content HTML-escaped before DOM insertion (OWASP A03)",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-16T10:03:59.114Z"
+        },
+        {
+          "id": "NFR-canvas-data-classification",
+          "category": "nfr",
+          "label": "Data classification: Internal — non-public, low sensitivity",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-16T10:03:59.114Z"
+        },
+        {
+          "id": "NFR-canvas-accessibility",
+          "category": "nfr",
+          "label": "Canvas blocks keyboard-navigable, role=\"region\", text-labelled types (WCAG SC 1.4.1, 2.1.1)",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-16T10:03:59.114Z"
+        }
+      ]
     },
     {
       "slug": "2026-06-15-ideate-web-ux-inc2",

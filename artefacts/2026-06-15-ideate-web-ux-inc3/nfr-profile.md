@@ -16,6 +16,8 @@
 - inc4: `canvasBlock` JSON content must be HTML-escaped before DOM insertion (OWASP A03 — same standard as assumption cards and condition items)
 - inc4: `---CANVAS-JSON---` marker extraction uses same buffer pattern as assumption/condition markers — no eval, no innerHTML with unescaped model content
 
+**Data classification:** Internal — non-public but low sensitivity. Canvas block content is derived from /ideate session conversation (product facilitation discussion); no PII or payment data is collected or rendered. Consistent with `.github/context.yml` (`meta.scope: personal`, `meta.regulated: false`).
+
 ## Accessibility
 
 - inc4: canvas blocks must be keyboard-navigable; block type conveyed by text label not colour only (WCAG SC 1.4.1, SC 2.1.1); canvas panel must have `role="region"` and `aria-label`
