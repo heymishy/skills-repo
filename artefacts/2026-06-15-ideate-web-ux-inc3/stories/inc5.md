@@ -1,7 +1,9 @@
 # Story: inc5 — Canvas-JSON marker instruction in /ideate SKILL.md
 
 **Feature:** 2026-06-15-ideate-web-ux-inc3
-**Epic:** inc3-inc4 (Skill cadence + canvas output)
+**Epic reference:** inc3-inc4 — Skill cadence + canvas output (`.github/pipeline-state.json` epics[inc3-inc4])
+**Discovery reference:** artefacts/2026-06-15-ideate-web-ux-inc3/discovery.md (see "Deferred" addendum — inc5 split out of inc4's original marker-emission scope)
+**Benefit-metric reference:** artefacts/2026-06-15-ideate-web-ux-inc3/benefit-metric.md (M2 — Canvas block render fidelity)
 **Depends on:** inc4 at definition-of-done
 **Story type:** SKILL.md instruction update (no code changes)
 
@@ -20,6 +22,25 @@ So that the session produces a richer, visual artefact alongside the conversatio
 inc4 built the full client-side infrastructure: SSE `canvasBlock` event, `#canvas-panel` renderer, `renderCanvasBlock` for `cluster-tree`, `table`, and `text` types. The panel is live in the UI. The gap is that the /ideate skill model does not emit `---CANVAS-JSON: {...}---` markers — so the canvas panel stays empty during sessions.
 
 inc5 closes this gap by adding a canvas marker instruction block to the /ideate SKILL.md. No code changes are required; the change is instruction-only.
+
+---
+
+## Benefit Linkage
+
+**Metric moved:** M2 — Canvas block render fidelity (`benefit-metric.md`)
+**How:** M2 measures the proportion of `canvasBlock` SSE events that render correctly, but inc4 built the rendering pipeline with no upstream source of those events — M2 has had nothing to measure since inc4 merged. inc5 is the only story that makes the /ideate model emit `---CANVAS-JSON: {...}---` markers, so it is the story that makes M2 measurable at all, not just improvable.
+
+---
+
+## Architecture Constraints
+
+None identified — SKILL.md instruction content is governed by pipeline process, not `.github/architecture-guardrails.md` (see guardrails line 38: "Skill files and templates are content, not code — they are governed by pipeline process, not these guardrails").
+
+---
+
+## NFRs
+
+None identified — instruction text only, no new runtime path, no client/server code touched. Output correctness (marker schema compliance) is covered by AC4 and verified via the inc4 `parseCanvasBlock` validator already in production; inc5 adds no new validation surface of its own.
 
 ---
 
@@ -50,6 +71,20 @@ Each lens output produces exactly one CANVAS-JSON marker. The model does not emi
 - New canvas block types beyond `cluster-tree`, `table`, `text` (covered by the inc4 type allowlist)
 - Changes to the canvas panel layout, CSS, or renderer (inc4)
 - Changes to any SKILL.md other than /ideate
+
+---
+
+## Dependencies
+
+- **Upstream:** inc4 must be at definition-of-done — inc5's markers are consumed by inc4's `parseCanvasBlock`/`canvasBlock` SSE pipeline, which must exist and be merged first.
+- **Downstream:** Satisfies the inc4 DoD entry condition deferred pending this story (see Definition of done entry condition note below). Closes the M2 measurement gap for the feature's benefit-metric tracking.
+
+---
+
+## Complexity Rating
+
+**Rating:** 1
+**Scope stability:** Stable
 
 ---
 
