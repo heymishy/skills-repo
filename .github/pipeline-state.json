@@ -4759,7 +4759,7 @@
       "title": "Web server observability (structured logging + correlation IDs)",
       "stage": "subagent-execution",
       "health": "green",
-      "updatedAt": "2026-06-15T21:02:46.015Z",
+      "updatedAt": "2026-06-16T08:58:23.402Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-15-web-observability/discovery.md",
