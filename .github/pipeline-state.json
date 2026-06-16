@@ -37,7 +37,7 @@
       "title": "ideate web UX Increment 3 (skill cadence + canvas output)",
       "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-06-16T09:22:30.356Z",
+      "updatedAt": "2026-06-16T19:50:33.856Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/discovery.md",
@@ -148,10 +148,10 @@
               "slug": "inc5",
               "title": "Canvas-JSON marker instruction in /ideate SKILL.md",
               "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/stories/inc5.md",
-              "stage": "definition-of-ready",
+              "stage": "verify-completion",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-06-16T10:03:59.114Z",
+              "updatedAt": "2026-06-16T19:50:33.856Z",
               "name": "Canvas-JSON marker instruction in /ideate SKILL.md",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -171,7 +171,15 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/dor/inc5-dor.md",
               "dorContractArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/dor/inc5-dor-contract.md",
-              "dorSignedOffAt": "2026-06-16T10:03:59.114Z"
+              "dorSignedOffAt": "2026-06-16T10:03:59.114Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Canvas markers (inc5) SKILL.md section - AC1-AC4, AC6",
+                  "tddState": "green",
+                  "file": ".github/skills/ideate/SKILL.md"
+                }
+              ]
             }
           ],
           "status": "in-progress",
@@ -4989,5 +4997,5 @@
     ],
     "lastUpdated": "2026-05-06"
   },
-  "updatedAt": "2026-05-21"
+  "updatedAt": "2026-06-16T19:50:33.856Z"
 }
