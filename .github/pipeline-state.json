@@ -4759,7 +4759,7 @@
       "title": "Web server observability (structured logging + correlation IDs)",
       "stage": "subagent-execution",
       "health": "green",
-      "updatedAt": "2026-06-15T21:02:46.015Z",
+      "updatedAt": "2026-06-16T09:13:16.094Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-15-web-observability/discovery.md",
@@ -4770,13 +4770,13 @@
         {
           "slug": "obs-core",
           "name": "Engineers can diagnose web server SSE issues from structured logs alone",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "obs-1",
               "name": "Add pino structured logging with turn correlation IDs and timing to the web server",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "reviewStatus": "passed",
               "reviewRun": 1,
               "highFindings": 0,
@@ -4792,7 +4792,7 @@
               "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "updatedAt": "2026-06-15T21:02:46.015Z",
+              "updatedAt": "2026-06-16T09:13:16.094Z",
               "dorStatus": "signed-off",
               "tasks": [
                 {
@@ -4825,8 +4825,11 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/381"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/381",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "NFR-PERF-1 (pino <5ms SSE-open latency) unmeasured -- RISK-ACCEPTed in decisions.md 2026-06-16, not blocking but not verified."
             }
           ]
         }
@@ -4883,17 +4886,19 @@
           "id": "NFR-PERF-LOG-LATENCY",
           "category": "nfr",
           "label": "Log emission must not add more than 5ms to SSE stream open time",
-          "status": "not-assessed",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-06-16"
+          "status": "not-met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-06-16",
+          "evidence": "Manual SSE time-to-first-byte timing comparison not run; RISK-ACCEPTed in decisions.md 2026-06-16."
         },
         {
           "id": "NFR-SEC-NO-SECRETS",
           "category": "nfr",
           "label": "No API keys, OAuth tokens, or session secrets in any log line",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-06-16"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-06-16",
+          "evidence": "NFR-SEC-1 + T7/T8 automated tests pass -- no secret values found in captured log output."
         }
       ],
       "name": "Web server observability (structured logging + correlation IDs)",
