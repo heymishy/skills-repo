@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-04-23T00:00:00Z",
+  "updated": "2026-06-17T08:30:00.000Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -4964,6 +4964,89 @@
       ],
       "name": "Web server observability (structured logging + correlation IDs)",
       "track": "standard"
+    },
+    {
+      "slug": "2026-06-17-kanban-feature-detail-cx",
+      "name": "Truncated Kanban card titles, artefact-count indicator, and design-system-styled feature/artefact detail pages",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "kfd1",
+          "dorStatus": "signed-off",
+          "stage": "definition-of-ready",
+          "prStatus": null,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 38,
+            "passing": 15,
+            "artefact": "artefacts/2026-06-17-kanban-feature-detail-cx/test-plans/kfd1-kanban-card-and-detail-page-cx-test-plan.md"
+          },
+          "acTotal": 6,
+          "acVerified": 0
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-06-17T08:30:00.000Z",
+      "guardrails": [
+        {
+          "id": "ARCH-RENDER-ONLY",
+          "category": "mandatory-constraint",
+          "label": "No pipeline-state stage writes from board view",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-17"
+        },
+        {
+          "id": "ARCH-ESCAPE-HTML",
+          "category": "mandatory-constraint",
+          "label": "All rendered text HTML-escaped via escHtml",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-17"
+        },
+        {
+          "id": "ARCH-NO-NEW-DEPS",
+          "category": "mandatory-constraint",
+          "label": "No new npm dependencies",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-17"
+        },
+        {
+          "id": "NFR-PERF-BOARD",
+          "category": "nfr",
+          "label": "Board load no noticeable latency for ≤25 features (fs reads only)",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-17"
+        },
+        {
+          "id": "NFR-SEC-AUTH",
+          "category": "nfr",
+          "label": "No change to auth guards on /features/:slug or /artefact/:slug/:type",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-17"
+        },
+        {
+          "id": "NFR-A11Y-TRUNCATION",
+          "category": "nfr",
+          "label": "Truncated card titles accessible via title= attribute",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-17"
+        },
+        {
+          "id": "NFR-AUDIT-UNCHANGED",
+          "category": "nfr",
+          "label": "Existing audit log calls unchanged on /features and /features/:slug",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-17"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
