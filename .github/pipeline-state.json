@@ -83,7 +83,8 @@
               "dorContract": "artefacts/2026-06-15-ideate-web-ux-inc3/dor/inc3-dor-contract.md",
               "updatedAt": "2026-06-15",
               "verifyStatus": "passed",
-              "verifyArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/verification/inc3-cadence-verification.md"
+              "verifyArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/verification/inc3-cadence-verification.md",
+              "name": "Reduce clarifying question frequency in /ideate"
             },
             {
               "id": "inc4",
@@ -139,7 +140,8 @@
                   "file": "artefacts/2026-06-15-ideate-web-ux-inc3/plans/inc4-plan.md"
                 }
               ],
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "name": "Canvas output panel for lens structured content"
             },
             {
               "id": "inc5",
@@ -149,12 +151,17 @@
               "stage": "discovery",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-06-15"
+              "updatedAt": "2026-06-15",
+              "name": "Canvas-JSON marker instruction in /ideate SKILL.md"
             }
           ],
-          "status": "in-progress"
+          "status": "in-progress",
+          "slug": "inc3-inc4",
+          "name": "Skill cadence + canvas output"
         }
-      ]
+      ],
+      "name": "ideate web UX Increment 3 (skill cadence + canvas output)",
+      "track": "standard"
     },
     {
       "slug": "2026-06-15-ideate-web-ux-inc2",
@@ -208,7 +215,8 @@
               "dodStatus": "complete",
               "dodDate": "2026-06-15",
               "dodArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/dod/inc2.1-dod.md",
-              "commitRef": "34a9022"
+              "commitRef": "34a9022",
+              "name": "Conditions panel: parse ---CONDITION-JSON--- markers and render condition cards in the /ideate session shell"
             },
             {
               "id": "inc2.2",
@@ -242,7 +250,8 @@
               "dodArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/dod/inc2.2-dod.md",
               "verifyStatus": "passed",
               "verifyArtefact": "artefacts/2026-06-15-ideate-web-ux-inc2/verification/inc2.2-emission-verification.md",
-              "commitRef": "0f36923"
+              "commitRef": "0f36923",
+              "name": "Add ---CONDITION-JSON--- marker emission instruction to ideate/SKILL.md"
             }
           ]
         }
@@ -4886,7 +4895,9 @@
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-06-16"
         }
-      ]
+      ],
+      "name": "Web server observability (structured logging + correlation IDs)",
+      "track": "standard"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
