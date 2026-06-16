@@ -37,7 +37,7 @@
       "title": "ideate web UX Increment 3 (skill cadence + canvas output)",
       "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-06-15",
+      "updatedAt": "2026-06-16T09:22:30.356Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/discovery.md",
@@ -148,11 +148,17 @@
               "slug": "inc5",
               "title": "Canvas-JSON marker instruction in /ideate SKILL.md",
               "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/stories/inc5.md",
-              "stage": "discovery",
+              "stage": "review",
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-06-15",
-              "name": "Canvas-JSON marker instruction in /ideate SKILL.md"
+              "updatedAt": "2026-06-16T09:22:30.356Z",
+              "name": "Canvas-JSON marker instruction in /ideate SKILL.md",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "mediumFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/review/inc5-review-2.md",
+              "reviewDate": "2026-06-16",
+              "reviewRun": 2
             }
           ],
           "status": "in-progress",
