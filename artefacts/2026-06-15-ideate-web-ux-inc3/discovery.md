@@ -83,3 +83,9 @@ inc4's original scope statement above describes the model emitting `---CANVAS-JS
 **Dependency:** inc4 must be at definition-of-done (inc4's marker-consuming pipeline must exist before inc5's emitted markers have anywhere to go).
 
 Full story detail: `artefacts/2026-06-15-ideate-web-ux-inc3/stories/inc5.md`.
+
+---
+
+## Approved By
+
+- Hamish King — Engineering lead — 2026-06-15

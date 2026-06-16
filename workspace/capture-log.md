@@ -120,6 +120,12 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-text: "inc5 (Canvas-JSON marker instruction in /ideate SKILL.md) is instruction-only — there is no code-level way to unit test whether the model actually follows a SKILL.md instruction at inference time, only whether the instruction text itself is present and well-formed. AC1 (Lens A cluster-tree marker), AC2 (Lens D table marker), and AC6 (one-marker-per-lens cadence) were all classified gap type Untestable-by-nature and pushed to manual verification scenarios in the AC verification script; AC1 and AC2 are a blocking DoD gate per the story's own entry condition, AC6 is not. This is a recurring shape for any story that adds model-instruction text rather than code: the test plan can only ever cover 'the instruction exists and is well-formed', never 'the model reliably obeys it' — that gap is permanent for this class of story, not a one-off oversight. Pattern worth reusing verbatim for any future SKILL.md-instruction-only story (e.g. inc3's question-cadence story already had the same shape with its T5 manual scenario)."
   source: agent-auto
 
+- date: 2026-06-16
+  session-phase: inc5 /definition-of-ready
+  signal-type: gap
+  signal-text: "inc5's story text states a literal dependency on \"inc4 at definition-of-done\", but inc4's pipeline-state stage was still verify-completion (its own DoD was never run) — yet the real functional prerequisite (inc4's code merged, parseCanvasBlock/canvasBlock pipeline live) was satisfied. H8-ext's schemaDepends check only verifies that declared fields (stage, dodStatus) exist in pipeline-state.schema.json, not that the upstream story's current value satisfies any condition — so this passed mechanically without surfacing the wording vs. reality gap. Handled this run via an explicit Assumptions-section note in the DoR contract rather than a hard block, since inc4's DoD was intentionally deferred pending inc5 by the story's own design (see inc5.md's \"Definition of done entry condition\" note). Pattern worth watching: any story whose Dependencies block names an upstream story's stage informally (\"at definition-of-done\") rather than checking the literal pipeline-state value can silently drift out of sync with reality; H8-ext's field-existence check does not catch this class of drift, only a human or agent reading both artefacts side-by-side does."
+  source: agent-auto
+
 - date: 2026-06-17
   session-phase: ideate-web-ux (live testing, post-PR-385)
   signal-type: gap
