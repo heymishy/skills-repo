@@ -145,8 +145,26 @@ async function handleGetFeatures(req, res) {
     const view = (req.query && req.query.view) || '';
     let bodyContent;
     if (view === 'board') {
+      const counts = await Promise.all(
+        features.map(function(f) {
+          return _listArtefacts(f.slug, token)
+            .then(function(r) { return r && !r.noArtefacts ? r.artefacts.length : 0; })
+            .catch(function() { return 0; });
+        })
+      );
+      const boardFeatures = features.map(function(f, i) {
+        return {
+          slug:          f.slug,
+          title:         f.title || f.name || f.slug,
+          stage:         f.stage || '',
+          updated:       f.lastUpdated || f.updatedAt || '',
+          health:        f.health || '',
+          owner:         f.owner || '',
+          artefactCount: counts[i]
+        };
+      });
       const { ideas } = _readIdeas();
-      bodyContent = renderKanban({ features: viewFeatures, ideas });
+      bodyContent = renderKanban({ features: boardFeatures, ideas });
     } else {
       bodyContent = renderFeaturesList({ features: viewFeatures, repoCount: 0 });
     }
@@ -173,19 +191,26 @@ function renderArtefactIndexHtml(artefacts, featureSlug) {
   if (!artefacts || artefacts.length === 0) {
     return '<p class="artefact-list__empty">No artefacts found for this feature</p>';
   }
-  const items = artefacts.map((a) => {
-    const label   = getLabel(a.type || '');
-    // Derive URL slug from the actual filename (e.g. "discovery.md" → "discovery")
-    // rather than the plain-language label (e.g. "Discovery") so the artefact-fetcher
-    // can reconstruct the correct path on the GitHub Contents API.
-    const fileSlug = (a.path || '').split('/').pop().replace(/\.md$/, '') || (a.type || '');
-    const viewUrl = `/artefact/${featureSlug}/${fileSlug}`;
-    const base    = renderArtefactItem({ type: label, name: a.path || '', viewUrl });
-    // Insert creation date before closing </li>
-    const date    = shellEscHtml(a.createdAt || '');
-    return base.slice(0, -5) + `<time class="artefact-list__date">${date}</time></li>`;
+
+  // Group artefacts by plain-language label
+  const groups = {};
+  const groupOrder = [];
+  artefacts.forEach((a) => {
+    const label = getLabel(a.type || '');
+    if (!groups[label]) { groups[label] = []; groupOrder.push(label); }
+    groups[label].push(a);
+  });
+
+  return groupOrder.map((label) => {
+    const items = groups[label].map((a) => {
+      const fileSlug = (a.path || '').split('/').pop().replace(/\.md$/, '') || (a.type || '');
+      const viewUrl  = `/artefact/${featureSlug}/${fileSlug}`;
+      const base     = renderArtefactItem({ type: label, name: a.path || '', viewUrl });
+      const date     = shellEscHtml(a.createdAt || '');
+      return base.slice(0, -5) + `<time class="artefact-list__date">${date}</time></li>`;
+    }).join('');
+    return `<div class="sw-card"><h2 class="sw-section-title">${shellEscHtml(label)}</h2><ul class="artefact-list">${items}</ul></div>`;
   }).join('');
-  return `<ul class="artefact-list">${items}</ul>`;
 }
 
 /**
