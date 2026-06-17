@@ -2094,7 +2094,8 @@ async function handlePostTurnStreamHtml(req, res) {
   var historySnapshot = session.turns.slice();
   session.turns.push({ role: 'user', content: userContent });
 
-  var _chunkCount = 0;
+  var _chunkCount   = 0;
+  var _reasoningCount = 0;
   // iwu.3: assumption marker buffer — accumulates text to detect cross-chunk markers
   var _assumptionBuf = '';
   var _ASSMP_START   = '---ASSUMPTION-JSON:';
@@ -2277,6 +2278,7 @@ async function handlePostTurnStreamHtml(req, res) {
         }
       },
       function onThinkingChunk(chunk) {
+        _reasoningCount++;
         res.write('data: ' + JSON.stringify({ reasoningChunk: chunk }) + '\n\n');
       }
     );
@@ -2294,7 +2296,7 @@ async function handlePostTurnStreamHtml(req, res) {
     condition:  (fullText.match(/---CONDITION-JSON:/g)  || []).length,
     canvas:     (fullText.match(/---CANVAS-JSON:/g)     || []).length
   };
-  _turnLog.info({ event: 'llm_complete', llm_duration_ms: _llmDuration, markers: _markerCounts }, 'LLM call complete');
+  _turnLog.info({ event: 'llm_complete', llm_duration_ms: _llmDuration, reasoning_chunks: _reasoningCount, markers: _markerCounts }, 'LLM call complete');
   } catch (err) {
     clearInterval(_keepaliveInterval);
     _turnLog.error({ event: 'sse_error', error_message: (err && err.message) ? err.message : 'unknown' }, 'SSE stream error');
