@@ -1330,6 +1330,32 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
       '',
       'Do not skip this — the right panel of the web UI is populated by these markers in real time.'
     ].join('\n'));
+
+    parts.push([
+      '--- CANVAS MARKER PROTOCOL (ideate) ---',
+      '',
+      'CRITICAL — emit one canvas marker immediately after each lens output. The canvas panel (visible to the user on the right side of the screen) is populated ONLY by these markers. If you do not emit them, the canvas stays blank.',
+      '',
+      'Use EXACTLY this format on its own line immediately after the lens output text (no extra spaces, no line breaks inside the JSON):',
+      '',
+      '---CANVAS-JSON: {"type":"<cluster-tree|table|text>","title":"<string>","content":<object>}---',
+      '',
+      'Shape of content by type:',
+      '  cluster-tree → {"clusters": ["cluster name 1", "cluster name 2", ...]}',
+      '  table        → {"headers": ["Col1", "Col2"], "rows": [["val1","val2"], ...]}',
+      '  text         → {"paragraphs": ["paragraph 1", "paragraph 2", ...]}',
+      '',
+      'One marker per lens step — do not batch, do not skip.',
+      '',
+      'Lens A (Opportunity map) → cluster-tree, title "Opportunity map", clusters = top-level opportunity clusters',
+      'Lens D (Strategy framing) → table, title "Strategy assessment", headers = ["Question","Answer"], rows = Q/A pairs',
+      'Lens B/C/E → text, title = lens name, paragraphs = key narrative points',
+      '',
+      'Example for Lens A:',
+      '---CANVAS-JSON: {"type":"cluster-tree","title":"Opportunity map","content":{"clusters":["Capture problem: context lost post-workshop","Transcript problem: no link to decisions","Handoff problem: output not machine-readable"]}}---',
+      '',
+      'Emit this marker at the END of each lens output block, on its own line.'
+    ].join('\n'));
   }
 
   return parts.join('\n\n');
