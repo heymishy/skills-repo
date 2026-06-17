@@ -107,7 +107,7 @@ function _callAnthropic(systemPrompt, history, currentInput, maxTokens, timeoutM
  * Sends stream:true, parses OpenAI-compatible SSE chunks, calls onChunk(text) for each delta.
  * Resolves with the full concatenated text when [DONE] is received.
  */
-function _callCopilotStream(systemPrompt, history, currentInput, token, onChunk, maxTokens, timeoutMs) {
+function _callCopilotStream(systemPrompt, history, currentInput, token, onChunk, maxTokens, timeoutMs, onThinkingChunk) {
   const authToken = process.env.GITHUB_TOKEN || token;
   if (!authToken) {
     return Promise.reject(new Error(
@@ -187,10 +187,10 @@ function _callCopilotStream(systemPrompt, history, currentInput, token, onChunk,
             const content = delta && typeof delta.content === 'string' ? delta.content : '';
             // Detect extended-thinking tokens (Claude via Copilot proxy uses reasoning_content;
             // o1/o3 models use reasoning_content too; some proxies use a 'thinking' field).
-            // These are internal model reasoning — never displayed, but they explain why
-            // content chunks can be absent for long durations.
             if (delta && !content && (delta.reasoning_content || delta.thinking)) {
               _thinkingCount++;
+              const thinkingText = delta.reasoning_content || delta.thinking || '';
+              if (thinkingText && typeof onThinkingChunk === 'function') { onThinkingChunk(thinkingText); }
             }
             if (content) {
               fullText += content;
@@ -356,7 +356,7 @@ function skillTurnExecutor(systemPrompt, history, currentInput, token) {
  * @param {function} onChunk — called with each text delta
  * @returns {Promise<string>} full response text
  */
-function skillTurnExecutorStream(systemPrompt, history, currentInput, token, onChunk) {
+function skillTurnExecutorStream(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk) {
   const provider  = (process.env.SKILL_EXECUTOR_PROVIDER || 'copilot').toLowerCase();
   const maxTokens = parseInt(process.env.WUCE_TURN_MODEL_MAX_TOKENS || String(DEFAULT_MAX_TOKENS), 10);
   const timeoutMs = parseInt(process.env.WUCE_TURN_TIMEOUT_MS       || String(DEFAULT_TIMEOUT_MS), 10);
@@ -367,7 +367,7 @@ function skillTurnExecutorStream(systemPrompt, history, currentInput, token, onC
       .then(function(text) { if (typeof onChunk === 'function') { onChunk(text); } return text; });
   }
 
-  return _callCopilotStream(systemPrompt, history, currentInput, token, onChunk, maxTokens, timeoutMs);
+  return _callCopilotStream(systemPrompt, history, currentInput, token, onChunk, maxTokens, timeoutMs, onThinkingChunk);
 }
 
 /**

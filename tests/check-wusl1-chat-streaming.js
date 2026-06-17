@@ -262,15 +262,20 @@ queue.push(function() {
     assert.ok(scriptStart !== -1, 'HTML must contain <script> block');
     const scriptContent = capturedHtml.slice(scriptStart);
 
-    const removeIdx   = scriptContent.indexOf('thinkingDiv.remove()');
-    const chunkIdx    = scriptContent.indexOf('evt.chunk');
+    const removeIdx       = scriptContent.indexOf('thinkingDiv.remove()');
+    const chunkIdx        = scriptContent.indexOf('evt.chunk');
+    const reasoningIdx    = scriptContent.indexOf('evt.reasoningChunk');
 
     assert.ok(removeIdx !== -1, 'thinkingDiv.remove() must appear in script');
     assert.ok(chunkIdx !== -1,  'evt.chunk must appear in script');
+    // thinkingDiv is removed on the first model signal — either a content chunk or a
+    // reasoning chunk. The removal must NOT happen immediately when response headers
+    // arrive (before the pump loop). We assert it appears after either signal check.
+    const firstSignalIdx = reasoningIdx !== -1 ? Math.min(chunkIdx, reasoningIdx) : chunkIdx;
     assert.ok(
-      removeIdx > chunkIdx,
-      'thinkingDiv.remove() must appear AFTER evt.chunk check (remove on first chunk, not on response start). ' +
-      'removeIdx=' + removeIdx + ' chunkIdx=' + chunkIdx
+      removeIdx > firstSignalIdx,
+      'thinkingDiv.remove() must appear after evt.chunk or evt.reasoningChunk check (remove on first model signal, not on response start). ' +
+      'removeIdx=' + removeIdx + ' firstSignalIdx=' + firstSignalIdx
     );
   });
 });
