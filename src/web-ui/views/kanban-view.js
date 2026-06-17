@@ -7,7 +7,7 @@ const { escHtml } = require('../utils/html-shell');
 
 const LANES = [
   { id: 'idea',       label: 'Ideas',       stages: [] },
-  { id: 'discovery',  label: 'Discovery',   stages: ['discovery', 'benefit-metric'] },
+  { id: 'discovery',  label: 'Discovery',   stages: ['discovery', 'benefit-metric', 'ideation'] },
   { id: 'definition', label: 'Definition',  stages: ['definition'] },
   { id: 'review',     label: 'In Review',   stages: ['review', 'test-plan', 'definition-of-ready'] },
   { id: 'delivery',   label: 'In Delivery', stages: ['branch-setup', 'implementation-plan', 'subagent-execution', 'verify-completion', 'branch-complete'] },
@@ -31,15 +31,28 @@ function ageDays(updated) {
   return days + 'd ago';
 }
 
+function truncateTitle(title, max) {
+  if (title.length <= max) return title;
+  return title.slice(0, max) + '…';
+}
+
 function featureCard(f) {
   const age = ageDays(f.updated || f.lastUpdated);
   const dot = '<span class="kb-dot" style="background:' + healthColor(f.health) + '"></span>';
+  const fullTitle = f.title || f.slug;
+  const displayTitle = truncateTitle(fullTitle, 48);
+  const count = typeof f.artefactCount === 'number' ? f.artefactCount : null;
+  const badge = count === null ? '' :
+    count === 0
+      ? '<span class="kb-artefact-badge kb-artefact-badge--empty">no artefacts yet</span>'
+      : '<span class="kb-artefact-badge">' + count + ' artefact' + (count === 1 ? '' : 's') + '</span>';
   return [
-    '<a class="kb-card" href="/features/' + escHtml(f.slug) + '">',
+    '<a class="kb-card" href="/features/' + escHtml(f.slug) + '" title="' + escHtml(fullTitle) + '">',
       '<div class="kb-card-head">',
         dot,
-        '<span class="kb-card-title">' + escHtml(f.title || f.slug) + '</span>',
+        '<span class="kb-card-title">' + escHtml(displayTitle) + '</span>',
       '</div>',
+      badge,
       '<div class="kb-card-meta">',
         '<span class="kb-slug">' + escHtml(f.slug) + '</span>',
         age ? (' · <span class="kb-age">' + escHtml(age) + '</span>') : '',

@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-04-23T00:00:00Z",
+  "updated": "2026-06-17T08:30:00.000Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -604,7 +604,7 @@
     },
     {
       "slug": "2026-04-23-non-technical-channel",
-      "name": "Non-Technical Channel â€” Framework Adoption Friction (Phase 5 WS0 / G0b)",
+      "name": "Non-Technical Channel — Framework Adoption Friction (Phase 5 WS0 / G0b)",
       "stage": "ideation",
       "health": "green",
       "track": "library",
@@ -619,7 +619,7 @@
     },
     {
       "slug": "2026-04-19-skills-platform-phase4-opus",
-      "name": "Skills Platform ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Phase 4 (Opus 4.6 arm): Distribution, Structural Enforcement, and Non-Technical Access",
+      "name": "Skills Platform — Phase 4 (Opus 4.6 arm): Distribution, Structural Enforcement, and Non-Technical Access",
       "stage": "review",
       "discoveryStatus": "approved",
       "health": "green",
@@ -870,7 +870,7 @@
     },
     {
       "slug": "2026-04-14-skills-platform-phase3",
-      "name": "Skills Platform ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Phase 3: Governance Hardening, T3M1 Close, and Enterprise Scale",
+      "name": "Skills Platform — Phase 3: Governance Hardening, T3M1 Close, and Enterprise Scale",
       "stage": "definition-of-done",
       "health": "green",
       "track": "library",
@@ -4964,6 +4964,89 @@
       ],
       "name": "Web server observability (structured logging + correlation IDs)",
       "track": "standard"
+    },
+    {
+      "slug": "2026-06-17-kanban-feature-detail-cx",
+      "name": "Truncated Kanban card titles, artefact-count indicator, and design-system-styled feature/artefact detail pages",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "kfd1",
+          "dorStatus": "signed-off",
+          "stage": "definition-of-ready",
+          "prStatus": null,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 38,
+            "passing": 15,
+            "artefact": "artefacts/2026-06-17-kanban-feature-detail-cx/test-plans/kfd1-kanban-card-and-detail-page-cx-test-plan.md"
+          },
+          "acTotal": 6,
+          "acVerified": 0
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-06-17T08:30:00.000Z",
+      "guardrails": [
+        {
+          "id": "ARCH-RENDER-ONLY",
+          "category": "mandatory-constraint",
+          "label": "No pipeline-state stage writes from board view",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-17"
+        },
+        {
+          "id": "ARCH-ESCAPE-HTML",
+          "category": "mandatory-constraint",
+          "label": "All rendered text HTML-escaped via escHtml",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-17"
+        },
+        {
+          "id": "ARCH-NO-NEW-DEPS",
+          "category": "mandatory-constraint",
+          "label": "No new npm dependencies",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-17"
+        },
+        {
+          "id": "NFR-PERF-BOARD",
+          "category": "nfr",
+          "label": "Board load no noticeable latency for ≤25 features (fs reads only)",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-17"
+        },
+        {
+          "id": "NFR-SEC-AUTH",
+          "category": "nfr",
+          "label": "No change to auth guards on /features/:slug or /artefact/:slug/:type",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-17"
+        },
+        {
+          "id": "NFR-A11Y-TRUNCATION",
+          "category": "nfr",
+          "label": "Truncated card titles accessible via title= attribute",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-17"
+        },
+        {
+          "id": "NFR-AUDIT-UNCHANGED",
+          "category": "nfr",
+          "label": "Existing audit log calls unchanged on /features and /features/:slug",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-17"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
