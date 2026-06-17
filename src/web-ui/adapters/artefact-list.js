@@ -4,6 +4,9 @@
 // Returns artefacts for a feature grouped by pipeline stage with plain-language labels.
 // AC2: all returned type fields use plain-language labels — never internal type identifiers.
 
+const fs   = require('fs');
+const path = require('path');
+
 const { labelArtefactType, labelFromPath, groupArtefactsByStage } = require('../utils/plain-language-labels');
 
 // Injected dependencies — replaced in tests via setters
@@ -95,8 +98,40 @@ async function listArtefacts(featureSlug, token) {
   return { artefacts: [], grouped: {}, noArtefacts: true };
 }
 
+/**
+ * Recursively walk a directory and collect all .md files as artefact items.
+ * @param {string} dir  absolute path to search
+ * @param {string[]} acc  accumulator
+ */
+function walkMdFiles(dir, acc) {
+  let entries;
+  try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch (_) { return; }
+  for (const e of entries) {
+    const full = path.join(dir, e.name);
+    if (e.isDirectory()) { walkMdFiles(full, acc); }
+    else if (e.isFile() && e.name.endsWith('.md')) { acc.push(full); }
+  }
+}
+
+/**
+ * List artefacts for a feature from the local filesystem (used when COPILOT_REPO_PATH is set).
+ * Returns an array of { path, type: 'file' } or null if the directory doesn't exist.
+ *
+ * @param {string} repoRoot   absolute path to the repository root
+ * @param {string} featureSlug
+ * @returns {Array<{path:string, type:'file'}>|null}
+ */
+function listLocalArtefacts(repoRoot, featureSlug) {
+  const featDir = path.join(repoRoot, 'artefacts', featureSlug);
+  if (!fs.existsSync(featDir)) return null;
+  const files = [];
+  walkMdFiles(featDir, files);
+  return files.map((f) => ({ path: f, type: 'file' }));
+}
+
 module.exports = {
   listArtefacts,
+  listLocalArtefacts,
   setFetchArtefactDirectory,
   setConfiguredRepositories,
   setValidateRepositoryAccess,

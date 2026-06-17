@@ -47,6 +47,79 @@ discovery, or before starting any formal pipeline stage.
 
 ---
 
+## Canvas markers (inc5)
+
+When this skill runs inside the web UI, lens output may be rendered in a side
+canvas panel. Emit a canvas marker on its own line immediately after the
+relevant lens output, using this format:
+
+```
+---CANVAS-JSON: {"type":"<cluster-tree|table|text>","title":"<string>","content":<object>}---
+```
+
+Fields:
+- `type`: one of `cluster-tree`, `table`, `text`
+- `title`: short human-readable title for the canvas block
+- `content`: the structured payload for that type (shape depends on `type`, see below)
+
+### cluster-tree — Lens A output
+
+When Lens A (Opportunity mapping) produces an opportunity tree, emit exactly
+one `cluster-tree` marker summarising it. `content` holds a `clusters` array
+(strings, or `{"name":...,"children":[...]}` objects for nested groups):
+
+```
+---CANVAS-JSON: {"type":"cluster-tree","title":"Opportunity map","content":["Need: faster checkout","Need: visible trust signals","Need: fewer form fields"]}---
+```
+
+The `content` array above is the list of clusters directly. In the canvas
+panel this is read as `content.clusters`, so when emitting for real, nest it
+under that key:
+
+```json
+{"clusters": ["Need: faster checkout", "Need: visible trust signals", "Need: fewer form fields"]}
+```
+
+### table — Lens D output
+
+When Lens D (Product strategy framing) produces its opportunity assessment,
+emit exactly one `table` marker summarising it. `content` holds `headers`
+(array of column names) and `rows` (array of arrays):
+
+```
+---CANVAS-JSON: {"type":"table","title":"Strategy assessment","content":["Question","Answer"]}---
+```
+
+The canvas panel reads `content.headers` and `content.rows`, so when emitting
+for real, use the full shape:
+
+```json
+{"headers": ["Question", "Answer"], "rows": [["Problem", "Checkout abandonment"], ["Customer", "First-time buyers"]]}
+```
+
+### text — narrative / prose lens output
+
+When a lens produces narrative or prose output rather than a tree or table
+(Lens C market scan, Lens E jobs-to-be-done), emit exactly one `text` marker.
+`content` holds a `paragraphs` array (or a `text` string):
+
+```
+---CANVAS-JSON: {"type":"text","title":"Market scan summary","content":"Three competitors offer one-click checkout; none surface trust signals at the point of payment."}---
+```
+
+The canvas panel reads `content.paragraphs` (falling back to `content.text`),
+so when emitting for real, use the full shape:
+
+```json
+{"paragraphs": ["Three competitors offer one-click checkout; none surface trust signals at the point of payment."]}
+```
+
+Cadence: emit exactly one CANVAS-JSON marker per lens output — do not batch
+multiple lenses into one marker, and do not emit more than one CANVAS-JSON
+marker per lens step.
+
+---
+
 ## Conversation cadence
 
 Move with the user — do not ask for confirmation before making progress.

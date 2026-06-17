@@ -6,6 +6,7 @@
 
 const { fetchArtefact, ArtefactNotFoundError, ArtefactFetchError } = require('../adapters/artefact-fetcher');
 const { renderArtefactToHTML, extractMetadata }                    = require('../utils/markdown-renderer');
+const { renderShell, escHtml: shellEscHtml }                       = require('../utils/html-shell');
 
 // Replaceable dependencies for testing
 let _fetchArtefact = fetchArtefact;
@@ -52,18 +53,34 @@ async function handleArtefactRoute(req, res, slug, artefactType) {
       timestamp:    new Date().toISOString()
     });
 
+    const bodyContent = `<div class="sw-doc">${html}</div>`;
+    const page = renderShell({
+      title:       `${shellEscHtml(artefactType)} — ${shellEscHtml(slug)}`,
+      bodyContent,
+      user:        { login: req.session.login || '' }
+    });
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(`<html><head><meta charset="utf-8"></head><body>${html}</body></html>`);
+    res.end(page);
 
   } catch (err) {
     if (err.name === 'ArtefactNotFoundError') {
+      const page = renderShell({
+        title:       'Artefact Not Found',
+        bodyContent: '<p>artefact not found</p>',
+        user:        { login: (req.session && req.session.login) || '' }
+      });
       res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end('<html><body><p>artefact not found</p></body></html>');
+      res.end(page);
     } else {
       // ArtefactFetchError or unexpected error — log technical detail, surface human message
       _logger.warn('artefact_fetch_error', { error: err.cause || err.message });
+      const page = renderShell({
+        title:       'Error',
+        bodyContent: '<p>Unable to load artefact — please try again</p>',
+        user:        { login: (req.session && req.session.login) || '' }
+      });
       res.writeHead(503, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end('<html><body><p>Unable to load artefact \u2014 please try again</p></body></html>');
+      res.end(page);
     }
   }
 }
