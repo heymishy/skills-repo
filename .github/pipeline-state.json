@@ -35,7 +35,7 @@
     {
       "slug": "2026-06-15-ideate-web-ux-inc3",
       "title": "ideate web UX Increment 3 (skill cadence + canvas output)",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "updatedAt": "2026-06-16T19:50:33.856Z",
       "discovery": {
@@ -148,7 +148,7 @@
               "slug": "inc5",
               "title": "Canvas-JSON marker instruction in /ideate SKILL.md",
               "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/stories/inc5.md",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 1,
               "updatedAt": "2026-06-16T19:50:33.856Z",
@@ -162,10 +162,10 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0
+                "passing": 16
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -179,7 +179,9 @@
                   "tddState": "green",
                   "file": ".github/skills/ideate/SKILL.md"
                 }
-              ]
+              ],
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/389"
             }
           ],
           "status": "in-progress",
@@ -4818,7 +4820,7 @@
     {
       "slug": "2026-06-15-web-observability",
       "title": "Web server observability (structured logging + correlation IDs)",
-      "stage": "subagent-execution",
+      "stage": "definition-of-done",
       "health": "green",
       "updatedAt": "2026-06-16T09:13:16.094Z",
       "discovery": {
@@ -4963,7 +4965,9 @@
         }
       ],
       "name": "Web server observability (structured logging + correlation IDs)",
-      "track": "standard"
+      "track": "standard",
+      "dodStatus": "complete",
+      "dodDate": "2026-06-16"
     },
     {
       "slug": "2026-06-17-kanban-feature-detail-cx",
