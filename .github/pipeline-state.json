@@ -229,14 +229,14 @@
     {
       "slug": "2026-06-15-ideate-web-ux-inc2",
       "name": "/ideate Web UX — Increment 2 (Conditions Sidebar)",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-06-15",
+      "updatedAt": "2026-06-17",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-15-ideate-web-ux-inc2/discovery.md",
