@@ -155,8 +155,9 @@ function _callCopilotStream(systemPrompt, history, currentInput, token, onChunk,
         return;
       }
 
-      let fullText = '';
-      let buffer   = '';
+      let fullText       = '';
+      let buffer         = '';
+      let _thinkingCount = 0; // counts extended-thinking chunks (reasoning_content/thinking)
 
       // Idle-stream watchdog: if no chunk arrives for STREAM_IDLE_MS after the response
       // headers land, abort. This catches stalled streams that never error or close.
@@ -184,6 +185,13 @@ function _callCopilotStream(systemPrompt, history, currentInput, token, onChunk,
             const parsed  = JSON.parse(payload);
             const delta   = parsed && parsed.choices && parsed.choices[0] && parsed.choices[0].delta;
             const content = delta && typeof delta.content === 'string' ? delta.content : '';
+            // Detect extended-thinking tokens (Claude via Copilot proxy uses reasoning_content;
+            // o1/o3 models use reasoning_content too; some proxies use a 'thinking' field).
+            // These are internal model reasoning — never displayed, but they explain why
+            // content chunks can be absent for long durations.
+            if (delta && !content && (delta.reasoning_content || delta.thinking)) {
+              _thinkingCount++;
+            }
             if (content) {
               fullText += content;
               if (typeof onChunk === 'function') { onChunk(content); }
@@ -194,6 +202,11 @@ function _callCopilotStream(systemPrompt, history, currentInput, token, onChunk,
 
       res.on('end', function() {
         clearTimeout(_idleTimer);
+        if (!fullText && _thinkingCount > 0) {
+          process.stderr.write('[skill-turn-executor] WARNING: stream produced ' + _thinkingCount
+            + ' thinking chunk(s) but zero content chunks — model may be using extended thinking '
+            + 'with output in a non-standard field. Check delta structure.\n');
+        }
         resolve(fullText);
       });
 

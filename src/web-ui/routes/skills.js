@@ -1664,7 +1664,9 @@ function _renderChatPage(skillName, sessionId, session) {
     '                handleLensComplete();',
     '              }',
     '              if(evt.error) {',
-    '                if(textNode) textNode.innerHTML = \'<em style="color:var(--error,red)">\' + evt.error + \'</em>\';',
+    '                if(thinkingDiv) { thinkingDiv.remove(); thinkingDiv = null; }',
+    '                if(streamDiv)   { streamDiv.remove();   streamDiv = null; }',
+    '                appendBubble("assistant", \'<em style="color:var(--error,red)">\' + escHtmlClient(evt.error || "Error") + \'</em>\');',
     '                if(submitBtn) submitBtn.disabled = false;',
     '              }',
     '            } catch(_) {}',
@@ -2234,6 +2236,16 @@ async function handlePostTurnStreamHtml(req, res) {
   }
   clearInterval(_keepaliveInterval);
   _turnLog.info({ event: 'sse_close', chunk_count: _chunkCount }, 'SSE stream closed');
+
+  // Guard: if the LLM returned no content at all, surface it as a retriable error.
+  // Don't push an empty assistant turn — it corrupts history and makes future turns worse.
+  if (!fullText && _chunkCount === 0) {
+    _turnLog.warn({ event: 'empty_llm_response', llm_duration_ms: _llmDuration }, 'LLM returned empty response — not storing turn');
+    session.turns.pop(); // remove the user turn we already pushed
+    res.write('data: ' + JSON.stringify({ error: 'No response received — please try again.' }) + '\n\n');
+    res.end();
+    return;
+  }
 
   var artefactMatch = fullText.match(/---ARTEFACT-START---\s*([\s\S]+?)\s*---ARTEFACT-END---/);
   var slugMatch     = fullText.match(/---SLUG---\s*\n?([\w-]+)/);
