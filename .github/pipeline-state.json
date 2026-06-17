@@ -4969,14 +4969,14 @@
       "slug": "2026-06-17-kanban-feature-detail-cx",
       "name": "Truncated Kanban card titles, artefact-count indicator, and design-system-styled feature/artefact detail pages",
       "track": "short",
-      "stage": "verify-completion",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "id": "kfd1",
           "dorStatus": "signed-off",
-          "stage": "verify-completion",
-          "prStatus": null,
+          "stage": "branch-complete",
+          "prStatus": "draft",
           "testPlan": {
             "status": "green",
             "totalTests": 38,
@@ -5051,7 +5051,9 @@
       "acVerified": 6,
       "acTotal": 6,
       "verifiedAt": "2026-06-17",
-      "implementationCommit": "ef417c0"
+      "implementationCommit": "ef417c0",
+      "prStatus": "draft",
+      "prUrl": "https://github.com/heymishy/skills-repo/pull/388"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
