@@ -52,8 +52,9 @@ console.log('\n[kfd1] AC1 — card title truncation, tooltip, and encoding fix')
     ideas: []
   });
 
-  assert(!html.includes(longTitle.length > 48 ? longTitle : ' '), 'AC1a: full untruncated title is not rendered as visible card text');
+  // Note: full title WILL appear in title= attribute (that's AC1e) — check only visible span text
   const titleSpanMatch = html.match(/<span class="kb-card-title"[^>]*>([^<]*)<\/span>/);
+  assert(!titleSpanMatch || titleSpanMatch[1] !== longTitle, 'AC1a: full untruncated title is not the visible text of the kb-card-title span');
   assert(!!titleSpanMatch, 'AC1b: kb-card-title span found');
   if (titleSpanMatch) {
     assert(titleSpanMatch[1].length <= 49, 'AC1c: displayed title text is 49 chars or fewer (48 + ellipsis)');

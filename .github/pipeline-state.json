@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-06-17T08:30:00.000Z",
+  "updated": "2026-06-17T08:30:00Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -4969,26 +4969,26 @@
       "slug": "2026-06-17-kanban-feature-detail-cx",
       "name": "Truncated Kanban card titles, artefact-count indicator, and design-system-styled feature/artefact detail pages",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "verify-completion",
       "health": "green",
       "stories": [
         {
           "id": "kfd1",
           "dorStatus": "signed-off",
-          "stage": "definition-of-ready",
+          "stage": "verify-completion",
           "prStatus": null,
           "testPlan": {
-            "status": "written",
+            "status": "green",
             "totalTests": 38,
-            "passing": 15,
+            "passing": 45,
             "artefact": "artefacts/2026-06-17-kanban-feature-detail-cx/test-plans/kfd1-kanban-card-and-detail-page-cx-test-plan.md"
           },
           "acTotal": 6,
-          "acVerified": 0
+          "acVerified": 6
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-06-17T08:30:00.000Z",
+      "updatedAt": "2026-06-17T08:30:00Z",
       "guardrails": [
         {
           "id": "ARCH-RENDER-ONLY",
@@ -5046,7 +5046,12 @@
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-06-17"
         }
-      ]
+      ],
+      "verifyStatus": "complete",
+      "acVerified": 6,
+      "acTotal": 6,
+      "verifiedAt": "2026-06-17",
+      "implementationCommit": "ef417c0"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
