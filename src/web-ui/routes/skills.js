@@ -2289,7 +2289,12 @@ async function handlePostTurnStreamHtml(req, res) {
     _displayBuf = '';
   }
   var _llmDuration = Date.now() - _llmStart;
-  _turnLog.info({ event: 'llm_complete', llm_duration_ms: _llmDuration }, 'LLM call complete');
+  var _markerCounts = {
+    assumption: (fullText.match(/---ASSUMPTION-JSON:/g) || []).length,
+    condition:  (fullText.match(/---CONDITION-JSON:/g)  || []).length,
+    canvas:     (fullText.match(/---CANVAS-JSON:/g)     || []).length
+  };
+  _turnLog.info({ event: 'llm_complete', llm_duration_ms: _llmDuration, markers: _markerCounts }, 'LLM call complete');
   } catch (err) {
     clearInterval(_keepaliveInterval);
     _turnLog.error({ event: 'sse_error', error_message: (err && err.message) ? err.message : 'unknown' }, 'SSE stream error');
