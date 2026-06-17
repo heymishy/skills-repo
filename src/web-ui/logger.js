@@ -18,7 +18,7 @@ function createLogger(opts) {
   } else {
     dest = pino.destination(1); // 1 = stdout fd
   }
-  return pino({ level: 'info' }, dest);
+  return pino({ level: 'info', timestamp: pino.stdTimeFunctions.isoTime }, dest);
 }
 
 module.exports = { createLogger: createLogger };

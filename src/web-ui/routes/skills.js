@@ -598,7 +598,7 @@ let _createSession = skillsAdapter.createSession;
 
 // Audit logger for HTML skill routes — injectable via setSkillsAuditLogger().
 let _htmlAuditLogger = function(data) {
-  process.stdout.write('[skills-html] audit ' + JSON.stringify(data) + '\n');
+  process.stdout.write('[skills-html] audit ' + JSON.stringify(Object.assign({ timestamp: new Date().toISOString() }, data)) + '\n');
 };
 
 /**

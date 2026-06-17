@@ -42,12 +42,19 @@ function _callAnthropic(systemPrompt, history, currentInput, maxTokens, timeoutM
   });
   messages.push({ role: 'user', content: currentInput });
 
-  const body = JSON.stringify({
+  const anthropicBody = {
     model:      model,
     max_tokens: maxTokens,
     system:     systemPrompt,
     messages:   messages
-  });
+  };
+
+  if (process.env.WUCE_ENABLE_THINKING === '1') {
+    const budget = parseInt(process.env.WUCE_THINKING_BUDGET_TOKENS || '10000', 10);
+    anthropicBody.thinking = { type: 'enabled', budget_tokens: Math.min(budget, maxTokens - 1) };
+  }
+
+  const body = JSON.stringify(anthropicBody);
 
   const options = {
     hostname: 'api.anthropic.com',
@@ -124,12 +131,24 @@ function _callCopilotStream(systemPrompt, history, currentInput, token, onChunk,
   });
   messages.push({ role: 'user', content: currentInput });
 
-  const body = JSON.stringify({
+  const requestBody = {
     model:      model,
     max_tokens: maxTokens,
     messages:   messages,
     stream:     true
-  });
+  };
+
+  // WUCE_ENABLE_THINKING=1 — request extended thinking tokens.
+  // budget_tokens must be < max_tokens; defaults to 10000.
+  // Whether the Copilot proxy forwards this to Anthropic is untested — if not
+  // supported you'll see an API error in the logs. Switch to direct Anthropic
+  // API (SKILL_EXECUTOR_PROVIDER=anthropic) for guaranteed support.
+  if (process.env.WUCE_ENABLE_THINKING === '1') {
+    const budget = parseInt(process.env.WUCE_THINKING_BUDGET_TOKENS || '10000', 10);
+    requestBody.thinking = { type: 'enabled', budget_tokens: Math.min(budget, maxTokens - 1) };
+  }
+
+  const body = JSON.stringify(requestBody);
 
   const options = {
     hostname: 'api.githubcopilot.com',

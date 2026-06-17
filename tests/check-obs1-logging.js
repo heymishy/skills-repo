@@ -33,7 +33,8 @@ function makeCapture() {
       assert.fail('T5 FAIL — log line is not valid JSON: ' + cap.lines[0]);
     }
     assert.ok(parsed.level !== undefined, 'T5 FAIL — missing level field');
-    assert.ok(typeof parsed.time === 'number', 'T5 FAIL — missing or non-numeric time field');
+    assert.ok(parsed.time !== undefined, 'T5 FAIL — missing time field');
+    assert.ok(typeof parsed.time === 'number' || typeof parsed.time === 'string', 'T5 FAIL — time field must be number or ISO string');
     assert.ok(typeof parsed.msg === 'string', 'T5 FAIL — missing or non-string msg field');
     console.log('T5 PASS — pino emits valid JSON with level/time/msg');
     runT6();

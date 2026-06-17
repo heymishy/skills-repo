@@ -14,7 +14,7 @@ function getSessionBase() {
 }
 
 let _logger = {
-  info:  function(msg, data) { process.stdout.write('[session-manager] ' + msg + (data ? ' ' + JSON.stringify(data) : '') + '\n'); },
+  info:  function(msg, data) { process.stdout.write('[session-manager] ' + msg + (data ? ' ' + JSON.stringify(Object.assign({ timestamp: new Date().toISOString() }, data)) : '') + '\n'); },
   warn:  function(msg) { process.stderr.write('[session-manager] WARN ' + msg + '\n'); },
   error: function(msg) { process.stderr.write('[session-manager] ERROR ' + msg + '\n'); }
 };

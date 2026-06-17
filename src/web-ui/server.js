@@ -34,9 +34,10 @@ const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
 
 // Wire up console logger for auth events (login, logout, state_mismatch)
+const _ts = () => new Date().toISOString();
 setLogger({
-  info: (event, data) => console.log(`[auth] ${event}`, JSON.stringify(data)),
-  warn: (event, data) => console.warn(`[auth] ${event}`, JSON.stringify(data))
+  info: (event, data) => console.log(`[auth] ${event}`, JSON.stringify(Object.assign({ timestamp: _ts() }, data))),
+  warn: (event, data) => console.warn(`[auth] ${event}`, JSON.stringify(Object.assign({ timestamp: _ts() }, data)))
 });
 
 // Wire skill list + session creation — active in production AND when
@@ -583,8 +584,13 @@ if (require.main === module) {
   const server = createApp();
   server.listen(PORT, () => {
     const gheMode = !!process.env.GITHUB_API_BASE_URL;
-    console.log(`Web UI server listening on port ${PORT}`);
-    console.log(`GitHub hostname: ${process.env.GITHUB_API_BASE_URL || 'github.com'} (Enterprise mode: ${gheMode})`);
+    const startTs = new Date().toISOString();
+    console.log(`[${startTs}] Web UI server listening on port ${PORT}`);
+    console.log(`[${startTs}] GitHub hostname: ${process.env.GITHUB_API_BASE_URL || 'github.com'} (Enterprise mode: ${gheMode})`);
+    if (process.env.WUCE_ENABLE_THINKING === '1') {
+      const budget = process.env.WUCE_THINKING_BUDGET_TOKENS || '10000';
+      console.log(`[${startTs}] Extended thinking: ENABLED (budget_tokens=${budget}, WUCE_ENABLE_THINKING=1)`);
+    }
   });
 }
 
