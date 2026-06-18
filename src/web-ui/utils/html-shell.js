@@ -50,6 +50,7 @@ function renderSidebar(active, login) {
         '<span class="sw-brand-name">Skills</span>',
       '</div>',
       '<nav aria-label="Main navigation">' + items + '</nav>',
+      '<button class="sw-nav-collapse-btn" id="sw-nav-collapse-btn" onclick="swCollapseNav()" title="Collapse navigation">◂</button>',
       '<div class="sw-user">',
         '<div class="sw-avatar">' + escHtml(initial) + '</div>',
         '<span>' + escHtml(login || 'signed in') + '</span>',
@@ -109,6 +110,24 @@ const SHELL_JS =
       'if(o)o.classList.remove(\'sw-overlay--active\');' +
       'document.body.style.overflow=\'\';' +
     '};' +
+    // Nav collapse (desktop)
+    'window.swCollapseNav=function(){' +
+      'var s=document.getElementById(\'sw-sidebar\');' +
+      'var btn=document.getElementById(\'sw-nav-collapse-btn\');' +
+      'if(!s)return;' +
+      'var c=s.classList.toggle(\'sw-sidebar--collapsed\');' +
+      'if(btn)btn.textContent=c?\'▸\':\'◂\';' +
+      'localStorage.setItem(\'sw-nav-collapsed\',c?\'1\':\'\');' +
+    '};' +
+    // Restore nav collapse state on load
+    '(function(){' +
+      'if(localStorage.getItem(\'sw-nav-collapsed\')===\'1\'){' +
+        'var s=document.getElementById(\'sw-sidebar\');' +
+        'var btn=document.getElementById(\'sw-nav-collapse-btn\');' +
+        'if(s)s.classList.add(\'sw-sidebar--collapsed\');' +
+        'if(btn)btn.textContent=\'▸\';' +
+      '}' +
+    '})();' +
     // OS preference change listener (only when no manual override in localStorage)
     'if(window.matchMedia){' +
       'window.matchMedia(\'(prefers-color-scheme: dark)\').addEventListener(\'change\',function(e){' +
@@ -261,6 +280,27 @@ a { color: inherit; }
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 .sw-theme-toggle:hover { background: var(--line-2); color: var(--ink); }
+
+/* ── Nav collapse button ────────────────────────────────────────────────────── */
+.sw-nav-collapse-btn {
+  display:flex; align-items:center; justify-content:center; width:100%;
+  padding:5px 0; background:none; border:1px solid var(--line); border-radius:6px;
+  cursor:pointer; color:var(--muted); font-size:11px; line-height:1;
+  transition:background 0.15s, color 0.15s; flex-shrink:0;
+}
+.sw-nav-collapse-btn:hover { background:var(--line-2); color:var(--ink); }
+/* ── Collapsed sidebar ──────────────────────────────────────────────────────── */
+.sw-sidebar { transition:width 0.2s ease, flex 0.2s ease; overflow:hidden; }
+.sw-sidebar--collapsed { width:52px !important; flex:0 0 52px !important; padding:20px 8px; }
+.sw-sidebar--collapsed .sw-brand-name,
+.sw-sidebar--collapsed nav .sw-nav-item > span:not(.sw-nav-icon),
+.sw-sidebar--collapsed .sw-user > span,
+.sw-sidebar--collapsed .sw-signout { display:none; }
+.sw-sidebar--collapsed .sw-brand { justify-content:center; padding:0; }
+.sw-sidebar--collapsed .sw-nav-item { justify-content:center; padding:8px 0; }
+.sw-sidebar--collapsed .sw-nav-icon { width:auto; color:var(--muted); }
+.sw-sidebar--collapsed .sw-user { justify-content:center; padding:0; }
+.sw-sidebar--collapsed .sw-nav-collapse-btn { border-color:transparent; }
 
 /* ── Hamburger (mobile only — hidden by default) ────────────────────────────── */
 .sw-hamburger {
