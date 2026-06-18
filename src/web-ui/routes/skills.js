@@ -2211,6 +2211,7 @@ async function handlePostTurnStreamHtml(req, res) {
     var _DRAFT_START = '---ARTEFACT-START---';
     var _DRAFT_END   = '---ARTEFACT-END---';
     var _llmStart = Date.now();
+    var _ttfbMs = null;
     fullText = await _skillTurnExecutorStream(
       session.systemPrompt,
       historySnapshot,
@@ -2368,7 +2369,8 @@ async function handlePostTurnStreamHtml(req, res) {
       function onThinkingChunk(chunk) {
         _reasoningCount++;
         res.write('data: ' + JSON.stringify({ reasoningChunk: chunk }) + '\n\n');
-      }
+      },
+      function onFirstChunk(ms) { _ttfbMs = ms; }
     );
   // Flush any remaining display buffer content (e.g. text after last marker was held back)
   if (_displayBuf) {
@@ -2384,7 +2386,7 @@ async function handlePostTurnStreamHtml(req, res) {
     condition:  (fullText.match(/---CONDITION-JSON:/g)  || []).length,
     canvas:     (fullText.match(/---CANVAS-JSON:/g)     || []).length
   };
-  _turnLog.info({ event: 'llm_complete', llm_duration_ms: _llmDuration, reasoning_chunks: _reasoningCount, markers: _markerCounts }, 'LLM call complete');
+  _turnLog.info({ event: 'llm_complete', llm_duration_ms: _llmDuration, ttfb_ms: _ttfbMs, reasoning_chunks: _reasoningCount, markers: _markerCounts }, 'LLM call complete');
   } catch (err) {
     clearInterval(_keepaliveInterval);
     _turnLog.error({ event: 'sse_error', error_message: (err && err.message) ? err.message : 'unknown' }, 'SSE stream error');

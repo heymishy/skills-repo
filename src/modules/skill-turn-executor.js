@@ -110,11 +110,136 @@ function _callAnthropic(systemPrompt, history, currentInput, maxTokens, timeoutM
 }
 
 /**
+ * Streaming variant of _callAnthropic.
+ * Parses Anthropic SSE format (content_block_delta events), calls onChunk for text deltas
+ * and onThinkingChunk for thinking_delta blocks. onFirstChunk fires once with ttfb_ms.
+ */
+function _callAnthropicStream(systemPrompt, history, currentInput, maxTokens, timeoutMs, onChunk, onThinkingChunk, onFirstChunk) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return Promise.reject(new Error('ANTHROPIC_API_KEY is not set. Set it in .env to use the anthropic provider.'));
+  }
+
+  const model = process.env.WUCE_TURN_MODEL || DEFAULT_ANTHROPIC_MODEL;
+
+  const messages = [];
+  (history || []).forEach(function(turn) {
+    messages.push({ role: turn.role, content: turn.content });
+  });
+  messages.push({ role: 'user', content: currentInput });
+
+  const anthropicBody = {
+    model:      model,
+    max_tokens: maxTokens,
+    system:     systemPrompt,
+    messages:   messages,
+    stream:     true
+  };
+
+  if (process.env.WUCE_ENABLE_THINKING === '1') {
+    const budget = parseInt(process.env.WUCE_THINKING_BUDGET_TOKENS || '10000', 10);
+    anthropicBody.thinking = { type: 'enabled', budget_tokens: Math.min(budget, maxTokens - 1) };
+  }
+
+  const body = JSON.stringify(anthropicBody);
+
+  const options = {
+    hostname: 'api.anthropic.com',
+    path:     '/v1/messages',
+    method:   'POST',
+    headers:  {
+      'x-api-key':         apiKey,
+      'anthropic-version': ANTHROPIC_VERSION,
+      'Content-Type':      'application/json',
+      'Content-Length':    Buffer.byteLength(body)
+    }
+  };
+
+  return new Promise(function(resolve, reject) {
+    const _start = Date.now();
+    let _ttfbFired = false;
+
+    const req = https.request(options, function(res) {
+      if (res.statusCode !== 200) {
+        let errRaw = '';
+        res.on('data', function(c) { errRaw += c; });
+        res.on('end', function() {
+          reject(new Error('Anthropic API HTTP ' + res.statusCode + ': ' + errRaw.slice(0, 300).replace(/[\r\n]+/g, ' ')));
+        });
+        return;
+      }
+
+      let fullText = '';
+      let buffer   = '';
+
+      const STREAM_IDLE_MS = parseInt(process.env.WUCE_STREAM_IDLE_MS || '60000', 10);
+      let _idleTimer = setTimeout(function() {
+        res.destroy(new Error('Anthropic API stream idle for ' + STREAM_IDLE_MS + 'ms — aborting'));
+      }, STREAM_IDLE_MS);
+
+      res.on('data', function(chunk) {
+        clearTimeout(_idleTimer);
+        _idleTimer = setTimeout(function() {
+          res.destroy(new Error('Anthropic API stream idle for ' + STREAM_IDLE_MS + 'ms — aborting'));
+        }, STREAM_IDLE_MS);
+
+        buffer += chunk.toString();
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line.startsWith('data: ')) continue;
+          const payload = line.slice(6);
+          try {
+            const parsed = JSON.parse(payload);
+            if (parsed.type !== 'content_block_delta') continue;
+            const delta = parsed.delta;
+            if (!delta) continue;
+            if (delta.type === 'text_delta' && typeof delta.text === 'string') {
+              if (!_ttfbFired) {
+                _ttfbFired = true;
+                if (typeof onFirstChunk === 'function') { onFirstChunk(Date.now() - _start); }
+              }
+              fullText += delta.text;
+              if (typeof onChunk === 'function') { onChunk(delta.text); }
+            } else if (delta.type === 'thinking_delta' && typeof delta.thinking === 'string') {
+              if (typeof onThinkingChunk === 'function') { onThinkingChunk(delta.thinking); }
+            }
+          } catch (_) { /* skip malformed SSE line */ }
+        }
+      });
+
+      res.on('end', function() {
+        clearTimeout(_idleTimer);
+        resolve(fullText);
+      });
+
+      res.on('error', function(err) {
+        clearTimeout(_idleTimer);
+        reject(new Error('Anthropic API stream failed: ' + (err && err.message ? err.message : 'unknown error')));
+      });
+    });
+
+    req.setTimeout(timeoutMs, function() {
+      req.destroy(new Error('Anthropic API stream timed out after ' + timeoutMs + 'ms'));
+    });
+
+    req.on('error', function(err) {
+      reject(new Error('Anthropic API stream failed: ' + (err && err.message ? err.message : 'unknown error')));
+    });
+
+    req.write(body);
+    req.end();
+  });
+}
+
+/**
  * Streaming variant of _callCopilot.
  * Sends stream:true, parses OpenAI-compatible SSE chunks, calls onChunk(text) for each delta.
+ * onFirstChunk fires once with ttfb_ms (time to first content token).
  * Resolves with the full concatenated text when [DONE] is received.
  */
-function _callCopilotStream(systemPrompt, history, currentInput, token, onChunk, maxTokens, timeoutMs, onThinkingChunk) {
+function _callCopilotStream(systemPrompt, history, currentInput, token, onChunk, maxTokens, timeoutMs, onThinkingChunk, onFirstChunk) {
   const authToken = process.env.GITHUB_TOKEN || token;
   if (!authToken) {
     return Promise.reject(new Error(
@@ -177,6 +302,8 @@ function _callCopilotStream(systemPrompt, history, currentInput, token, onChunk,
       let fullText       = '';
       let buffer         = '';
       let _thinkingCount = 0; // counts extended-thinking chunks (reasoning_content/thinking)
+      const _start = Date.now();
+      let _ttfbFired = false;
 
       // Idle-stream watchdog: if no chunk arrives for STREAM_IDLE_MS after the response
       // headers land, abort. This catches stalled streams that never error or close.
@@ -212,6 +339,10 @@ function _callCopilotStream(systemPrompt, history, currentInput, token, onChunk,
               if (thinkingText && typeof onThinkingChunk === 'function') { onThinkingChunk(thinkingText); }
             }
             if (content) {
+              if (!_ttfbFired) {
+                _ttfbFired = true;
+                if (typeof onFirstChunk === 'function') { onFirstChunk(Date.now() - _start); }
+              }
               fullText += content;
               if (typeof onChunk === 'function') { onChunk(content); }
             }
@@ -367,26 +498,27 @@ function skillTurnExecutor(systemPrompt, history, currentInput, token) {
 
 /**
  * Streaming skill turn — calls onChunk(text) for each token as it arrives.
- * Only the copilot provider supports streaming; anthropic falls back to non-streaming.
+ * Both copilot and anthropic providers support streaming.
+ * onFirstChunk(ttfb_ms) fires once when the first content token arrives.
  * @param {string}   systemPrompt
  * @param {Array}    history
  * @param {string}   currentInput
  * @param {string}   token
  * @param {function} onChunk — called with each text delta
+ * @param {function} [onThinkingChunk] — called with each reasoning/thinking delta
+ * @param {function} [onFirstChunk] — called once with time-to-first-byte in ms
  * @returns {Promise<string>} full response text
  */
-function skillTurnExecutorStream(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk) {
+function skillTurnExecutorStream(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
   const provider  = (process.env.SKILL_EXECUTOR_PROVIDER || 'copilot').toLowerCase();
   const maxTokens = parseInt(process.env.WUCE_TURN_MODEL_MAX_TOKENS || String(DEFAULT_MAX_TOKENS), 10);
   const timeoutMs = parseInt(process.env.WUCE_TURN_TIMEOUT_MS       || String(DEFAULT_TIMEOUT_MS), 10);
 
   if (provider === 'anthropic') {
-    // Anthropic streaming not yet implemented — fall back to non-streaming and call onChunk once
-    return _callAnthropic(systemPrompt, history, currentInput, maxTokens, timeoutMs)
-      .then(function(text) { if (typeof onChunk === 'function') { onChunk(text); } return text; });
+    return _callAnthropicStream(systemPrompt, history, currentInput, maxTokens, timeoutMs, onChunk, onThinkingChunk, onFirstChunk);
   }
 
-  return _callCopilotStream(systemPrompt, history, currentInput, token, onChunk, maxTokens, timeoutMs, onThinkingChunk);
+  return _callCopilotStream(systemPrompt, history, currentInput, token, onChunk, maxTokens, timeoutMs, onThinkingChunk, onFirstChunk);
 }
 
 /**
