@@ -1217,9 +1217,11 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
     if (featureDir.startsWith(artefactsRoot)) {
       var refDir = path.join(featureDir, 'reference');
       if (fs.existsSync(refDir)) {
-        fs.readdirSync(refDir).filter(function(f) { return f.endsWith('.md'); }).forEach(function(rf) {
-          parts.push('--- REFERENCE: ' + rf + ' ---\n\n' + fs.readFileSync(path.join(refDir, rf), 'utf8'));
-        });
+        fs.readdirSync(refDir)
+          .filter(function(f) { return f.endsWith('.md') || f.endsWith('.txt'); })
+          .forEach(function(rf) {
+            parts.push('--- REFERENCE: ' + rf + ' ---\n\n' + fs.readFileSync(path.join(refDir, rf), 'utf8'));
+          });
       }
     }
   }
@@ -2073,10 +2075,13 @@ function _renderChatPage(skillName, sessionId, session) {
         '.sn-step--active{background:var(--accent-soft,#eaf1fb);color:var(--ink);font-weight:600}',
         '.sn-step--active .sn-icon{color:var(--accent,#0969da)}',
         '.sn-step--pending{opacity:0.4}',
+        '.sn-ref-link{margin-left:auto;flex-shrink:0;font-size:11px;color:var(--muted);text-decoration:none;padding:0 12px;white-space:nowrap;border-left:1px solid var(--line)}',
+        '.sn-ref-link:hover{color:var(--accent,#0969da);background:var(--line)}',
         '</style>',
         '<nav class="sn-bar" aria-label="Journey stages">',
           '<span class="sn-feature">' + _featureDisplaySlug + '</span>',
           '<ul class="sn-steps">' + _stepsHtml + '</ul>',
+          '<a href="/journey/' + escHtml(session.journeyId) + '/reference" class="sn-ref-link" title="Reference docs for this feature">📁 Ref docs</a>',
         '</nav>'
       ].join('');
     }

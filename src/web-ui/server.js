@@ -26,7 +26,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetStageReview, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handlePostWizardSelection } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4
+const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetStageReview, handleGetReference, handlePostReference, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handlePostWizardSelection } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 
@@ -471,6 +471,16 @@ async function router(req, res) {
     // step5 — artefact review panel before gate-confirm
     req.params = { journeyId: pathname.split('/')[2] };
     await handleGetStageReview(req, res);
+
+  } else if (pathname.match(/^\/journey\/[^/]+\/reference$/) && req.method === 'GET') {
+    // step7 — reference docs list + upload form
+    req.params = { journeyId: pathname.split('/')[2] };
+    await handleGetReference(req, res);
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/reference$/) && req.method === 'POST') {
+    // step7 — save reference doc
+    req.params = { journeyId: pathname.split('/')[3] };
+    await handlePostReference(req, res);
 
   } else if (pathname === '/api/journey' && req.method === 'POST') {
     // ougl.3 — start journey + discovery session

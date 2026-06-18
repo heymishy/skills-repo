@@ -566,6 +566,194 @@ async function handleGetJourneyResume(req, res) {
   res.end();
 }
 
+// ---------------------------------------------------------------------------
+// Step 7 — Reference folder upload UI
+// ---------------------------------------------------------------------------
+
+/**
+ * Sanitise a user-supplied doc name to a safe filesystem filename stem.
+ * Returns null if the name is invalid.
+ * @param {string} raw
+ * @returns {string|null}
+ */
+function _sanitiseRefFilename(raw) {
+  if (!raw || typeof raw !== 'string') return null;
+  var stem = raw.trim()
+    .toLowerCase()
+    .replace(/\.md$/, '')           // strip trailing .md if user typed it
+    .replace(/[^a-z0-9_-]/g, '-')  // replace unsafe chars
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 64);
+  return stem.length > 0 ? stem : null;
+}
+
+/**
+ * GET /journey/:journeyId/reference
+ * Lists existing reference docs and shows an upload (paste) form.
+ */
+async function handleGetReference(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Journey not found.</p><a href="/journey">Back</a></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  var featureSlug = journey.featureSlug || '';
+  var repoRoot = getRepoRoot();
+  var refDir = path.join(repoRoot, 'artefacts', featureSlug, 'reference');
+  var existingFiles = [];
+  if (fs.existsSync(refDir)) {
+    existingFiles = fs.readdirSync(refDir)
+      .filter(function(f) { return f.endsWith('.md') || f.endsWith('.txt'); })
+      .sort();
+  }
+
+  var safeId = escHtml(journeyId);
+  var featureName = escHtml(featureSlug.replace(/^\d{4}-\d{2}-\d{2}-/, '').replace(/-/g, ' '));
+
+  var fileList = existingFiles.length > 0
+    ? existingFiles.map(function(f) {
+        var stat;
+        try { stat = fs.statSync(path.join(refDir, f)); } catch (_) {}
+        var size = stat ? Math.round(stat.size / 1024 * 10) / 10 + ' KB' : '';
+        return '<li class="rf-file"><span class="rf-filename">📄 ' + escHtml(f) + '</span>' +
+          (size ? '<span class="rf-size">' + escHtml(size) + '</span>' : '') + '</li>';
+      }).join('')
+    : '<li class="rf-empty">No reference docs yet — add one below.</li>';
+
+  var body = [
+    '<style>',
+    '.rf-page{max-width:660px;margin:0 auto;padding:28px 24px}',
+    '.rf-hdr{margin-bottom:28px}',
+    '.rf-eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}',
+    '.rf-title{font-size:20px;font-weight:700;margin:0 0 4px}',
+    '.rf-sub{font-size:13px;color:var(--muted);margin:0}',
+    '.rf-section{margin-bottom:28px}',
+    '.rf-section h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 12px}',
+    '.rf-filelist{list-style:none;margin:0;padding:0}',
+    '.rf-file{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border:1px solid var(--line);border-radius:6px;margin-bottom:6px;background:var(--surface);font-size:13px}',
+    '.rf-filename{font-family:var(--mono);font-size:12px}',
+    '.rf-size{font-size:11px;color:var(--muted)}',
+    '.rf-empty{font-size:13px;color:var(--muted);padding:10px 0}',
+    '.rf-form-row{margin-bottom:16px}',
+    '.rf-label{display:block;font-size:13px;font-weight:600;margin-bottom:5px}',
+    '.rf-hint{font-size:12px;color:var(--muted);margin-top:4px}',
+    '.rf-input{width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:13px;background:var(--bg);color:var(--ink);font-family:inherit}',
+    '.rf-textarea{width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:12px;background:var(--bg);color:var(--ink);font-family:var(--mono);line-height:1.5;resize:vertical}',
+    '.rf-input:focus,.rf-textarea:focus{outline:2px solid var(--accent,#0969da);border-color:transparent}',
+    '.rf-actions{display:flex;align-items:center;gap:12px}',
+    '.rf-back{font-size:13px;color:var(--muted)}',
+    '</style>',
+    '<div class="rf-page">',
+      '<div class="rf-hdr">',
+        '<p class="rf-eyebrow">Reference docs</p>',
+        '<h1 class="rf-title">' + featureName + '</h1>',
+        '<p class="rf-sub">Files here are automatically loaded into the Design skill system prompt.</p>',
+      '</div>',
+      '<section class="rf-section">',
+        '<h2>Existing docs (' + existingFiles.length + ')</h2>',
+        '<ul class="rf-filelist">' + fileList + '</ul>',
+      '</section>',
+      '<section class="rf-section">',
+        '<h2>Add a reference doc</h2>',
+        '<form method="POST" action="/api/journey/' + safeId + '/reference">',
+          '<div class="rf-form-row">',
+            '<label class="rf-label" for="rf-name">Document name</label>',
+            '<input id="rf-name" class="rf-input" name="filename" type="text" placeholder="e.g. solution-architecture or ux-wireframe" required>',
+            '<p class="rf-hint">Saved as <code>[name].md</code> in the reference folder. Alphanumeric and hyphens only.</p>',
+          '</div>',
+          '<div class="rf-form-row">',
+            '<label class="rf-label" for="rf-content">Content</label>',
+            '<textarea id="rf-content" class="rf-textarea" name="content" rows="18" placeholder="Paste markdown, text, or structured content here..." required></textarea>',
+            '<p class="rf-hint">Markdown is rendered in the design skill. Max 100 KB.</p>',
+          '</div>',
+          '<div class="rf-actions">',
+            '<button type="submit" class="sw-btn sw-btn--primary">Save reference doc</button>',
+            '<a href="javascript:history.back()" class="rf-back">Cancel</a>',
+          '</div>',
+        '</form>',
+      '</section>',
+    '</div>'
+  ].join('');
+
+  var html = renderShell({ title: 'Reference docs — ' + featureName, bodyContent: body, user: { login: req.session.login || '' }, active: 'journey' });
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
+/**
+ * POST /api/journey/:journeyId/reference
+ * Saves a new reference doc to artefacts/{featureSlug}/reference/{filename}.md.
+ */
+async function handlePostReference(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Journey not found.</p>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  var body = await _readFormBody(req);
+  var rawFilename = (body.filename || '').trim();
+  var content     = (body.content  || '').trim();
+
+  var stem = _sanitiseRefFilename(rawFilename);
+  if (!stem) {
+    res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Error', bodyContent: '<div class="sw-page-content"><p>Invalid filename. Use letters, numbers, and hyphens only.</p><a href="javascript:history.back()">Back</a></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+  if (!content) {
+    res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Error', bodyContent: '<div class="sw-page-content"><p>Content cannot be empty.</p><a href="javascript:history.back()">Back</a></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+  if (content.length > 100 * 1024) {
+    res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Error', bodyContent: '<div class="sw-page-content"><p>Content too large (max 100 KB).</p><a href="javascript:history.back()">Back</a></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  var featureSlug = journey.featureSlug || '';
+  var repoRoot = getRepoRoot();
+  var refDir  = path.join(repoRoot, 'artefacts', featureSlug, 'reference');
+  var filePath = path.join(refDir, stem + '.md');
+
+  // Path traversal guard
+  var resolvedRoot = path.resolve(repoRoot);
+  if (!path.resolve(filePath).startsWith(resolvedRoot + path.sep)) {
+    res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Error', bodyContent: '<p>Invalid filename.</p>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  try {
+    fs.mkdirSync(refDir, { recursive: true });
+    fs.writeFileSync(filePath, content, 'utf8');
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Error', bodyContent: '<div class="sw-page-content"><p>Failed to save: ' + escHtml(err.message) + '</p></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  res.writeHead(303, { Location: '/journey/' + encodeURIComponent(journeyId) + '/reference' });
+  res.end();
+}
+
 /**
  * POST /api/journey/:journeyId/gate-confirm — save artefact, build handoff, route to next stage.
  */
@@ -2125,6 +2313,8 @@ module.exports = {
   handlePostJourney,
   handleGetJourneyResume,
   handleGetStageReview,
+  handleGetReference,
+  handlePostReference,
   handlePostGateConfirm,
   handleGetStories,
   handlePostStories,
