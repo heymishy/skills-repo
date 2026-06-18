@@ -1382,9 +1382,21 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
  * @param {string} sessionPath  — absolute path returned by sessionManager.createSession
  * @param {string} skillName
  */
-function registerHtmlSession(sessionId, sessionPath, skillName) {
+/**
+ * @param {string} sessionId
+ * @param {string} sessionPath
+ * @param {string} skillName
+ * @param {Array|object} [opts] — legacy: priorArtefacts array; or { productProfile, priorArtefacts, featureSlug }
+ */
+function registerHtmlSession(sessionId, sessionPath, skillName, opts) {
+  var options = Array.isArray(opts) ? { priorArtefacts: opts } : (opts || {});
   var contextFiles = [];
-  var systemPrompt = buildSystemPrompt(skillName, sessionPath, undefined, undefined, undefined, contextFiles);
+  var systemPrompt = buildSystemPrompt(
+    skillName, sessionPath, undefined,
+    options.priorArtefacts || undefined,
+    { productProfile: options.productProfile || undefined },
+    contextFiles
+  );
   _sessionStore.set(sessionId, {
     skillName:              skillName,
     sessionPath:            sessionPath,
@@ -1395,7 +1407,6 @@ function registerHtmlSession(sessionId, sessionPath, skillName) {
     artefactPath:           null,
     done:                   false,
     journeyId:              null,
-    // iwu.6 — assumption cards enabled by default for all sessions
     assumptionCardsEnabled: true
   });
 }

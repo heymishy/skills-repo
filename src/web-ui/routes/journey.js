@@ -58,8 +58,183 @@ function setGetHtmlSession(fn) { _getHtmlSessionFn = fn; }
 function setListHtmlSessions(fn) { _listHtmlSessionsFn = fn; }
 function setRepoRoot(root) { _repoRoot = root; }
 
+// ---------------------------------------------------------------------------
+// Journey home helpers
+// ---------------------------------------------------------------------------
+
+var _journeyDisk = require('../../modules/journey-disk');
+
+var STAGE_META = [
+  { id: 'ideate',              num: 1,    label: 'Idea',       optional: true },
+  { id: 'discovery',           num: 2,    label: 'Discovery',  optional: false },
+  { id: 'benefit-metric',      num: '2b', label: 'Benefits',   optional: false },
+  { id: 'design',              num: 3,    label: 'Design',     optional: false },
+  { id: 'definition',          num: 4,    label: 'Definition', optional: false },
+  { id: 'test-plan',           num: 5,    label: 'Test Plan',  optional: false },
+  { id: 'review',              num: 6,    label: 'Review',     optional: false },
+  { id: 'definition-of-ready', num: 7,    label: 'Ready',      optional: false }
+];
+
+function _listProfiles(repoRoot) {
+  var profilesDir = path.join(repoRoot, 'product', 'profiles');
+  if (!fs.existsSync(profilesDir)) return ['default'];
+  try {
+    return fs.readdirSync(profilesDir).filter(function(d) {
+      try { return fs.statSync(path.join(profilesDir, d)).isDirectory(); } catch (_) { return false; }
+    });
+  } catch (_) { return ['default']; }
+}
+
+function _getActiveProfile(repoRoot) {
+  try {
+    var ap = path.join(repoRoot, 'product', 'active-profile');
+    if (fs.existsSync(ap)) return fs.readFileSync(ap, 'utf8').trim() || 'default';
+  } catch (_) {}
+  return 'default';
+}
+
+function _slugify(str) {
+  return String(str).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48);
+}
+
+function _featureDisplayName(slug) {
+  var name = slug.replace(/^\d{4}-\d{2}-\d{2}-/, '').replace(/-/g, ' ');
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+function _readFormBody(req) {
+  return new Promise(function(resolve) {
+    if (req.body !== undefined) { resolve(req.body); return; }
+    var raw = '';
+    req.on('data', function(c) { raw += c; });
+    req.on('end', function() {
+      try {
+        var params = new URLSearchParams(raw);
+        var obj = {};
+        params.forEach(function(v, k) { obj[k] = v; });
+        resolve(obj);
+      } catch (_) { resolve({}); }
+    });
+    req.on('error', function() { resolve({}); });
+  });
+}
+
+function _renderJourneyHome(data) {
+  var profiles     = data.profiles || ['default'];
+  var activeProfile = data.activeProfile || 'default';
+  var journeys     = data.journeys || [];
+  var showNewForm  = data.showNewForm;
+
+  function stageLabel(stageId) {
+    var m = STAGE_META.find(function(s) { return s.id === stageId; });
+    return m ? m.num + '. ' + m.label : stageId;
+  }
+
+  function progressDots(stages) {
+    return STAGE_META.map(function(s) {
+      var st = stages && stages[s.id] && stages[s.id].status;
+      var cls = st === 'complete' ? 'jh-dot--done' : st === 'active' ? 'jh-dot--active' : s.optional ? 'jh-dot--optional' : '';
+      return '<span class="jh-dot ' + cls + '" title="' + escHtml(s.label) + '"></span>';
+    }).join('');
+  }
+
+  var cards = journeys.map(function(j) {
+    var resumeUrl = '/journey/' + encodeURIComponent(j.featureSlug || '') + '/resume';
+    return [
+      '<div class="jh-card">',
+        '<div class="jh-card__main">',
+          '<div class="jh-card__name">' + escHtml(_featureDisplayName(j.featureSlug || '')) + '</div>',
+          '<div class="jh-card__meta">',
+            '<span class="jh-stage-badge">' + escHtml(stageLabel(j.currentStage || '')) + '</span>',
+            '<span class="jh-card__profile">◈ ' + escHtml(j.productProfile || 'default') + '</span>',
+            '<span class="jh-card__date">' + escHtml((j.createdAt || '').slice(0, 10)) + '</span>',
+          '</div>',
+          '<div class="jh-progress">' + progressDots(j.stages) + '</div>',
+        '</div>',
+        '<a href="' + escHtml(resumeUrl) + '" class="jh-continue">Continue →</a>',
+      '</div>'
+    ].join('');
+  }).join('');
+
+  var profileOpts = profiles.map(function(p) {
+    return '<option value="' + escHtml(p) + '"' + (p === activeProfile ? ' selected' : '') + '>' + escHtml(p) + '</option>';
+  }).join('');
+
+  var profileField = profiles.length > 1
+    ? '<div class="jh-form-row"><label class="jh-label" for="jh-profile">Product context</label>' +
+      '<select id="jh-profile" class="jh-select" name="profileName">' + profileOpts + '</select></div>'
+    : '<input type="hidden" name="profileName" value="' + escHtml(activeProfile) + '">';
+
+  return [
+    '<style>',
+    '.jh-home{max-width:820px}',
+    '.jh-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:28px}',
+    '.jh-title{font-size:22px;font-weight:700;margin:0 0 4px}',
+    '.jh-sub{color:var(--muted);font-size:14px;margin:0}',
+    '.jh-hdr-right{display:flex;align-items:center;gap:12px;flex-shrink:0}',
+    '.jh-profile-pill{font-size:12px;color:var(--muted);background:var(--line);padding:4px 10px;border-radius:20px}',
+    '.jh-section{margin-bottom:28px}',
+    '.jh-section h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 12px}',
+    '.jh-empty{color:var(--muted);font-size:14px;padding:16px 0}',
+    '.jh-card{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:10px;background:var(--surface);gap:16px}',
+    '.jh-card__main{flex:1;min-width:0}',
+    '.jh-card__name{font-weight:600;font-size:14px;margin-bottom:5px}',
+    '.jh-card__meta{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px;color:var(--muted)}',
+    '.jh-stage-badge{background:var(--accent-soft,#eaf1fb);color:var(--accent-ink,#0969da);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}',
+    '.jh-progress{display:flex;gap:5px;align-items:center}',
+    '.jh-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--line-2,#ddd)}',
+    '.jh-dot--done{background:#2da44e}',
+    '.jh-dot--active{background:var(--accent,#0969da)}',
+    '.jh-dot--optional{opacity:.4}',
+    '.jh-continue{flex-shrink:0;font-size:13px;color:var(--accent,#0969da);font-weight:600;text-decoration:none;padding:6px 14px;border:1px solid var(--line);border-radius:6px;white-space:nowrap}',
+    '.jh-continue:hover{background:var(--line)}',
+    '.jh-new-section{border-top:1px solid var(--line);padding-top:24px}',
+    '.jh-form{max-width:480px}',
+    '.jh-form-row{margin-bottom:18px}',
+    '.jh-label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}',
+    '.jh-input{width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:14px;background:var(--bg);color:var(--ink)}',
+    '.jh-input:focus{outline:2px solid var(--accent,#0969da);border-color:transparent}',
+    '.jh-select{padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:14px;background:var(--bg);color:var(--ink)}',
+    '.jh-radio-label{display:flex;align-items:baseline;gap:8px;font-size:13px;margin-bottom:8px;cursor:pointer;line-height:1.5}',
+    '.jh-submit{margin-top:4px}',
+    '</style>',
+    '<div class="sw-page-content jh-home">',
+      '<div class="jh-hdr">',
+        '<div>',
+          '<h1 class="jh-title">Journeys</h1>',
+          '<p class="jh-sub">Guide a feature from idea to ready.</p>',
+        '</div>',
+        '<div class="jh-hdr-right">',
+          '<span class="jh-profile-pill">◈ ' + escHtml(activeProfile) + '</span>',
+          '<a href="/journey?new=1#jh-new" class="sw-btn sw-btn--primary">+ New feature</a>',
+        '</div>',
+      '</div>',
+      '<section class="jh-section">',
+        '<h2>' + (journeys.length > 0 ? 'Features (' + journeys.length + ')' : 'Features') + '</h2>',
+        journeys.length > 0 ? cards : '<p class="jh-empty">No features yet — start one below.</p>',
+      '</section>',
+      '<section class="jh-new-section" id="jh-new"' + (showNewForm ? ' style="background:var(--accent-soft,#eaf1fb);padding:20px;border-radius:8px;margin-top:4px"' : '') + '>',
+        '<h2>Start a new feature</h2>',
+        '<form method="POST" action="/api/journey" class="jh-form">',
+          '<div class="jh-form-row">',
+            '<label class="jh-label" for="jh-fname">Feature name</label>',
+            '<input id="jh-fname" class="jh-input" name="featureName" type="text" placeholder="e.g. Impact matrix tool" required autofocus>',
+          '</div>',
+          '<div class="jh-form-row">',
+            '<label class="jh-label">Where are you starting from?</label>',
+            '<label class="jh-radio-label"><input type="radio" name="startSkill" value="ideate"> Rough idea — explore the opportunity space first</label>',
+            '<label class="jh-radio-label"><input type="radio" name="startSkill" value="discovery" checked> Formed idea — jump straight to discovery</label>',
+          '</div>',
+          profileField,
+          '<button type="submit" class="sw-btn sw-btn--primary jh-submit">Start journey →</button>',
+        '</form>',
+      '</section>',
+    '</div>'
+  ].join('');
+}
+
 /**
- * GET /journey — render the journey entry form.
+ * GET /journey — journey home screen: list features, start new.
  */
 function handleGetJourney(req, res) {
   if (!req.session || !req.session.accessToken) {
@@ -67,44 +242,63 @@ function handleGetJourney(req, res) {
     res.end();
     return;
   }
-  var login = req.session.login || '';
-  var body = [
-    '<div class="sw-page-content">',
-    '<h1>Start a guided outer loop journey</h1>',
-    '<p>Begin a new journey through the skills pipeline for your feature.</p>',
-    '<form method="POST" action="/api/journey">',
-    '<button type="submit" class="sw-btn sw-btn--primary">Start journey</button>',
-    '</form>',
-    '</div>'
-  ].join('');
-  var html = renderShell({ title: 'Journey', bodyContent: body, user: { login: login } });
+  var login      = req.session.login || '';
+  var repoRoot   = getRepoRoot();
+  var profiles   = _listProfiles(repoRoot);
+  var activeProfile = _getActiveProfile(repoRoot);
+  var journeys   = _journeyStore.listJourneys ? _journeyStore.listJourneys(repoRoot) : [];
+  journeys.sort(function(a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); });
+  var showNewForm = !!(req.query && req.query.new === '1');
+  var body = _renderJourneyHome({ profiles: profiles, activeProfile: activeProfile, journeys: journeys, showNewForm: showNewForm });
+  var html = renderShell({ title: 'Journeys', active: 'journey', bodyContent: body, user: { login: login } });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
 
 /**
- * POST /api/journey — create journey and start discovery session.
+ * POST /api/journey — create journey and start first skill session.
+ * Form fields: featureName, startSkill (ideate|discovery), profileName
  */
-function handlePostJourney(req, res) {
+async function handlePostJourney(req, res) {
   if (!req.session || !req.session.accessToken) {
     res.writeHead(302, { Location: '/auth/github' });
     res.end();
-    return Promise.resolve();
+    return;
   }
   try {
-    var featureSlug = (req.body && req.body.featureSlug) || '';
-    var created = _journeyStore.createJourney(featureSlug);
+    var body        = await _readFormBody(req);
+    var featureName = (body.featureName || '').trim();
+    var startSkill  = body.startSkill === 'ideate' ? 'ideate' : 'discovery';
+    var profileName = (body.profileName || '').trim() || _getActiveProfile(getRepoRoot());
+
+    if (!featureName) {
+      res.writeHead(303, { Location: '/journey?new=1#jh-new' });
+      res.end();
+      return;
+    }
+
+    var today       = new Date().toISOString().slice(0, 10);
+    var featureSlug = today + '-' + _slugify(featureName);
+    var repoRoot    = getRepoRoot();
+
+    // Create journey in memory + disk
+    var created = _journeyStore.createJourney(featureSlug, profileName);
     var journeyId = created.journeyId;
-    // wsm.2: store ownerId from session (server-side only — cannot be set from request body)
     created.ownerId = req.session.login || null;
-    var sid = crypto.randomUUID();
-    var sessionPath = path.join(os.tmpdir(), 'ougl-sessions', sid + '-discovery.md');
-    getRegisterHtmlSession()(sid, sessionPath, 'discovery');
+
+    // Session path under artefacts so reference/ folder is discovered by buildSystemPrompt
+    var sid         = crypto.randomUUID();
+    var sessionPath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', sid);
+
+    getRegisterHtmlSession()(sid, sessionPath, startSkill, { productProfile: profileName });
     getLinkSessionToJourney()(sid, journeyId);
     if (_journeyStore.setActiveSession) {
-      _journeyStore.setActiveSession(journeyId, sid, 'discovery');
+      _journeyStore.setActiveSession(journeyId, sid, startSkill);
     }
-    res.writeHead(303, { Location: '/skills/discovery/sessions/' + sid + '/chat' });
+    // Mark stage active on disk
+    try { _journeyDisk.updateStage(featureSlug, startSkill, { status: 'active', sessionId: sid }, repoRoot); } catch (_) {}
+
+    res.writeHead(303, { Location: '/skills/' + encodeURIComponent(startSkill) + '/sessions/' + sid + '/chat' });
     res.end();
   } catch (err) {
     var errBody = [
@@ -114,11 +308,9 @@ function handlePostJourney(req, res) {
       '<a href="/journey">Try again</a>',
       '</div>'
     ].join('');
-    var errHtml = renderShell({ title: 'Error', bodyContent: errBody });
     res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(errHtml);
+    res.end(renderShell({ title: 'Error', bodyContent: errBody }));
   }
-  return Promise.resolve();
 }
 
 /**

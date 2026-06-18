@@ -457,10 +457,8 @@ async function router(req, res) {
     await handlePostWizardSelection(req, res);
 
   } else if (pathname === '/journey' && req.method === 'GET') {
-    // ougl.3 / wucp.4 — journey entry: show wizard if no activeFeatureSlug
-    if (req.session && !req.session.activeFeatureSlug) {
-      handleGetWizard(req, res);
-    } else {
+    // jdsk.1 — journey home screen (replaces old wizard-first routing)
+    {
       handleGetJourney(req, res);
     }
 

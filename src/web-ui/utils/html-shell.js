@@ -25,6 +25,7 @@ function escHtml(str) {
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Home',        href: '/dashboard', icon: '⌂' },
+  { id: 'journey',   label: 'Journeys',    href: '/journey',   icon: '◎' },
   { id: 'skills',    label: 'Run a Skill', href: '/skills',    icon: '✦' },
   { id: 'features',  label: 'Features',   href: '/features',  icon: '◫' },
   { id: 'actions',   label: 'Actions',    href: '/actions',   icon: '✓' },

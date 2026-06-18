@@ -180,6 +180,18 @@ function markJourneyComplete(journeyId) {
 }
 
 /**
+ * List all journeys — from disk if adapter is set, otherwise from in-memory map.
+ * @param {string} [repoRoot]
+ * @returns {object[]}
+ */
+function listJourneys(repoRoot) {
+  if (_diskAdapter) {
+    try { return _diskAdapter.listJourneys(repoRoot); } catch (_) {}
+  }
+  return Array.from(_journeys.values());
+}
+
+/**
  * Load all journeys from disk into the in-memory store.
  * Called once at server startup after setDiskAdapter().
  * Journeys already in memory are skipped (startup only).
@@ -239,5 +251,6 @@ module.exports = {
   markJourneyComplete,
   setDiskAdapter,
   loadAllFromDisk,
+  listJourneys,
   _clear
 };
