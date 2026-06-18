@@ -5,34 +5,47 @@ var crypto = require('crypto');
 var _journeys = new Map();
 
 var STAGE_SEQUENCE = [
-  'discovery',
-  'benefit-metric',
-  'definition',
-  'test-plan',
-  'definition-of-ready'
+  'ideate',              // step 1 (optional — may be skipped)
+  'discovery',           // step 2a
+  'benefit-metric',      // step 2b
+  'design',              // step 3
+  'definition',          // step 4
+  'test-plan',           // step 5
+  'review',              // step 6
+  'definition-of-ready'  // step 7
 ];
+
+// Optional disk adapter — injected by server.js for persistence.
+// When set, createJourney / completeStage / markJourneyComplete persist to disk.
+var _diskAdapter = null;
+function setDiskAdapter(adapter) { _diskAdapter = adapter; }
 
 /**
  * Create a new journey for a feature slug.
  * @param {string} featureSlug
- * @returns {{ journeyId: string, featureSlug: string, activeSkill: null, activeSessionId: null, completedStages: [], mode: string }}
+ * @param {string} [productProfile] — product context profile name (default: 'default')
+ * @returns {object} journey object
  */
-function createJourney(featureSlug) {
+function createJourney(featureSlug, productProfile) {
   var journeyId = crypto.randomUUID();
   var journey = {
-    journeyId: journeyId,
-    featureSlug: featureSlug,
-    activeSkill: null,
+    journeyId:      journeyId,
+    featureSlug:    featureSlug,
+    productProfile: productProfile || 'default',
+    activeSkill:    null,
     activeSessionId: null,
     completedStages: [],
-    mode: 'feature',
-    complete: false,
-    completedAt: null,
-    stories: [],
+    mode:           'feature',
+    complete:       false,
+    completedAt:    null,
+    stories:        [],
     currentStoryIndex: 0,
-    sessions: {}
+    sessions:       {}
   };
   _journeys.set(journeyId, journey);
+  if (_diskAdapter) {
+    try { _diskAdapter.saveJourney(journey); } catch (_) {}
+  }
   return journey;
 }
 
@@ -80,7 +93,16 @@ function getJourneyBySession(sessionId) {
 function completeStage(journeyId, skillName, artefactPath) {
   var journey = _journeys.get(journeyId);
   if (!journey) return;
-  journey.completedStages.push({ skillName: skillName, artefactPath: artefactPath });
+  journey.completedStages.push({ skillName: skillName, artefactPath: artefactPath, completedAt: new Date().toISOString() });
+  if (_diskAdapter) {
+    try {
+      _diskAdapter.updateStage(journey.featureSlug, skillName, {
+        status: 'complete',
+        artefactPath: artefactPath,
+        completedAt: new Date().toISOString()
+      });
+    } catch (_) {}
+  }
 }
 
 /**
@@ -158,6 +180,45 @@ function markJourneyComplete(journeyId) {
 }
 
 /**
+ * Load all journeys from disk into the in-memory store.
+ * Called once at server startup after setDiskAdapter().
+ * Journeys already in memory are skipped (startup only).
+ * @param {string} [repoRoot]
+ */
+function loadAllFromDisk(repoRoot) {
+  if (!_diskAdapter) return;
+  var all;
+  try { all = _diskAdapter.listJourneys(repoRoot); } catch (_) { return; }
+  all.forEach(function(diskJourney) {
+    if (!diskJourney.journeyId || _journeys.has(diskJourney.journeyId)) return;
+    // Merge disk fields into a full in-memory journey object
+    var journey = {
+      journeyId:       diskJourney.journeyId,
+      featureSlug:     diskJourney.featureSlug,
+      productProfile:  diskJourney.productProfile || 'default',
+      activeSkill:     diskJourney.currentStage || null,
+      activeSessionId: null,
+      completedStages: [],
+      mode:            'feature',
+      complete:        false,
+      completedAt:     null,
+      stories:         [],
+      currentStoryIndex: 0,
+      sessions:        {}
+    };
+    // Rebuild completedStages from disk stages
+    var stages = diskJourney.stages || {};
+    Object.keys(stages).forEach(function(stageName) {
+      var s = stages[stageName];
+      if (s.status === 'complete') {
+        journey.completedStages.push({ skillName: stageName, artefactPath: s.artefactPath || null, completedAt: s.completedAt || null });
+      }
+    });
+    _journeys.set(journey.journeyId, journey);
+  });
+}
+
+/**
  * Reset all state (test helper).
  */
 function _clear() {
@@ -176,5 +237,7 @@ module.exports = {
   setStoryList,
   getCurrentStory,
   markJourneyComplete,
+  setDiskAdapter,
+  loadAllFromDisk,
   _clear
 };

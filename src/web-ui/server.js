@@ -88,6 +88,13 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   const _diskSessionStoreAdapter = require('./adapters/session-store');
   _setSessionStore(_diskSessionStoreAdapter);
   _diskSessionStoreAdapter.loadSessions(_restoreHtmlSession);
+
+  // jdsk.1 — wire journey disk adapter and reload journeys from workspace/journeys/
+  const _journeyDisk  = require('../modules/journey-disk');
+  const _journeyStore = require('./modules/journey-store');
+  const _journeyRoot  = process.env.COPILOT_REPO_PATH || _path.resolve(__dirname, '../..');
+  _journeyStore.setDiskAdapter(_journeyDisk);
+  _journeyStore.loadAllFromDisk(_journeyRoot);
 }
 
 // Wire real GitHub pipeline-state fetcher for production (non-test) mode.

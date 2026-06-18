@@ -1182,18 +1182,30 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
     if (_cf) _cf.push({ path: '.github/skills/' + skillName + '/SKILL.md', status: 'warn' });
   }
 
-  // 3. Product context files
+  // 3. Product context files — resolved from active profile
+  // Profile resolution: ctx.productProfile > product/active-profile file > 'default'
+  var _profileName = ctx.productProfile || (function() {
+    try {
+      var ap = path.join(root, 'product', 'active-profile');
+      return fs.existsSync(ap) ? fs.readFileSync(ap, 'utf8').trim() || 'default' : 'default';
+    } catch (_) { return 'default'; }
+  })();
+  var _profileDir = path.join(root, 'product', 'profiles', _profileName);
+  // Fallback: if profiles/ structure doesn't exist, read from legacy product/ root
+  if (!fs.existsSync(_profileDir)) { _profileDir = path.join(root, 'product'); }
+  if (_cf) _cf.push({ path: 'product/profiles/' + _profileName, status: 'ok', note: 'profile' });
+
   var PRODUCT_FILES = [
-    { name: 'mission.md',      label: 'PRODUCT MISSION' },
-    { name: 'tech-stack.md',   label: 'TECH STACK' },
-    { name: 'constraints.md',  label: 'CONSTRAINTS' },
-    { name: 'roadmap.md',      label: 'PRODUCT ROADMAP' }
+    { name: 'mission.md',    label: 'PRODUCT MISSION' },
+    { name: 'tech-stack.md', label: 'TECH STACK' },
+    { name: 'constraints.md', label: 'CONSTRAINTS' },
+    { name: 'roadmap.md',    label: 'PRODUCT ROADMAP' }
   ];
   PRODUCT_FILES.forEach(function(pf) {
-    var pfPath = path.join(root, 'product', pf.name);
+    var pfPath = path.join(_profileDir, pf.name);
     if (fs.existsSync(pfPath)) {
       parts.push('--- ' + pf.label + ' ---\n\n' + fs.readFileSync(pfPath, 'utf8'));
-      if (_cf) _cf.push({ path: 'product/' + pf.name, status: 'ok' });
+      if (_cf) _cf.push({ path: 'product/profiles/' + _profileName + '/' + pf.name, status: 'ok' });
     }
   });
 
