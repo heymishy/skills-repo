@@ -313,6 +313,192 @@ async function handlePostJourney(req, res) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Step 5 — Artefact review panel
+// ---------------------------------------------------------------------------
+
+/**
+ * Minimal markdown → safe HTML renderer for artefact review.
+ * Processes line-by-line; escapes content before applying markdown patterns.
+ * @param {string} text
+ * @returns {string}
+ */
+function _renderMarkdown(text) {
+  if (!text) return '';
+  var lines = text.split('\n');
+  var out = [];
+  var inCode = false;
+  var inList = false;
+  var listTag = 'ul';
+
+  function closeList() {
+    if (inList) { out.push('</' + listTag + '>'); inList = false; }
+  }
+
+  for (var i = 0; i < lines.length; i++) {
+    var raw = lines[i];
+
+    if (/^```/.test(raw)) {
+      if (inCode) {
+        out.push('</code></pre>');
+        inCode = false;
+      } else {
+        closeList();
+        out.push('<pre class="sr-pre"><code>');
+        inCode = true;
+      }
+      continue;
+    }
+    if (inCode) { out.push(escHtml(raw)); continue; }
+
+    var l = escHtml(raw);
+    l = l.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    l = l.replace(/\*([^*\s][^*]*[^*\s]|[^*\s])\*/g, '<em>$1</em>');
+    l = l.replace(/`([^`]+)`/g, '<code class="sr-code">$1</code>');
+
+    if (/^### /.test(l)) { closeList(); out.push('<h3 class="sr-h3">' + l.slice(4) + '</h3>'); continue; }
+    if (/^## /.test(l))  { closeList(); out.push('<h2 class="sr-h2">' + l.slice(3) + '</h2>'); continue; }
+    if (/^# /.test(l))   { closeList(); out.push('<h1 class="sr-h1">' + l.slice(2) + '</h1>'); continue; }
+
+    if (/^---+$/.test(raw) || /^\*\*\*+$/.test(raw)) { closeList(); out.push('<hr class="sr-hr">'); continue; }
+
+    if (/^- /.test(l)) {
+      if (!inList || listTag !== 'ul') { closeList(); out.push('<ul class="sr-list">'); inList = true; listTag = 'ul'; }
+      out.push('<li>' + l.slice(2) + '</li>');
+      continue;
+    }
+    if (/^\d+\. /.test(l)) {
+      if (!inList || listTag !== 'ol') { closeList(); out.push('<ol class="sr-list">'); inList = true; listTag = 'ol'; }
+      out.push('<li>' + l.replace(/^\d+\. /, '') + '</li>');
+      continue;
+    }
+
+    if (l.trim() === '') { closeList(); out.push(''); continue; }
+
+    closeList();
+    out.push('<p class="sr-p">' + l + '</p>');
+  }
+  closeList();
+  if (inCode) out.push('</code></pre>');
+  return out.join('\n');
+}
+
+/**
+ * GET /journey/:journeyId/stage-review
+ * Shows the completed artefact from the active session for review before gate-confirm.
+ */
+async function handleGetStageReview(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Journey not found.</p><a href="/journey">Back to journeys</a></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  var session = getGetHtmlSession()(journey.activeSessionId);
+  if (!session || !session.done || !session.artefactContent) {
+    var skillForRedirect = (session && session.skillName) || journey.activeSkill || 'discovery';
+    var sidForRedirect   = journey.activeSessionId || '';
+    res.writeHead(302, { Location: '/skills/' + encodeURIComponent(skillForRedirect) + '/sessions/' + encodeURIComponent(sidForRedirect) + '/chat' });
+    res.end();
+    return;
+  }
+
+  var skillName  = session.skillName || journey.activeSkill || '';
+  var stageMeta  = STAGE_META.find(function(s) { return s.id === skillName; });
+  var stageLabel = stageMeta ? (stageMeta.num + '. ' + stageMeta.label) : skillName;
+  var nextStage  = _journeyStore.getNextStage(skillName);
+  var nextMeta   = nextStage ? STAGE_META.find(function(s) { return s.id === nextStage; }) : null;
+  var nextLabel  = nextMeta ? (nextMeta.num + '. ' + nextMeta.label) : (nextStage || 'complete');
+
+  // Stage navigator strip
+  var _doneSet = new Set((journey.completedStages || []).map(function(s) { return s.skillName; }));
+  var _stepsHtml = STAGE_META.map(function(s) {
+    var isDone = _doneSet.has(s.id);
+    var isActive = s.id === skillName;
+    var cls = isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending';
+    var icon = isDone ? '●' : isActive ? '▶' : '○';
+    return '<li class="sn-step ' + cls + '">' +
+      '<span class="sn-num">' + escHtml(String(s.num)) + '</span>' +
+      '<span class="sn-label">' + escHtml(s.label) + '</span>' +
+      '<span class="sn-icon" aria-hidden="true">' + icon + '</span>' +
+      '</li>';
+  }).join('');
+  var navigatorHtml = [
+    '<style>',
+    '.sn-bar{display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--line);background:var(--surface);overflow-x:auto;gap:0}',
+    '.sn-feature{font-size:11px;font-weight:600;color:var(--muted);padding:0 12px 0 4px;border-right:1px solid var(--line);white-space:nowrap;margin-right:4px}',
+    '.sn-steps{display:flex;list-style:none;margin:0;padding:0;gap:0}',
+    '.sn-step{display:flex;align-items:center;gap:5px;padding:7px 11px;font-size:12px;white-space:nowrap;border-right:1px solid var(--line);color:var(--muted)}',
+    '.sn-step:last-child{border-right:none}',
+    '.sn-num{font-weight:700;font-size:10px;opacity:0.6}',
+    '.sn-icon{font-size:9px}',
+    '.sn-step--done{color:var(--ink);opacity:0.75}',
+    '.sn-step--done .sn-icon{color:#2da44e}',
+    '.sn-step--active{background:var(--accent-soft,#eaf1fb);color:var(--ink);font-weight:600}',
+    '.sn-step--active .sn-icon{color:var(--accent,#0969da)}',
+    '.sn-step--pending{opacity:0.4}',
+    '</style>',
+    '<nav class="sn-bar" aria-label="Journey stages">',
+      '<span class="sn-feature">' + escHtml(journey.featureSlug || '') + '</span>',
+      '<ul class="sn-steps">' + _stepsHtml + '</ul>',
+    '</nav>'
+  ].join('');
+
+  var artefactHtml  = _renderMarkdown(session.artefactContent);
+  var featureName   = escHtml((journey.featureSlug || '').replace(/^\d{4}-\d{2}-\d{2}-/, '').replace(/-/g, ' '));
+  var safeJourneyId = escHtml(journeyId);
+  var chatUrl = '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(journey.activeSessionId || '') + '/chat';
+
+  var body = [
+    '<style>',
+    '.sr-page{max-width:740px;margin:0 auto;padding:24px 24px 120px}',
+    '.sr-eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}',
+    '.sr-title{font-size:20px;font-weight:700;margin:0 0 4px}',
+    '.sr-sub{font-size:13px;color:var(--muted);margin:0 0 24px}',
+    '.sr-paper{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:32px 36px;margin-bottom:24px;line-height:1.7;overflow-wrap:break-word}',
+    '.sr-h1{font-size:20px;font-weight:700;margin:1.4em 0 0.5em;border-bottom:1px solid var(--line);padding-bottom:6px}',
+    '.sr-h1:first-child,.sr-paper>:first-child{margin-top:0}',
+    '.sr-h2{font-size:16px;font-weight:600;margin:1.2em 0 0.4em}',
+    '.sr-h3{font-size:14px;font-weight:600;margin:1em 0 0.3em;color:var(--ink)}',
+    '.sr-p{margin:0.6em 0;font-size:14px;color:var(--ink)}',
+    '.sr-list{margin:0.4em 0 0.4em 1.4em;padding:0;font-size:14px}',
+    '.sr-list li{margin-bottom:0.3em}',
+    '.sr-hr{border:none;border-top:1px solid var(--line);margin:1.2em 0}',
+    '.sr-pre{background:var(--line-2,#f6f8fa);border:1px solid var(--line);border-radius:6px;padding:14px 16px;overflow-x:auto;margin:0.8em 0;font-size:12px;line-height:1.5;font-family:var(--mono)}',
+    '.sr-code{background:var(--line-2,#f6f8fa);border:1px solid var(--line);border-radius:3px;padding:1px 5px;font-size:12px;font-family:var(--mono)}',
+    '.sr-confirm-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;gap:14px;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.06)}',
+    '.sr-confirm-hint{font-size:13px;color:var(--muted);flex:1;min-width:0}',
+    '</style>',
+    navigatorHtml,
+    '<div class="sr-page">',
+      '<p class="sr-eyebrow">' + escHtml(stageLabel) + ' — artefact review</p>',
+      '<h1 class="sr-title">' + featureName + '</h1>',
+      '<p class="sr-sub">Review the artefact below, then confirm to advance to <strong>' + escHtml(nextLabel) + '</strong>. Or go back to continue the conversation.</p>',
+      '<article class="sr-paper">',
+        artefactHtml,
+      '</article>',
+    '</div>',
+    '<div class="sr-confirm-bar">',
+      '<a href="' + escHtml(chatUrl) + '" class="sw-btn" style="border:1px solid var(--line);flex-shrink:0">← Back to session</a>',
+      '<span class="sr-confirm-hint">Confirming saves this artefact and opens the next stage.</span>',
+      '<form method="POST" action="/api/journey/' + safeJourneyId + '/gate-confirm" style="margin:0;flex-shrink:0">',
+        '<button type="submit" class="sw-btn sw-btn--primary">Confirm &amp; continue to ' + escHtml(nextLabel) + ' &#x2192;</button>',
+      '</form>',
+    '</div>'
+  ].join('');
+
+  var html = renderShell({ title: 'Review: ' + stageLabel, bodyContent: body, user: { login: req.session.login || '' }, active: 'journey' });
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
 /**
  * GET /journey/:featureSlug/resume — resume a journey by creating a fresh session for the current stage.
  * Looks up the journey by featureSlug (disk), loads prior artefacts, creates session, redirects to chat.
@@ -1938,6 +2124,7 @@ module.exports = {
   handleGetJourney,
   handlePostJourney,
   handleGetJourneyResume,
+  handleGetStageReview,
   handlePostGateConfirm,
   handleGetStories,
   handlePostStories,

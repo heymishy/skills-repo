@@ -2109,11 +2109,11 @@ function _renderChatPage(skillName, sessionId, session) {
         'View journey complete &#x2192;</a></div>';
     } else {
       var nextStage = _journeyStore.getNextStage(skillName) || 'next stage';
-      journeyPanel = '<div class="sw-journey-gate" style="padding:16px;margin-top:12px">' +
-        '<form method="POST" action="/api/journey/' + safeJourneyId + '/gate-confirm">' +
-        '<button type="submit" class="sw-btn sw-btn--primary">' +
-        'Save and continue to ' + escHtml(nextStage) + ' &#x2192;</button>' +
-        '</form></div>';
+      journeyPanel = '<div class="sw-journey-gate" style="padding:16px;margin-top:12px;display:flex;align-items:center;gap:12px">' +
+        '<a href="/journey/' + safeJourneyId + '/stage-review" class="sw-btn sw-btn--primary">' +
+        'Review &amp; continue to ' + escHtml(nextStage) + ' &#x2192;</a>' +
+        '<span style="font-size:12px;color:var(--muted)">Artefact ready — review before confirming</span>' +
+        '</div>';
     }
     bodyContent = bodyContent + journeyPanel;
   }
