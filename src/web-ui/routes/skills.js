@@ -1420,6 +1420,8 @@ function linkSessionToJourney(sessionId, journeyId) {
   var session = _sessionStore.get(sessionId);
   if (!session) return;
   session.journeyId = journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (journey && journey.featureSlug) session.featureSlug = journey.featureSlug;
 }
 
 /**
@@ -2028,7 +2030,59 @@ function _renderChatPage(skillName, sessionId, session) {
     '</script>'
   ].join('\n');
 
-  var bodyContent = _renderChatView({
+  // Journey stage navigator strip
+  var navigatorHtml = '';
+  if (session.journeyId) {
+    var _navJourney = _journeyStore.getJourney(session.journeyId);
+    if (_navJourney) {
+      var _NAV_STAGES = [
+        { id: 'ideate',              num: '1',  label: 'Idea',       optional: true },
+        { id: 'discovery',           num: '2',  label: 'Discovery',  optional: false },
+        { id: 'benefit-metric',      num: '2b', label: 'Benefits',   optional: false },
+        { id: 'design',              num: '3',  label: 'Design',     optional: false },
+        { id: 'definition',          num: '4',  label: 'Definition', optional: false },
+        { id: 'test-plan',           num: '5',  label: 'Test Plan',  optional: false },
+        { id: 'review',              num: '6',  label: 'Review',     optional: false },
+        { id: 'definition-of-ready', num: '7',  label: 'Ready',      optional: false }
+      ];
+      var _doneSet = new Set((_navJourney.completedStages || []).map(function(s) { return s.skillName; }));
+      var _activeSkill = _navJourney.activeSkill;
+      var _featureDisplaySlug = escHtml(_navJourney.featureSlug || '');
+      var _stepsHtml = _NAV_STAGES.map(function(s) {
+        var isDone = _doneSet.has(s.id);
+        var isActive = s.id === _activeSkill;
+        var cls = isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending';
+        var icon = isDone ? '●' : isActive ? '▶' : '○';
+        return '<li class="sn-step ' + cls + '">' +
+          '<span class="sn-num">' + escHtml(s.num) + '</span>' +
+          '<span class="sn-label">' + escHtml(s.label) + '</span>' +
+          '<span class="sn-icon" aria-hidden="true">' + icon + '</span>' +
+          '</li>';
+      }).join('');
+      navigatorHtml = [
+        '<style>',
+        '.sn-bar{display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--line);background:var(--surface);overflow-x:auto;gap:0;flex-shrink:0}',
+        '.sn-feature{font-size:11px;font-weight:600;color:var(--muted);padding:0 12px 0 4px;border-right:1px solid var(--line);white-space:nowrap;margin-right:4px}',
+        '.sn-steps{display:flex;list-style:none;margin:0;padding:0;gap:0}',
+        '.sn-step{display:flex;align-items:center;gap:5px;padding:7px 11px;font-size:12px;white-space:nowrap;border-right:1px solid var(--line);color:var(--muted)}',
+        '.sn-step:last-child{border-right:none}',
+        '.sn-num{font-weight:700;font-size:10px;opacity:0.6}',
+        '.sn-icon{font-size:9px}',
+        '.sn-step--done{color:var(--ink);opacity:0.75}',
+        '.sn-step--done .sn-icon{color:#2da44e}',
+        '.sn-step--active{background:var(--accent-soft,#eaf1fb);color:var(--ink);font-weight:600}',
+        '.sn-step--active .sn-icon{color:var(--accent,#0969da)}',
+        '.sn-step--pending{opacity:0.4}',
+        '</style>',
+        '<nav class="sn-bar" aria-label="Journey stages">',
+          '<span class="sn-feature">' + _featureDisplaySlug + '</span>',
+          '<ul class="sn-steps">' + _stepsHtml + '</ul>',
+        '</nav>'
+      ].join('');
+    }
+  }
+
+  var bodyContent = navigatorHtml + _renderChatView({
     skillName:         skillName,
     skillLabel:        skillName,
     featureSlug:       session.featureSlug || '',

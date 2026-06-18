@@ -314,6 +314,73 @@ async function handlePostJourney(req, res) {
 }
 
 /**
+ * GET /journey/:featureSlug/resume — resume a journey by creating a fresh session for the current stage.
+ * Looks up the journey by featureSlug (disk), loads prior artefacts, creates session, redirects to chat.
+ */
+async function handleGetJourneyResume(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var featureSlug = req.params && req.params.featureSlug;
+  var repoRoot = getRepoRoot();
+
+  // Load from disk
+  var diskJourney = null;
+  try { diskJourney = _journeyDisk.loadJourney(featureSlug, repoRoot); } catch (_) {}
+  if (!diskJourney) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Journey not found: ' + escHtml(featureSlug) + '</p><a href="/journey">Back to journeys</a></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  // Find in-memory journey (loaded at startup from disk)
+  var allJourneys = _journeyStore.listJourneys ? _journeyStore.listJourneys(repoRoot) : [];
+  var memJourney = allJourneys.find(function(j) { return j.featureSlug === featureSlug; });
+  if (!memJourney && diskJourney.journeyId) {
+    memJourney = _journeyStore.getJourney(diskJourney.journeyId);
+  }
+
+  var journeyId = memJourney ? memJourney.journeyId : (diskJourney.journeyId || null);
+  var currentStage = diskJourney.currentStage || 'discovery';
+  var productProfile = diskJourney.productProfile || 'default';
+
+  // Build priorArtefacts from completed disk stages in sequence order
+  var STAGE_ORDER = ['ideate', 'discovery', 'benefit-metric', 'design', 'definition', 'test-plan', 'review', 'definition-of-ready'];
+  var diskStages = diskJourney.stages || {};
+  var priorArtefacts = [];
+  STAGE_ORDER.forEach(function(stageName) {
+    var s = diskStages[stageName];
+    if (s && s.status === 'complete' && s.artefactPath) {
+      var absPath = path.resolve(path.join(repoRoot, s.artefactPath));
+      var content = '';
+      try { content = fs.readFileSync(absPath, 'utf8'); } catch (_) {}
+      priorArtefacts.push({ path: s.artefactPath, content: content });
+    }
+  });
+
+  // Create new session for current stage
+  var sid = crypto.randomUUID();
+  var sessionPath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', sid);
+
+  getRegisterHtmlSession()(sid, sessionPath, currentStage, { productProfile: productProfile, priorArtefacts: priorArtefacts });
+
+  if (journeyId) {
+    getLinkSessionToJourney()(sid, journeyId);
+    if (_journeyStore.setActiveSession) {
+      _journeyStore.setActiveSession(journeyId, sid, currentStage);
+    }
+  }
+
+  // Mark stage active on disk with new sessionId
+  try { _journeyDisk.updateStage(featureSlug, currentStage, { status: 'active', sessionId: sid }, repoRoot); } catch (_) {}
+
+  res.writeHead(303, { Location: '/skills/' + encodeURIComponent(currentStage) + '/sessions/' + sid + '/chat' });
+  res.end();
+}
+
+/**
  * POST /api/journey/:journeyId/gate-confirm — save artefact, build handoff, route to next stage.
  */
 async function handlePostGateConfirm(req, res) {
@@ -1870,6 +1937,7 @@ function handlePostWizardSelection(req, res) {
 module.exports = {
   handleGetJourney,
   handlePostJourney,
+  handleGetJourneyResume,
   handlePostGateConfirm,
   handleGetStories,
   handlePostStories,
