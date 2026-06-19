@@ -75,7 +75,7 @@ function setLogger(logger) { _logger = logger; }
 
 /** Resolve the repository root used by listAvailableSkills. */
 function _getRepoPath() {
-  return process.env.COPILOT_REPO_PATH || path.resolve(__dirname, '../../..');
+  return process.env.CLAUDE_REPO_PATH || process.env.COPILOT_REPO_PATH || path.resolve(__dirname, '../../..');
 }
 
 /**
@@ -1155,7 +1155,7 @@ async function handleGetResultHtml(req, res) {
  * Loads copilot-instructions.md + SKILL.md + product context + reference materials
  * + web UI protocol section (instructs model to output ---ARTEFACT-START--- markers).
  *
- * @param {string}  skillName   — skill directory name under .github/skills/
+ * @param {string}  skillName   — skill directory name under skills/
  * @param {string}  sessionPath — absolute session path (used to locate reference/ folder)
  * @param {string}  [repoRoot]  — override repo root (defaults to _getRepoPath(); pass process.cwd() in tests)
  * @returns {string}
@@ -1166,20 +1166,24 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
   var parts = [];
   var _cf = _outContextFiles || null;
 
-  // 1. copilot-instructions.md
-  var ciPath = path.join(root, '.github', 'copilot-instructions.md');
+  // 1. Instruction file — CLAUDE.md (Claude Code) or .github/copilot-instructions.md (GHCP)
+  var ciPath = fs.existsSync(path.join(root, 'CLAUDE.md'))
+    ? path.join(root, 'CLAUDE.md')
+    : path.join(root, '.github', 'copilot-instructions.md');
   if (fs.existsSync(ciPath)) {
     parts.push(fs.readFileSync(ciPath, 'utf8'));
-    if (_cf) _cf.push({ path: '.github/copilot-instructions.md', status: 'ok' });
+    if (_cf) _cf.push({ path: path.relative(root, ciPath), status: 'ok' });
   }
 
-  // 2. SKILL.md
-  var skillMdPath = path.join(root, '.github', 'skills', skillName, 'SKILL.md');
+  // 2. SKILL.md — skills/ (canonical) with .github/skills/ fallback for GHCP
+  var skillMdPath = fs.existsSync(path.join(root, 'skills', skillName, 'SKILL.md'))
+    ? path.join(root, 'skills', skillName, 'SKILL.md')
+    : path.join(root, '.github', 'skills', skillName, 'SKILL.md');
   if (fs.existsSync(skillMdPath)) {
     parts.push('--- SKILL: ' + skillName + ' ---\n\n' + fs.readFileSync(skillMdPath, 'utf8'));
-    if (_cf) _cf.push({ path: '.github/skills/' + skillName + '/SKILL.md', status: 'ok' });
+    if (_cf) _cf.push({ path: 'skills/' + skillName + '/SKILL.md', status: 'ok' });
   } else {
-    if (_cf) _cf.push({ path: '.github/skills/' + skillName + '/SKILL.md', status: 'warn' });
+    if (_cf) _cf.push({ path: 'skills/' + skillName + '/SKILL.md', status: 'warn' });
   }
 
   // 3. Product context files — resolved from active profile
@@ -1208,6 +1212,22 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
       if (_cf) _cf.push({ path: 'product/profiles/' + _profileName + '/' + pf.name, status: 'ok' });
     }
   });
+
+  // 3.5. Architecture guardrails — profile-level first, then repo-level fallback
+  var _guardrailsLoaded = false;
+  var _profileGuardrailsPath = path.join(_profileDir, 'architecture-guardrails.md');
+  if (fs.existsSync(_profileGuardrailsPath)) {
+    parts.push('--- ARCHITECTURE GUARDRAILS ---\n\n' + fs.readFileSync(_profileGuardrailsPath, 'utf8'));
+    if (_cf) _cf.push({ path: 'product/profiles/' + _profileName + '/architecture-guardrails.md', status: 'ok' });
+    _guardrailsLoaded = true;
+  }
+  if (!_guardrailsLoaded) {
+    var _repoGuardrailsPath = path.join(root, '.github', 'architecture-guardrails.md');
+    if (fs.existsSync(_repoGuardrailsPath)) {
+      parts.push('--- ARCHITECTURE GUARDRAILS ---\n\n' + fs.readFileSync(_repoGuardrailsPath, 'utf8'));
+      if (_cf) _cf.push({ path: '.github/architecture-guardrails.md', status: 'ok' });
+    }
+  }
 
   // 4. Reference materials from artefacts/[feature-slug]/reference/ (if present)
   if (sessionPath) {
@@ -1253,13 +1273,14 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
     } catch (_) {}
   });
 
-  // 5a. workspace/learnings.md — first 50 lines only
+  // 5a. workspace/learnings.md — most recent N lines (WUCE_MAX_LEARNINGS_LINES, default 50)
   try {
     var learningsPath = path.join(root, 'workspace', 'learnings.md');
     if (fs.existsSync(learningsPath)) {
+      var _maxLearnings = parseInt(process.env.WUCE_MAX_LEARNINGS_LINES || '50', 10);
       var allLines = fs.readFileSync(learningsPath, 'utf8').split('\n');
-      var firstFifty = allLines.slice(0, 50).join('\n');
-      parts.push('--- workspace/learnings.md ---\n\n' + firstFifty);
+      var recentLines = allLines.slice(-_maxLearnings).join('\n');
+      parts.push('--- workspace/learnings.md ---\n\n' + recentLines);
     }
   } catch (_) {}
 
@@ -1580,10 +1601,21 @@ function _renderChatPage(skillName, sessionId, session) {
     }
   }
 
-  // Build draft sections from artefactContent if session is done
+  var isIdeate = skillName === 'ideate';
+
+  // For ideate: pass draftSections to populate the canvas panel on initial load.
+  // For non-ideate: the artefact panel is populated via a JS init block below.
   var draftSections = [];
-  if (session.done && session.artefactContent) {
+  if (isIdeate && session.done && session.artefactContent) {
     draftSections = [{ title: 'Artefact', body: session.artefactContent, state: 'drafted' }];
+  }
+
+  // Artefact init script for non-ideate sessions that already have artefactContent on load
+  var artefactInitScript = '';
+  if (!isIdeate && session.artefactContent) {
+    var safeArtefact = JSON.stringify(session.artefactContent)
+      .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+    artefactInitScript = '<script>window.__SW_INITIAL_ARTEFACT__=' + safeArtefact + ';</script>';
   }
 
   var commitUrl = '/skills/' + encodedSkill + '/sessions/' + encodedId + '/commit-preview';
@@ -1598,7 +1630,11 @@ function _renderChatPage(skillName, sessionId, session) {
     '  if(!form || !thread) return;',
     '  var TURN_URL   = "' + escHtml(turnUrl) + '";',
     '  var STREAM_URL = TURN_URL + "-stream";',
-    '  var COMMIT_URL = "' + escHtml(commitUrl) + '";',
+    '  var IS_IDEATE      = ' + (isIdeate ? 'true' : 'false') + ';',
+    '  var IS_DEFINITION  = ' + (skillName === 'definition' ? 'true' : 'false') + ';',
+    // Pre-compute gate-confirm URL server-side — avoids embedding /api/journey/ literal when no journey
+    '  var GATE_CONFIRM_URL = "' + (session.journeyId ? escHtml('/api/journey/' + session.journeyId + '/gate-confirm') : '') + '";',
+    '  var NEXT_STAGE_LABEL = "' + escHtml(session.journeyId ? ('Continue to ' + (_journeyStore.getNextStage(skillName) || 'next stage') + ' →') : '') + '";',
     '  var submitBtn  = form.querySelector("button[type=\'submit\']");',
     '',
     '  function scrollToBottom() {',
@@ -1606,6 +1642,9 @@ function _renderChatPage(skillName, sessionId, session) {
     '  }',
     '  // Scroll to bottom on initial load so latest message is visible.',
     '  scrollToBottom();',
+    '  // Auto-fire initial turn client-side when chat is empty (non-blocking, via SSE).',
+    '  // sendTurn is defined below — defer slightly so the function is ready.',
+    '  if(thread.children.length === 0) { setTimeout(function(){ sendTurn("__init__"); }, 0); }',
     '',
     '  function escHtmlClient(s) {',
     '    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");',
@@ -1639,21 +1678,226 @@ function _renderChatPage(skillName, sessionId, session) {
     '    return s;',
     '  }',
     '',
-    '  function updateDraftPanel(artefactContent) {',
-    '    var panel = document.getElementById("canvas-panel");',
-    '    if(!panel) return;',
-    '    panel.innerHTML = \'<div style="font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;font-weight:500">Draft</div>\'',
-    '      + \'<div class="sw-draft-section"><div class="sw-draft-head"><h2>Artefact</h2></div>\'',
-    '      + \'<div class="sw-draft-body" style="white-space:pre-wrap;font-family:var(--mono);font-size:13px">\' + escHtmlClient(artefactContent) + \'</div></div>\';',
+    '  // ── Artefact markdown renderer (non-ideate right panel) ─────────────────',
+    '  function inlineMd(s){',
+    '    s=s.replace(/\\*\\*(.+?)\\*\\*/g,"<strong>$1</strong>");',
+    '    s=s.replace(/`([^`]+)`/g,\'<code class="ad-code">$1</code>\');',
+    '    return s;',
     '  }',
+    '  function flushAdTable(rows){',
+    '    if(!rows.length)return"";',
+    '    var h="<table class=\\"ad-table\\">";',
+    '    for(var ri=0;ri<rows.length;ri++){',
+    '      var r=rows[ri];',
+    '      if(/^\\|[-: |]+\\|$/.test(r.trim()))continue;',
+    '      var cells=r.split("|").slice(1,-1);',
+    '      var tag=ri===0?"th":"td";',
+    '      h+="<tr>"+cells.map(function(c){return"<"+tag+">"+inlineMd(c.trim())+"</"+tag+">";}).join("")+"</tr>";',
+    '    }',
+    '    return h+"</table>";',
+    '  }',
+    '  function renderArtefactMd(raw){',
+    '    var lines=escHtmlClient(raw).split("\\n");',
+    '    var out=[];var inCode=false;var codeBuf=[];var inTable=false;var tableBuf=[];var inList=false;',
+    '    for(var i=0;i<lines.length;i++){',
+    '      var line=lines[i];',
+    '      if(line.startsWith("```")){',
+    '        if(inCode){out.push("<pre class=\\"ad-pre\\"><code>"+codeBuf.join("\\n")+"</code></pre>");codeBuf=[];inCode=false;}',
+    '        else{if(inList){out.push("</ul>");inList=false;}if(inTable){out.push(flushAdTable(tableBuf));tableBuf=[];inTable=false;}inCode=true;}',
+    '        continue;',
+    '      }',
+    '      if(inCode){codeBuf.push(line);continue;}',
+    '      if(line.startsWith("|")){if(!inTable){inTable=true;tableBuf=[];}tableBuf.push(line);continue;}',
+    '      else if(inTable){out.push(flushAdTable(tableBuf));tableBuf=[];inTable=false;}',
+    '      if(inList&&!line.startsWith("- ")&&!line.startsWith("* ")){out.push("</ul>");inList=false;}',
+    '      var trim=line.trim();',
+    '      if(!trim){out.push("<div style=\\"height:5px\\"></div>");continue;}',
+    '      if(trim==="---"){out.push("<hr class=\\"ad-hr\\">");continue;}',
+    '      var hm=trim.match(/^(#{1,3}) (.+)/);',
+    '      if(hm){var hlv=hm[1].length;out.push("<h"+hlv+" class=\\"ad-h"+hlv+"\\">"+inlineMd(hm[2])+"</h"+hlv+">");continue;}',
+    '      if(trim.startsWith("- ")||trim.startsWith("* ")){if(!inList){out.push("<ul class=\\"ad-ul\\">");inList=true;}out.push("<li>"+inlineMd(trim.slice(2))+"</li>");continue;}',
+    '      out.push("<p class=\\"ad-p\\">"+inlineMd(line)+"</p>");',
+    '    }',
+    '    if(inList)out.push("</ul>");if(inTable)out.push(flushAdTable(tableBuf));if(inCode)out.push("<pre class=\\"ad-pre\\"><code>"+codeBuf.join("\\n")+"</code></pre>");',
+    '    return out.join("");',
+    '  }',
+    '  // ── Definition: story map parser ─────────────────────────────────────────',
+    '  function parseDefinitionArtefact(md) {',
+    '    var r = { slicing: "", epics: [], epicCount: 0, storyCount: 0 };',
+    '    var sm = md.match(/^Slicing strategy:\\s*(.+)$/m);',
+    '    if (!sm) sm = md.match(/\\*\\*Slicing strategy:\\*\\*\\s*(.+)$/m);',
+    '    if (sm) r.slicing = sm[1].trim();',
+    '    // Format B: flat "## story.id — Title" with "**Epic:** slug" inside each story',
+    '    // Detection: any H2 header that looks like a story ID (letters.digits)',
+    '    var _hasFlatStories = /\\n## [a-z][a-z0-9.-]*\\.\\d+\\s*[—\\-]/i.test(md);',
+    '    if (_hasFlatStories) {',
+    '      // Extract epic name/order from the Epic structure table',
+    '      var _epicNames = {}, _epicOrder = [];',
+    '      var _tblM = md.match(/## Epic structure([\\s\\S]*?)(?=\\n## [^E]|\\n## E(?!pic)|$)/);',
+    '      if (_tblM) {',
+    '        _tblM[1].split("\\n").forEach(function(tl) {',
+    '          var cols = tl.split("|").map(function(c){return c.trim();}).filter(Boolean);',
+    '          if (cols.length >= 2 && /^Epic \\d+/.test(cols[0]) && cols[1] && !/^[-:]+$/.test(cols[1])) {',
+    '            var epSlug = cols[1];',
+    '            var epName = cols[0].replace(/^Epic \\d+[:\\-—]\\s*/,"").trim();',
+    '            if (!_epicNames[epSlug]) { _epicNames[epSlug] = epName; _epicOrder.push(epSlug); }',
+    '          }',
+    '        });',
+    '      }',
+    '      // Also check for ## Epic N: Name headers (mixed format)',
+    '      md.split(/\\n## Epic /).slice(1).forEach(function(eb) {',
+    '        var efl = eb.split("\\n")[0];',
+    '        if (!/^\\d/.test(efl)) return;',
+    '        var nM = efl.match(/—\\s*(.+)$/) || efl.match(/[-]\\s*(.+)$/) || efl.match(/:\\s*(.+)$/);',
+    '        var epSlug2 = efl.replace(/^\\d+[:\\-—\\s]+/,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");',
+    '        var numM2 = efl.match(/^(\\d+)/);',
+    '        if (nM && numM2 && !_epicNames[epSlug2]) { _epicNames[epSlug2] = nM[1].trim(); _epicOrder.push(epSlug2); }',
+    '      });',
+    '      // Parse flat story sections',
+    '      var _storiesByEpic = {};',
+    '      md.split(/\\n## /).slice(1).forEach(function(sblk) {',
+    '        var sfl = sblk.split("\\n")[0].trim();',
+    '        var sM = sfl.match(/^([a-z][a-z0-9.-]*\\.\\d+)\\s*[—\\-]\\s*(.+)$/i);',
+    '        if (!sM) return;',
+    '        var _cx = sblk.match(/Complexity:\\s*(\\d)/);',
+    '        var _epM = sblk.match(/\\*\\*Epic:\\*\\*\\s*([a-z][a-z0-9-]*)/i);',
+    '        var _epSlug = _epM ? _epM[1] : "uncategorised";',
+    '        if (!_storiesByEpic[_epSlug]) _storiesByEpic[_epSlug] = [];',
+    '        _storiesByEpic[_epSlug].push({ id: sM[1], title: sM[2].trim(), cx: _cx ? parseInt(_cx[1],10) : 0, raw: sblk });',
+    '      });',
+    '      // Build epics in order',
+    '      var _allSlugs = _epicOrder.slice();',
+    '      Object.keys(_storiesByEpic).forEach(function(s){ if(_allSlugs.indexOf(s)===-1) _allSlugs.push(s); });',
+    '      _allSlugs.forEach(function(slug, idx) {',
+    '        var sts = _storiesByEpic[slug] || [];',
+    '        r.epics.push({ num: String(idx+1), name: _epicNames[slug] || slug, stories: sts });',
+    '        r.storyCount += sts.length;',
+    '      });',
+    '    } else {',
+    '      // Format A: ## Epic N: Name sections with ### story-id subsections',
+    '      var eblocks = md.split(/\\n## Epic /);',
+    '      for (var _ei = 1; _ei < eblocks.length; _ei++) {',
+    '        var eb = eblocks[_ei];',
+    '        var fl = eb.split("\\n")[0];',
+    '        if (!/^\\d/.test(fl)) continue;',
+    '        var numM = fl.match(/^(\\d+)/);',
+    '        var nM = fl.match(/—\\s*(.+)$/);',
+    '        if (!nM) nM = fl.match(/[-]\\s*(.+)$/);',
+    '        if (!nM) nM = fl.match(/:\\s*(.+)$/);',
+    '        var stories = [];',
+    '        var sblocks = eb.split(/\\n### /);',
+    '        for (var _si = 1; _si < sblocks.length; _si++) {',
+    '          var sb = sblocks[_si];',
+    '          var sl = sb.split("\\n")[0];',
+    '          var idM = sl.match(/^([a-z][a-z0-9.-]*)/i);',
+    '          var tM = sl.match(/—\\s*(.+)$/);',
+    '          if (!tM) tM = sl.match(/\\s[-]\\s(.+)$/);',
+    '          var cxM = sb.match(/Complexity:\\s*(\\d)/);',
+    '          stories.push({ id: idM ? idM[1] : ("S" + _si), title: tM ? tM[1].trim() : sl.trim(), cx: cxM ? parseInt(cxM[1],10) : 0, raw: sb });',
+    '        }',
+    '        r.epics.push({ num: numM ? numM[1] : String(_ei), name: nM ? nM[1].trim() : fl.trim(), stories: stories });',
+    '        r.storyCount += stories.length;',
+    '      }',
+    '    }',
+    '    r.epicCount = r.epics.length;',
+    '    return r;',
+    '  }',
+    '  function renderDefinitionMap(p) {',
+    '    if (!p || !p.epicCount) return \'<div class="dm-empty">Generating definition… epics will appear here.</div>\';',
+    '    var badge = p.slicing ? \'<span class="dm-badge">\' + escHtmlClient(p.slicing) + \'</span>\' : "";',
+    '    var epicsHtml = p.epics.map(function(epic, ei) {',
+    '      var cards = epic.stories.map(function(s, si) {',
+    '        var cls = s.cx >= 3 ? "dm-cx--h" : s.cx === 2 ? "dm-cx--m" : "dm-cx--l";',
+    '        return \'<button class="dm-card" data-ei="\' + ei + \'" data-si="\' + si + \'">\' +',
+    '          \'<span class="dm-card-id">\' + escHtmlClient(s.id) + \'</span>\' +',
+    '          \'<span class="dm-card-title">\' + escHtmlClient(s.title) + \'</span>\' +',
+    '          (s.cx ? \'<span class="dm-cx \' + cls + \'">C:\' + s.cx + \'</span>\' : "") +',
+    '        \'</button>\';',
+    '      }).join("");',
+    '      var cntBadge = epic.stories.length ? \'<span class="dm-epic-count">\' + epic.stories.length + (epic.stories.length === 1 ? " story" : " stories") + \'</span>\' : "";',
+    '      return \'<div class="dm-epic">\' +',
+    '        \'<div class="dm-epic-hd">\' +',
+    '          \'<span class="dm-epic-tag">E\' + escHtmlClient(epic.num) + \'</span>\' +',
+    '          \'<span class="dm-epic-name">\' + escHtmlClient(epic.name) + \'</span>\' +',
+    '          cntBadge +',
+    '        \'</div>\' +',
+    '        \'<div class="dm-cards">\' + (cards || \'<span style="font-size:11px;color:var(--muted);padding:4px 0">Writing stories…</span>\') + \'</div>\' +',
+    '      \'</div>\';',
+    '    }).join("");',
+    '    return \'<div class="dm-canvas">\' +',
+    '      \'<div class="dm-hdr">\' +',
+    '        \'<span class="dm-count">\' + p.epicCount + (p.epicCount === 1 ? " epic" : " epics") + \' \xB7 \' + p.storyCount + (p.storyCount === 1 ? " story" : " stories") + \'</span>\' +',
+    '        badge +',
+    '      \'</div>\' +',
+    '      epicsHtml +',
+    '    \'</div>\';',
+    '  }',
+    '  // ─────────────────────────────────────────────────────────────────────────',
+    '  function updateDraftPanel(artefactContent) {',
+    '    if(IS_IDEATE){',
+    '      var panel = document.getElementById("canvas-panel");',
+    '      if(!panel) return;',
+    '      panel.innerHTML = \'<div style="font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;font-weight:500">Draft</div>\'',
+    '        + \'<div class="sw-draft-section"><div class="sw-draft-head"><h2>Artefact</h2></div>\'',
+    '        + \'<div class="sw-draft-body" style="white-space:pre-wrap;font-family:var(--mono);font-size:13px">\' + escHtmlClient(artefactContent) + \'</div></div>\';',
+    '    } else {',
+    '      var ap = document.getElementById("artefact-panel");',
+    '      if(!ap) return;',
+    '      if (IS_DEFINITION) {',
+    '        window.dmParsed = parseDefinitionArtefact(artefactContent);',
+    '        ap.innerHTML = renderDefinitionMap(window.dmParsed);',
+    '      } else {',
+    '        ap.innerHTML = renderArtefactMd(artefactContent);',
+    '      }',
+    '    }',
+    '  }',
+    '  // ── Definition: story modal ───────────────────────────────────────────────',
+    '  window.dmParsed = null;',
+    '  window.dmOpenStory = function(ei, si) {',
+    '    var p = window.dmParsed;',
+    '    if (!p || !p.epics[ei] || !p.epics[ei].stories[si]) return;',
+    '    var s = p.epics[ei].stories[si];',
+    '    var modal = document.getElementById("dm-modal");',
+    '    if (!modal) {',
+    '      modal = document.createElement("div");',
+    '      modal.id = "dm-modal";',
+    '      modal.className = "dm-modal";',
+    '      modal.innerHTML =',
+    '        \'<div class="dm-mo" onclick="dmCloseModal()"></div>\' +',
+    '        \'<div class="dm-mb">\' +',
+    '          \'<div class="dm-mh">\' +',
+    '            \'<div id="dm-mt" class="dm-mt"></div>\' +',
+    '            \'<button onclick="dmCloseModal()" class="dm-mx" title="Close">✕</button>\' +',
+    '          \'</div>\' +',
+    '          \'<div id="dm-body" class="dm-mbd"></div>\' +',
+    '        \'</div>\';',
+    '      document.body.appendChild(modal);',
+    '      document.addEventListener("keydown", function(ev) {',
+    '        if (ev.key === "Escape") window.dmCloseModal();',
+    '      });',
+    '    }',
+    '    document.getElementById("dm-mt").textContent = s.id + " — " + s.title;',
+    '    document.getElementById("dm-body").innerHTML = renderArtefactMd("### " + s.id + " — " + s.title + "\\n" + s.raw);',
+    '    modal.style.display = "flex";',
+    '  };',
+    '  window.dmCloseModal = function() {',
+    '    var m = document.getElementById("dm-modal");',
+    '    if (m) m.style.display = "none";',
+    '  };',
     '',
     '  function showCommitLink() {',
     '    var foot = form.closest(".sw-chat-pane") && form.closest(".sw-chat-pane").querySelector(".sw-chat-foot");',
     '    if(!foot) return;',
-    '    var link = document.createElement("div");',
-    '    link.style.cssText = "padding:10px 12px 2px";',
-    '    link.innerHTML = \'<a href="\' + COMMIT_URL + \'" style="display:inline-block;font-size:14px;font-weight:600;color:#fff;background:var(--ink);padding:8px 18px;border-radius:6px;text-decoration:none">Review &amp; save artefact \u2192</a>\';',
-    '    foot.appendChild(link);',
+    '    var wrap = document.createElement("div");',
+    '    wrap.style.cssText = "padding:10px 12px 2px;display:flex;align-items:center;gap:10px;flex-wrap:wrap";',
+    '    if(GATE_CONFIRM_URL) {',
+    '      wrap.innerHTML = \'<span style="font-size:12px;color:var(--muted)">Artefact saved \u2713</span>\'',
+    '        + \'<form method="POST" action="\' + GATE_CONFIRM_URL + \'" style="margin:0">\'',
+    '        + \'<button type="submit" class="sw-btn sw-btn--primary" style="font-size:14px">\' + (NEXT_STAGE_LABEL || "Continue \u2192") + \'</button></form>\';',
+    '    } else {',
+    '      wrap.innerHTML = \'<span style="font-size:14px;color:green;font-weight:600">Artefact saved \u2713</span>\';',
+    '    }',
+    '    foot.appendChild(wrap);',
     '  }',
     '',
     '  function sendTurn(answer) {',
@@ -1743,7 +1987,7 @@ function _renderChatPage(skillName, sessionId, session) {
     '                if(evt.done) {',
     '                  showCommitLink();',
     '                } else if(streamText && streamText.indexOf("?") === -1) {',
-    '                  setTimeout(function(){ sendTurn("continue"); }, 800);',
+    '                  setTimeout(function(){ sendTurn("continue"); }, 100);',
     '                } else {',
     '                  if(submitBtn) submitBtn.disabled = false;',
     '                }',
@@ -2028,6 +2272,23 @@ function _renderChatPage(skillName, sessionId, session) {
     '    if(ta) ta.value = "";',
     '    sendTurn(answer);',
     '  });',
+    '  // Initialize artefact panel from server-rendered session (non-ideate, done on page load)',
+    '  if(!IS_IDEATE && typeof __SW_INITIAL_ARTEFACT__ !== "undefined" && __SW_INITIAL_ARTEFACT__) {',
+    '    updateDraftPanel(__SW_INITIAL_ARTEFACT__);',
+    '  }',
+    '  // Definition: delegate story-card clicks from artefact panel',
+    '  if (IS_DEFINITION) {',
+    '    var _dmAp = document.getElementById("artefact-panel");',
+    '    if (_dmAp) {',
+    '      _dmAp.addEventListener("click", function(e) {',
+    '        var btn = e.target && e.target.closest ? e.target.closest(".dm-card") : null;',
+    '        if (!btn) return;',
+    '        var ei = parseInt(btn.getAttribute("data-ei") || "0", 10);',
+    '        var si = parseInt(btn.getAttribute("data-si") || "0", 10);',
+    '        if (window.dmOpenStory) window.dmOpenStory(ei, si);',
+    '      });',
+    '    }',
+    '  }',
     '})();',
     '</script>'
   ].join('\n');
@@ -2050,24 +2311,30 @@ function _renderChatPage(skillName, sessionId, session) {
       var _doneSet = new Set((_navJourney.completedStages || []).map(function(s) { return s.skillName; }));
       var _activeSkill = _navJourney.activeSkill;
       var _featureDisplaySlug = escHtml(_navJourney.featureSlug || '');
+      var _navJourneyId = escHtml(session.journeyId);
       var _stepsHtml = _NAV_STAGES.map(function(s) {
         var isDone = _doneSet.has(s.id);
         var isActive = s.id === _activeSkill;
         var cls = isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending';
         var icon = isDone ? '●' : isActive ? '▶' : '○';
-        return '<li class="sn-step ' + cls + '">' +
-          '<span class="sn-num">' + escHtml(s.num) + '</span>' +
+        var inner = '<span class="sn-num">' + escHtml(s.num) + '</span>' +
           '<span class="sn-label">' + escHtml(s.label) + '</span>' +
-          '<span class="sn-icon" aria-hidden="true">' + icon + '</span>' +
-          '</li>';
+          '<span class="sn-icon" aria-hidden="true">' + icon + '</span>';
+        if (isDone) {
+          return '<li class="sn-step ' + cls + '"><a href="/journey/' + _navJourneyId + '/stage/' + encodeURIComponent(s.id) + '" class="sn-step-link" title="View ' + escHtml(s.label) + ' artefact">' + inner + '</a></li>';
+        }
+        return '<li class="sn-step ' + cls + '">' + inner + '</li>';
       }).join('');
       navigatorHtml = [
         '<style>',
         '.sn-bar{display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--line);background:var(--surface);overflow-x:auto;gap:0;flex-shrink:0}',
         '.sn-feature{font-size:11px;font-weight:600;color:var(--muted);padding:0 12px 0 4px;border-right:1px solid var(--line);white-space:nowrap;margin-right:4px}',
         '.sn-steps{display:flex;list-style:none;margin:0;padding:0;gap:0}',
-        '.sn-step{display:flex;align-items:center;gap:5px;padding:7px 11px;font-size:12px;white-space:nowrap;border-right:1px solid var(--line);color:var(--muted)}',
+        '.sn-step{display:flex;align-items:center;gap:5px;padding:0;font-size:12px;white-space:nowrap;border-right:1px solid var(--line);color:var(--muted)}',
         '.sn-step:last-child{border-right:none}',
+        '.sn-step>span{padding:7px 11px}',
+        '.sn-step-link{display:flex;align-items:center;gap:5px;padding:7px 11px;color:inherit;text-decoration:none;width:100%}',
+        '.sn-step-link:hover{background:var(--line-2,#f6f8fa)}',
         '.sn-num{font-weight:700;font-size:10px;opacity:0.6}',
         '.sn-icon{font-size:9px}',
         '.sn-step--done{color:var(--ink);opacity:0.75}',
@@ -2087,9 +2354,10 @@ function _renderChatPage(skillName, sessionId, session) {
     }
   }
 
-  var bodyContent = navigatorHtml + _renderChatView({
+  var bodyContent = navigatorHtml + artefactInitScript + _renderChatView({
     skillName:         skillName,
     skillLabel:        skillName,
+    isIdeate:          isIdeate,
     featureSlug:       session.featureSlug || '',
     sessionId:         sessionId,
     questionIndex:     priorQA.length + 1,
@@ -2103,7 +2371,7 @@ function _renderChatPage(skillName, sessionId, session) {
     contextManifestHtml: buildContextManifestHtml(session.contextFiles || [])
   }) + script;
 
-  // ougl.4 — journey-aware gate-confirm button
+  // ougl.4 — journey-aware gate-confirm button (with sub-step affordances)
   if (session.done && session.journeyId) {
     var safeJourneyId = escHtml(session.journeyId);
     var journeyPanel;
@@ -2114,11 +2382,111 @@ function _renderChatPage(skillName, sessionId, session) {
         'View journey complete &#x2192;</a></div>';
     } else {
       var nextStage = _journeyStore.getNextStage(skillName) || 'next stage';
-      journeyPanel = '<div class="sw-journey-gate" style="padding:16px;margin-top:12px;display:flex;align-items:center;gap:12px">' +
-        '<a href="/journey/' + safeJourneyId + '/stage-review" class="sw-btn sw-btn--primary">' +
-        'Review &amp; continue to ' + escHtml(nextStage) + ' &#x2192;</a>' +
-        '<span style="font-size:12px;color:var(--muted)">Artefact ready — review before confirming</span>' +
-        '</div>';
+
+      // Build optional sub-step affordances for stages that have side trips
+      var subStepHtml = '';
+      var subStepJs = '';
+      if (skillName === 'discovery') {
+        var rawJourneyId = session.journeyId;
+        subStepHtml = [
+          '<div class="sw-gate-substeps">',
+          '<span class="sw-gate-substep-lbl">Before proceeding:</span>',
+          '<a href="#" class="sw-gate-substep-btn sw-gate-substep-btn--rec" id="sw-clarify-btn" onclick="swLaunchClarify(event)" title="Resolve open assumptions before benefit-metric">',
+          '1a&#160; /clarify <span style="opacity:0.6;font-size:11px">(resolve assumptions)</span></a>',
+          '<button type="button" class="sw-gate-substep-btn" onclick="swToggleEstimate()" id="sw-estimate-btn" title="Log a rough time forecast for calibration">',
+          '1b&#160; /estimate <span style="opacity:0.6;font-size:11px">(time forecast)</span></button>',
+          '</div>',
+          '<div id="sw-estimate-panel" style="display:none">',
+          '<form id="sw-estimate-form" class="sw-est-form">',
+          '<div class="sw-est-field"><label>Focus hours</label><input name="focusHours" type="number" min="1" max="200" placeholder="4" required></div>',
+          '<div class="sw-est-field"><label>Complexity 1–5</label><input name="complexity" type="number" min="1" max="5" placeholder="2" required></div>',
+          '<div class="sw-est-field"><label>Scope stability</label><select name="scopeStability"><option>Stable</option><option>Likely stable</option><option>Uncertain</option><option>Volatile</option></select></div>',
+          '<div class="sw-est-field"><label>Notes</label><input name="notes" type="text" style="width:180px" placeholder="Context or assumptions…"></div>',
+          '<div class="sw-est-field"><label>&nbsp;</label><button type="submit" class="sw-gate-substep-btn sw-gate-substep-btn--rec">Log estimate</button></div>',
+          '</form>',
+          '</div>'
+        ].join('');
+        subStepJs = [
+          '<script>',
+          '(function(){',
+          '  function swLaunchClarify(e){',
+          '    e.preventDefault();',
+          '    var btn=document.getElementById("sw-clarify-btn");',
+          '    if(btn){btn.innerHTML="Opening /clarify…";btn.style.opacity="0.7";}',
+          '    fetch("/api/journey/' + escHtml(rawJourneyId) + '/side-trip/clarify",{method:"POST"})',
+          '      .then(function(r){return r.json();})',
+          '      .then(function(d){if(d.sideTripSessionId)window.location.href="/skills/clarify/sessions/"+d.sideTripSessionId+"/chat";})',
+          '      .catch(function(){if(btn){btn.innerHTML="1a /clarify (error — retry)";btn.style.opacity="1";}});',
+          '  }',
+          '  window.swLaunchClarify=swLaunchClarify;',
+          '  window.swToggleEstimate=function(){',
+          '    var p=document.getElementById("sw-estimate-panel");',
+          '    if(p)p.style.display=p.style.display==="none"?"block":"none";',
+          '  };',
+          '  var ef=document.getElementById("sw-estimate-form");',
+          '  if(ef)ef.addEventListener("submit",function(evt){',
+          '    evt.preventDefault();',
+          '    var data={};new FormData(ef).forEach(function(v,k){data[k]=v;});',
+          '    fetch("/api/journey/' + escHtml(rawJourneyId) + '/estimate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)})',
+          '      .then(function(r){',
+          '        var btn=document.getElementById("sw-estimate-btn");',
+          '        document.getElementById("sw-estimate-panel").style.display="none";',
+          '        if(r.ok){if(btn)btn.innerHTML="1b&#160; /estimate <span style=\\"opacity:0.6;font-size:11px\\">(&#x2713; logged)</span>";}',
+          '        else{if(btn)btn.innerHTML="1b&#160; /estimate <span style=\\"color:red;font-size:11px\\">(error)</span>";}',
+          '      });',
+          '  });',
+          '})();',
+          '</script>'
+        ].join('');
+      } else if (skillName === 'definition') {
+        var rawJourneyIdDef = session.journeyId;
+        subStepHtml = [
+          '<div class="sw-gate-substeps">',
+          '<span class="sw-gate-substep-lbl">Optional:</span>',
+          '<button type="button" class="sw-gate-substep-btn" onclick="swToggleEstimate()" id="sw-estimate-btn" title="Refine your time estimate (E2)">',
+          '4a&#160; /estimate <span style="opacity:0.6;font-size:11px">(E2 — refine forecast)</span></button>',
+          '</div>',
+          '<div id="sw-estimate-panel" style="display:none">',
+          '<form id="sw-estimate-form" class="sw-est-form">',
+          '<div class="sw-est-field"><label>Focus hours</label><input name="focusHours" type="number" min="1" max="200" placeholder="4" required></div>',
+          '<div class="sw-est-field"><label>Complexity 1–5</label><input name="complexity" type="number" min="1" max="5" placeholder="2" required></div>',
+          '<div class="sw-est-field"><label>Scope stability</label><select name="scopeStability"><option>Stable</option><option>Likely stable</option><option>Uncertain</option><option>Volatile</option></select></div>',
+          '<div class="sw-est-field"><label>Notes</label><input name="notes" type="text" style="width:180px" placeholder="Context or assumptions…"></div>',
+          '<div class="sw-est-field"><label>&nbsp;</label><button type="submit" class="sw-gate-substep-btn sw-gate-substep-btn--rec">Log estimate</button></div>',
+          '</form>',
+          '</div>'
+        ].join('');
+        subStepJs = [
+          '<script>',
+          '(function(){',
+          '  window.swToggleEstimate=function(){',
+          '    var p=document.getElementById("sw-estimate-panel");',
+          '    if(p)p.style.display=p.style.display==="none"?"block":"none";',
+          '  };',
+          '  var ef=document.getElementById("sw-estimate-form");',
+          '  if(ef)ef.addEventListener("submit",function(evt){',
+          '    evt.preventDefault();',
+          '    var data={pass:"E2"};new FormData(ef).forEach(function(v,k){data[k]=v;});',
+          '    fetch("/api/journey/' + escHtml(rawJourneyIdDef) + '/estimate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)})',
+          '      .then(function(r){',
+          '        var btn=document.getElementById("sw-estimate-btn");',
+          '        document.getElementById("sw-estimate-panel").style.display="none";',
+          '        if(r.ok){if(btn)btn.innerHTML="4a&#160; /estimate <span style=\\"opacity:0.6;font-size:11px\\">(&#x2713; logged)</span>";}',
+          '        else{if(btn)btn.innerHTML="4a&#160; /estimate <span style=\\"color:red;font-size:11px\\">(error)</span>";}',
+          '      });',
+          '  });',
+          '})();',
+          '</script>'
+        ].join('');
+      }
+
+      journeyPanel = subStepHtml +
+        '<div class="sw-journey-gate" style="padding:16px;margin-top:' + (subStepHtml ? '0' : '12px') + ';display:flex;align-items:center;gap:12px">' +
+        '<form method="POST" action="/api/journey/' + safeJourneyId + '/gate-confirm" style="margin:0">' +
+        '<button type="submit" class="sw-btn sw-btn--primary">Continue to ' + escHtml(nextStage) + ' &#x2192;</button>' +
+        '</form>' +
+        '<span style="font-size:12px;color:var(--muted)">Artefact saved — advance to next stage</span>' +
+        '</div>' + subStepJs;
     }
     bodyContent = bodyContent + journeyPanel;
   }
@@ -2146,22 +2514,7 @@ async function handleGetChatHtml(req, res) {
     res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Session not found.</p>', user: { login: '' } }));
     return;
   }
-  // Fire initial turn when there is no prior conversation
-  if (session.turns.length === 0) {
-    var initResponse = '';
-    try {
-      initResponse = await _skillTurnExecutor(
-        session.systemPrompt,
-        [],
-        'Begin the session. Greet the operator with one short welcoming sentence and ask your single opening question only. Do not list multiple questions.',
-        req.session.accessToken
-      );
-    } catch (err) {
-      _logger.warn('handleGetChatHtml initial turn error: ' + (err && err.message ? err.message : 'unknown'));
-      initResponse = '';
-    }
-    session.turns.push({ role: 'assistant', content: initResponse });
-  }
+  // Initial turn is fired client-side via SSE to avoid blocking page render on LLM call
   var html = _renderChatPage(skillName, sessionId, session);
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
@@ -2260,9 +2613,25 @@ async function handlePostTurnStreamHtml(req, res) {
     try { res.write(':\n\n'); } catch (_) {}
   }, 15000);
 
-  var userContent     = sanitiseAnswer(rawAnswer);
+  // __init__ is a special sentinel from the client's auto-initial-turn.
+  // Use the standard opening prompt and do NOT push a user turn to history
+  // (so session state matches the old server-side initial-turn behaviour).
+  var _isInitialTurn = rawAnswer === '__init__' && session.turns.length === 0;
+  var _initPrompt = 'Begin the session. Greet the operator with one short welcoming sentence and ask your single opening question only. Do not list multiple questions.';
+  if (_isInitialTurn && session.skillName === 'definition' && session.journeyId) {
+    _initPrompt = 'Begin the session. The feature has already been selected by the operator — do not ask which feature to work on. Present what you found (Step 1 summary) and ask if ready to decompose into epics and stories. One question only.';
+  }
+  var userContent = _isInitialTurn ? _initPrompt : sanitiseAnswer(rawAnswer);
   var historySnapshot = session.turns.slice();
-  session.turns.push({ role: 'user', content: userContent });
+  // Cap history on every turn — the system prompt holds all context, so older turns
+  // just add tokens without improving response quality.
+  var _maxHistoryTurns = parseInt(process.env.WUCE_MAX_HISTORY_TURNS || '12', 10);
+  if (historySnapshot.length > _maxHistoryTurns) {
+    historySnapshot = historySnapshot.slice(-_maxHistoryTurns);
+  }
+  if (!_isInitialTurn) {
+    session.turns.push({ role: 'user', content: userContent });
+  }
 
   var _chunkCount   = 0;
   var _reasoningCount = 0;
@@ -2289,12 +2658,29 @@ async function handlePostTurnStreamHtml(req, res) {
   var fullText = '';
   try {
     var _artefactAccum  = '';
-    var _inArtefactMode = false;
+    var _inArtefactMode = session._artefactInProgress === true;
     var _DRAFT_START = '---ARTEFACT-START---';
     var _DRAFT_END   = '---ARTEFACT-END---';
     var _llmStart = Date.now();
     var _ttfbMs = null;
-    fullText = await _skillTurnExecutorStream(
+    var _turnUsage = null;
+
+    // Build per-turn options: model routing, max_tokens, thinking control.
+    var _turnOptions = {};
+    if (!_isInitialTurn) { _turnOptions.noThinking = true; }
+    if (_isInitialTurn) {
+      // Init turn only ever produces a short greeting + one question.
+      _turnOptions.maxTokens = parseInt(process.env.WUCE_INIT_MAX_TOKENS || '1024', 10);
+    }
+    var _fastModel = process.env.WUCE_FAST_MODEL;
+    if (_fastModel) {
+      // Use the fast model for every operator turn that isn't generating artefact content.
+      // Continue turns and in-progress artefact continuation always use the configured model.
+      var _needsFullModel = rawAnswer === 'continue' || session._artefactInProgress === true;
+      if (!_needsFullModel) { _turnOptions.model = _fastModel; }
+    }
+
+    var _llmResult = await _skillTurnExecutorStream(
       session.systemPrompt,
       historySnapshot,
       userContent,
@@ -2438,13 +2824,29 @@ async function handlePostTurnStreamHtml(req, res) {
             if (cleanDraftText) {
               res.write('data: ' + JSON.stringify({ draftChunk: cleanDraftText }) + '\n\n');
             }
+            if (endIdx === -1) {
+              // Artefact opened but not closed — persist state for continuation turns
+              session._artefactInProgress = true;
+              session._artefactBuffer = afterStart;
+            }
           }
         } else {
           var endIdx2 = chunk.indexOf(_DRAFT_END);
           var draftChunk2 = endIdx2 !== -1 ? chunk.slice(0, endIdx2) : chunk;
-          var cleanDraftChunk2 = draftChunk2.replace(_COND_STRIP_RE, '');
-          if (cleanDraftChunk2) {
-            res.write('data: ' + JSON.stringify({ draftChunk: cleanDraftChunk2 }) + '\n\n');
+          // Only emit draftChunk while artefact is still open
+          if (_inArtefactMode) {
+            var cleanDraftChunk2 = draftChunk2.replace(_COND_STRIP_RE, '');
+            if (cleanDraftChunk2) {
+              res.write('data: ' + JSON.stringify({ draftChunk: cleanDraftChunk2 }) + '\n\n');
+            }
+          }
+          // Accumulate cross-turn artefact content
+          if (session._artefactInProgress) {
+            session._artefactBuffer = (session._artefactBuffer || '') + draftChunk2;
+            if (endIdx2 !== -1) {
+              session._artefactInProgress = false;
+              _inArtefactMode = false;
+            }
           }
         }
       },
@@ -2452,8 +2854,11 @@ async function handlePostTurnStreamHtml(req, res) {
         _reasoningCount++;
         res.write('data: ' + JSON.stringify({ reasoningChunk: chunk }) + '\n\n');
       },
-      function onFirstChunk(ms) { _ttfbMs = ms; }
+      function onFirstChunk(ms) { _ttfbMs = ms; },
+      _turnOptions
     );
+    fullText    = typeof _llmResult === 'string' ? _llmResult : (_llmResult && _llmResult.text ? _llmResult.text : '');
+    _turnUsage  = (typeof _llmResult === 'object' && _llmResult && _llmResult.usage) ? _llmResult.usage : null;
   // Flush any remaining display buffer content (e.g. text after last marker was held back)
   if (_displayBuf) {
     var _finalDisplay = _displayBuf.replace(_DISPLAY_STRIP_RE, '');
@@ -2468,7 +2873,23 @@ async function handlePostTurnStreamHtml(req, res) {
     condition:  (fullText.match(/---CONDITION-JSON:/g)  || []).length,
     canvas:     (fullText.match(/---CANVAS-JSON:/g)     || []).length
   };
-  _turnLog.info({ event: 'llm_complete', llm_duration_ms: _llmDuration, ttfb_ms: _ttfbMs, reasoning_chunks: _reasoningCount, markers: _markerCounts }, 'LLM call complete');
+  var _tu = _turnUsage || {};
+  var _turnType = _isInitialTurn ? 'init' : (rawAnswer === 'continue' ? 'continue' : 'operator');
+  _turnLog.info({
+    event:                'llm_complete',
+    llm_duration_ms:      _llmDuration,
+    ttfb_ms:              _ttfbMs,
+    reasoning_chunks:     _reasoningCount,
+    markers:              _markerCounts,
+    turn_type:            _turnType,
+    model:                _tu.model || null,
+    no_thinking:          (_turnOptions.noThinking === true),
+    max_tokens_requested: _turnOptions.maxTokens || null,
+    input_tokens:         _tu.input_tokens  || null,
+    output_tokens:        _tu.output_tokens || null,
+    cache_read_tokens:    _tu.cache_read_tokens    || null,
+    cache_creation_tokens: _tu.cache_creation_tokens || null
+  }, 'LLM call complete');
   } catch (err) {
     clearInterval(_keepaliveInterval);
     _turnLog.error({ event: 'sse_error', error_message: (err && err.message) ? err.message : 'unknown' }, 'SSE stream error');
@@ -2491,21 +2912,57 @@ async function handlePostTurnStreamHtml(req, res) {
 
   var artefactMatch = fullText.match(/---ARTEFACT-START---\s*([\s\S]+?)\s*---ARTEFACT-END---/);
   var slugMatch     = fullText.match(/---SLUG---\s*\n?([\w-]+)/);
+  // Persist slug across turns — store when found, retrieve on the final artefact turn
+  if (slugMatch && session._artefactInProgress) {
+    session._slugBuffer = slugMatch[1].trim();
+  }
+  if (!slugMatch && session._slugBuffer) {
+    slugMatch = [null, session._slugBuffer];
+  }
   var done = !!artefactMatch;
+  var _artefactText = artefactMatch ? artefactMatch[1].trim() : null;
+  // Multi-turn artefact: buffer was accumulated across turns, ARTEFACT-END found this turn
+  if (!done && session._artefactBuffer !== undefined && session._artefactInProgress === false) {
+    done = true;
+    _artefactText = session._artefactBuffer.trim();
+    session._artefactBuffer = undefined;
+    session._slugBuffer = undefined;
+  }
 
-  if (artefactMatch) {
-    session.artefactContent = artefactMatch[1].trim();
+  if (done && _artefactText) {
+    session.artefactContent = _artefactText;
     var skillName = (req.params && req.params.name) || '';
     var slug = slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName;
     session.artefactPath = 'artefacts/' + slug + '/' + (session.skillName || skillName) + '.md';
     session.done = true;
+
+    // Auto-save artefact to disk + git commit immediately on generation
+    var _autoRepoRoot = _getRepoPath();
+    var _autoAbsPath = path.resolve(path.join(_autoRepoRoot, session.artefactPath));
+    if (!fs.existsSync(_autoAbsPath)) {
+      try {
+        fs.mkdirSync(path.dirname(_autoAbsPath), { recursive: true });
+        fs.writeFileSync(_autoAbsPath, session.artefactContent, 'utf8');
+        var _cp = require('child_process');
+        _cp.execSync('git add ' + JSON.stringify(session.artefactPath), { cwd: _autoRepoRoot, encoding: 'utf8' });
+        _cp.execSync('git commit -m ' + JSON.stringify('feat: ' + (session.skillName || skillName) + ' artefact'), { cwd: _autoRepoRoot, encoding: 'utf8' });
+        console.info(JSON.stringify({ event: 'artefact_auto_saved', sessionId: sessionId, artefactPath: session.artefactPath }));
+      } catch (_autoErr) {
+        console.warn(JSON.stringify({ event: 'artefact_auto_save_failed', sessionId: sessionId, error: _autoErr.message }));
+      }
+    }
+    // Mark stage complete in journey so resume can load it as a prior artefact
+    if (session.journeyId && !session._stageDone) {
+      session._stageDone = true;
+      try { _journeyStore.completeStage(session.journeyId, session.skillName, session.artefactPath); } catch (_) {}
+    }
   }
 
   session.turns.push({ role: 'assistant', content: fullText });
 
   res.write('data: ' + JSON.stringify({
     done: done,
-    artefactContent: artefactMatch ? session.artefactContent : undefined
+    artefactContent: done ? session.artefactContent : undefined
   }) + '\n\n');
 
   // iwu.5: emit lensComplete event when artefact is produced

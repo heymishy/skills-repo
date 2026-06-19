@@ -500,6 +500,438 @@ async function handleGetStageReview(req, res) {
 }
 
 /**
+ * GET /journey/:journeyId/stage/:stageName — read-only view of a completed stage artefact.
+ * Supports ?edit=true to switch to inline edit mode.
+ * POST /api/journey/:journeyId/stage/:stageName/artefact — save edited artefact content to disk.
+ */
+async function handleGetJourneyStageView(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var stageName = req.params && req.params.stageName;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Journey not found.</p><a href="/journey">Back</a></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  // Find the completed stage entry in store
+  var storeStage = (journey.completedStages || []).find(function(s) { return s.skillName === stageName; });
+  var repoRoot = getRepoRoot();
+
+  // Resolve artefact path: prefer store, fall back to disk journey
+  var artefactRelPath = (storeStage && storeStage.artefactPath) || null;
+  if (!artefactRelPath) {
+    var dj = null;
+    try { dj = _journeyDisk.loadJourney(journey.featureSlug, repoRoot); } catch (_) {}
+    if (dj && dj.stages && dj.stages[stageName]) {
+      artefactRelPath = dj.stages[stageName].artefactPath || null;
+    }
+  }
+
+  if (!artefactRelPath) {
+    // Stage exists but has no artefact yet — redirect to current chat
+    var activeSkill = journey.activeSkill || 'discovery';
+    var activeSid = journey.activeSessionId || '';
+    res.writeHead(302, { Location: '/skills/' + encodeURIComponent(activeSkill) + '/sessions/' + encodeURIComponent(activeSid) + '/chat' });
+    res.end();
+    return;
+  }
+
+  var artefactContent = '';
+  var artefactAbsPath = path.resolve(path.join(repoRoot, artefactRelPath));
+  try { artefactContent = fs.readFileSync(artefactAbsPath, 'utf8'); } catch (_) {}
+
+  // Parse ?edit from URL
+  var url = req.url || '';
+  var isEdit = url.indexOf('edit=true') !== -1 || (req.query && req.query.edit === 'true');
+
+  var stageMeta = STAGE_META.find(function(s) { return s.id === stageName; });
+  var stageLabel = stageMeta ? (stageMeta.num + '. ' + stageMeta.label) : stageName;
+  var safeJourneyId = escHtml(journeyId);
+  var featureName = escHtml((journey.featureSlug || '').replace(/^\d{4}-\d{2}-\d{2}-/, '').replace(/-/g, ' '));
+
+  // Navigator bar — done stages are clickable, active stage links back to chat
+  var _doneSet = new Set((journey.completedStages || []).map(function(s) { return s.skillName; }));
+  var _activeSkill = journey.activeSkill;
+  var _activeSid = journey.activeSessionId || '';
+  var _stepsHtml = STAGE_META.map(function(s) {
+    var isDone = _doneSet.has(s.id);
+    var isActive = s.id === _activeSkill;
+    var isViewing = s.id === stageName;
+    var cls = isViewing ? 'sn-step--viewing' : isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending';
+    var icon = isDone || isViewing ? '●' : isActive ? '▶' : '○';
+    var inner = '<span class="sn-num">' + escHtml(String(s.num)) + '</span>' +
+      '<span class="sn-label">' + escHtml(s.label) + '</span>' +
+      '<span class="sn-icon" aria-hidden="true">' + icon + '</span>';
+    if (isDone && !isViewing) {
+      return '<li class="sn-step ' + cls + '"><a href="/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(s.id) + '" class="sn-step-link">' + inner + '</a></li>';
+    }
+    if (isActive) {
+      return '<li class="sn-step ' + cls + '"><a href="/skills/' + encodeURIComponent(_activeSkill) + '/sessions/' + encodeURIComponent(_activeSid) + '/chat" class="sn-step-link">' + inner + '</a></li>';
+    }
+    return '<li class="sn-step ' + cls + '">' + inner + '</li>';
+  }).join('');
+
+  var navigatorHtml = [
+    '<style>',
+    '.sn-bar{display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--line);background:var(--surface);overflow-x:auto;gap:0;flex-shrink:0}',
+    '.sn-feature{font-size:11px;font-weight:600;color:var(--muted);padding:0 12px 0 4px;border-right:1px solid var(--line);white-space:nowrap;margin-right:4px}',
+    '.sn-steps{display:flex;list-style:none;margin:0;padding:0;gap:0}',
+    '.sn-step{display:flex;align-items:center;gap:5px;padding:0;font-size:12px;white-space:nowrap;border-right:1px solid var(--line);color:var(--muted)}',
+    '.sn-step:last-child{border-right:none}',
+    '.sn-step-link{display:flex;align-items:center;gap:5px;padding:7px 11px;color:inherit;text-decoration:none;width:100%}',
+    '.sn-step-link:hover{background:var(--line-2,#f6f8fa)}',
+    '.sn-step>span{padding:7px 11px}',
+    '.sn-num{font-weight:700;font-size:10px;opacity:0.6}',
+    '.sn-icon{font-size:9px}',
+    '.sn-step--done{color:var(--ink);opacity:0.75}',
+    '.sn-step--done .sn-icon{color:#2da44e}',
+    '.sn-step--viewing{color:var(--ink);font-weight:600;background:var(--line-2,#f6f8fa)}',
+    '.sn-step--viewing .sn-icon{color:#2da44e}',
+    '.sn-step--active{background:var(--accent-soft,#eaf1fb);color:var(--ink);font-weight:600}',
+    '.sn-step--active .sn-step-link{font-weight:600}',
+    '.sn-step--active .sn-icon{color:var(--accent,#0969da)}',
+    '.sn-step--pending{opacity:0.4}',
+    '</style>',
+    '<nav class="sn-bar" aria-label="Journey stages">',
+      '<a href="/journey" class="sn-feature" style="text-decoration:none;color:var(--muted)">' + escHtml(journey.featureSlug || '') + '</a>',
+      '<ul class="sn-steps">' + _stepsHtml + '</ul>',
+    '</nav>'
+  ].join('');
+
+  var artefactHtml  = _renderMarkdown(artefactContent);
+  var saveUrl = '/api/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(stageName) + '/artefact';
+  var currentChatUrl = _activeSid
+    ? '/skills/' + encodeURIComponent(_activeSkill || 'discovery') + '/sessions/' + encodeURIComponent(_activeSid) + '/chat'
+    : '/journey';
+
+  var mainPanel;
+  if (isEdit) {
+    mainPanel = [
+      '<form method="POST" action="' + escHtml(saveUrl) + '" style="margin:0">',
+        '<textarea name="content" class="sv-textarea" style="width:100%;box-sizing:border-box;min-height:420px;padding:24px;border:none;outline:none;font-family:var(--mono);font-size:13px;line-height:1.65;resize:vertical;background:var(--surface);color:var(--ink)">' + escHtml(artefactContent) + '</textarea>',
+        '<div class="sv-edit-bar" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line);background:var(--surface)">',
+          '<button type="submit" class="sw-btn sw-btn--primary" style="font-size:13px">Save changes</button>',
+          '<a href="/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(stageName) + '" class="sw-btn" style="font-size:13px;border:1px solid var(--line)">Cancel</a>',
+          '<span style="font-size:12px;color:var(--muted);margin-left:auto">' + escHtml(artefactRelPath) + '</span>',
+        '</div>',
+      '</form>'
+    ].join('');
+  } else if (stageName === 'definition') {
+    var _svArtJson = JSON.stringify(artefactContent).replace(/<\/script/gi, '<\\/script');
+    mainPanel = [
+      '<style>',
+      '.dm-canvas{padding:12px 16px}',
+      '.dm-hdr{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}',
+      '.dm-count{font-size:11px;color:var(--muted);font-weight:500}',
+      '.dm-badge{background:var(--accent-soft,#eaf1fb);color:var(--accent-ink,#1d4ed8);font-size:10px;font-weight:600;padding:2px 9px;border-radius:10px;text-transform:uppercase;letter-spacing:0.4px}',
+      '.dm-epic{margin-bottom:20px}',
+      '.dm-epic-hd{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:2px solid var(--accent,#2563eb);margin-bottom:10px}',
+      '.dm-epic-tag{font-size:10px;font-weight:700;background:var(--accent,#2563eb);color:#fff;border-radius:4px;padding:1px 7px;flex-shrink:0}',
+      '.dm-epic-name{font-size:12px;font-weight:600;color:var(--ink);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.dm-epic-count{font-size:10px;color:var(--muted);flex-shrink:0;background:var(--line-2);padding:1px 6px;border-radius:10px;white-space:nowrap}',
+      '.dm-cards{display:flex;flex-wrap:wrap;gap:6px}',
+      '.dm-card{cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);text-align:left;min-width:96px;max-width:144px;display:flex;flex-direction:column;gap:3px;font-family:inherit;line-height:1;transition:border-color 0.15s,box-shadow 0.15s}',
+      '.dm-card:hover{border-color:var(--accent,#2563eb);box-shadow:0 2px 7px rgba(0,0,0,.09)}',
+      '.dm-card-id{font-size:9px;font-weight:700;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.3px}',
+      '.dm-card-title{font-size:11px;font-weight:500;color:var(--ink);line-height:1.35;margin:2px 0}',
+      '.dm-cx{font-size:9px;font-weight:600;margin-top:2px}',
+      '.dm-cx--l{color:#2da44e}.dm-cx--m{color:#ca8a04}.dm-cx--h{color:#dc2626}',
+      '.dm-empty{padding:24px 16px;font-size:13px;color:var(--muted);font-style:italic}',
+      '.dm-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:10000;align-items:center;justify-content:center}',
+      '.dm-mo{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4)}',
+      '.dm-mb{position:relative;background:var(--bg);border-radius:12px;width:700px;max-width:95vw;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.28)}',
+      '.dm-mh{display:flex;align-items:flex-start;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);flex-shrink:0;gap:12px}',
+      '.dm-mt{font-size:14px;font-weight:600;color:var(--ink);line-height:1.4}',
+      '.dm-mx{border:none;background:none;cursor:pointer;font-size:16px;color:var(--muted);padding:2px 6px;border-radius:4px;line-height:1;flex-shrink:0;font-family:inherit}',
+      '.dm-mx:hover{color:var(--ink);background:var(--line)}',
+      '.dm-mbd{overflow-y:auto;padding:20px 24px}',
+      '.ad-h1{font-size:18px;font-weight:700;margin:1.2em 0 0.4em;border-bottom:1px solid var(--line);padding-bottom:4px}',
+      '.ad-h2{font-size:15px;font-weight:600;margin:1em 0 0.35em}',
+      '.ad-h3{font-size:13px;font-weight:600;margin:0.8em 0 0.3em}',
+      '.ad-p{margin:0.5em 0;font-size:13px;color:var(--ink);line-height:1.6}',
+      '.ad-ul{margin:0.4em 0 0.4em 1.2em;padding:0;font-size:13px}',
+      '.ad-ul li{margin-bottom:0.25em}',
+      '.ad-pre{background:var(--line-2,#f6f8fa);border:1px solid var(--line);border-radius:6px;padding:12px;overflow-x:auto;font-size:12px;line-height:1.5;font-family:var(--mono);margin:0.6em 0}',
+      '.ad-code{background:var(--line-2,#f6f8fa);border:1px solid var(--line);border-radius:3px;padding:1px 4px;font-size:12px;font-family:var(--mono)}',
+      '.ad-hr{border:none;border-top:1px solid var(--line);margin:1em 0}',
+      '.ad-table{border-collapse:collapse;width:100%;font-size:13px;margin:0.6em 0}',
+      '.ad-table th,.ad-table td{border:1px solid var(--line);padding:6px 10px;text-align:left}',
+      '.ad-table th{background:var(--line-2,#f6f8fa);font-weight:600}',
+      '</style>',
+      '<div style="background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:24px">',
+        '<div id="sv-dm-canvas" style="padding:4px 0"></div>',
+      '</div>',
+      '<script>',
+      '(function(){',
+      'var __art=' + _svArtJson + ';',
+      'function escHtmlClient(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}',
+      'function inlineMd(s){s=s.replace(/\\*\\*(.+?)\\*\\*/g,"<strong>$1</strong>");s=s.replace(/`([^`]+)`/g,\'<code class="ad-code">$1</code>\');return s;}',
+      'function flushAdTable(rows){if(!rows.length)return"";var h=\'<table class="ad-table">\';for(var ri=0;ri<rows.length;ri++){var r=rows[ri];if(/^\\|[-: |]+\\|$/.test(r.trim()))continue;var cells=r.split("|").slice(1,-1);var tag=ri===0?"th":"td";h+="<tr>"+cells.map(function(c){return"<"+tag+">"+inlineMd(c.trim())+"</"+tag+">";}).join("")+"</tr>";}return h+"</table>";}',
+      'function renderArtefactMd(raw){',
+      '  var lines=escHtmlClient(raw).split("\\n");',
+      '  var out=[];var inCode=false;var codeBuf=[];var inTable=false;var tableBuf=[];var inList=false;',
+      '  for(var i=0;i<lines.length;i++){',
+      '    var line=lines[i];',
+      '    if(line.startsWith("```")){',
+      '      if(inCode){out.push(\'<pre class="ad-pre"><code>\'+codeBuf.join("\\n")+"</code></pre>");codeBuf=[];inCode=false;}',
+      '      else{if(inList){out.push("</ul>");inList=false;}if(inTable){out.push(flushAdTable(tableBuf));tableBuf=[];inTable=false;}inCode=true;}',
+      '      continue;',
+      '    }',
+      '    if(inCode){codeBuf.push(line);continue;}',
+      '    if(line.startsWith("|")){if(!inTable){inTable=true;tableBuf=[];}tableBuf.push(line);continue;}',
+      '    else if(inTable){out.push(flushAdTable(tableBuf));tableBuf=[];inTable=false;}',
+      '    if(inList&&!line.startsWith("- ")&&!line.startsWith("* ")){out.push("</ul>");inList=false;}',
+      '    var trim=line.trim();',
+      '    if(!trim){out.push(\'<div style="height:5px"></div>\');continue;}',
+      '    if(trim==="---"){out.push(\'<hr class="ad-hr">\');continue;}',
+      '    var hm=trim.match(/^(#{1,3}) (.+)/);',
+      '    if(hm){var hlv=hm[1].length;out.push("<h"+hlv+\' class="ad-h\'+hlv+\'">\'+inlineMd(hm[2])+"</h"+hlv+">");continue;}',
+      '    if(trim.startsWith("- ")||trim.startsWith("* ")){if(!inList){out.push(\'<ul class="ad-ul">\');inList=true;}out.push("<li>"+inlineMd(trim.slice(2))+"</li>");continue;}',
+      '    out.push(\'<p class="ad-p">\'+inlineMd(line)+"</p>");',
+      '  }',
+      '  if(inList)out.push("</ul>");if(inTable)out.push(flushAdTable(tableBuf));if(inCode)out.push(\'<pre class="ad-pre"><code>\'+codeBuf.join("\\n")+"</code></pre>");',
+      '  return out.join("");',
+      '}',
+      'function parseDefinitionArtefact(md){',
+      '  var r={slicing:"",epics:[],epicCount:0,storyCount:0};',
+      '  var sm=md.match(/^Slicing strategy:\\s*(.+)$/m);',
+      '  if(!sm)sm=md.match(/\\*\\*Slicing strategy:\\*\\*\\s*(.+)$/m);',
+      '  if(sm)r.slicing=sm[1].trim();',
+      '  var _hasFlatStories=/\\n## [a-z][a-z0-9.-]*\\.\\d+\\s*[—\\-]/i.test(md);',
+      '  if(_hasFlatStories){',
+      '    var _epicNames={},_epicOrder=[];',
+      '    var _tblM=md.match(/## Epic structure([\\s\\S]*?)(?=\\n## [^E]|\\n## E(?!pic)|$)/);',
+      '    if(_tblM){',
+      '      _tblM[1].split("\\n").forEach(function(tl){',
+      '        var cols=tl.split("|").map(function(c){return c.trim();}).filter(Boolean);',
+      '        if(cols.length>=2&&/^Epic \\d+/.test(cols[0])&&cols[1]&&!/^[-:]+$/.test(cols[1])){',
+      '          var epSlug=cols[1];',
+      '          var epName=cols[0].replace(/^Epic \\d+[:\\-—]\\s*/,"").trim();',
+      '          if(!_epicNames[epSlug]){_epicNames[epSlug]=epName;_epicOrder.push(epSlug);}',
+      '        }',
+      '      });',
+      '    }',
+      '    md.split(/\\n## Epic /).slice(1).forEach(function(eb){',
+      '      var efl=eb.split("\\n")[0];',
+      '      if(!/^\\d/.test(efl))return;',
+      '      var nM=efl.match(/—\\s*(.+)$/)||efl.match(/[-]\\s*(.+)$/)||efl.match(/:\\s*(.+)$/);',
+      '      var epSlug2=efl.replace(/^\\d+[:\\-—\\s]+/,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");',
+      '      var numM2=efl.match(/^(\\d+)/);',
+      '      if(nM&&numM2&&!_epicNames[epSlug2]){_epicNames[epSlug2]=nM[1].trim();_epicOrder.push(epSlug2);}',
+      '    });',
+      '    var _storiesByEpic={};',
+      '    md.split(/\\n## /).slice(1).forEach(function(sblk){',
+      '      var sfl=sblk.split("\\n")[0].trim();',
+      '      var sM=sfl.match(/^([a-z][a-z0-9.-]*\\.\\d+)\\s*[—\\-]\\s*(.+)$/i);',
+      '      if(!sM)return;',
+      '      var _cx=sblk.match(/Complexity:\\s*(\\d)/);',
+      '      var _epM=sblk.match(/\\*\\*Epic:\\*\\*\\s*([a-z][a-z0-9-]*)/i);',
+      '      var _epSlug=_epM?_epM[1]:"uncategorised";',
+      '      if(!_storiesByEpic[_epSlug])_storiesByEpic[_epSlug]=[];',
+      '      _storiesByEpic[_epSlug].push({id:sM[1],title:sM[2].trim(),cx:_cx?parseInt(_cx[1],10):0,raw:sblk});',
+      '    });',
+      '    var _allSlugs=_epicOrder.slice();',
+      '    Object.keys(_storiesByEpic).forEach(function(s){if(_allSlugs.indexOf(s)===-1)_allSlugs.push(s);});',
+      '    _allSlugs.forEach(function(slug,idx){',
+      '      var sts=_storiesByEpic[slug]||[];',
+      '      r.epics.push({num:String(idx+1),name:_epicNames[slug]||slug,stories:sts});',
+      '      r.storyCount+=sts.length;',
+      '    });',
+      '  } else {',
+      '    var eblocks=md.split(/\\n## Epic /);',
+      '    for(var _ei=1;_ei<eblocks.length;_ei++){',
+      '      var eb=eblocks[_ei];var fl=eb.split("\\n")[0];',
+      '      if(!/^\\d/.test(fl))continue;',
+      '      var numM=fl.match(/^(\\d+)/);',
+      '      var nM=fl.match(/—\\s*(.+)$/);',
+      '      if(!nM)nM=fl.match(/[-]\\s*(.+)$/);',
+      '      if(!nM)nM=fl.match(/:\\s*(.+)$/);',
+      '      var stories=[];var sblocks=eb.split(/\\n### /);',
+      '      for(var _si=1;_si<sblocks.length;_si++){',
+      '        var sb=sblocks[_si];var sl=sb.split("\\n")[0];',
+      '        var idM=sl.match(/^([a-z][a-z0-9.-]*)/i);',
+      '        var tM=sl.match(/—\\s*(.+)$/);if(!tM)tM=sl.match(/\\s[-]\\s(.+)$/);',
+      '        var cxM=sb.match(/Complexity:\\s*(\\d)/);',
+      '        stories.push({id:idM?idM[1]:"S"+_si,title:tM?tM[1].trim():sl.trim(),cx:cxM?parseInt(cxM[1],10):0,raw:sb});',
+      '      }',
+      '      r.epics.push({num:numM?numM[1]:String(_ei),name:nM?nM[1].trim():fl.trim(),stories:stories});',
+      '      r.storyCount+=stories.length;',
+      '    }',
+      '  }',
+      '  r.epicCount=r.epics.length;return r;',
+      '}',
+      'function renderDefinitionMap(p){',
+      '  if(!p||!p.epicCount)return \'<div class="dm-empty">No stories found in artefact.</div>\';',
+      '  var badge=p.slicing?\'<span class="dm-badge">\'+escHtmlClient(p.slicing)+\'</span>\':"";',
+      '  var epicsHtml=p.epics.map(function(epic,ei){',
+      '    var cards=epic.stories.map(function(s,si){',
+      '      var cls=s.cx>=3?"dm-cx--h":s.cx===2?"dm-cx--m":"dm-cx--l";',
+      '      return \'<button class="dm-card" data-ei="\'+ei+\'" data-si="\'+si+\'">\'+',
+      '        \'<span class="dm-card-id">\'+escHtmlClient(s.id)+\'</span>\'+',
+      '        \'<span class="dm-card-title">\'+escHtmlClient(s.title)+\'</span>\'+',
+      '        (s.cx?\'<span class="dm-cx \'+cls+\'">C:\'+s.cx+"</span>":"")+"</button>";',
+      '    }).join("");',
+      '    var cntBadge=epic.stories.length?\'<span class="dm-epic-count">\'+epic.stories.length+(epic.stories.length===1?" story":" stories")+"</span>":"";',
+      '    return \'<div class="dm-epic"><div class="dm-epic-hd">\'+',
+      '      \'<span class="dm-epic-tag">E\'+escHtmlClient(epic.num)+\'</span>\'+',
+      '      \'<span class="dm-epic-name">\'+escHtmlClient(epic.name)+\'</span>\'+',
+      '      cntBadge+\'</div><div class="dm-cards">\'+',
+      '      (cards||\'<span style="font-size:11px;color:var(--muted);padding:4px 0">No stories</span>\')+',
+      '      \'</div></div>\';',
+      '  }).join("");',
+      '  return \'<div class="dm-canvas"><div class="dm-hdr"><span class="dm-count">\'+',
+      '    p.epicCount+(p.epicCount===1?" epic":" epics")+" \xB7 "+p.storyCount+(p.storyCount===1?" story":" stories")+',
+      '    \'</span>\'+badge+\'</div>\'+epicsHtml+\'</div>\';',
+      '}',
+      'window.dmParsed=null;',
+      'window.dmOpenStory=function(ei,si){',
+      '  var p=window.dmParsed;',
+      '  if(!p||!p.epics[ei]||!p.epics[ei].stories[si])return;',
+      '  var s=p.epics[ei].stories[si];',
+      '  var modal=document.getElementById("dm-modal");',
+      '  if(!modal){',
+      '    modal=document.createElement("div");',
+      '    modal.id="dm-modal";modal.className="dm-modal";',
+      '    modal.innerHTML=',
+      '      \'<div class="dm-mo" onclick="dmCloseModal()"></div>\'+',
+      '      \'<div class="dm-mb"><div class="dm-mh">\'+',
+      '        \'<div id="dm-mt" class="dm-mt"></div>\'+',
+      '        \'<button onclick="dmCloseModal()" class="dm-mx" title="Close">✕</button>\'+',
+      '      \'</div><div id="dm-body" class="dm-mbd"></div></div>\';',
+      '    document.body.appendChild(modal);',
+      '    document.addEventListener("keydown",function(ev){if(ev.key==="Escape")window.dmCloseModal();});',
+      '  }',
+      '  document.getElementById("dm-mt").textContent=s.id+" — "+s.title;',
+      '  document.getElementById("dm-body").innerHTML=renderArtefactMd("### "+s.id+" — "+s.title+"\\n"+s.raw);',
+      '  modal.style.display="flex";',
+      '};',
+      'window.dmCloseModal=function(){var m=document.getElementById("dm-modal");if(m)m.style.display="none";};',
+      'document.addEventListener("DOMContentLoaded",function(){',
+      '  window.dmParsed=parseDefinitionArtefact(__art);',
+      '  var canvas=document.getElementById("sv-dm-canvas");',
+      '  if(canvas){',
+      '    canvas.innerHTML=renderDefinitionMap(window.dmParsed);',
+      '    canvas.addEventListener("click",function(e){',
+      '      var card=e.target&&e.target.closest?e.target.closest(".dm-card"):null;',
+      '      if(card)window.dmOpenStory(parseInt(card.dataset.ei,10),parseInt(card.dataset.si,10));',
+      '    });',
+      '  }',
+      '});',
+      '})();',
+      '</script>'
+    ].join('\n');
+  } else {
+    mainPanel = [
+      '<article class="sr-paper">',
+        artefactHtml || '<p class="sr-p" style="color:var(--muted)">No artefact content found.</p>',
+      '</article>'
+    ].join('');
+  }
+
+  var body = [
+    '<style>',
+    '.sv-page{max-width:740px;margin:0 auto;padding:24px 24px 100px}',
+    '.sv-eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}',
+    '.sv-title{font-size:20px;font-weight:700;margin:0 0 4px}',
+    '.sv-sub{font-size:13px;color:var(--muted);margin:0 0 24px}',
+    '.sr-paper{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:32px 36px;margin-bottom:24px;line-height:1.7;overflow-wrap:break-word}',
+    '.sr-h1{font-size:20px;font-weight:700;margin:1.4em 0 0.5em;border-bottom:1px solid var(--line);padding-bottom:6px}',
+    '.sr-h1:first-child,.sr-paper>:first-child{margin-top:0}',
+    '.sr-h2{font-size:16px;font-weight:600;margin:1.2em 0 0.4em}',
+    '.sr-h3{font-size:14px;font-weight:600;margin:1em 0 0.3em;color:var(--ink)}',
+    '.sr-p{margin:0.6em 0;font-size:14px;color:var(--ink)}',
+    '.sr-list{margin:0.4em 0 0.4em 1.4em;padding:0;font-size:14px}',
+    '.sr-list li{margin-bottom:0.3em}',
+    '.sr-hr{border:none;border-top:1px solid var(--line);margin:1.2em 0}',
+    '.sr-pre{background:var(--line-2,#f6f8fa);border:1px solid var(--line);border-radius:6px;padding:14px 16px;overflow-x:auto;margin:0.8em 0;font-size:12px;line-height:1.5;font-family:var(--mono)}',
+    '.sr-code{background:var(--line-2,#f6f8fa);border:1px solid var(--line);border-radius:3px;padding:1px 5px;font-size:12px;font-family:var(--mono)}',
+    '.sv-action-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--line);padding:12px 24px;display:flex;align-items:center;gap:12px;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.06)}',
+    '.sv-action-hint{font-size:13px;color:var(--muted);flex:1;min-width:0}',
+    '</style>',
+    navigatorHtml,
+    '<div class="sv-page">',
+      '<p class="sv-eyebrow">' + escHtml(stageLabel) + ' — artefact</p>',
+      '<h1 class="sv-title">' + featureName + '</h1>',
+      '<p class="sv-sub">Viewing completed stage document. ' + (isEdit ? 'Edit below and save.' : 'Click <strong>Edit</strong> to make changes.') + '</p>',
+      mainPanel,
+    '</div>',
+    !isEdit ? [
+      '<div class="sv-action-bar">',
+        '<a href="' + escHtml(currentChatUrl) + '" class="sw-btn" style="border:1px solid var(--line);flex-shrink:0;font-size:13px">← Current stage</a>',
+        '<span class="sv-action-hint">' + escHtml(artefactRelPath) + '</span>',
+        '<a href="/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(stageName) + '?edit=true" class="sw-btn sw-btn--primary" style="flex-shrink:0;font-size:13px">Edit artefact</a>',
+      '</div>'
+    ].join('') : ''
+  ].join('');
+
+  var html = renderShell({ title: stageLabel + ' — ' + featureName, bodyContent: body, user: { login: req.session.login || '' }, active: 'journey' });
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
+/**
+ * POST /api/journey/:journeyId/stage/:stageName/artefact — save inline-edited artefact to disk.
+ */
+async function handlePostJourneyStageArtefact(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var stageName = req.params && req.params.stageName;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+
+  var repoRoot = getRepoRoot();
+  var storeStage = (journey.completedStages || []).find(function(s) { return s.skillName === stageName; });
+  var artefactRelPath = (storeStage && storeStage.artefactPath) || null;
+  if (!artefactRelPath) {
+    var dj = null;
+    try { dj = _journeyDisk.loadJourney(journey.featureSlug, repoRoot); } catch (_) {}
+    if (dj && dj.stages && dj.stages[stageName]) {
+      artefactRelPath = dj.stages[stageName].artefactPath || null;
+    }
+  }
+  if (!artefactRelPath) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'No artefact path found for stage' }));
+    return;
+  }
+
+  var body = await _readFormBody(req);
+  var newContent = (body && body.content) || '';
+  if (!newContent.trim()) {
+    res.writeHead(302, { Location: '/journey/' + encodeURIComponent(journeyId) + '/stage/' + encodeURIComponent(stageName) });
+    res.end();
+    return;
+  }
+
+  var absPath = path.resolve(path.join(repoRoot, artefactRelPath));
+  try {
+    fs.mkdirSync(path.dirname(absPath), { recursive: true });
+    fs.writeFileSync(absPath, newContent, 'utf8');
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Failed to write artefact: ' + err.message }));
+    return;
+  }
+
+  res.writeHead(302, { Location: '/journey/' + encodeURIComponent(journeyId) + '/stage/' + encodeURIComponent(stageName) });
+  res.end();
+}
+
+/**
  * GET /journey/:featureSlug/resume — resume a journey by creating a fresh session for the current stage.
  * Looks up the journey by featureSlug (disk), loads prior artefacts, creates session, redirects to chat.
  */
@@ -797,8 +1229,11 @@ async function handlePostGateConfirm(req, res) {
     fs.mkdirSync(path.dirname(absPath), { recursive: true });
     fs.writeFileSync(absPath, session.artefactContent || '', 'utf8');
   }
-  // Call completeStage to record this stage
-  _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath);
+  // Call completeStage to record this stage (guard: auto-save may have already called this)
+  if (!session._stageDone) {
+    session._stageDone = true;
+    _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath);
+  }
 
   // cdg.4: validate DoR artefact before state write (ADR-023: disk → validate → state)
   if (session.skillName === 'definition-of-ready') {
@@ -855,13 +1290,16 @@ async function handlePostGateConfirm(req, res) {
   }
 
   // Build priorArtefacts from all completed stages (read authoritative disk content)
+  // completedStages entries may be objects { skillName, artefactPath } or legacy strings
   var updatedJourney = _journeyStore.getJourney(journeyId);
   var priorArtefacts = (updatedJourney.completedStages || []).map(function(stage) {
-    var stageAbsPath = path.resolve(path.join(repoRoot, stage.artefactPath));
+    var artefactPath = typeof stage === 'string' ? null : stage.artefactPath;
+    if (!artefactPath) return null;
+    var stageAbsPath = path.resolve(path.join(repoRoot, artefactPath));
     var content = '';
     try { content = fs.readFileSync(stageAbsPath, 'utf8'); } catch (_) {}
-    return { path: stage.artefactPath, content: content };
-  });
+    return { path: artefactPath, content: content };
+  }).filter(Boolean);
   // Determine next stage
   var nextStage = _journeyStore.getNextStage(session.skillName);
   console.info(JSON.stringify({ event: 'artefact_saved_to_disk', journeyId: journeyId, stage: session.skillName, featureSlug: journey.featureSlug }));
@@ -1028,18 +1466,71 @@ async function handleGetJourneyComplete(req, res) {
     res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Journey not found.</p>' }));
     return;
   }
-  var stageItems = (journey.completedStages || []).map(function(stage) {
-    return '<li><strong>' + escHtml(stage.skillName) + '</strong>: <code>' + escHtml(stage.artefactPath) + '</code></li>';
+  var featureSlug = journey.featureSlug || journeyId;
+  var completedStages = journey.completedStages || [];
+  var stageCount = completedStages.length;
+
+  var artefactCards = completedStages.map(function(stage) {
+    var artefactPath = stage.artefactPath || '';
+    var label = escHtml(stage.skillName || stage.stageName || '');
+    var safeJourneyId = escHtml(journeyId);
+    var href = '/journey/' + safeJourneyId + '/stage-review?stage=' + encodeURIComponent(stage.stageName || stage.skillName || '');
+    return [
+      '<a class="jc-artefact-card" href="' + href + '">',
+      '  <span class="jc-artefact-icon">&#x1F4C4;</span>',
+      '  <span class="jc-artefact-label">' + label + '</span>',
+      '  <span class="jc-artefact-path">' + escHtml(artefactPath) + '</span>',
+      '  <span class="jc-artefact-chevron">&#x203A;</span>',
+      '</a>'
+    ].join('');
   }).join('');
+
   var body = [
+    '<style>',
+    '.jc-hero{text-align:center;padding:48px 24px 32px;background:linear-gradient(135deg,var(--accent,#2563eb) 0%,#7c3aed 100%);color:#fff;border-radius:12px;margin-bottom:32px;}',
+    '.jc-hero h1{font-size:2rem;margin:0 0 8px;font-weight:700;}',
+    '.jc-hero .jc-slug{font-size:1.1rem;opacity:.85;font-family:monospace;}',
+    '.jc-hero .jc-count{margin-top:16px;font-size:.95rem;opacity:.75;}',
+    '.jc-section{margin-bottom:32px;}',
+    '.jc-section h2{font-size:1rem;font-weight:600;color:var(--muted,#6b7280);text-transform:uppercase;letter-spacing:.08em;margin:0 0 12px;}',
+    '.jc-artefacts{display:flex;flex-direction:column;gap:8px;}',
+    '.jc-artefact-card{display:grid;grid-template-columns:28px 1fr auto auto;align-items:center;gap:10px;padding:12px 16px;background:var(--card-bg,#1e1e2e);border:1px solid var(--border,#2a2a3e);border-radius:8px;text-decoration:none;color:inherit;transition:border-color .15s,background .15s;}',
+    '.jc-artefact-card:hover{border-color:var(--accent,#2563eb);background:var(--card-hover,#25253a);}',
+    '.jc-artefact-icon{font-size:1rem;opacity:.7;}',
+    '.jc-artefact-label{font-weight:500;font-size:.9rem;}',
+    '.jc-artefact-path{font-family:monospace;font-size:.75rem;color:var(--muted,#6b7280);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px;}',
+    '.jc-artefact-chevron{color:var(--muted,#6b7280);font-size:1.2rem;line-height:1;}',
+    '.jc-actions{display:flex;gap:12px;flex-wrap:wrap;}',
+    '.jc-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;font-size:.9rem;font-weight:500;text-decoration:none;cursor:pointer;border:none;}',
+    '.jc-btn--primary{background:var(--accent,#2563eb);color:#fff;}',
+    '.jc-btn--primary:hover{opacity:.9;}',
+    '.jc-btn--secondary{background:transparent;border:1px solid var(--border,#2a2a3e);color:inherit;}',
+    '.jc-btn--secondary:hover{border-color:var(--accent,#2563eb);}',
+    '</style>',
     '<div class="sw-page-content">',
-    '<h1>Journey complete!</h1>',
-    '<p>All stages completed for <strong>' + escHtml(journey.featureSlug || journeyId) + '</strong>.</p>',
-    '<h2>Completed stages</h2>',
-    '<ul>' + stageItems + '</ul>',
+    '<div class="jc-hero">',
+    '  <div style="font-size:2.5rem;margin-bottom:12px">&#x2705;</div>',
+    '  <h1>Journey complete</h1>',
+    '  <div class="jc-slug">' + escHtml(featureSlug) + '</div>',
+    '  <div class="jc-count">' + stageCount + ' stage' + (stageCount !== 1 ? 's' : '') + ' completed</div>',
+    '</div>',
+    stageCount > 0 ? [
+      '<div class="jc-section">',
+      '  <h2>Artefacts</h2>',
+      '  <div class="jc-artefacts">' + artefactCards + '</div>',
+      '</div>'
+    ].join('') : '',
+    '<div class="jc-section">',
+    '  <h2>Next steps</h2>',
+    '  <div class="jc-actions">',
+    '    <a class="jc-btn jc-btn--primary" href="/journey">&#x2190; All journeys</a>',
+    '    <a class="jc-btn jc-btn--secondary" href="/journey/' + escHtml(journeyId) + '">View journey</a>',
+    '  </div>',
+    '</div>',
     '</div>'
   ].join('');
-  var html = renderShell({ title: 'Journey Complete', bodyContent: body, user: { login: req.session.login || '' } });
+
+  var html = renderShell({ title: 'Journey Complete — ' + escHtml(featureSlug), bodyContent: body, user: { login: req.session.login || '' } });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -1929,6 +2420,7 @@ var SLASH_CAPABILITY_MAP = {
   'clarify':                 { capabilities: [], limitedOnWebUI: false },
   'coverage-map':            { capabilities: [], limitedOnWebUI: false },
   'decisions':               { capabilities: [], limitedOnWebUI: false },
+  'design':                  { capabilities: [], limitedOnWebUI: false },
   'definition':              { capabilities: [], limitedOnWebUI: false },
   'definition-of-done':      { capabilities: [], limitedOnWebUI: false },
   'definition-of-ready':     { capabilities: [], limitedOnWebUI: false },
@@ -1968,7 +2460,7 @@ var SLASH_CAPABILITY_MAP = {
 };
 
 /**
- * Returns an array of skill directory names under .github/skills/.
+ * Returns an array of skill directory names under skills/.
  * Reads the directory fresh each call (dynamic discovery — AC2).
  * @param {string} repoRoot
  * @returns {string[]}
@@ -2007,7 +2499,7 @@ function validateSlashSkillName(name, repoRoot) {
 }
 
 /**
- * Reads .github/skills/[skillName]/SKILL.md and assembles a prompt.
+ * Reads skills/[skillName]/SKILL.md and assembles a prompt.
  * Prepends a capability notice if the skill is in SLASH_CAPABILITY_MAP with
  * non-empty capabilities.
  * @param {string} skillName
@@ -2334,6 +2826,8 @@ module.exports = {
   checkJourneyIdle,
   setNow,
   // wsm.3 — stage back-navigation and needs-review
+  handleGetJourneyStageView,
+  handlePostJourneyStageArtefact,
   handleGetJourneyStage,
   handlePostJourneyRecommit,
   handleGetJourneyStageControls,
