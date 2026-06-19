@@ -29,7 +29,7 @@ const fs   = require('fs');
 const path = require('path');
 
 const root       = path.join(__dirname, '..', '..');
-const skillsRoot = path.join(root, '.github', 'skills');
+const skillsRoot = path.join(root, 'skills');
 
 // ── Pipeline path registry ────────────────────────────────────────────────────
 //
