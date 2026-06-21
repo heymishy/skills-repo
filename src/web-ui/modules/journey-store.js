@@ -10,8 +10,8 @@ var STAGE_SEQUENCE = [
   'benefit-metric',      // step 2b
   'design',              // step 3
   'definition',          // step 4
-  'test-plan',           // step 5
-  'review',              // step 6
+  'review',              // step 5 — review before test-plan (review may change story scope)
+  'test-plan',           // step 6
   'definition-of-ready'  // step 7
 ];
 
@@ -89,19 +89,28 @@ function getJourneyBySession(sessionId) {
  * @param {string} journeyId
  * @param {string} skillName
  * @param {string} artefactPath
+ * @param {{ costUsd?: number, model?: string, input_tokens?: number, output_tokens?: number }} [usageSummary]
  */
-function completeStage(journeyId, skillName, artefactPath) {
+function completeStage(journeyId, skillName, artefactPath, usageSummary) {
   var journey = _journeys.get(journeyId);
   if (!journey) return;
-  journey.completedStages.push({ skillName: skillName, artefactPath: artefactPath, completedAt: new Date().toISOString() });
+  var entry = { skillName: skillName, artefactPath: artefactPath, completedAt: new Date().toISOString() };
+  if (usageSummary && usageSummary.costUsd != null) {
+    entry.costUsd  = usageSummary.costUsd;
+    entry.model    = usageSummary.model    || null;
+    entry.inputTokens  = usageSummary.input_tokens  || 0;
+    entry.outputTokens = usageSummary.output_tokens || 0;
+  }
+  journey.completedStages.push(entry);
+  var diskEntry = { status: 'complete', artefactPath: artefactPath, completedAt: entry.completedAt };
+  if (entry.costUsd != null) {
+    diskEntry.costUsd      = entry.costUsd;
+    diskEntry.model        = entry.model;
+    diskEntry.inputTokens  = entry.inputTokens;
+    diskEntry.outputTokens = entry.outputTokens;
+  }
   if (_diskAdapter) {
-    try {
-      _diskAdapter.updateStage(journey.featureSlug, skillName, {
-        status: 'complete',
-        artefactPath: artefactPath,
-        completedAt: new Date().toISOString()
-      });
-    } catch (_) {}
+    try { _diskAdapter.updateStage(journey.featureSlug, skillName, diskEntry); } catch (_) {}
   }
 }
 
@@ -223,11 +232,28 @@ function loadAllFromDisk(repoRoot) {
     Object.keys(stages).forEach(function(stageName) {
       var s = stages[stageName];
       if (s.status === 'complete') {
-        journey.completedStages.push({ skillName: stageName, artefactPath: s.artefactPath || null, completedAt: s.completedAt || null });
+        var _entry = { skillName: stageName, artefactPath: s.artefactPath || null, completedAt: s.completedAt || null };
+        if (s.costUsd != null)  { _entry.costUsd = s.costUsd; _entry.model = s.model || null; _entry.inputTokens = s.inputTokens || 0; _entry.outputTokens = s.outputTokens || 0; }
+        journey.completedStages.push(_entry);
       }
     });
     _journeys.set(journey.journeyId, journey);
   });
+}
+
+/**
+ * Persist an arbitrary field update to the journey (e.g. clarifyDone, estimateDone).
+ * Mutates the in-memory journey and flushes to disk if a disk adapter is set.
+ * @param {string} journeyId
+ * @param {object} fields — key/value pairs to merge onto the journey
+ */
+function setJourneyFields(journeyId, fields) {
+  var journey = _journeys.get(journeyId);
+  if (!journey) return;
+  Object.assign(journey, fields);
+  if (_diskAdapter) {
+    try { _diskAdapter.saveJourney(journey); } catch (_) {}
+  }
 }
 
 /**
@@ -252,5 +278,6 @@ module.exports = {
   setDiskAdapter,
   loadAllFromDisk,
   listJourneys,
+  setJourneyFields,
   _clear
 };

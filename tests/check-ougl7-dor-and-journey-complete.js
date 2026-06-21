@@ -61,26 +61,20 @@ var tmpdir = os.tmpdir();
 
 var queue = [];
 
-// T7.1 — review session done + gate-confirm → DoR session created, priorArtefacts includes test-plan + review
+// T7.1 — review session done + gate-confirm → test-plan session created (review→test-plan→DoR order)
 queue.push(function() {
-  return test('T7.1: review done + gate-confirm → DoR session priorArtefacts has test-plan + review', async function() {
+  return test('T7.1: review done + gate-confirm → test-plan session created, priorArtefacts includes review', async function() {
     var journey = freshRequireJourney();
     var store = getStore();
     store._clear();
     var journeyObj = store.createJourney('test-feature-7-1');
     var journeyId = journeyObj.journeyId;
 
-    // Pre-create test-plan and review artefact files
-    var tpPath = 'ougl7-test-artefacts/test-plan-7-1.md';
+    // Pre-create review artefact file (test-plan comes after review in the new order)
     var revPath = 'ougl7-test-artefacts/review-7-1.md';
-    [tpPath, revPath].forEach(function(p) {
-      var abs = path.join(tmpdir, p);
-      fs.mkdirSync(path.dirname(abs), { recursive: true });
-      fs.writeFileSync(abs, '# Content for ' + p, 'utf8');
-    });
-
-    // Mark test-plan as a prior completed stage
-    store.completeStage(journeyId, 'test-plan', tpPath);
+    var revAbs = path.join(tmpdir, revPath);
+    fs.mkdirSync(path.dirname(revAbs), { recursive: true });
+    fs.writeFileSync(revAbs, '# Review artefact', 'utf8');
 
     // Active session is review, and it is done
     var reviewSid = 'sess-review-7-1-' + Date.now();
@@ -89,9 +83,10 @@ queue.push(function() {
     var capturedPriorArtefacts = null;
     var capturedSkillName = null;
     journey.setJourneyStoreModule(store);
-    journey.setRegisterHtmlSession(function(sid, sessionPath, skillName, priorArtefacts) {
-      capturedPriorArtefacts = priorArtefacts;
+    journey.setRegisterHtmlSession(function(sid, sessionPath, skillName, optsOrArtefacts) {
       capturedSkillName = skillName;
+      capturedPriorArtefacts = Array.isArray(optsOrArtefacts) ? optsOrArtefacts
+        : (optsOrArtefacts && optsOrArtefacts.priorArtefacts) || [];
     });
     journey.setLinkSessionToJourney(function() {});
     journey.setRepoRoot(tmpdir);
@@ -110,18 +105,16 @@ queue.push(function() {
     var res = makeRes();
     await journey.handlePostGateConfirm(req, res);
 
-    assert.strictEqual(capturedSkillName, 'definition-of-ready', 'Expected next skill to be definition-of-ready, got: ' + capturedSkillName);
+    assert.strictEqual(capturedSkillName, 'test-plan', 'Expected next skill to be test-plan, got: ' + capturedSkillName);
     assert.ok(Array.isArray(capturedPriorArtefacts), 'Expected priorArtefacts to be an array');
-    var hasTp = capturedPriorArtefacts.some(function(a) { return a.path === tpPath; });
     var hasRev = capturedPriorArtefacts.some(function(a) { return a.path === revPath; });
-    assert.ok(hasTp, 'Expected test-plan artefact in priorArtefacts');
-    assert.ok(hasRev, 'Expected review artefact in priorArtefacts');
+    assert.ok(hasRev, 'Expected review artefact in priorArtefacts for test-plan session');
   });
 });
 
-// T7.2 — DoR session → 303 to /skills/definition-of-ready/sessions/:id/chat
+// T7.2 — review gate-confirm → 303 to /skills/test-plan/sessions/:id/chat
 queue.push(function() {
-  return test('T7.2: review gate-confirm → 303 to definition-of-ready session chat', async function() {
+  return test('T7.2: review gate-confirm → 303 to test-plan session chat', async function() {
     var journey = freshRequireJourney();
     var store = getStore();
     store._clear();
@@ -157,16 +150,16 @@ queue.push(function() {
 
     assert.strictEqual(res._status, 303, 'Expected 303, got ' + res._status);
     assert.ok(
-      res._headers.Location && res._headers.Location.includes('/skills/definition-of-ready/sessions/'),
-      'Expected redirect to definition-of-ready session, got: ' + res._headers.Location
+      res._headers.Location && res._headers.Location.includes('/skills/test-plan/sessions/'),
+      'Expected redirect to test-plan session, got: ' + res._headers.Location
     );
     assert.ok(res._headers.Location.includes('/chat'), 'Expected /chat in Location');
   });
 });
 
-// T7.3 — DoR done + advanceToNextStory has next story → 303 to test-plan for next story
+// T7.3 — DoR done + advanceToNextStory has next story → 303 to review for next story
 queue.push(function() {
-  return test('T7.3: DoR done + more stories → 303 to next story test-plan session', async function() {
+  return test('T7.3: DoR done + more stories → 303 to next story review session', async function() {
     var journey = freshRequireJourney();
     var store = getStore();
     store._clear();
@@ -210,8 +203,8 @@ queue.push(function() {
 
     assert.strictEqual(res._status, 303, 'Expected 303, got ' + res._status);
     assert.ok(
-      res._headers.Location && res._headers.Location.includes('/skills/test-plan/sessions/'),
-      'Expected redirect to test-plan session for next story, got: ' + res._headers.Location
+      res._headers.Location && res._headers.Location.includes('/skills/review/sessions/'),
+      'Expected redirect to review session for next story, got: ' + res._headers.Location
     );
   });
 });
@@ -294,8 +287,8 @@ queue.push(function() {
     await journey.handleGetJourneyComplete(req, res);
 
     assert.strictEqual(res._status, 200, 'Expected 200, got ' + res._status);
-    assert.ok(res._body.includes('artefacts/'), 'Expected artefact paths listed in complete page');
-    assert.ok(res._body.includes('discovery'), 'Expected discovery in complete page');
+    assert.ok(res._body.includes('jc-table'), 'Expected stage table in complete page');
+    assert.ok(res._body.includes('discovery'), 'Expected discovery stage in complete page');
   });
 });
 
@@ -345,9 +338,9 @@ queue.push(function() {
     var res = makeRes();
     await journey.handleGetJourneyComplete(req, res);
 
-    // Count occurrences of 'artefacts/' in body
-    var matches = (res._body.match(/artefacts\//g) || []).length;
-    assert.ok(matches >= 9, 'Expected at least 9 artefacts/ references, got: ' + matches);
+    // Count stage rows rendered in the table (one per completed stage)
+    var matches = (res._body.match(/jc-row/g) || []).length;
+    assert.ok(matches >= 9, 'Expected at least 9 stage rows in complete page table, got: ' + matches);
   });
 });
 

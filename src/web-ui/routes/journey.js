@@ -70,8 +70,8 @@ var STAGE_META = [
   { id: 'benefit-metric',      num: '2b', label: 'Benefits',   optional: false },
   { id: 'design',              num: 3,    label: 'Design',     optional: false },
   { id: 'definition',          num: 4,    label: 'Definition', optional: false },
-  { id: 'test-plan',           num: 5,    label: 'Test Plan',  optional: false },
-  { id: 'review',              num: 6,    label: 'Review',     optional: false },
+  { id: 'review',              num: 5,    label: 'Review',     optional: false },
+  { id: 'test-plan',           num: 6,    label: 'Test Plan',  optional: false },
   { id: 'definition-of-ready', num: 7,    label: 'Ready',      optional: false }
 ];
 
@@ -290,7 +290,7 @@ async function handlePostJourney(req, res) {
     var sid         = crypto.randomUUID();
     var sessionPath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', sid);
 
-    getRegisterHtmlSession()(sid, sessionPath, startSkill, { productProfile: profileName });
+    getRegisterHtmlSession()(sid, sessionPath, startSkill, { productProfile: profileName, featureSlug: featureSlug });
     getLinkSessionToJourney()(sid, journeyId);
     if (_journeyStore.setActiveSession) {
       _journeyStore.setActiveSession(journeyId, sid, startSkill);
@@ -523,6 +523,19 @@ async function handleGetJourneyStageView(req, res) {
   var storeStage = (journey.completedStages || []).find(function(s) { return s.skillName === stageName; });
   var repoRoot = getRepoRoot();
 
+  // Extract cost/model — prefer in-memory, fall back to disk (populated after server restart)
+  var _stageCostUsd = (storeStage && storeStage.costUsd != null) ? storeStage.costUsd : null;
+  var _stageModel   = (storeStage && storeStage.model) ? storeStage.model : null;
+  if (_stageCostUsd == null) {
+    var _djCost = null;
+    try { _djCost = _journeyDisk.loadJourney(journey.featureSlug, repoRoot); } catch (_) {}
+    if (_djCost && _djCost.stages && _djCost.stages[stageName]) {
+      _stageCostUsd = _djCost.stages[stageName].costUsd != null ? _djCost.stages[stageName].costUsd : null;
+      _stageModel   = _djCost.stages[stageName].model || null;
+    }
+  }
+  var _stageModelShort = _stageModel ? _stageModel.replace(/^claude-/, '').replace(/-\d{4}-\d{2}-\d{2}$/, '') : null;
+
   // Resolve artefact path: prefer store, fall back to disk journey
   var artefactRelPath = (storeStage && storeStage.artefactPath) || null;
   if (!artefactRelPath) {
@@ -631,7 +644,8 @@ async function handleGetJourneyStageView(req, res) {
       '.dm-count{font-size:11px;color:var(--muted);font-weight:500}',
       '.dm-badge{background:var(--accent-soft,#eaf1fb);color:var(--accent-ink,#1d4ed8);font-size:10px;font-weight:600;padding:2px 9px;border-radius:10px;text-transform:uppercase;letter-spacing:0.4px}',
       '.dm-epic{margin-bottom:20px}',
-      '.dm-epic-hd{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:2px solid var(--accent,#2563eb);margin-bottom:10px}',
+      '.dm-epic-hd{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:2px solid var(--accent,#2563eb);margin-bottom:10px;width:100%;background:none;border-left:none;border-right:none;border-top:none;font-family:inherit;cursor:pointer;text-align:left}',
+      '.dm-epic-hd:hover .dm-epic-name{text-decoration:underline}',
       '.dm-epic-tag{font-size:10px;font-weight:700;background:var(--accent,#2563eb);color:#fff;border-radius:4px;padding:1px 7px;flex-shrink:0}',
       '.dm-epic-name{font-size:12px;font-weight:600;color:var(--ink);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
       '.dm-epic-count{font-size:10px;color:var(--muted);flex-shrink:0;background:var(--line-2);padding:1px 6px;border-radius:10px;white-space:nowrap}',
@@ -703,6 +717,36 @@ async function handleGetJourneyStageView(req, res) {
       '  var sm=md.match(/^Slicing strategy:\\s*(.+)$/m);',
       '  if(!sm)sm=md.match(/\\*\\*Slicing strategy:\\*\\*\\s*(.+)$/m);',
       '  if(sm)r.slicing=sm[1].trim();',
+      '  // Format C: H1 epic headers "# Epic N: Name" + H1 story headers "# Story id — Title"',
+      '  var _hasH1Epics=/^# Epic \\d+/m.test(md);',
+      '  var _hasH1Stories=/^# Story [a-z][a-z0-9.-]*\\.\\d+/im.test(md);',
+      '  if(_hasH1Epics||_hasH1Stories){',
+      '    var _epicMap={},_epicOrder2=[];',
+      '    md.split(/^(?=# Epic \\d+)/m).slice(1).forEach(function(eb,idx){',
+      '      var fl=eb.split("\\n")[0];',
+      '      var nM=fl.match(/^# Epic \\d+[:\\-—\\s]+(.+)$/)||fl.match(/^# Epic \\d+(.*)$/);',
+      '      var slug2=(nM&&nM[1]?nM[1].trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""):("epic-"+(idx+1)))||("epic-"+(idx+1));',
+      '      var name2=nM&&nM[1]?nM[1].trim():("Epic "+(idx+1));',
+      '      var storyIds=[];',
+      '      var listM=eb.match(/## Stories in this epic([\\s\\S]*?)(?=\\n## |\\n# |$)/);',
+      '      if(listM){listM[1].split("\\n").forEach(function(line){var idM2=line.match(/[\\-\\*]?\\s*([a-z][a-z0-9.-]*\\.\\d+)/i);if(idM2)storyIds.push(idM2[1].toLowerCase());});}',
+      '      _epicMap[slug2]={num:String(idx+1),name:name2,storyIds:storyIds,stories:[],raw:eb};',
+      '      _epicOrder2.push(slug2);',
+      '    });',
+      '    md.split(/^(?=# Story [a-z][a-z0-9.-]*\\.\\d+)/im).slice(1).forEach(function(sb){',
+      '      var sfl=sb.split("\\n")[0];',
+      '      var sM2=sfl.match(/^# Story ([a-z][a-z0-9.-]*\\.\\d+)\\s*[—\\-]\\s*(.+)$/i);',
+      '      if(!sM2)return;',
+      '      var stId=sM2[1].toLowerCase(),stTitle=sM2[2].trim();',
+      '      var cxM2=sb.match(/Complexity:\\s*(\\d)/);',
+      '      var entry={id:stId,title:stTitle,cx:cxM2?parseInt(cxM2[1],10):0,raw:sb};',
+      '      var placed=false;',
+      '      _epicOrder2.forEach(function(eSlug){if(_epicMap[eSlug].storyIds.indexOf(stId)!==-1){_epicMap[eSlug].stories.push(entry);placed=true;}});',
+      '      if(!placed){var lastSlug=_epicOrder2[_epicOrder2.length-1]||"uncategorised";if(!_epicMap[lastSlug]){_epicMap[lastSlug]={num:"?",name:"Uncategorised",storyIds:[],stories:[]};_epicOrder2.push(lastSlug);}_epicMap[lastSlug].stories.push(entry);}',
+      '    });',
+      '    _epicOrder2.forEach(function(slug){var ep=_epicMap[slug];r.epics.push({num:ep.num,name:ep.name,stories:ep.stories,raw:ep.raw||""});r.storyCount+=ep.stories.length;});',
+      '    r.epicCount=r.epics.length;return r;',
+      '  }',
       '  var _hasFlatStories=/\\n## [a-z][a-z0-9.-]*\\.\\d+\\s*[—\\-]/i.test(md);',
       '  if(_hasFlatStories){',
       '    var _epicNames={},_epicOrder=[];',
@@ -760,7 +804,7 @@ async function handleGetJourneyStageView(req, res) {
       '        var cxM=sb.match(/Complexity:\\s*(\\d)/);',
       '        stories.push({id:idM?idM[1]:"S"+_si,title:tM?tM[1].trim():sl.trim(),cx:cxM?parseInt(cxM[1],10):0,raw:sb});',
       '      }',
-      '      r.epics.push({num:numM?numM[1]:String(_ei),name:nM?nM[1].trim():fl.trim(),stories:stories});',
+      '      r.epics.push({num:numM?numM[1]:String(_ei),name:nM?nM[1].trim():fl.trim(),stories:stories,raw:eb});',
       '      r.storyCount+=stories.length;',
       '    }',
       '  }',
@@ -778,10 +822,11 @@ async function handleGetJourneyStageView(req, res) {
       '        (s.cx?\'<span class="dm-cx \'+cls+\'">C:\'+s.cx+"</span>":"")+"</button>";',
       '    }).join("");',
       '    var cntBadge=epic.stories.length?\'<span class="dm-epic-count">\'+epic.stories.length+(epic.stories.length===1?" story":" stories")+"</span>":"";',
-      '    return \'<div class="dm-epic"><div class="dm-epic-hd">\'+',
+      '    return \'<div class="dm-epic"><button class="dm-epic-hd" onclick="window.dmOpenEpic(\'+ei+\')" title="View epic details">\'+',
       '      \'<span class="dm-epic-tag">E\'+escHtmlClient(epic.num)+\'</span>\'+',
       '      \'<span class="dm-epic-name">\'+escHtmlClient(epic.name)+\'</span>\'+',
-      '      cntBadge+\'</div><div class="dm-cards">\'+',
+      '      cntBadge+\'<span style="font-size:9px;color:var(--muted);margin-left:auto;flex-shrink:0">&#x2197;</span>\'+',
+      '      \'</button><div class="dm-cards">\'+',
       '      (cards||\'<span style="font-size:11px;color:var(--muted);padding:4px 0">No stories</span>\')+',
       '      \'</div></div>\';',
       '  }).join("");',
@@ -809,6 +854,21 @@ async function handleGetJourneyStageView(req, res) {
       '  }',
       '  document.getElementById("dm-mt").textContent=s.id+" — "+s.title;',
       '  document.getElementById("dm-body").innerHTML=renderArtefactMd("### "+s.id+" — "+s.title+"\\n"+s.raw);',
+      '  modal.style.display="flex";',
+      '};',
+      'window.dmOpenEpic=function(ei){',
+      '  var p=window.dmParsed;if(!p||!p.epics[ei])return;',
+      '  var epic=p.epics[ei];',
+      '  var modal=document.getElementById("dm-modal");',
+      '  if(!modal){modal=document.createElement("div");modal.id="dm-modal";modal.className="dm-modal";',
+      '    modal.innerHTML=\'<div class="dm-mo" onclick="dmCloseModal()"></div><div class="dm-mb"><div class="dm-mh"><div id="dm-mt" class="dm-mt"></div><button onclick="dmCloseModal()" class="dm-mx" title="Close">✕</button></div><div id="dm-body" class="dm-mbd"></div></div>\';',
+      '    document.body.appendChild(modal);',
+      '    document.addEventListener("keydown",function(ev){if(ev.key==="Escape")window.dmCloseModal();});',
+      '  }',
+      '  document.getElementById("dm-mt").textContent="E"+epic.num+" — "+epic.name;',
+      '  var storyList=epic.stories.map(function(s){return"- **"+s.id+"** — "+s.title;}).join("\\n");',
+      '  var body=epic.raw?renderArtefactMd(epic.raw):(storyList?renderArtefactMd(storyList):"<p>No epic details available.</p>");',
+      '  document.getElementById("dm-body").innerHTML=body;',
       '  modal.style.display="flex";',
       '};',
       'window.dmCloseModal=function(){var m=document.getElementById("dm-modal");if(m)m.style.display="none";};',
@@ -853,11 +913,15 @@ async function handleGetJourneyStageView(req, res) {
     '.sr-code{background:var(--line-2,#f6f8fa);border:1px solid var(--line);border-radius:3px;padding:1px 5px;font-size:12px;font-family:var(--mono)}',
     '.sv-action-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--line);padding:12px 24px;display:flex;align-items:center;gap:12px;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.06)}',
     '.sv-action-hint{font-size:13px;color:var(--muted);flex:1;min-width:0}',
+    '.sv-cost-meta{display:flex;align-items:center;gap:8px;margin:2px 0 20px}',
+    '.sv-cost-badge{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;font-family:var(--mono)}',
+    '.sv-cost-model{font-size:11px;color:var(--muted);font-family:var(--mono)}',
     '</style>',
     navigatorHtml,
     '<div class="sv-page">',
       '<p class="sv-eyebrow">' + escHtml(stageLabel) + ' — artefact</p>',
       '<h1 class="sv-title">' + featureName + '</h1>',
+      (_stageCostUsd != null ? '<p class="sv-cost-meta"><span class="sv-cost-badge">$' + _stageCostUsd.toFixed(4) + '</span>' + (_stageModelShort ? '<span class="sv-cost-model">' + escHtml(_stageModelShort) + '</span>' : '') + '</p>' : ''),
       '<p class="sv-sub">Viewing completed stage document. ' + (isEdit ? 'Edit below and save.' : 'Click <strong>Edit</strong> to make changes.') + '</p>',
       mainPanel,
     '</div>',
@@ -982,7 +1046,7 @@ async function handleGetJourneyResume(req, res) {
   var sid = crypto.randomUUID();
   var sessionPath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', sid);
 
-  getRegisterHtmlSession()(sid, sessionPath, currentStage, { productProfile: productProfile, priorArtefacts: priorArtefacts });
+  getRegisterHtmlSession()(sid, sessionPath, currentStage, { productProfile: productProfile, priorArtefacts: priorArtefacts, featureSlug: featureSlug });
 
   if (journeyId) {
     getLinkSessionToJourney()(sid, journeyId);
@@ -1232,7 +1296,16 @@ async function handlePostGateConfirm(req, res) {
   // Call completeStage to record this stage (guard: auto-save may have already called this)
   if (!session._stageDone) {
     session._stageDone = true;
-    _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath);
+    var _costUsd = null;
+    try {
+      var _computeCost = require('./skills').computeCostUsd;
+      _costUsd = _computeCost(session.usage || null);
+    } catch (_ce) {}
+    var _usageSummary = session.usage ? Object.assign({ costUsd: _costUsd }, session.usage) : null;
+    _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath, _usageSummary);
+    if (_costUsd != null) {
+      console.info(JSON.stringify({ event: 'stage_cost', journeyId: journeyId, stage: session.skillName, model: (session.usage || {}).model, costUsd: _costUsd, inputTokens: (session.usage || {}).input_tokens, outputTokens: (session.usage || {}).output_tokens }));
+    }
   }
 
   // cdg.4: validate DoR artefact before state write (ADR-023: disk → validate → state)
@@ -1304,8 +1377,9 @@ async function handlePostGateConfirm(req, res) {
   var nextStage = _journeyStore.getNextStage(session.skillName);
   console.info(JSON.stringify({ event: 'artefact_saved_to_disk', journeyId: journeyId, stage: session.skillName, featureSlug: journey.featureSlug }));
 
-  // Per-story stage sequence: test-plan → review → definition-of-ready
-  var PER_STORY_SEQ = ['test-plan', 'review', 'definition-of-ready'];
+  // Per-story stage sequence: review → test-plan → definition-of-ready
+  // review runs first (may change story scope); test-plan requires a passed review.
+  var PER_STORY_SEQ = ['review', 'test-plan', 'definition-of-ready'];
   var perStoryIdx = PER_STORY_SEQ.indexOf(session.skillName);
   var newSid, newSessionPath, perStoryNextStage;
 
@@ -1313,15 +1387,15 @@ async function handlePostGateConfirm(req, res) {
     // Story-mode: check for more stories; feature-mode: complete journey
     var nextStory = _journeyStore.advanceToNextStory(journeyId);
     if (nextStory) {
-      // More stories: create test-plan session for next story
+      // More stories: create review session for next story (review → test-plan → DoR per story)
       newSid = crypto.randomUUID();
-      newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-test-plan.md');
-      getRegisterHtmlSession()(newSid, newSessionPath, 'test-plan', priorArtefacts);
+      newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-review.md');
+      getRegisterHtmlSession()(newSid, newSessionPath, 'review', { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug });
       getLinkSessionToJourney()(newSid, journeyId);
       if (_journeyStore.setActiveSession) {
-        _journeyStore.setActiveSession(journeyId, newSid, 'test-plan');
+        _journeyStore.setActiveSession(journeyId, newSid, 'review');
       }
-      res.writeHead(303, { Location: '/skills/test-plan/sessions/' + newSid + '/chat' });
+      res.writeHead(303, { Location: '/skills/review/sessions/' + newSid + '/chat' });
       res.end();
     } else {
       // No more stories (or feature-mode): complete journey
@@ -1335,7 +1409,7 @@ async function handlePostGateConfirm(req, res) {
     perStoryNextStage = PER_STORY_SEQ[perStoryIdx + 1];
     newSid = crypto.randomUUID();
     newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-' + perStoryNextStage + '.md');
-    getRegisterHtmlSession()(newSid, newSessionPath, perStoryNextStage, priorArtefacts);
+    getRegisterHtmlSession()(newSid, newSessionPath, perStoryNextStage, { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug });
     getLinkSessionToJourney()(newSid, journeyId);
     if (_journeyStore.setActiveSession) {
       _journeyStore.setActiveSession(journeyId, newSid, perStoryNextStage);
@@ -1348,15 +1422,16 @@ async function handlePostGateConfirm(req, res) {
     console.info(JSON.stringify({ event: 'journey_completed', journeyId: journeyId, featureSlug: journey.featureSlug, stageCount: updatedJourney.completedStages.length }));
     res.writeHead(303, { Location: '/journey/' + journeyId + '/complete' });
     res.end();
-  } else if (nextStage === 'test-plan') {
+  } else if (nextStage === 'review') {
     // Feature-level: switch to per-story routing (ougl.6)
+    // review is the first per-story stage (review → test-plan → definition-of-ready per story)
     res.writeHead(303, { Location: '/journey/' + journeyId + '/stories' });
     res.end();
   } else {
     // Feature-level: create session for next stage
     newSid = crypto.randomUUID();
     newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-' + nextStage + '.md');
-    getRegisterHtmlSession()(newSid, newSessionPath, nextStage, priorArtefacts);
+    getRegisterHtmlSession()(newSid, newSessionPath, nextStage, { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug });
     getLinkSessionToJourney()(newSid, journeyId);
     if (_journeyStore.setActiveSession) {
       _journeyStore.setActiveSession(journeyId, newSid, nextStage);
@@ -1386,7 +1461,7 @@ async function handleGetStories(req, res) {
   var body = [
     '<div class="sw-page-content">',
     '<h1>Story list for journey</h1>',
-    '<p>Enter one story slug per line. These will be processed through test-plan and definition-of-ready.</p>',
+    '<p>Enter one story slug per line. These will be processed through review, test-plan, and definition-of-ready.</p>',
     '<form method="POST" action="/api/journey/' + safeId + '/stories">',
     '<textarea name="stories" rows="10" cols="50" placeholder="e.g. wgol.1&#10;wgol.2&#10;wgol.3"></textarea>',
     '<br><button type="submit" class="sw-btn sw-btn--primary">Start per-story stages</button>',
@@ -1438,15 +1513,15 @@ async function handlePostStories(req, res) {
     try { content = fs.readFileSync(stageAbsPath, 'utf8'); } catch (_) {}
     return { path: stage.artefactPath, content: content };
   });
-  // Create test-plan session for first story
+  // Create review session for first story (review → test-plan → DoR per story)
   var newSid = crypto.randomUUID();
-  var newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-test-plan.md');
-  getRegisterHtmlSession()(newSid, newSessionPath, 'test-plan', priorArtefacts);
+  var newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-review.md');
+  getRegisterHtmlSession()(newSid, newSessionPath, 'review', { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug });
   getLinkSessionToJourney()(newSid, journeyId);
   if (_journeyStore.setActiveSession) {
-    _journeyStore.setActiveSession(journeyId, newSid, 'test-plan');
+    _journeyStore.setActiveSession(journeyId, newSid, 'review');
   }
-  res.writeHead(303, { Location: '/skills/test-plan/sessions/' + newSid + '/chat' });
+  res.writeHead(303, { Location: '/skills/review/sessions/' + newSid + '/chat' });
   res.end();
 }
 
@@ -1470,63 +1545,161 @@ async function handleGetJourneyComplete(req, res) {
   var completedStages = journey.completedStages || [];
   var stageCount = completedStages.length;
 
-  var artefactCards = completedStages.map(function(stage) {
-    var artefactPath = stage.artefactPath || '';
-    var label = escHtml(stage.skillName || stage.stageName || '');
-    var safeJourneyId = escHtml(journeyId);
-    var href = '/journey/' + safeJourneyId + '/stage-review?stage=' + encodeURIComponent(stage.stageName || stage.skillName || '');
-    return [
-      '<a class="jc-artefact-card" href="' + href + '">',
-      '  <span class="jc-artefact-icon">&#x1F4C4;</span>',
-      '  <span class="jc-artefact-label">' + label + '</span>',
-      '  <span class="jc-artefact-path">' + escHtml(artefactPath) + '</span>',
-      '  <span class="jc-artefact-chevron">&#x203A;</span>',
-      '</a>'
-    ].join('');
+  // Human-readable feature name from slug: strip date prefix, spaces from dashes
+  var _featureName = featureSlug.replace(/^\d{4}-\d{2}-\d{2}-/, '').replace(/-/g, ' ');
+
+  var _STAGE_META_MAP = {
+    'ideate':              { num: '1',  label: 'Ideate' },
+    'discovery':           { num: '2',  label: 'Discovery' },
+    'benefit-metric':      { num: '2b', label: 'Benefits & Metrics' },
+    'design':              { num: '3',  label: 'Design' },
+    'definition':          { num: '4',  label: 'Definition' },
+    'review':              { num: '5',  label: 'Review' },
+    'test-plan':           { num: '6',  label: 'Test Plan' },
+    'definition-of-ready': { num: '7',  label: 'Def of Ready' },
+  };
+
+  var _totalCostUsd = 0;
+  var _totalInputTok = 0;
+  var _totalOutputTok = 0;
+  var _hasCost = false;
+  completedStages.forEach(function(s) {
+    if (s.costUsd != null) { _hasCost = true; _totalCostUsd += s.costUsd; }
+    _totalInputTok  += (s.inputTokens  || 0);
+    _totalOutputTok += (s.outputTokens || 0);
+  });
+  var _totalTokens = _totalInputTok + _totalOutputTok;
+
+  var safeJourneyId = escHtml(journeyId);
+
+  // Pipeline nodes row
+  var _nodeHtml = completedStages.map(function(stage, i) {
+    var sm = _STAGE_META_MAP[stage.skillName] || { num: '·', label: stage.skillName || '' };
+    var connector = i > 0 ? '<div class="jc-connector" aria-hidden="true"></div>' : '';
+    return connector + '<div class="jc-node">' +
+      '<div class="jc-node-circle">' + escHtml(sm.num) + '</div>' +
+      '<div class="jc-node-label">' + escHtml(sm.label) + '</div>' +
+    '</div>';
   }).join('');
+
+  // Stage rows
+  var _stageRows = completedStages.map(function(stage) {
+    var sm = _STAGE_META_MAP[stage.skillName] || { num: '·', label: stage.skillName || '' };
+    var href = '/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(stage.skillName || '');
+    var modelShort = (stage.model || '').replace(/^claude-/, '').replace(/^gpt-/, '').replace(/-\d{4}-\d{2}-\d{2}$/, '');
+    var costCell = stage.costUsd != null
+      ? '<span class="jc-cost-pill">$' + stage.costUsd.toFixed(4) + '</span>'
+      : '<span class="jc-cost-pill jc-cost-pill--none">—</span>';
+    var modelCell = modelShort
+      ? '<span class="jc-model-pill">' + escHtml(modelShort) + '</span>'
+      : '';
+    var dateCell = stage.completedAt
+      ? escHtml(stage.completedAt.slice(0, 10))
+      : '';
+    return '<tr class="jc-row">' +
+      '<td class="jc-col-num">' + escHtml(sm.num) + '</td>' +
+      '<td class="jc-col-label">' + escHtml(sm.label) + '</td>' +
+      '<td class="jc-col-cost">' + costCell + '</td>' +
+      '<td class="jc-col-model">' + modelCell + '</td>' +
+      '<td class="jc-col-date">' + dateCell + '</td>' +
+      '<td class="jc-col-link"><a href="' + escHtml(href) + '" class="jc-view-link">View ›</a></td>' +
+    '</tr>';
+  }).join('');
+
+  var _statsHtml = [
+    '<span class="jc-stat"><strong>' + stageCount + '</strong> stage' + (stageCount !== 1 ? 's' : '') + '</span>',
+    _hasCost ? '<span class="jc-stat-sep">·</span><span class="jc-stat"><strong>$' + _totalCostUsd.toFixed(4) + '</strong> total</span>' : '',
+    _totalTokens > 0 ? '<span class="jc-stat-sep">·</span><span class="jc-stat"><strong>' + (_totalTokens >= 1000 ? Math.round(_totalTokens / 1000) + 'k' : _totalTokens) + '</strong> tokens</span>' : '',
+  ].join('');
 
   var body = [
     '<style>',
-    '.jc-hero{text-align:center;padding:48px 24px 32px;background:linear-gradient(135deg,var(--accent,#2563eb) 0%,#7c3aed 100%);color:#fff;border-radius:12px;margin-bottom:32px;}',
-    '.jc-hero h1{font-size:2rem;margin:0 0 8px;font-weight:700;}',
-    '.jc-hero .jc-slug{font-size:1.1rem;opacity:.85;font-family:monospace;}',
-    '.jc-hero .jc-count{margin-top:16px;font-size:.95rem;opacity:.75;}',
-    '.jc-section{margin-bottom:32px;}',
-    '.jc-section h2{font-size:1rem;font-weight:600;color:var(--muted,#6b7280);text-transform:uppercase;letter-spacing:.08em;margin:0 0 12px;}',
-    '.jc-artefacts{display:flex;flex-direction:column;gap:8px;}',
-    '.jc-artefact-card{display:grid;grid-template-columns:28px 1fr auto auto;align-items:center;gap:10px;padding:12px 16px;background:var(--card-bg,#1e1e2e);border:1px solid var(--border,#2a2a3e);border-radius:8px;text-decoration:none;color:inherit;transition:border-color .15s,background .15s;}',
-    '.jc-artefact-card:hover{border-color:var(--accent,#2563eb);background:var(--card-hover,#25253a);}',
-    '.jc-artefact-icon{font-size:1rem;opacity:.7;}',
-    '.jc-artefact-label{font-weight:500;font-size:.9rem;}',
-    '.jc-artefact-path{font-family:monospace;font-size:.75rem;color:var(--muted,#6b7280);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px;}',
-    '.jc-artefact-chevron{color:var(--muted,#6b7280);font-size:1.2rem;line-height:1;}',
-    '.jc-actions{display:flex;gap:12px;flex-wrap:wrap;}',
-    '.jc-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;font-size:.9rem;font-weight:500;text-decoration:none;cursor:pointer;border:none;}',
-    '.jc-btn--primary{background:var(--accent,#2563eb);color:#fff;}',
-    '.jc-btn--primary:hover{opacity:.9;}',
-    '.jc-btn--secondary{background:transparent;border:1px solid var(--border,#2a2a3e);color:inherit;}',
-    '.jc-btn--secondary:hover{border-color:var(--accent,#2563eb);}',
+    '.jc-page{max-width:780px;margin:0 auto;padding:32px 24px 80px}',
+    /* Header */
+    '.jc-header{margin-bottom:32px}',
+    '.jc-check{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:var(--green-soft);color:var(--green);font-size:18px;margin-bottom:14px}',
+    '.jc-eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 6px}',
+    '.jc-feature-name{font-size:24px;font-weight:700;margin:0 0 10px;color:var(--ink);font-family:var(--serif);text-transform:capitalize}',
+    '.jc-stats{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);flex-wrap:wrap;margin-bottom:4px}',
+    '.jc-stat strong{color:var(--ink);font-weight:600}',
+    '.jc-stat-sep{color:var(--line);font-size:14px;user-select:none}',
+    '.jc-slug{font-family:var(--mono);font-size:11px;color:var(--muted-2);margin-top:6px}',
+    /* Pipeline nodes */
+    '.jc-pipeline{display:flex;align-items:flex-start;overflow-x:auto;padding:20px 0 8px;gap:0;scrollbar-width:thin;margin-bottom:28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}',
+    '.jc-node{display:flex;flex-direction:column;align-items:center;flex:0 0 auto}',
+    '.jc-node-circle{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:var(--green-soft);border:2px solid var(--green);color:var(--green)}',
+    '.jc-node-label{font-size:9px;color:var(--muted);margin-top:5px;text-align:center;max-width:58px;line-height:1.2;white-space:nowrap;font-weight:500;text-transform:uppercase;letter-spacing:.03em}',
+    '.jc-connector{flex:1;min-width:16px;max-width:40px;height:2px;background:var(--green);margin-top:17px;opacity:0.4}',
+    /* Stage table */
+    '.jc-table{width:100%;border-collapse:collapse;margin-bottom:32px}',
+    '.jc-table thead th{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:0 12px 8px;text-align:left;border-bottom:2px solid var(--line)}',
+    '.jc-row{border-bottom:1px solid var(--line)}',
+    '.jc-row:last-child{border-bottom:none}',
+    '.jc-row:hover{background:var(--line-2)}',
+    '.jc-col-num{font-size:10px;font-weight:700;font-family:var(--mono);color:var(--muted);padding:12px 12px 12px 0;width:28px;white-space:nowrap}',
+    '.jc-col-label{font-size:13px;font-weight:500;color:var(--ink);padding:12px 12px 12px 0}',
+    '.jc-col-cost{padding:12px 12px 12px 0;white-space:nowrap}',
+    '.jc-col-model{padding:12px 12px 12px 0;white-space:nowrap}',
+    '.jc-col-date{font-size:11px;font-family:var(--mono);color:var(--muted-2);padding:12px 12px 12px 0;white-space:nowrap}',
+    '.jc-col-link{padding:12px 0;text-align:right}',
+    '.jc-cost-pill{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--green);background:var(--green-soft);padding:2px 7px;border-radius:8px;white-space:nowrap}',
+    '.jc-cost-pill--none{color:var(--muted-2);background:var(--line-2)}',
+    '.jc-model-pill{font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--line-2);padding:2px 6px;border-radius:6px;white-space:nowrap}',
+    '.jc-view-link{font-size:12px;font-weight:500;color:var(--accent-ink);text-decoration:none;padding:4px 8px;border-radius:5px;border:1px solid var(--line);white-space:nowrap}',
+    '.jc-view-link:hover{background:var(--accent-soft);border-color:var(--accent)}',
+    /* CTA block */
+    '.jc-cta{background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}',
+    '.jc-cta-text{font-size:14px;font-weight:500;color:var(--accent-ink)}',
+    '.jc-cta-sub{font-size:12px;color:var(--accent-ink);opacity:.75;margin-top:2px}',
+    '.jc-btn-primary{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:7px;font-size:13px;font-weight:600;text-decoration:none;background:var(--accent);color:#fff;white-space:nowrap}',
+    '.jc-btn-primary:hover{opacity:.9}',
+    '.jc-secondary-actions{display:flex;gap:10px;flex-wrap:wrap}',
+    '.jc-btn-ghost{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:7px;font-size:13px;font-weight:500;text-decoration:none;color:var(--ink);border:1px solid var(--line);white-space:nowrap}',
+    '.jc-btn-ghost:hover{border-color:var(--accent);color:var(--accent-ink)}',
     '</style>',
-    '<div class="sw-page-content">',
-    '<div class="jc-hero">',
-    '  <div style="font-size:2.5rem;margin-bottom:12px">&#x2705;</div>',
-    '  <h1>Journey complete</h1>',
+    '<div class="jc-page">',
+
+    /* ── Header ── */
+    '<div class="jc-header">',
+    '  <div class="jc-check">✓</div>',
+    '  <p class="jc-eyebrow">Journey complete</p>',
+    '  <h1 class="jc-feature-name">' + escHtml(_featureName) + '</h1>',
+    '  <div class="jc-stats">' + _statsHtml + '</div>',
     '  <div class="jc-slug">' + escHtml(featureSlug) + '</div>',
-    '  <div class="jc-count">' + stageCount + ' stage' + (stageCount !== 1 ? 's' : '') + ' completed</div>',
     '</div>',
+
+    /* ── Pipeline nodes ── */
+    stageCount > 0 ? '<div class="jc-pipeline" aria-label="Completed stages">' + _nodeHtml + '</div>' : '',
+
+    /* ── Stage table ── */
     stageCount > 0 ? [
-      '<div class="jc-section">',
-      '  <h2>Artefacts</h2>',
-      '  <div class="jc-artefacts">' + artefactCards + '</div>',
-      '</div>'
+      '<table class="jc-table">',
+      '<thead><tr>',
+      '  <th></th>',
+      '  <th>Stage</th>',
+      '  <th>Cost</th>',
+      '  <th>Model</th>',
+      '  <th>Completed</th>',
+      '  <th></th>',
+      '</tr></thead>',
+      '<tbody>' + _stageRows + '</tbody>',
+      '</table>',
     ].join('') : '',
-    '<div class="jc-section">',
-    '  <h2>Next steps</h2>',
-    '  <div class="jc-actions">',
-    '    <a class="jc-btn jc-btn--primary" href="/journey">&#x2190; All journeys</a>',
-    '    <a class="jc-btn jc-btn--secondary" href="/journey/' + escHtml(journeyId) + '">View journey</a>',
+
+    /* ── CTA ── */
+    '<div class="jc-cta">',
+    '  <div>',
+    '    <div class="jc-cta-text">Ready for implementation</div>',
+    '    <div class="jc-cta-sub">All stages complete — start the inner coding loop</div>',
     '  </div>',
+    '  <a class="jc-btn-primary" href="/journey/' + safeJourneyId + '">Continue &#x2192;</a>',
     '</div>',
+
+    /* ── Secondary actions ── */
+    '<div class="jc-secondary-actions">',
+    '  <a class="jc-btn-ghost" href="/journey">&#x2190; All journeys</a>',
+    '</div>',
+
     '</div>'
   ].join('');
 
@@ -2048,7 +2221,16 @@ async function handleDeleteSideTrip(req, res) {
   var sideTripSid = journey.sideTripSessionId;
   if (sideTripSid) {
     var stSession = getGetHtmlSession()(sideTripSid);
-    if (stSession) { stSession.done = true; }
+    if (stSession) {
+      stSession.done = true;
+      // Mark clarify as done on the journey if the side-trip session was a /clarify
+      if (stSession.skillName === 'clarify') {
+        _journeyStore.setJourneyFields(journeyId, { clarifyDone: true, sideTripSessionId: null });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ closed: true }));
+        return;
+      }
+    }
     journey.sideTripSessionId = null;
   }
   res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -2110,6 +2292,8 @@ async function handlePostEstimate(req, res) {
       fs.writeFileSync(normPath, HEADER, 'utf8');
     }
     fs.appendFileSync(normPath, row, 'utf8');
+    // Mark estimate as done on the journey so the navigator can show it
+    _journeyStore.setJourneyFields(journeyId, { estimateDone: true });
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ success: true, row: row.trim() }));
   } catch (err) {
