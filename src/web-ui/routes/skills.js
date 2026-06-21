@@ -442,6 +442,63 @@ const { renderChat: _renderChatView } = require('../views/chat-view');
 const skillsAdapter              = require('../adapters/skills');
 const { getActiveModel }         = require('../../modules/skill-turn-executor');
 
+// Pricing table — direct API rates per million tokens (Anthropic + common OpenAI models).
+// Cache read/write rates follow Anthropic's standard cache pricing (10% / 125% of input rate).
+// Update when Anthropic or OpenAI publish rate changes.
+const _SKILL_PRICING = {
+  'claude-sonnet-4-6': { inputPerM: 3.00,  outputPerM: 15.00, cacheReadPerM: 0.30,  cacheWritePerM: 3.75 },
+  'claude-haiku-4-5':  { inputPerM: 1.00,  outputPerM: 5.00,  cacheReadPerM: 0.10,  cacheWritePerM: 1.25 },
+  'claude-opus-4-8':   { inputPerM: 5.00,  outputPerM: 25.00, cacheReadPerM: 0.50,  cacheWritePerM: 6.25 },
+  'claude-fable-5':    { inputPerM: 10.00, outputPerM: 50.00, cacheReadPerM: 1.00,  cacheWritePerM: 12.50 },
+  'gpt-4o':            { inputPerM: 2.50,  outputPerM: 10.00, cacheReadPerM: 1.25,  cacheWritePerM: 0 },
+  'gpt-4o-mini':       { inputPerM: 0.15,  outputPerM: 0.60,  cacheReadPerM: 0.075, cacheWritePerM: 0 },
+  'gpt-5':             { inputPerM: 5.00,  outputPerM: 30.00, cacheReadPerM: 0.625, cacheWritePerM: 0 },
+  'gpt-5-mini':        { inputPerM: 0.125, outputPerM: 1.00,  cacheReadPerM: 0,     cacheWritePerM: 0 },
+};
+
+/**
+ * Compute USD cost from accumulated usage. Returns null when model is unknown.
+ * @param {{ model: string, input_tokens: number, output_tokens: number, cache_read_tokens: number, cache_creation_tokens: number }} usage
+ * @returns {number|null}
+ */
+function _computeCostUsd(usage) {
+  if (!usage || !usage.model) return null;
+  var p = _SKILL_PRICING[usage.model];
+  if (!p) return null;
+  var cost = (usage.input_tokens           || 0) / 1e6 * p.inputPerM
+           + (usage.output_tokens          || 0) / 1e6 * p.outputPerM
+           + (usage.cache_read_tokens      || 0) / 1e6 * p.cacheReadPerM
+           + (usage.cache_creation_tokens  || 0) / 1e6 * p.cacheWritePerM;
+  return Math.round(cost * 100000) / 100000; // 5 decimal places → $0.00001 resolution
+}
+
+// Skills where Haiku is proven unsafe regardless of operator overrides.
+// EXP-021: Haiku 0/22 on /discovery S-series — fabricates regulatory constraints
+// that are structurally compliant (pass automated gates) but content-wrong.
+const HAIKU_BLOCKED_SKILLS = ['discovery'];
+
+function _isHaikuModel(modelId) {
+  return !!(modelId && modelId.indexOf('haiku') !== -1);
+}
+
+// Mirror the per-skill model routing from the turn handler so the chat-view label
+// shows the model that will actually be used, not the global default.
+function getModelForSkill(skillName) {
+  const SONNET_SKILLS = ['discovery', 'ideate'];
+  const fastModel = process.env.WUCE_FAST_MODEL;
+  if (fastModel) {
+    // Block Haiku even when WUCE_FAST_MODEL is set — fabrication risk is not prompt-tunable
+    if (_isHaikuModel(fastModel) && HAIKU_BLOCKED_SKILLS.indexOf(skillName) !== -1) {
+      return getActiveModel();
+    }
+    return fastModel;
+  }
+  if (SONNET_SKILLS.indexOf(skillName) === -1) {
+    return process.env.WUCE_HAIKU_MODEL || 'claude-haiku-4-5';
+  }
+  return getActiveModel();
+}
+
 /**
  * Minimal markdown-to-HTML converter for model response rendering (wuce.26).
  * Handles headings, bold, italic, inline code, fenced code blocks, lists, and HRs.
@@ -1165,6 +1222,8 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
   var ctx = sessionContext || {};
   var parts = [];
   var _cf = _outContextFiles || null;
+  var _modelId = ctx.modelId || '';
+  var _isHaiku = _isHaikuModel(_modelId);
 
   // 1. Instruction file — CLAUDE.md (Claude Code) or .github/copilot-instructions.md (GHCP)
   var ciPath = fs.existsSync(path.join(root, 'CLAUDE.md'))
@@ -1205,13 +1264,28 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
     { name: 'constraints.md', label: 'CONSTRAINTS' },
     { name: 'roadmap.md',    label: 'PRODUCT ROADMAP' }
   ];
+  var _constraintsLoaded = false;
   PRODUCT_FILES.forEach(function(pf) {
     var pfPath = path.join(_profileDir, pf.name);
     if (fs.existsSync(pfPath)) {
       parts.push('--- ' + pf.label + ' ---\n\n' + fs.readFileSync(pfPath, 'utf8'));
       if (_cf) _cf.push({ path: 'product/profiles/' + _profileName + '/' + pf.name, status: 'ok' });
+      if (pf.name === 'constraints.md') { _constraintsLoaded = true; }
     }
   });
+
+  // Gate 3: Missing constraints warning — EXP-021 finding: absence of constraints.md causes
+  // Haiku (and degrades Sonnet) to invent regulatory constraints from training distribution.
+  var _CONSTRAINT_SENSITIVE_SKILLS = ['discovery', 'definition', 'benefit-metric'];
+  if (_CONSTRAINT_SENSITIVE_SKILLS.indexOf(skillName) !== -1 && !_constraintsLoaded) {
+    parts.push([
+      '--- MISSING CONTEXT WARNING ---',
+      '',
+      'product/constraints.md was not found. This file normally contains hard limits: regulatory requirements, budget, team capability, and compliance constraints.',
+      '',
+      'IMPORTANT: Do NOT invent or assume regulatory constraints, compliance frameworks, or architectural limits that are not present in the input or prior artefacts. If the feature context suggests a regulated domain (financial services, healthcare, payments, data residency, etc.), ask the operator to provide the relevant constraints before including any in the artefact.'
+    ].join('\n'));
+  }
 
   // 3.5. Architecture guardrails — profile-level first, then repo-level fallback
   var _guardrailsLoaded = false;
@@ -1262,7 +1336,7 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
   var PIPELINE_CONTEXT_FILES = [
     { rel: 'pipeline-state.json',              label: 'pipeline-state.json' },
     { rel: 'workspace/state.json',             label: 'workspace/state.json' },
-    { rel: 'context.yml',                      label: 'context.yml' }
+    { rel: '.github/context.yml',              label: 'context.yml' }
   ];
   PIPELINE_CONTEXT_FILES.forEach(function(pf) {
     try {
@@ -1300,13 +1374,53 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
     }
   } catch (_) {}
 
-  // 5d. Artefact listing for activeFeatureSlug — filenames only
-  if (ctx.activeFeatureSlug) {
+  // 5d. Artefact listing + key artefact content for active feature
+  // Derive featureSlug from ctx (explicitly set) or from sessionPath (when under artefacts/)
+  var _featureSlug = ctx.activeFeatureSlug;
+  if (!_featureSlug && sessionPath) {
+    var _artsRoot = path.resolve(path.join(root, 'artefacts'));
+    var _normSp   = path.resolve(String(sessionPath || ''));
+    if (_normSp.startsWith(_artsRoot + path.sep)) {
+      var _relSp   = _normSp.slice(_artsRoot.length + 1);
+      var _firstSeg = _relSp.split(path.sep)[0];
+      if (_firstSeg && !/^\./.test(_firstSeg)) { _featureSlug = _firstSeg; }
+    }
+  }
+
+  if (_featureSlug) {
     try {
-      var featureArtefactsDir = path.join(root, 'artefacts', ctx.activeFeatureSlug);
+      var featureArtefactsDir = path.join(root, 'artefacts', _featureSlug);
       if (fs.existsSync(featureArtefactsDir)) {
-        var fileList = fs.readdirSync(featureArtefactsDir);
-        parts.push('--- Artefact listing: artefacts/' + ctx.activeFeatureSlug + '/ ---\n\n' + fileList.join('\n'));
+        // Recursive file listing (sessions/ directory excluded)
+        var _allFiles = [];
+        (function _listDir(dir, prefix) {
+          try {
+            fs.readdirSync(dir, { withFileTypes: true }).forEach(function(e) {
+              if (e.name === 'sessions') { return; }
+              var rel = prefix ? prefix + '/' + e.name : e.name;
+              if (e.isDirectory()) { _listDir(path.join(dir, e.name), rel); }
+              else { _allFiles.push(rel); }
+            });
+          } catch (_) {}
+        })(featureArtefactsDir, '');
+        parts.push('--- Artefact listing: artefacts/' + _featureSlug + '/ ---\n\n' + _allFiles.join('\n'));
+
+        // Load content from key artefact subdirectories not already in priorArtefacts
+        var _priorSet = new Set((priorArtefacts || []).map(function(pa) { return pa.path; }));
+        var _KEY_DIRS = ['stories', 'review', 'test-plans', 'verification-scripts'];
+        var _diskParts = [];
+        _allFiles.forEach(function(relFile) {
+          if (_KEY_DIRS.indexOf(relFile.split('/')[0]) === -1) { return; }
+          var fullPath = 'artefacts/' + _featureSlug + '/' + relFile;
+          if (_priorSet.has(fullPath)) { return; }
+          try {
+            var fc = fs.readFileSync(path.join(featureArtefactsDir, relFile), 'utf8');
+            _diskParts.push('--- ARTEFACT: ' + fullPath + ' ---\n' + fc + '\n--- END ARTEFACT ---');
+          } catch (_) {}
+        });
+        if (_diskParts.length > 0) {
+          parts.push('--- FEATURE ARTEFACTS ---\n\n' + _diskParts.join('\n\n') + '\n\n--- END FEATURE ARTEFACTS ---');
+        }
       }
     } catch (_) {}
   }
@@ -1318,7 +1432,20 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
     'You are running as a web UI assistant for a structured skill session.',
     'Read the SKILL.md instructions above and follow them to run the session.',
     '',
-    'OPENING TURN: When the session begins, greet the operator with one short welcoming sentence and ask exactly ONE opening question. Do not list multiple questions. Do not number questions. Do not use headers or bullet lists in your opening.',
+    'ACTIVE FEATURE: ' + (_featureSlug || 'see HANDOFF CONTEXT below'),
+    '',
+    'PRIOR ARTEFACTS — DO NOT ASK: All prior stage artefacts for the active feature have already been loaded into the HANDOFF CONTEXT section above (each labelled "--- PRIOR ARTEFACT: artefacts/<feature>/<stage>.md ---"). You cannot read the filesystem directly in this environment — the server has already done it for you.',
+    '',
+    'When SKILL.md Step 1 instructs you to:',
+    '  - "Check if [X] artefact exists at artefacts/..."',
+    '  - "Verify entry conditions" or "confirm you have an approved [X]"',
+    '  - "Ask for the feature slug" or "what feature are we working on?"',
+    '  DO NOT ask the operator any of these questions. Read the artefact content directly from the HANDOFF CONTEXT above. The existence check is already satisfied — you would not be in this session if the prior stages were not complete. Use ONLY artefacts for the active feature slug shown above; ignore artefact paths from other features that may appear in pipeline-state.json.',
+    '',
+    'OPENING TURN: When the session begins, read SKILL.md Step 1 first, then respond as follows:',
+    '- If Step 1 says "Do NOT ask" or "Proceed immediately": output a one-sentence greeting, then execute Step 1 directly (list the artefacts found, state what you are doing, and start). Do NOT ask any question.',
+    '- If Step 1 is an entry-condition / artefact-existence check (covered above): read the prior artefact from HANDOFF CONTEXT, then proceed to the first substantive question or action.',
+    '- Otherwise: output a one-sentence greeting and ask exactly ONE opening question from Step 1. Do not list multiple questions, do not use headers or bullet points.',
     '',
     'ONE QUESTION AT A TIME: Ask one question at a time. Wait for the answer before asking the next.',
     '',
@@ -1344,6 +1471,60 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
   ].join('\n'));
 
   // 6a. Skill-specific protocol additions
+  if (skillName === 'test-plan') {
+    parts.push([
+      '--- TEST PLAN PROTOCOL (Web UI) ---',
+      '',
+      'IMPORTANT: In this Web UI environment you cannot write files to disk. The SKILL.md instructions to "Save to artefacts/[feature]/test-plans/..." are handled automatically by the server after you produce the artefact block.',
+      '',
+      'YOUR JOB: Write the test plan for EXACTLY ONE STORY — the first story in delivery sequence that does NOT appear in the completed test-plan list in Step 1. Identify it from the HANDOFF CONTEXT story list (e.g. if Step 1 shows sdg-1 ✅ and the story list has sdg-1 through sdg-6, the next story is sdg-2). PROCEED IMMEDIATELY — do NOT ask the operator which story to run. Produce the complete test plan — all ACs, unit/integration/NFR tests, and verification script — as a single artefact block.',
+      '',
+      'ARTEFACT CONTENT: Put the complete test plan (all sections from the SKILL.md template) inside the ---ARTEFACT-START--- / ---ARTEFACT-END--- markers. This is how the server saves the artefact to disk.',
+      '',
+      'DO NOT output "Saved artefacts:", "Pipeline state updated ✅", or file-save confirmation lines — the server handles those automatically.',
+      '',
+      'SLUG: Your slug MUST be exactly: ' + (_featureSlug ? '"' + _featureSlug + '-tp-[story-id]" (e.g. "' + _featureSlug + '-tp-sdg-1")' : '"[feature-slug]-tp-[story-id]"') + '. Do not shorten, rename, or reinterpret this value.',
+      '',
+      'CRITICAL — SINGLE STORY ONLY: After your ---ARTEFACT-END--- marker, add one closing line: "Test plan saved for [story-id]. Start a new session for the next story." Then STOP. Do NOT continue to the next story. The operator will start a new session for each remaining story.'
+    ].join('\n'));
+  }
+
+  if (skillName === 'review') {
+    parts.push([
+      '--- REVIEW PROTOCOL (Web UI) ---',
+      '',
+      'IMPORTANT: In this Web UI environment you cannot write files to disk or update .github/pipeline-state.json directly. All SKILL.md instructions to save artefacts or update pipeline state are handled automatically by the server after you produce the artefact block.',
+      '',
+      'YOUR JOB: Review all pending stories in scope (identified in Step 1). Produce the complete review output — all stories, scoring table, and verdict — as a single artefact block.',
+      '',
+      'ARTEFACT CONTENT: Put the entire review output (per-story findings, scoring table, overall verdict, and any HIGH/MEDIUM/LOW findings) inside the ---ARTEFACT-START--- / ---ARTEFACT-END--- markers. This is how the server saves the review to disk and advances the pipeline.',
+      '',
+      'DO NOT output "Saved artefacts:", "Pipeline state updated ✅", or any file-write confirmation lines — the server handles those automatically.',
+      '',
+      'SLUG: Your slug MUST be exactly: ' + (_featureSlug ? '"' + _featureSlug + '"' : '"[feature-slug]"') + '. Do not shorten, rename, or reinterpret this value — use it verbatim.',
+      '',
+      'After your ARTEFACT-END marker, you may add a brief closing message (e.g. summary and next steps). Then stop.'
+    ].join('\n'));
+  }
+
+  if (skillName === 'definition-of-ready') {
+    parts.push([
+      '--- DEFINITION OF READY PROTOCOL (Web UI) ---',
+      '',
+      'IMPORTANT: In this Web UI environment you cannot write files to disk. The SKILL.md instructions to "Save DoR artefact to artefacts/..." and "Update .github/pipeline-state.json" are handled automatically by the server after you produce the artefact block.',
+      '',
+      'YOUR JOB: Run the DoR checklist for EXACTLY ONE STORY — the first story in delivery sequence that does NOT appear in the completed DoR list in Step 1. Identify it from the HANDOFF CONTEXT story list (e.g. if Step 1 shows sdg-1 ✅ and the story list has sdg-1 through sdg-6, the next story is sdg-2). PROCEED IMMEDIATELY — do NOT ask the operator which story to run. Produce the full DoR result wrapped in the artefact markers. STOP after that one story.',
+      '',
+      'ARTEFACT CONTENT: Put the complete DoR output (hard blocks table, contract proposal, coding agent instructions, and completion summary) inside the ---ARTEFACT-START--- / ---ARTEFACT-END--- markers. This is how the server saves the artefact to disk and marks the story as signed off.',
+      '',
+      'DO NOT output "Saved artefacts:" or "Pipeline state updated ✅" lines — the server handles those automatically when you produce the artefact block.',
+      '',
+      'SLUG: Your slug MUST be exactly: ' + (_featureSlug ? '"' + _featureSlug + '-dor-[story-id]" (e.g. "' + _featureSlug + '-dor-sdg-1")' : '"[feature-slug]-dor-[story-id]"') + '. Do not shorten, rename, or reinterpret this value.',
+      '',
+      'CRITICAL — SINGLE STORY ONLY: After your ---ARTEFACT-END--- marker, add exactly one closing line like "DoR saved for [story-id]. Start a new session to process the next story." Then STOP completely. Do NOT ask if the operator wants to continue. Do NOT generate DoR for the next story. The operator will start a new session for each story.'
+    ].join('\n'));
+  }
+
   if (skillName === 'ideate') {
     parts.push([
       '--- ASSUMPTION CARD PROTOCOL (ideate) ---',
@@ -1393,6 +1574,21 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
     ].join('\n'));
   }
 
+  // Gate 2: Haiku format enforcement — EXP-002a/EXP-021 findings.
+  // Haiku produces consulting-style advisory notes instead of template-format artefacts,
+  // always ends with an open question, and never terminates cleanly.
+  if (_isHaiku) {
+    parts.push([
+      '--- FORMAT ENFORCEMENT ---',
+      '',
+      'CRITICAL: You MUST produce a complete structured artefact using the exact section headings from the SKILL.md template. Do NOT produce a consulting-style advisory, gap analysis, or list of discovery questions instead of the artefact.',
+      '',
+      'Do NOT invent constraints, regulatory requirements, or compliance obligations that are not explicitly present in the input brief, prior artefacts, or CONSTRAINTS context above. Only document what is in the input.',
+      '',
+      'STOP CONDITION: After your ---ARTEFACT-END--- marker, add one brief closing sentence and STOP immediately. Do NOT end your response with an open question. Do NOT ask the operator which area to tackle first or what they would like to focus on next.'
+    ].join('\n'));
+  }
+
   return parts.join('\n\n');
 }
 
@@ -1411,15 +1607,117 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
  * @param {string} skillName
  * @param {Array|object} [opts] — legacy: priorArtefacts array; or { productProfile, priorArtefacts, featureSlug }
  */
+/**
+ * Map from skillName to the artefact subdirectory that holds completed artefacts for that skill.
+ */
+var _STEP1_SUBDIR = {
+  'test-plan':           'test-plans',
+  'review':              'review',
+  'definition-of-ready': 'dor'
+};
+
+/**
+ * Compute the Step 1 story-list summary for content-heavy skills by reading the
+ * filesystem directly — no LLM call required.
+ *
+ * Returns a formatted string listing completed artefact slugs found on disk.
+ * Never throws — fs errors return the "no prior artefacts" fallback.
+ *
+ * @param {string} featureSlug  — e.g. '2026-06-18-2x2-grid'
+ * @param {string} skillName    — one of 'test-plan', 'review', 'definition-of-ready'
+ * @param {string} [repoRoot]   — override for testing; defaults to _getRepoPath()
+ * @returns {string}
+ */
+function computeStep1Summary(featureSlug, skillName, repoRoot) {
+  var root = repoRoot || _getRepoPath();
+  var subdir = _STEP1_SUBDIR[skillName];
+  if (!subdir || !featureSlug) {
+    return '**Step 1 — Scope**\n\nNo prior artefacts found. All stories are pending.';
+  }
+
+  var artefactsBase = path.resolve(path.join(root, 'artefacts'));
+  var label = skillName === 'test-plan' ? 'test-plan' : skillName === 'review' ? 'review' : 'DoR';
+
+  // DoR artefacts: artefacts/[featureSlug]-dor-[storyId]/definition-of-ready.md
+  if (skillName === 'definition-of-ready') {
+    var dorPrefix = featureSlug + '-dor-';
+    var dorEntries = [];
+    try {
+      fs.readdirSync(artefactsBase).forEach(function(dir) {
+        if (!dir.startsWith(dorPrefix)) return;
+        var safeDir = path.resolve(path.join(artefactsBase, dir));
+        if (!safeDir.startsWith(artefactsBase + path.sep)) return;
+        if (fs.existsSync(path.join(safeDir, 'definition-of-ready.md'))) {
+          dorEntries.push(dir.slice(dorPrefix.length));
+        }
+      });
+    } catch (_) {}
+    if (dorEntries.length === 0) {
+      return '**Step 1 — Scope (pre-computed)**\n\nScanned `artefacts/` for `' + dorPrefix + '*` — no prior DoR artefacts found. All stories are pending.\n\n**Action:** Identify the first story in sequence from the HANDOFF CONTEXT above and proceed immediately to Step 2 for that story. Do not ask the operator which story to run.';
+    }
+    return '**Step 1 — Scope (pre-computed)**\n\nScanned `artefacts/` for `' + dorPrefix + '*`\n\n**Completed DoR artefacts found:**\n' + dorEntries.map(function(s) { return '- ' + s + ' ✅'; }).join('\n') + '\n\n**Action:** From the HANDOFF CONTEXT story list, identify the first story in delivery sequence that is NOT in the completed list above. Proceed immediately to Step 2 for that story. Do not ask the operator which story to choose.';
+  }
+
+  // Test-plan artefacts: artefacts/[featureSlug]-tp-[storyId]/test-plan.md
+  if (skillName === 'test-plan') {
+    var tpPrefix = featureSlug + '-tp-';
+    var tpEntries = [];
+    try {
+      fs.readdirSync(artefactsBase).forEach(function(dir) {
+        if (!dir.startsWith(tpPrefix)) return;
+        var safeDir = path.resolve(path.join(artefactsBase, dir));
+        if (!safeDir.startsWith(artefactsBase + path.sep)) return;
+        if (fs.existsSync(path.join(safeDir, 'test-plan.md'))) {
+          tpEntries.push(dir.slice(tpPrefix.length));
+        }
+      });
+    } catch (_) {}
+    if (tpEntries.length === 0) {
+      return '**Step 1 — Scope (pre-computed)**\n\nScanned `artefacts/` for `' + tpPrefix + '*` — no prior test-plan artefacts found. All stories are pending.\n\n**Action:** Identify the first story in sequence from the HANDOFF CONTEXT above and proceed immediately to Step 2 for that story. Do not ask the operator which story to run.';
+    }
+    return '**Step 1 — Scope (pre-computed)**\n\nScanned `artefacts/` for `' + tpPrefix + '*`\n\n**Completed test-plan artefacts found:**\n' + tpEntries.map(function(s) { return '- ' + s + ' ✅'; }).join('\n') + '\n\n**Action:** From the HANDOFF CONTEXT story list, identify the first story in delivery sequence that is NOT in the completed list above. Proceed immediately to Step 2 for that story. Do not ask the operator which story to choose.';
+  }
+
+  // Review: auto-save writes artefacts/[featureSlug]/review.md (not a subdirectory)
+  if (skillName === 'review') {
+    var reviewFile = path.resolve(path.join(artefactsBase, featureSlug, 'review.md'));
+    if (reviewFile.startsWith(artefactsBase + path.sep) && fs.existsSync(reviewFile)) {
+      return '**Step 1 — Scope (pre-computed)**\n\nFound prior review artefact at `artefacts/' + featureSlug + '/review.md`.\n\nCheck whether any stories were amended since the last review — if so, re-review only the changed stories. If not, all stories are already reviewed. Proceed to Step 3.';
+    }
+    return '**Step 1 — Scope (pre-computed)**\n\nNo prior review artefact found at `artefacts/' + featureSlug + '/review.md`. All stories are pending review.\n\nProceed to Step 3.';
+  }
+
+  // Fallback: scan artefacts/[featureSlug]/[subdir]/ (original behaviour)
+  var targetDir = path.resolve(path.join(artefactsBase, featureSlug, subdir));
+  if (!targetDir.startsWith(artefactsBase + path.sep)) {
+    return '**Step 1 — Scope**\n\nNo prior artefacts found. All stories are pending.';
+  }
+  var files = [];
+  try {
+    files = fs.readdirSync(targetDir).filter(function(f) { return f.endsWith('.md'); });
+  } catch (_) {}
+
+  if (files.length === 0) {
+    return '**Step 1 — Scope (pre-computed)**\n\nScanned `artefacts/' + featureSlug + '/' + subdir + '/` — no prior ' + label + ' artefacts found. All stories are pending.\n\nProceed to Step 3.';
+  }
+  var slugs = files.map(function(f) { return f.replace(/\.md$/, ''); });
+  return '**Step 1 — Scope (pre-computed)**\n\nScanned `artefacts/' + featureSlug + '/' + subdir + '/`\n\n**Completed ' + label + ' artefacts found:**\n' + slugs.map(function(s) { return '- ' + s + ' ✅'; }).join('\n') + '\n\nStories without a matching artefact are pending.\n\nProceed to Step 3.';
+}
+
 function registerHtmlSession(sessionId, sessionPath, skillName, opts) {
   var options = Array.isArray(opts) ? { priorArtefacts: opts } : (opts || {});
   var contextFiles = [];
+  var resolvedModel = getModelForSkill(skillName);
   var systemPrompt = buildSystemPrompt(
     skillName, sessionPath, undefined,
     options.priorArtefacts || undefined,
-    { productProfile: options.productProfile || undefined },
+    { productProfile: options.productProfile || undefined, activeFeatureSlug: options.featureSlug || undefined, modelId: resolvedModel },
     contextFiles
   );
+  var _precomputedStep1 = null;
+  if (options.featureSlug && _STEP1_SUBDIR[skillName]) {
+    _precomputedStep1 = computeStep1Summary(options.featureSlug, skillName);
+  }
   _sessionStore.set(sessionId, {
     skillName:              skillName,
     sessionPath:            sessionPath,
@@ -1430,7 +1728,10 @@ function registerHtmlSession(sessionId, sessionPath, skillName, opts) {
     artefactPath:           null,
     done:                   false,
     journeyId:              null,
-    assumptionCardsEnabled: true
+    assumptionCardsEnabled: true,
+    featureSlug:            options.featureSlug || null,
+    precomputedStep1:       _precomputedStep1,
+    model:                  resolvedModel
   });
 }
 
@@ -1650,11 +1951,29 @@ function _renderChatPage(skillName, sessionId, session) {
     '    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");',
     '  }',
     '  function lightMd(text) {',
-    '    var s = escHtmlClient(text);',
-    '    s = s.replace(/\\*\\*(.+?)\\*\\*/g,"<strong>$1</strong>");',
-    '    s = s.replace(/(^|[^*])\\*([^*]+?)\\*/g,"$1<em>$2</em>");',
-    '    s = s.replace(/`([^`]+)`/g,"<code>$1</code>");',
-    '    return s.replace(/\\n/g,"<br>");',
+    '    function ilm(s){s=s.replace(/\\*\\*(.+?)\\*\\*/g,"<strong>$1</strong>");s=s.replace(/`([^`]+)`/g,"<code>$1</code>");s=s.replace(/(^|[^*])\\*([^*]+?)\\*/g,"$1<em>$2</em>");return s;}',
+    '    function flushLmTable(rows){if(!rows.length)return"";var h=\'<table class="lm-table">\';',
+    '    for(var ri=0;ri<rows.length;ri++){var r=rows[ri];if(/^\\|[-: |]+\\|$/.test(r.trim()))continue;',
+    '    var cells=r.split("|").slice(1,-1);var tag=ri===0?"th":"td";',
+    '    h+="<tr>"+cells.map(function(c){return"<"+tag+">"+ilm(c.trim())+"</"+tag+">";}).join("")+"</tr>";}',
+    '    return h+"</table>";}',
+    '    var lines=escHtmlClient(text).split("\\n");',
+    '    var out=[];var inTable=false;var tableBuf=[];var inList=false;',
+    '    for(var i=0;i<lines.length;i++){',
+    '      var line=lines[i];',
+    '      if(line.startsWith("|")){if(!inTable){inTable=true;tableBuf=[];}tableBuf.push(line);continue;}',
+    '      else if(inTable){out.push(flushLmTable(tableBuf));tableBuf=[];inTable=false;}',
+    '      if(inList&&!/^[-*] /.test(line.trim())){out.push("</ul>");inList=false;}',
+    '      var trim=line.trim();',
+    '      if(!trim){out.push("<br>");continue;}',
+    '      if(trim==="---"||trim==="***"){out.push(\'<hr class="lm-hr">\');continue;}',
+    '      var hm=trim.match(/^(#{1,3}) (.+)/);',
+    '      if(hm){var lv=hm[1].length;out.push("<h"+lv+\' class="lm-h"+lv+">\'+ ilm(hm[2])+"</h"+lv+">");continue;}',
+    '      if(/^[-*] /.test(trim)){if(!inList){out.push(\'<ul class="lm-ul">\');inList=true;}out.push("<li>"+ilm(trim.slice(2))+"</li>");continue;}',
+    '      out.push("<span>"+ilm(line)+"</span><br>");',
+    '    }',
+    '    if(inTable)out.push(flushLmTable(tableBuf));if(inList)out.push("</ul>");',
+    '    return out.join("");',
     '  }',
     '',
     '  function appendBubble(role, html) {',
@@ -1672,8 +1991,17 @@ function _renderChatPage(skillName, sessionId, session) {
     '  }',
     '',
     '  function stripArtefactBlock(text) {',
+    '    // Remove complete artefact blocks (START...END)',
     '    var s = text.replace(/---ARTEFACT-START---[\\s\\S]*?---ARTEFACT-END---/g, "");',
-    '    s = s.replace(/---SLUG---[\\s\\S]*?\\n---\\n?/g, "");',
+    '    // Strip unclosed artefact blocks (START but no END — truncated mid-response)',
+    '    s = s.replace(/---ARTEFACT-START---[\\s\\S]*$/g, "");',
+    '    // Continuation turns have END but no START — everything before END is artefact',
+    '    // content; keep only the post-END conversational summary.',
+    '    if(s.indexOf("---ARTEFACT-START---")===-1 && s.indexOf("---ARTEFACT-END---")!==-1){',
+    '      s = s.slice(s.indexOf("---ARTEFACT-END---")+"---ARTEFACT-END---".length);',
+    '    }',
+    '    // Remove slug line: ---SLUG---\\n<slug-value>',
+    '    s = s.replace(/---SLUG---\\n[^\\n]*\\n?/g, "");',
     '    s = s.replace(/\\n{3,}/g, "\\n\\n").trim();',
     '    return s;',
     '  }',
@@ -1727,6 +2055,59 @@ function _renderChatPage(skillName, sessionId, session) {
     '    var sm = md.match(/^Slicing strategy:\\s*(.+)$/m);',
     '    if (!sm) sm = md.match(/\\*\\*Slicing strategy:\\*\\*\\s*(.+)$/m);',
     '    if (sm) r.slicing = sm[1].trim();',
+    '    // Format C: H1 epic headers "# Epic N: Name" + H1 story headers "# Story id — Title"',
+    '    // (produced by Haiku when the skill uses H1 headings for major sections)',
+    '    var _hasH1Epics = /^# Epic \\d+/m.test(md);',
+    '    var _hasH1Stories = /^# Story [a-z][a-z0-9.-]*\\.\\d+/im.test(md);',
+    '    if (_hasH1Epics || _hasH1Stories) {',
+    '      // Parse epic blocks to get name + story ID list',
+    '      var _epicMap = {}, _epicOrder2 = [];',
+    '      md.split(/^(?=# Epic \\d+)/m).slice(1).forEach(function(eb, idx) {',
+    '        var fl = eb.split("\\n")[0];',
+    '        var nM = fl.match(/^# Epic \\d+[:\\-—\\s]+(.+)$/) || fl.match(/^# Epic \\d+(.*)$/);',
+    '        var slug2 = (nM && nM[1] ? nM[1].trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") : ("epic-"+(idx+1))) || ("epic-"+(idx+1));',
+    '        var name2 = nM && nM[1] ? nM[1].trim() : ("Epic "+(idx+1));',
+    '        var storyIds = [];',
+    '        var listM = eb.match(/## Stories in this epic([\\s\\S]*?)(?=\\n## |\\n# |$)/);',
+    '        if (listM) {',
+    '          listM[1].split("\\n").forEach(function(line) {',
+    '            var idM2 = line.match(/[\\-\\*]?\\s*([a-z][a-z0-9.-]*\\.\\d+)/i);',
+    '            if (idM2) storyIds.push(idM2[1].toLowerCase());',
+    '          });',
+    '        }',
+    '        _epicMap[slug2] = { num: String(idx+1), name: name2, storyIds: storyIds, stories: [], raw: eb };',
+    '        _epicOrder2.push(slug2);',
+    '      });',
+    '      // Parse H1 story blocks',
+    '      md.split(/^(?=# Story [a-z][a-z0-9.-]*\\.\\d+)/im).slice(1).forEach(function(sb) {',
+    '        var sfl = sb.split("\\n")[0];',
+    '        var sM2 = sfl.match(/^# Story ([a-z][a-z0-9.-]*\\.\\d+)\\s*[—\\-]\\s*(.+)$/i);',
+    '        if (!sM2) return;',
+    '        var stId = sM2[1].toLowerCase(), stTitle = sM2[2].trim();',
+    '        var cxM2 = sb.match(/Complexity:\\s*(\\d)/);',
+    '        var entry = { id: stId, title: stTitle, cx: cxM2 ? parseInt(cxM2[1],10) : 0, raw: sb };',
+    '        // Find which epic claims this story',
+    '        var placed = false;',
+    '        _epicOrder2.forEach(function(eSlug) {',
+    '          if (_epicMap[eSlug].storyIds.indexOf(stId) !== -1) {',
+    '            _epicMap[eSlug].stories.push(entry); placed = true;',
+    '          }',
+    '        });',
+    '        if (!placed) {',
+    '          // Fallback: attach to last epic or create uncategorised',
+    '          var lastSlug = _epicOrder2[_epicOrder2.length - 1] || "uncategorised";',
+    '          if (!_epicMap[lastSlug]) { _epicMap[lastSlug] = { num: "?", name: "Uncategorised", storyIds: [], stories: [] }; _epicOrder2.push(lastSlug); }',
+    '          _epicMap[lastSlug].stories.push(entry);',
+    '        }',
+    '      });',
+    '      _epicOrder2.forEach(function(slug) {',
+    '        var ep = _epicMap[slug];',
+    '        r.epics.push({ num: ep.num, name: ep.name, stories: ep.stories, raw: ep.raw || "" });',
+    '        r.storyCount += ep.stories.length;',
+    '      });',
+    '      r.epicCount = r.epics.length;',
+    '      return r;',
+    '    }',
     '    // Format B: flat "## story.id — Title" with "**Epic:** slug" inside each story',
     '    // Detection: any H2 header that looks like a story ID (letters.digits)',
     '    var _hasFlatStories = /\\n## [a-z][a-z0-9.-]*\\.\\d+\\s*[—\\-]/i.test(md);',
@@ -1795,7 +2176,7 @@ function _renderChatPage(skillName, sessionId, session) {
     '          var cxM = sb.match(/Complexity:\\s*(\\d)/);',
     '          stories.push({ id: idM ? idM[1] : ("S" + _si), title: tM ? tM[1].trim() : sl.trim(), cx: cxM ? parseInt(cxM[1],10) : 0, raw: sb });',
     '        }',
-    '        r.epics.push({ num: numM ? numM[1] : String(_ei), name: nM ? nM[1].trim() : fl.trim(), stories: stories });',
+    '        r.epics.push({ num: numM ? numM[1] : String(_ei), name: nM ? nM[1].trim() : fl.trim(), stories: stories, raw: eb });',
     '        r.storyCount += stories.length;',
     '      }',
     '    }',
@@ -1816,11 +2197,12 @@ function _renderChatPage(skillName, sessionId, session) {
     '      }).join("");',
     '      var cntBadge = epic.stories.length ? \'<span class="dm-epic-count">\' + epic.stories.length + (epic.stories.length === 1 ? " story" : " stories") + \'</span>\' : "";',
     '      return \'<div class="dm-epic">\' +',
-    '        \'<div class="dm-epic-hd">\' +',
+    '        \'<button class="dm-epic-hd" onclick="window.dmOpenEpic(\' + ei + \')" title="View epic details">\' +',
     '          \'<span class="dm-epic-tag">E\' + escHtmlClient(epic.num) + \'</span>\' +',
     '          \'<span class="dm-epic-name">\' + escHtmlClient(epic.name) + \'</span>\' +',
     '          cntBadge +',
-    '        \'</div>\' +',
+    '          \'<span style="font-size:9px;color:var(--muted);margin-left:auto;flex-shrink:0">&#x2197;</span>\' +',
+    '        \'</button>\' +',
     '        \'<div class="dm-cards">\' + (cards || \'<span style="font-size:11px;color:var(--muted);padding:4px 0">Writing stories…</span>\') + \'</div>\' +',
     '      \'</div>\';',
     '    }).join("");',
@@ -1880,12 +2262,42 @@ function _renderChatPage(skillName, sessionId, session) {
     '    document.getElementById("dm-body").innerHTML = renderArtefactMd("### " + s.id + " — " + s.title + "\\n" + s.raw);',
     '    modal.style.display = "flex";',
     '  };',
+    '  window.dmOpenEpic = function(ei) {',
+    '    var p = window.dmParsed;',
+    '    if (!p || !p.epics[ei]) return;',
+    '    var epic = p.epics[ei];',
+    '    var modal = document.getElementById("dm-modal");',
+    '    if (!modal) {',
+    '      modal = document.createElement("div");',
+    '      modal.id = "dm-modal";',
+    '      modal.className = "dm-modal";',
+    '      modal.innerHTML =',
+    '        \'<div class="dm-mo" onclick="dmCloseModal()"></div>\' +',
+    '        \'<div class="dm-mb">\' +',
+    '          \'<div class="dm-mh">\' +',
+    '            \'<div id="dm-mt" class="dm-mt"></div>\' +',
+    '            \'<button onclick="dmCloseModal()" class="dm-mx" title="Close">✕</button>\' +',
+    '          \'</div>\' +',
+    '          \'<div id="dm-body" class="dm-mbd"></div>\' +',
+    '        \'</div>\';',
+    '      document.body.appendChild(modal);',
+    '      document.addEventListener("keydown", function(ev) { if (ev.key === "Escape") window.dmCloseModal(); });',
+    '    }',
+    '    document.getElementById("dm-mt").textContent = "E" + epic.num + " — " + epic.name;',
+    '    var storyList = epic.stories.map(function(s) { return "- **" + s.id + "** — " + s.title; }).join("\\n");',
+    '    var body = epic.raw ? renderArtefactMd(epic.raw) : (storyList ? renderArtefactMd(storyList) : "<p>No epic details available.</p>");',
+    '    document.getElementById("dm-body").innerHTML = body;',
+    '    modal.style.display = "flex";',
+    '  };',
     '  window.dmCloseModal = function() {',
     '    var m = document.getElementById("dm-modal");',
     '    if (m) m.style.display = "none";',
     '  };',
     '',
+    '  var _commitLinkShown = false;',
     '  function showCommitLink() {',
+    '    if (_commitLinkShown) return;',
+    '    _commitLinkShown = true;',
     '    var foot = form.closest(".sw-chat-pane") && form.closest(".sw-chat-pane").querySelector(".sw-chat-foot");',
     '    if(!foot) return;',
     '    var wrap = document.createElement("div");',
@@ -1900,14 +2312,16 @@ function _renderChatPage(skillName, sessionId, session) {
     '    foot.appendChild(wrap);',
     '  }',
     '',
-    '  function sendTurn(answer) {',
+    '  function sendTurn(answer, _isContinuation) {',
     '    if(submitBtn) submitBtn.disabled = true;',
+    '    // Always show thinking dots — continuation turns still take time and need user feedback.',
     '    var thinkingDiv = appendBubble("assistant", \'<span class="sw-thinking"><span class="sw-dot"></span><span class="sw-dot"></span><span class="sw-dot"></span></span>\');',
     '    var streamText    = "";',
     '    var streamDiv    = null;',
     '    var partialDraft = "";',
     '    var reasoningEl  = null;',
     '    var reasoningLen = 0;',
+    '    var _continuationPending = false;',
     '    fetch(STREAM_URL, {',
     '      method: "POST",',
     '      headers: {"Content-Type": "application/json"},',
@@ -1917,7 +2331,8 @@ function _renderChatPage(skillName, sessionId, session) {
     '      var ct = r.headers.get("content-type") || "";',
     '      if(ct.indexOf("text/event-stream") === -1) throw new Error("session-expired");',
     '      streamDiv = appendBubble("assistant", "");',
-    '      var textNode = streamDiv.querySelector(".sw-chat-text");',
+    '      if(_isContinuation) { streamDiv.style.display = "none"; }',
+    '      var textNode = _isContinuation ? null : streamDiv.querySelector(".sw-chat-text");',
     '      var reader   = r.body.getReader();',
     '      var decoder  = new TextDecoder();',
     '      var buf      = "";',
@@ -1925,7 +2340,7 @@ function _renderChatPage(skillName, sessionId, session) {
     '        return reader.read().then(function(result) {',
     '          if(result.done) {',
     '            if(thinkingDiv) { thinkingDiv.remove(); thinkingDiv = null; }',
-    '            if(submitBtn) submitBtn.disabled = false;',
+    '            if(!_continuationPending && submitBtn) submitBtn.disabled = false;',
     '            return;',
     '          }',
     '          buf += decoder.decode(result.value, {stream: true});',
@@ -1938,7 +2353,8 @@ function _renderChatPage(skillName, sessionId, session) {
     '              var evt = JSON.parse(payload);',
     '              if(evt.reasoningChunk) {',
     '                if(thinkingDiv) { thinkingDiv.remove(); thinkingDiv = null; }',
-    '                if(!reasoningEl) {',
+    '                // Continuation turns are invisible — skip the reasoning block too.',
+    '                if(!reasoningEl && !_isContinuation) {',
     '                  reasoningEl = document.createElement("details");',
     '                  reasoningEl.className = "sw-reasoning-block";',
     '                  reasoningEl.open = true;',
@@ -1954,7 +2370,7 @@ function _renderChatPage(skillName, sessionId, session) {
     '                }',
     '                reasoningLen += evt.reasoningChunk.length;',
     '                var rb = reasoningEl.querySelector(".sw-reasoning-body");',
-    '                if(rb) rb.textContent += evt.reasoningChunk;',
+    '                if(rb) { rb.textContent += evt.reasoningChunk; rb.scrollTop = rb.scrollHeight; }',
     '                scrollToBottom();',
     '              }',
     '              if(evt.chunk) {',
@@ -1970,6 +2386,7 @@ function _renderChatPage(skillName, sessionId, session) {
     '                scrollToBottom();',
     '              }',
     '              if(evt.draftChunk) {',
+    '                if(thinkingDiv) { thinkingDiv.remove(); thinkingDiv = null; }',
     '                partialDraft += evt.draftChunk;',
     '                updateDraftPanel(partialDraft);',
     '              }',
@@ -1985,10 +2402,23 @@ function _renderChatPage(skillName, sessionId, session) {
     '              if(evt.done !== undefined) {',
     '                if(evt.artefactContent) { partialDraft = ""; updateDraftPanel(evt.artefactContent); }',
     '                if(evt.done) {',
+    '                  // For continuation turns: surface the post-artefact summary (verdict,',
+    '                  // questions) that was stripped from the hidden bubble during streaming.',
+    '                  if(_isContinuation && streamText) {',
+    '                    var _postText = stripArtefactBlock(streamText).trim();',
+    '                    if(_postText) { appendBubble("assistant", lightMd(_postText)); }',
+    '                  }',
     '                  showCommitLink();',
     '                } else if(streamText && streamText.indexOf("?") === -1) {',
-    '                  setTimeout(function(){ sendTurn("continue"); }, 100);',
+    '                  _continuationPending = true;',
+    '                  setTimeout(function(){ _continuationPending = false; sendTurn("continue", true); }, 100);',
     '                } else {',
+    '                  // done=false with question: re-enable input.',
+    '                  // For hidden continuation turns, surface any visible text first.',
+    '                  if(_isContinuation && streamText) {',
+    '                    var _postQ = stripArtefactBlock(streamText).trim();',
+    '                    if(_postQ) { appendBubble("assistant", lightMd(_postQ)); }',
+    '                  }',
     '                  if(submitBtn) submitBtn.disabled = false;',
     '                }',
     '              }',
@@ -2299,29 +2729,47 @@ function _renderChatPage(skillName, sessionId, session) {
     var _navJourney = _journeyStore.getJourney(session.journeyId);
     if (_navJourney) {
       var _NAV_STAGES = [
-        { id: 'ideate',              num: '1',  label: 'Idea',       optional: true },
-        { id: 'discovery',           num: '2',  label: 'Discovery',  optional: false },
-        { id: 'benefit-metric',      num: '2b', label: 'Benefits',   optional: false },
-        { id: 'design',              num: '3',  label: 'Design',     optional: false },
-        { id: 'definition',          num: '4',  label: 'Definition', optional: false },
-        { id: 'test-plan',           num: '5',  label: 'Test Plan',  optional: false },
-        { id: 'review',              num: '6',  label: 'Review',     optional: false },
-        { id: 'definition-of-ready', num: '7',  label: 'Ready',      optional: false }
+        { id: 'ideate',              num: '1',   label: 'Idea',       optional: true,  subStep: false },
+        { id: 'discovery',           num: '2',   label: 'Discovery',  optional: false, subStep: false },
+        { id: 'clarify',             num: '◦',   label: 'Clarify',    optional: true,  subStep: true  },
+        { id: 'estimate',            num: '◦',   label: 'Estimate',   optional: true,  subStep: true  },
+        { id: 'benefit-metric',      num: '2b',  label: 'Benefits',   optional: false, subStep: false },
+        { id: 'design',              num: '3',   label: 'Design',     optional: false, subStep: false },
+        { id: 'definition',          num: '4',   label: 'Definition', optional: false, subStep: false },
+        { id: 'review',              num: '5',   label: 'Review',     optional: false, subStep: false },
+        { id: 'test-plan',           num: '6',   label: 'Test Plan',  optional: false, subStep: false },
+        { id: 'definition-of-ready', num: '7',   label: 'Ready',      optional: false, subStep: false }
       ];
       var _doneSet = new Set((_navJourney.completedStages || []).map(function(s) { return s.skillName; }));
+      var _costMap = {};
+      (_navJourney.completedStages || []).forEach(function(s) { if (s.costUsd != null) { _costMap[s.skillName] = s.costUsd; } });
       var _activeSkill = _navJourney.activeSkill;
       var _featureDisplaySlug = escHtml(_navJourney.featureSlug || '');
       var _navJourneyId = escHtml(session.journeyId);
       var _stepsHtml = _NAV_STAGES.map(function(s) {
-        var isDone = _doneSet.has(s.id);
-        var isActive = s.id === _activeSkill;
-        var cls = isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending';
-        var icon = isDone ? '●' : isActive ? '▶' : '○';
-        var inner = '<span class="sn-num">' + escHtml(s.num) + '</span>' +
-          '<span class="sn-label">' + escHtml(s.label) + '</span>' +
-          '<span class="sn-icon" aria-hidden="true">' + icon + '</span>';
-        if (isDone) {
-          return '<li class="sn-step ' + cls + '"><a href="/journey/' + _navJourneyId + '/stage/' + encodeURIComponent(s.id) + '" class="sn-step-link" title="View ' + escHtml(s.label) + ' artefact">' + inner + '</a></li>';
+        // Sub-steps (clarify, estimate) use journey flags rather than completedStages
+        var isDone, isActive;
+        if (s.id === 'clarify') {
+          isDone = !!_navJourney.clarifyDone;
+          isActive = _navJourney.sideTripSessionId && _navJourney.activeSkill === 'discovery';
+        } else if (s.id === 'estimate') {
+          isDone = !!_navJourney.estimateDone;
+          isActive = false;
+        } else {
+          isDone = _doneSet.has(s.id);
+          isActive = s.id === _activeSkill;
+        }
+        var cls = s.subStep
+          ? 'sn-step--sub ' + (isDone ? 'sn-step--sub-done' : 'sn-step--sub-pending')
+          : (isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending');
+        var icon = isDone ? '✓' : (isActive ? '▶' : '◦');
+        var costLabel = (!s.subStep && isDone && _costMap[s.id] != null) ? ' · $' + _costMap[s.id].toFixed(3) : '';
+        var inner = (s.subStep
+          ? '<span class="sn-sub-label">' + escHtml(s.label) + '</span><span class="sn-icon" aria-hidden="true">' + icon + '</span>'
+          : '<span class="sn-num">' + escHtml(s.num) + '</span><span class="sn-label">' + escHtml(s.label) + '</span><span class="sn-icon" aria-hidden="true">' + icon + '</span>');
+        if (!s.subStep && isDone) {
+          var titleAttr = 'View ' + escHtml(s.label) + ' artefact' + (costLabel ? ' (' + costLabel.trim() + ')' : '');
+          return '<li class="sn-step ' + cls + '"><a href="/journey/' + _navJourneyId + '/stage/' + encodeURIComponent(s.id) + '" class="sn-step-link" title="' + titleAttr + '">' + inner + (costLabel ? '<span class="sn-cost">' + escHtml(costLabel) + '</span>' : '') + '</a></li>';
         }
         return '<li class="sn-step ' + cls + '">' + inner + '</li>';
       }).join('');
@@ -2342,6 +2790,12 @@ function _renderChatPage(skillName, sessionId, session) {
         '.sn-step--active{background:var(--accent-soft,#eaf1fb);color:var(--ink);font-weight:600}',
         '.sn-step--active .sn-icon{color:var(--accent,#0969da)}',
         '.sn-step--pending{opacity:0.4}',
+        '.sn-cost{font-size:9px;font-family:monospace;opacity:0.65;margin-left:1px}',
+        '.sn-step--sub{border-right:none;padding:0 2px}',
+        '.sn-step--sub-done{opacity:0.6}',
+        '.sn-step--sub-pending{opacity:0.3}',
+        '.sn-sub-label{font-size:10px;padding:7px 5px;color:var(--muted)}',
+        '.sn-step--sub .sn-icon{font-size:8px;padding:7px 3px 7px 0;color:var(--muted)}',
         '.sn-ref-link{margin-left:auto;flex-shrink:0;font-size:11px;color:var(--muted);text-decoration:none;padding:0 12px;white-space:nowrap;border-left:1px solid var(--line)}',
         '.sn-ref-link:hover{color:var(--accent,#0969da);background:var(--line)}',
         '</style>',
@@ -2367,7 +2821,7 @@ function _renderChatPage(skillName, sessionId, session) {
     draftSections:     draftSections,
     pendingConfirmation: false,
     userInitial:       'M',
-    modelLabel:        getActiveModel(),
+    modelLabel:        getModelForSkill(skillName),
     contextManifestHtml: buildContextManifestHtml(session.contextFiles || [])
   }) + script;
 
@@ -2613,6 +3067,23 @@ async function handlePostTurnStreamHtml(req, res) {
     try { res.write(':\n\n'); } catch (_) {}
   }, 15000);
 
+  // ssp.1: If __init__ arrives and the session has a pre-computed Step 1 summary,
+  // stream it directly without a model call. This eliminates the thinking-overflow
+  // failure mode on GHCP where extended thinking exhausts the token budget before
+  // any text output is produced.
+  if (rawAnswer === '__init__' && session.precomputedStep1 && session.turns.length === 0) {
+    var _step1Text = session.precomputedStep1;
+    res.write('data: ' + JSON.stringify({ chunk: _step1Text }) + '\n\n');
+    session.turns.push({ role: 'assistant', content: _step1Text });
+    clearInterval(_keepaliveInterval);
+    // ssp.1 fix: emit done:false so the client auto-continues without showing the "Continue to next
+    // stage" commit link. done:true here would fire showCommitLink() before the skill session is
+    // complete, causing gate-confirm to return 400 "Session not complete yet".
+    res.write('data: ' + JSON.stringify({ done: false }) + '\n\n');
+    res.end();
+    return;
+  }
+
   // __init__ is a special sentinel from the client's auto-initial-turn.
   // Use the standard opening prompt and do NOT push a user turn to history
   // (so session state matches the old server-side initial-turn behaviour).
@@ -2620,6 +3091,8 @@ async function handlePostTurnStreamHtml(req, res) {
   var _initPrompt = 'Begin the session. Greet the operator with one short welcoming sentence and ask your single opening question only. Do not list multiple questions.';
   if (_isInitialTurn && session.skillName === 'definition' && session.journeyId) {
     _initPrompt = 'Begin the session. The feature has already been selected by the operator — do not ask which feature to work on. Present what you found (Step 1 summary) and ask if ready to decompose into epics and stories. One question only.';
+  } else if (_isInitialTurn && ['test-plan', 'review', 'definition-of-ready'].indexOf(session.skillName) !== -1) {
+    _initPrompt = 'Begin the session. Run SKILL.md Step 1 only: check which stories already have completed artefacts on disk, then list the stories still pending. If all are done, say so and stop. Otherwise list pending stories and then ask ONLY the Step 3 test data strategy question. Do NOT write any test plans, verification scripts, or test content in this turn — wait for the answer to Step 3 first. Keep your response to the story list plus the single Step 3 question. Nothing more.';
   }
   var userContent = _isInitialTurn ? _initPrompt : sanitiseAnswer(rawAnswer);
   var historySnapshot = session.turns.slice();
@@ -2666,18 +3139,38 @@ async function handlePostTurnStreamHtml(req, res) {
     var _turnUsage = null;
 
     // Build per-turn options: model routing, max_tokens, thinking control.
-    var _turnOptions = {};
-    if (!_isInitialTurn) { _turnOptions.noThinking = true; }
+    // noThinking=true disables extended thinking for all Web UI skill turns.
+    // EXP-045 (definition) + EXP-042 (discovery): thinking is net negative across all tested skills.
+    // Re-enable per-skill via WUCE_ENABLE_THINKING=1 only when eval evidence supports it.
+    var _turnOptions = { noThinking: true };
     if (_isInitialTurn) {
-      // Init turn only ever produces a short greeting + one question.
-      _turnOptions.maxTokens = parseInt(process.env.WUCE_INIT_MAX_TOKENS || '1024', 10);
+      // Content-heavy skills run Step 1 + session recovery + first story on the init turn,
+      // so don't cap max_tokens — they need the full model budget.
+      // All other skills produce a short greeting + one question: apply the cap.
+      var _contentHeavyInitSkills = ['test-plan', 'review', 'definition-of-ready'];
+      if (_contentHeavyInitSkills.indexOf(session.skillName) === -1) {
+        _turnOptions.maxTokens = parseInt(process.env.WUCE_INIT_MAX_TOKENS || '1024', 10);
+      }
     }
+    // Per-skill model routing — backed by eval programme (workspace/experiments/EXPERIMENTS-SUMMARY.md)
+    // EXP-021: Haiku 0/22 passes on /discovery S-series → Sonnet only for discovery
+    // EXP-006/007R/004/016/037/038: Haiku FDR=1.00 / TCF=1.00 / GF=1.00 on all gate skills at 4× lower cost
+    // EXP-045: thinking degrades /definition C2 propagation; EXP-042: thinking degrades /discovery
+    // EXP-044: no Haiku/Sonnet gap on /ideate in current eval (eval gap noted in scorecard)
+    // discovery + ideate require Sonnet; all other pipeline skills default to Haiku
+    // noThinking=true is already set above for all turns — non-Sonnet block sets model only.
+    var _SONNET_SKILLS = ['discovery', 'ideate'];
+    if (_SONNET_SKILLS.indexOf(session.skillName) === -1) {
+      _turnOptions.model = process.env.WUCE_HAIKU_MODEL || 'claude-haiku-4-5';
+    }
+    // WUCE_FAST_MODEL: blanket operator override for quick turns (takes precedence over skill routing).
+    // Exception: HAIKU_BLOCKED_SKILLS bypass this override — Haiku fabrication risk is not
+    // prompt-tunable (EXP-021: structurally-compliant artefacts with invented regulatory constraints).
     var _fastModel = process.env.WUCE_FAST_MODEL;
-    if (_fastModel) {
-      // Use the fast model for every operator turn that isn't generating artefact content.
-      // Continue turns and in-progress artefact continuation always use the configured model.
-      var _needsFullModel = rawAnswer === 'continue' || session._artefactInProgress === true;
-      if (!_needsFullModel) { _turnOptions.model = _fastModel; }
+    if (_fastModel && rawAnswer !== 'continue' && session._artefactInProgress !== true) {
+      if (!(_isHaikuModel(_fastModel) && HAIKU_BLOCKED_SKILLS.indexOf(session.skillName) !== -1)) {
+        _turnOptions.model = _fastModel;
+      }
     }
 
     var _llmResult = await _skillTurnExecutorStream(
@@ -2874,6 +3367,18 @@ async function handlePostTurnStreamHtml(req, res) {
     canvas:     (fullText.match(/---CANVAS-JSON:/g)     || []).length
   };
   var _tu = _turnUsage || {};
+
+  // Accumulate token usage on the session so gate-confirm can compute stage-level cost.
+  if (_turnUsage && _turnUsage.model) {
+    if (!session.usage) {
+      session.usage = { model: _turnUsage.model, input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_creation_tokens: 0 };
+    }
+    session.usage.input_tokens          += _turnUsage.input_tokens           || 0;
+    session.usage.output_tokens         += _turnUsage.output_tokens          || 0;
+    session.usage.cache_read_tokens     += _turnUsage.cache_read_tokens      || 0;
+    session.usage.cache_creation_tokens += _turnUsage.cache_creation_tokens  || 0;
+  }
+
   var _turnType = _isInitialTurn ? 'init' : (rawAnswer === 'continue' ? 'continue' : 'operator');
   _turnLog.info({
     event:                'llm_complete',
@@ -2936,20 +3441,22 @@ async function handlePostTurnStreamHtml(req, res) {
     session.artefactPath = 'artefacts/' + slug + '/' + (session.skillName || skillName) + '.md';
     session.done = true;
 
-    // Auto-save artefact to disk + git commit immediately on generation
+    // Auto-save artefact to disk + git commit immediately on generation (or amendment)
     var _autoRepoRoot = _getRepoPath();
     var _autoAbsPath = path.resolve(path.join(_autoRepoRoot, session.artefactPath));
-    if (!fs.existsSync(_autoAbsPath)) {
-      try {
-        fs.mkdirSync(path.dirname(_autoAbsPath), { recursive: true });
-        fs.writeFileSync(_autoAbsPath, session.artefactContent, 'utf8');
-        var _cp = require('child_process');
-        _cp.execSync('git add ' + JSON.stringify(session.artefactPath), { cwd: _autoRepoRoot, encoding: 'utf8' });
-        _cp.execSync('git commit -m ' + JSON.stringify('feat: ' + (session.skillName || skillName) + ' artefact'), { cwd: _autoRepoRoot, encoding: 'utf8' });
-        console.info(JSON.stringify({ event: 'artefact_auto_saved', sessionId: sessionId, artefactPath: session.artefactPath }));
-      } catch (_autoErr) {
-        console.warn(JSON.stringify({ event: 'artefact_auto_save_failed', sessionId: sessionId, error: _autoErr.message }));
-      }
+    var _isAmendment = fs.existsSync(_autoAbsPath);
+    try {
+      fs.mkdirSync(path.dirname(_autoAbsPath), { recursive: true });
+      fs.writeFileSync(_autoAbsPath, session.artefactContent, 'utf8');
+      var _cp = require('child_process');
+      _cp.execSync('git add ' + JSON.stringify(session.artefactPath), { cwd: _autoRepoRoot, encoding: 'utf8' });
+      var _commitMsg = _isAmendment
+        ? 'feat: ' + (session.skillName || skillName) + ' artefact (amended)'
+        : 'feat: ' + (session.skillName || skillName) + ' artefact';
+      _cp.execSync('git commit -m ' + JSON.stringify(_commitMsg), { cwd: _autoRepoRoot, encoding: 'utf8' });
+      console.info(JSON.stringify({ event: _isAmendment ? 'artefact_auto_amended' : 'artefact_auto_saved', sessionId: sessionId, artefactPath: session.artefactPath }));
+    } catch (_autoErr) {
+      console.warn(JSON.stringify({ event: 'artefact_auto_save_failed', sessionId: sessionId, error: _autoErr.message }));
     }
     // Mark stage complete in journey so resume can load it as a prior artefact
     if (session.journeyId && !session._stageDone) {
@@ -2959,6 +3466,13 @@ async function handlePostTurnStreamHtml(req, res) {
   }
 
   session.turns.push({ role: 'assistant', content: fullText });
+
+  // wsm.1: persist session to disk after mutation (non-fatal — write failure must not break the turn)
+  try {
+    _diskSessionWriter.write(sessionId, session);
+  } catch (_writeErr) {
+    console.error(JSON.stringify({ event: 'session_write_error', sessionId: sessionId, error: _writeErr && _writeErr.message ? _writeErr.message : String(_writeErr) }));
+  }
 
   res.write('data: ' + JSON.stringify({
     done: done,
@@ -3321,5 +3835,13 @@ module.exports = {
   // inc4 — canvas output panel
   parseCanvasBlock,
   // iwu.4 — confirm/flag endpoint
-  handlePostAssumptionConfirm
+  handlePostAssumptionConfirm,
+  // ssp.1 — server-side Step 1 pre-computation (exported for testing)
+  computeStep1Summary,
+  // cost tracking — compute USD cost from accumulated session.usage
+  computeCostUsd: _computeCostUsd,
+  // model routing + system prompt (exported for gate testing)
+  getModelForSkill,
+  buildSystemPrompt,
+  HAIKU_BLOCKED_SKILLS
 };
