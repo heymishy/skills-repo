@@ -4,6 +4,7 @@ var crypto = require('crypto');
 var os = require('os');
 var fs = require('fs');
 var { renderShell, escHtml } = require('../utils/html-shell');
+var { requireJourneyAccess, asHttpResponse, POLICY } = require('../middleware/journey-access');
 
 // Injectable adapters — defaults wire to real implementations
 var _journeyStore = require('../modules/journey-store');
@@ -241,6 +242,16 @@ function handleGetJourney(req, res) {
     res.writeHead(302, { Location: '/auth/github' });
     res.end();
     return;
+  }
+  var _gjId = req.params && req.params.journeyId;
+  if (_gjId) {
+    var _gjJourney = _journeyStore.getJourney(_gjId);
+    try { requireJourneyAccess(_gjJourney, req.session, POLICY.TENANT); }
+    catch (err) {
+      res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(renderShell({ title: 'Not found', bodyContent: '<p>Not found.</p>', user: { login: req.session.login || '' } }));
+      return;
+    }
   }
   var login      = req.session.login || '';
   var repoRoot   = getRepoRoot();
@@ -513,9 +524,10 @@ async function handleGetJourneyStageView(req, res) {
   var journeyId = req.params && req.params.journeyId;
   var stageName = req.params && req.params.stageName;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Journey not found.</p><a href="/journey">Back</a></div>', user: { login: req.session.login || '' } }));
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Not found.</p><a href="/journey">Back</a></div>', user: { login: req.session.login || '' } }));
     return;
   }
 
@@ -1761,8 +1773,9 @@ function handleGetJourneyById(req, res) {
   }
   var journeyId = req.params && req.params.journeyId;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(renderShell({ title: 'Journey not found', bodyContent: '<p>Journey not found.</p>', user: { login: req.session.login || '' } }));
     return;
   }
@@ -1794,9 +1807,10 @@ async function handleGetJourneyState(req, res) {
   }
   var journeyId = req.params && req.params.journeyId;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Journey not found' }));
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
     return;
   }
   var login = req.session.login || 'anon';
@@ -1842,9 +1856,10 @@ async function handleGetJourneyViewers(req, res) {
   }
   var journeyId = req.params && req.params.journeyId;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Journey not found' }));
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
     return;
   }
   var activeUsers = _getActiveViewerCount(journeyId);
@@ -1957,15 +1972,10 @@ async function handlePostJourneyRecommit(req, res) {
   var journeyId = req.params && req.params.journeyId;
   var stageName = req.params && req.params.stageName;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Journey not found' }));
-    return;
-  }
-  // Owner-only check
-  if (journey.ownerId && journey.ownerId !== (req.session && req.session.login)) {
-    res.writeHead(403, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'FORBIDDEN' }));
+  try { requireJourneyAccess(journey, req.session, POLICY.OWNER); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.OWNER), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: err.code }));
     return;
   }
   var body = req.body || {};
@@ -2054,14 +2064,10 @@ async function handlePostJourneyStageCommit(req, res) {
   var journeyId = req.params && req.params.journeyId;
   var stageName = req.params && req.params.stageName;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Journey not found' }));
-    return;
-  }
-  if (journey.ownerId && journey.ownerId !== (req.session && req.session.login)) {
-    res.writeHead(403, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'FORBIDDEN' }));
+  try { requireJourneyAccess(journey, req.session, POLICY.OWNER); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.OWNER), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: err.code }));
     return;
   }
   var stage = (journey.completedStages || []).find(function(s) { return s.skillName === stageName; });
@@ -2110,9 +2116,10 @@ function handleGetStageControls(req, res) {
   }
   var journeyId = req.params && req.params.journeyId;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Journey not found' }));
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
     return;
   }
   var clarifyAvailable = journey.activeSkill === 'discovery';
@@ -2157,9 +2164,10 @@ async function handlePostSideTripClarify(req, res) {
   }
   var journeyId = req.params && req.params.journeyId;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Journey not found' }));
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
     return;
   }
 
@@ -2213,9 +2221,10 @@ async function handleDeleteSideTrip(req, res) {
   }
   var journeyId = req.params && req.params.journeyId;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Journey not found' }));
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
     return;
   }
   var sideTripSid = journey.sideTripSessionId;
@@ -2359,9 +2368,10 @@ async function handleGetTrace(req, res) {
   }
   var journeyId = req.params && req.params.journeyId;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Journey not found' }));
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
     return;
   }
 
