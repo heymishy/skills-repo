@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-06-17T08:30:00Z",
+  "updated": "2026-06-20T09:30:00Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -32,6 +32,299 @@
     }
   },
   "features": [
+    {
+      "slug": "2026-06-22-wuce-multi-tenancy",
+      "name": "WUCE Multi-Tenancy — Authorization Guard and Tenant Isolation",
+      "stage": "review",
+      "health": "green",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "slicingStrategy": "risk-first",
+      "updatedAt": "2026-06-22T00:00:00Z",
+      "discovery": {
+        "status": "approved",
+        "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/discovery.md",
+        "approvedBy": "Hamish King",
+        "approvedDate": "2026-06-22"
+      },
+      "benefit-metric": {
+        "status": "active",
+        "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/benefit-metric.md",
+        "definedAt": "2026-06-22"
+      },
+      "nfrProfileArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/nfr-profile.md",
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Authorization coverage rate",
+          "tier": 1,
+          "baseline": "18% (2/11 handlers)",
+          "target": "100% (11/11 handlers)",
+          "minimumSignal": "82% (9/11 handlers)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "p0.1",
+            "p0.2"
+          ]
+        },
+        {
+          "id": "M2",
+          "name": "Cross-tenant journey data leakage prevention",
+          "tier": 1,
+          "baseline": "Not established — no multi-tenant deployment exists yet",
+          "target": "Zero cross-tenant API responses return journey data for caller from different tenant",
+          "minimumSignal": "Phase 0 complete — 404 on all 9 KNOWN BUG routes for unauthorized callers",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "p0.2",
+            "p1.1",
+            "p1.2",
+            "p2.1",
+            "p2.2"
+          ]
+        },
+        {
+          "id": "T3-M1",
+          "name": "KNOWN BUG closure — unguarded journey route handlers",
+          "tier": 3,
+          "baseline": "9 unguarded handlers (confirmed 2026-06-22)",
+          "target": "0 unguarded handlers",
+          "minimumSignal": "not-applicable — binary (OPEN or CLOSED)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "p0.1",
+            "p0.2"
+          ]
+        },
+        {
+          "id": "T3-M2",
+          "name": "Path-traversal guard validity under variable tenantId-derived repoRoot",
+          "tier": 3,
+          "baseline": "Not established — repoRoot currently static; variable-root threat model not yet exercised",
+          "target": "0 guard failures against adversarial tenantId injection test suite",
+          "minimumSignal": "not-applicable — binary",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "p5.1"
+          ]
+        }
+      ],
+      "guardrails": [],
+      "epics": [
+        {
+          "slug": "phase-0-authorization-guard",
+          "name": "Phase 0 — Authorization Guard",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "p0.1",
+              "name": "Authorization guard module — journey-access.js",
+              "stage": "branch-complete",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/p0.1-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p0.1-test-plan.md",
+                "totalTests": 12
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p0.1-dor.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/390",
+              "updatedAt": "2026-06-23T00:00:00Z"
+            },
+            {
+              "slug": "p0.2",
+              "name": "Wire guard into all KNOWN BUG routes; integration tests",
+              "stage": "branch-complete",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/p0.2-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p0.2-test-plan.md",
+                "totalTests": 13
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p0.2-dor.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/390",
+              "updatedAt": "2026-06-23T00:00:00Z"
+            }
+          ]
+        },
+        {
+          "slug": "phase-1-tenant-identity",
+          "name": "Phase 1 — Tenant Identity",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "p1.1",
+              "name": "OAuth read:org scope; tenantId resolution; zero-match rejection",
+              "stage": "test-plan",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/p1.1-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p1.1-test-plan.md",
+                "totalTests": 9
+              }
+            },
+            {
+              "slug": "p1.2",
+              "name": "Session + journey tenantId; isSameTenant enforcement; 3→4 field fixture update",
+              "stage": "test-plan",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/p1.2-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p1.2-test-plan.md",
+                "totalTests": 8
+              }
+            }
+          ]
+        },
+        {
+          "slug": "phase-2-storage-isolation",
+          "name": "Phase 2 — Storage Isolation",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "p2.1",
+              "name": "Tenant-parameterised repoRoot; SESSION_STORE_PATH namespacing; featureSlug collision guard",
+              "stage": "test-plan",
+              "health": "green",
+              "complexity": 3,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/p2.1-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p2.1-test-plan.md",
+                "totalTests": 11
+              }
+            },
+            {
+              "slug": "p2.2",
+              "name": "Tenant-isolation test suite — two-tenant scenario, zero cross-read assertion",
+              "stage": "test-plan",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/p2.2-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p2.2-test-plan.md",
+                "totalTests": 14
+              }
+            }
+          ]
+        },
+        {
+          "slug": "phase-3-state-persistence",
+          "name": "Phase 3 — State Persistence",
+          "status": "deferred",
+          "deferralReason": "Pending OQ7 vendor selection (managed Postgres + Redis). Run /definition for Phase 3 after vendor is confirmed.",
+          "stories": [
+            {
+              "slug": "p3.1",
+              "name": "Postgres journey store adapter (injectable, same interface as in-memory store)",
+              "stage": "deferred",
+              "health": "amber",
+              "complexity": 3,
+              "scopeStability": "unstable"
+            },
+            {
+              "slug": "p3.2",
+              "name": "Redis auth-session and viewer-activity store adapter (injectable, TTL eviction)",
+              "stage": "deferred",
+              "health": "amber",
+              "complexity": 3,
+              "scopeStability": "unstable"
+            },
+            {
+              "slug": "p3.3",
+              "name": "Concurrency tests (two tenants interleaved, no state bleed) + restart-survival test",
+              "stage": "deferred",
+              "health": "amber",
+              "complexity": 2,
+              "scopeStability": "stable"
+            }
+          ]
+        },
+        {
+          "slug": "phase-4-performance-isolation",
+          "name": "Phase 4 — Performance Isolation",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "p4.1",
+              "name": "Prompt-cache key scoping per tenant+session; per-tenant API rate-limit isolation",
+              "stage": "test-plan",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/p4.1-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p4.1-test-plan.md",
+                "totalTests": 7
+              }
+            }
+          ]
+        },
+        {
+          "slug": "phase-5-security-hardening",
+          "name": "Phase 5 — Security Hardening",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "p5.1",
+              "name": "tenantId validation; adversarial path-traversal test suite; re-audit all guards with variable repoRoot",
+              "stage": "test-plan",
+              "health": "green",
+              "complexity": 3,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/p5.1-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p5.1-test-plan.md",
+                "totalTests": 12
+              }
+            }
+          ]
+        }
+      ],
+      "stories": [
+        {
+          "id": "stage=review",
+          "updatedAt": "2026-06-22T00:00:00Z"
+        }
+      ]
+    },
     {
       "slug": "2026-06-15-ideate-web-ux-inc3",
       "title": "ideate web UX Increment 3 (skill cadence + canvas output)",
@@ -5062,6 +5355,55 @@
       "implementationCommit": "ef417c0",
       "prStatus": "draft",
       "prUrl": "https://github.com/heymishy/skills-repo/pull/388"
+    },
+    {
+      "slug": "2026-06-18-2x2-grid",
+      "id": "2026-06-18-2x2-grid",
+      "discoveryStatus": "complete",
+      "artefact": "artefacts/2026-06-04-impact-effort-matrix-workshop/discovery.md",
+      "stage": "test-plan"
+    },
+    {
+      "slug": "2026-06-20-skill-session-precomp",
+      "title": "Server-side Step 1 pre-computation for content-heavy skill sessions",
+      "stage": "dor-signed-off",
+      "health": "green",
+      "updatedAt": "2026-06-20T09:30:00Z",
+      "stories": [
+        {
+          "id": "ssp.1",
+          "title": "Pre-compute skill session Step 1 on the server",
+          "stage": "dor-signed-off",
+          "health": "green",
+          "updatedAt": "2026-06-20T09:30:00Z",
+          "dorStatus": "signed-off",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 0
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
+        }
+      ]
+    },
+    {
+      "slug": "2026-06-21-strategy-and-data-hub",
+      "id": "2026-06-21-strategy-and-data-hub",
+      "stage": "branch-complete",
+      "discoveryStatus": "complete",
+      "artefact": "artefacts/2026-06-04-strategy-data-grounding/discovery.md"
+    },
+    {
+      "slug": "2026-06-21-new-test-idea-001",
+      "id": "2026-06-21-new-test-idea-001",
+      "discoveryStatus": "complete",
+      "artefact": "artefacts/2026-06-21-rtp-receiving-integration/discovery.md",
+      "stage": "design"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -5095,5 +5437,5 @@
     ],
     "lastUpdated": "2026-05-06"
   },
-  "updatedAt": "2026-06-16T19:50:33.856Z"
+  "updatedAt": "2026-06-22T00:00:00Z"
 }
