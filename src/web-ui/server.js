@@ -19,7 +19,7 @@ const { handleGetStatus, handleGetStatusExport }                     = require('
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
 const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml, handlePostAssumptionConfirm } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3 / iwu.4
-const { setLogger }                                                  = require('./routes/auth');
+const { setLogger, setFetchOrgs }                                    = require('./routes/auth');
 const { setFetchPipelineState }                                      = require('./adapters/feature-list');
 const { setFetchArtefactDirectory }                                  = require('./adapters/artefact-list');
 const skillsAdapter                                                  = require('./adapters/skills');          // wuce.23 HTML form wiring
@@ -156,6 +156,28 @@ if (process.env.NODE_ENV !== 'test') {
     const data = await response.json();
     const decoded = Buffer.from(data.content.replace(/\n/g, ''), 'base64').toString('utf8');
     return JSON.parse(decoded);
+  });
+}
+
+// p1.1: Wire real GitHub org-fetch for tenant resolution (D37 rule 3 — separate wiring task)
+if (process.env.NODE_ENV !== 'test') {
+  setFetchOrgs(async function(accessToken, page) {
+    const url = GITHUB_API_BASE + '/user/orgs?per_page=100&page=' + (page || 1);
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': 'token ' + accessToken,
+        'Accept':        'application/json',
+        'User-Agent':    'skills-pipeline-web-ui'
+      }
+    });
+    if (!response.ok) {
+      throw new Error('GitHub orgs fetch failed: ' + response.status);
+    }
+    const orgs = await response.json();
+    const link = response.headers.get('link') || '';
+    const nextMatch = link.match(/<[^>]+[?&]page=(\d+)[^>]*>;\s*rel="next"/);
+    const nextPage = nextMatch ? parseInt(nextMatch[1], 10) : null;
+    return { orgs: orgs, nextPage: nextPage };
   });
 }
 
