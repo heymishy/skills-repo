@@ -222,7 +222,7 @@
             {
               "slug": "p1.1",
               "name": "OAuth read:org scope; tenantId resolution; zero-match rejection",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -235,7 +235,7 @@
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p1.1-dor.md",
-              "updatedAt": "2026-06-23T00:00:00Z"
+              "updatedAt": "2026-06-23T01:00:00Z"
             },
             {
               "slug": "p1.2",
