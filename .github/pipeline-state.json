@@ -5461,8 +5461,8 @@
       "artefact": "artefacts/2026-06-04-strategy-data-grounding/discovery.md"
     },
     {
-      "slug": "2026-06-21-new-test-idea-001",
-      "id": "2026-06-21-new-test-idea-001",
+      "slug": "2026-06-21-rtp-receiving-integration",
+      "id": "2026-06-21-rtp-receiving-integration",
       "name": "RTP receiving integration",
       "track": "short",
       "health": "green",
