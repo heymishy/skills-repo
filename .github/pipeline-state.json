@@ -222,7 +222,7 @@
             {
               "slug": "p1.1",
               "name": "OAuth read:org scope; tenantId resolution; zero-match rejection",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -235,12 +235,16 @@
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p1.1-dor.md",
-              "updatedAt": "2026-06-23T00:00:00Z"
+              "updatedAt": "2026-06-23T04:00:00Z",
+              "planArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/plans/p1.1-plan.md",
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/391",
+              "verifyStatus": "passed"
             },
             {
               "slug": "p1.2",
               "name": "Session + journey tenantId; isSameTenant enforcement; 3→4 field fixture update",
-              "stage": "definition-of-ready",
+              "stage": "subagent-execution",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -253,7 +257,9 @@
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p1.2-dor.md",
-              "updatedAt": "2026-06-23T00:00:00Z"
+              "updatedAt": "2026-06-23T05:00:00Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/393"
             }
           ]
         },
@@ -503,7 +509,7 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 16
+                "passing": 5
               },
               "acTotal": 6,
               "acVerified": 6,
@@ -5329,7 +5335,7 @@
           "testPlan": {
             "status": "all-passing",
             "totalTests": 38,
-            "passing": 45,
+            "passing": 38,
             "artefact": "artefacts/2026-06-17-kanban-feature-detail-cx/test-plans/kfd1-kanban-card-and-detail-page-cx-test-plan.md"
           },
           "acTotal": 6,
@@ -5455,8 +5461,8 @@
       "artefact": "artefacts/2026-06-04-strategy-data-grounding/discovery.md"
     },
     {
-      "slug": "2026-06-21-new-test-idea-001",
-      "id": "2026-06-21-new-test-idea-001",
+      "slug": "2026-06-21-rtp-receiving-integration",
+      "id": "2026-06-21-rtp-receiving-integration",
       "name": "RTP receiving integration",
       "track": "short",
       "health": "green",
