@@ -266,7 +266,7 @@
             {
               "slug": "p1.2",
               "name": "Session + journey tenantId; isSameTenant enforcement; 3→4 field fixture update",
-              "stage": "branch-setup",
+              "stage": "subagent-execution",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -279,7 +279,9 @@
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p1.2-dor.md",
-              "updatedAt": "2026-06-23T00:00:00Z"
+              "updatedAt": "2026-06-23T05:00:00Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/393"
             }
           ]
         },
