@@ -222,7 +222,7 @@
             {
               "slug": "p1.1",
               "name": "OAuth read:org scope; tenantId resolution; zero-match rejection",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -235,7 +235,30 @@
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p1.1-dor.md",
-              "updatedAt": "2026-06-23T01:00:00Z"
+              "updatedAt": "2026-06-23T02:00:00Z",
+              "tasks": [
+                {
+                  "id": "T1",
+                  "title": "Write RED tests (check-p1.1-oauth-tenant-resolution.js)",
+                  "status": "pending"
+                },
+                {
+                  "id": "T2",
+                  "title": "Add read:org scope to oauth-adapter.js buildOAuthRedirectURL (AC1)",
+                  "status": "pending"
+                },
+                {
+                  "id": "T3",
+                  "title": "Add injectable _fetchOrgs + resolveTenant() + tenant enforcement in routes/auth.js (AC2-AC7)",
+                  "status": "pending"
+                },
+                {
+                  "id": "T4",
+                  "title": "Wire real fetchOrgs in server.js (AC9 / D37 rule 3)",
+                  "status": "pending"
+                }
+              ],
+              "planArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/plans/p1.1-plan.md"
             },
             {
               "slug": "p1.2",
