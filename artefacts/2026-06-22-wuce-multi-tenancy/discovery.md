@@ -262,3 +262,9 @@ Phase 4 (P4.1)                      ← performance isolation
 ```
 
 Phase 0 is independently shippable today. Phases 4 and 5 have no infra dependency and could be parallelised with Phase 3 if needed.
+
+---
+
+## Approved By
+
+Hamish King — Solo Founder / Operator — 2026-06-22

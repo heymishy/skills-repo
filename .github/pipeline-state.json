@@ -181,7 +181,7 @@
             {
               "slug": "p1.1",
               "name": "OAuth read:org scope; tenantId resolution; zero-match rejection",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -191,12 +191,15 @@
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p1.1-test-plan.md",
                 "totalTests": 9
-              }
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p1.1-dor.md",
+              "updatedAt": "2026-06-23T00:00:00Z"
             },
             {
               "slug": "p1.2",
               "name": "Session + journey tenantId; isSameTenant enforcement; 3→4 field fixture update",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -206,7 +209,10 @@
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p1.2-test-plan.md",
                 "totalTests": 8
-              }
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p1.2-dor.md",
+              "updatedAt": "2026-06-23T00:00:00Z"
             }
           ]
         },
