@@ -74,6 +74,14 @@ reference_dirs:
   - 2026-05-20-cloud-platform
   - 2026-05-21-ideate-web-ux
   - 2026-05-17-regulatory-reporting-pipeline-automation
+  - 2026-06-04-iem
+  - 2026-06-04-iem-stories-corrected
+  - 2026-06-04-strategy-data-grounding-benefit-metric
+  - 2026-06-21-definition-of-ready
+  - 2026-06-21-mock-output
+  - 2026-06-21-review
+  - 2026-06-21-strategy-and-data-hub-dor-sdg-1
+  - 2026-06-21-strategy-and-data-hub-dor-sdg-2
 tracks_without_discovery:
   - short
   - defect
