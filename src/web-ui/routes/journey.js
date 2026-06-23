@@ -295,7 +295,8 @@ async function handlePostJourney(req, res) {
     // Create journey in memory + disk
     var created = _journeyStore.createJourney(featureSlug, profileName);
     var journeyId = created.journeyId;
-    created.ownerId = req.session.login || null;
+    created.ownerId  = req.session.login    || null;
+    created.tenantId = req.session.tenantId || undefined;
 
     // Session path under artefacts so reference/ folder is discovered by buildSystemPrompt
     var sid         = crypto.randomUUID();
