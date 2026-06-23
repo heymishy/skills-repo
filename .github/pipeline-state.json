@@ -118,7 +118,48 @@
           ]
         }
       ],
-      "guardrails": [],
+      "guardrails": [
+        {
+          "id": "NFR-sec-no-accesstoken-disk",
+          "category": "nfr",
+          "label": "accessToken never written to disk - strip-before-write invariant preserved",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-23T00:00:00Z"
+        },
+        {
+          "id": "NFR-sec-allowlist-disclosure",
+          "category": "nfr",
+          "label": "Zero-match OAuth rejection message does not expose TENANT_ORG_ALLOWLIST contents",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-23T00:00:00Z"
+        },
+        {
+          "id": "NFR-sec-session-field",
+          "category": "nfr",
+          "label": "req.session.accessToken is the canonical field name - no aliases",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-23T00:00:00Z"
+        },
+        {
+          "id": "NFR-p1.1-async-fetch",
+          "category": "nfr",
+          "label": "Org pagination fetch async/await - does not block event loop",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-23T00:00:00Z"
+        },
+        {
+          "id": "NFR-p1.1-fetch-timeout",
+          "category": "nfr",
+          "label": "Total org fetch completes within 5s; warning logged above 3s",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-23T00:00:00Z"
+        }
+      ],
       "epics": [
         {
           "slug": "phase-0-authorization-guard",
