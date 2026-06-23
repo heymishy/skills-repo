@@ -236,28 +236,6 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p1.1-dor.md",
               "updatedAt": "2026-06-23T04:00:00Z",
-              "tasks": [
-                {
-                  "id": "T1",
-                  "title": "Write RED tests (check-p1.1-oauth-tenant-resolution.js)",
-                  "status": "completed"
-                },
-                {
-                  "id": "T2",
-                  "title": "Add read:org scope to oauth-adapter.js buildOAuthRedirectURL (AC1)",
-                  "status": "completed"
-                },
-                {
-                  "id": "T3",
-                  "title": "Add injectable _fetchOrgs + resolveTenant() + tenant enforcement in routes/auth.js (AC2-AC7)",
-                  "status": "completed"
-                },
-                {
-                  "id": "T4",
-                  "title": "Wire real fetchOrgs in server.js (AC9 / D37 rule 3)",
-                  "status": "completed"
-                }
-              ],
               "planArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/plans/p1.1-plan.md",
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/391",
@@ -531,7 +509,7 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 16
+                "passing": 5
               },
               "acTotal": 6,
               "acVerified": 6,
@@ -5357,7 +5335,7 @@
           "testPlan": {
             "status": "all-passing",
             "totalTests": 38,
-            "passing": 45,
+            "passing": 38,
             "artefact": "artefacts/2026-06-17-kanban-feature-detail-cx/test-plans/kfd1-kanban-card-and-detail-page-cx-test-plan.md"
           },
           "acTotal": 6,
