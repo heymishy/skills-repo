@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-06-20T09:30:00Z",
+  "updated": "2026-06-23T00:00:00Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -41,7 +41,7 @@
       "regulated": false,
       "complianceProfile": "standard",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-06-22T00:00:00Z",
+      "updatedAt": "2026-06-23T00:00:00Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/discovery.md",
@@ -62,9 +62,9 @@
           "baseline": "18% (2/11 handlers)",
           "target": "100% (11/11 handlers)",
           "minimumSignal": "82% (9/11 handlers)",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-06-23",
+          "evidence": "11/11 handlers now call requireJourneyAccess(). Verified by test suite on merged commit 1b1d068.",
           "contributingStories": [
             "p0.1",
             "p0.2"
@@ -95,9 +95,9 @@
           "baseline": "9 unguarded handlers (confirmed 2026-06-22)",
           "target": "0 unguarded handlers",
           "minimumSignal": "not-applicable — binary (OPEN or CLOSED)",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-06-23",
+          "evidence": "9 previously unguarded handlers now guarded — 0 remaining. KNOWN BUG closed. Verified by 13-test integration suite on merged commit 1b1d068.",
           "contributingStories": [
             "p0.1",
             "p0.2"
@@ -123,12 +123,12 @@
         {
           "slug": "phase-0-authorization-guard",
           "name": "Phase 0 — Authorization Guard",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "p0.1",
               "name": "Authorization guard module — journey-access.js",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -141,14 +141,17 @@
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p0.1-dor.md",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/390",
-              "updatedAt": "2026-06-23T00:00:00Z"
+              "updatedAt": "2026-06-23T00:00:00Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dod/p0.1-dod.md"
             },
             {
               "slug": "p0.2",
               "name": "Wire guard into all KNOWN BUG routes; integration tests",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -161,9 +164,12 @@
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p0.2-dor.md",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/390",
-              "updatedAt": "2026-06-23T00:00:00Z"
+              "updatedAt": "2026-06-23T00:00:00Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dod/p0.2-dod.md"
             }
           ]
         },
@@ -318,12 +324,7 @@
           ]
         }
       ],
-      "stories": [
-        {
-          "id": "stage=review",
-          "updatedAt": "2026-06-22T00:00:00Z"
-        }
-      ]
+      "stories": []
     },
     {
       "slug": "2026-06-15-ideate-web-ux-inc3",
