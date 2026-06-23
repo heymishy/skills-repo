@@ -58,8 +58,8 @@ queue.push(function() {
       { writeHead: function() {}, end: function(h) { body = h || ''; } }
     );
     assert.ok(
-      body.includes('/api/journey/journey-abc/gate-confirm'),
-      'Expected gate-confirm form action in HTML, got body length: ' + body.length
+      body.includes('/journey/journey-abc/stage-review'),
+      'Expected stage-review link in HTML, got body length: ' + body.length
     );
   });
 });

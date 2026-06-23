@@ -33,7 +33,7 @@ const CONTRACTS = [
   // ── Core pipeline skills ──────────────────────────────────────────────────
   {
     skill: 'discovery',
-    file:  '.github/skills/discovery/SKILL.md',
+    file:  'skills/discovery/SKILL.md',
     required: [
       'one at a time',
       'artefacts/[feature-slug]/reference/',
@@ -44,7 +44,7 @@ const CONTRACTS = [
   },
   {
     skill: 'clarify',
-    file:  '.github/skills/clarify/SKILL.md',
+    file:  'skills/clarify/SKILL.md',
     required: [
       '### SCOPE',
       '### INTEGRATION',
@@ -57,7 +57,7 @@ const CONTRACTS = [
   },
   {
     skill: 'benefit-metric',
-    file:  '.github/skills/benefit-metric/SKILL.md',
+    file:  'skills/benefit-metric/SKILL.md',
     required: [
       'Meta-benefit check',
       'meta-benefit situation',
@@ -68,7 +68,7 @@ const CONTRACTS = [
   },
   {
     skill: 'definition',
-    file:  '.github/skills/definition/SKILL.md',
+    file:  'skills/definition/SKILL.md',
     required: [
       'scope accumulator',
       'Step 1.5 - Architecture constraints scan',
@@ -81,7 +81,7 @@ const CONTRACTS = [
   },
   {
     skill: 'review',
-    file:  '.github/skills/review/SKILL.md',
+    file:  'skills/review/SKILL.md',
     required: [
       'sceptical',
       '1\u20135',
@@ -95,7 +95,7 @@ const CONTRACTS = [
   },
   {
     skill: 'test-plan',
-    file:  '.github/skills/test-plan/SKILL.md',
+    file:  'skills/test-plan/SKILL.md',
     required: [
       'artefacts/[feature]/test-plans/[story-slug]-test-plan.md',
       'AC verification script',
@@ -105,7 +105,7 @@ const CONTRACTS = [
   },
   {
     skill: 'definition-of-ready',
-    file:  '.github/skills/definition-of-ready/SKILL.md',
+    file:  'skills/definition-of-ready/SKILL.md',
     required: [
       'Step 2 \u2014 Contract proposal',
       'Step 3 \u2014 Contract review',
@@ -118,7 +118,7 @@ const CONTRACTS = [
   // ── Inner coding loop ─────────────────────────────────────────────────────
   {
     skill: 'branch-setup',
-    file:  '.github/skills/branch-setup/SKILL.md',
+    file:  'skills/branch-setup/SKILL.md',
     required: [
       'git worktree add',
       'artefacts/[feature]/dor/[story-slug]-dor.md',
@@ -128,7 +128,7 @@ const CONTRACTS = [
   },
   {
     skill: 'implementation-plan',
-    file:  '.github/skills/implementation-plan/SKILL.md',
+    file:  'skills/implementation-plan/SKILL.md',
     required: [
       'artefacts/[feature]/plans/[story-slug]-plan.md',
       '## File map',
@@ -138,7 +138,7 @@ const CONTRACTS = [
   },
   {
     skill: 'tdd',
-    file:  '.github/skills/tdd/SKILL.md',
+    file:  'skills/tdd/SKILL.md',
     required: [
       'NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST',
       'RED \u2014 Write the failing test',
@@ -148,7 +148,7 @@ const CONTRACTS = [
   },
   {
     skill: 'subagent-execution',
-    file:  '.github/skills/subagent-execution/SKILL.md',
+    file:  'skills/subagent-execution/SKILL.md',
     required: [
       'Fresh subagent per task',
       'DONE_WITH_CONCERNS',
@@ -158,7 +158,7 @@ const CONTRACTS = [
   },
   {
     skill: 'verify-completion',
-    file:  '.github/skills/verify-completion/SKILL.md',
+    file:  'skills/verify-completion/SKILL.md',
     required: [
       'NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE',
       'artefacts/[feature]/verification-scripts/[story-slug]-verification.md',
@@ -168,7 +168,7 @@ const CONTRACTS = [
   },
   {
     skill: 'branch-complete',
-    file:  '.github/skills/branch-complete/SKILL.md',
+    file:  'skills/branch-complete/SKILL.md',
     required: [
       'always draft - merge is a human action',
       '/verify-completion must have passed',
@@ -179,7 +179,7 @@ const CONTRACTS = [
   // ── Post-merge skills ─────────────────────────────────────────────────────
   {
     skill: 'definition-of-done',
-    file:  '.github/skills/definition-of-done/SKILL.md',
+    file:  'skills/definition-of-done/SKILL.md',
     required: [
       'Out-of-scope check',
       'CSS-layout-dependent',
@@ -189,7 +189,7 @@ const CONTRACTS = [
   },
   {
     skill: 'trace',
-    file:  '.github/skills/trace/SKILL.md',
+    file:  'skills/trace/SKILL.md',
     required: [
       'Chain structure',
       'Metric orphan check',
@@ -199,7 +199,7 @@ const CONTRACTS = [
   },
   {
     skill: 'release',
-    file:  '.github/skills/release/SKILL.md',
+    file:  'skills/release/SKILL.md',
     required: [
       'rollback trigger definition',
       'Compliance bundle',
@@ -209,7 +209,7 @@ const CONTRACTS = [
   },
   {
     skill: 'improve',
-    file:  '.github/skills/improve/SKILL.md',
+    file:  'skills/improve/SKILL.md',
     required: [
       'artefacts/[feature]/dod/[story-slug]-dod.md',
       'Category A \u2014 Technical patterns worth standardising',
@@ -220,7 +220,7 @@ const CONTRACTS = [
   // ── Support skills ────────────────────────────────────────────────────────
   {
     skill: 'systematic-debugging',
-    file:  '.github/skills/systematic-debugging/SKILL.md',
+    file:  'skills/systematic-debugging/SKILL.md',
     required: [
       'NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST',
       'Phase 1 \u2014 Root cause investigation',
@@ -230,7 +230,7 @@ const CONTRACTS = [
   },
   {
     skill: 'implementation-review',
-    file:  '.github/skills/implementation-review/SKILL.md',
+    file:  'skills/implementation-review/SKILL.md',
     required: [
       'Stage 1 \u2014 Spec compliance',
       'Stage 2 \u2014 Code quality',
@@ -240,7 +240,7 @@ const CONTRACTS = [
   },
   {
     skill: 'spike',
-    file:  '.github/skills/spike/SKILL.md',
+    file:  'skills/spike/SKILL.md',
     required: [
       'PROCEED, REDESIGN, or DEFER',
       'Step 0 \u2014 Read the parent discovery artefact',
@@ -250,7 +250,7 @@ const CONTRACTS = [
   },
   {
     skill: 'decisions',
-    file:  '.github/skills/decisions/SKILL.md',
+    file:  'skills/decisions/SKILL.md',
     required: [
       'Two tracks',
       'artefacts/[feature]/decisions.md',
@@ -260,7 +260,7 @@ const CONTRACTS = [
   },
   {
     skill: 'coverage-map',
-    file:  '.github/skills/coverage-map/SKILL.md',
+    file:  'skills/coverage-map/SKILL.md',
     required: [
       'Output 1 \u2014 Terminal (ANSI coloured ASCII table)',
       'artefacts/[feature-slug]/test-plans',
@@ -270,7 +270,7 @@ const CONTRACTS = [
   },
   {
     skill: 'record-signal',
-    file:  '.github/skills/record-signal/SKILL.md',
+    file:  'skills/record-signal/SKILL.md',
     required: [
       'metrics[]',
       'on-track / at-risk / off-track / not-yet-measured',
@@ -280,7 +280,7 @@ const CONTRACTS = [
   },
   {
     skill: 'metric-review',
-    file:  '.github/skills/metric-review/SKILL.md',
+    file:  'skills/metric-review/SKILL.md',
     required: [
       'Re-baselines benefit metrics',
       'Target needs revision',
@@ -291,7 +291,7 @@ const CONTRACTS = [
   // ── Programme track ───────────────────────────────────────────────────────
   {
     skill: 'programme',
-    file:  '.github/skills/programme/SKILL.md',
+    file:  'skills/programme/SKILL.md',
     required: [
       'Step 0 \u2014 Qualification',
       'artefacts/[programme-slug]/programme.md',
@@ -302,7 +302,7 @@ const CONTRACTS = [
   // ── Architecture / research skills ───────────────────────────────────────
   {
     skill: 'ea-registry',
-    file:  '.github/skills/ea-registry/SKILL.md',
+    file:  'skills/ea-registry/SKILL.md',
     required: [
       'QUERY',
       'CONTRIBUTE',
@@ -314,7 +314,7 @@ const CONTRACTS = [
   },
   {
     skill: 'reverse-engineer',
-    file:  '.github/skills/reverse-engineer/SKILL.md',
+    file:  'skills/reverse-engineer/SKILL.md',
     required: [
       'six-layer analysis',
       'Layer 1',
@@ -324,7 +324,7 @@ const CONTRACTS = [
   },
   {
     skill: 'ideate',
-    file:  '.github/skills/ideate/SKILL.md',
+    file:  'skills/ideate/SKILL.md',
     required: [
       'five lenses',
       'opportunity mapping (Torres)',
@@ -335,7 +335,7 @@ const CONTRACTS = [
   // ── Pipeline evolution skills ─────────────────────────────────────────────
   {
     skill: 'bootstrap',
-    file:  '.github/skills/bootstrap/SKILL.md',
+    file:  'skills/bootstrap/SKILL.md',
     required: [
       'What bootstrap creates',
       'pull_request_template.md',
@@ -345,7 +345,7 @@ const CONTRACTS = [
   },
   {
     skill: 'loop-design',
-    file:  '.github/skills/loop-design/SKILL.md',
+    file:  'skills/loop-design/SKILL.md',
     required: [
       'swappable inner loop',
       'Setup slot',
@@ -355,7 +355,7 @@ const CONTRACTS = [
   },
   {
     skill: 'token-optimization',
-    file:  '.github/skills/token-optimization/SKILL.md',
+    file:  'skills/token-optimization/SKILL.md',
     required: [
       'Stage-by-stage model routing',
       'Token budget policy',
@@ -365,7 +365,7 @@ const CONTRACTS = [
   },
   {
     skill: 'org-mapping',
-    file:  '.github/skills/org-mapping/SKILL.md',
+    file:  'skills/org-mapping/SKILL.md',
     required: [
       'translation matrix',
       'artefacts/[programme-slug]/org-mapping.md',
@@ -375,7 +375,7 @@ const CONTRACTS = [
   },
   {
     skill: 'scale-pipeline',
-    file:  '.github/skills/scale-pipeline/SKILL.md',
+    file:  'skills/scale-pipeline/SKILL.md',
     required: [
       'artefacts/[programme-slug]/scale-pipeline.md',
       '1-2 teams to 20-30 teams',
@@ -386,7 +386,7 @@ const CONTRACTS = [
   // ── Modernisation skills ──────────────────────────────────────────────────
   {
     skill: 'modernisation-decompose',
-    file:  '.github/skills/modernisation-decompose/SKILL.md',
+    file:  'skills/modernisation-decompose/SKILL.md',
     required: [
       'reverse-engineering-report.md',
       'candidate-features.md',
@@ -398,7 +398,7 @@ const CONTRACTS = [
   // ── Dispatch skills ───────────────────────────────────────────────────────
   {
     skill: 'issue-dispatch',
-    file:  '.github/skills/issue-dispatch/SKILL.md',
+    file:  'skills/issue-dispatch/SKILL.md',
     required: [
       '--target vscode',
       '--target github-agent',
@@ -410,7 +410,7 @@ const CONTRACTS = [
   // ── Greenfield orientation ────────────────────────────────────────────────
   {
     skill: 'start',
-    file:  '.github/skills/start/SKILL.md',
+    file:  'skills/start/SKILL.md',
     required: [
       'single-turn-constraint',
       'brownfield-routing',
@@ -419,7 +419,7 @@ const CONTRACTS = [
   // ── Workflow navigator ────────────────────────────────────────────────────
   {
     skill: 'workflow',
-    file:  '.github/skills/workflow/SKILL.md',
+    file:  'skills/workflow/SKILL.md',
     required: [
       'Pipeline health note',
       'Confirm this is genuinely short-track',
@@ -444,7 +444,7 @@ const CONTRACTS = [
   },
   {
     skill: 'prioritise',
-    file:  '.github/skills/prioritise/SKILL.md',
+    file:  'skills/prioritise/SKILL.md',
     required: [
       '## Available Frameworks',
       '## Output Format',
@@ -454,7 +454,7 @@ const CONTRACTS = [
   },
   {
     skill: 'reference-corpus-update',
-    file:  '.github/skills/reference-corpus-update/SKILL.md',
+    file:  'skills/reference-corpus-update/SKILL.md',
     required: [
       'DEEPEN',
       'corpus-state.md',

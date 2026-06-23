@@ -4,6 +4,7 @@ var crypto = require('crypto');
 var os = require('os');
 var fs = require('fs');
 var { renderShell, escHtml } = require('../utils/html-shell');
+var { requireJourneyAccess, asHttpResponse, POLICY } = require('../middleware/journey-access');
 
 // Injectable adapters — defaults wire to real implementations
 var _journeyStore = require('../modules/journey-store');
@@ -70,8 +71,8 @@ var STAGE_META = [
   { id: 'benefit-metric',      num: '2b', label: 'Benefits',   optional: false },
   { id: 'design',              num: 3,    label: 'Design',     optional: false },
   { id: 'definition',          num: 4,    label: 'Definition', optional: false },
-  { id: 'test-plan',           num: 5,    label: 'Test Plan',  optional: false },
-  { id: 'review',              num: 6,    label: 'Review',     optional: false },
+  { id: 'review',              num: 5,    label: 'Review',     optional: false },
+  { id: 'test-plan',           num: 6,    label: 'Test Plan',  optional: false },
   { id: 'definition-of-ready', num: 7,    label: 'Ready',      optional: false }
 ];
 
@@ -242,6 +243,16 @@ function handleGetJourney(req, res) {
     res.end();
     return;
   }
+  var _gjId = req.params && req.params.journeyId;
+  if (_gjId) {
+    var _gjJourney = _journeyStore.getJourney(_gjId);
+    try { requireJourneyAccess(_gjJourney, req.session, POLICY.TENANT); }
+    catch (err) {
+      res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(renderShell({ title: 'Not found', bodyContent: '<p>Not found.</p>', user: { login: req.session.login || '' } }));
+      return;
+    }
+  }
   var login      = req.session.login || '';
   var repoRoot   = getRepoRoot();
   var profiles   = _listProfiles(repoRoot);
@@ -290,7 +301,7 @@ async function handlePostJourney(req, res) {
     var sid         = crypto.randomUUID();
     var sessionPath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', sid);
 
-    getRegisterHtmlSession()(sid, sessionPath, startSkill, { productProfile: profileName });
+    getRegisterHtmlSession()(sid, sessionPath, startSkill, { productProfile: profileName, featureSlug: featureSlug });
     getLinkSessionToJourney()(sid, journeyId);
     if (_journeyStore.setActiveSession) {
       _journeyStore.setActiveSession(journeyId, sid, startSkill);
@@ -311,6 +322,944 @@ async function handlePostJourney(req, res) {
     res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(renderShell({ title: 'Error', bodyContent: errBody }));
   }
+}
+
+// ---------------------------------------------------------------------------
+// Step 5 — Artefact review panel
+// ---------------------------------------------------------------------------
+
+/**
+ * Minimal markdown → safe HTML renderer for artefact review.
+ * Processes line-by-line; escapes content before applying markdown patterns.
+ * @param {string} text
+ * @returns {string}
+ */
+function _renderMarkdown(text) {
+  if (!text) return '';
+  var lines = text.split('\n');
+  var out = [];
+  var inCode = false;
+  var inList = false;
+  var listTag = 'ul';
+
+  function closeList() {
+    if (inList) { out.push('</' + listTag + '>'); inList = false; }
+  }
+
+  for (var i = 0; i < lines.length; i++) {
+    var raw = lines[i];
+
+    if (/^```/.test(raw)) {
+      if (inCode) {
+        out.push('</code></pre>');
+        inCode = false;
+      } else {
+        closeList();
+        out.push('<pre class="sr-pre"><code>');
+        inCode = true;
+      }
+      continue;
+    }
+    if (inCode) { out.push(escHtml(raw)); continue; }
+
+    var l = escHtml(raw);
+    l = l.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    l = l.replace(/\*([^*\s][^*]*[^*\s]|[^*\s])\*/g, '<em>$1</em>');
+    l = l.replace(/`([^`]+)`/g, '<code class="sr-code">$1</code>');
+
+    if (/^### /.test(l)) { closeList(); out.push('<h3 class="sr-h3">' + l.slice(4) + '</h3>'); continue; }
+    if (/^## /.test(l))  { closeList(); out.push('<h2 class="sr-h2">' + l.slice(3) + '</h2>'); continue; }
+    if (/^# /.test(l))   { closeList(); out.push('<h1 class="sr-h1">' + l.slice(2) + '</h1>'); continue; }
+
+    if (/^---+$/.test(raw) || /^\*\*\*+$/.test(raw)) { closeList(); out.push('<hr class="sr-hr">'); continue; }
+
+    if (/^- /.test(l)) {
+      if (!inList || listTag !== 'ul') { closeList(); out.push('<ul class="sr-list">'); inList = true; listTag = 'ul'; }
+      out.push('<li>' + l.slice(2) + '</li>');
+      continue;
+    }
+    if (/^\d+\. /.test(l)) {
+      if (!inList || listTag !== 'ol') { closeList(); out.push('<ol class="sr-list">'); inList = true; listTag = 'ol'; }
+      out.push('<li>' + l.replace(/^\d+\. /, '') + '</li>');
+      continue;
+    }
+
+    if (l.trim() === '') { closeList(); out.push(''); continue; }
+
+    closeList();
+    out.push('<p class="sr-p">' + l + '</p>');
+  }
+  closeList();
+  if (inCode) out.push('</code></pre>');
+  return out.join('\n');
+}
+
+/**
+ * GET /journey/:journeyId/stage-review
+ * Shows the completed artefact from the active session for review before gate-confirm.
+ */
+async function handleGetStageReview(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Journey not found.</p><a href="/journey">Back to journeys</a></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  var session = getGetHtmlSession()(journey.activeSessionId);
+  if (!session || !session.done || !session.artefactContent) {
+    var skillForRedirect = (session && session.skillName) || journey.activeSkill || 'discovery';
+    var sidForRedirect   = journey.activeSessionId || '';
+    res.writeHead(302, { Location: '/skills/' + encodeURIComponent(skillForRedirect) + '/sessions/' + encodeURIComponent(sidForRedirect) + '/chat' });
+    res.end();
+    return;
+  }
+
+  var skillName  = session.skillName || journey.activeSkill || '';
+  var stageMeta  = STAGE_META.find(function(s) { return s.id === skillName; });
+  var stageLabel = stageMeta ? (stageMeta.num + '. ' + stageMeta.label) : skillName;
+  var nextStage  = _journeyStore.getNextStage(skillName);
+  var nextMeta   = nextStage ? STAGE_META.find(function(s) { return s.id === nextStage; }) : null;
+  var nextLabel  = nextMeta ? (nextMeta.num + '. ' + nextMeta.label) : (nextStage || 'complete');
+
+  // Stage navigator strip
+  var _doneSet = new Set((journey.completedStages || []).map(function(s) { return s.skillName; }));
+  var _stepsHtml = STAGE_META.map(function(s) {
+    var isDone = _doneSet.has(s.id);
+    var isActive = s.id === skillName;
+    var cls = isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending';
+    var icon = isDone ? '●' : isActive ? '▶' : '○';
+    return '<li class="sn-step ' + cls + '">' +
+      '<span class="sn-num">' + escHtml(String(s.num)) + '</span>' +
+      '<span class="sn-label">' + escHtml(s.label) + '</span>' +
+      '<span class="sn-icon" aria-hidden="true">' + icon + '</span>' +
+      '</li>';
+  }).join('');
+  var navigatorHtml = [
+    '<style>',
+    '.sn-bar{display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--line);background:var(--surface);overflow-x:auto;gap:0}',
+    '.sn-feature{font-size:11px;font-weight:600;color:var(--muted);padding:0 12px 0 4px;border-right:1px solid var(--line);white-space:nowrap;margin-right:4px}',
+    '.sn-steps{display:flex;list-style:none;margin:0;padding:0;gap:0}',
+    '.sn-step{display:flex;align-items:center;gap:5px;padding:7px 11px;font-size:12px;white-space:nowrap;border-right:1px solid var(--line);color:var(--muted)}',
+    '.sn-step:last-child{border-right:none}',
+    '.sn-num{font-weight:700;font-size:10px;opacity:0.6}',
+    '.sn-icon{font-size:9px}',
+    '.sn-step--done{color:var(--ink);opacity:0.75}',
+    '.sn-step--done .sn-icon{color:#2da44e}',
+    '.sn-step--active{background:var(--accent-soft,#eaf1fb);color:var(--ink);font-weight:600}',
+    '.sn-step--active .sn-icon{color:var(--accent,#0969da)}',
+    '.sn-step--pending{opacity:0.4}',
+    '</style>',
+    '<nav class="sn-bar" aria-label="Journey stages">',
+      '<span class="sn-feature">' + escHtml(journey.featureSlug || '') + '</span>',
+      '<ul class="sn-steps">' + _stepsHtml + '</ul>',
+    '</nav>'
+  ].join('');
+
+  var artefactHtml  = _renderMarkdown(session.artefactContent);
+  var featureName   = escHtml((journey.featureSlug || '').replace(/^\d{4}-\d{2}-\d{2}-/, '').replace(/-/g, ' '));
+  var safeJourneyId = escHtml(journeyId);
+  var chatUrl = '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(journey.activeSessionId || '') + '/chat';
+
+  var body = [
+    '<style>',
+    '.sr-page{max-width:740px;margin:0 auto;padding:24px 24px 120px}',
+    '.sr-eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}',
+    '.sr-title{font-size:20px;font-weight:700;margin:0 0 4px}',
+    '.sr-sub{font-size:13px;color:var(--muted);margin:0 0 24px}',
+    '.sr-paper{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:32px 36px;margin-bottom:24px;line-height:1.7;overflow-wrap:break-word}',
+    '.sr-h1{font-size:20px;font-weight:700;margin:1.4em 0 0.5em;border-bottom:1px solid var(--line);padding-bottom:6px}',
+    '.sr-h1:first-child,.sr-paper>:first-child{margin-top:0}',
+    '.sr-h2{font-size:16px;font-weight:600;margin:1.2em 0 0.4em}',
+    '.sr-h3{font-size:14px;font-weight:600;margin:1em 0 0.3em;color:var(--ink)}',
+    '.sr-p{margin:0.6em 0;font-size:14px;color:var(--ink)}',
+    '.sr-list{margin:0.4em 0 0.4em 1.4em;padding:0;font-size:14px}',
+    '.sr-list li{margin-bottom:0.3em}',
+    '.sr-hr{border:none;border-top:1px solid var(--line);margin:1.2em 0}',
+    '.sr-pre{background:var(--line-2,#f6f8fa);border:1px solid var(--line);border-radius:6px;padding:14px 16px;overflow-x:auto;margin:0.8em 0;font-size:12px;line-height:1.5;font-family:var(--mono)}',
+    '.sr-code{background:var(--line-2,#f6f8fa);border:1px solid var(--line);border-radius:3px;padding:1px 5px;font-size:12px;font-family:var(--mono)}',
+    '.sr-confirm-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;gap:14px;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.06)}',
+    '.sr-confirm-hint{font-size:13px;color:var(--muted);flex:1;min-width:0}',
+    '</style>',
+    navigatorHtml,
+    '<div class="sr-page">',
+      '<p class="sr-eyebrow">' + escHtml(stageLabel) + ' — artefact review</p>',
+      '<h1 class="sr-title">' + featureName + '</h1>',
+      '<p class="sr-sub">Review the artefact below, then confirm to advance to <strong>' + escHtml(nextLabel) + '</strong>. Or go back to continue the conversation.</p>',
+      '<article class="sr-paper">',
+        artefactHtml,
+      '</article>',
+    '</div>',
+    '<div class="sr-confirm-bar">',
+      '<a href="' + escHtml(chatUrl) + '" class="sw-btn" style="border:1px solid var(--line);flex-shrink:0">← Back to session</a>',
+      '<span class="sr-confirm-hint">Confirming saves this artefact and opens the next stage.</span>',
+      '<form method="POST" action="/api/journey/' + safeJourneyId + '/gate-confirm" style="margin:0;flex-shrink:0">',
+        '<button type="submit" class="sw-btn sw-btn--primary">Confirm &amp; continue to ' + escHtml(nextLabel) + ' &#x2192;</button>',
+      '</form>',
+    '</div>'
+  ].join('');
+
+  var html = renderShell({ title: 'Review: ' + stageLabel, bodyContent: body, user: { login: req.session.login || '' }, active: 'journey' });
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
+/**
+ * GET /journey/:journeyId/stage/:stageName — read-only view of a completed stage artefact.
+ * Supports ?edit=true to switch to inline edit mode.
+ * POST /api/journey/:journeyId/stage/:stageName/artefact — save edited artefact content to disk.
+ */
+async function handleGetJourneyStageView(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var stageName = req.params && req.params.stageName;
+  var journey = _journeyStore.getJourney(journeyId);
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Not found.</p><a href="/journey">Back</a></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  // Find the completed stage entry in store
+  var storeStage = (journey.completedStages || []).find(function(s) { return s.skillName === stageName; });
+  var repoRoot = getRepoRoot();
+
+  // Extract cost/model — prefer in-memory, fall back to disk (populated after server restart)
+  var _stageCostUsd = (storeStage && storeStage.costUsd != null) ? storeStage.costUsd : null;
+  var _stageModel   = (storeStage && storeStage.model) ? storeStage.model : null;
+  if (_stageCostUsd == null) {
+    var _djCost = null;
+    try { _djCost = _journeyDisk.loadJourney(journey.featureSlug, repoRoot); } catch (_) {}
+    if (_djCost && _djCost.stages && _djCost.stages[stageName]) {
+      _stageCostUsd = _djCost.stages[stageName].costUsd != null ? _djCost.stages[stageName].costUsd : null;
+      _stageModel   = _djCost.stages[stageName].model || null;
+    }
+  }
+  var _stageModelShort = _stageModel ? _stageModel.replace(/^claude-/, '').replace(/-\d{4}-\d{2}-\d{2}$/, '') : null;
+
+  // Resolve artefact path: prefer store, fall back to disk journey
+  var artefactRelPath = (storeStage && storeStage.artefactPath) || null;
+  if (!artefactRelPath) {
+    var dj = null;
+    try { dj = _journeyDisk.loadJourney(journey.featureSlug, repoRoot); } catch (_) {}
+    if (dj && dj.stages && dj.stages[stageName]) {
+      artefactRelPath = dj.stages[stageName].artefactPath || null;
+    }
+  }
+
+  if (!artefactRelPath) {
+    // Stage exists but has no artefact yet — redirect to current chat
+    var activeSkill = journey.activeSkill || 'discovery';
+    var activeSid = journey.activeSessionId || '';
+    res.writeHead(302, { Location: '/skills/' + encodeURIComponent(activeSkill) + '/sessions/' + encodeURIComponent(activeSid) + '/chat' });
+    res.end();
+    return;
+  }
+
+  var artefactContent = '';
+  var artefactAbsPath = path.resolve(path.join(repoRoot, artefactRelPath));
+  try { artefactContent = fs.readFileSync(artefactAbsPath, 'utf8'); } catch (_) {}
+
+  // Parse ?edit from URL
+  var url = req.url || '';
+  var isEdit = url.indexOf('edit=true') !== -1 || (req.query && req.query.edit === 'true');
+
+  var stageMeta = STAGE_META.find(function(s) { return s.id === stageName; });
+  var stageLabel = stageMeta ? (stageMeta.num + '. ' + stageMeta.label) : stageName;
+  var safeJourneyId = escHtml(journeyId);
+  var featureName = escHtml((journey.featureSlug || '').replace(/^\d{4}-\d{2}-\d{2}-/, '').replace(/-/g, ' '));
+
+  // Navigator bar — done stages are clickable, active stage links back to chat
+  var _doneSet = new Set((journey.completedStages || []).map(function(s) { return s.skillName; }));
+  var _activeSkill = journey.activeSkill;
+  var _activeSid = journey.activeSessionId || '';
+  var _stepsHtml = STAGE_META.map(function(s) {
+    var isDone = _doneSet.has(s.id);
+    var isActive = s.id === _activeSkill;
+    var isViewing = s.id === stageName;
+    var cls = isViewing ? 'sn-step--viewing' : isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending';
+    var icon = isDone || isViewing ? '●' : isActive ? '▶' : '○';
+    var inner = '<span class="sn-num">' + escHtml(String(s.num)) + '</span>' +
+      '<span class="sn-label">' + escHtml(s.label) + '</span>' +
+      '<span class="sn-icon" aria-hidden="true">' + icon + '</span>';
+    if (isDone && !isViewing) {
+      return '<li class="sn-step ' + cls + '"><a href="/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(s.id) + '" class="sn-step-link">' + inner + '</a></li>';
+    }
+    if (isActive) {
+      return '<li class="sn-step ' + cls + '"><a href="/skills/' + encodeURIComponent(_activeSkill) + '/sessions/' + encodeURIComponent(_activeSid) + '/chat" class="sn-step-link">' + inner + '</a></li>';
+    }
+    return '<li class="sn-step ' + cls + '">' + inner + '</li>';
+  }).join('');
+
+  var navigatorHtml = [
+    '<style>',
+    '.sn-bar{display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--line);background:var(--surface);overflow-x:auto;gap:0;flex-shrink:0}',
+    '.sn-feature{font-size:11px;font-weight:600;color:var(--muted);padding:0 12px 0 4px;border-right:1px solid var(--line);white-space:nowrap;margin-right:4px}',
+    '.sn-steps{display:flex;list-style:none;margin:0;padding:0;gap:0}',
+    '.sn-step{display:flex;align-items:center;gap:5px;padding:0;font-size:12px;white-space:nowrap;border-right:1px solid var(--line);color:var(--muted)}',
+    '.sn-step:last-child{border-right:none}',
+    '.sn-step-link{display:flex;align-items:center;gap:5px;padding:7px 11px;color:inherit;text-decoration:none;width:100%}',
+    '.sn-step-link:hover{background:var(--line-2,#f6f8fa)}',
+    '.sn-step>span{padding:7px 11px}',
+    '.sn-num{font-weight:700;font-size:10px;opacity:0.6}',
+    '.sn-icon{font-size:9px}',
+    '.sn-step--done{color:var(--ink);opacity:0.75}',
+    '.sn-step--done .sn-icon{color:#2da44e}',
+    '.sn-step--viewing{color:var(--ink);font-weight:600;background:var(--line-2,#f6f8fa)}',
+    '.sn-step--viewing .sn-icon{color:#2da44e}',
+    '.sn-step--active{background:var(--accent-soft,#eaf1fb);color:var(--ink);font-weight:600}',
+    '.sn-step--active .sn-step-link{font-weight:600}',
+    '.sn-step--active .sn-icon{color:var(--accent,#0969da)}',
+    '.sn-step--pending{opacity:0.4}',
+    '</style>',
+    '<nav class="sn-bar" aria-label="Journey stages">',
+      '<a href="/journey" class="sn-feature" style="text-decoration:none;color:var(--muted)">' + escHtml(journey.featureSlug || '') + '</a>',
+      '<ul class="sn-steps">' + _stepsHtml + '</ul>',
+    '</nav>'
+  ].join('');
+
+  var artefactHtml  = _renderMarkdown(artefactContent);
+  var saveUrl = '/api/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(stageName) + '/artefact';
+  var currentChatUrl = _activeSid
+    ? '/skills/' + encodeURIComponent(_activeSkill || 'discovery') + '/sessions/' + encodeURIComponent(_activeSid) + '/chat'
+    : '/journey';
+
+  var mainPanel;
+  if (isEdit) {
+    mainPanel = [
+      '<form method="POST" action="' + escHtml(saveUrl) + '" style="margin:0">',
+        '<textarea name="content" class="sv-textarea" style="width:100%;box-sizing:border-box;min-height:420px;padding:24px;border:none;outline:none;font-family:var(--mono);font-size:13px;line-height:1.65;resize:vertical;background:var(--surface);color:var(--ink)">' + escHtml(artefactContent) + '</textarea>',
+        '<div class="sv-edit-bar" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line);background:var(--surface)">',
+          '<button type="submit" class="sw-btn sw-btn--primary" style="font-size:13px">Save changes</button>',
+          '<a href="/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(stageName) + '" class="sw-btn" style="font-size:13px;border:1px solid var(--line)">Cancel</a>',
+          '<span style="font-size:12px;color:var(--muted);margin-left:auto">' + escHtml(artefactRelPath) + '</span>',
+        '</div>',
+      '</form>'
+    ].join('');
+  } else if (stageName === 'definition') {
+    var _svArtJson = JSON.stringify(artefactContent).replace(/<\/script/gi, '<\\/script');
+    mainPanel = [
+      '<style>',
+      '.dm-canvas{padding:12px 16px}',
+      '.dm-hdr{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}',
+      '.dm-count{font-size:11px;color:var(--muted);font-weight:500}',
+      '.dm-badge{background:var(--accent-soft,#eaf1fb);color:var(--accent-ink,#1d4ed8);font-size:10px;font-weight:600;padding:2px 9px;border-radius:10px;text-transform:uppercase;letter-spacing:0.4px}',
+      '.dm-epic{margin-bottom:20px}',
+      '.dm-epic-hd{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:2px solid var(--accent,#2563eb);margin-bottom:10px;width:100%;background:none;border-left:none;border-right:none;border-top:none;font-family:inherit;cursor:pointer;text-align:left}',
+      '.dm-epic-hd:hover .dm-epic-name{text-decoration:underline}',
+      '.dm-epic-tag{font-size:10px;font-weight:700;background:var(--accent,#2563eb);color:#fff;border-radius:4px;padding:1px 7px;flex-shrink:0}',
+      '.dm-epic-name{font-size:12px;font-weight:600;color:var(--ink);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.dm-epic-count{font-size:10px;color:var(--muted);flex-shrink:0;background:var(--line-2);padding:1px 6px;border-radius:10px;white-space:nowrap}',
+      '.dm-cards{display:flex;flex-wrap:wrap;gap:6px}',
+      '.dm-card{cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);text-align:left;min-width:96px;max-width:144px;display:flex;flex-direction:column;gap:3px;font-family:inherit;line-height:1;transition:border-color 0.15s,box-shadow 0.15s}',
+      '.dm-card:hover{border-color:var(--accent,#2563eb);box-shadow:0 2px 7px rgba(0,0,0,.09)}',
+      '.dm-card-id{font-size:9px;font-weight:700;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.3px}',
+      '.dm-card-title{font-size:11px;font-weight:500;color:var(--ink);line-height:1.35;margin:2px 0}',
+      '.dm-cx{font-size:9px;font-weight:600;margin-top:2px}',
+      '.dm-cx--l{color:#2da44e}.dm-cx--m{color:#ca8a04}.dm-cx--h{color:#dc2626}',
+      '.dm-empty{padding:24px 16px;font-size:13px;color:var(--muted);font-style:italic}',
+      '.dm-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:10000;align-items:center;justify-content:center}',
+      '.dm-mo{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4)}',
+      '.dm-mb{position:relative;background:var(--bg);border-radius:12px;width:700px;max-width:95vw;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.28)}',
+      '.dm-mh{display:flex;align-items:flex-start;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);flex-shrink:0;gap:12px}',
+      '.dm-mt{font-size:14px;font-weight:600;color:var(--ink);line-height:1.4}',
+      '.dm-mx{border:none;background:none;cursor:pointer;font-size:16px;color:var(--muted);padding:2px 6px;border-radius:4px;line-height:1;flex-shrink:0;font-family:inherit}',
+      '.dm-mx:hover{color:var(--ink);background:var(--line)}',
+      '.dm-mbd{overflow-y:auto;padding:20px 24px}',
+      '.ad-h1{font-size:18px;font-weight:700;margin:1.2em 0 0.4em;border-bottom:1px solid var(--line);padding-bottom:4px}',
+      '.ad-h2{font-size:15px;font-weight:600;margin:1em 0 0.35em}',
+      '.ad-h3{font-size:13px;font-weight:600;margin:0.8em 0 0.3em}',
+      '.ad-p{margin:0.5em 0;font-size:13px;color:var(--ink);line-height:1.6}',
+      '.ad-ul{margin:0.4em 0 0.4em 1.2em;padding:0;font-size:13px}',
+      '.ad-ul li{margin-bottom:0.25em}',
+      '.ad-pre{background:var(--line-2,#f6f8fa);border:1px solid var(--line);border-radius:6px;padding:12px;overflow-x:auto;font-size:12px;line-height:1.5;font-family:var(--mono);margin:0.6em 0}',
+      '.ad-code{background:var(--line-2,#f6f8fa);border:1px solid var(--line);border-radius:3px;padding:1px 4px;font-size:12px;font-family:var(--mono)}',
+      '.ad-hr{border:none;border-top:1px solid var(--line);margin:1em 0}',
+      '.ad-table{border-collapse:collapse;width:100%;font-size:13px;margin:0.6em 0}',
+      '.ad-table th,.ad-table td{border:1px solid var(--line);padding:6px 10px;text-align:left}',
+      '.ad-table th{background:var(--line-2,#f6f8fa);font-weight:600}',
+      '</style>',
+      '<div style="background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:24px">',
+        '<div id="sv-dm-canvas" style="padding:4px 0"></div>',
+      '</div>',
+      '<script>',
+      '(function(){',
+      'var __art=' + _svArtJson + ';',
+      'function escHtmlClient(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}',
+      'function inlineMd(s){s=s.replace(/\\*\\*(.+?)\\*\\*/g,"<strong>$1</strong>");s=s.replace(/`([^`]+)`/g,\'<code class="ad-code">$1</code>\');return s;}',
+      'function flushAdTable(rows){if(!rows.length)return"";var h=\'<table class="ad-table">\';for(var ri=0;ri<rows.length;ri++){var r=rows[ri];if(/^\\|[-: |]+\\|$/.test(r.trim()))continue;var cells=r.split("|").slice(1,-1);var tag=ri===0?"th":"td";h+="<tr>"+cells.map(function(c){return"<"+tag+">"+inlineMd(c.trim())+"</"+tag+">";}).join("")+"</tr>";}return h+"</table>";}',
+      'function renderArtefactMd(raw){',
+      '  var lines=escHtmlClient(raw).split("\\n");',
+      '  var out=[];var inCode=false;var codeBuf=[];var inTable=false;var tableBuf=[];var inList=false;',
+      '  for(var i=0;i<lines.length;i++){',
+      '    var line=lines[i];',
+      '    if(line.startsWith("```")){',
+      '      if(inCode){out.push(\'<pre class="ad-pre"><code>\'+codeBuf.join("\\n")+"</code></pre>");codeBuf=[];inCode=false;}',
+      '      else{if(inList){out.push("</ul>");inList=false;}if(inTable){out.push(flushAdTable(tableBuf));tableBuf=[];inTable=false;}inCode=true;}',
+      '      continue;',
+      '    }',
+      '    if(inCode){codeBuf.push(line);continue;}',
+      '    if(line.startsWith("|")){if(!inTable){inTable=true;tableBuf=[];}tableBuf.push(line);continue;}',
+      '    else if(inTable){out.push(flushAdTable(tableBuf));tableBuf=[];inTable=false;}',
+      '    if(inList&&!line.startsWith("- ")&&!line.startsWith("* ")){out.push("</ul>");inList=false;}',
+      '    var trim=line.trim();',
+      '    if(!trim){out.push(\'<div style="height:5px"></div>\');continue;}',
+      '    if(trim==="---"){out.push(\'<hr class="ad-hr">\');continue;}',
+      '    var hm=trim.match(/^(#{1,3}) (.+)/);',
+      '    if(hm){var hlv=hm[1].length;out.push("<h"+hlv+\' class="ad-h\'+hlv+\'">\'+inlineMd(hm[2])+"</h"+hlv+">");continue;}',
+      '    if(trim.startsWith("- ")||trim.startsWith("* ")){if(!inList){out.push(\'<ul class="ad-ul">\');inList=true;}out.push("<li>"+inlineMd(trim.slice(2))+"</li>");continue;}',
+      '    out.push(\'<p class="ad-p">\'+inlineMd(line)+"</p>");',
+      '  }',
+      '  if(inList)out.push("</ul>");if(inTable)out.push(flushAdTable(tableBuf));if(inCode)out.push(\'<pre class="ad-pre"><code>\'+codeBuf.join("\\n")+"</code></pre>");',
+      '  return out.join("");',
+      '}',
+      'function parseDefinitionArtefact(md){',
+      '  var r={slicing:"",epics:[],epicCount:0,storyCount:0};',
+      '  var sm=md.match(/^Slicing strategy:\\s*(.+)$/m);',
+      '  if(!sm)sm=md.match(/\\*\\*Slicing strategy:\\*\\*\\s*(.+)$/m);',
+      '  if(sm)r.slicing=sm[1].trim();',
+      '  // Format C: H1 epic headers "# Epic N: Name" + H1 story headers "# Story id — Title"',
+      '  var _hasH1Epics=/^# Epic \\d+/m.test(md);',
+      '  var _hasH1Stories=/^# Story [a-z][a-z0-9.-]*\\.\\d+/im.test(md);',
+      '  if(_hasH1Epics||_hasH1Stories){',
+      '    var _epicMap={},_epicOrder2=[];',
+      '    md.split(/^(?=# Epic \\d+)/m).slice(1).forEach(function(eb,idx){',
+      '      var fl=eb.split("\\n")[0];',
+      '      var nM=fl.match(/^# Epic \\d+[:\\-—\\s]+(.+)$/)||fl.match(/^# Epic \\d+(.*)$/);',
+      '      var slug2=(nM&&nM[1]?nM[1].trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""):("epic-"+(idx+1)))||("epic-"+(idx+1));',
+      '      var name2=nM&&nM[1]?nM[1].trim():("Epic "+(idx+1));',
+      '      var storyIds=[];',
+      '      var listM=eb.match(/## Stories in this epic([\\s\\S]*?)(?=\\n## |\\n# |$)/);',
+      '      if(listM){listM[1].split("\\n").forEach(function(line){var idM2=line.match(/[\\-\\*]?\\s*([a-z][a-z0-9.-]*\\.\\d+)/i);if(idM2)storyIds.push(idM2[1].toLowerCase());});}',
+      '      _epicMap[slug2]={num:String(idx+1),name:name2,storyIds:storyIds,stories:[],raw:eb};',
+      '      _epicOrder2.push(slug2);',
+      '    });',
+      '    md.split(/^(?=# Story [a-z][a-z0-9.-]*\\.\\d+)/im).slice(1).forEach(function(sb){',
+      '      var sfl=sb.split("\\n")[0];',
+      '      var sM2=sfl.match(/^# Story ([a-z][a-z0-9.-]*\\.\\d+)\\s*[—\\-]\\s*(.+)$/i);',
+      '      if(!sM2)return;',
+      '      var stId=sM2[1].toLowerCase(),stTitle=sM2[2].trim();',
+      '      var cxM2=sb.match(/Complexity:\\s*(\\d)/);',
+      '      var entry={id:stId,title:stTitle,cx:cxM2?parseInt(cxM2[1],10):0,raw:sb};',
+      '      var placed=false;',
+      '      _epicOrder2.forEach(function(eSlug){if(_epicMap[eSlug].storyIds.indexOf(stId)!==-1){_epicMap[eSlug].stories.push(entry);placed=true;}});',
+      '      if(!placed){var lastSlug=_epicOrder2[_epicOrder2.length-1]||"uncategorised";if(!_epicMap[lastSlug]){_epicMap[lastSlug]={num:"?",name:"Uncategorised",storyIds:[],stories:[]};_epicOrder2.push(lastSlug);}_epicMap[lastSlug].stories.push(entry);}',
+      '    });',
+      '    _epicOrder2.forEach(function(slug){var ep=_epicMap[slug];r.epics.push({num:ep.num,name:ep.name,stories:ep.stories,raw:ep.raw||""});r.storyCount+=ep.stories.length;});',
+      '    r.epicCount=r.epics.length;return r;',
+      '  }',
+      '  var _hasFlatStories=/\\n## [a-z][a-z0-9.-]*\\.\\d+\\s*[—\\-]/i.test(md);',
+      '  if(_hasFlatStories){',
+      '    var _epicNames={},_epicOrder=[];',
+      '    var _tblM=md.match(/## Epic structure([\\s\\S]*?)(?=\\n## [^E]|\\n## E(?!pic)|$)/);',
+      '    if(_tblM){',
+      '      _tblM[1].split("\\n").forEach(function(tl){',
+      '        var cols=tl.split("|").map(function(c){return c.trim();}).filter(Boolean);',
+      '        if(cols.length>=2&&/^Epic \\d+/.test(cols[0])&&cols[1]&&!/^[-:]+$/.test(cols[1])){',
+      '          var epSlug=cols[1];',
+      '          var epName=cols[0].replace(/^Epic \\d+[:\\-—]\\s*/,"").trim();',
+      '          if(!_epicNames[epSlug]){_epicNames[epSlug]=epName;_epicOrder.push(epSlug);}',
+      '        }',
+      '      });',
+      '    }',
+      '    md.split(/\\n## Epic /).slice(1).forEach(function(eb){',
+      '      var efl=eb.split("\\n")[0];',
+      '      if(!/^\\d/.test(efl))return;',
+      '      var nM=efl.match(/—\\s*(.+)$/)||efl.match(/[-]\\s*(.+)$/)||efl.match(/:\\s*(.+)$/);',
+      '      var epSlug2=efl.replace(/^\\d+[:\\-—\\s]+/,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");',
+      '      var numM2=efl.match(/^(\\d+)/);',
+      '      if(nM&&numM2&&!_epicNames[epSlug2]){_epicNames[epSlug2]=nM[1].trim();_epicOrder.push(epSlug2);}',
+      '    });',
+      '    var _storiesByEpic={};',
+      '    md.split(/\\n## /).slice(1).forEach(function(sblk){',
+      '      var sfl=sblk.split("\\n")[0].trim();',
+      '      var sM=sfl.match(/^([a-z][a-z0-9.-]*\\.\\d+)\\s*[—\\-]\\s*(.+)$/i);',
+      '      if(!sM)return;',
+      '      var _cx=sblk.match(/Complexity:\\s*(\\d)/);',
+      '      var _epM=sblk.match(/\\*\\*Epic:\\*\\*\\s*([a-z][a-z0-9-]*)/i);',
+      '      var _epSlug=_epM?_epM[1]:"uncategorised";',
+      '      if(!_storiesByEpic[_epSlug])_storiesByEpic[_epSlug]=[];',
+      '      _storiesByEpic[_epSlug].push({id:sM[1],title:sM[2].trim(),cx:_cx?parseInt(_cx[1],10):0,raw:sblk});',
+      '    });',
+      '    var _allSlugs=_epicOrder.slice();',
+      '    Object.keys(_storiesByEpic).forEach(function(s){if(_allSlugs.indexOf(s)===-1)_allSlugs.push(s);});',
+      '    _allSlugs.forEach(function(slug,idx){',
+      '      var sts=_storiesByEpic[slug]||[];',
+      '      r.epics.push({num:String(idx+1),name:_epicNames[slug]||slug,stories:sts});',
+      '      r.storyCount+=sts.length;',
+      '    });',
+      '  } else {',
+      '    var eblocks=md.split(/\\n## Epic /);',
+      '    for(var _ei=1;_ei<eblocks.length;_ei++){',
+      '      var eb=eblocks[_ei];var fl=eb.split("\\n")[0];',
+      '      if(!/^\\d/.test(fl))continue;',
+      '      var numM=fl.match(/^(\\d+)/);',
+      '      var nM=fl.match(/—\\s*(.+)$/);',
+      '      if(!nM)nM=fl.match(/[-]\\s*(.+)$/);',
+      '      if(!nM)nM=fl.match(/:\\s*(.+)$/);',
+      '      var stories=[];var sblocks=eb.split(/\\n### /);',
+      '      for(var _si=1;_si<sblocks.length;_si++){',
+      '        var sb=sblocks[_si];var sl=sb.split("\\n")[0];',
+      '        var idM=sl.match(/^([a-z][a-z0-9.-]*)/i);',
+      '        var tM=sl.match(/—\\s*(.+)$/);if(!tM)tM=sl.match(/\\s[-]\\s(.+)$/);',
+      '        var cxM=sb.match(/Complexity:\\s*(\\d)/);',
+      '        stories.push({id:idM?idM[1]:"S"+_si,title:tM?tM[1].trim():sl.trim(),cx:cxM?parseInt(cxM[1],10):0,raw:sb});',
+      '      }',
+      '      r.epics.push({num:numM?numM[1]:String(_ei),name:nM?nM[1].trim():fl.trim(),stories:stories,raw:eb});',
+      '      r.storyCount+=stories.length;',
+      '    }',
+      '  }',
+      '  r.epicCount=r.epics.length;return r;',
+      '}',
+      'function renderDefinitionMap(p){',
+      '  if(!p||!p.epicCount)return \'<div class="dm-empty">No stories found in artefact.</div>\';',
+      '  var badge=p.slicing?\'<span class="dm-badge">\'+escHtmlClient(p.slicing)+\'</span>\':"";',
+      '  var epicsHtml=p.epics.map(function(epic,ei){',
+      '    var cards=epic.stories.map(function(s,si){',
+      '      var cls=s.cx>=3?"dm-cx--h":s.cx===2?"dm-cx--m":"dm-cx--l";',
+      '      return \'<button class="dm-card" data-ei="\'+ei+\'" data-si="\'+si+\'">\'+',
+      '        \'<span class="dm-card-id">\'+escHtmlClient(s.id)+\'</span>\'+',
+      '        \'<span class="dm-card-title">\'+escHtmlClient(s.title)+\'</span>\'+',
+      '        (s.cx?\'<span class="dm-cx \'+cls+\'">C:\'+s.cx+"</span>":"")+"</button>";',
+      '    }).join("");',
+      '    var cntBadge=epic.stories.length?\'<span class="dm-epic-count">\'+epic.stories.length+(epic.stories.length===1?" story":" stories")+"</span>":"";',
+      '    return \'<div class="dm-epic"><button class="dm-epic-hd" onclick="window.dmOpenEpic(\'+ei+\')" title="View epic details">\'+',
+      '      \'<span class="dm-epic-tag">E\'+escHtmlClient(epic.num)+\'</span>\'+',
+      '      \'<span class="dm-epic-name">\'+escHtmlClient(epic.name)+\'</span>\'+',
+      '      cntBadge+\'<span style="font-size:9px;color:var(--muted);margin-left:auto;flex-shrink:0">&#x2197;</span>\'+',
+      '      \'</button><div class="dm-cards">\'+',
+      '      (cards||\'<span style="font-size:11px;color:var(--muted);padding:4px 0">No stories</span>\')+',
+      '      \'</div></div>\';',
+      '  }).join("");',
+      '  return \'<div class="dm-canvas"><div class="dm-hdr"><span class="dm-count">\'+',
+      '    p.epicCount+(p.epicCount===1?" epic":" epics")+" \xB7 "+p.storyCount+(p.storyCount===1?" story":" stories")+',
+      '    \'</span>\'+badge+\'</div>\'+epicsHtml+\'</div>\';',
+      '}',
+      'window.dmParsed=null;',
+      'window.dmOpenStory=function(ei,si){',
+      '  var p=window.dmParsed;',
+      '  if(!p||!p.epics[ei]||!p.epics[ei].stories[si])return;',
+      '  var s=p.epics[ei].stories[si];',
+      '  var modal=document.getElementById("dm-modal");',
+      '  if(!modal){',
+      '    modal=document.createElement("div");',
+      '    modal.id="dm-modal";modal.className="dm-modal";',
+      '    modal.innerHTML=',
+      '      \'<div class="dm-mo" onclick="dmCloseModal()"></div>\'+',
+      '      \'<div class="dm-mb"><div class="dm-mh">\'+',
+      '        \'<div id="dm-mt" class="dm-mt"></div>\'+',
+      '        \'<button onclick="dmCloseModal()" class="dm-mx" title="Close">✕</button>\'+',
+      '      \'</div><div id="dm-body" class="dm-mbd"></div></div>\';',
+      '    document.body.appendChild(modal);',
+      '    document.addEventListener("keydown",function(ev){if(ev.key==="Escape")window.dmCloseModal();});',
+      '  }',
+      '  document.getElementById("dm-mt").textContent=s.id+" — "+s.title;',
+      '  document.getElementById("dm-body").innerHTML=renderArtefactMd("### "+s.id+" — "+s.title+"\\n"+s.raw);',
+      '  modal.style.display="flex";',
+      '};',
+      'window.dmOpenEpic=function(ei){',
+      '  var p=window.dmParsed;if(!p||!p.epics[ei])return;',
+      '  var epic=p.epics[ei];',
+      '  var modal=document.getElementById("dm-modal");',
+      '  if(!modal){modal=document.createElement("div");modal.id="dm-modal";modal.className="dm-modal";',
+      '    modal.innerHTML=\'<div class="dm-mo" onclick="dmCloseModal()"></div><div class="dm-mb"><div class="dm-mh"><div id="dm-mt" class="dm-mt"></div><button onclick="dmCloseModal()" class="dm-mx" title="Close">✕</button></div><div id="dm-body" class="dm-mbd"></div></div>\';',
+      '    document.body.appendChild(modal);',
+      '    document.addEventListener("keydown",function(ev){if(ev.key==="Escape")window.dmCloseModal();});',
+      '  }',
+      '  document.getElementById("dm-mt").textContent="E"+epic.num+" — "+epic.name;',
+      '  var storyList=epic.stories.map(function(s){return"- **"+s.id+"** — "+s.title;}).join("\\n");',
+      '  var body=epic.raw?renderArtefactMd(epic.raw):(storyList?renderArtefactMd(storyList):"<p>No epic details available.</p>");',
+      '  document.getElementById("dm-body").innerHTML=body;',
+      '  modal.style.display="flex";',
+      '};',
+      'window.dmCloseModal=function(){var m=document.getElementById("dm-modal");if(m)m.style.display="none";};',
+      'document.addEventListener("DOMContentLoaded",function(){',
+      '  window.dmParsed=parseDefinitionArtefact(__art);',
+      '  var canvas=document.getElementById("sv-dm-canvas");',
+      '  if(canvas){',
+      '    canvas.innerHTML=renderDefinitionMap(window.dmParsed);',
+      '    canvas.addEventListener("click",function(e){',
+      '      var card=e.target&&e.target.closest?e.target.closest(".dm-card"):null;',
+      '      if(card)window.dmOpenStory(parseInt(card.dataset.ei,10),parseInt(card.dataset.si,10));',
+      '    });',
+      '  }',
+      '});',
+      '})();',
+      '</script>'
+    ].join('\n');
+  } else {
+    mainPanel = [
+      '<article class="sr-paper">',
+        artefactHtml || '<p class="sr-p" style="color:var(--muted)">No artefact content found.</p>',
+      '</article>'
+    ].join('');
+  }
+
+  var body = [
+    '<style>',
+    '.sv-page{max-width:740px;margin:0 auto;padding:24px 24px 100px}',
+    '.sv-eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}',
+    '.sv-title{font-size:20px;font-weight:700;margin:0 0 4px}',
+    '.sv-sub{font-size:13px;color:var(--muted);margin:0 0 24px}',
+    '.sr-paper{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:32px 36px;margin-bottom:24px;line-height:1.7;overflow-wrap:break-word}',
+    '.sr-h1{font-size:20px;font-weight:700;margin:1.4em 0 0.5em;border-bottom:1px solid var(--line);padding-bottom:6px}',
+    '.sr-h1:first-child,.sr-paper>:first-child{margin-top:0}',
+    '.sr-h2{font-size:16px;font-weight:600;margin:1.2em 0 0.4em}',
+    '.sr-h3{font-size:14px;font-weight:600;margin:1em 0 0.3em;color:var(--ink)}',
+    '.sr-p{margin:0.6em 0;font-size:14px;color:var(--ink)}',
+    '.sr-list{margin:0.4em 0 0.4em 1.4em;padding:0;font-size:14px}',
+    '.sr-list li{margin-bottom:0.3em}',
+    '.sr-hr{border:none;border-top:1px solid var(--line);margin:1.2em 0}',
+    '.sr-pre{background:var(--line-2,#f6f8fa);border:1px solid var(--line);border-radius:6px;padding:14px 16px;overflow-x:auto;margin:0.8em 0;font-size:12px;line-height:1.5;font-family:var(--mono)}',
+    '.sr-code{background:var(--line-2,#f6f8fa);border:1px solid var(--line);border-radius:3px;padding:1px 5px;font-size:12px;font-family:var(--mono)}',
+    '.sv-action-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--line);padding:12px 24px;display:flex;align-items:center;gap:12px;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.06)}',
+    '.sv-action-hint{font-size:13px;color:var(--muted);flex:1;min-width:0}',
+    '.sv-cost-meta{display:flex;align-items:center;gap:8px;margin:2px 0 20px}',
+    '.sv-cost-badge{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;font-family:var(--mono)}',
+    '.sv-cost-model{font-size:11px;color:var(--muted);font-family:var(--mono)}',
+    '</style>',
+    navigatorHtml,
+    '<div class="sv-page">',
+      '<p class="sv-eyebrow">' + escHtml(stageLabel) + ' — artefact</p>',
+      '<h1 class="sv-title">' + featureName + '</h1>',
+      (_stageCostUsd != null ? '<p class="sv-cost-meta"><span class="sv-cost-badge">$' + _stageCostUsd.toFixed(4) + '</span>' + (_stageModelShort ? '<span class="sv-cost-model">' + escHtml(_stageModelShort) + '</span>' : '') + '</p>' : ''),
+      '<p class="sv-sub">Viewing completed stage document. ' + (isEdit ? 'Edit below and save.' : 'Click <strong>Edit</strong> to make changes.') + '</p>',
+      mainPanel,
+    '</div>',
+    !isEdit ? [
+      '<div class="sv-action-bar">',
+        '<a href="' + escHtml(currentChatUrl) + '" class="sw-btn" style="border:1px solid var(--line);flex-shrink:0;font-size:13px">← Current stage</a>',
+        '<span class="sv-action-hint">' + escHtml(artefactRelPath) + '</span>',
+        '<a href="/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(stageName) + '?edit=true" class="sw-btn sw-btn--primary" style="flex-shrink:0;font-size:13px">Edit artefact</a>',
+      '</div>'
+    ].join('') : ''
+  ].join('');
+
+  var html = renderShell({ title: stageLabel + ' — ' + featureName, bodyContent: body, user: { login: req.session.login || '' }, active: 'journey' });
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
+/**
+ * POST /api/journey/:journeyId/stage/:stageName/artefact — save inline-edited artefact to disk.
+ */
+async function handlePostJourneyStageArtefact(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var stageName = req.params && req.params.stageName;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+
+  var repoRoot = getRepoRoot();
+  var storeStage = (journey.completedStages || []).find(function(s) { return s.skillName === stageName; });
+  var artefactRelPath = (storeStage && storeStage.artefactPath) || null;
+  if (!artefactRelPath) {
+    var dj = null;
+    try { dj = _journeyDisk.loadJourney(journey.featureSlug, repoRoot); } catch (_) {}
+    if (dj && dj.stages && dj.stages[stageName]) {
+      artefactRelPath = dj.stages[stageName].artefactPath || null;
+    }
+  }
+  if (!artefactRelPath) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'No artefact path found for stage' }));
+    return;
+  }
+
+  var body = await _readFormBody(req);
+  var newContent = (body && body.content) || '';
+  if (!newContent.trim()) {
+    res.writeHead(302, { Location: '/journey/' + encodeURIComponent(journeyId) + '/stage/' + encodeURIComponent(stageName) });
+    res.end();
+    return;
+  }
+
+  var absPath = path.resolve(path.join(repoRoot, artefactRelPath));
+  try {
+    fs.mkdirSync(path.dirname(absPath), { recursive: true });
+    fs.writeFileSync(absPath, newContent, 'utf8');
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Failed to write artefact: ' + err.message }));
+    return;
+  }
+
+  res.writeHead(302, { Location: '/journey/' + encodeURIComponent(journeyId) + '/stage/' + encodeURIComponent(stageName) });
+  res.end();
+}
+
+/**
+ * GET /journey/:featureSlug/resume — resume a journey by creating a fresh session for the current stage.
+ * Looks up the journey by featureSlug (disk), loads prior artefacts, creates session, redirects to chat.
+ */
+async function handleGetJourneyResume(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var featureSlug = req.params && req.params.featureSlug;
+  var repoRoot = getRepoRoot();
+
+  // Load from disk
+  var diskJourney = null;
+  try { diskJourney = _journeyDisk.loadJourney(featureSlug, repoRoot); } catch (_) {}
+  if (!diskJourney) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Journey not found: ' + escHtml(featureSlug) + '</p><a href="/journey">Back to journeys</a></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  // Find in-memory journey (loaded at startup from disk)
+  var allJourneys = _journeyStore.listJourneys ? _journeyStore.listJourneys(repoRoot) : [];
+  var memJourney = allJourneys.find(function(j) { return j.featureSlug === featureSlug; });
+  if (!memJourney && diskJourney.journeyId) {
+    memJourney = _journeyStore.getJourney(diskJourney.journeyId);
+  }
+
+  var journeyId = memJourney ? memJourney.journeyId : (diskJourney.journeyId || null);
+  var currentStage = diskJourney.currentStage || 'discovery';
+  var productProfile = diskJourney.productProfile || 'default';
+
+  // Build priorArtefacts from completed disk stages in sequence order
+  var STAGE_ORDER = ['ideate', 'discovery', 'benefit-metric', 'design', 'definition', 'test-plan', 'review', 'definition-of-ready'];
+  var diskStages = diskJourney.stages || {};
+  var priorArtefacts = [];
+  STAGE_ORDER.forEach(function(stageName) {
+    var s = diskStages[stageName];
+    if (s && s.status === 'complete' && s.artefactPath) {
+      var absPath = path.resolve(path.join(repoRoot, s.artefactPath));
+      var content = '';
+      try { content = fs.readFileSync(absPath, 'utf8'); } catch (_) {}
+      priorArtefacts.push({ path: s.artefactPath, content: content });
+    }
+  });
+
+  // Create new session for current stage
+  var sid = crypto.randomUUID();
+  var sessionPath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', sid);
+
+  getRegisterHtmlSession()(sid, sessionPath, currentStage, { productProfile: productProfile, priorArtefacts: priorArtefacts, featureSlug: featureSlug });
+
+  if (journeyId) {
+    getLinkSessionToJourney()(sid, journeyId);
+    if (_journeyStore.setActiveSession) {
+      _journeyStore.setActiveSession(journeyId, sid, currentStage);
+    }
+  }
+
+  // Mark stage active on disk with new sessionId
+  try { _journeyDisk.updateStage(featureSlug, currentStage, { status: 'active', sessionId: sid }, repoRoot); } catch (_) {}
+
+  res.writeHead(303, { Location: '/skills/' + encodeURIComponent(currentStage) + '/sessions/' + sid + '/chat' });
+  res.end();
+}
+
+// ---------------------------------------------------------------------------
+// Step 7 — Reference folder upload UI
+// ---------------------------------------------------------------------------
+
+/**
+ * Sanitise a user-supplied doc name to a safe filesystem filename stem.
+ * Returns null if the name is invalid.
+ * @param {string} raw
+ * @returns {string|null}
+ */
+function _sanitiseRefFilename(raw) {
+  if (!raw || typeof raw !== 'string') return null;
+  var stem = raw.trim()
+    .toLowerCase()
+    .replace(/\.md$/, '')           // strip trailing .md if user typed it
+    .replace(/[^a-z0-9_-]/g, '-')  // replace unsafe chars
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 64);
+  return stem.length > 0 ? stem : null;
+}
+
+/**
+ * GET /journey/:journeyId/reference
+ * Lists existing reference docs and shows an upload (paste) form.
+ */
+async function handleGetReference(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Journey not found.</p><a href="/journey">Back</a></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  var featureSlug = journey.featureSlug || '';
+  var repoRoot = getRepoRoot();
+  var refDir = path.join(repoRoot, 'artefacts', featureSlug, 'reference');
+  var existingFiles = [];
+  if (fs.existsSync(refDir)) {
+    existingFiles = fs.readdirSync(refDir)
+      .filter(function(f) { return f.endsWith('.md') || f.endsWith('.txt'); })
+      .sort();
+  }
+
+  var safeId = escHtml(journeyId);
+  var featureName = escHtml(featureSlug.replace(/^\d{4}-\d{2}-\d{2}-/, '').replace(/-/g, ' '));
+
+  var fileList = existingFiles.length > 0
+    ? existingFiles.map(function(f) {
+        var stat;
+        try { stat = fs.statSync(path.join(refDir, f)); } catch (_) {}
+        var size = stat ? Math.round(stat.size / 1024 * 10) / 10 + ' KB' : '';
+        return '<li class="rf-file"><span class="rf-filename">📄 ' + escHtml(f) + '</span>' +
+          (size ? '<span class="rf-size">' + escHtml(size) + '</span>' : '') + '</li>';
+      }).join('')
+    : '<li class="rf-empty">No reference docs yet — add one below.</li>';
+
+  var body = [
+    '<style>',
+    '.rf-page{max-width:660px;margin:0 auto;padding:28px 24px}',
+    '.rf-hdr{margin-bottom:28px}',
+    '.rf-eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}',
+    '.rf-title{font-size:20px;font-weight:700;margin:0 0 4px}',
+    '.rf-sub{font-size:13px;color:var(--muted);margin:0}',
+    '.rf-section{margin-bottom:28px}',
+    '.rf-section h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 12px}',
+    '.rf-filelist{list-style:none;margin:0;padding:0}',
+    '.rf-file{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border:1px solid var(--line);border-radius:6px;margin-bottom:6px;background:var(--surface);font-size:13px}',
+    '.rf-filename{font-family:var(--mono);font-size:12px}',
+    '.rf-size{font-size:11px;color:var(--muted)}',
+    '.rf-empty{font-size:13px;color:var(--muted);padding:10px 0}',
+    '.rf-form-row{margin-bottom:16px}',
+    '.rf-label{display:block;font-size:13px;font-weight:600;margin-bottom:5px}',
+    '.rf-hint{font-size:12px;color:var(--muted);margin-top:4px}',
+    '.rf-input{width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:13px;background:var(--bg);color:var(--ink);font-family:inherit}',
+    '.rf-textarea{width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:12px;background:var(--bg);color:var(--ink);font-family:var(--mono);line-height:1.5;resize:vertical}',
+    '.rf-input:focus,.rf-textarea:focus{outline:2px solid var(--accent,#0969da);border-color:transparent}',
+    '.rf-actions{display:flex;align-items:center;gap:12px}',
+    '.rf-back{font-size:13px;color:var(--muted)}',
+    '</style>',
+    '<div class="rf-page">',
+      '<div class="rf-hdr">',
+        '<p class="rf-eyebrow">Reference docs</p>',
+        '<h1 class="rf-title">' + featureName + '</h1>',
+        '<p class="rf-sub">Files here are automatically loaded into the Design skill system prompt.</p>',
+      '</div>',
+      '<section class="rf-section">',
+        '<h2>Existing docs (' + existingFiles.length + ')</h2>',
+        '<ul class="rf-filelist">' + fileList + '</ul>',
+      '</section>',
+      '<section class="rf-section">',
+        '<h2>Add a reference doc</h2>',
+        '<form method="POST" action="/api/journey/' + safeId + '/reference">',
+          '<div class="rf-form-row">',
+            '<label class="rf-label" for="rf-name">Document name</label>',
+            '<input id="rf-name" class="rf-input" name="filename" type="text" placeholder="e.g. solution-architecture or ux-wireframe" required>',
+            '<p class="rf-hint">Saved as <code>[name].md</code> in the reference folder. Alphanumeric and hyphens only.</p>',
+          '</div>',
+          '<div class="rf-form-row">',
+            '<label class="rf-label" for="rf-content">Content</label>',
+            '<textarea id="rf-content" class="rf-textarea" name="content" rows="18" placeholder="Paste markdown, text, or structured content here..." required></textarea>',
+            '<p class="rf-hint">Markdown is rendered in the design skill. Max 100 KB.</p>',
+          '</div>',
+          '<div class="rf-actions">',
+            '<button type="submit" class="sw-btn sw-btn--primary">Save reference doc</button>',
+            '<a href="javascript:history.back()" class="rf-back">Cancel</a>',
+          '</div>',
+        '</form>',
+      '</section>',
+    '</div>'
+  ].join('');
+
+  var html = renderShell({ title: 'Reference docs — ' + featureName, bodyContent: body, user: { login: req.session.login || '' }, active: 'journey' });
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
+/**
+ * POST /api/journey/:journeyId/reference
+ * Saves a new reference doc to artefacts/{featureSlug}/reference/{filename}.md.
+ */
+async function handlePostReference(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Journey not found.</p>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  var body = await _readFormBody(req);
+  var rawFilename = (body.filename || '').trim();
+  var content     = (body.content  || '').trim();
+
+  var stem = _sanitiseRefFilename(rawFilename);
+  if (!stem) {
+    res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Error', bodyContent: '<div class="sw-page-content"><p>Invalid filename. Use letters, numbers, and hyphens only.</p><a href="javascript:history.back()">Back</a></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+  if (!content) {
+    res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Error', bodyContent: '<div class="sw-page-content"><p>Content cannot be empty.</p><a href="javascript:history.back()">Back</a></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+  if (content.length > 100 * 1024) {
+    res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Error', bodyContent: '<div class="sw-page-content"><p>Content too large (max 100 KB).</p><a href="javascript:history.back()">Back</a></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  var featureSlug = journey.featureSlug || '';
+  var repoRoot = getRepoRoot();
+  var refDir  = path.join(repoRoot, 'artefacts', featureSlug, 'reference');
+  var filePath = path.join(refDir, stem + '.md');
+
+  // Path traversal guard
+  var resolvedRoot = path.resolve(repoRoot);
+  if (!path.resolve(filePath).startsWith(resolvedRoot + path.sep)) {
+    res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Error', bodyContent: '<p>Invalid filename.</p>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  try {
+    fs.mkdirSync(refDir, { recursive: true });
+    fs.writeFileSync(filePath, content, 'utf8');
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Error', bodyContent: '<div class="sw-page-content"><p>Failed to save: ' + escHtml(err.message) + '</p></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  res.writeHead(303, { Location: '/journey/' + encodeURIComponent(journeyId) + '/reference' });
+  res.end();
 }
 
 /**
@@ -356,8 +1305,20 @@ async function handlePostGateConfirm(req, res) {
     fs.mkdirSync(path.dirname(absPath), { recursive: true });
     fs.writeFileSync(absPath, session.artefactContent || '', 'utf8');
   }
-  // Call completeStage to record this stage
-  _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath);
+  // Call completeStage to record this stage (guard: auto-save may have already called this)
+  if (!session._stageDone) {
+    session._stageDone = true;
+    var _costUsd = null;
+    try {
+      var _computeCost = require('./skills').computeCostUsd;
+      _costUsd = _computeCost(session.usage || null);
+    } catch (_ce) {}
+    var _usageSummary = session.usage ? Object.assign({ costUsd: _costUsd }, session.usage) : null;
+    _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath, _usageSummary);
+    if (_costUsd != null) {
+      console.info(JSON.stringify({ event: 'stage_cost', journeyId: journeyId, stage: session.skillName, model: (session.usage || {}).model, costUsd: _costUsd, inputTokens: (session.usage || {}).input_tokens, outputTokens: (session.usage || {}).output_tokens }));
+    }
+  }
 
   // cdg.4: validate DoR artefact before state write (ADR-023: disk → validate → state)
   if (session.skillName === 'definition-of-ready') {
@@ -414,19 +1375,23 @@ async function handlePostGateConfirm(req, res) {
   }
 
   // Build priorArtefacts from all completed stages (read authoritative disk content)
+  // completedStages entries may be objects { skillName, artefactPath } or legacy strings
   var updatedJourney = _journeyStore.getJourney(journeyId);
   var priorArtefacts = (updatedJourney.completedStages || []).map(function(stage) {
-    var stageAbsPath = path.resolve(path.join(repoRoot, stage.artefactPath));
+    var artefactPath = typeof stage === 'string' ? null : stage.artefactPath;
+    if (!artefactPath) return null;
+    var stageAbsPath = path.resolve(path.join(repoRoot, artefactPath));
     var content = '';
     try { content = fs.readFileSync(stageAbsPath, 'utf8'); } catch (_) {}
-    return { path: stage.artefactPath, content: content };
-  });
+    return { path: artefactPath, content: content };
+  }).filter(Boolean);
   // Determine next stage
   var nextStage = _journeyStore.getNextStage(session.skillName);
   console.info(JSON.stringify({ event: 'artefact_saved_to_disk', journeyId: journeyId, stage: session.skillName, featureSlug: journey.featureSlug }));
 
-  // Per-story stage sequence: test-plan → review → definition-of-ready
-  var PER_STORY_SEQ = ['test-plan', 'review', 'definition-of-ready'];
+  // Per-story stage sequence: review → test-plan → definition-of-ready
+  // review runs first (may change story scope); test-plan requires a passed review.
+  var PER_STORY_SEQ = ['review', 'test-plan', 'definition-of-ready'];
   var perStoryIdx = PER_STORY_SEQ.indexOf(session.skillName);
   var newSid, newSessionPath, perStoryNextStage;
 
@@ -434,15 +1399,15 @@ async function handlePostGateConfirm(req, res) {
     // Story-mode: check for more stories; feature-mode: complete journey
     var nextStory = _journeyStore.advanceToNextStory(journeyId);
     if (nextStory) {
-      // More stories: create test-plan session for next story
+      // More stories: create review session for next story (review → test-plan → DoR per story)
       newSid = crypto.randomUUID();
-      newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-test-plan.md');
-      getRegisterHtmlSession()(newSid, newSessionPath, 'test-plan', priorArtefacts);
+      newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-review.md');
+      getRegisterHtmlSession()(newSid, newSessionPath, 'review', { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug });
       getLinkSessionToJourney()(newSid, journeyId);
       if (_journeyStore.setActiveSession) {
-        _journeyStore.setActiveSession(journeyId, newSid, 'test-plan');
+        _journeyStore.setActiveSession(journeyId, newSid, 'review');
       }
-      res.writeHead(303, { Location: '/skills/test-plan/sessions/' + newSid + '/chat' });
+      res.writeHead(303, { Location: '/skills/review/sessions/' + newSid + '/chat' });
       res.end();
     } else {
       // No more stories (or feature-mode): complete journey
@@ -456,7 +1421,7 @@ async function handlePostGateConfirm(req, res) {
     perStoryNextStage = PER_STORY_SEQ[perStoryIdx + 1];
     newSid = crypto.randomUUID();
     newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-' + perStoryNextStage + '.md');
-    getRegisterHtmlSession()(newSid, newSessionPath, perStoryNextStage, priorArtefacts);
+    getRegisterHtmlSession()(newSid, newSessionPath, perStoryNextStage, { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug });
     getLinkSessionToJourney()(newSid, journeyId);
     if (_journeyStore.setActiveSession) {
       _journeyStore.setActiveSession(journeyId, newSid, perStoryNextStage);
@@ -469,15 +1434,16 @@ async function handlePostGateConfirm(req, res) {
     console.info(JSON.stringify({ event: 'journey_completed', journeyId: journeyId, featureSlug: journey.featureSlug, stageCount: updatedJourney.completedStages.length }));
     res.writeHead(303, { Location: '/journey/' + journeyId + '/complete' });
     res.end();
-  } else if (nextStage === 'test-plan') {
+  } else if (nextStage === 'review') {
     // Feature-level: switch to per-story routing (ougl.6)
+    // review is the first per-story stage (review → test-plan → definition-of-ready per story)
     res.writeHead(303, { Location: '/journey/' + journeyId + '/stories' });
     res.end();
   } else {
     // Feature-level: create session for next stage
     newSid = crypto.randomUUID();
     newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-' + nextStage + '.md');
-    getRegisterHtmlSession()(newSid, newSessionPath, nextStage, priorArtefacts);
+    getRegisterHtmlSession()(newSid, newSessionPath, nextStage, { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug });
     getLinkSessionToJourney()(newSid, journeyId);
     if (_journeyStore.setActiveSession) {
       _journeyStore.setActiveSession(journeyId, newSid, nextStage);
@@ -507,7 +1473,7 @@ async function handleGetStories(req, res) {
   var body = [
     '<div class="sw-page-content">',
     '<h1>Story list for journey</h1>',
-    '<p>Enter one story slug per line. These will be processed through test-plan and definition-of-ready.</p>',
+    '<p>Enter one story slug per line. These will be processed through review, test-plan, and definition-of-ready.</p>',
     '<form method="POST" action="/api/journey/' + safeId + '/stories">',
     '<textarea name="stories" rows="10" cols="50" placeholder="e.g. wgol.1&#10;wgol.2&#10;wgol.3"></textarea>',
     '<br><button type="submit" class="sw-btn sw-btn--primary">Start per-story stages</button>',
@@ -559,15 +1525,15 @@ async function handlePostStories(req, res) {
     try { content = fs.readFileSync(stageAbsPath, 'utf8'); } catch (_) {}
     return { path: stage.artefactPath, content: content };
   });
-  // Create test-plan session for first story
+  // Create review session for first story (review → test-plan → DoR per story)
   var newSid = crypto.randomUUID();
-  var newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-test-plan.md');
-  getRegisterHtmlSession()(newSid, newSessionPath, 'test-plan', priorArtefacts);
+  var newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-review.md');
+  getRegisterHtmlSession()(newSid, newSessionPath, 'review', { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug });
   getLinkSessionToJourney()(newSid, journeyId);
   if (_journeyStore.setActiveSession) {
-    _journeyStore.setActiveSession(journeyId, newSid, 'test-plan');
+    _journeyStore.setActiveSession(journeyId, newSid, 'review');
   }
-  res.writeHead(303, { Location: '/skills/test-plan/sessions/' + newSid + '/chat' });
+  res.writeHead(303, { Location: '/skills/review/sessions/' + newSid + '/chat' });
   res.end();
 }
 
@@ -587,18 +1553,169 @@ async function handleGetJourneyComplete(req, res) {
     res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Journey not found.</p>' }));
     return;
   }
-  var stageItems = (journey.completedStages || []).map(function(stage) {
-    return '<li><strong>' + escHtml(stage.skillName) + '</strong>: <code>' + escHtml(stage.artefactPath) + '</code></li>';
+  var featureSlug = journey.featureSlug || journeyId;
+  var completedStages = journey.completedStages || [];
+  var stageCount = completedStages.length;
+
+  // Human-readable feature name from slug: strip date prefix, spaces from dashes
+  var _featureName = featureSlug.replace(/^\d{4}-\d{2}-\d{2}-/, '').replace(/-/g, ' ');
+
+  var _STAGE_META_MAP = {
+    'ideate':              { num: '1',  label: 'Ideate' },
+    'discovery':           { num: '2',  label: 'Discovery' },
+    'benefit-metric':      { num: '2b', label: 'Benefits & Metrics' },
+    'design':              { num: '3',  label: 'Design' },
+    'definition':          { num: '4',  label: 'Definition' },
+    'review':              { num: '5',  label: 'Review' },
+    'test-plan':           { num: '6',  label: 'Test Plan' },
+    'definition-of-ready': { num: '7',  label: 'Def of Ready' },
+  };
+
+  var _totalCostUsd = 0;
+  var _totalInputTok = 0;
+  var _totalOutputTok = 0;
+  var _hasCost = false;
+  completedStages.forEach(function(s) {
+    if (s.costUsd != null) { _hasCost = true; _totalCostUsd += s.costUsd; }
+    _totalInputTok  += (s.inputTokens  || 0);
+    _totalOutputTok += (s.outputTokens || 0);
+  });
+  var _totalTokens = _totalInputTok + _totalOutputTok;
+
+  var safeJourneyId = escHtml(journeyId);
+
+  // Pipeline nodes row
+  var _nodeHtml = completedStages.map(function(stage, i) {
+    var sm = _STAGE_META_MAP[stage.skillName] || { num: '·', label: stage.skillName || '' };
+    var connector = i > 0 ? '<div class="jc-connector" aria-hidden="true"></div>' : '';
+    return connector + '<div class="jc-node">' +
+      '<div class="jc-node-circle">' + escHtml(sm.num) + '</div>' +
+      '<div class="jc-node-label">' + escHtml(sm.label) + '</div>' +
+    '</div>';
   }).join('');
+
+  // Stage rows
+  var _stageRows = completedStages.map(function(stage) {
+    var sm = _STAGE_META_MAP[stage.skillName] || { num: '·', label: stage.skillName || '' };
+    var href = '/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(stage.skillName || '');
+    var modelShort = (stage.model || '').replace(/^claude-/, '').replace(/^gpt-/, '').replace(/-\d{4}-\d{2}-\d{2}$/, '');
+    var costCell = stage.costUsd != null
+      ? '<span class="jc-cost-pill">$' + stage.costUsd.toFixed(4) + '</span>'
+      : '<span class="jc-cost-pill jc-cost-pill--none">—</span>';
+    var modelCell = modelShort
+      ? '<span class="jc-model-pill">' + escHtml(modelShort) + '</span>'
+      : '';
+    var dateCell = stage.completedAt
+      ? escHtml(stage.completedAt.slice(0, 10))
+      : '';
+    return '<tr class="jc-row">' +
+      '<td class="jc-col-num">' + escHtml(sm.num) + '</td>' +
+      '<td class="jc-col-label">' + escHtml(sm.label) + '</td>' +
+      '<td class="jc-col-cost">' + costCell + '</td>' +
+      '<td class="jc-col-model">' + modelCell + '</td>' +
+      '<td class="jc-col-date">' + dateCell + '</td>' +
+      '<td class="jc-col-link"><a href="' + escHtml(href) + '" class="jc-view-link">View ›</a></td>' +
+    '</tr>';
+  }).join('');
+
+  var _statsHtml = [
+    '<span class="jc-stat"><strong>' + stageCount + '</strong> stage' + (stageCount !== 1 ? 's' : '') + '</span>',
+    _hasCost ? '<span class="jc-stat-sep">·</span><span class="jc-stat"><strong>$' + _totalCostUsd.toFixed(4) + '</strong> total</span>' : '',
+    _totalTokens > 0 ? '<span class="jc-stat-sep">·</span><span class="jc-stat"><strong>' + (_totalTokens >= 1000 ? Math.round(_totalTokens / 1000) + 'k' : _totalTokens) + '</strong> tokens</span>' : '',
+  ].join('');
+
   var body = [
-    '<div class="sw-page-content">',
-    '<h1>Journey complete!</h1>',
-    '<p>All stages completed for <strong>' + escHtml(journey.featureSlug || journeyId) + '</strong>.</p>',
-    '<h2>Completed stages</h2>',
-    '<ul>' + stageItems + '</ul>',
+    '<style>',
+    '.jc-page{max-width:780px;margin:0 auto;padding:32px 24px 80px}',
+    /* Header */
+    '.jc-header{margin-bottom:32px}',
+    '.jc-check{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:var(--green-soft);color:var(--green);font-size:18px;margin-bottom:14px}',
+    '.jc-eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 6px}',
+    '.jc-feature-name{font-size:24px;font-weight:700;margin:0 0 10px;color:var(--ink);font-family:var(--serif);text-transform:capitalize}',
+    '.jc-stats{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);flex-wrap:wrap;margin-bottom:4px}',
+    '.jc-stat strong{color:var(--ink);font-weight:600}',
+    '.jc-stat-sep{color:var(--line);font-size:14px;user-select:none}',
+    '.jc-slug{font-family:var(--mono);font-size:11px;color:var(--muted-2);margin-top:6px}',
+    /* Pipeline nodes */
+    '.jc-pipeline{display:flex;align-items:flex-start;overflow-x:auto;padding:20px 0 8px;gap:0;scrollbar-width:thin;margin-bottom:28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}',
+    '.jc-node{display:flex;flex-direction:column;align-items:center;flex:0 0 auto}',
+    '.jc-node-circle{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:var(--green-soft);border:2px solid var(--green);color:var(--green)}',
+    '.jc-node-label{font-size:9px;color:var(--muted);margin-top:5px;text-align:center;max-width:58px;line-height:1.2;white-space:nowrap;font-weight:500;text-transform:uppercase;letter-spacing:.03em}',
+    '.jc-connector{flex:1;min-width:16px;max-width:40px;height:2px;background:var(--green);margin-top:17px;opacity:0.4}',
+    /* Stage table */
+    '.jc-table{width:100%;border-collapse:collapse;margin-bottom:32px}',
+    '.jc-table thead th{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:0 12px 8px;text-align:left;border-bottom:2px solid var(--line)}',
+    '.jc-row{border-bottom:1px solid var(--line)}',
+    '.jc-row:last-child{border-bottom:none}',
+    '.jc-row:hover{background:var(--line-2)}',
+    '.jc-col-num{font-size:10px;font-weight:700;font-family:var(--mono);color:var(--muted);padding:12px 12px 12px 0;width:28px;white-space:nowrap}',
+    '.jc-col-label{font-size:13px;font-weight:500;color:var(--ink);padding:12px 12px 12px 0}',
+    '.jc-col-cost{padding:12px 12px 12px 0;white-space:nowrap}',
+    '.jc-col-model{padding:12px 12px 12px 0;white-space:nowrap}',
+    '.jc-col-date{font-size:11px;font-family:var(--mono);color:var(--muted-2);padding:12px 12px 12px 0;white-space:nowrap}',
+    '.jc-col-link{padding:12px 0;text-align:right}',
+    '.jc-cost-pill{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--green);background:var(--green-soft);padding:2px 7px;border-radius:8px;white-space:nowrap}',
+    '.jc-cost-pill--none{color:var(--muted-2);background:var(--line-2)}',
+    '.jc-model-pill{font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--line-2);padding:2px 6px;border-radius:6px;white-space:nowrap}',
+    '.jc-view-link{font-size:12px;font-weight:500;color:var(--accent-ink);text-decoration:none;padding:4px 8px;border-radius:5px;border:1px solid var(--line);white-space:nowrap}',
+    '.jc-view-link:hover{background:var(--accent-soft);border-color:var(--accent)}',
+    /* CTA block */
+    '.jc-cta{background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}',
+    '.jc-cta-text{font-size:14px;font-weight:500;color:var(--accent-ink)}',
+    '.jc-cta-sub{font-size:12px;color:var(--accent-ink);opacity:.75;margin-top:2px}',
+    '.jc-btn-primary{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:7px;font-size:13px;font-weight:600;text-decoration:none;background:var(--accent);color:#fff;white-space:nowrap}',
+    '.jc-btn-primary:hover{opacity:.9}',
+    '.jc-secondary-actions{display:flex;gap:10px;flex-wrap:wrap}',
+    '.jc-btn-ghost{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:7px;font-size:13px;font-weight:500;text-decoration:none;color:var(--ink);border:1px solid var(--line);white-space:nowrap}',
+    '.jc-btn-ghost:hover{border-color:var(--accent);color:var(--accent-ink)}',
+    '</style>',
+    '<div class="jc-page">',
+
+    /* ── Header ── */
+    '<div class="jc-header">',
+    '  <div class="jc-check">✓</div>',
+    '  <p class="jc-eyebrow">Journey complete</p>',
+    '  <h1 class="jc-feature-name">' + escHtml(_featureName) + '</h1>',
+    '  <div class="jc-stats">' + _statsHtml + '</div>',
+    '  <div class="jc-slug">' + escHtml(featureSlug) + '</div>',
+    '</div>',
+
+    /* ── Pipeline nodes ── */
+    stageCount > 0 ? '<div class="jc-pipeline" aria-label="Completed stages">' + _nodeHtml + '</div>' : '',
+
+    /* ── Stage table ── */
+    stageCount > 0 ? [
+      '<table class="jc-table">',
+      '<thead><tr>',
+      '  <th></th>',
+      '  <th>Stage</th>',
+      '  <th>Cost</th>',
+      '  <th>Model</th>',
+      '  <th>Completed</th>',
+      '  <th></th>',
+      '</tr></thead>',
+      '<tbody>' + _stageRows + '</tbody>',
+      '</table>',
+    ].join('') : '',
+
+    /* ── CTA ── */
+    '<div class="jc-cta">',
+    '  <div>',
+    '    <div class="jc-cta-text">Ready for implementation</div>',
+    '    <div class="jc-cta-sub">All stages complete — start the inner coding loop</div>',
+    '  </div>',
+    '  <a class="jc-btn-primary" href="/journey/' + safeJourneyId + '">Continue &#x2192;</a>',
+    '</div>',
+
+    /* ── Secondary actions ── */
+    '<div class="jc-secondary-actions">',
+    '  <a class="jc-btn-ghost" href="/journey">&#x2190; All journeys</a>',
+    '</div>',
+
     '</div>'
   ].join('');
-  var html = renderShell({ title: 'Journey Complete', bodyContent: body, user: { login: req.session.login || '' } });
+
+  var html = renderShell({ title: 'Journey Complete — ' + escHtml(featureSlug), bodyContent: body, user: { login: req.session.login || '' } });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -656,8 +1773,9 @@ function handleGetJourneyById(req, res) {
   }
   var journeyId = req.params && req.params.journeyId;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(renderShell({ title: 'Journey not found', bodyContent: '<p>Journey not found.</p>', user: { login: req.session.login || '' } }));
     return;
   }
@@ -689,9 +1807,10 @@ async function handleGetJourneyState(req, res) {
   }
   var journeyId = req.params && req.params.journeyId;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Journey not found' }));
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
     return;
   }
   var login = req.session.login || 'anon';
@@ -737,9 +1856,10 @@ async function handleGetJourneyViewers(req, res) {
   }
   var journeyId = req.params && req.params.journeyId;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Journey not found' }));
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
     return;
   }
   var activeUsers = _getActiveViewerCount(journeyId);
@@ -852,15 +1972,10 @@ async function handlePostJourneyRecommit(req, res) {
   var journeyId = req.params && req.params.journeyId;
   var stageName = req.params && req.params.stageName;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Journey not found' }));
-    return;
-  }
-  // Owner-only check
-  if (journey.ownerId && journey.ownerId !== (req.session && req.session.login)) {
-    res.writeHead(403, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'FORBIDDEN' }));
+  try { requireJourneyAccess(journey, req.session, POLICY.OWNER); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.OWNER), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: err.code }));
     return;
   }
   var body = req.body || {};
@@ -949,14 +2064,10 @@ async function handlePostJourneyStageCommit(req, res) {
   var journeyId = req.params && req.params.journeyId;
   var stageName = req.params && req.params.stageName;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Journey not found' }));
-    return;
-  }
-  if (journey.ownerId && journey.ownerId !== (req.session && req.session.login)) {
-    res.writeHead(403, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'FORBIDDEN' }));
+  try { requireJourneyAccess(journey, req.session, POLICY.OWNER); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.OWNER), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: err.code }));
     return;
   }
   var stage = (journey.completedStages || []).find(function(s) { return s.skillName === stageName; });
@@ -1005,9 +2116,10 @@ function handleGetStageControls(req, res) {
   }
   var journeyId = req.params && req.params.journeyId;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Journey not found' }));
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
     return;
   }
   var clarifyAvailable = journey.activeSkill === 'discovery';
@@ -1052,9 +2164,10 @@ async function handlePostSideTripClarify(req, res) {
   }
   var journeyId = req.params && req.params.journeyId;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Journey not found' }));
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
     return;
   }
 
@@ -1108,15 +2221,25 @@ async function handleDeleteSideTrip(req, res) {
   }
   var journeyId = req.params && req.params.journeyId;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Journey not found' }));
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
     return;
   }
   var sideTripSid = journey.sideTripSessionId;
   if (sideTripSid) {
     var stSession = getGetHtmlSession()(sideTripSid);
-    if (stSession) { stSession.done = true; }
+    if (stSession) {
+      stSession.done = true;
+      // Mark clarify as done on the journey if the side-trip session was a /clarify
+      if (stSession.skillName === 'clarify') {
+        _journeyStore.setJourneyFields(journeyId, { clarifyDone: true, sideTripSessionId: null });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ closed: true }));
+        return;
+      }
+    }
     journey.sideTripSessionId = null;
   }
   res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -1178,6 +2301,8 @@ async function handlePostEstimate(req, res) {
       fs.writeFileSync(normPath, HEADER, 'utf8');
     }
     fs.appendFileSync(normPath, row, 'utf8');
+    // Mark estimate as done on the journey so the navigator can show it
+    _journeyStore.setJourneyFields(journeyId, { estimateDone: true });
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ success: true, row: row.trim() }));
   } catch (err) {
@@ -1243,9 +2368,10 @@ async function handleGetTrace(req, res) {
   }
   var journeyId = req.params && req.params.journeyId;
   var journey = _journeyStore.getJourney(journeyId);
-  if (!journey) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Journey not found' }));
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
     return;
   }
 
@@ -1488,6 +2614,7 @@ var SLASH_CAPABILITY_MAP = {
   'clarify':                 { capabilities: [], limitedOnWebUI: false },
   'coverage-map':            { capabilities: [], limitedOnWebUI: false },
   'decisions':               { capabilities: [], limitedOnWebUI: false },
+  'design':                  { capabilities: [], limitedOnWebUI: false },
   'definition':              { capabilities: [], limitedOnWebUI: false },
   'definition-of-done':      { capabilities: [], limitedOnWebUI: false },
   'definition-of-ready':     { capabilities: [], limitedOnWebUI: false },
@@ -1527,7 +2654,7 @@ var SLASH_CAPABILITY_MAP = {
 };
 
 /**
- * Returns an array of skill directory names under .github/skills/.
+ * Returns an array of skill directory names under skills/.
  * Reads the directory fresh each call (dynamic discovery — AC2).
  * @param {string} repoRoot
  * @returns {string[]}
@@ -1566,7 +2693,7 @@ function validateSlashSkillName(name, repoRoot) {
 }
 
 /**
- * Reads .github/skills/[skillName]/SKILL.md and assembles a prompt.
+ * Reads skills/[skillName]/SKILL.md and assembles a prompt.
  * Prepends a capability notice if the skill is in SLASH_CAPABILITY_MAP with
  * non-empty capabilities.
  * @param {string} skillName
@@ -1870,6 +2997,10 @@ function handlePostWizardSelection(req, res) {
 module.exports = {
   handleGetJourney,
   handlePostJourney,
+  handleGetJourneyResume,
+  handleGetStageReview,
+  handleGetReference,
+  handlePostReference,
   handlePostGateConfirm,
   handleGetStories,
   handlePostStories,
@@ -1889,6 +3020,8 @@ module.exports = {
   checkJourneyIdle,
   setNow,
   // wsm.3 — stage back-navigation and needs-review
+  handleGetJourneyStageView,
+  handlePostJourneyStageArtefact,
   handleGetJourneyStage,
   handlePostJourneyRecommit,
   handleGetJourneyStageControls,
