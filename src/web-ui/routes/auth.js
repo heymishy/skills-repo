@@ -27,6 +27,55 @@ function setLogger(logger) {
   _logger = logger;
 }
 
+// Injectable org-fetch adapter (D37: stub throws; production wiring in server.js via setFetchOrgs)
+let _fetchOrgs = function() {
+  throw new Error('Adapter not wired: fetchOrgs. Call setFetchOrgs() with a real implementation before use.');
+};
+
+/**
+ * Replace the org-fetch adapter (used in tests and production startup).
+ * @param {Function} fn - async (accessToken: string, page: number) => Array<{login}> | {orgs: Array<{login}>, nextPage: number|null}
+ */
+function setFetchOrgs(fn) {
+  _fetchOrgs = fn;
+}
+
+/**
+ * Resolve the tenantId by matching the user's GitHub org memberships against TENANT_ORG_ALLOWLIST.
+ * Returns the first allowlist match (allowlist order wins over API response order — AC5).
+ * Fetches all pages before matching (AC3).
+ * Returns undefined immediately if allowlist is empty/absent (AC6 backward-compatible).
+ * @param {string} accessToken
+ * @param {string} allowlist - raw TENANT_ORG_ALLOWLIST value (may be empty string)
+ * @returns {Promise<string|undefined>}
+ */
+async function resolveTenant(accessToken, allowlist) {
+  const allowedOrgs = allowlist.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+  if (!allowedOrgs.length) return undefined;
+
+  const startTime = Date.now();
+  let allOrgs = [];
+  let page = 1;
+
+  while (true) {
+    const result = await _fetchOrgs(accessToken, page);
+    const orgs    = Array.isArray(result) ? result      : result.orgs;
+    const nextPage = Array.isArray(result) ? null        : result.nextPage;
+    allOrgs = allOrgs.concat(orgs || []);
+    if (!nextPage) break;
+    page = nextPage;
+  }
+
+  const elapsed = Date.now() - startTime;
+  if (elapsed > 3000) {
+    _logger.warn('org_fetch_slow', { elapsed });
+  }
+
+  // Match by allowlist order, not by orgs response order (AC5)
+  const orgLoginSet = new Set(allOrgs.map(function(o) { return o.login; }));
+  return allowedOrgs.find(function(org) { return orgLoginSet.has(org); });
+}
+
 /**
  * GET /auth/github — redirect to GitHub OAuth authorisation page.
  * Stores a random CSRF state parameter in the session.
@@ -64,6 +113,21 @@ async function handleAuthCallback(req, res) {
     const user = await getUserIdentity(token);
     req.session.userId = user.id;
     req.session.login  = user.login;
+
+    // Tenant resolution (AC2–AC6) — only when TENANT_ORG_ALLOWLIST is configured
+    const _allowlist = process.env.TENANT_ORG_ALLOWLIST || '';
+    if (_allowlist.trim()) {
+      const tenantId = await resolveTenant(token, _allowlist);
+      if (!tenantId) {
+        // Zero-match rejection (AC4): message must NOT expose TENANT_ORG_ALLOWLIST contents (NFR-sec-allowlist-disclosure)
+        _logger.warn('tenant_mismatch', { userId: user.id, timestamp: new Date().toISOString() });
+        res.writeHead(403, { 'Content-Type': 'text/plain' });
+        res.end('You are not a member of an authorised organisation.');
+        return;
+      }
+      req.session.tenantId = tenantId;
+    }
+    // When TENANT_ORG_ALLOWLIST is absent, session.tenantId is not set (AC6 backward-compatible)
 
     // Audit log: user ID and timestamp only — never the token value
     _logger.info('login', {
@@ -116,5 +180,7 @@ module.exports = {
   handleAuthCallback,
   handleLogout,
   authGuard,
-  setLogger
+  setLogger,
+  setFetchOrgs,
+  resolveTenant
 };

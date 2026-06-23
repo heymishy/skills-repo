@@ -37,7 +37,11 @@ function buildOAuthRedirectURL(state) {
   const url = new URL(authorizeBase);
   url.searchParams.set('client_id', clientId);
   url.searchParams.set('redirect_uri', callbackUrl);
-  url.searchParams.set('scope', 'repo,read:user');
+  const _allowlist = process.env.TENANT_ORG_ALLOWLIST || '';
+  const _orgScope = _allowlist.split(',').filter(function(s) { return s.trim(); }).length > 0
+    ? ',read:org'
+    : '';
+  url.searchParams.set('scope', 'repo,read:user' + _orgScope);
   url.searchParams.set('state', state);
   return url.toString();
 }

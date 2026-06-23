@@ -118,7 +118,48 @@
           ]
         }
       ],
-      "guardrails": [],
+      "guardrails": [
+        {
+          "id": "NFR-sec-no-accesstoken-disk",
+          "category": "nfr",
+          "label": "accessToken never written to disk - strip-before-write invariant preserved",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-23T00:00:00Z"
+        },
+        {
+          "id": "NFR-sec-allowlist-disclosure",
+          "category": "nfr",
+          "label": "Zero-match OAuth rejection message does not expose TENANT_ORG_ALLOWLIST contents",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-23T00:00:00Z"
+        },
+        {
+          "id": "NFR-sec-session-field",
+          "category": "nfr",
+          "label": "req.session.accessToken is the canonical field name - no aliases",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-23T00:00:00Z"
+        },
+        {
+          "id": "NFR-p1.1-async-fetch",
+          "category": "nfr",
+          "label": "Org pagination fetch async/await - does not block event loop",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-23T00:00:00Z"
+        },
+        {
+          "id": "NFR-p1.1-fetch-timeout",
+          "category": "nfr",
+          "label": "Total org fetch completes within 5s; warning logged above 3s",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-23T00:00:00Z"
+        }
+      ],
       "epics": [
         {
           "slug": "phase-0-authorization-guard",
@@ -181,7 +222,7 @@
             {
               "slug": "p1.1",
               "name": "OAuth read:org scope; tenantId resolution; zero-match rejection",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -191,12 +232,15 @@
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p1.1-test-plan.md",
                 "totalTests": 9
-              }
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p1.1-dor.md",
+              "updatedAt": "2026-06-23T00:00:00Z"
             },
             {
               "slug": "p1.2",
               "name": "Session + journey tenantId; isSameTenant enforcement; 3→4 field fixture update",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -206,7 +250,10 @@
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p1.2-test-plan.md",
                 "totalTests": 8
-              }
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p1.2-dor.md",
+              "updatedAt": "2026-06-23T00:00:00Z"
             }
           ]
         },
@@ -250,7 +297,7 @@
         {
           "slug": "phase-3-state-persistence",
           "name": "Phase 3 — State Persistence",
-          "status": "deferred",
+          "status": "not-started",
           "deferralReason": "Pending OQ7 vendor selection (managed Postgres + Redis). Run /definition for Phase 3 after vendor is confirmed.",
           "stories": [
             {
@@ -5280,7 +5327,7 @@
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/388",
           "testPlan": {
-            "status": "green",
+            "status": "all-passing",
             "totalTests": 38,
             "passing": 45,
             "artefact": "artefacts/2026-06-17-kanban-feature-detail-cx/test-plans/kfd1-kanban-card-and-detail-page-cx-test-plan.md"
@@ -5360,14 +5407,19 @@
     {
       "slug": "2026-06-18-2x2-grid",
       "id": "2026-06-18-2x2-grid",
+      "name": "Impact-effort 2x2 grid",
+      "track": "short",
+      "health": "green",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-06-04-impact-effort-matrix-workshop/discovery.md",
       "stage": "test-plan"
     },
     {
       "slug": "2026-06-20-skill-session-precomp",
+      "name": "Skill session Step 1 pre-computation",
+      "track": "short",
       "title": "Server-side Step 1 pre-computation for content-heavy skill sessions",
-      "stage": "dor-signed-off",
+      "stage": "definition-of-ready",
       "health": "green",
       "updatedAt": "2026-06-20T09:30:00Z",
       "stories": [
@@ -5395,6 +5447,9 @@
     {
       "slug": "2026-06-21-strategy-and-data-hub",
       "id": "2026-06-21-strategy-and-data-hub",
+      "name": "Strategy and Data Hub",
+      "track": "short",
+      "health": "green",
       "stage": "branch-complete",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-06-04-strategy-data-grounding/discovery.md"
@@ -5402,9 +5457,12 @@
     {
       "slug": "2026-06-21-new-test-idea-001",
       "id": "2026-06-21-new-test-idea-001",
+      "name": "RTP receiving integration",
+      "track": "short",
+      "health": "green",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-06-21-rtp-receiving-integration/discovery.md",
-      "stage": "design"
+      "stage": "discovery"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
