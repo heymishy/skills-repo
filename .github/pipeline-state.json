@@ -266,7 +266,7 @@
             {
               "slug": "p1.2",
               "name": "Session + journey tenantId; isSameTenant enforcement; 3→4 field fixture update",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
