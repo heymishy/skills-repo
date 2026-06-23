@@ -222,7 +222,7 @@
             {
               "slug": "p1.1",
               "name": "OAuth read:org scope; tenantId resolution; zero-match rejection",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -235,7 +235,7 @@
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p1.1-dor.md",
-              "updatedAt": "2026-06-23T03:00:00Z",
+              "updatedAt": "2026-06-23T03:30:00Z",
               "tasks": [
                 {
                   "id": "T1",
@@ -258,7 +258,10 @@
                   "status": "completed"
                 }
               ],
-              "planArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/plans/p1.1-plan.md"
+              "planArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/plans/p1.1-plan.md",
+              "prStatus": "open",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/391",
+              "verifyStatus": "passed"
             },
             {
               "slug": "p1.2",
