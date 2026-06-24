@@ -41,7 +41,7 @@
       "regulated": false,
       "complianceProfile": "standard",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-06-23T00:00:00Z",
+      "updatedAt": "2026-06-24T06:07:41.724Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/discovery.md",
@@ -79,7 +79,7 @@
           "minimumSignal": "Phase 0 complete — 404 on all 9 KNOWN BUG routes for unauthorized callers",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "p2.1 establishes filesystem isolation boundary; storage-layer tests AC5-AC7 all pass. Full measurement requires p2.2 + real multi-tenant deployment.",
           "contributingStories": [
             "p0.2",
             "p1.1",
@@ -158,6 +158,42 @@
           "status": "met",
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-06-23T00:00:00Z"
+        },
+        {
+          "id": "NFR-sec-pathtraversal",
+          "category": "nfr",
+          "label": "Path-traversal guard on all tenant-derived disk write paths - HTTP 400, no raw path logged",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-06-24T04:08:49.977Z",
+          "evidence": "AC3 + NFR log-spy tests both pass in tests/check-p2.1-tenant-storage.js on merged PR#394"
+        },
+        {
+          "id": "NFR-p2.1-getRepoRoot-sync",
+          "category": "nfr",
+          "label": "getRepoRoot is synchronous and completes in under 1ms per call",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-06-24T04:08:49.977Z",
+          "evidence": "NFR test: 1000 calls complete in <1000ms. No await/fs calls in repo-root.js."
+        },
+        {
+          "id": "NFR-p2.2-suite-perf",
+          "category": "nfr",
+          "label": "p2.2 test suite completes in under 10 seconds",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-24T06:07:41.725Z",
+          "evidence": "NFR declared in story; timing assertion in test. Verified at /definition-of-done after merge."
+        },
+        {
+          "id": "NFR-p2.2-tmpdir-cleanup",
+          "category": "nfr",
+          "label": "p2.2 test suite cleans up all temporary directories (try/finally)",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-24T06:07:41.725Z",
+          "evidence": "NFR declared in story; cleanup assertion in test. Verified at /definition-of-done after merge."
         }
       ],
       "epics": [
@@ -266,12 +302,12 @@
         {
           "slug": "phase-2-storage-isolation",
           "name": "Phase 2 — Storage Isolation",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "p2.1",
               "name": "Tenant-parameterised repoRoot; SESSION_STORE_PATH namespacing; featureSlug collision guard",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "complexity": 3,
               "reviewStatus": "passed",
@@ -280,15 +316,21 @@
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p2.1-test-plan.md",
-                "totalTests": 11
+                "totalTests": 16,
+                "passing": 16
               },
               "dorStatus": "signed-off",
-              "updatedAt": "2026-06-24T00:00:00Z"
+              "updatedAt": "2026-06-24T04:08:17Z",
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/394",
+              "acVerified": 9,
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "p2.2",
               "name": "Tenant-isolation test suite — two-tenant scenario, zero cross-read assertion",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -298,7 +340,9 @@
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p2.2-test-plan.md",
                 "totalTests": 14
-              }
+              },
+              "dorStatus": "signed-off",
+              "updatedAt": "2026-06-24T06:07:29Z"
             }
           ]
         },
