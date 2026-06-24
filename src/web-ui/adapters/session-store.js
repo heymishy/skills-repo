@@ -1,8 +1,9 @@
 'use strict';
 /**
- * session-store.js — wsm.1
+ * session-store.js — wsm.1 + p2.1
  * Disk persistence adapter for HTML skill sessions.
  * Sessions are written as JSON to SESSION_STORE_PATH/<sessionId>.json.
+ * Multi-tenant writes use SESSION_STORE_PATH/<tenantSlug>/<sessionId>.json (p2.1).
  * accessToken is ALWAYS stripped before writing (NFR-sec-no-accesstoken-disk).
  *
  * Usage (server.js wiring):
@@ -13,6 +14,7 @@
 
 var fs = require('fs');
 var path = require('path');
+var { slugifyTenantId } = require('./repo-root');
 
 var DEFAULT_MAX_AGE_DAYS = 7;
 
@@ -141,4 +143,54 @@ function loadSessions(setFn) {
   }
 }
 
-module.exports = { write, read, list, loadSessions };
+/**
+ * Write session data to tenant-namespaced path (p2.1 AC5/AC8).
+ * If session.tenantId is present, writes to SESSION_STORE_PATH/<tenantSlug>/<sessionId>.json.
+ * Otherwise falls through to flat write.
+ * accessToken is stripped before write — invariant unchanged.
+ * @param {object} session — must include sessionId; optionally tenantId
+ */
+function writeSession(session) {
+  if (!session || !session.sessionId) return;
+  var storePath = getStorePath();
+  var tenantId = session.tenantId;
+  var dir = tenantId
+    ? path.join(storePath, slugifyTenantId(tenantId))
+    : storePath;
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+    var safe = Object.assign({}, session);
+    delete safe.accessToken;
+    safe.lastUpdated = new Date().toISOString();
+    var filePath = path.join(dir, session.sessionId + '.json');
+    fs.writeFileSync(filePath, JSON.stringify(safe, null, 2), 'utf8');
+  } catch (err) {
+    console.error(JSON.stringify({
+      event: 'session_write_error',
+      error: err && err.message ? err.message : String(err)
+    }));
+  }
+}
+
+/**
+ * Read session from tenant-namespaced path (p2.1 AC6).
+ * If tenantId is present, reads from SESSION_STORE_PATH/<tenantSlug>/<sessionId>.json.
+ * Otherwise reads from the flat path.
+ * @param {string} sessionId
+ * @param {string} [tenantId]
+ * @returns {object|null}
+ */
+function readSession(sessionId, tenantId) {
+  var storePath = getStorePath();
+  var dir = tenantId
+    ? path.join(storePath, slugifyTenantId(tenantId))
+    : storePath;
+  try {
+    var content = fs.readFileSync(path.join(dir, sessionId + '.json'), 'utf8');
+    return JSON.parse(content);
+  } catch (_) {
+    return null;
+  }
+}
+
+module.exports = { write, read, list, loadSessions, writeSession, readSession };
