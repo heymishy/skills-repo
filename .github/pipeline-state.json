@@ -253,22 +253,24 @@
         {
           "slug": "inf.5",
           "name": "Extend chain-hash trace to emit on infra-plan sign-off",
-          "stage": "review",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
-          "epicSlug": "infra-track"
+          "epicSlug": "infra-track",
+          "dorStatus": "signed-off"
         },
         {
           "slug": "inf.4",
           "name": "Add H-INF hard block to /definition-of-ready SKILL.md",
-          "stage": "review",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
-          "epicSlug": "infra-track"
+          "epicSlug": "infra-track",
+          "dorStatus": "signed-off"
         },
         {
           "slug": "mig.5",
@@ -283,12 +285,13 @@
         {
           "slug": "mig.1",
           "name": "Write schema-migration-plan SKILL.md with additive/breaking classification and mandatory forward+rollback pair",
-          "stage": "review",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
-          "epicSlug": "schema-migration-track"
+          "epicSlug": "schema-migration-track",
+          "dorStatus": "signed-off"
         },
         {
           "slug": "mig.2",
@@ -303,22 +306,24 @@
         {
           "slug": "mig.4",
           "name": "Extend chain-hash trace to emit on migration-review sign-off",
-          "stage": "review",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
-          "epicSlug": "schema-migration-track"
+          "epicSlug": "schema-migration-track",
+          "dorStatus": "signed-off"
         },
         {
           "slug": "mig.3",
           "name": "Add H-MIG hard block to /definition-of-ready SKILL.md",
-          "stage": "review",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
-          "epicSlug": "schema-migration-track"
+          "epicSlug": "schema-migration-track",
+          "dorStatus": "signed-off"
         }
       ]
     },
