@@ -330,7 +330,7 @@
             {
               "slug": "p2.2",
               "name": "Tenant-isolation test suite — two-tenant scenario, zero cross-read assertion",
-              "stage": "branch-setup",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -339,10 +339,13 @@
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p2.2-test-plan.md",
-                "totalTests": 14
+                "totalTests": 27,
+                "passing": 27
               },
               "dorStatus": "signed-off",
-              "updatedAt": "2026-06-24T06:25:45Z"
+              "updatedAt": "2026-06-24T06:25:45Z",
+              "prStatus": "merged",
+              "verifyStatus": "passed"
             }
           ]
         },
