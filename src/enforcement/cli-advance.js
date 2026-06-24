@@ -23,6 +23,14 @@ var BOOLEAN_FIELDS = [
   'gateChecksumVerified',
   'regulated',
   'stalenessFlag',
+  'hasInfraTrack',
+  'hasMigrationTrack',
+];
+
+// Path fields — always stored as strings; integer coercion is skipped (no numeric paths allowed).
+var STRING_FIELDS = [
+  'infraPlanPath',
+  'migrationReviewPath',
 ];
 
 var USAGE = 'Usage: skills advance <feature-slug> <story-id> <field>=<value>...';
@@ -153,8 +161,8 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
   // ── Apply all fields (with integer coercion and single-level dot-notation) ─
   Object.keys(stateUpdate).forEach(function(key) {
     var val = stateUpdate[key];
-    // Integer coercion: bare digit strings become numbers
-    if (/^\d+$/.test(val)) { val = Number(val); }
+    // Integer coercion: bare digit strings become numbers (skipped for STRING_FIELDS — path values stay as strings).
+    if (/^\d+$/.test(val) && STRING_FIELDS.indexOf(key) === -1) { val = Number(val); }
     // Boolean coercion: fields in BOOLEAN_FIELDS are coerced from 'true'/'false' strings to booleans.
     // Values are already validated in the parsing loop — only 'true'/'false' can reach here.
     if (BOOLEAN_FIELDS.indexOf(key) !== -1) { val = (val === 'true'); }
