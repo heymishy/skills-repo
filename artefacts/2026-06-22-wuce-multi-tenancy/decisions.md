@@ -70,3 +70,23 @@ Step 4a is not applicable. No trigger table required.
 **Decision:** Risk-first — Phase 0 closes the highest-risk item (active exploit possible today), Phase 1 adds identity (medium risk, no infra change), Phase 2 adds storage isolation (lowest risk of the three, infra change required).
 **Rationale:** Phase 0 can ship today with no dependencies. Phases 1 and 2 have sequencing dependencies. Risk-first naturally produces the correct phase ordering.
 **Applies to:** All 3 epics.
+
+---
+
+## Decision 7 — RISK-ACCEPT: Phase 3 (Redis) waived as p4.1 prerequisite
+
+**Date:** 2026-06-24
+**Context:** p4.1 story originally listed p3.1 (Postgres) and p3.2 (Redis) as hard prerequisites. Phase 3 has been deferred indefinitely. p4.1's own out-of-scope section and test plan both state "in-process Map is sufficient for Phase 4."
+**Decision:** RISK-ACCEPT — proceed with p4.1 using in-process Map for rate-limit counters. Phase 3 dependency removed as a hard gate.
+**Rationale:** The two stated reasons for the Phase 3 dependency are (a) "prompt-cache session persistence is more meaningful once sessions survive restarts" — meaningfulness, not a hard technical requirement; and (b) "rate-limit counter should use Redis for correctness across restarts" — correctness-preference acknowledged and accepted. Counters reset on server restart; for current solo-founder deployment profile this is acceptable. When Phase 3 ships, the rate-limiter key can be wired to Redis with no AC changes.
+**Applies to:** p4.1 W1.
+
+---
+
+## Decision 8 — RISK-ACCEPT: cache-scope embedding via system-prompt comment
+
+**Date:** 2026-06-24
+**Context:** Anthropic's prompt-caching mechanism hashes content — there is no named key parameter. To prevent cross-tenant cache hits when two tenants send structurally identical system prompts, the tenantId-sessionId scope string must appear in the prompt content itself.
+**Decision:** RISK-ACCEPT — embed `<!-- cache-scope: ${tenantId}-${sessionId} -->` as the first line of the system prompt in `_anthropicSystem()` when tenantId is present. The comment is inert to model behaviour (HTML comments in plain-text prompts are treated as literal text, but a one-line prefix has negligible effect on model output). Session threading into the call stack is deferred; the scoping logic is implemented and ready to activate when session is passed through.
+**Rationale:** Embedding a tenant discriminator in the prompt content is the only available mechanism with the Anthropic ephemeral cache_control API. The risk of a cross-tenant cache hit without this guard is real for identical system prompts across tenants (unlikely but possible). The implementation is complete in `_anthropicSystem()` and `buildCacheKey()`; activation requires threading `session` through the call chain in a follow-up.
+**Applies to:** p4.1 W2.
