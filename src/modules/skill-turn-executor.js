@@ -15,6 +15,7 @@
  */
 
 const https = require('https');
+const { buildCacheKey } = require('../web-ui/adapters/cache-key');
 
 // Keep-alive agents — reuse TLS connections across turns instead of re-handshaking
 // each time. One agent per upstream host; maxSockets prevents runaway connections.
@@ -40,9 +41,13 @@ const ANTHROPIC_VERSION  = '2023-06-01';
  * full prompt across turns in the same session (TTL: 5 min, refreshed on hit).
  * Requires anthropic-beta: prompt-caching-2024-07-31 header — added below.
  */
-function _anthropicSystem(systemPrompt) {
+function _anthropicSystem(systemPrompt, session) {
   if (process.env.WUCE_ENABLE_PROMPT_CACHE === '0') { return systemPrompt; }
-  return [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }];
+  var scopedPrompt = systemPrompt;
+  if (session && session.tenantId) {
+    scopedPrompt = '<!-- cache-scope: ' + buildCacheKey(session) + ' -->\n' + systemPrompt;
+  }
+  return [{ type: 'text', text: scopedPrompt, cache_control: { type: 'ephemeral' } }];
 }
 
 /**

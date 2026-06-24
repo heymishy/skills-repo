@@ -41,7 +41,7 @@
       "regulated": false,
       "complianceProfile": "standard",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-06-24T06:07:41.724Z",
+      "updatedAt": "2026-06-24T06:25:53.754Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/discovery.md",
@@ -330,7 +330,7 @@
             {
               "slug": "p2.2",
               "name": "Tenant-isolation test suite — two-tenant scenario, zero cross-read assertion",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -339,10 +339,15 @@
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p2.2-test-plan.md",
-                "totalTests": 14
+                "totalTests": 27,
+                "passing": 27
               },
               "dorStatus": "signed-off",
-              "updatedAt": "2026-06-24T06:07:29Z"
+              "updatedAt": "2026-06-24T06:25:45Z",
+              "prStatus": "merged",
+              "verifyStatus": "passed",
+              "dodStatus": "complete",
+              "acVerified": 7
             }
           ]
         },
@@ -386,7 +391,7 @@
             {
               "slug": "p4.1",
               "name": "Prompt-cache key scoping per tenant+session; per-tenant API rate-limit isolation",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -396,7 +401,8 @@
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p4.1-test-plan.md",
                 "totalTests": 7
-              }
+              },
+              "dorStatus": "signed-off"
             }
           ]
         },
