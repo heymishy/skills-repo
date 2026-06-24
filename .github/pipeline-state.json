@@ -271,7 +271,7 @@
             {
               "slug": "p2.1",
               "name": "Tenant-parameterised repoRoot; SESSION_STORE_PATH namespacing; featureSlug collision guard",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "complexity": 3,
               "reviewStatus": "passed",
@@ -281,7 +281,9 @@
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p2.1-test-plan.md",
                 "totalTests": 11
-              }
+              },
+              "dorStatus": "signed-off",
+              "updatedAt": "2026-06-24T00:00:00Z"
             },
             {
               "slug": "p2.2",
