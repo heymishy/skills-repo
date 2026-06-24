@@ -145,7 +145,11 @@
                 "dorStatus":           { "type": "string", "enum": ["not-started", "blocked", "signed-off"] },
                 "dorArtefact":         { "type": "string", "description": "Relative path to the DoR artefact" },
                 "dorContractArtefact": { "type": "string", "description": "Relative path to the DoR contract artefact" },
-                "dorSignedOffAt":      { "type": "string", "format": "date-time" }
+                "dorSignedOffAt":      { "type": "string", "format": "date-time" },
+                "hasInfraTrack":       { "type": "boolean", "description": "True when this story has a corresponding infra-definition artefact (written by /infra-definition, read by H-INF gate at DoR)" },
+                "hasMigrationTrack":   { "type": "boolean", "description": "True when this story has a corresponding schema-migration artefact (written by /schema-migration-plan, read by H-MIG gate at DoR)" },
+                "infraPlanPath":       { "type": "string",  "description": "Relative path to the infra-plan artefact for this story, e.g. artefacts/feat/infra/s1-infra-plan.md" },
+                "migrationReviewPath": { "type": "string",  "description": "Relative path to the migration-review sign-off artefact for this story, e.g. artefacts/feat/migrations/s1-review.md" }
               }
             }
           },
@@ -200,6 +204,10 @@
                       "releaseReady":           { "type": "boolean", "description": "Set true by /definition-of-done when all ACs are covered" },
                       "layoutGapsAtMerge":      { "type": "boolean", "description": "True if CSS-layout test gaps existed at merge time (written by /definition-of-done)" },
                       "layoutGapsRiskAccepted": { "type": "boolean", "description": "True if the layout gap risk was explicitly accepted at merge (written by /definition-of-done)" },
+                      "hasInfraTrack":       { "type": "boolean", "description": "True when this story has a corresponding infra-definition artefact (written by /infra-definition, read by H-INF gate at DoR)" },
+                      "hasMigrationTrack":   { "type": "boolean", "description": "True when this story has a corresponding schema-migration artefact (written by /schema-migration-plan, read by H-MIG gate at DoR)" },
+                      "infraPlanPath":       { "type": "string",  "description": "Relative path to the infra-plan artefact for this story, e.g. artefacts/feat/infra/s1-infra-plan.md" },
+                      "migrationReviewPath": { "type": "string",  "description": "Relative path to the migration-review sign-off artefact for this story, e.g. artefacts/feat/migrations/s1-review.md" },
                       "tasks": {
                         "type": "array",
                         "description": "Implementation plan tasks for this story, written by /implementation-plan and updated by /tdd",
