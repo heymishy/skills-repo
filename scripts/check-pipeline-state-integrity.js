@@ -481,6 +481,18 @@ selfAssert(checkStory('f', { id: 's1', prStatus: 'open', testPlan: { totalTests:
   selfAssert(f.some(x => x.code === 'C8' && x.level === 'fail'), 'C8 level is fail');
 }
 
+// shr.1: optional infra/migration track fields — present or absent, no C-check fires
+{
+  const s = { id: 's1', hasInfraTrack: true, infraPlanPath: 'artefacts/f/infra/s1.md' };
+  selfAssert(checkStory('f', s).every(function(x) { return x.level !== 'fail'; }),
+    'shr.1: hasInfraTrack present → no integrity violations');
+}
+{
+  const s = { id: 's1' };
+  selfAssert(checkStory('f', s).every(function(x) { return x.level !== 'fail'; }),
+    'shr.1: track flags absent → no integrity violations');
+}
+
 if (selfFailed > 0) {
   process.stdout.write(`  ${selfFailed} self-test(s) FAILED — aborting integration check\n`);
   process.exit(1);

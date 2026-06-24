@@ -131,3 +131,33 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: "Live /ideate web UI session (10 turns) showed llm_duration_ms of 69122ms on turn 1, dropping to a 8868-17942ms range for turns 2-10. Right-panel canvas structure (Canvas / A-E lens pips) confirmed visible and correctly empty — inc5 (the marker-emission instruction) is not yet implemented, so no canvas content is expected at this stage; this is not a rendering defect. The latency pattern itself is unexplained: first-turn cost is ~4-8x later turns, consistent with a cold-start/connection-establishment cost on the Copilot-proxy path (skill-turn-executor.js getActiveModel() defaults to provider 'copilot' with no SKILL_EXECUTOR_PROVIDER override in .env), but this is a hypothesis, not confirmed — no instrumentation currently isolates connection-setup time from model-generation time. Even the steady-state 9-18s/turn range is slow relative to the 2026-06-05 decision-log success criterion ('beating GitHub Copilot chat UX is a critical success criterion... must feel more dynamic and less structured'). Out of scope for the inc3-inc4 epic (discovery.md explicitly excludes 'Backend model or routing changes'). Deferred per operator instruction to log and revisit later — candidate for a future discovery/spike artefact on turn-latency root cause (cold-start isolation, DEFAULT_TIMEOUT_MS=30000 vs observed 69122ms with no visible abort, DEFAULT_MAX_TOKENS=4096 effect on generation time)."
   source: operator-manual
+
+- date: 2026-06-24
+  session-phase: wuce-multi-tenancy inner loop / PR #392 fix
+  signal-type: pattern
+  signal-text: "Feature slug in pipeline-state.json must exactly match the artefacts/ directory name. Mismatched slug (2026-06-21-new-test-idea-001 vs actual dir 2026-06-21-rtp-receiving-integration/) caused the assurance gate 'Collect governed artefacts' step to exit 1 on every PR where the auto-resolver picked that feature — because trace-report.js --collect uses the slug, not the artefact field, to locate the directory."
+  source: agent-auto
+
+- date: 2026-06-24
+  session-phase: wuce-multi-tenancy inner loop / PR #392 fix
+  signal-type: pattern
+  signal-text: "validate-trace.sh discovery_exists iterates ALL committed subdirectories in artefacts/, not only features registered in pipeline-state.json. Fragment directories (single-file staging artefacts — a lone benefit-metric.md, a lone review.md, a lone DoR doc) committed to git without a full discovery chain will hard-fail CI unless explicitly added to reference_dirs in .github/trace-validation.yml."
+  source: agent-auto
+
+- date: 2026-06-24
+  session-phase: wuce-multi-tenancy inner loop / PR #392 fix
+  signal-type: pattern
+  signal-text: "Every task object in a story's tasks[] array in pipeline-state.json must include a tddState field — check-pipeline-state-integrity.js raises C4 for each task missing it. The tasks array is optional; if tracking tasks without tddState is needed, remove the array entirely rather than leaving bare task objects."
+  source: agent-auto
+
+- date: 2026-06-24
+  session-phase: wuce-multi-tenancy inner loop / PR #392 fix
+  signal-type: pattern
+  signal-text: "testPlan.passing in pipeline-state.json must never exceed testPlan.totalTests — check-pipeline-state-integrity.js raises C2 and validate-trace.sh treats it as a hard-fail. Likely cause is passing count being incremented without totalTests being updated when the test plan was later revised."
+  source: agent-auto
+
+- date: 2026-06-25
+  session-phase: review / skills-infra-migration-tracks
+  signal-type: pattern
+  signal-text: "ADR-017 mandates all new features use flat features[].stories[] in pipeline-state.json — but /definition generated epics[].stories[] nesting for this feature. The /review skill caught this as a MEDIUM finding (1-M1 on shr.1). The nesting structure triggers the B2 rule (state advances must be applied on master post-merge), adding implementation overhead across all 12 stories. Future /definition runs for features with logical epics should use flat stories[] in pipeline-state.json while keeping epic artefact files for documentation."
+  source: agent-auto

@@ -33,6 +33,294 @@
   },
   "features": [
     {
+      "slug": "2026-06-22-skills-infra-migration-tracks",
+      "name": "Skills Infrastructure and Schema-Migration Pipeline Tracks",
+      "stage": "definition",
+      "health": "green",
+      "updatedAt": "2026-06-25T00:00:00Z",
+      "discoveryArtefact": "artefacts/2026-06-22-skills-infra-migration-tracks/discovery.md",
+      "benefitMetricArtefact": "artefacts/2026-06-22-skills-infra-migration-tracks/benefit-metric.md",
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Infra track completion time",
+          "target": "Under 30 minutes end-to-end",
+          "baseline": "Not yet established — measure on first 3 real uses post-delivery",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "inf.1",
+            "inf.2",
+            "inf.3"
+          ]
+        },
+        {
+          "id": "M2",
+          "name": "DoR gate enforcement correctness",
+          "target": "100% of flagged stories hard-blocked when sign-off artefact absent",
+          "baseline": "0% (H-INF and H-MIG do not exist today)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "inf.4",
+            "mig.3"
+          ]
+        },
+        {
+          "id": "MM1",
+          "name": "Trace completeness for new artefact types",
+          "target": "100% of infra-plan and migration-review sign-offs appear in trace chain",
+          "baseline": "0 infra or migration trace events emitted today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "inf.5",
+            "mig.4"
+          ]
+        },
+        {
+          "id": "MM2",
+          "name": "No STAGE_SEQUENCE change required",
+          "target": "STAGE_SEQUENCE length and content identical after delivery",
+          "baseline": "8 stages (ideate to definition-of-ready)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "shr.1",
+            "shr.2"
+          ]
+        },
+        {
+          "id": "T3-M1",
+          "name": "Breaking migration rollback coverage",
+          "target": "100% of breaking migration artefacts include CI-tier rollback evidence",
+          "baseline": "0% (no migration governance today)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "mig.1",
+            "mig.2"
+          ]
+        },
+        {
+          "id": "T3-M2",
+          "name": "Blast-radius declaration coverage",
+          "target": "100% of infra-definition artefacts include tier-applicability section",
+          "baseline": "0% (no infra blast-radius requirement today)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "inf.1",
+            "inf.2"
+          ]
+        }
+      ],
+      "slicingStrategy": "walking-skeleton",
+      "nfrProfileArtefact": "artefacts/2026-06-22-skills-infra-migration-tracks/nfr-profile.md",
+      "guardrails": [
+        {
+          "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "No credentials, tokens, or personal data in committed files",
+          "status": "met",
+          "evidence": "No violations found — no credentials, tokens, or personal data in story ACs or artefacts",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-25T00:00:00Z"
+        },
+        {
+          "id": "MC-CORRECT-02",
+          "category": "mandatory-constraint",
+          "label": "Fields written to pipeline-state.json must exist in schema",
+          "status": "met",
+          "evidence": "shr.1 AC5 mandates schema and implementation in same commit; new fields added to schema before use",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-25T00:00:00Z"
+        },
+        {
+          "id": "MC-CORRECT-03",
+          "category": "mandatory-constraint",
+          "label": "Fields read by viz from pipeline-state.json must exist in schema",
+          "status": "na",
+          "evidence": "No viz rendering of new infra/migration track fields in scope for this feature (deferred per epic 1 out-of-scope)",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-25T00:00:00Z"
+        },
+        {
+          "id": "ADR-003",
+          "category": "adr",
+          "label": "Schema-first: fields defined before use",
+          "status": "met",
+          "evidence": "shr.1 AC5 explicitly requires same-commit schema + implementation; Architecture Constraints on shr.1 and inf.4 cite this ADR",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-25T00:00:00Z"
+        },
+        {
+          "id": "ADR-004",
+          "category": "adr",
+          "label": "context.yml is the single config source of truth",
+          "status": "met",
+          "evidence": "inf.1 AC5 verifiable grep check for hardcoded tool names; inf.2 and mig.1/mig.2 Architecture Constraints cite ADR-004 explicitly",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-25T00:00:00Z"
+        },
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: new SKILL.md files require story artefact before commit",
+          "status": "met",
+          "evidence": "All 5 new SKILL.md files (inf.1-3, mig.1-2) and 1 template (mig.5) have story artefacts before implementation; PR required clause noted in Architecture Constraints",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-25T00:00:00Z"
+        },
+        {
+          "id": "ADR-012",
+          "category": "adr",
+          "label": "Platform-agnostic architecture",
+          "status": "met",
+          "evidence": "All skill instruction text is tool-agnostic; no Terraform/Flyway/Alembic references in required-tool contexts; Architecture Constraints cite ADR-012 on inf.1/inf.2/mig.1/mig.2",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-25T00:00:00Z"
+        },
+        {
+          "id": "ADR-017",
+          "category": "adr",
+          "label": "",
+          "status": "met",
+          "evidence": "Restructured from epics[].stories[] to flat features[].stories[] on 2026-06-25 (1-M1 resolved). Epic artefact documentation files retained in artefacts/.../epics/.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-25T00:00:00Z"
+        }
+      ],
+      "stories": [
+        {
+          "slug": "shr.1",
+          "name": "Extend pipeline-state schema and harness for infra and migration track flags",
+          "stage": "review",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "updatedAt": "2026-06-25T00:00:00Z",
+          "epicSlug": "shared-infrastructure"
+        },
+        {
+          "slug": "shr.2",
+          "name": "Support ops/ path prefix for standalone infra changes",
+          "stage": "review",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "updatedAt": "2026-06-25T00:00:00Z",
+          "epicSlug": "shared-infrastructure"
+        },
+        {
+          "slug": "inf.1",
+          "name": "Write infra-definition SKILL.md with blast-radius, rollback, and tier-applicability artefact template",
+          "stage": "review",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "updatedAt": "2026-06-25T00:00:00Z",
+          "epicSlug": "infra-track"
+        },
+        {
+          "slug": "inf.2",
+          "name": "Write infra-review SKILL.md with DESTRUCTIVE/REVERSIBLE-HIGH/ADVISORY severity scale",
+          "stage": "review",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "updatedAt": "2026-06-25T00:00:00Z",
+          "epicSlug": "infra-track"
+        },
+        {
+          "slug": "inf.3",
+          "name": "Write infra-plan SKILL.md as the infra track sign-off skill",
+          "stage": "review",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "updatedAt": "2026-06-25T00:00:00Z",
+          "epicSlug": "infra-track"
+        },
+        {
+          "slug": "inf.5",
+          "name": "Extend chain-hash trace to emit on infra-plan sign-off",
+          "stage": "review",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "updatedAt": "2026-06-25T00:00:00Z",
+          "epicSlug": "infra-track"
+        },
+        {
+          "slug": "inf.4",
+          "name": "Add H-INF hard block to /definition-of-ready SKILL.md",
+          "stage": "review",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "updatedAt": "2026-06-25T00:00:00Z",
+          "epicSlug": "infra-track"
+        },
+        {
+          "slug": "mig.5",
+          "name": "Write staging-data-policy template with three named options and declared-choice field",
+          "stage": "review",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "updatedAt": "2026-06-25T00:00:00Z",
+          "epicSlug": "schema-migration-track"
+        },
+        {
+          "slug": "mig.1",
+          "name": "Write schema-migration-plan SKILL.md with additive/breaking classification and mandatory forward+rollback pair",
+          "stage": "review",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "updatedAt": "2026-06-25T00:00:00Z",
+          "epicSlug": "schema-migration-track"
+        },
+        {
+          "slug": "mig.2",
+          "name": "Write schema-migration-review SKILL.md with rollback evidence check and classification validation",
+          "stage": "review",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "updatedAt": "2026-06-25T00:00:00Z",
+          "epicSlug": "schema-migration-track"
+        },
+        {
+          "slug": "mig.4",
+          "name": "Extend chain-hash trace to emit on migration-review sign-off",
+          "stage": "review",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "updatedAt": "2026-06-25T00:00:00Z",
+          "epicSlug": "schema-migration-track"
+        },
+        {
+          "slug": "mig.3",
+          "name": "Add H-MIG hard block to /definition-of-ready SKILL.md",
+          "stage": "review",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "updatedAt": "2026-06-25T00:00:00Z",
+          "epicSlug": "schema-migration-track"
+        }
+      ]
+    },
+    {
       "slug": "2026-06-22-wuce-multi-tenancy",
       "name": "WUCE Multi-Tenancy — Authorization Guard and Tenant Isolation",
       "stage": "review",
@@ -424,7 +712,7 @@
             {
               "slug": "p5.1",
               "name": "tenantId validation; adversarial path-traversal test suite; re-audit all guards with variable repoRoot",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "complexity": 3,
               "reviewStatus": "passed",
@@ -433,10 +721,18 @@
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p5.1-test-plan.md",
-                "totalTests": 12
+                "totalTests": 14,
+                "passing": 14
               },
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p5.1-dor.md"
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p5.1-dor.md",
+              "verifyStatus": "passed",
+              "acVerified": 14,
+              "acTotal": 14,
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "prNumber": 397
             }
           ]
         }
