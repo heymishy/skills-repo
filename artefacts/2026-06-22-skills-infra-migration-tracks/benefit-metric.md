@@ -101,12 +101,12 @@ This initiative both delivers user value (pipeline consumers can govern infra an
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1 — Infra track completion time | inf.1, inf.2, inf.3 | To be confirmed at /definition |
-| M2 — DoR gate enforcement correctness | inf.4, mig.3 | To be confirmed at /definition |
-| MM1 — Trace completeness | inf.5, mig.4 | To be confirmed at /definition |
-| MM2 — No STAGE_SEQUENCE change | shr.1, all inf.* and mig.* | To be confirmed at /definition |
-| T3-M1 — Breaking migration rollback coverage | mig.1, mig.2 | To be confirmed at /definition |
-| T3-M2 — Blast-radius declaration coverage | inf.1, inf.2 | To be confirmed at /definition |
+| M1 — Infra track completion time | inf.1, inf.2, inf.3 | ✅ Covered |
+| M2 — DoR gate enforcement correctness | inf.4, mig.3 | ✅ Covered |
+| MM1 — Trace completeness | inf.5, mig.4 | ✅ Covered |
+| MM2 — No STAGE_SEQUENCE change | shr.1, shr.2 (and all stories — none touch STAGE_SEQUENCE) | ✅ Covered |
+| T3-M1 — Breaking migration rollback coverage | mig.1, mig.2 | ✅ Covered |
+| T3-M2 — Blast-radius declaration coverage | inf.1, inf.2 | ✅ Covered |
 
 ---
 

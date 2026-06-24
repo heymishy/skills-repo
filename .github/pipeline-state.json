@@ -35,9 +35,9 @@
     {
       "slug": "2026-06-22-skills-infra-migration-tracks",
       "name": "Skills Infrastructure and Schema-Migration Pipeline Tracks",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
-      "updatedAt": "2026-06-24T00:00:00Z",
+      "updatedAt": "2026-06-25T00:00:00Z",
       "discoveryArtefact": "artefacts/2026-06-22-skills-infra-migration-tracks/discovery.md",
       "benefitMetricArtefact": "artefacts/2026-06-22-skills-infra-migration-tracks/benefit-metric.md",
       "metrics": [
@@ -49,7 +49,11 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "inf.1",
+            "inf.2",
+            "inf.3"
+          ]
         },
         {
           "id": "M2",
@@ -59,7 +63,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "inf.4",
+            "mig.3"
+          ]
         },
         {
           "id": "MM1",
@@ -69,7 +76,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "inf.5",
+            "mig.4"
+          ]
         },
         {
           "id": "MM2",
@@ -79,7 +89,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "shr.1",
+            "shr.2"
+          ]
         },
         {
           "id": "T3-M1",
@@ -89,7 +102,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "mig.1",
+            "mig.2"
+          ]
         },
         {
           "id": "T3-M2",
@@ -99,10 +115,153 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "inf.1",
+            "inf.2"
+          ]
         }
       ],
-      "stories": []
+      "slicingStrategy": "walking-skeleton",
+      "nfrProfileArtefact": "artefacts/2026-06-22-skills-infra-migration-tracks/nfr-profile.md",
+      "guardrails": [
+        {
+          "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "No credentials, tokens, or personal data in committed files",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CORRECT-02",
+          "category": "mandatory-constraint",
+          "label": "Fields written to pipeline-state.json must exist in schema",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CORRECT-03",
+          "category": "mandatory-constraint",
+          "label": "Fields read by viz from pipeline-state.json must exist in schema",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-003",
+          "category": "adr",
+          "label": "Schema-first: fields defined before use",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-004",
+          "category": "adr",
+          "label": "context.yml is the single config source of truth",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: new SKILL.md files require story artefact before commit",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-012",
+          "category": "adr",
+          "label": "Platform-agnostic architecture",
+          "status": "not-assessed"
+        }
+      ],
+      "epics": [
+        {
+          "slug": "shared-infrastructure",
+          "name": "Pipeline schema and path convention support infra and migration tracks",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "shr.1",
+              "name": "Extend pipeline-state schema and harness for infra and migration track flags",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "shr.2",
+              "name": "Support ops/ path prefix for standalone infra changes",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        },
+        {
+          "slug": "infra-track",
+          "name": "Infrastructure changes are governable within the pipeline",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "inf.1",
+              "name": "Write infra-definition SKILL.md with blast-radius, rollback, and tier-applicability artefact template",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "inf.2",
+              "name": "Write infra-review SKILL.md with DESTRUCTIVE/REVERSIBLE-HIGH/ADVISORY severity scale",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "inf.3",
+              "name": "Write infra-plan SKILL.md as the infra track sign-off skill",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "inf.5",
+              "name": "Extend chain-hash trace to emit on infra-plan sign-off",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "inf.4",
+              "name": "Add H-INF hard block to /definition-of-ready SKILL.md",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        },
+        {
+          "slug": "schema-migration-track",
+          "name": "Schema migrations are classified, have tested rollbacks, and appear in the audit chain",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "mig.5",
+              "name": "Write staging-data-policy template with three named options and declared-choice field",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "mig.1",
+              "name": "Write schema-migration-plan SKILL.md with additive/breaking classification and mandatory forward+rollback pair",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "mig.2",
+              "name": "Write schema-migration-review SKILL.md with rollback evidence check and classification validation",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "mig.4",
+              "name": "Extend chain-hash trace to emit on migration-review sign-off",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "mig.3",
+              "name": "Add H-MIG hard block to /definition-of-ready SKILL.md",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        }
+      ]
     },
     {
       "slug": "2026-06-22-wuce-multi-tenancy",
