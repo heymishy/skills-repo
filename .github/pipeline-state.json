@@ -391,7 +391,7 @@
             {
               "slug": "p4.1",
               "name": "Prompt-cache key scoping per tenant+session; per-tenant API rate-limit isolation",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -403,7 +403,12 @@
                 "totalTests": 11,
                 "passing": 11
               },
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "verifyStatus": "passed",
+              "acVerified": 7,
+              "acTotal": 7,
+              "prStatus": "draft",
+              "prNumber": 396
             }
           ]
         },
