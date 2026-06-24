@@ -264,6 +264,12 @@ mig.5 (staging-data-policy template) ──► parallel with mig.1, referenced a
 
 ---
 
+## Approved By
+
+Hamish King — Operator / Platform Maintainer — 2026-06-22
+
+---
+
 ## Attribution
 
 Operator: Hamish King
