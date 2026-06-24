@@ -33,6 +33,78 @@
   },
   "features": [
     {
+      "slug": "2026-06-22-skills-infra-migration-tracks",
+      "name": "Skills Infrastructure and Schema-Migration Pipeline Tracks",
+      "stage": "benefit-metric",
+      "health": "green",
+      "updatedAt": "2026-06-24T00:00:00Z",
+      "discoveryArtefact": "artefacts/2026-06-22-skills-infra-migration-tracks/discovery.md",
+      "benefitMetricArtefact": "artefacts/2026-06-22-skills-infra-migration-tracks/benefit-metric.md",
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Infra track completion time",
+          "target": "Under 30 minutes end-to-end",
+          "baseline": "Not yet established — measure on first 3 real uses post-delivery",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M2",
+          "name": "DoR gate enforcement correctness",
+          "target": "100% of flagged stories hard-blocked when sign-off artefact absent",
+          "baseline": "0% (H-INF and H-MIG do not exist today)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "MM1",
+          "name": "Trace completeness for new artefact types",
+          "target": "100% of infra-plan and migration-review sign-offs appear in trace chain",
+          "baseline": "0 infra or migration trace events emitted today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "MM2",
+          "name": "No STAGE_SEQUENCE change required",
+          "target": "STAGE_SEQUENCE length and content identical after delivery",
+          "baseline": "8 stages (ideate to definition-of-ready)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "T3-M1",
+          "name": "Breaking migration rollback coverage",
+          "target": "100% of breaking migration artefacts include CI-tier rollback evidence",
+          "baseline": "0% (no migration governance today)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "T3-M2",
+          "name": "Blast-radius declaration coverage",
+          "target": "100% of infra-definition artefacts include tier-applicability section",
+          "baseline": "0% (no infra blast-radius requirement today)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "stories": []
+    },
+    {
       "slug": "2026-06-22-wuce-multi-tenancy",
       "name": "WUCE Multi-Tenancy — Authorization Guard and Tenant Isolation",
       "stage": "review",
