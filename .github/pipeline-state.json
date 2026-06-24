@@ -391,7 +391,7 @@
             {
               "slug": "p4.1",
               "name": "Prompt-cache key scoping per tenant+session; per-tenant API rate-limit isolation",
-              "stage": "branch-setup",
+              "stage": "verify-completion",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -400,7 +400,8 @@
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p4.1-test-plan.md",
-                "totalTests": 7
+                "totalTests": 11,
+                "passing": 11
               },
               "dorStatus": "signed-off"
             }
