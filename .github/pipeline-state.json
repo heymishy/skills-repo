@@ -41,7 +41,7 @@
       "regulated": false,
       "complianceProfile": "standard",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-06-24T06:07:41.724Z",
+      "updatedAt": "2026-06-24T06:25:53.754Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/discovery.md",
@@ -330,7 +330,7 @@
             {
               "slug": "p2.2",
               "name": "Tenant-isolation test suite — two-tenant scenario, zero cross-read assertion",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -342,7 +342,7 @@
                 "totalTests": 14
               },
               "dorStatus": "signed-off",
-              "updatedAt": "2026-06-24T06:07:29Z"
+              "updatedAt": "2026-06-24T06:25:45Z"
             }
           ]
         },
