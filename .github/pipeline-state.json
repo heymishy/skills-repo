@@ -424,7 +424,7 @@
             {
               "slug": "p5.1",
               "name": "tenantId validation; adversarial path-traversal test suite; re-audit all guards with variable repoRoot",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "complexity": 3,
               "reviewStatus": "passed",
@@ -434,7 +434,9 @@
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p5.1-test-plan.md",
                 "totalTests": 12
-              }
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p5.1-dor.md"
             }
           ]
         }
