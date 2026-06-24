@@ -79,13 +79,14 @@
           "minimumSignal": "Phase 0 complete — 404 on all 9 KNOWN BUG routes for unauthorized callers",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "p2.1 establishes filesystem isolation boundary; storage-layer tests AC5-AC7 all pass. Full measurement requires p2.2 + real multi-tenant deployment.",
+          "evidence": "p2.1 establishes filesystem isolation boundary; p2.2 adds HTTP-layer cross-tenant guard (27/27 tests); p4.1 closes inference-layer gap (tenant-scoped prompt-cache keys + per-tenant rate-limit counters). Full measurement requires live multi-tenant deployment.",
           "contributingStories": [
             "p0.2",
             "p1.1",
             "p1.2",
             "p2.1",
-            "p2.2"
+            "p2.2",
+            "p4.1"
           ]
         },
         {
@@ -391,7 +392,7 @@
             {
               "slug": "p4.1",
               "name": "Prompt-cache key scoping per tenant+session; per-tenant API rate-limit isolation",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -400,9 +401,18 @@
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p4.1-test-plan.md",
-                "totalTests": 7
+                "totalTests": 11,
+                "passing": 11
               },
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "verifyStatus": "passed",
+              "acVerified": 7,
+              "acTotal": 7,
+              "prStatus": "merged",
+              "prNumber": 396,
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dod/p4.1-dod.md"
             }
           ]
         },
@@ -414,7 +424,7 @@
             {
               "slug": "p5.1",
               "name": "tenantId validation; adversarial path-traversal test suite; re-audit all guards with variable repoRoot",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "complexity": 3,
               "reviewStatus": "passed",
@@ -424,7 +434,9 @@
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p5.1-test-plan.md",
                 "totalTests": 12
-              }
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p5.1-dor.md"
             }
           ]
         }
