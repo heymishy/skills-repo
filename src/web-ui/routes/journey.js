@@ -13,6 +13,7 @@ var _linkSessionToJourney = null;
 var _getHtmlSessionFn = null;
 var _listHtmlSessionsFn = null;
 var _repoRoot = null;
+var _repoRootAdapter = require('../adapters/repo-root');
 
 function getRegisterHtmlSession() {
   if (_registerHtmlSession) return _registerHtmlSession;
@@ -29,8 +30,8 @@ function getGetHtmlSession() {
   return require('./skills')._getHtmlSession;
 }
 
-function getRepoRoot() {
-  return _repoRoot || path.resolve(__dirname, '../../..');
+function getRepoRoot(req) {
+  return _repoRootAdapter.getRepoRoot(req || { session: {} });
 }
 
 // owle.6: injectable pipeline-state writer
@@ -57,7 +58,7 @@ function setLinkSessionToJourney(fn) { _linkSessionToJourney = fn; }
 function setJourneyStoreModule(mod) { _journeyStore = mod; }
 function setGetHtmlSession(fn) { _getHtmlSessionFn = fn; }
 function setListHtmlSessions(fn) { _listHtmlSessionsFn = fn; }
-function setRepoRoot(root) { _repoRoot = root; }
+function setRepoRoot(root) { _repoRoot = root; _repoRootAdapter.setRepoRoot(root); }
 
 // ---------------------------------------------------------------------------
 // Journey home helpers
@@ -254,7 +255,7 @@ function handleGetJourney(req, res) {
     }
   }
   var login      = req.session.login || '';
-  var repoRoot   = getRepoRoot();
+  var repoRoot   = getRepoRoot(req);
   var profiles   = _listProfiles(repoRoot);
   var activeProfile = _getActiveProfile(repoRoot);
   var journeys   = _journeyStore.listJourneys ? _journeyStore.listJourneys(repoRoot) : [];
@@ -280,7 +281,7 @@ async function handlePostJourney(req, res) {
     var body        = await _readFormBody(req);
     var featureName = (body.featureName || '').trim();
     var startSkill  = body.startSkill === 'ideate' ? 'ideate' : 'discovery';
-    var profileName = (body.profileName || '').trim() || _getActiveProfile(getRepoRoot());
+    var profileName = (body.profileName || '').trim() || _getActiveProfile(getRepoRoot(req));
 
     if (!featureName) {
       res.writeHead(303, { Location: '/journey?new=1#jh-new' });
@@ -290,7 +291,7 @@ async function handlePostJourney(req, res) {
 
     var today       = new Date().toISOString().slice(0, 10);
     var featureSlug = today + '-' + _slugify(featureName);
-    var repoRoot    = getRepoRoot();
+    var repoRoot    = getRepoRoot(req);
 
     // Create journey in memory + disk
     var created = _journeyStore.createJourney(featureSlug, profileName);
@@ -534,7 +535,7 @@ async function handleGetJourneyStageView(req, res) {
 
   // Find the completed stage entry in store
   var storeStage = (journey.completedStages || []).find(function(s) { return s.skillName === stageName; });
-  var repoRoot = getRepoRoot();
+  var repoRoot = getRepoRoot(req);
 
   // Extract cost/model — prefer in-memory, fall back to disk (populated after server restart)
   var _stageCostUsd = (storeStage && storeStage.costUsd != null) ? storeStage.costUsd : null;
@@ -970,7 +971,7 @@ async function handlePostJourneyStageArtefact(req, res) {
     return;
   }
 
-  var repoRoot = getRepoRoot();
+  var repoRoot = getRepoRoot(req);
   var storeStage = (journey.completedStages || []).find(function(s) { return s.skillName === stageName; });
   var artefactRelPath = (storeStage && storeStage.artefactPath) || null;
   if (!artefactRelPath) {
@@ -1019,7 +1020,7 @@ async function handleGetJourneyResume(req, res) {
     return;
   }
   var featureSlug = req.params && req.params.featureSlug;
-  var repoRoot = getRepoRoot();
+  var repoRoot = getRepoRoot(req);
 
   // Load from disk
   var diskJourney = null;
@@ -1116,7 +1117,7 @@ async function handleGetReference(req, res) {
   }
 
   var featureSlug = journey.featureSlug || '';
-  var repoRoot = getRepoRoot();
+  var repoRoot = getRepoRoot(req);
   var refDir = path.join(repoRoot, 'artefacts', featureSlug, 'reference');
   var existingFiles = [];
   if (fs.existsSync(refDir)) {
@@ -1238,7 +1239,7 @@ async function handlePostReference(req, res) {
   }
 
   var featureSlug = journey.featureSlug || '';
-  var repoRoot = getRepoRoot();
+  var repoRoot = getRepoRoot(req);
   var refDir  = path.join(repoRoot, 'artefacts', featureSlug, 'reference');
   var filePath = path.join(refDir, stem + '.md');
 
@@ -1292,7 +1293,7 @@ async function handlePostGateConfirm(req, res) {
     return;
   }
   var artefactRelPath = session.artefactPath || '';
-  var repoRoot = getRepoRoot();
+  var repoRoot = getRepoRoot(req);
   var absPath = path.resolve(path.join(repoRoot, artefactRelPath));
   var resolvedRoot = path.resolve(repoRoot);
   // Security: path traversal check
@@ -1518,7 +1519,7 @@ async function handlePostStories(req, res) {
   }
   _journeyStore.setStoryList(journeyId, slugs);
   // Build priorArtefacts from completed stages
-  var repoRoot = getRepoRoot();
+  var repoRoot = getRepoRoot(req);
   var updatedJourney = _journeyStore.getJourney(journeyId);
   var priorArtefacts = (updatedJourney.completedStages || []).map(function(stage) {
     var stageAbsPath = path.resolve(path.join(repoRoot, stage.artefactPath));
@@ -2131,7 +2132,7 @@ function handleGetStageControls(req, res) {
   var openSpikes = [];
   var featureSlugForControls = journey.featureSlug || '';
   if (featureSlugForControls) {
-    var spikesDir = path.join(getRepoRoot(), 'artefacts', featureSlugForControls, 'spikes');
+    var spikesDir = path.join(getRepoRoot(req), 'artefacts', featureSlugForControls, 'spikes');
     if (fs.existsSync(spikesDir)) {
       var spikeFiles = fs.readdirSync(spikesDir).filter(function(f) { return f.endsWith('.md'); });
       spikeFiles.forEach(function(f) {
@@ -2174,7 +2175,7 @@ async function handlePostSideTripClarify(req, res) {
 
   // Path traversal guard: validate featureSlug resolves within repoRoot
   var featureSlug = journey.featureSlug || '';
-  var repoRoot = getRepoRoot();
+  var repoRoot = getRepoRoot(req);
   var discoveryRel = path.join('artefacts', featureSlug, 'discovery.md');
   var discoveryAbs = path.resolve(path.join(repoRoot, discoveryRel));
   var resolvedRoot = path.resolve(repoRoot);
@@ -2282,7 +2283,7 @@ async function handlePostEstimate(req, res) {
   }
 
   var featureSlug = journey.featureSlug || '';
-  var repoRoot = getRepoRoot();
+  var repoRoot = getRepoRoot(req);
   var normPath = path.join(repoRoot, 'workspace', 'estimation-norms.md');
 
   var date = new Date().toISOString().slice(0, 10);
@@ -2377,7 +2378,7 @@ async function handleGetTrace(req, res) {
   }
 
   var featureSlug = journey.featureSlug || '';
-  var repoRoot = getRepoRoot();
+  var repoRoot = getRepoRoot(req);
   var artefactsDir = path.resolve(repoRoot, 'artefacts', featureSlug);
   // Path traversal guard
   if (!artefactsDir.startsWith(path.resolve(repoRoot, 'artefacts') + path.sep) &&
@@ -2430,7 +2431,7 @@ async function handlePostDecisions(req, res) {
 
   // Derive path server-side from journey — NEVER from request body/params
   var featureSlug = journey.featureSlug || '';
-  var repoRoot = getRepoRoot();
+  var repoRoot = getRepoRoot(req);
   var decisionsPath = path.resolve(repoRoot, 'artefacts', featureSlug, 'decisions.md');
   var guard = path.resolve(repoRoot, 'artefacts', featureSlug);
   if (!guard.startsWith(repoRoot + path.sep)) {
@@ -2509,7 +2510,7 @@ async function handlePostSpike(req, res) {
     return;
   }
   var featureSlug = journey.featureSlug || '';
-  var repoRoot = getRepoRoot();
+  var repoRoot = getRepoRoot(req);
   var spikesDir = path.join(repoRoot, 'artefacts', featureSlug, 'spikes');
   var spikePath = path.join(spikesDir, slug + '-spike.md');
   // Path traversal guard
@@ -2571,7 +2572,7 @@ async function handlePatchSpike(req, res) {
     return;
   }
   var featureSlug = journey.featureSlug || '';
-  var repoRoot = getRepoRoot();
+  var repoRoot = getRepoRoot(req);
   var spikePath = path.join(repoRoot, 'artefacts', featureSlug, 'spikes', spikeSlug + '-spike.md');
   // Path traversal guard
   var resolvedRoot = path.resolve(repoRoot);
