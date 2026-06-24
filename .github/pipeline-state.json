@@ -128,43 +128,73 @@
           "id": "MC-SEC-02",
           "category": "mandatory-constraint",
           "label": "No credentials, tokens, or personal data in committed files",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "No violations found — no credentials, tokens, or personal data in story ACs or artefacts",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-25T00:00:00Z"
         },
         {
           "id": "MC-CORRECT-02",
           "category": "mandatory-constraint",
           "label": "Fields written to pipeline-state.json must exist in schema",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "shr.1 AC5 mandates schema and implementation in same commit; new fields added to schema before use",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-25T00:00:00Z"
         },
         {
           "id": "MC-CORRECT-03",
           "category": "mandatory-constraint",
           "label": "Fields read by viz from pipeline-state.json must exist in schema",
-          "status": "not-assessed"
+          "status": "na",
+          "evidence": "No viz rendering of new infra/migration track fields in scope for this feature (deferred per epic 1 out-of-scope)",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-25T00:00:00Z"
         },
         {
           "id": "ADR-003",
           "category": "adr",
           "label": "Schema-first: fields defined before use",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "shr.1 AC5 explicitly requires same-commit schema + implementation; Architecture Constraints on shr.1 and inf.4 cite this ADR",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-25T00:00:00Z"
         },
         {
           "id": "ADR-004",
           "category": "adr",
           "label": "context.yml is the single config source of truth",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "inf.1 AC5 verifiable grep check for hardcoded tool names; inf.2 and mig.1/mig.2 Architecture Constraints cite ADR-004 explicitly",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-25T00:00:00Z"
         },
         {
           "id": "ADR-011",
           "category": "adr",
           "label": "Artefact-first: new SKILL.md files require story artefact before commit",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "All 5 new SKILL.md files (inf.1-3, mig.1-2) and 1 template (mig.5) have story artefacts before implementation; PR required clause noted in Architecture Constraints",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-25T00:00:00Z"
         },
         {
           "id": "ADR-012",
           "category": "adr",
           "label": "Platform-agnostic architecture",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "All skill instruction text is tool-agnostic; no Terraform/Flyway/Alembic references in required-tool contexts; Architecture Constraints cite ADR-012 on inf.1/inf.2/mig.1/mig.2",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-25T00:00:00Z"
+        },
+        {
+          "id": "ADR-017",
+          "category": "adr",
+          "label": "",
+          "status": "not-met",
+          "evidence": "1-M1 (shr.1-review-1): feature uses epics[].stories[] nesting in pipeline-state.json; ADR-017 mandates all new features use flat features[].stories[] — recommend restructure before implementation",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-25T00:00:00Z"
         }
       ],
       "epics": [
@@ -176,14 +206,20 @@
             {
               "slug": "shr.1",
               "name": "Extend pipeline-state schema and harness for infra and migration track flags",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-06-25T00:00:00Z"
             },
             {
               "slug": "shr.2",
               "name": "Support ops/ path prefix for standalone infra changes",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-06-25T00:00:00Z"
             }
           ]
         },
@@ -195,32 +231,47 @@
             {
               "slug": "inf.1",
               "name": "Write infra-definition SKILL.md with blast-radius, rollback, and tier-applicability artefact template",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-06-25T00:00:00Z"
             },
             {
               "slug": "inf.2",
               "name": "Write infra-review SKILL.md with DESTRUCTIVE/REVERSIBLE-HIGH/ADVISORY severity scale",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-06-25T00:00:00Z"
             },
             {
               "slug": "inf.3",
               "name": "Write infra-plan SKILL.md as the infra track sign-off skill",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-06-25T00:00:00Z"
             },
             {
               "slug": "inf.5",
               "name": "Extend chain-hash trace to emit on infra-plan sign-off",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-06-25T00:00:00Z"
             },
             {
               "slug": "inf.4",
               "name": "Add H-INF hard block to /definition-of-ready SKILL.md",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-06-25T00:00:00Z"
             }
           ]
         },
@@ -232,32 +283,47 @@
             {
               "slug": "mig.5",
               "name": "Write staging-data-policy template with three named options and declared-choice field",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-06-25T00:00:00Z"
             },
             {
               "slug": "mig.1",
               "name": "Write schema-migration-plan SKILL.md with additive/breaking classification and mandatory forward+rollback pair",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-06-25T00:00:00Z"
             },
             {
               "slug": "mig.2",
               "name": "Write schema-migration-review SKILL.md with rollback evidence check and classification validation",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-06-25T00:00:00Z"
             },
             {
               "slug": "mig.4",
               "name": "Extend chain-hash trace to emit on migration-review sign-off",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-06-25T00:00:00Z"
             },
             {
               "slug": "mig.3",
               "name": "Add H-MIG hard block to /definition-of-ready SKILL.md",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-06-25T00:00:00Z"
             }
           ]
         }
