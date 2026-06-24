@@ -41,7 +41,7 @@
       "regulated": false,
       "complianceProfile": "standard",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-06-24T04:08:49.976Z",
+      "updatedAt": "2026-06-24T06:07:41.724Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/discovery.md",
@@ -176,6 +176,24 @@
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-06-24T04:08:49.977Z",
           "evidence": "NFR test: 1000 calls complete in <1000ms. No await/fs calls in repo-root.js."
+        },
+        {
+          "id": "NFR-p2.2-suite-perf",
+          "category": "nfr",
+          "label": "p2.2 test suite completes in under 10 seconds",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-24T06:07:41.725Z",
+          "evidence": "NFR declared in story; timing assertion in test. Verified at /definition-of-done after merge."
+        },
+        {
+          "id": "NFR-p2.2-tmpdir-cleanup",
+          "category": "nfr",
+          "label": "p2.2 test suite cleans up all temporary directories (try/finally)",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-24T06:07:41.725Z",
+          "evidence": "NFR declared in story; cleanup assertion in test. Verified at /definition-of-done after merge."
         }
       ],
       "epics": [
@@ -312,7 +330,7 @@
             {
               "slug": "p2.2",
               "name": "Tenant-isolation test suite — two-tenant scenario, zero cross-read assertion",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -322,7 +340,9 @@
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p2.2-test-plan.md",
                 "totalTests": 14
-              }
+              },
+              "dorStatus": "signed-off",
+              "updatedAt": "2026-06-24T06:07:29Z"
             }
           ]
         },
