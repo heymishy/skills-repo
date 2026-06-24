@@ -41,7 +41,7 @@
       "regulated": false,
       "complianceProfile": "standard",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-06-23T00:00:00Z",
+      "updatedAt": "2026-06-24T01:20:50.261Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/discovery.md",
@@ -266,12 +266,12 @@
         {
           "slug": "phase-2-storage-isolation",
           "name": "Phase 2 — Storage Isolation",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "p2.1",
               "name": "Tenant-parameterised repoRoot; SESSION_STORE_PATH namespacing; featureSlug collision guard",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 3,
               "reviewStatus": "passed",
@@ -280,10 +280,14 @@
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p2.1-test-plan.md",
-                "totalTests": 11
+                "totalTests": 16,
+                "passing": 16
               },
               "dorStatus": "signed-off",
-              "updatedAt": "2026-06-24T00:00:00Z"
+              "updatedAt": "2026-06-24T01:20:41Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/394",
+              "acVerified": 9
             },
             {
               "slug": "p2.2",
