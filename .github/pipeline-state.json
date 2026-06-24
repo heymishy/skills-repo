@@ -201,12 +201,14 @@
         {
           "slug": "shr.1",
           "name": "Extend pipeline-state schema and harness for infra and migration track flags",
-          "stage": "review",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
-          "epicSlug": "shared-infrastructure"
+          "epicSlug": "shared-infrastructure",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/398"
         },
         {
           "slug": "shr.2",
