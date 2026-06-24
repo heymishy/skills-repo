@@ -123,6 +123,18 @@ function checkFeature(feature) {
                `Valid values: ${VALID_FEATURE_STAGES.join(' | ')}`,
     });
   }
+  // C9: ops/ slug must match ops/YYYY-MM-DD-[descriptor] with no traversal sequences (shr.2)
+  if (feature.slug && feature.slug.startsWith('ops/')) {
+    const opsRemainder = feature.slug.slice(4); // content after 'ops/'
+    if (opsRemainder.indexOf('..') !== -1 || !/^\d{4}-\d{2}-\d{2}-./.test(opsRemainder)) {
+      findings.push({
+        level: 'fail',
+        code:  'C9',
+        message: `Feature ${slug}: ops/ slug "${feature.slug}" is invalid. ` +
+                 `ops/ slugs must match ops/YYYY-MM-DD-[descriptor] with no traversal sequences (..).`,
+      });
+    }
+  }
   return findings;
 }
 
@@ -491,6 +503,24 @@ selfAssert(checkStory('f', { id: 's1', prStatus: 'open', testPlan: { totalTests:
   const s = { id: 's1' };
   selfAssert(checkStory('f', s).every(function(x) { return x.level !== 'fail'; }),
     'shr.1: track flags absent → no integrity violations');
+}
+
+// C9: ops/ slug validation (shr.2)
+{
+  const f = checkFeature({ slug: 'ops/2026-06-25-secrets-rotation' });
+  selfAssert(f.every(x => x.code !== 'C9'), 'C9: valid ops slug → no C9');
+}
+{
+  const f = checkFeature({ slug: 'ops/2026-12-31-firewall-rule-update' });
+  selfAssert(f.every(x => x.code !== 'C9'), 'C9: second valid ops slug → no C9');
+}
+{
+  const f = checkFeature({ slug: 'ops/../../etc/passwd' });
+  selfAssert(f.some(x => x.code === 'C9'), 'C9: traversal ops slug → C9 fires');
+}
+{
+  const f = checkFeature({ slug: '2026-06-22-standard-feature' });
+  selfAssert(f.every(x => x.code !== 'C9'), 'C9: standard slug → no C9 (unaffected)');
 }
 
 if (selfFailed > 0) {
