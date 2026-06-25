@@ -4574,11 +4574,11 @@
         {
           "id": "sri.1",
           "title": "Add git fetch timeout and fallback in inner-loop skills",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "complexity": 1,
           "scopeStability": "stable",
           "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.1.md",
-          "prStatus": "none",
+          "prStatus": "draft",
           "dorStatus": "signed-off",
           "traceStatus": "not-run",
           "health": "green",
@@ -4588,21 +4588,23 @@
           "testPlan": {
             "status": "written",
             "totalTests": 13,
-            "passing": 0
+            "passing": 13
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": "false",
-          "e2eToolingRequired": "false"
+          "e2eToolingRequired": "false",
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/410"
         },
         {
           "id": "sri.2",
           "title": "Expand DoD entry condition message with actionable guidance",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "complexity": 1,
           "scopeStability": "stable",
           "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.2.md",
-          "prStatus": "none",
+          "prStatus": "draft",
           "dorStatus": "signed-off",
           "traceStatus": "not-run",
           "health": "green",
@@ -4612,21 +4614,23 @@
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 0
+            "passing": 5
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": "false",
-          "e2eToolingRequired": "false"
+          "e2eToolingRequired": "false",
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/411"
         },
         {
           "id": "sri.3",
           "title": "Add measurement-ready gate to DoD Step 6 for infrastructure stories",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "complexity": 1,
           "scopeStability": "stable",
           "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.3.md",
-          "prStatus": "none",
+          "prStatus": "draft",
           "dorStatus": "signed-off",
           "traceStatus": "not-run",
           "health": "green",
@@ -4636,12 +4640,14 @@
           "testPlan": {
             "status": "written",
             "totalTests": 8,
-            "passing": 0
+            "passing": 8
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": "false",
-          "e2eToolingRequired": "false"
+          "e2eToolingRequired": "false",
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/412"
         }
       ],
       "updatedAt": "2026-06-25",

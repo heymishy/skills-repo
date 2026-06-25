@@ -42,9 +42,15 @@ Before asking anything, verify:
 If not met:
 
 > ❌ **Entry condition not met**
-> [Specific issue - e.g. "PR is not yet merged. Run this after merge, not before."]
+> [Specific issue — e.g. "PR is not yet merged. Run this after merge, not before."]
 >
-> Run /workflow to see the current pipeline state.
+> **Check PR status:** run `gh pr view <number>` to confirm whether the PR is merged, open, or still a draft.
+>
+> **Next steps to reach merge:** mark PR ready for review → obtain approval → merge → re-run `/definition-of-done`.
+>
+> **Why this gate exists:** DoD validates what has actually shipped, not what is proposed in an open PR. Running it before merge produces AC coverage against unmerged code, which is not a valid signal.
+>
+> Run `/workflow` to see the current pipeline state.
 
 ---
 
