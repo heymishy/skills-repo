@@ -1401,6 +1401,31 @@ async function handlePostGateConfirm(req, res) {
     });
   }
 
+  // mig.4: chain-hash trace emission for migration-review sign-off (ADR-023)
+  if (session.skillName === 'schema-migration-review' && stateWriteSucceeded) {
+    var migOperatorEmail = '';
+    try { migOperatorEmail = require('child_process').execSync('git config user.email', { encoding: 'utf8' }).trim(); } catch (_) {}
+    var migrationReviewPath = session.migrationReviewPath ||
+      ('artefacts/' + journey.featureSlug + '/migrations/' + storyId + '-migration-review.md');
+    var migrationReviewHash = '';
+    try {
+      var migReviewAbsPath = path.resolve(path.join(repoRoot, migrationReviewPath));
+      var migReviewContent = fs.readFileSync(migReviewAbsPath, 'utf8');
+      migrationReviewHash = crypto.createHash('sha256').update(migReviewContent).digest('hex');
+    } catch (_e) {}
+    _writeTrace({
+      timestamp: new Date().toISOString(),
+      featureSlug: journey.featureSlug,
+      storyId: storyId,
+      stage: session.skillName,
+      event: 'migration-review-sign-off',
+      migrationReviewPath: migrationReviewPath,
+      migrationReviewHash: migrationReviewHash,
+      operatorEmail: migOperatorEmail,
+      exitCode: 0
+    });
+  }
+
   // Build priorArtefacts from all completed stages (read authoritative disk content)
   // completedStages entries may be objects { skillName, artefactPath } or legacy strings
   var updatedJourney = _journeyStore.getJourney(journeyId);
