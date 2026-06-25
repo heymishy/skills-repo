@@ -1,132 +1,59 @@
 {
-  "currentPhase": "definition-of-ready",
-    "lastUpdated": "2026-06-04T18:30:00Z",
-  "activeFeature": "2026-05-21-ideate-web-ux",
+  "currentPhase": "definition-of-done",
+  "lastUpdated": "2026-06-25T00:00:00Z",
+  "activeFeature": "2026-06-22-skills-infra-migration-tracks",
   "cycle": {
-    "ideation": {
-      "completedAt": "2026-06-03",
-      "artefact": "artefacts/2026-05-21-ideate-web-ux/research/ideation.md",
+    "definition-of-done": {
       "status": "complete",
-      "lenses": [
-        "A (opportunity mapping)",
-        "D (Cagan strategy — PROCEED)",
-        "B (assumption inventory — 12 assumptions A1–A12)"
-      ],
-      "commit": "f592fb0"
-    },
-    "spike-a1": {
-      "completedAt": "2026-06-03",
-      "artefact": "artefacts/2026-05-21-ideate-web-ux/spikes/a1-sse-architecture-feasibility.md",
-      "status": "complete",
-      "outcome": "PROCEED",
-      "commit": "e087c44",
-      "finding": "SSE streaming architecture (handlePostTurnStreamHtml) supports assumption cards as new event type — no structural rewrite needed. Three implementation choices made: (1) JSON protocol markers, (2) dedicated confirm endpoint, (3) two-section right panel layout."
-    },
-    "discovery": {
-      "status": "approved",
-      "artefact": "artefacts/2026-05-21-ideate-web-ux/discovery.md",
-      "completedAt": "2026-06-04",
-      "approvedAt": "2026-06-04",
-      "approvedBy": "Hamish King"
-    },
-    "benefit-metric": {
-      "status": "active",
-      "artefact": "artefacts/2026-05-21-ideate-web-ux/benefit-metric.md",
-      "definedAt": "2026-06-04"
-    },
-    "definition": {
-      "status": "complete",
-      "artefact": "artefacts/2026-05-21-ideate-web-ux/epics/iwu-web-session-surface.md",
-      "completedAt": "2026-06-04",
-      "commit": "c86f706",
-      "storiesCreated": ["iwu.1", "iwu.2", "iwu.3", "iwu.4", "iwu.5", "iwu.6"],
-      "epicsCreated": ["iwu-web-session-surface", "iwu-skillmd-tuning"],
-      "slicingStrategy": "user journey",
-      "scopeAccumulator": "6 stories for 4 MVP scope clusters (Cluster 1, 2, 4, cross-cutting SKILL.md). iwu.2 (right panel layout restructure) is a definition-discovered prerequisite — not scope expansion. No drift."
-    },
-    "test-plan": {
-      "status": "complete",
-      "completedAt": "2026-06-04",
-      "commit": "899f02d",
-      "storiesWithTestPlans": ["iwu.1", "iwu.2", "iwu.3", "iwu.4", "iwu.5", "iwu.6"],
-      "artefacts": [
-        "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.1-test-plan.md",
-        "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.2-test-plan.md",
-        "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.3-test-plan.md",
-        "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.4-test-plan.md",
-        "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.5-test-plan.md",
-        "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.6-test-plan.md"
-      ],
-      "notes": "iwu.2 AC4 requires Playwright E2E test (CSS max-height constraint — jsdom cannot verify). iwu.6 AC2+AC3 are manually verified (probabilistic AI emission — untestable by automation). AC3 is a blocking DoD gate requiring committed evidence file."
+      "completedAt": "2026-06-25",
+      "commit": "a3a7826",
+      "storiesCompleted": ["shr.1", "shr.2", "inf.1", "inf.2", "inf.3", "inf.4", "inf.5", "mig.1", "mig.2", "mig.3", "mig.4", "mig.5"],
+      "outcome": "COMPLETE — all 12 stories COMPLETE, 126 tests passing, 0 failures",
+      "dodArtefacts": "artefacts/2026-06-22-skills-infra-migration-tracks/dod/",
+      "metricSignals": {
+        "M1": "not-yet-measured (no real infra sessions yet)",
+        "M2": "on-track (H-INF 9/9, H-MIG 10/10 gate tests passing)",
+        "MM1": "on-track (trace extension 8/8 + 8/8 tests; real session pending)",
+        "MM2": "on-track (STAGE_SEQUENCE unchanged — 8 stages, identical to baseline)",
+        "T3-M1": "not-yet-measured (no real breaking migrations yet)",
+        "T3-M2": "not-yet-measured (no real infra-definition artefacts yet)"
+      }
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-06-04",
-    "contextAtWrite": "ideate-web-ux: /definition-of-ready complete for all 6 stories (iwu.1-iwu.6). 12 DoR artefacts created (6 dor.md + 6 dor-contract.md). Also created nfr-profile.md and iwu.6-emission-verification.md stub. pipeline-state.json: all 6 stories at stage=definition-of-ready, dorStatus=signed-off, health=green. Schema: 0 errors. Commit 2a06916.",
-    "resumeInstruction": "All 6 iwu stories are DoR-signed-off. Next step: run /branch-setup for iwu.1 (context manifest panel) — it has no upstream story dependencies and can begin immediately. Delivery order: iwu.1 → iwu.2 → iwu.3 → iwu.4 → iwu.5 → iwu.6. Key constraints: (1) iwu.2 must merge before iwu.3/iwu.5 E2E tests can run; (2) iwu.3+iwu.4+iwu.5 must all merge before iwu.6 AC3 DoD gate can be completed; (3) iwu.6 requires a real multi-turn session and emission verification stub completion before DoD-complete; (4) iwu.6 SKILL.md change must go via PR reviewed by Hamish King (High oversight, governed file).",
+    "writtenAt": "2026-06-25",
+    "contextAtWrite": "skills-infra-migration-tracks: all 12 stories DoD-complete. All 12 PRs (#398-409) merged. 12 DoD artefacts written. pipeline-state.json updated: dodStatus=complete, releaseReady=true for all 12 stories; M2/MM1/MM2 metric signals updated to on-track. NFR profile verified. Commit a3a7826 pushed to master.",
+    "resumeInstruction": "skills-infra-migration-tracks is COMPLETE. All 12 stories DoD-signed-off. Pending parallel work: (1) iwu.1-6 are DoR-signed-off — run /branch-setup for iwu.1 (context manifest panel); (2) bsr-workforce-planner Phase 2 — wfp.12-16 DoR signed-off, run /branch-setup for wfp.12 (heat-map); (3) 2026-05-18-skill-robustness-improvements at benefit-metric-active — run /definition for sri.1/sri.2/sri.3.",
     "pendingActions": [
-      "Run /branch-setup for iwu.1 (context manifest panel) — no upstream dependencies, ready to implement",
-      "bsr-workforce-planner Phase 2 (wfp.12-wfp.16): all DoR signed-off — run /branch-setup for wfp.12 (heat-map, no upstream code dependencies) as first story",
-      "2026-05-18-skill-robustness-improvements: still at benefit-metric-active — run /definition to write sri.1/sri.2/sri.3 story artefacts",
-      "Finance/planning lead reviewer required for bsr-workforce-planner benefit-metric.md (non-engineering approver TO BE NAMED)",
-      "iwu.6 DoD gate (AC3): complete emission verification stub at artefacts/2026-05-21-ideate-web-ux/verification/iwu.6-emission-verification.md after iwu.3/iwu.4/iwu.5 merge — requires real >=6-turn ideate session with >=70% marker emission rate"
+      "Run /branch-setup for iwu.1 (context manifest panel for ideate-web-ux) — no upstream dependencies, ready to implement",
+      "Run /branch-setup for wfp.12 (heat-map story for bsr-workforce-planner Phase 2) — no upstream code dependencies",
+      "Run /definition for 2026-05-18-skill-robustness-improvements to write sri.1/sri.2/sri.3 story artefacts",
+      "Finance/planning lead reviewer still required for bsr-workforce-planner benefit-metric.md (non-engineering approver TO BE NAMED)",
+      "iwu.6 DoD gate (Acceptance Criterion 3 — emission rate >=70% verified): complete emission verification stub at artefacts/2026-05-21-ideate-web-ux/verification/iwu.6-emission-verification.md after iwu.3/iwu.4/iwu.5 merge",
+      "M1 (Infra track completion time): measure after 3 real infra track sessions complete — operator self-reports elapsed time in infra-plan sign-off artefact",
+      "MM1 (Trace completeness): verify after first real feature uses both infra and migration tracks — run /trace and confirm both artefact types appear"
     ]
   },
-  "estimate": {
-    "e1": {
-      "date": "2026-06-04",
-      "expectedCalendarDays": 2,
-      "engagementFraction": 0.25,
-      "outerLoopFocusH": "1.0 (derived: 2 × 2 × 0.25)",
-      "innerLoopHuman": 1,
-      "expectedStoryCount": 10,
-      "confidence": "low",
-      "assumptions": "None noted by operator",
-      "gaugeAtStart": "7.5% (525/7000 AI credits — Copilot Pro Plus = 7,000 AI credits/month included + $11 additional overage budget; credit rate: ~$0.00957/credit (observed actuals Jun 1-3: 580 credits = $5.55); at E3 record aiCreditsConsumedCount = (endCredits - 525) and aiCreditsConsumedUSD = count × 0.00957)",
-      "premiumRequestsForecast": null,
-      "billingModel": "ai-credits-token-based (effective 2026-06-01)"
-    }
-  },
   "features": {
+    "2026-06-22-skills-infra-migration-tracks": {
+      "status": "definition-of-done-complete",
+      "dodCompletedAt": "2026-06-25",
+      "commit": "a3a7826",
+      "allStoriesComplete": true,
+      "testResults": "126/126 tests passing across 12 test suites",
+      "nextAction": "Feature complete. Infra and migration tracks now available for use. Monitor M1 signal after first 3 real infra sessions."
+    },
     "2026-05-21-ideate-web-ux": {
-      "status": "discovery-ready",
-      "ideationComplete": true,
-      "spikeA1": "PROCEED",
-      "nextAction": "run /discovery — scoped to Clusters 1 (context manifest), 2 (assumption cards), 4 (live artefact panel)"
+      "status": "definition-of-ready",
+      "phase": "inner loop — ready for branch-setup",
+      "dorSignedOff": ["iwu.1", "iwu.2", "iwu.3", "iwu.4", "iwu.5", "iwu.6"],
+      "nextAction": "run /branch-setup for iwu.1 (context manifest panel) — no upstream story dependencies"
     },
     "2026-05-26-bsr-workforce-planner": {
       "status": "definition-of-ready",
-      "phase": "Phase 2 — intelligence layer (wfp.12–wfp.16)",
-      "dorSignedOff": [
-        "wfp.12",
-        "wfp.13",
-        "wfp.14",
-        "wfp.15",
-        "wfp.16"
-      ],
+      "phase": "Phase 2 — intelligence layer (wfp.12-wfp.16)",
+      "dorSignedOff": ["wfp.12", "wfp.13", "wfp.14", "wfp.15", "wfp.16"],
       "nextAction": "run /branch-setup for wfp.12 (heat-map) — no upstream code dependencies"
-    },
-    "2026-05-19-cli-deterministic-governance": {
-      "status": "complete",
-      "note": "All 7 stories (cdg.1-cdg.7) merged.",
-      "cdg.7": {
-        "stage": "definition-of-done",
-        "prStatus": "merged",
-        "pr": "https://github.com/heymishy/skills-repo/pull/373",
-        "commit": "c611f21",
-        "dod": "artefacts/2026-05-19-cli-deterministic-governance/dod/cdg.7-dod.md",
-        "outcome": "COMPLETE WITH DEVIATIONS"
-      }
-    },
-    "2026-05-27-cli-advance-boolean-coercion": {
-      "b3": {
-        "stage": "definition-of-done",
-        "prStatus": "merged",
-        "pr": "https://github.com/heymishy/skills-repo/pull/374",
-        "commit": "2619630",
-        "dod": "artefacts/2026-05-27-cli-advance-boolean-coercion/dod/b3-boolean-coercion-dod.md",
-        "outcome": "COMPLETE"
-      }
     },
     "2026-05-18-skill-robustness-improvements": {
       "status": "benefit-metric-active",
@@ -134,12 +61,9 @@
       "benefitMetric": "artefacts/2026-05-18-skill-robustness-improvements/benefit-metric.md",
       "nextAction": "run /definition to write sri.1/sri.2/sri.3 story artefacts"
     },
-    "2026-05-24-governance-platform-architecture": {
-      "gpa-sc-02": {
-        "stage": "definition-of-done",
-        "prStatus": "merged",
-        "branch": "feat/gpa-sc02-unified-gate-evaluator"
-      }
+    "2026-05-19-cli-deterministic-governance": {
+      "status": "complete",
+      "note": "All 7 stories (cdg.1-cdg.7) merged and DoD-complete."
     }
   }
 }
