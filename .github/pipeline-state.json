@@ -266,24 +266,28 @@
         {
           "slug": "inf.5",
           "name": "Extend chain-hash trace to emit on infra-plan sign-off",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "infra-track",
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/405"
         },
         {
           "slug": "inf.4",
           "name": "Add H-INF hard block to /definition-of-ready SKILL.md",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "infra-track",
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/406"
         },
         {
           "slug": "mig.5",
@@ -301,13 +305,15 @@
         {
           "slug": "mig.1",
           "name": "Write schema-migration-plan SKILL.md with additive/breaking classification and mandatory forward+rollback pair",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "schema-migration-track",
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/407"
         },
         {
           "slug": "mig.2",
@@ -325,24 +331,28 @@
         {
           "slug": "mig.4",
           "name": "Extend chain-hash trace to emit on migration-review sign-off",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "schema-migration-track",
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/408"
         },
         {
           "slug": "mig.3",
           "name": "Add H-MIG hard block to /definition-of-ready SKILL.md",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "schema-migration-track",
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/409"
         }
       ]
     },
