@@ -4574,56 +4574,102 @@
         {
           "id": "sri.1",
           "title": "Add git fetch timeout and fallback in inner-loop skills",
-          "stage": "definition",
+          "stage": "review",
           "complexity": 1,
           "scopeStability": "stable",
           "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.1.md",
           "prStatus": "none",
           "dorStatus": "not-started",
           "traceStatus": "not-run",
-          "health": "green"
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "updatedAt": "2026-06-25"
         },
         {
           "id": "sri.2",
           "title": "Expand DoD entry condition message with actionable guidance",
-          "stage": "definition",
+          "stage": "review",
           "complexity": 1,
           "scopeStability": "stable",
           "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.2.md",
           "prStatus": "none",
           "dorStatus": "not-started",
           "traceStatus": "not-run",
-          "health": "green"
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "updatedAt": "2026-06-25"
         },
         {
           "id": "sri.3",
           "title": "Add measurement-ready gate to DoD Step 6 for infrastructure stories",
-          "stage": "definition",
+          "stage": "review",
           "complexity": 1,
           "scopeStability": "stable",
           "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.3.md",
           "prStatus": "none",
           "dorStatus": "not-started",
           "traceStatus": "not-run",
-          "health": "green"
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "updatedAt": "2026-06-25"
         }
       ],
       "updatedAt": "2026-06-25",
       "guardrails": [
         {
           "id": "ADR-011",
-          "status": "compliant",
-          "notes": "Story artefacts exist for all 3 SKILL.md changes (sri.1, sri.2, sri.3)"
+          "status": "met",
+          "notes": "Story artefacts exist for all 3 SKILL.md changes (sri.1, sri.2, sri.3)",
+          "evidence": "Story artefacts exist for all 3 stories before implementation",
+          "assessedBy": "/review Run 1",
+          "assessedAt": "2026-06-25"
         },
         {
           "id": "platform-change-policy",
-          "status": "compliant",
-          "notes": "All changes to .github/skills/*.md governed files — PR with platform review required before merge"
+          "status": "met",
+          "notes": "All changes to .github/skills/*.md governed files — PR with platform review required before merge",
+          "evidence": "All 3 stories explicitly require PR with platform review in Architecture Constraints",
+          "assessedBy": "/review Run 1",
+          "assessedAt": "2026-06-25"
         },
         {
           "id": "MC-SEC-02",
-          "status": "compliant",
-          "notes": "No credentials, tokens, or personal data introduced — SKILL.md text changes only"
+          "status": "met",
+          "notes": "No credentials, tokens, or personal data introduced — SKILL.md text changes only",
+          "evidence": "No credentials or personal data in any story scope; sri.1 NFR explicitly prohibits remote URL in warning message",
+          "assessedBy": "/review Run 1",
+          "assessedAt": "2026-06-25"
+        },
+        {
+          "id": "MC-CORRECT-01",
+          "status": "na",
+          "evidence": "No gate logic introduced — SKILL.md text changes only",
+          "assessedBy": "/review Run 1",
+          "assessedAt": "2026-06-25"
+        },
+        {
+          "id": "MC-CORRECT-02",
+          "status": "na",
+          "evidence": "No new pipeline-state.json fields introduced",
+          "assessedBy": "/review Run 1",
+          "assessedAt": "2026-06-25"
+        },
+        {
+          "id": "ADR-003",
+          "status": "na",
+          "evidence": "No schema changes — operator-question approach only (schema change deferred per discovery)",
+          "assessedBy": "/review Run 1",
+          "assessedAt": "2026-06-25"
+        },
+        {
+          "id": "AP-11",
+          "status": "na",
+          "evidence": "Changes are to existing SKILL.md files (not new files); covered by story artefacts — no violation",
+          "assessedBy": "/review Run 1",
+          "assessedAt": "2026-06-25"
         }
       ],
       "metrics": [
