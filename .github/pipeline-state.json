@@ -6048,9 +6048,65 @@
       "name": "Strategy and Data Hub",
       "track": "short",
       "health": "green",
-      "stage": "branch-complete",
+      "stage": "definition-of-ready",
       "discoveryStatus": "complete",
-      "artefact": "artefacts/2026-06-04-strategy-data-grounding/discovery.md"
+      "artefact": "artefacts/2026-06-04-strategy-data-grounding/discovery.md",
+      "stories": [
+        {
+          "id": "sdg.1",
+          "name": "Reference upload modal UI",
+          "stage": "definition-of-ready",
+          "testPlanStatus": "written",
+          "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg1-test-plan.md",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub-dor-sdg-1/definition-of-ready.md"
+        },
+        {
+          "id": "sdg.2",
+          "name": "Reference file persistence in journey state",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub-dor-sdg-2/definition-of-ready.md",
+          "testPlanStatus": "written",
+          "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg2-test-plan.md"
+        },
+        {
+          "id": "sdg.3",
+          "name": "Reference file content reading and validation",
+          "stage": "definition-of-ready",
+          "testPlanStatus": "written",
+          "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg3-test-plan.md",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg3-dor.md"
+        },
+        {
+          "id": "sdg.4",
+          "name": "Reference content injection into /ideate system prompt",
+          "stage": "definition-of-ready",
+          "testPlanStatus": "written",
+          "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg4-test-plan.md",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg4-dor.md"
+        },
+        {
+          "id": "sdg.5",
+          "name": "Reference content injection into /discovery system prompt",
+          "stage": "definition-of-ready",
+          "testPlanStatus": "written",
+          "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg5-test-plan.md",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg5-dor.md"
+        },
+        {
+          "id": "sdg.6",
+          "name": "Callout markers in discovery artefact output",
+          "stage": "definition-of-ready",
+          "testPlanStatus": "written",
+          "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg6-test-plan.md",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg6-dor.md"
+        }
+      ]
     },
     {
       "slug": "2026-06-21-rtp-receiving-integration",
