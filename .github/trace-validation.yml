@@ -82,6 +82,8 @@ reference_dirs:
   - 2026-06-21-review
   - 2026-06-21-strategy-and-data-hub-dor-sdg-1
   - 2026-06-21-strategy-and-data-hub-dor-sdg-2
+  - 2026-06-04-impact-effort-matrix
+  - 2026-06-04-impact-effort-matrix-workshop
 tracks_without_discovery:
   - short
   - defect
