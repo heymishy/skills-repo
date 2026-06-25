@@ -2,7 +2,7 @@
 
 **Feature:** 2026-05-18-skill-robustness-improvements
 **Date:** 2026-06-25
-**Status:** Active — written at /definition
+**Status:** Verified at 2026-06-25 — all stories DoD-complete
 
 ---
 

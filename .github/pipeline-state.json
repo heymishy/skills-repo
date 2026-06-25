@@ -4574,7 +4574,7 @@
         {
           "id": "sri.1",
           "title": "Add git fetch timeout and fallback in inner-loop skills",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "complexity": 1,
           "scopeStability": "stable",
           "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.1.md",
@@ -4595,12 +4595,13 @@
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/410"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/410",
+          "dodStatus": "complete"
         },
         {
           "id": "sri.2",
           "title": "Expand DoD entry condition message with actionable guidance",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "complexity": 1,
           "scopeStability": "stable",
           "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.2.md",
@@ -4621,12 +4622,13 @@
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/411"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/411",
+          "dodStatus": "complete"
         },
         {
           "id": "sri.3",
           "title": "Add measurement-ready gate to DoD Step 6 for infrastructure stories",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "complexity": 1,
           "scopeStability": "stable",
           "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.3.md",
@@ -4647,7 +4649,8 @@
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/412"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/412",
+          "dodStatus": "complete"
         }
       ],
       "updatedAt": "2026-06-25",
@@ -4750,7 +4753,9 @@
           ],
           "signal": "not-yet-measured",
           "target": "100% — all 3 skills handle missing/unreachable origin with warning and fallback",
-          "baseline": "0% — hangs indefinitely (confirmed OrderHub 2026-05-10)"
+          "baseline": "0% — hangs indefinitely (confirmed OrderHub 2026-05-10)",
+          "evidence": "Timeout+fallback text present and verified (13/13 tests pass). Runtime measurement requires a real no-origin repo session. OrderHub team to confirm per M1 measurement plan.",
+          "lastMeasured": null
         },
         {
           "id": "M2",
@@ -4758,9 +4763,11 @@
           "contributingStories": [
             "sri.2"
           ],
-          "signal": "not-yet-measured",
+          "signal": "on-track",
           "target": "3 of 3 elements present in shipped SKILL.md entry condition block",
-          "baseline": "0 of 3 elements present"
+          "baseline": "0 of 3 elements present",
+          "evidence": "Structural check: 3/3 elements present in shipped SKILL.md (T1-T4 all pass): pr-status-check, next-steps, gate-rationale all verified at DoD 2026-06-25.",
+          "lastMeasured": "2026-06-25"
         },
         {
           "id": "M3",
@@ -4770,7 +4777,9 @@
           ],
           "signal": "not-yet-measured",
           "target": "Under 30 seconds for Step 6 on an infrastructure story",
-          "baseline": ">2 minutes with no satisfactory outcome"
+          "baseline": ">2 minutes with no satisfactory outcome",
+          "evidence": "Measurement-ready gate text present and verified (8/8 tests pass). Runtime timing requires a real DoD session on an infrastructure story. OrderHub team to confirm per M3 measurement plan.",
+          "lastMeasured": null
         }
       ]
     },
