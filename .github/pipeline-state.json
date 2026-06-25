@@ -252,13 +252,14 @@
         {
           "slug": "inf.3",
           "name": "Write infra-plan SKILL.md as the infra track sign-off skill",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "infra-track",
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "merged"
         },
         {
           "slug": "inf.5",
