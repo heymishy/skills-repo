@@ -4574,12 +4574,12 @@
         {
           "id": "sri.1",
           "title": "Add git fetch timeout and fallback in inner-loop skills",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "complexity": 1,
           "scopeStability": "stable",
           "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.1.md",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "traceStatus": "not-run",
           "health": "green",
           "reviewStatus": "passed",
@@ -4598,12 +4598,12 @@
         {
           "id": "sri.2",
           "title": "Expand DoD entry condition message with actionable guidance",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "complexity": 1,
           "scopeStability": "stable",
           "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.2.md",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "traceStatus": "not-run",
           "health": "green",
           "reviewStatus": "passed",
@@ -4622,12 +4622,12 @@
         {
           "id": "sri.3",
           "title": "Add measurement-ready gate to DoD Step 6 for infrastructure stories",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "complexity": 1,
           "scopeStability": "stable",
           "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.3.md",
           "prStatus": "none",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "traceStatus": "not-run",
           "health": "green",
           "reviewStatus": "passed",
@@ -4650,16 +4650,16 @@
           "id": "ADR-011",
           "status": "met",
           "notes": "Story artefacts exist for all 3 SKILL.md changes (sri.1, sri.2, sri.3)",
-          "evidence": "Story artefacts exist for all 3 stories before implementation",
-          "assessedBy": "/review Run 1",
+          "evidence": "H9 PASS: story artefacts exist for all 3 stories; no ADR-011 violation",
+          "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-06-25"
         },
         {
           "id": "platform-change-policy",
           "status": "met",
           "notes": "All changes to .github/skills/*.md governed files — PR with platform review required before merge",
-          "evidence": "All 3 stories explicitly require PR with platform review in Architecture Constraints",
-          "assessedBy": "/review Run 1",
+          "evidence": "H9 PASS: all 3 DoR contracts explicitly require PR review before merge",
+          "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-06-25"
         },
         {
@@ -4696,6 +4696,42 @@
           "status": "na",
           "evidence": "Changes are to existing SKILL.md files (not new files); covered by story artefacts — no violation",
           "assessedBy": "/review Run 1",
+          "assessedAt": "2026-06-25"
+        },
+        {
+          "id": "NFR-performance-sri1",
+          "category": "nfr",
+          "label": "sri.1: fallback activates within 5 seconds of fetch failure",
+          "status": "met",
+          "evidence": "H-NFR PASS: NFR profile confirmed; test T1/T4/T7 assert timeout text present",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-25"
+        },
+        {
+          "id": "NFR-security-sri1",
+          "category": "nfr",
+          "label": "sri.1: warning message does not expose remote URL or credentials",
+          "status": "met",
+          "evidence": "H-NFR PASS: NFR profile confirmed; tests T11/T12/T13 are regression guards",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-25"
+        },
+        {
+          "id": "NFR-performance-sri3",
+          "category": "nfr",
+          "label": "sri.3: Step 6 completes in <30 seconds on not-yet-measured path",
+          "status": "met",
+          "evidence": "H-NFR PASS: NFR profile confirmed; Manual Scenario 5 covers runtime assertion",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-25"
+        },
+        {
+          "id": "NFR-audit-sri3",
+          "category": "nfr",
+          "label": "sri.3: not-yet-measured outcome with evidence note recorded in DoD artefact",
+          "status": "met",
+          "evidence": "H-NFR PASS: NFR profile confirmed; test T7 asserts artefact-write instruction",
+          "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-06-25"
         }
       ],
