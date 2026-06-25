@@ -299,6 +299,14 @@ async function handlePostJourney(req, res) {
     created.ownerId  = req.session.login    || null;
     created.tenantId = req.session.tenantId || undefined;
 
+    // sdg.1: new-product selection → show strategy grounding modal before starting first skill
+    if (body.newProduct === '1') {
+      _journeyStore.setJourneyFields(journeyId, { pendingStartSkill: startSkill });
+      res.writeHead(303, { Location: '/journey/' + encodeURIComponent(journeyId) + '/reference-modal' });
+      res.end();
+      return;
+    }
+
     // Session path under artefacts so reference/ folder is discovered by buildSystemPrompt
     var sid         = crypto.randomUUID();
     var sessionPath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', sid);
@@ -1077,6 +1085,147 @@ async function handleGetJourneyResume(req, res) {
 }
 
 // ---------------------------------------------------------------------------
+// sdg.1 — Strategy grounding modal (new-product upload gate)
+// ---------------------------------------------------------------------------
+
+/**
+ * GET /journey/:journeyId/reference-modal (sdg.1)
+ * Renders the strategy grounding upload modal.
+ */
+async function handleGetReferenceModal(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Journey not found.</p>', user: { login: req.session.login || '' } }));
+    return;
+  }
+  var safeId = escHtml(journeyId);
+  var featureName = escHtml(journey.featureSlug || '');
+
+  var body = [
+    '<style>',
+    '.rm-page{max-width:560px;margin:48px auto;padding:0 24px}',
+    '.rm-title{font-size:22px;font-weight:700;margin:0 0 8px}',
+    '.rm-sub{font-size:14px;color:var(--muted);margin:0 0 28px}',
+    '.rm-label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}',
+    '.rm-hint{font-size:12px;color:var(--muted);margin:6px 0 20px}',
+    '.rm-file-input{width:100%;padding:8px;border:1px dashed var(--line);border-radius:6px;font-size:13px;background:var(--surface);cursor:pointer}',
+    '.rm-error{display:none;color:#c0392b;font-size:12px;margin-top:6px}',
+    '.rm-actions{display:flex;gap:12px;margin-top:24px;align-items:center}',
+    '.rm-skip{font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;padding:0}',
+    '</style>',
+    '<div class="rm-page">',
+      '<h1 class="rm-title">Ground this feature in strategy</h1>',
+      '<p class="rm-sub">Upload one or more markdown files containing strategy, market data, or research. These will be injected into your /ideate and /discovery sessions.</p>',
+      '<label class="rm-label" for="rm-file-input">Upload markdown files</label>',
+      '<input id="rm-file-input" class="rm-file-input" type="file" accept=".md" multiple',
+      '  aria-label="Upload one or more markdown strategy or data files" />',
+      '<p class="rm-hint">Accepts .md files up to 1 MB each. UTF-8 text only.</p>',
+      '<div id="rm-error" class="rm-error" role="alert" aria-live="polite"></div>',
+      '<div class="rm-actions">',
+        '<button id="rm-upload-btn" class="sw-btn sw-btn--primary" type="button">Upload and continue</button>',
+        '<form method="POST" action="/api/journey/' + safeId + '/reference-modal/skip" style="margin:0">',
+          '<button class="rm-skip" type="submit">Skip — continue without files</button>',
+        '</form>',
+      '</div>',
+    '</div>',
+    '<script>',
+    '(function(){',
+    '  var btn = document.getElementById("rm-upload-btn");',
+    '  var inp = document.getElementById("rm-file-input");',
+    '  var err = document.getElementById("rm-error");',
+    '  btn.addEventListener("click", async function() {',
+    '    var files = Array.from(inp.files || []);',
+    '    if (!files.length) {',
+    '      err.textContent = "Please select at least one file, or click Skip.";',
+    '      err.style.display = "block"; return;',
+    '    }',
+    '    err.style.display = "none";',
+    '    btn.disabled = true; btn.textContent = "Uploading…";',
+    '    var payloads = await Promise.all(files.map(function(f) {',
+    '      return new Promise(function(resolve) {',
+    '        var reader = new FileReader();',
+    '        reader.onload = function(e) {',
+    '          var b64 = btoa(String.fromCharCode.apply(null, new Uint8Array(e.target.result)));',
+    '          resolve({ name: f.name, size: f.size, contentBase64: b64 });',
+    '        };',
+    '        reader.readAsArrayBuffer(f);',
+    '      });',
+    '    }));',
+    '    var resp = await fetch("/api/journey/' + safeId + '/reference-upload", {',
+    '      method: "POST",',
+    '      headers: { "Content-Type": "application/json" },',
+    '      body: JSON.stringify({ files: payloads })',
+    '    });',
+    '    var data = await resp.json();',
+    '    if (resp.ok || data.saved && data.saved.length > 0) {',
+    '      window.location.href = "/api/journey/' + safeId + '/reference-modal/start";',
+    '    } else {',
+    '      err.textContent = data.errors ? data.errors.map(function(e) { return e.name + ": " + e.error; }).join("; ") : "Upload failed.";',
+    '      err.style.display = "block";',
+    '      btn.disabled = false; btn.textContent = "Upload and continue";',
+    '    }',
+    '  });',
+    '})();',
+    '</script>'
+  ].join('\n');
+
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(renderShell({ title: 'Strategy grounding — ' + featureName, bodyContent: body, user: { login: req.session.login || '' }, active: 'journey' }));
+}
+
+/**
+ * GET /api/journey/:journeyId/reference-modal/start (sdg.1)
+ * Starts the first skill session after the upload modal (or after skip).
+ */
+async function handleGetReferenceModalStart(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Journey not found.</p>', user: { login: req.session.login || '' } }));
+    return;
+  }
+  var startSkill  = journey.pendingStartSkill || 'discovery';
+  var featureSlug = journey.featureSlug || '';
+  var profileName = journey.productProfile || 'default';
+  var repoRoot    = getRepoRoot(req);
+
+  var sid         = crypto.randomUUID();
+  var sessionPath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', sid);
+
+  getRegisterHtmlSession()(sid, sessionPath, startSkill, { productProfile: profileName, featureSlug: featureSlug });
+  getLinkSessionToJourney()(sid, journeyId);
+  if (_journeyStore.setActiveSession) {
+    _journeyStore.setActiveSession(journeyId, sid, startSkill);
+  }
+  try { _journeyDisk.updateStage(featureSlug, startSkill, { status: 'active', sessionId: sid }, repoRoot); } catch (_) {}
+
+  res.writeHead(303, { Location: '/skills/' + encodeURIComponent(startSkill) + '/sessions/' + sid + '/chat' });
+  res.end();
+}
+
+/**
+ * POST /api/journey/:journeyId/reference-modal/skip (sdg.1)
+ * Skips the upload modal and proceeds to the first skill session.
+ */
+async function handlePostReferenceModalSkip(req, res) {
+  req.params = req.params || {};
+  return handleGetReferenceModalStart(req, res);
+}
+
+// ---------------------------------------------------------------------------
 // Step 7 — Reference folder upload UI
 // ---------------------------------------------------------------------------
 
@@ -1262,6 +1411,108 @@ async function handlePostReference(req, res) {
 
   res.writeHead(303, { Location: '/journey/' + encodeURIComponent(journeyId) + '/reference' });
   res.end();
+}
+
+/**
+ * POST /api/journey/:journeyId/reference-upload (sdg.1)
+ * Accepts JSON body { files: [{name, size, contentBase64}] }.
+ * Validates each file, writes valid files to disk, updates journey.referenceFiles.
+ * Returns JSON { saved: [...], errors: [...] }.
+ */
+async function handlePostReferenceUpload(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Journey not found' }));
+    return;
+  }
+
+  var body = req.body;
+  if (!body) {
+    body = await _readJsonBody(req);
+  }
+  var files = (body && Array.isArray(body.files)) ? body.files : [];
+
+  var repoRoot    = getRepoRoot(req);
+  var featureSlug = journey.featureSlug || '';
+  var validator   = require('../modules/reference-validator');
+
+  var saved  = [];
+  var errors = [];
+
+  for (var i = 0; i < files.length; i++) {
+    var f = files[i];
+    var filename = (f.name || '').trim();
+
+    // Path traversal guard — check filename before any processing
+    var refDir   = path.resolve(repoRoot, 'artefacts', featureSlug, 'reference');
+    var outPath  = path.resolve(refDir, filename);
+    if (!outPath.startsWith(path.resolve(repoRoot) + path.sep)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid filename: path traversal detected' }));
+      return;
+    }
+
+    var contentBuf;
+    try {
+      contentBuf = Buffer.from(f.contentBase64 || '', 'base64');
+    } catch (_) {
+      errors.push({ name: filename, error: 'Failed to decode file content' });
+      continue;
+    }
+
+    var result = validator.validateReferenceFile({ name: filename, size: f.size || contentBuf.length, content: contentBuf });
+    if (!result.valid) {
+      errors.push({ name: filename, error: result.error });
+      continue;
+    }
+
+    try {
+      validator.writeReferenceFile(repoRoot, featureSlug, filename, contentBuf.toString('utf8'));
+      saved.push(filename);
+    } catch (err) {
+      errors.push({ name: filename, error: err.message });
+    }
+  }
+
+  // Update journey.referenceFiles
+  if (saved.length > 0) {
+    var now = new Date().toISOString();
+    var existing = journey.referenceFiles || [];
+    var newEntries = saved.map(function(name) {
+      return {
+        path: 'artefacts/' + featureSlug + '/reference/' + name,
+        uploadedAt: now,
+        sizeBytes: (function() {
+          var f2 = files.find(function(x) { return x.name === name; });
+          return f2 ? (f2.size || 0) : 0;
+        }())
+      };
+    });
+    _journeyStore.setJourneyFields(journeyId, { referenceFiles: existing.concat(newEntries) });
+  }
+
+  var status = errors.length > 0 && saved.length === 0 ? 400 : (errors.length > 0 ? 207 : 200);
+  res.writeHead(status, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ saved: saved, errors: errors }));
+}
+
+function _readJsonBody(req) {
+  return new Promise(function(resolve) {
+    if (req.body !== undefined) { resolve(req.body); return; }
+    var raw = '';
+    req.on('data', function(c) { raw += c; });
+    req.on('end', function() {
+      try { resolve(JSON.parse(raw)); } catch (_) { resolve({}); }
+    });
+    req.on('error', function() { resolve({}); });
+  });
 }
 
 /**
@@ -3053,6 +3304,10 @@ module.exports = {
   handleGetStageReview,
   handleGetReference,
   handlePostReference,
+  handlePostReferenceUpload,
+  handleGetReferenceModal,
+  handleGetReferenceModalStart,
+  handlePostReferenceModalSkip,
   handlePostGateConfirm,
   handleGetStories,
   handlePostStories,

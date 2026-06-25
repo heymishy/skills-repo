@@ -35,6 +35,7 @@
     {
       "slug": "2026-06-22-skills-infra-migration-tracks",
       "name": "Skills Infrastructure and Schema-Migration Pipeline Tracks",
+      "track": "library",
       "stage": "definition",
       "health": "green",
       "updatedAt": "2026-06-25T00:00:00Z",
@@ -199,6 +200,7 @@
       ],
       "stories": [
         {
+          "id": "shr.1",
           "slug": "shr.1",
           "name": "Extend pipeline-state schema and harness for infra and migration track flags",
           "stage": "definition-of-done",
@@ -214,6 +216,7 @@
           "releaseReady": true
         },
         {
+          "id": "shr.2",
           "slug": "shr.2",
           "name": "Support ops/ path prefix for standalone infra changes",
           "stage": "definition-of-done",
@@ -229,6 +232,7 @@
           "releaseReady": true
         },
         {
+          "id": "inf.1",
           "slug": "inf.1",
           "name": "Write infra-definition SKILL.md with blast-radius, rollback, and tier-applicability artefact template",
           "stage": "definition-of-done",
@@ -244,6 +248,7 @@
           "releaseReady": true
         },
         {
+          "id": "inf.2",
           "slug": "inf.2",
           "name": "Write infra-review SKILL.md with DESTRUCTIVE/REVERSIBLE-HIGH/ADVISORY severity scale",
           "stage": "definition-of-done",
@@ -258,6 +263,7 @@
           "releaseReady": true
         },
         {
+          "id": "inf.3",
           "slug": "inf.3",
           "name": "Write infra-plan SKILL.md as the infra track sign-off skill",
           "stage": "definition-of-done",
@@ -272,6 +278,7 @@
           "releaseReady": true
         },
         {
+          "id": "inf.5",
           "slug": "inf.5",
           "name": "Extend chain-hash trace to emit on infra-plan sign-off",
           "stage": "definition-of-done",
@@ -286,6 +293,7 @@
           "releaseReady": true
         },
         {
+          "id": "inf.4",
           "slug": "inf.4",
           "name": "Add H-INF hard block to /definition-of-ready SKILL.md",
           "stage": "definition-of-done",
@@ -300,6 +308,7 @@
           "releaseReady": true
         },
         {
+          "id": "mig.5",
           "slug": "mig.5",
           "name": "Write staging-data-policy template with three named options and declared-choice field",
           "stage": "definition-of-done",
@@ -314,6 +323,7 @@
           "releaseReady": true
         },
         {
+          "id": "mig.1",
           "slug": "mig.1",
           "name": "Write schema-migration-plan SKILL.md with additive/breaking classification and mandatory forward+rollback pair",
           "stage": "definition-of-done",
@@ -328,6 +338,7 @@
           "releaseReady": true
         },
         {
+          "id": "mig.2",
           "slug": "mig.2",
           "name": "Write schema-migration-review SKILL.md with rollback evidence check and classification validation",
           "stage": "definition-of-done",
@@ -342,6 +353,7 @@
           "releaseReady": true
         },
         {
+          "id": "mig.4",
           "slug": "mig.4",
           "name": "Extend chain-hash trace to emit on migration-review sign-off",
           "stage": "definition-of-done",
@@ -356,6 +368,7 @@
           "releaseReady": true
         },
         {
+          "id": "mig.3",
           "slug": "mig.3",
           "name": "Add H-MIG hard block to /definition-of-ready SKILL.md",
           "stage": "definition-of-done",
@@ -6048,9 +6061,65 @@
       "name": "Strategy and Data Hub",
       "track": "short",
       "health": "green",
-      "stage": "branch-complete",
+      "stage": "definition-of-ready",
       "discoveryStatus": "complete",
-      "artefact": "artefacts/2026-06-04-strategy-data-grounding/discovery.md"
+      "artefact": "artefacts/2026-06-04-strategy-data-grounding/discovery.md",
+      "stories": [
+        {
+          "id": "sdg.1",
+          "name": "Reference upload modal UI",
+          "stage": "definition-of-ready",
+          "testPlanStatus": "written",
+          "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg1-test-plan.md",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub-dor-sdg-1/definition-of-ready.md"
+        },
+        {
+          "id": "sdg.2",
+          "name": "Reference file persistence in journey state",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub-dor-sdg-2/definition-of-ready.md",
+          "testPlanStatus": "written",
+          "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg2-test-plan.md"
+        },
+        {
+          "id": "sdg.3",
+          "name": "Reference file content reading and validation",
+          "stage": "definition-of-ready",
+          "testPlanStatus": "written",
+          "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg3-test-plan.md",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg3-dor.md"
+        },
+        {
+          "id": "sdg.4",
+          "name": "Reference content injection into /ideate system prompt",
+          "stage": "definition-of-ready",
+          "testPlanStatus": "written",
+          "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg4-test-plan.md",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg4-dor.md"
+        },
+        {
+          "id": "sdg.5",
+          "name": "Reference content injection into /discovery system prompt",
+          "stage": "definition-of-ready",
+          "testPlanStatus": "written",
+          "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg5-test-plan.md",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg5-dor.md"
+        },
+        {
+          "id": "sdg.6",
+          "name": "Callout markers in discovery artefact output",
+          "stage": "definition-of-ready",
+          "testPlanStatus": "written",
+          "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg6-test-plan.md",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg6-dor.md"
+        }
+      ]
     },
     {
       "slug": "2026-06-21-rtp-receiving-integration",
