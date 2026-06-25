@@ -130,6 +130,7 @@ All must pass. No exceptions. Run each check and record PASS or FAIL.
 | H-NFR-profile | NFR profile presence check (B1-enforce): if the story's NFR section is not "None" or blank, check that `artefacts/[feature]/nfr-profile.md` exists. If absent, fire as a hard block: "H-NFR-profile FAIL: story declares NFRs but no feature NFR profile exists at artefacts/[feature]/nfr-profile.md. Create the NFR profile (run /definition Step 7) before sign-off." If the story's NFR section is "None" or blank, skip this check. | Story + NFR profile |
 | H-GOV | Governance approval check: `## Approved By` section in the discovery artefact must contain ≥1 non-blank named entry. Read the artefact directly from the file system (not pipeline-state.json). Presence-only check per ADR-017. See H-GOV detail section below. | Discovery artefact |
 | H-ADAPTER | Injectable adapter wiring check (D37): if the story introduces one or more injectable adapters (`setX()` functions), each adapter must have (a) an explicit AC scoping the production wiring in the server/wiring module, (b) the stub default must throw (not return null/empty — silently safe-looking returns mask misconfiguration), and (c) the implementation plan must name the wiring as a separate task from the handler task. If any adapter lacks a wiring AC, fire as hard block: "H-ADAPTER FAIL: adapter `setX` is introduced by this story but no AC scopes its production wiring in server.js (or equivalent). Add a wiring AC before sign-off." | Story ACs + DoR contract |
+| H-INF | Infra-plan gate check (inf.4): if the story's pipeline-state entry has `hasInfraTrack: true`, check that `infraPlanPath` is set and that the artefact at that path contains a `**Status: PASS**` line. If `hasInfraTrack` is absent or false, skip this check entirely — existing H1-H9, H-E2E, H-NFR, H-GOV, H-ADAPTER blocks are unaffected. See H-INF detail section below. | pipeline-state.json + infra-plan artefact |
 
 **If any hard block fails - stop immediately:**
 
@@ -179,6 +180,33 @@ If the benefit-metric artefact contains an "Attribution incomplete" note, this i
 **M1 metric signal:**
 - When Approved By has text but the role is not clearly non-engineering: H-GOV passes — record M1 signal (role unverified for independent sign-off quality).
 - When the approver title clearly identifies them as non-engineering (PM, product owner, business stakeholder): record positive M1 signal.
+
+---
+
+### H-INF — Infra-plan gate detail
+
+<!-- h-inf-block -->
+
+**Trigger condition:** This check fires only when the story's pipeline-state entry has `hasInfraTrack: true`. When `hasInfraTrack` is absent or false, skip H-INF entirely — H1-H9, H-E2E, H-NFR, H-GOV, and H-ADAPTER are unaffected.
+
+**When `hasInfraTrack: true`:**
+
+Read `infraPlanPath` from the story's pipeline-state entry. Evaluate the following cases:
+
+**AC1 (FAIL — infraPlanPath absent):** `infraPlanPath` is not set or is blank in the pipeline-state entry:
+
+> ❌ **H-INF FAIL — infraPlanPath not set**
+> The story has `hasInfraTrack: true` but `infraPlanPath` is not recorded in pipeline-state.json.
+> Resolution: run `/infra-plan` for this story and record the resulting artefact path in `infraPlanPath` before DoR sign-off.
+
+**AC2 (FAIL — artefact does not contain PASS status):** `infraPlanPath` is set but the artefact at that path does not contain a `**Status: PASS**` line:
+
+> ❌ **H-INF FAIL — infra-plan artefact at `[infraPlanPath]` does not contain Status: PASS**
+> The artefact exists but has not been signed off. Complete the `/infra-plan` sign-off so the artefact contains `**Status: PASS**` before DoR sign-off.
+
+**AC3 (PASS):** `infraPlanPath` is set and the artefact at that path contains `**Status: PASS**`:
+
+> ✅ **H-INF PASS — infra-plan sign-off confirmed at `[infraPlanPath]`**
 
 ---
 
