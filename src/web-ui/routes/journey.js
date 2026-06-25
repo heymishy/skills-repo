@@ -1376,6 +1376,31 @@ async function handlePostGateConfirm(req, res) {
     });
   }
 
+  // inf.5: chain-hash trace emission for infra-plan sign-off (ADR-023)
+  if (session.skillName === 'infra-plan' && stateWriteSucceeded) {
+    var infraOperatorEmail = '';
+    try { infraOperatorEmail = require('child_process').execSync('git config user.email', { encoding: 'utf8' }).trim(); } catch (_) {}
+    var infraPlanPath = session.infraPlanPath ||
+      ('artefacts/' + journey.featureSlug + '/infra/' + storyId + '-infra-plan.md');
+    var infraPlanHash = '';
+    try {
+      var infraPlanAbsPath = path.resolve(path.join(repoRoot, infraPlanPath));
+      var infraPlanContent = fs.readFileSync(infraPlanAbsPath, 'utf8');
+      infraPlanHash = crypto.createHash('sha256').update(infraPlanContent).digest('hex');
+    } catch (_e) {}
+    _writeTrace({
+      timestamp: new Date().toISOString(),
+      featureSlug: journey.featureSlug,
+      storyId: storyId,
+      stage: session.skillName,
+      event: 'infra-plan-sign-off',
+      infraPlanPath: infraPlanPath,
+      infraPlanHash: infraPlanHash,
+      operatorEmail: infraOperatorEmail,
+      exitCode: 0
+    });
+  }
+
   // Build priorArtefacts from all completed stages (read authoritative disk content)
   // completedStages entries may be objects { skillName, artefactPath } or legacy strings
   var updatedJourney = _journeyStore.getJourney(journeyId);
