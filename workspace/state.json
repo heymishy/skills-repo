@@ -1,6 +1,6 @@
 {
-  "currentPhase": "definition",
-  "lastUpdated": "2026-06-25T00:00:00Z",
+  "currentPhase": "branch-complete",
+  "lastUpdated": "2026-06-25T12:00:00Z",
   "activeFeature": "2026-05-18-skill-robustness-improvements",
   "cycle": {
     "definition": {
@@ -25,19 +25,51 @@
       "commit": "a3a7826",
       "storiesCompleted": ["shr.1", "shr.2", "inf.1", "inf.2", "inf.3", "inf.4", "inf.5", "mig.1", "mig.2", "mig.3", "mig.4", "mig.5"],
       "outcome": "COMPLETE — all 12 stories COMPLETE, 126 tests passing, 0 failures"
+    },
+    "inner-loop-sri": {
+      "status": "branch-complete",
+      "completedAt": "2026-06-25",
+      "stories": {
+        "sri.1": {
+          "branch": "feature/sri.1",
+          "commit": "f53f7a8",
+          "pr": "https://github.com/heymishy/skills-repo/pull/410",
+          "prStatus": "draft",
+          "tests": "13/13 passing",
+          "acVerified": 5
+        },
+        "sri.2": {
+          "branch": "feature/sri.2",
+          "commit": "91fb32b",
+          "pr": "https://github.com/heymishy/skills-repo/pull/411",
+          "prStatus": "draft",
+          "tests": "5/5 passing",
+          "acVerified": 5
+        },
+        "sri.3": {
+          "branch": "feature/sri.3",
+          "commit": "9e158a2",
+          "pr": "https://github.com/heymishy/skills-repo/pull/412",
+          "prStatus": "draft",
+          "tests": "8/8 passing",
+          "acVerified": 5
+        }
+      }
     }
   },
   "checkpoint": {
     "writtenAt": "2026-06-25",
-    "contextAtWrite": "2026-05-18-skill-robustness-improvements /definition complete. 3 story artefacts (sri.1/sri.2/sri.3) exist, epic and NFR profile written, guardrails and metrics seeded in pipeline-state. Previous session also completed all 12 DoD artefacts for 2026-06-22-skills-infra-migration-tracks (commit a3a7826). bsr-workforce-planner archived (implemented in another repo). 2026-05-21-ideate-web-ux confirmed fully implemented already.",
-    "resumeInstruction": "2026-05-18-skill-robustness-improvements /definition is COMPLETE. Next step: run /review for each of sri.1, sri.2, sri.3 in sequence. All 3 are complexity-1 SKILL.md text-only changes — review should be fast. After review passes (no HIGH findings per story), run /test-plan per story, then /definition-of-ready.",
+    "contextAtWrite": "Inner loop complete for sri.1/sri.2/sri.3. All three stories implemented, tested, committed, and draft PRs opened. sri.2 and sri.3 both touch skills/definition-of-done/SKILL.md and must be merged sequentially to avoid conflicts. All pre-commit hooks passed on all three branches.",
+    "resumeInstruction": "Three draft PRs are awaiting human review. PR #410 (sri.1): 5-second fetch timeout in 3 SKILL.md files. PR #411 (sri.2): expanded DoD entry condition. PR #412 (sri.3): measurement-ready gate in DoD Step 6. After human review and merge: merge sri.1 first, then sri.2, then sri.3 (sri.2 and sri.3 both touch definition-of-done/SKILL.md — resolve conflicts carefully). After each merge: run /definition-of-done for that story, then update pipeline-state stage=definition-of-done on master.",
     "pendingActions": [
-      "Run /review for sri.1 (Add git fetch timeout and fallback in inner-loop skills) — SKILL.md text change, 3 files: branch-complete/SKILL.md, implementation-plan/SKILL.md, subagent-execution/SKILL.md",
-      "Run /review for sri.2 (Expand DoD entry condition message) — SKILL.md text change, 1 file: definition-of-done/SKILL.md",
-      "Run /review for sri.3 (Add measurement-ready gate to DoD Step 6) — SKILL.md text change, 1 file: definition-of-done/SKILL.md",
-      "iwu.6 DoD gate (Acceptance Criterion 3 — emission rate >= 70% verified): complete emission verification stub at artefacts/2026-05-21-ideate-web-ux/verification/iwu.6-emission-verification.md after running a real 6+ turn ideate session and verifying emission rate",
-      "M1 (Infra track completion time): measure after 3 real infra track sessions complete — operator self-reports elapsed time in infra-plan sign-off artefact",
-      "MM1 (Trace completeness): verify after first real feature uses both infra and migration tracks — run /trace and confirm both artefact types appear"
+      "Human review PR #410 (sri.1 — fetch timeout): https://github.com/heymishy/skills-repo/pull/410",
+      "Human review PR #411 (sri.2 — entry condition): https://github.com/heymishy/skills-repo/pull/411",
+      "Human review PR #412 (sri.3 — Step 6 gate): https://github.com/heymishy/skills-repo/pull/412",
+      "Merge sequentially: sri.1 first, then sri.2, then sri.3. sri.2 and sri.3 both modify skills/definition-of-done/SKILL.md — resolve conflicts if master has sri.2 changes when merging sri.3.",
+      "After each merge: run /definition-of-done for the story, update pipeline-state to stage=definition-of-done on master",
+      "iwu.6 DoD gate (Acceptance Criterion 3 — emission rate >= 70% verified): complete emission verification stub at artefacts/2026-05-21-ideate-web-ux/verification/iwu.6-emission-verification.md after running a real 6+ turn ideate session",
+      "M1 (Infra track completion time metric): measure after 3 real infra track sessions complete — operator self-reports elapsed time in infra-plan sign-off artefact",
+      "MM1 (Trace completeness meta-metric): verify after first real feature uses both infra and migration tracks"
     ]
   },
   "features": {
@@ -59,10 +91,14 @@
       "note": "Implemented in another repo — archived 2026-06-25. No further work in this repo."
     },
     "2026-05-18-skill-robustness-improvements": {
-      "status": "definition-complete",
-      "phase": "inner loop — ready for /review",
-      "storiesWritten": ["sri.1", "sri.2", "sri.3"],
-      "nextAction": "Run /review for sri.1, sri.2, sri.3 in sequence. All complexity-1 SKILL.md text-only changes."
+      "status": "branch-complete",
+      "phase": "awaiting human review and merge",
+      "prs": {
+        "sri.1": "https://github.com/heymishy/skills-repo/pull/410",
+        "sri.2": "https://github.com/heymishy/skills-repo/pull/411",
+        "sri.3": "https://github.com/heymishy/skills-repo/pull/412"
+      },
+      "nextAction": "Human review required for PRs #410 #411 #412. Merge sequentially (sri.1 → sri.2 → sri.3). After each merge: run /definition-of-done."
     },
     "2026-05-19-cli-deterministic-governance": {
       "status": "complete",
