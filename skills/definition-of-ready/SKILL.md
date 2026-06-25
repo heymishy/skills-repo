@@ -131,6 +131,7 @@ All must pass. No exceptions. Run each check and record PASS or FAIL.
 | H-GOV | Governance approval check: `## Approved By` section in the discovery artefact must contain ≥1 non-blank named entry. Read the artefact directly from the file system (not pipeline-state.json). Presence-only check per ADR-017. See H-GOV detail section below. | Discovery artefact |
 | H-ADAPTER | Injectable adapter wiring check (D37): if the story introduces one or more injectable adapters (`setX()` functions), each adapter must have (a) an explicit AC scoping the production wiring in the server/wiring module, (b) the stub default must throw (not return null/empty — silently safe-looking returns mask misconfiguration), and (c) the implementation plan must name the wiring as a separate task from the handler task. If any adapter lacks a wiring AC, fire as hard block: "H-ADAPTER FAIL: adapter `setX` is introduced by this story but no AC scopes its production wiring in server.js (or equivalent). Add a wiring AC before sign-off." | Story ACs + DoR contract |
 | H-INF | Infra-plan gate check (inf.4): if the story's pipeline-state entry has `hasInfraTrack: true`, check that `infraPlanPath` is set and that the artefact at that path contains a `**Status: PASS**` line. If `hasInfraTrack` is absent or false, skip this check entirely — existing H1-H9, H-E2E, H-NFR, H-GOV, H-ADAPTER blocks are unaffected. See H-INF detail section below. | pipeline-state.json + infra-plan artefact |
+| H-MIG | Migration-review gate check (mig.3): if the story's pipeline-state entry has `hasMigrationTrack: true`, check that `migrationReviewPath` is set, that the artefact at that path contains a `**Status: PASS**` line, and that breaking migrations have CI-tier rollback execution evidence. If `hasMigrationTrack` is absent or false, skip this check entirely — existing H1-H9, H-E2E, H-NFR, H-GOV, H-ADAPTER, H-INF blocks are unaffected. See H-MIG detail section below. | pipeline-state.json + migration-review artefact |
 
 **If any hard block fails - stop immediately:**
 
@@ -207,6 +208,36 @@ Read `infraPlanPath` from the story's pipeline-state entry. Evaluate the followi
 **AC3 (PASS):** `infraPlanPath` is set and the artefact at that path contains `**Status: PASS**`:
 
 > ✅ **H-INF PASS — infra-plan sign-off confirmed at `[infraPlanPath]`**
+
+### H-MIG — Migration-review gate detail
+
+<!-- h-mig-block -->
+
+**Trigger condition:** This check fires only when the story's pipeline-state entry has `hasMigrationTrack: true`. When `hasMigrationTrack` is absent or false, skip H-MIG entirely — H1-H9, H-E2E, H-NFR, H-GOV, H-ADAPTER, and H-INF are unaffected.
+
+**When `hasMigrationTrack: true`:**
+
+Read `migrationReviewPath` from the story's pipeline-state entry. Evaluate the following cases:
+
+**AC1 (FAIL — migrationReviewPath absent):** `migrationReviewPath` is not set or is blank:
+
+> ❌ **H-MIG FAIL — migrationReviewPath not set**
+> The story has `hasMigrationTrack: true` but `migrationReviewPath` is not recorded in pipeline-state.json.
+> Resolution: run `/schema-migration-review` for this story and record the resulting artefact path in `migrationReviewPath` before DoR sign-off.
+
+**AC2 (FAIL — artefact does not contain PASS status):** `migrationReviewPath` is set but the artefact at that path does not contain a `**Status: PASS**` line:
+
+> ❌ **H-MIG FAIL — migration-review artefact at `[migrationReviewPath]` does not contain Status: PASS**
+> Complete `/schema-migration-review` so the artefact contains `**Status: PASS**` before DoR sign-off.
+
+**AC3 (FAIL — breaking migration without CI-tier rollback execution evidence):** `migrationReviewPath` is set and the artefact contains `**Status: PASS**`, but the migration classification is `breaking` and the review artefact does not include CI-tier rollback execution evidence (log snippet, test result, or operator attestation):
+
+> ❌ **H-MIG FAIL — breaking migration at `[migrationReviewPath]` lacks CI-tier rollback execution evidence**
+> Breaking migrations require evidence that the rollback command was executed on a CI-equivalent environment. Provide a log snippet, test result, or operator attestation in the migration-review artefact before DoR sign-off.
+
+**AC4 (PASS):** `migrationReviewPath` is set, the artefact contains `**Status: PASS**`, and (if breaking) CI-tier rollback execution evidence is present:
+
+> ✅ **H-MIG PASS — migration-review sign-off confirmed at `[migrationReviewPath]`**
 
 ---
 
