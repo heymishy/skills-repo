@@ -4608,7 +4608,56 @@
           "health": "green"
         }
       ],
-      "updatedAt": "2026-05-26"
+      "updatedAt": "2026-06-25",
+      "guardrails": [
+        {
+          "id": "ADR-011",
+          "status": "compliant",
+          "notes": "Story artefacts exist for all 3 SKILL.md changes (sri.1, sri.2, sri.3)"
+        },
+        {
+          "id": "platform-change-policy",
+          "status": "compliant",
+          "notes": "All changes to .github/skills/*.md governed files — PR with platform review required before merge"
+        },
+        {
+          "id": "MC-SEC-02",
+          "status": "compliant",
+          "notes": "No credentials, tokens, or personal data introduced — SKILL.md text changes only"
+        }
+      ],
+      "metrics": [
+        {
+          "id": "M1",
+          "label": "Inner loop hang-free rate on no-origin repos",
+          "contributingStories": [
+            "sri.1"
+          ],
+          "signal": "not-yet-measured",
+          "target": "100% — all 3 skills handle missing/unreachable origin with warning and fallback",
+          "baseline": "0% — hangs indefinitely (confirmed OrderHub 2026-05-10)"
+        },
+        {
+          "id": "M2",
+          "label": "DoD entry condition actionability (3 of 3 elements present)",
+          "contributingStories": [
+            "sri.2"
+          ],
+          "signal": "not-yet-measured",
+          "target": "3 of 3 elements present in shipped SKILL.md entry condition block",
+          "baseline": "0 of 3 elements present"
+        },
+        {
+          "id": "M3",
+          "label": "Infrastructure story DoD Step 6 completion time",
+          "contributingStories": [
+            "sri.3"
+          ],
+          "signal": "not-yet-measured",
+          "target": "Under 30 seconds for Step 6 on an infrastructure story",
+          "baseline": ">2 minutes with no satisfactory outcome"
+        }
+      ]
     },
     {
       "slug": "2026-05-20-cloud-platform",
