@@ -26,9 +26,7 @@
     "resumeInstruction": "skills-infra-migration-tracks is COMPLETE. All 12 stories DoD-signed-off. Pending parallel work: (1) iwu.1-6 are DoR-signed-off — run /branch-setup for iwu.1 (context manifest panel); (2) bsr-workforce-planner Phase 2 — wfp.12-16 DoR signed-off, run /branch-setup for wfp.12 (heat-map); (3) 2026-05-18-skill-robustness-improvements at benefit-metric-active — run /definition for sri.1/sri.2/sri.3.",
     "pendingActions": [
       "Run /branch-setup for iwu.1 (context manifest panel for ideate-web-ux) — no upstream dependencies, ready to implement",
-      "Run /branch-setup for wfp.12 (heat-map story for bsr-workforce-planner Phase 2) — no upstream code dependencies",
       "Run /definition for 2026-05-18-skill-robustness-improvements to write sri.1/sri.2/sri.3 story artefacts",
-      "Finance/planning lead reviewer still required for bsr-workforce-planner benefit-metric.md (non-engineering approver TO BE NAMED)",
       "iwu.6 DoD gate (Acceptance Criterion 3 — emission rate >=70% verified): complete emission verification stub at artefacts/2026-05-21-ideate-web-ux/verification/iwu.6-emission-verification.md after iwu.3/iwu.4/iwu.5 merge",
       "M1 (Infra track completion time): measure after 3 real infra track sessions complete — operator self-reports elapsed time in infra-plan sign-off artefact",
       "MM1 (Trace completeness): verify after first real feature uses both infra and migration tracks — run /trace and confirm both artefact types appear"
@@ -50,10 +48,8 @@
       "nextAction": "run /branch-setup for iwu.1 (context manifest panel) — no upstream story dependencies"
     },
     "2026-05-26-bsr-workforce-planner": {
-      "status": "definition-of-ready",
-      "phase": "Phase 2 — intelligence layer (wfp.12-wfp.16)",
-      "dorSignedOff": ["wfp.12", "wfp.13", "wfp.14", "wfp.15", "wfp.16"],
-      "nextAction": "run /branch-setup for wfp.12 (heat-map) — no upstream code dependencies"
+      "status": "archived",
+      "note": "Implemented in another repo — archived 2026-06-25. No further work in this repo."
     },
     "2026-05-18-skill-robustness-improvements": {
       "status": "benefit-metric-active",
