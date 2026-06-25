@@ -201,7 +201,7 @@
         {
           "slug": "shr.1",
           "name": "Extend pipeline-state schema and harness for infra and migration track flags",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -214,7 +214,7 @@
         {
           "slug": "shr.2",
           "name": "Support ops/ path prefix for standalone infra changes",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
