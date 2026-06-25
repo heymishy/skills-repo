@@ -336,13 +336,14 @@
         {
           "slug": "mig.3",
           "name": "Add H-MIG hard block to /definition-of-ready SKILL.md",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "schema-migration-track",
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "merged"
         }
       ]
     },
