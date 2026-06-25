@@ -208,7 +208,8 @@
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "shared-infrastructure",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/398"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/398",
+          "dorStatus": "signed-off"
         },
         {
           "slug": "shr.2",
@@ -219,38 +220,44 @@
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "shared-infrastructure",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/399"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/399",
+          "dorStatus": "signed-off"
         },
         {
           "slug": "inf.1",
           "name": "Write infra-definition SKILL.md with blast-radius, rollback, and tier-applicability artefact template",
-          "stage": "review",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
-          "epicSlug": "infra-track"
+          "epicSlug": "infra-track",
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/400"
         },
         {
           "slug": "inf.2",
           "name": "Write infra-review SKILL.md with DESTRUCTIVE/REVERSIBLE-HIGH/ADVISORY severity scale",
-          "stage": "review",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
-          "epicSlug": "infra-track"
+          "epicSlug": "infra-track",
+          "dorStatus": "signed-off"
         },
         {
           "slug": "inf.3",
           "name": "Write infra-plan SKILL.md as the infra track sign-off skill",
-          "stage": "review",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
-          "epicSlug": "infra-track"
+          "epicSlug": "infra-track",
+          "dorStatus": "signed-off"
         },
         {
           "slug": "inf.5",
@@ -277,12 +284,13 @@
         {
           "slug": "mig.5",
           "name": "Write staging-data-policy template with three named options and declared-choice field",
-          "stage": "review",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
-          "epicSlug": "schema-migration-track"
+          "epicSlug": "schema-migration-track",
+          "dorStatus": "signed-off"
         },
         {
           "slug": "mig.1",
@@ -298,12 +306,13 @@
         {
           "slug": "mig.2",
           "name": "Write schema-migration-review SKILL.md with rollback evidence check and classification validation",
-          "stage": "review",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
-          "epicSlug": "schema-migration-track"
+          "epicSlug": "schema-migration-track",
+          "dorStatus": "signed-off"
         },
         {
           "slug": "mig.4",
