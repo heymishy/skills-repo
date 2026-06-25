@@ -265,17 +265,29 @@ Fan-out concurrent worktrees each hold a stale copy of `pipeline-state.json` fro
 
 ```js
 const { execSync } = require('child_process');
-execSync('git fetch origin master');
-const masterSha = execSync('git rev-parse origin/master').toString().trim();
-const s = JSON.parse(execSync('git show origin/master:.github/pipeline-state.json').toString());
-console.log(`[pipeline-state] read from master @ ${masterSha}`);
+// Wrap fetch in try/catch with a 5-second timeout. If origin is not reachable,
+// fall back to the local branch copy of pipeline-state.json and warn the operator.
+let usingLocalCopy = false;
+try {
+  execSync('git fetch origin master', { timeout: 5000 });
+} catch (_) {
+  console.warn('[pipeline-state] WARNING: origin not reachable — falling back to local branch copy. Verify state accuracy before merging.');
+  usingLocalCopy = true;
+}
+const masterSha = usingLocalCopy
+  ? execSync('git rev-parse HEAD').toString().trim()
+  : execSync('git rev-parse origin/master').toString().trim();
+const s = usingLocalCopy
+  ? JSON.parse(require('fs').readFileSync('.github/pipeline-state.json', 'utf8'))
+  : JSON.parse(execSync('git show origin/master:.github/pipeline-state.json').toString());
+console.log(`[pipeline-state] read from ${usingLocalCopy ? 'local worktree file' : 'master'} @ ${masterSha}`);
 // --- apply only this story's fields to s ---
 require('fs').writeFileSync('.github/pipeline-state.json', JSON.stringify(s, null, 2) + '\n', 'utf8');
 ```
 
 **Rule (five steps, no exceptions):**
-1. `git fetch origin master` — sync remote refs first
-2. Read from `git show origin/master:.github/pipeline-state.json` — not from the worktree file
+1. `git fetch origin master` with a 5-second timeout — if origin is not reachable, warn and fall back to the local branch copy
+2. Read from `git show origin/master:.github/pipeline-state.json` (or the local worktree file on fallback) — not from the stale worktree file unless origin is unreachable
 3. Log the SHA — one-line audit trail enabling post-hoc reconstruction of any merge inconsistency
 4. Apply only this story's fields to the fetched state
 5. Write back — the worktree file is now current-master + this story's update
