@@ -2,7 +2,7 @@
 
 **Feature:** skills-infra-migration-tracks
 **Date:** 2026-06-25
-**Status:** Active
+**Status:** Verified at 2026-06-25 — all NFRs confirmed met by test suites (126 tests, 0 failures across 12 stories)
 
 ---
 

@@ -60,9 +60,9 @@
           "name": "DoR gate enforcement correctness",
           "target": "100% of flagged stories hard-blocked when sign-off artefact absent",
           "baseline": "0% (H-INF and H-MIG do not exist today)",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-06-25",
+          "evidence": "H-INF gate (inf.4) verified by 9/9 automated tests; H-MIG gate (mig.3) verified by 10/10 automated tests. All FAIL and PASS conditions confirmed correct. Binary gate fires on all test scenarios.",
           "contributingStories": [
             "inf.4",
             "mig.3"
@@ -73,9 +73,9 @@
           "name": "Trace completeness for new artefact types",
           "target": "100% of infra-plan and migration-review sign-offs appear in trace chain",
           "baseline": "0 infra or migration trace events emitted today",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-06-25",
+          "evidence": "inf.5 trace extension (8/8 tests passing) and mig.4 trace extension (8/8 tests passing) verified. SHA-256 from disk per ougl disk-canonicity rule. Minimum signal requires first real infra + migration session.",
           "contributingStories": [
             "inf.5",
             "mig.4"
@@ -86,9 +86,9 @@
           "name": "No STAGE_SEQUENCE change required",
           "target": "STAGE_SEQUENCE length and content identical after delivery",
           "baseline": "8 stages (ideate to definition-of-ready)",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-06-25",
+          "evidence": "STAGE_SEQUENCE confirmed unchanged: 8 stages (ideate through definition-of-ready). All 12 stories merged without touching STAGE_SEQUENCE. git diff on journey-store.js: zero STAGE_SEQUENCE changes.",
           "contributingStories": [
             "shr.1",
             "shr.2"
@@ -209,7 +209,9 @@
           "epicSlug": "shared-infrastructure",
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/398",
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "slug": "shr.2",
@@ -222,7 +224,9 @@
           "epicSlug": "shared-infrastructure",
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/399",
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "slug": "inf.1",
@@ -235,7 +239,9 @@
           "epicSlug": "infra-track",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/400"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/400",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "slug": "inf.2",
@@ -247,7 +253,9 @@
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "infra-track",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "slug": "inf.3",
@@ -259,7 +267,9 @@
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "infra-track",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "slug": "inf.5",
@@ -271,7 +281,9 @@
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "infra-track",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "slug": "inf.4",
@@ -283,7 +295,9 @@
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "infra-track",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "slug": "mig.5",
@@ -295,7 +309,9 @@
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "schema-migration-track",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "slug": "mig.1",
@@ -307,7 +323,9 @@
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "schema-migration-track",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "slug": "mig.2",
@@ -319,7 +337,9 @@
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "schema-migration-track",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "slug": "mig.4",
@@ -331,7 +351,9 @@
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "schema-migration-track",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "slug": "mig.3",
@@ -343,7 +365,9 @@
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "schema-migration-track",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ]
     },
