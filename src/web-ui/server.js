@@ -26,7 +26,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetStageReview, handleGetReference, handlePostReference, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handlePostWizardSelection } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4
+const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetStageReview, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handlePostWizardSelection } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 
@@ -503,6 +503,26 @@ async function router(req, res) {
     // step7 — save reference doc
     req.params = { journeyId: pathname.split('/')[3] };
     await handlePostReference(req, res);
+
+  } else if (pathname.match(/^\/journey\/[^/]+\/reference-modal$/) && req.method === 'GET') {
+    // sdg.1 — strategy grounding modal (new-product upload gate)
+    req.params = { journeyId: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handleGetReferenceModal(req, res); });
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/reference-upload$/) && req.method === 'POST') {
+    // sdg.1 — reference file upload handler (JSON body: {files:[{name,size,contentBase64}]})
+    req.params = { journeyId: pathname.split('/')[3] };
+    authGuard(req, res, async () => { await handlePostReferenceUpload(req, res); });
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/reference-modal\/start$/) && req.method === 'GET') {
+    // sdg.1 — start first skill session after upload modal
+    req.params = { journeyId: pathname.split('/')[3] };
+    authGuard(req, res, async () => { await handleGetReferenceModalStart(req, res); });
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/reference-modal\/skip$/) && req.method === 'POST') {
+    // sdg.1 — skip strategy grounding and proceed to first skill
+    req.params = { journeyId: pathname.split('/')[3] };
+    authGuard(req, res, async () => { await handlePostReferenceModalSkip(req, res); });
 
   } else if (pathname === '/api/journey' && req.method === 'POST') {
     // ougl.3 — start journey + discovery session
