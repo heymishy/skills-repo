@@ -288,13 +288,15 @@
         {
           "slug": "mig.5",
           "name": "Write staging-data-policy template with three named options and declared-choice field",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "schema-migration-track",
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/403"
         },
         {
           "slug": "mig.1",
@@ -310,13 +312,15 @@
         {
           "slug": "mig.2",
           "name": "Write schema-migration-review SKILL.md with rollback evidence check and classification validation",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "updatedAt": "2026-06-25T00:00:00Z",
           "epicSlug": "schema-migration-track",
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/404"
         },
         {
           "slug": "mig.4",
