@@ -4574,17 +4574,17 @@
         {
           "id": "sri.1",
           "title": "Add git fetch timeout and fallback in inner-loop skills",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "complexity": 1,
           "scopeStability": "stable",
           "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.1.md",
           "prStatus": "merged",
           "dorStatus": "signed-off",
-          "traceStatus": "not-run",
+          "traceStatus": "passed",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "updatedAt": "2026-06-25",
+          "updatedAt": "2026-06-26",
           "testPlan": {
             "status": "written",
             "totalTests": 13,
@@ -4601,17 +4601,17 @@
         {
           "id": "sri.2",
           "title": "Expand DoD entry condition message with actionable guidance",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "complexity": 1,
           "scopeStability": "stable",
           "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.2.md",
           "prStatus": "merged",
           "dorStatus": "signed-off",
-          "traceStatus": "not-run",
+          "traceStatus": "passed",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "updatedAt": "2026-06-25",
+          "updatedAt": "2026-06-26",
           "testPlan": {
             "status": "written",
             "totalTests": 5,
@@ -4628,17 +4628,17 @@
         {
           "id": "sri.3",
           "title": "Add measurement-ready gate to DoD Step 6 for infrastructure stories",
-          "stage": "definition-of-done",
+          "stage": "trace",
           "complexity": 1,
           "scopeStability": "stable",
           "artefact": "artefacts/2026-05-18-skill-robustness-improvements/stories/sri.3.md",
           "prStatus": "merged",
           "dorStatus": "signed-off",
-          "traceStatus": "not-run",
+          "traceStatus": "passed",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "updatedAt": "2026-06-25",
+          "updatedAt": "2026-06-26",
           "testPlan": {
             "status": "written",
             "totalTests": 8,
@@ -4653,23 +4653,23 @@
           "dodStatus": "complete"
         }
       ],
-      "updatedAt": "2026-06-25",
+      "updatedAt": "2026-06-26",
       "guardrails": [
         {
           "id": "ADR-011",
           "status": "met",
           "notes": "Story artefacts exist for all 3 SKILL.md changes (sri.1, sri.2, sri.3)",
-          "evidence": "H9 PASS: story artefacts exist for all 3 stories; no ADR-011 violation",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-06-25"
+          "evidence": "Trace confirms full artefact chain (discovery→benefit-metric→epic→stories→test-plans→DoR→DoD) intact for all 3 stories.",
+          "assessedBy": "/trace",
+          "assessedAt": "2026-06-26"
         },
         {
           "id": "platform-change-policy",
           "status": "met",
           "notes": "All changes to .github/skills/*.md governed files — PR with platform review required before merge",
-          "evidence": "H9 PASS: all 3 DoR contracts explicitly require PR review before merge",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-06-25"
+          "evidence": "All 3 PRs (#410 #411 #412) went via feature branches and human merge. No direct commits to master for SKILL.md changes.",
+          "assessedBy": "/trace",
+          "assessedAt": "2026-06-26"
         },
         {
           "id": "MC-SEC-02",
@@ -4742,6 +4742,13 @@
           "evidence": "H-NFR PASS: NFR profile confirmed; test T7 asserts artefact-write instruction",
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-06-25"
+        },
+        {
+          "id": "ADR-008",
+          "status": "met",
+          "evidence": "No scope bundling across PRs. Each PR contains only its story's changes as per DoR contract.",
+          "assessedBy": "/trace",
+          "assessedAt": "2026-06-26"
         }
       ],
       "metrics": [
@@ -4781,7 +4788,8 @@
           "evidence": "Measurement-ready gate text present and verified (8/8 tests pass). Runtime timing requires a real DoD session on an infrastructure story. OrderHub team to confirm per M3 measurement plan.",
           "lastMeasured": null
         }
-      ]
+      ],
+      "traceStatus": "passed"
     },
     {
       "slug": "2026-05-20-cloud-platform",
