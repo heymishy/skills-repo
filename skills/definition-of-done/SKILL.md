@@ -164,9 +164,24 @@ If no NFR profile exists and no story-level NFRs:
 
 For each metric in the feature's `metrics` array whose `contributingStories` list includes this story's slug:
 
-1. Ask: **Has a signal been measurable since this story merged?** (yes / not yet)
-2. If yes - ask for the observed result and date measured.
-3. Determine signal status: `on-track` / `at-risk` / `off-track` (see definitions below).
+**Measurement-ready gate (first question per story):** Is measurement possible yet for this story? (yes / not yet)
+
+If the operator answers **"not yet"**:
+- Record `not-yet-measured` as the outcome for this metric.
+- Ask for a brief evidence note (e.g. "no user-facing features shipped yet — infrastructure only").
+- Move on to the next metric in Step 6. Do not ask for a signal value, trend, or rating.
+
+Record in the DoD artefact:
+
+> **[Metric name]**
+> Signal: not-yet-measured
+> Evidence note: [operator-supplied evidence note — must not be blank or "N/A"]
+> Date measured: null
+
+If the operator answers **"yes"** — proceed with the existing signal-capture flow:
+
+1. Ask for the observed result and date measured.
+2. Determine signal status: `on-track` / `at-risk` / `off-track` (see definitions below).
 
 > **[Metric name]**
 > Signal: [on-track / at-risk / off-track / not-yet-measured]
@@ -183,7 +198,7 @@ This section does not claim success - it records what is now observable.
 
 **State write for metrics:** After capturing signals, update the feature's `metrics` array in pipeline-state.json:
 - Set `metrics[x].signal` to the determined value
-- Set `metrics[x].evidence` to the evidence string (or `null` if not yet measured)
+- Set `metrics[x].evidence` to the evidence string or evidence note (not blank, not "N/A" — must include the operator-supplied brief note for `not-yet-measured` stories)
 - Set `metrics[x].lastMeasured` to today's date (ISO 8601) if a measurement was taken, else leave `null`
 
 ---
