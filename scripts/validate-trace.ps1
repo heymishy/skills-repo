@@ -162,10 +162,16 @@ function Check-DiscoveryApproved {
         Write-Ok "artefacts/ is empty — nothing to check"
         return
     }
+    $referenceDirs          = Read-TraceConfigList 'reference_dirs'
+    $tracksWithoutDiscovery = Read-TraceConfigList 'tracks_without_discovery'
+    $featureTracks          = Read-FeatureTracks
     $unapproved = 0
     foreach ($featureDir in (Get-ChildItem -Path $Artefacts -Directory)) {
         $feature = $featureDir.Name
         if ($feature -match '^\.' ) { continue }
+        if ($referenceDirs.Contains($feature)) { continue }
+        $track = if ($featureTracks.ContainsKey($feature)) { $featureTracks[$feature] } else { '' }
+        if ($track -and $tracksWithoutDiscovery.Contains($track)) { continue }
         $discoveryPath = Join-Path $featureDir.FullName "discovery.md"
         if (-not (Test-Path $discoveryPath)) { continue }
         $content = Get-Content $discoveryPath -Raw
