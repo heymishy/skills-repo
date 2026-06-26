@@ -5,6 +5,7 @@ var os = require('os');
 var fs = require('fs');
 var { renderShell, escHtml } = require('../utils/html-shell');
 var { requireJourneyAccess, asHttpResponse, POLICY } = require('../middleware/journey-access');
+var { updateJourneyReferenceFiles } = require('../modules/journey-state-persistence');
 
 // Injectable adapters — defaults wire to real implementations
 var _journeyStore = require('../modules/journey-store');
@@ -1481,21 +1482,15 @@ async function handlePostReferenceUpload(req, res) {
     }
   }
 
-  // Update journey.referenceFiles
+  // Update journey.referenceFiles — re-upload replaces the prior list (AC4)
   if (saved.length > 0) {
-    var now = new Date().toISOString();
-    var existing = journey.referenceFiles || [];
     var newEntries = saved.map(function(name) {
-      return {
-        path: 'artefacts/' + featureSlug + '/reference/' + name,
-        uploadedAt: now,
-        sizeBytes: (function() {
-          var f2 = files.find(function(x) { return x.name === name; });
-          return f2 ? (f2.size || 0) : 0;
-        }())
-      };
+      var f2 = files.find(function(x) { return x.name === name; });
+      return { path: 'artefacts/' + featureSlug + '/reference/' + name, sizeBytes: f2 ? (f2.size || 0) : 0 };
     });
-    _journeyStore.setJourneyFields(journeyId, { referenceFiles: existing.concat(newEntries) });
+    var journeySnap = {};
+    updateJourneyReferenceFiles(journeySnap, newEntries);
+    _journeyStore.setJourneyFields(journeyId, { referenceFiles: journeySnap.referenceFiles });
   }
 
   var status = errors.length > 0 && saved.length === 0 ? 400 : (errors.length > 0 ? 207 : 200);
