@@ -65,7 +65,8 @@ function setRepoRoot(root) { _repoRoot = root; _repoRootAdapter.setRepoRoot(root
 // Journey home helpers
 // ---------------------------------------------------------------------------
 
-var _journeyDisk = require('../../modules/journey-disk');
+var _journeyDisk  = require('../../modules/journey-disk');
+var _tenantPlan   = require('../modules/tenant-plan');
 
 var STAGE_META = [
   { id: 'ideate',              num: 1,    label: 'Idea',       optional: true },
@@ -305,6 +306,23 @@ async function handlePostJourney(req, res) {
     var today       = new Date().toISOString().slice(0, 10);
     var featureSlug = today + '-' + _slugify(featureName);
     var repoRoot    = getRepoRoot(req);
+
+    // s2.1: pre-flight billing gate — check per-tenant journey cap before creation
+    var _gateTenantId = req.session.tenantId;
+    if (_gateTenantId) {
+      var _allForCap  = _journeyStore.listJourneys ? _journeyStore.listJourneys(repoRoot) : [];
+      var _tenantCount = _allForCap.filter(function(j) { return j.tenantId === _gateTenantId; }).length;
+      var _capResult   = _tenantPlan.checkJourneyCap(_gateTenantId, _tenantCount, repoRoot);
+      if (!_capResult.allowed) {
+        res.writeHead(402, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(renderShell({
+          title: 'Journey limit reached',
+          bodyContent: '<div class="sw-page-content"><h1>Journey limit reached</h1><p>You have reached the maximum of ' + _capResult.cap + ' journey' + (_capResult.cap === 1 ? '' : 's') + ' for your account. Please contact the operator to increase your limit.</p><a href="/journey">Back to journeys</a></div>',
+          user: { login: req.session.login || '' }
+        }));
+        return;
+      }
+    }
 
     // Create journey in memory + disk; persist ownerId + tenantId immediately so
     // they survive a server restart (setJourneyFields triggers the disk adapter write).
