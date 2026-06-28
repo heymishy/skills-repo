@@ -1867,6 +1867,48 @@ function buildContextManifestHtml(files) {
     '\n  ' + inner + '\n</div>';
 }
 
+// ── dic.1: Definition canvas server-side renderer ─────────────────────────
+// Pure function — mirrors client-side renderDefinitionMap in the inline script.
+// Exported for unit testing. Uses server-side escHtml (inline uses escHtmlClient).
+function _renderDefinitionMapHtml(p) {
+  if (!p || !p.epicCount) return '<div class="dm-empty">Generating definition… epics will appear here.</div>';
+  var badge = p.slicing ? '<span class="dm-badge">' + escHtml(p.slicing) + '</span>' : '';
+  var epicsHtml = p.epics.map(function(epic, ei) {
+    var epicId = 'epic-' + epic.num;
+    var cards = epic.stories.map(function(s, si) {
+      var cls = s.cx >= 3 ? 'dm-cx--h' : s.cx === 2 ? 'dm-cx--m' : 'dm-cx--l';
+      var cardId = epicId + '_' + s.id;
+      return '<div class="dm-card story-card card--inherited" draggable="true"' +
+        ' data-card-id="' + escHtml(cardId) + '" data-origin="model"' +
+        ' data-epic-id="' + escHtml(epicId) + '" data-phase-id="phase-1"' +
+        ' data-ei="' + ei + '" data-si="' + si + '" tabindex="0" role="button">' +
+        '<div class="dm-card-hd"><span class="card-tag card-tag--model">model</span>' +
+        '<span class="dm-card-id">' + escHtml(s.id) + '</span></div>' +
+        '<span class="dm-card-title">' + escHtml(s.title) + '</span>' +
+        (s.cx ? '<span class="dm-cx ' + cls + '">C:' + s.cx + '</span>' : '') +
+        '</div>';
+    }).join('');
+    var cntBadge = epic.stories.length ? '<span class="dm-epic-count">' + epic.stories.length + (epic.stories.length === 1 ? ' story' : ' stories') + '</span>' : '';
+    return '<div class="dm-epic">' +
+      '<button class="dm-epic-hd" onclick="window.dmOpenEpic(' + ei + ')" title="View epic details">' +
+        '<span class="dm-epic-tag">E' + escHtml(epic.num) + '</span>' +
+        '<span class="dm-epic-name">' + escHtml(epic.name) + '</span>' +
+        cntBadge +
+        '<span style="font-size:9px;color:var(--muted);margin-left:auto;flex-shrink:0">&#x2197;</span>' +
+      '</button>' +
+      '<div class="dm-cards">' + (cards || '<span style="font-size:11px;color:var(--muted);padding:4px 0">Writing stories…</span>') + '</div>' +
+    '</div>';
+  }).join('');
+  return '<div class="dm-canvas">' +
+    '<div class="dm-hdr">' +
+      '<span class="dm-count">' + p.epicCount + (p.epicCount === 1 ? ' epic' : ' epics') + ' \xB7 ' + p.storyCount + (p.storyCount === 1 ? ' story' : ' stories') + '</span>' +
+      badge +
+      '<button id="dm-apply-btn" class="dm-apply-btn" disabled>Apply changes (0 pending)</button>' +
+    '</div>' +
+    epicsHtml +
+  '</div>';
+}
+
 /**
  * Render the single-page chat UI HTML.
  * @param {string} skillName
@@ -2189,11 +2231,17 @@ function _renderChatPage(skillName, sessionId, session) {
     '    var epicsHtml = p.epics.map(function(epic, ei) {',
     '      var cards = epic.stories.map(function(s, si) {',
     '        var cls = s.cx >= 3 ? "dm-cx--h" : s.cx === 2 ? "dm-cx--m" : "dm-cx--l";',
-    '        return \'<button class="dm-card" data-ei="\' + ei + \'" data-si="\' + si + \'">\' +',
-    '          \'<span class="dm-card-id">\' + escHtmlClient(s.id) + \'</span>\' +',
+    '        var _epicId = "epic-" + epic.num;',
+    '        var _cardId = _epicId + "_" + s.id;',
+    '        return \'<div class="dm-card story-card card--inherited" draggable="true"\' +',
+    '          \' data-card-id="\' + escHtmlClient(_cardId) + \'" data-origin="model"\' +',
+    '          \' data-epic-id="\' + escHtmlClient(_epicId) + \'" data-phase-id="phase-1"\' +',
+    '          \' data-ei="\' + ei + \'" data-si="\' + si + \'" tabindex="0" role="button">\' +',
+    '          \'<div class="dm-card-hd"><span class="card-tag card-tag--model">model</span>\' +',
+    '          \'<span class="dm-card-id">\' + escHtmlClient(s.id) + \'</span></div>\' +',
     '          \'<span class="dm-card-title">\' + escHtmlClient(s.title) + \'</span>\' +',
     '          (s.cx ? \'<span class="dm-cx \' + cls + \'">C:\' + s.cx + \'</span>\' : "") +',
-    '        \'</button>\';',
+    '        \'</div>\';',
     '      }).join("");',
     '      var cntBadge = epic.stories.length ? \'<span class="dm-epic-count">\' + epic.stories.length + (epic.stories.length === 1 ? " story" : " stories") + \'</span>\' : "";',
     '      return \'<div class="dm-epic">\' +',
@@ -2210,10 +2258,118 @@ function _renderChatPage(skillName, sessionId, session) {
     '      \'<div class="dm-hdr">\' +',
     '        \'<span class="dm-count">\' + p.epicCount + (p.epicCount === 1 ? " epic" : " epics") + \' \xB7 \' + p.storyCount + (p.storyCount === 1 ? " story" : " stories") + \'</span>\' +',
     '        badge +',
+    '        \'<button id="dm-apply-btn" class="dm-apply-btn" disabled>Apply changes (0 pending)</button>\' +',
     '      \'</div>\' +',
     '      epicsHtml +',
     '    \'</div>\';',
     '  }',
+    '',
+    '  // ── dic.1: Canvas interactivity state ────────────────────────────────────',
+    '  var _canvasState = { pendingReorder: [], pendingAdds: [] };',
+    '  var _touchState  = { selectedCardId: null, selectedCardEl: null };',
+    '',
+    '  function _updatePendingCount() {',
+    '    var btn = document.getElementById("dm-apply-btn");',
+    '    if (!btn) return;',
+    '    var n = _canvasState.pendingReorder.length + _canvasState.pendingAdds.length;',
+    '    btn.textContent = "Apply changes (" + n + " pending)";',
+    '    btn.disabled = n === 0;',
+    '  }',
+    '',
+    '  function initCanvasInteractivity() {',
+    '    var _ap = document.getElementById("artefact-panel");',
+    '    if (!_ap) return;',
+    '    var _dragCardId = null;',
+    '    var _dragEpicId = null;',
+    '',
+    '    // ── Drag start ──────────────────────────────────────────────────────────',
+    '    _ap.addEventListener("dragstart", function(e) {',
+    '      var card = e.target && e.target.closest && e.target.closest("[data-card-id]");',
+    '      if (!card) return;',
+    '      _dragCardId = card.getAttribute("data-card-id");',
+    '      _dragEpicId = card.getAttribute("data-epic-id");',
+    '      e.dataTransfer.setData("text/plain", _dragCardId);',
+    '      e.dataTransfer.effectAllowed = "move";',
+    '    });',
+    '',
+    '    // ── Dragover — column + phase guard ─────────────────────────────────────',
+    '    _ap.addEventListener("dragover", function(e) {',
+    '      var target = e.target && e.target.closest && e.target.closest("[data-card-id]");',
+    '      if (!target) target = e.target && e.target.closest && e.target.closest(".dm-cards");',
+    '      if (!target) return;',
+    '      var targetEpicId = target.getAttribute("data-epic-id");',
+    '      if (!targetEpicId) {',
+    '        var epicEl = target.closest(".dm-epic");',
+    '        var firstCard = epicEl && epicEl.querySelector("[data-epic-id]");',
+    '        targetEpicId = firstCard ? firstCard.getAttribute("data-epic-id") : null;',
+    '      }',
+    '      if (!targetEpicId || targetEpicId !== _dragEpicId) return;',
+    '      // dic.2 phase guard — check data-phase-current on closest row',
+    '      var phaseRow = target.closest("[data-phase-current]");',
+    '      if (phaseRow && phaseRow.getAttribute("data-phase-current") !== "true") return;',
+    '      e.preventDefault();',
+    '      e.dataTransfer.dropEffect = "move";',
+    '    });',
+    '',
+    '    // ── Drop — reorder + record pendingReorder ────────────────────────────────',
+    '    _ap.addEventListener("drop", function(e) {',
+    '      e.preventDefault();',
+    '      if (!_dragCardId) return;',
+    '      var target = e.target && e.target.closest && e.target.closest("[data-card-id]");',
+    '      if (!target) return;',
+    '      if (target.getAttribute("data-card-id") === _dragCardId) { _dragCardId = null; _dragEpicId = null; return; }',
+    '      if (target.getAttribute("data-epic-id") !== _dragEpicId) { _dragCardId = null; _dragEpicId = null; return; }',
+    '      var draggedEl = _ap.querySelector("[data-card-id=\\"" + _dragCardId + "\\"]");',
+    '      if (!draggedEl || !target.parentNode) { _dragCardId = null; _dragEpicId = null; return; }',
+    '      target.parentNode.insertBefore(draggedEl, target);',
+    '      var cards = Array.prototype.slice.call(target.parentNode.querySelectorAll("[data-card-id]"));',
+    '      var newIdx = cards.indexOf(draggedEl);',
+    '      _canvasState.pendingReorder.push({ cardId: _dragCardId, epicId: _dragEpicId, phaseId: draggedEl.getAttribute("data-phase-id") || "phase-1", newIndex: newIdx });',
+    '      _updatePendingCount();',
+    '      _dragCardId = null; _dragEpicId = null;',
+    '    });',
+    '',
+    '    // ── Epic rename guard ─────────────────────────────────────────────────────',
+    '    _ap.addEventListener("click", function(e) {',
+    '      var hd = e.target && e.target.closest && e.target.closest(".dm-epic-hd");',
+    '      if (!hd) return;',
+    '      if (hd.querySelector(".epic-rename-tooltip")) return;',
+    '      var tip = document.createElement("div");',
+    '      tip.className = "epic-rename-tooltip";',
+    '      tip.setAttribute("role", "alert");',
+    '      tip.textContent = "Epic names are set by the Definition skill — return to the chat to rename.";',
+    '      hd.appendChild(tip);',
+    '      setTimeout(function() { if (tip.parentNode) tip.parentNode.removeChild(tip); }, 3000);',
+    '    });',
+    '',
+    '    // ── Keyboard reorder (ArrowUp / ArrowDown) ────────────────────────────────',
+    '    _ap.addEventListener("keydown", function(e) {',
+    '      if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;',
+    '      var card = e.target && e.target.closest && e.target.closest("[data-card-id]");',
+    '      if (!card) return;',
+    '      e.preventDefault();',
+    '      var parent = card.parentNode;',
+    '      var siblings = Array.prototype.slice.call(parent.querySelectorAll("[data-card-id]"));',
+    '      var idx = siblings.indexOf(card);',
+    '      if (e.key === "ArrowUp" && idx > 0) {',
+    '        parent.insertBefore(card, siblings[idx - 1]);',
+    '      } else if (e.key === "ArrowDown" && idx < siblings.length - 1) {',
+    '        parent.insertBefore(card, siblings[idx + 2] || null);',
+    '      } else {',
+    '        return;',
+    '      }',
+    '      card.focus();',
+    '      var updated = Array.prototype.slice.call(parent.querySelectorAll("[data-card-id]"));',
+    '      _canvasState.pendingReorder.push({ cardId: card.getAttribute("data-card-id"), epicId: card.getAttribute("data-epic-id"), phaseId: card.getAttribute("data-phase-id") || "phase-1", newIndex: updated.indexOf(card) });',
+    '      _updatePendingCount();',
+    '    });',
+    '  }',
+    '',
+    '  // ── dic.1: escHtml alias for operator content (more complete than escHtmlClient) ──',
+    '  function escHtml(s) {',
+    '    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/\'/g,"&#039;");',
+    '  }',
+    '',
     '  // ─────────────────────────────────────────────────────────────────────────',
     '  function updateDraftPanel(artefactContent) {',
     '    if(IS_IDEATE){',
@@ -2706,7 +2862,7 @@ function _renderChatPage(skillName, sessionId, session) {
     '  if(!IS_IDEATE && typeof __SW_INITIAL_ARTEFACT__ !== "undefined" && __SW_INITIAL_ARTEFACT__) {',
     '    updateDraftPanel(__SW_INITIAL_ARTEFACT__);',
     '  }',
-    '  // Definition: delegate story-card clicks from artefact panel',
+    '  // Definition: delegate story-card clicks + initialise canvas interactivity',
     '  if (IS_DEFINITION) {',
     '    var _dmAp = document.getElementById("artefact-panel");',
     '    if (_dmAp) {',
@@ -2717,6 +2873,7 @@ function _renderChatPage(skillName, sessionId, session) {
     '        var si = parseInt(btn.getAttribute("data-si") || "0", 10);',
     '        if (window.dmOpenStory) window.dmOpenStory(ei, si);',
     '      });',
+    '      initCanvasInteractivity();',
     '    }',
     '  }',
     '})();',
@@ -3843,5 +4000,7 @@ module.exports = {
   // model routing + system prompt (exported for gate testing)
   getModelForSkill,
   buildSystemPrompt,
-  HAIKU_BLOCKED_SKILLS
+  HAIKU_BLOCKED_SKILLS,
+  // dic.1 — definition canvas server-side renderer (exported for testing)
+  _renderDefinitionMapHtml
 };
