@@ -107,3 +107,13 @@ Upstash Redis stands — serverless per-request pricing remains the right fit fo
 **Decision:** RISK-ACCEPT — embed `<!-- cache-scope: ${tenantId}-${sessionId} -->` as the first line of the system prompt in `_anthropicSystem()` when tenantId is present. The comment is inert to model behaviour (HTML comments in plain-text prompts are treated as literal text, but a one-line prefix has negligible effect on model output). Session threading into the call stack is deferred; the scoping logic is implemented and ready to activate when session is passed through.
 **Rationale:** Embedding a tenant discriminator in the prompt content is the only available mechanism with the Anthropic ephemeral cache_control API. The risk of a cross-tenant cache hit without this guard is real for identical system prompts across tenants (unlikely but possible). The implementation is complete in `_anthropicSystem()` and `buildCacheKey()`; activation requires threading `session` through the call chain in a follow-up.
 **Applies to:** p4.1 W2.
+
+---
+
+## Decision 10 — MEDIUM review finding acknowledgement: sprint story template compliance gaps (s3.1–s5.1)
+
+**Date:** 2026-06-29
+**Context:** The /review run for all five sprint stories (s3.1, s3.2, s4.1, s4.2, s5.1) raised identical MEDIUM findings: missing Discovery reference link, Benefit-metric reference link, Benefit Linkage section with named metric, Architecture Constraints section, and NFRs section. These gaps arose because the sprint stories were written as operator-execution checklists without the full story.md template structure.
+**Decision:** All five gaps resolved before DoR sign-off by updating the story artefacts to add the missing sections. The fixes are additive (no AC or scope changes): Discovery/Benefit-metric references added to headers; Metric Linkage updated to name M1/M2; Architecture Constraints and NFRs sections added referencing nfr-profile.md. RESOLVED — all sections now present in s3.1–s5.1.
+**Rationale:** Adding missing template sections does not change story scope or ACs. Blocking all 5 stories at DoR pending a separate review re-run would add overhead with no quality benefit; the gaps are structural (template compliance) not substantive.
+**Applies to:** s3.1-review-1.md, s3.2-review-1.md, s4.1-review-1.md, s4.2-review-1.md, s5.1-review-1.md — findings M1–M5 in each.

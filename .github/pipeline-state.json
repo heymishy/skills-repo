@@ -547,6 +547,46 @@
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-06-24T06:07:41.725Z",
           "evidence": "NFR declared in story; cleanup assertion in test. Verified at /definition-of-done after merge."
+        },
+        {
+          "id": "dor-s3.1-arch-constraints",
+          "category": "adr",
+          "label": "s3.1 Architecture Constraints — no governed paths touched (DoR H9)",
+          "status": "na",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-29T00:00:00Z"
+        },
+        {
+          "id": "dor-s3.2-arch-constraints",
+          "category": "adr",
+          "label": "s3.2 Architecture Constraints — no governed paths touched (DoR H9)",
+          "status": "na",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-29T00:00:00Z"
+        },
+        {
+          "id": "dor-s4.1-arch-constraints",
+          "category": "adr",
+          "label": "s4.1 Architecture Constraints — no governed paths touched (DoR H9)",
+          "status": "na",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-29T00:00:00Z"
+        },
+        {
+          "id": "dor-s4.2-arch-constraints",
+          "category": "adr",
+          "label": "s4.2 Architecture Constraints — no governed paths touched (DoR H9)",
+          "status": "na",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-29T00:00:00Z"
+        },
+        {
+          "id": "dor-s5.1-arch-constraints",
+          "category": "adr",
+          "label": "s5.1 Architecture Constraints — no governed paths touched (DoR H9)",
+          "status": "na",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-29T00:00:00Z"
         }
       ],
       "epics": [
@@ -835,14 +875,14 @@
             {
               "slug": "s3.1",
               "name": "Neon Postgres provisioning and schema activation",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "complexity": 1,
               "scopeStability": "Stable",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s3.1-review-1.md",
-              "updatedAt": "2026-06-28T23:22:41.789Z",
+              "updatedAt": "2026-06-29T00:00:00Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s3.1-test-plan.md",
@@ -852,19 +892,21 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s3.1-dor.md"
             },
             {
               "slug": "s3.2",
               "name": "Upstash Redis provisioning and session persistence activation",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "complexity": 1,
               "scopeStability": "Stable",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s3.2-review-1.md",
-              "updatedAt": "2026-06-28T23:22:41.789Z",
+              "updatedAt": "2026-06-29T00:00:00Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s3.2-test-plan.md",
@@ -874,7 +916,9 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s3.2-dor.md"
             }
           ]
         },
@@ -886,14 +930,14 @@
             {
               "slug": "s4.1",
               "name": "Production deployment and end-to-end smoke test",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "complexity": 1,
               "scopeStability": "Stable",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s4.1-review-1.md",
-              "updatedAt": "2026-06-28T23:22:41.789Z",
+              "updatedAt": "2026-06-29T00:00:00Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s4.1-test-plan.md",
@@ -903,19 +947,21 @@
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s4.1-dor.md"
             },
             {
               "slug": "s4.2",
               "name": "Tenant onboarding configuration",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "complexity": 1,
               "scopeStability": "Stable",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s4.2-review-1.md",
-              "updatedAt": "2026-06-28T23:22:41.789Z",
+              "updatedAt": "2026-06-29T00:00:00Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s4.2-test-plan.md",
@@ -925,7 +971,9 @@
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s4.2-dor.md"
             }
           ]
         },
@@ -937,14 +985,14 @@
             {
               "slug": "s5.1",
               "name": "Beta monitoring signals",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "complexity": 1,
               "scopeStability": "Stable",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s5.1-review-1.md",
-              "updatedAt": "2026-06-28T23:22:41.789Z",
+              "updatedAt": "2026-06-29T00:00:00Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s5.1-test-plan.md",
@@ -954,7 +1002,9 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s5.1-dor.md"
             }
           ]
         }
@@ -6545,5 +6595,5 @@
     ],
     "lastUpdated": "2026-05-06"
   },
-  "updatedAt": "2026-06-22T00:00:00Z"
+  "updatedAt": "2026-06-29T00:00:00Z"
 }
