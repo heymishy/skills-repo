@@ -214,18 +214,20 @@ function loadAllFromDisk(repoRoot) {
     if (!diskJourney.journeyId || _journeys.has(diskJourney.journeyId)) return;
     // Merge disk fields into a full in-memory journey object
     var journey = {
-      journeyId:       diskJourney.journeyId,
-      featureSlug:     diskJourney.featureSlug,
-      productProfile:  diskJourney.productProfile || 'default',
-      activeSkill:     diskJourney.currentStage || null,
-      activeSessionId: null,
-      completedStages: [],
-      mode:            'feature',
-      complete:        false,
-      completedAt:     null,
-      stories:         [],
+      journeyId:         diskJourney.journeyId,
+      featureSlug:       diskJourney.featureSlug,
+      productProfile:    diskJourney.productProfile || 'default',
+      activeSkill:       diskJourney.currentStage || null,
+      activeSessionId:   null,
+      completedStages:   [],
+      mode:              'feature',
+      complete:          false,
+      completedAt:       null,
+      stories:           [],
       currentStoryIndex: 0,
-      sessions:        {}
+      sessions:          {},
+      ownerId:           diskJourney.ownerId  || null,
+      tenantId:          diskJourney.tenantId || null
     };
     // Rebuild completedStages from disk stages
     var stages = diskJourney.stages || {};
