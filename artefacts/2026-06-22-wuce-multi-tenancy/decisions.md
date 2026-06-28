@@ -1,7 +1,7 @@
 # Decisions — WUCE Multi-Tenancy
 
 **Feature slug:** wuce-multi-tenancy
-**Last updated:** 2026-06-22
+**Last updated:** 2026-06-29
 
 ---
 
@@ -80,6 +80,23 @@ Step 4a is not applicable. No trigger table required.
 **Decision:** RISK-ACCEPT — proceed with p4.1 using in-process Map for rate-limit counters. Phase 3 dependency removed as a hard gate.
 **Rationale:** The two stated reasons for the Phase 3 dependency are (a) "prompt-cache session persistence is more meaningful once sessions survive restarts" — meaningfulness, not a hard technical requirement; and (b) "rate-limit counter should use Redis for correctness across restarts" — correctness-preference acknowledged and accepted. Counters reset on server restart; for current solo-founder deployment profile this is acceptable. When Phase 3 ships, the rate-limiter key can be wired to Redis with no AC changes.
 **Applies to:** p4.1 W1.
+
+---
+
+## Decision 9 — OQ7 resolved: Neon free tier (Postgres) + Upstash (Redis)
+
+**Date:** 2026-06-29
+**Context:** OQ7 (Phase 3 vendor selection) was originally unresolved pending operator research. The initial recommendation in `reference/oq7-vendor-recommendation.md` proposed Fly Postgres + Upstash Redis, based on a narrow comparison of Fly's own offerings. The operator conducted independent research after OQ7 was published.
+**Decision:** Neon free tier for Postgres; Upstash Redis unchanged.
+**Rationale:** Neon free tier is the better fit for a small-friends beta at this stage:
+(1) Genuinely free — no trial expiry, no 7-day pause (unlike Supabase free), no flat monthly commitment (unlike DigitalOcean $15/month or Fly Managed $38+/month).
+(2) Cold starts (few-hundred ms after idle) are acceptable at beta usage patterns — sporadic sessions from 5–10 people; imperceptible versus a pipeline session that takes minutes.
+(3) Sidesteps backup-discipline burden — managed service handles backups without operator cron jobs.
+(4) Migration path is clean: Neon → DigitalOcean $15/month is a connection-string swap when cold starts become user-felt. No schema changes required.
+Upstash Redis stands — serverless per-request pricing remains the right fit for sporadic beta traffic.
+**Data residency note:** NZ-based beta users; no EU-resident data expected; Schrems II / CLOUD Act exposure noted but not a blocking concern for this deployment profile.
+**Upgrade trigger:** Cold starts become noticeable to users, or data exceeds 3 GiB. Next tier: DigitalOcean Managed Postgres $15/month.
+**Applies to:** Sprint 1 (p3.1 Postgres adapter, p3.2 Redis adapter, p3.3 concurrency tests). Phase 3 stories are now unblocked.
 
 ---
 

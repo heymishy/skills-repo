@@ -3,7 +3,18 @@
 **Feature:** wuce-multi-tenancy
 **Open question ID:** OQ7
 **Date:** 2026-06-29
-**Status:** Recommendation (pending operator decision)
+**Status:** RESOLVED — see Decision 9 in decisions.md
+
+## Resolved decision (2026-06-29)
+
+**Postgres: Neon free tier** (revised from Fly Postgres after operator independent research)
+**Redis: Upstash Redis** (unchanged)
+
+The initial recommendation below (Fly Postgres) was revised because it compared only Fly's own offering and missed providers with better fit for a small-friends beta: specifically Neon's genuinely-free tier (no pause, no expiry, no monthly cost) versus Fly Managed Postgres at $38+/month. See Decision 9 in `decisions.md` for full rationale and upgrade triggers.
+
+---
+
+## Original recommendation (superseded)
 
 ## Decision required
 
