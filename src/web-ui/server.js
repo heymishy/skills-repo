@@ -283,10 +283,15 @@ async function router(req, res) {
       userId:      9999,
       login:       'e2e-tester',
     });
-    // No Set-Cookie returned — the fixture injects the cookie via storageState.
-    // Returning Set-Cookie (SameSite=Strict) would overwrite the fixture's
-    // SameSite=Strict cookie and break first-navigation auth in tests.
-    res.writeHead(200, { 'Content-Type': 'application/json' });
+    // Return Set-Cookie so Playwright's APIRequestContext (page.request) stores
+    // the session cookie in its own cookie jar. Without this, page.request.post()
+    // doesn't send the cookie because APIRequestContext has a separate cookie store
+    // from the browser context that context.addCookies() fills.
+    // No Secure flag — we run on HTTP in test mode; SameSite=Lax allows API calls.
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Set-Cookie': `session_id=${E2E_SESSION_ID}; HttpOnly; SameSite=Lax; Path=/`,
+    });
     res.end(JSON.stringify({ sessionId: E2E_SESSION_ID, login: 'e2e-tester' }));
     return;
   }

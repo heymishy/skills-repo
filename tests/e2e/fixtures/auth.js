@@ -56,24 +56,15 @@ const withAuth = base.extend({
       baseURL: process.env.E2E_BASE_URL || 'http://localhost:3000',
     });
 
-    // Re-seed the server-side test session. The server seeds the session at
-    // startup (NODE_ENV=test), but this call handles the post-logout case.
+    // Re-seed the server-side test session AND populate the APIRequestContext's
+    // cookie store.  The server (NODE_ENV=test) returns Set-Cookie on /test/session
+    // so that Playwright's page.request / context.request (which have a separate
+    // cookie store from the browser's cookie jar) pick up the session cookie and
+    // send it on subsequent page.request.post() API calls.
     await context.request.get('/test/session');
 
-    // Inject the session cookie two ways so it is reliably sent on BOTH
-    // browser-based page navigation (page.goto) and programmatic API calls
-    // (page.request.*):
-    //
-    // 1. context.addCookies — adds to the browser's cookie store (used by
-    //    page.goto and Playwright browser navigation).
-    //
-    // 2. context.setExtraHTTPHeaders — adds a Cookie header to every request
-    //    that originates from this context, including context.request API
-    //    calls that may have a separate cookie jar from the browser.
-    //
-    // sameSite is intentionally omitted from addCookies so Playwright uses
-    // the implicit default (Lax / None) which allows the cookie to be sent
-    // on first navigation and on API requests with no prior same-site context.
+    // Also inject the session cookie into the browser's cookie store so that
+    // page.goto() navigations send the cookie on the first request.
     await context.addCookies([
       {
         name:     'session_id',
@@ -84,10 +75,6 @@ const withAuth = base.extend({
         secure:   false,
       },
     ]);
-
-    await context.setExtraHTTPHeaders({
-      'Cookie': `session_id=${E2E_SESSION_ID}`,
-    });
 
     const page = await context.newPage();
     await use(page);
