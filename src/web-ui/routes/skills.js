@@ -1867,6 +1867,219 @@ function buildContextManifestHtml(files) {
     '\n  ' + inner + '\n</div>';
 }
 
+// ── dic.2: parsePhaseModel injectable adapter (D37) ───────────────────────
+let _parsePhaseModel = function() {
+  throw new Error('Adapter not wired: parsePhaseModel. Call setParsePhaseModel() with a real implementation before use.');
+};
+function setParsePhaseModel(fn) { _parsePhaseModel = fn; }
+
+function defaultParsePhaseModel(content) {
+  if (!content) return [{ name: 'Phase 1 (current)', isCurrent: true }];
+  var idx = content.indexOf('## Phases');
+  if (idx === -1) return [{ name: 'Phase 1 (current)', isCurrent: true }];
+  var after = content.slice(idx + '## Phases'.length);
+  var endIdx = after.search(/\n##/);
+  var section = endIdx === -1 ? after : after.slice(0, endIdx);
+  var items = section.split('\n')
+    .map(function(l) { return l.replace(/^[\s\-\*]+/, '').trim(); })
+    .filter(Boolean);
+  if (!items.length) return [{ name: 'Phase 1 (current)', isCurrent: true }];
+  return items.map(function(name, i) { return { name: name, isCurrent: i === 0 }; });
+}
+// Production wiring (D37 separate task)
+setParsePhaseModel(defaultParsePhaseModel);
+
+// ── dic.1+2: Definition canvas server-side renderer ───────────────────────
+// Pure function — mirrors client-side renderDefinitionMap in the inline script.
+// Exported for unit testing. Uses server-side escHtml (inline uses escHtmlClient).
+function _renderDefinitionMapHtml(p, phaseModel) {
+  if (!p || !p.epicCount) return '<div class="dm-empty">Generating definition… epics will appear here.</div>';
+  var phases = phaseModel && phaseModel.length ? phaseModel : [{ name: 'Phase 1 (current)', isCurrent: true }];
+  var badge = p.slicing ? '<span class="dm-badge">' + escHtml(p.slicing) + '</span>' : '';
+  var epicHeaders = p.epics.map(function(epic, ei) {
+    var cntBadge = epic.stories.length ? '<span class="dm-epic-count">' + epic.stories.length + (epic.stories.length === 1 ? ' story' : ' stories') + '</span>' : '';
+    return '<th class="dm-epic-th">' +
+      '<button class="dm-epic-hd" onclick="window.dmOpenEpic(' + ei + ')" title="View epic details">' +
+        '<span class="dm-epic-tag">E' + escHtml(epic.num) + '</span>' +
+        '<span class="dm-epic-name">' + escHtml(epic.name) + '</span>' +
+        cntBadge +
+        '<span style="font-size:9px;color:var(--muted);margin-left:auto;flex-shrink:0">&#x2197;</span>' +
+      '</button></th>';
+  }).join('');
+  var phaseRows = phases.map(function(phase, pi) {
+    var phaseId = 'phase-' + (pi + 1);
+    var isCurrent = !!phase.isCurrent;
+    var trClass = 'phase-row' + (isCurrent ? '' : ' phase-row--locked');
+    var cells = p.epics.map(function(epic, ei) {
+      var epicId = 'epic-' + epic.num;
+      var cellContent;
+      if (isCurrent) {
+        var cards = epic.stories.map(function(s, si) {
+          var cls = s.cx >= 3 ? 'dm-cx--h' : s.cx === 2 ? 'dm-cx--m' : 'dm-cx--l';
+          var cardId = epicId + '_' + s.id;
+          return '<div class="dm-card story-card card--inherited" draggable="true"' +
+            ' data-card-id="' + escHtml(cardId) + '" data-origin="model"' +
+            ' data-epic-id="' + escHtml(epicId) + '" data-phase-id="' + phaseId + '"' +
+            ' data-ei="' + ei + '" data-si="' + si + '" tabindex="0" role="button">' +
+            '<div class="dm-card-hd"><span class="card-tag card-tag--model">model</span>' +
+            '<span class="dm-card-id">' + escHtml(s.id) + '</span></div>' +
+            '<span class="dm-card-title">' + escHtml(s.title) + '</span>' +
+            (s.cx ? '<span class="dm-cx ' + cls + '">C:' + s.cx + '</span>' : '') +
+            '</div>';
+        }).join('');
+        var addBtn = '<button class="add-story-btn" data-epic-id="' + escHtml(epicId) + '" data-phase-id="' + phaseId + '" data-epic-name="' + escHtml(epic.name) + '" aria-label="Add story to ' + escHtml(epic.name) + '" tabindex="0">+</button>';
+        cellContent = '<div class="dm-cards" data-epic-id="' + escHtml(epicId) + '" data-phase-id="' + phaseId + '">' + (cards || '') + addBtn + '</div>';
+      } else {
+        cellContent = '<div class="dm-cards" data-epic-id="' + escHtml(epicId) + '" data-phase-id="' + phaseId + '">' +
+          '<div class="phase-lock-label" role="note">Not yet defined — awaits Phase ' + (pi + 1) + '’s Definition pass</div>' +
+          '</div>';
+      }
+      return '<td class="dm-cell">' + cellContent + '</td>';
+    }).join('');
+    return '<tr class="' + trClass + '" data-phase-current="' + (isCurrent ? 'true' : 'false') + '">' +
+      '<td class="dm-phase-lbl">' + escHtml(phase.name) + '</td>' +
+      cells + '</tr>';
+  }).join('');
+  return '<div class="dm-canvas">' +
+    '<div class="dm-hdr">' +
+      '<span class="dm-count">' + p.epicCount + (p.epicCount === 1 ? ' epic' : ' epics') + ' \xB7 ' + p.storyCount + (p.storyCount === 1 ? ' story' : ' stories') + '</span>' +
+      badge +
+      '<button id="dm-apply-btn" class="dm-apply-btn" disabled>Apply changes (0 pending)</button>' +
+    '</div>' +
+    '<div class="dm-table-wrap"><table class="dm-table"><thead>' +
+      '<tr class="dm-epic-row"><th class="dm-phase-th"></th>' + epicHeaders + '</tr>' +
+    '</thead><tbody>' + phaseRows + '</tbody></table></div>' +
+  '</div>';
+}
+
+// ── dic.5: applyCanvasEdits injectable adapter (D37) ─────────────────────────
+let _applyCanvasEdits = function() {
+  throw new Error('Adapter not wired: applyCanvasEdits. Call setApplyCanvasEdits() with a real implementation before use.');
+};
+function setApplyCanvasEdits(fn) { _applyCanvasEdits = fn; }
+
+function buildCanvasAuditEntry(opts) {
+  return {
+    type: 'canvas-edit',
+    action: opts.action,
+    subject: { epicId: opts.epicId, storyId: opts.storyId || null },
+    value: opts.action === 'reorder' ? { newIndex: opts.newIndex } : { title: opts.title },
+    origin: 'canvas',
+    sessionId: opts.sessionId,
+    timestamp: new Date().toISOString()
+  };
+}
+
+function writeAuditEntry(session, entry) {
+  if (!session.auditLog) session.auditLog = [];
+  session.auditLog.push(entry);
+}
+
+async function realApplyCanvasEdits(session) {
+  const fs = require('fs');
+  const pathMod = require('path');
+  const artefactPath = session.artefactPath;
+  const content = session.artefactContent || '';
+  if (artefactPath) {
+    fs.writeFileSync(artefactPath, content, 'utf8');
+    const diskContent = fs.readFileSync(artefactPath, 'utf8');
+    return { artefactPath: artefactPath, updatedAt: new Date().toISOString(), artefactContent: diskContent };
+  }
+  return { artefactPath: null, updatedAt: new Date().toISOString(), artefactContent: content };
+}
+setApplyCanvasEdits(realApplyCanvasEdits);
+
+async function handlePostCanvasEditHtml(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    _json(res, 401, { error: 'Not authenticated' });
+    return;
+  }
+  const skillName = (req.params && req.params.name) || '';
+  const sessionId = (req.params && req.params.id) || '';
+  const session = _sessionStore.get(sessionId);
+  if (!session) {
+    _json(res, 404, { error: 'Session not found' });
+    return;
+  }
+
+  // Race condition guard
+  if (session.streamActive) {
+    _json(res, 409, { error: 'A model turn is in progress — apply changes after the turn completes.' });
+    return;
+  }
+
+  // Body validation
+  const body = await _readBody(req);
+  if (!body
+    || !Object.prototype.hasOwnProperty.call(body, 'pendingReorder')
+    || !Object.prototype.hasOwnProperty.call(body, 'pendingAdds')) {
+    _json(res, 400, { error: 'Request body must contain pendingReorder and pendingAdds.' });
+    return;
+  }
+  const allowedKeys = ['pendingReorder', 'pendingAdds'];
+  for (const k of Object.keys(body)) {
+    if (!allowedKeys.includes(k)) {
+      _json(res, 400, { error: 'Unrecognised field in request body: ' + k });
+      return;
+    }
+  }
+  if (!Array.isArray(body.pendingReorder) || !Array.isArray(body.pendingAdds)) {
+    _json(res, 400, { error: 'pendingReorder and pendingAdds must be arrays.' });
+    return;
+  }
+
+  // Phase guard: verify phaseId is the current phase for each edit
+  const phaseModel = session.phaseModel || [{ name: 'Phase 1 (current)', isCurrent: true }];
+  const currentPhaseIds = new Set();
+  phaseModel.forEach(function(ph, i) { if (ph.isCurrent) currentPhaseIds.add('phase-' + (i + 1)); });
+  const allEdits = body.pendingReorder.concat(body.pendingAdds);
+  for (const edit of allEdits) {
+    if (edit.phaseId && !currentPhaseIds.has(edit.phaseId)) {
+      _json(res, 400, { error: 'Canvas edit targets a non-current phase row.' });
+      return;
+    }
+  }
+
+  // Path traversal guard
+  const path = require('path');
+  const repoRoot = path.resolve(__dirname, '../../..');
+  const artefactPath = session.artefactPath;
+  if (artefactPath) {
+    const resolved = path.resolve(artefactPath);
+    if (!resolved.startsWith(repoRoot + path.sep)) {
+      _json(res, 400, { error: 'Invalid artefact path.' });
+      return;
+    }
+  }
+
+  // Apply edits via injectable adapter
+  let result;
+  try {
+    result = await _applyCanvasEdits(session, body, req.session.accessToken);
+  } catch (err) {
+    _json(res, 500, { error: 'Apply failed: ' + err.message });
+    return;
+  }
+
+  // Write one audit entry per change record
+  for (const r of body.pendingReorder) {
+    const parts = (r.cardId || '').split('_');
+    const storyId = parts.length > 1 ? parts.slice(1).join('_') : null;
+    writeAuditEntry(session, buildCanvasAuditEntry({
+      action: 'reorder', epicId: r.epicId, storyId: storyId,
+      newIndex: r.newIndex, sessionId: sessionId
+    }));
+  }
+  for (const a of body.pendingAdds) {
+    writeAuditEntry(session, buildCanvasAuditEntry({
+      action: 'add', epicId: a.epicId, storyId: null,
+      title: a.title, sessionId: sessionId
+    }));
+  }
+
+  _json(res, 200, Object.assign({ ok: true }, result || {}));
+}
+
 /**
  * Render the single-page chat UI HTML.
  * @param {string} skillName
@@ -1919,6 +2132,15 @@ function _renderChatPage(skillName, sessionId, session) {
     artefactInitScript = '<script>window.__SW_INITIAL_ARTEFACT__=' + safeArtefact + ';</script>';
   }
 
+  // dic.2: Phase model init script for definition sessions
+  var phaseModelInitScript = '';
+  if (skillName === 'definition') {
+    var _phaseModelForInit = session.phaseModel || [{ name: 'Phase 1 (current)', isCurrent: true }];
+    var safePhaseModel = JSON.stringify(_phaseModelForInit)
+      .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+    phaseModelInitScript = '<script>window.__SW_PHASE_MODEL__=' + safePhaseModel + ';<\/script>';
+  }
+
   var commitUrl = '/skills/' + encodedSkill + '/sessions/' + encodedId + '/commit-preview';
 
   // Inline script — DOM-update chat (no page reload).
@@ -1936,6 +2158,7 @@ function _renderChatPage(skillName, sessionId, session) {
     // Pre-compute gate-confirm URL server-side — avoids embedding /api/journey/ literal when no journey
     '  var GATE_CONFIRM_URL = "' + (session.journeyId ? escHtml('/api/journey/' + session.journeyId + '/gate-confirm') : '') + '";',
     '  var NEXT_STAGE_LABEL = "' + escHtml(session.journeyId ? ('Continue to ' + (_journeyStore.getNextStage(skillName) || 'next stage') + ' →') : '') + '";',
+    '  var CANVAS_EDIT_URL  = IS_DEFINITION ? (TURN_URL.replace("/turn", "/canvas-edit")) : "";',
     '  var submitBtn  = form.querySelector("button[type=\'submit\']");',
     '',
     '  function scrollToBottom() {',
@@ -2183,37 +2406,262 @@ function _renderChatPage(skillName, sessionId, session) {
     '    r.epicCount = r.epics.length;',
     '    return r;',
     '  }',
-    '  function renderDefinitionMap(p) {',
+    '  function renderDefinitionMap(p, phaseModel) {',
     '    if (!p || !p.epicCount) return \'<div class="dm-empty">Generating definition… epics will appear here.</div>\';',
+    '    var phases = (phaseModel && phaseModel.length) ? phaseModel : [{ name: "Phase 1 (current)", isCurrent: true }];',
     '    var badge = p.slicing ? \'<span class="dm-badge">\' + escHtmlClient(p.slicing) + \'</span>\' : "";',
-    '    var epicsHtml = p.epics.map(function(epic, ei) {',
-    '      var cards = epic.stories.map(function(s, si) {',
-    '        var cls = s.cx >= 3 ? "dm-cx--h" : s.cx === 2 ? "dm-cx--m" : "dm-cx--l";',
-    '        return \'<button class="dm-card" data-ei="\' + ei + \'" data-si="\' + si + \'">\' +',
-    '          \'<span class="dm-card-id">\' + escHtmlClient(s.id) + \'</span>\' +',
-    '          \'<span class="dm-card-title">\' + escHtmlClient(s.title) + \'</span>\' +',
-    '          (s.cx ? \'<span class="dm-cx \' + cls + \'">C:\' + s.cx + \'</span>\' : "") +',
-    '        \'</button>\';',
-    '      }).join("");',
+    '    var epicHeaders = p.epics.map(function(epic, ei) {',
     '      var cntBadge = epic.stories.length ? \'<span class="dm-epic-count">\' + epic.stories.length + (epic.stories.length === 1 ? " story" : " stories") + \'</span>\' : "";',
-    '      return \'<div class="dm-epic">\' +',
+    '      return \'<th class="dm-epic-th">\' +',
     '        \'<button class="dm-epic-hd" onclick="window.dmOpenEpic(\' + ei + \')" title="View epic details">\' +',
     '          \'<span class="dm-epic-tag">E\' + escHtmlClient(epic.num) + \'</span>\' +',
     '          \'<span class="dm-epic-name">\' + escHtmlClient(epic.name) + \'</span>\' +',
     '          cntBadge +',
     '          \'<span style="font-size:9px;color:var(--muted);margin-left:auto;flex-shrink:0">&#x2197;</span>\' +',
-    '        \'</button>\' +',
-    '        \'<div class="dm-cards">\' + (cards || \'<span style="font-size:11px;color:var(--muted);padding:4px 0">Writing stories…</span>\') + \'</div>\' +',
-    '      \'</div>\';',
+    '        \'</button></th>\';',
+    '    }).join("");',
+    '    var phaseRows = phases.map(function(phase, pi) {',
+    '      var phaseId = "phase-" + (pi + 1);',
+    '      var isCurrent = !!phase.isCurrent;',
+    '      var trClass = "phase-row" + (isCurrent ? "" : " phase-row--locked");',
+    '      var cells = p.epics.map(function(epic, ei) {',
+    '        var epicId = "epic-" + epic.num;',
+    '        var cellContent;',
+    '        if (isCurrent) {',
+    '          var cards = epic.stories.map(function(s, si) {',
+    '            var cls = s.cx >= 3 ? "dm-cx--h" : s.cx === 2 ? "dm-cx--m" : "dm-cx--l";',
+    '            var cardId = epicId + "_" + s.id;',
+    '            return \'<div class="dm-card story-card card--inherited" draggable="true"\' +',
+    '              \' data-card-id="\' + escHtmlClient(cardId) + \'" data-origin="model"\' +',
+    '              \' data-epic-id="\' + escHtmlClient(epicId) + \'" data-phase-id="\' + phaseId + \'"\' +',
+    '              \' data-ei="\' + ei + \'" data-si="\' + si + \'" tabindex="0" role="button">\' +',
+    '              \'<div class="dm-card-hd"><span class="card-tag card-tag--model">model</span>\' +',
+    '              \'<span class="dm-card-id">\' + escHtmlClient(s.id) + \'</span></div>\' +',
+    '              \'<span class="dm-card-title">\' + escHtmlClient(s.title) + \'</span>\' +',
+    '              (s.cx ? \'<span class="dm-cx \' + cls + \'">C:\' + s.cx + \'</span>\' : "") +',
+    '            \'</div>\';',
+    '          }).join("");',
+    '          var addBtn = \'<button class="add-story-btn" data-epic-id="\' + escHtmlClient(epicId) + \'" data-phase-id="\' + phaseId + \'" data-epic-name="\' + escHtmlClient(epic.name) + \'" aria-label="Add story to \' + escHtmlClient(epic.name) + \'" tabindex="0">+</button>\';',
+    '          cellContent = \'<div class="dm-cards" data-epic-id="\' + escHtmlClient(epicId) + \'" data-phase-id="\' + phaseId + \'">\' + (cards || "") + addBtn + \'</div>\';',
+    '        } else {',
+    '          cellContent = \'<div class="dm-cards" data-epic-id="\' + escHtmlClient(epicId) + \'" data-phase-id="\' + phaseId + \'">\' +',
+    '            \'<div class="phase-lock-label" role="note">Not yet defined — awaits Phase \' + (pi + 1) + \'’s Definition pass</div>\' +',
+    '          \'</div>\';',
+    '        }',
+    '        return \'<td class="dm-cell">\' + cellContent + \'</td>\';',
+    '      }).join("");',
+    '      return \'<tr class="\' + trClass + \'" data-phase-current="\' + (isCurrent ? "true" : "false") + \'">\' +',
+    '        \'<td class="dm-phase-lbl">\' + escHtmlClient(phase.name) + \'</td>\' +',
+    '        cells + \'</tr>\';',
     '    }).join("");',
     '    return \'<div class="dm-canvas">\' +',
     '      \'<div class="dm-hdr">\' +',
     '        \'<span class="dm-count">\' + p.epicCount + (p.epicCount === 1 ? " epic" : " epics") + \' \xB7 \' + p.storyCount + (p.storyCount === 1 ? " story" : " stories") + \'</span>\' +',
     '        badge +',
+    '        \'<button id="dm-apply-btn" class="dm-apply-btn" disabled>Apply changes (0 pending)</button>\' +',
     '      \'</div>\' +',
-    '      epicsHtml +',
+    '      \'<div class="dm-table-wrap"><table class="dm-table"><thead>\' +',
+    '        \'<tr class="dm-epic-row"><th class="dm-phase-th"></th>\' + epicHeaders + \'</tr>\' +',
+    '      \'</thead><tbody>\' + phaseRows + \'</tbody></table></div>\' +',
     '    \'</div>\';',
     '  }',
+    '',
+    '  // ── dic.1: Canvas interactivity state ────────────────────────────────────',
+    '  var _canvasState = { pendingReorder: [], pendingAdds: [] };',
+    '  var _touchState  = { selectedCardId: null, selectedCardEl: null };',
+    '',
+    '  function _updatePendingCount() {',
+    '    var btn = document.getElementById("dm-apply-btn");',
+    '    if (!btn) return;',
+    '    var n = _canvasState.pendingReorder.length + _canvasState.pendingAdds.length;',
+    '    btn.textContent = "Apply changes (" + n + " pending)";',
+    '    btn.disabled = n === 0;',
+    '  }',
+    '',
+    '  function initCanvasInteractivity() {',
+    '    var _ap = document.getElementById("artefact-panel");',
+    '    if (!_ap) return;',
+    '    var _dragCardId = null;',
+    '    var _dragEpicId = null;',
+    '',
+    '    // ── Drag start ──────────────────────────────────────────────────────────',
+    '    _ap.addEventListener("dragstart", function(e) {',
+    '      var card = e.target && e.target.closest && e.target.closest("[data-card-id]");',
+    '      if (!card) return;',
+    '      _dragCardId = card.getAttribute("data-card-id");',
+    '      _dragEpicId = card.getAttribute("data-epic-id");',
+    '      e.dataTransfer.setData("text/plain", _dragCardId);',
+    '      e.dataTransfer.effectAllowed = "move";',
+    '    });',
+    '',
+    '    // ── Dragover — column + phase guard ─────────────────────────────────────',
+    '    _ap.addEventListener("dragover", function(e) {',
+    '      var target = e.target && e.target.closest && e.target.closest("[data-card-id]");',
+    '      if (!target) target = e.target && e.target.closest && e.target.closest(".dm-cards");',
+    '      if (!target) return;',
+    '      var targetEpicId = target.getAttribute("data-epic-id");',
+    '      if (!targetEpicId) {',
+    '        var cardsEl = target.closest(".dm-cards");',
+    '        targetEpicId = cardsEl ? cardsEl.getAttribute("data-epic-id") : null;',
+    '      }',
+    '      if (!targetEpicId || targetEpicId !== _dragEpicId) return;',
+    '      // dic.2 phase guard — check data-phase-current on closest row',
+    '      var phaseRow = target.closest("[data-phase-current]");',
+    '      if (phaseRow && phaseRow.getAttribute("data-phase-current") !== "true") return;',
+    '      e.preventDefault();',
+    '      e.dataTransfer.dropEffect = "move";',
+    '    });',
+    '',
+    '    // ── Drop — reorder + record pendingReorder ────────────────────────────────',
+    '    _ap.addEventListener("drop", function(e) {',
+    '      e.preventDefault();',
+    '      if (!_dragCardId) return;',
+    '      var target = e.target && e.target.closest && e.target.closest("[data-card-id]");',
+    '      if (!target) return;',
+    '      if (target.getAttribute("data-card-id") === _dragCardId) { _dragCardId = null; _dragEpicId = null; return; }',
+    '      if (target.getAttribute("data-epic-id") !== _dragEpicId) { _dragCardId = null; _dragEpicId = null; return; }',
+    '      var draggedEl = _ap.querySelector("[data-card-id=\\"" + _dragCardId + "\\"]");',
+    '      if (!draggedEl || !target.parentNode) { _dragCardId = null; _dragEpicId = null; return; }',
+    '      target.parentNode.insertBefore(draggedEl, target);',
+    '      var cards = Array.prototype.slice.call(target.parentNode.querySelectorAll("[data-card-id]"));',
+    '      var newIdx = cards.indexOf(draggedEl);',
+    '      _canvasState.pendingReorder.push({ cardId: _dragCardId, epicId: _dragEpicId, phaseId: draggedEl.getAttribute("data-phase-id") || "phase-1", newIndex: newIdx });',
+    '      _updatePendingCount();',
+    '      _dragCardId = null; _dragEpicId = null;',
+    '    });',
+    '',
+    '    // ── dic.4: Touch tap-to-select / tap-to-place ─────────────────────────────',
+    '    function _handleCardTouchStart(e) {',
+    '      var card = e.target && e.target.closest && e.target.closest("[data-card-id]");',
+    '      if (!card) return;',
+    '      e.stopPropagation();',
+    '      if (_touchState.selectedCardEl === card) {',
+    '        card.classList.remove("card--touch-selected");',
+    '        card.setAttribute("aria-selected", "false");',
+    '        _touchState.selectedCardId = null; _touchState.selectedCardEl = null;',
+    '        return;',
+    '      }',
+    '      if (_touchState.selectedCardEl) {',
+    '        _touchState.selectedCardEl.classList.remove("card--touch-selected");',
+    '        _touchState.selectedCardEl.setAttribute("aria-selected", "false");',
+    '      }',
+    '      card.classList.add("card--touch-selected");',
+    '      card.setAttribute("aria-selected", "true");',
+    '      _touchState.selectedCardId = card.getAttribute("data-card-id");',
+    '      _touchState.selectedCardEl = card;',
+    '    }',
+    '    function _handleCellPlacement(e) {',
+    '      if (!_touchState.selectedCardId || !_touchState.selectedCardEl) return;',
+    '      var cell = e.target && e.target.closest && e.target.closest(".dm-cards");',
+    '      if (!cell) return;',
+    '      var selectedCard = _touchState.selectedCardEl;',
+    '      if (cell.getAttribute("data-epic-id") !== selectedCard.getAttribute("data-epic-id")) return;',
+    '      var phaseRow = cell.closest("[data-phase-current]");',
+    '      if (!phaseRow || phaseRow.getAttribute("data-phase-current") !== "true") return;',
+    '      var targetCard = e.target && e.target.closest && e.target.closest("[data-card-id]");',
+    '      var anchor = (targetCard && targetCard !== selectedCard) ? targetCard : (cell.querySelector(".add-story-btn") || null);',
+    '      cell.insertBefore(selectedCard, anchor);',
+    '      var newIdx = Array.prototype.slice.call(cell.querySelectorAll("[data-card-id]")).indexOf(selectedCard);',
+    '      _canvasState.pendingReorder.push({ cardId: _touchState.selectedCardId, epicId: selectedCard.getAttribute("data-epic-id"), phaseId: selectedCard.getAttribute("data-phase-id") || "phase-1", newIndex: newIdx });',
+    '      _updatePendingCount();',
+    '      selectedCard.classList.remove("card--touch-selected");',
+    '      selectedCard.setAttribute("aria-selected", "false");',
+    '      _touchState.selectedCardId = null; _touchState.selectedCardEl = null;',
+    '    }',
+    '    _ap.addEventListener("touchstart", _handleCardTouchStart);',
+    '    _ap.addEventListener("touchend", _handleCellPlacement);',
+    '',
+    '    // ── dic.3: Add-story inline input ─────────────────────────────────────────',
+    '    function _showAddInput(btn) {',
+    '      var epicId   = btn.getAttribute("data-epic-id");',
+    '      var phaseId  = btn.getAttribute("data-phase-id");',
+    '      var parent   = btn.parentNode;',
+    '      var input    = document.createElement("input");',
+    '      input.type        = "text";',
+    '      input.className   = "add-story-input";',
+    '      input.placeholder = "Story title…";',
+    '      input.setAttribute("aria-label", "New story title for " + epicId);',
+    '      parent.replaceChild(input, btn);',
+    '      input.focus();',
+    '      function _commit() {',
+    '        var title = input.value.trim();',
+    '        if (!title) { _dismiss(); return; }',
+    '        var cardId = epicId + "_op_" + Date.now();',
+    '        var card   = document.createElement("div");',
+    '        card.className = "dm-card story-card card--new";',
+    '        card.setAttribute("draggable", "true");',
+    '        card.setAttribute("data-card-id", cardId);',
+    '        card.setAttribute("data-origin", "operator");',
+    '        card.setAttribute("data-epic-id", epicId);',
+    '        card.setAttribute("data-phase-id", phaseId);',
+    '        card.setAttribute("tabindex", "0");',
+    '        card.setAttribute("role", "button");',
+    '        card.innerHTML = \'<div class="dm-card-hd"><span class="card-tag card-tag--new">new</span></div>\' +',
+    '          \'<span class="dm-card-title">\' + escHtml(title) + \'</span>\';',
+    '        if (input.parentNode) parent.replaceChild(card, input);',
+    '        parent.appendChild(btn);',
+    '        _canvasState.pendingAdds.push({ cardId: cardId, epicId: epicId, phaseId: phaseId, title: title });',
+    '        _updatePendingCount();',
+    '      }',
+    '      function _dismiss() {',
+    '        if (input.parentNode) parent.replaceChild(btn, input);',
+    '      }',
+    '      input.addEventListener("keydown", function(e) {',
+    '        if (e.key === "Enter")  { e.preventDefault(); _commit(); }',
+    '        else if (e.key === "Escape") { _dismiss(); }',
+    '      });',
+    '      input.addEventListener("blur", function() {',
+    '        if (!input.value.trim()) { _dismiss(); }',
+    '      });',
+    '    }',
+    '',
+    '    // ── Epic rename guard + Add-story click + Touch placement click ──────────',
+    '    _ap.addEventListener("click", function(e) {',
+    '      _handleCellPlacement(e);',
+    '      var addBtn = e.target && e.target.classList && e.target.classList.contains("add-story-btn") ? e.target : null;',
+    '      if (addBtn) { _showAddInput(addBtn); return; }',
+    '      var hd = e.target && e.target.closest && e.target.closest(".dm-epic-hd");',
+    '      if (!hd) return;',
+    '      if (hd.querySelector(".epic-rename-tooltip")) return;',
+    '      var tip = document.createElement("div");',
+    '      tip.className = "epic-rename-tooltip";',
+    '      tip.setAttribute("role", "alert");',
+    '      tip.textContent = "Epic names are set by the Definition skill — return to the chat to rename.";',
+    '      hd.appendChild(tip);',
+    '      setTimeout(function() { if (tip.parentNode) tip.parentNode.removeChild(tip); }, 3000);',
+    '    });',
+    '',
+    '    // ── Keyboard reorder (ArrowUp / ArrowDown) + add-story (Space/Enter) ──────',
+    '    _ap.addEventListener("keydown", function(e) {',
+    '      if ((e.key === " " || e.key === "Enter") && e.target && e.target.classList && e.target.classList.contains("add-story-btn")) {',
+    '        e.preventDefault(); _showAddInput(e.target); return;',
+    '      }',
+    '      if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;',
+    '      var card = e.target && e.target.closest && e.target.closest("[data-card-id]");',
+    '      if (!card) return;',
+    '      e.preventDefault();',
+    '      var parent = card.parentNode;',
+    '      var siblings = Array.prototype.slice.call(parent.querySelectorAll("[data-card-id]"));',
+    '      var idx = siblings.indexOf(card);',
+    '      if (e.key === "ArrowUp" && idx > 0) {',
+    '        parent.insertBefore(card, siblings[idx - 1]);',
+    '      } else if (e.key === "ArrowDown" && idx < siblings.length - 1) {',
+    '        parent.insertBefore(card, siblings[idx + 2] || null);',
+    '      } else {',
+    '        return;',
+    '      }',
+    '      card.focus();',
+    '      var updated = Array.prototype.slice.call(parent.querySelectorAll("[data-card-id]"));',
+    '      _canvasState.pendingReorder.push({ cardId: card.getAttribute("data-card-id"), epicId: card.getAttribute("data-epic-id"), phaseId: card.getAttribute("data-phase-id") || "phase-1", newIndex: updated.indexOf(card) });',
+    '      _updatePendingCount();',
+    '    });',
+    '  }',
+    '',
+    '  // ── dic.1: escHtml alias for operator content (more complete than escHtmlClient) ──',
+    '  function escHtml(s) {',
+    '    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/\'/g,"&#039;");',
+    '  }',
+    '',
     '  // ─────────────────────────────────────────────────────────────────────────',
     '  function updateDraftPanel(artefactContent) {',
     '    if(IS_IDEATE){',
@@ -2227,7 +2675,8 @@ function _renderChatPage(skillName, sessionId, session) {
     '      if(!ap) return;',
     '      if (IS_DEFINITION) {',
     '        window.dmParsed = parseDefinitionArtefact(artefactContent);',
-    '        ap.innerHTML = renderDefinitionMap(window.dmParsed);',
+    '        _canvasState = { pendingReorder: [], pendingAdds: [] };',
+    '        ap.innerHTML = renderDefinitionMap(window.dmParsed, window.dmPhaseModel);',
     '      } else {',
     '        ap.innerHTML = renderArtefactMd(artefactContent);',
     '      }',
@@ -2706,8 +3155,47 @@ function _renderChatPage(skillName, sessionId, session) {
     '  if(!IS_IDEATE && typeof __SW_INITIAL_ARTEFACT__ !== "undefined" && __SW_INITIAL_ARTEFACT__) {',
     '    updateDraftPanel(__SW_INITIAL_ARTEFACT__);',
     '  }',
-    '  // Definition: delegate story-card clicks from artefact panel',
+    '  // dic.5: Apply-changes dispatch ─────────────────────────────────────────',
+    '  function applyChanges() {',
+    '    var btn = document.getElementById("dm-apply-btn");',
+    '    var total = _canvasState.pendingReorder.length + _canvasState.pendingAdds.length;',
+    '    if (!btn || total === 0 || !CANVAS_EDIT_URL) return;',
+    '    btn.disabled = true;',
+    '    btn.textContent = "Applying…";',
+    '    var _payload = { pendingReorder: _canvasState.pendingReorder.slice(), pendingAdds: _canvasState.pendingAdds.slice() };',
+    '    fetch(CANVAS_EDIT_URL, {',
+    '      method: "POST",',
+    '      headers: { "Content-Type": "application/json" },',
+    '      body: JSON.stringify(_payload)',
+    '    }).then(function(resp) {',
+    '      return resp.json().then(function(data) { return { status: resp.status, data: data }; });',
+    '    }).then(function(result) {',
+    '      var errEl = document.getElementById("dm-apply-err");',
+    '      if (result.status === 409) {',
+    '        if (!errEl) { errEl = document.createElement("div"); errEl.id = "dm-apply-err"; errEl.className = "dm-apply-error"; if (btn.parentNode) btn.parentNode.appendChild(errEl); }',
+    '        errEl.textContent = result.data.error || "A model turn is in progress.";',
+    '        btn.disabled = false; btn.textContent = "Apply changes (" + total + " pending)"; return;',
+    '      }',
+    '      if (!result.data.ok) {',
+    '        if (!errEl) { errEl = document.createElement("div"); errEl.id = "dm-apply-err"; errEl.className = "dm-apply-error"; if (btn.parentNode) btn.parentNode.appendChild(errEl); }',
+    '        errEl.textContent = result.data.error || "Apply failed.";',
+    '        btn.disabled = false; btn.textContent = "Apply changes (" + total + " pending)"; return;',
+    '      }',
+    '      _canvasState.pendingReorder = []; _canvasState.pendingAdds = [];',
+    '      if (errEl) errEl.textContent = "";',
+    '      _updatePendingCount();',
+    '      if (result.data.artefactContent) { updateDraftPanel(result.data.artefactContent); }',
+    '      btn.disabled = false;',
+    '    }).catch(function() {',
+    '      var errEl = document.getElementById("dm-apply-err");',
+    '      if (!errEl) { errEl = document.createElement("div"); errEl.id = "dm-apply-err"; errEl.className = "dm-apply-error"; if (btn.parentNode) btn.parentNode.appendChild(errEl); }',
+    '      errEl.textContent = "Apply failed — please retry.";',
+    '      btn.disabled = false; btn.textContent = "Apply changes (" + total + " pending)";',
+    '    });',
+    '  }',
+    '  // Definition: delegate story-card clicks + initialise canvas interactivity',
     '  if (IS_DEFINITION) {',
+    '    window.dmPhaseModel = (typeof __SW_PHASE_MODEL__ !== "undefined" && __SW_PHASE_MODEL__) ? __SW_PHASE_MODEL__ : [{ name: "Phase 1 (current)", isCurrent: true }];',
     '    var _dmAp = document.getElementById("artefact-panel");',
     '    if (_dmAp) {',
     '      _dmAp.addEventListener("click", function(e) {',
@@ -2717,6 +3205,9 @@ function _renderChatPage(skillName, sessionId, session) {
     '        var si = parseInt(btn.getAttribute("data-si") || "0", 10);',
     '        if (window.dmOpenStory) window.dmOpenStory(ei, si);',
     '      });',
+    '      initCanvasInteractivity();',
+    '      var _applyBtn = document.getElementById("dm-apply-btn");',
+    '      if (_applyBtn) _applyBtn.addEventListener("click", applyChanges);',
     '    }',
     '  }',
     '})();',
@@ -2808,7 +3299,7 @@ function _renderChatPage(skillName, sessionId, session) {
     }
   }
 
-  var bodyContent = navigatorHtml + artefactInitScript + _renderChatView({
+  var bodyContent = navigatorHtml + artefactInitScript + phaseModelInitScript + _renderChatView({
     skillName:         skillName,
     skillLabel:        skillName,
     isIdeate:          isIdeate,
@@ -3843,5 +4334,12 @@ module.exports = {
   // model routing + system prompt (exported for gate testing)
   getModelForSkill,
   buildSystemPrompt,
-  HAIKU_BLOCKED_SKILLS
+  HAIKU_BLOCKED_SKILLS,
+  // dic.1 — definition canvas server-side renderer (exported for testing)
+  _renderDefinitionMapHtml,
+  // dic.2 — phase model adapter (exported for testing)
+  setParsePhaseModel, defaultParsePhaseModel,
+  // dic.5 — canvas-edit dispatch (exported for testing)
+  handlePostCanvasEditHtml, setApplyCanvasEdits, realApplyCanvasEdits,
+  buildCanvasAuditEntry, writeAuditEntry
 };

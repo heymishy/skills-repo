@@ -18,7 +18,7 @@ const { handleGetFeatures, handleGetFeatureArtefacts, handleGetIdeas, handlePost
 const { handleGetStatus, handleGetStatusExport }                     = require('./routes/status');
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
-const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml, handlePostAssumptionConfirm } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3 / iwu.4
+const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml, handlePostAssumptionConfirm, handlePostCanvasEditHtml } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3 / iwu.4 / dic.5
 const { setLogger, setFetchOrgs }                                    = require('./routes/auth');
 const { setFetchPipelineState }                                      = require('./adapters/feature-list');
 const { setFetchArtefactDirectory }                                  = require('./adapters/artefact-list');
@@ -291,6 +291,48 @@ async function router(req, res) {
     return;
   }
 
+  // dic-canvas E2E: seed a definition session with stub artefact content
+  if (pathname === '/test/seed-definition-session' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    const { _setHtmlSession } = require('./routes/skills');
+    const _uid = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    const _sessionId = 'def-e2e-' + _uid;
+    _setHtmlSession(_sessionId, {
+      skillName:      'definition',
+      sessionPath:    null,
+      systemPrompt:   'test',
+      turns:          [],
+      artefactContent: [
+        '# Definition — E2E Canvas Test Feature',
+        '',
+        '**Slicing strategy:** vertical',
+        '',
+        '## Epic 1 — Platform Core',
+        '',
+        '### s.1 — Set up repo',
+        '',
+        'Complexity: 1',
+        '',
+        '### s.2 — Configure CI',
+        '',
+        'Complexity: 2',
+        '',
+        '## Epic 2 — Operator Tools',
+        '',
+        '### s.3 — Build dashboard',
+        '',
+        'Complexity: 2',
+        '',
+      ].join('\n'),
+      artefactPath:   null,
+      done:           false,
+      journeyId:      null,
+      phaseModel:     [{ name: 'Phase 1 (current)', isCurrent: true }],
+    });
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ sessionId: _sessionId }));
+    return;
+  }
+
   // Attach session before routing
   sessionMiddleware(req, res);
 
@@ -411,6 +453,14 @@ async function router(req, res) {
     req.params = { name: parts[3], id: parts[5] };
     authGuard(req, res, async () => {
       await handlePostTurnStreamHtml(req, res);
+    });
+
+  } else if (pathname.match(/^\/api\/skills\/[^/]+\/sessions\/[^/]+\/canvas-edit$/) && req.method === 'POST') {
+    // dic.5 — canvas-edit dispatch endpoint
+    const parts = pathname.split('/');
+    req.params = { name: parts[3], id: parts[5] };
+    authGuard(req, res, async () => {
+      await handlePostCanvasEditHtml(req, res);
     });
 
   } else if (pathname.match(/^\/api\/skills\/[^/]+\/sessions\/[^/]+\/assumption\/[^/]+\/confirm$/) && req.method === 'POST') {

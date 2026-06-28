@@ -4670,6 +4670,8 @@
       "guardrails": [
         {
           "id": "ADR-011",
+          "category": "adr",
+          "label": "ADR-011: Artefact-first rule for governed SKILL.md changes",
           "status": "met",
           "notes": "Story artefacts exist for all 3 SKILL.md changes (sri.1, sri.2, sri.3)",
           "evidence": "Trace confirms full artefact chain (discovery→benefit-metric→epic→stories→test-plans→DoR→DoD) intact for all 3 stories.",
@@ -4678,6 +4680,8 @@
         },
         {
           "id": "platform-change-policy",
+          "category": "mandatory-constraint",
+          "label": "Platform change policy: governed files require PR review",
           "status": "met",
           "notes": "All changes to .github/skills/*.md governed files — PR with platform review required before merge",
           "evidence": "All 3 PRs (#410 #411 #412) went via feature branches and human merge. No direct commits to master for SKILL.md changes.",
@@ -4686,6 +4690,8 @@
         },
         {
           "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "MC-SEC-02: No credentials or personal data introduced",
           "status": "met",
           "notes": "No credentials, tokens, or personal data introduced — SKILL.md text changes only",
           "evidence": "No credentials or personal data in any story scope; sri.1 NFR explicitly prohibits remote URL in warning message",
@@ -4694,6 +4700,8 @@
         },
         {
           "id": "MC-CORRECT-01",
+          "category": "mandatory-constraint",
+          "label": "MC-CORRECT-01: Gate logic correctness",
           "status": "na",
           "evidence": "No gate logic introduced — SKILL.md text changes only",
           "assessedBy": "/review Run 1",
@@ -4701,6 +4709,8 @@
         },
         {
           "id": "MC-CORRECT-02",
+          "category": "mandatory-constraint",
+          "label": "MC-CORRECT-02: No new pipeline-state.json fields",
           "status": "na",
           "evidence": "No new pipeline-state.json fields introduced",
           "assessedBy": "/review Run 1",
@@ -4708,6 +4718,8 @@
         },
         {
           "id": "ADR-003",
+          "category": "adr",
+          "label": "ADR-003: Schema change approval",
           "status": "na",
           "evidence": "No schema changes — operator-question approach only (schema change deferred per discovery)",
           "assessedBy": "/review Run 1",
@@ -4715,6 +4727,8 @@
         },
         {
           "id": "AP-11",
+          "category": "anti-pattern",
+          "label": "AP-11: New files require governed artefact chain",
           "status": "na",
           "evidence": "Changes are to existing SKILL.md files (not new files); covered by story artefacts — no violation",
           "assessedBy": "/review Run 1",
@@ -4758,6 +4772,8 @@
         },
         {
           "id": "ADR-008",
+          "category": "adr",
+          "label": "ADR-008: No scope bundling across PRs",
           "status": "met",
           "evidence": "No scope bundling across PRs. Each PR contains only its story's changes as per DoR contract.",
           "assessedBy": "/trace",
@@ -6130,6 +6146,195 @@
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-06-21-rtp-receiving-integration/discovery.md",
       "stage": "discovery"
+    },
+    {
+      "slug": "2026-06-28-definition-canvas",
+      "name": "Definition Story Map — Interactive Canvas",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "updatedAt": "2026-06-28T00:00:00Z",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discovery": {
+        "status": "approved",
+        "artefact": "artefacts/2026-06-28-definition-canvas/discovery.md",
+        "approvedAt": "2026-06-28",
+        "approvedBy": "Hamish King"
+      },
+      "benefit-metric": {
+        "status": "active",
+        "artefact": "artefacts/2026-06-28-definition-canvas/benefit-metric.md",
+        "definedAt": "2026-06-28"
+      },
+      "nfrProfileArtefact": "artefacts/2026-06-28-definition-canvas/nfr-profile.md",
+      "decisionsArtefact": "artefacts/2026-06-28-definition-canvas/decisions.md",
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Audit trail parity — canvas edits structurally identical to conversational-turn edits",
+          "target": "100% — zero schema divergence permitted",
+          "baseline": "N/A — canvas edits do not exist today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["dic.5"]
+        },
+        {
+          "id": "M2",
+          "name": "Future-phase placement guard holds across all code paths",
+          "target": "Zero incidents in test suite — all code paths reject non-current phase placement",
+          "baseline": "N/A — phase rows do not exist today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["dic.2", "dic.3", "dic.4", "dic.5"]
+        },
+        {
+          "id": "M3",
+          "name": "Canvas edit round-trip P90 ≤ 3 seconds (local dev)",
+          "target": "P90 ≤ 3s; minimum signal ≤ 5s",
+          "baseline": "Not established — canvas edits do not exist",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["dic.5"]
+        },
+        {
+          "id": "MM1",
+          "name": "Definition re-instruction turns reduced per session",
+          "target": "≤1 re-instruction turn per session on average at 30-day review",
+          "baseline": "~4 re-instruction turns (directional; 2026-06-21-strategy-and-data-hub session)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": ["dic.1", "dic.3"]
+        }
+      ],
+      "epics": [
+        {
+          "slug": "dic-interactive-canvas",
+          "name": "Definition story map becomes an interactive canvas operators can act on directly",
+          "stories": [
+            {
+              "id": "dic.1",
+              "slug": "dic.1",
+              "name": "Interactive story cards with inherited/new styling and epic rename guard",
+              "artefact": "artefacts/2026-06-28-definition-canvas/stories/dic.1.md",
+              "complexity": 2,
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-28-definition-canvas/dor/dic.1-dor.md",
+              "reviewArtefact": "artefacts/2026-06-28-definition-canvas/review/dic.1-review-1.md",
+              "acTotal": 6,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-28-definition-canvas/test-plans/dic.1-test-plan.md",
+                "totalTests": 15,
+                "passing": 0
+              },
+              "tddState": "red",
+              "updatedAt": "2026-06-28"
+            },
+            {
+              "id": "dic.2",
+              "slug": "dic.2",
+              "name": "Phase row model with locked future-phase rows",
+              "artefact": "artefacts/2026-06-28-definition-canvas/stories/dic.2.md",
+              "complexity": 2,
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-28-definition-canvas/dor/dic.2-dor.md",
+              "reviewArtefact": "artefacts/2026-06-28-definition-canvas/review/dic.2-review-1.md",
+              "acTotal": 7,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-28-definition-canvas/test-plans/dic.2-test-plan.md",
+                "totalTests": 15,
+                "passing": 0
+              },
+              "tddState": "red",
+              "updatedAt": "2026-06-28"
+            },
+            {
+              "id": "dic.3",
+              "slug": "dic.3",
+              "name": "Add-story canvas flow",
+              "artefact": "artefacts/2026-06-28-definition-canvas/stories/dic.3.md",
+              "complexity": 2,
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-28-definition-canvas/dor/dic.3-dor.md",
+              "reviewArtefact": "artefacts/2026-06-28-definition-canvas/review/dic.3-review-1.md",
+              "acTotal": 7,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-28-definition-canvas/test-plans/dic.3-test-plan.md",
+                "totalTests": 18,
+                "passing": 0
+              },
+              "tddState": "red",
+              "updatedAt": "2026-06-28"
+            },
+            {
+              "id": "dic.4",
+              "slug": "dic.4",
+              "name": "Touch tap-to-select / tap-to-place reorder fallback",
+              "artefact": "artefacts/2026-06-28-definition-canvas/stories/dic.4.md",
+              "complexity": 2,
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-28-definition-canvas/dor/dic.4-dor.md",
+              "reviewArtefact": "artefacts/2026-06-28-definition-canvas/review/dic.4-review-1.md",
+              "acTotal": 8,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-28-definition-canvas/test-plans/dic.4-test-plan.md",
+                "totalTests": 19,
+                "passing": 0
+              },
+              "tddState": "red",
+              "updatedAt": "2026-06-28"
+            },
+            {
+              "id": "dic.5",
+              "slug": "dic.5",
+              "name": "Canvas-edit dispatch and audit trail parity",
+              "artefact": "artefacts/2026-06-28-definition-canvas/stories/dic.5.md",
+              "complexity": 3,
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-28-definition-canvas/dor/dic.5-dor.md",
+              "reviewArtefact": "artefacts/2026-06-28-definition-canvas/review/dic.5-review-1.md",
+              "acTotal": 9,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-28-definition-canvas/test-plans/dic.5-test-plan.md",
+                "totalTests": 25,
+                "passing": 0
+              },
+              "tddState": "red",
+              "updatedAt": "2026-06-28"
+            }
+          ]
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
