@@ -6,8 +6,48 @@
 
 const crypto = require('crypto');
 
-// In-memory session store (replace with persistent store in production)
+// In-memory session store — primary runtime read path.
+// Redis adapter (optional) provides restart-survival persistence.
 const _sessions = new Map();
+
+let _redisAdapter = null;
+function setRedisAdapter(adapter) { _redisAdapter = adapter; }
+
+let _redisAdapterForTesting = null;
+function setRedisAdapterForTesting(adapter) { _redisAdapterForTesting = adapter; }
+
+function _activeRedis() { return _redisAdapterForTesting || _redisAdapter; }
+
+function _sanitiseForRedis(data) {
+  const safe = Object.assign({}, data);
+  delete safe.accessToken;
+  return safe;
+}
+
+/**
+ * Load sessions from Redis into the in-memory store.
+ * Called once at server startup when UPSTASH_REDIS_REST_URL is set.
+ * @returns {Promise<void>}
+ */
+async function loadSessionsFromRedis() {
+  const adapter = _activeRedis();
+  if (!adapter) return;
+  let sessions;
+  try { sessions = await adapter.loadAllSessions(); } catch (err) {
+    console.error('[session] Redis load error:', err.message);
+    return;
+  }
+  sessions.forEach(function(entry) {
+    if (entry.id && !_sessions.has(entry.id)) {
+      _sessions.set(entry.id, entry.data || {});
+    }
+  });
+}
+
+/** Clear in-memory store (test helper). */
+function _clearForTesting() {
+  _sessions.clear();
+}
 
 /**
  * Session cookie security configuration.
@@ -47,6 +87,21 @@ function createSession() {
 }
 
 /**
+ * Persist the current session to Redis (called after session fields are populated).
+ * No-op when Redis adapter is not configured.
+ * @param {string} id — session ID
+ */
+function persistSession(id) {
+  const adapter = _activeRedis();
+  if (!adapter) return;
+  const data = _sessions.get(id);
+  if (!data) return;
+  adapter.writeSession(id, _sanitiseForRedis(data)).catch(function(err) {
+    console.error('[session] Redis write error:', err.message);
+  });
+}
+
+/**
  * Retrieve a session by ID.
  * @param {string} id
  * @returns {object|null}
@@ -61,6 +116,12 @@ function getSession(id) {
  */
 function destroySession(id) {
   _sessions.delete(id);
+  const adapter = _activeRedis();
+  if (adapter) {
+    adapter.deleteSession(id).catch(function(err) {
+      console.error('[session] Redis delete error:', err.message);
+    });
+  }
 }
 
 /** Parse session ID from Cookie header value. */
@@ -115,5 +176,10 @@ module.exports = {
   createSession,
   getSession,
   destroySession,
-  seedTestSession
+  seedTestSession,
+  setRedisAdapter,
+  setRedisAdapterForTesting,
+  loadSessionsFromRedis,
+  persistSession,
+  _clearForTesting
 };

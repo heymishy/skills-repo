@@ -90,11 +90,30 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   _diskSessionStoreAdapter.loadSessions(_restoreHtmlSession);
 
   // jdsk.1 — wire journey disk adapter and reload journeys from workspace/journeys/
-  const _journeyDisk  = require('../modules/journey-disk');
   const _journeyStore = require('./modules/journey-store');
   const _journeyRoot  = process.env.COPILOT_REPO_PATH || _path.resolve(__dirname, '../..');
-  _journeyStore.setDiskAdapter(_journeyDisk);
-  _journeyStore.loadAllFromDisk(_journeyRoot);
+  if (process.env.DATABASE_URL) {
+    // p3.1 — Postgres journey persistence (Neon free tier, see Decision 9)
+    const _journeyPg = require('./adapters/journey-store-pg');
+    _journeyStore.setPgAdapter(_journeyPg);
+    _journeyStore.loadAllFromPg().catch(function(err) {
+      console.error('[server] loadAllFromPg failed:', err.message);
+    });
+  } else {
+    const _journeyDisk = require('../modules/journey-disk');
+    _journeyStore.setDiskAdapter(_journeyDisk);
+    _journeyStore.loadAllFromDisk(_journeyRoot);
+  }
+
+  // p3.2 — Upstash Redis session persistence (see Decision 9)
+  if (process.env.UPSTASH_REDIS_REST_URL) {
+    const _sessionRedis = require('./adapters/session-redis');
+    const { setRedisAdapter, loadSessionsFromRedis } = require('./middleware/session');
+    setRedisAdapter(_sessionRedis);
+    loadSessionsFromRedis().catch(function(err) {
+      console.error('[server] loadSessionsFromRedis failed:', err.message);
+    });
+  }
 }
 
 // Wire real GitHub pipeline-state fetcher for production (non-test) mode.

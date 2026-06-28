@@ -19,6 +19,8 @@
     "jsdom": "^25.0.1"
   },
   "dependencies": {
+    "@upstash/redis": "^1.38.0",
+    "pg": "^8.22.0",
     "pino": "10.3.1"
   }
 }
