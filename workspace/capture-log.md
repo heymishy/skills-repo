@@ -161,3 +161,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: pattern
   signal-text: "ADR-017 mandates all new features use flat features[].stories[] in pipeline-state.json — but /definition generated epics[].stories[] nesting for this feature. The /review skill caught this as a MEDIUM finding (1-M1 on shr.1). The nesting structure triggers the B2 rule (state advances must be applied on master post-merge), adding implementation overhead across all 12 stories. Future /definition runs for features with logical epics should use flat stories[] in pipeline-state.json while keeping epic artefact files for documentation."
   source: agent-auto
+
+- date: 2026-06-29
+  session-phase: review / wuce-multi-tenancy sprint stories s3.1–s5.1
+  signal-type: pattern
+  signal-text: "All five sprint operator-manual stories (s3.1, s3.2, s4.1, s4.2, s5.1) share the same five MEDIUM findings: missing Discovery reference link, missing Benefit-metric reference link, missing Benefit Linkage section, missing Architecture Constraints section, missing NFRs section. These are template compliance gaps consistently produced when /definition writes operator-manual infra stories without running through the full story template. The substance of the stories is sound — the gaps are all format-level. A story template checklist at write-time would prevent this class of finding from appearing in every review."
+  source: agent-auto

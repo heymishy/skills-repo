@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-06-28T23:00:54.636Z",
+  "updated": "2026-06-28T23:14:36.755Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -393,7 +393,7 @@
       "regulated": false,
       "complianceProfile": "standard",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-06-28T23:00:54.634Z",
+      "updatedAt": "2026-06-28T23:14:36.755Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/discovery.md",
@@ -835,18 +835,26 @@
             {
               "slug": "s3.1",
               "name": "Neon Postgres provisioning and schema activation",
-              "stage": "definition",
+              "stage": "review",
               "health": "green",
               "complexity": 1,
-              "scopeStability": "Stable"
+              "scopeStability": "Stable",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s3.1-review-1.md",
+              "updatedAt": "2026-06-28T23:14:36.755Z"
             },
             {
               "slug": "s3.2",
               "name": "Upstash Redis provisioning and session persistence activation",
-              "stage": "definition",
+              "stage": "review",
               "health": "green",
               "complexity": 1,
-              "scopeStability": "Stable"
+              "scopeStability": "Stable",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s3.2-review-1.md",
+              "updatedAt": "2026-06-28T23:14:36.755Z"
             }
           ]
         },
@@ -858,18 +866,26 @@
             {
               "slug": "s4.1",
               "name": "Production deployment and end-to-end smoke test",
-              "stage": "definition",
+              "stage": "review",
               "health": "green",
               "complexity": 1,
-              "scopeStability": "Stable"
+              "scopeStability": "Stable",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s4.1-review-1.md",
+              "updatedAt": "2026-06-28T23:14:36.755Z"
             },
             {
               "slug": "s4.2",
               "name": "Tenant onboarding configuration",
-              "stage": "definition",
+              "stage": "review",
               "health": "green",
               "complexity": 1,
-              "scopeStability": "Stable"
+              "scopeStability": "Stable",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s4.2-review-1.md",
+              "updatedAt": "2026-06-28T23:14:36.755Z"
             }
           ]
         },
@@ -881,10 +897,14 @@
             {
               "slug": "s5.1",
               "name": "Beta monitoring signals",
-              "stage": "definition",
+              "stage": "review",
               "health": "green",
               "complexity": 1,
-              "scopeStability": "Stable"
+              "scopeStability": "Stable",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s5.1-review-1.md",
+              "updatedAt": "2026-06-28T23:14:36.755Z"
             }
           ]
         }
