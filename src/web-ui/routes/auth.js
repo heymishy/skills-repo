@@ -4,14 +4,8 @@
 // Auth handler is standalone — no inline GitHub API calls.
 // CSRF state parameter is mandatory on every callback (ADR-012).
 
-const {
-  generateState,
-  buildOAuthRedirectURL,
-  exchangeCodeForToken,
-  getUserIdentity,
-  storeTokenInSession,
-  validateOAuthState
-} = require('../auth/oauth-adapter');
+// Use module reference (not destructuring) so tests can monkeypatch individual exports.
+const _oauthAdapter = require('../auth/oauth-adapter');
 
 // Audit logger — replaced via setLogger() in tests and in production bootstrap
 let _logger = {
@@ -81,9 +75,9 @@ async function resolveTenant(accessToken, allowlist) {
  * Stores a random CSRF state parameter in the session.
  */
 async function handleAuthGithub(req, res) {
-  const state = generateState();
+  const state = _oauthAdapter.generateState();
   req.session.oauthState = state;
-  const redirectUrl = buildOAuthRedirectURL(state);
+  const redirectUrl = _oauthAdapter.buildOAuthRedirectURL(state);
   res.writeHead(302, { Location: redirectUrl });
   res.end();
 }
@@ -99,7 +93,7 @@ async function handleAuthCallback(req, res) {
   const callbackState = query.state;
   const sessionState  = req.session && req.session.oauthState;
 
-  if (!validateOAuthState(sessionState, callbackState)) {
+  if (!_oauthAdapter.validateOAuthState(sessionState, callbackState)) {
     _logger.warn('oauth_state_mismatch', { sessionId: req.sessionId });
     res.writeHead(403, { 'Content-Type': 'text/plain' });
     res.end('Forbidden');
@@ -107,10 +101,10 @@ async function handleAuthCallback(req, res) {
   }
 
   try {
-    const token = await exchangeCodeForToken(code);
-    storeTokenInSession(req, token);
+    const token = await _oauthAdapter.exchangeCodeForToken(code);
+    _oauthAdapter.storeTokenInSession(req, token);
 
-    const user = await getUserIdentity(token);
+    const user = await _oauthAdapter.getUserIdentity(token);
     req.session.userId = user.id;
     req.session.login  = user.login;
 
@@ -126,8 +120,11 @@ async function handleAuthCallback(req, res) {
         return;
       }
       req.session.tenantId = tenantId;
+    } else {
+      // No TENANT_ORG_ALLOWLIST: each GitHub user is their own isolated tenant.
+      // Org-based tenantId (when TENANT_ORG_ALLOWLIST is set) is unaffected by this branch.
+      req.session.tenantId = user.login;
     }
-    // When TENANT_ORG_ALLOWLIST is absent, session.tenantId is not set (AC6 backward-compatible)
 
     // Audit log: user ID and timestamp only — never the token value
     _logger.info('login', {

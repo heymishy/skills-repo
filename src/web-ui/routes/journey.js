@@ -260,6 +260,18 @@ function handleGetJourney(req, res) {
   var profiles   = _listProfiles(repoRoot);
   var activeProfile = _getActiveProfile(repoRoot);
   var journeys   = _journeyStore.listJourneys ? _journeyStore.listJourneys(repoRoot) : [];
+  // Filter to current tenant when tenantId is set (all sessions after s0.2 deploy).
+  // Migration grace: pre-s0.1 journeys have no tenantId on disk — include those whose
+  // ownerId matches the current login (or no ownerId at all, for solo-mode history).
+  var _tid   = req.session.tenantId;
+  var _login = req.session.login;
+  if (_tid) {
+    journeys = journeys.filter(function(j) {
+      if (j.tenantId === _tid) return true;
+      if (j.tenantId == null && (j.ownerId == null || j.ownerId === _login)) return true;
+      return false;
+    });
+  }
   journeys.sort(function(a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); });
   var showNewForm = !!(req.query && req.query.new === '1');
   var body = _renderJourneyHome({ profiles: profiles, activeProfile: activeProfile, journeys: journeys, showNewForm: showNewForm });
@@ -294,11 +306,14 @@ async function handlePostJourney(req, res) {
     var featureSlug = today + '-' + _slugify(featureName);
     var repoRoot    = getRepoRoot(req);
 
-    // Create journey in memory + disk
+    // Create journey in memory + disk; persist ownerId + tenantId immediately so
+    // they survive a server restart (setJourneyFields triggers the disk adapter write).
     var created = _journeyStore.createJourney(featureSlug, profileName);
     var journeyId = created.journeyId;
-    created.ownerId  = req.session.login    || null;
-    created.tenantId = req.session.tenantId || undefined;
+    _journeyStore.setJourneyFields(journeyId, {
+      ownerId:  req.session.login    || null,
+      tenantId: req.session.tenantId || null
+    });
 
     // sdg.1: new-product selection → show strategy grounding modal before starting first skill
     if (body.newProduct === '1') {
@@ -1045,6 +1060,20 @@ async function handleGetJourneyResume(req, res) {
   var memJourney = allJourneys.find(function(j) { return j.featureSlug === featureSlug; });
   if (!memJourney && diskJourney.journeyId) {
     memJourney = _journeyStore.getJourney(diskJourney.journeyId);
+  }
+
+  // Access guard: prefer in-memory journey (has ownerId/tenantId from this process lifetime);
+  // fall back to disk fields (available after restart once s0.1 ownerId persistence is in place).
+  var _resumeGuardSubject = memJourney || {
+    journeyId: diskJourney.journeyId || null,
+    ownerId:   diskJourney.ownerId   || null,
+    tenantId:  diskJourney.tenantId  || null
+  };
+  try { requireJourneyAccess(_resumeGuardSubject, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Not found.</p><a href="/journey">Back to journeys</a></div>', user: { login: req.session.login || '' } }));
+    return;
   }
 
   var journeyId = memJourney ? memJourney.journeyId : (diskJourney.journeyId || null);
