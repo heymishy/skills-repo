@@ -249,6 +249,54 @@ if (process.env.NODE_ENV === 'test') {
     }
     return Promise.resolve(_fs.readFileSync(fixturePath, 'utf8'));
   });
+
+  // ── Stub skill turn stream adapter (NODE_ENV=test) ───────────────────────
+  // Wires a canned streaming response so the definition canvas can be driven
+  // from the browser without a real model API call or GitHub token.
+  // Submit any turn in the chat and the stub returns a fixed definition artefact.
+  const { setSkillTurnExecutorStreamAdapter } = require('./routes/skills');
+  const _STUB_ARTEFACT = [
+    '# Definition — Stub Feature',
+    '',
+    '**Slicing strategy:** vertical',
+    '',
+    '## Epic 1 — Platform Core',
+    '',
+    '### s.1 — Set up repository',
+    '',
+    'Complexity: 1',
+    '',
+    '### s.2 — Configure CI pipeline',
+    '',
+    'Complexity: 2',
+    '',
+    '## Epic 2 — Operator Tools',
+    '',
+    '### s.3 — Build operator dashboard',
+    '',
+    'Complexity: 2',
+    '',
+    '### s.4 — Add export feature',
+    '',
+    'Complexity: 1',
+    '',
+    '---ARTEFACT-COMPLETE---',
+  ].join('\n');
+
+  setSkillTurnExecutorStreamAdapter(function stubSkillTurnStream(_sys, _hist, _user, _token, onChunk) {
+    // Stream the stub artefact in small chunks to exercise the chunked display path
+    const words = _STUB_ARTEFACT.split(' ');
+    let i = 0;
+    return new Promise(function(resolve) {
+      function next() {
+        if (i >= words.length) { resolve(_STUB_ARTEFACT); return; }
+        const chunk = (i === 0 ? '' : ' ') + words[i++];
+        onChunk(chunk);
+        setTimeout(next, 8);
+      }
+      next();
+    });
+  });
 }
 
 /** Parse query parameters from a URL into a plain object. */
@@ -335,6 +383,69 @@ async function router(req, res) {
     });
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ sessionId: _sessionId }));
+    return;
+  }
+
+  // ── /test/canvas — one-shot browser shortcut (NODE_ENV=test only) ──────────
+  // GET this URL in the browser to:
+  //   1. authenticate as e2e-tester (no GitHub OAuth needed)
+  //   2. seed a definition session with stub artefact content
+  //   3. redirect straight to the canvas chat page
+  // The stub skill-turn adapter (wired above) returns a canned definition
+  // artefact when you submit any turn, so the full drag/add/apply flow is
+  // testable without a real model API call or GitHub token.
+  if (pathname === '/test/canvas' && req.method === 'GET' && process.env.NODE_ENV === 'test') {
+    const { seedTestSession } = require('./middleware/session');
+    const { _setHtmlSession } = require('./routes/skills');
+    const E2E_SESSION_ID = 'e2e' + '0'.repeat(60) + '1';
+    seedTestSession(E2E_SESSION_ID, {
+      accessToken: 'e2e-test-access-token',
+      userId:      9999,
+      login:       'e2e-tester',
+    });
+    const _uid = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    const _defSessionId = 'def-e2e-' + _uid;
+    _setHtmlSession(_defSessionId, {
+      skillName:      'definition',
+      sessionPath:    null,
+      systemPrompt:   'test',
+      turns:          [],
+      artefactContent: [
+        '# Definition — Stub Canvas Feature',
+        '',
+        '**Slicing strategy:** vertical',
+        '',
+        '## Epic 1 — Platform Core',
+        '',
+        '### s.1 — Set up repository',
+        '',
+        'Complexity: 1',
+        '',
+        '### s.2 — Configure CI pipeline',
+        '',
+        'Complexity: 2',
+        '',
+        '## Epic 2 — Operator Tools',
+        '',
+        '### s.3 — Build operator dashboard',
+        '',
+        'Complexity: 2',
+        '',
+        '### s.4 — Add export feature',
+        '',
+        'Complexity: 1',
+        '',
+      ].join('\n'),
+      artefactPath:   null,
+      done:           false,
+      journeyId:      null,
+      phaseModel:     [{ name: 'Phase 1 (current)', isCurrent: true }],
+    });
+    res.writeHead(302, {
+      'Location':   `/skills/definition/sessions/${_defSessionId}/chat`,
+      'Set-Cookie': `session_id=${E2E_SESSION_ID}; HttpOnly; SameSite=Lax; Path=/`,
+    });
+    res.end();
     return;
   }
 
