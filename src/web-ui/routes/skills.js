@@ -1952,6 +1952,134 @@ function _renderDefinitionMapHtml(p, phaseModel) {
   '</div>';
 }
 
+// ── dic.5: applyCanvasEdits injectable adapter (D37) ─────────────────────────
+let _applyCanvasEdits = function() {
+  throw new Error('Adapter not wired: applyCanvasEdits. Call setApplyCanvasEdits() with a real implementation before use.');
+};
+function setApplyCanvasEdits(fn) { _applyCanvasEdits = fn; }
+
+function buildCanvasAuditEntry(opts) {
+  return {
+    type: 'canvas-edit',
+    action: opts.action,
+    subject: { epicId: opts.epicId, storyId: opts.storyId || null },
+    value: opts.action === 'reorder' ? { newIndex: opts.newIndex } : { title: opts.title },
+    origin: 'canvas',
+    sessionId: opts.sessionId,
+    timestamp: new Date().toISOString()
+  };
+}
+
+function writeAuditEntry(session, entry) {
+  if (!session.auditLog) session.auditLog = [];
+  session.auditLog.push(entry);
+}
+
+async function realApplyCanvasEdits(session) {
+  const fs = require('fs');
+  const pathMod = require('path');
+  const artefactPath = session.artefactPath;
+  const content = session.artefactContent || '';
+  if (artefactPath) {
+    fs.writeFileSync(artefactPath, content, 'utf8');
+    const diskContent = fs.readFileSync(artefactPath, 'utf8');
+    return { artefactPath: artefactPath, updatedAt: new Date().toISOString(), artefactContent: diskContent };
+  }
+  return { artefactPath: null, updatedAt: new Date().toISOString(), artefactContent: content };
+}
+setApplyCanvasEdits(realApplyCanvasEdits);
+
+async function handlePostCanvasEditHtml(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    _json(res, 401, { error: 'Not authenticated' });
+    return;
+  }
+  const skillName = (req.params && req.params.name) || '';
+  const sessionId = (req.params && req.params.id) || '';
+  const session = _sessionStore.get(sessionId);
+  if (!session) {
+    _json(res, 404, { error: 'Session not found' });
+    return;
+  }
+
+  // Race condition guard
+  if (session.streamActive) {
+    _json(res, 409, { error: 'A model turn is in progress — apply changes after the turn completes.' });
+    return;
+  }
+
+  // Body validation
+  const body = await _readBody(req);
+  if (!body
+    || !Object.prototype.hasOwnProperty.call(body, 'pendingReorder')
+    || !Object.prototype.hasOwnProperty.call(body, 'pendingAdds')) {
+    _json(res, 400, { error: 'Request body must contain pendingReorder and pendingAdds.' });
+    return;
+  }
+  const allowedKeys = ['pendingReorder', 'pendingAdds'];
+  for (const k of Object.keys(body)) {
+    if (!allowedKeys.includes(k)) {
+      _json(res, 400, { error: 'Unrecognised field in request body: ' + k });
+      return;
+    }
+  }
+  if (!Array.isArray(body.pendingReorder) || !Array.isArray(body.pendingAdds)) {
+    _json(res, 400, { error: 'pendingReorder and pendingAdds must be arrays.' });
+    return;
+  }
+
+  // Phase guard: verify phaseId is the current phase for each edit
+  const phaseModel = session.phaseModel || [{ name: 'Phase 1 (current)', isCurrent: true }];
+  const currentPhaseIds = new Set();
+  phaseModel.forEach(function(ph, i) { if (ph.isCurrent) currentPhaseIds.add('phase-' + (i + 1)); });
+  const allEdits = body.pendingReorder.concat(body.pendingAdds);
+  for (const edit of allEdits) {
+    if (edit.phaseId && !currentPhaseIds.has(edit.phaseId)) {
+      _json(res, 400, { error: 'Canvas edit targets a non-current phase row.' });
+      return;
+    }
+  }
+
+  // Path traversal guard
+  const path = require('path');
+  const repoRoot = path.resolve(__dirname, '../../..');
+  const artefactPath = session.artefactPath;
+  if (artefactPath) {
+    const resolved = path.resolve(artefactPath);
+    if (!resolved.startsWith(repoRoot + path.sep)) {
+      _json(res, 400, { error: 'Invalid artefact path.' });
+      return;
+    }
+  }
+
+  // Apply edits via injectable adapter
+  let result;
+  try {
+    result = await _applyCanvasEdits(session, body, req.session.accessToken);
+  } catch (err) {
+    _json(res, 500, { error: 'Apply failed: ' + err.message });
+    return;
+  }
+
+  // Write one audit entry per change record
+  for (const r of body.pendingReorder) {
+    const parts = (r.cardId || '').split('_');
+    const storyId = parts.length > 1 ? parts.slice(1).join('_') : null;
+    writeAuditEntry(session, buildCanvasAuditEntry({
+      action: 'reorder', epicId: r.epicId, storyId: storyId,
+      newIndex: r.newIndex, sessionId: sessionId
+    }));
+  }
+  for (const a of body.pendingAdds) {
+    writeAuditEntry(session, buildCanvasAuditEntry({
+      action: 'add', epicId: a.epicId, storyId: null,
+      title: a.title, sessionId: sessionId
+    }));
+  }
+
+  _json(res, 200, Object.assign({ ok: true }, result || {}));
+}
+
 /**
  * Render the single-page chat UI HTML.
  * @param {string} skillName
@@ -2030,6 +2158,7 @@ function _renderChatPage(skillName, sessionId, session) {
     // Pre-compute gate-confirm URL server-side — avoids embedding /api/journey/ literal when no journey
     '  var GATE_CONFIRM_URL = "' + (session.journeyId ? escHtml('/api/journey/' + session.journeyId + '/gate-confirm') : '') + '";',
     '  var NEXT_STAGE_LABEL = "' + escHtml(session.journeyId ? ('Continue to ' + (_journeyStore.getNextStage(skillName) || 'next stage') + ' →') : '') + '";',
+    '  var CANVAS_EDIT_URL  = IS_DEFINITION ? (TURN_URL.replace("/turn", "/canvas-edit")) : "";',
     '  var submitBtn  = form.querySelector("button[type=\'submit\']");',
     '',
     '  function scrollToBottom() {',
@@ -3026,6 +3155,44 @@ function _renderChatPage(skillName, sessionId, session) {
     '  if(!IS_IDEATE && typeof __SW_INITIAL_ARTEFACT__ !== "undefined" && __SW_INITIAL_ARTEFACT__) {',
     '    updateDraftPanel(__SW_INITIAL_ARTEFACT__);',
     '  }',
+    '  // dic.5: Apply-changes dispatch ─────────────────────────────────────────',
+    '  function applyChanges() {',
+    '    var btn = document.getElementById("dm-apply-btn");',
+    '    var total = _canvasState.pendingReorder.length + _canvasState.pendingAdds.length;',
+    '    if (!btn || total === 0 || !CANVAS_EDIT_URL) return;',
+    '    btn.disabled = true;',
+    '    btn.textContent = "Applying…";',
+    '    var _payload = { pendingReorder: _canvasState.pendingReorder.slice(), pendingAdds: _canvasState.pendingAdds.slice() };',
+    '    fetch(CANVAS_EDIT_URL, {',
+    '      method: "POST",',
+    '      headers: { "Content-Type": "application/json" },',
+    '      body: JSON.stringify(_payload)',
+    '    }).then(function(resp) {',
+    '      return resp.json().then(function(data) { return { status: resp.status, data: data }; });',
+    '    }).then(function(result) {',
+    '      var errEl = document.getElementById("dm-apply-err");',
+    '      if (result.status === 409) {',
+    '        if (!errEl) { errEl = document.createElement("div"); errEl.id = "dm-apply-err"; errEl.className = "dm-apply-error"; if (btn.parentNode) btn.parentNode.appendChild(errEl); }',
+    '        errEl.textContent = result.data.error || "A model turn is in progress.";',
+    '        btn.disabled = false; btn.textContent = "Apply changes (" + total + " pending)"; return;',
+    '      }',
+    '      if (!result.data.ok) {',
+    '        if (!errEl) { errEl = document.createElement("div"); errEl.id = "dm-apply-err"; errEl.className = "dm-apply-error"; if (btn.parentNode) btn.parentNode.appendChild(errEl); }',
+    '        errEl.textContent = result.data.error || "Apply failed.";',
+    '        btn.disabled = false; btn.textContent = "Apply changes (" + total + " pending)"; return;',
+    '      }',
+    '      _canvasState.pendingReorder = []; _canvasState.pendingAdds = [];',
+    '      if (errEl) errEl.textContent = "";',
+    '      _updatePendingCount();',
+    '      if (result.data.artefactContent) { updateDraftPanel(result.data.artefactContent); }',
+    '      btn.disabled = false;',
+    '    }).catch(function() {',
+    '      var errEl = document.getElementById("dm-apply-err");',
+    '      if (!errEl) { errEl = document.createElement("div"); errEl.id = "dm-apply-err"; errEl.className = "dm-apply-error"; if (btn.parentNode) btn.parentNode.appendChild(errEl); }',
+    '      errEl.textContent = "Apply failed — please retry.";',
+    '      btn.disabled = false; btn.textContent = "Apply changes (" + total + " pending)";',
+    '    });',
+    '  }',
     '  // Definition: delegate story-card clicks + initialise canvas interactivity',
     '  if (IS_DEFINITION) {',
     '    window.dmPhaseModel = (typeof __SW_PHASE_MODEL__ !== "undefined" && __SW_PHASE_MODEL__) ? __SW_PHASE_MODEL__ : [{ name: "Phase 1 (current)", isCurrent: true }];',
@@ -3039,6 +3206,8 @@ function _renderChatPage(skillName, sessionId, session) {
     '        if (window.dmOpenStory) window.dmOpenStory(ei, si);',
     '      });',
     '      initCanvasInteractivity();',
+    '      var _applyBtn = document.getElementById("dm-apply-btn");',
+    '      if (_applyBtn) _applyBtn.addEventListener("click", applyChanges);',
     '    }',
     '  }',
     '})();',
@@ -4169,5 +4338,8 @@ module.exports = {
   // dic.1 — definition canvas server-side renderer (exported for testing)
   _renderDefinitionMapHtml,
   // dic.2 — phase model adapter (exported for testing)
-  setParsePhaseModel, defaultParsePhaseModel
+  setParsePhaseModel, defaultParsePhaseModel,
+  // dic.5 — canvas-edit dispatch (exported for testing)
+  handlePostCanvasEditHtml, setApplyCanvasEdits, realApplyCanvasEdits,
+  buildCanvasAuditEntry, writeAuditEntry
 };
