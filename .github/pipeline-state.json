@@ -6150,6 +6150,7 @@
     {
       "slug": "2026-06-28-definition-canvas",
       "name": "Definition Story Map — Interactive Canvas",
+      "track": "standard",
       "stage": "definition-of-ready",
       "health": "green",
       "updatedAt": "2026-06-28T00:00:00Z",
