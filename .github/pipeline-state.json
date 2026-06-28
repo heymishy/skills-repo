@@ -6179,7 +6179,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["dic.5"]
+          "contributingStories": [
+            "dic.5"
+          ]
         },
         {
           "id": "M2",
@@ -6189,7 +6191,12 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["dic.2", "dic.3", "dic.4", "dic.5"]
+          "contributingStories": [
+            "dic.2",
+            "dic.3",
+            "dic.4",
+            "dic.5"
+          ]
         },
         {
           "id": "M3",
@@ -6199,7 +6206,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["dic.5"]
+          "contributingStories": [
+            "dic.5"
+          ]
         },
         {
           "id": "MM1",
@@ -6209,7 +6218,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": ["dic.1", "dic.3"]
+          "contributingStories": [
+            "dic.1",
+            "dic.3"
+          ]
         }
       ],
       "epics": [
@@ -6223,7 +6235,7 @@
               "name": "Interactive story cards with inherited/new styling and epic rename guard",
               "artefact": "artefacts/2026-06-28-definition-canvas/stories/dic.1.md",
               "complexity": 2,
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -6238,7 +6250,8 @@
                 "passing": 0
               },
               "tddState": "red",
-              "updatedAt": "2026-06-28"
+              "updatedAt": "2026-06-28",
+              "prStatus": "merged"
             },
             {
               "id": "dic.2",
@@ -6246,7 +6259,7 @@
               "name": "Phase row model with locked future-phase rows",
               "artefact": "artefacts/2026-06-28-definition-canvas/stories/dic.2.md",
               "complexity": 2,
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -6261,7 +6274,8 @@
                 "passing": 0
               },
               "tddState": "red",
-              "updatedAt": "2026-06-28"
+              "updatedAt": "2026-06-28",
+              "prStatus": "merged"
             },
             {
               "id": "dic.3",
@@ -6269,7 +6283,7 @@
               "name": "Add-story canvas flow",
               "artefact": "artefacts/2026-06-28-definition-canvas/stories/dic.3.md",
               "complexity": 2,
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -6284,7 +6298,8 @@
                 "passing": 0
               },
               "tddState": "red",
-              "updatedAt": "2026-06-28"
+              "updatedAt": "2026-06-28",
+              "prStatus": "merged"
             },
             {
               "id": "dic.4",
@@ -6292,7 +6307,7 @@
               "name": "Touch tap-to-select / tap-to-place reorder fallback",
               "artefact": "artefacts/2026-06-28-definition-canvas/stories/dic.4.md",
               "complexity": 2,
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -6307,7 +6322,8 @@
                 "passing": 0
               },
               "tddState": "red",
-              "updatedAt": "2026-06-28"
+              "updatedAt": "2026-06-28",
+              "prStatus": "merged"
             },
             {
               "id": "dic.5",
@@ -6315,7 +6331,7 @@
               "name": "Canvas-edit dispatch and audit trail parity",
               "artefact": "artefacts/2026-06-28-definition-canvas/stories/dic.5.md",
               "complexity": 3,
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -6330,11 +6346,13 @@
                 "passing": 0
               },
               "tddState": "red",
-              "updatedAt": "2026-06-28"
+              "updatedAt": "2026-06-28",
+              "prStatus": "merged"
             }
           ]
         }
-      ]
+      ],
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
