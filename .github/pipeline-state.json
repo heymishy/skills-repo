@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-06-23T00:00:00Z",
+  "updated": "2026-06-28T23:00:54.636Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -393,7 +393,7 @@
       "regulated": false,
       "complianceProfile": "standard",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-06-24T06:25:53.754Z",
+      "updatedAt": "2026-06-28T23:00:54.634Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/discovery.md",
@@ -824,6 +824,67 @@
               "dodStatus": "complete",
               "releaseReady": true,
               "prNumber": 397
+            }
+          ]
+        },
+        {
+          "slug": "sprint-3-infrastructure-provisioning",
+          "name": "Sprint 3 — Infrastructure Provisioning (Neon + Upstash)",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "s3.1",
+              "name": "Neon Postgres provisioning and schema activation",
+              "stage": "definition",
+              "health": "green",
+              "complexity": 1,
+              "scopeStability": "Stable"
+            },
+            {
+              "slug": "s3.2",
+              "name": "Upstash Redis provisioning and session persistence activation",
+              "stage": "definition",
+              "health": "green",
+              "complexity": 1,
+              "scopeStability": "Stable"
+            }
+          ]
+        },
+        {
+          "slug": "sprint-4-beta-deployment",
+          "name": "Sprint 4 — Beta Deployment and Tenant Onboarding",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "s4.1",
+              "name": "Production deployment and end-to-end smoke test",
+              "stage": "definition",
+              "health": "green",
+              "complexity": 1,
+              "scopeStability": "Stable"
+            },
+            {
+              "slug": "s4.2",
+              "name": "Tenant onboarding configuration",
+              "stage": "definition",
+              "health": "green",
+              "complexity": 1,
+              "scopeStability": "Stable"
+            }
+          ]
+        },
+        {
+          "slug": "sprint-5-beta-assessment",
+          "name": "Sprint 5 — Beta Monitoring and Assessment",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "s5.1",
+              "name": "Beta monitoring signals",
+              "stage": "definition",
+              "health": "green",
+              "complexity": 1,
+              "scopeStability": "Stable"
             }
           ]
         }
