@@ -6,6 +6,7 @@
 
 // Use module reference (not destructuring) so tests can monkeypatch individual exports.
 const _oauthAdapter = require('../auth/oauth-adapter');
+const { persistSession } = require('../middleware/session');
 
 // Audit logger — replaced via setLogger() in tests and in production bootstrap
 let _logger = {
@@ -131,6 +132,9 @@ async function handleAuthCallback(req, res) {
       userId:    user.id,
       timestamp: new Date().toISOString()
     });
+
+    // Persist session to Redis for restart survival (p3.2). accessToken is stripped inside persistSession.
+    persistSession(req.sessionId);
 
     res.writeHead(302, { Location: '/dashboard' });
     res.end();

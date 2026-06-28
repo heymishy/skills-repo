@@ -20,6 +20,25 @@ var STAGE_SEQUENCE = [
 var _diskAdapter = null;
 function setDiskAdapter(adapter) { _diskAdapter = adapter; }
 
+// Optional PG adapter — injected by server.js when DATABASE_URL is set.
+// Writes are async fire-and-forget; reads come from the in-memory map (loaded at startup).
+var _pgAdapter = null;
+function setPgAdapter(adapter) { _pgAdapter = adapter; }
+
+// Injectable stub for tests — must throw when not wired per D37.
+var _pgAdapterForTesting = null;
+function setPgAdapterForTesting(adapter) { _pgAdapterForTesting = adapter; }
+
+function _activePgAdapter() { return _pgAdapterForTesting || _pgAdapter; }
+
+function _pgWrite(journey) {
+  var pg = _activePgAdapter();
+  if (!pg) return;
+  pg.saveJourney(journey).catch(function(err) {
+    console.error('[journey-store] PG write error:', err.message);
+  });
+}
+
 /**
  * Create a new journey for a feature slug.
  * @param {string} featureSlug
@@ -46,6 +65,7 @@ function createJourney(featureSlug, productProfile) {
   if (_diskAdapter) {
     try { _diskAdapter.saveJourney(journey); } catch (_) {}
   }
+  _pgWrite(journey);
   return journey;
 }
 
@@ -112,6 +132,7 @@ function completeStage(journeyId, skillName, artefactPath, usageSummary) {
   if (_diskAdapter) {
     try { _diskAdapter.updateStage(journey.featureSlug, skillName, diskEntry); } catch (_) {}
   }
+  _pgWrite(journey);
 }
 
 /**
@@ -256,12 +277,46 @@ function setJourneyFields(journeyId, fields) {
   if (_diskAdapter) {
     try { _diskAdapter.saveJourney(journey); } catch (_) {}
   }
+  _pgWrite(journey);
 }
 
 /**
- * Reset all state (test helper).
+ * Load all journeys from Postgres into the in-memory store.
+ * Called once at server startup after setPgAdapter().
+ * @returns {Promise<void>}
+ */
+async function loadAllFromPg() {
+  var pg = _activePgAdapter();
+  if (!pg) return;
+  var rows;
+  try { rows = await pg.listJourneys(); } catch (err) {
+    console.error('[journey-store] loadAllFromPg error:', err.message);
+    return;
+  }
+  rows.forEach(function(row) {
+    if (!row.journeyId || _journeys.has(row.journeyId)) return;
+    _journeys.set(row.journeyId, Object.assign({
+      activeSessionId:   null,
+      mode:              'feature',
+      complete:          false,
+      completedAt:       null,
+      stories:           [],
+      currentStoryIndex: 0,
+      sessions:          {},
+      productProfile:    'default'
+    }, row));
+  });
+}
+
+/**
+ * Reset all state (test helper — also clears PG stub state).
  */
 function _clear() {
+  _journeys.clear();
+}
+
+/** Clear in-memory map (test helper, preserves adapter wiring). */
+function _clearForTesting() {
   _journeys.clear();
 }
 
@@ -279,7 +334,11 @@ module.exports = {
   markJourneyComplete,
   setDiskAdapter,
   loadAllFromDisk,
+  setPgAdapter,
+  setPgAdapterForTesting,
+  loadAllFromPg,
   listJourneys,
   setJourneyFields,
-  _clear
+  _clear,
+  _clearForTesting
 };
