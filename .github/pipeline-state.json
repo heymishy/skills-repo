@@ -713,26 +713,53 @@
             {
               "slug": "p3.1",
               "name": "Postgres journey store adapter (injectable, same interface as in-memory store)",
-              "stage": "deferred",
+              "stage": "definition-of-done",
               "health": "amber",
               "complexity": 3,
-              "scopeStability": "unstable"
+              "scopeStability": "unstable",
+              "prStatus": "merged",
+              "dorStatus": "signed-off",
+              "reviewStatus": "passed",
+              "testPlan": "true",
+              "verifyStatus": "passed",
+              "acVerified": 7,
+              "acTotal": 7,
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "p3.2",
               "name": "Redis auth-session and viewer-activity store adapter (injectable, TTL eviction)",
-              "stage": "deferred",
+              "stage": "definition-of-done",
               "health": "amber",
               "complexity": 3,
-              "scopeStability": "unstable"
+              "scopeStability": "unstable",
+              "prStatus": "merged",
+              "dorStatus": "signed-off",
+              "reviewStatus": "passed",
+              "testPlan": "true",
+              "verifyStatus": "passed",
+              "acVerified": 7,
+              "acTotal": 7,
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "p3.3",
               "name": "Concurrency tests (two tenants interleaved, no state bleed) + restart-survival test",
-              "stage": "deferred",
+              "stage": "definition-of-done",
               "health": "amber",
               "complexity": 2,
-              "scopeStability": "stable"
+              "scopeStability": "stable",
+              "prStatus": "merged",
+              "dorStatus": "signed-off",
+              "reviewStatus": "passed",
+              "testPlan": "true",
+              "verifyStatus": "passed",
+              "acVerified": 7,
+              "acTotal": 7,
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         },
