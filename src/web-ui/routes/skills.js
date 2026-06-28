@@ -1867,37 +1867,77 @@ function buildContextManifestHtml(files) {
     '\n  ' + inner + '\n</div>';
 }
 
-// ── dic.1: Definition canvas server-side renderer ─────────────────────────
+// ── dic.2: parsePhaseModel injectable adapter (D37) ───────────────────────
+let _parsePhaseModel = function() {
+  throw new Error('Adapter not wired: parsePhaseModel. Call setParsePhaseModel() with a real implementation before use.');
+};
+function setParsePhaseModel(fn) { _parsePhaseModel = fn; }
+
+function defaultParsePhaseModel(content) {
+  if (!content) return [{ name: 'Phase 1 (current)', isCurrent: true }];
+  var idx = content.indexOf('## Phases');
+  if (idx === -1) return [{ name: 'Phase 1 (current)', isCurrent: true }];
+  var after = content.slice(idx + '## Phases'.length);
+  var endIdx = after.search(/\n##/);
+  var section = endIdx === -1 ? after : after.slice(0, endIdx);
+  var items = section.split('\n')
+    .map(function(l) { return l.replace(/^[\s\-\*]+/, '').trim(); })
+    .filter(Boolean);
+  if (!items.length) return [{ name: 'Phase 1 (current)', isCurrent: true }];
+  return items.map(function(name, i) { return { name: name, isCurrent: i === 0 }; });
+}
+// Production wiring (D37 separate task)
+setParsePhaseModel(defaultParsePhaseModel);
+
+// ── dic.1+2: Definition canvas server-side renderer ───────────────────────
 // Pure function — mirrors client-side renderDefinitionMap in the inline script.
 // Exported for unit testing. Uses server-side escHtml (inline uses escHtmlClient).
-function _renderDefinitionMapHtml(p) {
+function _renderDefinitionMapHtml(p, phaseModel) {
   if (!p || !p.epicCount) return '<div class="dm-empty">Generating definition… epics will appear here.</div>';
+  var phases = phaseModel && phaseModel.length ? phaseModel : [{ name: 'Phase 1 (current)', isCurrent: true }];
   var badge = p.slicing ? '<span class="dm-badge">' + escHtml(p.slicing) + '</span>' : '';
-  var epicsHtml = p.epics.map(function(epic, ei) {
-    var epicId = 'epic-' + epic.num;
-    var cards = epic.stories.map(function(s, si) {
-      var cls = s.cx >= 3 ? 'dm-cx--h' : s.cx === 2 ? 'dm-cx--m' : 'dm-cx--l';
-      var cardId = epicId + '_' + s.id;
-      return '<div class="dm-card story-card card--inherited" draggable="true"' +
-        ' data-card-id="' + escHtml(cardId) + '" data-origin="model"' +
-        ' data-epic-id="' + escHtml(epicId) + '" data-phase-id="phase-1"' +
-        ' data-ei="' + ei + '" data-si="' + si + '" tabindex="0" role="button">' +
-        '<div class="dm-card-hd"><span class="card-tag card-tag--model">model</span>' +
-        '<span class="dm-card-id">' + escHtml(s.id) + '</span></div>' +
-        '<span class="dm-card-title">' + escHtml(s.title) + '</span>' +
-        (s.cx ? '<span class="dm-cx ' + cls + '">C:' + s.cx + '</span>' : '') +
-        '</div>';
-    }).join('');
+  var epicHeaders = p.epics.map(function(epic, ei) {
     var cntBadge = epic.stories.length ? '<span class="dm-epic-count">' + epic.stories.length + (epic.stories.length === 1 ? ' story' : ' stories') + '</span>' : '';
-    return '<div class="dm-epic">' +
+    return '<th class="dm-epic-th">' +
       '<button class="dm-epic-hd" onclick="window.dmOpenEpic(' + ei + ')" title="View epic details">' +
         '<span class="dm-epic-tag">E' + escHtml(epic.num) + '</span>' +
         '<span class="dm-epic-name">' + escHtml(epic.name) + '</span>' +
         cntBadge +
         '<span style="font-size:9px;color:var(--muted);margin-left:auto;flex-shrink:0">&#x2197;</span>' +
-      '</button>' +
-      '<div class="dm-cards">' + (cards || '<span style="font-size:11px;color:var(--muted);padding:4px 0">Writing stories…</span>') + '</div>' +
-    '</div>';
+      '</button></th>';
+  }).join('');
+  var phaseRows = phases.map(function(phase, pi) {
+    var phaseId = 'phase-' + (pi + 1);
+    var isCurrent = !!phase.isCurrent;
+    var trClass = 'phase-row' + (isCurrent ? '' : ' phase-row--locked');
+    var cells = p.epics.map(function(epic, ei) {
+      var epicId = 'epic-' + epic.num;
+      var cellContent;
+      if (isCurrent) {
+        var cards = epic.stories.map(function(s, si) {
+          var cls = s.cx >= 3 ? 'dm-cx--h' : s.cx === 2 ? 'dm-cx--m' : 'dm-cx--l';
+          var cardId = epicId + '_' + s.id;
+          return '<div class="dm-card story-card card--inherited" draggable="true"' +
+            ' data-card-id="' + escHtml(cardId) + '" data-origin="model"' +
+            ' data-epic-id="' + escHtml(epicId) + '" data-phase-id="' + phaseId + '"' +
+            ' data-ei="' + ei + '" data-si="' + si + '" tabindex="0" role="button">' +
+            '<div class="dm-card-hd"><span class="card-tag card-tag--model">model</span>' +
+            '<span class="dm-card-id">' + escHtml(s.id) + '</span></div>' +
+            '<span class="dm-card-title">' + escHtml(s.title) + '</span>' +
+            (s.cx ? '<span class="dm-cx ' + cls + '">C:' + s.cx + '</span>' : '') +
+            '</div>';
+        }).join('');
+        cellContent = '<div class="dm-cards" data-epic-id="' + escHtml(epicId) + '" data-phase-id="' + phaseId + '">' + (cards || '') + '</div>';
+      } else {
+        cellContent = '<div class="dm-cards" data-epic-id="' + escHtml(epicId) + '" data-phase-id="' + phaseId + '">' +
+          '<div class="phase-lock-label" role="note">Not yet defined — awaits Phase ' + (pi + 1) + '’s Definition pass</div>' +
+          '</div>';
+      }
+      return '<td class="dm-cell">' + cellContent + '</td>';
+    }).join('');
+    return '<tr class="' + trClass + '" data-phase-current="' + (isCurrent ? 'true' : 'false') + '">' +
+      '<td class="dm-phase-lbl">' + escHtml(phase.name) + '</td>' +
+      cells + '</tr>';
   }).join('');
   return '<div class="dm-canvas">' +
     '<div class="dm-hdr">' +
@@ -1905,7 +1945,9 @@ function _renderDefinitionMapHtml(p) {
       badge +
       '<button id="dm-apply-btn" class="dm-apply-btn" disabled>Apply changes (0 pending)</button>' +
     '</div>' +
-    epicsHtml +
+    '<div class="dm-table-wrap"><table class="dm-table"><thead>' +
+      '<tr class="dm-epic-row"><th class="dm-phase-th"></th>' + epicHeaders + '</tr>' +
+    '</thead><tbody>' + phaseRows + '</tbody></table></div>' +
   '</div>';
 }
 
@@ -1959,6 +2001,15 @@ function _renderChatPage(skillName, sessionId, session) {
     var safeArtefact = JSON.stringify(session.artefactContent)
       .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
     artefactInitScript = '<script>window.__SW_INITIAL_ARTEFACT__=' + safeArtefact + ';</script>';
+  }
+
+  // dic.2: Phase model init script for definition sessions
+  var phaseModelInitScript = '';
+  if (skillName === 'definition') {
+    var _phaseModelForInit = session.phaseModel || [{ name: 'Phase 1 (current)', isCurrent: true }];
+    var safePhaseModel = JSON.stringify(_phaseModelForInit)
+      .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+    phaseModelInitScript = '<script>window.__SW_PHASE_MODEL__=' + safePhaseModel + ';<\/script>';
   }
 
   var commitUrl = '/skills/' + encodedSkill + '/sessions/' + encodedId + '/commit-preview';
@@ -2225,34 +2276,52 @@ function _renderChatPage(skillName, sessionId, session) {
     '    r.epicCount = r.epics.length;',
     '    return r;',
     '  }',
-    '  function renderDefinitionMap(p) {',
+    '  function renderDefinitionMap(p, phaseModel) {',
     '    if (!p || !p.epicCount) return \'<div class="dm-empty">Generating definition… epics will appear here.</div>\';',
+    '    var phases = (phaseModel && phaseModel.length) ? phaseModel : [{ name: "Phase 1 (current)", isCurrent: true }];',
     '    var badge = p.slicing ? \'<span class="dm-badge">\' + escHtmlClient(p.slicing) + \'</span>\' : "";',
-    '    var epicsHtml = p.epics.map(function(epic, ei) {',
-    '      var cards = epic.stories.map(function(s, si) {',
-    '        var cls = s.cx >= 3 ? "dm-cx--h" : s.cx === 2 ? "dm-cx--m" : "dm-cx--l";',
-    '        var _epicId = "epic-" + epic.num;',
-    '        var _cardId = _epicId + "_" + s.id;',
-    '        return \'<div class="dm-card story-card card--inherited" draggable="true"\' +',
-    '          \' data-card-id="\' + escHtmlClient(_cardId) + \'" data-origin="model"\' +',
-    '          \' data-epic-id="\' + escHtmlClient(_epicId) + \'" data-phase-id="phase-1"\' +',
-    '          \' data-ei="\' + ei + \'" data-si="\' + si + \'" tabindex="0" role="button">\' +',
-    '          \'<div class="dm-card-hd"><span class="card-tag card-tag--model">model</span>\' +',
-    '          \'<span class="dm-card-id">\' + escHtmlClient(s.id) + \'</span></div>\' +',
-    '          \'<span class="dm-card-title">\' + escHtmlClient(s.title) + \'</span>\' +',
-    '          (s.cx ? \'<span class="dm-cx \' + cls + \'">C:\' + s.cx + \'</span>\' : "") +',
-    '        \'</div>\';',
-    '      }).join("");',
+    '    var epicHeaders = p.epics.map(function(epic, ei) {',
     '      var cntBadge = epic.stories.length ? \'<span class="dm-epic-count">\' + epic.stories.length + (epic.stories.length === 1 ? " story" : " stories") + \'</span>\' : "";',
-    '      return \'<div class="dm-epic">\' +',
+    '      return \'<th class="dm-epic-th">\' +',
     '        \'<button class="dm-epic-hd" onclick="window.dmOpenEpic(\' + ei + \')" title="View epic details">\' +',
     '          \'<span class="dm-epic-tag">E\' + escHtmlClient(epic.num) + \'</span>\' +',
     '          \'<span class="dm-epic-name">\' + escHtmlClient(epic.name) + \'</span>\' +',
     '          cntBadge +',
     '          \'<span style="font-size:9px;color:var(--muted);margin-left:auto;flex-shrink:0">&#x2197;</span>\' +',
-    '        \'</button>\' +',
-    '        \'<div class="dm-cards">\' + (cards || \'<span style="font-size:11px;color:var(--muted);padding:4px 0">Writing stories…</span>\') + \'</div>\' +',
-    '      \'</div>\';',
+    '        \'</button></th>\';',
+    '    }).join("");',
+    '    var phaseRows = phases.map(function(phase, pi) {',
+    '      var phaseId = "phase-" + (pi + 1);',
+    '      var isCurrent = !!phase.isCurrent;',
+    '      var trClass = "phase-row" + (isCurrent ? "" : " phase-row--locked");',
+    '      var cells = p.epics.map(function(epic, ei) {',
+    '        var epicId = "epic-" + epic.num;',
+    '        var cellContent;',
+    '        if (isCurrent) {',
+    '          var cards = epic.stories.map(function(s, si) {',
+    '            var cls = s.cx >= 3 ? "dm-cx--h" : s.cx === 2 ? "dm-cx--m" : "dm-cx--l";',
+    '            var cardId = epicId + "_" + s.id;',
+    '            return \'<div class="dm-card story-card card--inherited" draggable="true"\' +',
+    '              \' data-card-id="\' + escHtmlClient(cardId) + \'" data-origin="model"\' +',
+    '              \' data-epic-id="\' + escHtmlClient(epicId) + \'" data-phase-id="\' + phaseId + \'"\' +',
+    '              \' data-ei="\' + ei + \'" data-si="\' + si + \'" tabindex="0" role="button">\' +',
+    '              \'<div class="dm-card-hd"><span class="card-tag card-tag--model">model</span>\' +',
+    '              \'<span class="dm-card-id">\' + escHtmlClient(s.id) + \'</span></div>\' +',
+    '              \'<span class="dm-card-title">\' + escHtmlClient(s.title) + \'</span>\' +',
+    '              (s.cx ? \'<span class="dm-cx \' + cls + \'">C:\' + s.cx + \'</span>\' : "") +',
+    '            \'</div>\';',
+    '          }).join("");',
+    '          cellContent = \'<div class="dm-cards" data-epic-id="\' + escHtmlClient(epicId) + \'" data-phase-id="\' + phaseId + \'">\' + (cards || "") + \'</div>\';',
+    '        } else {',
+    '          cellContent = \'<div class="dm-cards" data-epic-id="\' + escHtmlClient(epicId) + \'" data-phase-id="\' + phaseId + \'">\' +',
+    '            \'<div class="phase-lock-label" role="note">Not yet defined — awaits Phase \' + (pi + 1) + \'’s Definition pass</div>\' +',
+    '          \'</div>\';',
+    '        }',
+    '        return \'<td class="dm-cell">\' + cellContent + \'</td>\';',
+    '      }).join("");',
+    '      return \'<tr class="\' + trClass + \'" data-phase-current="\' + (isCurrent ? "true" : "false") + \'">\' +',
+    '        \'<td class="dm-phase-lbl">\' + escHtmlClient(phase.name) + \'</td>\' +',
+    '        cells + \'</tr>\';',
     '    }).join("");',
     '    return \'<div class="dm-canvas">\' +',
     '      \'<div class="dm-hdr">\' +',
@@ -2260,7 +2329,9 @@ function _renderChatPage(skillName, sessionId, session) {
     '        badge +',
     '        \'<button id="dm-apply-btn" class="dm-apply-btn" disabled>Apply changes (0 pending)</button>\' +',
     '      \'</div>\' +',
-    '      epicsHtml +',
+    '      \'<div class="dm-table-wrap"><table class="dm-table"><thead>\' +',
+    '        \'<tr class="dm-epic-row"><th class="dm-phase-th"></th>\' + epicHeaders + \'</tr>\' +',
+    '      \'</thead><tbody>\' + phaseRows + \'</tbody></table></div>\' +',
     '    \'</div>\';',
     '  }',
     '',
@@ -2299,9 +2370,8 @@ function _renderChatPage(skillName, sessionId, session) {
     '      if (!target) return;',
     '      var targetEpicId = target.getAttribute("data-epic-id");',
     '      if (!targetEpicId) {',
-    '        var epicEl = target.closest(".dm-epic");',
-    '        var firstCard = epicEl && epicEl.querySelector("[data-epic-id]");',
-    '        targetEpicId = firstCard ? firstCard.getAttribute("data-epic-id") : null;',
+    '        var cardsEl = target.closest(".dm-cards");',
+    '        targetEpicId = cardsEl ? cardsEl.getAttribute("data-epic-id") : null;',
     '      }',
     '      if (!targetEpicId || targetEpicId !== _dragEpicId) return;',
     '      // dic.2 phase guard — check data-phase-current on closest row',
@@ -2383,7 +2453,8 @@ function _renderChatPage(skillName, sessionId, session) {
     '      if(!ap) return;',
     '      if (IS_DEFINITION) {',
     '        window.dmParsed = parseDefinitionArtefact(artefactContent);',
-    '        ap.innerHTML = renderDefinitionMap(window.dmParsed);',
+    '        _canvasState = { pendingReorder: [], pendingAdds: [] };',
+    '        ap.innerHTML = renderDefinitionMap(window.dmParsed, window.dmPhaseModel);',
     '      } else {',
     '        ap.innerHTML = renderArtefactMd(artefactContent);',
     '      }',
@@ -2864,6 +2935,7 @@ function _renderChatPage(skillName, sessionId, session) {
     '  }',
     '  // Definition: delegate story-card clicks + initialise canvas interactivity',
     '  if (IS_DEFINITION) {',
+    '    window.dmPhaseModel = (typeof __SW_PHASE_MODEL__ !== "undefined" && __SW_PHASE_MODEL__) ? __SW_PHASE_MODEL__ : [{ name: "Phase 1 (current)", isCurrent: true }];',
     '    var _dmAp = document.getElementById("artefact-panel");',
     '    if (_dmAp) {',
     '      _dmAp.addEventListener("click", function(e) {',
@@ -2965,7 +3037,7 @@ function _renderChatPage(skillName, sessionId, session) {
     }
   }
 
-  var bodyContent = navigatorHtml + artefactInitScript + _renderChatView({
+  var bodyContent = navigatorHtml + artefactInitScript + phaseModelInitScript + _renderChatView({
     skillName:         skillName,
     skillLabel:        skillName,
     isIdeate:          isIdeate,
@@ -4002,5 +4074,7 @@ module.exports = {
   buildSystemPrompt,
   HAIKU_BLOCKED_SKILLS,
   // dic.1 — definition canvas server-side renderer (exported for testing)
-  _renderDefinitionMapHtml
+  _renderDefinitionMapHtml,
+  // dic.2 — phase model adapter (exported for testing)
+  setParsePhaseModel, defaultParsePhaseModel
 };
