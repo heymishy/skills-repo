@@ -291,6 +291,48 @@ async function router(req, res) {
     return;
   }
 
+  // dic-canvas E2E: seed a definition session with stub artefact content
+  if (pathname === '/test/seed-definition-session' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    const { _setHtmlSession } = require('./routes/skills');
+    const _uid = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    const _sessionId = 'def-e2e-' + _uid;
+    _setHtmlSession(_sessionId, {
+      skillName:      'definition',
+      sessionPath:    null,
+      systemPrompt:   'test',
+      turns:          [],
+      artefactContent: [
+        '# Definition — E2E Canvas Test Feature',
+        '',
+        '**Slicing strategy:** vertical',
+        '',
+        '## Epic 1 — Platform Core',
+        '',
+        '### s.1 — Set up repo',
+        '',
+        'Complexity: 1',
+        '',
+        '### s.2 — Configure CI',
+        '',
+        'Complexity: 2',
+        '',
+        '## Epic 2 — Operator Tools',
+        '',
+        '### s.3 — Build dashboard',
+        '',
+        'Complexity: 2',
+        '',
+      ].join('\n'),
+      artefactPath:   null,
+      done:           false,
+      journeyId:      null,
+      phaseModel:     [{ name: 'Phase 1 (current)', isCurrent: true }],
+    });
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ sessionId: _sessionId }));
+    return;
+  }
+
   // Attach session before routing
   sessionMiddleware(req, res);
 
