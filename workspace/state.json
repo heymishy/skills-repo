@@ -1,135 +1,34 @@
 {
-  "currentPhase": "branch-complete",
-  "lastUpdated": "2026-06-29T10:00:00Z",
+  "currentPhase": "definition-of-done",
+  "lastUpdated": "2026-06-30T00:00:00Z",
   "activeFeature": "2026-06-29-beta-entry-experience",
   "cycle": {
-    "discovery": {
-      "status": "complete",
-      "artefact": "artefacts/2026-06-29-beta-entry-experience/discovery.md",
-      "approvedAt": "2026-06-29",
-      "approvedBy": "Hamish King"
-    },
-    "benefit-metric": {
-      "status": "complete",
-      "artefact": "artefacts/2026-06-29-beta-entry-experience/benefit-metric.md",
-      "metrics": ["M1 — Beta activation rate", "M2 — Cross-tenant isolation confirmed", "M3 — Landing page conversion rate", "M4 — Referral attribution coverage"],
-      "completedAt": "2026-06-29"
-    },
-    "definition": {
-      "status": "complete",
-      "slicingStrategy": "user-journey",
-      "epics": ["bee-entry-surface"],
-      "stories": ["bee.1 — Public landing page", "bee.2 — First-run empty-state experience", "bee.3 — PostHog instrumentation"],
-      "completedAt": "2026-06-29"
-    },
-    "review": {
-      "status": "complete",
-      "result": "PASS",
-      "highFindings": 0,
-      "mediumFindings": 6,
-      "mediumFindingsResolved": 6,
-      "artefacts": [
-        "artefacts/2026-06-29-beta-entry-experience/review/bee.1-review-1.md",
-        "artefacts/2026-06-29-beta-entry-experience/review/bee.2-review-1.md",
-        "artefacts/2026-06-29-beta-entry-experience/review/bee.3-review-1.md"
-      ],
-      "completedAt": "2026-06-29"
-    },
-    "test-plan": {
+    "discovery": { "status": "complete", "artefact": "artefacts/2026-06-29-beta-entry-experience/discovery.md", "approvedAt": "2026-06-29" },
+    "benefit-metric": { "status": "complete", "artefact": "artefacts/2026-06-29-beta-entry-experience/benefit-metric.md", "completedAt": "2026-06-29" },
+    "definition": { "status": "complete", "epics": ["bee-entry-surface"], "stories": ["bee.1", "bee.2", "bee.3"], "completedAt": "2026-06-29" },
+    "review": { "status": "complete", "result": "PASS", "highFindings": 0, "completedAt": "2026-06-29" },
+    "test-plan": { "status": "complete", "completedAt": "2026-06-29" },
+    "definition-of-ready": { "status": "complete", "completedAt": "2026-06-29" },
+    "branch-complete": { "status": "complete", "completedAt": "2026-06-29" },
+    "definition-of-done": {
       "status": "complete",
       "stories": {
-        "bee.1": {
-          "testPlan": "artefacts/2026-06-29-beta-entry-experience/test-plans/bee.1-test-plan.md",
-          "verificationScript": "artefacts/2026-06-29-beta-entry-experience/verification-scripts/bee.1-verification.md",
-          "testScript": "tests/check-bee1-landing-page.js",
-          "totalTests": 11,
-          "passing": 11
-        },
-        "bee.2": {
-          "testPlan": "artefacts/2026-06-29-beta-entry-experience/test-plans/bee.2-test-plan.md",
-          "verificationScript": "artefacts/2026-06-29-beta-entry-experience/verification-scripts/bee.2-verification.md",
-          "testScript": "tests/check-bee2-empty-state.js",
-          "totalTests": 12,
-          "passing": 12
-        },
-        "bee.3": {
-          "testPlan": "artefacts/2026-06-29-beta-entry-experience/test-plans/bee.3-test-plan.md",
-          "verificationScript": "artefacts/2026-06-29-beta-entry-experience/verification-scripts/bee.3-verification.md",
-          "testScript": "tests/check-bee3-posthog.js",
-          "totalTests": 18,
-          "passing": 18
-        }
+        "bee.1": { "prNumber": 420, "prStatus": "merged", "dodStatus": "complete", "health": "green", "artefact": "artefacts/2026-06-29-beta-entry-experience/dod/bee.1-dod.md" },
+        "bee.2": { "prNumber": 421, "prStatus": "merged", "dodStatus": "complete", "health": "green", "artefact": "artefacts/2026-06-29-beta-entry-experience/dod/bee.2-dod.md" },
+        "bee.3": { "prNumber": 422, "prStatus": "merged", "dodStatus": "complete", "health": "amber", "blocker": "AC4 manual browser Scenario 4 not yet executed (CTA navigation when PostHog CDN blocked)", "artefact": "artefacts/2026-06-29-beta-entry-experience/dod/bee.3-dod.md" }
       },
-      "completedAt": "2026-06-29"
-    },
-    "definition-of-ready": {
-      "status": "complete",
-      "stories": {
-        "bee.1": {
-          "dor": "artefacts/2026-06-29-beta-entry-experience/dor/bee.1-dor.md",
-          "contract": "artefacts/2026-06-29-beta-entry-experience/dor/bee.1-dor-contract.md",
-          "hardBlocks": "19/19 passed",
-          "warnings": "1 acknowledged (W4 — solo-operator self-review)",
-          "oversight": "Low",
-          "status": "signed-off"
-        },
-        "bee.2": {
-          "dor": "artefacts/2026-06-29-beta-entry-experience/dor/bee.2-dor.md",
-          "contract": "artefacts/2026-06-29-beta-entry-experience/dor/bee.2-dor-contract.md",
-          "hardBlocks": "19/19 passed",
-          "warnings": "1 acknowledged (W4 — solo-operator self-review)",
-          "oversight": "Low",
-          "status": "signed-off"
-        },
-        "bee.3": {
-          "dor": "artefacts/2026-06-29-beta-entry-experience/dor/bee.3-dor.md",
-          "contract": "artefacts/2026-06-29-beta-entry-experience/dor/bee.3-dor-contract.md",
-          "hardBlocks": "19/19 passed",
-          "warnings": "1 acknowledged (W4 — solo-operator self-review)",
-          "oversight": "Low",
-          "status": "signed-off"
-        }
-      },
-      "completedAt": "2026-06-29"
-    },
-    "branch-complete": {
-      "status": "complete",
-      "stories": {
-        "bee.1": {
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/420",
-          "prStatus": "draft",
-          "testsPassing": "11/11",
-          "completedAt": "2026-06-29"
-        },
-        "bee.2": {
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/421",
-          "prStatus": "draft",
-          "testsPassing": "12/12",
-          "completedAt": "2026-06-29"
-        },
-        "bee.3": {
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/422",
-          "prStatus": "draft",
-          "testsPassing": "18/18",
-          "completedAt": "2026-06-29"
-        }
-      },
-      "completedAt": "2026-06-29"
+      "epicStatus": "complete",
+      "completedAt": "2026-06-30"
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-06-29",
-    "contextAtWrite": "Inner coding loop complete for all 3 stories. bee.1 (PR #420, 11/11 passing), bee.2 (PR #421, 12/12 passing), bee.3 (PR #422, 18/18 passing). All three draft PRs open. bee.3 branch merged bee.1 + bee.2 feature branches before implementing PostHog since it modifies files from both.",
-    "resumeInstruction": "All 3 draft PRs open and all tests pass. Merge order: bee.1 (#420) first, then bee.2 (#421), then bee.3 (#422). After each PR merges, run /definition-of-done for that story. After all three merge, run feature-level DoD. Also run bee.3-verification.md Scenario 4 (manual 🔴 browser test: CTA navigation not blocked when PostHog is network-blocked).",
+    "writtenAt": "2026-06-30",
+    "contextAtWrite": "All 3 bee stories at definition-of-done. PRs #420/#421/#422 merged. bee.1 and bee.2 are health=green COMPLETE. bee.3 is health=amber COMPLETE WITH DEVIATIONS — AC4 manual browser Scenario 4 pending. Epic bee-entry-surface=complete. M1/M3/M4 blocked on PostHog account creation. M2 blocked on first external user.",
+    "resumeInstruction": "BEE sprint complete at DoD. Choose next action: (a) /trace to validate chain health across all 3 stories, (b) start next feature with /discovery, (c) run /improve on the BEE sprint for retrospective learning signal.",
     "pendingActions": [
-      "Create PostHog Cloud account (posthog.com, EU region) — get project API key and set POSTHOG_KEY as Fly.io env var (fly env set POSTHOG_KEY=phc_xxxx --app [app-name]) — this is a public frontend key, NOT a Fly secret",
-      "Merge bee.1 PR #420 first (no upstream deps) — https://github.com/heymishy/skills-repo/pull/420",
-      "Merge bee.2 PR #421 second (no code dep on bee.1, only user-journey ordering) — https://github.com/heymishy/skills-repo/pull/421",
-      "Merge bee.3 PR #422 last (modifies landing.js and journey.js from bee.1 and bee.2) — https://github.com/heymishy/skills-repo/pull/422",
-      "After each merge: run /definition-of-done for that story",
-      "After all three merged: run feature-level Definition of Done for 2026-06-29-beta-entry-experience",
-      "Manual browser test (bee.3 AC4 — 🔴): verify CTA navigation not blocked when PostHog CDN is blocked in browser DevTools; follow bee.3-verification.md Scenario 4",
-      "wuce-multi-tenancy Metric 2 (cross-tenant isolation confirmed): update to on-track after first external user onboards and cross-tenant 404 is verified in production"
+      "MANUAL (Hamish — before first external user promotion): Run bee.3-verification.md Scenario 4 — block PostHog CDN in browser DevTools, verify CTA navigates to /auth/github without JS error. Update bee.3-dod.md AC4 deviation to resolved.",
+      "MANUAL (Hamish — unblocks M1/M3/M4): Create PostHog Cloud (EU) account, obtain project API key, set as Fly env var: fly env set POSTHOG_KEY=<key> --app <app-name>. This is a public frontend key — NOT a fly secret (DEC-003).",
+      "MANUAL (Hamish — after first external user): M2 cross-tenant isolation check: log in as yourself, attempt to access external user's journey by URL, confirm 404. Record result in wuce-multi-tenancy M2 signal."
     ]
   },
   "features": {
@@ -137,13 +36,7 @@
       "status": "definition-of-done-complete",
       "dodCompletedAt": "2026-06-29",
       "allStoriesComplete": true,
-      "metrics": {
-        "M1": "on-track — 11/11 handlers guarded (100%)",
-        "M2": "not-yet-measured — requires second tenant in production",
-        "T3-M1": "on-track — 0 unguarded handlers (KNOWN BUG closed)",
-        "T3-M2": "on-track — 14/14 adversarial traversal tests pass (p5.1, 2026-06-24)"
-      },
-      "nextAction": "No further pipeline work. M2 (cross-tenant isolation confirmed) transitions to on-track when first org-based beta user is onboarded."
+      "nextAction": "M2 (cross-tenant isolation) transitions to on-track when first org-based beta user is onboarded and cross-tenant 404 verified."
     }
   }
 }
