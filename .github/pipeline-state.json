@@ -875,14 +875,14 @@
             {
               "slug": "s3.1",
               "name": "Neon Postgres provisioning and schema activation",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "complexity": 1,
               "scopeStability": "Stable",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s3.1-review-1.md",
-              "updatedAt": "2026-06-29T00:00:00Z",
+              "updatedAt": "2026-06-29T07:30:00Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s3.1-test-plan.md",
@@ -890,23 +890,24 @@
                 "passing": 0
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s3.1-dor.md"
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s3.1-dor.md",
+              "prStatus": "merged"
             },
             {
               "slug": "s3.2",
               "name": "Upstash Redis provisioning and session persistence activation",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "complexity": 1,
               "scopeStability": "Stable",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s3.2-review-1.md",
-              "updatedAt": "2026-06-29T00:00:00Z",
+              "updatedAt": "2026-06-29T07:30:00Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s3.2-test-plan.md",
@@ -914,11 +915,12 @@
                 "passing": 0
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s3.2-dor.md"
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s3.2-dor.md",
+              "prStatus": "merged"
             }
           ]
         },
@@ -930,14 +932,14 @@
             {
               "slug": "s4.1",
               "name": "Production deployment and end-to-end smoke test",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
               "complexity": 1,
               "scopeStability": "Stable",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s4.1-review-1.md",
-              "updatedAt": "2026-06-29T00:00:00Z",
+              "updatedAt": "2026-06-29T07:30:00Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s4.1-test-plan.md",
@@ -945,11 +947,12 @@
                 "passing": 0
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s4.1-dor.md"
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s4.1-dor.md",
+              "prStatus": "merged"
             },
             {
               "slug": "s4.2",
