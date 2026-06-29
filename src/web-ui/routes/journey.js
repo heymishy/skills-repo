@@ -314,6 +314,7 @@ async function handlePostJourney(req, res) {
       var _tenantCount = _allForCap.filter(function(j) { return j.tenantId === _gateTenantId; }).length;
       var _capResult   = _tenantPlan.checkJourneyCap(_gateTenantId, _tenantCount, repoRoot);
       if (!_capResult.allowed) {
+        console.error('[journey-store] Journey limit reached for tenant ' + _gateTenantId + ' (cap=' + _capResult.cap + ')');
         res.writeHead(402, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(renderShell({
           title: 'Journey limit reached',
