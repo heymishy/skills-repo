@@ -1067,19 +1067,40 @@ async function handleGetJourneyResume(req, res) {
   var featureSlug = req.params && req.params.featureSlug;
   var repoRoot = getRepoRoot(req);
 
-  // Load from disk
+  // Load from disk (present in disk-mode; absent in Postgres mode)
   var diskJourney = null;
   try { diskJourney = _journeyDisk.loadJourney(featureSlug, repoRoot); } catch (_) {}
+
+  // In-memory lookup — always performed; is the authoritative source in Postgres mode
+  var allJourneys = [];
+  try { allJourneys = _journeyStore.listJourneys ? _journeyStore.listJourneys(repoRoot) : []; } catch (_) {}
+  var memJourney = allJourneys.find(function(j) { return j.featureSlug === featureSlug; });
+  if (!memJourney && diskJourney && diskJourney.journeyId) {
+    memJourney = _journeyStore.getJourney(diskJourney.journeyId);
+  }
+
+  // In Postgres mode the disk file never exists — synthesize disk-format from memory
+  if (!diskJourney && memJourney) {
+    var _synthStages = {};
+    (memJourney.completedStages || []).forEach(function(s) {
+      _synthStages[s.skillName] = { status: 'complete', artefactPath: s.artefactPath || null, completedAt: s.completedAt || null };
+    });
+    diskJourney = {
+      journeyId:      memJourney.journeyId,
+      featureSlug:    memJourney.featureSlug,
+      currentStage:   memJourney.activeSkill || 'discovery',
+      productProfile: memJourney.productProfile || 'default',
+      stages:         _synthStages,
+      ownerId:        memJourney.ownerId  || null,
+      tenantId:       memJourney.tenantId || null
+    };
+  }
+
   if (!diskJourney) {
     res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Journey not found: ' + escHtml(featureSlug) + '</p><a href="/journey">Back to journeys</a></div>', user: { login: req.session.login || '' } }));
     return;
   }
-
-  // Find in-memory journey (loaded at startup from disk)
-  var allJourneys = [];
-  try { allJourneys = _journeyStore.listJourneys ? _journeyStore.listJourneys(repoRoot) : []; } catch (_) {}
-  var memJourney = allJourneys.find(function(j) { return j.featureSlug === featureSlug; });
   if (!memJourney && diskJourney.journeyId) {
     memJourney = _journeyStore.getJourney(diskJourney.journeyId);
   }
