@@ -3408,6 +3408,7 @@ module.exports = {
 };
 
 // --- bee.2: first-run empty-state experience ---
+// --- bee.3: PostHog instrumentation for dashboard ---
 
 var _listJourneys = async function() {
   throw new Error('Adapter not wired: _listJourneys. Call setListJourneys() before use.');
@@ -3417,8 +3418,38 @@ function setListJourneys(fn) {
   _listJourneys = fn;
 }
 
+/**
+ * Build the PostHog CDN initialisation snippet for the dashboard.
+ * Returns empty string when key is falsy or empty (AC8 graceful degradation).
+ * Includes posthog.identify(login, {tenant_id}) (AC5) and posthog.capture('login_completed') (AC6).
+ * SECURITY: inject req.session.login and req.session.tenantId ONLY.
+ * NEVER inject req.session.accessToken here (NFR-T1 / T11 canary test).
+ * @param {string} key - process.env.POSTHOG_KEY value
+ * @param {string} login - req.session.login (GitHub handle)
+ * @param {string} tenantId - req.session.tenantId
+ * @returns {string} HTML snippet to inject into dashboard HTML
+ */
+function buildDashboardPostHogScript(key, login, tenantId) {
+  if (!key) return '';
+  return '<script async src="https://eu-assets.i.posthog.com/static/array.js"></script>' +
+    '<script>' +
+    '!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){' +
+    'function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]);t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}' +
+    '(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,' +
+    'p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",' +
+    '(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);' +
+    'var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},' +
+    'u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group resetGroups setPersonProperties get_distinct_id getGroups get_session_id get_session_replay_url startSessionRecording stopSessionRecording".split(" "),' +
+    'n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])}e.__SV=1}(document,window.posthog||(window.posthog=[]));' +
+    'posthog.init("' + key + '",{api_host:"https://eu.i.posthog.com",person_profiles:"identified_only"});' +
+    'posthog.identify("' + login + '",{tenant_id:"' + tenantId + '"});' +
+    'posthog.capture("login_completed");' +
+    '</script>';
+}
+
 async function handleJourneys(req, res) {
   var tenantId = (req.session && req.session.tenantId) || (req.session && req.session.login) || '';
+  var login = (req.session && req.session.login) || '';
   var journeys;
   try {
     journeys = await _listJourneys(tenantId);
@@ -3429,6 +3460,14 @@ async function handleJourneys(req, res) {
     return;
   }
 
+  // bee.3: build PostHog snippet (empty string when key unset -- AC8)
+  // SECURITY: uses login and tenantId ONLY -- never accessToken (NFR-T1)
+  var phScript = buildDashboardPostHogScript(
+    process.env.POSTHOG_KEY || '',
+    login,
+    tenantId
+  );
+
   if (!journeys || journeys.length === 0) {
     var emptyHtml = '<!DOCTYPE html>\n' +
       '<html>\n' +
@@ -3436,8 +3475,9 @@ async function handleJourneys(req, res) {
       '<body>\n' +
       '<h1>Welcome to Skills Platform</h1>\n' +
       "<p>You haven't started any skill sessions yet.</p>\n" +
-      '<p>A skill session produces a governed artefact — a traceable, high-quality deliverable built through the structured pipeline.</p>\n' +
+      '<p>A skill session produces a governed artefact -- a traceable, high-quality deliverable built through the structured pipeline.</p>\n' +
       '<a href="/skills">Start a skill session</a>\n' +
+      phScript + '\n' +
       '</body>\n' +
       '</html>';
     res.writeHead(200, { 'Content-Type': 'text/html' });
@@ -3454,6 +3494,7 @@ async function handleJourneys(req, res) {
     '<body>\n' +
     '<h1>Your Skill Sessions</h1>\n' +
     cards + '\n' +
+    phScript + '\n' +
     '</body>\n' +
     '</html>';
   res.writeHead(200, { 'Content-Type': 'text/html' });

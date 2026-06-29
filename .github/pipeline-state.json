@@ -6585,7 +6585,7 @@
       "track": "standard",
       "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-06-29T09:29:37.156Z",
+      "updatedAt": "2026-06-29T10:07:05.700Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -6657,6 +6657,52 @@
               "updatedAt": "2026-06-29T09:29:37.155Z",
               "prStatus": "draft",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/420"
+            },
+            {
+              "id": "bee.2",
+              "slug": "bee.2",
+              "name": "First-run empty-state experience",
+              "artefact": "artefacts/2026-06-29-beta-entry-experience/stories/bee.2.md",
+              "complexity": 1,
+              "stage": "branch-complete",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-29-beta-entry-experience/dor/bee.2-dor.md",
+              "acTotal": 5,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-29-beta-entry-experience/test-plans/bee.2-test-plan.md",
+                "totalTests": 17,
+                "passing": 17
+              },
+              "tddState": "green",
+              "updatedAt": "2026-06-29T10:07:05.698Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/421"
+            },
+            {
+              "id": "bee.3",
+              "slug": "bee.3",
+              "name": "PostHog instrumentation",
+              "artefact": "artefacts/2026-06-29-beta-entry-experience/stories/bee.3.md",
+              "complexity": 2,
+              "stage": "verify-completion",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-29-beta-entry-experience/dor/bee.3-dor.md",
+              "acTotal": 9,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-29-beta-entry-experience/test-plans/bee.3-test-plan.md",
+                "totalTests": 18,
+                "passing": 18
+              },
+              "tddState": "green",
+              "updatedAt": "2026-06-29T10:07:05.700Z"
             }
           ]
         }
