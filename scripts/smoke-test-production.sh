@@ -28,7 +28,7 @@ REQUIRED_SECRETS=(DATABASE_URL UPSTASH_REDIS_REST_URL UPSTASH_REDIS_REST_TOKEN T
 SECRET_LIST=$(fly secrets list --app "$APP" 2>/dev/null || echo "")
 MISSING=0
 for secret in "${REQUIRED_SECRETS[@]}"; do
-  if echo "$SECRET_LIST" | grep -q "^$secret"; then
+  if echo "$SECRET_LIST" | grep -qE "(^| )$secret( |$|[[:space:]])"; then
     pass "$secret present"
   else
     fail "$secret MISSING"
@@ -41,7 +41,7 @@ fi
 
 # ── AC2 — Startup log check (last 60 lines) ─────────────────────────────────
 section "AC2: Startup log — no error lines"
-STARTUP_ERRORS=$(fly logs --app "$APP" 2>/dev/null | tail -60 | grep -E "PG write error|loadAllFromPg failed|Redis load error" || true)
+STARTUP_ERRORS=$(timeout 10 fly logs --app "$APP" 2>/dev/null | grep -E "PG write error|loadAllFromPg failed|Redis load error" || true)
 if [ -z "$STARTUP_ERRORS" ]; then
   pass "No startup error log lines found"
 else
@@ -51,8 +51,8 @@ fi
 
 # ── AC3 — Health check ──────────────────────────────────────────────────────
 section "AC3: GET /health → HTTP 200"
-HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/health" || echo "000")
-if [ "$HTTP_STATUS" = "200" ]; then
+HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/health" 2>/dev/null || echo "000")
+if echo "$HTTP_STATUS" | grep -q "^200"; then
   pass "GET /health returned 200"
 else
   fail "GET /health returned $HTTP_STATUS (expected 200)"

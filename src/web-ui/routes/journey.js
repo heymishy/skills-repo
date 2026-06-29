@@ -151,7 +151,7 @@ function _renderJourneyHome(data) {
           '<div class="jh-card__meta">',
             '<span class="jh-stage-badge">' + escHtml(stageLabel(j.currentStage || '')) + '</span>',
             '<span class="jh-card__profile">◈ ' + escHtml(j.productProfile || 'default') + '</span>',
-            '<span class="jh-card__date">' + escHtml((j.createdAt || '').slice(0, 10)) + '</span>',
+            '<span class="jh-card__date">' + escHtml((j.createdAt ? new Date(j.createdAt).toISOString() : '').slice(0, 10)) + '</span>',
           '</div>',
           '<div class="jh-progress">' + progressDots(j.stages) + '</div>',
         '</div>',
