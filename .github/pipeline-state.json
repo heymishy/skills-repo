@@ -974,6 +974,17 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s4.2-dor.md"
+            },
+            {
+              "label": "Default executor provider to Anthropic; copilot remains opt-in",
+              "stage": "definition-of-done",
+              "health": "green",
+              "storyArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/stories/s4.3.md",
+              "dorStatus": "signed-off",
+              "reviewStatus": "passed",
+              "prStatus": "merged",
+              "updatedAt": "2026-06-29T05:00:00Z",
+              "notes": "Production hotfix during s4.1 execution — retroactive story. Commit 8c21dcd."
             }
           ]
         },

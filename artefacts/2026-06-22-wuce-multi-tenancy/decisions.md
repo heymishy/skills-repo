@@ -110,6 +110,16 @@ Upstash Redis stands — serverless per-request pricing remains the right fit fo
 
 ---
 
+## Decision 11 — Production hotfix: default SKILL_EXECUTOR_PROVIDER to anthropic
+
+**Date:** 2026-06-29
+**Context:** During s4.1 beta deployment execution, the first journey start attempt returned `sse_error: Copilot API HTTP 400 model_not_supported` for `claude-sonnet-4-6`. The code defaulted to the copilot provider when `SKILL_EXECUTOR_PROVIDER` was unset; the GitHub Copilot Chat Completions API does not support Claude 4.x model IDs. `.env` comments already noted that "Anthropic enforces budget_tokens correctly; GHCP does not, causing thinking overflow" — Anthropic direct was always the intended production provider.
+**Decision:** Change the hardcoded fallback in `skill-turn-executor.js` from `'copilot'` to `'anthropic'`. Copilot remains available as an explicit opt-in via `SKILL_EXECUTOR_PROVIDER=copilot`. Applied as a production hotfix (commit `8c21dcd`) without a preceding DoR; retroactive story s4.3 created post-implementation.
+**Rationale:** The code change is 3 lines (string default), low risk, and immediately unblocked the s4.1 smoke test. Blocking on a full artefact chain before fixing a broken beta deployment was disproportionate. The retrospective story (s4.3) satisfies the artefact-first rule post-facto.
+**Applies to:** `src/modules/skill-turn-executor.js`, `tests/check-wuce26-per-answer-model-response.js` (T9/T10 provider pin), `.env.example` (new provider section).
+
+---
+
 ## Decision 10 — MEDIUM review finding acknowledgement: sprint story template compliance gaps (s3.1–s5.1)
 
 **Date:** 2026-06-29
