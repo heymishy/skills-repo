@@ -26,7 +26,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetStageReview, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handlePostWizardSelection } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1
+const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetStageReview, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 
@@ -103,6 +103,16 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     const _journeyDisk = require('../modules/journey-disk');
     _journeyStore.setDiskAdapter(_journeyDisk);
     _journeyStore.loadAllFromDisk(_journeyRoot);
+  }
+
+  // bee.2 — Task 3: wire listJourneys adapter for GET /journeys (D37 separate wiring task)
+  {
+    const _journeyStoreForBee2 = require('./modules/journey-store');
+    const _journeyRootForBee2  = process.env.COPILOT_REPO_PATH || _path.resolve(__dirname, '../..');
+    setListJourneys(async function(tenantId) {
+      var all = _journeyStoreForBee2.listJourneys(_journeyRootForBee2);
+      return tenantId ? all.filter(function(j) { return j.tenantId === tenantId; }) : all;
+    });
   }
 
   // p3.2 — Upstash Redis session persistence (see Decision 9)
@@ -662,6 +672,10 @@ async function router(req, res) {
   } else if (pathname === '/journey/wizard' && req.method === 'POST') {
     // wucp.4 — wizard feature selection POST
     await handlePostWizardSelection(req, res);
+
+  } else if (pathname === '/journeys' && req.method === 'GET') {
+    // bee.2 — first-run empty-state experience
+    authGuard(req, res, async function() { await handleJourneys(req, res); });
 
   } else if (pathname === '/journey' && req.method === 'GET') {
     // jdsk.1 — journey home screen (replaces old wizard-first routing)
