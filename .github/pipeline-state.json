@@ -6614,7 +6614,7 @@
           "baseline": "0 — no external user has ever completed a session (2026-06-29)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "Feature deployed 2026-06-30. PostHog account not yet created. No external users have completed a session.",
           "contributingStories": [
             "bee.1",
             "bee.2",
@@ -6628,7 +6628,7 @@
           "baseline": "not-yet-measured — solo mode, one tenant only",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "Requires second production tenant. No external users exist yet. Manual verification pending first external sign-up.",
           "contributingStories": [
             "bee.2"
           ]
@@ -6640,7 +6640,7 @@
           "baseline": "Not yet established — no landing page exists today",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "PostHog account not yet created. No landing_page_view or cta_clicked events recorded yet.",
           "contributingStories": [
             "bee.1",
             "bee.3"
@@ -6653,7 +6653,7 @@
           "baseline": "0 — no referral attribution data exists",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "PostHog account not yet created. No person identification events or UTM captures recorded yet.",
           "contributingStories": [
             "bee.3"
           ]
@@ -6692,40 +6692,45 @@
           "category": "nfr",
           "label": "Landing page responds <200ms; no external calls in handler",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-06-29T00:00:00Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-06-30T00:00:00Z",
+          "evidence": "Handler reads HTML at module init; no network calls per request. NFR-T1 spy confirms 0 external calls."
         },
         {
           "id": "NFR-perf-posthog-async",
           "category": "nfr",
           "label": "PostHog CDN script loaded with async attribute (non-blocking)",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-06-29T00:00:00Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-06-30T00:00:00Z",
+          "evidence": "bee.3 T2 and T9 assert async attribute on PostHog CDN script tag."
         },
         {
           "id": "NFR-sec-no-accesstoken-html",
           "category": "nfr",
           "label": "req.session.accessToken never appears in HTML responses",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-06-29T00:00:00Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-06-30T00:00:00Z",
+          "evidence": "bee.3 T11 canary test: SECRET_GITHUB_TOKEN_CANARY not present in any HTML response."
         },
         {
           "id": "NFR-sec-posthog-key-env",
           "category": "nfr",
           "label": "POSTHOG_KEY read from env var, not hardcoded in source",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-06-29T00:00:00Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-06-30T00:00:00Z",
+          "evidence": "bee.3 AC8/T3/T4/T13 confirm key read from process.env.POSTHOG_KEY; empty string treated as unset."
         },
         {
           "id": "NFR-data-classification",
           "category": "nfr",
           "label": "Data classification: Public (landing page); Internal (PostHog events)",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-06-29T00:00:00Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-06-30T00:00:00Z",
+          "evidence": "Only login and tenantId injected server-side. accessToken excluded by function signature and asserted by T11."
         }
       ],
       "stories": [],
@@ -6736,16 +6741,16 @@
         {
           "slug": "bee-entry-surface",
           "name": "Beta Entry Surface",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "bee.1",
               "name": "Public landing page",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-06-29T10:00:00Z",
+              "updatedAt": "2026-06-30T00:00:00Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 11,
@@ -6756,17 +6761,19 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/420"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/420",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "bee.2",
               "name": "First-run empty-state experience",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-06-29T00:00:00Z",
+              "updatedAt": "2026-06-30T00:00:00Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 12,
@@ -6777,17 +6784,19 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/421"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/421",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "bee.3",
               "name": "PostHog instrumentation",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-06-29T10:00:00Z",
+              "updatedAt": "2026-06-30T00:00:00Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 18,
@@ -6798,8 +6807,11 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/422"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/422",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "blocker": "AC4 manual browser scenario (Scenario 4 in bee.3-verification.md) not yet executed. Risk: LOW. Typeof guard verified at code level."
             }
           ],
           "updatedAt": "2026-06-29T10:00:00Z"
