@@ -760,7 +760,7 @@
               "prStatus": "merged",
               "dorStatus": "signed-off",
               "reviewStatus": "passed",
-              "testPlan": "true",
+              "testPlan": { "status": "complete" },
               "verifyStatus": "passed",
               "acVerified": 7,
               "acTotal": 7,
@@ -777,7 +777,7 @@
               "prStatus": "merged",
               "dorStatus": "signed-off",
               "reviewStatus": "passed",
-              "testPlan": "true",
+              "testPlan": { "status": "complete" },
               "verifyStatus": "passed",
               "acVerified": 7,
               "acTotal": 7,
@@ -794,7 +794,7 @@
               "prStatus": "merged",
               "dorStatus": "signed-off",
               "reviewStatus": "passed",
-              "testPlan": "true",
+              "testPlan": { "status": "complete" },
               "verifyStatus": "passed",
               "acVerified": 7,
               "acTotal": 7,
@@ -980,6 +980,8 @@
               "prStatus": "merged"
             },
             {
+              "slug": "s4.3",
+              "name": "Default executor provider to Anthropic (production hotfix)",
               "label": "Default executor provider to Anthropic; copilot remains opt-in",
               "stage": "definition-of-done",
               "health": "green",
@@ -6578,6 +6580,220 @@
         }
       ],
       "stories": []
+    },
+    {
+      "slug": "2026-06-29-beta-entry-experience",
+      "name": "Beta Entry Experience",
+      "track": "web-ui",
+      "stage": "branch-complete",
+      "health": "green",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "updatedAt": "2026-06-29T10:00:00Z",
+      "discoveryArtefact": "artefacts/2026-06-29-beta-entry-experience/discovery.md",
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Beta activation rate",
+          "target": ">=1 external user completes a session within 2 weeks; >=3 within 4 weeks",
+          "baseline": "0 — no external user has ever completed a session (2026-06-29)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "bee.1",
+            "bee.2",
+            "bee.3"
+          ]
+        },
+        {
+          "id": "M2",
+          "name": "Cross-tenant isolation confirmed in production",
+          "target": "One cross-tenant access attempt between two real tenants returns 404 (binary: not-yet-measured -> on-track)",
+          "baseline": "not-yet-measured — solo mode, one tenant only",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "bee.2"
+          ]
+        },
+        {
+          "id": "M3",
+          "name": "Landing page conversion rate",
+          "target": ">=50% of unique unauthenticated visitors click Sign in with GitHub (rolling 4-week window, >=20 visits)",
+          "baseline": "Not yet established — no landing page exists today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "bee.1",
+            "bee.3"
+          ]
+        },
+        {
+          "id": "M4",
+          "name": "Referral attribution coverage",
+          "target": ">=80% of identified PostHog persons have a known utm_source within 4 weeks",
+          "baseline": "0 — no referral attribution data exists",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "bee.3"
+          ]
+        }
+      ],
+      "guardrails": [
+        {
+          "id": "MC-SEC-01",
+          "category": "mandatory-constraint",
+          "label": "No credentials or tokens in HTML responses",
+          "status": "met",
+          "evidence": "bee.3 Architecture Constraints explicitly prohibits req.session.accessToken in HTML; only login and tenantId injected",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-29T00:00:00Z"
+        },
+        {
+          "id": "MC-DEP-01",
+          "category": "mandatory-constraint",
+          "label": "Zero new npm dependencies",
+          "status": "met",
+          "evidence": "bee.3 AC9 verifies no posthog-js or any PostHog npm package; CDN-only confirmed in all three stories",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-29T00:00:00Z"
+        },
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: story artefacts before src/ implementation",
+          "status": "met",
+          "evidence": "All three stories (bee.1, bee.2, bee.3) reference ADR-011 in Architecture Constraints",
+          "assessedBy": "/review",
+          "assessedAt": "2026-06-29T00:00:00Z"
+        },
+        {
+          "id": "NFR-perf-landing",
+          "category": "nfr",
+          "label": "Landing page responds <200ms; no external calls in handler",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-29T00:00:00Z"
+        },
+        {
+          "id": "NFR-perf-posthog-async",
+          "category": "nfr",
+          "label": "PostHog CDN script loaded with async attribute (non-blocking)",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-29T00:00:00Z"
+        },
+        {
+          "id": "NFR-sec-no-accesstoken-html",
+          "category": "nfr",
+          "label": "req.session.accessToken never appears in HTML responses",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-29T00:00:00Z"
+        },
+        {
+          "id": "NFR-sec-posthog-key-env",
+          "category": "nfr",
+          "label": "POSTHOG_KEY read from env var, not hardcoded in source",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-29T00:00:00Z"
+        },
+        {
+          "id": "NFR-data-classification",
+          "category": "nfr",
+          "label": "Data classification: Public (landing page); Internal (PostHog events)",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-06-29T00:00:00Z"
+        }
+      ],
+      "stories": [],
+      "benefitMetricArtefact": "artefacts/2026-06-29-beta-entry-experience/benefit-metric.md",
+      "slicingStrategy": "user-journey",
+      "nfrProfileArtefact": "artefacts/2026-06-29-beta-entry-experience/nfr-profile.md",
+      "epics": [
+        {
+          "slug": "bee-entry-surface",
+          "name": "Beta Entry Surface",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "bee.1",
+              "name": "Public landing page",
+              "stage": "branch-complete",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-06-29T10:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 11,
+                "passing": 11
+              },
+              "acTotal": 6,
+              "acVerified": 6,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/420"
+            },
+            {
+              "slug": "bee.2",
+              "name": "First-run empty-state experience",
+              "stage": "branch-complete",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-06-29T00:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 12,
+                "passing": 12
+              },
+              "acTotal": 5,
+              "acVerified": 5,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/421"
+            },
+            {
+              "slug": "bee.3",
+              "name": "PostHog instrumentation",
+              "stage": "branch-complete",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-06-29T10:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 18,
+                "passing": 18
+              },
+              "acTotal": 9,
+              "acVerified": 9,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/422"
+            }
+          ],
+          "updatedAt": "2026-06-29T10:00:00Z"
+        }
+      ],
+      "reviewStatus": "passed",
+      "highFindings": 0
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
