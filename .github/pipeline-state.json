@@ -6578,6 +6578,90 @@
         }
       ],
       "stories": []
+    },
+    {
+      "slug": "2026-06-29-beta-entry-experience",
+      "name": "Beta Entry Experience",
+      "track": "standard",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-06-29T09:26:10.907Z",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discovery": {
+        "status": "approved",
+        "artefact": "artefacts/2026-06-29-beta-entry-experience/discovery.md",
+        "approvedAt": "2026-06-29",
+        "approvedBy": "Hamish King"
+      },
+      "benefit-metric": {
+        "status": "active",
+        "artefact": "artefacts/2026-06-29-beta-entry-experience/benefit-metric.md",
+        "definedAt": "2026-06-29"
+      },
+      "nfrProfileArtefact": "artefacts/2026-06-29-beta-entry-experience/nfr-profile.md",
+      "metrics": [
+        {
+          "id": "M3",
+          "name": "Landing page conversion rate",
+          "target": "Measurable from day 1 of beta",
+          "baseline": "N/A — page does not exist",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "bee.1"
+          ]
+        },
+        {
+          "id": "M1",
+          "name": "Beta activation rate",
+          "target": "Improve first-session completion",
+          "baseline": "N/A",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": [
+            "bee.1"
+          ]
+        }
+      ],
+      "epics": [
+        {
+          "id": "bee-entry-surface",
+          "slug": "bee-entry-surface",
+          "name": "Entry surface — public landing page and authentication entry point",
+          "stories": [
+            {
+              "id": "bee.1",
+              "slug": "bee.1",
+              "name": "Public landing page",
+              "artefact": "artefacts/2026-06-29-beta-entry-experience/stories/bee.1.md",
+              "complexity": 1,
+              "stage": "branch-complete",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-29-beta-entry-experience/dor/bee.1-dor.md",
+              "acTotal": 6,
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-06-29-beta-entry-experience/test-plans/bee.1-test-plan.md",
+                "totalTests": 25,
+                "passing": 25
+              },
+              "tddState": "green",
+              "updatedAt": "2026-06-29T09:26:10.908Z",
+              "prStatus": "draft",
+              "prUrl": "pending"
+            }
+          ]
+        }
+      ],
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
