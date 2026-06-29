@@ -6,8 +6,8 @@
  * provider and returns the response text.
  *
  * Two providers supported — selected via SKILL_EXECUTOR_PROVIDER env var:
- *   copilot   (default) — GitHub Copilot Chat Completions API (OpenAI-compatible)
- *   anthropic           — Anthropic Messages API (direct, BYOK)
+ *   anthropic (default) — Anthropic Messages API (direct, BYOK)
+ *   copilot             — GitHub Copilot Chat Completions API (OpenAI-compatible)
  *
  * No new npm dependencies — uses Node built-in `https` module only.
  *
@@ -546,8 +546,8 @@ function _callCopilot(systemPrompt, history, currentInput, token, maxTokens, tim
  * Execute one skill turn.
  *
  * Routes to Anthropic or Copilot based on SKILL_EXECUTOR_PROVIDER env var.
- *   SKILL_EXECUTOR_PROVIDER=anthropic  → Anthropic Messages API (requires ANTHROPIC_API_KEY)
- *   SKILL_EXECUTOR_PROVIDER=copilot    → Copilot Chat Completions API (default, requires GitHub token)
+ *   SKILL_EXECUTOR_PROVIDER=anthropic  → Anthropic Messages API (default, requires ANTHROPIC_API_KEY)
+ *   SKILL_EXECUTOR_PROVIDER=copilot   → Copilot Chat Completions API (requires GitHub token with copilot scope)
  *
  * @param {string}  systemPrompt   — full system prompt (SKILL.md + product context + web UI framing)
  * @param {Array}   history        — array of { role: 'user'|'assistant', content: string }
@@ -556,7 +556,7 @@ function _callCopilot(systemPrompt, history, currentInput, token, maxTokens, tim
  * @returns {Promise<string>}      — the model's response text
  */
 function skillTurnExecutor(systemPrompt, history, currentInput, token) {
-  const provider  = (process.env.SKILL_EXECUTOR_PROVIDER || 'copilot').toLowerCase();
+  const provider  = (process.env.SKILL_EXECUTOR_PROVIDER || 'anthropic').toLowerCase();
   const maxTokens = parseInt(process.env.WUCE_TURN_MODEL_MAX_TOKENS || String(DEFAULT_MAX_TOKENS), 10);
   const timeoutMs = parseInt(process.env.WUCE_TURN_TIMEOUT_MS       || String(DEFAULT_TIMEOUT_MS), 10);
 
@@ -581,7 +581,7 @@ function skillTurnExecutor(systemPrompt, history, currentInput, token) {
  * @returns {Promise<string>} full response text
  */
 function skillTurnExecutorStream(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk, options) {
-  const provider       = (process.env.SKILL_EXECUTOR_PROVIDER || 'copilot').toLowerCase();
+  const provider       = (process.env.SKILL_EXECUTOR_PROVIDER || 'anthropic').toLowerCase();
   const defaultTokens  = parseInt(process.env.WUCE_TURN_MODEL_MAX_TOKENS || String(DEFAULT_MAX_TOKENS), 10);
   const maxTokens      = (options && options.maxTokens) ? options.maxTokens : defaultTokens;
   const timeoutMs      = parseInt(process.env.WUCE_TURN_TIMEOUT_MS || String(DEFAULT_TIMEOUT_MS), 10);
@@ -600,7 +600,7 @@ function skillTurnExecutorStream(systemPrompt, history, currentInput, token, onC
  * @returns {string}
  */
 function getActiveModel() {
-  const provider = (process.env.SKILL_EXECUTOR_PROVIDER || 'copilot').toLowerCase();
+  const provider = (process.env.SKILL_EXECUTOR_PROVIDER || 'anthropic').toLowerCase();
   if (provider === 'anthropic') {
     return process.env.WUCE_TURN_MODEL || DEFAULT_ANTHROPIC_MODEL;
   }

@@ -214,6 +214,8 @@ queue.push(function runT7() {
 queue.push(function runT9() {
   console.log('\n-- T9 -- skill-turn-executor sends correct request with new signature');
   return test('T9: executor sends POST with messages=[system, ...history, currentUser]', async function() {
+    const origProvider = process.env.SKILL_EXECUTOR_PROVIDER;
+    process.env.SKILL_EXECUTOR_PROVIDER = 'copilot';
     const executor = require(EXECUTOR_PATH);
     let capturedOptions = null; let capturedBody = null;
     const https = require('https');
@@ -258,7 +260,11 @@ queue.push(function runT9() {
       assert.strictEqual(last.content, 'current input', 'last message must be current input');
       assert.ok(capturedBody.max_tokens > 0, 'max_tokens must be positive');
       assert.strictEqual(result, 'Good insight.', 'must return choices[0].message.content');
-    } finally { https.request = origRequest; }
+    } finally {
+      https.request = origRequest;
+      if (origProvider === undefined) { delete process.env.SKILL_EXECUTOR_PROVIDER; }
+      else { process.env.SKILL_EXECUTOR_PROVIDER = origProvider; }
+    }
   });
 });
 
@@ -266,6 +272,8 @@ queue.push(function runT9() {
 queue.push(function runT10() {
   console.log('\n-- T10 -- executor returns parsed response content');
   return test('T10: executor returns choices[0].message.content from response JSON', async function() {
+    const origProvider = process.env.SKILL_EXECUTOR_PROVIDER;
+    process.env.SKILL_EXECUTOR_PROVIDER = 'copilot';
     const executor = require(EXECUTOR_PATH);
     const https = require('https');
     const origRequest = https.request;
@@ -288,7 +296,11 @@ queue.push(function runT10() {
     try {
       const result = await executor.skillTurnExecutor('skill', [], 'answer', 'tok');
       assert.strictEqual(result, 'Parsed result here.', 'must return choices[0].message.content');
-    } finally { https.request = origRequest; }
+    } finally {
+      https.request = origRequest;
+      if (origProvider === undefined) { delete process.env.SKILL_EXECUTOR_PROVIDER; }
+      else { process.env.SKILL_EXECUTOR_PROVIDER = origProvider; }
+    }
   });
 });
 
