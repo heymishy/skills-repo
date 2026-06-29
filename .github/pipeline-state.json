@@ -760,7 +760,10 @@
               "prStatus": "merged",
               "dorStatus": "signed-off",
               "reviewStatus": "passed",
-              "testPlan": { "status": "complete", "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p3.1-test-plan.md" },
+              "testPlan": {
+                "status": "all-passing",
+                "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p3.1-test-plan.md"
+              },
               "verifyStatus": "passed",
               "acVerified": 7,
               "acTotal": 7,
@@ -777,7 +780,10 @@
               "prStatus": "merged",
               "dorStatus": "signed-off",
               "reviewStatus": "passed",
-              "testPlan": { "status": "complete", "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p3.2-test-plan.md" },
+              "testPlan": {
+                "status": "all-passing",
+                "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p3.2-test-plan.md"
+              },
               "verifyStatus": "passed",
               "acVerified": 7,
               "acTotal": 7,
@@ -794,7 +800,10 @@
               "prStatus": "merged",
               "dorStatus": "signed-off",
               "reviewStatus": "passed",
-              "testPlan": { "status": "complete", "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p3.3-test-plan.md" },
+              "testPlan": {
+                "status": "all-passing",
+                "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p3.3-test-plan.md"
+              },
               "verifyStatus": "passed",
               "acVerified": 7,
               "acTotal": 7,
@@ -991,7 +1000,10 @@
               "prStatus": "merged",
               "updatedAt": "2026-06-29T05:00:00Z",
               "notes": "Production hotfix during s4.1 execution — retroactive story. Commit 8c21dcd.",
-              "testPlan": { "status": "complete", "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s4.3-test-plan.md" }
+              "testPlan": {
+                "status": "all-passing",
+                "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s4.3-test-plan.md"
+              }
             }
           ]
         },
@@ -6585,7 +6597,7 @@
     {
       "slug": "2026-06-29-beta-entry-experience",
       "name": "Beta Entry Experience",
-      "track": "web-ui",
+      "track": "standard",
       "stage": "branch-complete",
       "health": "green",
       "regulated": false,
