@@ -6585,7 +6585,7 @@
       "track": "standard",
       "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-06-29T10:07:05.700Z",
+      "updatedAt": "2026-06-29T10:08:27.738Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -6688,7 +6688,7 @@
               "name": "PostHog instrumentation",
               "artefact": "artefacts/2026-06-29-beta-entry-experience/stories/bee.3.md",
               "complexity": 2,
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -6702,7 +6702,9 @@
                 "passing": 18
               },
               "tddState": "green",
-              "updatedAt": "2026-06-29T10:07:05.700Z"
+              "updatedAt": "2026-06-29T10:08:27.736Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/422"
             }
           ]
         }
