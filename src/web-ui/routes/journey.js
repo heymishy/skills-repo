@@ -273,7 +273,7 @@ function handleGetJourney(req, res) {
       return false;
     });
   }
-  journeys.sort(function(a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); });
+  journeys.sort(function(a, b) { return (b.createdAt ? new Date(b.createdAt).toISOString() : '').localeCompare(a.createdAt ? new Date(a.createdAt).toISOString() : ''); });
   var showNewForm = !!(req.query && req.query.new === '1');
   var body = _renderJourneyHome({ profiles: profiles, activeProfile: activeProfile, journeys: journeys, showNewForm: showNewForm });
   var html = renderShell({ title: 'Journeys', active: 'journey', bodyContent: body, user: { login: login } });
