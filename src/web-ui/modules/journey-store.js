@@ -211,6 +211,8 @@ function markJourneyComplete(journeyId) {
 
 /**
  * List all journeys — from disk if adapter is set, otherwise from in-memory map.
+ * D37: throws when neither disk nor PG adapter is configured AND the in-memory map
+ * is empty. This surfaces misconfiguration early (test isolation guard).
  * @param {string} [repoRoot]
  * @returns {object[]}
  */
@@ -218,7 +220,11 @@ function listJourneys(repoRoot) {
   if (_diskAdapter) {
     try { return _diskAdapter.listJourneys(repoRoot); } catch (_) {}
   }
-  return Array.from(_journeys.values());
+  var inMem = Array.from(_journeys.values());
+  if (!_activePgAdapter() && inMem.length === 0) {
+    throw new Error('Adapter not wired: listJourneys. Call setDiskAdapter() or setPgAdapter() before use.');
+  }
+  return inMem;
 }
 
 /**
