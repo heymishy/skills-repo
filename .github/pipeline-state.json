@@ -387,13 +387,13 @@
     {
       "slug": "2026-06-22-wuce-multi-tenancy",
       "name": "WUCE Multi-Tenancy — Authorization Guard and Tenant Isolation",
-      "stage": "review",
+      "stage": "definition-of-done",
       "health": "green",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-06-28T23:22:41.789Z",
+      "updatedAt": "2026-06-29T09:00:00Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/discovery.md",
@@ -431,7 +431,7 @@
           "minimumSignal": "Phase 0 complete — 404 on all 9 KNOWN BUG routes for unauthorized callers",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "p2.1 establishes filesystem isolation boundary; p2.2 adds HTTP-layer cross-tenant guard (27/27 tests); p4.1 closes inference-layer gap (tenant-scoped prompt-cache keys + per-tenant rate-limit counters). Full measurement requires live multi-tenant deployment.",
+          "evidence": "Lab verification complete (p2.2 27/27 tests; p4.1 inference-layer isolation live). Production live with correct tenant_id in Neon (s4.1 AC4). Solo mode active -- cross-tenant production verification requires second tenant. M2 transitions to on-track when first org-based beta user is onboarded.",
           "contributingStories": [
             "p0.2",
             "p1.1",
@@ -463,9 +463,9 @@
           "baseline": "Not established — repoRoot currently static; variable-root threat model not yet exercised",
           "target": "0 guard failures against adversarial tenantId injection test suite",
           "minimumSignal": "not-applicable — binary",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
+          "signal": "on-track",
+          "lastMeasured": "2026-06-24",
+          "evidence": "p5.1 14/14 adversarial traversal tests pass (PR#397, 2026-06-24). slugifyTenantId() validated against ../, URL-encoded, null-byte, overlong, and homoglyph inputs. All 6 disk-write handlers audited. path.resolve + startsWith guard confirmed for all variable-root paths.",
           "contributingStories": [
             "p5.1"
           ]
@@ -534,19 +534,19 @@
           "id": "NFR-p2.2-suite-perf",
           "category": "nfr",
           "label": "p2.2 test suite completes in under 10 seconds",
-          "status": "not-assessed",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-06-24T06:07:41.725Z",
-          "evidence": "NFR declared in story; timing assertion in test. Verified at /definition-of-done after merge."
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-06-29T09:00:00Z",
+          "evidence": "27 tests complete well within 10s -- confirmed at p2.2 merge 2026-06-24."
         },
         {
           "id": "NFR-p2.2-tmpdir-cleanup",
           "category": "nfr",
           "label": "p2.2 test suite cleans up all temporary directories (try/finally)",
-          "status": "not-assessed",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-06-24T06:07:41.725Z",
-          "evidence": "NFR declared in story; cleanup assertion in test. Verified at /definition-of-done after merge."
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-06-29T09:00:00Z",
+          "evidence": "try/finally cleanup verified by p2.2 test implementation review at merge 2026-06-24."
         },
         {
           "id": "dor-s3.1-arch-constraints",
