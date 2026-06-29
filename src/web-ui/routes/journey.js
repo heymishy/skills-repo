@@ -260,7 +260,8 @@ function handleGetJourney(req, res) {
   var repoRoot   = getRepoRoot(req);
   var profiles   = _listProfiles(repoRoot);
   var activeProfile = _getActiveProfile(repoRoot);
-  var journeys   = _journeyStore.listJourneys ? _journeyStore.listJourneys(repoRoot) : [];
+  var journeys   = [];
+  try { journeys = _journeyStore.listJourneys ? _journeyStore.listJourneys(repoRoot) : []; } catch (_) {}
   // Filter to current tenant when tenantId is set (all sessions after s0.2 deploy).
   // Migration grace: pre-s0.1 journeys have no tenantId on disk — include those whose
   // ownerId matches the current login (or no ownerId at all, for solo-mode history).
@@ -310,7 +311,8 @@ async function handlePostJourney(req, res) {
     // s2.1: pre-flight billing gate — check per-tenant journey cap before creation
     var _gateTenantId = req.session.tenantId;
     if (_gateTenantId) {
-      var _allForCap  = _journeyStore.listJourneys ? _journeyStore.listJourneys(repoRoot) : [];
+      var _allForCap  = [];
+      try { _allForCap = _journeyStore.listJourneys ? _journeyStore.listJourneys(repoRoot) : []; } catch (_) {}
       var _tenantCount = _allForCap.filter(function(j) { return j.tenantId === _gateTenantId; }).length;
       var _capResult   = _tenantPlan.checkJourneyCap(_gateTenantId, _tenantCount, repoRoot);
       if (!_capResult.allowed) {
@@ -1075,7 +1077,8 @@ async function handleGetJourneyResume(req, res) {
   }
 
   // Find in-memory journey (loaded at startup from disk)
-  var allJourneys = _journeyStore.listJourneys ? _journeyStore.listJourneys(repoRoot) : [];
+  var allJourneys = [];
+  try { allJourneys = _journeyStore.listJourneys ? _journeyStore.listJourneys(repoRoot) : []; } catch (_) {}
   var memJourney = allJourneys.find(function(j) { return j.featureSlug === featureSlug; });
   if (!memJourney && diskJourney.journeyId) {
     memJourney = _journeyStore.getJourney(diskJourney.journeyId);
@@ -3403,4 +3406,59 @@ module.exports = {
   handleGetWizard,
   handlePostWizardSelection
 };
+
+// --- bee.2: first-run empty-state experience ---
+
+var _listJourneys = async function() {
+  throw new Error('Adapter not wired: _listJourneys. Call setListJourneys() before use.');
+};
+
+function setListJourneys(fn) {
+  _listJourneys = fn;
+}
+
+async function handleJourneys(req, res) {
+  var tenantId = (req.session && req.session.tenantId) || (req.session && req.session.login) || '';
+  var journeys;
+  try {
+    journeys = await _listJourneys(tenantId);
+  } catch (err) {
+    console.error('[journey-store]', err.message);
+    res.writeHead(500, { 'Content-Type': 'text/html' });
+    res.end('<html><body><p>Error loading journeys.</p></body></html>');
+    return;
+  }
+
+  if (!journeys || journeys.length === 0) {
+    var emptyHtml = '<!DOCTYPE html>\n' +
+      '<html>\n' +
+      '<head><title>Skills Platform</title></head>\n' +
+      '<body>\n' +
+      '<h1>Welcome to Skills Platform</h1>\n' +
+      "<p>You haven't started any skill sessions yet.</p>\n" +
+      '<p>A skill session produces a governed artefact — a traceable, high-quality deliverable built through the structured pipeline.</p>\n' +
+      '<a href="/skills">Start a skill session</a>\n' +
+      '</body>\n' +
+      '</html>';
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(emptyHtml);
+    return;
+  }
+
+  var cards = journeys.map(function(j) {
+    return '<div data-journey-id="' + (j.id || '') + '">' + (j.name || j.id || '') + '</div>';
+  }).join('\n');
+  var listHtml = '<!DOCTYPE html>\n' +
+    '<html>\n' +
+    '<head><title>Your Skill Sessions</title></head>\n' +
+    '<body>\n' +
+    '<h1>Your Skill Sessions</h1>\n' +
+    cards + '\n' +
+    '</body>\n' +
+    '</html>';
+  res.writeHead(200, { 'Content-Type': 'text/html' });
+  res.end(listHtml);
+}
+
+module.exports = Object.assign(module.exports, { handleJourneys: handleJourneys, setListJourneys: setListJourneys });
 
