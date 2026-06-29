@@ -47,6 +47,22 @@ async function saveJourney(journey) {
   );
 }
 
+async function migrateSchema() {
+  const pool = _getPool();
+  if (!pool) return;
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS journeys (
+      journey_id   VARCHAR      PRIMARY KEY,
+      tenant_id    VARCHAR,
+      owner_id     VARCHAR,
+      feature_slug VARCHAR      NOT NULL,
+      created_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+      data         JSONB        NOT NULL DEFAULT '{}'
+    )
+  `);
+  await pool.query(`CREATE INDEX IF NOT EXISTS journeys_tenant_id_idx ON journeys (tenant_id)`);
+}
+
 async function listJourneys() {
   const pool = _getPool();
   if (!pool) return [];
@@ -65,4 +81,4 @@ async function listJourneys() {
   });
 }
 
-module.exports = { saveJourney, listJourneys };
+module.exports = { saveJourney, listJourneys, migrateSchema };

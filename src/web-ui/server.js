@@ -97,9 +97,12 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // p3.1 — Postgres journey persistence (Neon free tier, see Decision 9)
     const _journeyPg = require('./adapters/journey-store-pg');
     _journeyStore.setPgAdapter(_journeyPg);
-    _journeyStore.loadAllFromPg().catch(function(err) {
-      console.error('[server] loadAllFromPg failed:', err.message);
-    });
+    // Auto-migrate schema on startup then load journeys (CREATE TABLE IF NOT EXISTS is idempotent)
+    _journeyPg.migrateSchema()
+      .then(function() { return _journeyStore.loadAllFromPg(); })
+      .catch(function(err) {
+        console.error('[server] Postgres startup failed:', err.message);
+      });
   } else {
     const _journeyDisk = require('../modules/journey-disk');
     _journeyStore.setDiskAdapter(_journeyDisk);
