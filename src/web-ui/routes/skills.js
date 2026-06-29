@@ -3454,13 +3454,25 @@ async function handleGetChatHtml(req, res) {
   var skillName = (req.params && req.params.name) || '';
   var sessionId = (req.params && req.params.id) || '';
   var session = _sessionStore.get(sessionId);
+
+  // bee.3: journey_created PostHog capture (AC7). Empty string when key unset (AC8).
+  var _phKey = process.env.POSTHOG_KEY || '';
+  var journeyCreatedScript = _phKey
+    ? '<script>if (typeof posthog !== "undefined") { posthog.capture("journey_created"); }</script>'
+    : '';
+
   if (!session) {
+    var notFoundHtml = renderShell({ title: 'Not Found', bodyContent: '<p>Session not found.</p>' + journeyCreatedScript, user: { login: '' } });
     res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Session not found.</p>', user: { login: '' } }));
+    res.end(notFoundHtml);
     return;
   }
   // Initial turn is fired client-side via SSE to avoid blocking page render on LLM call
   var html = _renderChatPage(skillName, sessionId, session);
+  // Inject journey_created script when key is set (bee.3 AC7)
+  if (journeyCreatedScript) {
+    html = html.replace('</body>', journeyCreatedScript + '</body>');
+  }
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
