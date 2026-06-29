@@ -6585,7 +6585,7 @@
       "track": "standard",
       "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-06-29T09:26:10.907Z",
+      "updatedAt": "2026-06-29T09:29:37.156Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -6654,9 +6654,9 @@
                 "passing": 25
               },
               "tddState": "green",
-              "updatedAt": "2026-06-29T09:26:10.908Z",
+              "updatedAt": "2026-06-29T09:29:37.155Z",
               "prStatus": "draft",
-              "prUrl": "pending"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/420"
             }
           ]
         }
