@@ -39,6 +39,10 @@ RUN npm ci --omit=dev --ignore-scripts
 # Copy application source from builder
 COPY --chown=node:node --from=builder /app/src ./src/
 
+# Copy runtime data directories (SKILL.md files and product context)
+COPY --chown=node:node skills/ ./skills/
+COPY --chown=node:node product/ ./product/
+
 # Expose application port
 EXPOSE 3000
 
