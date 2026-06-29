@@ -167,3 +167,19 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: pattern
   signal-text: "All five sprint operator-manual stories (s3.1, s3.2, s4.1, s4.2, s5.1) share the same five MEDIUM findings: missing Discovery reference link, missing Benefit-metric reference link, missing Benefit Linkage section, missing Architecture Constraints section, missing NFRs section. These are template compliance gaps consistently produced when /definition writes operator-manual infra stories without running through the full story template. The substance of the stories is sound — the gaps are all format-level. A story template checklist at write-time would prevent this class of finding from appearing in every review."
   source: agent-auto
+
+---
+
+- date: 2026-06-29
+  session-phase: test-plan / 2026-06-29-beta-entry-experience
+  signal-type: decision
+  signal-text: "bee.3 AC7 (journey_created event placement): committed to GET /skills/:name/sessions/:id/chat as the placement — the first HTML page served after the POST-to-303 redirect that creates a journey. This was required to make AC7 independently testable at DoD without implementation-time ambiguity. Test T14 in check-bee3-posthog.js asserts this directly."
+  source: agent-auto
+
+---
+
+- date: 2026-06-29
+  session-phase: test-plan / 2026-06-29-beta-entry-experience
+  signal-type: pattern
+  signal-text: "bee.3 graceful degradation (typeof posthog guard): when POSTHOG_KEY is unset and the PostHog CDN snippet is omitted, ALL posthog.capture() and posthog.identify() calls must also be omitted server-side (conditional on POSTHOG_KEY), or each must be wrapped in typeof posthog !== 'undefined'. The server-side omission approach (simplest) means the test assertion is: no posthog. string in HTML when key is unset. This is a real runtime defect pattern (ReferenceError on page load) that was caught at review and resolved before test-plan."
+  source: agent-auto

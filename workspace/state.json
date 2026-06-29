@@ -1,75 +1,149 @@
 {
-  "currentPhase": "definition-of-done",
-  "lastUpdated": "2026-06-25T13:00:00Z",
-  "activeFeature": "2026-05-18-skill-robustness-improvements",
+  "currentPhase": "branch-complete",
+  "lastUpdated": "2026-06-29T10:00:00Z",
+  "activeFeature": "2026-06-29-beta-entry-experience",
   "cycle": {
+    "discovery": {
+      "status": "complete",
+      "artefact": "artefacts/2026-06-29-beta-entry-experience/discovery.md",
+      "approvedAt": "2026-06-29",
+      "approvedBy": "Hamish King"
+    },
+    "benefit-metric": {
+      "status": "complete",
+      "artefact": "artefacts/2026-06-29-beta-entry-experience/benefit-metric.md",
+      "metrics": ["M1 — Beta activation rate", "M2 — Cross-tenant isolation confirmed", "M3 — Landing page conversion rate", "M4 — Referral attribution coverage"],
+      "completedAt": "2026-06-29"
+    },
     "definition": {
       "status": "complete",
-      "completedAt": "2026-06-25",
-      "outcome": "COMPLETE — 3 stories written (sri.1/sri.2/sri.3), epic, NFR profile, guardrails and metrics seeded in pipeline-state"
+      "slicingStrategy": "user-journey",
+      "epics": ["bee-entry-surface"],
+      "stories": ["bee.1 — Public landing page", "bee.2 — First-run empty-state experience", "bee.3 — PostHog instrumentation"],
+      "completedAt": "2026-06-29"
     },
-    "definition-of-done-skills-infra": {
+    "review": {
       "status": "complete",
-      "completedAt": "2026-06-25",
-      "commit": "a3a7826",
-      "outcome": "COMPLETE — all 12 stories COMPLETE, 126 tests passing, 0 failures"
+      "result": "PASS",
+      "highFindings": 0,
+      "mediumFindings": 6,
+      "mediumFindingsResolved": 6,
+      "artefacts": [
+        "artefacts/2026-06-29-beta-entry-experience/review/bee.1-review-1.md",
+        "artefacts/2026-06-29-beta-entry-experience/review/bee.2-review-1.md",
+        "artefacts/2026-06-29-beta-entry-experience/review/bee.3-review-1.md"
+      ],
+      "completedAt": "2026-06-29"
     },
-    "inner-loop-sri": {
+    "test-plan": {
       "status": "complete",
-      "completedAt": "2026-06-25",
       "stories": {
-        "sri.1": { "pr": "#410", "merged": "2026-06-25", "tests": "13/13", "dodStatus": "COMPLETE" },
-        "sri.2": { "pr": "#411", "merged": "2026-06-25", "tests": "5/5", "dodStatus": "COMPLETE" },
-        "sri.3": { "pr": "#412", "merged": "2026-06-25", "tests": "8/8", "dodStatus": "COMPLETE" }
+        "bee.1": {
+          "testPlan": "artefacts/2026-06-29-beta-entry-experience/test-plans/bee.1-test-plan.md",
+          "verificationScript": "artefacts/2026-06-29-beta-entry-experience/verification-scripts/bee.1-verification.md",
+          "testScript": "tests/check-bee1-landing-page.js",
+          "totalTests": 11,
+          "passing": 11
+        },
+        "bee.2": {
+          "testPlan": "artefacts/2026-06-29-beta-entry-experience/test-plans/bee.2-test-plan.md",
+          "verificationScript": "artefacts/2026-06-29-beta-entry-experience/verification-scripts/bee.2-verification.md",
+          "testScript": "tests/check-bee2-empty-state.js",
+          "totalTests": 12,
+          "passing": 12
+        },
+        "bee.3": {
+          "testPlan": "artefacts/2026-06-29-beta-entry-experience/test-plans/bee.3-test-plan.md",
+          "verificationScript": "artefacts/2026-06-29-beta-entry-experience/verification-scripts/bee.3-verification.md",
+          "testScript": "tests/check-bee3-posthog.js",
+          "totalTests": 18,
+          "passing": 18
+        }
       },
-      "commit": "ec87d2d"
+      "completedAt": "2026-06-29"
+    },
+    "definition-of-ready": {
+      "status": "complete",
+      "stories": {
+        "bee.1": {
+          "dor": "artefacts/2026-06-29-beta-entry-experience/dor/bee.1-dor.md",
+          "contract": "artefacts/2026-06-29-beta-entry-experience/dor/bee.1-dor-contract.md",
+          "hardBlocks": "19/19 passed",
+          "warnings": "1 acknowledged (W4 — solo-operator self-review)",
+          "oversight": "Low",
+          "status": "signed-off"
+        },
+        "bee.2": {
+          "dor": "artefacts/2026-06-29-beta-entry-experience/dor/bee.2-dor.md",
+          "contract": "artefacts/2026-06-29-beta-entry-experience/dor/bee.2-dor-contract.md",
+          "hardBlocks": "19/19 passed",
+          "warnings": "1 acknowledged (W4 — solo-operator self-review)",
+          "oversight": "Low",
+          "status": "signed-off"
+        },
+        "bee.3": {
+          "dor": "artefacts/2026-06-29-beta-entry-experience/dor/bee.3-dor.md",
+          "contract": "artefacts/2026-06-29-beta-entry-experience/dor/bee.3-dor-contract.md",
+          "hardBlocks": "19/19 passed",
+          "warnings": "1 acknowledged (W4 — solo-operator self-review)",
+          "oversight": "Low",
+          "status": "signed-off"
+        }
+      },
+      "completedAt": "2026-06-29"
+    },
+    "branch-complete": {
+      "status": "complete",
+      "stories": {
+        "bee.1": {
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/420",
+          "prStatus": "draft",
+          "testsPassing": "11/11",
+          "completedAt": "2026-06-29"
+        },
+        "bee.2": {
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/421",
+          "prStatus": "draft",
+          "testsPassing": "12/12",
+          "completedAt": "2026-06-29"
+        },
+        "bee.3": {
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/422",
+          "prStatus": "draft",
+          "testsPassing": "18/18",
+          "completedAt": "2026-06-29"
+        }
+      },
+      "completedAt": "2026-06-29"
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-06-25",
-    "contextAtWrite": "2026-05-18-skill-robustness-improvements feature COMPLETE. All three stories (sri.1/sri.2/sri.3) are DoD-complete. 26/26 tests passing on master. Metrics: M1=not-yet-measured (runtime confirmation pending from OrderHub), M2=on-track (structural check 3/3 elements verified at DoD), M3=not-yet-measured (runtime timing pending from OrderHub). NFR profile status updated to Verified.",
-    "resumeInstruction": "2026-05-18-skill-robustness-improvements is fully complete. No further pipeline work required for this feature. Pending actions are external confirmations from OrderHub team (issue #344).",
+    "writtenAt": "2026-06-29",
+    "contextAtWrite": "Inner coding loop complete for all 3 stories. bee.1 (PR #420, 11/11 passing), bee.2 (PR #421, 12/12 passing), bee.3 (PR #422, 18/18 passing). All three draft PRs open. bee.3 branch merged bee.1 + bee.2 feature branches before implementing PostHog since it modifies files from both.",
+    "resumeInstruction": "All 3 draft PRs open and all tests pass. Merge order: bee.1 (#420) first, then bee.2 (#421), then bee.3 (#422). After each PR merges, run /definition-of-done for that story. After all three merge, run feature-level DoD. Also run bee.3-verification.md Scenario 4 (manual 🔴 browser test: CTA navigation not blocked when PostHog is network-blocked).",
     "pendingActions": [
-      "M1 runtime confirmation: OrderHub team (abhijeet-qsofte) to run a real session in a no-origin repo and confirm all three inner-loop skills complete without hanging (issue #344)",
-      "M3 runtime confirmation: OrderHub team to confirm DoD Step 6 completes in under 30 seconds on an infrastructure story (issue #344)",
-      "iwu.6 DoD gate (Acceptance Criterion 3 - emission rate >= 70% verified): complete emission verification stub at artefacts/2026-05-21-ideate-web-ux/verification/iwu.6-emission-verification.md after running a real 6+ turn ideate session",
-      "M1 (Infra track completion time metric for 2026-06-22-skills-infra-migration-tracks): measure after 3 real infra track sessions complete"
+      "Create PostHog Cloud account (posthog.com, EU region) — get project API key and set POSTHOG_KEY as Fly.io env var (fly env set POSTHOG_KEY=phc_xxxx --app [app-name]) — this is a public frontend key, NOT a Fly secret",
+      "Merge bee.1 PR #420 first (no upstream deps) — https://github.com/heymishy/skills-repo/pull/420",
+      "Merge bee.2 PR #421 second (no code dep on bee.1, only user-journey ordering) — https://github.com/heymishy/skills-repo/pull/421",
+      "Merge bee.3 PR #422 last (modifies landing.js and journey.js from bee.1 and bee.2) — https://github.com/heymishy/skills-repo/pull/422",
+      "After each merge: run /definition-of-done for that story",
+      "After all three merged: run feature-level Definition of Done for 2026-06-29-beta-entry-experience",
+      "Manual browser test (bee.3 AC4 — 🔴): verify CTA navigation not blocked when PostHog CDN is blocked in browser DevTools; follow bee.3-verification.md Scenario 4",
+      "wuce-multi-tenancy Metric 2 (cross-tenant isolation confirmed): update to on-track after first external user onboards and cross-tenant 404 is verified in production"
     ]
   },
   "features": {
-    "2026-06-22-skills-infra-migration-tracks": {
+    "2026-06-22-wuce-multi-tenancy": {
       "status": "definition-of-done-complete",
-      "dodCompletedAt": "2026-06-25",
-      "commit": "a3a7826",
+      "dodCompletedAt": "2026-06-29",
       "allStoriesComplete": true,
-      "testResults": "126/126 tests passing across 12 test suites",
-      "nextAction": "Feature complete. Monitor M1 signal after first 3 real infra sessions."
-    },
-    "2026-05-21-ideate-web-ux": {
-      "status": "definition-of-done-complete",
-      "note": "All 6 stories (iwu.1-iwu.6) fully implemented and DoD-complete. iwu.6 emission rate verification pending.",
-      "nextAction": "Complete emission verification stub at artefacts/2026-05-21-ideate-web-ux/verification/iwu.6-emission-verification.md after running a real ideate session."
-    },
-    "2026-05-26-bsr-workforce-planner": {
-      "status": "archived",
-      "note": "Implemented in another repo — archived 2026-06-25."
-    },
-    "2026-05-18-skill-robustness-improvements": {
-      "status": "definition-of-done-complete",
-      "dodCompletedAt": "2026-06-25",
-      "commit": "ec87d2d",
-      "allStoriesComplete": true,
-      "testResults": "26/26 tests passing (sri.1: 13/13, sri.2: 5/5, sri.3: 8/8)",
       "metrics": {
-        "M1": "not-yet-measured — runtime confirmation pending from OrderHub",
-        "M2": "on-track — 3/3 structural elements verified at DoD",
-        "M3": "not-yet-measured — runtime timing pending from OrderHub"
+        "M1": "on-track — 11/11 handlers guarded (100%)",
+        "M2": "not-yet-measured — requires second tenant in production",
+        "T3-M1": "on-track — 0 unguarded handlers (KNOWN BUG closed)",
+        "T3-M2": "on-track — 14/14 adversarial traversal tests pass (p5.1, 2026-06-24)"
       },
-      "nextAction": "No further pipeline work. Await external runtime confirmations from OrderHub team (issue #344)."
-    },
-    "2026-05-19-cli-deterministic-governance": {
-      "status": "complete",
-      "note": "All 7 stories (cdg.1-cdg.7) merged and DoD-complete."
+      "nextAction": "No further pipeline work. M2 (cross-tenant isolation confirmed) transitions to on-track when first org-based beta user is onboarded."
     }
   }
 }
