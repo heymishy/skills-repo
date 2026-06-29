@@ -8,6 +8,7 @@ const http = require('http');
 const { URL } = require('url');
 
 const { sessionMiddleware }                                          = require('./middleware/session');
+const { handleLanding }                                              = require('./routes/landing');     // bee.1
 const { handleAuthGithub, handleAuthCallback, handleLogout, authGuard } = require('./routes/auth');
 const { handleArtefactRoute }                                        = require('./routes/artefact');
 const { handleSignOff, handleArtefactRead }                             = require('./routes/sign-off');
@@ -799,6 +800,10 @@ async function router(req, res) {
       login: authenticated ? (req.session.login || null) : null,
       sessionId: req.sessionId
     }));
+
+  } else if (pathname === '/' && req.method === 'GET') {
+    // bee.1 — public landing page (no auth required)
+    await handleLanding(req, res);
 
   } else {
     // Sign-in page (unauthenticated root)
