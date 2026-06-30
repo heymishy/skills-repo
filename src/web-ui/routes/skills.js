@@ -3455,23 +3455,37 @@ async function handleGetChatHtml(req, res) {
   var sessionId = (req.params && req.params.id) || '';
   var session = _sessionStore.get(sessionId);
 
-  // bee.3: journey_created PostHog capture (AC7). Empty string when key unset (AC8).
-  var _phKey = process.env.POSTHOG_KEY || '';
-  var journeyCreatedScript = _phKey
-    ? '<script>if (typeof posthog !== "undefined") { posthog.capture("journey_created"); }</script>'
-    : '';
-
   if (!session) {
-    var notFoundHtml = renderShell({ title: 'Not Found', bodyContent: '<p>Session not found.</p>' + journeyCreatedScript, user: { login: '' } });
+    var notFoundHtml = renderShell({ title: 'Not Found', bodyContent: '<p>Session not found.</p>', user: { login: '' } });
     res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(notFoundHtml);
     return;
   }
   // Initial turn is fired client-side via SSE to avoid blocking page render on LLM call
   var html = _renderChatPage(skillName, sessionId, session);
-  // Inject journey_created script when key is set (bee.3 AC7)
-  if (journeyCreatedScript) {
-    html = html.replace('</body>', journeyCreatedScript + '</body>');
+  // Initialize PostHog on chat pages so $pageview fires and users are identified here too.
+  // Without this, the entire active session is invisible to PostHog.
+  var _phKey = process.env.POSTHOG_KEY || '';
+  if (_phKey) {
+    var _phLogin  = req.session.login  ? String(req.session.login).replace(/['"<>]/g, '')  : 'anonymous';
+    var _phTenant = req.session.tenantId ? String(req.session.tenantId).replace(/['"<>]/g, '') : '';
+    var _phJid    = session.journeyId   ? String(session.journeyId).replace(/['"<>]/g, '')   : '';
+    var _phSkill  = String(skillName).replace(/['"<>]/g, '');
+    var _phSnippet = '<script async src="https://us-assets.i.posthog.com/static/array.js"></script>' +
+      '<script>' +
+      '!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){' +
+      'function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]);t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}' +
+      '(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,' +
+      'p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",' +
+      '(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);' +
+      'var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},' +
+      'u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group resetGroups setPersonProperties get_distinct_id getGroups get_session_id get_session_replay_url startSessionRecording stopSessionRecording".split(" "),' +
+      'n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||(window.posthog=[]));' +
+      'posthog.init("' + _phKey + '",{api_host:"https://us.i.posthog.com",person_profiles:"always"});' +
+      'posthog.identify("' + _phLogin + '",{tenant_id:"' + _phTenant + '"});' +
+      'posthog.capture("skill_session_view",{skill_name:"' + _phSkill + '",journey_id:"' + _phJid + '"});' +
+      '</script>';
+    html = html.replace('</body>', _phSnippet + '</body>');
   }
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
@@ -3526,6 +3540,19 @@ async function handlePostTurnHtml(req, res) {
   if (!result) {
     _json(res, 404, { error: 'Session not found' });
     return;
+  }
+  // Track operator turns (skip __init__ auto-fire)
+  var _answer = (typeof answer === 'string') ? answer : '';
+  if (_answer !== '__init__' && session) {
+    var _phTurn = require('../modules/posthog-server');
+    _phTurn.capture(req.session.login || sessionId, 'skill_turn', {
+      skillName:  skillName,
+      journeyId:  session.journeyId || null,
+      featureSlug: (_linkedJourney && _linkedJourney.featureSlug) || null,
+      turnIndex:  Math.floor(session.turns.length / 2),
+      done:       !!(result && result.done),
+      tenantId:   req.session.tenantId || null
+    });
   }
   _json(res, 200, result);
 }
@@ -3969,6 +3996,19 @@ async function handlePostTurnStreamHtml(req, res) {
   }
 
   session.turns.push({ role: 'assistant', content: fullText });
+
+  // Track operator turns (skip __init__ auto-fire and precomputed step1 path)
+  if (!_isInitialTurn) {
+    var _phStream = require('../modules/posthog-server');
+    _phStream.capture(req.session.login || sessionId, 'skill_turn', {
+      skillName:  session.skillName || (req.params && req.params.name) || '',
+      journeyId:  session.journeyId || null,
+      featureSlug: session.featureSlug || null,
+      turnIndex:  Math.floor(session.turns.length / 2),
+      done:       done,
+      tenantId:   req.session.tenantId || null
+    });
+  }
 
   // wsm.1: persist session to disk after mutation (non-fatal — write failure must not break the turn)
   try {

@@ -1166,6 +1166,13 @@ async function handleGetJourneyResume(req, res) {
     if (_journeyStore.setActiveSession) {
       _journeyStore.setActiveSession(journeyId, sid, currentStage);
     }
+    _posthog.capture(req.session.login || (memJourney && memJourney.ownerId) || journeyId, 'stage_started', {
+      skillName:          currentStage,
+      featureSlug:        featureSlug,
+      journeyId:          journeyId,
+      completedStageCount: memJourney ? (memJourney.completedStages || []).length : 0,
+      tenantId:           req.session.tenantId || null
+    });
   }
 
   // Mark stage active on disk with new sessionId
