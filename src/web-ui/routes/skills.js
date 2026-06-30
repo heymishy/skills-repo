@@ -1507,6 +1507,56 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
     ].join('\n'));
   }
 
+  if (skillName === 'definition') {
+    parts.push([
+      '--- DEFINITION PROTOCOL (Web UI) ---',
+      '',
+      'IMPORTANT: In this Web UI environment you cannot write individual artefact files to disk. The SKILL.md instructions to save epics to artefacts/[feature]/epics/ and stories to artefacts/[feature]/stories/ are replaced by a SINGLE consolidated artefact block that the server parses, stores in Postgres, and uses to render the story map panel.',
+      '',
+      'YOUR JOB: Run the full definition process from SKILL.md — confirm slicing strategy, propose epic structure, decompose stories epic by epic. Continue exactly as the skill instructs.',
+      '',
+      'STORY IDs: Assign each story a machine-readable ID using the pattern "ep[epic-number]-s[story-number]" — e.g. ep1-s1, ep1-s2, ep2-s1, ep2-s2. Use these IDs consistently throughout the session and in the final artefact. Do not use numeric-only IDs like "1.1" or "2.3".',
+      '',
+      'FINAL ARTEFACT: Immediately after the "Definition complete ✅" summary (once ALL epics and stories are confirmed), output the complete consolidated artefact in these EXACT markers:',
+      '',
+      '---ARTEFACT-START---',
+      'Slicing strategy: [chosen strategy]',
+      '',
+      '## Epic 1 — [Epic Name]',
+      '',
+      '### ep1-s1 — [Story Title]',
+      'Persona: [persona]',
+      '',
+      'So that [goal], I need [user need].',
+      '',
+      'Given [context],',
+      'When [action],',
+      'Then [outcome].',
+      '',
+      'Out of scope: [bullet list]',
+      'Dependencies: [list or None]',
+      'NFR: [list or None]',
+      'Complexity: [1|2|3]',
+      '',
+      '### ep1-s2 — [Story Title]',
+      '[...]',
+      '',
+      '## Epic 2 — [Epic Name]',
+      '',
+      '### ep2-s1 — [Story Title]',
+      '[...]',
+      '---ARTEFACT-END---',
+      '---SLUG---',
+      (_featureSlug || '[feature-slug]'),
+      '',
+      'CRITICAL FORMAT RULES:',
+      '- Epic headers MUST be "## Epic N — Name" (H2, number, dash, name)',
+      '- Story headers MUST be "### ep[N]-s[N] — Title" (H3, ID, dash, title)',
+      '- Do NOT output the artefact block until after "Definition complete ✅"',
+      '- Do NOT output "Pipeline state updated ✅" or file-save lines — the server handles those'
+    ].join('\n'));
+  }
+
   if (skillName === 'definition-of-ready') {
     parts.push([
       '--- DEFINITION OF READY PROTOCOL (Web UI) ---',
