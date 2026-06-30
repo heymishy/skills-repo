@@ -67,6 +67,7 @@ function setRepoRoot(root) { _repoRoot = root; _repoRootAdapter.setRepoRoot(root
 
 var _journeyDisk  = require('../../modules/journey-disk');
 var _tenantPlan   = require('../modules/tenant-plan');
+var _posthog      = require('../modules/posthog-server');
 
 var STAGE_META = [
   { id: 'ideate',              num: 1,    label: 'Idea',       optional: true },
@@ -334,6 +335,12 @@ async function handlePostJourney(req, res) {
     _journeyStore.setJourneyFields(journeyId, {
       ownerId:  req.session.login    || null,
       tenantId: req.session.tenantId || null
+    });
+    _posthog.capture(req.session.login || journeyId, 'journey_created', {
+      featureSlug:    featureSlug,
+      productProfile: profileName,
+      startSkill:     startSkill,
+      tenantId:       req.session.tenantId || null
     });
 
     // sdg.1: new-product selection → show strategy grounding modal before starting first skill
@@ -1635,6 +1642,16 @@ async function handlePostGateConfirm(req, res) {
     } catch (_ce) {}
     var _usageSummary = session.usage ? Object.assign({ costUsd: _costUsd }, session.usage) : null;
     _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath, _usageSummary);
+    _posthog.capture(req.session.login || journey.ownerId || journeyId, 'stage_completed', {
+      skillName:    session.skillName,
+      featureSlug:  journey.featureSlug,
+      journeyId:    journeyId,
+      costUsd:      _costUsd,
+      inputTokens:  (session.usage || {}).input_tokens  || null,
+      outputTokens: (session.usage || {}).output_tokens || null,
+      model:        (session.usage || {}).model         || null,
+      tenantId:     journey.tenantId || null
+    });
     if (_costUsd != null) {
       console.info(JSON.stringify({ event: 'stage_cost', journeyId: journeyId, stage: session.skillName, model: (session.usage || {}).model, costUsd: _costUsd, inputTokens: (session.usage || {}).input_tokens, outputTokens: (session.usage || {}).output_tokens }));
     }
@@ -1783,6 +1800,12 @@ async function handlePostGateConfirm(req, res) {
       // No more stories (or feature-mode): complete journey
       _journeyStore.markJourneyComplete(journeyId);
       console.info(JSON.stringify({ event: 'journey_completed', journeyId: journeyId, featureSlug: journey.featureSlug, stageCount: updatedJourney.completedStages.length }));
+      _posthog.capture(req.session.login || journey.ownerId || journeyId, 'journey_completed', {
+        featureSlug: journey.featureSlug,
+        journeyId:   journeyId,
+        stageCount:  updatedJourney.completedStages.length,
+        tenantId:    journey.tenantId || null
+      });
       res.writeHead(303, { Location: '/journey/' + journeyId + '/complete' });
       res.end();
     }
@@ -1802,6 +1825,12 @@ async function handlePostGateConfirm(req, res) {
     // Non-per-story null: complete journey
     _journeyStore.markJourneyComplete(journeyId);
     console.info(JSON.stringify({ event: 'journey_completed', journeyId: journeyId, featureSlug: journey.featureSlug, stageCount: updatedJourney.completedStages.length }));
+    _posthog.capture(req.session.login || journey.ownerId || journeyId, 'journey_completed', {
+      featureSlug: journey.featureSlug,
+      journeyId:   journeyId,
+      stageCount:  updatedJourney.completedStages.length,
+      tenantId:    journey.tenantId || null
+    });
     res.writeHead(303, { Location: '/journey/' + journeyId + '/complete' });
     res.end();
   } else if (nextStage === 'review') {
