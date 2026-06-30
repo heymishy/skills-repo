@@ -110,11 +110,13 @@ function getJourneyBySession(sessionId) {
  * @param {string} skillName
  * @param {string} artefactPath
  * @param {{ costUsd?: number, model?: string, input_tokens?: number, output_tokens?: number }} [usageSummary]
+ * @param {string} [artefactContent] — stored in Postgres so resume works after disk wipe
  */
-function completeStage(journeyId, skillName, artefactPath, usageSummary) {
+function completeStage(journeyId, skillName, artefactPath, usageSummary, artefactContent) {
   var journey = _journeys.get(journeyId);
   if (!journey) return;
   var entry = { skillName: skillName, artefactPath: artefactPath, completedAt: new Date().toISOString() };
+  if (artefactContent) entry.artefactContent = artefactContent;
   if (usageSummary && usageSummary.costUsd != null) {
     entry.costUsd  = usageSummary.costUsd;
     entry.model    = usageSummary.model    || null;

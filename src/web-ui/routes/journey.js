@@ -1090,7 +1090,7 @@ async function handleGetJourneyResume(req, res) {
   if (!diskJourney && memJourney) {
     var _synthStages = {};
     (memJourney.completedStages || []).forEach(function(s) {
-      _synthStages[s.skillName] = { status: 'complete', artefactPath: s.artefactPath || null, completedAt: s.completedAt || null };
+      _synthStages[s.skillName] = { status: 'complete', artefactPath: s.artefactPath || null, artefactContent: s.artefactContent || null, completedAt: s.completedAt || null };
     });
     diskJourney = {
       journeyId:      memJourney.journeyId,
@@ -1140,6 +1140,8 @@ async function handleGetJourneyResume(req, res) {
       var absPath = path.resolve(path.join(repoRoot, s.artefactPath));
       var content = '';
       try { content = fs.readFileSync(absPath, 'utf8'); } catch (_) {}
+      // Fly disk is wiped on every deploy — fall back to Postgres-stored content
+      if (!content && s.artefactContent) content = s.artefactContent;
       priorArtefacts.push({ path: s.artefactPath, content: content });
     }
   });
@@ -1641,7 +1643,7 @@ async function handlePostGateConfirm(req, res) {
       _costUsd = _computeCost(session.usage || null);
     } catch (_ce) {}
     var _usageSummary = session.usage ? Object.assign({ costUsd: _costUsd }, session.usage) : null;
-    _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath, _usageSummary);
+    _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath, _usageSummary, session.artefactContent || '');
     _posthog.capture(req.session.login || journey.ownerId || journeyId, 'stage_completed', {
       skillName:    session.skillName,
       featureSlug:  journey.featureSlug,
