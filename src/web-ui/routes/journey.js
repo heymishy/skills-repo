@@ -1067,6 +1067,10 @@ async function handlePostJourneyStageArtefact(req, res) {
  */
 async function handleGetJourneyResume(req, res) {
   if (!req.session || !req.session.accessToken) {
+    if (req.session) {
+      req.session.returnTo = req.url;
+      require('../middleware/session').persistSession(req.sessionId);
+    }
     res.writeHead(302, { Location: '/auth/github' });
     res.end();
     return;

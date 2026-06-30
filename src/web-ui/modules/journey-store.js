@@ -90,6 +90,7 @@ function setActiveSession(journeyId, sessionId, skillName) {
   journey.activeSessionId = sessionId;
   journey.activeSkill = skillName;
   journey.sessions[sessionId] = skillName;
+  _pgWrite(journey);
 }
 
 /**

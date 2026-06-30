@@ -25,7 +25,7 @@ const _copilotAgent   = new https.Agent({ keepAlive: true, maxSockets: 4 });
 const DEFAULT_MODEL      = 'gpt-4o';
 const DEFAULT_ANTHROPIC_MODEL = 'claude-sonnet-4.6';
 const DEFAULT_MAX_TOKENS = 16384;
-const DEFAULT_TIMEOUT_MS = 30000;
+const DEFAULT_TIMEOUT_MS = 90000;
 const ANTHROPIC_VERSION  = '2023-06-01';
 
 /**

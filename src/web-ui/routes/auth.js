@@ -136,9 +136,11 @@ async function handleAuthCallback(req, res) {
     });
 
     // Persist session to Redis for restart survival (p3.2). accessToken is stripped inside persistSession.
+    const returnTo = (req.session.returnTo && /^\//.test(req.session.returnTo)) ? req.session.returnTo : '/dashboard';
+    req.session.returnTo = undefined;
     persistSession(req.sessionId);
 
-    res.writeHead(302, { Location: '/dashboard' });
+    res.writeHead(302, { Location: returnTo });
     res.end();
   } catch (err) {
     _logger.warn('login_failure', { reason: err.message });
