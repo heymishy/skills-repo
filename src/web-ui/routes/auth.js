@@ -78,6 +78,8 @@ async function resolveTenant(accessToken, allowlist) {
 async function handleAuthGithub(req, res) {
   const state = _oauthAdapter.generateState();
   req.session.oauthState = state;
+  // Persist OAuth state to Redis immediately so it survives across the external redirect
+  persistSession(req.sessionId);
   const redirectUrl = _oauthAdapter.buildOAuthRedirectURL(state);
   res.writeHead(302, { Location: redirectUrl });
   res.end();

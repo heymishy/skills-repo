@@ -61,6 +61,40 @@ async function migrateSchema() {
     )
   `);
   await pool.query(`CREATE INDEX IF NOT EXISTS journeys_tenant_id_idx ON journeys (tenant_id)`);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS artefacts (
+      id            SERIAL       PRIMARY KEY,
+      journey_id    VARCHAR      NOT NULL REFERENCES journeys(journey_id),
+      skill_name    VARCHAR      NOT NULL,
+      artefact_path VARCHAR,
+      content       TEXT         NOT NULL DEFAULT '',
+      created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+      UNIQUE(journey_id, skill_name)
+    )
+  `);
+  await pool.query(`CREATE INDEX IF NOT EXISTS artefacts_journey_id_idx ON artefacts (journey_id)`);
+}
+
+async function saveArtefact(journeyId, skillName, artefactPath, content) {
+  const pool = _getPool();
+  if (!pool) return;
+  await pool.query(
+    `INSERT INTO artefacts (journey_id, skill_name, artefact_path, content)
+     VALUES ($1, $2, $3, $4)
+     ON CONFLICT (journey_id, skill_name)
+     DO UPDATE SET content = EXCLUDED.content, artefact_path = EXCLUDED.artefact_path, created_at = NOW()`,
+    [journeyId, skillName, artefactPath, content || '']
+  );
+}
+
+async function getArtefactsForJourney(journeyId) {
+  const pool = _getPool();
+  if (!pool) return [];
+  const result = await pool.query(
+    'SELECT skill_name, artefact_path, content FROM artefacts WHERE journey_id = $1 ORDER BY created_at ASC',
+    [journeyId]
+  );
+  return result.rows;
 }
 
 async function listJourneys() {
@@ -81,4 +115,4 @@ async function listJourneys() {
   });
 }
 
-module.exports = { saveJourney, listJourneys, migrateSchema };
+module.exports = { saveJourney, listJourneys, migrateSchema, saveArtefact, getArtefactsForJourney };

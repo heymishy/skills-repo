@@ -1090,7 +1090,7 @@ async function handleGetJourneyResume(req, res) {
   if (!diskJourney && memJourney) {
     var _synthStages = {};
     (memJourney.completedStages || []).forEach(function(s) {
-      _synthStages[s.skillName] = { status: 'complete', artefactPath: s.artefactPath || null, artefactContent: s.artefactContent || null, completedAt: s.completedAt || null };
+      _synthStages[s.skillName] = { status: 'complete', artefactPath: s.artefactPath || null, completedAt: s.completedAt || null };
     });
     diskJourney = {
       journeyId:      memJourney.journeyId,
@@ -1130,18 +1130,27 @@ async function handleGetJourneyResume(req, res) {
   var currentStage = diskJourney.currentStage || 'discovery';
   var productProfile = diskJourney.productProfile || 'default';
 
-  // Build priorArtefacts from completed disk stages in sequence order
+  // Build priorArtefacts: Postgres-first (survives Fly deploys), disk fallback (local dev/CLI/IDE)
   var STAGE_ORDER = ['ideate', 'discovery', 'benefit-metric', 'design', 'definition', 'test-plan', 'review', 'definition-of-ready'];
   var diskStages = diskJourney.stages || {};
+  var _resumePgMap = {};
+  if (process.env.DATABASE_URL && journeyId) {
+    try {
+      var _resumePgArts = await require('../adapters/journey-store-pg').getArtefactsForJourney(journeyId);
+      _resumePgArts.forEach(function(a) { _resumePgMap[a.skill_name] = a.content; });
+    } catch (_resumePgErr) {
+      console.error('[artefact] Postgres read (resume) failed:', _resumePgErr.message);
+    }
+  }
   var priorArtefacts = [];
   STAGE_ORDER.forEach(function(stageName) {
     var s = diskStages[stageName];
     if (s && s.status === 'complete' && s.artefactPath) {
-      var absPath = path.resolve(path.join(repoRoot, s.artefactPath));
-      var content = '';
-      try { content = fs.readFileSync(absPath, 'utf8'); } catch (_) {}
-      // Fly disk is wiped on every deploy — fall back to Postgres-stored content
-      if (!content && s.artefactContent) content = s.artefactContent;
+      var content = _resumePgMap[stageName] || '';
+      if (!content) {
+        var absPath = path.resolve(path.join(repoRoot, s.artefactPath));
+        try { content = fs.readFileSync(absPath, 'utf8'); } catch (_) {}
+      }
       priorArtefacts.push({ path: s.artefactPath, content: content });
     }
   });
@@ -1629,10 +1638,18 @@ async function handlePostGateConfirm(req, res) {
     res.end(renderShell({ title: 'Error', bodyContent: '<p>Invalid artefact path.</p>' }));
     return;
   }
-  // Write artefact to disk only if not already present
+  // Write artefact to disk (keeps VS Code / IDE / CLI usage working)
   if (!fs.existsSync(absPath)) {
     fs.mkdirSync(path.dirname(absPath), { recursive: true });
     fs.writeFileSync(absPath, session.artefactContent || '', 'utf8');
+  }
+  // Persist artefact content to Postgres (web UI primary durable store — disk is wiped on Fly deploys)
+  if (process.env.DATABASE_URL) {
+    try {
+      await require('../adapters/journey-store-pg').saveArtefact(journeyId, session.skillName, artefactRelPath, session.artefactContent || '');
+    } catch (_pgArtErr) {
+      console.error('[artefact] Postgres save failed:', _pgArtErr.message);
+    }
   }
   // Call completeStage to record this stage (guard: auto-save may have already called this)
   if (!session._stageDone) {
@@ -1643,7 +1660,7 @@ async function handlePostGateConfirm(req, res) {
       _costUsd = _computeCost(session.usage || null);
     } catch (_ce) {}
     var _usageSummary = session.usage ? Object.assign({ costUsd: _costUsd }, session.usage) : null;
-    _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath, _usageSummary, session.artefactContent || '');
+    _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath, _usageSummary);
     _posthog.capture(req.session.login || journey.ownerId || journeyId, 'stage_completed', {
       skillName:    session.skillName,
       featureSlug:  journey.featureSlug,
@@ -1763,15 +1780,27 @@ async function handlePostGateConfirm(req, res) {
     });
   }
 
-  // Build priorArtefacts from all completed stages (read authoritative disk content)
-  // completedStages entries may be objects { skillName, artefactPath } or legacy strings
+  // Build priorArtefacts: Postgres-first (survives Fly deploys), disk fallback (local dev/CLI/IDE)
   var updatedJourney = _journeyStore.getJourney(journeyId);
+  var _pgArtMap = {};
+  if (process.env.DATABASE_URL) {
+    try {
+      var _pgArts = await require('../adapters/journey-store-pg').getArtefactsForJourney(journeyId);
+      _pgArts.forEach(function(a) { _pgArtMap[a.skill_name] = { content: a.content, path: a.artefact_path }; });
+    } catch (_pgReadErr) {
+      console.error('[artefact] Postgres read failed:', _pgReadErr.message);
+    }
+  }
   var priorArtefacts = (updatedJourney.completedStages || []).map(function(stage) {
+    var skillName    = typeof stage === 'string' ? null : stage.skillName;
     var artefactPath = typeof stage === 'string' ? null : stage.artefactPath;
     if (!artefactPath) return null;
-    var stageAbsPath = path.resolve(path.join(repoRoot, artefactPath));
-    var content = '';
-    try { content = fs.readFileSync(stageAbsPath, 'utf8'); } catch (_) {}
+    var pgEntry = skillName && _pgArtMap[skillName];
+    var content = (pgEntry && pgEntry.content) || '';
+    if (!content) {
+      var stageAbsPath = path.resolve(path.join(repoRoot, artefactPath));
+      try { content = fs.readFileSync(stageAbsPath, 'utf8'); } catch (_) {}
+    }
     return { path: artefactPath, content: content };
   }).filter(Boolean);
   // Determine next stage
