@@ -77,9 +77,13 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     return _fs.readFileSync(resolvedPath, 'utf8');
   });
 
+  // sec-perf AC1 — rate limiter for SSE turn endpoint (30 turns/min per tenant)
+  const { createRateLimiter } = require('./middleware/rate-limiter');
+  const _turnStreamRateLimiter = createRateLimiter({ maxRequests: 30, windowMs: 60000 });
+
   // mfc.1 — wire real Copilot API executor for model-first chat turns
   const { skillTurnExecutor: realSkillTurnExecutor, skillTurnExecutorStream: realSkillTurnExecutorStream } = require('../modules/skill-turn-executor');
-  const { setSkillTurnExecutorAdapter, setSkillTurnExecutorStreamAdapter, setSessionStore: _setSessionStore, _setHtmlSession: _restoreHtmlSession } = require('./routes/skills');
+  const { setSkillTurnExecutorAdapter, setSkillTurnExecutorStreamAdapter, setSessionStore: _setSessionStore, _setHtmlSession: _restoreHtmlSession, startSessionEviction } = require('./routes/skills');
   setSkillTurnExecutorAdapter(realSkillTurnExecutor);
   setSkillTurnExecutorStreamAdapter(realSkillTurnExecutorStream);
   // _nextQuestionExecutorAdapter and _sectionDraftExecutorAdapter are no-ops (AC9 — mfc.1);
@@ -89,6 +93,9 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   const _diskSessionStoreAdapter = require('./adapters/session-store');
   _setSessionStore(_diskSessionStoreAdapter);
   _diskSessionStoreAdapter.loadSessions(_restoreHtmlSession);
+
+  // wsm.2 — prune stale skill sessions from in-process _sessionStore hourly
+  startSessionEviction();
 
   // jdsk.1 — wire journey disk adapter and reload journeys from workspace/journeys/
   const _journeyStore = require('./modules/journey-store');
@@ -127,6 +134,14 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     loadSessionsFromRedis().catch(function(err) {
       console.error('[server] loadSessionsFromRedis failed:', err.message);
     });
+
+    // wsm.2 — Skill session Redis persistence: turns survive Fly.io deploys
+    const _skillSessionRedis = require('./adapters/skill-session-redis');
+    const { setSkillSessionRedisAdapter, readSessionFromRedis, mergeRedisSessionData } = require('./routes/skills');
+    const { setReadSessionFromRedis, setMergeRedisSessionData } = require('./routes/journey');
+    setSkillSessionRedisAdapter(_skillSessionRedis);
+    setReadSessionFromRedis(readSessionFromRedis);
+    setMergeRedisSessionData(mergeRedisSessionData);
   }
 }
 
@@ -598,9 +613,13 @@ async function router(req, res) {
 
   } else if (pathname.match(/^\/api\/skills\/[^/]+\/sessions\/[^/]+\/turn-stream$/) && req.method === 'POST') {
     // mfc.3 — streaming model turn endpoint (SSE)
+    // sec-perf AC1: rate-limited to 30 turns/min per tenant to prevent Anthropic API abuse
     const parts = pathname.split('/');
     req.params = { name: parts[3], id: parts[5] };
     authGuard(req, res, async () => {
+      let _rlOk = false;
+      _turnStreamRateLimiter(req, res, () => { _rlOk = true; });
+      if (!_rlOk) return;
       await handlePostTurnStreamHtml(req, res);
     });
 

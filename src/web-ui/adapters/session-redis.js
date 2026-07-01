@@ -39,18 +39,21 @@ async function deleteSession(id) {
 async function loadAllSessions() {
   const client = _getClient();
   if (!client) return [];
-  const keys = await client.keys(KEY_PREFIX + '*');
-  if (!keys || keys.length === 0) return [];
   const results = [];
-  for (const key of keys) {
-    try {
-      const raw = await client.get(key);
-      if (raw) {
-        const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
-        results.push({ id: key.slice(KEY_PREFIX.length), data });
-      }
-    } catch (_) {}
-  }
+  let cursor = '0';
+  do {
+    const [nextCursor, keys] = await client.scan(cursor, { match: KEY_PREFIX + '*', count: 100 });
+    cursor = String(nextCursor);
+    for (const key of (keys || [])) {
+      try {
+        const raw = await client.get(key);
+        if (raw) {
+          const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          results.push({ id: key.slice(KEY_PREFIX.length), data });
+        }
+      } catch (_) {}
+    }
+  } while (cursor !== '0');
   return results;
 }
 

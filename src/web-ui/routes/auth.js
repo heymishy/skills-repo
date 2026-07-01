@@ -6,7 +6,7 @@
 
 // Use module reference (not destructuring) so tests can monkeypatch individual exports.
 const _oauthAdapter = require('../auth/oauth-adapter');
-const { persistSession } = require('../middleware/session');
+const { persistSession, rotateSessionId, getSession } = require('../middleware/session');
 
 // Audit logger — replaced via setLogger() in tests and in production bootstrap
 let _logger = {
@@ -135,8 +135,13 @@ async function handleAuthCallback(req, res) {
       timestamp: new Date().toISOString()
     });
 
-    // Persist session to Redis for restart survival (p3.2). accessToken is stripped inside persistSession.
-    const returnTo = (req.session.returnTo && /^\//.test(req.session.returnTo)) ? req.session.returnTo : '/dashboard';
+    // sec-perf AC5: rotate session ID to prevent session fixation attacks.
+    // Must happen after all session fields are set, before persistSession.
+    const _rt = req.session.returnTo;
+    const returnTo = (_rt && _rt.startsWith('/') && !_rt.startsWith('//')) ? _rt : '/dashboard';
+    const { newId } = rotateSessionId(req.sessionId, res, req.session);
+    req.sessionId = newId;
+    req.session   = getSession(newId);
     req.session.returnTo = undefined;
     persistSession(req.sessionId);
 

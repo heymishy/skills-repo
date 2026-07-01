@@ -13,6 +13,8 @@ var _registerHtmlSession = null;
 var _linkSessionToJourney = null;
 var _getHtmlSessionFn = null;
 var _listHtmlSessionsFn = null;
+var _readSessionFromRedisFn = null;
+var _mergeRedisSessionDataFn = null;
 var _repoRoot = null;
 var _repoRootAdapter = require('../adapters/repo-root');
 
@@ -29,6 +31,16 @@ function getLinkSessionToJourney() {
 function getGetHtmlSession() {
   if (_getHtmlSessionFn) return _getHtmlSessionFn;
   return require('./skills')._getHtmlSession;
+}
+
+function getReadSessionFromRedis() {
+  if (_readSessionFromRedisFn) return _readSessionFromRedisFn;
+  return require('./skills').readSessionFromRedis;
+}
+
+function getMergeRedisSessionData() {
+  if (_mergeRedisSessionDataFn) return _mergeRedisSessionDataFn;
+  return require('./skills').mergeRedisSessionData;
 }
 
 function getRepoRoot(req) {
@@ -59,6 +71,8 @@ function setLinkSessionToJourney(fn) { _linkSessionToJourney = fn; }
 function setJourneyStoreModule(mod) { _journeyStore = mod; }
 function setGetHtmlSession(fn) { _getHtmlSessionFn = fn; }
 function setListHtmlSessions(fn) { _listHtmlSessionsFn = fn; }
+function setReadSessionFromRedis(fn) { _readSessionFromRedisFn = fn; }
+function setMergeRedisSessionData(fn) { _mergeRedisSessionDataFn = fn; }
 function setRepoRoot(root) { _repoRoot = root; _repoRootAdapter.setRepoRoot(root); }
 
 // ---------------------------------------------------------------------------
@@ -1134,7 +1148,20 @@ async function handleGetJourneyResume(req, res) {
   var currentStage = diskJourney.currentStage || 'discovery';
   var productProfile = diskJourney.productProfile || 'default';
 
-  // Build priorArtefacts: Postgres-first (survives Fly deploys), disk fallback (local dev/CLI/IDE)
+  // Fast path: active session already in memory — redirect without any Postgres/disk I/O.
+  // sec-perf AC4: artefact reads are deferred to only when actually needed.
+  var _existingActiveId = memJourney && memJourney.activeSessionId;
+  if (_existingActiveId) {
+    var _memSession = getGetHtmlSession()(_existingActiveId);
+    if (_memSession && !_memSession.done) {
+      res.writeHead(303, { Location: '/skills/' + encodeURIComponent(_memSession.skillName || currentStage) + '/sessions/' + _existingActiveId + '/chat' });
+      res.end();
+      return;
+    }
+  }
+
+  // Build priorArtefacts: needed for Redis restore (system prompt rebuild) or new session creation.
+  // Postgres-first (survives Fly deploys), disk fallback (local dev/CLI/IDE).
   var STAGE_ORDER = ['ideate', 'discovery', 'benefit-metric', 'design', 'definition', 'test-plan', 'review', 'definition-of-ready'];
   var diskStages = diskJourney.stages || {};
   var _resumePgMap = {};
@@ -1158,6 +1185,24 @@ async function handleGetJourneyResume(req, res) {
       priorArtefacts.push({ path: s.artefactPath, content: content });
     }
   });
+
+  // Redis restore: session not in memory (post-deploy) — rebuild systemPrompt via
+  // registerHtmlSession then merge compact turn data from Redis.
+  if (_existingActiveId) {
+    var _redisData = null;
+    try { _redisData = await getReadSessionFromRedis()(_existingActiveId); } catch (_) {}
+    if (_redisData && Array.isArray(_redisData.turns) && _redisData.turns.length > 0) {
+      var _restorePath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', _existingActiveId);
+      getRegisterHtmlSession()(_existingActiveId, _restorePath, currentStage, { productProfile: productProfile, priorArtefacts: priorArtefacts, featureSlug: featureSlug });
+      getMergeRedisSessionData()(_existingActiveId, _redisData);
+      var _restoredSession = getGetHtmlSession()(_existingActiveId);
+      if (_restoredSession && !_restoredSession.done) {
+        res.writeHead(303, { Location: '/skills/' + encodeURIComponent(_restoredSession.skillName || currentStage) + '/sessions/' + _existingActiveId + '/chat' });
+        res.end();
+        return;
+      }
+    }
+  }
 
   // Create new session for current stage
   var sid = crypto.randomUUID();
@@ -3479,6 +3524,8 @@ module.exports = {
   setJourneyStoreModule,
   setGetHtmlSession,
   setListHtmlSessions,
+  setReadSessionFromRedis,
+  setMergeRedisSessionData,
   setRepoRoot,
   setPipelineStateWriter,
   setValidate,

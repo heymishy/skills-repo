@@ -59,6 +59,69 @@ var _diskSessionWriter = {
  */
 function setSessionStore(store) { _diskSessionWriter = store; }
 
+// Injectable Redis adapter for skill session persistence across Fly.io deploys.
+// Wire via setSkillSessionRedisAdapter(require('./adapters/skill-session-redis')).
+var _skillSessionRedis = null;
+function setSkillSessionRedisAdapter(adapter) { _skillSessionRedis = adapter; }
+
+/**
+ * Read compact session data from Redis. Returns null if not found, absent adapter, or done.
+ * The returned object has turns + runtime state but NO systemPrompt (stripped on write to save
+ * space — system prompt is rebuilt via registerHtmlSession on restore).
+ * @param {string} sessionId
+ * @returns {Promise<object|null>}
+ */
+async function readSessionFromRedis(sessionId) {
+  if (!_skillSessionRedis) return null;
+  var data;
+  try { data = await _skillSessionRedis.read(sessionId); } catch (_) { return null; }
+  if (!data || data.done) return null;
+  return data;
+}
+
+/**
+ * Merge turns + runtime state from Redis compact data onto an already-registered session.
+ * Call after registerHtmlSession so the session has a fresh systemPrompt, then call this
+ * to restore the conversation history and any mid-artefact state.
+ * @param {string} sessionId
+ * @param {object} redisData
+ * @returns {boolean} true if merge succeeded
+ */
+function mergeRedisSessionData(sessionId, redisData) {
+  var session = _sessionStore.get(sessionId);
+  if (!session || !redisData) return false;
+  if (Array.isArray(redisData.turns)) session.turns = redisData.turns;
+  var stateFields = ['artefactContent', 'artefactPath', 'done', 'usage',
+    '_artefactBuffer', '_artefactInProgress', '_slugBuffer', 'assumptionCards'];
+  stateFields.forEach(function(k) {
+    if (redisData[k] !== undefined) session[k] = redisData[k];
+  });
+  return true;
+}
+
+/**
+ * Prune skill sessions from _sessionStore that have not been updated within SESSION_MAX_AGE_DAYS.
+ * Call once at server startup (sets a recurring hourly interval).
+ * Safe to call in tests — no-ops if _sessionStore is empty.
+ */
+function startSessionEviction() {
+  var maxAgeMs = parseInt(process.env.SESSION_MAX_AGE_DAYS || '7', 10) * 86400000;
+  setInterval(function() {
+    var cutoff = Date.now() - maxAgeMs;
+    var evicted = 0;
+    _sessionStore.forEach(function(session, sid) {
+      var updated = session.lastUpdated ? new Date(session.lastUpdated).getTime() : 0;
+      if (updated && updated < cutoff) {
+        _sessionStore.delete(sid);
+        evicted++;
+      }
+    });
+    if (evicted > 0) {
+      console.info(JSON.stringify({ event: 'skill_sessions_evicted', count: evicted }));
+    }
+  }, 3600000); // hourly sweep
+}
+
 // Audit logger — replaced via setLogger() in tests and production bootstrap.
 // Never log answer content (ADR-009).
 let _logger = {
@@ -4060,11 +4123,27 @@ async function handlePostTurnStreamHtml(req, res) {
     });
   }
 
+  // Stamp lastUpdated for in-process eviction (startSessionEviction uses this field)
+  session.lastUpdated = new Date().toISOString();
+
   // wsm.1: persist session to disk after mutation (non-fatal — write failure must not break the turn)
   try {
     _diskSessionWriter.write(sessionId, session);
   } catch (_writeErr) {
     console.error(JSON.stringify({ event: 'session_write_error', sessionId: sessionId, error: _writeErr && _writeErr.message ? _writeErr.message : String(_writeErr) }));
+  }
+  // Fire-and-forget Redis write (compact — strips systemPrompt, see skill-session-redis.js)
+  if (_skillSessionRedis) {
+    if (done) {
+      // Session complete — delete from Redis to reclaim space (artefact is in Postgres/disk)
+      _skillSessionRedis.del(sessionId).catch(function(_delErr) {
+        console.warn(JSON.stringify({ event: 'skill_session_redis_del_failed', sessionId: sessionId, error: _delErr && _delErr.message ? _delErr.message : String(_delErr) }));
+      });
+    } else {
+      _skillSessionRedis.write(sessionId, session).catch(function(_redisErr) {
+        console.warn(JSON.stringify({ event: 'skill_session_redis_write_failed', sessionId: sessionId, error: _redisErr && _redisErr.message ? _redisErr.message : String(_redisErr) }));
+      });
+    }
   }
 
   res.write('data: ' + JSON.stringify({
@@ -4409,6 +4488,8 @@ module.exports = {
   _getHtmlSession, _setHtmlSession, _listHtmlSessions, setSkillTurnExecutorAdapter,
   // wsm.1 — disk session writer injectable
   setSessionStore,
+  // wsm.2 — Redis skill session injectable, compact read/merge, eviction
+  setSkillSessionRedisAdapter, readSessionFromRedis, mergeRedisSessionData, startSessionEviction,
   // ougl.2 — journey session link
   linkSessionToJourney,
   // mfc.3 — streaming turn handler + adapter setter
