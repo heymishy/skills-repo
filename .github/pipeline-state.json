@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-06-28T23:22:41.789Z",
+  "updated": "2026-07-01T10:00:00Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -6819,6 +6819,512 @@
       ],
       "reviewStatus": "passed",
       "highFindings": 0
+    },
+    {
+      "id": "2026-07-01-landing-auth-billing",
+      "title": "Landing Site, Multi-Provider Auth, and Billing",
+      "stage": "review",
+      "health": "green",
+      "updatedAt": "2026-07-01T08:00:00.000Z",
+      "slicingStrategy": "risk-first",
+      "stories": [],
+      "epics": [
+        {
+          "slug": "lab-e1-foundation",
+          "name": "Foundation — Auth Spike + Public Entry Point",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "lab-s1.1",
+              "name": "Auth tech spike: ESM/CJS path recommendation",
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0
+            },
+            {
+              "slug": "lab-s1.2",
+              "name": "Landing page at /",
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0
+            },
+            {
+              "slug": "lab-s1.3",
+              "name": "Multi-provider auth registry (GitHub primary)",
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0
+            }
+          ]
+        },
+        {
+          "slug": "lab-e2-providers-onboarding",
+          "name": "Additional Providers + Onboarding",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "lab-s2.1",
+              "name": "Google OAuth — second auth provider",
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0
+            },
+            {
+              "slug": "lab-s2.2",
+              "name": "Email/password — third auth provider",
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0
+            },
+            {
+              "slug": "lab-s2.3",
+              "name": "/welcome onboarding — first-login detection + plan selection redirect",
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0
+            }
+          ]
+        },
+        {
+          "slug": "lab-e3-billing-credits",
+          "name": "Billing + Credits",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "lab-s3.1",
+              "name": "Credits table + plan data model (Postgres)",
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0
+            },
+            {
+              "slug": "lab-s3.2",
+              "name": "Stripe Checkout + plan subscription flow",
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0
+            },
+            {
+              "slug": "lab-s3.3",
+              "name": "Credit enforcement — 402 turn guard",
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0
+            },
+            {
+              "slug": "lab-s3.4",
+              "name": "Stripe webhook handler (provision credits, idempotency)",
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0
+            },
+            {
+              "slug": "lab-s3.5",
+              "name": "Billing portal + pre-launch Stripe ID swap checklist",
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0
+            }
+          ]
+        }
+      ],
+      "guardrails": [
+        {
+          "id": "MC-SEC-01",
+          "category": "mandatory-constraint",
+          "label": "No user-supplied content in innerHTML without sanitisation",
+          "status": "met",
+          "evidence": "No stories introduce innerHTML rendering of user content — all server-rendered templates. No violations found.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-01"
+        },
+        {
+          "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "No credentials, tokens, or personal data in committed files",
+          "status": "met",
+          "evidence": "All stories include explicit 'no credentials committed' NFRs. lab-s3.1 AC7 (git grep DATABASE_URL), lab-s3.2/s3.4/s3.5 require Fly.io secrets only.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-01"
+        },
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: new src/ modules require story artefact",
+          "status": "met",
+          "evidence": "All new src/ modules (public.js, auth-email.js, password.js, user-flags.js, credits.js, stripe-client.js, billing.js, credits-guard.js) are explicitly listed as touchpoints in story artefacts. No ADR-011 violations.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-01"
+        },
+        {
+          "id": "ADR-018",
+          "category": "adr",
+          "label": "Playwright is the E2E testing framework; specs in tests/e2e/",
+          "status": "not-assessed",
+          "evidence": "No E2E test specs introduced at this stage. ADR-018 will be assessed at /test-plan and /definition-of-ready.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-01"
+        }
+      ],
+      "discovery": {
+        "status": "approved",
+        "approvedBy": "Hamish King",
+        "approvedAt": "2026-07-01",
+        "artefact": "artefacts/2026-07-01-landing-auth-billing/discovery.md"
+      },
+      "benefit-metric": {
+        "status": "active",
+        "definedAt": "2026-07-01",
+        "artefact": "artefacts/2026-07-01-landing-auth-billing/benefit-metric.md",
+        "metrics": [
+          "self-serve-signup-conversion",
+          "credits-enforcement",
+          "cost-recovery-rate",
+          "time-to-first-paid-plan",
+          "pricing-configurability"
+        ]
+      }
+    },
+    {
+      "slug": "2026-07-01-landing-auth-billing",
+      "name": "Landing Site, Multi-Provider Auth, and Billing",
+      "stage": "test-plan",
+      "health": "green",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "slicingStrategy": "risk-first",
+      "updatedAt": "2026-07-01T10:00:00Z",
+      "discovery": {
+        "status": "approved",
+        "artefact": "artefacts/2026-07-01-landing-auth-billing/discovery.md",
+        "approvedBy": "Hamish King",
+        "approvedDate": "2026-07-01"
+      },
+      "benefit-metric": {
+        "status": "active",
+        "artefact": "artefacts/2026-07-01-landing-auth-billing/benefit-metric.md",
+        "definedAt": "2026-07-01"
+      },
+      "nfrProfileArtefact": "artefacts/2026-07-01-landing-auth-billing/nfr-profile.md",
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Self-serve signup conversion",
+          "tier": 1,
+          "signal": "not-yet-measured"
+        },
+        {
+          "id": "M2",
+          "name": "Credits enforcement",
+          "tier": 1,
+          "signal": "not-yet-measured"
+        },
+        {
+          "id": "M3",
+          "name": "Monthly cost recovery rate",
+          "tier": 1,
+          "signal": "not-yet-measured"
+        },
+        {
+          "id": "M4",
+          "name": "Time to first paid plan",
+          "tier": 1,
+          "signal": "not-yet-measured"
+        },
+        {
+          "id": "M5",
+          "name": "Pricing configurability",
+          "tier": 2,
+          "signal": "not-yet-measured"
+        }
+      ],
+      "guardrails": [
+        {
+          "id": "MC-SEC-01",
+          "category": "security",
+          "label": "rotateSessionId called after every provider login",
+          "status": "met",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-01T00:00:00Z"
+        },
+        {
+          "id": "MC-SEC-02",
+          "category": "security",
+          "label": "accessToken never in HTML response or logs",
+          "status": "met",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-01T00:00:00Z"
+        },
+        {
+          "id": "ADR-011",
+          "category": "architecture",
+          "label": "Artefact-first — all new src/ modules have story artefacts",
+          "status": "met",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-01T00:00:00Z"
+        },
+        {
+          "id": "ADR-018",
+          "category": "architecture",
+          "label": "D37 injectable adapter rule",
+          "status": "not-assessed",
+          "assessedBy": null,
+          "assessedAt": null
+        }
+      ],
+      "stories": [],
+      "epics": [
+        {
+          "id": "lab-e1",
+          "name": "Auth Spike + Public Entry Point",
+          "stories": [
+            {
+              "id": "lab-s1.1",
+              "title": "Auth tech spike: ESM/CJS path recommendation",
+              "stage": "test-plan",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 2,
+              "updatedAt": "2026-07-01T10:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s1.1-test-plan.md",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
+            },
+            {
+              "id": "lab-s1.2",
+              "title": "Landing page at /",
+              "stage": "test-plan",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 1,
+              "updatedAt": "2026-07-01T10:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s1.2-test-plan.md",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": false
+            },
+            {
+              "id": "lab-s1.3",
+              "title": "Multi-provider auth registry (GitHub primary)",
+              "stage": "test-plan",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 3,
+              "updatedAt": "2026-07-01T10:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s1.3-test-plan.md",
+                "totalTests": 11,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
+            }
+          ]
+        },
+        {
+          "id": "lab-e2",
+          "name": "Additional Providers + Onboarding",
+          "stories": [
+            {
+              "id": "lab-s2.1",
+              "title": "Google OAuth — second auth provider",
+              "stage": "test-plan",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 2,
+              "updatedAt": "2026-07-01T10:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s2.1-test-plan.md",
+                "totalTests": 12,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
+            },
+            {
+              "id": "lab-s2.2",
+              "title": "Email/password — third auth provider",
+              "stage": "test-plan",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 3,
+              "updatedAt": "2026-07-01T10:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s2.2-test-plan.md",
+                "totalTests": 13,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
+            },
+            {
+              "id": "lab-s2.3",
+              "title": "/welcome onboarding — first-login detection + plan selection redirect",
+              "stage": "test-plan",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 2,
+              "updatedAt": "2026-07-01T10:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s2.3-test-plan.md",
+                "totalTests": 11,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": false
+            }
+          ]
+        },
+        {
+          "id": "lab-e3",
+          "name": "Billing + Credits",
+          "stories": [
+            {
+              "id": "lab-s3.1",
+              "title": "Credits table + plan data model (Postgres)",
+              "stage": "test-plan",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 1,
+              "updatedAt": "2026-07-01T10:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s3.1-test-plan.md",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
+            },
+            {
+              "id": "lab-s3.2",
+              "title": "Stripe Checkout + plan subscription flow",
+              "stage": "test-plan",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 2,
+              "updatedAt": "2026-07-01T10:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s3.2-test-plan.md",
+                "totalTests": 10,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
+            },
+            {
+              "id": "lab-s3.3",
+              "title": "Credit enforcement — 402 turn guard",
+              "stage": "test-plan",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 2,
+              "updatedAt": "2026-07-01T10:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s3.3-test-plan.md",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
+            },
+            {
+              "id": "lab-s3.4",
+              "title": "Stripe webhook handler (provision credits, idempotency)",
+              "stage": "test-plan",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 2,
+              "updatedAt": "2026-07-01T10:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s3.4-test-plan.md",
+                "totalTests": 10,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
+            },
+            {
+              "id": "lab-s3.5",
+              "title": "Billing portal + pre-launch Stripe ID swap checklist",
+              "stage": "test-plan",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 1,
+              "updatedAt": "2026-07-01T10:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s3.5-test-plan.md",
+                "totalTests": 8,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
+            }
+          ]
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
