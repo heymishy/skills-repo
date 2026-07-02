@@ -35,6 +35,7 @@ const { setToolExecutor }                                            = require('
 const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
 const { handlePostCheckout, handleGetBillingSuccess }                = require('./routes/billing');         // lab-s3.2
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
+const { creditsGuard }                                               = require('./middleware/credits-guard'); // lab-s3.3
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -371,6 +372,9 @@ if (process.env.NODE_ENV === 'test') {
       next();
     });
   });
+
+  // lab-s3.3: wire unlimited credits in test mode so existing E2E tests are not blocked by the guard
+  setCreditsAdapter({ query: async () => ({ rows: [{ balance: 9999 }] }) });
 }
 
 /** Parse query parameters from a URL into a plain object. */
@@ -631,18 +635,26 @@ async function router(req, res) {
 
   } else if (pathname.match(/^\/api\/skills\/[^/]+\/sessions\/[^/]+\/turn$/) && req.method === 'POST') {
     // mfc.1 — model turn endpoint
+    // lab-s3.3: creditsGuard mounted between authGuard and handler — balance check fires before Anthropic call
     const parts = pathname.split('/');
     req.params = { name: parts[3], id: parts[5] };
     authGuard(req, res, async () => {
+      let _cgOk = false;
+      await creditsGuard(req, res, () => { _cgOk = true; });
+      if (!_cgOk) return;
       await handlePostTurnHtml(req, res);
     });
 
   } else if (pathname.match(/^\/api\/skills\/[^/]+\/sessions\/[^/]+\/turn-stream$/) && req.method === 'POST') {
     // mfc.3 — streaming model turn endpoint (SSE)
     // sec-perf AC1: rate-limited to 30 turns/min per tenant to prevent Anthropic API abuse
+    // lab-s3.3: creditsGuard mounted between authGuard and handler — balance check fires before Anthropic call
     const parts = pathname.split('/');
     req.params = { name: parts[3], id: parts[5] };
     authGuard(req, res, async () => {
+      let _cgOk = false;
+      await creditsGuard(req, res, () => { _cgOk = true; });
+      if (!_cgOk) return;
       let _rlOk = false;
       _turnStreamRateLimiter(req, res, () => { _rlOk = true; });
       if (!_rlOk) return;
