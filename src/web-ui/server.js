@@ -10,7 +10,7 @@ const { URL } = require('url');
 const { sessionMiddleware }                                          = require('./middleware/session');
 const { handleLanding }                                              = require('./routes/landing');     // bee.1
 const { handleRoot }                                                 = require('./routes/public');      // lab-s1.2
-const { handleAuthGithub, handleAuthCallback, handleLogout, authGuard } = require('./routes/auth');
+const { handleAuthGithub, handleAuthCallback, handleAuthGoogle, handleAuthGoogleCallback, handleLogout, authGuard } = require('./routes/auth');
 const { handleArtefactRoute }                                        = require('./routes/artefact');
 const { handleSignOff, handleArtefactRead }                             = require('./routes/sign-off');
 const { healthCheckHandler }                                         = require('./routes/health');
@@ -22,7 +22,7 @@ const { handlePostAnnotation }                                       = require('
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
 const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml, handlePostAssumptionConfirm, handlePostCanvasEditHtml } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3 / iwu.4 / dic.5
 const { setLogger, setFetchOrgs }                                    = require('./routes/auth');
-const { setProviderAdapter, gitHubProviderAdapter }                  = require('./auth/oauth-adapter');  // lab-s1.3 provider registry wiring (D37 separate task)
+const { setProviderAdapter, gitHubProviderAdapter, setGoogleUserInfoAdapter, _realFetchGoogleUserInfo } = require('./auth/oauth-adapter');  // lab-s1.3 provider registry wiring (D37 separate task)
 const { setFetchPipelineState }                                      = require('./adapters/feature-list');
 const { setFetchArtefactDirectory }                                  = require('./adapters/artefact-list');
 const skillsAdapter                                                  = require('./adapters/skills');          // wuce.23 HTML form wiring
@@ -52,6 +52,13 @@ setLogger({
 // must wire it explicitly so AC6 is independently verifiable.
 setProviderAdapter(gitHubProviderAdapter);
 console.log('[auth] provider registry initialised');
+
+// lab-s2.1 / D37 mandatory separate wiring task — wire real Google userinfo adapter
+// Only wired when GOOGLE_CLIENT_ID is set; no-op (throwing stub retained) when absent.
+if (process.env.GOOGLE_CLIENT_ID) {
+  setGoogleUserInfoAdapter(_realFetchGoogleUserInfo);
+  console.log('[auth] google oauth registered');
+}
 
 // Wire skill list + session creation — active in production AND when
 // WIRE_SKILL_ADAPTERS=true (used by playwright.local.config.js to test adapter
@@ -535,6 +542,14 @@ async function router(req, res) {
 
   } else if (pathname === '/auth/github/callback' && req.method === 'GET') {
     await handleAuthCallback(req, res);
+
+  } else if (pathname === '/auth/google' && req.method === 'GET') {
+    // lab-s2.1 — Google OAuth initiation
+    await handleAuthGoogle(req, res);
+
+  } else if (pathname === '/auth/google/callback' && req.method === 'GET') {
+    // lab-s2.1 — Google OAuth callback
+    await handleAuthGoogleCallback(req, res);
 
   } else if (pathname === '/auth/logout' && req.method === 'GET') {
     await handleLogout(req, res);

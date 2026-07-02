@@ -167,6 +167,71 @@ async function handleAuthCallback(req, res) {
 }
 
 /**
+ * GET /auth/google — redirect to Google OAuth authorisation page.
+ * Stores a random CSRF state parameter in the session.
+ * lab-s2.1: mirrors handleAuthGithub but uses Google OAuth URL builder.
+ */
+async function handleAuthGoogle(req, res) {
+  const state = _oauthAdapter.generateState();
+  req.session.oauthState = state;
+  persistSession(req.sessionId);
+  const redirectUrl = _oauthAdapter.getGoogleAuthUrl(state);
+  res.writeHead(302, { Location: redirectUrl });
+  res.end();
+}
+
+/**
+ * GET /auth/google/callback — receive OAuth code + state from Google.
+ * Validates CSRF state, exchanges code + fetches userinfo via injectable adapter,
+ * stores token in session, rotates session ID, and redirects to /dashboard.
+ * Returns 403 on state mismatch (no token stored, mismatch logged).
+ * lab-s2.1: canonical session fields — accessToken, userId (sub), tenantId (sub), login (email).
+ */
+async function handleAuthGoogleCallback(req, res) {
+  const query         = req.query || {};
+  const code          = query.code;
+  const callbackState = query.state;
+  const sessionState  = req.session && req.session.oauthState;
+
+  if (!_oauthAdapter.validateOAuthState(sessionState, callbackState)) {
+    _logger.warn('oauth_state_mismatch', { sessionId: req.sessionId });
+    res.writeHead(403, { 'Content-Type': 'text/plain' });
+    res.end('Forbidden');
+    return;
+  }
+
+  try {
+    const redirectUri = process.env.GOOGLE_CALLBACK_URL;
+    const userInfo = await _oauthAdapter.fetchGoogleUserInfo(code, redirectUri);
+
+    // Store Google access token under the canonical field name (CLAUDE.md)
+    req.session.accessToken = userInfo.accessToken;
+    req.session.userId      = userInfo.sub;
+    req.session.tenantId    = userInfo.sub;
+    req.session.login       = userInfo.email;
+
+    _logger.info('login', {
+      provider:  'google',
+      userId:    userInfo.sub,
+      timestamp: new Date().toISOString()
+    });
+
+    // Rotate session ID after every successful provider login (sec-perf / D37)
+    const { newId } = rotateSessionId(req.sessionId, res, req.session);
+    req.sessionId = newId;
+    req.session   = getSession(newId);
+    persistSession(req.sessionId);
+
+    res.writeHead(302, { Location: '/dashboard' });
+    res.end();
+  } catch (err) {
+    _logger.warn('login_failure', { provider: 'google', reason: err.message });
+    res.writeHead(500, { 'Content-Type': 'text/plain' });
+    res.end('Authentication failed');
+  }
+}
+
+/**
  * GET /auth/logout — clear session and redirect to sign-in.
  */
 async function handleLogout(req, res) {
@@ -201,6 +266,8 @@ function authGuard(req, res, next) {
 module.exports = {
   handleAuthGithub,
   handleAuthCallback,
+  handleAuthGoogle,
+  handleAuthGoogleCallback,
   handleLogout,
   authGuard,
   setLogger,
