@@ -5,12 +5,17 @@
 // No inline GitHub API calls in route handlers.
 // Provider registry (setProviderAdapter / providerExchangeCode / providerGetUserIdentity)
 // allows future providers (Google, GitLab, etc.) to be plugged in without touching route logic.
+// lab-s2.1: Google OAuth support — getGoogleAuthUrl, fetchGoogleUserInfo (injectable, D37).
 
 const crypto = require('crypto');
 const { URL, URLSearchParams } = require('url');
 
 const GITHUB_OAUTH_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize';
 const GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
+
+const GOOGLE_OAUTH_AUTHORIZE_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
+const GOOGLE_TOKEN_URL           = 'https://oauth2.googleapis.com/token';
+const GOOGLE_USERINFO_URL        = 'https://openidconnect.googleapis.com/v1/userinfo';
 
 /**
  * Generate a cryptographically random CSRF state parameter.
@@ -123,6 +128,94 @@ function validateOAuthState(sessionState, callbackState) {
   return sessionState === callbackState;
 }
 
+// ── Google OAuth (lab-s2.1) ───────────────────────────────────────────────────
+
+/**
+ * Build the Google OAuth authorisation redirect URL.
+ * Reads GOOGLE_CLIENT_ID and GOOGLE_CALLBACK_URL from environment.
+ * Scopes: openid + email (minimal; no profile data beyond sub and email).
+ * @param {string} state - CSRF state parameter
+ * @returns {string} full redirect URL
+ */
+function getGoogleAuthUrl(state) {
+  const clientId   = process.env.GOOGLE_CLIENT_ID;
+  const redirectUri = process.env.GOOGLE_CALLBACK_URL;
+  const url = new URL(GOOGLE_OAUTH_AUTHORIZE_URL);
+  url.searchParams.set('client_id', clientId);
+  url.searchParams.set('redirect_uri', redirectUri);
+  url.searchParams.set('scope', 'openid email');
+  url.searchParams.set('response_type', 'code');
+  url.searchParams.set('state', state);
+  return url.toString();
+}
+
+// Injectable Google userinfo fetcher (D37: stub throws; production wiring in server.js).
+let _fetchGoogleUserInfo = function() {
+  throw new Error('Adapter not wired: googleUserInfo. Call setGoogleUserInfoAdapter() before use.');
+};
+
+/**
+ * Replace the Google userinfo adapter (used in tests and production startup).
+ * @param {Function} impl - async (code: string, redirectUri: string) => { sub: string, email: string }
+ */
+function setGoogleUserInfoAdapter(impl) {
+  _fetchGoogleUserInfo = impl;
+}
+
+/**
+ * Fetch Google user info by exchanging an auth code.
+ * Delegates to the injectable adapter (set via setGoogleUserInfoAdapter).
+ * @param {string} code - authorisation code from callback
+ * @param {string} redirectUri - must match the redirect_uri used in the auth request
+ * @returns {Promise<{ sub: string, email: string, accessToken: string }>}
+ */
+async function fetchGoogleUserInfo(code, redirectUri) {
+  return _fetchGoogleUserInfo(code, redirectUri);
+}
+
+/**
+ * Real Google userinfo implementation — exchanges code for token then fetches userinfo.
+ * Reads GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET from environment.
+ * @param {string} code
+ * @param {string} redirectUri
+ * @returns {Promise<{ sub: string, email: string, accessToken: string }>}
+ */
+async function _realFetchGoogleUserInfo(code, redirectUri) {
+  const tokenBody = new URLSearchParams({
+    code,
+    client_id:     process.env.GOOGLE_CLIENT_ID,
+    client_secret: process.env.GOOGLE_CLIENT_SECRET,
+    redirect_uri:  redirectUri,
+    grant_type:    'authorization_code'
+  }).toString();
+
+  const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Accept':       'application/json'
+    },
+    body: tokenBody
+  });
+
+  const tokenData = await tokenResponse.json();
+  if (tokenData.error) {
+    throw new Error(tokenData.error_description || tokenData.error);
+  }
+
+  const accessToken = tokenData.access_token;
+
+  const userinfoResponse = await fetch(GOOGLE_USERINFO_URL, {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Accept':        'application/json'
+    }
+  });
+
+  const userinfo = await userinfoResponse.json();
+  return { sub: userinfo.sub, email: userinfo.email, accessToken };
+}
+
 // ── Provider registry (lab-s1.3 / D37) ───────────────────────────────────────
 //
 // The provider adapter is injectable so tests can swap in a mock without touching
@@ -200,5 +293,10 @@ module.exports = {
   setProviderAdapter,
   gitHubProviderAdapter,
   providerExchangeCode,
-  providerGetUserIdentity
+  providerGetUserIdentity,
+  // ── Google OAuth (lab-s2.1) ──
+  getGoogleAuthUrl,
+  fetchGoogleUserInfo,
+  setGoogleUserInfoAdapter,
+  _realFetchGoogleUserInfo
 };
