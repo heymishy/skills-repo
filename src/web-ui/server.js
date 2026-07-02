@@ -30,6 +30,7 @@ const _path                                                          = require('
 const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetStageReview, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
+const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -124,6 +125,14 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       var all = _journeyStoreForBee2.listJourneys(_journeyRootForBee2);
       return tenantId ? all.filter(function(j) { return j.tenantId === tenantId; }) : all;
     });
+  }
+
+  // lab-s3.1 — Wire credits DB adapter (D37 mandatory separate wiring task)
+  if (process.env.DATABASE_URL) {
+    const { Pool } = require('pg');
+    const _creditsPool = new Pool({ connectionString: process.env.DATABASE_URL });
+    setCreditsAdapter(_creditsPool);
+    console.log('Credits DB adapter wired');
   }
 
   // p3.2 — Upstash Redis session persistence (see Decision 9)
