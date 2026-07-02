@@ -489,6 +489,27 @@ function renderLoginPage() {
 .sw-login-divider::before, .sw-login-divider::after {
   content: ''; flex: 1; height: 1px; background: var(--line);
 }
+.sw-login-input {
+  display: block; width: 100%; padding: 10px 12px; margin-bottom: 8px;
+  border-radius: 8px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--ink);
+  font-family: inherit; font-size: 14px; outline: none;
+  box-sizing: border-box;
+}
+.sw-login-input:focus { border-color: var(--ink); }
+.sw-login-btn--secondary {
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line);
+}
+.sw-login-email-tabs {
+  display: flex; gap: 0; margin-bottom: 14px; border: 1px solid var(--line);
+  border-radius: 8px; overflow: hidden;
+}
+.sw-login-email-tab {
+  flex: 1; padding: 8px; font-size: 13px; font-family: inherit; cursor: pointer;
+  background: var(--surface); color: var(--muted); border: none;
+  transition: background 0.1s, color 0.1s;
+}
+.sw-login-email-tab.active { background: var(--ink); color: var(--bg); }
 `;
   return '<!doctype html>\n<html lang="en">\n<head>\n' +
     '<meta charset="utf-8">\n' +
@@ -507,7 +528,7 @@ function renderLoginPage() {
           '<span class="sw-login-brand-name">Skills Platform</span>' +
         '</div>\n' +
         '<h1 class="sw-login-title">Sign in to continue</h1>\n' +
-        '<p class="sw-login-sub">Connect your GitHub account to run skills and manage pipeline artefacts.</p>\n' +
+        '<p class="sw-login-sub">Connect your account to run skills and manage pipeline artefacts.</p>\n' +
         '<a class="sw-login-btn" href="/auth/github">' +
           '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
             '<path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.164 6.839 9.489.5.09.682-.218.682-.482' +
@@ -531,6 +552,44 @@ function renderLoginPage() {
           '</svg>' +
           'Continue with Google' +
         '</a>\n' +
+        '<div class="sw-login-divider">or</div>\n' +
+        '<div class="sw-login-email-tabs" role="tablist">' +
+          '<button type="button" class="sw-login-email-tab active" id="tab-signin" role="tab" aria-selected="true" onclick="showEmailTab(\'signin\')">' +
+            'Sign in' +
+          '</button>' +
+          '<button type="button" class="sw-login-email-tab" id="tab-signup" role="tab" aria-selected="false" onclick="showEmailTab(\'signup\')">' +
+            'Sign up' +
+          '</button>' +
+        '</div>\n' +
+        '<form id="email-signin-form" method="POST" action="/auth/email/login">' +
+          '<input class="sw-login-input" type="email" name="email" placeholder="Email address" autocomplete="email" required aria-label="Email address">' +
+          '<input class="sw-login-input" type="password" name="password" placeholder="Password" autocomplete="current-password" required aria-label="Password">' +
+          '<button type="submit" class="sw-login-btn sw-login-btn--secondary">Sign in with email / password</button>' +
+        '</form>\n' +
+        '<form id="email-signup-form" method="POST" action="/auth/email/signup" style="display:none">' +
+          '<input class="sw-login-input" type="email" name="email" placeholder="Email address" autocomplete="email" required aria-label="Email address">' +
+          '<input class="sw-login-input" type="password" name="password" placeholder="Password (min 8 characters)" autocomplete="new-password" required aria-label="Password" minlength="8">' +
+          '<button type="submit" class="sw-login-btn sw-login-btn--secondary">Create account</button>' +
+        '</form>\n' +
+        '<script>' +
+          'function showEmailTab(tab) {' +
+            'var signin = document.getElementById("email-signin-form");' +
+            'var signup = document.getElementById("email-signup-form");' +
+            'var tabSignin = document.getElementById("tab-signin");' +
+            'var tabSignup = document.getElementById("tab-signup");' +
+            'if (tab === "signin") {' +
+              'signin.style.display = "";' +
+              'signup.style.display = "none";' +
+              'tabSignin.classList.add("active");' +
+              'tabSignup.classList.remove("active");' +
+            '} else {' +
+              'signin.style.display = "none";' +
+              'signup.style.display = "";' +
+              'tabSignin.classList.remove("active");' +
+              'tabSignup.classList.add("active");' +
+            '}' +
+          '}' +
+        '</script>\n' +
       '</div>\n' +
     '</div>\n' +
     SHELL_JS + '\n' +
