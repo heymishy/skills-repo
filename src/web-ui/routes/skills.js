@@ -3654,6 +3654,12 @@ async function handlePostTurnHtml(req, res) {
     _json(res, 404, { error: 'Session not found' });
     return;
   }
+  // lab-s3.3: deduct credits after successful turn (TURN_CREDIT_COST read at request time — not cached at module load)
+  var _guardTenantId = req.session && req.session.tenantId;
+  if (_guardTenantId) {
+    var _guardCost = parseInt(process.env.TURN_CREDIT_COST || '1', 10);
+    try { await require('../modules/credits').adjustBalance(_guardTenantId, -_guardCost); } catch (_adjErr) {}
+  }
   // Track operator turns (skip __init__ auto-fire)
   var _answer = (typeof answer === 'string') ? answer : '';
   if (_answer !== '__init__' && session) {
@@ -4056,6 +4062,13 @@ async function handlePostTurnStreamHtml(req, res) {
     res.write('data: ' + JSON.stringify({ error: 'No response received — please try again.' }) + '\n\n');
     res.end();
     return;
+  }
+
+  // lab-s3.3: deduct credits after successful streaming turn (TURN_CREDIT_COST read at request time — not cached at module load)
+  var _streamGuardTenantId = req.session && req.session.tenantId;
+  if (_streamGuardTenantId) {
+    var _streamGuardCost = parseInt(process.env.TURN_CREDIT_COST || '1', 10);
+    try { await require('../modules/credits').adjustBalance(_streamGuardTenantId, -_streamGuardCost); } catch (_sAdjErr) {}
   }
 
   var artefactMatch = fullText.match(/---ARTEFACT-START---\s*([\s\S]+?)\s*---ARTEFACT-END---/);
