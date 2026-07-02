@@ -9,7 +9,7 @@ const { URL } = require('url');
 
 const { sessionMiddleware }                                          = require('./middleware/session');
 const { handleLanding }                                              = require('./routes/landing');     // bee.1
-const { handleRoot }                                                 = require('./routes/public');      // lab-s1.2
+const { handleRoot, handleWelcome }                                  = require('./routes/public');      // lab-s1.2 / lab-s2.3
 const { handleAuthGithub, handleAuthCallback, handleAuthGoogle, handleAuthGoogleCallback, handleLogout, authGuard } = require('./routes/auth');
 const { handleArtefactRoute }                                        = require('./routes/artefact');
 const { handleSignOff, handleArtefactRead }                             = require('./routes/sign-off');
@@ -38,6 +38,7 @@ const { setStripeAdapter }                                           = require('
 const { creditsGuard }                                               = require('./middleware/credits-guard'); // lab-s3.3
 const { handleEmailSignup, handleEmailLogin, setUserDb }             = require('./routes/auth-email');       // lab-s2.2
 const { setPasswordAdapter }                                         = require('./modules/password');         // lab-s2.2
+const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -175,6 +176,38 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     const _usersPool = new _UsersPool({ connectionString: process.env.DATABASE_URL });
     setUserDb(_usersPool);
     console.log('[auth-email] users DB adapter wired');
+  }
+
+  // lab-s2.3 — Wire real user-flags DB adapter (D37 mandatory separate wiring task).
+  // Requires a `users` table with a `first_login` boolean column (true on first signup).
+  // Falls back to a no-op adapter (everyone treated as returning user) when DATABASE_URL is absent.
+  if (process.env.DATABASE_URL) {
+    const { Pool: _FlagsPool } = require('pg');
+    const _flagsPool = new _FlagsPool({ connectionString: process.env.DATABASE_URL });
+    setUserFlagsAdapter({
+      getFirstLoginFlag: async function(userId) {
+        const result = await _flagsPool.query(
+          'SELECT first_login FROM users WHERE id = $1',
+          [userId]
+        );
+        if (!result.rows.length) return true; // unknown user → treat as first login
+        return result.rows[0].first_login === true;
+      },
+      clearFirstLoginFlag: async function(userId) {
+        await _flagsPool.query(
+          'UPDATE users SET first_login = false WHERE id = $1',
+          [userId]
+        );
+      }
+    });
+    console.log('User-flags DB adapter wired');
+  } else {
+    // No DATABASE_URL — wire a no-op adapter (treat everyone as returning user).
+    // First-login detection is effectively disabled without a DB.
+    setUserFlagsAdapter({
+      getFirstLoginFlag:   async function() { return false; },
+      clearFirstLoginFlag: async function() {}
+    });
   }
 
   // p3.2 — Upstash Redis session persistence (see Decision 9)
@@ -400,9 +433,18 @@ if (process.env.NODE_ENV === 'test') {
   // lab-s3.3: wire unlimited credits in test mode so existing E2E tests are not blocked by the guard
   setCreditsAdapter({ query: async () => ({ rows: [{ balance: 9999 }] }) });
 
+<<<<<<< HEAD
   // lab-s3.4: no-op webhook DB in test mode — rowCount=1 so each event appears as new (not a duplicate)
   // The check-lab-s3.4-stripe-webhook.js unit tests inject their own mock directly via setWebhookDbAdapter().
   setWebhookDbAdapter({ query: async function() { return { rows: [], rowCount: 1 }; } });
+=======
+  // lab-s2.3: wire user-flags adapter in test mode — returns firstLogin: false (returning user) by default.
+  // Tests override this per-test via monkeypatching.
+  setUserFlagsAdapter({
+    getFirstLoginFlag:   async function() { return false; },
+    clearFirstLoginFlag: async function() {}
+  });
+>>>>>>> lab-s2.3: /welcome onboarding — first-login detection + plan selection
 }
 
 /** Parse query parameters from a URL into a plain object. */
@@ -927,6 +969,7 @@ async function router(req, res) {
       sessionId: req.sessionId
     }));
 
+<<<<<<< HEAD
   } else if (pathname === '/auth/email/signup' && req.method === 'POST') {
     // lab-s2.2 — email/password signup
     await handleEmailSignup(req, res);
@@ -934,6 +977,11 @@ async function router(req, res) {
   } else if (pathname === '/auth/email/login' && req.method === 'POST') {
     // lab-s2.2 — email/password login
     await handleEmailLogin(req, res);
+=======
+  } else if (pathname === '/welcome' && req.method === 'GET') {
+    // lab-s2.3 — plan selection page for first-time users (firstLogin detection)
+    await handleWelcome(req, res);
+>>>>>>> lab-s2.3: /welcome onboarding — first-login detection + plan selection
 
   } else if (pathname === '/' && req.method === 'GET') {
     // lab-s1.2 — public landing page with PostHog event + auth redirect to /dashboard

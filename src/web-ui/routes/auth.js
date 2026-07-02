@@ -9,6 +9,8 @@
 // Use module reference (not destructuring) so tests can monkeypatch individual exports.
 const _oauthAdapter = require('../auth/oauth-adapter');
 const { persistSession, rotateSessionId, getSession } = require('../middleware/session');
+// lab-s2.3: user-flags module (injectable adapter — D37). Used only in handleAuthCallback.
+const _userFlags = require('../modules/user-flags');
 
 // Wire the real GitHub provider adapter on module load.
 // This ensures handleAuthCallback works when auth.js is required without server.js
@@ -147,6 +149,16 @@ async function handleAuthCallback(req, res) {
       timestamp: new Date().toISOString()
     });
 
+    // lab-s2.3: first-login detection — check before session rotation so userId is available.
+    // getFirstLoginFlag returns true if this is the user's first login.
+    // D37: _userFlags adapter must be wired before this runs (done in server.js).
+    let isFirstLogin = false;
+    try {
+      isFirstLogin = await _userFlags.getFirstLoginFlag(user.id);
+    } catch (_) {
+      // Adapter not wired or lookup failed — treat as returning user (safe fallback).
+    }
+
     // sec-perf AC5 / lab-s1.3 AC2: rotate session ID after every successful provider login
     // to prevent session fixation attacks. Must happen after all session fields are set.
     const _rt = req.session.returnTo;
@@ -155,10 +167,20 @@ async function handleAuthCallback(req, res) {
     req.sessionId = newId;
     req.session   = getSession(newId);
     req.session.returnTo = undefined;
-    persistSession(req.sessionId);
 
-    res.writeHead(302, { Location: returnTo });
-    res.end();
+    if (isFirstLogin) {
+      // AC1: mark session as first-login and redirect to /welcome for plan selection.
+      req.session.firstLogin = true;
+      // Clear the DB flag fire-and-forget so subsequent logins go to /dashboard (AC2).
+      _userFlags.clearFirstLoginFlag(user.id).catch(function() {});
+      persistSession(req.sessionId);
+      res.writeHead(302, { Location: '/welcome' });
+      res.end();
+    } else {
+      persistSession(req.sessionId);
+      res.writeHead(302, { Location: returnTo });
+      res.end();
+    }
   } catch (err) {
     _logger.warn('login_failure', { reason: err.message });
     res.writeHead(500, { 'Content-Type': 'text/plain' });
