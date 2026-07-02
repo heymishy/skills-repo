@@ -85,6 +85,8 @@ reference_dirs:
   - 2026-06-04-impact-effort-matrix
   - 2026-06-04-impact-effort-matrix-workshop
   - test-slug
+  - 2026-07-01-security-perf-hardening
+  - 2026-07-01-session-resume-hardening
 tracks_without_discovery:
   - short
   - defect

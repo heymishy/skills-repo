@@ -92,6 +92,7 @@ module.exports = function pipelineStateWriterFactory(repoRoot) {
     // Atomic write of feature-level changes first, then advance() for story-level.
     // advance() reads from disk, so the feature-level write must precede it.
     var content = JSON.stringify(state, null, 2) + '\n';
+    fs.mkdirSync(path.dirname(tmpPath), { recursive: true });
     fs.writeFileSync(tmpPath, content, 'utf8');
     fs.renameSync(tmpPath, statePath);
 

@@ -58,6 +58,8 @@ journeyRoute.setRepoRoot(tmpDir);
 journeyRoute.setRegisterHtmlSession(function() {});
 journeyRoute.setLinkSessionToJourney(function() {});
 journeyRoute.setGetHtmlSession(function() { return null; });
+journeyRoute.setReadSessionFromRedis(function() { return Promise.resolve(null); });
+journeyRoute.setMergeRedisSessionData(function() { return false; });
 
 var { handleGetJourneyResume } = journeyRoute;
 

@@ -59,6 +59,69 @@ var _diskSessionWriter = {
  */
 function setSessionStore(store) { _diskSessionWriter = store; }
 
+// Injectable Redis adapter for skill session persistence across Fly.io deploys.
+// Wire via setSkillSessionRedisAdapter(require('./adapters/skill-session-redis')).
+var _skillSessionRedis = null;
+function setSkillSessionRedisAdapter(adapter) { _skillSessionRedis = adapter; }
+
+/**
+ * Read compact session data from Redis. Returns null if not found, absent adapter, or done.
+ * The returned object has turns + runtime state but NO systemPrompt (stripped on write to save
+ * space — system prompt is rebuilt via registerHtmlSession on restore).
+ * @param {string} sessionId
+ * @returns {Promise<object|null>}
+ */
+async function readSessionFromRedis(sessionId) {
+  if (!_skillSessionRedis) return null;
+  var data;
+  try { data = await _skillSessionRedis.read(sessionId); } catch (_) { return null; }
+  if (!data || data.done) return null;
+  return data;
+}
+
+/**
+ * Merge turns + runtime state from Redis compact data onto an already-registered session.
+ * Call after registerHtmlSession so the session has a fresh systemPrompt, then call this
+ * to restore the conversation history and any mid-artefact state.
+ * @param {string} sessionId
+ * @param {object} redisData
+ * @returns {boolean} true if merge succeeded
+ */
+function mergeRedisSessionData(sessionId, redisData) {
+  var session = _sessionStore.get(sessionId);
+  if (!session || !redisData) return false;
+  if (Array.isArray(redisData.turns)) session.turns = redisData.turns;
+  var stateFields = ['artefactContent', 'artefactPath', 'done', 'usage',
+    '_artefactBuffer', '_artefactInProgress', '_slugBuffer', 'assumptionCards'];
+  stateFields.forEach(function(k) {
+    if (redisData[k] !== undefined) session[k] = redisData[k];
+  });
+  return true;
+}
+
+/**
+ * Prune skill sessions from _sessionStore that have not been updated within SESSION_MAX_AGE_DAYS.
+ * Call once at server startup (sets a recurring hourly interval).
+ * Safe to call in tests — no-ops if _sessionStore is empty.
+ */
+function startSessionEviction() {
+  var maxAgeMs = parseInt(process.env.SESSION_MAX_AGE_DAYS || '7', 10) * 86400000;
+  setInterval(function() {
+    var cutoff = Date.now() - maxAgeMs;
+    var evicted = 0;
+    _sessionStore.forEach(function(session, sid) {
+      var updated = session.lastUpdated ? new Date(session.lastUpdated).getTime() : 0;
+      if (updated && updated < cutoff) {
+        _sessionStore.delete(sid);
+        evicted++;
+      }
+    });
+    if (evicted > 0) {
+      console.info(JSON.stringify({ event: 'skill_sessions_evicted', count: evicted }));
+    }
+  }, 3600000); // hourly sweep
+}
+
 // Audit logger — replaced via setLogger() in tests and production bootstrap.
 // Never log answer content (ADR-009).
 let _logger = {
@@ -1504,6 +1567,56 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
       'SLUG: Your slug MUST be exactly: ' + (_featureSlug ? '"' + _featureSlug + '"' : '"[feature-slug]"') + '. Do not shorten, rename, or reinterpret this value — use it verbatim.',
       '',
       'After your ARTEFACT-END marker, you may add a brief closing message (e.g. summary and next steps). Then stop.'
+    ].join('\n'));
+  }
+
+  if (skillName === 'definition') {
+    parts.push([
+      '--- DEFINITION PROTOCOL (Web UI) ---',
+      '',
+      'IMPORTANT: In this Web UI environment you cannot write individual artefact files to disk. The SKILL.md instructions to save epics to artefacts/[feature]/epics/ and stories to artefacts/[feature]/stories/ are replaced by a SINGLE consolidated artefact block that the server parses, stores in Postgres, and uses to render the story map panel.',
+      '',
+      'YOUR JOB: Run the full definition process from SKILL.md — confirm slicing strategy, propose epic structure, decompose stories epic by epic. Continue exactly as the skill instructs.',
+      '',
+      'STORY IDs: Assign each story a machine-readable ID using the pattern "ep[epic-number]-s[story-number]" — e.g. ep1-s1, ep1-s2, ep2-s1, ep2-s2. Use these IDs consistently throughout the session and in the final artefact. Do not use numeric-only IDs like "1.1" or "2.3".',
+      '',
+      'FINAL ARTEFACT: Immediately after the "Definition complete ✅" summary (once ALL epics and stories are confirmed), output the complete consolidated artefact in these EXACT markers:',
+      '',
+      '---ARTEFACT-START---',
+      'Slicing strategy: [chosen strategy]',
+      '',
+      '## Epic 1 — [Epic Name]',
+      '',
+      '### ep1-s1 — [Story Title]',
+      'Persona: [persona]',
+      '',
+      'So that [goal], I need [user need].',
+      '',
+      'Given [context],',
+      'When [action],',
+      'Then [outcome].',
+      '',
+      'Out of scope: [bullet list]',
+      'Dependencies: [list or None]',
+      'NFR: [list or None]',
+      'Complexity: [1|2|3]',
+      '',
+      '### ep1-s2 — [Story Title]',
+      '[...]',
+      '',
+      '## Epic 2 — [Epic Name]',
+      '',
+      '### ep2-s1 — [Story Title]',
+      '[...]',
+      '---ARTEFACT-END---',
+      '---SLUG---',
+      (_featureSlug || '[feature-slug]'),
+      '',
+      'CRITICAL FORMAT RULES:',
+      '- Epic headers MUST be "## Epic N — Name" (H2, number, dash, name)',
+      '- Story headers MUST be "### ep[N]-s[N] — Title" (H3, ID, dash, title)',
+      '- Do NOT output the artefact block until after "Definition complete ✅"',
+      '- Do NOT output "Pipeline state updated ✅" or file-save lines — the server handles those'
     ].join('\n'));
   }
 
@@ -3455,23 +3568,37 @@ async function handleGetChatHtml(req, res) {
   var sessionId = (req.params && req.params.id) || '';
   var session = _sessionStore.get(sessionId);
 
-  // bee.3: journey_created PostHog capture (AC7). Empty string when key unset (AC8).
-  var _phKey = process.env.POSTHOG_KEY || '';
-  var journeyCreatedScript = _phKey
-    ? '<script>if (typeof posthog !== "undefined") { posthog.capture("journey_created"); }</script>'
-    : '';
-
   if (!session) {
-    var notFoundHtml = renderShell({ title: 'Not Found', bodyContent: '<p>Session not found.</p>' + journeyCreatedScript, user: { login: '' } });
+    var notFoundHtml = renderShell({ title: 'Not Found', bodyContent: '<p>Session not found.</p>', user: { login: '' } });
     res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(notFoundHtml);
     return;
   }
   // Initial turn is fired client-side via SSE to avoid blocking page render on LLM call
   var html = _renderChatPage(skillName, sessionId, session);
-  // Inject journey_created script when key is set (bee.3 AC7)
-  if (journeyCreatedScript) {
-    html = html.replace('</body>', journeyCreatedScript + '</body>');
+  // Initialize PostHog on chat pages so $pageview fires and users are identified here too.
+  // Without this, the entire active session is invisible to PostHog.
+  var _phKey = process.env.POSTHOG_KEY || '';
+  if (_phKey) {
+    var _phLogin  = req.session.login  ? String(req.session.login).replace(/['"<>]/g, '')  : 'anonymous';
+    var _phTenant = req.session.tenantId ? String(req.session.tenantId).replace(/['"<>]/g, '') : '';
+    var _phJid    = session.journeyId   ? String(session.journeyId).replace(/['"<>]/g, '')   : '';
+    var _phSkill  = String(skillName).replace(/['"<>]/g, '');
+    var _phSnippet = '<script async src="https://us-assets.i.posthog.com/static/array.js"></script>' +
+      '<script>' +
+      '!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){' +
+      'function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]);t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}' +
+      '(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,' +
+      'p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",' +
+      '(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);' +
+      'var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},' +
+      'u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group resetGroups setPersonProperties get_distinct_id getGroups get_session_id get_session_replay_url startSessionRecording stopSessionRecording".split(" "),' +
+      'n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||(window.posthog=[]));' +
+      'posthog.init("' + _phKey + '",{api_host:"https://us.i.posthog.com",person_profiles:"always"});' +
+      'posthog.identify("' + _phLogin + '",{tenant_id:"' + _phTenant + '"});' +
+      'posthog.capture("skill_session_view",{skill_name:"' + _phSkill + '",journey_id:"' + _phJid + '"});' +
+      '</script>';
+    html = html.replace('</body>', _phSnippet + '</body>');
   }
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
@@ -3526,6 +3653,19 @@ async function handlePostTurnHtml(req, res) {
   if (!result) {
     _json(res, 404, { error: 'Session not found' });
     return;
+  }
+  // Track operator turns (skip __init__ auto-fire)
+  var _answer = (typeof answer === 'string') ? answer : '';
+  if (_answer !== '__init__' && session) {
+    var _phTurn = require('../modules/posthog-server');
+    _phTurn.capture(req.session.login || sessionId, 'skill_turn', {
+      skillName:  skillName,
+      journeyId:  session.journeyId || null,
+      featureSlug: (_linkedJourney && _linkedJourney.featureSlug) || null,
+      turnIndex:  Math.floor(session.turns.length / 2),
+      done:       !!(result && result.done),
+      tenantId:   req.session.tenantId || null
+    });
   }
   _json(res, 200, result);
 }
@@ -3970,11 +4110,40 @@ async function handlePostTurnStreamHtml(req, res) {
 
   session.turns.push({ role: 'assistant', content: fullText });
 
+  // Track operator turns (skip __init__ auto-fire and precomputed step1 path)
+  if (!_isInitialTurn) {
+    var _phStream = require('../modules/posthog-server');
+    _phStream.capture(req.session.login || sessionId, 'skill_turn', {
+      skillName:  session.skillName || (req.params && req.params.name) || '',
+      journeyId:  session.journeyId || null,
+      featureSlug: session.featureSlug || null,
+      turnIndex:  Math.floor(session.turns.length / 2),
+      done:       done,
+      tenantId:   req.session.tenantId || null
+    });
+  }
+
+  // Stamp lastUpdated for in-process eviction (startSessionEviction uses this field)
+  session.lastUpdated = new Date().toISOString();
+
   // wsm.1: persist session to disk after mutation (non-fatal — write failure must not break the turn)
   try {
     _diskSessionWriter.write(sessionId, session);
   } catch (_writeErr) {
     console.error(JSON.stringify({ event: 'session_write_error', sessionId: sessionId, error: _writeErr && _writeErr.message ? _writeErr.message : String(_writeErr) }));
+  }
+  // Fire-and-forget Redis write (compact — strips systemPrompt, see skill-session-redis.js)
+  if (_skillSessionRedis) {
+    if (done) {
+      // Session complete — delete from Redis to reclaim space (artefact is in Postgres/disk)
+      _skillSessionRedis.del(sessionId).catch(function(_delErr) {
+        console.warn(JSON.stringify({ event: 'skill_session_redis_del_failed', sessionId: sessionId, error: _delErr && _delErr.message ? _delErr.message : String(_delErr) }));
+      });
+    } else {
+      _skillSessionRedis.write(sessionId, session).catch(function(_redisErr) {
+        console.warn(JSON.stringify({ event: 'skill_session_redis_write_failed', sessionId: sessionId, error: _redisErr && _redisErr.message ? _redisErr.message : String(_redisErr) }));
+      });
+    }
   }
 
   res.write('data: ' + JSON.stringify({
@@ -4319,6 +4488,8 @@ module.exports = {
   _getHtmlSession, _setHtmlSession, _listHtmlSessions, setSkillTurnExecutorAdapter,
   // wsm.1 — disk session writer injectable
   setSessionStore,
+  // wsm.2 — Redis skill session injectable, compact read/merge, eviction
+  setSkillSessionRedisAdapter, readSessionFromRedis, mergeRedisSessionData, startSessionEviction,
   // ougl.2 — journey session link
   linkSessionToJourney,
   // mfc.3 — streaming turn handler + adapter setter

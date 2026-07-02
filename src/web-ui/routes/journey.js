@@ -13,6 +13,8 @@ var _registerHtmlSession = null;
 var _linkSessionToJourney = null;
 var _getHtmlSessionFn = null;
 var _listHtmlSessionsFn = null;
+var _readSessionFromRedisFn = null;
+var _mergeRedisSessionDataFn = null;
 var _repoRoot = null;
 var _repoRootAdapter = require('../adapters/repo-root');
 
@@ -29,6 +31,16 @@ function getLinkSessionToJourney() {
 function getGetHtmlSession() {
   if (_getHtmlSessionFn) return _getHtmlSessionFn;
   return require('./skills')._getHtmlSession;
+}
+
+function getReadSessionFromRedis() {
+  if (_readSessionFromRedisFn) return _readSessionFromRedisFn;
+  return require('./skills').readSessionFromRedis;
+}
+
+function getMergeRedisSessionData() {
+  if (_mergeRedisSessionDataFn) return _mergeRedisSessionDataFn;
+  return require('./skills').mergeRedisSessionData;
 }
 
 function getRepoRoot(req) {
@@ -59,6 +71,8 @@ function setLinkSessionToJourney(fn) { _linkSessionToJourney = fn; }
 function setJourneyStoreModule(mod) { _journeyStore = mod; }
 function setGetHtmlSession(fn) { _getHtmlSessionFn = fn; }
 function setListHtmlSessions(fn) { _listHtmlSessionsFn = fn; }
+function setReadSessionFromRedis(fn) { _readSessionFromRedisFn = fn; }
+function setMergeRedisSessionData(fn) { _mergeRedisSessionDataFn = fn; }
 function setRepoRoot(root) { _repoRoot = root; _repoRootAdapter.setRepoRoot(root); }
 
 // ---------------------------------------------------------------------------
@@ -67,6 +81,7 @@ function setRepoRoot(root) { _repoRoot = root; _repoRootAdapter.setRepoRoot(root
 
 var _journeyDisk  = require('../../modules/journey-disk');
 var _tenantPlan   = require('../modules/tenant-plan');
+var _posthog      = require('../modules/posthog-server');
 
 var STAGE_META = [
   { id: 'ideate',              num: 1,    label: 'Idea',       optional: true },
@@ -334,6 +349,12 @@ async function handlePostJourney(req, res) {
     _journeyStore.setJourneyFields(journeyId, {
       ownerId:  req.session.login    || null,
       tenantId: req.session.tenantId || null
+    });
+    _posthog.capture(req.session.login || journeyId, 'journey_created', {
+      featureSlug:    featureSlug,
+      productProfile: profileName,
+      startSkill:     startSkill,
+      tenantId:       req.session.tenantId || null
     });
 
     // sdg.1: new-product selection → show strategy grounding modal before starting first skill
@@ -1060,6 +1081,10 @@ async function handlePostJourneyStageArtefact(req, res) {
  */
 async function handleGetJourneyResume(req, res) {
   if (!req.session || !req.session.accessToken) {
+    if (req.session) {
+      req.session.returnTo = req.url;
+      require('../middleware/session').persistSession(req.sessionId);
+    }
     res.writeHead(302, { Location: '/auth/github' });
     res.end();
     return;
@@ -1123,19 +1148,61 @@ async function handleGetJourneyResume(req, res) {
   var currentStage = diskJourney.currentStage || 'discovery';
   var productProfile = diskJourney.productProfile || 'default';
 
-  // Build priorArtefacts from completed disk stages in sequence order
+  // Fast path: active session already in memory — redirect without any Postgres/disk I/O.
+  // sec-perf AC4: artefact reads are deferred to only when actually needed.
+  var _existingActiveId = memJourney && memJourney.activeSessionId;
+  if (_existingActiveId) {
+    var _memSession = getGetHtmlSession()(_existingActiveId);
+    if (_memSession && !_memSession.done) {
+      res.writeHead(303, { Location: '/skills/' + encodeURIComponent(_memSession.skillName || currentStage) + '/sessions/' + _existingActiveId + '/chat' });
+      res.end();
+      return;
+    }
+  }
+
+  // Build priorArtefacts: needed for Redis restore (system prompt rebuild) or new session creation.
+  // Postgres-first (survives Fly deploys), disk fallback (local dev/CLI/IDE).
   var STAGE_ORDER = ['ideate', 'discovery', 'benefit-metric', 'design', 'definition', 'test-plan', 'review', 'definition-of-ready'];
   var diskStages = diskJourney.stages || {};
+  var _resumePgMap = {};
+  if (process.env.DATABASE_URL && journeyId) {
+    try {
+      var _resumePgArts = await require('../adapters/journey-store-pg').getArtefactsForJourney(journeyId);
+      _resumePgArts.forEach(function(a) { _resumePgMap[a.skill_name] = a.content; });
+    } catch (_resumePgErr) {
+      console.error('[artefact] Postgres read (resume) failed:', _resumePgErr.message);
+    }
+  }
   var priorArtefacts = [];
   STAGE_ORDER.forEach(function(stageName) {
     var s = diskStages[stageName];
     if (s && s.status === 'complete' && s.artefactPath) {
-      var absPath = path.resolve(path.join(repoRoot, s.artefactPath));
-      var content = '';
-      try { content = fs.readFileSync(absPath, 'utf8'); } catch (_) {}
+      var content = _resumePgMap[stageName] || '';
+      if (!content) {
+        var absPath = path.resolve(path.join(repoRoot, s.artefactPath));
+        try { content = fs.readFileSync(absPath, 'utf8'); } catch (_) {}
+      }
       priorArtefacts.push({ path: s.artefactPath, content: content });
     }
   });
+
+  // Redis restore: session not in memory (post-deploy) — rebuild systemPrompt via
+  // registerHtmlSession then merge compact turn data from Redis.
+  if (_existingActiveId) {
+    var _redisData = null;
+    try { _redisData = await getReadSessionFromRedis()(_existingActiveId); } catch (_) {}
+    if (_redisData && Array.isArray(_redisData.turns) && _redisData.turns.length > 0) {
+      var _restorePath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', _existingActiveId);
+      getRegisterHtmlSession()(_existingActiveId, _restorePath, currentStage, { productProfile: productProfile, priorArtefacts: priorArtefacts, featureSlug: featureSlug });
+      getMergeRedisSessionData()(_existingActiveId, _redisData);
+      var _restoredSession = getGetHtmlSession()(_existingActiveId);
+      if (_restoredSession && !_restoredSession.done) {
+        res.writeHead(303, { Location: '/skills/' + encodeURIComponent(_restoredSession.skillName || currentStage) + '/sessions/' + _existingActiveId + '/chat' });
+        res.end();
+        return;
+      }
+    }
+  }
 
   // Create new session for current stage
   var sid = crypto.randomUUID();
@@ -1148,6 +1215,13 @@ async function handleGetJourneyResume(req, res) {
     if (_journeyStore.setActiveSession) {
       _journeyStore.setActiveSession(journeyId, sid, currentStage);
     }
+    _posthog.capture(req.session.login || (memJourney && memJourney.ownerId) || journeyId, 'stage_started', {
+      skillName:          currentStage,
+      featureSlug:        featureSlug,
+      journeyId:          journeyId,
+      completedStageCount: memJourney ? (memJourney.completedStages || []).length : 0,
+      tenantId:           req.session.tenantId || null
+    });
   }
 
   // Mark stage active on disk with new sessionId
@@ -1620,10 +1694,18 @@ async function handlePostGateConfirm(req, res) {
     res.end(renderShell({ title: 'Error', bodyContent: '<p>Invalid artefact path.</p>' }));
     return;
   }
-  // Write artefact to disk only if not already present
+  // Write artefact to disk (keeps VS Code / IDE / CLI usage working)
   if (!fs.existsSync(absPath)) {
     fs.mkdirSync(path.dirname(absPath), { recursive: true });
     fs.writeFileSync(absPath, session.artefactContent || '', 'utf8');
+  }
+  // Persist artefact content to Postgres (web UI primary durable store — disk is wiped on Fly deploys)
+  if (process.env.DATABASE_URL) {
+    try {
+      await require('../adapters/journey-store-pg').saveArtefact(journeyId, session.skillName, artefactRelPath, session.artefactContent || '');
+    } catch (_pgArtErr) {
+      console.error('[artefact] Postgres save failed:', _pgArtErr.message);
+    }
   }
   // Call completeStage to record this stage (guard: auto-save may have already called this)
   if (!session._stageDone) {
@@ -1635,6 +1717,16 @@ async function handlePostGateConfirm(req, res) {
     } catch (_ce) {}
     var _usageSummary = session.usage ? Object.assign({ costUsd: _costUsd }, session.usage) : null;
     _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath, _usageSummary);
+    _posthog.capture(req.session.login || journey.ownerId || journeyId, 'stage_completed', {
+      skillName:    session.skillName,
+      featureSlug:  journey.featureSlug,
+      journeyId:    journeyId,
+      costUsd:      _costUsd,
+      inputTokens:  (session.usage || {}).input_tokens  || null,
+      outputTokens: (session.usage || {}).output_tokens || null,
+      model:        (session.usage || {}).model         || null,
+      tenantId:     journey.tenantId || null
+    });
     if (_costUsd != null) {
       console.info(JSON.stringify({ event: 'stage_cost', journeyId: journeyId, stage: session.skillName, model: (session.usage || {}).model, costUsd: _costUsd, inputTokens: (session.usage || {}).input_tokens, outputTokens: (session.usage || {}).output_tokens }));
     }
@@ -1744,15 +1836,27 @@ async function handlePostGateConfirm(req, res) {
     });
   }
 
-  // Build priorArtefacts from all completed stages (read authoritative disk content)
-  // completedStages entries may be objects { skillName, artefactPath } or legacy strings
+  // Build priorArtefacts: Postgres-first (survives Fly deploys), disk fallback (local dev/CLI/IDE)
   var updatedJourney = _journeyStore.getJourney(journeyId);
+  var _pgArtMap = {};
+  if (process.env.DATABASE_URL) {
+    try {
+      var _pgArts = await require('../adapters/journey-store-pg').getArtefactsForJourney(journeyId);
+      _pgArts.forEach(function(a) { _pgArtMap[a.skill_name] = { content: a.content, path: a.artefact_path }; });
+    } catch (_pgReadErr) {
+      console.error('[artefact] Postgres read failed:', _pgReadErr.message);
+    }
+  }
   var priorArtefacts = (updatedJourney.completedStages || []).map(function(stage) {
+    var skillName    = typeof stage === 'string' ? null : stage.skillName;
     var artefactPath = typeof stage === 'string' ? null : stage.artefactPath;
     if (!artefactPath) return null;
-    var stageAbsPath = path.resolve(path.join(repoRoot, artefactPath));
-    var content = '';
-    try { content = fs.readFileSync(stageAbsPath, 'utf8'); } catch (_) {}
+    var pgEntry = skillName && _pgArtMap[skillName];
+    var content = (pgEntry && pgEntry.content) || '';
+    if (!content) {
+      var stageAbsPath = path.resolve(path.join(repoRoot, artefactPath));
+      try { content = fs.readFileSync(stageAbsPath, 'utf8'); } catch (_) {}
+    }
     return { path: artefactPath, content: content };
   }).filter(Boolean);
   // Determine next stage
@@ -1783,6 +1887,12 @@ async function handlePostGateConfirm(req, res) {
       // No more stories (or feature-mode): complete journey
       _journeyStore.markJourneyComplete(journeyId);
       console.info(JSON.stringify({ event: 'journey_completed', journeyId: journeyId, featureSlug: journey.featureSlug, stageCount: updatedJourney.completedStages.length }));
+      _posthog.capture(req.session.login || journey.ownerId || journeyId, 'journey_completed', {
+        featureSlug: journey.featureSlug,
+        journeyId:   journeyId,
+        stageCount:  updatedJourney.completedStages.length,
+        tenantId:    journey.tenantId || null
+      });
       res.writeHead(303, { Location: '/journey/' + journeyId + '/complete' });
       res.end();
     }
@@ -1802,6 +1912,12 @@ async function handlePostGateConfirm(req, res) {
     // Non-per-story null: complete journey
     _journeyStore.markJourneyComplete(journeyId);
     console.info(JSON.stringify({ event: 'journey_completed', journeyId: journeyId, featureSlug: journey.featureSlug, stageCount: updatedJourney.completedStages.length }));
+    _posthog.capture(req.session.login || journey.ownerId || journeyId, 'journey_completed', {
+      featureSlug: journey.featureSlug,
+      journeyId:   journeyId,
+      stageCount:  updatedJourney.completedStages.length,
+      tenantId:    journey.tenantId || null
+    });
     res.writeHead(303, { Location: '/journey/' + journeyId + '/complete' });
     res.end();
   } else if (nextStage === 'review') {
@@ -3408,6 +3524,8 @@ module.exports = {
   setJourneyStoreModule,
   setGetHtmlSession,
   setListHtmlSessions,
+  setReadSessionFromRedis,
+  setMergeRedisSessionData,
   setRepoRoot,
   setPipelineStateWriter,
   setValidate,
@@ -3461,8 +3579,8 @@ function buildDashboardPostHogScript(key, login, tenantId) {
     '(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);' +
     'var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},' +
     'u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group resetGroups setPersonProperties get_distinct_id getGroups get_session_id get_session_replay_url startSessionRecording stopSessionRecording".split(" "),' +
-    'n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])}e.__SV=1}(document,window.posthog||(window.posthog=[]));' +
-    'posthog.init("' + key + '",{api_host:"https://us.i.posthog.com",person_profiles:"identified_only"});' +
+    'n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||(window.posthog=[]));' +
+    'posthog.init("' + key + '",{api_host:"https://us.i.posthog.com",person_profiles:"always"});' +
     'posthog.identify("' + login + '",{tenant_id:"' + tenantId + '"});' +
     'posthog.capture("login_completed");' +
     '</script>';

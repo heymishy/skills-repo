@@ -183,3 +183,37 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: pattern
   signal-text: "bee.3 graceful degradation (typeof posthog guard): when POSTHOG_KEY is unset and the PostHog CDN snippet is omitted, ALL posthog.capture() and posthog.identify() calls must also be omitted server-side (conditional on POSTHOG_KEY), or each must be wrapped in typeof posthog !== 'undefined'. The server-side omission approach (simplest) means the test assertion is: no posthog. string in HTML when key is unset. This is a real runtime defect pattern (ReferenceError on page load) that was caught at review and resolved before test-plan."
   source: agent-auto
+
+- date: 2026-07-01
+  session-phase: definition / 2026-07-01-landing-auth-billing
+  signal-type: decision
+  signal-text: "Better Auth ESM/CJS incompatibility is treated as a known fact (not a risk to validate) — framed as a 3-path spike: Path A (dynamic import() wrapper), Path B (full ESM migration), Path C (roll-your-own OAuth via fetch()). Spike exits with a concrete recommendation, not just confirmation of the problem. Pattern: when an incompatibility is confirmed in external docs, reframe the spike as a path-selection decision rather than a feasibility question."
+  source: agent-auto
+
+- date: 2026-07-01
+  session-phase: definition / 2026-07-01-landing-auth-billing
+  signal-type: pattern
+  signal-text: "Stripe raw body constraint: POST /webhook/stripe must be registered BEFORE any JSON body-parser middleware — the Stripe SDK's signature verification requires the raw, unparsed request body. Registering the route after body parsing silently breaks signature checks. This must be an explicit DoR architecture constraint on the webhook story, not just an implementation note."
+  source: agent-auto
+
+- date: 2026-07-01
+  session-phase: definition / 2026-07-01-landing-auth-billing
+  signal-type: decision
+  signal-text: "Session schema migration strategy for Better Auth (paths A/B): forced re-auth on first post-migration login rather than transparent mapping. Simpler to implement; acceptable because there are no existing beta users. The decision is documented at story-level AC in lab-s1.3 — not deferred to implementation. Pattern: capture migration strategy as a story-level AC, not an implementation detail comment."
+  source: agent-auto
+
+---
+
+- date: 2026-07-01
+  session-phase: test-plan / 2026-07-01-landing-auth-billing
+  signal-type: pattern
+  signal-text: "AC testability classification: 'element visible' ACs split into two types — (1) 'exists in HTML source' (unit-testable, e.g. Continue with Google button DOM presence) vs (2) 'renders correctly at viewport' (CSS-layout-dependent, needs browser). Only the latter requires RISK-ACCEPT and manual smoke test."
+  source: agent-auto
+
+---
+
+- date: 2026-07-01
+  session-phase: test-plan / 2026-07-01-landing-auth-billing
+  signal-type: pattern
+  signal-text: "Stripe idempotency store must use INSERT ... ON CONFLICT DO NOTHING, not SELECT then INSERT. Test plan (lab-s3.4 IT2) asserts the SQL pattern directly. Pattern: assert the SQL pattern for idempotency, not only the behavioural outcome."
+  source: agent-auto

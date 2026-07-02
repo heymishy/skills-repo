@@ -56,7 +56,7 @@ function _clearForTesting() {
 const SESSION_COOKIE_CONFIG = {
   httpOnly: true,
   secure:   true,
-  sameSite: 'strict',
+  sameSite: 'lax',
   path:     '/'
 };
 
@@ -65,7 +65,7 @@ function _buildCookieHeader(sessionId) {
   const parts = [
     `session_id=${sessionId}`,
     'HttpOnly',
-    'SameSite=Strict',
+    'SameSite=Lax',
     'Path=/'
   ];
   // Enforce Secure flag in production; allow HTTP in development for local testing
@@ -154,6 +154,41 @@ function sessionMiddleware(req, res) {
 }
 
 /**
+ * Rotate the session ID after login to prevent session fixation attacks.
+ * Creates a new session with a fresh ID, copies all data from the old session,
+ * deletes the old session (in-memory and Redis), and sets a new Set-Cookie header.
+ *
+ * Must be called after successful token exchange and before persistSession.
+ *
+ * @param {string} oldId - the pre-login session ID to retire
+ * @param {object} res   - HTTP response object (must support setHeader)
+ * @param {object} [existingData] - session data override; when provided takes precedence over the
+ *   in-memory Map lookup. Allows callers that hold a reference to req.session (which may not yet be
+ *   registered under oldId in the Map) to ensure the full session contents are carried forward.
+ * @returns {{ newId: string, newSession: object }}
+ */
+function rotateSessionId(oldId, res, existingData) {
+  const oldData = existingData || _sessions.get(oldId) || {};
+  const { id: newId, session: newSession } = createSession();
+  Object.assign(newSession, oldData);
+
+  // Remove old session from memory and Redis before any new writes
+  _sessions.delete(oldId);
+  const adapter = _activeRedis();
+  if (adapter) {
+    adapter.deleteSession(oldId).catch(function(err) {
+      console.error('[session] rotateSessionId Redis delete error:', err.message);
+    });
+  }
+
+  if (res && res.setHeader) {
+    res.setHeader('Set-Cookie', _buildCookieHeader(newId));
+  }
+
+  return { newId, newSession };
+}
+
+/**
  * Seed a test session with a known ID and data (NODE_ENV=test only).
  * Used by the E2E test infrastructure so Playwright tests can inject an
  * authenticated session without completing the real GitHub OAuth flow.
@@ -176,6 +211,7 @@ module.exports = {
   createSession,
   getSession,
   destroySession,
+  rotateSessionId,
   seedTestSession,
   setRedisAdapter,
   setRedisAdapterForTesting,

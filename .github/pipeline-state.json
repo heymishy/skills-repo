@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-06-28T23:22:41.789Z",
+  "updated": "2026-07-01T10:00:00Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -6819,6 +6819,369 @@
       ],
       "reviewStatus": "passed",
       "highFindings": 0
+    },
+    {
+      "slug": "2026-07-01-landing-auth-billing",
+      "name": "Landing Site, Multi-Provider Auth, and Billing",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "slicingStrategy": "risk-first",
+      "updatedAt": "2026-07-02T09:00:00Z",
+      "discovery": {
+        "status": "approved",
+        "artefact": "artefacts/2026-07-01-landing-auth-billing/discovery.md",
+        "approvedBy": "Hamish King",
+        "approvedDate": "2026-07-01"
+      },
+      "benefit-metric": {
+        "status": "active",
+        "artefact": "artefacts/2026-07-01-landing-auth-billing/benefit-metric.md",
+        "definedAt": "2026-07-01"
+      },
+      "nfrProfileArtefact": "artefacts/2026-07-01-landing-auth-billing/nfr-profile.md",
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Self-serve signup conversion",
+          "tier": 1,
+          "signal": "not-yet-measured"
+        },
+        {
+          "id": "M2",
+          "name": "Credits enforcement",
+          "tier": 1,
+          "signal": "not-yet-measured"
+        },
+        {
+          "id": "M3",
+          "name": "Monthly cost recovery rate",
+          "tier": 1,
+          "signal": "not-yet-measured"
+        },
+        {
+          "id": "M4",
+          "name": "Time to first paid plan",
+          "tier": 1,
+          "signal": "not-yet-measured"
+        },
+        {
+          "id": "M5",
+          "name": "Pricing configurability",
+          "tier": 2,
+          "signal": "not-yet-measured"
+        }
+      ],
+      "guardrails": [
+        {
+          "id": "MC-SEC-01",
+          "category": "mandatory-constraint",
+          "label": "rotateSessionId called after every provider login",
+          "status": "met",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-01T00:00:00Z"
+        },
+        {
+          "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "accessToken never in HTML response or logs",
+          "status": "met",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-01T00:00:00Z"
+        },
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first — all new src/ modules have story artefacts",
+          "status": "met",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-01T00:00:00Z"
+        },
+        {
+          "id": "ADR-018",
+          "category": "adr",
+          "label": "D37 injectable adapter rule",
+          "status": "not-assessed",
+          "assessedBy": "",
+          "assessedAt": ""
+        }
+      ],
+      "stories": [],
+      "epics": [
+        {
+          "name": "Auth Spike + Public Entry Point",
+          "stories": [
+            {
+              "stage": "definition-of-ready",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 2,
+              "updatedAt": "2026-07-02T09:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s1.1-test-plan.md",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.1-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.1-dor-contract.md",
+              "slug": "lab-s1.1",
+              "name": "Auth tech spike: ESM/CJS path recommendation"
+            },
+            {
+              "stage": "definition-of-ready",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 1,
+              "updatedAt": "2026-07-02T09:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s1.2-test-plan.md",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.2-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.2-dor-contract.md",
+              "slug": "lab-s1.2",
+              "name": "Landing page at /"
+            },
+            {
+              "stage": "definition-of-ready",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 3,
+              "updatedAt": "2026-07-02T09:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s1.3-test-plan.md",
+                "totalTests": 11,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.3-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.3-dor-contract.md",
+              "slug": "lab-s1.3",
+              "name": "Multi-provider auth registry (GitHub primary)"
+            }
+          ],
+          "slug": "lab-e1"
+        },
+        {
+          "name": "Additional Providers + Onboarding",
+          "stories": [
+            {
+              "stage": "definition-of-ready",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 2,
+              "updatedAt": "2026-07-02T09:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s2.1-test-plan.md",
+                "totalTests": 12,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.1-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.1-dor-contract.md",
+              "slug": "lab-s2.1",
+              "name": "Google OAuth — second auth provider"
+            },
+            {
+              "stage": "definition-of-ready",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 3,
+              "updatedAt": "2026-07-02T09:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s2.2-test-plan.md",
+                "totalTests": 13,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.2-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.2-dor-contract.md",
+              "slug": "lab-s2.2",
+              "name": "Email/password — third auth provider"
+            },
+            {
+              "stage": "definition-of-ready",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 2,
+              "updatedAt": "2026-07-02T09:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s2.3-test-plan.md",
+                "totalTests": 11,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.3-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.3-dor-contract.md",
+              "slug": "lab-s2.3",
+              "name": "/welcome onboarding — first-login detection + plan selection redirect"
+            }
+          ],
+          "slug": "lab-e2"
+        },
+        {
+          "name": "Billing + Credits",
+          "stories": [
+            {
+              "stage": "definition-of-ready",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 1,
+              "updatedAt": "2026-07-02T09:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s3.1-test-plan.md",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.1-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.1-dor-contract.md",
+              "slug": "lab-s3.1",
+              "name": "Credits table + plan data model (Postgres)"
+            },
+            {
+              "stage": "definition-of-ready",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 2,
+              "updatedAt": "2026-07-02T09:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s3.2-test-plan.md",
+                "totalTests": 10,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.2-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.2-dor-contract.md",
+              "slug": "lab-s3.2",
+              "name": "Stripe Checkout + plan subscription flow"
+            },
+            {
+              "stage": "definition-of-ready",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 2,
+              "updatedAt": "2026-07-02T09:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s3.3-test-plan.md",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.3-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.3-dor-contract.md",
+              "slug": "lab-s3.3",
+              "name": "Credit enforcement — 402 turn guard"
+            },
+            {
+              "stage": "definition-of-ready",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 2,
+              "updatedAt": "2026-07-02T09:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s3.4-test-plan.md",
+                "totalTests": 10,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.4-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.4-dor-contract.md",
+              "slug": "lab-s3.4",
+              "name": "Stripe webhook handler (provision credits, idempotency)"
+            },
+            {
+              "stage": "definition-of-ready",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "complexity": 1,
+              "updatedAt": "2026-07-02T09:00:00Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s3.5-test-plan.md",
+                "totalTests": 8,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.5-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.5-dor-contract.md",
+              "slug": "lab-s3.5",
+              "name": "Billing portal + pre-launch Stripe ID swap checklist"
+            }
+          ],
+          "slug": "lab-e3"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

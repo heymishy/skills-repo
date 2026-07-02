@@ -1,34 +1,58 @@
 {
-  "currentPhase": "definition-of-done",
-  "lastUpdated": "2026-06-30T00:00:00Z",
-  "activeFeature": "2026-06-29-beta-entry-experience",
+  "currentPhase": "definition-of-ready",
+  "lastUpdated": "2026-07-02T09:00:00Z",
+  "activeFeature": "2026-07-01-landing-auth-billing",
   "cycle": {
-    "discovery": { "status": "complete", "artefact": "artefacts/2026-06-29-beta-entry-experience/discovery.md", "approvedAt": "2026-06-29" },
-    "benefit-metric": { "status": "complete", "artefact": "artefacts/2026-06-29-beta-entry-experience/benefit-metric.md", "completedAt": "2026-06-29" },
-    "definition": { "status": "complete", "epics": ["bee-entry-surface"], "stories": ["bee.1", "bee.2", "bee.3"], "completedAt": "2026-06-29" },
-    "review": { "status": "complete", "result": "PASS", "highFindings": 0, "completedAt": "2026-06-29" },
-    "test-plan": { "status": "complete", "completedAt": "2026-06-29" },
-    "definition-of-ready": { "status": "complete", "completedAt": "2026-06-29" },
-    "branch-complete": { "status": "complete", "completedAt": "2026-06-29" },
-    "definition-of-done": {
+    "discovery": { "status": "complete", "artefact": "artefacts/2026-07-01-landing-auth-billing/discovery.md", "approvedAt": "2026-07-01" },
+    "benefit-metric": { "status": "complete", "artefact": "artefacts/2026-07-01-landing-auth-billing/benefit-metric.md", "completedAt": "2026-07-01" },
+    "definition": {
       "status": "complete",
-      "stories": {
-        "bee.1": { "prNumber": 420, "prStatus": "merged", "dodStatus": "complete", "health": "green", "artefact": "artefacts/2026-06-29-beta-entry-experience/dod/bee.1-dod.md" },
-        "bee.2": { "prNumber": 421, "prStatus": "merged", "dodStatus": "complete", "health": "green", "artefact": "artefacts/2026-06-29-beta-entry-experience/dod/bee.2-dod.md" },
-        "bee.3": { "prNumber": 422, "prStatus": "merged", "dodStatus": "complete", "health": "amber", "blocker": "AC4 manual browser Scenario 4 not yet executed (CTA navigation when PostHog CDN blocked)", "artefact": "artefacts/2026-06-29-beta-entry-experience/dod/bee.3-dod.md" }
-      },
-      "epicStatus": "complete",
-      "completedAt": "2026-06-30"
+      "slicingStrategy": "risk-first",
+      "epics": ["lab-e1-foundation", "lab-e2-providers-onboarding", "lab-e3-billing-credits"],
+      "stories": ["lab-s1.1", "lab-s1.2", "lab-s1.3", "lab-s2.1", "lab-s2.2", "lab-s2.3", "lab-s3.1", "lab-s3.2", "lab-s3.3", "lab-s3.4", "lab-s3.5"],
+      "completedAt": "2026-07-01"
+    },
+    "review": {
+      "status": "complete",
+      "result": "all-pass",
+      "highFindings": 0,
+      "mediumFindings": 4,
+      "allResolved": true,
+      "completedAt": "2026-07-01",
+      "artefactDir": "artefacts/2026-07-01-landing-auth-billing/review/"
+    },
+    "test-plan": {
+      "status": "complete",
+      "storiesWithTestPlan": 11,
+      "totalTests": 101,
+      "cssLayoutGapStories": ["lab-s1.2", "lab-s2.3"],
+      "e2eToolingRequired": false,
+      "completedAt": "2026-07-01",
+      "artefactDir": "artefacts/2026-07-01-landing-auth-billing/test-plans/",
+      "verificationScriptsDir": "artefacts/2026-07-01-landing-auth-billing/verification-scripts/"
+    },
+    "definition-of-ready": {
+      "status": "complete",
+      "storiesSignedOff": 11,
+      "allHardBlocksPassed": true,
+      "warningsAcknowledged": ["W4 RISK-ACCEPT (solo operator) — all 11 stories"],
+      "oversightLevel": "Low",
+      "completedAt": "2026-07-02",
+      "artefactDir": "artefacts/2026-07-01-landing-auth-billing/dor/"
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-06-30",
-    "contextAtWrite": "All 3 bee stories at definition-of-done. PRs #420/#421/#422 merged. bee.1 and bee.2 are health=green COMPLETE. bee.3 is health=amber COMPLETE WITH DEVIATIONS — AC4 manual browser Scenario 4 pending. Epic bee-entry-surface=complete. M1/M3/M4 blocked on PostHog account creation. M2 blocked on first external user.",
-    "resumeInstruction": "BEE sprint complete at DoD. Choose next action: (a) /trace to validate chain health across all 3 stories, (b) start next feature with /discovery, (c) run /improve on the BEE sprint for retrospective learning signal.",
+    "writtenAt": "2026-07-02",
+    "contextAtWrite": "Definition-of-ready complete for 2026-07-01-landing-auth-billing. All 11 stories (lab-s1.1 through lab-s3.5) signed off. 22 DoR artefacts written (dor.md + dor-contract.md per story). All 19/19 hard blocks passed for every story. W4 RISK-ACCEPT acknowledged (solo operator, already in decisions.md). Oversight: Low for all stories. Pipeline state updated — all stories at stage=definition-of-ready, dorStatus=signed-off.",
+    "resumeInstruction": "DoR complete for landing-auth-billing. Next step: inner coding loop. Start with lab-s1.1 (Auth tech spike — ESM/CJS path recommendation, no dependencies). Read artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.1-dor.md for coding agent instructions, then run /branch-setup → /implementation-plan → /subagent-execution → /verify-completion → /branch-complete. After spike, lab-s1.2 (Landing page) and lab-s1.3 (Auth registry, blocked until spike ARCH-002 updated) follow. Epic-nested story rule: apply all pipeline-state advances on master AFTER each PR merges.",
     "pendingActions": [
-      "MANUAL (Hamish — before first external user promotion): Run bee.3-verification.md Scenario 4 — block PostHog CDN in browser DevTools, verify CTA navigates to /auth/github without JS error. Update bee.3-dod.md AC4 deviation to resolved.",
-      "MANUAL (Hamish — unblocks M1/M3/M4): Create PostHog Cloud (EU) account, obtain project API key, set as Fly env var: fly env set POSTHOG_KEY=<key> --app <app-name>. This is a public frontend key — NOT a fly secret (DEC-003).",
-      "MANUAL (Hamish — after first external user): M2 cross-tenant isolation check: log in as yourself, attempt to access external user's journey by URL, confirm 404. Record result in wuce-multi-tenancy M2 signal."
+      "NEXT: Begin inner coding loop with lab-s1.1 (Auth tech spike — ESM/CJS path recommendation, Complexity 2). Read artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.1-dor.md. Run /branch-setup, /implementation-plan (1 task: write spike outcome + update decisions.md ARCH-002), then /subagent-execution.",
+      "UNBLOCKED AFTER lab-s1.1: lab-s1.2 (Landing page, Complexity 1) — can start as soon as s1.1 branch is open (no hard dep). lab-s1.3 (Auth registry, Complexity 3) — blocked until s1.1 spike outcome doc written and ARCH-002 updated.",
+      "BILLING DEPENDENCY CHAIN: lab-s3.1 first → lab-s3.2 + lab-s3.3 (parallel, both need s3.1) → lab-s3.4 (needs s3.1 + s3.2) → lab-s3.5 (needs s3.2 + s3.4).",
+      "MANUAL (Hamish — before bee.3 DoD closes): Verify bee.3 Acceptance Criterion 4 Scenario 4 — block PostHog CDN in DevTools, confirm CTA navigates without JS error. Update bee.3-dod.md.",
+      "MANUAL (Hamish — unblocks Metric 1/Metric 3/Metric 4 for bee feature): Create PostHog Cloud (EU) account, set POSTHOG_KEY as Fly env var.",
+      "MANUAL (Hamish — after first external user): Metric 2 cross-tenant isolation check for wuce-multi-tenancy — verify cross-tenant 404 with second tenant.",
+      "MANUAL (Hamish — pre-launch gate before accepting real payments): Run node scripts/check-prelaunch-stripe.js and complete all steps in artefacts/2026-07-01-landing-auth-billing/verification-scripts/lab-s3.5-verification.md pre-launch checklist before switching Fly.io secrets from test to live Stripe keys."
     ]
   },
   "features": {
@@ -36,7 +60,13 @@
       "status": "definition-of-done-complete",
       "dodCompletedAt": "2026-06-29",
       "allStoriesComplete": true,
-      "nextAction": "M2 (cross-tenant isolation) transitions to on-track when first org-based beta user is onboarded and cross-tenant 404 verified."
+      "nextAction": "Metric 2 (cross-tenant isolation) transitions to on-track when first org-based beta user is onboarded and cross-tenant 404 verified."
+    },
+    "2026-06-29-beta-entry-experience": {
+      "status": "definition-of-done-complete",
+      "dodCompletedAt": "2026-06-30",
+      "pendingManualCheck": "bee.3 Acceptance Criterion 4 Scenario 4 (PostHog CDN blocked — browser smoke test not yet executed)",
+      "nextAction": "PostHog account creation unblocks Metric 1/Metric 3/Metric 4 metrics measurement."
     }
   }
 }

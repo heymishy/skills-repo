@@ -6,7 +6,7 @@
 
 // Use module reference (not destructuring) so tests can monkeypatch individual exports.
 const _oauthAdapter = require('../auth/oauth-adapter');
-const { persistSession } = require('../middleware/session');
+const { persistSession, rotateSessionId, getSession } = require('../middleware/session');
 
 // Audit logger — replaced via setLogger() in tests and in production bootstrap
 let _logger = {
@@ -78,6 +78,8 @@ async function resolveTenant(accessToken, allowlist) {
 async function handleAuthGithub(req, res) {
   const state = _oauthAdapter.generateState();
   req.session.oauthState = state;
+  // Persist OAuth state to Redis immediately so it survives across the external redirect
+  persistSession(req.sessionId);
   const redirectUrl = _oauthAdapter.buildOAuthRedirectURL(state);
   res.writeHead(302, { Location: redirectUrl });
   res.end();
@@ -133,10 +135,17 @@ async function handleAuthCallback(req, res) {
       timestamp: new Date().toISOString()
     });
 
-    // Persist session to Redis for restart survival (p3.2). accessToken is stripped inside persistSession.
+    // sec-perf AC5: rotate session ID to prevent session fixation attacks.
+    // Must happen after all session fields are set, before persistSession.
+    const _rt = req.session.returnTo;
+    const returnTo = (_rt && _rt.startsWith('/') && !_rt.startsWith('//')) ? _rt : '/dashboard';
+    const { newId } = rotateSessionId(req.sessionId, res, req.session);
+    req.sessionId = newId;
+    req.session   = getSession(newId);
+    req.session.returnTo = undefined;
     persistSession(req.sessionId);
 
-    res.writeHead(302, { Location: '/dashboard' });
+    res.writeHead(302, { Location: returnTo });
     res.end();
   } catch (err) {
     _logger.warn('login_failure', { reason: err.message });
