@@ -6911,12 +6911,9 @@
       "stories": [],
       "epics": [
         {
-          "id": "lab-e1",
           "name": "Auth Spike + Public Entry Point",
           "stories": [
             {
-              "id": "lab-s1.1",
-              "title": "Auth tech spike: ESM/CJS path recommendation",
               "stage": "definition-of-ready",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -6935,11 +6932,11 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.1-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.1-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.1-dor-contract.md",
+              "slug": "lab-s1.1",
+              "name": "Auth tech spike: ESM/CJS path recommendation"
             },
             {
-              "id": "lab-s1.2",
-              "title": "Landing page at /",
               "stage": "definition-of-ready",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -6958,11 +6955,11 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.2-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.2-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.2-dor-contract.md",
+              "slug": "lab-s1.2",
+              "name": "Landing page at /"
             },
             {
-              "id": "lab-s1.3",
-              "title": "Multi-provider auth registry (GitHub primary)",
               "stage": "definition-of-ready",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -6981,17 +6978,17 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.3-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.3-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.3-dor-contract.md",
+              "slug": "lab-s1.3",
+              "name": "Multi-provider auth registry (GitHub primary)"
             }
-          ]
+          ],
+          "slug": "lab-e1"
         },
         {
-          "id": "lab-e2",
           "name": "Additional Providers + Onboarding",
           "stories": [
             {
-              "id": "lab-s2.1",
-              "title": "Google OAuth — second auth provider",
               "stage": "definition-of-ready",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -7010,11 +7007,11 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.1-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.1-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.1-dor-contract.md",
+              "slug": "lab-s2.1",
+              "name": "Google OAuth — second auth provider"
             },
             {
-              "id": "lab-s2.2",
-              "title": "Email/password — third auth provider",
               "stage": "definition-of-ready",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -7033,11 +7030,11 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.2-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.2-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.2-dor-contract.md",
+              "slug": "lab-s2.2",
+              "name": "Email/password — third auth provider"
             },
             {
-              "id": "lab-s2.3",
-              "title": "/welcome onboarding — first-login detection + plan selection redirect",
               "stage": "definition-of-ready",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -7056,17 +7053,17 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.3-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.3-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.3-dor-contract.md",
+              "slug": "lab-s2.3",
+              "name": "/welcome onboarding — first-login detection + plan selection redirect"
             }
-          ]
+          ],
+          "slug": "lab-e2"
         },
         {
-          "id": "lab-e3",
           "name": "Billing + Credits",
           "stories": [
             {
-              "id": "lab-s3.1",
-              "title": "Credits table + plan data model (Postgres)",
               "stage": "definition-of-ready",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -7085,11 +7082,11 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.1-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.1-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.1-dor-contract.md",
+              "slug": "lab-s3.1",
+              "name": "Credits table + plan data model (Postgres)"
             },
             {
-              "id": "lab-s3.2",
-              "title": "Stripe Checkout + plan subscription flow",
               "stage": "definition-of-ready",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -7108,11 +7105,11 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.2-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.2-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.2-dor-contract.md",
+              "slug": "lab-s3.2",
+              "name": "Stripe Checkout + plan subscription flow"
             },
             {
-              "id": "lab-s3.3",
-              "title": "Credit enforcement — 402 turn guard",
               "stage": "definition-of-ready",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -7131,11 +7128,11 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.3-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.3-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.3-dor-contract.md",
+              "slug": "lab-s3.3",
+              "name": "Credit enforcement — 402 turn guard"
             },
             {
-              "id": "lab-s3.4",
-              "title": "Stripe webhook handler (provision credits, idempotency)",
               "stage": "definition-of-ready",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -7154,11 +7151,11 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.4-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.4-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.4-dor-contract.md",
+              "slug": "lab-s3.4",
+              "name": "Stripe webhook handler (provision credits, idempotency)"
             },
             {
-              "id": "lab-s3.5",
-              "title": "Billing portal + pre-launch Stripe ID swap checklist",
               "stage": "definition-of-ready",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -7177,9 +7174,12 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.5-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.5-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.5-dor-contract.md",
+              "slug": "lab-s3.5",
+              "name": "Billing portal + pre-launch Stripe ID swap checklist"
             }
-          ]
+          ],
+          "slug": "lab-e3"
         }
       ]
     }
