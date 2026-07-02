@@ -32,6 +32,8 @@ const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetSt
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
+const { handlePostCheckout, handleGetBillingSuccess }                = require('./routes/billing');         // lab-s3.2
+const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -134,6 +136,13 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     const _creditsPool = new Pool({ connectionString: process.env.DATABASE_URL });
     setCreditsAdapter(_creditsPool);
     console.log('Credits DB adapter wired');
+  }
+
+  // lab-s3.2 — Wire real Stripe SDK adapter (D37 mandatory separate wiring task)
+  if (process.env.STRIPE_SECRET_KEY) {
+    const _stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    setStripeAdapter(_stripe);
+    console.log('Stripe adapter wired');
   }
 
   // p3.2 — Upstash Redis session persistence (see Decision 9)
@@ -837,6 +846,14 @@ async function router(req, res) {
     const journeyIdPart = pathname.split('/')[3];
     req.params = { journeyId: journeyIdPart };
     authGuard(req, res, () => handleGetJourneyState(req, res));
+
+  } else if (pathname === '/billing/checkout' && req.method === 'POST') {
+    // lab-s3.2 — Stripe Checkout session creation
+    authGuard(req, res, async () => { await handlePostCheckout(req, res); });
+
+  } else if (pathname === '/billing/success' && req.method === 'GET') {
+    // lab-s3.2 — Stripe Checkout success callback
+    await handleGetBillingSuccess(req, res);
 
   } else if (pathname === '/api/me' && req.method === 'GET') {
     const authenticated = !!(req.session && req.session.accessToken);
