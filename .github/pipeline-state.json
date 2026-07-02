@@ -6877,7 +6877,7 @@
       "guardrails": [
         {
           "id": "MC-SEC-01",
-          "category": "security",
+          "category": "mandatory-constraint",
           "label": "rotateSessionId called after every provider login",
           "status": "met",
           "assessedBy": "/review",
@@ -6885,7 +6885,7 @@
         },
         {
           "id": "MC-SEC-02",
-          "category": "security",
+          "category": "mandatory-constraint",
           "label": "accessToken never in HTML response or logs",
           "status": "met",
           "assessedBy": "/review",
@@ -6893,7 +6893,7 @@
         },
         {
           "id": "ADR-011",
-          "category": "architecture",
+          "category": "adr",
           "label": "Artefact-first — all new src/ modules have story artefacts",
           "status": "met",
           "assessedBy": "/review",
@@ -6901,11 +6901,11 @@
         },
         {
           "id": "ADR-018",
-          "category": "architecture",
+          "category": "adr",
           "label": "D37 injectable adapter rule",
           "status": "not-assessed",
-          "assessedBy": null,
-          "assessedAt": null
+          "assessedBy": "",
+          "assessedAt": ""
         }
       ],
       "stories": [],
