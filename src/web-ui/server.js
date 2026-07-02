@@ -33,7 +33,7 @@ const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetSt
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
-const { handlePostCheckout, handleGetBillingSuccess }                = require('./routes/billing');         // lab-s3.2
+const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter } = require('./routes/billing'); // lab-s3.2 / lab-s3.4
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
 const { creditsGuard }                                               = require('./middleware/credits-guard'); // lab-s3.3
 
@@ -146,11 +146,14 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   }
 
   // lab-s3.1 — Wire credits DB adapter (D37 mandatory separate wiring task)
+  // lab-s3.4 — Wire webhook DB adapter to same Postgres pool (stripe_events idempotency table)
   if (process.env.DATABASE_URL) {
     const { Pool } = require('pg');
     const _creditsPool = new Pool({ connectionString: process.env.DATABASE_URL });
     setCreditsAdapter(_creditsPool);
     console.log('Credits DB adapter wired');
+    setWebhookDbAdapter(_creditsPool); // same pool — stripe_events in same DB as credits
+    console.log('Webhook DB adapter wired (idempotency)');
   }
 
   // lab-s3.2 — Wire real Stripe SDK adapter (D37 mandatory separate wiring task)
@@ -382,6 +385,10 @@ if (process.env.NODE_ENV === 'test') {
 
   // lab-s3.3: wire unlimited credits in test mode so existing E2E tests are not blocked by the guard
   setCreditsAdapter({ query: async () => ({ rows: [{ balance: 9999 }] }) });
+
+  // lab-s3.4: no-op webhook DB in test mode — rowCount=1 so each event appears as new (not a duplicate)
+  // The check-lab-s3.4-stripe-webhook.js unit tests inject their own mock directly via setWebhookDbAdapter().
+  setWebhookDbAdapter({ query: async function() { return { rows: [], rowCount: 1 }; } });
 }
 
 /** Parse query parameters from a URL into a plain object. */
@@ -880,6 +887,14 @@ async function router(req, res) {
     const journeyIdPart = pathname.split('/')[3];
     req.params = { journeyId: journeyIdPart };
     authGuard(req, res, () => handleGetJourneyState(req, res));
+
+  } else if (pathname === '/webhook/stripe' && req.method === 'POST') {
+    // lab-s3.4 — Stripe webhook: credit provisioning + idempotency
+    // CRITICAL: This route MUST appear BEFORE any JSON body-parsing middleware.
+    // Stripe signature verification requires the raw, unparsed request body bytes.
+    // No express.json() or equivalent is used in this server (native http module).
+    // The handler reads raw bytes directly from the request stream via _readRawBody().
+    await handlePostStripeWebhook(req, res);
 
   } else if (pathname === '/billing/checkout' && req.method === 'POST') {
     // lab-s3.2 — Stripe Checkout session creation

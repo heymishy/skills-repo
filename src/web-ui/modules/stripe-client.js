@@ -55,4 +55,19 @@ async function createPortalSession(customerId, returnUrl) { // eslint-disable-li
   throw new Error('Adapter not wired: stripeClient. Call setStripeAdapter() before use.');
 }
 
-module.exports = { setStripeAdapter, createCheckoutSession, createPortalSession };
+/**
+ * Verify a Stripe webhook signature and return the parsed event object.
+ * Throws if the signature is invalid — caller must catch and return HTTP 400.
+ * Uses the D37 injectable _stripe adapter (set via setStripeAdapter()).
+ *
+ * @param {Buffer|string} rawBody - The raw, unparsed request body bytes
+ * @param {string}        sig     - Value of the 'stripe-signature' request header
+ * @param {string}        secret  - STRIPE_WEBHOOK_SECRET env var value
+ * @returns {object}              - Parsed Stripe event object
+ */
+function verifyWebhookSignature(rawBody, sig, secret) {
+  var stripe = requireAdapter();
+  return stripe.webhooks.constructEvent(rawBody, sig, secret);
+}
+
+module.exports = { setStripeAdapter, createCheckoutSession, createPortalSession, verifyWebhookSignature };
