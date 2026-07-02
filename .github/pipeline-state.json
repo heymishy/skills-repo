@@ -6962,7 +6962,7 @@
               "prStatus": "merged"
             },
             {
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -6982,7 +6982,8 @@
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.3-dor-contract.md",
               "slug": "lab-s1.3",
-              "name": "Multi-provider auth registry (GitHub primary)"
+              "name": "Multi-provider auth registry (GitHub primary)",
+              "prStatus": "merged"
             }
           ],
           "slug": "lab-e1"
@@ -7090,7 +7091,7 @@
               "prStatus": "merged"
             },
             {
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -7110,10 +7111,11 @@
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.2-dor-contract.md",
               "slug": "lab-s3.2",
-              "name": "Stripe Checkout + plan subscription flow"
+              "name": "Stripe Checkout + plan subscription flow",
+              "prStatus": "merged"
             },
             {
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -7133,7 +7135,8 @@
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.3-dor-contract.md",
               "slug": "lab-s3.3",
-              "name": "Credit enforcement — 402 turn guard"
+              "name": "Credit enforcement — 402 turn guard",
+              "prStatus": "merged"
             },
             {
               "stage": "definition-of-ready",
