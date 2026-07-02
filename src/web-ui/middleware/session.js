@@ -52,11 +52,12 @@ function _clearForTesting() {
 /**
  * Session cookie security configuration.
  * Exported for inspection in tests (NFR1).
+ * SameSite=Strict: cookies are not sent in cross-site contexts.
  */
 const SESSION_COOKIE_CONFIG = {
   httpOnly: true,
   secure:   true,
-  sameSite: 'lax',
+  sameSite: 'strict',
   path:     '/'
 };
 
@@ -65,7 +66,7 @@ function _buildCookieHeader(sessionId) {
   const parts = [
     `session_id=${sessionId}`,
     'HttpOnly',
-    'SameSite=Lax',
+    'SameSite=Strict',
     'Path=/'
   ];
   // Enforce Secure flag in production; allow HTTP in development for local testing
@@ -217,5 +218,6 @@ module.exports = {
   setRedisAdapterForTesting,
   loadSessionsFromRedis,
   persistSession,
-  _clearForTesting
+  _clearForTesting,
+  _sanitiseForRedis  // exported for test inspection (lab-s1.3 NFR1)
 };

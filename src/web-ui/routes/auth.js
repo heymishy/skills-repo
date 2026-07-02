@@ -3,10 +3,18 @@
 // auth.js — OAuth route handlers (ADR-009: separate from read/write routes)
 // Auth handler is standalone — no inline GitHub API calls.
 // CSRF state parameter is mandatory on every callback (ADR-012).
+// lab-s1.3: uses provider registry (providerExchangeCode / providerGetUserIdentity) so
+// future providers (Google, etc.) can be swapped in via setProviderAdapter() in server.js.
 
 // Use module reference (not destructuring) so tests can monkeypatch individual exports.
 const _oauthAdapter = require('../auth/oauth-adapter');
 const { persistSession, rotateSessionId, getSession } = require('../middleware/session');
+
+// Wire the real GitHub provider adapter on module load.
+// This ensures handleAuthCallback works when auth.js is required without server.js
+// (e.g. unit tests that require('./routes/auth') directly).
+// server.js also calls setProviderAdapter() explicitly on startup for clarity (AC6).
+_oauthAdapter.setProviderAdapter(_oauthAdapter.gitHubProviderAdapter);
 
 // Audit logger — replaced via setLogger() in tests and in production bootstrap
 let _logger = {
@@ -87,8 +95,10 @@ async function handleAuthGithub(req, res) {
 
 /**
  * GET /auth/github/callback — receive OAuth code + state from GitHub.
- * Validates CSRF state, exchanges code for token, stores token in session.
+ * Validates CSRF state, exchanges code for token via provider registry, stores token in session.
  * Returns 403 on state mismatch (no token stored, mismatch logged).
+ * lab-s1.3: uses providerExchangeCode / providerGetUserIdentity (registry dispatch) so
+ * additional providers can be supported by swapping the adapter.
  */
 async function handleAuthCallback(req, res) {
   const query         = req.query || {};
@@ -104,10 +114,12 @@ async function handleAuthCallback(req, res) {
   }
 
   try {
-    const token = await _oauthAdapter.exchangeCodeForToken(code);
+    // lab-s1.3: call through provider registry (not the direct standalone functions) so
+    // the adapter can be swapped in tests and for future non-GitHub providers.
+    const token = await _oauthAdapter.providerExchangeCode(code);
     _oauthAdapter.storeTokenInSession(req, token);
 
-    const user = await _oauthAdapter.getUserIdentity(token);
+    const user = await _oauthAdapter.providerGetUserIdentity(token);
     req.session.userId = user.id;
     req.session.login  = user.login;
 
@@ -135,8 +147,8 @@ async function handleAuthCallback(req, res) {
       timestamp: new Date().toISOString()
     });
 
-    // sec-perf AC5: rotate session ID to prevent session fixation attacks.
-    // Must happen after all session fields are set, before persistSession.
+    // sec-perf AC5 / lab-s1.3 AC2: rotate session ID after every successful provider login
+    // to prevent session fixation attacks. Must happen after all session fields are set.
     const _rt = req.session.returnTo;
     const returnTo = (_rt && _rt.startsWith('/') && !_rt.startsWith('//')) ? _rt : '/dashboard';
     const { newId } = rotateSessionId(req.sessionId, res, req.session);
@@ -170,7 +182,8 @@ async function handleLogout(req, res) {
 
 /**
  * Auth guard middleware — protects routes requiring an authenticated session.
- * Redirects to / without exposing session data when token is absent.
+ * Reads req.session.accessToken (canonical field — CLAUDE.md).
+ * NEVER reads req.session.token — sessions using the legacy field are rejected (ARCH-003).
  * @param {object} req
  * @param {object} res
  * @param {Function} next

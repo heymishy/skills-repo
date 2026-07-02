@@ -22,6 +22,7 @@ const { handlePostAnnotation }                                       = require('
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
 const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml, handlePostAssumptionConfirm, handlePostCanvasEditHtml } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3 / iwu.4 / dic.5
 const { setLogger, setFetchOrgs }                                    = require('./routes/auth');
+const { setProviderAdapter, gitHubProviderAdapter }                  = require('./auth/oauth-adapter');  // lab-s1.3 provider registry wiring (D37 separate task)
 const { setFetchPipelineState }                                      = require('./adapters/feature-list');
 const { setFetchArtefactDirectory }                                  = require('./adapters/artefact-list');
 const skillsAdapter                                                  = require('./adapters/skills');          // wuce.23 HTML form wiring
@@ -42,6 +43,12 @@ setLogger({
   info: (event, data) => console.log(`[auth] ${event}`, JSON.stringify(Object.assign({ timestamp: _ts() }, data))),
   warn: (event, data) => console.warn(`[auth] ${event}`, JSON.stringify(Object.assign({ timestamp: _ts() }, data)))
 });
+
+// lab-s1.3 / D37 mandatory separate wiring task — wire real GitHub provider adapter
+// routes/auth.js also wires this at module load for direct-require compat, but server.js
+// must wire it explicitly so AC6 is independently verifiable.
+setProviderAdapter(gitHubProviderAdapter);
+console.log('[auth] provider registry initialised');
 
 // Wire skill list + session creation — active in production AND when
 // WIRE_SKILL_ADAPTERS=true (used by playwright.local.config.js to test adapter
