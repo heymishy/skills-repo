@@ -9,6 +9,7 @@ const { URL } = require('url');
 
 const { sessionMiddleware }                                          = require('./middleware/session');
 const { handleLanding }                                              = require('./routes/landing');     // bee.1
+const { handleRoot }                                                 = require('./routes/public');      // lab-s1.2
 const { handleAuthGithub, handleAuthCallback, handleLogout, authGuard } = require('./routes/auth');
 const { handleArtefactRoute }                                        = require('./routes/artefact');
 const { handleSignOff, handleArtefactRead }                             = require('./routes/sign-off');
@@ -847,8 +848,8 @@ async function router(req, res) {
     }));
 
   } else if (pathname === '/' && req.method === 'GET') {
-    // bee.1 — public landing page (no auth required)
-    await handleLanding(req, res);
+    // lab-s1.2 — public landing page with PostHog event + auth redirect to /dashboard
+    await handleRoot(req, res);
 
   } else {
     // Sign-in page (unauthenticated root)
