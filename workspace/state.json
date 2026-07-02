@@ -1,6 +1,6 @@
 {
-  "currentPhase": "test-plan",
-  "lastUpdated": "2026-07-01T10:00:00Z",
+  "currentPhase": "definition-of-ready",
+  "lastUpdated": "2026-07-02T09:00:00Z",
   "activeFeature": "2026-07-01-landing-auth-billing",
   "cycle": {
     "discovery": { "status": "complete", "artefact": "artefacts/2026-07-01-landing-auth-billing/discovery.md", "approvedAt": "2026-07-01" },
@@ -30,17 +30,29 @@
       "completedAt": "2026-07-01",
       "artefactDir": "artefacts/2026-07-01-landing-auth-billing/test-plans/",
       "verificationScriptsDir": "artefacts/2026-07-01-landing-auth-billing/verification-scripts/"
+    },
+    "definition-of-ready": {
+      "status": "complete",
+      "storiesSignedOff": 11,
+      "allHardBlocksPassed": true,
+      "warningsAcknowledged": ["W4 RISK-ACCEPT (solo operator) — all 11 stories"],
+      "oversightLevel": "Low",
+      "completedAt": "2026-07-02",
+      "artefactDir": "artefacts/2026-07-01-landing-auth-billing/dor/"
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-07-01",
-    "contextAtWrite": "Test-plan complete for 2026-07-01-landing-auth-billing. 11 test plans + 11 AC verification scripts written across lab-s1.1 through lab-s3.5. Total 101 tests specified (all failing — TDD). CSS-layout RISK-ACCEPTs for lab-s1.2 AC5 and lab-s2.3 AC4 documented. No E2E tooling required. Pipeline state updated.",
-    "resumeInstruction": "Test-plan complete for landing-auth-billing. Next step: /definition-of-ready (DoR) for each story, starting with the highest-risk (lab-s1.3 complexity=3, then lab-s2.2 complexity=3). Entry condition: review passed + test plan written. Exit condition: DoR sign-off for all 11 stories.",
+    "writtenAt": "2026-07-02",
+    "contextAtWrite": "Definition-of-ready complete for 2026-07-01-landing-auth-billing. All 11 stories (lab-s1.1 through lab-s3.5) signed off. 22 DoR artefacts written (dor.md + dor-contract.md per story). All 19/19 hard blocks passed for every story. W4 RISK-ACCEPT acknowledged (solo operator, already in decisions.md). Oversight: Low for all stories. Pipeline state updated — all stories at stage=definition-of-ready, dorStatus=signed-off.",
+    "resumeInstruction": "DoR complete for landing-auth-billing. Next step: inner coding loop. Start with lab-s1.1 (Auth tech spike — ESM/CJS path recommendation, no dependencies). Read artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.1-dor.md for coding agent instructions, then run /branch-setup → /implementation-plan → /subagent-execution → /verify-completion → /branch-complete. After spike, lab-s1.2 (Landing page) and lab-s1.3 (Auth registry, blocked until spike ARCH-002 updated) follow. Epic-nested story rule: apply all pipeline-state advances on master AFTER each PR merges.",
     "pendingActions": [
-      "NEXT: Run /definition-of-ready on all 11 stories (lab-s1.1 through lab-s3.5). Start with lab-s1.3 (complexity=3, most blockers). Review DoR contract against test plan for each story — especially verify no 'MUST NOT touch' constraint excludes a file the test plan requires (CLAUDE.md B1/D1 rule).",
-      "MANUAL (Hamish — before bee.3 DoD closes): Verify bee.3 AC4 Scenario 4 — block PostHog CDN in DevTools, confirm CTA navigates without JS error. Update bee.3-dod.md.",
-      "MANUAL (Hamish — unblocks M1/M3/M4 for bee feature): Create PostHog Cloud (EU) account, set POSTHOG_KEY as Fly env var.",
-      "MANUAL (Hamish — after first external user): M2 cross-tenant isolation check for wuce-multi-tenancy — verify cross-tenant 404 with second tenant."
+      "NEXT: Begin inner coding loop with lab-s1.1 (Auth tech spike — ESM/CJS path recommendation, Complexity 2). Read artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.1-dor.md. Run /branch-setup, /implementation-plan (1 task: write spike outcome + update decisions.md ARCH-002), then /subagent-execution.",
+      "UNBLOCKED AFTER lab-s1.1: lab-s1.2 (Landing page, Complexity 1) — can start as soon as s1.1 branch is open (no hard dep). lab-s1.3 (Auth registry, Complexity 3) — blocked until s1.1 spike outcome doc written and ARCH-002 updated.",
+      "BILLING DEPENDENCY CHAIN: lab-s3.1 first → lab-s3.2 + lab-s3.3 (parallel, both need s3.1) → lab-s3.4 (needs s3.1 + s3.2) → lab-s3.5 (needs s3.2 + s3.4).",
+      "MANUAL (Hamish — before bee.3 DoD closes): Verify bee.3 Acceptance Criterion 4 Scenario 4 — block PostHog CDN in DevTools, confirm CTA navigates without JS error. Update bee.3-dod.md.",
+      "MANUAL (Hamish — unblocks Metric 1/Metric 3/Metric 4 for bee feature): Create PostHog Cloud (EU) account, set POSTHOG_KEY as Fly env var.",
+      "MANUAL (Hamish — after first external user): Metric 2 cross-tenant isolation check for wuce-multi-tenancy — verify cross-tenant 404 with second tenant.",
+      "MANUAL (Hamish — pre-launch gate before accepting real payments): Run node scripts/check-prelaunch-stripe.js and complete all steps in artefacts/2026-07-01-landing-auth-billing/verification-scripts/lab-s3.5-verification.md pre-launch checklist before switching Fly.io secrets from test to live Stripe keys."
     ]
   },
   "features": {
@@ -48,13 +60,13 @@
       "status": "definition-of-done-complete",
       "dodCompletedAt": "2026-06-29",
       "allStoriesComplete": true,
-      "nextAction": "M2 (cross-tenant isolation) transitions to on-track when first org-based beta user is onboarded and cross-tenant 404 verified."
+      "nextAction": "Metric 2 (cross-tenant isolation) transitions to on-track when first org-based beta user is onboarded and cross-tenant 404 verified."
     },
     "2026-06-29-beta-entry-experience": {
       "status": "definition-of-done-complete",
       "dodCompletedAt": "2026-06-30",
-      "pendingManualCheck": "bee.3 AC4 Scenario 4 (PostHog CDN blocked — browser smoke test not yet executed)",
-      "nextAction": "PostHog account creation unblocks M1/M3/M4 metrics measurement."
+      "pendingManualCheck": "bee.3 Acceptance Criterion 4 Scenario 4 (PostHog CDN blocked — browser smoke test not yet executed)",
+      "nextAction": "PostHog account creation unblocks Metric 1/Metric 3/Metric 4 metrics measurement."
     }
   }
 }
