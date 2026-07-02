@@ -6914,7 +6914,7 @@
           "name": "Auth Spike + Public Entry Point",
           "stories": [
             {
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -6934,10 +6934,11 @@
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.1-dor.md",
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.1-dor-contract.md",
               "slug": "lab-s1.1",
-              "name": "Auth tech spike: ESM/CJS path recommendation"
+              "name": "Auth tech spike: ESM/CJS path recommendation",
+              "prStatus": "merged"
             },
             {
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -6957,7 +6958,8 @@
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.2-dor-contract.md",
               "slug": "lab-s1.2",
-              "name": "Landing page at /"
+              "name": "Landing page at /",
+              "prStatus": "merged"
             },
             {
               "stage": "definition-of-ready",
@@ -7064,7 +7066,7 @@
           "name": "Billing + Credits",
           "stories": [
             {
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -7084,7 +7086,8 @@
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.1-dor.md",
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.1-dor-contract.md",
               "slug": "lab-s3.1",
-              "name": "Credits table + plan data model (Postgres)"
+              "name": "Credits table + plan data model (Postgres)",
+              "prStatus": "merged"
             },
             {
               "stage": "definition-of-ready",
