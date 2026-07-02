@@ -17,15 +17,15 @@
 
 ---
 
-### ARCH-002: Better Auth path — to be determined by spike (lab-s1.1)
+### ARCH-002: Better Auth path — Path C chosen (roll-your-own OAuth via fetch())
 
-**Date:** 2026-07-01
+**Date:** 2026-07-01 (opened) / 2026-07-02 (resolved by lab-s1.1 spike exit)
 **Context:** Three paths exist for resolving the ESM/CJS incompatibility with Better Auth:
 - Path A: Dynamic `import()` wrapper — keep server CJS, wrap Better Auth calls behind async `import()` at the auth boundary
 - Path B: Full ESM migration — add `"type": "module"` to `package.json`, convert all `require()` to `import`, replace `__dirname`/`__filename` with `import.meta.url`
 - Path C: Roll-your-own thin provider abstraction — implement multi-provider OAuth directly using `fetch()` calls, extending the existing `oauth-adapter.js` pattern, staying entirely CJS with no new npm packages for auth
-**Decision:** DEFERRED to spike exit. The spike's exit deliverable is a written recommendation between A, B, and C with rationale, migration cost estimate (for B), and a go/no-go on Better Auth adoption. The spike MUST NOT exit with "confirmed: doesn't work" and no decision.
-**Rationale:** Choosing a path before the spike is complete would either pre-decide the outcome or require rework.
+**Decision:** **Path C — roll-your-own OAuth abstraction using `fetch()`.** The existing `src/web-ui/auth/oauth-adapter.js` already implements GitHub OAuth via `fetch()` and is working in production. Extending this pattern to additional providers (Google, GitLab) costs roughly one adapter module per provider with zero new npm dependencies. Path A was rejected because `better-auth` is not in `package.json` and introduces ESM interop complexity for no MVP-required features. Path B was rejected because it requires migrating 200 `require()` call sites across 48 files (estimated 2–3 operator days) with no proportional benefit once Path C is viable.
+**Rationale:** Path C is the lowest-risk, lowest-cost path for MVP multi-provider OAuth. It preserves the CJS runtime, the existing session schema, and the established `fetch()`-based adapter pattern. See full spike outcome at `artefacts/2026-07-01-landing-auth-billing/research/auth-spike-outcome.md`.
 
 ---
 
