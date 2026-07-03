@@ -50,12 +50,15 @@ async function adminCreditsGet(req, res) {
       '<tr>' +
       '<td>' + escapeHtml(r.tenant_id) + '</td>' +
       '<td>' + escapeHtml(String(r.balance)) + '</td>' +
+      '<td>' +
+      '<form method="POST" action="/api/admin/credits/adjust">' +
+      '<input type="hidden" name="tenantId" value="' + escapeHtml(r.tenant_id) + '">' +
+      '<input type="number" name="amount" min="1" required>' +
+      '<button type="submit">Adjust</button>' +
+      '</form>' +
+      '</td>' +
       '</tr>'
     );
-  }).join('\n');
-
-  const formOptions = rows.map(function(r) {
-    return '<option value="' + escapeHtml(r.tenant_id) + '">' + escapeHtml(r.tenant_id) + '</option>';
   }).join('\n');
 
   const html = [
@@ -65,17 +68,11 @@ async function adminCreditsGet(req, res) {
     '<body>',
     '<h1>Admin: Credits</h1>',
     '<table>',
-    '<thead><tr><th>Tenant ID</th><th>Balance</th></tr></thead>',
+    '<thead><tr><th>Tenant ID</th><th>Balance</th><th>Top-up</th></tr></thead>',
     '<tbody>',
     tableRows,
     '</tbody>',
     '</table>',
-    '<h2>Adjust Balance</h2>',
-    '<form method="POST" action="/api/admin/credits/adjust">',
-    '<label>Tenant: <select name="tenantId">' + formOptions + '</select></label>',
-    '<label>Amount: <input type="number" name="amount" required></label>',
-    '<button type="submit">Adjust</button>',
-    '</form>',
     '</body>',
     '</html>',
   ].join('\n');

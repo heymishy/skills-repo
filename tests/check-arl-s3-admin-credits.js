@@ -89,6 +89,9 @@ async function main() {
       assert.ok(res._body.includes('/api/admin/credits/adjust'), 'HTML must contain the adjust form action');
       assert.ok(res._body.includes('name="tenantId"'), 'Form must have tenantId field');
       assert.ok(res._body.includes('name="amount"'), 'Form must have amount field');
+      assert.ok(res._body.includes('type="hidden"'), 'tenantId must be a hidden input, not a select');
+      assert.ok(!res._body.includes('<select'), 'Old select dropdown must not be present');
+      assert.ok(res._body.includes('value="tenant-a"'), 'Hidden input must have tenant-a as its value');
     });
   });
 
