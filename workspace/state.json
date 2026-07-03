@@ -1,44 +1,40 @@
 {
-  "currentPhase": "branch-complete",
-  "lastUpdated": "2026-07-03T14:00:00Z",
+  "currentPhase": "definition-of-done",
+  "lastUpdated": "2026-07-04T00:00:00Z",
   "activeFeature": "2026-07-03-admin-role-panel",
   "cycle": {
     "discovery": { "status": "complete", "artefact": "artefacts/2026-07-03-admin-role-panel/discovery.md", "completedAt": "2026-07-03" },
-    "benefit-metric": { "status": "complete", "artefact": "artefacts/2026-07-03-admin-role-panel/benefit-metric.md", "completedAt": "2026-07-03", "metrics": ["M1 — Admin credits-guard bypass operational", "M2 — Credits top-up time via browser UI", "M3 — Non-admin enforcement not regressed"] },
-    "definition": { "status": "complete", "artefact": "artefacts/2026-07-03-admin-role-panel/", "completedAt": "2026-07-03" },
-    "review": { "status": "complete", "completedAt": "2026-07-03", "results": { "arl-s1": "PASS 0H/0M/1L", "arl-s2": "PASS 0H/0M/0L", "arl-s3": "PASS 0H/1M-resolved/1L-resolved" } },
+    "benefit-metric": { "status": "complete", "artefact": "artefacts/2026-07-03-admin-role-panel/benefit-metric.md", "completedAt": "2026-07-03" },
+    "definition": { "status": "complete", "completedAt": "2026-07-03" },
+    "review": { "status": "complete", "completedAt": "2026-07-03" },
     "test-plan": { "status": "complete", "completedAt": "2026-07-03" },
-    "definition-of-ready": { "status": "complete", "completedAt": "2026-07-03", "results": { "arl-s1": "SIGNED OFF", "arl-s2": "SIGNED OFF", "arl-s3": "SIGNED OFF" } },
-    "inner-loop": {
-      "status": "draft-pr-open",
-      "prUrl": "https://github.com/heymishy/skills-repo/pull/435",
-      "prStatus": "draft",
-      "branch": "feat/admin-role-panel",
-      "commits": {
-        "arl-s1": "cddd779 — user_roles migration and role loading via getUserRole adapter",
-        "arl-s2": "ed25cb3 — creditsGuard admin bypass and requireAdmin middleware",
-        "arl-s3": "360ca8c — admin credits page GET and POST handlers",
-        "arl-s3-fix": "cbd2982 — add AC5+AC6 non-admin 403 tests"
+    "definition-of-ready": { "status": "complete", "completedAt": "2026-07-03" },
+    "inner-loop": { "status": "merged", "prNumber": 435, "mergedAt": "2026-07-03T19:08:57Z", "mergeCommit": "145e45ec" },
+    "definition-of-done": {
+      "status": "complete",
+      "completedAt": "2026-07-04",
+      "results": {
+        "arl-s1": "COMPLETE WITH DEVIATIONS — 7/7 ACs, D1 (test count consolidated), D2 (try/catch swallows adapter error — safe-fail)",
+        "arl-s2": "COMPLETE — 6/6 ACs, no deviations, M3 on-track",
+        "arl-s3": "COMPLETE WITH DEVIATIONS — 8/9 ACs (AC7 RISK-ACCEPT pre-approved), manual smoke test pending"
       },
-      "testResults": {
-        "arl-s1": "6/6 passing (tests/check-arl-s1-user-roles.js)",
-        "arl-s2": "8/8 passing (tests/check-arl-s2-admin-middleware.js)",
-        "arl-s3": "12/12 passing (tests/check-arl-s3-admin-credits.js)"
-      },
-      "openQuestion": "AC2 deviation: arl-s3 renders one form with a <select> dropdown rather than one form per tenant row. Functionally equivalent — admin can top up any tenant. Decide before merging: accept deviation or have agent add per-row forms."
+      "dodArtefacts": [
+        "artefacts/2026-07-03-admin-role-panel/dod/arl-s1-dod.md",
+        "artefacts/2026-07-03-admin-role-panel/dod/arl-s2-dod.md",
+        "artefacts/2026-07-03-admin-role-panel/dod/arl-s3-dod.md"
+      ]
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-07-03",
-    "contextAtWrite": "Inner coding loop complete. Draft PR #435 open on feat/admin-role-panel. 26 tests passing across 3 stories. One open question: AC2 form layout deviation (single select vs per-row forms). Pending: operator decision on AC2, then merge, then /definition-of-done.",
-    "resumeInstruction": "Inner coding loop complete for 2026-07-03-admin-role-panel. Draft PR #435 is open at https://github.com/heymishy/skills-repo/pull/435 on branch feat/admin-role-panel. 26 tests pass (6+8+12). OPEN QUESTION: AC2 deviation — arl-s3 uses a single <select> form instead of one form per tenant row. Operator must decide: accept or fix before merge. NEXT STEP after merge: run /definition-of-done for each story (arl-s1, arl-s2, arl-s3). Epic-nested story rule: apply all pipeline-state advances on master AFTER each PR merges (cdg.6). Post-deploy action: run admin seed SQL via fly postgres connect.",
+    "writtenAt": "2026-07-04",
+    "contextAtWrite": "Definition-of-done complete for all three arl stories. arl-s1: COMPLETE WITH DEVIATIONS (minor). arl-s2: COMPLETE. arl-s3: COMPLETE WITH DEVIATIONS (AC7 RISK-ACCEPT pre-approved). M3 on-track (CI gate active). M1 and M2 not-yet-measured pending deploy. Pipeline-state updated for all stories. Feature 2026-07-03-admin-role-panel is now DoD-complete. Next: deploy to Fly.io, run admin seed SQL, run AC7 manual smoke test.",
+    "resumeInstruction": "DoD complete for 2026-07-03-admin-role-panel. All three stories (arl-s1, arl-s2, arl-s3) are definition-of-done-complete. DoD artefacts in artefacts/2026-07-03-admin-role-panel/dod/. PENDING MANUAL ACTIONS before feature is fully verified: (1) Deploy to Fly.io, (2) Run admin seed SQL via fly postgres connect, (3) Run AC7 manual smoke test on /admin/credits (keyboard navigation), (4) Measure M1 and M2 in production.",
     "pendingActions": [
-      "DECISION (Hamish — before merge): AC2 deviation on arl-s3 — page uses one <select> form (not per-row forms). Accept or fix? If fix: send subagent back to rewrite adminCreditsGet HTML to render one form per table row with a hidden tenantId input.",
-      "MERGE: Review and merge PR #435 when ready. Remember: epic-nested story state rule — run pipeline-state advances on master AFTER merge.",
-      "POST-MERGE: Run /definition-of-done for arl-s1, arl-s2, arl-s3. Read merged artefacts and verify AC coverage.",
-      "POST-DEPLOY (Hamish — after first deploy): Run seed SQL via fly postgres connect: INSERT INTO user_roles (tenant_id, role) VALUES ('heymishy', 'admin') ON CONFLICT (tenant_id) DO UPDATE SET role = 'admin'",
-      "MANUAL SMOKE TEST (post-deploy arl-s3): keyboard-navigate /admin/credits using Tab/Enter/Space. Required by B2 RISK-ACCEPT (decisions.md ADR-004).",
-      "EXISTING FEATURE (landing-auth-billing): Inner coding loop for all 11 stories (lab-s1.1 through lab-s3.5) still pending.",
+      "DEPLOY: Deploy feat/admin-role-panel (now merged to master) to Fly.io.",
+      "POST-DEPLOY REQUIRED (Hamish): Run seed SQL via fly postgres connect: INSERT INTO user_roles (tenant_id, role) VALUES ('heymishy', 'admin') ON CONFLICT (tenant_id) DO UPDATE SET role = 'admin'",
+      "POST-DEPLOY MANUAL SMOKE TEST (Hamish — arl-s3 AC7 RISK-ACCEPT): keyboard-navigate /admin/credits using Tab/Enter/Space. Verify all tenant forms reachable and submittable. Mark Scenario 7 in arl-s3-verification.md as Pass/Fail.",
+      "POST-DEPLOY METRIC MEASUREMENT: M1 — confirm admin session turns succeed (no 402). M2 — time the credits top-up browser workflow. Update pipeline-state.json metrics after measurement.",
+      "EXISTING FEATURE (landing-auth-billing): Inner coding loop for all 11 stories (lab-s1.1 through lab-s3.5) still pending. Start with lab-s1.1 (Auth tech spike).",
       "MANUAL (Hamish — bee.3): Verify bee.3 AC4 Scenario 4 — block PostHog CDN in DevTools.",
       "MANUAL (Hamish): Create PostHog Cloud (EU) account, set POSTHOG_KEY as Fly env var.",
       "MANUAL (Hamish — pre-launch gate): Run node scripts/check-prelaunch-stripe.js before switching to live Stripe keys."
@@ -50,11 +46,16 @@
     "2026-07-01-landing-auth-billing": { "status": "definition-of-ready-complete", "dorCompletedAt": "2026-07-02", "storiesSignedOff": 11, "nextAction": "Begin inner coding loop. Start with lab-s1.1." },
     "2026-07-03-skills-session-resume": { "status": "definition-of-done-complete", "dodCompletedAt": "2026-07-03", "allStoriesComplete": true },
     "2026-07-03-admin-role-panel": {
-      "status": "branch-complete",
-      "prUrl": "https://github.com/heymishy/skills-repo/pull/435",
-      "prStatus": "draft",
-      "branch": "feat/admin-role-panel",
-      "nextAction": "Operator decides on AC2 deviation, then merges PR, then runs /definition-of-done per story on master."
+      "status": "definition-of-done-complete",
+      "dodCompletedAt": "2026-07-04",
+      "allStoriesComplete": true,
+      "pendingPostDeploy": [
+        "Admin seed SQL (fly postgres connect)",
+        "AC7 manual smoke test (/admin/credits keyboard nav)",
+        "M1 measurement (admin session turns succeed)",
+        "M2 measurement (top-up time < 2 min)"
+      ],
+      "nextAction": "Deploy to Fly.io. Run seed SQL. Verify AC7. Measure M1+M2."
     }
   }
 }

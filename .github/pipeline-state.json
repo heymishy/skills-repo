@@ -7309,8 +7309,8 @@
           "baseline": "0% — every turn returns HTTP 402 (balance = 0, no bypass)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "arl-s1+arl-s2 merged (PR #435); admin seed SQL not yet run post-deploy; measurement possible after first Fly.io deploy and seed execution via fly postgres connect",
+          "contributingStories": ["arl-s1", "arl-s2"]
         },
         {
           "id": "M2",
@@ -7319,18 +7319,18 @@
           "baseline": "5-10 minutes via fly postgres connect + manual SQL",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "arl-s3 merged (PR #435); browser UI shipped; measurement requires first deploy to Fly.io and manual timing of form submit cycle by admin user",
+          "contributingStories": ["arl-s3"]
         },
         {
           "id": "M3",
           "name": "Non-admin credits enforcement not regressed",
           "target": "100% maintained — user-role sessions with balance=0 still return HTTP 402",
           "baseline": "100% (current guard blocks all users with balance=0)",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "signal": "on-track",
+          "lastMeasured": "2026-07-03",
+          "evidence": "CI gate test in check-arl-s2-admin-middleware.js (T3: creditsGuard returns 402 for role=user + balance=0) passes on every build as of merge commit 145e45ec",
+          "contributingStories": ["arl-s2"]
         }
       ],
       "definitionStatus": "complete",
@@ -7346,7 +7346,7 @@
               "title": "Create user_roles DB table and load role into session for all auth paths",
               "complexity": 2,
               "scopeStability": "Stable",
-              "status": "dor-signed-off",
+              "status": "definition-of-done",
               "metricsAddressed": [
                 "M1",
                 "M3"
@@ -7368,14 +7368,20 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-07-03-admin-role-panel/dor/arl-s1-dor.md"
+              "dorArtefact": "artefacts/2026-07-03-admin-role-panel/dor/arl-s1-dor.md",
+              "prStatus": "merged",
+              "prNumber": 435,
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false
             },
             {
               "id": "arl-s2",
               "title": "Credits guard admin bypass and requireAdmin middleware",
               "complexity": 1,
               "scopeStability": "Stable",
-              "status": "dor-signed-off",
+              "status": "definition-of-done",
               "metricsAddressed": [
                 "M1",
                 "M3"
@@ -7397,14 +7403,20 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-07-03-admin-role-panel/dor/arl-s2-dor.md"
+              "dorArtefact": "artefacts/2026-07-03-admin-role-panel/dor/arl-s2-dor.md",
+              "prStatus": "merged",
+              "prNumber": 435,
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false
             },
             {
               "id": "arl-s3",
               "title": "Admin credits page: view all balances and submit top-up",
               "complexity": 2,
               "scopeStability": "Stable",
-              "status": "dor-signed-off",
+              "status": "definition-of-done",
               "metricsAddressed": [
                 "M2"
               ],
@@ -7425,7 +7437,13 @@
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-07-03-admin-role-panel/dor/arl-s3-dor.md"
+              "dorArtefact": "artefacts/2026-07-03-admin-role-panel/dor/arl-s3-dor.md",
+              "prStatus": "merged",
+              "prNumber": 435,
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "layoutGapsAtMerge": true,
+              "layoutGapsRiskAccepted": true
             }
           ]
         }
