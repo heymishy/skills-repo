@@ -157,6 +157,21 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     console.log('Credits DB adapter wired');
     setWebhookDbAdapter(_creditsPool); // same pool — stripe_events in same DB as credits
     console.log('Webhook DB adapter wired (idempotency)');
+    // Auto-migrate credits and stripe_events tables on startup (CREATE TABLE IF NOT EXISTS is idempotent)
+    _creditsPool.query(`
+      CREATE TABLE IF NOT EXISTS credits (
+        tenant_id  VARCHAR PRIMARY KEY,
+        balance    INTEGER NOT NULL DEFAULT 0,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )
+    `).then(function() { console.log('credits table ready'); })
+      .catch(function(err) { console.error('credits table migration failed:', err.message); });
+    _creditsPool.query(`
+      CREATE TABLE IF NOT EXISTS stripe_events (
+        stripe_event_id VARCHAR PRIMARY KEY
+      )
+    `).then(function() { console.log('stripe_events table ready'); })
+      .catch(function(err) { console.error('stripe_events table migration failed:', err.message); });
   }
 
   // lab-s3.2 — Wire real Stripe SDK adapter (D37 mandatory separate wiring task)
