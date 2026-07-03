@@ -7308,7 +7308,7 @@
       },
       "stories": [
         {
-          "slug": "pla-s1",
+          "id": "pla-s1",
           "name": "Extend posthog-server.js with identify, groupIdentify, captureException, and groups support",
           "stage": "branch-complete",
           "health": "green",
