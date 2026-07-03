@@ -48,10 +48,14 @@ Given the sessionId is NOT in `_sessionStore` AND `readSessionFromRedis` returns
 When `handleGetChatHtml` executes,
 Then the handler returns 404 "Session not found" (existing behaviour preserved).
 
-**AC3** — Prior conversation turns restored
+**AC3** — Prior conversation turns restored with current question shown and no restart
 Given AC1 holds (Redis restore occurred),
+And the session has N completed turns (e.g. question 3 of 10 through /ideate: turns = [A1, U1, A2, U2, A3]),
 When the rendered chat page HTML is inspected,
-Then the `priorQA` pairs built from `session.turns` are present in the HTML — the user sees their prior conversation, not a blank chat.
+Then:
+(a) The N-1 answered Q&A pairs (e.g. Q1/A1, Q2/A2) are rendered in `#chat-messages` as prior history messages,
+(b) The last unanswered assistant question (e.g. Q3) is rendered as the current prompt — the user sees where they left off, ready to answer,
+(c) `thread.children.length > 0` so the client-side auto-fire guard (`if(thread.children.length === 0) sendTurn("__init__")`) does NOT trigger — the skill does NOT restart from question 1.
 
 **AC4** — Prior artefact content restored
 Given AC1 holds (Redis restore occurred),
@@ -105,7 +109,7 @@ Then the handler serves the chat page exactly as before — no change in behavio
 Tests live in `tests/web-ui/skills-session-resume.test.js`. The test injects a mock `_skillSessionRedis` adapter via `setSkillSessionRedisAdapter`. Required cases:
 - AC1: mock Redis returns session data → 200 response, session appears in `_sessionStore`
 - AC2: mock Redis returns null → 404 response
-- AC3: session has turns → priorQA HTML present in response body
+- AC3: session has turns [A1, U1, A2, U2, A3] → priorQA HTML for Q1/A1 and Q2/A2 present in response body; Q3 rendered as current question; no `sendTurn("__init__")` scenario (thread non-empty)
 - AC4: session has `artefactContent` → `__SW_INITIAL_ARTEFACT__` present in response body
 - AC5: session has `journeyId` → restored session has `journeyId` set
 - AC6: session already in `_sessionStore` → 200, Redis adapter NOT called
