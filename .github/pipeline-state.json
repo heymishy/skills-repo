@@ -7231,17 +7231,17 @@
     {
       "slug": "2026-07-03-skills-session-resume",
       "name": "Skills Session Resume: Redis Restore on Cache Miss",
-      "track": "short-track",
+      "track": "short",
       "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-07-03T00:00:00Z",
+      "updatedAt": "2026-07-03T07:09:44.933Z",
       "stories": [
         {
           "id": "def-s1",
           "title": "Restore turns and artefact from Redis when session not in memory",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "dorStatus": "signed-off",
-          "prStatus": "not-started",
+          "prStatus": "merged",
           "health": "green",
           "releaseReady": false,
           "complexity": 2,
@@ -7252,13 +7252,35 @@
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0
+            "passing": 9
           },
           "acTotal": 6,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-07-03T00:00:00Z"
+          "updatedAt": "2026-07-03T07:09:44.932Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write failing tests (9 tests, AC1-AC6 + IT1 + NFR1)",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-03-skills-session-resume/plans/def-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Implement Redis restore in handleGetChatHtml (~5 lines)",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-03-skills-session-resume/plans/def-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Register test in package.json test chain",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-03-skills-session-resume/plans/def-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/434"
         }
       ],
       "guardrails": []
