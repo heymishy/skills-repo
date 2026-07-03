@@ -25,6 +25,7 @@ function test(name, fn) {
 
 var CREDITS_PATH = path.resolve(__dirname, '../src/web-ui/modules/credits.js');
 var ADMIN_CREDITS_PATH = path.resolve(__dirname, '../src/web-ui/routes/admin-credits.js');
+var requireAdmin = require(path.resolve(__dirname, '../src/web-ui/middleware/require-admin')).requireAdmin;
 
 function freshRequireCredits() {
   delete require.cache[require.resolve(CREDITS_PATH)];
@@ -303,6 +304,72 @@ async function main() {
       assert.strictEqual(ids.length, 2);
       assert.ok(ids.includes('tenant-a'));
       assert.ok(ids.includes('tenant-b'));
+    });
+  });
+
+  // T11: Non-admin GET /admin/credits returns 403 (AC5)
+  queue.push(function() {
+    console.log('\n[arl-s3] T11 -- Non-admin GET /admin/credits returns 403 (AC5)');
+    return test('requireAdmin + adminCreditsGet: non-admin role returns 403', async function() {
+      var credits = freshRequireCredits();
+      credits.setCreditsAdapter(makeMockDb());
+      var handler = freshRequireAdminCredits(credits);
+
+      var req = { session: { userId: 1, role: 'user' } };
+      var res = makeRes();
+
+      await new Promise(function(resolve) {
+        var called = false;
+        requireAdmin(req, res, function() { called = true; });
+        if (called) {
+          handler.adminCreditsGet(req, res).then(resolve).catch(resolve);
+        } else {
+          resolve();
+        }
+      });
+
+      assert.strictEqual(res._status, 403, 'Expected 403 for non-admin role, got ' + res._status);
+      assert.ok(!res._body.includes('<table'), 'Credits page HTML must not be rendered');
+    });
+  });
+
+  // T12: Non-admin POST /api/admin/credits/adjust returns 403 (AC6)
+  queue.push(function() {
+    console.log('\n[arl-s3] T12 -- Non-admin POST /api/admin/credits/adjust returns 403 (AC6)');
+    return test('requireAdmin + adminCreditsPost: non-admin role returns 403', async function() {
+      var adjustCalled = false;
+      var credits = freshRequireCredits();
+      credits.setCreditsAdapter({
+        query: async function(sql) {
+          if (sql.includes('UPDATE')) { adjustCalled = true; return { rows: [] }; }
+          return { rows: [] };
+        }
+      });
+      var handler = freshRequireAdminCredits(credits);
+
+      var body = 'tenantId=tenant-a&amount=50';
+      var req = {
+        session: { userId: 1, role: 'user' },
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        on: function(event, cb) {
+          if (event === 'data') cb(body);
+          if (event === 'end') cb();
+        }
+      };
+      var res = makeRes();
+
+      await new Promise(function(resolve) {
+        var called = false;
+        requireAdmin(req, res, function() { called = true; });
+        if (called) {
+          handler.adminCreditsPost(req, res).then(resolve).catch(resolve);
+        } else {
+          resolve();
+        }
+      });
+
+      assert.strictEqual(res._status, 403, 'Expected 403 for non-admin role, got ' + res._status);
+      assert.ok(!adjustCalled, 'adjustBalance must not be called for non-admin');
     });
   });
 
