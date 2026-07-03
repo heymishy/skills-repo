@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-07-01T10:00:00Z",
+  "updated": "2026-07-03T00:00:00Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -7225,6 +7225,30 @@
             }
           ],
           "slug": "lab-e3"
+        }
+      ]
+    },
+    {
+      "slug": "2026-07-03-skills-session-resume",
+      "name": "Skills Session Resume: Redis Restore on Cache Miss",
+      "track": "short-track",
+      "stage": "definition",
+      "health": "green",
+      "updatedAt": "2026-07-03T00:00:00Z",
+      "stories": [
+        {
+          "id": "def-s1",
+          "title": "Restore turns and artefact from Redis when session not in memory",
+          "stage": "definition",
+          "dorStatus": "pending",
+          "prStatus": "not-started",
+          "health": "green",
+          "releaseReady": false,
+          "complexity": 2,
+          "scopeStability": "Stable",
+          "tddState": "not-started",
+          "testsPassing": 0,
+          "totalTests": 0
         }
       ]
     }
