@@ -10,6 +10,7 @@ var GPA_TESTS = [
   'tests/check-gpa-sc05-skills-init.js',
   'tests/check-gpa-sc06-source-path-guard.js',
   'tests/check-gpa-sc02-unified-gate-evaluator.js',
+  'tests/check-pla-s1-posthog-module.js',
 ];
 
 var failed = false;
