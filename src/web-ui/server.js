@@ -33,7 +33,7 @@ const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetSt
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
-const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter } = require('./routes/billing'); // lab-s3.2 / lab-s3.4
+const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
 const { creditsGuard }                                               = require('./middleware/credits-guard'); // lab-s3.3
 const { handleEmailSignup, handleEmailLogin, setUserDb }             = require('./routes/auth-email');       // lab-s2.2
@@ -433,18 +433,16 @@ if (process.env.NODE_ENV === 'test') {
   // lab-s3.3: wire unlimited credits in test mode so existing E2E tests are not blocked by the guard
   setCreditsAdapter({ query: async () => ({ rows: [{ balance: 9999 }] }) });
 
-<<<<<<< HEAD
   // lab-s3.4: no-op webhook DB in test mode — rowCount=1 so each event appears as new (not a duplicate)
   // The check-lab-s3.4-stripe-webhook.js unit tests inject their own mock directly via setWebhookDbAdapter().
   setWebhookDbAdapter({ query: async function() { return { rows: [], rowCount: 1 }; } });
-=======
+
   // lab-s2.3: wire user-flags adapter in test mode — returns firstLogin: false (returning user) by default.
   // Tests override this per-test via monkeypatching.
   setUserFlagsAdapter({
     getFirstLoginFlag:   async function() { return false; },
     clearFirstLoginFlag: async function() {}
   });
->>>>>>> lab-s2.3: /welcome onboarding — first-login detection + plan selection
 }
 
 /** Parse query parameters from a URL into a plain object. */
@@ -960,6 +958,10 @@ async function router(req, res) {
     // lab-s3.2 — Stripe Checkout success callback
     await handleGetBillingSuccess(req, res);
 
+  } else if (pathname === '/settings/billing' && req.method === 'GET') {
+    // lab-s3.5 — Stripe Billing Portal redirect
+    await handleGetBillingPortal(req, res);
+
   } else if (pathname === '/api/me' && req.method === 'GET') {
     const authenticated = !!(req.session && req.session.accessToken);
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -969,7 +971,6 @@ async function router(req, res) {
       sessionId: req.sessionId
     }));
 
-<<<<<<< HEAD
   } else if (pathname === '/auth/email/signup' && req.method === 'POST') {
     // lab-s2.2 — email/password signup
     await handleEmailSignup(req, res);
@@ -977,11 +978,10 @@ async function router(req, res) {
   } else if (pathname === '/auth/email/login' && req.method === 'POST') {
     // lab-s2.2 — email/password login
     await handleEmailLogin(req, res);
-=======
+
   } else if (pathname === '/welcome' && req.method === 'GET') {
     // lab-s2.3 — plan selection page for first-time users (firstLogin detection)
     await handleWelcome(req, res);
->>>>>>> lab-s2.3: /welcome onboarding — first-login detection + plan selection
 
   } else if (pathname === '/' && req.method === 'GET') {
     // lab-s1.2 — public landing page with PostHog event + auth redirect to /dashboard

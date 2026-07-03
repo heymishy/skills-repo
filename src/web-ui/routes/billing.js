@@ -242,4 +242,27 @@ async function handlePostStripeWebhook(req, res) {
   res.end(JSON.stringify({ received: true }));
 }
 
-module.exports = { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter };
+/**
+ * GET /settings/billing — Stripe Billing Portal redirect (lab-s3.5)
+ *
+ * AC2: No session (or no accessToken) → 302 to /
+ * AC1: Has session with stripeCustomerId → call createPortalSession → 302 to portal URL
+ * AC6: returnUrl passed to createPortalSession contains '/dashboard'
+ */
+async function handleGetBillingPortal(req, res) {
+  // AC2: auth guard — no session → redirect to /
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/' });
+    res.end();
+    return;
+  }
+
+  // AC1: create portal session and redirect
+  var customerId = req.session.stripeCustomerId;
+  var portalUrl = await stripeClient.createPortalSession(customerId, '/dashboard');
+
+  res.writeHead(302, { Location: portalUrl });
+  res.end();
+}
+
+module.exports = { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal };
