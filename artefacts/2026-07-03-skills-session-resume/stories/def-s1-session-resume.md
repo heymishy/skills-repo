@@ -15,6 +15,10 @@ The consequence: users lose access to their in-progress skill session (turns and
 
 A secondary gap: once the page loads (same server instance, session still in `_sessionStore`), `session.turns` and `session.artefactContent` are served from memory correctly. The Redis restore path must replicate this, restoring both `turns` (conversation history → rendered as prior Q&A pairs) and `artefactContent` (partial skill output → rendered in the artefact panel).
 
+## Metric linkage
+
+- **M1** (Self-serve signup conversion — indirectly): A broken session resume forces users to restart skill sessions from scratch, degrading the experience and increasing drop-off before artefact completion. This fix is a prerequisite for M1 reaching a measurable baseline on the landing-auth-billing feature.
+
 ## User story
 
 As a platform user with an in-progress skill session,
@@ -100,9 +104,7 @@ Then the handler serves the chat page exactly as before — no change in behavio
 
 ## NFRs
 
-- **No additional Redis reads for hot path**: Redis restore only executes when `_sessionStore.get(sessionId)` returns null (cache miss). Sessions already in memory incur zero additional I/O (AC6).
-- **Graceful Redis unavailability**: `readSessionFromRedis` already returns null if `_skillSessionRedis` is null or if the read throws. The 404 fallback is preserved when Redis is unavailable.
-- **No credentials in Redis data**: `skill-session-redis.js` already strips `accessToken` from all writes (`_sanitise`). No change needed.
+None — confirmed 2026-07-03. Performance and security constraints are captured in Architecture Constraints above (no extra Redis reads for hot path, graceful Redis unavailability, no credentials in Redis data) and verified by test plan IT1 and NFR1.
 
 ## Test
 

@@ -7232,15 +7232,15 @@
       "slug": "2026-07-03-skills-session-resume",
       "name": "Skills Session Resume: Redis Restore on Cache Miss",
       "track": "short-track",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
       "updatedAt": "2026-07-03T00:00:00Z",
       "stories": [
         {
           "id": "def-s1",
           "title": "Restore turns and artefact from Redis when session not in memory",
-          "stage": "test-plan",
-          "dorStatus": "pending",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
           "prStatus": "not-started",
           "health": "green",
           "releaseReady": false,
@@ -7257,9 +7257,11 @@
           "acTotal": 6,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-07-03T00:00:00Z"
         }
-      ]
+      ],
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
