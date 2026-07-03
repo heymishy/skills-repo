@@ -6829,7 +6829,7 @@
       "regulated": false,
       "complianceProfile": "standard",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-07-02T09:00:00Z",
+      "updatedAt": "2026-07-03T00:00:00Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-01-landing-auth-billing/discovery.md",
@@ -6846,32 +6846,44 @@
         {
           "id": "M1",
           "name": "Self-serve signup conversion",
-          "tier": 1,
-          "signal": "not-yet-measured"
+          "signal": "not-yet-measured",
+          "evidence": "Platform not yet live with real beta users. Measurement begins once first friend is invited and PostHog funnel data is available.",
+          "lastMeasured": null
         },
         {
           "id": "M2",
           "name": "Credits enforcement",
-          "tier": 1,
-          "signal": "not-yet-measured"
+          "signal": "on-track",
+          "evidence": "Automated test suite asserts 402 on every turn attempt with balance = 0 and no Anthropic API call made (36/36 tests pass, CI green). Production weekly query cannot run until platform is live.",
+          "lastMeasured": "2026-07-03"
         },
         {
           "id": "M3",
           "name": "Monthly cost recovery rate",
-          "tier": 1,
-          "signal": "not-yet-measured"
+          "signal": "not-yet-measured",
+          "evidence": "Stripe Checkout, webhook, and billing portal implemented and tested. No real Stripe payments received; platform not yet live.",
+          "lastMeasured": null
         },
         {
           "id": "M4",
           "name": "Time to first paid plan",
-          "tier": 1,
-          "signal": "not-yet-measured"
+          "signal": "not-yet-measured",
+          "evidence": "Full checkout flow implemented. First checkout.session.completed webhook not yet received. Pre-launch checklist not yet run with live Stripe keys.",
+          "lastMeasured": null
         },
         {
           "id": "M5",
           "name": "Pricing configurability",
-          "tier": 2,
-          "signal": "not-yet-measured"
+          "signal": "not-yet-measured",
+          "evidence": "Structural guarantee implemented (env-var-sourced price IDs; check-prelaunch-stripe.js exits 1 if placeholders present). AC5 end-to-end smoke test not yet run — requires live Stripe keys and Fly.io deploy.",
+          "lastMeasured": null
+        },
+        {
+          "id": "M6",
+          "name": "Session continuity post-migration",
+          "signal": "not-yet-measured",
+          "evidence": "Metric dropped — no existing beta users at migration time. Retained for audit trail only.",
+          "lastMeasured": null
         }
       ],
       "guardrails": [
@@ -6914,7 +6926,7 @@
           "name": "Auth Spike + Public Entry Point",
           "stories": [
             {
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -6935,13 +6947,15 @@
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.1-dor-contract.md",
               "slug": "lab-s1.1",
               "name": "Auth tech spike: ESM/CJS path recommendation",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "health": "green",
+              "health": "amber",
               "complexity": 1,
               "updatedAt": "2026-07-02T09:00:00Z",
               "testPlan": {
@@ -6959,10 +6973,12 @@
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.2-dor-contract.md",
               "slug": "lab-s1.2",
               "name": "Landing page at /",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": false
             },
             {
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -6983,7 +6999,9 @@
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.3-dor-contract.md",
               "slug": "lab-s1.3",
               "name": "Multi-provider auth registry (GitHub primary)",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ],
           "slug": "lab-e1"
@@ -6992,7 +7010,7 @@
           "name": "Additional Providers + Onboarding",
           "stories": [
             {
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -7013,13 +7031,15 @@
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.1-dor-contract.md",
               "slug": "lab-s2.1",
               "name": "Google OAuth — second auth provider",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "health": "green",
+              "health": "amber",
               "complexity": 3,
               "updatedAt": "2026-07-02T09:00:00Z",
               "testPlan": {
@@ -7037,13 +7057,15 @@
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.2-dor-contract.md",
               "slug": "lab-s2.2",
               "name": "Email/password — third auth provider",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": false
             },
             {
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "health": "green",
+              "health": "amber",
               "complexity": 2,
               "updatedAt": "2026-07-02T09:00:00Z",
               "testPlan": {
@@ -7061,7 +7083,9 @@
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.3-dor-contract.md",
               "slug": "lab-s2.3",
               "name": "/welcome onboarding — first-login detection + plan selection redirect",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": false
             }
           ],
           "slug": "lab-e2"
@@ -7070,7 +7094,7 @@
           "name": "Billing + Credits",
           "stories": [
             {
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -7091,10 +7115,12 @@
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.1-dor-contract.md",
               "slug": "lab-s3.1",
               "name": "Credits table + plan data model (Postgres)",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -7115,10 +7141,12 @@
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.2-dor-contract.md",
               "slug": "lab-s3.2",
               "name": "Stripe Checkout + plan subscription flow",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -7139,10 +7167,12 @@
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.3-dor-contract.md",
               "slug": "lab-s3.3",
               "name": "Credit enforcement — 402 turn guard",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -7163,13 +7193,15 @@
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.4-dor-contract.md",
               "slug": "lab-s3.4",
               "name": "Stripe webhook handler (provision credits, idempotency)",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "health": "green",
+              "health": "amber",
               "complexity": 1,
               "updatedAt": "2026-07-02T09:00:00Z",
               "testPlan": {
@@ -7187,7 +7219,9 @@
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.5-dor-contract.md",
               "slug": "lab-s3.5",
               "name": "Billing portal + pre-launch Stripe ID swap checklist",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": false
             }
           ],
           "slug": "lab-e3"
