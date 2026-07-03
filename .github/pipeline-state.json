@@ -7285,6 +7285,52 @@
         }
       ],
       "guardrails": []
+    },
+    {
+      "slug": "2026-07-04-posthog-llm-analytics",
+      "name": "PostHog LLM Analytics",
+      "stage": "branch-complete",
+      "health": "green",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "updatedAt": "2026-07-04T00:00:00Z",
+      "discovery": {
+        "status": "approved",
+        "artefact": "artefacts/2026-07-04-posthog-llm-analytics/discovery.md",
+        "approvedBy": "Hamish King",
+        "approvedDate": "2026-07-04"
+      },
+      "benefit-metric": {
+        "status": "active",
+        "artefact": "artefacts/2026-07-04-posthog-llm-analytics/benefit-metric.md",
+        "definedAt": "2026-07-04"
+      },
+      "stories": [
+        {
+          "slug": "pla-s1",
+          "name": "Extend posthog-server.js with identify, groupIdentify, captureException, and groups support",
+          "stage": "branch-complete",
+          "health": "green",
+          "complexity": 1,
+          "scopeStability": "stable",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-04-posthog-llm-analytics/dor/pla-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-04-posthog-llm-analytics/dor/pla-s1-dor-contract.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-07-04-posthog-llm-analytics/test-plans/pla-s1-test-plan.md",
+            "totalTests": 17,
+            "passing": 17
+          },
+          "acTotal": 7,
+          "acVerified": 7,
+          "prStatus": "draft",
+          "updatedAt": "2026-07-04T00:00:00Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
