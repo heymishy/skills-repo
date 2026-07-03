@@ -217,3 +217,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: pattern
   signal-text: "Stripe idempotency store must use INSERT ... ON CONFLICT DO NOTHING, not SELECT then INSERT. Test plan (lab-s3.4 IT2) asserts the SQL pattern directly. Pattern: assert the SQL pattern for idempotency, not only the behavioural outcome."
   source: agent-auto
+
+- date: 2026-07-03
+  session-phase: discovery / 2026-07-03-admin-role-panel
+  signal-type: gap
+  signal-text: "Pipeline skills (skills/*/SKILL.md) were not registered as Claude Code slash commands, so invoking /clarify or /discovery via the Skill tool failed every time. Fixed by generating .claude/commands/*.md stubs (one per skill) that read the corresponding SKILL.md. Pattern: pipeline skill invocation requires .claude/commands/ registration, not just SKILL.md files."
+  source: operator-manual

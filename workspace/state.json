@@ -1,58 +1,74 @@
 {
   "currentPhase": "definition-of-ready",
-  "lastUpdated": "2026-07-02T09:00:00Z",
-  "activeFeature": "2026-07-01-landing-auth-billing",
+  "lastUpdated": "2026-07-03T12:00:00Z",
+  "activeFeature": "2026-07-03-admin-role-panel",
   "cycle": {
-    "discovery": { "status": "complete", "artefact": "artefacts/2026-07-01-landing-auth-billing/discovery.md", "approvedAt": "2026-07-01" },
-    "benefit-metric": { "status": "complete", "artefact": "artefacts/2026-07-01-landing-auth-billing/benefit-metric.md", "completedAt": "2026-07-01" },
+    "discovery": {
+      "status": "complete",
+      "artefact": "artefacts/2026-07-03-admin-role-panel/discovery.md",
+      "completedAt": "2026-07-03"
+    },
+    "benefit-metric": {
+      "status": "complete",
+      "artefact": "artefacts/2026-07-03-admin-role-panel/benefit-metric.md",
+      "completedAt": "2026-07-03",
+      "metrics": ["M1 — Admin credits-guard bypass operational", "M2 — Credits top-up time via browser UI", "M3 — Non-admin enforcement not regressed"]
+    },
     "definition": {
       "status": "complete",
-      "slicingStrategy": "risk-first",
-      "epics": ["lab-e1-foundation", "lab-e2-providers-onboarding", "lab-e3-billing-credits"],
-      "stories": ["lab-s1.1", "lab-s1.2", "lab-s1.3", "lab-s2.1", "lab-s2.2", "lab-s2.3", "lab-s3.1", "lab-s3.2", "lab-s3.3", "lab-s3.4", "lab-s3.5"],
-      "completedAt": "2026-07-01"
+      "artefact": "artefacts/2026-07-03-admin-role-panel/",
+      "completedAt": "2026-07-03",
+      "epics": ["arl-e1 — Admin gains platform access and credits control without SQL"],
+      "stories": [
+        "arl-s1 — Create user_roles DB table and load role into session for all auth paths",
+        "arl-s2 — Credits guard admin bypass and requireAdmin middleware",
+        "arl-s3 — Admin credits page: view all balances and submit top-up"
+      ],
+      "slicingStrategy": "Risk-first",
+      "humanOversight": "Medium"
     },
     "review": {
       "status": "complete",
-      "result": "all-pass",
-      "highFindings": 0,
-      "mediumFindings": 4,
-      "allResolved": true,
-      "completedAt": "2026-07-01",
-      "artefactDir": "artefacts/2026-07-01-landing-auth-billing/review/"
+      "completedAt": "2026-07-03",
+      "results": {
+        "arl-s1": "PASS 0H/0M/1L",
+        "arl-s2": "PASS 0H/0M/0L",
+        "arl-s3": "PASS 0H/1M-resolved/1L-resolved — AC8+AC9 added inline"
+      }
     },
     "test-plan": {
       "status": "complete",
-      "storiesWithTestPlan": 11,
-      "totalTests": 101,
-      "cssLayoutGapStories": ["lab-s1.2", "lab-s2.3"],
-      "e2eToolingRequired": false,
-      "completedAt": "2026-07-01",
-      "artefactDir": "artefacts/2026-07-01-landing-auth-billing/test-plans/",
-      "verificationScriptsDir": "artefacts/2026-07-01-landing-auth-billing/verification-scripts/"
+      "completedAt": "2026-07-03",
+      "testFiles": [
+        "tests/check-arl-s1-user-roles.js (10 tests)",
+        "tests/check-arl-s2-admin-middleware.js (8 tests)",
+        "tests/check-arl-s3-admin-credits.js (13 tests)"
+      ]
     },
     "definition-of-ready": {
       "status": "complete",
-      "storiesSignedOff": 11,
-      "allHardBlocksPassed": true,
-      "warningsAcknowledged": ["W4 RISK-ACCEPT (solo operator) — all 11 stories"],
-      "oversightLevel": "Low",
-      "completedAt": "2026-07-02",
-      "artefactDir": "artefacts/2026-07-01-landing-auth-billing/dor/"
+      "completedAt": "2026-07-03",
+      "results": {
+        "arl-s1": "SIGNED OFF — all hard blocks PASS, W4 solo RISK-ACCEPT",
+        "arl-s2": "SIGNED OFF — all hard blocks PASS, W4 solo RISK-ACCEPT",
+        "arl-s3": "SIGNED OFF — all hard blocks PASS, W3+W4 acknowledged (W3: arl-s3 MEDIUM review finding resolved)"
+      }
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-07-02",
-    "contextAtWrite": "Definition-of-ready complete for 2026-07-01-landing-auth-billing. All 11 stories (lab-s1.1 through lab-s3.5) signed off. 22 DoR artefacts written (dor.md + dor-contract.md per story). All 19/19 hard blocks passed for every story. W4 RISK-ACCEPT acknowledged (solo operator, already in decisions.md). Oversight: Low for all stories. Pipeline state updated — all stories at stage=definition-of-ready, dorStatus=signed-off.",
-    "resumeInstruction": "DoR complete for landing-auth-billing. Next step: inner coding loop. Start with lab-s1.1 (Auth tech spike — ESM/CJS path recommendation, no dependencies). Read artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.1-dor.md for coding agent instructions, then run /branch-setup → /implementation-plan → /subagent-execution → /verify-completion → /branch-complete. After spike, lab-s1.2 (Landing page) and lab-s1.3 (Auth registry, blocked until spike ARCH-002 updated) follow. Epic-nested story rule: apply all pipeline-state advances on master AFTER each PR merges.",
+    "writtenAt": "2026-07-03",
+    "contextAtWrite": "Definition-of-ready complete for 2026-07-03-admin-role-panel. All three stories signed off: arl-s1 (DoR artefacts/2026-07-03-admin-role-panel/dor/arl-s1-dor.md), arl-s2 (dor/arl-s2-dor.md), arl-s3 (dor/arl-s3-dor.md). Pipeline-state advanced to dor-signed-off for all three via gate-advance. Critical injection clarification for coding agent: credits.js uses setCreditsAdapter as the single injection point — no per-function setters (setAdjustBalance, setGetTenantIds do NOT exist). arl-s3 story updated to include explicit ADR-011 and ADR-004 references in Architecture Constraints to satisfy H9 validator. Next: inner coding loop — branch-setup then implementation-plan then subagent-execution.",
+    "resumeInstruction": "Definition-of-ready is complete for 2026-07-03-admin-role-panel. All three stories (arl-s1, arl-s2, arl-s3) are signed off. DoR artefacts are in artefacts/2026-07-03-admin-role-panel/dor/. Pipeline-state shows dor-signed-off for each story. NEXT STEP: run /branch-setup to create the feature branch and worktree, then /implementation-plan, then /subagent-execution. Implement in dependency order: arl-s1 first, arl-s2 second, arl-s3 third. CRITICAL: the coding agent instructions in each DoR file correct the test injection mechanism — use setCreditsAdapter (from credits.js) not setGetBalance/setAdjustBalance/setGetTenantIds (those do not exist). Epic-nested story rule (cdg.6): apply all pipeline-state advances on master AFTER each PR merges.",
     "pendingActions": [
-      "NEXT: Begin inner coding loop with lab-s1.1 (Auth tech spike — ESM/CJS path recommendation, Complexity 2). Read artefacts/2026-07-01-landing-auth-billing/dor/lab-s1.1-dor.md. Run /branch-setup, /implementation-plan (1 task: write spike outcome + update decisions.md ARCH-002), then /subagent-execution.",
-      "UNBLOCKED AFTER lab-s1.1: lab-s1.2 (Landing page, Complexity 1) — can start as soon as s1.1 branch is open (no hard dep). lab-s1.3 (Auth registry, Complexity 3) — blocked until s1.1 spike outcome doc written and ARCH-002 updated.",
-      "BILLING DEPENDENCY CHAIN: lab-s3.1 first → lab-s3.2 + lab-s3.3 (parallel, both need s3.1) → lab-s3.4 (needs s3.1 + s3.2) → lab-s3.5 (needs s3.2 + s3.4).",
-      "MANUAL (Hamish — before bee.3 DoD closes): Verify bee.3 Acceptance Criterion 4 Scenario 4 — block PostHog CDN in DevTools, confirm CTA navigates without JS error. Update bee.3-dod.md.",
-      "MANUAL (Hamish — unblocks Metric 1/Metric 3/Metric 4 for bee feature): Create PostHog Cloud (EU) account, set POSTHOG_KEY as Fly env var.",
-      "MANUAL (Hamish — after first external user): Metric 2 cross-tenant isolation check for wuce-multi-tenancy — verify cross-tenant 404 with second tenant.",
-      "MANUAL (Hamish — pre-launch gate before accepting real payments): Run node scripts/check-prelaunch-stripe.js and complete all steps in artefacts/2026-07-01-landing-auth-billing/verification-scripts/lab-s3.5-verification.md pre-launch checklist before switching Fly.io secrets from test to live Stripe keys."
+      "NEXT: Run /branch-setup for 2026-07-03-admin-role-panel. Start with arl-s1.",
+      "CODING ORDER: arl-s1 → arl-s2 → arl-s3 (risk-first, each depends on prior being DoD-complete).",
+      "CRITICAL (coding agent): setCreditsAdapter is the only injection point in credits.js. Do NOT create setAdjustBalance, setGetTenantIds, or setGetBalance — they don't exist. Wire mock DB via setCreditsAdapter in all three test files.",
+      "POST-DEPLOY (Hamish — after arl-s1 deploy): Run seed SQL via fly postgres connect: INSERT INTO user_roles (tenant_id, role) VALUES ('heymishy', 'admin') ON CONFLICT (tenant_id) DO UPDATE SET role = 'admin'",
+      "MANUAL SMOKE TEST (post-deploy arl-s3): keyboard-navigate /admin/credits using Tab/Enter/Space — verify all tenant forms reachable and submittable. Required by B2 RISK-ACCEPT (decisions.md ADR-004 — RISK-ACCEPT: arl-s3 AC7 keyboard navigation classified as manual-only).",
+      "EXISTING FEATURE (landing-auth-billing): Inner coding loop for all 11 stories (lab-s1.1 through lab-s3.5) is pending. Start with lab-s1.1 (Auth tech spike). Read artefacts/2026-07-01-landing-auth-billing/dor/ for coding agent instructions.",
+      "MANUAL (Hamish — bee.3): Verify bee.3 AC4 Scenario 4 — block PostHog CDN in DevTools, confirm CTA navigates without JS error. Update bee.3-dod.md.",
+      "MANUAL (Hamish): Create PostHog Cloud (EU) account, set POSTHOG_KEY as Fly env var to unblock Metric 1/3/4 for bee feature.",
+      "MANUAL (Hamish — pre-launch gate): Run node scripts/check-prelaunch-stripe.js before switching Fly.io secrets from test to live Stripe keys."
     ]
   },
   "features": {
@@ -65,8 +81,26 @@
     "2026-06-29-beta-entry-experience": {
       "status": "definition-of-done-complete",
       "dodCompletedAt": "2026-06-30",
-      "pendingManualCheck": "bee.3 Acceptance Criterion 4 Scenario 4 (PostHog CDN blocked — browser smoke test not yet executed)",
+      "pendingManualCheck": "bee.3 AC4 Scenario 4 (PostHog CDN blocked — browser smoke test not yet executed)",
       "nextAction": "PostHog account creation unblocks Metric 1/Metric 3/Metric 4 metrics measurement."
+    },
+    "2026-07-01-landing-auth-billing": {
+      "status": "definition-of-ready-complete",
+      "dorCompletedAt": "2026-07-02",
+      "storiesSignedOff": 11,
+      "nextAction": "Begin inner coding loop. Start with lab-s1.1 (Auth tech spike). Epic-nested story rule: apply all pipeline-state advances on master AFTER each PR merges."
+    },
+    "2026-07-03-skills-session-resume": {
+      "status": "definition-of-done-complete",
+      "dodCompletedAt": "2026-07-03",
+      "allStoriesComplete": true,
+      "nextAction": "M1 signal measurable after landing-auth-billing ships. Manual smoke test (def-s1 resume flow) still pending."
+    },
+    "2026-07-03-admin-role-panel": {
+      "status": "definition-of-ready-complete",
+      "dorCompletedAt": "2026-07-03",
+      "storiesSignedOff": 3,
+      "nextAction": "Begin inner coding loop with /branch-setup. Implement arl-s1 first, then arl-s2, then arl-s3."
     }
   }
 }

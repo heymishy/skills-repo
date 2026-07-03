@@ -7285,6 +7285,211 @@
         }
       ],
       "guardrails": []
+    },
+    {
+      "slug": "2026-07-03-admin-role-panel",
+      "name": "Admin Role System and Admin Panel",
+      "track": "short",
+      "health": "green",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "updatedAt": "2026-07-03T00:00:00Z",
+      "discoveryArtefact": "artefacts/2026-07-03-admin-role-panel/discovery.md",
+      "discoveryStatus": "approved",
+      "discoveryApprovedAt": "2026-07-03",
+      "discoveryApprovedBy": "Hamish King - Platform operator",
+      "benefitMetricArtefact": "artefacts/2026-07-03-admin-role-panel/benefit-metric.md",
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Admin credits-guard bypass operational",
+          "target": "100% of admin-role session turns succeed regardless of credit balance",
+          "baseline": "0% — every turn returns HTTP 402 (balance = 0, no bypass)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M2",
+          "name": "Credits top-up time via browser UI",
+          "target": "Under 2 minutes end-to-end without SQL access",
+          "baseline": "5-10 minutes via fly postgres connect + manual SQL",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M3",
+          "name": "Non-admin credits enforcement not regressed",
+          "target": "100% maintained — user-role sessions with balance=0 still return HTTP 402",
+          "baseline": "100% (current guard blocks all users with balance=0)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "definitionStatus": "complete",
+      "definitionCompletedAt": "2026-07-03",
+      "epics": [
+        {
+          "id": "arl-e1",
+          "title": "Admin gains platform access and credits control without SQL",
+          "oversight": "Medium",
+          "stories": [
+            {
+              "id": "arl-s1",
+              "title": "Create user_roles DB table and load role into session for all auth paths",
+              "complexity": 2,
+              "scopeStability": "Stable",
+              "status": "dor-signed-off",
+              "metricsAddressed": [
+                "M1",
+                "M3"
+              ],
+              "tddState": "red",
+              "testsTotal": 0,
+              "testsPassing": 0,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "reviewArtefact": "artefacts/2026-07-03-admin-role-panel/review/arl-s1-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 10,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-03-admin-role-panel/dor/arl-s1-dor.md"
+            },
+            {
+              "id": "arl-s2",
+              "title": "Credits guard admin bypass and requireAdmin middleware",
+              "complexity": 1,
+              "scopeStability": "Stable",
+              "status": "dor-signed-off",
+              "metricsAddressed": [
+                "M1",
+                "M3"
+              ],
+              "tddState": "red",
+              "testsTotal": 0,
+              "testsPassing": 0,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "reviewArtefact": "artefacts/2026-07-03-admin-role-panel/review/arl-s2-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-03-admin-role-panel/dor/arl-s2-dor.md"
+            },
+            {
+              "id": "arl-s3",
+              "title": "Admin credits page: view all balances and submit top-up",
+              "complexity": 2,
+              "scopeStability": "Stable",
+              "status": "dor-signed-off",
+              "metricsAddressed": [
+                "M2"
+              ],
+              "tddState": "red",
+              "testsTotal": 0,
+              "testsPassing": 0,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "amber",
+              "reviewArtefact": "artefacts/2026-07-03-admin-role-panel/review/arl-s3-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 13,
+                "passing": 0
+              },
+              "acTotal": 9,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-03-admin-role-panel/dor/arl-s3-dor.md"
+            }
+          ]
+        }
+      ],
+      "reviewStatus": "passed",
+      "highFindings": 0,
+      "guardrails": [
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first",
+          "status": "met",
+          "evidence": "Story artefacts (arl-s1/s2/s3) exist before any implementation — artefact-first satisfied",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-03"
+        },
+        {
+          "id": "ADR-018",
+          "category": "adr",
+          "label": "Playwright E2E framework",
+          "status": "met",
+          "evidence": "arl-s3 AC7 classified as RISK-ACCEPT per B2 (decisions.md ADR-004); no automated Playwright test required for this AC",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-03"
+        },
+        {
+          "id": "ADR-001",
+          "category": "adr",
+          "label": "Single-file viz, no build step",
+          "status": "na",
+          "evidence": "Feature does not touch dashboards/pipeline-viz.html",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-03"
+        },
+        {
+          "id": "ADR-002",
+          "category": "adr",
+          "label": "Gates must use evidence fields",
+          "status": "na",
+          "evidence": "Feature does not introduce new governance gate logic",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-03"
+        },
+        {
+          "id": "ADR-003",
+          "category": "adr",
+          "label": "Schema-first: fields defined before use",
+          "status": "na",
+          "evidence": "Feature does not modify pipeline-state.json schema; implementation changes are in src/ and server.js",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-03"
+        },
+        {
+          "id": "MC-SEC-01",
+          "category": "mandatory-constraint",
+          "label": "No user-supplied content in innerHTML without sanitisation",
+          "status": "met",
+          "evidence": "arl-s3 AC9 mandates HTML escaping of tenantId/balance values in the admin page response",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-03"
+        }
+      ],
+      "stage": "test-plan",
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
