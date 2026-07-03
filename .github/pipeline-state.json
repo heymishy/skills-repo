@@ -7231,10 +7231,10 @@
     {
       "slug": "2026-07-03-skills-session-resume",
       "name": "Skills Session Resume: Redis Restore on Cache Miss",
-      "track": "short-track",
+      "track": "short",
       "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-07-03T06:41:10.761Z",
+      "updatedAt": "2026-07-03T06:43:56.808Z",
       "stories": [
         {
           "id": "def-s1",
