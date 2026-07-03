@@ -7232,14 +7232,14 @@
       "slug": "2026-07-03-skills-session-resume",
       "name": "Skills Session Resume: Redis Restore on Cache Miss",
       "track": "short-track",
-      "stage": "definition",
+      "stage": "test-plan",
       "health": "green",
       "updatedAt": "2026-07-03T00:00:00Z",
       "stories": [
         {
           "id": "def-s1",
           "title": "Restore turns and artefact from Redis when session not in memory",
-          "stage": "definition",
+          "stage": "test-plan",
           "dorStatus": "pending",
           "prStatus": "not-started",
           "health": "green",
@@ -7248,7 +7248,16 @@
           "scopeStability": "Stable",
           "tddState": "not-started",
           "testsPassing": 0,
-          "totalTests": 0
+          "totalTests": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         }
       ]
     }
