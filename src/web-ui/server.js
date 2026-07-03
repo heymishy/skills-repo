@@ -36,6 +36,8 @@ const { setCreditsAdapter }                                          = require('
 const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter } = require('./routes/billing'); // lab-s3.2 / lab-s3.4
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
 const { creditsGuard }                                               = require('./middleware/credits-guard'); // lab-s3.3
+const { handleEmailSignup, handleEmailLogin, setUserDb }             = require('./routes/auth-email');       // lab-s2.2
+const { setPasswordAdapter }                                         = require('./modules/password');         // lab-s2.2
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -161,6 +163,18 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     const _stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
     setStripeAdapter(_stripe);
     console.log('Stripe adapter wired');
+  }
+
+  // lab-s2.2 — Wire bcrypt adapter for email/password auth (D37 mandatory separate wiring task)
+  setPasswordAdapter(require('bcrypt'));
+  console.log('[auth-email] bcrypt adapter wired');
+
+  // lab-s2.2 — Wire users DB adapter (D37 mandatory separate wiring task)
+  if (process.env.DATABASE_URL) {
+    const { Pool: _UsersPool } = require('pg');
+    const _usersPool = new _UsersPool({ connectionString: process.env.DATABASE_URL });
+    setUserDb(_usersPool);
+    console.log('[auth-email] users DB adapter wired');
   }
 
   // p3.2 — Upstash Redis session persistence (see Decision 9)
@@ -912,6 +926,14 @@ async function router(req, res) {
       login: authenticated ? (req.session.login || null) : null,
       sessionId: req.sessionId
     }));
+
+  } else if (pathname === '/auth/email/signup' && req.method === 'POST') {
+    // lab-s2.2 — email/password signup
+    await handleEmailSignup(req, res);
+
+  } else if (pathname === '/auth/email/login' && req.method === 'POST') {
+    // lab-s2.2 — email/password login
+    await handleEmailLogin(req, res);
 
   } else if (pathname === '/' && req.method === 'GET') {
     // lab-s1.2 — public landing page with PostHog event + auth redirect to /dashboard
