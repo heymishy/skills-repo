@@ -54,4 +54,26 @@ async function adjustBalance(tenantId, delta) {
   );
 }
 
-module.exports = { getBalance, adjustBalance, setCreditsAdapter };
+/**
+ * Return all tenant balances ordered by tenant_id (for admin UI).
+ * @returns {Promise<Array<{tenant_id: string, balance: number}>>}
+ */
+async function getAllTenantBalances() {
+  const db = requireAdapter();
+  const result = await db.query(
+    'SELECT tenant_id, balance FROM credits ORDER BY tenant_id'
+  );
+  return result.rows;
+}
+
+/**
+ * Return all known tenant IDs from the credits table (allowlist for admin adjustments).
+ * @returns {Promise<string[]>}
+ */
+async function getValidTenantIds() {
+  const db = requireAdapter();
+  const result = await db.query('SELECT tenant_id FROM credits');
+  return result.rows.map(function(r) { return r.tenant_id; });
+}
+
+module.exports = { getBalance, adjustBalance, setCreditsAdapter, getAllTenantBalances, getValidTenantIds };
