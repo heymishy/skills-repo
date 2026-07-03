@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-07-03T00:00:00Z",
+  "updated": "2026-07-01T10:00:00Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -7234,12 +7234,12 @@
       "track": "short-track",
       "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-07-03T00:00:00Z",
+      "updatedAt": "2026-07-03T06:39:53.711Z",
       "stories": [
         {
           "id": "def-s1",
           "title": "Restore turns and artefact from Redis when session not in memory",
-          "stage": "definition-of-ready",
+          "stage": "verify-completion",
           "dorStatus": "signed-off",
           "prStatus": "not-started",
           "health": "green",
@@ -7252,13 +7252,34 @@
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0
+            "passing": 9
           },
           "acTotal": 6,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-07-03T00:00:00Z"
+          "updatedAt": "2026-07-03T06:39:53.709Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write failing tests (9 tests, AC1-AC6 + IT1 + NFR1)",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-03-skills-session-resume/plans/def-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Implement Redis restore in handleGetChatHtml (~5 lines)",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-03-skills-session-resume/plans/def-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Register test in package.json test chain",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-03-skills-session-resume/plans/def-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed"
         }
       ],
       "guardrails": []
