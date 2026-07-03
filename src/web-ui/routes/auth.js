@@ -11,6 +11,8 @@ const _oauthAdapter = require('../auth/oauth-adapter');
 const { persistSession, rotateSessionId, getSession } = require('../middleware/session');
 // lab-s2.3: user-flags module (injectable adapter — D37). Used only in handleAuthCallback.
 const _userFlags = require('../modules/user-flags');
+// arl-s1: user-roles module (injectable adapter — D37). Loads role after tenantId is set.
+const _userRoles = require('../modules/user-roles');
 
 // Wire the real GitHub provider adapter on module load.
 // This ensures handleAuthCallback works when auth.js is required without server.js
@@ -143,6 +145,13 @@ async function handleAuthCallback(req, res) {
       req.session.tenantId = user.login;
     }
 
+    // arl-s1: load role from user_roles table. Falls back to 'user' on error (adapter not wired in test mode).
+    try {
+      req.session.role = await _userRoles.getUserRole(req.session.tenantId);
+    } catch (_) {
+      req.session.role = 'user';
+    }
+
     // Audit log: user ID and timestamp only — never the token value
     _logger.info('login', {
       userId:    user.id,
@@ -231,6 +240,13 @@ async function handleAuthGoogleCallback(req, res) {
     req.session.userId      = userInfo.sub;
     req.session.tenantId    = userInfo.sub;
     req.session.login       = userInfo.email;
+
+    // arl-s1: load role from user_roles table. Falls back to 'user' on error.
+    try {
+      req.session.role = await _userRoles.getUserRole(req.session.tenantId);
+    } catch (_) {
+      req.session.role = 'user';
+    }
 
     _logger.info('login', {
       provider:  'google',

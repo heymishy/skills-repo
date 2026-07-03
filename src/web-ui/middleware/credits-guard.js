@@ -18,6 +18,10 @@ const { getBalance } = require('../modules/credits');
  * @param {Function} next
  */
 async function creditsGuard(req, res, next) {
+  // arl-s2: admin users bypass the credits check entirely (strict equality only)
+  if (req.session && req.session.role === 'admin') {
+    return next();
+  }
   const tenantId = req.session && req.session.tenantId;
   const balance = await getBalance(tenantId);
   if (balance <= 0) {
