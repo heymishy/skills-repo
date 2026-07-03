@@ -47,12 +47,18 @@ async function createCheckoutSession({ priceId, tenantId, successUrl, cancelUrl 
 
 /**
  * Create a Stripe Billing Portal session.
- * Stub only in this story — implemented fully in lab-s3.5.
- * @param {string} customerId
- * @param {string} returnUrl
+ * Implemented in lab-s3.5. Uses the D37-injectable _stripe adapter (set via setStripeAdapter()).
+ * @param {string} customerId - Stripe customer ID stored in req.session.stripeCustomerId
+ * @param {string} returnUrl  - URL Stripe redirects the user to after leaving the portal
+ * @returns {Promise<string>} Stripe Billing Portal session URL
  */
-async function createPortalSession(customerId, returnUrl) { // eslint-disable-line no-unused-vars
-  throw new Error('Adapter not wired: stripeClient. Call setStripeAdapter() before use.');
+async function createPortalSession(customerId, returnUrl) {
+  var stripe = requireAdapter();
+  var session = await stripe.billingPortal.sessions.create({
+    customer:   customerId,
+    return_url: returnUrl,
+  });
+  return session.url;
 }
 
 /**
