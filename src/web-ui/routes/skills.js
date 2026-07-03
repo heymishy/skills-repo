@@ -3569,6 +3569,18 @@ async function handleGetChatHtml(req, res) {
   var session = _sessionStore.get(sessionId);
 
   if (!session) {
+    var _redisData = await readSessionFromRedis(sessionId);
+    if (_redisData) {
+      registerHtmlSession(sessionId, _redisData.sessionPath, _redisData.skillName, { featureSlug: _redisData.featureSlug });
+      mergeRedisSessionData(sessionId, _redisData);
+      // journeyId is not in mergeRedisSessionData stateFields — restore explicitly
+      var _restored = _sessionStore.get(sessionId);
+      if (_restored && _redisData.journeyId) _restored.journeyId = _redisData.journeyId;
+      session = _restored;
+    }
+  }
+
+  if (!session) {
     var notFoundHtml = renderShell({ title: 'Not Found', bodyContent: '<p>Session not found.</p>', user: { login: '' } });
     res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(notFoundHtml);
