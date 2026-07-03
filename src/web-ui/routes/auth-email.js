@@ -9,6 +9,8 @@
 const crypto  = require('crypto');
 const { hashPassword, verifyPassword } = require('../modules/password');
 const _session = require('../middleware/session');
+// arl-s1: user-roles module (injectable adapter — D37). Loads role after tenantId is set.
+const _userRoles = require('../modules/user-roles');
 
 // ── D37: injectable user DB adapter ──────────────────────────────────────────
 // Default stub throws — call setUserDb(pgPool) before use.
@@ -135,6 +137,13 @@ async function handleEmailSignup(req, res) {
   req.session.tenantId    = email;
   req.session.login       = email;
 
+  // arl-s1: load role from user_roles table. Falls back to 'user' on error.
+  try {
+    req.session.role = await _userRoles.getUserRole(email);
+  } catch (_) {
+    req.session.role = 'user';
+  }
+
   // Rotate session ID to prevent session fixation (AC6).
   const { newId } = _rotateSessionId(req.sessionId, res, req.session);
   req.sessionId = newId;
@@ -187,6 +196,13 @@ async function handleEmailLogin(req, res) {
   req.session.userId      = user.id;
   req.session.tenantId    = email;
   req.session.login       = email;
+
+  // arl-s1: load role from user_roles table. Falls back to 'user' on error.
+  try {
+    req.session.role = await _userRoles.getUserRole(email);
+  } catch (_) {
+    req.session.role = 'user';
+  }
 
   // Rotate session ID to prevent session fixation (AC6).
   const { newId } = _rotateSessionId(req.sessionId, res, req.session);

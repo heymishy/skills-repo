@@ -39,6 +39,9 @@ const { creditsGuard }                                               = require('
 const { handleEmailSignup, handleEmailLogin, setUserDb }             = require('./routes/auth-email');       // lab-s2.2
 const { setPasswordAdapter }                                         = require('./modules/password');         // lab-s2.2
 const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
+const { setGetUserRole }                                             = require('./modules/user-roles');       // arl-s1
+const { requireAdmin }                                               = require('./middleware/require-admin'); // arl-s2
+const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -172,6 +175,25 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       )
     `).then(function() { console.log('stripe_events table ready'); })
       .catch(function(err) { console.error('stripe_events table migration failed:', err.message); });
+    // arl-s1 — Wire user_roles DB adapter (D37 mandatory separate wiring task)
+    const _userRolesPool = new Pool({ connectionString: process.env.DATABASE_URL });
+    setGetUserRole(async function(tenantId) {
+      const result = await _userRolesPool.query(
+        'SELECT role FROM user_roles WHERE tenant_id = $1',
+        [tenantId]
+      );
+      if (!result.rows.length) return 'user';
+      return result.rows[0].role;
+    });
+    console.log('[arl-s1] user_roles adapter wired');
+    // arl-s1 — Auto-migrate user_roles table on startup
+    _userRolesPool.query(`
+      CREATE TABLE IF NOT EXISTS user_roles (
+        tenant_id VARCHAR PRIMARY KEY,
+        role VARCHAR NOT NULL DEFAULT 'user'
+      )
+    `).then(function() { console.log('user_roles table ready'); })
+      .catch(function(err) { console.error('user_roles table migration failed:', err.message); });
   }
 
   // lab-s3.2 — Wire real Stripe SDK adapter (D37 mandatory separate wiring task)
@@ -997,6 +1019,20 @@ async function router(req, res) {
   } else if (pathname === '/welcome' && req.method === 'GET') {
     // lab-s2.3 — plan selection page for first-time users (firstLogin detection)
     await handleWelcome(req, res);
+
+  } else if (pathname === '/admin/credits' && req.method === 'GET') {
+    // arl-s2/arl-s3 — admin credits view (requireAdmin gate)
+    let _raOk = false;
+    requireAdmin(req, res, () => { _raOk = true; });
+    if (!_raOk) return;
+    await adminCreditsGet(req, res);
+
+  } else if (pathname === '/api/admin/credits/adjust' && req.method === 'POST') {
+    // arl-s3 — admin credits adjustment (requireAdmin gate)
+    let _raOk = false;
+    requireAdmin(req, res, () => { _raOk = true; });
+    if (!_raOk) return;
+    await adminCreditsPost(req, res);
 
   } else if (pathname === '/' && req.method === 'GET') {
     // lab-s1.2 — public landing page with PostHog event + auth redirect to /dashboard
