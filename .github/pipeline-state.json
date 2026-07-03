@@ -6992,7 +6992,7 @@
           "name": "Additional Providers + Onboarding",
           "stories": [
             {
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -7012,10 +7012,11 @@
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.1-dor.md",
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.1-dor-contract.md",
               "slug": "lab-s2.1",
-              "name": "Google OAuth — second auth provider"
+              "name": "Google OAuth — second auth provider",
+              "prStatus": "merged"
             },
             {
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -7035,10 +7036,11 @@
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.2-dor-contract.md",
               "slug": "lab-s2.2",
-              "name": "Email/password — third auth provider"
+              "name": "Email/password — third auth provider",
+              "prStatus": "merged"
             },
             {
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -7058,7 +7060,8 @@
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s2.3-dor-contract.md",
               "slug": "lab-s2.3",
-              "name": "/welcome onboarding — first-login detection + plan selection redirect"
+              "name": "/welcome onboarding — first-login detection + plan selection redirect",
+              "prStatus": "merged"
             }
           ],
           "slug": "lab-e2"
@@ -7139,7 +7142,7 @@
               "prStatus": "merged"
             },
             {
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -7159,7 +7162,8 @@
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.4-dor.md",
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.4-dor-contract.md",
               "slug": "lab-s3.4",
-              "name": "Stripe webhook handler (provision credits, idempotency)"
+              "name": "Stripe webhook handler (provision credits, idempotency)",
+              "prStatus": "merged"
             },
             {
               "stage": "definition-of-ready",
