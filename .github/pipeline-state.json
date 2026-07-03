@@ -7234,16 +7234,16 @@
       "track": "short",
       "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-07-03T07:09:44.933Z",
+      "updatedAt": "2026-07-03T07:11:51.075Z",
       "stories": [
         {
           "id": "def-s1",
           "title": "Restore turns and artefact from Redis when session not in memory",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "prStatus": "merged",
           "health": "green",
-          "releaseReady": false,
+          "releaseReady": true,
           "complexity": 2,
           "scopeStability": "Stable",
           "tddState": "not-started",
@@ -7258,7 +7258,7 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-07-03T07:09:44.932Z",
+          "updatedAt": "2026-07-03T07:11:51.073Z",
           "tasks": [
             {
               "id": "task-1",
@@ -7280,7 +7280,8 @@
             }
           ],
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/434"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/434",
+          "dodStatus": "complete"
         }
       ],
       "guardrails": []
