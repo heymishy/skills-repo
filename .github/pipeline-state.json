@@ -7166,7 +7166,7 @@
               "prStatus": "merged"
             },
             {
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "reviewStatus": "passed",
               "highFindings": 0,
               "health": "green",
@@ -7186,7 +7186,8 @@
               "dorArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.5-dor.md",
               "dorContractArtefact": "artefacts/2026-07-01-landing-auth-billing/dor/lab-s3.5-dor-contract.md",
               "slug": "lab-s3.5",
-              "name": "Billing portal + pre-launch Stripe ID swap checklist"
+              "name": "Billing portal + pre-launch Stripe ID swap checklist",
+              "prStatus": "merged"
             }
           ],
           "slug": "lab-e3"
