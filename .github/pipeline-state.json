@@ -7562,6 +7562,29 @@
           "dodStatus": "complete",
           "releaseReady": true,
           "updatedAt": "2026-07-04T00:00:00Z"
+        },
+        {
+          "id": "pla-s2",
+          "stage": "branch-complete",
+          "prStatus": "draft",
+          "testPlan": {
+            "passing": 27,
+            "status": "written",
+            "artefact": "artefacts/2026-07-04-posthog-llm-analytics/test-plans/pla-s2-test-plan.md",
+            "totalTests": 27
+          },
+          "acTotal": 8,
+          "acVerified": 8,
+          "name": "Emit $ai_generation events after Anthropic calls and wire identity and group analytics",
+          "health": "green",
+          "complexity": 2,
+          "scopeStability": "stable",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-04-posthog-llm-analytics/dor/pla-s2-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-04-posthog-llm-analytics/dor/pla-s2-dor-contract.md",
+          "updatedAt": "2026-07-04T01:20:00Z"
         }
       ]
     }
