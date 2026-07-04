@@ -7576,17 +7576,8 @@
         },
         {
           "id": "pla-s2",
-          "stage": "definition-of-done",
-          "prStatus": "merged",
-          "testPlan": {
-            "passing": 27,
-            "status": "written",
-            "artefact": "artefacts/2026-07-04-posthog-llm-analytics/test-plans/pla-s2-test-plan.md",
-            "totalTests": 27
-          },
-          "acTotal": 8,
-          "acVerified": 8,
           "name": "Emit $ai_generation events after Anthropic calls and wire identity and group analytics",
+          "stage": "definition-of-done",
           "health": "green",
           "complexity": 2,
           "scopeStability": "stable",
@@ -7595,10 +7586,100 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-04-posthog-llm-analytics/dor/pla-s2-dor.md",
           "dorContractArtefact": "artefacts/2026-07-04-posthog-llm-analytics/dor/pla-s2-dor-contract.md",
-          "updatedAt": "2026-07-04T00:00:00Z",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-07-04-posthog-llm-analytics/test-plans/pla-s2-test-plan.md",
+            "totalTests": 28,
+            "passing": 28
+          },
+          "acTotal": 8,
+          "acVerified": 8,
+          "prStatus": "merged",
           "prNumber": 437,
           "dodStatus": "complete",
-          "releaseReady": true
+          "dodArtefact": "artefacts/2026-07-04-posthog-llm-analytics/dod/pla-s2-dod.md",
+          "releaseReady": true,
+          "updatedAt": "2026-07-04T00:00:00Z"
+        }
+      ],
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Per-tenant LLM cost attribution rate",
+          "target": "≥99% of Anthropic API calls produce a $ai_generation event with $ai_total_cost_usd attributed to the correct company group",
+          "baseline": "0% — no $ai_generation events exist in PostHog today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": "pla-s2 merged (PR #437); $ai_generation events with $ai_total_cost_usd and $groups.company now emit on every Anthropic call; measurement requires Fly.io redeploy with POSTHOG_KEY set and at least one real tenant session post-deploy.",
+          "contributingStories": ["pla-s1", "pla-s2"]
+        },
+        {
+          "id": "M2",
+          "name": "PostHog trace view completeness",
+          "target": "100% of authenticated turns from journey-linked sessions carry $ai_trace_id on both skill_turn and $ai_generation events",
+          "baseline": "0% — $ai_trace_id absent on all PostHog events today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": "$ai_trace_id = journeyId now set on both skill_turn and $ai_generation events (pla-s2); measurement requires Fly.io redeploy and one complete journey session to verify PostHog trace view shows linked events.",
+          "contributingStories": ["pla-s2"]
+        },
+        {
+          "id": "M3",
+          "name": "Cache hit rate observability per skill",
+          "target": "PostHog insight can render cache hit rate per skill; discovery and benefit-metric skills show ≥50% cache hit rate",
+          "baseline": "Not measurable — $ai_cache_read_input_tokens not forwarded to PostHog",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": "$ai_cache_read_input_tokens and $ai_cache_creation_input_tokens now forwarded to PostHog on every $ai_generation event (pla-s2); measurement requires Fly.io redeploy and multi-turn sessions to accumulate cache data.",
+          "contributingStories": ["pla-s2"]
+        },
+        {
+          "id": "M4",
+          "name": "Per-role LLM cost segmentation",
+          "target": "100% of $ai_generation events from authenticated sessions carry a role property; PostHog can render cost by role",
+          "baseline": "0% — role absent from all PostHog events today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": "role property included on every $ai_generation event; identify() wires role into PostHog person record on journey creation (pla-s2); measurement requires Fly.io redeploy, admin seed SQL execution, and at least one session per role type.",
+          "contributingStories": ["pla-s1", "pla-s2"]
+        }
+      ],
+      "guardrails": [
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: story artefacts must precede src/ changes",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-04",
+          "evidence": "pla-s1 and pla-s2 artefacts (discovery through DoR) committed to PR branches before any implementation merged; confirmed in PR #436 and PR #437 CI assurance gate passes."
+        },
+        {
+          "id": "NFR-PERF-fire-forget",
+          "category": "nfr",
+          "label": "PostHog event emission must not block turn response (fire-and-forget)",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-04",
+          "evidence": "Test N1 (pla-s2): posthog capture() throws synchronously — SSE response still completes. All PostHog calls wrapped in try/catch in production code."
+        },
+        {
+          "id": "NFR-SEC-privacy-mode",
+          "category": "nfr",
+          "label": "LLM content gated behind POSTHOG_PRIVACY_MODE env var",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-04",
+          "evidence": "Tests P1 and P2 (pla-s2): $ai_input and $ai_output_choices absent from $ai_generation events. Fields not populated in current implementation — privacy-safe by default."
+        },
+        {
+          "id": "NFR-CORRECTNESS-cost",
+          "category": "nfr",
+          "label": "$ai_total_cost_usd must use _computeCostUsd(), not inline arithmetic",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-04",
+          "evidence": "Test N2 (pla-s2): spy on computeCostUsd confirmed called; value flows through to captured $ai_generation event."
         }
       ]
     }
