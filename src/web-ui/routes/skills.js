@@ -3784,8 +3784,16 @@ async function handlePostTurnStreamHtml(req, res) {
   var _isInitialTurn = rawAnswer === '__init__' && session.turns.length === 0;
   var _initPrompt = 'Begin the session. Greet the operator with one short welcoming sentence and ask your single opening question only. Do not list multiple questions.';
   if (_isInitialTurn && session.skillName === 'definition' && session.journeyId) {
-    _initPrompt = 'Begin the session. The feature has already been selected by the operator — do not ask which feature to work on. Present what you found (Step 1 summary) and ask if ready to decompose into epics and stories. One question only.';
-  } else if (_isInitialTurn && ['test-plan', 'review', 'definition-of-ready'].indexOf(session.skillName) !== -1) {
+    var _defJourney = _journeyStore.getJourney(session.journeyId);
+    var _defAlreadyDone = _defJourney && (_defJourney.completedStages || []).some(function(s) { return s.skillName === 'definition'; });
+    if (_defAlreadyDone) {
+      _initPrompt = 'Begin the session. The definition artefact for this feature has already been completed — it is included in the system prompt above. Greet the operator, briefly confirm which feature was defined and how many stories exist, then ask what they would like to do: review the stories, revise a story, or proceed to the next pipeline stage. One question only.';
+    } else {
+      _initPrompt = 'Begin the session. The feature has already been selected by the operator — do not ask which feature to work on. Present what you found (Step 1 summary) and ask if ready to decompose into epics and stories. One question only.';
+    }
+  } else if (_isInitialTurn && session.skillName === 'review') {
+    _initPrompt = 'Begin the session. Run SKILL.md Step 1 only: check which stories already have a completed review artefact on disk, then list the stories still pending review. Do NOT ask the operator which stories to review — proceed to review ALL pending stories automatically, starting with the first one. If all stories are already reviewed, say so and stop. Keep your response to the story status list and then begin reviewing the first pending story immediately.';
+  } else if (_isInitialTurn && ['test-plan', 'definition-of-ready'].indexOf(session.skillName) !== -1) {
     _initPrompt = 'Begin the session. Run SKILL.md Step 1 only: check which stories already have completed artefacts on disk, then list the stories still pending. If all are done, say so and stop. Otherwise list pending stories and then ask ONLY the Step 3 test data strategy question. Do NOT write any test plans, verification scripts, or test content in this turn — wait for the answer to Step 3 first. Keep your response to the story list plus the single Step 3 question. Nothing more.';
   }
   var userContent = _isInitialTurn ? _initPrompt : sanitiseAnswer(rawAnswer);
@@ -4142,27 +4150,39 @@ async function handlePostTurnStreamHtml(req, res) {
     session.artefactPath = 'artefacts/' + slug + '/' + (session.skillName || skillName) + '.md';
     session.done = true;
 
-    // Auto-save artefact to disk + git commit immediately on generation (or amendment)
+    // Auto-save artefact to disk
     var _autoRepoRoot = _getRepoPath();
     var _autoAbsPath = path.resolve(path.join(_autoRepoRoot, session.artefactPath));
     var _isAmendment = fs.existsSync(_autoAbsPath);
     try {
       fs.mkdirSync(path.dirname(_autoAbsPath), { recursive: true });
       fs.writeFileSync(_autoAbsPath, session.artefactContent, 'utf8');
+      console.info(JSON.stringify({ event: _isAmendment ? 'artefact_auto_amended' : 'artefact_auto_saved', sessionId: sessionId, artefactPath: session.artefactPath }));
+    } catch (_autoErr) {
+      console.warn(JSON.stringify({ event: 'artefact_disk_save_failed', sessionId: sessionId, error: _autoErr.message }));
+    }
+    // Git commit (best-effort — git is not installed in Fly.io containers; failure is not an error)
+    try {
       var _cp = require('child_process');
-      _cp.execSync('git add ' + JSON.stringify(session.artefactPath), { cwd: _autoRepoRoot, encoding: 'utf8' });
       var _commitMsg = _isAmendment
         ? 'feat: ' + (session.skillName || skillName) + ' artefact (amended)'
         : 'feat: ' + (session.skillName || skillName) + ' artefact';
+      _cp.execSync('git add ' + JSON.stringify(session.artefactPath), { cwd: _autoRepoRoot, encoding: 'utf8' });
       _cp.execSync('git commit -m ' + JSON.stringify(_commitMsg), { cwd: _autoRepoRoot, encoding: 'utf8' });
-      console.info(JSON.stringify({ event: _isAmendment ? 'artefact_auto_amended' : 'artefact_auto_saved', sessionId: sessionId, artefactPath: session.artefactPath }));
-    } catch (_autoErr) {
-      console.warn(JSON.stringify({ event: 'artefact_auto_save_failed', sessionId: sessionId, error: _autoErr.message }));
-    }
+    } catch (_gitErr) { /* git unavailable in production — disk write above is the durable record */ }
     // Mark stage complete in journey so resume can load it as a prior artefact
     if (session.journeyId && !session._stageDone) {
       session._stageDone = true;
       try { _journeyStore.completeStage(session.journeyId, session.skillName, session.artefactPath); } catch (_) {}
+      // Persist artefact content to Postgres so cross-device / post-deploy resume works.
+      // (completeStage only writes the artefact path; content must be saved separately.)
+      if (process.env.DATABASE_URL && session.artefactContent) {
+        require('../adapters/journey-store-pg').saveArtefact(
+          session.journeyId, session.skillName, session.artefactPath, session.artefactContent
+        ).catch(function(e) {
+          console.warn(JSON.stringify({ event: 'artefact_pg_save_failed', sessionId: sessionId, error: e.message }));
+        });
+      }
     }
   }
 
