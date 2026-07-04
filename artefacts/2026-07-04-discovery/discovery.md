@@ -1,1 +1,1 @@
-Final artefact text
+Body text
