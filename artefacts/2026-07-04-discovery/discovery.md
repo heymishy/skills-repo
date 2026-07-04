@@ -1,1 +1,1 @@
-ARTEFACT_CONTENT
+Split marker content
