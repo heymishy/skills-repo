@@ -1,4 +1,1 @@
-# Discovery
-
-Line one
-Line two
+Final artefact text
