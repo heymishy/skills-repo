@@ -7576,8 +7576,8 @@
         },
         {
           "id": "pla-s2",
-          "stage": "branch-complete",
-          "prStatus": "draft",
+          "stage": "definition-of-done",
+          "prStatus": "merged",
           "testPlan": {
             "passing": 27,
             "status": "written",
@@ -7595,7 +7595,10 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-04-posthog-llm-analytics/dor/pla-s2-dor.md",
           "dorContractArtefact": "artefacts/2026-07-04-posthog-llm-analytics/dor/pla-s2-dor-contract.md",
-          "updatedAt": "2026-07-04T01:20:00Z"
+          "updatedAt": "2026-07-04T00:00:00Z",
+          "prNumber": 437,
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ]
     }
