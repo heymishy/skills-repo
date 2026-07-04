@@ -1,1 +1,1 @@
-First line of artefact content
+ARTEFACT_CONTENT
