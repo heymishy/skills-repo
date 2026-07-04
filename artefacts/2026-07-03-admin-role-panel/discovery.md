@@ -108,4 +108,3 @@ Hamish King — Platform operator — 2026-07-03
 - Q: Does Hamish log in via email/password or GitHub OAuth? A: GitHub OAuth exclusively — it is the only visible login option in the UI. Email/password is wired but not surfaced.
 - Scope update: Removed `role` column on `users` table approach. Replaced with separate `user_roles` table keyed by `tenant_id` — the common session identifier across all auth paths (GitHub OAuth sets `tenantId = user.login`; email sets `tenantId = email`). This resolves role loading for GitHub OAuth sessions without modifying the `users` table schema. Resolved [ASSUMPTION].
 
-<!-- eval-mode: true -->

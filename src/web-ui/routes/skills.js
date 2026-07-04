@@ -1911,13 +1911,23 @@ async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token) {
   session.turns.push({ role: 'user', content: userContent });
 
   var response = '';
+  var _turnUsageNS = null;
   try {
-    response = await _skillTurnExecutor(
+    var _execResult = await _skillTurnExecutor(
       session.systemPrompt,
       historySnapshot,
       userContent,
       token || ''
     );
+    // Handle both string (legacy/copilot) and { text, usage } (anthropic) shapes
+    if (typeof _execResult === 'string') {
+      response = _execResult;
+    } else if (_execResult && typeof _execResult.text === 'string') {
+      response = _execResult.text;
+      _turnUsageNS = _execResult.usage || null;
+    } else {
+      response = String(_execResult || '');
+    }
   } catch (err) {
     _logger.warn('htmlSubmitTurn executor error: ' + (err && err.message ? err.message : 'unknown'));
     response = '';
@@ -1947,9 +1957,9 @@ async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token) {
   }
 
   if (session.done) {
-    return { done: true, response: response, artefactContent: session.artefactContent };
+    return { done: true, response: response, artefactContent: session.artefactContent, usage: _turnUsageNS };
   }
-  return { done: false, response: response };
+  return { done: false, response: response, usage: _turnUsageNS };
 }
 
 /**
@@ -3653,6 +3663,7 @@ async function handlePostTurnHtml(req, res) {
 
   var body = await _readBody(req);
   var answer = (body && typeof body.answer === 'string') ? body.answer : '';
+  var _nonStreamStart = Date.now();
   var result;
   try {
     result = await htmlSubmitTurn(skillName, sessionId, answer, req.session.accessToken);
@@ -3677,13 +3688,35 @@ async function handlePostTurnHtml(req, res) {
   if (_answer !== '__init__' && session) {
     var _phTurn = require('../modules/posthog-server');
     _phTurn.capture(req.session.login || sessionId, 'skill_turn', {
-      skillName:  skillName,
-      journeyId:  session.journeyId || null,
-      featureSlug: (_linkedJourney && _linkedJourney.featureSlug) || null,
-      turnIndex:  Math.floor(session.turns.length / 2),
-      done:       !!(result && result.done),
-      tenantId:   req.session.tenantId || null
+      skillName:    skillName,
+      journeyId:    session.journeyId || null,
+      featureSlug:  (_linkedJourney && _linkedJourney.featureSlug) || null,
+      turnIndex:    Math.floor(session.turns.length / 2),
+      done:         !!(result && result.done),
+      tenantId:     req.session.tenantId || null,
+      $ai_trace_id: session.journeyId || sessionId
     });
+    // pla-s2: emit $ai_generation for non-streaming Anthropic turns
+    try {
+      var _nsUsage = result && result.usage;
+      var _phNs = require('../modules/posthog-server');
+      var _nsProps = {
+        $ai_trace_id:                 session.journeyId || sessionId,
+        $ai_span_id:                  require('crypto').randomUUID(),
+        $ai_session_id:               (req.session.login || sessionId) + '-' + (session.journeyId || sessionId),
+        $ai_model:                    (_nsUsage && _nsUsage.model) || 'claude-sonnet-4-6',
+        $ai_provider:                 'anthropic',
+        $ai_input_tokens:             (_nsUsage && _nsUsage.input_tokens)             || 0,
+        $ai_output_tokens:            (_nsUsage && _nsUsage.output_tokens)            || 0,
+        $ai_cache_read_input_tokens:  (_nsUsage && _nsUsage.cache_read_tokens)        || 0,
+        $ai_cache_creation_input_tokens: (_nsUsage && _nsUsage.cache_creation_tokens) || 0,
+        $ai_latency:                  (Date.now() - _nonStreamStart) / 1000,
+        $ai_stream:                   false,
+        $ai_total_cost_usd:           _computeCostUsd(_nsUsage || {}),
+        role:                         req.session.role || 'user'
+      };
+      _phNs.capture(req.session.login || sessionId, '$ai_generation', _nsProps, { company: req.session.tenantId });
+    } catch (_phNsErr) { /* fire-and-forget: PostHog failure must not break the turn */ }
   }
   _json(res, 200, result);
 }
@@ -4136,17 +4169,41 @@ async function handlePostTurnStreamHtml(req, res) {
   session.turns.push({ role: 'assistant', content: fullText });
 
   // Track operator turns (skip __init__ auto-fire and precomputed step1 path)
-  if (!_isInitialTurn) {
-    var _phStream = require('../modules/posthog-server');
-    _phStream.capture(req.session.login || sessionId, 'skill_turn', {
-      skillName:  session.skillName || (req.params && req.params.name) || '',
-      journeyId:  session.journeyId || null,
-      featureSlug: session.featureSlug || null,
-      turnIndex:  Math.floor(session.turns.length / 2),
-      done:       done,
-      tenantId:   req.session.tenantId || null
-    });
-  }
+  // fire-and-forget: PostHog failure must not block SSE stream
+  try {
+    if (!_isInitialTurn) {
+      var _phStream = require('../modules/posthog-server');
+      _phStream.capture(req.session.login || sessionId, 'skill_turn', {
+        skillName:    session.skillName || (req.params && req.params.name) || '',
+        journeyId:    session.journeyId || null,
+        featureSlug:  session.featureSlug || null,
+        turnIndex:    Math.floor(session.turns.length / 2),
+        done:         done,
+        tenantId:     req.session.tenantId || null,
+        $ai_trace_id: session.journeyId || sessionId
+      });
+    }
+    // pla-s2: emit $ai_generation for every streaming Anthropic turn (including init turns)
+    var _tu2 = _turnUsage || {};
+    var _phGen = require('../modules/posthog-server');
+    var _genProps = {
+      $ai_trace_id:                 session.journeyId || sessionId,
+      $ai_span_id:                  require('crypto').randomUUID(),
+      $ai_session_id:               (req.session.login || sessionId) + '-' + (session.journeyId || sessionId),
+      $ai_model:                    _tu2.model || 'claude-sonnet-4-6',
+      $ai_provider:                 'anthropic',
+      $ai_input_tokens:             _tu2.input_tokens             || 0,
+      $ai_output_tokens:            _tu2.output_tokens            || 0,
+      $ai_cache_read_input_tokens:  _tu2.cache_read_tokens        || 0,
+      $ai_cache_creation_input_tokens: _tu2.cache_creation_tokens || 0,
+      $ai_latency:                  (Date.now() - _llmStart) / 1000,
+      $ai_time_to_first_token:      (_ttfbMs !== null ? _ttfbMs : 0) / 1000,
+      $ai_stream:                   true,
+      $ai_total_cost_usd:           _computeCostUsd(_tu2),
+      role:                         req.session.role || 'user'
+    };
+    _phGen.capture(req.session.login || sessionId, '$ai_generation', _genProps, { company: req.session.tenantId });
+  } catch (_phErr) { /* fire-and-forget: PostHog failure must not block SSE stream */ }
 
   // Stamp lastUpdated for in-process eviction (startSessionEviction uses this field)
   session.lastUpdated = new Date().toISOString();

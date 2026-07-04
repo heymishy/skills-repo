@@ -112,13 +112,22 @@ function _callAnthropic(systemPrompt, history, currentInput, maxTokens, timeoutM
         }
         try {
           const parsed = JSON.parse(raw);
-          // Anthropic response: { content: [{ type: 'text', text: '...' }] }
+          // Anthropic response: { content: [{ type: 'text', text: '...' }], usage: {...} }
           const content = parsed &&
             parsed.content &&
             parsed.content[0] &&
             parsed.content[0].text;
           if (typeof content === 'string') {
-            resolve(content);
+            resolve({
+              text: content,
+              usage: {
+                input_tokens:          (parsed.usage && parsed.usage.input_tokens)                  || 0,
+                output_tokens:         (parsed.usage && parsed.usage.output_tokens)                 || 0,
+                cache_read_tokens:     (parsed.usage && parsed.usage.cache_read_input_tokens)       || 0,
+                cache_creation_tokens: (parsed.usage && parsed.usage.cache_creation_input_tokens)   || 0,
+                model:                 model
+              }
+            });
           } else {
             reject(new Error('Unexpected Anthropic response format: ' + raw.slice(0, 200)));
           }

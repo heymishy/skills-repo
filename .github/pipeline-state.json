@@ -7345,15 +7345,20 @@
       "epics": [
         {
           "id": "arl-e1",
+          "slug": "arl-e1",
           "title": "Admin gains platform access and credits control without SQL",
+          "name": "Admin gains platform access and credits control without SQL",
           "oversight": "Medium",
           "stories": [
             {
               "id": "arl-s1",
+              "slug": "arl-s1",
               "title": "Create user_roles DB table and load role into session for all auth paths",
+              "name": "Create user_roles DB table and load role into session for all auth paths",
               "complexity": 2,
               "scopeStability": "Stable",
               "status": "definition-of-done",
+              "stage": "definition-of-done",
               "metricsAddressed": [
                 "M1",
                 "M3"
@@ -7385,10 +7390,13 @@
             },
             {
               "id": "arl-s2",
+              "slug": "arl-s2",
               "title": "Credits guard admin bypass and requireAdmin middleware",
+              "name": "Credits guard admin bypass and requireAdmin middleware",
               "complexity": 1,
               "scopeStability": "Stable",
               "status": "definition-of-done",
+              "stage": "definition-of-done",
               "metricsAddressed": [
                 "M1",
                 "M3"
@@ -7420,10 +7428,13 @@
             },
             {
               "id": "arl-s3",
+              "slug": "arl-s3",
               "title": "Admin credits page: view all balances and submit top-up",
+              "name": "Admin credits page: view all balances and submit top-up",
               "complexity": 2,
               "scopeStability": "Stable",
               "status": "definition-of-done",
+              "stage": "definition-of-done",
               "metricsAddressed": [
                 "M2"
               ],
@@ -7562,6 +7573,29 @@
           "dodStatus": "complete",
           "releaseReady": true,
           "updatedAt": "2026-07-04T00:00:00Z"
+        },
+        {
+          "id": "pla-s2",
+          "stage": "branch-complete",
+          "prStatus": "draft",
+          "testPlan": {
+            "passing": 27,
+            "status": "written",
+            "artefact": "artefacts/2026-07-04-posthog-llm-analytics/test-plans/pla-s2-test-plan.md",
+            "totalTests": 27
+          },
+          "acTotal": 8,
+          "acVerified": 8,
+          "name": "Emit $ai_generation events after Anthropic calls and wire identity and group analytics",
+          "health": "green",
+          "complexity": 2,
+          "scopeStability": "stable",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-04-posthog-llm-analytics/dor/pla-s2-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-04-posthog-llm-analytics/dor/pla-s2-dor-contract.md",
+          "updatedAt": "2026-07-04T01:20:00Z"
         }
       ]
     }
