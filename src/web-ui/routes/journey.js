@@ -355,7 +355,14 @@ async function handlePostJourney(req, res) {
       productProfile: profileName,
       startSkill:     startSkill,
       tenantId:       req.session.tenantId || null
-    });
+    }, { company: req.session.tenantId });
+    // pla-s2: identify user and company group on journey creation
+    if (req.session.login) {
+      _posthog.identify(req.session.login, {
+        $set: { login: req.session.login, tenantId: req.session.tenantId, role: req.session.role || 'user' }
+      });
+      _posthog.groupIdentify('company', req.session.tenantId, { name: req.session.tenantId });
+    }
 
     // sdg.1: new-product selection → show strategy grounding modal before starting first skill
     if (body.newProduct === '1') {
@@ -1221,7 +1228,7 @@ async function handleGetJourneyResume(req, res) {
       journeyId:          journeyId,
       completedStageCount: memJourney ? (memJourney.completedStages || []).length : 0,
       tenantId:           req.session.tenantId || null
-    });
+    }, { company: req.session.tenantId || (memJourney && memJourney.tenantId) });
   }
 
   // Mark stage active on disk with new sessionId
@@ -1726,7 +1733,7 @@ async function handlePostGateConfirm(req, res) {
       outputTokens: (session.usage || {}).output_tokens || null,
       model:        (session.usage || {}).model         || null,
       tenantId:     journey.tenantId || null
-    });
+    }, { company: journey.tenantId || req.session.tenantId });
     if (_costUsd != null) {
       console.info(JSON.stringify({ event: 'stage_cost', journeyId: journeyId, stage: session.skillName, model: (session.usage || {}).model, costUsd: _costUsd, inputTokens: (session.usage || {}).input_tokens, outputTokens: (session.usage || {}).output_tokens }));
     }
@@ -1892,7 +1899,7 @@ async function handlePostGateConfirm(req, res) {
         journeyId:   journeyId,
         stageCount:  updatedJourney.completedStages.length,
         tenantId:    journey.tenantId || null
-      });
+      }, { company: journey.tenantId || req.session.tenantId });
       res.writeHead(303, { Location: '/journey/' + journeyId + '/complete' });
       res.end();
     }
@@ -1917,7 +1924,7 @@ async function handlePostGateConfirm(req, res) {
       journeyId:   journeyId,
       stageCount:  updatedJourney.completedStages.length,
       tenantId:    journey.tenantId || null
-    });
+    }, { company: journey.tenantId || req.session.tenantId });
     res.writeHead(303, { Location: '/journey/' + journeyId + '/complete' });
     res.end();
   } else if (nextStage === 'review') {
