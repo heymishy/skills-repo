@@ -7310,7 +7310,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": "arl-s1+arl-s2 merged (PR #435); admin seed SQL not yet run post-deploy; measurement possible after first Fly.io deploy and seed execution via fly postgres connect",
-          "contributingStories": ["arl-s1", "arl-s2"]
+          "contributingStories": [
+            "arl-s1",
+            "arl-s2"
+          ]
         },
         {
           "id": "M2",
@@ -7320,7 +7323,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": "arl-s3 merged (PR #435); browser UI shipped; measurement requires first deploy to Fly.io and manual timing of form submit cycle by admin user",
-          "contributingStories": ["arl-s3"]
+          "contributingStories": [
+            "arl-s3"
+          ]
         },
         {
           "id": "M3",
@@ -7330,7 +7335,9 @@
           "signal": "on-track",
           "lastMeasured": "2026-07-03",
           "evidence": "CI gate test in check-arl-s2-admin-middleware.js (T3: creditsGuard returns 402 for role=user + balance=0) passes on every build as of merge commit 145e45ec",
-          "contributingStories": ["arl-s2"]
+          "contributingStories": [
+            "arl-s2"
+          ]
         }
       ],
       "definitionStatus": "complete",
@@ -7512,7 +7519,7 @@
     {
       "slug": "2026-07-04-posthog-llm-analytics",
       "name": "PostHog LLM Analytics",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "track": "short",
       "regulated": false,
@@ -7533,7 +7540,7 @@
         {
           "id": "pla-s1",
           "name": "Extend posthog-server.js with identify, groupIdentify, captureException, and groups support",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "complexity": 1,
           "scopeStability": "stable",
@@ -7550,7 +7557,10 @@
           },
           "acTotal": 7,
           "acVerified": 7,
-          "prStatus": "draft",
+          "prStatus": "merged",
+          "prNumber": 436,
+          "dodStatus": "complete",
+          "releaseReady": true,
           "updatedAt": "2026-07-04T00:00:00Z"
         }
       ]

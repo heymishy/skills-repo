@@ -223,3 +223,15 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: "Pipeline skills (skills/*/SKILL.md) were not registered as Claude Code slash commands, so invoking /clarify or /discovery via the Skill tool failed every time. Fixed by generating .claude/commands/*.md stubs (one per skill) that read the corresponding SKILL.md. Pattern: pipeline skill invocation requires .claude/commands/ registration, not just SKILL.md files."
   source: operator-manual
+
+- date: 2026-07-04
+  session-phase: test-plan / 2026-07-04-posthog-llm-analytics
+  signal-type: pattern
+  signal-text: "For pla-s2: _callAnthropic is a private function not in module.exports — testing its return-shape change (AC1) via integration through the non-streaming handler (AC4) is preferable to adding a test-only export. The integration test mocks https at the require-cache level, calls skillTurnExecutor, and asserts the $ai_generation event contains the correct token counts from the new usage return value."
+  source: agent-auto
+
+- date: 2026-07-04
+  session-phase: test-plan / 2026-07-04-posthog-llm-analytics
+  signal-type: decision
+  signal-text: "Review finding 1-M3 (AC8 'any of' construct) resolved by decomposing AC8 into 4 separate test() calls — one per event type (journey_created, stage_started, stage_completed, journey_completed). A single test satisfying one event type would not catch missing $groups wiring on the other three routes."
+  source: agent-auto
