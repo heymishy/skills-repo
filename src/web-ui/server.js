@@ -102,10 +102,6 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     return _fs.readFileSync(resolvedPath, 'utf8');
   });
 
-  // sec-perf AC1 — rate limiter for SSE turn endpoint (30 turns/min per tenant)
-  const { createRateLimiter } = require('./middleware/rate-limiter');
-  const _turnStreamRateLimiter = createRateLimiter({ maxRequests: 30, windowMs: 60000 });
-
   // mfc.1 — wire real Copilot API executor for model-first chat turns
   const { skillTurnExecutor: realSkillTurnExecutor, skillTurnExecutorStream: realSkillTurnExecutorStream } = require('../modules/skill-turn-executor');
   const { setSkillTurnExecutorAdapter, setSkillTurnExecutorStreamAdapter, setSessionStore: _setSessionStore, _setHtmlSession: _restoreHtmlSession, startSessionEviction } = require('./routes/skills');
@@ -265,6 +261,11 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     setMergeRedisSessionData(mergeRedisSessionData);
   }
 }
+
+// sec-perf AC1 — rate limiter for SSE turn endpoint (30 turns/min per tenant)
+// Declared at module scope so it is accessible inside the request router (outside the wiring if-block).
+const { createRateLimiter } = require('./middleware/rate-limiter');
+const _turnStreamRateLimiter = createRateLimiter({ maxRequests: 30, windowMs: 60000 });
 
 // Wire real GitHub pipeline-state fetcher for production (non-test) mode.
 // Fetches .github/pipeline-state.json from the given owner/repo using the user's token.
