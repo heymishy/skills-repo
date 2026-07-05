@@ -5,6 +5,7 @@
 // Session middleware, auth routes, health handler, and authGuard mounted here.
 
 const http = require('http');
+const https = require('https');
 const { URL } = require('url');
 
 const { sessionMiddleware }                                          = require('./middleware/session');
@@ -340,17 +341,68 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   // psh-s3 D37 wiring: wire AI draft generator for product creation
   {
     setGenerateProductDraft(async function(fields) {
-      // Real implementation: use AI to generate product context sections
-      // For initial wiring: return structured defaults based on name/description
-      return {
-        name: fields.name || '',
-        description: fields.description || '',
-        mission: 'Define the mission for ' + (fields.name || 'this product'),
-        techStack: 'Define the tech stack for ' + (fields.name || 'this product'),
-        constraints: 'Define constraints for ' + (fields.name || 'this product'),
-        roadmap: 'Define the roadmap for ' + (fields.name || 'this product'),
-        architectureGuardrails: 'Define architecture guardrails for ' + (fields.name || 'this product')
-      };
+      const apiKey = process.env.ANTHROPIC_API_KEY;
+      const name = fields.name || 'this product';
+      const description = fields.description || '';
+
+      if (!apiKey) {
+        return { mission: '', roadmap: '', techStack: '', constraints: '', architectureGuardrails: '' };
+      }
+
+      const prompt = 'Generate product context files for a software product called "' + name + '".' +
+        (description ? '\n\nProduct description: ' + description : '') +
+        '\n\nReturn ONLY a JSON object (no markdown, no explanation) with exactly these 5 keys:\n' +
+        '- mission: 2-3 sentences on what the product does and for whom\n' +
+        '- roadmap: 3-5 bullet points on near-term priorities and strategic direction\n' +
+        '- techStack: current or intended technology decisions and constraints (language, frameworks, infra)\n' +
+        '- constraints: hard limits — budget, regulatory, team capability, timeline\n' +
+        '- architectureGuardrails: key architectural decisions that must be respected (e.g. no monolith, API-first, etc.)\n\n' +
+        'Each value should be a concise markdown string (1-5 sentences or bullet points). Return only the JSON.';
+
+      const body = JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: prompt }]
+      });
+
+      const raw = await new Promise(function(resolve, reject) {
+        const req = https.request({
+          hostname: 'api.anthropic.com',
+          path: '/v1/messages',
+          method: 'POST',
+          headers: {
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(body)
+          }
+        }, function(res) {
+          let buf = '';
+          res.on('data', function(c) { buf += c; });
+          res.on('end', function() { resolve(buf); });
+        });
+        req.on('error', reject);
+        req.write(body);
+        req.end();
+      });
+
+      try {
+        const parsed = JSON.parse(raw);
+        const text = parsed.content && parsed.content[0] && parsed.content[0].text || '';
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const draft = JSON.parse(jsonMatch[0]);
+          return {
+            mission:                draft.mission || '',
+            roadmap:                draft.roadmap || '',
+            techStack:              draft.techStack || '',
+            constraints:            draft.constraints || '',
+            architectureGuardrails: draft.architectureGuardrails || ''
+          };
+        }
+      } catch (_e) {}
+
+      return { mission: '', roadmap: '', techStack: '', constraints: '', architectureGuardrails: '' };
     });
     console.log('[psh-s3] generateProductDraft adapter wired');
   }
