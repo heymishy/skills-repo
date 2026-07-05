@@ -106,6 +106,54 @@ async function handleGetProductView(req, res, _next, pool) {
   res.json({ features: features });
 }
 
+var STAGE_COLUMNS = ['discovery','benefit-metric','definition','review','test-plan','definition-of-ready','implementation','definition-of-done'];
+
+function _healthLabel(health) {
+  if (health === 'red')   return 'Blocked';
+  if (health === 'amber') return 'Warning';
+  return 'Healthy';
+}
+
+async function handleGetProductKanban(req, res, _next, pool, posthog) {
+  var _pool = pool;
+  var _ph = posthog || _posthog;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+
+  var rows = (await _pool.query(
+    'SELECT journey_id, stage, health, feature_slug FROM journeys WHERE product_id = $1',
+    [productId]
+  )).rows;
+
+  var columns = STAGE_COLUMNS.map(function(stage) {
+    var features = rows
+      .filter(function(j) { return j.stage === stage; })
+      .map(function(j) {
+        return {
+          journey_id: j.journey_id,
+          name: _escapeHtml(j.feature_slug || j.journey_id),
+          health: j.health,
+          healthLabel: _healthLabel(j.health),
+          healthIcon: j.health === 'red' ? '⚠' : (j.health === 'amber' ? '⚠' : '✓')
+        };
+      });
+    return {
+      stage: stage,
+      features: features,
+      emptyLabel: features.length === 0 ? 'No features at this stage' : null
+    };
+  });
+
+  _ph.capture(tenantId || (req.session && req.session.login), 'kanban_viewed', {
+    view: 'product',
+    productId: productId,
+    tenantId: tenantId,
+    featureCount: rows.length
+  });
+
+  res.json({ columns: columns });
+}
+
 async function handlePostProductFeature(req, res, _next, pool, posthog) {
   var _pool = pool;
   var _ph = posthog || _posthog;
@@ -133,5 +181,6 @@ module.exports = {
   handlePostProductConfirm,
   handleGetDashboard,
   handleGetProductView,
-  handlePostProductFeature
+  handlePostProductFeature,
+  handleGetProductKanban
 };
