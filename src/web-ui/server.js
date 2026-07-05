@@ -210,6 +210,16 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       updated_at TIMESTAMPTZ DEFAULT NOW()
     )`).then(function() {
       console.log('[psh-s1] products table ready');
+      // psh-s3: add context columns if they were not present at initial table creation
+      return Promise.all([
+        _creditsPool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS mission TEXT'),
+        _creditsPool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS roadmap TEXT'),
+        _creditsPool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS tech_stack TEXT'),
+        _creditsPool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS constraints TEXT'),
+        _creditsPool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS architecture_guardrails TEXT')
+      ]);
+    }).then(function() {
+      console.log('[psh-s3] products context columns ready');
     }).catch(function(err) {
       console.error('[psh-s1] products migration failed:', err.message);
     });
