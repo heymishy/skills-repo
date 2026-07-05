@@ -228,6 +228,18 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.error('[psh-s1] standards migration failed:', err.message);
     });
 
+    // psh-s9: standard_product_optouts table
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS standard_product_optouts (
+      standard_id UUID REFERENCES standards(standard_id) ON DELETE CASCADE,
+      product_id  UUID REFERENCES products(product_id)   ON DELETE CASCADE,
+      opted_out_at TIMESTAMPTZ DEFAULT NOW(),
+      PRIMARY KEY (standard_id, product_id)
+    )`).then(function() {
+      console.log('[psh-s9] standard_product_optouts table ready');
+    }).catch(function(err) {
+      console.error('[psh-s9] standard_product_optouts migration failed:', err.message);
+    });
+
     // psh-s1: journeys.product_id FK column
     _creditsPool.query(`ALTER TABLE journeys ADD COLUMN IF NOT EXISTS product_id UUID REFERENCES products(product_id) ON DELETE SET NULL`).then(function() {
       console.log('[psh-s1] journeys.product_id column ready');
@@ -1165,6 +1177,24 @@ async function router(req, res) {
     req.params = { id: pathname.split('/')[2] };
     const _standardsRoutes = require('./routes/standards');
     authGuard(req, res, async () => { await _standardsRoutes.standardsPut(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/standards\/[^/]+\/promote$/) && req.method === 'PUT') {
+    // psh-s9 — promote standard to org-wide visibility
+    req.params = { id: pathname.split('/')[2] };
+    const _standardsRoutes = require('./routes/standards');
+    authGuard(req, res, async () => { await _standardsRoutes.standardsPromote(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/standards\/[^/]+\/optout$/) && req.method === 'POST') {
+    // psh-s9 — per-product opt-out from org standard
+    req.params = { id: pathname.split('/')[2] };
+    const _standardsRoutes = require('./routes/standards');
+    authGuard(req, res, async () => { await _standardsRoutes.optoutPost(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/standards\/[^/]+\/optout$/) && req.method === 'DELETE') {
+    // psh-s9 — remove per-product opt-out (opt back in)
+    req.params = { id: pathname.split('/')[2] };
+    const _standardsRoutes = require('./routes/standards');
+    authGuard(req, res, async () => { await _standardsRoutes.optoutDelete(req, res, null, _pshPool, null); });
 
   } else if (pathname === '/' && req.method === 'GET') {
     // lab-s1.2 — public landing page with PostHog event + auth redirect to /dashboard

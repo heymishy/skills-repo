@@ -71,4 +71,53 @@ async function standardsPut(req, res, _next, pool) {
   res.status(200).json({ standard_id: standardId });
 }
 
-module.exports = { standardsPost, standardsList, standardsPut };
+async function standardsPromote(req, res, _next, pool, posthog) {
+  var _pool = pool;
+  var _ph = posthog || _posthog;
+  var tenantId = req.session && req.session.tenantId;
+  var standardId = req.params && req.params.id;
+
+  var row = (await _pool.query(
+    'SELECT standard_id, org_id, visibility FROM standards WHERE standard_id = $1',
+    [standardId]
+  )).rows[0];
+  if (!row) { res.status(404).json({ error: 'not found' }); return; }
+  if (row.org_id !== tenantId) { res.status(403).json({ error: 'forbidden' }); return; }
+
+  await _pool.query(
+    'UPDATE standards SET visibility = $1, updated_at = NOW() WHERE standard_id = $2',
+    ['org', standardId]
+  );
+
+  _ph.capture(tenantId, 'standard_promoted', {
+    standardId: standardId,
+    tenantId: tenantId,
+    visibility: 'org'
+  });
+
+  res.status(200).json({ standard_id: standardId, visibility: 'org' });
+}
+
+async function optoutPost(req, res, _next, pool, posthog) {
+  var _pool = pool;
+  var standardId = req.params && req.params.id;
+  var productId = (req.body && req.body.productId) || (req.params && req.params.productId);
+  await _pool.query(
+    'INSERT INTO standard_product_optouts (standard_id, product_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+    [standardId, productId]
+  );
+  res.status(201).json({ standard_id: standardId, product_id: productId, opted_out: true });
+}
+
+async function optoutDelete(req, res, _next, pool, posthog) {
+  var _pool = pool;
+  var standardId = req.params && req.params.id;
+  var productId = (req.body && req.body.productId) || (req.params && req.params.productId);
+  await _pool.query(
+    'DELETE FROM standard_product_optouts WHERE standard_id = $1 AND product_id = $2',
+    [standardId, productId]
+  );
+  res.status(200).json({ standard_id: standardId, product_id: productId, opted_out: false });
+}
+
+module.exports = { standardsPost, standardsList, standardsPut, standardsPromote, optoutPost, optoutDelete };
