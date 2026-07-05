@@ -42,7 +42,7 @@ const { setUserFlagsAdapter }                                        = require('
 const { setGetUserRole }                                             = require('./modules/user-roles');       // arl-s1
 const { requireAdmin }                                               = require('./middleware/require-admin'); // arl-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
 const { setStandardsAdapter }                                        = require('./standards-adapter');             // psh-s10
@@ -1150,6 +1150,10 @@ async function router(req, res) {
     requireAdmin(req, res, () => { _raOk = true; });
     if (!_raOk) return;
     await adminCreditsPost(req, res);
+
+  } else if (pathname === '/products/new' && req.method === 'GET') {
+    // psh-s3 — product creation form
+    authGuard(req, res, async () => { handleGetProductNew(req, res); });
 
   } else if (pathname === '/products/new' && req.method === 'POST') {
     // psh-s3 — product creation: generate AI draft
