@@ -99,7 +99,7 @@ try {
 try {
   const story = getStory('psh-s1');
   assert(story, 'psh-s1 not found in pipeline-state');
-  const innerStages = ['subagent-execution', 'implementation-plan', 'branch-setup', 'branch-complete'];
+  const innerStages = ['subagent-execution', 'implementation-plan', 'branch-setup', 'branch-complete', 'verify-completion', 'definition-of-done'];
   assert(innerStages.includes(story.stage), `psh-s1 stage is '${story.stage}', expected inner loop stage`);
   pass('psh-s1 pipeline-state stage is in inner loop');
 } catch(e) { fail('psh-s1 pipeline-state stage is in inner loop', e); }
