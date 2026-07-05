@@ -22,6 +22,7 @@ const crypto = require('crypto');
 const sessionStore = require('../../session-store');
 
 var _productContextAdapter = require('../product-context-adapter'); // psh-s5 D37
+var _standardsAdapter = require('../standards-adapter'); // psh-s10 D37
 
 const { listAvailableSkills, validateSkillName } = require('../../adapters/skill-discovery');
 const { extractQuestions, extractSections } = require('../../skill-content-adapter');
@@ -4572,8 +4573,10 @@ async function handlePostAssumptionConfirm(req, res) {
 }
 
 // psh-s5 — inject product context sections into the skill system prompt
+// psh-s10 — also inject active standards section after product context
 async function buildSystemPromptWithProductContext(opts) {
   var productId = opts && opts.productId;
+  var orgId = opts && opts.orgId;
   var skillContent = (opts && opts.skillContent) || '';
   var parts = [];
 
@@ -4585,6 +4588,15 @@ async function buildSystemPromptWithProductContext(opts) {
       if (ctx.constraints)            parts.push('## Product Context — Constraints\n\n' + ctx.constraints);
       if (ctx.roadmap)                parts.push('## Product Context — Roadmap\n\n' + ctx.roadmap);
       if (ctx.architectureGuardrails) parts.push('## Product Context — Architecture Guardrails\n\n' + ctx.architectureGuardrails);
+    }
+
+    // Standards section (after product context, before SKILL content)
+    var standards = await _standardsAdapter.getActiveStandards(productId, orgId);
+    if (standards && standards.length > 0) {
+      var stdLines = standards.map(function(s) {
+        return '### ' + s.name + '\n\n' + s.content;
+      });
+      parts.push('## Standards and Patterns\n\n' + stdLines.join('\n\n'));
     }
   }
 

@@ -45,6 +45,7 @@ const { adminCreditsGet, adminCreditsPost }                          = require('
 const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
+const { setStandardsAdapter }                                        = require('./standards-adapter');             // psh-s10
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -265,6 +266,23 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
         };
       });
       console.log('[psh-s5] product context adapter wired');
+    }
+
+    // psh-s10 D37 wiring: wire real Postgres active standards adapter
+    {
+      setStandardsAdapter(async function(productId, orgId) {
+        var r = await _creditsPool.query(
+          `SELECT name, content FROM standards
+           WHERE (product_id = $1 OR (visibility = 'org' AND org_id = $2))
+             AND standard_id NOT IN (
+               SELECT standard_id FROM standard_product_optouts WHERE product_id = $1
+             )
+           ORDER BY created_at ASC`,
+          [productId, orgId]
+        );
+        return r.rows;
+      });
+      console.log('[psh-s10] standards adapter wired');
     }
   }
 
