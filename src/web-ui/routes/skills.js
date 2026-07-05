@@ -21,6 +21,9 @@ const crypto = require('crypto');
 
 const sessionStore = require('../../session-store');
 
+var _productContextAdapter = require('../product-context-adapter'); // psh-s5 D37
+var _standardsAdapter = require('../standards-adapter'); // psh-s10 D37
+
 const { listAvailableSkills, validateSkillName } = require('../../adapters/skill-discovery');
 const { extractQuestions, extractSections } = require('../../skill-content-adapter');
 const { sanitiseAnswer }    = require('../../answer-sanitiser');
@@ -4569,6 +4572,39 @@ async function handlePostAssumptionConfirm(req, res) {
   _json(res, 200, { cardId: cardId, state: cards[cardId].state });
 }
 
+// psh-s5 — inject product context sections into the skill system prompt
+// psh-s10 — also inject active standards section after product context
+async function buildSystemPromptWithProductContext(opts) {
+  var productId = opts && opts.productId;
+  var orgId = opts && opts.orgId;
+  var skillContent = (opts && opts.skillContent) || '';
+  var parts = [];
+
+  if (productId) {
+    var ctx = await _productContextAdapter.getProductContext(productId);
+    if (ctx) {
+      if (ctx.mission)                parts.push('## Product Context — Mission\n\n' + ctx.mission);
+      if (ctx.techStack)              parts.push('## Product Context — Tech Stack\n\n' + ctx.techStack);
+      if (ctx.constraints)            parts.push('## Product Context — Constraints\n\n' + ctx.constraints);
+      if (ctx.roadmap)                parts.push('## Product Context — Roadmap\n\n' + ctx.roadmap);
+      if (ctx.architectureGuardrails) parts.push('## Product Context — Architecture Guardrails\n\n' + ctx.architectureGuardrails);
+    }
+
+    // Standards section (after product context, before SKILL content)
+    var standards = await _standardsAdapter.getActiveStandards(productId, orgId);
+    if (standards && standards.length > 0) {
+      var stdLines = standards.map(function(s) {
+        return '### ' + s.name + '\n\n' + s.content;
+      });
+      parts.push('## Standards and Patterns\n\n' + stdLines.join('\n\n'));
+    }
+  }
+
+  if (skillContent) parts.push(skillContent);
+
+  return parts.join('\n\n');
+}
+
 module.exports = {
   handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState,
   handleCommitArtefact, handleResumeSession, setLogger, NO_LICENCE_MSG,
@@ -4626,5 +4662,7 @@ module.exports = {
   setParsePhaseModel, defaultParsePhaseModel,
   // dic.5 — canvas-edit dispatch (exported for testing)
   handlePostCanvasEditHtml, setApplyCanvasEdits, realApplyCanvasEdits,
-  buildCanvasAuditEntry, writeAuditEntry
+  buildCanvasAuditEntry, writeAuditEntry,
+  // psh-s5 — product context injection
+  buildSystemPromptWithProductContext
 };
