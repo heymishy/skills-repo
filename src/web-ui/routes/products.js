@@ -151,6 +151,15 @@ async function handlePostProductConfirm(req, res, _next, pool, posthog) {
   var _pool = pool;
   var _ph = posthog || _posthog;
   var tenantId = req.session && req.session.tenantId;
+
+  // Ensure context columns exist — idempotent no-op once columns are present
+  await Promise.all([
+    _pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS mission TEXT'),
+    _pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS roadmap TEXT'),
+    _pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS tech_stack TEXT'),
+    _pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS constraints TEXT'),
+    _pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS architecture_guardrails TEXT')
+  ]).catch(function(e) { console.error('[psh-s3] column migration error:', e.message); });
   var name = (req.body && req.body.name) || '';
   var description = (req.body && req.body.description) || '';
   var mission = (req.body && req.body.mission) || '';
