@@ -44,6 +44,7 @@ const { requireAdmin }                                               = require('
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
 const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductView, handlePostProductFeature } = require('./routes/products'); // psh-s3 / psh-s4
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
+const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -233,6 +234,26 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     }).catch(function(err) {
       console.error('[psh-s1] journeys product_id migration failed:', err.message);
     });
+
+    // psh-s5 D37 wiring: wire real Postgres product context adapter
+    {
+      setProductContextAdapter(async function(productId) {
+        var r = await _creditsPool.query(
+          'SELECT name, description, mission, roadmap, tech_stack, constraints, architecture_guardrails FROM products WHERE product_id = $1',
+          [productId]
+        );
+        if (!r.rows.length) return null;
+        var row = r.rows[0];
+        return {
+          mission: row.mission || row.description || '',
+          techStack: row.tech_stack || '',
+          constraints: row.constraints || '',
+          roadmap: row.roadmap || '',
+          architectureGuardrails: row.architecture_guardrails || ''
+        };
+      });
+      console.log('[psh-s5] product context adapter wired');
+    }
   }
 
   // lab-s3.2 — Wire real Stripe SDK adapter (D37 mandatory separate wiring task)
