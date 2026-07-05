@@ -7697,7 +7697,7 @@
       "slug": "2026-07-05-product-stds-hierarchy",
       "name": "Product Hierarchy, Standards and Patterns Library",
       "track": "standard",
-      "stage": "definition-of-ready",
+      "stage": "implementation-plan",
       "discoveryStatus": "approved",
       "health": "green",
       "updatedAt": "2026-07-05T00:00:00Z",
@@ -7932,7 +7932,7 @@
             {
               "slug": "psh-s1",
               "name": "Products and standards Postgres schema",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -7955,12 +7955,26 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 8 failing tests — schema checks + integration (RED)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "add products/standards/journeys.product_id migration SQL to server.js (GREEN)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s1-plan.md"
+                }
+              ]
             },
             {
               "slug": "psh-s2",
               "name": "Migration — assign existing journeys to Default product",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -7983,7 +7997,21 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 7 failing tests — idempotency, per-tenant isolation, Default product (RED)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "create scripts/migrate-journeys-to-default-product.js — runMigration(pool, log) (GREEN)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s2-plan.md"
+                }
+              ]
             }
           ]
         },
@@ -7995,7 +8023,7 @@
             {
               "slug": "psh-s3",
               "name": "Product creation flow (hybrid form + AI draft + inline review)",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "complexity": 3,
               "reviewStatus": "passed",
@@ -8018,12 +8046,38 @@
               "acTotal": 8,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 9 failing tests — solo plan, D37 throw, PostHog (RED)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "create src/web-ui/adapters/product-draft.js — D37 adapter (GREEN partial)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "create src/web-ui/routes/products.js — handlePostProductNew + handlePostProductConfirm (GREEN)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s3-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "wire setGenerateProductDraft in server.js — D37 mandatory separate wiring task",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s3-plan.md"
+                }
+              ]
             },
             {
               "slug": "psh-s4",
               "name": "Product-aware dashboard and navigation",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -8046,7 +8100,33 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 7 failing tests — dashboard cards, product view, new feature, HTML escape (RED)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s4-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "add handleGetDashboard, handleGetProductView, handlePostProductFeature to products.js (GREEN)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s4-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "create tests/e2e/psh-s4-dashboard-layout.spec.js — Playwright layout test (GREEN)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s4-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "mount GET /dashboard, GET /products/:id, POST /products/:id/features in server.js",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s4-plan.md"
+                }
+              ]
             }
           ]
         },
@@ -8058,7 +8138,7 @@
             {
               "slug": "psh-s5",
               "name": "Product context injection into skill sessions",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -8081,7 +8161,33 @@
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 9 failing tests — D37 throw, 5 sections, order, concurrent, DB error propagate (RED)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s5-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "create src/web-ui/product-context-adapter.js — D37 adapter (GREEN partial)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s5-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "add buildSystemPromptWithProductContext export to skills.js (GREEN)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s5-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "wire setProductContextAdapter in server.js — D37 mandatory separate wiring task",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s5-plan.md"
+                }
+              ]
             }
           ]
         },
@@ -8093,7 +8199,7 @@
             {
               "slug": "psh-s6",
               "name": "Per-product kanban board",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -8116,12 +8222,38 @@
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": true,
-              "e2eToolingRequired": true
+              "e2eToolingRequired": true,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 7 failing tests — 8 stage columns, health labels, empty state, PostHog (RED)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s6-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "add handleGetProductKanban to products.js — 8-column kanban (GREEN)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s6-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "create tests/e2e/psh-s6-product-kanban.spec.js — Playwright 8-column layout test",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s6-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "mount GET /products/:id/kanban in server.js",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s6-plan.md"
+                }
+              ]
             },
             {
               "slug": "psh-s7",
               "name": "Org-level kanban with product grouping and filter",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -8144,7 +8276,33 @@
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": true,
-              "e2eToolingRequired": true
+              "e2eToolingRequired": true,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 7 failing tests — groups by product, filter, PostHog, cross-tenant (RED)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s7-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "add handleGetOrgKanban to products.js — org-level grouped kanban (GREEN)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s7-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "create tests/e2e/psh-s7-org-kanban.spec.js — Playwright layout test",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s7-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "mount GET /org/kanban in server.js",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s7-plan.md"
+                }
+              ]
             }
           ]
         },
@@ -8156,7 +8314,7 @@
             {
               "slug": "psh-s8",
               "name": "Standards definition and management per product",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -8179,12 +8337,32 @@
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 8 failing tests — POST/GET/PUT standards, org_id from session, XSS (RED)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s8-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "create src/web-ui/routes/standards.js — standardsPost, standardsList, standardsPut (GREEN)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s8-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "mount POST/GET /products/:id/standards and PUT /standards/:id in server.js",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s8-plan.md"
+                }
+              ]
             },
             {
               "slug": "psh-s9",
               "name": "Org-level standard promotion and per-product opt-out",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -8207,12 +8385,38 @@
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 8 failing tests — promote, cross-org block, public block, optout CRUD (RED)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s9-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "add standard_product_optouts migration to server.js CREATE TABLE IF NOT EXISTS",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s9-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "add standardsPromote, optoutPost, optoutDelete to standards.js (GREEN)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s9-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "mount PUT /standards/:id/promote, POST/DELETE /standards/:id/optout in server.js",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s9-plan.md"
+                }
+              ]
             },
             {
               "slug": "psh-s10",
               "name": "Standards injection into skill sessions",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -8235,7 +8439,33 @@
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 8 failing tests — D37 throw, standards section order, empty list, null productId (RED)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s10-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "create src/web-ui/standards-adapter.js — D37 adapter (GREEN partial)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s10-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "extend buildSystemPromptWithProductContext in skills.js — add standards section (GREEN)",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s10-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "wire setStandardsAdapter in server.js — D37 mandatory separate wiring task",
+                  "tddState": "pending",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s10-plan.md"
+                }
+              ]
             }
           ]
         }
