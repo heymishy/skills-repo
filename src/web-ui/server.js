@@ -190,6 +190,43 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       )
     `).then(function() { console.log('user_roles table ready'); })
       .catch(function(err) { console.error('user_roles table migration failed:', err.message); });
+    // psh-s1: products table
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS products (
+      product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      tenant_id VARCHAR NOT NULL,
+      name VARCHAR NOT NULL,
+      description TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      created_by VARCHAR NOT NULL DEFAULT 'system',
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )`).then(function() {
+      console.log('[psh-s1] products table ready');
+    }).catch(function(err) {
+      console.error('[psh-s1] products migration failed:', err.message);
+    });
+
+    // psh-s1: standards table
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS standards (
+      standard_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      product_id UUID REFERENCES products(product_id) ON DELETE CASCADE,
+      org_id VARCHAR NOT NULL,
+      name VARCHAR NOT NULL,
+      content TEXT NOT NULL,
+      visibility VARCHAR NOT NULL DEFAULT 'product' CHECK (visibility IN ('product', 'org', 'public')),
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )`).then(function() {
+      console.log('[psh-s1] standards table ready');
+    }).catch(function(err) {
+      console.error('[psh-s1] standards migration failed:', err.message);
+    });
+
+    // psh-s1: journeys.product_id FK column
+    _creditsPool.query(`ALTER TABLE journeys ADD COLUMN IF NOT EXISTS product_id UUID REFERENCES products(product_id) ON DELETE SET NULL`).then(function() {
+      console.log('[psh-s1] journeys.product_id column ready');
+    }).catch(function(err) {
+      console.error('[psh-s1] journeys product_id migration failed:', err.message);
+    });
   }
 
   // lab-s3.2 — Wire real Stripe SDK adapter (D37 mandatory separate wiring task)
