@@ -42,9 +42,14 @@ const { setUserFlagsAdapter }                                        = require('
 const { setGetUserRole }                                             = require('./modules/user-roles');       // arl-s1
 const { requireAdmin }                                               = require('./middleware/require-admin'); // arl-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
+const { handlePostProductNew, handlePostProductConfirm }             = require('./routes/products');            // psh-s3
+const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
+
+// psh-s3: module-level pool reference for product routes (assigned inside DATABASE_URL block)
+let _pshPool = null;
 
 // Wire up console logger for auth events (login, logout, state_mismatch)
 const _ts = () => new Date().toISOString();
@@ -152,6 +157,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   if (process.env.DATABASE_URL) {
     const { Pool } = require('pg');
     const _creditsPool = new Pool({ connectionString: process.env.DATABASE_URL });
+    _pshPool = _creditsPool; // psh-s3: wire pool for product creation routes
     setCreditsAdapter(_creditsPool);
     console.log('Credits DB adapter wired');
     setWebhookDbAdapter(_creditsPool); // same pool — stripe_events in same DB as credits
@@ -278,6 +284,24 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       getFirstLoginFlag:   async function() { return false; },
       clearFirstLoginFlag: async function() {}
     });
+  }
+
+  // psh-s3 D37 wiring: wire AI draft generator for product creation
+  {
+    setGenerateProductDraft(async function(fields) {
+      // Real implementation: use AI to generate product context sections
+      // For initial wiring: return structured defaults based on name/description
+      return {
+        name: fields.name || '',
+        description: fields.description || '',
+        mission: 'Define the mission for ' + (fields.name || 'this product'),
+        techStack: 'Define the tech stack for ' + (fields.name || 'this product'),
+        constraints: 'Define constraints for ' + (fields.name || 'this product'),
+        roadmap: 'Define the roadmap for ' + (fields.name || 'this product'),
+        architectureGuardrails: 'Define architecture guardrails for ' + (fields.name || 'this product')
+      };
+    });
+    console.log('[psh-s3] generateProductDraft adapter wired');
   }
 
   // p3.2 — Upstash Redis session persistence (see Decision 9)
@@ -1071,6 +1095,14 @@ async function router(req, res) {
     requireAdmin(req, res, () => { _raOk = true; });
     if (!_raOk) return;
     await adminCreditsPost(req, res);
+
+  } else if (pathname === '/products/new' && req.method === 'POST') {
+    // psh-s3 — product creation: generate AI draft
+    authGuard(req, res, async () => { await handlePostProductNew(req, res, null, null, null); });
+
+  } else if (pathname === '/products/confirm' && req.method === 'POST') {
+    // psh-s3 — product creation: confirm and persist
+    authGuard(req, res, async () => { await handlePostProductConfirm(req, res, null, _pshPool, null); });
 
   } else if (pathname === '/' && req.method === 'GET') {
     // lab-s1.2 — public landing page with PostHog event + auth redirect to /dashboard
