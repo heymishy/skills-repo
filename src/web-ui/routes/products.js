@@ -130,7 +130,8 @@ function _renderProductView(productName, productId, features, login) {
 }
 
 function _isTeamPlan(session) {
-  return session && session.plan === 'team';
+  // Only restrict when plan is explicitly 'solo'; unset/unknown defaults to unrestricted
+  return !session || session.plan !== 'solo';
 }
 
 async function handlePostProductNew(req, res, _next, pool, posthog) {
@@ -180,7 +181,7 @@ async function handlePostProductConfirm(req, res, _next, pool, posthog) {
     var existing = await _pool.query('SELECT product_id FROM products WHERE tenant_id = $1', [tenantId]);
     if (existing.rows.length >= 1) {
       if (res.status) { res.status(403).json({ reason: 'plan_limit', upgradeRequired: true }); }
-      else { res.writeHead(403, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ reason: 'plan_limit', upgradeRequired: true })); }
+      else { res.writeHead(302, { 'Location': '/products/new?error=plan_limit' }); res.end(); }
       return;
     }
   }
@@ -242,7 +243,9 @@ async function handleGetDashboard(req, res, _next, pool) {
 
 function handleGetProductNew(req, res) {
   var login = req.session && req.session.login;
-  var html = _renderProductNew(login, null);
+  var errorParam = req.query && req.query.error;
+  var error = errorParam === 'plan_limit' ? 'Your plan allows 1 product. Upgrade to create more.' : null;
+  var html = _renderProductNew(login, error);
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
