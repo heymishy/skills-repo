@@ -257,14 +257,14 @@ async function handleGetProductView(req, res, _next, pool) {
   )).rows[0];
   var productName = prodRow ? prodRow.name : productId;
   var rows = (await _pool.query(
-    'SELECT journey_id, stage, health, feature_slug, updated_at FROM journeys WHERE product_id = $1',
+    "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1",
     [productId]
   )).rows;
   var features = rows.map(function(j) {
     return {
       journey_id: j.journey_id,
-      stage: j.stage,
-      health: j.health,
+      stage: j.stage || 'discovery',
+      health: 'green',
       featureSlug: j.feature_slug
     };
   });
@@ -292,20 +292,21 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
   var tenantId = req.session && req.session.tenantId;
 
   var rows = (await _pool.query(
-    'SELECT journey_id, stage, health, feature_slug FROM journeys WHERE product_id = $1',
+    "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1",
     [productId]
   )).rows;
 
   var columns = STAGE_COLUMNS.map(function(stage) {
     var features = rows
-      .filter(function(j) { return j.stage === stage; })
+      .filter(function(j) { return (j.stage || 'discovery') === stage; })
       .map(function(j) {
+        var health = j.health || 'green';
         return {
           journey_id: j.journey_id,
           name: _escapeHtml(j.feature_slug || j.journey_id),
-          health: j.health,
-          healthLabel: _healthLabel(j.health),
-          healthIcon: j.health === 'red' ? '⚠' : (j.health === 'amber' ? '⚠' : '✓')
+          health: health,
+          healthLabel: _healthLabel(health),
+          healthIcon: health === 'red' ? '⚠' : (health === 'amber' ? '⚠' : '✓')
         };
       });
     return {
@@ -346,18 +347,19 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
   for (var i = 0; i < filteredProds.length; i++) {
     var p = filteredProds[i];
     var jRows = (await _pool.query(
-      'SELECT journey_id, product_id, stage, health, feature_slug FROM journeys WHERE product_id = $1 AND tenant_id = $2',
+      "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1 AND tenant_id = $2",
       [p.product_id, tenantId]
     )).rows;
     allJourneyCount += jRows.length;
     var features = jRows.map(function(j) {
+      var stage = j.stage || 'discovery';
       return {
         journey_id: j.journey_id,
         name: _escapeHtml(j.feature_slug || j.journey_id),
-        stage: j.stage,
-        health: j.health,
-        healthLabel: _healthLabel(j.health),
-        stageLink: '/journeys/' + j.journey_id + '/' + j.stage
+        stage: stage,
+        health: 'green',
+        healthLabel: 'Healthy',
+        stageLink: '/journeys/' + j.journey_id + '/' + stage
       };
     });
     groups.push({
