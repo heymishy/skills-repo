@@ -1148,6 +1148,24 @@ async function router(req, res) {
     // psh-s7 — org-level kanban: all products and their features grouped by product
     authGuard(req, res, async () => { await handleGetOrgKanban(req, res, null, _pshPool, null); });
 
+  } else if (pathname.match(/^\/products\/[^/]+\/standards$/) && req.method === 'POST') {
+    // psh-s8 — create standard for a product
+    req.params = { id: pathname.split('/')[2] };
+    const _standardsRoutes = require('./routes/standards');
+    authGuard(req, res, async () => { await _standardsRoutes.standardsPost(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/standards$/) && req.method === 'GET') {
+    // psh-s8 — list standards for a product
+    req.params = { id: pathname.split('/')[2] };
+    const _standardsRoutes = require('./routes/standards');
+    authGuard(req, res, async () => { await _standardsRoutes.standardsList(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/standards\/[^/]+$/) && req.method === 'PUT') {
+    // psh-s8 — edit a standard
+    req.params = { id: pathname.split('/')[2] };
+    const _standardsRoutes = require('./routes/standards');
+    authGuard(req, res, async () => { await _standardsRoutes.standardsPut(req, res, null, _pshPool); });
+
   } else if (pathname === '/' && req.method === 'GET') {
     // lab-s1.2 — public landing page with PostHog event + auth redirect to /dashboard
     await handleRoot(req, res);
