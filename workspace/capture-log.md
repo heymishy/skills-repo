@@ -265,3 +265,21 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: decision
   signal-text: All 3 MEDIUM review findings (1-M1 AC5 guard note in psh-s1, 1-M2 under-specified AC1 in psh-s3, 1-M3 non-existent ADR-020 in psh-s3) resolved inline at DoR by editing story artefacts directly — not logged to decisions.md since fixes were unambiguous and no risk-accept was required.
   source: agent-auto
+
+- date: 2026-07-05
+  session-phase: inner-loop / psh-s10 delivery
+  signal-type: pattern
+  signal-text: "Multi-adapter module cache isolation in test helpers: when multiple injectable adapters share a common function (buildSystemPromptWithProductContext), adding a second adapter (standards, psh-s10) causes existing tests for the first adapter (product-context, psh-s5) to fail because the test helper's getBsp() cleared one adapter's cache entry but not the second. Fix: in getBsp(), clear ALL adapter module cache entries that the shared function may call, then wire no-op stubs for all adapters not under test. Pattern: document the full set of require() calls in buildSystemPromptWithProductContext and clear them all in any test helper that re-requires the shared function."
+  source: agent-auto
+
+- date: 2026-07-05
+  session-phase: branch-complete / trace CI fix
+  signal-type: pattern
+  signal-text: "dodStatus: null is a schema violation in pipeline-state.json — the schema requires string 'not-started' or 'complete', not null. Trace validation CI fails with '20 violations — None is not of type string'. Always initialise dodStatus to 'not-started' (never null) when creating pipeline-state story objects. The advance-psh-branch-complete.js script set null because the field was omitted from the story object at creation time."
+  source: agent-auto
+
+- date: 2026-07-05
+  session-phase: definition-of-done
+  signal-type: pattern
+  signal-text: "decisions.md was absent for feature 2026-07-05-product-stds-hierarchy despite 6 architectural decisions (ADR-022/023 canonicity, D37 adapter pattern, opt-out model, solo plan enforcement, section ordering). CLAUDE.md mandates creation at discovery approval. File was created retroactively at DoD time — all decisions are accurate to what was implemented, but rationale was reconstructed rather than captured at decision-time. Recurrence prevention: /discovery output checklist should prompt for decisions.md creation alongside benefit-metric.md."
+  source: agent-auto
