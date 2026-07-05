@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-07-05T06:54:27.329Z",
+  "updated": "2026-07-05T07:00:44.038Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -7697,10 +7697,10 @@
       "slug": "2026-07-05-product-stds-hierarchy",
       "name": "Product Hierarchy, Standards and Patterns Library",
       "track": "standard",
-      "stage": "branch-complete",
+      "stage": "verify-completion",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-07-05T06:54:27.329Z",
+      "updatedAt": "2026-07-05T07:00:44.038Z",
       "discoveryArtefact": "artefacts/2026-07-05-product-stds-hierarchy/discovery.md",
       "benefitMetricArtefact": "artefacts/2026-07-05-product-stds-hierarchy/benefit-metric.md",
       "metrics": [
@@ -7932,7 +7932,7 @@
             {
               "slug": "psh-s1",
               "name": "Products and standards Postgres schema",
-              "stage": "branch-complete",
+              "stage": "verify-completion",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -7948,12 +7948,12 @@
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s1-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T05:41:07.342Z",
+              "updatedAt": "2026-07-05T07:00:44.038Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
-              "acTotal": 5,
-              "acVerified": 0,
+              "acTotal": 4,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "tasks": [
@@ -7969,12 +7969,13 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s1-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "psh-s2",
               "name": "Migration — assign existing journeys to Default product",
-              "stage": "branch-complete",
+              "stage": "verify-completion",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -7982,18 +7983,19 @@
               "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s2-review-1.md",
               "testPlan": {
                 "passing": 7,
-                "totalTests": 7
+                "totalTests": 7,
+                "status": "written"
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s2-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T05:48:56.255Z",
+              "updatedAt": "2026-07-05T07:00:44.038Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "tasks": [
@@ -8009,7 +8011,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s2-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             }
           ]
         },
@@ -8021,7 +8024,7 @@
             {
               "slug": "psh-s3",
               "name": "Product creation flow (hybrid form + AI draft + inline review)",
-              "stage": "branch-complete",
+              "stage": "verify-completion",
               "health": "green",
               "complexity": 3,
               "reviewStatus": "passed",
@@ -8029,18 +8032,19 @@
               "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s3-review-1.md",
               "testPlan": {
                 "passing": 8,
-                "totalTests": 8
+                "totalTests": 8,
+                "status": "written"
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s3-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T06:10:35.364Z",
+              "updatedAt": "2026-07-05T07:00:44.038Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
               "acTotal": 8,
-              "acVerified": 0,
+              "acVerified": 8,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "tasks": [
@@ -8068,12 +8072,13 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s3-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "psh-s4",
               "name": "Product-aware dashboard and navigation",
-              "stage": "branch-complete",
+              "stage": "verify-completion",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -8081,18 +8086,19 @@
               "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s4-review-1.md",
               "testPlan": {
                 "passing": 6,
-                "totalTests": 6
+                "totalTests": 6,
+                "status": "written"
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s4-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T06:25:52.947Z",
+              "updatedAt": "2026-07-05T07:00:44.038Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "tasks": [
@@ -8120,7 +8126,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s4-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             }
           ]
         },
@@ -8132,7 +8139,7 @@
             {
               "slug": "psh-s5",
               "name": "Product context injection into skill sessions",
-              "stage": "branch-complete",
+              "stage": "verify-completion",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -8140,18 +8147,19 @@
               "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s5-review-1.md",
               "testPlan": {
                 "passing": 9,
-                "totalTests": 9
+                "totalTests": 9,
+                "status": "written"
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s5-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T06:31:42.501Z",
+              "updatedAt": "2026-07-05T07:00:44.038Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "tasks": [
@@ -8179,7 +8187,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s5-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             }
           ]
         },
@@ -8191,7 +8200,7 @@
             {
               "slug": "psh-s6",
               "name": "Per-product kanban board",
-              "stage": "branch-complete",
+              "stage": "verify-completion",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -8199,18 +8208,19 @@
               "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s6-review-1.md",
               "testPlan": {
                 "passing": 7,
-                "totalTests": 7
+                "totalTests": 7,
+                "status": "written"
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s6-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T06:35:06.312Z",
+              "updatedAt": "2026-07-05T07:00:44.038Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "tasks": [
@@ -8238,12 +8248,13 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s6-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "psh-s7",
               "name": "Org-level kanban with product grouping and filter",
-              "stage": "branch-complete",
+              "stage": "verify-completion",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -8251,18 +8262,19 @@
               "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s7-review-1.md",
               "testPlan": {
                 "passing": 7,
-                "totalTests": 7
+                "totalTests": 7,
+                "status": "written"
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s7-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T06:38:28.999Z",
+              "updatedAt": "2026-07-05T07:00:44.038Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "tasks": [
@@ -8290,7 +8302,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s7-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             }
           ]
         },
@@ -8302,7 +8315,7 @@
             {
               "slug": "psh-s8",
               "name": "Standards definition and management per product",
-              "stage": "branch-complete",
+              "stage": "verify-completion",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -8310,18 +8323,19 @@
               "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s8-review-1.md",
               "testPlan": {
                 "passing": 8,
-                "totalTests": 8
+                "totalTests": 8,
+                "status": "written"
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s8-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T06:42:34.160Z",
+              "updatedAt": "2026-07-05T07:00:44.038Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "tasks": [
@@ -8343,12 +8357,13 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s8-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "psh-s9",
               "name": "Org-level standard promotion and per-product opt-out",
-              "stage": "branch-complete",
+              "stage": "verify-completion",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -8356,18 +8371,19 @@
               "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s9-review-1.md",
               "testPlan": {
                 "passing": 8,
-                "totalTests": 8
+                "totalTests": 8,
+                "status": "written"
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s9-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T06:46:28.360Z",
+              "updatedAt": "2026-07-05T07:00:44.038Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "tasks": [
@@ -8395,12 +8411,13 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s9-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "psh-s10",
               "name": "Standards injection into skill sessions",
-              "stage": "branch-complete",
+              "stage": "verify-completion",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -8416,12 +8433,12 @@
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s10-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T06:54:27.328Z",
+              "updatedAt": "2026-07-05T07:00:44.038Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "tasks": [
@@ -8449,7 +8466,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s10-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             }
           ]
         }
