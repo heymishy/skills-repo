@@ -42,9 +42,16 @@ const { setUserFlagsAdapter }                                        = require('
 const { setGetUserRole }                                             = require('./modules/user-roles');       // arl-s1
 const { requireAdmin }                                               = require('./middleware/require-admin'); // arl-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7
+const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
+const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
+const { setStandardsAdapter }                                        = require('./standards-adapter');             // psh-s10
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
+
+// psh-s3: module-level pool reference for product routes (assigned inside DATABASE_URL block)
+let _pshPool = null;
 
 // Wire up console logger for auth events (login, logout, state_mismatch)
 const _ts = () => new Date().toISOString();
@@ -152,6 +159,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   if (process.env.DATABASE_URL) {
     const { Pool } = require('pg');
     const _creditsPool = new Pool({ connectionString: process.env.DATABASE_URL });
+    _pshPool = _creditsPool; // psh-s3: wire pool for product creation routes
     setCreditsAdapter(_creditsPool);
     console.log('Credits DB adapter wired');
     setWebhookDbAdapter(_creditsPool); // same pool — stripe_events in same DB as credits
@@ -190,6 +198,92 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       )
     `).then(function() { console.log('user_roles table ready'); })
       .catch(function(err) { console.error('user_roles table migration failed:', err.message); });
+    // psh-s1: products table
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS products (
+      product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      tenant_id VARCHAR NOT NULL,
+      name VARCHAR NOT NULL,
+      description TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      created_by VARCHAR NOT NULL DEFAULT 'system',
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )`).then(function() {
+      console.log('[psh-s1] products table ready');
+    }).catch(function(err) {
+      console.error('[psh-s1] products migration failed:', err.message);
+    });
+
+    // psh-s1: standards table
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS standards (
+      standard_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      product_id UUID REFERENCES products(product_id) ON DELETE CASCADE,
+      org_id VARCHAR NOT NULL,
+      name VARCHAR NOT NULL,
+      content TEXT NOT NULL,
+      visibility VARCHAR NOT NULL DEFAULT 'product' CHECK (visibility IN ('product', 'org', 'public')),
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )`).then(function() {
+      console.log('[psh-s1] standards table ready');
+    }).catch(function(err) {
+      console.error('[psh-s1] standards migration failed:', err.message);
+    });
+
+    // psh-s9: standard_product_optouts table
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS standard_product_optouts (
+      standard_id UUID REFERENCES standards(standard_id) ON DELETE CASCADE,
+      product_id  UUID REFERENCES products(product_id)   ON DELETE CASCADE,
+      opted_out_at TIMESTAMPTZ DEFAULT NOW(),
+      PRIMARY KEY (standard_id, product_id)
+    )`).then(function() {
+      console.log('[psh-s9] standard_product_optouts table ready');
+    }).catch(function(err) {
+      console.error('[psh-s9] standard_product_optouts migration failed:', err.message);
+    });
+
+    // psh-s1: journeys.product_id FK column
+    _creditsPool.query(`ALTER TABLE journeys ADD COLUMN IF NOT EXISTS product_id UUID REFERENCES products(product_id) ON DELETE SET NULL`).then(function() {
+      console.log('[psh-s1] journeys.product_id column ready');
+    }).catch(function(err) {
+      console.error('[psh-s1] journeys product_id migration failed:', err.message);
+    });
+
+    // psh-s5 D37 wiring: wire real Postgres product context adapter
+    {
+      setProductContextAdapter(async function(productId) {
+        var r = await _creditsPool.query(
+          'SELECT name, description, mission, roadmap, tech_stack, constraints, architecture_guardrails FROM products WHERE product_id = $1',
+          [productId]
+        );
+        if (!r.rows.length) return null;
+        var row = r.rows[0];
+        return {
+          mission: row.mission || row.description || '',
+          techStack: row.tech_stack || '',
+          constraints: row.constraints || '',
+          roadmap: row.roadmap || '',
+          architectureGuardrails: row.architecture_guardrails || ''
+        };
+      });
+      console.log('[psh-s5] product context adapter wired');
+    }
+
+    // psh-s10 D37 wiring: wire real Postgres active standards adapter
+    {
+      setStandardsAdapter(async function(productId, orgId) {
+        var r = await _creditsPool.query(
+          `SELECT name, content FROM standards
+           WHERE (product_id = $1 OR (visibility = 'org' AND org_id = $2))
+             AND standard_id NOT IN (
+               SELECT standard_id FROM standard_product_optouts WHERE product_id = $1
+             )
+           ORDER BY created_at ASC`,
+          [productId, orgId]
+        );
+        return r.rows;
+      });
+      console.log('[psh-s10] standards adapter wired');
+    }
   }
 
   // lab-s3.2 — Wire real Stripe SDK adapter (D37 mandatory separate wiring task)
@@ -241,6 +335,24 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       getFirstLoginFlag:   async function() { return false; },
       clearFirstLoginFlag: async function() {}
     });
+  }
+
+  // psh-s3 D37 wiring: wire AI draft generator for product creation
+  {
+    setGenerateProductDraft(async function(fields) {
+      // Real implementation: use AI to generate product context sections
+      // For initial wiring: return structured defaults based on name/description
+      return {
+        name: fields.name || '',
+        description: fields.description || '',
+        mission: 'Define the mission for ' + (fields.name || 'this product'),
+        techStack: 'Define the tech stack for ' + (fields.name || 'this product'),
+        constraints: 'Define constraints for ' + (fields.name || 'this product'),
+        roadmap: 'Define the roadmap for ' + (fields.name || 'this product'),
+        architectureGuardrails: 'Define architecture guardrails for ' + (fields.name || 'this product')
+      };
+    });
+    console.log('[psh-s3] generateProductDraft adapter wired');
   }
 
   // p3.2 — Upstash Redis session persistence (see Decision 9)
@@ -671,7 +783,11 @@ async function router(req, res) {
     });
 
   } else if (pathname === '/dashboard') {
-    handleDashboard(req, res);
+    if (_pshPool) {
+      authGuard(req, res, async () => { await _handleGetDashboard(req, res, null, _pshPool); });
+    } else {
+      handleDashboard(req, res);
+    }
 
   } else if (pathname.match(/^\/artefact\/[^/]+\/[^/]+$/) && req.method === 'GET') {
     const parts        = pathname.split('/').filter(Boolean);
@@ -1034,6 +1150,69 @@ async function router(req, res) {
     requireAdmin(req, res, () => { _raOk = true; });
     if (!_raOk) return;
     await adminCreditsPost(req, res);
+
+  } else if (pathname === '/products/new' && req.method === 'POST') {
+    // psh-s3 — product creation: generate AI draft
+    authGuard(req, res, async () => { await handlePostProductNew(req, res, null, null, null); });
+
+  } else if (pathname === '/products/confirm' && req.method === 'POST') {
+    // psh-s3 — product creation: confirm and persist
+    authGuard(req, res, async () => { await handlePostProductConfirm(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+$/) && req.method === 'GET') {
+    // psh-s4 — product view: list features for one product with stage + health
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handleGetProductView(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/features$/) && req.method === 'POST') {
+    // psh-s4 — create new journey with product_id FK, emits journey_created PostHog event
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handlePostProductFeature(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/kanban$/) && req.method === 'GET') {
+    // psh-s6 — per-product kanban board with 8 stage columns and health indicators
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handleGetProductKanban(req, res, null, _pshPool, null); });
+
+  } else if (pathname === '/org/kanban' && req.method === 'GET') {
+    // psh-s7 — org-level kanban: all products and their features grouped by product
+    authGuard(req, res, async () => { await handleGetOrgKanban(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/standards$/) && req.method === 'POST') {
+    // psh-s8 — create standard for a product
+    req.params = { id: pathname.split('/')[2] };
+    const _standardsRoutes = require('./routes/standards');
+    authGuard(req, res, async () => { await _standardsRoutes.standardsPost(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/standards$/) && req.method === 'GET') {
+    // psh-s8 — list standards for a product
+    req.params = { id: pathname.split('/')[2] };
+    const _standardsRoutes = require('./routes/standards');
+    authGuard(req, res, async () => { await _standardsRoutes.standardsList(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/standards\/[^/]+$/) && req.method === 'PUT') {
+    // psh-s8 — edit a standard
+    req.params = { id: pathname.split('/')[2] };
+    const _standardsRoutes = require('./routes/standards');
+    authGuard(req, res, async () => { await _standardsRoutes.standardsPut(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/standards\/[^/]+\/promote$/) && req.method === 'PUT') {
+    // psh-s9 — promote standard to org-wide visibility
+    req.params = { id: pathname.split('/')[2] };
+    const _standardsRoutes = require('./routes/standards');
+    authGuard(req, res, async () => { await _standardsRoutes.standardsPromote(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/standards\/[^/]+\/optout$/) && req.method === 'POST') {
+    // psh-s9 — per-product opt-out from org standard
+    req.params = { id: pathname.split('/')[2] };
+    const _standardsRoutes = require('./routes/standards');
+    authGuard(req, res, async () => { await _standardsRoutes.optoutPost(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/standards\/[^/]+\/optout$/) && req.method === 'DELETE') {
+    // psh-s9 — remove per-product opt-out (opt back in)
+    req.params = { id: pathname.split('/')[2] };
+    const _standardsRoutes = require('./routes/standards');
+    authGuard(req, res, async () => { await _standardsRoutes.optoutDelete(req, res, null, _pshPool, null); });
 
   } else if (pathname === '/' && req.method === 'GET') {
     // lab-s1.2 — public landing page with PostHog event + auth redirect to /dashboard

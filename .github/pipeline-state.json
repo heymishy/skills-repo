@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-07-03T00:00:00Z",
+  "updated": "2026-07-05T08:38:13.964Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -7611,7 +7611,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": "pla-s2 merged (PR #437); $ai_generation events with $ai_total_cost_usd and $groups.company now emit on every Anthropic call; measurement requires Fly.io redeploy with POSTHOG_KEY set and at least one real tenant session post-deploy.",
-          "contributingStories": ["pla-s1", "pla-s2"]
+          "contributingStories": [
+            "pla-s1",
+            "pla-s2"
+          ]
         },
         {
           "id": "M2",
@@ -7621,7 +7624,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": "$ai_trace_id = journeyId now set on both skill_turn and $ai_generation events (pla-s2); measurement requires Fly.io redeploy and one complete journey session to verify PostHog trace view shows linked events.",
-          "contributingStories": ["pla-s2"]
+          "contributingStories": [
+            "pla-s2"
+          ]
         },
         {
           "id": "M3",
@@ -7631,7 +7636,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": "$ai_cache_read_input_tokens and $ai_cache_creation_input_tokens now forwarded to PostHog on every $ai_generation event (pla-s2); measurement requires Fly.io redeploy and multi-turn sessions to accumulate cache data.",
-          "contributingStories": ["pla-s2"]
+          "contributingStories": [
+            "pla-s2"
+          ]
         },
         {
           "id": "M4",
@@ -7641,7 +7648,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": "role property included on every $ai_generation event; identify() wires role into PostHog person record on journey creation (pla-s2); measurement requires Fly.io redeploy, admin seed SQL execution, and at least one session per role type.",
-          "contributingStories": ["pla-s1", "pla-s2"]
+          "contributingStories": [
+            "pla-s1",
+            "pla-s2"
+          ]
         }
       ],
       "guardrails": [
@@ -7682,6 +7692,787 @@
           "evidence": "Test N2 (pla-s2): spy on computeCostUsd confirmed called; value flows through to captured $ai_generation event."
         }
       ]
+    },
+    {
+      "slug": "2026-07-05-product-stds-hierarchy",
+      "name": "Product Hierarchy, Standards and Patterns Library",
+      "track": "standard",
+      "stage": "branch-complete",
+      "discoveryStatus": "approved",
+      "health": "green",
+      "updatedAt": "2026-07-05T08:38:13.962Z",
+      "discoveryArtefact": "artefacts/2026-07-05-product-stds-hierarchy/discovery.md",
+      "benefitMetricArtefact": "artefacts/2026-07-05-product-stds-hierarchy/benefit-metric.md",
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Product setup completion rate",
+          "target": ">=70% of new accounts complete product setup + first feature in first active session",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M2",
+          "name": "Product context injection rate",
+          "target": "100% of skill sessions for product-associated features include product context in system prompt",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M3a",
+          "name": "Kanban render correctness",
+          "target": "100% correct render on every deploy",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M3b",
+          "name": "Kanban weekly view rate",
+          "target": ">=50% of active tenants view kanban weekly within 30 days of launch",
+          "baseline": "not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M4a",
+          "name": "Standards library adoption rate",
+          "target": "TBD - observe for 60 days post-launch",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M4b",
+          "name": "Standards injection rate",
+          "target": "100% of sessions for products with standards configured receive standards in system prompt",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "slicingStrategy": "user-journey",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "benefit-metric": {
+        "status": "active",
+        "artefact": "artefacts/2026-07-05-product-stds-hierarchy/benefit-metric.md",
+        "definedAt": "2026-07-05"
+      },
+      "nfrProfileArtefact": "artefacts/2026-07-05-product-stds-hierarchy/nfr-profile.md",
+      "guardrails": [
+        {
+          "id": "ADR-011-artefact-first",
+          "category": "adr",
+          "label": "ADR-011: Artefact-first — all new src/ modules have story artefacts before or alongside commit",
+          "status": "met",
+          "assessedBy": "/review",
+          "evidence": "All 10 stories have artefacts committed before any src/ code. ADR-011 referenced in all applicable stories' Architecture Constraints.",
+          "assessedAt": "2026-07-05T00:00:00Z"
+        },
+        {
+          "id": "ADR-018-playwright-e2e",
+          "category": "adr",
+          "label": "ADR-018: Playwright required for CSS-layout-dependent ACs in psh-s6 AC6 and psh-s7 AC6, or explicit RISK-ACCEPT at DoR",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "evidence": "psh-s6 AC6 and psh-s7 AC6 flagged as CSS-layout-dependent. Playwright vs RISK-ACCEPT decision deferred to DoR sign-off per ADR-018.",
+          "assessedAt": "2026-07-05T00:00:00Z",
+          "notes": "psh-s6 AC6: tests/e2e/psh-s6-product-kanban.spec.js; psh-s7 AC6: tests/e2e/psh-s7-org-kanban.spec.js; psh-s4 layout: tests/e2e/psh-s4-dashboard-layout.spec.js"
+        },
+        {
+          "id": "ADR-022-option-b-sessions",
+          "category": "adr",
+          "label": "ADR-022: Option B journey orchestration — psh-s5 and psh-s10 inject context at session init only, not across sessions",
+          "status": "met",
+          "assessedBy": "/review",
+          "evidence": "psh-s5 AC specifies session init only (ADR-022). psh-s10 follows same pattern. No cross-session state.",
+          "assessedAt": "2026-07-05T00:00:00Z"
+        },
+        {
+          "id": "ADR-023-db-canonicity",
+          "category": "adr",
+          "label": "ADR-023: B-iii handoff — product context and standards read from Postgres/disk, never from in-memory session state",
+          "status": "met",
+          "assessedBy": "/review",
+          "evidence": "psh-s5 AC2 names session.artefactContent and session.productContext as prohibited sources. psh-s10 AC2 same pattern. DB canonical read via adapter only.",
+          "assessedAt": "2026-07-05T00:00:00Z"
+        },
+        {
+          "id": "ADR-024-journey-get-shape",
+          "category": "adr",
+          "label": "ADR-024: Any new consumer of GET /api/journey/:id must verify turns, stages, completedStages, stage, ownerId, activeSkill fields present",
+          "status": "met",
+          "assessedBy": "/review",
+          "evidence": "psh-s4 Architecture Constraints conditionally references ADR-024 shape check. No new consumers add partial shapes.",
+          "assessedAt": "2026-07-05T00:00:00Z"
+        },
+        {
+          "id": "NFR-sec-pathtraversal",
+          "category": "nfr",
+          "label": "Path traversal guard on all disk writes derived from request data — psh-s3, psh-s8; HTTP 400, no raw path in logs",
+          "status": "met",
+          "assessedBy": "/review",
+          "evidence": "psh-s3 AC7 and psh-s8 AC6 both specify HTTP 400 + no-file-written assertions. Path traversal guard explicitly in Architecture Constraints.",
+          "assessedAt": "2026-07-05T00:00:00Z"
+        },
+        {
+          "id": "NFR-sec-session-field",
+          "category": "nfr",
+          "label": "req.session.accessToken is canonical field name — no req.session.token aliases anywhere in feature",
+          "status": "met",
+          "assessedBy": "/review",
+          "evidence": "psh-s3 Architecture Constraints names req.session.accessToken canonical requirement. Finding 1-M3 notes ADR-020 reference is a broken pointer — constraint itself is correct.",
+          "assessedAt": "2026-07-05T00:00:00Z"
+        },
+        {
+          "id": "NFR-sec-html-escape",
+          "category": "nfr",
+          "label": "All user-supplied content (product names, standard names/content, feature names) HTML-escaped before DOM insertion — no raw innerHTML",
+          "status": "met",
+          "assessedBy": "/review",
+          "evidence": "MC-SEC-01 referenced in Architecture Constraints of psh-s3, psh-s4, psh-s6, psh-s7, psh-s8. AC-level XSS test cases in psh-s3 AC6, psh-s8 AC5.",
+          "assessedAt": "2026-07-05T00:00:00Z"
+        },
+        {
+          "id": "NFR-D37-stub-throws",
+          "category": "nfr",
+          "label": "D37: generateProductDraft, getProductContext, getActiveStandards adapter stubs must throw on invocation without wiring, not return null/empty",
+          "status": "met",
+          "assessedBy": "/review",
+          "evidence": "psh-s3 AC8, psh-s5 AC4+AC5, psh-s10 AC4+AC5 all model D37 as independent stub-throws + wiring ACs. Stub error messages specified.",
+          "assessedAt": "2026-07-05T00:00:00Z"
+        },
+        {
+          "id": "NFR-performance-session-init",
+          "category": "nfr",
+          "label": "Context and standards DB lookups add at most 1 Postgres round-trip each per session init (psh-s5, psh-s10)",
+          "status": "met",
+          "assessedBy": "/review",
+          "evidence": "psh-s5 NFR: at most 1 Postgres round-trip per session init. psh-s10 NFR: same. Combination query permitted but not required.",
+          "assessedAt": "2026-07-05T00:00:00Z"
+        },
+        {
+          "id": "NFR-performance",
+          "category": "nfr",
+          "label": "Performance — kanban < 2s, product creation < 30s, standards list < 1s",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-05T00:00:00Z"
+        },
+        {
+          "id": "NFR-security",
+          "category": "nfr",
+          "label": "Security — tenantId from session, HTML-escape, path traversal guard, D37 stub-throws",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-05T00:00:00Z"
+        },
+        {
+          "id": "NFR-availability",
+          "category": "nfr",
+          "label": "Availability — migration idempotent; injection failure propagates error",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-05T00:00:00Z"
+        },
+        {
+          "id": "NFR-data",
+          "category": "nfr",
+          "label": "Data — classification: Internal; no new external data stores; PII scoped to tenantId",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-05T00:00:00Z"
+        },
+        {
+          "id": "NFR-accessibility",
+          "category": "nfr",
+          "label": "Accessibility — MC-A11Y-01 keyboard, MC-A11Y-02 colour-not-sole, ADR-018 Playwright E2E",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-05T00:00:00Z"
+        },
+        {
+          "id": "NFR-technology",
+          "category": "nfr",
+          "label": "Technology — Node.js CommonJS only, no new npm deps, idempotent Postgres migrations",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-05T00:00:00Z"
+        },
+        {
+          "id": "NFR-monitoring",
+          "category": "nfr",
+          "label": "Monitoring — PostHog events: product_created, journey_created, kanban_viewed, standard_created",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-05T00:00:00Z"
+        }
+      ],
+      "epics": [
+        {
+          "slug": "psh-e1-product-data-model",
+          "name": "E1 — Product data model and migration",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "psh-s1",
+              "name": "Products and standards Postgres schema",
+              "stage": "branch-complete",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s1-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 8,
+                "artefact": "artefacts/2026-07-05-product-stds-hierarchy/test-plans/psh-s1-test-plan.md"
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s1-dor.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/441",
+              "updatedAt": "2026-07-05T07:25:44.263Z",
+              "dodStatus": "not-started",
+              "releaseReady": false,
+              "dodArtefact": null,
+              "acTotal": 4,
+              "acVerified": 4,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 8 failing tests — schema checks + integration (RED)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "add products/standards/journeys.product_id migration SQL to server.js (GREEN)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s1-plan.md"
+                }
+              ],
+              "verifyStatus": "passed"
+            },
+            {
+              "slug": "psh-s2",
+              "name": "Migration — assign existing journeys to Default product",
+              "stage": "branch-complete",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s2-review-1.md",
+              "testPlan": {
+                "passing": 7,
+                "totalTests": 7,
+                "status": "written"
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s2-dor.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/441",
+              "updatedAt": "2026-07-05T07:25:44.263Z",
+              "dodStatus": "not-started",
+              "releaseReady": false,
+              "dodArtefact": null,
+              "acTotal": 5,
+              "acVerified": 5,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 7 failing tests — idempotency, per-tenant isolation, Default product (RED)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "create scripts/migrate-journeys-to-default-product.js — runMigration(pool, log) (GREEN)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s2-plan.md"
+                }
+              ],
+              "verifyStatus": "passed"
+            }
+          ]
+        },
+        {
+          "slug": "psh-e2-product-creation-navigation",
+          "name": "E2 — Product creation and navigation",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "psh-s3",
+              "name": "Product creation flow (hybrid form + AI draft + inline review)",
+              "stage": "branch-complete",
+              "health": "green",
+              "complexity": 3,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s3-review-1.md",
+              "testPlan": {
+                "passing": 8,
+                "totalTests": 8,
+                "status": "written"
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s3-dor.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/441",
+              "updatedAt": "2026-07-05T07:25:44.263Z",
+              "dodStatus": "not-started",
+              "releaseReady": false,
+              "dodArtefact": null,
+              "acTotal": 8,
+              "acVerified": 8,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 9 failing tests — solo plan, D37 throw, PostHog (RED)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "create src/web-ui/adapters/product-draft.js — D37 adapter (GREEN partial)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "create src/web-ui/routes/products.js — handlePostProductNew + handlePostProductConfirm (GREEN)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s3-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "wire setGenerateProductDraft in server.js — D37 mandatory separate wiring task",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s3-plan.md"
+                }
+              ],
+              "verifyStatus": "passed"
+            },
+            {
+              "slug": "psh-s4",
+              "name": "Product-aware dashboard and navigation",
+              "stage": "branch-complete",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s4-review-1.md",
+              "testPlan": {
+                "passing": 6,
+                "totalTests": 6,
+                "status": "written"
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s4-dor.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/441",
+              "updatedAt": "2026-07-05T07:25:44.263Z",
+              "dodStatus": "not-started",
+              "releaseReady": false,
+              "dodArtefact": null,
+              "acTotal": 5,
+              "acVerified": 5,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 7 failing tests — dashboard cards, product view, new feature, HTML escape (RED)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s4-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "add handleGetDashboard, handleGetProductView, handlePostProductFeature to products.js (GREEN)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s4-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "create tests/e2e/psh-s4-dashboard-layout.spec.js — Playwright layout test (GREEN)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s4-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "mount GET /dashboard, GET /products/:id, POST /products/:id/features in server.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s4-plan.md"
+                }
+              ],
+              "verifyStatus": "passed"
+            }
+          ]
+        },
+        {
+          "slug": "psh-e3-context-inheritance",
+          "name": "E3 — Product context inheritance",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "psh-s5",
+              "name": "Product context injection into skill sessions",
+              "stage": "branch-complete",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s5-review-1.md",
+              "testPlan": {
+                "passing": 9,
+                "totalTests": 9,
+                "status": "written"
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s5-dor.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/441",
+              "updatedAt": "2026-07-05T07:25:44.263Z",
+              "dodStatus": "not-started",
+              "releaseReady": false,
+              "dodArtefact": null,
+              "acTotal": 6,
+              "acVerified": 6,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 9 failing tests — D37 throw, 5 sections, order, concurrent, DB error propagate (RED)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s5-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "create src/web-ui/product-context-adapter.js — D37 adapter (GREEN partial)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s5-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "add buildSystemPromptWithProductContext export to skills.js (GREEN)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s5-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "wire setProductContextAdapter in server.js — D37 mandatory separate wiring task",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s5-plan.md"
+                }
+              ],
+              "verifyStatus": "passed"
+            }
+          ]
+        },
+        {
+          "slug": "psh-e4-kanban-boards",
+          "name": "E4 — Kanban boards",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "psh-s6",
+              "name": "Per-product kanban board",
+              "stage": "branch-complete",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s6-review-1.md",
+              "testPlan": {
+                "passing": 7,
+                "totalTests": 7,
+                "status": "written"
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s6-dor.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/441",
+              "updatedAt": "2026-07-05T07:25:44.263Z",
+              "dodStatus": "not-started",
+              "releaseReady": false,
+              "dodArtefact": null,
+              "acTotal": 6,
+              "acVerified": 6,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 7 failing tests — 8 stage columns, health labels, empty state, PostHog (RED)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s6-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "add handleGetProductKanban to products.js — 8-column kanban (GREEN)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s6-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "create tests/e2e/psh-s6-product-kanban.spec.js — Playwright 8-column layout test",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s6-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "mount GET /products/:id/kanban in server.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s6-plan.md"
+                }
+              ],
+              "verifyStatus": "passed"
+            },
+            {
+              "slug": "psh-s7",
+              "name": "Org-level kanban with product grouping and filter",
+              "stage": "branch-complete",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s7-review-1.md",
+              "testPlan": {
+                "passing": 7,
+                "totalTests": 7,
+                "status": "written"
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s7-dor.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/441",
+              "updatedAt": "2026-07-05T07:25:44.263Z",
+              "dodStatus": "not-started",
+              "releaseReady": false,
+              "dodArtefact": null,
+              "acTotal": 6,
+              "acVerified": 6,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 7 failing tests — groups by product, filter, PostHog, cross-tenant (RED)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s7-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "add handleGetOrgKanban to products.js — org-level grouped kanban (GREEN)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s7-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "create tests/e2e/psh-s7-org-kanban.spec.js — Playwright layout test",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s7-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "mount GET /org/kanban in server.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s7-plan.md"
+                }
+              ],
+              "verifyStatus": "passed"
+            }
+          ]
+        },
+        {
+          "slug": "psh-e5-standards-library",
+          "name": "E5 — Standards and patterns library",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "psh-s8",
+              "name": "Standards definition and management per product",
+              "stage": "branch-complete",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s8-review-1.md",
+              "testPlan": {
+                "passing": 8,
+                "totalTests": 8,
+                "status": "written"
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s8-dor.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/441",
+              "updatedAt": "2026-07-05T07:25:44.263Z",
+              "dodStatus": "not-started",
+              "releaseReady": false,
+              "dodArtefact": null,
+              "acTotal": 6,
+              "acVerified": 6,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 8 failing tests — POST/GET/PUT standards, org_id from session, XSS (RED)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s8-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "create src/web-ui/routes/standards.js — standardsPost, standardsList, standardsPut (GREEN)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s8-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "mount POST/GET /products/:id/standards and PUT /standards/:id in server.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s8-plan.md"
+                }
+              ],
+              "verifyStatus": "passed"
+            },
+            {
+              "slug": "psh-s9",
+              "name": "Org-level standard promotion and per-product opt-out",
+              "stage": "branch-complete",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s9-review-1.md",
+              "testPlan": {
+                "passing": 8,
+                "totalTests": 8,
+                "status": "written"
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s9-dor.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/441",
+              "updatedAt": "2026-07-05T07:25:44.263Z",
+              "dodStatus": "not-started",
+              "releaseReady": false,
+              "dodArtefact": null,
+              "acTotal": 6,
+              "acVerified": 6,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 8 failing tests — promote, cross-org block, public block, optout CRUD (RED)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s9-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "add standard_product_optouts migration to server.js CREATE TABLE IF NOT EXISTS",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s9-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "add standardsPromote, optoutPost, optoutDelete to standards.js (GREEN)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s9-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "mount PUT /standards/:id/promote, POST/DELETE /standards/:id/optout in server.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s9-plan.md"
+                }
+              ],
+              "verifyStatus": "passed"
+            },
+            {
+              "slug": "psh-s10",
+              "name": "Standards injection into skill sessions",
+              "stage": "branch-complete",
+              "health": "green",
+              "complexity": 2,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s10-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 8,
+                "artefact": "artefacts/2026-07-05-product-stds-hierarchy/test-plans/psh-s10-test-plan.md"
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s10-dor.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/441",
+              "updatedAt": "2026-07-05T07:25:44.263Z",
+              "dodStatus": "not-started",
+              "releaseReady": false,
+              "dodArtefact": null,
+              "acTotal": 6,
+              "acVerified": 6,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "write 8 failing tests — D37 throw, standards section order, empty list, null productId (RED)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s10-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "create src/web-ui/standards-adapter.js — D37 adapter (GREEN partial)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s10-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "extend buildSystemPromptWithProductContext in skills.js — add standards section (GREEN)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s10-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "wire setStandardsAdapter in server.js — D37 mandatory separate wiring task",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s10-plan.md"
+                }
+              ],
+              "verifyStatus": "passed"
+            }
+          ]
+        }
+      ],
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

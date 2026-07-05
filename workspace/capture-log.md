@@ -235,3 +235,33 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: decision
   signal-text: "Review finding 1-M3 (AC8 'any of' construct) resolved by decomposing AC8 into 4 separate test() calls — one per event type (journey_created, stage_started, stage_completed, journey_completed). A single test satisfying one event type would not catch missing $groups wiring on the other three routes."
   source: agent-auto
+
+- date: 2026-07-05
+  session-phase: review / 2026-07-05-product-stds-hierarchy
+  signal-type: gap
+  signal-text: "req.session.accessToken canonical field requirement (from CLAUDE.md Coding standards) is referenced in story Architecture Constraints as 'ADR-020' — a non-existent ADR ID. The constraint is correct but the pointer is broken. Gap: CLAUDE.md Coding standards rules that are story-relevant should either be promoted to a numbered ADR in architecture-guardrails.md, or referenced by their CLAUDE.md section name rather than a fabricated ADR ID. Finding 1-M3 in psh-s3 review."
+  source: agent-auto
+
+- date: 2026-07-05
+  session-phase: review / 2026-07-05-product-stds-hierarchy
+  signal-type: pattern
+  signal-text: "D37 null-AC anti-pattern: psh-s1 AC5 was written as 'if any adapter pattern is introduced during implementation, the stub must throw — record in implementation plan if applicable'. This is a planning note embedded as an AC, not testable. When a story is certain no adapter is introduced, omit the D37 AC entirely and rely on Architecture Constraints instead. Only write D37 ACs when an adapter IS being introduced. Finding 1-M1 in psh-s1 review."
+  source: agent-auto
+
+- date: 2026-07-05
+  session-phase: definition-of-ready
+  signal-type: decision
+  signal-text: ADR-018 E2E resolution for psh-s6 and psh-s7 — chose Playwright E2E (not RISK-ACCEPT) because @playwright/test is already a devDependency. Both spec files named in DoR contracts. Guardrail ADR-018-playwright-e2e updated to met.
+  source: agent-auto
+
+- date: 2026-07-05
+  session-phase: definition-of-ready
+  signal-type: pattern
+  signal-text: psh-s2 migration-story.md template passes H1 under a template exception — migration stories authorised by CLAUDE.md use a different structure than story.md. DoR skill H1 check should note this exception when processing migration stories.
+  source: agent-auto
+
+- date: 2026-07-05
+  session-phase: definition-of-ready
+  signal-type: decision
+  signal-text: All 3 MEDIUM review findings (1-M1 AC5 guard note in psh-s1, 1-M2 under-specified AC1 in psh-s3, 1-M3 non-existent ADR-020 in psh-s3) resolved inline at DoR by editing story artefacts directly — not logged to decisions.md since fixes were unambiguous and no risk-accept was required.
+  source: agent-auto
