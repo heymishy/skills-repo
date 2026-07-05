@@ -42,7 +42,7 @@ const { setUserFlagsAdapter }                                        = require('
 const { setGetUserRole }                                             = require('./modules/user-roles');       // arl-s1
 const { requireAdmin }                                               = require('./middleware/require-admin'); // arl-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductView, handlePostProductFeature, handleGetProductKanban } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
 
@@ -1143,6 +1143,10 @@ async function router(req, res) {
     // psh-s6 — per-product kanban board with 8 stage columns and health indicators
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleGetProductKanban(req, res, null, _pshPool, null); });
+
+  } else if (pathname === '/org/kanban' && req.method === 'GET') {
+    // psh-s7 — org-level kanban: all products and their features grouped by product
+    authGuard(req, res, async () => { await handleGetOrgKanban(req, res, null, _pshPool, null); });
 
   } else if (pathname === '/' && req.method === 'GET') {
     // lab-s1.2 — public landing page with PostHog event + auth redirect to /dashboard

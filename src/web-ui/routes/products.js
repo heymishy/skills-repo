@@ -154,6 +154,57 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
   res.json({ columns: columns });
 }
 
+async function handleGetOrgKanban(req, res, _next, pool, posthog) {
+  var _pool = pool;
+  var _ph = posthog || _posthog;
+  var tenantId = req.session && req.session.tenantId;
+  var productFilter = req.query && req.query.product;
+
+  var prodRows = (await _pool.query(
+    'SELECT product_id, name FROM products WHERE tenant_id = $1',
+    [tenantId]
+  )).rows;
+
+  var filteredProds = productFilter
+    ? prodRows.filter(function(p) { return p.product_id === productFilter; })
+    : prodRows;
+
+  var allJourneyCount = 0;
+  var groups = [];
+  for (var i = 0; i < filteredProds.length; i++) {
+    var p = filteredProds[i];
+    var jRows = (await _pool.query(
+      'SELECT journey_id, product_id, stage, health, feature_slug FROM journeys WHERE product_id = $1 AND tenant_id = $2',
+      [p.product_id, tenantId]
+    )).rows;
+    allJourneyCount += jRows.length;
+    var features = jRows.map(function(j) {
+      return {
+        journey_id: j.journey_id,
+        name: _escapeHtml(j.feature_slug || j.journey_id),
+        stage: j.stage,
+        health: j.health,
+        healthLabel: _healthLabel(j.health),
+        stageLink: '/journeys/' + j.journey_id + '/' + j.stage
+      };
+    });
+    groups.push({
+      product_id: p.product_id,
+      productName: _escapeHtml(p.name),
+      features: features
+    });
+  }
+
+  _ph.capture(tenantId || (req.session && req.session.login), 'kanban_viewed', {
+    view: 'org',
+    tenantId: tenantId,
+    productCount: groups.length,
+    featureCount: allJourneyCount
+  });
+
+  res.json({ groups: groups });
+}
+
 async function handlePostProductFeature(req, res, _next, pool, posthog) {
   var _pool = pool;
   var _ph = posthog || _posthog;
@@ -182,5 +233,6 @@ module.exports = {
   handleGetDashboard,
   handleGetProductView,
   handlePostProductFeature,
-  handleGetProductKanban
+  handleGetProductKanban,
+  handleGetOrgKanban
 };
