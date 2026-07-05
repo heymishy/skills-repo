@@ -63,4 +63,75 @@ async function handlePostProductConfirm(req, res, _next, pool, posthog) {
   res.status(201).json({ product_id: productId });
 }
 
-module.exports = { handlePostProductNew, handlePostProductConfirm };
+async function handleGetDashboard(req, res, _next, pool) {
+  var _pool = pool;
+  var tenantId = req.session && req.session.tenantId;
+  var products = (await _pool.query(
+    'SELECT product_id, name, created_at FROM products WHERE tenant_id = $1 ORDER BY created_at DESC',
+    [tenantId]
+  )).rows;
+  var cards = await Promise.all(products.map(async function(p) {
+    var journeyRows = (await _pool.query(
+      'SELECT journey_id, updated_at FROM journeys WHERE product_id = $1',
+      [p.product_id]
+    )).rows;
+    var lastUpdated = journeyRows.reduce(function(mx, j) {
+      return (!mx || j.updated_at > mx) ? j.updated_at : mx;
+    }, null);
+    return {
+      product_id: p.product_id,
+      name: _escapeHtml(p.name),
+      featureCount: journeyRows.length,
+      lastUpdated: lastUpdated
+    };
+  }));
+  res.json({ products: cards, showCta: cards.length === 0 });
+}
+
+async function handleGetProductView(req, res, _next, pool) {
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var rows = (await _pool.query(
+    'SELECT journey_id, stage, health, feature_slug, updated_at FROM journeys WHERE product_id = $1',
+    [productId]
+  )).rows;
+  var features = rows.map(function(j) {
+    return {
+      journey_id: j.journey_id,
+      stage: j.stage,
+      health: j.health,
+      featureSlug: j.feature_slug
+    };
+  });
+  res.json({ features: features });
+}
+
+async function handlePostProductFeature(req, res, _next, pool, posthog) {
+  var _pool = pool;
+  var _ph = posthog || _posthog;
+  var tenantId = req.session && req.session.tenantId;
+  var productId = req.params && req.params.id;
+  var journeyId = require('crypto').randomUUID();
+  await _pool.query(
+    `INSERT INTO journeys (journey_id, feature_slug, tenant_id, product_id, data) VALUES ($1, $2, $3, $4, '{}'::jsonb) ON CONFLICT DO NOTHING`,
+    [journeyId, 'new-feature-' + journeyId.slice(0, 8), tenantId, productId]
+  );
+  _ph.capture(tenantId, 'journey_created', {
+    journeyId: journeyId,
+    productId: productId,
+    tenantId: tenantId
+  });
+  if (res.redirect) {
+    res.redirect('/journeys/' + journeyId + '/discovery');
+  } else {
+    res.status(201).json({ journey_id: journeyId });
+  }
+}
+
+module.exports = {
+  handlePostProductNew,
+  handlePostProductConfirm,
+  handleGetDashboard,
+  handleGetProductView,
+  handlePostProductFeature
+};

@@ -42,7 +42,7 @@ const { setUserFlagsAdapter }                                        = require('
 const { setGetUserRole }                                             = require('./modules/user-roles');       // arl-s1
 const { requireAdmin }                                               = require('./middleware/require-admin'); // arl-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
-const { handlePostProductNew, handlePostProductConfirm }             = require('./routes/products');            // psh-s3
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductView, handlePostProductFeature } = require('./routes/products'); // psh-s3 / psh-s4
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 
 const PORT = process.env.PORT || 3000;
@@ -732,7 +732,11 @@ async function router(req, res) {
     });
 
   } else if (pathname === '/dashboard') {
-    handleDashboard(req, res);
+    if (_pshPool) {
+      authGuard(req, res, async () => { await _handleGetDashboard(req, res, null, _pshPool); });
+    } else {
+      handleDashboard(req, res);
+    }
 
   } else if (pathname.match(/^\/artefact\/[^/]+\/[^/]+$/) && req.method === 'GET') {
     const parts        = pathname.split('/').filter(Boolean);
@@ -1103,6 +1107,16 @@ async function router(req, res) {
   } else if (pathname === '/products/confirm' && req.method === 'POST') {
     // psh-s3 — product creation: confirm and persist
     authGuard(req, res, async () => { await handlePostProductConfirm(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+$/) && req.method === 'GET') {
+    // psh-s4 — product view: list features for one product with stage + health
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handleGetProductView(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/features$/) && req.method === 'POST') {
+    // psh-s4 — create new journey with product_id FK, emits journey_created PostHog event
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handlePostProductFeature(req, res, null, _pshPool, null); });
 
   } else if (pathname === '/' && req.method === 'GET') {
     // lab-s1.2 — public landing page with PostHog event + auth redirect to /dashboard
