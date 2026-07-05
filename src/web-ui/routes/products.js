@@ -218,7 +218,7 @@ async function handleGetDashboard(req, res, _next, pool) {
   )).rows;
   var cards = await Promise.all(products.map(async function(p) {
     var journeyRows = (await _pool.query(
-      'SELECT journey_id, updated_at FROM journeys WHERE product_id = $1',
+      'SELECT journey_id, created_at AS updated_at FROM journeys WHERE product_id = $1',
       [p.product_id]
     )).rows;
     var lastUpdated = journeyRows.reduce(function(mx, j) {
