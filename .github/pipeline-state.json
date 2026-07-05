@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-07-05T00:00:00Z",
+  "updated": "2026-07-05T06:54:27.329Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -7697,10 +7697,10 @@
       "slug": "2026-07-05-product-stds-hierarchy",
       "name": "Product Hierarchy, Standards and Patterns Library",
       "track": "standard",
-      "stage": "implementation-plan",
+      "stage": "branch-complete",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-07-05T00:00:00Z",
+      "updatedAt": "2026-07-05T06:54:27.329Z",
       "discoveryArtefact": "artefacts/2026-07-05-product-stds-hierarchy/discovery.md",
       "benefitMetricArtefact": "artefacts/2026-07-05-product-stds-hierarchy/benefit-metric.md",
       "metrics": [
@@ -7932,7 +7932,7 @@
             {
               "slug": "psh-s1",
               "name": "Products and standards Postgres schema",
-              "stage": "implementation-plan",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -7940,15 +7940,15 @@
               "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s1-review-1.md",
               "testPlan": {
                 "status": "written",
-                "totalTests": 10,
-                "passing": 0,
+                "totalTests": 8,
+                "passing": 8,
                 "artefact": "artefacts/2026-07-05-product-stds-hierarchy/test-plans/psh-s1-test-plan.md"
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s1-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T00:00:00Z",
+              "updatedAt": "2026-07-05T05:41:07.342Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
@@ -7960,13 +7960,13 @@
                 {
                   "id": "task-1",
                   "name": "write 8 failing tests — schema checks + integration (RED)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s1-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "add products/standards/journeys.product_id migration SQL to server.js (GREEN)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s1-plan.md"
                 }
               ]
@@ -7974,23 +7974,21 @@
             {
               "slug": "psh-s2",
               "name": "Migration — assign existing journeys to Default product",
-              "stage": "implementation-plan",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s2-review-1.md",
               "testPlan": {
-                "status": "written",
-                "totalTests": 7,
-                "passing": 0,
-                "artefact": "artefacts/2026-07-05-product-stds-hierarchy/test-plans/psh-s2-test-plan.md"
+                "passing": 7,
+                "totalTests": 7
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s2-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T00:00:00Z",
+              "updatedAt": "2026-07-05T05:48:56.255Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
@@ -8002,13 +8000,13 @@
                 {
                   "id": "task-1",
                   "name": "write 7 failing tests — idempotency, per-tenant isolation, Default product (RED)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s2-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "create scripts/migrate-journeys-to-default-product.js — runMigration(pool, log) (GREEN)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s2-plan.md"
                 }
               ]
@@ -8023,23 +8021,21 @@
             {
               "slug": "psh-s3",
               "name": "Product creation flow (hybrid form + AI draft + inline review)",
-              "stage": "implementation-plan",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 3,
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s3-review-1.md",
               "testPlan": {
-                "status": "written",
-                "totalTests": 11,
-                "passing": 0,
-                "artefact": "artefacts/2026-07-05-product-stds-hierarchy/test-plans/psh-s3-test-plan.md"
+                "passing": 8,
+                "totalTests": 8
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s3-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T00:00:00Z",
+              "updatedAt": "2026-07-05T06:10:35.364Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
@@ -8051,25 +8047,25 @@
                 {
                   "id": "task-1",
                   "name": "write 9 failing tests — solo plan, D37 throw, PostHog (RED)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s3-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "create src/web-ui/adapters/product-draft.js — D37 adapter (GREEN partial)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s3-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "create src/web-ui/routes/products.js — handlePostProductNew + handlePostProductConfirm (GREEN)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s3-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "wire setGenerateProductDraft in server.js — D37 mandatory separate wiring task",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s3-plan.md"
                 }
               ]
@@ -8077,23 +8073,21 @@
             {
               "slug": "psh-s4",
               "name": "Product-aware dashboard and navigation",
-              "stage": "implementation-plan",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s4-review-1.md",
               "testPlan": {
-                "status": "written",
-                "totalTests": 7,
-                "passing": 0,
-                "artefact": "artefacts/2026-07-05-product-stds-hierarchy/test-plans/psh-s4-test-plan.md"
+                "passing": 6,
+                "totalTests": 6
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s4-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T00:00:00Z",
+              "updatedAt": "2026-07-05T06:25:52.947Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
@@ -8105,25 +8099,25 @@
                 {
                   "id": "task-1",
                   "name": "write 7 failing tests — dashboard cards, product view, new feature, HTML escape (RED)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s4-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "add handleGetDashboard, handleGetProductView, handlePostProductFeature to products.js (GREEN)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s4-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "create tests/e2e/psh-s4-dashboard-layout.spec.js — Playwright layout test (GREEN)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s4-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "mount GET /dashboard, GET /products/:id, POST /products/:id/features in server.js",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s4-plan.md"
                 }
               ]
@@ -8138,23 +8132,21 @@
             {
               "slug": "psh-s5",
               "name": "Product context injection into skill sessions",
-              "stage": "implementation-plan",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s5-review-1.md",
               "testPlan": {
-                "status": "written",
-                "totalTests": 9,
-                "passing": 0,
-                "artefact": "artefacts/2026-07-05-product-stds-hierarchy/test-plans/psh-s5-test-plan.md"
+                "passing": 9,
+                "totalTests": 9
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s5-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T00:00:00Z",
+              "updatedAt": "2026-07-05T06:31:42.501Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
@@ -8166,25 +8158,25 @@
                 {
                   "id": "task-1",
                   "name": "write 9 failing tests — D37 throw, 5 sections, order, concurrent, DB error propagate (RED)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s5-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "create src/web-ui/product-context-adapter.js — D37 adapter (GREEN partial)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s5-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "add buildSystemPromptWithProductContext export to skills.js (GREEN)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s5-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "wire setProductContextAdapter in server.js — D37 mandatory separate wiring task",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s5-plan.md"
                 }
               ]
@@ -8199,23 +8191,21 @@
             {
               "slug": "psh-s6",
               "name": "Per-product kanban board",
-              "stage": "implementation-plan",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s6-review-1.md",
               "testPlan": {
-                "status": "written",
-                "totalTests": 8,
-                "passing": 0,
-                "artefact": "artefacts/2026-07-05-product-stds-hierarchy/test-plans/psh-s6-test-plan.md"
+                "passing": 7,
+                "totalTests": 7
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s6-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T00:00:00Z",
+              "updatedAt": "2026-07-05T06:35:06.312Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
@@ -8227,25 +8217,25 @@
                 {
                   "id": "task-1",
                   "name": "write 7 failing tests — 8 stage columns, health labels, empty state, PostHog (RED)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s6-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "add handleGetProductKanban to products.js — 8-column kanban (GREEN)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s6-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "create tests/e2e/psh-s6-product-kanban.spec.js — Playwright 8-column layout test",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s6-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "mount GET /products/:id/kanban in server.js",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s6-plan.md"
                 }
               ]
@@ -8253,23 +8243,21 @@
             {
               "slug": "psh-s7",
               "name": "Org-level kanban with product grouping and filter",
-              "stage": "implementation-plan",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s7-review-1.md",
               "testPlan": {
-                "status": "written",
-                "totalTests": 8,
-                "passing": 0,
-                "artefact": "artefacts/2026-07-05-product-stds-hierarchy/test-plans/psh-s7-test-plan.md"
+                "passing": 7,
+                "totalTests": 7
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s7-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T00:00:00Z",
+              "updatedAt": "2026-07-05T06:38:28.999Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
@@ -8281,25 +8269,25 @@
                 {
                   "id": "task-1",
                   "name": "write 7 failing tests — groups by product, filter, PostHog, cross-tenant (RED)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s7-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "add handleGetOrgKanban to products.js — org-level grouped kanban (GREEN)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s7-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "create tests/e2e/psh-s7-org-kanban.spec.js — Playwright layout test",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s7-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "mount GET /org/kanban in server.js",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s7-plan.md"
                 }
               ]
@@ -8314,23 +8302,21 @@
             {
               "slug": "psh-s8",
               "name": "Standards definition and management per product",
-              "stage": "implementation-plan",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s8-review-1.md",
               "testPlan": {
-                "status": "written",
-                "totalTests": 8,
-                "passing": 0,
-                "artefact": "artefacts/2026-07-05-product-stds-hierarchy/test-plans/psh-s8-test-plan.md"
+                "passing": 8,
+                "totalTests": 8
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s8-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T00:00:00Z",
+              "updatedAt": "2026-07-05T06:42:34.160Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
@@ -8342,19 +8328,19 @@
                 {
                   "id": "task-1",
                   "name": "write 8 failing tests — POST/GET/PUT standards, org_id from session, XSS (RED)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s8-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "create src/web-ui/routes/standards.js — standardsPost, standardsList, standardsPut (GREEN)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s8-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "mount POST/GET /products/:id/standards and PUT /standards/:id in server.js",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s8-plan.md"
                 }
               ]
@@ -8362,23 +8348,21 @@
             {
               "slug": "psh-s9",
               "name": "Org-level standard promotion and per-product opt-out",
-              "stage": "implementation-plan",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-05-product-stds-hierarchy/review/psh-s9-review-1.md",
               "testPlan": {
-                "status": "written",
-                "totalTests": 8,
-                "passing": 0,
-                "artefact": "artefacts/2026-07-05-product-stds-hierarchy/test-plans/psh-s9-test-plan.md"
+                "passing": 8,
+                "totalTests": 8
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s9-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T00:00:00Z",
+              "updatedAt": "2026-07-05T06:46:28.360Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
@@ -8390,25 +8374,25 @@
                 {
                   "id": "task-1",
                   "name": "write 8 failing tests — promote, cross-org block, public block, optout CRUD (RED)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s9-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "add standard_product_optouts migration to server.js CREATE TABLE IF NOT EXISTS",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s9-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "add standardsPromote, optoutPost, optoutDelete to standards.js (GREEN)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s9-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "mount PUT /standards/:id/promote, POST/DELETE /standards/:id/optout in server.js",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s9-plan.md"
                 }
               ]
@@ -8416,7 +8400,7 @@
             {
               "slug": "psh-s10",
               "name": "Standards injection into skill sessions",
-              "stage": "implementation-plan",
+              "stage": "branch-complete",
               "health": "green",
               "complexity": 2,
               "reviewStatus": "passed",
@@ -8425,14 +8409,14 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
-                "passing": 0,
+                "passing": 8,
                 "artefact": "artefacts/2026-07-05-product-stds-hierarchy/test-plans/psh-s10-test-plan.md"
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s10-dor.md",
               "prStatus": null,
               "prUrl": null,
-              "updatedAt": "2026-07-05T00:00:00Z",
+              "updatedAt": "2026-07-05T06:54:27.328Z",
               "dodStatus": null,
               "releaseReady": false,
               "dodArtefact": null,
@@ -8444,25 +8428,25 @@
                 {
                   "id": "task-1",
                   "name": "write 8 failing tests — D37 throw, standards section order, empty list, null productId (RED)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s10-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "create src/web-ui/standards-adapter.js — D37 adapter (GREEN partial)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s10-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "extend buildSystemPromptWithProductContext in skills.js — add standards section (GREEN)",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s10-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "wire setStandardsAdapter in server.js — D37 mandatory separate wiring task",
-                  "tddState": "pending",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-05-product-stds-hierarchy/plans/psh-s10-plan.md"
                 }
               ]

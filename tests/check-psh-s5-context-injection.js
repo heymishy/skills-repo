@@ -19,7 +19,11 @@ try {
 
 function getBsp() {
   delete require.cache[require.resolve('../src/web-ui/product-context-adapter')];
+  delete require.cache[require.resolve('../src/web-ui/standards-adapter')];
   delete require.cache[require.resolve('../src/web-ui/routes/skills')];
+  const sa = require('../src/web-ui/standards-adapter');
+  // Wire no-op standards adapter so psh-s5 tests are isolated from psh-s10 standards injection
+  sa.setStandardsAdapter(async function() { return []; });
   return {
     buildSystemPromptWithProductContext: require('../src/web-ui/routes/skills').buildSystemPromptWithProductContext,
     setProductContextAdapter: require('../src/web-ui/product-context-adapter').setProductContextAdapter
