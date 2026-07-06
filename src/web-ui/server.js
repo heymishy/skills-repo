@@ -314,6 +314,22 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     const _usersPool = new _UsersPool({ connectionString: process.env.DATABASE_URL });
     setUserDb(_usersPool);
     console.log('[auth-email] users DB adapter wired');
+    // lab-s2.2/s2.3 — Auto-migrate users table on startup (CREATE TABLE IF NOT EXISTS is idempotent).
+    // Schema is derived from usage: id (RETURNING id + first_login lookups), email (UNIQUE — signup
+    // relies on the 23505 duplicate-key path), password_hash, and first_login (read by user-flags adapter).
+    _usersPool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id            SERIAL PRIMARY KEY,
+        email         VARCHAR UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        first_login   BOOLEAN NOT NULL DEFAULT true,
+        created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `).then(function() {
+      // Defensive: ensure first_login exists if the table pre-dated this column.
+      return _usersPool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS first_login BOOLEAN NOT NULL DEFAULT true');
+    }).then(function() { console.log('users table ready'); })
+      .catch(function(err) { console.error('users table migration failed:', err.message); });
   }
 
   // lab-s2.3 — Wire real user-flags DB adapter (D37 mandatory separate wiring task).

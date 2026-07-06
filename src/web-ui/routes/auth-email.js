@@ -136,6 +136,10 @@ async function handleEmailSignup(req, res) {
   req.session.userId      = newUser.id;
   req.session.tenantId    = email;
   req.session.login       = email;
+  // lab-s2.3: a fresh signup is a first-time user — flag the session so the /welcome
+  // redirect below renders the plan-selection page instead of bouncing to /dashboard.
+  // Set BEFORE session rotation so it is carried into the rotated (persisted) session.
+  req.session.firstLogin  = true;
 
   // arl-s1: load role from user_roles table. Falls back to 'user' on error.
   try {
