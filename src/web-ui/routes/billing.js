@@ -95,7 +95,9 @@ async function handlePostCheckout(req, res) {
     ? 'https://' + req.headers.host
     : 'https://localhost';
   var successUrl = host + '/billing/success?session_id={CHECKOUT_SESSION_ID}';
-  var cancelUrl  = '/welcome';
+  // Stripe requires cancel_url to be an absolute URL, same as success_url — a bare
+  // path throws "Not a valid URL" client-side before any request is sent.
+  var cancelUrl  = host + '/welcome';
 
   // AC1: create Stripe Checkout session with mode:subscription + client_reference_id
   var session = await stripeClient.createCheckoutSession({
