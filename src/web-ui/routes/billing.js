@@ -33,8 +33,10 @@ function _getPosthog() {
 }
 
 /**
- * Read and JSON-parse the full request body.
+ * Read and parse the full request body.
  * Returns req.body if already parsed (test scenario).
+ * The /welcome plan-selection form posts application/x-www-form-urlencoded (default
+ * HTML form encoding) — parse accordingly; fall back to JSON for API-style callers.
  */
 function _readBody(req) {
   if (req.body !== undefined) return Promise.resolve(req.body);
@@ -42,7 +44,17 @@ function _readBody(req) {
     var raw = '';
     req.on('data', function(chunk) { raw += chunk; });
     req.on('end', function() {
-      try { resolve(JSON.parse(raw)); } catch (_) { resolve(null); }
+      var contentType = (req.headers && req.headers['content-type']) || '';
+      if (contentType.indexOf('application/json') !== -1) {
+        try { resolve(JSON.parse(raw)); } catch (_) { resolve(null); }
+        return;
+      }
+      try {
+        var params = new URLSearchParams(raw);
+        var obj = {};
+        params.forEach(function(v, k) { obj[k] = v; });
+        resolve(obj);
+      } catch (_) { resolve(null); }
     });
     req.on('error', function() { resolve(null); });
   });
