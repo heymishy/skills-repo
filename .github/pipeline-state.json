@@ -8639,24 +8639,27 @@
             {
               "slug": "bri-s2.1",
               "name": "Provision the wuce-staging Fly app",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-09T21:19:43.866Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
-                "passing": 0
+                "passing": 8
               },
               "acTotal": 3,
-              "acVerified": 0,
+              "acVerified": 1,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.1-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.1-dor-contract.md",
-              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+              "dorSignedOffAt": "2026-07-10T00:00:00Z",
+              "acVerificationNote": "AC2 fully code-verified. AC1 and AC3 are config-verified only (structural parity / scale-to-zero settings) -- real Fly.io build/start and real weekly billing remain manual operator verification steps (external-dependency gaps declared in the test plan).",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/442"
             },
             {
               "slug": "bri-s2.2",
