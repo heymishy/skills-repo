@@ -16,6 +16,10 @@
 
 const https = require('https');
 const { buildCacheKey } = require('../web-ui/adapters/cache-key');
+// bri-s3.1: D37 mock-LLM-gateway adapter, wired alongside the real providers below.
+// Only takes effect when a caller explicitly passes a `stage` (via `meta`/`options`)
+// AND mockLlmGateway.isMockGatewayEnabled() is true — see functions below.
+const mockLlmGateway = require('../web-ui/modules/mock-llm-gateway');
 
 // Keep-alive agents — reuse TLS connections across turns instead of re-handshaking
 // each time. One agent per upstream host; maxSockets prevents runaway connections.
@@ -552,19 +556,56 @@ function _callCopilot(systemPrompt, history, currentInput, token, maxTokens, tim
 }
 
 /**
+ * bri-s3.1: resolve a mock-gateway response into the same shape _callAnthropic
+ * resolves with ({ text, usage }), so callers don't need to branch on source.
+ */
+function _resolveMockGatewayResponse(stage, model, scenarioName) {
+  const mockResult = mockLlmGateway.getMockResponse(stage, model || getActiveModel(), scenarioName || 'success');
+  return Promise.resolve({
+    text: mockResult.text,
+    usage: mockResult.usage || { model: model || 'mock', input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_creation_tokens: 0 }
+  });
+}
+
+/**
+ * bri-s3.1: stream a mock-gateway response through the same onChunk/onFirstChunk
+ * contract as the real streaming callers, with no real network round-trip.
+ */
+function _streamMockGatewayResponse(stage, model, scenarioName, onChunk, onFirstChunk) {
+  const mockResult = mockLlmGateway.getMockResponse(stage, model || getActiveModel(), scenarioName || 'success');
+  const text = mockResult.text || '';
+  if (typeof onFirstChunk === 'function') { onFirstChunk(0); }
+  if (typeof onChunk === 'function' && text) { onChunk(text); }
+  return Promise.resolve({
+    text: text,
+    usage: mockResult.usage || { model: model || 'mock', input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_creation_tokens: 0 }
+  });
+}
+
+/**
  * Execute one skill turn.
  *
  * Routes to Anthropic or Copilot based on SKILL_EXECUTOR_PROVIDER env var.
  *   SKILL_EXECUTOR_PROVIDER=anthropic  → Anthropic Messages API (default, requires ANTHROPIC_API_KEY)
  *   SKILL_EXECUTOR_PROVIDER=copilot   → Copilot Chat Completions API (requires GitHub token with copilot scope)
  *
+ * bri-s3.1: when `meta.stage` is supplied AND mockLlmGateway.isMockGatewayEnabled()
+ * is true, routes to the mock LLM gateway instead of any real provider — no real
+ * network call is made. Omitting `meta` (all existing callers) leaves behaviour
+ * unchanged; a caller must explicitly opt in with a stage name to be mocked.
+ *
  * @param {string}  systemPrompt   — full system prompt (SKILL.md + product context + web UI framing)
  * @param {Array}   history        — array of { role: 'user'|'assistant', content: string }
  * @param {string}  currentInput   — current user input (or 'Begin the session.' for the first turn)
  * @param {string}  token          — GitHub access token (only used for copilot provider)
+ * @param {{stage?: string, scenarioName?: string, model?: string}} [meta] — bri-s3.1 mock-gateway routing
  * @returns {Promise<string>}      — the model's response text
  */
-function skillTurnExecutor(systemPrompt, history, currentInput, token) {
+function skillTurnExecutor(systemPrompt, history, currentInput, token, meta) {
+  if (meta && meta.stage && mockLlmGateway.isMockGatewayEnabled()) {
+    return _resolveMockGatewayResponse(meta.stage, meta.model, meta.scenarioName);
+  }
+
   const provider  = (process.env.SKILL_EXECUTOR_PROVIDER || 'anthropic').toLowerCase();
   const maxTokens = parseInt(process.env.WUCE_TURN_MODEL_MAX_TOKENS || String(DEFAULT_MAX_TOKENS), 10);
   const timeoutMs = parseInt(process.env.WUCE_TURN_TIMEOUT_MS       || String(DEFAULT_TIMEOUT_MS), 10);
@@ -580,6 +621,12 @@ function skillTurnExecutor(systemPrompt, history, currentInput, token) {
  * Streaming skill turn — calls onChunk(text) for each token as it arrives.
  * Both copilot and anthropic providers support streaming.
  * onFirstChunk(ttfb_ms) fires once when the first content token arrives.
+ *
+ * bri-s3.1: when `options.stage` is supplied AND mockLlmGateway.isMockGatewayEnabled()
+ * is true, routes to the mock LLM gateway (single onChunk call, no real network
+ * round-trip) instead of any real provider. Omitting `options.stage` (all existing
+ * callers) leaves behaviour unchanged.
+ *
  * @param {string}   systemPrompt
  * @param {Array}    history
  * @param {string}   currentInput
@@ -587,15 +634,21 @@ function skillTurnExecutor(systemPrompt, history, currentInput, token) {
  * @param {function} onChunk — called with each text delta
  * @param {function} [onThinkingChunk] — called with each reasoning/thinking delta
  * @param {function} [onFirstChunk] — called once with time-to-first-byte in ms
+ * @param {{maxTokens?: number, noThinking?: boolean, model?: string, stage?: string, scenarioName?: string}} [options]
  * @returns {Promise<string>} full response text
  */
 function skillTurnExecutorStream(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk, options) {
+  const modelOverride  = options && options.model;
+
+  if (options && options.stage && mockLlmGateway.isMockGatewayEnabled()) {
+    return _streamMockGatewayResponse(options.stage, modelOverride, options.scenarioName, onChunk, onFirstChunk);
+  }
+
   const provider       = (process.env.SKILL_EXECUTOR_PROVIDER || 'anthropic').toLowerCase();
   const defaultTokens  = parseInt(process.env.WUCE_TURN_MODEL_MAX_TOKENS || String(DEFAULT_MAX_TOKENS), 10);
   const maxTokens      = (options && options.maxTokens) ? options.maxTokens : defaultTokens;
   const timeoutMs      = parseInt(process.env.WUCE_TURN_TIMEOUT_MS || String(DEFAULT_TIMEOUT_MS), 10);
   const noThinking     = options && options.noThinking;
-  const modelOverride  = options && options.model;
 
   if (provider === 'anthropic') {
     return _callAnthropicStream(systemPrompt, history, currentInput, maxTokens, timeoutMs, onChunk, onThinkingChunk, onFirstChunk, noThinking, modelOverride);

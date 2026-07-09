@@ -1,0 +1,10 @@
+{
+  "stage": "branch-complete",
+  "scenarioName": "failure",
+  "model": "claude-sonnet-4.6",
+  "response": "I can't open the draft PR yet — 2 tests are still failing in the full suite run (see the failures listed above). Fix or explain each failure before branch-complete can proceed.",
+  "usage": {
+    "input_tokens": 220,
+    "output_tokens": 70
+  }
+}

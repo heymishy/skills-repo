@@ -1,0 +1,10 @@
+{
+  "stage": "test-plan",
+  "scenarioName": "success",
+  "model": "claude-sonnet-4.6",
+  "response": "Understood. Producing the complete test plan now.\n\n---ARTEFACT-START---\n# Test Plan: Mock Fixture Feature\n\n**Status:** Complete (mock fixture — bri-s3.1)\n**Feature slug:** mock-fixture-feature\n**Date:** 2026-07-10\n**Skill version:** /test-plan\n\n## AC Coverage\n\n| AC | Unit | Integration |\n|----|------|-------------|\n| AC1 | 1 | - |\n---ARTEFACT-END---\n---SLUG---\n2026-07-10-mock-fixture-feature",
+  "usage": {
+    "input_tokens": 400,
+    "output_tokens": 190
+  }
+}

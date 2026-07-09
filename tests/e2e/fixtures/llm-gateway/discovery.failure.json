@@ -1,0 +1,10 @@
+{
+  "stage": "discovery",
+  "scenarioName": "failure",
+  "model": "claude-sonnet-4.6",
+  "response": "I can't proceed with discovery yet — the problem statement you've given me is too vague to scope (no persona, no constraint, no success indicator). Please describe who this is for and what problem they have before I draft the discovery artefact.",
+  "usage": {
+    "input_tokens": 90,
+    "output_tokens": 48
+  }
+}
