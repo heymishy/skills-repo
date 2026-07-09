@@ -283,3 +283,51 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: pattern
   signal-text: "decisions.md was absent for feature 2026-07-05-product-stds-hierarchy despite 6 architectural decisions (ADR-022/023 canonicity, D37 adapter pattern, opt-out model, solo plan enforcement, section ordering). CLAUDE.md mandates creation at discovery approval. File was created retroactively at DoD time — all decisions are accurate to what was implemented, but rationale was reconstructed rather than captured at decision-time. Recurrence prevention: /discovery output checklist should prompt for decisions.md creation alongside benefit-metric.md."
   source: agent-auto
+
+- date: 2026-07-09
+  session-phase: review / 2026-07-09-beta-readiness-infra
+  signal-type: gap
+  signal-text: "bri-s1.5 (Epic 1, feature flags) wrote ACs gating two product features (GLM-5.2 model routing, a v2 billing flow) named in the original operator brief as if they already existed. Repo-wide search confirmed zero implementation of either anywhere in src/ — the story silently required building substantial unscoped product functionality under a 'feature flags infrastructure' story. Root cause: /definition took the operator's brief's feature names at face value without verifying they exist in the codebase before writing ACs against them. Recurrence prevention: /definition should verify any named feature/system referenced in an AC actually exists in the codebase (a quick grep) before finalizing the AC, not just before finalizing architecture constraints."
+  source: agent-auto
+
+- date: 2026-07-09
+  session-phase: review / 2026-07-09-beta-readiness-infra
+  signal-type: pattern
+  signal-text: "ADR-018 (Playwright is the sole E2E framework) was invoked by an AC's own language ('a Playwright test') in 3 of 17 stories (bri-s1.2, bri-s1.3, bri-s2.6) without being cited in that story's Architecture Constraints field. Recurring pattern, not isolated — worth a /definition-time check: whenever an AC's text names a specific tool/framework/mechanism ('a Playwright test', 'via fetch()', etc.), the corresponding ADR/guardrail governing that tool should be auto-suggested for the Architecture Constraints field."
+  source: agent-auto
+
+- date: 2026-07-09
+  session-phase: review / 2026-07-09-beta-readiness-infra
+  signal-type: gap
+  signal-text: "bri-s1.2 embedded an AC (AC3) that depends on a live staging environment and Playwright suite neither of which exist yet within the same epic — a direct violation of the repo's own Approved Pattern PAT-06 ('Execution pre-condition gate on runtime artefact existence... express as a DoR PROCEED-BLOCKED condition, not an AC caveat'). /definition wrote the AC without checking PAT-06 against the discovery's own explicit hard-sequencing constraint (sub-feature 1 ships before 2 and 3 exist). Recurrence prevention: /definition Step 4 should cross-check each AC against the feature's own discovery-stated sequencing before finalizing, specifically flagging ACs that reference infrastructure/artefacts from a later-sequenced sub-feature/epic."
+  source: agent-auto
+
+- date: 2026-07-09
+  session-phase: test-plan / 2026-07-09-beta-readiness-infra
+  signal-type: pattern
+  signal-text: "When fixing a story to remove a fabricated/placeholder feature name (bri-s1.5's GLM-5.2/billing-v2 → real routes), the fix touched the User Story and ACs but missed an NFR line still referencing the old name ('billing-v2 gating must not expose billing data...') — caught only when a downstream /test-plan subagent, working from the story fresh, flagged the inconsistency. Recurrence prevention: when replacing a named entity (flag name, feature name, route) throughout a story artefact, grep the whole file for the old name before considering the edit complete — a targeted AC-only fix can leave stale references in NFRs, Out of Scope, or Architecture Constraints sections that don't get re-read in the same pass."
+  source: agent-auto
+
+- date: 2026-07-09
+  session-phase: test-plan / 2026-07-09-beta-readiness-infra
+  signal-type: pattern
+  signal-text: "A RISK-ACCEPT/PROCEED-BLOCKED gate logged in decisions.md at /review time (bri-s3.3's cross-feature dependency on team-identity-roles) propagated cleanly into /test-plan without re-litigation — the test-plan subagent read the gate, declared the 3 blocked ACs as External-dependency gaps with manual scenarios, and wrote the spec as 'written now, cannot pass until the dependency clears' rather than either skipping the story or pretending it was testable. This is the intended behaviour of formalizing a dependency as a structural decisions.md entry rather than leaving it as prose: each downstream skill can read and honor it without re-deriving the judgment call."
+  source: agent-auto
+
+- date: 2026-07-10
+  session-phase: definition-of-ready / 2026-07-09-beta-readiness-infra (Epic 3)
+  signal-type: decision
+  signal-text: "bri-s3.3's DoR determination is BLOCKED, not READY, even though every individual H1-H9/H-E2E/H-NFR/H-GOV hard block technically passes (the story/test-plan/verification-script all correctly acknowledge the gap). The BLOCKED status is driven by the story's own Dependencies field and the formal RISK-ACCEPT/PROCEED-BLOCKED gate in decisions.md (2026-07-09) — 3 of 4 ACs depend on the unbuilt team-identity-roles role model. Coding Agent Instructions block was produced (not omitted) with Proceed: No, so the block is machine-readable wherever the DoR artefact is read. pipeline-state.json set dorStatus=not-started (schema also permits 'blocked' but the cli-advance.js ENUM_FIELDS.dorStatus guard only accepts not-started/in-progress/signed-off, a schema-vs-CLI enum mismatch worth fixing separately) plus health=red and a blocker note field."
+  source: agent-auto
+
+- date: 2026-07-10
+  session-phase: definition-of-ready / 2026-07-09-beta-readiness-infra (Epic 3)
+  signal-type: gap
+  signal-text: "Two MEDIUM review findings carried forward unresolved into DoR without a decisions.md entry: bri-s3.1's [1-M1] (AC4 phrasing describes an investigative activity rather than observable behaviour) and bri-s3.3's [1-M2] (ADR-025 citation is a stretch for within-tenant RBAC — the real governing spec is the unbuilt team-identity-roles feature). Both are flagged as outstanding W3 warnings in this DoR run rather than being logged to /decisions automatically, since W3 is report-only per the DoR skill's design ('evaluate, do not resolve'). Recommend the operator run /decisions for these two findings before or alongside assigning bri-s3.1 to a coding agent."
+  source: agent-auto
+
+- date: 2026-07-10
+  session-phase: definition-of-ready / 2026-07-09-beta-readiness-infra (Epic 3)
+  signal-type: pattern
+  signal-text: "H8-ext (cross-story schema dependency check) is worded to fire whenever a story's Dependencies block names an upstream story, regardless of whether the dependency is a pipeline-state.json field read or a code/module/fixture consumption dependency. For bri-s3.2/s3.4/s3.5/s3.6 (all depend on bri-s3.1's mock LLM gateway as a code-level import, not a state-field read) and bri-s3.3 (cross-feature dependency on team-identity-roles reaching a gated stage), the judgment call made was to still declare schemaDepends: [\"dorStatus\"] — keyed on the upstream story's/feature's dorStatus field reaching signed-off — since that is the closest real schema-backed gating condition, even though the substantive dependency is functional/code-level. Worth a SKILL.md clarification: H8-ext's intent (schema-field gating) vs. its literal trigger condition (any named upstream story) diverge for code-consumption dependencies."
+  source: agent-auto

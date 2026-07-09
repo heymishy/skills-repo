@@ -165,6 +165,7 @@ Skill files and templates are content, not code — they are governed by pipelin
 | ADR-022 | Active | Multi-skill journey orchestration is Option B — one session per skill stage with structured artefact handoff; Option A (single persistent session across multiple skills) is incompatible with the mfc.1 session model and must not be used | All features that orchestrate multiple skill stages through the web UI; any future guided journey or wizard flow |
 | ADR-023 | Active | Handoff schema between journey stages is artefact content injection (B-iii) — prior-stage artefact file content injected as named sections; full Q&A replay (B-i) and model-synthesised summary (B-ii) are deferred | All gate-confirm handlers; `buildSystemPrompt` callers that pass `priorArtefacts`; any story that reads prior-stage context into a new session |
 | ADR-024 | Active | `GET /api/journey/:id` response shape is the canonical contract for all web UI consumers — `turns`, `stages`, `completedStages`, `stage`, `ownerId`, `activeSkill` are required fields; partial shapes are forbidden | All stories that add consumers of the journey GET endpoint; `handleGetJourneyState` implementations; viewer, breadcrumb, and turn-list UI features |
+| ADR-025 | Active | Multi-tenancy is enforced at the application layer — tenant_id scoping (HTTP-layer ownership/tenant guard + filesystem/session/DB namespacing by tenantId), not schema-per-tenant or database-per-tenant isolation; delivered as 6 sequenced phases (0 authz guard → 1 identity → 2 storage scoping → 3 Postgres/Redis persistence → 4 rate-limit isolation → 5 security hardening) | All multi-tenant features (wuce-multi-tenancy and successors); any story that reads/writes tenant-scoped data; retroactively formalises the decision previously mis-cited as "ADR-030" |
 
 ---
 
@@ -956,6 +957,11 @@ This repository is operated by a single engineer. The following posture applies 
   category: adr
   label: "Playwright is the E2E testing framework; specs in tests/e2e/; devDependency only; unit test chain (npm test) must not invoke Playwright; auth bypass is test-fixture-layer only (NODE_ENV=test guard)"
   section: Active ADRs
+
+- id: ADR-025
+  category: adr
+  label: "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030"
+  section: Active ADRs
 ```
 
 
@@ -1241,3 +1247,40 @@ A browser E2E framework is needed. The decision is: which one, and what structur
 - Any PR that adds browser-facing ACs to a new story must also add or extend a `tests/e2e/` spec file as part of the story's DoR contract
 - CI must run `npm run test:e2e` separately from `npm test`; E2E failures may be non-fatal in v1 (gated by `audit.e2e_tests: true` in `context.yml`) but must be visible in the PR status panel
 - Contributors installing a new browser E2E framework alongside Playwright must first raise an ADR — adding a second framework requires a decision record and approval
+
+---
+
+### ADR-025: Multi-tenancy enforced at the application layer — tenant_id scoping, not schema/DB-per-tenant
+
+**Status:** Active
+**Date:** 2026-07-09 (formalised retroactively — decision was made and implemented 2026-06-22 through 2026-06-29, never previously recorded as a numbered ADR)
+**Story:** wuce-multi-tenancy (2026-06-22-wuce-multi-tenancy), phases 0–5
+**Decided by:** Hamish King — retroactive formalisation via /decisions, 2026-07-09
+
+#### Context
+
+Three artefacts (`artefacts/2026-06-22-wuce-multi-tenancy/dod/feature-dod.md`, `reference/beta-readiness-assessment.md`, `reference/oq7-vendor-recommendation.md`) cite "ADR-030" as the governing record for the multi-tenancy model. No ADR-030 was ever written — the ADR log in this file stops at ADR-024. All three citations trace back to an external document, `wucemultitenancybillingreference.md`, which does not exist in this repo. The citation chain terminates in nothing: a foundational architectural decision — how tenant isolation is implemented — was made and shipped across six phases without ever being recorded as a governed ADR. This ADR closes that gap by documenting the decision as it was actually made and implemented, and the three orphaned citations should be read as referring to this ADR-025 going forward.
+
+The underlying problem being solved: the web UI was originally single-tenant (one process, one filesystem root, one GitHub OAuth app, no organisation concept). A live security bug existed where any authenticated user could read any other user's journey by guessing a `journeyId` (no ownership or tenant check on read routes). A tenancy model was needed both to fix that bug and to support multiple organisations using the platform with data isolation between them.
+
+#### Options considered
+
+| Option | Pros | Cons |
+|--------|------|------|
+| **Application-layer tenant_id scoping (chosen)** — a single shared process/database/filesystem, with every resource carrying a `tenantId` and an HTTP-layer guard (`requireJourneyAccess`, `isSameTenant`) enforcing the boundary on every read/write, plus storage paths namespaced by `tenantId` | Deliverable incrementally by a solo operator with no new infrastructure per tenant; the existing live security bug (P1) could be fixed in Phase 0 with zero dependency on the rest of the tenancy work; onboarding a new tenant costs nothing operationally | The boundary is enforced by application code, not infrastructure — a missed guard on a new route is a real class of bug (mitigated by ADR-024-style shape/consumer contracts and the tenant-isolation test suites required in every phase) |
+| Schema-per-tenant (separate Postgres schema per tenant, shared database instance) | Stronger structural isolation than row-scoping; a missed `WHERE tenant_id = ?` can't leak across schemas | Requires per-tenant schema provisioning/migration tooling that doesn't exist and isn't solo-operator-friendly; no such infrastructure exists today (Phase 3 Postgres was still being provisioned at time of this decision) |
+| Database-per-tenant (separate Postgres instance/branch per tenant) | Strongest isolation; a compromised query literally cannot reach another tenant's data | Highest operational cost and complexity per new tenant; directly contradicts the solo-founder-operability constraint (Persona: "Solo founder / operator" in the wuce-multi-tenancy discovery) that every phase must be deliverable by one person with no dedicated platform engineering |
+
+#### Decision
+
+Application-layer tenant_id scoping was chosen and implemented across six sequenced phases: **Phase 0** (authorization guard — `requireJourneyAccess`/`isOwner`/`isSameTenant`, closing the live read-any-journey bug independent of tenancy), **Phase 1** (identity — `tenantId` resolved at OAuth callback via `TENANT_ORG_ALLOWLIST`, extending the session shape), **Phase 2** (storage scoping — filesystem and session store paths namespaced by `tenantId`), **Phase 3** (Postgres/Redis persistence, injectable adapters), **Phase 4** (performance isolation — per-tenant rate limiting), **Phase 5** (security hardening — adversarial path-traversal tests). The primary reason: solo-operator deliverability. Every phase had to ship without dedicated platform engineering or new infrastructure per tenant, which ruled out schema-per-tenant and database-per-tenant as the *initial* model — those remain available as a future hardening step if a customer's compliance requirements demand it, not as the day-one architecture.
+
+#### Consequences
+
+- **Easier:** onboarding a new tenant is zero-infrastructure — a GitHub org login added to `TENANT_ORG_ALLOWLIST` (or, per the team-identity-roles feature, a first-class team entity). No per-tenant provisioning step.
+- **Harder / more constrained:** every new route or data access path that touches tenant-scoped resources must go through the guard (`requireJourneyAccess`/`isSameTenant`) or an equivalent tenant_id check — there is no infrastructure backstop if a guard is missed. This is why a tenant-isolation test suite is required in every phase (Phase 2's two-tenant filesystem/session isolation tests, Phase 5's 14/14 adversarial path-traversal tests) and why `2026-07-09-team-identity-roles` (this session) explicitly targets zero regression on existing tenant-isolation tests.
+- **Off the table (for now):** schema-per-tenant and database-per-tenant isolation as the baseline model. Not ruled out permanently — see revisit trigger.
+
+#### Revisit trigger
+
+If a customer's compliance/security requirements demand infrastructure-level tenant isolation (not just application-code enforcement) — e.g. a regulated customer requiring physically separate data stores — revisit toward schema-per-tenant or database-per-tenant for that customer's data, layered on top of (not replacing) the existing application-layer guard.

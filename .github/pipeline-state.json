@@ -393,7 +393,7 @@
       "regulated": false,
       "complianceProfile": "standard",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-06-29T09:00:00Z",
+      "updatedAt": "2026-07-09T00:00:00Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/discovery.md",
@@ -8473,6 +8473,627 @@
         }
       ],
       "stories": []
+    },
+    {
+      "slug": "2026-07-09-team-identity-roles",
+      "name": "Unified Per-User Identity and Role-Based Access Model for Multi-Tenant Teams",
+      "stage": "discovery",
+      "health": "green",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "updatedAt": "2026-07-09T00:00:00Z",
+      "discovery": {
+        "status": "clarified",
+        "artefact": "artefacts/2026-07-09-team-identity-roles/discovery.md",
+        "clarifiedAt": "2026-07-09"
+      },
+      "stories": [],
+      "epics": [],
+      "decisionsArtefact": "artefacts/2026-07-09-team-identity-roles/decisions.md"
+    },
+    {
+      "slug": "2026-07-09-beta-readiness-infra",
+      "name": "Beta-Readiness Infrastructure - Feature Flags, Staging Environment, and E2E Test Coverage",
+      "stage": "definition-of-ready",
+      "health": "amber",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "updatedAt": "2026-07-10T00:00:00Z",
+      "discovery": {
+        "status": "approved",
+        "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
+        "clarifiedAt": "2026-07-09",
+        "approvedBy": "Hamish King",
+        "approvedDate": "2026-07-09"
+      },
+      "stories": [],
+      "epics": [
+        {
+          "slug": "epic-1-feature-flags",
+          "name": "Incomplete work can ship to main safely, gated off, without a redeploy to toggle it",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "bri-s1.1",
+              "name": "Build the isEnabled() flag helper shared by API and UI",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-10T00:00:00Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.1-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.1-dor-contract.md",
+              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+            },
+            {
+              "slug": "bri-s1.2",
+              "name": "Separate staging and prod PostHog projects with isolated API keys",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-10T00:00:00Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 10,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.2-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.2-dor-contract.md",
+              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+            },
+            {
+              "slug": "bri-s1.3",
+              "name": "Bootstrap flags server-side on session start to avoid UI flicker",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-10T00:00:00Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.3-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.3-dor-contract.md",
+              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+            },
+            {
+              "slug": "bri-s1.4",
+              "name": "Wire tenant-level flag targeting via PostHog group analytics",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-10T00:00:00Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.4-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.4-dor-contract.md",
+              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+            },
+            {
+              "slug": "bri-s1.5",
+              "name": "Create and wire the 3 initial flags across both projects",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-10T00:00:00Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 10,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.5-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.5-dor-contract.md",
+              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+            }
+          ]
+        },
+        {
+          "slug": "epic-2-staging-environment",
+          "name": "A broken build cannot reach production",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "bri-s2.1",
+              "name": "Provision the wuce-staging Fly app",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-10T00:00:00Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 0
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.1-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.1-dor-contract.md",
+              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+            },
+            {
+              "slug": "bri-s2.2",
+              "name": "Provision a Neon staging branch for Postgres",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-10T00:00:00Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.2-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.2-dor-contract.md",
+              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+            },
+            {
+              "slug": "bri-s2.3",
+              "name": "Provision an Upstash staging instance for Redis",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-10T00:00:00Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.3-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.3-dor-contract.md",
+              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+            },
+            {
+              "slug": "bri-s2.4",
+              "name": "Build an idempotent anonymized seed script for staging",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-10T00:00:00Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 10,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.4-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.4-dor-contract.md",
+              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+            },
+            {
+              "slug": "bri-s2.5",
+              "name": "Build the CI pipeline: PR checks through staging deploy",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-10T00:00:00Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 11,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.5-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.5-dor-contract.md",
+              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+            },
+            {
+              "slug": "bri-s2.6",
+              "name": "Add staging smoke test + manual promote gate to prod",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-10T00:00:00Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 10,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.6-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.6-dor-contract.md",
+              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+            }
+          ]
+        },
+        {
+          "slug": "epic-3-test-suite",
+          "name": "Risk-critical journeys have deterministic, tagged coverage before beta",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "bri-s3.1",
+              "name": "Build the mock LLM gateway and fixture set",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-10T00:00:00Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 10,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
+            },
+            {
+              "slug": "bri-s3.2",
+              "name": "Signup to onboarding to first feature journey spec",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-10T00:00:00Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off"
+            },
+            {
+              "slug": "bri-s3.3",
+              "name": "Multi-user within one tenant journey spec",
+              "stage": "test-plan",
+              "health": "red",
+              "updatedAt": "2026-07-10T00:00:00Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": true,
+              "dorStatus": "blocked",
+              "blocker": "PROCEED-BLOCKED per RISK-ACCEPT (decisions.md 2026-07-09) - cannot pass until 2026-07-09-team-identity-roles reaches definition-of-ready"
+            },
+            {
+              "slug": "bri-s3.4",
+              "name": "Cross-tenant isolation journey spec",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-10T00:00:00Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 10,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off"
+            },
+            {
+              "slug": "bri-s3.5",
+              "name": "Billing journey spec",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-10T00:00:00Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 11,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off"
+            },
+            {
+              "slug": "bri-s3.6",
+              "name": "Auth journey spec",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-10T00:00:00Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 11,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off"
+            }
+          ]
+        }
+      ],
+      "decisionsArtefact": "artefacts/2026-07-09-beta-readiness-infra/decisions.md",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "A broken build cannot reach prod",
+          "target": "100% of merges pass staging + smoke test + manual approval before prod",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Feature flags toggle without a redeploy",
+          "target": "100% of 3 named flags respond to PostHog toggle within one request cycle",
+          "baseline": "0",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Zero staging/prod PostHog cross-contamination",
+          "target": "0 staging events ever appear in prod project",
+          "baseline": "not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m4",
+          "name": "Risk-critical journeys have deterministic E2E coverage",
+          "target": "5 of 5 journeys covered and tagged",
+          "baseline": "0 of 5",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m5",
+          "name": "Cross-tenant isolation suite has zero tolerance for flake or skip",
+          "target": "0% skip rate, 0% flake rate over 20 consecutive CI runs",
+          "baseline": "not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m6",
+          "name": "@mocked suite runtime under 10 minutes on every PR",
+          "target": "under 10 minutes",
+          "baseline": "not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "slicingStrategy": "risk-first",
+      "guardrails": [
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit",
+          "status": "met",
+          "evidence": "All 17 stories written as artefacts before implementation; no violations found across Category E review",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-09T00:00:00Z"
+        },
+        {
+          "id": "ADR-018",
+          "category": "adr",
+          "label": "Playwright is the E2E testing framework; specs in tests/e2e/; devDependency only; unit test chain (npm test) must not invoke Playwright; auth bypass is test-fixture-layer only (NODE_ENV=test guard)",
+          "status": "met",
+          "evidence": "/definition-of-ready (Epic 3, bri-s3.1 through bri-s3.6): H9 confirmed ADR-018 correctly cited in all 6 stories Architecture Constraints; H-E2E confirmed Playwright tooling (playwright.config.js, tests/e2e/) is configured repo-wide, so all 6 E2E stories pass H-E2E cleanly.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-10T00:00:00Z"
+        },
+        {
+          "id": "ADR-025",
+          "category": "adr",
+          "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) - not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
+          "status": "met",
+          "evidence": "/definition-of-ready (Epic 3): H9 confirmed correct citation in bri-s3.4 (cross-tenant isolation guard) and reasonable stretch-application in bri-s3.3 (within-tenant, MEDIUM finding [1-M2] not yet logged in decisions.md - see bri-s3.3 DoR W3).",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-10T00:00:00Z"
+        },
+        {
+          "id": "PAT-06",
+          "category": "pattern",
+          "label": "Execution pre-condition gate on runtime artefact existence (DoR PROCEED-BLOCKED)",
+          "status": "met",
+          "evidence": "Run 2: bri-s1.2 AC3 rewritten to be independently testable now; live E2E confirmation reclassified as an explicit PAT-06 PROCEED-BLOCKED condition gated on Epic 2 + bri-s3.4.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-09T00:00:00Z"
+        },
+        {
+          "id": "NFR-mock-gateway-latency",
+          "category": "nfr",
+          "label": "Mock LLM gateway response < 50ms per call",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-10T00:00:00Z"
+        },
+        {
+          "id": "NFR-mocked-suite-runtime",
+          "category": "nfr",
+          "label": "@mocked suite total runtime under 10 minutes (revisable per decisions.md)",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-10T00:00:00Z"
+        },
+        {
+          "id": "NFR-auth-e2e-coverage",
+          "category": "nfr",
+          "label": "GitHub/Google OAuth and email/password login flows covered by deterministic E2E coverage",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-10T00:00:00Z"
+        },
+        {
+          "id": "NFR-tenant-isolation",
+          "category": "nfr",
+          "label": "Tenant isolation (cross-tenant reads/writes rejected, 404 not 403) enforced and regression-tested",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-10T00:00:00Z"
+        },
+        {
+          "id": "NFR-role-differentiation",
+          "category": "nfr",
+          "label": "Per-person role differentiation within a tenant (admin vs engineer vs viewer) - depends on external feature",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-10T00:00:00Z"
+        },
+        {
+          "id": "NFR-billing-secrets",
+          "category": "nfr",
+          "label": "No real Stripe secret/webhook signing secret used in @mocked/@billing CI runs",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-10T00:00:00Z"
+        },
+        {
+          "id": "NFR-gateway-activation-guard",
+          "category": "nfr",
+          "label": "Mock LLM gateway only activatable via explicit test configuration, never by production config error",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-10T00:00:00Z"
+        },
+        {
+          "id": "NFR-accesstoken-audit",
+          "category": "nfr",
+          "label": "Session token / accessToken never appears in HTML response or logs",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-10T00:00:00Z"
+        },
+        {
+          "id": "NFR-session-rotation",
+          "category": "nfr",
+          "label": "rotateSessionId called after every provider login",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-10T00:00:00Z"
+        }
+      ],
+      "riskAcceptances": [
+        {
+          "id": "bri-s1.1-1-M1",
+          "decision": "AC3 implementation-detail wording accepted as-is",
+          "date": "2026-07-10T00:00:00Z"
+        },
+        {
+          "id": "bri-s1.3-1-M1-M2",
+          "decision": "AC2 hedge phrasing and indirect Benefit Linkage accepted as-is",
+          "date": "2026-07-10T00:00:00Z"
+        },
+        {
+          "id": "bri-s1.4-1-M1",
+          "decision": "Benefit Linkage misattribution (epic vs discovery) accepted as-is",
+          "date": "2026-07-10T00:00:00Z"
+        },
+        {
+          "id": "bri-s3.1-1-M1",
+          "decision": "AC4 investigative-activity phrasing accepted as-is",
+          "date": "2026-07-10T00:00:00Z"
+        },
+        {
+          "id": "bri-s3.3-1-M2",
+          "decision": "ADR-025 stretch citation for within-tenant RBAC accepted as-is",
+          "date": "2026-07-10T00:00:00Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

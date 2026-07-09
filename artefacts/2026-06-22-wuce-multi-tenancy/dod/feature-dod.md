@@ -1,6 +1,6 @@
 # Feature Definition of Done — wuce-multi-tenancy
 
-**Feature:** WUCE Multi-Tenancy — Authorization Guard and Tenant Isolation (ADR-030)
+**Feature:** WUCE Multi-Tenancy — Authorization Guard and Tenant Isolation (ADR-025)
 **Operator:** Hamish King | **Date:** 2026-06-29
 **Production deployment:** https://skills-framework.fly.dev
 

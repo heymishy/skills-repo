@@ -4,11 +4,29 @@
   "activeFeature": "2026-07-05-product-stds-hierarchy",
   "previousFeature": "2026-07-03-admin-role-panel",
   "cycle": {
-    "discovery": { "status": "complete", "artefact": "artefacts/2026-07-05-product-stds-hierarchy/discovery.md", "completedAt": "2026-07-05" },
-    "benefit-metric": { "status": "complete", "artefact": "artefacts/2026-07-05-product-stds-hierarchy/benefit-metric.md", "completedAt": "2026-07-05" },
-    "definition": { "status": "complete", "completedAt": "2026-07-05" },
-    "review": { "status": "complete", "completedAt": "2026-07-05" },
-    "test-plan": { "status": "complete", "completedAt": "2026-07-05", "totalTests": 76 },
+    "discovery": {
+      "status": "complete",
+      "artefact": "artefacts/2026-07-05-product-stds-hierarchy/discovery.md",
+      "completedAt": "2026-07-05"
+    },
+    "benefit-metric": {
+      "status": "complete",
+      "artefact": "artefacts/2026-07-05-product-stds-hierarchy/benefit-metric.md",
+      "completedAt": "2026-07-05"
+    },
+    "definition": {
+      "status": "complete",
+      "completedAt": "2026-07-05"
+    },
+    "review": {
+      "status": "complete",
+      "completedAt": "2026-07-05"
+    },
+    "test-plan": {
+      "status": "complete",
+      "completedAt": "2026-07-05",
+      "totalTests": 76
+    },
     "definition-of-ready": {
       "status": "complete",
       "completedAt": "2026-07-05",
@@ -20,9 +38,22 @@
       "adr018Resolved": "playwright-e2e",
       "dorArtefactsPath": "artefacts/2026-07-05-product-stds-hierarchy/dor/"
     },
-    "branch-setup": { "status": "complete", "completedAt": "2026-07-05", "worktree": ".worktrees/psh", "branch": "fix/rate-limiter-scope" },
-    "implementation-plan": { "status": "complete", "completedAt": "2026-07-05", "plansPath": "artefacts/2026-07-05-product-stds-hierarchy/plans/" },
-    "subagent-execution": { "status": "complete", "completedAt": "2026-07-05", "storiesCompleted": 10 },
+    "branch-setup": {
+      "status": "complete",
+      "completedAt": "2026-07-05",
+      "worktree": ".worktrees/psh",
+      "branch": "fix/rate-limiter-scope"
+    },
+    "implementation-plan": {
+      "status": "complete",
+      "completedAt": "2026-07-05",
+      "plansPath": "artefacts/2026-07-05-product-stds-hierarchy/plans/"
+    },
+    "subagent-execution": {
+      "status": "complete",
+      "completedAt": "2026-07-05",
+      "storiesCompleted": 10
+    },
     "verify-completion": {
       "status": "complete",
       "completedAt": "2026-07-05",
@@ -43,7 +74,11 @@
       "completedAt": "2026-07-05",
       "storiesComplete": 7,
       "storiesCompleteWithDeviations": 3,
-      "deviationStories": ["psh-s4", "psh-s6", "psh-s7"],
+      "deviationStories": [
+        "psh-s4",
+        "psh-s6",
+        "psh-s7"
+      ],
       "deviationReason": "Playwright E2E specs written and committed but pending live server execution for CSS-layout ACs (psh-s4: dashboard layout, psh-s6: product kanban columns, psh-s7: org kanban columns/filter)",
       "dodArtefactsPath": "artefacts/2026-07-05-product-stds-hierarchy/dod/"
     }
@@ -59,5 +94,27 @@
       "M4a review: check PostHog standard_created events at 60 days post-launch and set forward target — Owner: Hamish King",
       "Previous feature (2026-07-03-admin-role-panel): deploy to Fly.io pending; AC7 manual smoke test pending; M1/M2 measurement pending deploy"
     ]
+  },
+  "estimate": {
+    "e2": {
+      "date": "2026-07-09",
+      "storyCount": 17,
+      "byStory": {
+        "count": 17,
+        "complexity": {
+          "1": 2,
+          "2": 12,
+          "3": 3
+        },
+        "p75FocusHPerStory": 0.037
+      },
+      "expectedCalendarDays": 1,
+      "engagementFraction": 0.25,
+      "outerLoopFocusH": 0.5,
+      "innerLoopHuman": null,
+      "confidence": "medium",
+      "notes": "no E1 to compare -- E1 prompt was skipped at discovery time this session; this is the first forecast for 2026-07-09-beta-readiness-infra",
+      "premiumRequestsForecast": null
+    }
   }
 }

@@ -18,7 +18,7 @@ The initial recommendation below (Fly Postgres) was revised because it compared 
 
 ## Decision required
 
-Sprint 1 (Phase 3 of ADR-030) needs a managed Postgres instance for journey persistence and a managed Redis instance for session storage. No vendor has been selected yet. This recommendation is the input to that decision.
+Sprint 1 (Phase 3 of ADR-025) needs a managed Postgres instance for journey persistence and a managed Redis instance for session storage. No vendor has been selected yet. This recommendation is the input to that decision.
 
 ## Recommended stack
 

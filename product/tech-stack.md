@@ -382,7 +382,7 @@ src/web-ui/server.js              — raw Node.js http.createServer(); zero Expr
 - **No Express** — `http.createServer()` with URL matching via `pathname.match()` in the server router
 - **Zero new npm dependencies** — `https`, `fs`, `path`, `os`, `crypto` built-ins only
 - **No persistence** — session state lives in a `Map` for the lifetime of the Node process
-- **Injectable adapters (D37/ADR-009)** — every external dependency wired via a setter function; default stubs throw (never return null/undefined)
+- **Injectable adapters (D37)** — every external dependency wired via a setter function; default stubs throw (never return null/undefined). (Corrected 2026-07-09: previously mislabeled "D37/ADR-009" — the real `ADR-009` in `.github/architecture-guardrails.md` governs evaluation/write-back workflow trigger separation, an unrelated topic. D37 is defined in `CLAUDE.md`'s "Injectable adapter rule" and doesn't need an ADR pairing.)
 - **`req.session.accessToken` is canonical** — the GitHub OAuth token is always at this key; never `req.session.token`
 
 ### Model-first architecture

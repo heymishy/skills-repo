@@ -3,14 +3,14 @@
 **Audit date:** 2026-06-29
 **Type:** Read-only repo audit against three reference documents:
 - `wucebetareadinessdiscoveryprompt.md` (discovery prompt)
-- `wucemultitenancybillingreference.md` (ADR-030 phase plan, billing/ledger model, dual-surface authority)
+- ~~`wucemultitenancybillingreference.md` (ADR-030 phase plan, billing/ledger model, dual-surface authority)~~ — **correction (2026-07-09):** this file was never committed to the repo; the citation was orphaned. The multi-tenancy phase plan it referenced is now formally documented as `.github/architecture-guardrails.md` ADR-025. The billing/ledger model and dual-surface authority content this doc was meant to cover remain genuinely undocumented — not superseded by ADR-025, which covers tenancy isolation only.
 - `wucepairingjourney.md` (UI/UX implications of dual-surface pattern)
 
 ---
 
 ## Step 1 — Actual repo state at audit date
 
-### 1.1 Multi-tenancy (ADR-030)
+### 1.1 Multi-tenancy (ADR-025)
 
 | Phase | Status | Evidence |
 |---|---|---|

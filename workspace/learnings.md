@@ -2147,3 +2147,51 @@ audit:
 **Rule:** Whenever a /checkpoint or manual pipeline-state.json update is committed to master mid-implementation, the feature branch MUST also be updated before the next CI run on its PR.
 
 **Structural recommendation:** Avoid writing pipeline-state.json progress updates to master during active implementation. Write all updates (acVerified, stage, testPlan.passing) on the feature branch; let the PR merge carry them to master. Mid-session checkpoints should update only `workspace/state.json` — not `pipeline-state.json` — unless the story is fully complete and the PR is about to merge.
+
+---
+
+## ADR-citation drift is systemic, not incidental
+
+### Observed — 2026-07-09
+
+**Circumstance:** During `/discovery` and `/definition` for `2026-07-09-beta-readiness-infra`, found two independent, unrelated ADR-citation errors in the same session: (1) three artefacts cited "ADR-030" for the multi-tenancy model — no such ADR existed, the citation traced to an external doc never committed to the repo; (2) `product/tech-stack.md` and every downstream artefact that copied its phrasing labelled the injectable-adapter rule "D37/ADR-009" — the real `ADR-009` governs an unrelated topic (evaluation/write-back workflow trigger separation).
+
+**Root cause:** Three independent surfaces can each drift out of sync with no automated check catching it: the prose `### ADR-NNN` sections in `architecture-guardrails.md`, the fenced `guardrails-registry` YAML block the visualiser actually reads, and every downstream artefact (`product/` files, story artefacts) that cites an ADR by number from memory rather than by re-reading the source. Both errors were only caught by coincidence — cross-referencing during unrelated work — not by any structural check.
+
+**Proposed check:** A CI script that extracts every `ADR-\d+` citation across `artefacts/` and `product/*.md`, resolves it against the `guardrails-registry` YAML block's `id:` fields, and fails if a citation doesn't resolve or if a prose `### ADR-NNN` section has no matching registry entry (the file's own comments already flag this class of drift as a `/trace` LOW-finding candidate — it just isn't automated yet).
+
+---
+
+## Cross-feature dependencies aren't a first-class concept in /definition
+
+### Observed — 2026-07-09
+
+**Circumstance:** While decomposing `2026-07-09-beta-readiness-infra`, story `bri-s3.3` (multi-user-within-one-tenant E2E spec) turned out to depend entirely on a sibling feature, `2026-07-09-team-identity-roles`, which was only at benefit-metric stage — no per-person role model existed yet to test against.
+
+**What was missing:** The `/definition` skill's D1 (dependency chain validation) and D1-prereq (RISK-ACCEPT-sourced prerequisite validation) checks both assume the dependency is either another story *within the same feature* or a prerequisite *named in this feature's own discovery/decisions.md*. Neither anticipates "this story structurally cannot pass until an entirely separate, independently-scoped feature reaches a given stage." Handling it required manually flagging the dependency and getting ad hoc operator confirmation — there was no skill-native pattern for it, just the general-purpose `[External: ... — confirmed by operator on <date>]` annotation, which wasn't designed with cross-feature sequencing in mind.
+
+**Proposed check:** Add an explicit cross-feature dependency step to `/definition` Step 4: when a story's ACs require behaviour that another feature (not yet at DoR) must deliver, record it as a distinct dependency type (not the same annotation as a within-feature or RISK-ACCEPT-sourced one), and surface it in the scope accumulator or completion output as a named blocker — "N stories cannot be implemented until feature X reaches DoR" — rather than letting it look identical to a fully-resolved dependency once annotated.
+
+---
+
+## Scope-ratio heuristic assumes 1:1 granularity between discovery bullets and stories
+
+### Observed — 2026-07-09
+
+**Circumstance:** `2026-07-09-beta-readiness-infra`'s discovery named exactly 3 MVP scope items (the 3 sequenced sub-features), but each was described as a dense prose paragraph already naming ~5 granular technical items. Decomposition produced 17 stories — a 5.7x ratio that mechanically trips the `/definition` scope-drift heuristic (flag above 1.5x), even though every story traced cleanly to something already named in the discovery prose.
+
+**Root cause:** The scope accumulator's ratio check counts discovery MVP items at whatever granularity the discovery happened to use — a bulleted list of 15 fine-grained items and a 3-paragraph description of the same 15 items produce wildly different ratios for identical actual scope.
+
+**Proposed check:** Before computing the scope ratio, count granular sub-items already named in prose MVP scope descriptions (not just top-level bullet/numbered-item count) as the baseline — or ask the operator during Step 1 (confirm feature scope) to confirm the intended granularity, rather than inferring it purely from formatting.
+
+---
+
+## evaluation.mode: true left on globally is a silent, not loud, risk
+
+### Observed — 2026-07-09
+
+**Circumstance:** `.github/context.yml` had `evaluation.mode: true` set at the start of a real (non-eval) `/discovery` session — likely left over from a recent calibration sweep (`workspace/experiments/EXP-04x-*-calibration` folders were present in the working tree). Caught only because the entry condition check happened to surface it before any output was produced.
+
+**What was wrong:** The flag's own inline comment says "NEVER set to true in production," but nothing enforces this — a stale `true` value doesn't error, it silently changes `/discovery`'s behaviour (skips real clarifying questions, marks the artefact `<!-- eval-mode: true -->` and not-for-production) without any visible warning that this is happening for the wrong reason.
+
+**Proposed check:** A session-start guard (or a check in the skill's own entry condition) that warns loudly — not just proceeds silently in eval-mode — whenever `evaluation.mode: true` is detected outside of an actual eval-harness invocation context (e.g. no `caseId`/corpus context set). A misconfigured flag that silently degrades output quality is worse than one that errors.

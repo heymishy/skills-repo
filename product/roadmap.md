@@ -133,6 +133,43 @@ A structured evaluation programme for the skill library has been initiated as a 
 
 ---
 
+## Commercialisation track — wuce SaaS beta path
+
+**Status: 🟡 Active — pre-launch, no live paying customers yet**
+
+This track is parallel to, not part of, the Phase 1–6 platform-maturity numbering above. Phases 1–6 track the skills-platform's own governance maturity (distribution, enforcement, autoresearch, policy lifecycle); this track is the go-to-market path for `wuce` — the hosted, commercial delivery surface of that same platform (the web-UI layer, §Web UI layer in `tech-stack.md`) — reaching its first real beta customers.
+
+**Outcome:** wuce operates safely as a real product with paying, external teams — not just a solo-operator tool — with tenant isolation, per-person roles, a rehearsal environment before production, and deterministic coverage of the flows that would cost the business its first customers' trust if broken.
+
+### Shipped
+
+- **Multi-auth** — GitHub OAuth, Google OAuth, email/password (`2026-07-01-landing-auth-billing`, merged 2026-07-05)
+- **Billing** — Stripe checkout, webhook, billing portal (`2026-07-01-landing-auth-billing`); several post-merge fixes (form-parsing, plan-limit gating, GitHub OAuth first-login bug) landed 2026-07-06–09
+- **Multi-tenancy foundation (ADR-025)** — application-layer tenant_id scoping across 6 phases: authz guard, identity resolution, storage scoping, Postgres/Redis persistence, rate-limit isolation, security hardening (`2026-06-22-wuce-multi-tenancy`)
+- **Admin role + billing-gate bypass** — role-based access foundation (`2026-07-03-admin-role-panel`, arl-s1–s4)
+
+### Near-term (both discoveries approved 2026-07-09, sequencing TBD at /definition)
+
+- **`2026-07-09-team-identity-roles`** — unifies identity across all 3 auth providers, replaces tenant_id-as-role-key with a genuine per-person role (admin/engineer/product/viewer), supports teams up to ~100 members. Prerequisite for onboarding any beta customer that isn't a solo user.
+- **`2026-07-09-beta-readiness-infra`** — feature flags (PostHog, tenant-targeted), a staging environment (Fly + Neon + Upstash) between merge and prod, and deterministic E2E coverage (signup, cross-tenant isolation, billing, auth). Prerequisite for safely shipping anything to a real beta customer without a solo operator's manual care as the only safety net.
+
+### Path to beta
+
+1. Both near-term discoveries complete their outer loop (benefit-metric → definition → DoR → build).
+2. First beta customer(s) onboarded as a real team (not solo), exercising the per-person role model for the first time outside of test data.
+3. Beta feedback informs the deferred items below — none of them block first beta, but real usage should decide which to prioritize next, not upfront guesswork.
+
+### Deferred past first beta (from discovery Out-of-Scope sections)
+
+- Self-serve team/org creation and invite flow (`team-identity-roles`)
+- Per-seat/usage-based Stripe billing (`team-identity-roles`)
+- Full feature-access matrix across every screen, beyond the one proven role-gated feature (`team-identity-roles`)
+- Multi-team switching UX (schema supports it; UI doesn't yet) (`team-identity-roles`)
+- Self-serve staging, multi-region/HA staging, canary/blue-green deploys (`beta-readiness-infra`)
+- Full production monitoring/alerting overhaul (`beta-readiness-infra`)
+
+---
+
 ## What is not on the roadmap
 
 - The platform does not generate design artefacts — it references and validates them
