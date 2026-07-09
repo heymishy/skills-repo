@@ -197,8 +197,25 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
         tenant_id VARCHAR PRIMARY KEY,
         role VARCHAR NOT NULL DEFAULT 'user'
       )
-    `).then(function() { console.log('user_roles table ready'); })
-      .catch(function(err) { console.error('user_roles table migration failed:', err.message); });
+    `).then(function() {
+      console.log('user_roles table ready');
+      // arl-s4 — Seed admin role for operator accounts named in ADMIN_GITHUB_LOGINS
+      // (comma-separated GitHub logins — same allowlist shape as TENANT_ORG_ALLOWLIST).
+      // Runs after table creation so the upsert always has a table to target.
+      const _adminLogins = (process.env.ADMIN_GITHUB_LOGINS || '')
+        .split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+      if (_adminLogins.length) {
+        return Promise.all(_adminLogins.map(function(login) {
+          return _userRolesPool.query(
+            `INSERT INTO user_roles (tenant_id, role) VALUES ($1, 'admin')
+             ON CONFLICT (tenant_id) DO UPDATE SET role = 'admin'`,
+            [login]
+          );
+        })).then(function() {
+          console.log('[arl-s4] admin role seeded for', _adminLogins.length, 'login(s)');
+        });
+      }
+    }).catch(function(err) { console.error('user_roles table migration failed:', err.message); });
     // psh-s1: products table
     _creditsPool.query(`CREATE TABLE IF NOT EXISTS products (
       product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -333,24 +350,36 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   }
 
   // lab-s2.3 — Wire real user-flags DB adapter (D37 mandatory separate wiring task).
-  // Requires a `users` table with a `first_login` boolean column (true on first signup).
+  // arl-s4 fix: GitHub OAuth users are never rows in the `users` table (that table is only
+  // populated by email/password signup, keyed by an unrelated SERIAL id — see auth-email.js).
+  // Looking up a GitHub numeric user id there always returned zero rows, so every GitHub
+  // login was treated as first-login and bounced to /welcome (plan-selection/billing) forever.
+  // Fix: track GitHub OAuth first-login state in its own table, keyed by GitHub user id.
   // Falls back to a no-op adapter (everyone treated as returning user) when DATABASE_URL is absent.
   if (process.env.DATABASE_URL) {
     const { Pool: _FlagsPool } = require('pg');
     const _flagsPool = new _FlagsPool({ connectionString: process.env.DATABASE_URL });
+    _flagsPool.query(`
+      CREATE TABLE IF NOT EXISTS github_first_login (
+        github_user_id VARCHAR PRIMARY KEY,
+        first_login    BOOLEAN NOT NULL DEFAULT true
+      )
+    `).then(function() { console.log('github_first_login table ready'); })
+      .catch(function(err) { console.error('github_first_login table migration failed:', err.message); });
     setUserFlagsAdapter({
       getFirstLoginFlag: async function(userId) {
         const result = await _flagsPool.query(
-          'SELECT first_login FROM users WHERE id = $1',
-          [userId]
+          'SELECT first_login FROM github_first_login WHERE github_user_id = $1',
+          [String(userId)]
         );
-        if (!result.rows.length) return true; // unknown user → treat as first login
+        if (!result.rows.length) return true; // never seen this GitHub user before → genuinely first login
         return result.rows[0].first_login === true;
       },
       clearFirstLoginFlag: async function(userId) {
         await _flagsPool.query(
-          'UPDATE users SET first_login = false WHERE id = $1',
-          [userId]
+          `INSERT INTO github_first_login (github_user_id, first_login) VALUES ($1, false)
+           ON CONFLICT (github_user_id) DO UPDATE SET first_login = false`,
+          [String(userId)]
         );
       }
     });

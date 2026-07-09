@@ -72,3 +72,21 @@ _Populated after stories are written. No regulated constraints identified in dis
 ## W4 RISK-ACCEPT
 
 Solo operator posture per `.github/architecture-guardrails.md` Operating Posture section. W4 (no second reviewer) is the standard posture for this repository. Risk accepted for all stories in this feature.
+
+---
+
+### ARCH-004: `user_roles` keyed by `tenant_id`, not a per-user identity — RISK-ACCEPT until multi-tenancy is revisited
+
+**Date:** 2026-07-09
+**Context:** Fixing the GitHub OAuth first-login bug (arl-s4 — GitHub OAuth users were always treated as first-login because the flag lookup queried the email/password `users` table, which never contains a GitHub numeric id) surfaced a pre-existing design gap: the `user_roles` table (arl-s1) has no per-user role key at all — only `tenant_id VARCHAR PRIMARY KEY`. For GitHub OAuth, `tenantId` is the individual's GitHub login when `TENANT_ORG_ALLOWLIST` is unset (today's deployment), but per `resolveTenant()` (`auth.js`) it becomes the shared GitHub **org** name when that allowlist is populated — a design the `artefacts/2026-06-22-wuce-multi-tenancy` epic plans to activate. The `artefacts/2026-06-22-wuce-multi-tenancy` discovery (2026-06-23) predates Google OAuth (#429), email/password auth (#432), and the admin role feature (#435, arl-s4) — it never accounts for any of the three, or for role-per-tenant blast radius.
+**Decision:** RISK-ACCEPT the current tenant_id-as-role-key design as-is for now. It is inert today because `TENANT_ORG_ALLOWLIST` is unset in this solo deployment (`tenant_id` == one distinct GitHub login, confirmed via `.env`), so `ADMIN_GITHUB_LOGINS` seeding (arl-s4) is correct under current conditions. It is **not** safe to activate `TENANT_ORG_ALLOWLIST` under the current schema: doing so would grant any admin-seeded role to every member of that org, not just the intended individual, because there is no per-user role column to fall back on.
+**Rationale / follow-up required:** Before any `wuce-multi-tenancy` phase that populates `TENANT_ORG_ALLOWLIST` proceeds, `user_roles` needs a genuine per-user key (e.g. provider-scoped user id) independent of `tenant_id`, and the multi-tenancy discovery needs to be updated to reconcile with Google OAuth, email/password auth, and the admin role — none of which existed when it was written. Tracked as a prerequisite, not yet scheduled as a story.
+
+---
+
+### ARCH-005: Google OAuth does not implement first-login / plan-selection — open question, not yet resolved
+
+**Date:** 2026-07-09
+**Context:** While fixing the GitHub OAuth first-login bug (arl-s4), found that `handleAuthGoogleCallback` sets `req.session.role` via the same `_userRoles.getUserRole()` adapter as GitHub and email/password, but never calls `_userFlags.getFirstLoginFlag`/`clearFirstLoginFlag` — it always redirects straight to `/dashboard`. This is the mirror-image gap of the GitHub bug: Google sign-ups never see the `/welcome` plan-selection/billing page at all, unlike GitHub (now fixed) and email/password signups (`auth-email.js`).
+**Decision:** Deferred — not fixed as part of arl-s4. Whether Google sign-ups should hit plan-selection is a product decision (does every acquisition channel need to pick a paid plan before first use?), not just a bug fix, so it is left open rather than silently patched to match GitHub's behaviour.
+**Rationale / follow-up required:** Needs an explicit decision on intended Google onboarding behaviour before implementing either way.

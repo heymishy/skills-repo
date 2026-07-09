@@ -161,11 +161,15 @@ async function handleAuthCallback(req, res) {
     // lab-s2.3: first-login detection — check before session rotation so userId is available.
     // getFirstLoginFlag returns true if this is the user's first login.
     // D37: _userFlags adapter must be wired before this runs (done in server.js).
+    // arl-s4: admins bypass the /welcome plan-selection gate entirely — they must never
+    // be routed to billing regardless of first-login state.
     let isFirstLogin = false;
-    try {
-      isFirstLogin = await _userFlags.getFirstLoginFlag(user.id);
-    } catch (_) {
-      // Adapter not wired or lookup failed — treat as returning user (safe fallback).
+    if (req.session.role !== 'admin') {
+      try {
+        isFirstLogin = await _userFlags.getFirstLoginFlag(user.id);
+      } catch (_) {
+        // Adapter not wired or lookup failed — treat as returning user (safe fallback).
+      }
     }
 
     // sec-perf AC5 / lab-s1.3 AC2: rotate session ID after every successful provider login
