@@ -1,0 +1,10 @@
+{
+  "stage": "benefit-metric",
+  "scenarioName": "success",
+  "model": "claude-sonnet-4.6",
+  "response": "Thank you. Producing the benefit-metric artefact now.\n\n---ARTEFACT-START---\n# Benefit Metric: Mock Fixture Feature\n\n**Status:** Active (mock fixture — bri-s3.1)\n**Feature slug:** mock-fixture-feature\n**Date:** 2026-07-10\n**Skill version:** /benefit-metric\n\n## Primary metrics\n\n| Metric | Baseline | Target |\n|--------|---------|--------|\n| `@mocked` suite runtime | Unmeasured | Under 10 minutes |\n---ARTEFACT-END---\n---SLUG---\n2026-07-10-mock-fixture-feature",
+  "usage": {
+    "input_tokens": 380,
+    "output_tokens": 150
+  }
+}

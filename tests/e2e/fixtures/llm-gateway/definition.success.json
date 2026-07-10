@@ -1,0 +1,10 @@
+{
+  "stage": "definition",
+  "scenarioName": "success",
+  "model": "claude-sonnet-4.6",
+  "response": "Proceeding with the full definition.\n\n---ARTEFACT-START---\n# Definition: Mock Fixture Feature\n\n**Status:** Approved (mock fixture — bri-s3.1)\n**Feature slug:** mock-fixture-feature\n**Date:** 2026-07-10\n**Skill version:** /definition\n\n## Epic 1 — Mock Epic\n\n### mock-story-1 — Mock story\nComplexity: 1\n\nAC1: Fixture-driven definition completes deterministically.\n---ARTEFACT-END---\n---SLUG---\n2026-07-10-mock-fixture-feature",
+  "usage": {
+    "input_tokens": 410,
+    "output_tokens": 210
+  }
+}
