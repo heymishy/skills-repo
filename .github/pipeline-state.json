@@ -8504,7 +8504,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-10T21:11:11.853Z",
+      "updatedAt": "2026-07-10T21:14:21.878Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8741,9 +8741,9 @@
             {
               "slug": "bri-s2.4",
               "name": "Build an idempotent anonymized seed script for staging",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T21:10:52.005Z",
+              "updatedAt": "2026-07-10T21:14:05.353Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8764,36 +8764,38 @@
                 {
                   "id": "task-1",
                   "name": "Seed core logic + D37 injectable adapter + synthetic tenant dataset (T1-T3)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.4-anonymized-seed-script-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Idempotency regression guards (T4-T5)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.4-anonymized-seed-script-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "PII/synthetic-data denylist guards (T6-T7)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.4-anonymized-seed-script-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "CLI entrypoint mock-mode invocation (IT1, NFR1)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.4-anonymized-seed-script-plan.md"
                 },
                 {
                   "id": "task-5",
                   "name": "Wire real Postgres adapter as CLI production default (separate task, D37 rule 3) + register in test chain",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.4-anonymized-seed-script-plan.md"
                 }
               ],
               "verifyStatus": "passed",
-              "acVerificationNote": "AC1-AC3 fully code-verified (T1-T7, unit-level, mocked adapter per D37/Test Data Strategy -- no real Neon connection required or made). AC4 partially verified: IT1 confirms the single CLI-invokable entrypoint (exit 0, summary stdout); the automatic post-deploy triggering itself is S2.5-scope and remains a manual/cross-referenced gap (Scenario 4), same framing as the story test plan Coverage gaps table."
+              "acVerificationNote": "AC1-AC3 fully code-verified (T1-T7, unit-level, mocked adapter per D37/Test Data Strategy -- no real Neon connection required or made). AC4 partially verified: IT1 confirms the single CLI-invokable entrypoint (exit 0, summary stdout); the automatic post-deploy triggering itself is S2.5-scope and remains a manual/cross-referenced gap (Scenario 4), same framing as the story test plan Coverage gaps table.",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/453"
             },
             {
               "slug": "bri-s2.5",
