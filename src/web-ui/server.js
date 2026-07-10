@@ -694,11 +694,36 @@ if (process.env.NODE_ENV === 'test') {
   // The check-lab-s3.4-stripe-webhook.js unit tests inject their own mock directly via setWebhookDbAdapter().
   setWebhookDbAdapter({ query: async function() { return { rows: [], rowCount: 1 }; } });
 
-  // lab-s2.3: wire user-flags adapter in test mode — returns firstLogin: false (returning user) by default.
-  // Tests override this per-test via monkeypatching.
+  // lab-s2.3: wire user-flags adapter in test mode — per-user in-memory tracking that
+  // mirrors the real github_first_login table semantics (bri-s3.6): an id never seen
+  // before is first-login=true; clearFirstLoginFlag marks it false for all subsequent
+  // logins. This lets the E2E auth journey spec browser-drive both the first-time
+  // (/welcome) and returning (/dashboard) paths using the same synthetic identity,
+  // exactly as its own verification script's Scenario 1/2 do. No existing E2E spec
+  // calls getFirstLoginFlag (only reachable via the real /auth/github/callback route),
+  // so this replaces the prior blanket 'always false' stub without affecting other specs.
+  const _bri36FirstLoginCleared = new Set();
   setUserFlagsAdapter({
-    getFirstLoginFlag:   async function() { return false; },
-    clearFirstLoginFlag: async function() {}
+    getFirstLoginFlag:   async function(userId) { return !_bri36FirstLoginCleared.has(String(userId)); },
+    clearFirstLoginFlag: async function(userId) { _bri36FirstLoginCleared.add(String(userId)); }
+  });
+
+  // bri-s3.6: deterministic GitHub OAuth exchange stub (test mode only) — lets the E2E
+  // auth journey spec drive the real /auth/github -> /auth/github/callback redirect
+  // chain without ever contacting github.com. The authorisation `code` value IS the
+  // synthetic GitHub login name, so a spec can reuse the same code across two logins
+  // (first-time, then returning) to exercise both AC1 and AC2 with one identity.
+  // AC5: this is the "provider exchange stubbed" half of the @mocked contract — the
+  // real gitHubProviderAdapter (which calls fetch() against github.com) is replaced,
+  // so a global.fetch/network spy during the E2E run records zero real calls.
+  setProviderAdapter({
+    exchangeCode: async function(code) { return 'e2e-oauth-token-' + code; },
+    getUserIdentity: async function(token) {
+      const login = String(token).replace(/^e2e-oauth-token-/, '');
+      let id = 0;
+      for (let i = 0; i < login.length; i++) { id = (id * 31 + login.charCodeAt(i)) % 900000; }
+      return { id: 900000000 + id, login: login };
+    }
   });
 }
 
