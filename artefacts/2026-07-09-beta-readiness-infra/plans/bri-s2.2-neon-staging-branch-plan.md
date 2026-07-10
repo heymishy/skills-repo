@@ -305,8 +305,13 @@ function waitForDbReady(connectFn, timeoutMs) {
       settled = true;
       reject(new DbConnectTimeoutError(budget));
     }, budget);
-    // Do not let this timer keep a process/test runner alive on its own.
-    if (timer && typeof timer.unref === 'function') timer.unref();
+    // Intentionally NOT unref()'d: this timer is frequently the only
+    // pending handle in a short-lived health-check invocation (e.g. a
+    // one-off CI/smoke-test script). An unref'd timer lets Node consider
+    // the event loop empty and exit the process before the timeout ever
+    // fires, silently skipping the rejection this helper exists to
+    // guarantee. Callers that need the process to exit immediately after
+    // resolution/rejection should do so explicitly once this promise settles.
 
     Promise.resolve()
       .then(() => connectFn())
