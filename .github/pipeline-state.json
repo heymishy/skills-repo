@@ -8504,7 +8504,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-10T10:48:12.835Z",
+      "updatedAt": "2026-07-10T21:01:32.359Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8741,9 +8741,9 @@
             {
               "slug": "bri-s2.4",
               "name": "Build an idempotent anonymized seed script for staging",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-10T21:01:05.600Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8759,7 +8759,39 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.4-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.4-dor-contract.md",
-              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+              "dorSignedOffAt": "2026-07-10T00:00:00Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Seed core logic + D37 injectable adapter + synthetic tenant dataset (T1-T3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.4-anonymized-seed-script-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Idempotency regression guards (T4-T5)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.4-anonymized-seed-script-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "PII/synthetic-data denylist guards (T6-T7)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.4-anonymized-seed-script-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "CLI entrypoint mock-mode invocation (IT1, NFR1)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.4-anonymized-seed-script-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Wire real Postgres adapter as CLI production default (separate task, D37 rule 3) + register in test chain",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.4-anonymized-seed-script-plan.md"
+                }
+              ]
             },
             {
               "slug": "bri-s2.5",
