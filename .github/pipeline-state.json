@@ -8504,7 +8504,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-10T01:10:00Z",
+      "updatedAt": "2026-07-10T01:47:40.931Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8641,7 +8641,7 @@
         {
           "slug": "epic-2-staging-environment",
           "name": "A broken build cannot reach production",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "bri-s2.1",
@@ -8695,9 +8695,9 @@
             {
               "slug": "bri-s2.3",
               "name": "Provision an Upstash staging instance for Redis",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-10T01:47:17Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8713,7 +8713,21 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.3-dor-contract.md",
-              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+              "dorSignedOffAt": "2026-07-10T00:00:00Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "T1/T2 -- static regression guards (env-var-only credentials, no hardcoded literals)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "T3 -- module-reload credential-bleed guard + register in npm test chain",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.3-plan.md"
+                }
+              ]
             },
             {
               "slug": "bri-s2.4",
