@@ -8796,7 +8796,8 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "prStatus": "draft"
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/445"
             },
             {
               "slug": "bri-s3.2",
