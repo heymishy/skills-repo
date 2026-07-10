@@ -8504,7 +8504,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-10T05:36:59.354Z",
+      "updatedAt": "2026-07-10T05:44:10.533Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8547,7 +8547,7 @@
             {
               "slug": "bri-s1.2",
               "name": "Separate staging and prod PostHog projects with isolated API keys",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "updatedAt": "2026-07-10T05:37:59.192Z",
               "reviewStatus": "passed",
@@ -8566,7 +8566,9 @@
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.2-dor-contract.md",
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/446"
             },
             {
               "slug": "bri-s1.3",
