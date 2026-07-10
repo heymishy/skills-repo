@@ -11,6 +11,16 @@
 //
 // The adapter must implement:
 //   evaluateFlag(flagKey, context) → Promise<boolean>   (queries PostHog for the flag's boolean state)
+//   groupIdentify(groupType, groupKey) → Promise<void>  (optional — registers a PostHog Group
+//                                                         Analytics group; bri-s1.4)
+//
+// bri-s1.4 — tenant-level flag targeting via PostHog Group Analytics:
+// isEnabled() automatically derives a `groups.tenant` targeting key from context.tenantId
+// (see _withTenantGroup below) so every flag evaluation is scoped to the tenant, not the
+// individual user, with no extra work required by call sites (AC1, AC2, AC4 — including the
+// solo-tenant case, which uses this exact same derivation, no special-casing). identifyTenantGroup()
+// registers the tenant as a PostHog group ahead of evaluation, through this same adapter — not a
+// second, parallel adapter mechanism (Architecture Constraints, D37).
 
 let _postHogFlagsAdapter = null;
 
@@ -51,7 +61,23 @@ function _sanitizeContext(context) {
     if (_TOKEN_KEY_PATTERN.test(key)) continue;
     safe[key] = context[key];
   }
-  return safe;
+  return _withTenantGroup(safe); // bri-s1.4 — evaluate against the tenant's group, not the user
+}
+
+/**
+ * Derive the PostHog Group Analytics targeting key from context.tenantId (bri-s1.4, AC1/AC2/AC4).
+ * Every isEnabled() call whose context carries a tenantId is automatically evaluated against
+ * that tenant's PostHog group — callers do not need to build the `groups` object themselves,
+ * and the solo-tenant case (AC4) goes through this exact same derivation with no special-casing.
+ * A caller-supplied context.groups.tenant (if already present) is never overwritten.
+ * @param {object} context
+ * @returns {object}
+ */
+function _withTenantGroup(context) {
+  if (!context || typeof context !== 'object' || context.tenantId == null) return context;
+  if (context.groups && context.groups.tenant != null) return context;
+  const groups = Object.assign({}, context.groups, { tenant: context.tenantId });
+  return Object.assign({}, context, { groups: groups });
 }
 
 /**
@@ -82,4 +108,46 @@ async function isEnabled(flagKey, context) {
   }
 }
 
-module.exports = { setPostHogFlagsAdapter, isEnabled };
+/**
+ * Register (identify) a tenant as a PostHog Group Analytics group ahead of flag evaluation
+ * (bri-s1.4), so PostHog has a group record to target flags against (AC2). Wired through the
+ * same D37 injectable adapter as isEnabled() — no second, parallel adapter mechanism
+ * (Architecture Constraints).
+ *
+ * Inherits isEnabled()'s D37 stub-throw behaviour when no adapter has been wired at all — a
+ * misconfiguration must be visible immediately, same as isEnabled().
+ *
+ * Once an adapter is wired, this call must never crash the caller: first-time group-type
+ * registration (or any registration failure/delay) is caught and swallowed here — isEnabled()
+ * falls back to its own documented safe default independently of whether group identification
+ * succeeded (AC3).
+ *
+ * @param {string} tenantId
+ * @returns {Promise<void>}
+ */
+async function identifyTenantGroup(tenantId) {
+  const adapter = _requireAdapter(); // D37 — inherited stub-throw when unwired, same as isEnabled()
+  if (typeof adapter.groupIdentify !== 'function') return; // adapter doesn't support group identification — no-op
+
+  try {
+    await adapter.groupIdentify('tenant', tenantId);
+  } catch (err) {
+    // AC3 — first-time group-type registration (or any failure/delay) must never crash the
+    // caller; isEnabled() still falls back to its own safe default independently of this call.
+  }
+}
+
+/**
+ * Resolve the tenantId used for group targeting/identification exclusively from
+ * req.session.tenantId — never from req.body or req.query (Security NFR, ADR-025). A client
+ * cannot claim a different tenant via request body/query to influence which tenant's flag or
+ * group state is read.
+ *
+ * @param {object} req - an Express-style request object
+ * @returns {string|null}
+ */
+function resolveTenantIdFromRequest(req) {
+  return (req && req.session && req.session.tenantId) || null;
+}
+
+module.exports = { setPostHogFlagsAdapter, isEnabled, identifyTenantGroup, resolveTenantIdFromRequest };
