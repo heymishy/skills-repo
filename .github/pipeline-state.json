@@ -8517,7 +8517,7 @@
         {
           "slug": "epic-1-feature-flags",
           "name": "Incomplete work can ship to main safely, gated off, without a redeploy to toggle it",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "bri-s1.1",
@@ -8547,25 +8547,28 @@
             {
               "slug": "bri-s1.2",
               "name": "Separate staging and prod PostHog projects with isolated API keys",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-10T05:37:59.192Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 10,
-                "passing": 0,
+                "totalTests": 12,
+                "passing": 12,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s1.2-staging-prod-project-separation-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.2-dor-contract.md",
-              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+              "dorSignedOffAt": "2026-07-10T00:00:00Z",
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/446"
             },
             {
               "slug": "bri-s1.3",
