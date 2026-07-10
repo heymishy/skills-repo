@@ -8504,7 +8504,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-10T05:44:10.533Z",
+      "updatedAt": "2026-07-10T05:44:26.316Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8644,7 +8644,7 @@
         {
           "slug": "epic-2-staging-environment",
           "name": "A broken build cannot reach production",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "bri-s2.1",
@@ -8675,15 +8675,15 @@
             {
               "slug": "bri-s2.2",
               "name": "Provision a Neon staging branch for Postgres",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-10T05:43:50.745Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0,
+                "passing": 5,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s2.2-neon-staging-branch-test-plan.md"
               },
               "acTotal": 3,
@@ -8693,7 +8693,10 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.2-dor-contract.md",
-              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+              "dorSignedOffAt": "2026-07-10T00:00:00Z",
+              "acVerificationNote": "T1/T2/NFR2 (static regression guards) and IT1/IT2 (mocked cold-start timing for the new waitForDbReady helper) all pass -- 5/5. All 3 ACs' live-Neon proof (real schema comparison, real write isolation, real cold-start timing) remains the story's declared manual verification (Scenarios 1-3 in the AC verification script) -- no real Neon connection is available in this environment, per the discovery-stage decision. acVerified reflects only fully-closed ACs; 0/3 is honest given every AC requires a live Neon step this session did not perform.",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/447"
             },
             {
               "slug": "bri-s2.3",
