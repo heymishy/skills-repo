@@ -8504,7 +8504,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-10T21:01:46.293Z",
+      "updatedAt": "2026-07-10T21:04:44.016Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8573,9 +8573,9 @@
             {
               "slug": "bri-s1.3",
               "name": "Bootstrap flags server-side on session start to avoid UI flicker",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T21:01:46.293Z",
+              "updatedAt": "2026-07-10T21:04:44.016Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8592,7 +8592,8 @@
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.3-dor-contract.md",
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
-              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/452",
               "tasks": [
                 {
                   "id": "task-1",
