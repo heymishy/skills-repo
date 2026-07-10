@@ -1,0 +1,10 @@
+{
+  "stage": "discovery",
+  "scenarioName": "success",
+  "model": "claude-sonnet-4.6",
+  "response": "Understood — I'll run a full discovery now.\n\n---ARTEFACT-START---\n# Discovery: Mock Fixture Feature\n\n**Status:** Approved (mock fixture — bri-s3.1)\n**Feature slug:** mock-fixture-feature\n**Date:** 2026-07-10\n**Skill version:** /discovery\n\n## Problem statement\n\nThis is a canned discovery artefact used by the `@mocked` E2E test suite so journey specs can exercise the discovery stage deterministically.\n\n## MVP scope\n\n1. Canned discovery flow completes without a real LLM call.\n\n## Out of scope\n\nReal-world discovery content — this is a fixture, not production output.\n---ARTEFACT-END---\n---SLUG---\n2026-07-10-mock-fixture-feature",
+  "usage": {
+    "input_tokens": 420,
+    "output_tokens": 180
+  }
+}

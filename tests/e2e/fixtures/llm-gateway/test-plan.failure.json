@@ -1,0 +1,10 @@
+{
+  "stage": "test-plan",
+  "scenarioName": "failure",
+  "model": "claude-sonnet-4.6",
+  "response": "I can't write a test plan without at least one testable acceptance criterion. The story you've shared has no AC section — please add Given/When/Then acceptance criteria before I generate coverage.",
+  "usage": {
+    "input_tokens": 65,
+    "output_tokens": 38
+  }
+}

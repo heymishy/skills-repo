@@ -1,0 +1,10 @@
+{
+  "stage": "branch-setup",
+  "scenarioName": "success",
+  "model": "claude-sonnet-4.6",
+  "response": "Branch setup confirmed.\n\n---ARTEFACT-START---\n# Branch Setup: Mock Fixture Feature\n\n**Status:** Complete (mock fixture — bri-s3.1)\n**Feature slug:** mock-fixture-feature\n**Date:** 2026-07-10\n**Skill version:** /branch-setup\n\nWorktree created at `.worktrees/mock-fixture-feature`, branch `feature/mock-fixture-feature`, clean baseline test run confirmed.\n---ARTEFACT-END---\n---SLUG---\n2026-07-10-mock-fixture-feature",
+  "usage": {
+    "input_tokens": 260,
+    "output_tokens": 110
+  }
+}

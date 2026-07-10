@@ -1,0 +1,10 @@
+{
+  "stage": "branch-setup",
+  "scenarioName": "failure",
+  "model": "claude-sonnet-4.6",
+  "response": "Branch setup cannot proceed — the baseline `npm test` run on master is currently failing (3 pre-existing failures unrelated to this feature would be masked). Please confirm whether these are expected before I create the worktree, or fix them first.",
+  "usage": {
+    "input_tokens": 180,
+    "output_tokens": 60
+  }
+}

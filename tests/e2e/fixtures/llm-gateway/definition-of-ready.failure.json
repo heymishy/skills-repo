@@ -1,0 +1,10 @@
+{
+  "stage": "definition-of-ready",
+  "scenarioName": "failure",
+  "model": "claude-sonnet-4.6",
+  "response": "## ❌ BLOCKED\n\nHard block H3 fails: not every acceptance criterion has a mapped test in the test plan. AC2 and AC4 have no corresponding test-plan entries. Please close this gap before I can sign off.",
+  "usage": {
+    "input_tokens": 300,
+    "output_tokens": 95
+  }
+}

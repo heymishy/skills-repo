@@ -1,0 +1,10 @@
+{
+  "stage": "benefit-metric",
+  "scenarioName": "failure",
+  "model": "claude-sonnet-4.6",
+  "response": "I can't define a benefit metric without a baseline measurement. You haven't told me the current state for the outcome you're targeting — please provide today's baseline (or confirm it is genuinely absent, e.g. \"no current capability\") before I proceed.",
+  "usage": {
+    "input_tokens": 85,
+    "output_tokens": 44
+  }
+}

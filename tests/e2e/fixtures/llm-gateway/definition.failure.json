@@ -1,0 +1,10 @@
+{
+  "stage": "definition",
+  "scenarioName": "failure",
+  "model": "claude-sonnet-4.6",
+  "response": "I can't decompose this into stories yet — the discovery artefact this definition depends on hasn't been approved. Please complete and approve /discovery first, then re-run /definition.",
+  "usage": {
+    "input_tokens": 70,
+    "output_tokens": 40
+  }
+}

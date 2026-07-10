@@ -1,0 +1,10 @@
+{
+  "stage": "branch-complete",
+  "scenarioName": "success",
+  "model": "claude-sonnet-4.6",
+  "response": "All tests pass. Opening the draft PR now.\n\n---ARTEFACT-START---\n# Branch Complete: Mock Fixture Feature\n\n**Status:** Draft PR opened (mock fixture — bri-s3.1)\n**Feature slug:** mock-fixture-feature\n**Date:** 2026-07-10\n**Skill version:** /branch-complete\n\nDraft PR: https://github.com/example/example/pull/9999\n---ARTEFACT-END---\n---SLUG---\n2026-07-10-mock-fixture-feature",
+  "usage": {
+    "input_tokens": 300,
+    "output_tokens": 130
+  }
+}

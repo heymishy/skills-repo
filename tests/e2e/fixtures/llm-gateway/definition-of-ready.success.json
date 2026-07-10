@@ -1,0 +1,10 @@
+{
+  "stage": "definition-of-ready",
+  "scenarioName": "success",
+  "model": "claude-sonnet-4.6",
+  "response": "Producing the full Definition of Ready now.\n\n---ARTEFACT-START---\n# Definition of Ready: Mock Fixture Feature\n\n**Status:** READY (mock fixture — bri-s3.1)\n**Feature slug:** mock-fixture-feature\n**Date:** 2026-07-10\n**Skill version:** /definition-of-ready\n\n## READY / BLOCKED determination\n\n## ✅ READY\n\nAll hard blocks pass.\n---ARTEFACT-END---\n---SLUG---\n2026-07-10-mock-fixture-feature",
+  "usage": {
+    "input_tokens": 450,
+    "output_tokens": 220
+  }
+}
