@@ -14,6 +14,11 @@
 // the adapter setter, the logger) are injected via the `deps` parameter so the
 // function can be tested in isolation without a real network call or a real
 // posthog-node import (Integration tests, Test plan bri-s1.2).
+//
+// bri-s1.4 — D37 wiring task: the same startup wiring also supplies a real
+// groupIdentify() implementation on the adapter (client.groupIdentifyImmediate()),
+// so posthog-flags.js's identifyTenantGroup() has a real PostHog Group Analytics
+// call to invoke, distinct from the evaluateFlag() wiring above (bri-s1.2).
 
 /**
  * Resolve the PostHog API key for the given environment.
@@ -97,6 +102,13 @@ function initPostHogFlagsClient(envName, envVars, deps) {
       evaluateFlag: function(flagKey, context) {
         var distinctId = (context && context.tenantId) || 'anonymous';
         return client.isFeatureEnabled(flagKey, distinctId, { groups: context && context.groups });
+      },
+      // bri-s1.4 (D37 wiring) — registers a PostHog Group Analytics group for the given
+      // tenant. groupIdentifyImmediate() is used (rather than the fire-and-forget
+      // groupIdentify()) so callers (identifyTenantGroup() in posthog-flags.js) can await
+      // completion and catch a failed/delayed registration (AC3).
+      groupIdentify: function(groupType, groupKey) {
+        return client.groupIdentifyImmediate({ groupType: groupType, groupKey: groupKey });
       }
     });
   }
