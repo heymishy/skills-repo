@@ -125,17 +125,23 @@ function createInertMockAdapter() {
 }
 
 // ---------------------------------------------------------------------------
-// CLI entrypoint (AC4 / IT1 / NFR-Audit). Real Postgres wiring for the
-// production (non-mock) path is a SEPARATE task/commit from this handler
-// (D37 rule #3) -- see the implementation plan's Task 5. Until that wiring
-// lands, running without SEED_ADAPTER_MOCK=1 surfaces the D37 stub-throw
-// error from requireDbConnection() rather than silently no-opping.
+// CLI entrypoint (AC4 / IT1 / NFR-Audit). The real Postgres wiring in the
+// `else` branch below was added as a separate commit from the seed logic +
+// D37 setter (D37 rule #3) -- see this story's decisions.md / implementation
+// plan Task 5.
 // ---------------------------------------------------------------------------
 if (require.main === module) {
   (async () => {
     try {
       if (process.env.SEED_ADAPTER_MOCK === '1') {
         setDbConnection(createInertMockAdapter());
+      } else {
+        // eslint-disable-next-line global-require
+        const { Pool } = require('pg');
+        setDbConnection(new Pool({
+          connectionString: process.env.DATABASE_URL,
+          ssl: { rejectUnauthorized: false }
+        }));
       }
 
       const summary = await seed(requireDbConnection());
