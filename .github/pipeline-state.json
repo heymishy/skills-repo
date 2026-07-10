@@ -8596,7 +8596,7 @@
             {
               "slug": "bri-s1.4",
               "name": "Wire tenant-level flag targeting via PostHog group analytics",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "updatedAt": "2026-07-11T00:00:00Z",
               "reviewStatus": "passed",
@@ -8647,7 +8647,9 @@
                   "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.4-tenant-level-targeting-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/454"
             },
             {
               "slug": "bri-s1.5",
