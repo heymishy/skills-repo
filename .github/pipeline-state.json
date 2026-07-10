@@ -8504,7 +8504,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-10T10:48:12.835Z",
+      "updatedAt": "2026-07-10T20:52:50.202Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8573,9 +8573,9 @@
             {
               "slug": "bri-s1.3",
               "name": "Bootstrap flags server-side on session start to avoid UI flicker",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-10T20:52:50.202Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8591,7 +8591,39 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.3-dor-contract.md",
-              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+              "dorSignedOffAt": "2026-07-10T00:00:00Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "bootstrapFlags() -- resolve once per session, cache, never block",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.3-server-side-bootstrap-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "handleGetWizard gated render + handleGetWizardBootstrapped wrapper",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.3-server-side-bootstrap-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "NFR -- bootstrap timeout budget test",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.3-server-side-bootstrap-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "AC4 Playwright spec descope decision",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.3-server-side-bootstrap-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Test registration + decisions.md entries",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.3-server-side-bootstrap-plan.md"
+                }
+              ]
             },
             {
               "slug": "bri-s1.4",
