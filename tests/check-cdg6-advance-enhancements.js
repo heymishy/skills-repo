@@ -376,8 +376,9 @@ console.log('\n[cdg6] T13 — Governance: npm test chain includes cdg.6 test fil
     assert(
       typeof pkg.scripts === 'object' &&
       typeof pkg.scripts.test === 'string' &&
-      pkg.scripts.test.includes('node tests/check-cdg6-advance-enhancements.js'),
-      'T13b: package.json test script includes check-cdg6-advance-enhancements.js'
+      (pkg.scripts.test.includes('node tests/check-cdg6-advance-enhancements.js') ||
+       pkg.scripts.test.includes('run-all-tests.js')),
+      'T13b: package.json test script includes check-cdg6-advance-enhancements.js (directly, or via the pcr-s1 dynamic discovery runner)'
     );
   } else {
     failed++;
