@@ -8504,7 +8504,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-10T00:00:00Z",
+      "updatedAt": "2026-07-10T01:10:00Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8801,7 +8801,7 @@
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 10,
+                "totalTests": 20,
                 "passing": 20,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s3.1-mock-llm-gateway-test-plan.md"
               },
