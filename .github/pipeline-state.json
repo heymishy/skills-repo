@@ -8522,7 +8522,7 @@
             {
               "slug": "bri-s1.1",
               "name": "Build the isEnabled() flag helper shared by API and UI",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "updatedAt": "2026-07-10T00:00:00Z",
               "reviewStatus": "passed",
@@ -8530,17 +8530,19 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
-                "passing": 0,
+                "passing": 7,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s1.1-isenabled-helper-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.1-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.1-dor-contract.md",
-              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+              "dorSignedOffAt": "2026-07-10T00:00:00Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/444"
             },
             {
               "slug": "bri-s1.2",
