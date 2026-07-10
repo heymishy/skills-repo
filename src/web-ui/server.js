@@ -622,6 +622,7 @@ if (process.env.NODE_ENV === 'test') {
     accessToken: 'e2e-test-access-token',
     userId:      9999,
     login:       'e2e-tester',
+    tenantId:    'e2e-tester', // bri-s3.5: tenant-scoped billing/plan-state routes need this
   });
 
   // Fixture fetcher: serves <type>-sample.md for the canonical test slug;
@@ -694,6 +695,26 @@ if (process.env.NODE_ENV === 'test') {
   // The check-lab-s3.4-stripe-webhook.js unit tests inject their own mock directly via setWebhookDbAdapter().
   setWebhookDbAdapter({ query: async function() { return { rows: [], rowCount: 1 }; } });
 
+  // bri-s3.5: fake Stripe adapter in test mode so the @mocked/@billing E2E spec can
+  // drive POST /webhook/stripe with synthetic event payloads. No real Stripe secret
+  // is ever available in this variant, so a real signature cannot be constructed —
+  // constructEvent simply parses the raw request body as the event object, mirroring
+  // the same synthetic-event pattern check-lab-s3.4-stripe-webhook.js's unit tests
+  // already use via monkeypatched adapters. checkout/portal session creation still
+  // throw — the E2E spec never calls /billing/checkout, so this only guards against
+  // an accidental real-looking call slipping through unnoticed (AC5).
+  setStripeAdapter({
+    webhooks: {
+      constructEvent: function(rawBody) { return JSON.parse(rawBody.toString()); }
+    },
+    checkout: { sessions: { create: async function() {
+      throw new Error('Real Stripe Checkout must not be invoked in NODE_ENV=test');
+    } } },
+    billingPortal: { sessions: { create: async function() {
+      throw new Error('Real Stripe Billing Portal must not be invoked in NODE_ENV=test');
+    } } }
+  });
+
   // lab-s2.3: wire user-flags adapter in test mode — returns firstLogin: false (returning user) by default.
   // Tests override this per-test via monkeypatching.
   setUserFlagsAdapter({
@@ -728,11 +749,18 @@ async function router(req, res) {
   // (handles cases where a prior test consumed/mutated it, e.g. via logout).
   if (pathname === '/test/session' && req.method === 'GET' && process.env.NODE_ENV === 'test') {
     const { seedTestSession } = require('./middleware/session');
-    const E2E_SESSION_ID = 'e2e' + '0'.repeat(60) + '1';
-    seedTestSession(E2E_SESSION_ID, {
+    // bri-s3.5: optional ?sessionId=&tenantId= overrides let a spec seed an isolated
+    // session (its own cookie, its own tenant) instead of the shared default — used
+    // by the billing journey spec's usage-gate scenario so a per-tenant journey cap
+    // doesn't collide with other spec files that share the default e2e-tester tenant.
+    // Callers that omit both query params get the original, unchanged default session.
+    const sessionId = (req.query && req.query.sessionId) || ('e2e' + '0'.repeat(60) + '1');
+    const tenantId  = (req.query && req.query.tenantId) || 'e2e-tester';
+    seedTestSession(sessionId, {
       accessToken: 'e2e-test-access-token',
       userId:      9999,
       login:       'e2e-tester',
+      tenantId:    tenantId,
     });
     // Return Set-Cookie so Playwright's APIRequestContext (page.request) stores
     // the session cookie in its own cookie jar. Without this, page.request.post()
@@ -741,9 +769,9 @@ async function router(req, res) {
     // No Secure flag — we run on HTTP in test mode; SameSite=Lax allows API calls.
     res.writeHead(200, {
       'Content-Type': 'application/json',
-      'Set-Cookie': `session_id=${E2E_SESSION_ID}; HttpOnly; SameSite=Lax; Path=/`,
+      'Set-Cookie': `session_id=${sessionId}; HttpOnly; SameSite=Lax; Path=/`,
     });
-    res.end(JSON.stringify({ sessionId: E2E_SESSION_ID, login: 'e2e-tester' }));
+    res.end(JSON.stringify({ sessionId: sessionId, login: 'e2e-tester' }));
     return;
   }
 
@@ -805,6 +833,7 @@ async function router(req, res) {
       accessToken: 'e2e-test-access-token',
       userId:      9999,
       login:       'e2e-tester',
+      tenantId:    'e2e-tester', // bri-s3.5: tenant-scoped billing/plan-state routes need this
     });
     const _uid = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
     const _defSessionId = 'def-e2e-' + _uid;
