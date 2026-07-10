@@ -8504,7 +8504,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-10T05:44:26.316Z",
+      "updatedAt": "2026-07-10T10:48:12.835Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8822,7 +8822,7 @@
             {
               "slug": "bri-s3.2",
               "name": "Signup to onboarding to first feature journey spec",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "updatedAt": "2026-07-10T00:00:00Z",
               "reviewStatus": "passed",
@@ -8830,14 +8830,16 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
-                "passing": 0,
+                "passing": 9,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s3.2-signup-onboarding-journey-test-plan.md"
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/451"
             },
             {
               "slug": "bri-s3.3",

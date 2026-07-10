@@ -736,6 +736,84 @@ if (process.env.NODE_ENV === 'test') {
     getFirstLoginFlag:   async function() { return false; },
     clearFirstLoginFlag: async function() {}
   });
+
+  // bri-s3.2: wire the real bcrypt password adapter and the real (non-streaming)
+  // skill-turn executor even in NODE_ENV=test. Both blocks below normally live
+  // behind the `WIRE_SKILL_ADAPTERS=true` gate (see the big conditional near
+  // the top of this file) because most of what that gate wires needs a real
+  // DB/Stripe/GitHub token. These two do not: bcrypt is pure crypto with no
+  // external dependency, and the real skillTurnExecutor's `meta.stage` routing
+  // is exactly what lets it defer to S3.1's mock LLM gateway (isMockGatewayEnabled()
+  // is already true in NODE_ENV=test) instead of a real provider — so wiring it
+  // here does not risk a real network call. This lets the @mocked signup ->
+  // onboarding -> first-feature journey spec (bri-s3.2) exercise the REAL
+  // signup and chat-turn handlers without needing WIRE_SKILL_ADAPTERS at all.
+  setPasswordAdapter(require('bcrypt'));
+  {
+    const { setSkillTurnExecutorAdapter: _setRealTurnExecutor } = require('./routes/skills');
+    const { skillTurnExecutor: _realTurnExecutorForTest } = require('../modules/skill-turn-executor');
+    _setRealTurnExecutor(_realTurnExecutorForTest);
+  }
+  // bri-s3.2: bri-s3.1 built the mock LLM gateway as its own D37 adapter
+  // (mock-llm-gateway.js's _mockGatewayClient) but nothing in server.js ever
+  // called wireDefaultMockGatewayClient() — so isMockGatewayEnabled() being
+  // true was not sufficient on its own; getMockResponse() still threw
+  // "Adapter not wired: mockGatewayClient" for every chat turn. Wiring the
+  // built-in fixture-file-backed client here (test mode only) is what
+  // actually makes the @mocked gateway usable end-to-end.
+  {
+    const _mockLlmGatewayForTest = require('./modules/mock-llm-gateway');
+    if (_mockLlmGatewayForTest.isMockGatewayEnabled()) {
+      _mockLlmGatewayForTest.wireDefaultMockGatewayClient();
+    }
+  }
+  // bri-s3.2: wire the real generateProductDraft adapter too — it already
+  // no-ops (returns a blank draft, zero network calls) when ANTHROPIC_API_KEY
+  // is unset, which it deliberately is not set to in the shared E2E webServer
+  // env. Needed so POST /products/new (the "Generate context files" step)
+  // does not throw "Adapter not wired" for the bri-s3.2 product-creation spec.
+  setGenerateProductDraft(async function(fields) {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return { mission: '', roadmap: '', techStack: '', constraints: '', architectureGuardrails: '' };
+    }
+    // Real-key path intentionally left unimplemented here — this test-mode
+    // wiring only exists to satisfy the D37 "must be wired" adapter contract
+    // when ANTHROPIC_API_KEY is absent, which is always true in E2E CI.
+    return { mission: '', roadmap: '', techStack: '', constraints: '', architectureGuardrails: '' };
+  });
+
+  // bri-s3.2: in-memory fake users/products DB for NODE_ENV=test when no real
+  // DATABASE_URL is configured. Lets the REAL email/password signup
+  // (routes/auth-email.js) and REAL product-creation/dashboard handlers
+  // (routes/products.js) run end-to-end in the @mocked Playwright suite
+  // without needing a live Postgres instance. No-op when DATABASE_URL is set
+  // (that branch already wires the real Pool above and takes precedence).
+  if (!process.env.DATABASE_URL) {
+    const { createFakeTestDb } = require('./adapters/fake-test-db');
+    const _fakeTestDb = createFakeTestDb();
+    setUserDb(_fakeTestDb);
+    _pshPool = _fakeTestDb;
+    console.log('[bri-s3.2] fake in-memory users/products DB wired (NODE_ENV=test, no DATABASE_URL)');
+  }
+
+  // bri-s3.2 AC5: real-LLM-call counter. Wraps https.request so an @mocked E2E
+  // spec can assert zero real calls were made to the Anthropic or Copilot
+  // Chat Completions APIs during the whole spec file's run, via
+  // GET /test/real-llm-call-count. Only counts calls whose hostname matches
+  // a real LLM provider — never affects the call itself (always forwards to
+  // the original https.request).
+  {
+    let _realLlmCallCount = 0;
+    const _origHttpsRequest = https.request;
+    https.request = function(options) {
+      const hostname = (options && (options.hostname || options.host)) || '';
+      if (hostname === 'api.anthropic.com' || String(hostname).indexOf('githubcopilot.com') !== -1) {
+        _realLlmCallCount++;
+      }
+      return _origHttpsRequest.apply(https, arguments);
+    };
+    global.__BRI_S3_2_REAL_LLM_CALL_COUNT__ = function() { return _realLlmCallCount; };
+  }
 }
 
 /** Parse query parameters from a URL into a plain object. */
@@ -908,6 +986,33 @@ async function router(req, res) {
 
   // Attach session before routing
   sessionMiddleware(req, res);
+
+  // bri-s3.2 AC1: test-only onboarding-gate bypass (NODE_ENV=test only).
+  // The real plan-selection step at /welcome requires a live Stripe Checkout
+  // round-trip — out of scope for this journey-testing spec (owned by
+  // lab-s3.2's billing story) and unsafe to exercise for real in CI. This
+  // lets the @mocked signup->dashboard spec simulate "plan selected" for the
+  // just-created session without touching Stripe. Mirrors the existing
+  // /test/session and /test/seed-definition-session test-infrastructure
+  // pattern above — gated identically, never reachable outside NODE_ENV=test.
+  if (pathname === '/test/complete-onboarding' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    if (req.session) { req.session.firstLogin = false; }
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true }));
+    return;
+  }
+
+  // bri-s3.2 AC5: exposes the real-LLM-call counter (wired above) so an
+  // @mocked E2E spec can assert zero real calls were made to the Anthropic or
+  // Copilot Chat Completions APIs across its whole run.
+  if (pathname === '/test/real-llm-call-count' && req.method === 'GET' && process.env.NODE_ENV === 'test') {
+    const count = typeof global.__BRI_S3_2_REAL_LLM_CALL_COUNT__ === 'function'
+      ? global.__BRI_S3_2_REAL_LLM_CALL_COUNT__()
+      : 0;
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ count: count }));
+    return;
+  }
 
   if (pathname === '/auth/github' && req.method === 'GET') {
     await handleAuthGithub(req, res);
