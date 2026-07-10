@@ -8530,7 +8530,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s1.1-isenabled-helper-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -8552,7 +8553,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s1.2-staging-prod-project-separation-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -8574,7 +8576,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s1.3-server-side-bootstrap-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -8596,7 +8599,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s1.4-tenant-level-targeting-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -8618,7 +8622,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s1.5-initial-flags-wired-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -8647,7 +8652,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
-                "passing": 8
+                "passing": 8,
+                "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s2.1-fly-staging-app-test-plan.md"
               },
               "acTotal": 3,
               "acVerified": 1,
@@ -8672,7 +8678,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s2.2-neon-staging-branch-test-plan.md"
               },
               "acTotal": 3,
               "acVerified": 0,
@@ -8694,7 +8701,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s2.3-upstash-staging-instance-test-plan.md"
               },
               "acTotal": 3,
               "acVerified": 0,
@@ -8716,7 +8724,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s2.4-anonymized-seed-script-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -8738,7 +8747,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 11,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s2.5-ci-pipeline-staging-deploy-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -8760,7 +8770,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s2.6-smoke-test-promote-gate-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -8789,7 +8800,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s3.1-mock-llm-gateway-test-plan.md"
               },
               "acTotal": 5,
               "acVerified": 0,
@@ -8808,7 +8820,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s3.2-signup-onboarding-journey-test-plan.md"
               },
               "acTotal": 5,
               "acVerified": 0,
@@ -8827,7 +8840,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s3.3-multi-user-tenant-journey-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -8847,7 +8861,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s3.4-cross-tenant-isolation-journey-test-plan.md"
               },
               "acTotal": 5,
               "acVerified": 0,
@@ -8866,7 +8881,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 11,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s3.5-billing-journey-test-plan.md"
               },
               "acTotal": 5,
               "acVerified": 0,
@@ -8885,7 +8901,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 11,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s3.6-auth-journey-test-plan.md"
               },
               "acTotal": 5,
               "acVerified": 0,
