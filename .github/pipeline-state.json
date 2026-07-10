@@ -8504,7 +8504,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-10T01:47:40.931Z",
+      "updatedAt": "2026-07-10T05:33:26.360Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8695,15 +8695,15 @@
             {
               "slug": "bri-s2.3",
               "name": "Provision an Upstash staging instance for Redis",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-07-10T01:47:17Z",
+              "updatedAt": "2026-07-10T05:33:04Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0,
+                "passing": 5,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s2.3-upstash-staging-instance-test-plan.md"
               },
               "acTotal": 3,
@@ -8718,13 +8718,13 @@
                 {
                   "id": "task-1",
                   "name": "T1/T2 -- static regression guards (env-var-only credentials, no hardcoded literals)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.3-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "T3 -- module-reload credential-bleed guard + register in npm test chain",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.3-plan.md"
                 }
               ]
