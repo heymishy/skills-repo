@@ -8789,7 +8789,7 @@
         {
           "slug": "epic-3-test-suite",
           "name": "Risk-critical journeys have deterministic, tagged coverage before beta",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "bri-s3.1",
@@ -8877,22 +8877,24 @@
             {
               "slug": "bri-s3.5",
               "name": "Billing journey spec",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-10T01:10:00Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 11,
-                "passing": 0,
+                "passing": 11,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s3.5-billing-journey-test-plan.md"
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/449"
             },
             {
               "slug": "bri-s3.6",
