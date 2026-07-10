@@ -8573,7 +8573,7 @@
             {
               "slug": "bri-s1.3",
               "name": "Bootstrap flags server-side on session start to avoid UI flicker",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "updatedAt": "2026-07-10T00:00:00Z",
               "reviewStatus": "passed",
