@@ -8504,7 +8504,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-10T05:50:27.789Z",
+      "updatedAt": "2026-07-10T05:54:09.977Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8695,9 +8695,9 @@
             {
               "slug": "bri-s2.3",
               "name": "Provision an Upstash staging instance for Redis",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T05:50:11Z",
+              "updatedAt": "2026-07-10T05:53:54Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8728,7 +8728,9 @@
                   "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.3-plan.md"
                 }
               ],
-              "acVerificationNote": "Automated regression guards (5/5 passing: T1/T2 env-var-only credential derivation with no hardcoded fallback; T3 module-reload no-credential-bleed guard) fully cover the in-repo, static/wiring portion this story's code touches. All 3 ACs as literally worded describe live-infrastructure behaviour (a real wuce-staging instance connecting to a real, distinct Upstash Redis database; a real cross-instance write-isolation check; real monthly usage against the free-tier ceiling) that cannot be confirmed without live Upstash provisioning -- explicitly out of scope for this coding session per the story's own test plan Coverage gaps (AC2/AC3 flagged External-dependency) and the task's scope note. All 3 remain manual verification steps per the AC verification script (Scenarios 1-3), with AC3's dashboard check already scheduled ~1 week after CI starts against wuce-staging per the DoR operator follow-up note."
+              "acVerificationNote": "Automated regression guards (5/5 passing: T1/T2 env-var-only credential derivation with no hardcoded fallback; T3 module-reload no-credential-bleed guard) fully cover the in-repo, static/wiring portion this story's code touches. All 3 ACs as literally worded describe live-infrastructure behaviour (a real wuce-staging instance connecting to a real, distinct Upstash Redis database; a real cross-instance write-isolation check; real monthly usage against the free-tier ceiling) that cannot be confirmed without live Upstash provisioning -- explicitly out of scope for this coding session per the story's own test plan Coverage gaps (AC2/AC3 flagged External-dependency) and the task's scope note. All 3 remain manual verification steps per the AC verification script (Scenarios 1-3), with AC3's dashboard check already scheduled ~1 week after CI starts against wuce-staging per the DoR operator follow-up note.",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/448"
             },
             {
               "slug": "bri-s2.4",
