@@ -1,0 +1,10 @@
+{
+  "stage": "review",
+  "scenarioName": "success",
+  "model": "claude-sonnet-4.6",
+  "response": "Understood — running the review now.\n\n---ARTEFACT-START---\n# Review: Mock Fixture Feature\n\n**Status:** PASS (mock fixture — bri-s3.2)\n**Feature slug:** mock-fixture-feature\n**Date:** 2026-07-10\n**Skill version:** /review\n\n## Findings\n\nNone. This is a canned review artefact used by the `@mocked` E2E journey suite (bri-s3.2) so the per-story review stage can be driven deterministically.\n\n0 HIGH findings.\n---ARTEFACT-END---\n---SLUG---\n2026-07-10-mock-fixture-feature",
+  "usage": {
+    "input_tokens": 410,
+    "output_tokens": 160
+  }
+}

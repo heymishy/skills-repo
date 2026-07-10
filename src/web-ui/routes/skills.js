@@ -1847,7 +1847,12 @@ function registerHtmlSession(sessionId, sessionPath, skillName, opts) {
     assumptionCardsEnabled: true,
     featureSlug:            options.featureSlug || null,
     precomputedStep1:       _precomputedStep1,
-    model:                  resolvedModel
+    model:                  resolvedModel,
+    // bri-s3.2: optional per-session mock-LLM-gateway scenario override (e.g.
+    // 'failure' for a deliberately incomplete DoR run). Only ever set by
+    // journey.js when mockLlmGateway.isMockGatewayEnabled() is true — has no
+    // effect in production. Defaults to 'success' in htmlSubmitTurn below.
+    mockScenarioName:       options.mockScenarioName || null
   });
 }
 
@@ -1916,11 +1921,20 @@ async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token) {
   var response = '';
   var _turnUsageNS = null;
   try {
+    // bri-s3.2: route this turn through S3.1's mock LLM gateway when it is
+    // enabled (NODE_ENV=test or MOCK_LLM_GATEWAY=true). meta.stage tells the
+    // executor which fixture family to use; meta.scenarioName lets a session
+    // opt into a non-success fixture (e.g. AC4's deliberately incomplete DoR
+    // run) via session.mockScenarioName, set only by journey.js in test mode.
+    // When the gateway is disabled this is a no-op — the executor ignores
+    // meta entirely and calls the real provider exactly as before.
+    var _turnMeta = { stage: skillName, scenarioName: session.mockScenarioName || 'success' };
     var _execResult = await _skillTurnExecutor(
       session.systemPrompt,
       historySnapshot,
       userContent,
-      token || ''
+      token || '',
+      _turnMeta
     );
     // Handle both string (legacy/copilot) and { text, usage } (anthropic) shapes
     if (typeof _execResult === 'string') {

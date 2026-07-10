@@ -134,7 +134,41 @@ function _isTeamPlan(session) {
   return !session || session.plan !== 'solo';
 }
 
+/**
+ * bri-s3.2: read + parse the request body, short-circuiting when req.body is
+ * already populated (existing unit tests construct req objects with body
+ * pre-set, Express-mock style). Real raw-http requests (production, E2E)
+ * have no body-parsing middleware ahead of these routes, so without this the
+ * handlers below throw on `req.body.name` — a pre-existing gap this story's
+ * E2E spec surfaced while driving the real product-creation flow.
+ * Supports JSON and application/x-www-form-urlencoded, matching the pattern
+ * already used by routes/journey.js's _readFormBody and routes/auth-email.js's
+ * _readBody.
+ * @param {object} req
+ * @returns {Promise<object>}
+ */
+function _readBody(req) {
+  if (req.body !== undefined) return Promise.resolve(req.body);
+  return new Promise(function(resolve) {
+    var raw = '';
+    req.on('data', function(c) { raw += c; });
+    req.on('end', function() {
+      var ct = (req.headers && req.headers['content-type']) || '';
+      if (ct.indexOf('application/json') !== -1) {
+        try { resolve(JSON.parse(raw)); } catch (_) { resolve({}); }
+      } else {
+        var params = new URLSearchParams(raw);
+        var obj = {};
+        params.forEach(function(v, k) { obj[k] = v; });
+        resolve(obj);
+      }
+    });
+    req.on('error', function() { resolve({}); });
+  });
+}
+
 async function handlePostProductNew(req, res, _next, pool, posthog) {
+  req.body = await _readBody(req);
   var draft = await _productDraft.generateProductDraft({
     name: (req.body && req.body.name) || '',
     description: (req.body && req.body.description) || ''
@@ -149,6 +183,7 @@ async function handlePostProductNew(req, res, _next, pool, posthog) {
 }
 
 async function handlePostProductConfirm(req, res, _next, pool, posthog) {
+  req.body = await _readBody(req);
   var _pool = pool;
   var _ph = posthog || _posthog;
   var tenantId = req.session && req.session.tenantId;
