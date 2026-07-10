@@ -8504,7 +8504,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-10T20:52:50.202Z",
+      "updatedAt": "2026-07-10T21:01:46.293Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8573,54 +8573,55 @@
             {
               "slug": "bri-s1.3",
               "name": "Bootstrap flags server-side on session start to avoid UI flicker",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-07-10T20:52:50.202Z",
+              "updatedAt": "2026-07-10T21:01:46.293Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 8,
-                "passing": 0,
+                "totalTests": 10,
+                "passing": 10,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s1.3-server-side-bootstrap-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": true,
+              "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.3-dor-contract.md",
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
+              "verifyStatus": "passed",
               "tasks": [
                 {
                   "id": "task-1",
                   "name": "bootstrapFlags() -- resolve once per session, cache, never block",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.3-server-side-bootstrap-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "handleGetWizard gated render + handleGetWizardBootstrapped wrapper",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.3-server-side-bootstrap-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "NFR -- bootstrap timeout budget test",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.3-server-side-bootstrap-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "AC4 Playwright spec descope decision",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.3-server-side-bootstrap-plan.md"
                 },
                 {
                   "id": "task-5",
                   "name": "Test registration + decisions.md entries",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.3-server-side-bootstrap-plan.md"
                 }
               ]
