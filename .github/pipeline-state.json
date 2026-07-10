@@ -8504,7 +8504,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-10T10:48:12.835Z",
+      "updatedAt": "2026-07-11T00:00:00Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8596,25 +8596,58 @@
             {
               "slug": "bri-s1.4",
               "name": "Wire tenant-level flag targeting via PostHog group analytics",
-              "stage": "definition-of-ready",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-11T00:00:00Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 8,
-                "passing": 0,
+                "totalTests": 11,
+                "passing": 11,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s1.4-tenant-level-targeting-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.4-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.4-dor-contract.md",
-              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+              "dorSignedOffAt": "2026-07-10T00:00:00Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Derive groups.tenant from context.tenantId on isEnabled() (AC1, AC2, AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.4-tenant-level-targeting-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "identifyTenantGroup() -- group registration that never crashes the caller (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.4-tenant-level-targeting-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "resolveTenantIdFromRequest() -- session-only tenantId sourcing (Security NFR)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.4-tenant-level-targeting-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Performance NFR test for identifyTenantGroup() overhead budget",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.4-tenant-level-targeting-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "D37 wiring -- real groupIdentify() in posthog-config.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.4-tenant-level-targeting-plan.md"
+                }
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "bri-s1.5",
