@@ -47,6 +47,8 @@ const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _han
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
 const { setStandardsAdapter }                                        = require('./standards-adapter');             // psh-s10
+const { setPostHogFlagsAdapter }                                     = require('./modules/posthog-flags');          // bri-s1.1
+const { initPostHogFlagsClient }                                     = require('./modules/posthog-config');         // bri-s1.2
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -72,6 +74,19 @@ console.log('[auth] provider registry initialised');
 if (process.env.GOOGLE_CLIENT_ID) {
   setGoogleUserInfoAdapter(_realFetchGoogleUserInfo);
   console.log('[auth] google oauth registered');
+}
+
+// bri-s1.2 — wire the real PostHog flags client into the bri-s1.1 adapter contract,
+// using the env-appropriate project key (staging vs production). Never active under
+// NODE_ENV=test (consistent with the other adapter-wiring blocks in this file); a
+// missing/misconfigured key logs a clear, key-value-free error and does not crash
+// the process (AC4) — it never falls back to the other environment's key.
+if (process.env.NODE_ENV !== 'test') {
+  const _postHogEnvName = process.env.NODE_ENV === 'staging' ? 'staging' : 'production';
+  initPostHogFlagsClient(_postHogEnvName, process.env, {
+    setPostHogFlagsAdapter: setPostHogFlagsAdapter,
+    logger: console
+  });
 }
 
 // Wire skill list + session creation — active in production AND when
