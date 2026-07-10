@@ -142,6 +142,13 @@
 **Made by:** Claude (agent), via inner-loop implementation, 2026-07-10
 **Revisit trigger:** If a future story needs the `design`/`review` stages' fixtures to cover failure scenarios too, or if `WIRE_SKILL_ADAPTERS` is ever formalised via a `playwright.local.config.js`, reconcile this test-mode wiring against that mechanism instead of leaving both in place.
 ---
+**2026-07-11 | RISK-ACCEPT | verify-completion (bri-s2.4)**
+**Decision:** Accept a newly-discovered, pre-existing cross-story regression in `tests/check-bri-s2.2-neon-staging-branch.js`'s T1 ("server.js has no environment-conditional schema-forking branch") rather than fixing it as part of bri-s2.4 (Build an idempotent anonymized seed script for staging).
+**Alternatives considered:** Fix T1's regex or the `server.js` line it flags before finishing bri-s2.4 (rejected — `server.js` is untouched by this story's diff; the collision is between two already-merged, unrelated stories and fixing it is out of this story's scope).
+**Rationale:** Running `node tests/check-bri-s2.2-neon-staging-branch.js` directly now reports 4 passed, 1 failed (was 5/5 at bri-s2.2's own merge, per the RISK-ACCEPT entry above dated 2026-07-10). Root cause confirmed via `git diff origin/master -- src/web-ui/server.js`, which shows zero changes from this story's branch — the regression predates bri-s2.4 entirely. T1's regex (`NODE_ENV\s*===?\s*['"]staging['"]|STAGING_SCHEMA|...`) was written to guard against an environment-conditional *schema fork*, but bri-s1.2 (Separate staging and prod PostHog projects, merged after bri-s2.2) added an unrelated, legitimate `process.env.NODE_ENV === 'staging'` check in `server.js` to select the PostHog project key — a false-positive collision between two independently-scoped stories' string patterns, not an actual schema fork. bri-s2.4's own test file (`tests/check-bri-s2.4-anonymized-seed-script.js`) is unaffected — 9/9 passing.
+**Made by:** Coding agent (bri-s2.4 inner loop), 2026-07-11, per `skills/verify-completion/SKILL.md` Step 1 (fresh test run surfaced this while checking for regressions in adjacent bri-s2.x stories).
+**Revisit trigger:** When bri-s2.2's T1 regex is next touched, tighten it to specifically match a schema-forking pattern (e.g. requiring a nearby `CREATE TABLE`/`require(...schema...)` token) rather than any bare `NODE_ENV === 'staging'` string, so it does not collide with legitimate non-schema staging/prod branching added by later stories.
+---
 
 ## Architecture Decision Records
 
