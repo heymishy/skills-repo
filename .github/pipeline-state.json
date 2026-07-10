@@ -8504,7 +8504,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-10T01:43:30.899Z",
+      "updatedAt": "2026-07-10T06:00:23.032Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8897,48 +8897,23 @@
             {
               "slug": "bri-s3.6",
               "name": "Auth journey spec",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-07-10T01:43:30.899Z",
+              "updatedAt": "2026-07-10T06:00:23.032Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 11,
-                "passing": 0,
+                "totalTests": 22,
+                "passing": 22,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s3.6-auth-journey-test-plan.md"
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
-              "tasks": [
-                {
-                  "id": "task-1",
-                  "name": "Unit test: rotateSessionId called once per provider login",
-                  "tddState": "not-started",
-                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s3.6-auth-journey-plan.md"
-                },
-                {
-                  "id": "task-2",
-                  "name": "Integration tests: AC1/AC2 redirect split, AC4 token-leak scan, AC5 no-real-oauth-call",
-                  "tddState": "not-started",
-                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s3.6-auth-journey-plan.md"
-                },
-                {
-                  "id": "task-3",
-                  "name": "E2E Playwright spec (@mocked) covering AC1-AC5",
-                  "tddState": "not-started",
-                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s3.6-auth-journey-plan.md"
-                },
-                {
-                  "id": "task-4",
-                  "name": "Register check file in package.json test chain",
-                  "tddState": "not-started",
-                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s3.6-auth-journey-plan.md"
-                }
-              ]
+              "verifyStatus": "passed"
             }
           ]
         }
