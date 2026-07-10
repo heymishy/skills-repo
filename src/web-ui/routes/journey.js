@@ -82,6 +82,25 @@ function setRepoRoot(root) { _repoRoot = root; _repoRootAdapter.setRepoRoot(root
 var _journeyDisk  = require('../../modules/journey-disk');
 var _tenantPlan   = require('../modules/tenant-plan');
 var _posthog      = require('../modules/posthog-server');
+var _mockLlmGateway = require('../modules/mock-llm-gateway'); // bri-s3.2
+
+/**
+ * bri-s3.2: resolve the mock-gateway scenarioName for a newly created stage
+ * session. Returns 'failure' only when this journey was created with an
+ * explicit e2eForceFailStage matching stageName AND the mock gateway is
+ * active (NODE_ENV=test or MOCK_LLM_GATEWAY=true) — never affects production,
+ * and never affects any other stage in the same journey (AC4 requires the
+ * failure to be isolated to one deliberately incomplete stage). Returns
+ * undefined otherwise, which htmlSubmitTurn treats as its 'success' default.
+ * @param {object} journey
+ * @param {string} stageName
+ * @returns {string|undefined}
+ */
+function _mockScenarioForStage(journey, stageName) {
+  if (!_mockLlmGateway.isMockGatewayEnabled()) return undefined;
+  if (journey && journey.e2eForceFailStage === stageName) return 'failure';
+  return undefined;
+}
 
 var STAGE_META = [
   { id: 'ideate',              num: 1,    label: 'Idea',       optional: true },
@@ -312,6 +331,14 @@ async function handlePostJourney(req, res) {
     var featureName = (body.featureName || '').trim();
     var startSkill  = body.startSkill === 'ideate' ? 'ideate' : 'discovery';
     var profileName = (body.profileName || '').trim() || _getActiveProfile(getRepoRoot(req));
+    // bri-s3.2 AC4: optional test-only override so an E2E spec can force one
+    // named stage in this journey to resolve via the mock gateway's 'failure'
+    // fixture instead of 'success'. Only takes effect when the mock gateway
+    // is enabled (NODE_ENV=test or MOCK_LLM_GATEWAY=true) — ignored otherwise,
+    // so this field has zero effect in production.
+    var e2eForceFailStage = (_mockLlmGateway.isMockGatewayEnabled() && body.e2eForceFailStage)
+      ? String(body.e2eForceFailStage).trim()
+      : null;
 
     if (!featureName) {
       res.writeHead(303, { Location: '/journey?new=1#jh-new' });
@@ -348,7 +375,8 @@ async function handlePostJourney(req, res) {
     var journeyId = created.journeyId;
     _journeyStore.setJourneyFields(journeyId, {
       ownerId:  req.session.login    || null,
-      tenantId: req.session.tenantId || null
+      tenantId: req.session.tenantId || null,
+      e2eForceFailStage: e2eForceFailStage
     });
     _posthog.capture(req.session.login || journeyId, 'journey_created', {
       featureSlug:    featureSlug,
@@ -376,7 +404,11 @@ async function handlePostJourney(req, res) {
     var sid         = crypto.randomUUID();
     var sessionPath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', sid);
 
-    getRegisterHtmlSession()(sid, sessionPath, startSkill, { productProfile: profileName, featureSlug: featureSlug });
+    getRegisterHtmlSession()(sid, sessionPath, startSkill, {
+      productProfile: profileName,
+      featureSlug:    featureSlug,
+      mockScenarioName: _mockScenarioForStage({ e2eForceFailStage: e2eForceFailStage }, startSkill)
+    });
     getLinkSessionToJourney()(sid, journeyId);
     if (_journeyStore.setActiveSession) {
       _journeyStore.setActiveSession(journeyId, sid, startSkill);
@@ -1883,7 +1915,7 @@ async function handlePostGateConfirm(req, res) {
       // More stories: create review session for next story (review → test-plan → DoR per story)
       newSid = crypto.randomUUID();
       newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-review.md');
-      getRegisterHtmlSession()(newSid, newSessionPath, 'review', { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug });
+      getRegisterHtmlSession()(newSid, newSessionPath, 'review', { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug, mockScenarioName: _mockScenarioForStage(journey, 'review') });
       getLinkSessionToJourney()(newSid, journeyId);
       if (_journeyStore.setActiveSession) {
         _journeyStore.setActiveSession(journeyId, newSid, 'review');
@@ -1908,7 +1940,7 @@ async function handlePostGateConfirm(req, res) {
     perStoryNextStage = PER_STORY_SEQ[perStoryIdx + 1];
     newSid = crypto.randomUUID();
     newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-' + perStoryNextStage + '.md');
-    getRegisterHtmlSession()(newSid, newSessionPath, perStoryNextStage, { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug });
+    getRegisterHtmlSession()(newSid, newSessionPath, perStoryNextStage, { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug, mockScenarioName: _mockScenarioForStage(journey, perStoryNextStage) });
     getLinkSessionToJourney()(newSid, journeyId);
     if (_journeyStore.setActiveSession) {
       _journeyStore.setActiveSession(journeyId, newSid, perStoryNextStage);
@@ -1936,7 +1968,7 @@ async function handlePostGateConfirm(req, res) {
     // Feature-level: create session for next stage
     newSid = crypto.randomUUID();
     newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-' + nextStage + '.md');
-    getRegisterHtmlSession()(newSid, newSessionPath, nextStage, { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug });
+    getRegisterHtmlSession()(newSid, newSessionPath, nextStage, { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug, mockScenarioName: _mockScenarioForStage(journey, nextStage) });
     getLinkSessionToJourney()(newSid, journeyId);
     if (_journeyStore.setActiveSession) {
       _journeyStore.setActiveSession(journeyId, newSid, nextStage);
@@ -1994,6 +2026,13 @@ async function handlePostStories(req, res) {
     res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Journey not found.</p>' }));
     return;
   }
+  // bri-s3.2: this route had no body-parsing at all — req.body is never
+  // populated ahead of it in server.js, so POST /api/journey/:id/stories
+  // always 400'd with "story slug is required" for a real form submission.
+  // _readFormBody already exists in this file (used by handlePostJourney);
+  // short-circuits on req.body !== undefined so existing tests that
+  // construct { body: {...} } directly are unaffected.
+  req.body = await _readFormBody(req);
   var raw = (req.body && req.body.stories) || '';
   var slugs = raw.split('\n').map(function(s) { return s.trim(); }).filter(function(s) { return s.length > 0; });
   if (slugs.length === 0) {
@@ -2021,7 +2060,7 @@ async function handlePostStories(req, res) {
   // Create review session for first story (review → test-plan → DoR per story)
   var newSid = crypto.randomUUID();
   var newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-review.md');
-  getRegisterHtmlSession()(newSid, newSessionPath, 'review', { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug });
+  getRegisterHtmlSession()(newSid, newSessionPath, 'review', { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug, mockScenarioName: _mockScenarioForStage(updatedJourney, 'review') });
   getLinkSessionToJourney()(newSid, journeyId);
   if (_journeyStore.setActiveSession) {
     _journeyStore.setActiveSession(journeyId, newSid, 'review');
@@ -2333,7 +2372,10 @@ async function handleGetJourneyState(req, res) {
     activeSkill: journey.activeSkill,
     activeSessionId: journey.activeSessionId,
     completedStages: journey.completedStages,
-    complete: journey.complete
+    complete: journey.complete,
+    // bri-s3.2 / ADR-024: governed response shape requires ownerId alongside
+    // turns/stages/completedStages/stage/activeSkill — was missing before.
+    ownerId: journey.ownerId || null
   }));
 }
 
