@@ -1,0 +1,10 @@
+{
+  "stage": "design",
+  "scenarioName": "success",
+  "model": "claude-sonnet-4.6",
+  "response": "Understood — producing the design artefact now.\n\n---ARTEFACT-START---\n# Design: Mock Fixture Feature\n\n**Status:** Approved (mock fixture — bri-s3.2)\n**Feature slug:** mock-fixture-feature\n**Date:** 2026-07-10\n**Skill version:** /design\n\n## Design summary\n\nThis is a canned design artefact used by the `@mocked` E2E journey suite (bri-s3.2) so the signup-to-onboarding-to-first-feature spec can drive the design stage deterministically, alongside bri-s3.1's discovery/benefit-metric/definition/test-plan/definition-of-ready fixtures.\n\n## Out of scope\n\nReal-world design content — this is a fixture, not production output.\n---ARTEFACT-END---\n---SLUG---\n2026-07-10-mock-fixture-feature",
+  "usage": {
+    "input_tokens": 400,
+    "output_tokens": 170
+  }
+}
