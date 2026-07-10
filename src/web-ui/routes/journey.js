@@ -6,6 +6,7 @@ var fs = require('fs');
 var { renderShell, escHtml } = require('../utils/html-shell');
 var { requireJourneyAccess, asHttpResponse, POLICY } = require('../middleware/journey-access');
 var { updateJourneyReferenceFiles } = require('../modules/journey-state-persistence');
+var _flagBootstrap = require('../modules/flag-bootstrap'); // bri-s1.3
 
 // Injectable adapters — defaults wire to real implementations
 var _journeyStore = require('../modules/journey-store');
@@ -3451,7 +3452,13 @@ function handleGetWizard(req, res) {
   }
 
   // Step 1: default — three option cards
-  var body = '<h1>What would you like to do?</h1>\n' +
+  // bri-s1.3: flag state must already be resolved on req.session.flags by the time this
+  // renders — server-omitted when off/unresolved, never added/removed after the fact.
+  var _wizardUiOn = !!(req.session && req.session.flags && req.session.flags['wizard-ui'] === true);
+  var _wizardCanvasGate = _wizardUiOn
+    ? '<div id="wizard-canvas-gated" data-flag="wizard-ui">Wizard canvas</div>\n'
+    : '';
+  var body = _wizardCanvasGate + '<h1>What would you like to do?</h1>\n' +
     '<div class="wiz-options">\n' +
     '<div class="wiz-option">\n' +
     '<h2>Start something new</h2>\n' +
@@ -3529,6 +3536,23 @@ function handlePostWizardSelection(req, res) {
   res.end();
 }
 
+/**
+ * bri-s1.3: session-start entry point — resolves all relevant flags server-side
+ * (via bootstrapFlags) before delegating to the existing synchronous handleGetWizard
+ * render. Kept as a separate export so every pre-existing synchronous caller of
+ * handleGetWizard (check-wucp4-session-wizard.js, check-pmf3-orientation-wizard.js)
+ * is unaffected — this is the function a live route registration should call so the
+ * wizard canvas renders in its final gated state on first paint, with no client-side
+ * flag fetch preceding it.
+ * @param {object} req
+ * @param {object} res
+ * @param {object} [deps] - forwarded to bootstrapFlags for testability
+ */
+async function handleGetWizardBootstrapped(req, res, deps) {
+  await _flagBootstrap.bootstrapFlags(req, deps);
+  return handleGetWizard(req, res);
+}
+
 module.exports = {
   handleGetJourney,
   handlePostJourney,
@@ -3592,6 +3616,7 @@ module.exports = {
   // wucp.4 — session wizard
   STAGE_INDEX,
   handleGetWizard,
+  handleGetWizardBootstrapped,
   handlePostWizardSelection
 };
 
