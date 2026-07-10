@@ -93,7 +93,12 @@
 **Made by:** Hamish King (Founder/Operator), via /decisions, 2026-07-10
 **Revisit trigger:** Revisit citation accuracy once team-identity-roles's own ADR/decisions exist to reference instead.
 ---
-
+**2026-07-10 | RISK-ACCEPT | branch-setup (bri-s2.2)**
+**Decision:** Accept a pre-existing, repo-wide baseline test failure (`tests/check-definition-skill.js: FATAL: .github/skills/definition/SKILL.md not found`) rather than fixing it as part of bri-s2.2 (Provision a Neon staging branch for Postgres), and verify bri-s2.2's own test file directly (`node tests/check-bri-s2.2-neon-staging-branch.js`) instead of relying on the full `npm test` chain reaching it.
+**Alternatives considered:** Fix the missing `.github/skills/definition/SKILL.md` reference before starting bri-s2.2's implementation (rejected — out of this story's scope, a repo-structure/governance-script issue unrelated to Neon/Postgres staging provisioning, and touching it risks unbounded scope creep into another team's concern).
+**Rationale:** Confirmed the failure is pre-existing and unrelated to this story: reproduced identically on `origin/master` (commit `71f234bf`, the branch-setup baseline) before any bri-s2.2 code was written, and again after bri-s2.2's implementation was committed — the `npm test` chain fails at the exact same command (`check-definition-skill.js`) in both cases, with everything before it (including `check-viz-behaviour.js`, `check-skill-contracts.js`, `check-pipeline-artefact-paths.js`) passing identically. Because `check-bri-s2.2-neon-staging-branch.js` is appended at the very end of the `scripts.test` chain (after `check-bri-s2.1-fly-staging-app.js`), the full chain never reaches it while this earlier blocker is unresolved — bri-s2.2's own 5 tests (T1, T2, NFR2, IT1, IT2) were verified by running the file directly: `node tests/check-bri-s2.2-neon-staging-branch.js` → `5 passed, 0 failed`.
+**Made by:** Coding agent (bri-s2.2 inner loop), 2026-07-10, per `skills/branch-setup/SKILL.md` "Baseline failing" option 2 (acknowledge as pre-existing and proceed).
+**Revisit trigger:** When the `.github/skills/definition/SKILL.md` gap is fixed (likely a separate repo-structure/skills-relocation follow-up, given the repo's skills live at `skills/definition/SKILL.md` not `.github/skills/definition/SKILL.md`), re-run the full `npm test` chain end-to-end to confirm bri-s2.2's test file is reached and passes as part of the complete suite, not just standalone.
 ---
 
 ## Architecture Decision Records
