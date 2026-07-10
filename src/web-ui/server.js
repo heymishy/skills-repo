@@ -34,7 +34,7 @@ const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetSt
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
-const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5
+const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal, handleGetBillingPlanState } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5 / bri-s3.5
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
 const { creditsGuard }                                               = require('./middleware/credits-guard'); // lab-s3.3
 const { handleEmailSignup, handleEmailLogin, setUserDb }             = require('./routes/auth-email');       // lab-s2.2
@@ -637,6 +637,7 @@ if (process.env.NODE_ENV === 'test') {
     accessToken: 'e2e-test-access-token',
     userId:      9999,
     login:       'e2e-tester',
+    tenantId:    'e2e-tester', // bri-s3.5: tenant-scoped billing/plan-state routes need this
   });
 
   // Fixture fetcher: serves <type>-sample.md for the canonical test slug;
@@ -708,6 +709,26 @@ if (process.env.NODE_ENV === 'test') {
   // lab-s3.4: no-op webhook DB in test mode — rowCount=1 so each event appears as new (not a duplicate)
   // The check-lab-s3.4-stripe-webhook.js unit tests inject their own mock directly via setWebhookDbAdapter().
   setWebhookDbAdapter({ query: async function() { return { rows: [], rowCount: 1 }; } });
+
+  // bri-s3.5: fake Stripe adapter in test mode so the @mocked/@billing E2E spec can
+  // drive POST /webhook/stripe with synthetic event payloads. No real Stripe secret
+  // is ever available in this variant, so a real signature cannot be constructed —
+  // constructEvent simply parses the raw request body as the event object, mirroring
+  // the same synthetic-event pattern check-lab-s3.4-stripe-webhook.js's unit tests
+  // already use via monkeypatched adapters. checkout/portal session creation still
+  // throw — the E2E spec never calls /billing/checkout, so this only guards against
+  // an accidental real-looking call slipping through unnoticed (AC5).
+  setStripeAdapter({
+    webhooks: {
+      constructEvent: function(rawBody) { return JSON.parse(rawBody.toString()); }
+    },
+    checkout: { sessions: { create: async function() {
+      throw new Error('Real Stripe Checkout must not be invoked in NODE_ENV=test');
+    } } },
+    billingPortal: { sessions: { create: async function() {
+      throw new Error('Real Stripe Billing Portal must not be invoked in NODE_ENV=test');
+    } } }
+  });
 
   // lab-s2.3: wire user-flags adapter in test mode — per-user in-memory tracking that
   // mirrors the real github_first_login table semantics (bri-s3.6): an id never seen
@@ -846,11 +867,18 @@ async function router(req, res) {
   // (handles cases where a prior test consumed/mutated it, e.g. via logout).
   if (pathname === '/test/session' && req.method === 'GET' && process.env.NODE_ENV === 'test') {
     const { seedTestSession } = require('./middleware/session');
-    const E2E_SESSION_ID = 'e2e' + '0'.repeat(60) + '1';
-    seedTestSession(E2E_SESSION_ID, {
+    // bri-s3.5: optional ?sessionId=&tenantId= overrides let a spec seed an isolated
+    // session (its own cookie, its own tenant) instead of the shared default — used
+    // by the billing journey spec's usage-gate scenario so a per-tenant journey cap
+    // doesn't collide with other spec files that share the default e2e-tester tenant.
+    // Callers that omit both query params get the original, unchanged default session.
+    const sessionId = (req.query && req.query.sessionId) || ('e2e' + '0'.repeat(60) + '1');
+    const tenantId  = (req.query && req.query.tenantId) || 'e2e-tester';
+    seedTestSession(sessionId, {
       accessToken: 'e2e-test-access-token',
       userId:      9999,
       login:       'e2e-tester',
+      tenantId:    tenantId,
     });
     // Return Set-Cookie so Playwright's APIRequestContext (page.request) stores
     // the session cookie in its own cookie jar. Without this, page.request.post()
@@ -859,9 +887,9 @@ async function router(req, res) {
     // No Secure flag — we run on HTTP in test mode; SameSite=Lax allows API calls.
     res.writeHead(200, {
       'Content-Type': 'application/json',
-      'Set-Cookie': `session_id=${E2E_SESSION_ID}; HttpOnly; SameSite=Lax; Path=/`,
+      'Set-Cookie': `session_id=${sessionId}; HttpOnly; SameSite=Lax; Path=/`,
     });
-    res.end(JSON.stringify({ sessionId: E2E_SESSION_ID, login: 'e2e-tester' }));
+    res.end(JSON.stringify({ sessionId: sessionId, login: 'e2e-tester' }));
     return;
   }
 
@@ -923,6 +951,7 @@ async function router(req, res) {
       accessToken: 'e2e-test-access-token',
       userId:      9999,
       login:       'e2e-tester',
+      tenantId:    'e2e-tester', // bri-s3.5: tenant-scoped billing/plan-state routes need this
     });
     const _uid = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
     const _defSessionId = 'def-e2e-' + _uid;
@@ -967,6 +996,16 @@ async function router(req, res) {
       'Set-Cookie': `session_id=${E2E_SESSION_ID}; HttpOnly; SameSite=Lax; Path=/`,
     });
     res.end();
+    return;
+  }
+
+  // bri-s3.5 AC5 — test-only Stripe call-count spy read. Lets the @mocked/@billing
+  // E2E spec assert zero real Stripe API calls happened during the billing journey
+  // (NODE_ENV=test guard mirrors every other /test/* endpoint above).
+  if (pathname === '/test/stripe-call-count' && req.method === 'GET' && process.env.NODE_ENV === 'test') {
+    const { getCheckoutCallCount } = require('./modules/stripe-client');
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ count: getCheckoutCallCount() }));
     return;
   }
 
@@ -1367,6 +1406,10 @@ async function router(req, res) {
   } else if (pathname === '/settings/billing' && req.method === 'GET') {
     // lab-s3.5 — Stripe Billing Portal redirect
     await handleGetBillingPortal(req, res);
+
+  } else if (pathname === '/billing/plan-state' && req.method === 'GET') {
+    // bri-s3.5 — tenant plan-state read (paid/trial, active/past_due/canceled)
+    authGuard(req, res, () => handleGetBillingPlanState(req, res));
 
   } else if (pathname === '/api/me' && req.method === 'GET') {
     const authenticated = !!(req.session && req.session.accessToken);

@@ -6,6 +6,7 @@
 
 var stripeClient  = require('../modules/stripe-client');
 var creditsModule = require('../modules/credits');
+var tenantPlan    = require('../modules/tenant-plan'); // bri-s3.5
 
 // Placeholder sentinel used in .env.example — treat as unconfigured.
 var PLACEHOLDER = 'STRIPE_PLAN_PRICE_ID_PLACEHOLDER';
@@ -175,6 +176,16 @@ function _readRawBody(req) {
  * AC5:  Idempotency via INSERT INTO stripe_events ON CONFLICT DO NOTHING (rowCount=0 → skip)
  * AC6:  Unknown event types → log stripe_unhandled_event, return 200 (never 4xx/5xx to Stripe)
  * NFR:  Every adjustBalance call emits { event: 'credits_provisioned', tenantId, amount, stripeEventId }
+ *
+ * bri-s3.5 additions (billing journey spec — genuine gap found and logged in
+ * decisions.md per the DoR contract's ADR-008 escape clause; see
+ * artefacts/2026-07-09-beta-readiness-infra/decisions.md):
+ * bri-AC1: checkout.session.completed also sets tenant plan state to paid/active
+ *          (tenant-plan.js) — immediately reflected by a subsequent tenant/session read.
+ * bri-AC3: invoice.payment_failed → tenant plan state set to trial/past_due — the
+ *          failure is reflected, not silently ignored (falls into stripe_unhandled_event otherwise).
+ * bri-AC4: customer.subscription.deleted → tenant plan state set to trial/canceled —
+ *          usage gates (checkJourneyCap) are restricted per the new plan immediately.
  */
 async function handlePostStripeWebhook(req, res) {
   // AC1 step 1: capture raw body BEFORE any parsing (signature verification needs raw bytes)
@@ -217,6 +228,31 @@ async function handlePostStripeWebhook(req, res) {
       var amount1 = parseInt(process.env['CREDITS_PLAN_' + planName1] || 100);
       await creditsModule.adjustBalance(tenantId1, amount1);
       console.log(JSON.stringify({ event: 'credits_provisioned', tenantId: tenantId1, amount: amount1, stripeEventId: stripeEventId }));
+      // bri-s3.5 AC1: tenant/session reflects the paid plan immediately after this webhook
+      if (tenantId1) tenantPlan.setPlanState(tenantId1, 'paid', 'active');
+      break;
+    }
+
+    case 'invoice.payment_failed': {
+      // bri-s3.5 AC3: a failed payment must be reflected — not silently ignored.
+      // tenantId resolution mirrors the invoice.paid branch below (metadata.tenant_id,
+      // falling back to subscription_details metadata, then client_reference_id).
+      var objFail = event.data.object;
+      var tenantIdFail = (objFail.metadata && objFail.metadata.tenant_id) ||
+                         (objFail.subscription_details && objFail.subscription_details.metadata && objFail.subscription_details.metadata.tenant_id) ||
+                         objFail.client_reference_id;
+      if (tenantIdFail) tenantPlan.setPlanState(tenantIdFail, 'trial', 'past_due');
+      console.log(JSON.stringify({ event: 'payment_failed', tenantId: tenantIdFail, stripeEventId: stripeEventId }));
+      break;
+    }
+
+    case 'customer.subscription.deleted': {
+      // bri-s3.5 AC4: cancellation/downgrade — plan state reverts to trial/canceled so
+      // usage gates (checkJourneyCap) restrict access per the new plan immediately.
+      var objCancel = event.data.object;
+      var tenantIdCancel = (objCancel.metadata && objCancel.metadata.tenant_id) || objCancel.client_reference_id;
+      if (tenantIdCancel) tenantPlan.setPlanState(tenantIdCancel, 'trial', 'canceled');
+      console.log(JSON.stringify({ event: 'subscription_canceled', tenantId: tenantIdCancel, stripeEventId: stripeEventId }));
       break;
     }
 
@@ -279,4 +315,30 @@ async function handleGetBillingPortal(req, res) {
   res.end();
 }
 
-module.exports = { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal };
+/**
+ * GET /billing/plan-state (bri-s3.5)
+ *
+ * Auth guard: no session → 401
+ * Returns the current session's tenant plan state as JSON — the read side
+ * that lets a UI (or the E2E spec) confirm "the tenant/session reflects the
+ * paid plan" after a mocked checkout/failure/cancellation webhook has run.
+ */
+function handleGetBillingPlanState(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'text/plain' });
+    res.end('Unauthorized');
+    return;
+  }
+  var planState = tenantPlan.getPlanState(req.session.tenantId);
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(planState));
+}
+
+module.exports = {
+  handlePostCheckout,
+  handleGetBillingSuccess,
+  handlePostStripeWebhook,
+  setWebhookDbAdapter,
+  handleGetBillingPortal,
+  handleGetBillingPlanState
+};

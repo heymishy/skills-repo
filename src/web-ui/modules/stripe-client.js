@@ -10,6 +10,15 @@
 
 let _stripe = null;
 
+// bri-s3.5 AC5: call-count spy on real Stripe Checkout session creation.
+// Lets the @mocked/@billing E2E spec assert zero real Stripe API calls
+// happen during the journey (the spec never hits handlePostCheckout —
+// it drives the journey entirely through mocked webhook payloads — so
+// this counter should stay at 0 throughout that spec's run).
+let _checkoutCallCount = 0;
+function getCheckoutCallCount() { return _checkoutCallCount; }
+function resetCheckoutCallCount() { _checkoutCallCount = 0; }
+
 /**
  * Wire the real Stripe SDK instance (separate D37 wiring task — done in server.js).
  * @param {object} impl - Stripe SDK instance (e.g. require('stripe')(key))
@@ -36,6 +45,7 @@ function requireAdapter() {
  */
 async function createCheckoutSession({ priceId, tenantId, successUrl, cancelUrl }) {
   var stripe = requireAdapter();
+  _checkoutCallCount++; // bri-s3.5 AC5 spy — counts every real Stripe Checkout session creation call
   return stripe.checkout.sessions.create({
     mode:                'subscription',
     line_items:          [{ price: priceId, quantity: 1 }],
@@ -76,4 +86,11 @@ function verifyWebhookSignature(rawBody, sig, secret) {
   return stripe.webhooks.constructEvent(rawBody, sig, secret);
 }
 
-module.exports = { setStripeAdapter, createCheckoutSession, createPortalSession, verifyWebhookSignature };
+module.exports = {
+  setStripeAdapter,
+  createCheckoutSession,
+  createPortalSession,
+  verifyWebhookSignature,
+  getCheckoutCallCount,
+  resetCheckoutCallCount
+};
