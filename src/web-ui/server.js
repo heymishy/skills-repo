@@ -34,7 +34,7 @@ const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetSt
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
-const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5
+const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal, handleGetBillingPlanState } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5 / bri-s3.5
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
 const { creditsGuard }                                               = require('./middleware/credits-guard'); // lab-s3.3
 const { handleEmailSignup, handleEmailLogin, setUserDb }             = require('./routes/auth-email');       // lab-s2.2
@@ -852,6 +852,16 @@ async function router(req, res) {
     return;
   }
 
+  // bri-s3.5 AC5 — test-only Stripe call-count spy read. Lets the @mocked/@billing
+  // E2E spec assert zero real Stripe API calls happened during the billing journey
+  // (NODE_ENV=test guard mirrors every other /test/* endpoint above).
+  if (pathname === '/test/stripe-call-count' && req.method === 'GET' && process.env.NODE_ENV === 'test') {
+    const { getCheckoutCallCount } = require('./modules/stripe-client');
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ count: getCheckoutCallCount() }));
+    return;
+  }
+
   // Attach session before routing
   sessionMiddleware(req, res);
 
@@ -1222,6 +1232,10 @@ async function router(req, res) {
   } else if (pathname === '/settings/billing' && req.method === 'GET') {
     // lab-s3.5 — Stripe Billing Portal redirect
     await handleGetBillingPortal(req, res);
+
+  } else if (pathname === '/billing/plan-state' && req.method === 'GET') {
+    // bri-s3.5 — tenant plan-state read (paid/trial, active/past_due/canceled)
+    authGuard(req, res, () => handleGetBillingPlanState(req, res));
 
   } else if (pathname === '/api/me' && req.method === 'GET') {
     const authenticated = !!(req.session && req.session.accessToken);
