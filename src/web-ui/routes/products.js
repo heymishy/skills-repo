@@ -3,6 +3,8 @@
 var _posthog = require('../modules/posthog-server');
 var _productDraft = require('../adapters/product-draft');
 var _htmlShell = require('../utils/html-shell');
+var _postHogFlags = require('../modules/posthog-flags'); // bri-s1.5 — shared isEnabled() (D37)
+var _flagKeys = require('../modules/flag-keys'); // bri-s1.5
 
 function _escapeHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -323,11 +325,31 @@ function _healthLabel(health) {
   return 'Healthy';
 }
 
+function _respondFlagDisabled(res) {
+  // bri-s1.5 — shared not-found/disabled response shape for every flag-gated
+  // board handler (AC2, AC3). Short-circuits before any DB call so an off flag
+  // never even queries tenant-scoped rows.
+  if (res.status) {
+    res.status(404).json({ error: 'not_found' });
+  } else {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'not_found' }));
+  }
+}
+
 async function handleGetProductKanban(req, res, _next, pool, posthog) {
   var _pool = pool;
   var _ph = posthog || _posthog;
   var productId = req.params && req.params.id;
   var tenantId = req.session && req.session.tenantId;
+
+  // bri-s1.5 AC2 — gate before the DB call; D37: only the shared isEnabled() helper,
+  // no bespoke per-flag evaluation logic.
+  var _productKanbanOn = await _postHogFlags.isEnabled(_flagKeys.PRODUCT_KANBAN_VIEW, { tenantId: tenantId });
+  if (!_productKanbanOn) {
+    _respondFlagDisabled(res);
+    return;
+  }
 
   var rows = (await _pool.query(
     "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1",
@@ -370,6 +392,16 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
   var _ph = posthog || _posthog;
   var tenantId = req.session && req.session.tenantId;
   var productFilter = req.query && req.query.product;
+
+  // bri-s1.5 AC3 — gate before any DB call, keyed by tenantId so PostHog's tenant-
+  // group targeting (bri-s1.4) applies. Not-found/disabled for a non-targeted tenant
+  // never touches the products/journeys query below, so no other tenant's board
+  // data can leak even transiently (Security NFR, ADR-025).
+  var _orgKanbanOn = await _postHogFlags.isEnabled(_flagKeys.ORG_KANBAN_VIEW, { tenantId: tenantId });
+  if (!_orgKanbanOn) {
+    _respondFlagDisabled(res);
+    return;
+  }
 
   var prodRows = (await _pool.query(
     'SELECT product_id, name FROM products WHERE tenant_id = $1',
