@@ -8504,7 +8504,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-11T19:51:40.231Z",
+      "updatedAt": "2026-07-11T19:57:06.261Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8987,9 +8987,9 @@
             {
               "slug": "bri-s3.4",
               "name": "Cross-tenant isolation journey spec",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-11T19:51:40.231Z",
+              "updatedAt": "2026-07-11T19:57:06.261Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9003,6 +9003,8 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/459",
               "verifyStatus": "passed",
               "tasks": [
                 {
