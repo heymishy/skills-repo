@@ -344,8 +344,8 @@ const pipelineStateWriterFactory = require('../src/web-ui/adapters/pipeline-stat
 {
   const T = 'T14-package-json-includes-test';
   const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
-  assert(T, pkg.scripts.test.includes('node tests/check-cdg7-gate-advance.js'),
-    'package.json test script does not include "node tests/check-cdg7-gate-advance.js"');
+  assert(T, pkg.scripts.test.includes('node tests/check-cdg7-gate-advance.js') || pkg.scripts.test.includes('run-all-tests.js'),
+    'package.json test script does not include "node tests/check-cdg7-gate-advance.js" (directly, or via the pcr-s1 dynamic discovery runner)');
 }
 
 // ── Report ─────────────────────────────────────────────────────────────────────

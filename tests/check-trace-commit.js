@@ -335,8 +335,8 @@ process.stdout.write('\n  Unit: AC1 \u2014 npm test suite includes check-trace-c
   try {
     var pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
     var testCmd = (pkg.scripts && pkg.scripts.test) || '';
-    if (testCmd.indexOf('check-trace-commit.js') === -1) {
-      fail(testName, 'package.json scripts.test does not reference check-trace-commit.js');
+    if (testCmd.indexOf('check-trace-commit.js') === -1 && testCmd.indexOf('run-all-tests.js') === -1) {
+      fail(testName, 'package.json scripts.test does not reference check-trace-commit.js (directly, or via the pcr-s1 dynamic discovery runner)');
     } else {
       pass(testName);
     }
