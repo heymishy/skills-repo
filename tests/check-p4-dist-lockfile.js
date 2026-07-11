@@ -203,7 +203,8 @@ console.log('\n[p4-dist-lockfile] AC4 — end-to-end: pin then tamper then verif
     const covered = testScript.includes('check-p4-dist-lockfile')
       || testScript.includes('tests/**')
       || testScript.includes('tests/*.js')
-      || testScript.includes('check-p4-dist-');
+      || testScript.includes('check-p4-dist-')
+      || testScript.includes('run-all-tests.js'); // pcr-s1: dynamic discovery runner covers all check-*.js files
     assert(covered, `T8: check-p4-dist-lockfile.js covered by npm test script (script: ${testScript.substring(0, 120)})`);
   }
 }

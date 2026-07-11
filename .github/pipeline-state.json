@@ -9217,6 +9217,43 @@
           "date": "2026-07-10T00:00:00Z"
         }
       ]
+    },
+    {
+      "slug": "2026-07-11-pipeline-conflict-reduction",
+      "name": "Remove the three recurring merge-conflict hotspots in parallel-wave inner-loop delivery",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "pcr-s1",
+          "name": "Reduce merge-conflict hotspots (test chain, pipeline-state updatedAt, decisions.md union merge)",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 12,
+            "passing": 12,
+            "artefact": "artefacts/2026-07-11-pipeline-conflict-reduction/test-plans/pcr-s1-reduce-merge-conflict-hotspots-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-11-pipeline-conflict-reduction/dor/pcr-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-11-pipeline-conflict-reduction/dor/pcr-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-11T00:00:00Z",
+          "prStatus": "draft",
+          "updatedAt": "2026-07-11T05:31:37.724Z",
+          "id": "pcr-s1"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-11T00:00:00Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

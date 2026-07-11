@@ -148,8 +148,8 @@ console.log('[artefact-coverage] Running self-tests...');
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
   const testScript = (pkg.scripts && pkg.scripts.test) || '';
   selfAssert(
-    testScript.includes('check-artefact-coverage'),
-    'T7 package-json-chain: package.json test script includes check-artefact-coverage'
+    testScript.includes('check-artefact-coverage') || testScript.includes('run-all-tests.js'),
+    'T7 package-json-chain: package.json test script includes check-artefact-coverage (directly, or via the pcr-s1 dynamic discovery runner)'
   );
 }
 
