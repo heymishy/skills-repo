@@ -9130,25 +9130,26 @@
         {
           "slug": "pcr-s1",
           "name": "Reduce merge-conflict hotspots (test chain, pipeline-state updatedAt, decisions.md union merge)",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 12,
-            "passing": 0,
+            "passing": 12,
             "artefact": "artefacts/2026-07-11-pipeline-conflict-reduction/test-plans/pcr-s1-reduce-merge-conflict-hotspots-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-11-pipeline-conflict-reduction/dor/pcr-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-11-pipeline-conflict-reduction/dor/pcr-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-11T00:00:00Z",
-          "prStatus": "none"
+          "prStatus": "draft",
+          "updatedAt": "2026-07-11T05:31:37.724Z"
         }
       ],
       "metrics": [],
