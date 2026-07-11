@@ -1,0 +1,7 @@
+# pcr-s1 (2026-07-11-pipeline-conflict-reduction, AC5):
+# decisions.md is a shared append-only log. Two branches that each
+# independently append a new decision entry to the same file collided on
+# git's default line-based merge even though the entries themselves don't
+# overlap and order between them doesn't matter. `merge=union` tells git to
+# keep both sides' added lines instead of raising a conflict for this file.
+artefacts/**/decisions.md merge=union
