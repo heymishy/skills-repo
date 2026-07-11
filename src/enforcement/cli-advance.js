@@ -136,49 +136,81 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
     };
   }
 
-  // ── Find or create story entry ────────────────────────────────────────────
-  if (!Array.isArray(feature.stories)) feature.stories = [];
-  var story = feature.stories.find(function(s) {
-    return s.id === storyId || s.slug === storyId;
-  });
-  // If not in flat stories, search epic-nested stories
-  if (!story) {
-    var epics = feature.epics || [];
-    for (var ei = 0; ei < epics.length; ei++) {
-      var epicStories = epics[ei].stories || [];
-      var found = epicStories.find(function(s) {
-        return s.id === storyId || s.slug === storyId;
-      });
-      if (found) { story = found; break; }
-    }
-  }
-  // Still not found — create a new flat entry
-  if (!story) {
-    story = { id: storyId };
-    feature.stories.push(story);
-  }
+  // ── Split fields: feature-scoped (`feature.<field>`) vs story-scoped ──────
+  // pcr-s1 (AC3/AC4): only a `feature.<field>` write is a genuine feature-level
+  // milestone and bumps `feature.updatedAt`. Plain (story-scoped) fields never
+  // touch `feature.updatedAt` — this is what makes two stories in the same
+  // feature advancing concurrently produce zero conflict on that shared line.
+  var allKeys = Object.keys(stateUpdate);
+  var featureKeys = allKeys.filter(function(k) { return k.indexOf('feature.') === 0; });
+  var storyKeys = allKeys.filter(function(k) { return k.indexOf('feature.') !== 0; });
 
-  // ── Apply all fields (with integer coercion and single-level dot-notation) ─
-  Object.keys(stateUpdate).forEach(function(key) {
-    var val = stateUpdate[key];
+  function coerce(key, val) {
     // Integer coercion: bare digit strings become numbers (skipped for STRING_FIELDS — path values stay as strings).
     if (/^\d+$/.test(val) && STRING_FIELDS.indexOf(key) === -1) { val = Number(val); }
     // Boolean coercion: fields in BOOLEAN_FIELDS are coerced from 'true'/'false' strings to booleans.
     // Values are already validated in the parsing loop — only 'true'/'false' can reach here.
     if (BOOLEAN_FIELDS.indexOf(key) !== -1) { val = (val === 'true'); }
-    // Dot-notation: parent.child → story[parent][child]
-    if (key.indexOf('.') !== -1) {
-      var segs = key.split('.');
-      var parent = segs[0];
-      var child  = segs[1];
-      if (typeof story[parent] !== 'object' || story[parent] === null) {
-        story[parent] = {};
+    return val;
+  }
+
+  // ── Apply feature-scoped fields directly to the feature object ───────────
+  if (featureKeys.length > 0) {
+    featureKeys.forEach(function(key) {
+      var fieldName = key.slice('feature.'.length);
+      feature[fieldName] = coerce(key, stateUpdate[key]);
+    });
+    feature.updatedAt = new Date().toISOString();
+  }
+
+  // ── Find or create story entry — only when there are story-scoped fields ─
+  // A pure feature-level milestone call (no story-scoped fields) must not
+  // create a phantom story entry just because a storyId was passed.
+  var story = null;
+  if (storyKeys.length > 0) {
+    if (!Array.isArray(feature.stories)) feature.stories = [];
+    story = feature.stories.find(function(s) {
+      return s.id === storyId || s.slug === storyId;
+    });
+    // If not in flat stories, search epic-nested stories
+    if (!story) {
+      var epics = feature.epics || [];
+      for (var ei = 0; ei < epics.length; ei++) {
+        var epicStories = epics[ei].stories || [];
+        var found = epicStories.find(function(s) {
+          return s.id === storyId || s.slug === storyId;
+        });
+        if (found) { story = found; break; }
       }
-      story[parent][child] = val;
-    } else {
-      story[key] = val;
     }
-  });
+    // Still not found — create a new flat entry
+    if (!story) {
+      story = { id: storyId };
+      feature.stories.push(story);
+    }
+
+    // ── Apply story-scoped fields (with integer coercion and single-level dot-notation) ─
+    storyKeys.forEach(function(key) {
+      var val = coerce(key, stateUpdate[key]);
+      // Dot-notation: parent.child → story[parent][child]
+      if (key.indexOf('.') !== -1) {
+        var segs = key.split('.');
+        var parent = segs[0];
+        var child  = segs[1];
+        if (typeof story[parent] !== 'object' || story[parent] === null) {
+          story[parent] = {};
+        }
+        story[parent][child] = val;
+      } else {
+        story[key] = val;
+      }
+    });
+
+    // Story-scoped writes always stamp the story's own updatedAt — this
+    // removes the need for every caller (SKILL.md instruction) to pass it
+    // explicitly, and never touches feature.updatedAt.
+    story.updatedAt = new Date().toISOString();
+  }
 
   // ── Atomic write (temp-file rename) ──────────────────────────────────────
   var tmpPath = statePath + '.tmp';
