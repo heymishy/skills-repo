@@ -640,6 +640,24 @@ if (process.env.NODE_ENV === 'test') {
     tenantId:    'e2e-tester', // bri-s3.5: tenant-scoped billing/plan-state routes need this
   });
 
+  // bri-s3.4: wire the GET /journeys (bee.2) aggregate-list D37 adapter in
+  // test mode too. It previously only got wired inside the
+  // WIRE_SKILL_ADAPTERS-gated block further up this file, so /journeys threw
+  // "Adapter not wired: _listJourneys" for every NODE_ENV=test run -- a
+  // pre-existing gap this story's cross-tenant-isolation E2E spec surfaced
+  // (AC2 needs to confirm the aggregate journey list never leaks tenant B
+  // rows). No external dependency here (same journey-store module already
+  // used by the production wiring; falls back to its in-memory map when no
+  // disk/pg adapter is set, which is always the case in NODE_ENV=test) --
+  // safe to wire unconditionally.
+  {
+    const _journeyStoreForTest = require('./modules/journey-store');
+    setListJourneys(async function(tenantId) {
+      var all = _journeyStoreForTest.listJourneys();
+      return tenantId ? all.filter(function(j) { return j.tenantId === tenantId; }) : all;
+    });
+  }
+
   // Fixture fetcher: serves <type>-sample.md for the canonical test slug;
   // throws ArtefactNotFoundError for any other slug (exercises the 404 path).
   const FIXTURE_DIR  = _path.join(__dirname, '../../tests/fixtures/markdown');
