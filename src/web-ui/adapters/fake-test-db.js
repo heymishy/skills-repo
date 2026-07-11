@@ -30,6 +30,8 @@ function createFakeTestDb() {
   var nextUserId = 1;
   var products = [];     // { product_id, tenant_id, name, ...}
   var nextProductSeq = 1;
+  var standards = [];    // { standard_id, product_id, org_id, name, content, visibility, created_at }
+  var nextStandardSeq = 1;
 
   function query(sql, params) {
     var s = _normalise(sql);
@@ -91,11 +93,67 @@ function createFakeTestDb() {
       var match = products.filter(function(r) { return r.product_id === pid; }).map(function(r) { return { name: r.name }; });
       return Promise.resolve({ rows: match });
     }
+    // bri-s3.4: added alongside the tenant-ownership fix in routes/products.js
+    // (handleGetProductView) — narrow branches, mirroring the file's existing
+    // extension pattern, not a general SQL engine.
+    if (s.indexOf('SELECT NAME, TENANT_ID FROM PRODUCTS WHERE PRODUCT_ID') === 0) {
+      var pid2 = p[0];
+      var match2 = products.filter(function(r) { return r.product_id === pid2; }).map(function(r) { return { name: r.name, tenant_id: r.tenant_id }; });
+      return Promise.resolve({ rows: match2 });
+    }
+    // bri-s3.4: added alongside handleGetProductKanban / standardsPost's
+    // tenant-ownership check.
+    if (s.indexOf('SELECT TENANT_ID FROM PRODUCTS WHERE PRODUCT_ID') === 0) {
+      var pid3 = p[0];
+      var match3 = products.filter(function(r) { return r.product_id === pid3; }).map(function(r) { return { tenant_id: r.tenant_id }; });
+      return Promise.resolve({ rows: match3 });
+    }
 
     // ── journeys (product_id-scoped lookups — bri-s3.2 keeps journeys on the
     // existing disk adapter, so this fake always reports zero linked journeys) ─
     if (s.indexOf('FROM JOURNEYS WHERE PRODUCT_ID') !== -1) {
       return Promise.resolve({ rows: [] });
+    }
+
+    // ── standards (bri-s3.4) ─────────────────────────────────────────────
+    // Narrow support for exactly the query shapes routes/standards.js issues,
+    // added to let the @mocked cross-tenant-isolation E2E spec exercise real
+    // standards create/list/update flows without a live Postgres.
+    if (s.indexOf('INSERT INTO STANDARDS') === 0) {
+      var standardId = 'fake-standard-' + (nextStandardSeq++);
+      var stdRow = {
+        standard_id: standardId,
+        product_id:  p[0],
+        org_id:      p[1],
+        name:        p[2],
+        content:     p[3],
+        visibility:  p[4],
+        created_at:  new Date().toISOString()
+      };
+      standards.push(stdRow);
+      return Promise.resolve({ rows: [{ standard_id: standardId }] });
+    }
+    if (s.indexOf('SELECT STANDARD_ID, NAME, VISIBILITY, CREATED_AT FROM STANDARDS WHERE PRODUCT_ID') === 0) {
+      var stdProductId = p[0];
+      var stdOrgId = p[1];
+      var stdRows = standards
+        .filter(function(r) { return r.product_id === stdProductId && r.org_id === stdOrgId; })
+        .sort(function(a, b) { return b.created_at.localeCompare(a.created_at); })
+        .map(function(r) { return { standard_id: r.standard_id, name: r.name, visibility: r.visibility, created_at: r.created_at }; });
+      return Promise.resolve({ rows: stdRows });
+    }
+    if (s.indexOf('SELECT ORG_ID FROM STANDARDS WHERE STANDARD_ID') === 0) {
+      var lookupStdId = p[0];
+      var stdMatch = standards.filter(function(r) { return r.standard_id === lookupStdId; }).map(function(r) { return { org_id: r.org_id }; });
+      return Promise.resolve({ rows: stdMatch });
+    }
+    if (s.indexOf('UPDATE STANDARDS SET NAME') === 0) {
+      var updName = p[0];
+      var updContent = p[1];
+      var updStdId = p[2];
+      var target = standards.find(function(r) { return r.standard_id === updStdId; });
+      if (target) { target.name = updName; target.content = updContent; }
+      return Promise.resolve({ rows: target ? [{ standard_id: target.standard_id }] : [], rowCount: target ? 1 : 0 });
     }
 
     // ── startup migrations (CREATE TABLE / ALTER TABLE) — idempotent no-op ──
@@ -111,7 +169,7 @@ function createFakeTestDb() {
 
   return {
     query: query,
-    _reset: function() { users = []; nextUserId = 1; products = []; nextProductSeq = 1; }
+    _reset: function() { users = []; nextUserId = 1; products = []; nextProductSeq = 1; standards = []; nextStandardSeq = 1; }
   };
 }
 
