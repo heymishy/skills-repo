@@ -1,0 +1,46 @@
+name: PR Checks
+
+# bri-s2.5 - runs on every PR against master: lint, typecheck, unit test
+# chain, and build. None of the four steps has continue-on-error - a
+# failure in any of them fails this job, which blocks merge once configured
+# as a required status check in GitHub branch protection (AC1 - branch
+# protection configuration itself is a manual, external-dependency step,
+# see the story's test plan Coverage gaps table and this story's AC
+# verification script Scenario 1).
+
+on:
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  pr-checks:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit test chain
+        run: npm test
+
+      - name: Build
+        run: npm run build
