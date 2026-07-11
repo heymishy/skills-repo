@@ -1074,6 +1074,26 @@ let _skillTurnExecutorStream = function defaultSkillTurnExecutorStream() {
  */
 function setSkillTurnExecutorStreamAdapter(fn) { _skillTurnExecutorStream = fn; }
 
+// stis-s1: D37 injectable adapter for the artefact-completion git commit step.
+// Default implementation performs the real `git add`/`git commit` exactly as
+// before (production behaviour unchanged — AC2). This is a deliberate,
+// documented exception to the D37 "stub must throw" rule: this adapter's
+// whole purpose is to fail silently and safely when git is unavailable
+// (Fly.io containers) — see story AC2 (artefacts/2026-07-12-skill-turn-test-isolation).
+// Tests inject a stub via setSkillTurnGitCommitAdapter() so no test run ever
+// spawns a real git process (AC1).
+let _skillTurnGitCommit = function defaultSkillTurnGitCommit(artefactPath, commitMessage, repoRoot) {
+  var _cp = require('child_process');
+  _cp.execSync('git add ' + JSON.stringify(artefactPath), { cwd: repoRoot, encoding: 'utf8' });
+  _cp.execSync('git commit -m ' + JSON.stringify(commitMessage), { cwd: repoRoot, encoding: 'utf8' });
+};
+
+/**
+ * Replace the skill-turn artefact-completion git-commit adapter (for testing).
+ * @param {function(string, string, string): void} fn
+ */
+function setSkillTurnGitCommitAdapter(fn) { _skillTurnGitCommit = fn; }
+
 // mfc.1 — _nextQuestionExecutor and _sectionDraftExecutor retained as no-ops for backward compat (AC9).
 // They are not invoked in the model-first session flow.
 let _nextQuestionExecutor = function noOpNextQuestionExecutor() { return Promise.resolve(null); };
@@ -4178,14 +4198,14 @@ async function handlePostTurnStreamHtml(req, res) {
     } catch (_autoErr) {
       console.warn(JSON.stringify({ event: 'artefact_disk_save_failed', sessionId: sessionId, error: _autoErr.message }));
     }
-    // Git commit (best-effort — git is not installed in Fly.io containers; failure is not an error)
+    // Git commit (best-effort — git is not installed in Fly.io containers; failure is not an
+    // error). Routed through the D37 adapter (stis-s1) so tests can stub it — see
+    // setSkillTurnGitCommitAdapter above.
     try {
-      var _cp = require('child_process');
       var _commitMsg = _isAmendment
         ? 'feat: ' + (session.skillName || skillName) + ' artefact (amended)'
         : 'feat: ' + (session.skillName || skillName) + ' artefact';
-      _cp.execSync('git add ' + JSON.stringify(session.artefactPath), { cwd: _autoRepoRoot, encoding: 'utf8' });
-      _cp.execSync('git commit -m ' + JSON.stringify(_commitMsg), { cwd: _autoRepoRoot, encoding: 'utf8' });
+      _skillTurnGitCommit(session.artefactPath, _commitMsg, _autoRepoRoot);
     } catch (_gitErr) { /* git unavailable in production — disk write above is the durable record */ }
     // Mark stage complete in journey so resume can load it as a prior artefact
     if (session.journeyId && !session._stageDone) {
@@ -4646,6 +4666,8 @@ module.exports = {
   linkSessionToJourney,
   // mfc.3 — streaming turn handler + adapter setter
   handlePostTurnStreamHtml, setSkillTurnExecutorStreamAdapter,
+  // stis-s1 — artefact-completion git-commit adapter setter
+  setSkillTurnGitCommitAdapter,
   // dsq.1/dsq.2 — backward-compat no-op setters (AC9 — mfc.1)
   setNextQuestionExecutorAdapter,
   setSectionDraftExecutorAdapter,
