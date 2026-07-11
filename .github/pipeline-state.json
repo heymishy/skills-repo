@@ -9307,7 +9307,7 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "passing",
+            "status": "all-passing",
             "totalTests": 6,
             "passing": 6,
             "artefact": "artefacts/2026-07-12-skill-turn-test-isolation/test-plans/stis-s1-guard-skill-turn-auto-commit-test-plan.md"
