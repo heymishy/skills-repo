@@ -6,11 +6,44 @@ function _escapeHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+/**
+ * bri-s3.4: read + parse the request body, short-circuiting when req.body is
+ * already populated (existing unit tests construct req objects with body
+ * pre-set, Express-mock style). Neither standardsPost nor standardsPut had
+ * ANY body-parsing step -- req.body.name/req.body.content were always
+ * undefined for a real raw-http POST/PUT with no upstream middleware, a
+ * pre-existing gap this story's E2E spec surfaced while driving the real
+ * standard-creation/edit flow (same pattern as routes/products.js's
+ * _readBody, added by bri-s3.2 for the same reason).
+ * @param {object} req
+ * @returns {Promise<object>}
+ */
+function _readBody(req) {
+  if (req.body !== undefined) return Promise.resolve(req.body);
+  return new Promise(function(resolve) {
+    var raw = '';
+    req.on('data', function(c) { raw += c; });
+    req.on('end', function() {
+      var ct = (req.headers && req.headers['content-type']) || '';
+      if (ct.indexOf('application/json') !== -1) {
+        try { resolve(JSON.parse(raw)); } catch (_) { resolve({}); }
+      } else {
+        var params = new URLSearchParams(raw);
+        var obj = {};
+        params.forEach(function(v, k) { obj[k] = v; });
+        resolve(obj);
+      }
+    });
+    req.on('error', function() { resolve({}); });
+  });
+}
+
 async function standardsPost(req, res, _next, pool, posthog) {
   var _pool = pool;
   var _ph = posthog || _posthog;
   var tenantId = req.session && req.session.tenantId;
   var productId = req.params && req.params.id;
+  req.body = await _readBody(req);
   var name = (req.body && req.body.name) || '';
   var content = (req.body && req.body.content) || '';
 
@@ -82,6 +115,7 @@ async function standardsPut(req, res, _next, pool) {
   var _pool = pool;
   var tenantId = req.session && req.session.tenantId;
   var standardId = req.params && req.params.id;
+  req.body = await _readBody(req);
   var name = (req.body && req.body.name) || '';
   var content = (req.body && req.body.content) || '';
 
