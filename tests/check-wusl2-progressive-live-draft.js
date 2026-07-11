@@ -45,7 +45,13 @@ function test(name, fn) {
 function freshRequire(modulePath) {
   const resolved = require.resolve(modulePath);
   delete require.cache[resolved];
-  return require(resolved);
+  const mod = require(resolved);
+  // stis-s1: never let a completed-artefact test turn fire a real git commit
+  // into this worktree. Stub records nothing and never touches child_process.
+  if (typeof mod.setSkillTurnGitCommitAdapter === 'function') {
+    mod.setSkillTurnGitCommitAdapter(function stisS1TestStubGitCommit() { /* test stub — no real git op */ });
+  }
+  return mod;
 }
 
 const ROUTES_PATH = path.resolve(__dirname, '../src/web-ui/routes/skills.js');
