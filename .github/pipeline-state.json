@@ -9248,7 +9248,8 @@
           "dorContractArtefact": "artefacts/2026-07-11-pipeline-conflict-reduction/dor/pcr-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-11T00:00:00Z",
           "prStatus": "draft",
-          "updatedAt": "2026-07-11T05:31:37.724Z"
+          "updatedAt": "2026-07-11T05:31:37.724Z",
+          "id": "pcr-s1"
         }
       ],
       "metrics": [],
