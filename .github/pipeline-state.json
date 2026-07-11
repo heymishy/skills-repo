@@ -8504,7 +8504,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-10T01:10:00Z",
+      "updatedAt": "2026-07-10T21:14:21.878Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8517,7 +8517,7 @@
         {
           "slug": "epic-1-feature-flags",
           "name": "Incomplete work can ship to main safely, gated off, without a redeploy to toggle it",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "bri-s1.1",
@@ -8547,48 +8547,85 @@
             {
               "slug": "bri-s1.2",
               "name": "Separate staging and prod PostHog projects with isolated API keys",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-10T05:37:59.192Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 10,
-                "passing": 0,
+                "totalTests": 12,
+                "passing": 12,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s1.2-staging-prod-project-separation-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.2-dor-contract.md",
-              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+              "dorSignedOffAt": "2026-07-10T00:00:00Z",
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/446"
             },
             {
               "slug": "bri-s1.3",
               "name": "Bootstrap flags server-side on session start to avoid UI flicker",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-10T21:04:44.016Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 8,
-                "passing": 0,
+                "totalTests": 10,
+                "passing": 10,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s1.3-server-side-bootstrap-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": true,
+              "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.3-dor-contract.md",
-              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+              "dorSignedOffAt": "2026-07-10T00:00:00Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/452",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "bootstrapFlags() -- resolve once per session, cache, never block",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.3-server-side-bootstrap-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "handleGetWizard gated render + handleGetWizardBootstrapped wrapper",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.3-server-side-bootstrap-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "NFR -- bootstrap timeout budget test",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.3-server-side-bootstrap-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "AC4 Playwright spec descope decision",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.3-server-side-bootstrap-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Test registration + decisions.md entries",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.3-server-side-bootstrap-plan.md"
+                }
+              ]
             },
             {
               "slug": "bri-s1.4",
@@ -8641,7 +8678,7 @@
         {
           "slug": "epic-2-staging-environment",
           "name": "A broken build cannot reach production",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "bri-s2.1",
@@ -8672,15 +8709,15 @@
             {
               "slug": "bri-s2.2",
               "name": "Provision a Neon staging branch for Postgres",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-10T05:43:50.745Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0,
+                "passing": 5,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s2.2-neon-staging-branch-test-plan.md"
               },
               "acTotal": 3,
@@ -8690,20 +8727,23 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.2-dor-contract.md",
-              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+              "dorSignedOffAt": "2026-07-10T00:00:00Z",
+              "acVerificationNote": "T1/T2/NFR2 (static regression guards) and IT1/IT2 (mocked cold-start timing for the new waitForDbReady helper) all pass -- 5/5. All 3 ACs' live-Neon proof (real schema comparison, real write isolation, real cold-start timing) remains the story's declared manual verification (Scenarios 1-3 in the AC verification script) -- no real Neon connection is available in this environment, per the discovery-stage decision. acVerified reflects only fully-closed ACs; 0/3 is honest given every AC requires a live Neon step this session did not perform.",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/447"
             },
             {
               "slug": "bri-s2.3",
               "name": "Provision an Upstash staging instance for Redis",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-10T05:53:54Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0,
+                "passing": 5,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s2.3-upstash-staging-instance-test-plan.md"
               },
               "acTotal": 3,
@@ -8713,30 +8753,83 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.3-dor-contract.md",
-              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+              "dorSignedOffAt": "2026-07-10T00:00:00Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "T1/T2 -- static regression guards (env-var-only credentials, no hardcoded literals)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "T3 -- module-reload credential-bleed guard + register in npm test chain",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.3-plan.md"
+                }
+              ],
+              "acVerificationNote": "Automated regression guards (5/5 passing: T1/T2 env-var-only credential derivation with no hardcoded fallback; T3 module-reload no-credential-bleed guard) fully cover the in-repo, static/wiring portion this story's code touches. All 3 ACs as literally worded describe live-infrastructure behaviour (a real wuce-staging instance connecting to a real, distinct Upstash Redis database; a real cross-instance write-isolation check; real monthly usage against the free-tier ceiling) that cannot be confirmed without live Upstash provisioning -- explicitly out of scope for this coding session per the story's own test plan Coverage gaps (AC2/AC3 flagged External-dependency) and the task's scope note. All 3 remain manual verification steps per the AC verification script (Scenarios 1-3), with AC3's dashboard check already scheduled ~1 week after CI starts against wuce-staging per the DoR operator follow-up note.",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/448"
             },
             {
               "slug": "bri-s2.4",
               "name": "Build an idempotent anonymized seed script for staging",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-10T21:14:05.353Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 10,
-                "passing": 0,
+                "totalTests": 9,
+                "passing": 9,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s2.4-anonymized-seed-script-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 3,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.4-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.4-dor-contract.md",
-              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+              "dorSignedOffAt": "2026-07-10T00:00:00Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Seed core logic + D37 injectable adapter + synthetic tenant dataset (T1-T3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.4-anonymized-seed-script-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Idempotency regression guards (T4-T5)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.4-anonymized-seed-script-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "PII/synthetic-data denylist guards (T6-T7)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.4-anonymized-seed-script-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "CLI entrypoint mock-mode invocation (IT1, NFR1)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.4-anonymized-seed-script-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Wire real Postgres adapter as CLI production default (separate task, D37 rule 3) + register in test chain",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s2.4-anonymized-seed-script-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "acVerificationNote": "AC1-AC3 fully code-verified (T1-T7, unit-level, mocked adapter per D37/Test Data Strategy -- no real Neon connection required or made). AC4 partially verified: IT1 confirms the single CLI-invokable entrypoint (exit 0, summary stdout); the automatic post-deploy triggering itself is S2.5-scope and remains a manual/cross-referenced gap (Scenario 4), same framing as the story test plan Coverage gaps table.",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/453"
             },
             {
               "slug": "bri-s2.5",
@@ -8789,7 +8882,7 @@
         {
           "slug": "epic-3-test-suite",
           "name": "Risk-critical journeys have deterministic, tagged coverage before beta",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "bri-s3.1",
@@ -8816,7 +8909,7 @@
             {
               "slug": "bri-s3.2",
               "name": "Signup to onboarding to first feature journey spec",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "updatedAt": "2026-07-10T00:00:00Z",
               "reviewStatus": "passed",
@@ -8824,14 +8917,16 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
-                "passing": 0,
+                "passing": 9,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s3.2-signup-onboarding-journey-test-plan.md"
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/451"
             },
             {
               "slug": "bri-s3.3",
@@ -8877,42 +8972,46 @@
             {
               "slug": "bri-s3.5",
               "name": "Billing journey spec",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-10T01:10:00Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 11,
-                "passing": 0,
+                "passing": 11,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s3.5-billing-journey-test-plan.md"
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/449"
             },
             {
               "slug": "bri-s3.6",
               "name": "Auth journey spec",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-10T10:23:12.050Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 11,
-                "passing": 0,
+                "totalTests": 22,
+                "passing": 22,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s3.6-auth-journey-test-plan.md"
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/450"
             }
           ]
         }

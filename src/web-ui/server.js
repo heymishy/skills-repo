@@ -34,7 +34,7 @@ const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetSt
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
-const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5
+const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal, handleGetBillingPlanState } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5 / bri-s3.5
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
 const { creditsGuard }                                               = require('./middleware/credits-guard'); // lab-s3.3
 const { handleEmailSignup, handleEmailLogin, setUserDb }             = require('./routes/auth-email');       // lab-s2.2
@@ -47,6 +47,8 @@ const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _han
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
 const { setStandardsAdapter }                                        = require('./standards-adapter');             // psh-s10
+const { setPostHogFlagsAdapter }                                     = require('./modules/posthog-flags');          // bri-s1.1
+const { initPostHogFlagsClient }                                     = require('./modules/posthog-config');         // bri-s1.2
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -72,6 +74,19 @@ console.log('[auth] provider registry initialised');
 if (process.env.GOOGLE_CLIENT_ID) {
   setGoogleUserInfoAdapter(_realFetchGoogleUserInfo);
   console.log('[auth] google oauth registered');
+}
+
+// bri-s1.2 — wire the real PostHog flags client into the bri-s1.1 adapter contract,
+// using the env-appropriate project key (staging vs production). Never active under
+// NODE_ENV=test (consistent with the other adapter-wiring blocks in this file); a
+// missing/misconfigured key logs a clear, key-value-free error and does not crash
+// the process (AC4) — it never falls back to the other environment's key.
+if (process.env.NODE_ENV !== 'test') {
+  const _postHogEnvName = process.env.NODE_ENV === 'staging' ? 'staging' : 'production';
+  initPostHogFlagsClient(_postHogEnvName, process.env, {
+    setPostHogFlagsAdapter: setPostHogFlagsAdapter,
+    logger: console
+  });
 }
 
 // Wire skill list + session creation — active in production AND when
@@ -622,6 +637,7 @@ if (process.env.NODE_ENV === 'test') {
     accessToken: 'e2e-test-access-token',
     userId:      9999,
     login:       'e2e-tester',
+    tenantId:    'e2e-tester', // bri-s3.5: tenant-scoped billing/plan-state routes need this
   });
 
   // Fixture fetcher: serves <type>-sample.md for the canonical test slug;
@@ -694,12 +710,135 @@ if (process.env.NODE_ENV === 'test') {
   // The check-lab-s3.4-stripe-webhook.js unit tests inject their own mock directly via setWebhookDbAdapter().
   setWebhookDbAdapter({ query: async function() { return { rows: [], rowCount: 1 }; } });
 
-  // lab-s2.3: wire user-flags adapter in test mode — returns firstLogin: false (returning user) by default.
-  // Tests override this per-test via monkeypatching.
-  setUserFlagsAdapter({
-    getFirstLoginFlag:   async function() { return false; },
-    clearFirstLoginFlag: async function() {}
+  // bri-s3.5: fake Stripe adapter in test mode so the @mocked/@billing E2E spec can
+  // drive POST /webhook/stripe with synthetic event payloads. No real Stripe secret
+  // is ever available in this variant, so a real signature cannot be constructed —
+  // constructEvent simply parses the raw request body as the event object, mirroring
+  // the same synthetic-event pattern check-lab-s3.4-stripe-webhook.js's unit tests
+  // already use via monkeypatched adapters. checkout/portal session creation still
+  // throw — the E2E spec never calls /billing/checkout, so this only guards against
+  // an accidental real-looking call slipping through unnoticed (AC5).
+  setStripeAdapter({
+    webhooks: {
+      constructEvent: function(rawBody) { return JSON.parse(rawBody.toString()); }
+    },
+    checkout: { sessions: { create: async function() {
+      throw new Error('Real Stripe Checkout must not be invoked in NODE_ENV=test');
+    } } },
+    billingPortal: { sessions: { create: async function() {
+      throw new Error('Real Stripe Billing Portal must not be invoked in NODE_ENV=test');
+    } } }
   });
+
+  // lab-s2.3: wire user-flags adapter in test mode — per-user in-memory tracking that
+  // mirrors the real github_first_login table semantics (bri-s3.6): an id never seen
+  // before is first-login=true; clearFirstLoginFlag marks it false for all subsequent
+  // logins. This lets the E2E auth journey spec browser-drive both the first-time
+  // (/welcome) and returning (/dashboard) paths using the same synthetic identity,
+  // exactly as its own verification script's Scenario 1/2 do. No existing E2E spec
+  // calls getFirstLoginFlag (only reachable via the real /auth/github/callback route),
+  // so this replaces the prior blanket 'always false' stub without affecting other specs.
+  const _bri36FirstLoginCleared = new Set();
+  setUserFlagsAdapter({
+    getFirstLoginFlag:   async function(userId) { return !_bri36FirstLoginCleared.has(String(userId)); },
+    clearFirstLoginFlag: async function(userId) { _bri36FirstLoginCleared.add(String(userId)); }
+  });
+
+  // bri-s3.6: deterministic GitHub OAuth exchange stub (test mode only) — lets the E2E
+  // auth journey spec drive the real /auth/github -> /auth/github/callback redirect
+  // chain without ever contacting github.com. The authorisation `code` value IS the
+  // synthetic GitHub login name, so a spec can reuse the same code across two logins
+  // (first-time, then returning) to exercise both AC1 and AC2 with one identity.
+  // AC5: this is the "provider exchange stubbed" half of the @mocked contract — the
+  // real gitHubProviderAdapter (which calls fetch() against github.com) is replaced,
+  // so a global.fetch/network spy during the E2E run records zero real calls.
+  setProviderAdapter({
+    exchangeCode: async function(code) { return 'e2e-oauth-token-' + code; },
+    getUserIdentity: async function(token) {
+      const login = String(token).replace(/^e2e-oauth-token-/, '');
+      let id = 0;
+      for (let i = 0; i < login.length; i++) { id = (id * 31 + login.charCodeAt(i)) % 900000; }
+      return { id: 900000000 + id, login: login };
+    }
+  });
+
+  // bri-s3.2: wire the real bcrypt password adapter and the real (non-streaming)
+  // skill-turn executor even in NODE_ENV=test. Both blocks below normally live
+  // behind the `WIRE_SKILL_ADAPTERS=true` gate (see the big conditional near
+  // the top of this file) because most of what that gate wires needs a real
+  // DB/Stripe/GitHub token. These two do not: bcrypt is pure crypto with no
+  // external dependency, and the real skillTurnExecutor's `meta.stage` routing
+  // is exactly what lets it defer to S3.1's mock LLM gateway (isMockGatewayEnabled()
+  // is already true in NODE_ENV=test) instead of a real provider — so wiring it
+  // here does not risk a real network call. This lets the @mocked signup ->
+  // onboarding -> first-feature journey spec (bri-s3.2) exercise the REAL
+  // signup and chat-turn handlers without needing WIRE_SKILL_ADAPTERS at all.
+  setPasswordAdapter(require('bcrypt'));
+  {
+    const { setSkillTurnExecutorAdapter: _setRealTurnExecutor } = require('./routes/skills');
+    const { skillTurnExecutor: _realTurnExecutorForTest } = require('../modules/skill-turn-executor');
+    _setRealTurnExecutor(_realTurnExecutorForTest);
+  }
+  // bri-s3.2: bri-s3.1 built the mock LLM gateway as its own D37 adapter
+  // (mock-llm-gateway.js's _mockGatewayClient) but nothing in server.js ever
+  // called wireDefaultMockGatewayClient() — so isMockGatewayEnabled() being
+  // true was not sufficient on its own; getMockResponse() still threw
+  // "Adapter not wired: mockGatewayClient" for every chat turn. Wiring the
+  // built-in fixture-file-backed client here (test mode only) is what
+  // actually makes the @mocked gateway usable end-to-end.
+  {
+    const _mockLlmGatewayForTest = require('./modules/mock-llm-gateway');
+    if (_mockLlmGatewayForTest.isMockGatewayEnabled()) {
+      _mockLlmGatewayForTest.wireDefaultMockGatewayClient();
+    }
+  }
+  // bri-s3.2: wire the real generateProductDraft adapter too — it already
+  // no-ops (returns a blank draft, zero network calls) when ANTHROPIC_API_KEY
+  // is unset, which it deliberately is not set to in the shared E2E webServer
+  // env. Needed so POST /products/new (the "Generate context files" step)
+  // does not throw "Adapter not wired" for the bri-s3.2 product-creation spec.
+  setGenerateProductDraft(async function(fields) {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return { mission: '', roadmap: '', techStack: '', constraints: '', architectureGuardrails: '' };
+    }
+    // Real-key path intentionally left unimplemented here — this test-mode
+    // wiring only exists to satisfy the D37 "must be wired" adapter contract
+    // when ANTHROPIC_API_KEY is absent, which is always true in E2E CI.
+    return { mission: '', roadmap: '', techStack: '', constraints: '', architectureGuardrails: '' };
+  });
+
+  // bri-s3.2: in-memory fake users/products DB for NODE_ENV=test when no real
+  // DATABASE_URL is configured. Lets the REAL email/password signup
+  // (routes/auth-email.js) and REAL product-creation/dashboard handlers
+  // (routes/products.js) run end-to-end in the @mocked Playwright suite
+  // without needing a live Postgres instance. No-op when DATABASE_URL is set
+  // (that branch already wires the real Pool above and takes precedence).
+  if (!process.env.DATABASE_URL) {
+    const { createFakeTestDb } = require('./adapters/fake-test-db');
+    const _fakeTestDb = createFakeTestDb();
+    setUserDb(_fakeTestDb);
+    _pshPool = _fakeTestDb;
+    console.log('[bri-s3.2] fake in-memory users/products DB wired (NODE_ENV=test, no DATABASE_URL)');
+  }
+
+  // bri-s3.2 AC5: real-LLM-call counter. Wraps https.request so an @mocked E2E
+  // spec can assert zero real calls were made to the Anthropic or Copilot
+  // Chat Completions APIs during the whole spec file's run, via
+  // GET /test/real-llm-call-count. Only counts calls whose hostname matches
+  // a real LLM provider — never affects the call itself (always forwards to
+  // the original https.request).
+  {
+    let _realLlmCallCount = 0;
+    const _origHttpsRequest = https.request;
+    https.request = function(options) {
+      const hostname = (options && (options.hostname || options.host)) || '';
+      if (hostname === 'api.anthropic.com' || String(hostname).indexOf('githubcopilot.com') !== -1) {
+        _realLlmCallCount++;
+      }
+      return _origHttpsRequest.apply(https, arguments);
+    };
+    global.__BRI_S3_2_REAL_LLM_CALL_COUNT__ = function() { return _realLlmCallCount; };
+  }
 }
 
 /** Parse query parameters from a URL into a plain object. */
@@ -728,11 +867,18 @@ async function router(req, res) {
   // (handles cases where a prior test consumed/mutated it, e.g. via logout).
   if (pathname === '/test/session' && req.method === 'GET' && process.env.NODE_ENV === 'test') {
     const { seedTestSession } = require('./middleware/session');
-    const E2E_SESSION_ID = 'e2e' + '0'.repeat(60) + '1';
-    seedTestSession(E2E_SESSION_ID, {
+    // bri-s3.5: optional ?sessionId=&tenantId= overrides let a spec seed an isolated
+    // session (its own cookie, its own tenant) instead of the shared default — used
+    // by the billing journey spec's usage-gate scenario so a per-tenant journey cap
+    // doesn't collide with other spec files that share the default e2e-tester tenant.
+    // Callers that omit both query params get the original, unchanged default session.
+    const sessionId = (req.query && req.query.sessionId) || ('e2e' + '0'.repeat(60) + '1');
+    const tenantId  = (req.query && req.query.tenantId) || 'e2e-tester';
+    seedTestSession(sessionId, {
       accessToken: 'e2e-test-access-token',
       userId:      9999,
       login:       'e2e-tester',
+      tenantId:    tenantId,
     });
     // Return Set-Cookie so Playwright's APIRequestContext (page.request) stores
     // the session cookie in its own cookie jar. Without this, page.request.post()
@@ -741,9 +887,9 @@ async function router(req, res) {
     // No Secure flag — we run on HTTP in test mode; SameSite=Lax allows API calls.
     res.writeHead(200, {
       'Content-Type': 'application/json',
-      'Set-Cookie': `session_id=${E2E_SESSION_ID}; HttpOnly; SameSite=Lax; Path=/`,
+      'Set-Cookie': `session_id=${sessionId}; HttpOnly; SameSite=Lax; Path=/`,
     });
-    res.end(JSON.stringify({ sessionId: E2E_SESSION_ID, login: 'e2e-tester' }));
+    res.end(JSON.stringify({ sessionId: sessionId, login: 'e2e-tester' }));
     return;
   }
 
@@ -805,6 +951,7 @@ async function router(req, res) {
       accessToken: 'e2e-test-access-token',
       userId:      9999,
       login:       'e2e-tester',
+      tenantId:    'e2e-tester', // bri-s3.5: tenant-scoped billing/plan-state routes need this
     });
     const _uid = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
     const _defSessionId = 'def-e2e-' + _uid;
@@ -852,8 +999,45 @@ async function router(req, res) {
     return;
   }
 
+  // bri-s3.5 AC5 — test-only Stripe call-count spy read. Lets the @mocked/@billing
+  // E2E spec assert zero real Stripe API calls happened during the billing journey
+  // (NODE_ENV=test guard mirrors every other /test/* endpoint above).
+  if (pathname === '/test/stripe-call-count' && req.method === 'GET' && process.env.NODE_ENV === 'test') {
+    const { getCheckoutCallCount } = require('./modules/stripe-client');
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ count: getCheckoutCallCount() }));
+    return;
+  }
+
   // Attach session before routing
   sessionMiddleware(req, res);
+
+  // bri-s3.2 AC1: test-only onboarding-gate bypass (NODE_ENV=test only).
+  // The real plan-selection step at /welcome requires a live Stripe Checkout
+  // round-trip — out of scope for this journey-testing spec (owned by
+  // lab-s3.2's billing story) and unsafe to exercise for real in CI. This
+  // lets the @mocked signup->dashboard spec simulate "plan selected" for the
+  // just-created session without touching Stripe. Mirrors the existing
+  // /test/session and /test/seed-definition-session test-infrastructure
+  // pattern above — gated identically, never reachable outside NODE_ENV=test.
+  if (pathname === '/test/complete-onboarding' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    if (req.session) { req.session.firstLogin = false; }
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true }));
+    return;
+  }
+
+  // bri-s3.2 AC5: exposes the real-LLM-call counter (wired above) so an
+  // @mocked E2E spec can assert zero real calls were made to the Anthropic or
+  // Copilot Chat Completions APIs across its whole run.
+  if (pathname === '/test/real-llm-call-count' && req.method === 'GET' && process.env.NODE_ENV === 'test') {
+    const count = typeof global.__BRI_S3_2_REAL_LLM_CALL_COUNT__ === 'function'
+      ? global.__BRI_S3_2_REAL_LLM_CALL_COUNT__()
+      : 0;
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ count: count }));
+    return;
+  }
 
   if (pathname === '/auth/github' && req.method === 'GET') {
     await handleAuthGithub(req, res);
@@ -1222,6 +1406,10 @@ async function router(req, res) {
   } else if (pathname === '/settings/billing' && req.method === 'GET') {
     // lab-s3.5 — Stripe Billing Portal redirect
     await handleGetBillingPortal(req, res);
+
+  } else if (pathname === '/billing/plan-state' && req.method === 'GET') {
+    // bri-s3.5 — tenant plan-state read (paid/trial, active/past_due/canceled)
+    authGuard(req, res, () => handleGetBillingPlanState(req, res));
 
   } else if (pathname === '/api/me' && req.method === 'GET') {
     const authenticated = !!(req.session && req.session.accessToken);
