@@ -1,14 +1,28 @@
 'use strict';
 const assert = require('assert');
 
-function makeMockPool(standards) {
+// bri-s3.4: standardsPost/standardsList/standardsPut now check tenant
+// ownership before writing/listing. `tenantId` is the tenant that "owns" the
+// mock product/standard for this test scenario -- pass the same value as the
+// test's req.session.tenantId so the (same-tenant, legitimate) existing
+// coverage keeps passing.
+function makeMockPool(standards, tenantId) {
   return {
     _ops: [],
     query: async function(sql, params) {
       this._ops.push({ sql, params });
+      if (/SELECT tenant_id FROM products WHERE product_id/i.test(sql)) {
+        return { rows: tenantId ? [{ tenant_id: tenantId }] : [] };
+      }
+      if (/SELECT org_id FROM standards WHERE standard_id/i.test(sql)) {
+        const sid = params && params[0];
+        const row = (standards || []).find(s => s.standard_id === sid);
+        return { rows: row ? [{ org_id: row.org_id }] : (tenantId ? [{ org_id: tenantId }] : []) };
+      }
       if (/FROM standards WHERE product_id/i.test(sql)) {
         const pid = params && params[0];
-        const rows = (standards || []).filter(s => s.product_id === pid);
+        const orgId = params && params[1];
+        const rows = (standards || []).filter(s => s.product_id === pid && (orgId === undefined || s.org_id === orgId));
         rows.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
         return { rows };
       }
@@ -49,7 +63,7 @@ setTimeout(function() {
     // T2 — Integration: POST creates standard with correct fields
     try {
       const ph = { _caps: [], capture: function(id,ev,props) { this._caps.push({ev,props}); } };
-      const pool = makeMockPool([]);
+      const pool = makeMockPool([], 'org-1');
       const req = { session: { tenantId: 'org-1' }, params: { id: 'prod-1' }, body: { name: 'My Standard', content: 'Use tabs' } };
       const res = { status: function(c) { this._s=c; return this; }, json: function(b) { this._b=b; }, _s:200, _b:null };
       await standardsPost(req, res, null, pool, ph);
@@ -66,7 +80,7 @@ setTimeout(function() {
     // T3 — Integration: PostHog standard_created
     try {
       const ph = { _caps: [], capture: function(id,ev,props) { this._caps.push({ev,props}); } };
-      const pool = makeMockPool([]);
+      const pool = makeMockPool([], 'org-1');
       const req = { session: { tenantId: 'org-1' }, params: { id: 'prod-1' }, body: { name: 'S1', content: 'c1' } };
       const res = { status: function(c) { this._s=c; return this; }, json: function(b) { this._b=b; }, _s:200 };
       await standardsPost(req, res, null, pool, ph);
@@ -82,9 +96,9 @@ setTimeout(function() {
     try {
       const now = new Date();
       const standards = [
-        { standard_id: 's1', product_id: 'prod-1', name: 'S1', visibility: 'product', created_at: new Date(+now - 60000) },
-        { standard_id: 's2', product_id: 'prod-1', name: 'S2', visibility: 'product', created_at: new Date(+now - 30000) },
-        { standard_id: 's3', product_id: 'prod-1', name: 'S3', visibility: 'product', created_at: now }
+        { standard_id: 's1', product_id: 'prod-1', org_id: 'org-1', name: 'S1', visibility: 'product', created_at: new Date(+now - 60000) },
+        { standard_id: 's2', product_id: 'prod-1', org_id: 'org-1', name: 'S2', visibility: 'product', created_at: new Date(+now - 30000) },
+        { standard_id: 's3', product_id: 'prod-1', org_id: 'org-1', name: 'S3', visibility: 'product', created_at: now }
       ];
       const pool = makeMockPool(standards);
       const req = { session: { tenantId: 'org-1' }, params: { id: 'prod-1' } };
@@ -99,7 +113,7 @@ setTimeout(function() {
 
     // T5 — Integration: PUT updates name/content/updated_at
     try {
-      const pool = makeMockPool([]);
+      const pool = makeMockPool([{ standard_id: 'std-1', product_id: 'prod-1', org_id: 'org-1', name: 'Old Name', content: 'Old content', visibility: 'product', created_at: new Date() }]);
       const req = { session: { tenantId: 'org-1' }, params: { id: 'std-1' }, body: { name: 'New Name', content: 'New content' } };
       const res = { json: function(b) { this._b=b; }, _b:null, status: function(c) { this._s=c; return this; } };
       await standardsPut(req, res, null, pool);
@@ -114,7 +128,7 @@ setTimeout(function() {
 
     // T6 — org_id from session, not body
     try {
-      const pool = makeMockPool([]);
+      const pool = makeMockPool([], 'real-org');
       const req = { session: { tenantId: 'real-org' }, params: { id: 'prod-1' }, body: { name: 'S', content: 'c', org_id: 'injected-org' } };
       const res = { status: function(c) { this._s=c; return this; }, json: function(b) { this._b=b; }, _s:200 };
       await standardsPost(req, res, null, pool, mockPosthog);
@@ -127,7 +141,7 @@ setTimeout(function() {
 
     // T-NFR1 — HTML escape in list response
     try {
-      const standards = [{ standard_id: 'xss', product_id: 'p', name: '<script>xss</script>', visibility: 'product', created_at: new Date() }];
+      const standards = [{ standard_id: 'xss', product_id: 'p', org_id: 'org', name: '<script>xss</script>', visibility: 'product', created_at: new Date() }];
       const pool = makeMockPool(standards);
       const req = { session: { tenantId: 'org' }, params: { id: 'p' } };
       const res = { json: function(b) { this._b=b; }, _b:null, status: function(c) { this._s=c; return this; } };
@@ -141,7 +155,7 @@ setTimeout(function() {
 
     // T-NFR2 — performance < 1s for 50 standards
     try {
-      const s50 = Array.from({length:50}, (_,i) => ({ standard_id:'s'+i, product_id:'pb', name:'S'+i, visibility:'product', created_at:new Date() }));
+      const s50 = Array.from({length:50}, (_,i) => ({ standard_id:'s'+i, product_id:'pb', org_id:'tb', name:'S'+i, visibility:'product', created_at:new Date() }));
       const pool = makeMockPool(s50);
       const req = { session: { tenantId: 'tb' }, params: { id: 'pb' } };
       const res = { json: function(b) { this._b=b; }, _b:null, status: function(c) { this._s=c; return this; } };

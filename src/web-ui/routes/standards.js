@@ -24,6 +24,19 @@ async function standardsPost(req, res, _next, pool, posthog) {
     return;
   }
 
+  // bri-s3.4: this handler previously never verified the target productId
+  // belongs to the caller's own tenant -- tenant A could attach a standard to
+  // tenant B's product by ID. 404 (not 403), consistent with the
+  // FORBIDDEN-vs-NOT_FOUND policy used elsewhere in this codebase.
+  var _ownerRow = (await _pool.query(
+    'SELECT tenant_id FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!_ownerRow || _ownerRow.tenant_id !== tenantId) {
+    res.status(404).json({ error: 'not found' });
+    return;
+  }
+
   var r = await _pool.query(
     'INSERT INTO standards (product_id, org_id, name, content, visibility) VALUES ($1, $2, $3, $4, $5) RETURNING standard_id',
     [productId, tenantId, name, content, 'product']
@@ -43,9 +56,15 @@ async function standardsPost(req, res, _next, pool, posthog) {
 async function standardsList(req, res, _next, pool) {
   var _pool = pool;
   var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  // bri-s3.4: this query previously had no tenant filter at all -- listing
+  // standards for a product_id whose standards were seeded/created under a
+  // different tenant's org_id (or a product owned by another tenant) leaked
+  // those rows to any authenticated caller. org_id is this table's tenant
+  // boundary (see standardsPromote's existing org_id check below).
   var rows = (await _pool.query(
-    'SELECT standard_id, name, visibility, created_at FROM standards WHERE product_id = $1 ORDER BY created_at DESC',
-    [productId]
+    'SELECT standard_id, name, visibility, created_at FROM standards WHERE product_id = $1 AND org_id = $2 ORDER BY created_at DESC',
+    [productId, tenantId]
   )).rows;
   var standards = rows.map(function(s) {
     return {
@@ -61,9 +80,25 @@ async function standardsList(req, res, _next, pool) {
 
 async function standardsPut(req, res, _next, pool) {
   var _pool = pool;
+  var tenantId = req.session && req.session.tenantId;
   var standardId = req.params && req.params.id;
   var name = (req.body && req.body.name) || '';
   var content = (req.body && req.body.content) || '';
+
+  // bri-s3.4: this handler previously updated any standard by ID with no
+  // ownership check at all -- any authenticated user of any tenant could
+  // edit another tenant's standard. 404 (not 403) on a missing/mismatched
+  // standard, consistent with the FORBIDDEN-vs-NOT_FOUND policy used
+  // elsewhere in this codebase.
+  var _ownerRow = (await _pool.query(
+    'SELECT org_id FROM standards WHERE standard_id = $1',
+    [standardId]
+  )).rows[0];
+  if (!_ownerRow || _ownerRow.org_id !== tenantId) {
+    res.status(404).json({ error: 'not found' });
+    return;
+  }
+
   await _pool.query(
     'UPDATE standards SET name = $1, content = $2, updated_at = NOW() WHERE standard_id = $3',
     [name, content, standardId]
