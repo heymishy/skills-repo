@@ -9289,6 +9289,42 @@
       ],
       "metrics": [],
       "updatedAt": "2026-07-11T00:00:00Z"
+    },
+    {
+      "slug": "2026-07-12-skill-turn-test-isolation",
+      "name": "Stop the skill-turn artefact auto-commit from firing real git commits during tests",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "stis-s1",
+          "slug": "stis-s1",
+          "name": "Guard skill-turn auto-commit behind a D37 adapter so tests never fire real git commits",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 11,
+            "passing": 0,
+            "artefact": "artefacts/2026-07-12-skill-turn-test-isolation/test-plans/stis-s1-guard-skill-turn-auto-commit-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-12-skill-turn-test-isolation/dor/stis-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-12-skill-turn-test-isolation/dor/stis-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-12T00:00:00Z",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-12T00:00:00Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
