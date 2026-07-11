@@ -3,7 +3,7 @@
 **Story reference:** artefacts/2026-07-12-skill-turn-test-isolation/stories/stis-s1-guard-skill-turn-auto-commit.md
 **Technical test plan:** artefacts/2026-07-12-skill-turn-test-isolation/test-plans/stis-s1-guard-skill-turn-auto-commit-test-plan.md
 **Script version:** 1
-**Verified by:** _____ | **Date:** _____ | **Context:** [ ] Pre-code sign-off  [ ] Post-merge smoke test  [ ] Demo
+**Verified by:** Coding agent (autonomous /verify-completion) | **Date:** 2026-07-12 | **Context:** [x] Pre-code sign-off (post-implementation, pre-PR)
 
 ---
 
@@ -32,8 +32,8 @@
 **Expected outcome:**
 > The commit hash is exactly the same before and after. The test's own pass/fail output is unaffected — it should report all its usual tests passing, just with zero side-effect commits.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** The coding agent's own exhaustive search (tracing every call site of `handlePostTurnStreamHtml`, not grepping for marker text) found that `check-wusl1-chat-streaming.js` does not currently reach the artefact-completion path at all (no executor mock in that file returns ARTEFACT-START/END content). The 2 files that do reach it — `check-wusl2-progressive-live-draft.js` and `check-iwu5-lens-complete.js` — were each run standalone before/after the fix: HEAD identical both times (`7b71fe2b...` unchanged), wusl2 8/8 passing, iwu5 17/17 passing. Also reproduced the defect once, deliberately, on the unfixed code with a disposable slug (RED state: HEAD moved to a real `feat: discovery artefact` commit), then reverted via `git reset --hard` before implementing the fix — logged in decisions.md.
 
 ---
 
@@ -51,8 +51,8 @@
 **Expected outcome:**
 > All three commit-hash checks show the exact same value. No matter how many times you run the full suite, nothing new appears in the git history.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Ran `node scripts/run-all-tests.js` (this repo's dynamic test runner) twice in a row. HEAD was `7b71fe2b393b754254263ef68db121afb0a4deeb` before, after run 1, and after run 2 — unchanged all three times. Run 1: 308 files run, 69 failed. Run 2: 308 files run, 69 failed, identical failing-file list (diffed, zero differences).
 
 ---
 
@@ -68,8 +68,8 @@
 **Expected outcome:**
 > The failure count matches the documented pre-existing number — this fix didn't accidentally hide or add any real test failures, it only stopped the side-effect commits.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** 69 failures both full-suite runs, within the documented ~68-70 baseline range referenced across `pcr-s1`/`bri-s2.5` decisions.md entries. Failing-file list identical between the two runs (see Scenario 2 notes) — this fix changed zero test outcomes, only removed the git-commit side effect.
 
 ---
 
@@ -84,8 +84,8 @@
 **Expected outcome:**
 > The test confirms a real commit still happens when nothing overrides the adapter — proving this fix only changed test-time behaviour, not the real feature that saves and commits artefacts during an actual live skill session.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** `tests/check-stis-s1-guard-skill-turn-git-commit.js` U2 creates a disposable temp git repo via `fs.mkdtempSync`/`git init`, points `CLAUDE_REPO_PATH` at it, and confirms a real commit appears in that throwaway repo's `git log` when no adapter override is set — never touching this real repo checkout. PASS.
 
 ---
 
@@ -93,12 +93,12 @@
 
 | Scenario | Result | Notes |
 |----------|--------|-------|
-| Scenario 1 — one previously-affected test creates no commit | | |
-| Scenario 2 — full suite run twice creates no commits | | |
-| Scenario 3 — pre-existing failure count unchanged | | |
-| Edge case — production auto-commit still works | | |
+| Scenario 1 — one previously-affected test creates no commit | Pass | wusl1 does not reach the path; wusl2 + iwu5 (the 2 files that actually do) both verified HEAD-unchanged instead |
+| Scenario 2 — full suite run twice creates no commits | Pass | 308 files, 69 failed, HEAD unchanged across 2 runs |
+| Scenario 3 — pre-existing failure count unchanged | Pass | 69/69, identical failing-file list both runs |
+| Edge case — production auto-commit still works | Pass | U2, disposable temp repo only |
 
-**Overall verdict:** [ ] All pass — ready to proceed
+**Overall verdict:** [x] All pass — ready to proceed
 [ ] Failures found — log findings below before proceeding
 
 ---
@@ -107,4 +107,6 @@
 
 | Scenario | Expected | Actual | Severity | Action |
 |----------|----------|--------|----------|--------|
-| | | | HIGH / MED / LOW | Fix AC / Fix implementation / Accept |
+| Scenario 1 | DoR contract named `check-wusl1-chat-streaming.js` as "the primary trigger" | That file does not currently reach the git-commit path; 2 other files do (found by tracing, not grepping) | LOW | Accept — logged in decisions.md, plan's exhaustive-search table corrects the record |
+| (new, beyond test plan) | N/A | e2e/webServer subprocess also reaches the git-commit path with no way to stub via HTTP | MED | Fixed — `server.js` NODE_ENV=test no-op wiring added (Task 2), logged in decisions.md as a DoR-contract scope expansion |
+| (new, beyond test plan) | N/A | A pre-existing tracked file (`artefacts/test-slug/ideate.md`, commit `7147efb8`) appears to be historical contamination from this exact defect, already on master | LOW | Accept — out of scope for this story per its own Out of Scope section; logged in decisions.md for a future cleanup story |
