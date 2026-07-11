@@ -32,8 +32,22 @@ let _rotateSessionId = _session.rotateSessionId;
 function setRotateSessionId(fn) { _rotateSessionId = fn; }
 
 // ── In-memory rate limiter: 10 attempts per IP per 5 minutes ─────────────────
+// bri-s3.4: raised to an effectively-unlimited ceiling when
+// E2E_RATE_LIMIT_BYPASS=true (set only by playwright.config.js's webServer
+// env, never by production or by any unit test). Discovered via the AC4 20x
+// --repeat-each run of the cross-tenant-isolation E2E spec: every repeat
+// signs up 2 fresh tenants from the same Playwright-process IP, so by repeat
+// ~5 the cumulative signup calls legitimately tripped this limiter (16/20
+// repeats failed with 429 -- a real interaction between a legitimate
+// production control and repeated E2E signups, not a false flake). Gated on
+// a dedicated flag rather than NODE_ENV=test because
+// tests/check-lab-s2.2-email-password.js sets NODE_ENV='test' itself (for
+// unrelated module-load reasons) while still asserting the real 10-attempt
+// production limit in its T4.1/T4.2 -- gating on NODE_ENV alone would have
+// silently defeated that existing coverage. Same "unlimited in a controlled
+// test context" precedent as lab-s3.3's credits-guard bypass in server.js.
 const _rateLimits = new Map();
-const RATE_MAX    = 10;
+const RATE_MAX    = process.env.E2E_RATE_LIMIT_BYPASS === 'true' ? 100000 : 10;
 const RATE_WIN_MS = 5 * 60 * 1000; // 5 minutes
 
 function _getIP(req) {

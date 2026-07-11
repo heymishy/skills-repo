@@ -39,6 +39,17 @@ module.exports = {
       GITHUB_REPO_OWNER: process.env.GITHUB_REPO_OWNER || 'heymishy',
       GITHUB_REPO_NAME:  process.env.GITHUB_REPO_NAME  || 'skills-repo',
       GITHUB_REPO:       process.env.GITHUB_REPO       || 'heymishy/skills-repo',
+      // bri-s3.4: raise routes/auth-email.js's per-IP signup/login rate
+      // limiter to an effectively-unlimited ceiling for the whole E2E webServer
+      // process. Needed because any spec creating multiple tenants per run
+      // (bri-s3.2's, bri-s3.4's) can legitimately exceed the real 10-per-5-min
+      // production limit once Playwright's --repeat-each runs several
+      // iterations back-to-back from the same process IP -- discovered via
+      // bri-s3.4's AC4 20x repeat check (16/20 runs failed with 429 before
+      // this flag existed). Set only here, never in production; the real
+      // limit is still fully exercised by tests/check-lab-s2.2-email-password.js,
+      // which does not go through this config.
+      E2E_RATE_LIMIT_BYPASS: 'true',
     },
   },
 };
