@@ -206,10 +206,15 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
       }
     });
 
-    // Story-scoped writes always stamp the story's own updatedAt — this
-    // removes the need for every caller (SKILL.md instruction) to pass it
-    // explicitly, and never touches feature.updatedAt.
-    story.updatedAt = new Date().toISOString();
+    // Story-scoped writes stamp the story's own updatedAt automatically —
+    // this removes the need for every caller (SKILL.md instruction) to pass
+    // it explicitly, and never touches feature.updatedAt. An explicitly
+    // passed `updatedAt` field is respected as-is (existing callers/tests
+    // may set a specific value on purpose) — auto-stamp only fills the gap
+    // when the caller didn't provide one.
+    if (storyKeys.indexOf('updatedAt') === -1) {
+      story.updatedAt = new Date().toISOString();
+    }
   }
 
   // ── Atomic write (temp-file rename) ──────────────────────────────────────
