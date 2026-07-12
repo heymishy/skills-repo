@@ -1,0 +1,79 @@
+## Definition of Ready: A logged-in user links a second auth provider to their identity
+
+**Story reference:** artefacts/2026-07-09-team-identity-roles/stories/tir-s2.md
+**Test plan reference:** artefacts/2026-07-09-team-identity-roles/test-plans/tir-s2-cross-provider-linking-test-plan.md
+**Assessed by:** Copilot
+**Date:** 2026-07-13
+
+---
+
+## Hard Blocks
+
+| # | Check | Status | Notes |
+|---|-------|--------|-------|
+| H1 | User story is in As / Want / So format with a named persona | ✅ | |
+| H2 | At least 3 ACs in Given / When / Then format | ✅ | 4 ACs |
+| H3 | Every AC has at least one test in the test plan | ✅ | |
+| H4 | Out-of-scope section is populated — not blank or N/A | ✅ | |
+| H5 | Benefit linkage field references a named metric | ✅ | |
+| H6 | Complexity is rated | ✅ | |
+| H7 | No unresolved HIGH findings from the review report | ✅ | Review Run 2 clean |
+| H8 | Test plan has no uncovered ACs | ✅ | |
+| H9 | Architecture Constraints field populated; no Category E HIGH findings | ✅ | |
+| H-E2E | CSS-layout-dependent gap check | ✅ N/A | |
+
+Full detail (including H8-ext, H-NFR/2/3, H-NFR-profile, H-GOV, H-ADAPTER, H-INF, H-MIG): see `tir-s2-dor-contract.md`.
+
+---
+
+## Warnings
+
+| # | Check | Status | Risk if proceeding | Acknowledged by |
+|---|-------|--------|--------------------|-----------------|
+| W1 | NFRs are identified (or explicitly "None — confirmed") | ✅ | | |
+| W2 | Scope stability is declared | ✅ | | |
+| W3 | MEDIUM review findings acknowledged in /decisions | ✅ N/A | | |
+| W4 | Verification script reviewed by a domain expert | ⚠️ | Unreviewed script may miss an edge case | Acknowledged — proceed (see dor-contract) |
+| W5 | No UNCERTAIN items in test plan gap table left unaddressed | ✅ N/A | | |
+
+---
+
+## Coding Agent Instructions
+
+```
+## Coding Agent Instructions
+
+Proceed: Yes
+Story: A logged-in user links a second auth provider to their identity — artefacts/2026-07-09-team-identity-roles/stories/tir-s2.md
+Test plan: artefacts/2026-07-09-team-identity-roles/test-plans/tir-s2-cross-provider-linking-test-plan.md
+
+Goal:
+Make every test in the test plan pass. Do not add scope, behaviour, or
+structure beyond what the tests and ACs specify.
+
+Constraints:
+- CommonJS only, no Express, no TypeScript.
+- ADR-018 applies: link-flow tests use the NODE_ENV=test auth-bypass
+  fixture pattern to simulate both providers' completed authentication —
+  never a real OAuth round-trip in a test.
+- Reuse the existing provider adapters (gitHubProviderAdapter,
+  setGoogleUserInfoAdapter) — do not reimplement provider auth.
+- No automatic email-based merging under any circumstance — this must
+  never happen even as a side effect of some other code path.
+- Architecture standards: read `.github/architecture-guardrails.md` before
+  implementing.
+- Open a draft PR when tests pass — do not mark ready for review.
+- If you encounter an ambiguity not covered by the ACs or tests:
+  add a PR comment describing the ambiguity and do not mark ready for review.
+
+Oversight level: Medium — share this DoR artefact with the operator before
+assigning.
+```
+
+---
+
+## Sign-off
+
+**Oversight level:** Medium
+**Sign-off required:** No
+**Signed off by:** Not required — operator directly reviewing in-session

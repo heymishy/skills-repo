@@ -16,6 +16,7 @@
 | AC3 | Login role resolution reads the new schema path, not the legacy tenant-wide lookup | — | 1 test | — | — | — | 🟢 |
 | AC4 | Full existing auth/billing/tenancy suite passes unmodified | — | — | — | 1 scenario | — | 🟢 |
 | AC5 | Lazily creates a `team_memberships` row on first post-migration login for an unmigrated solo tenant | — | 1 test | — | — | — | 🟢 |
+| AC6 (D37) | `server.js` wires the real person/team-scoped lookup as the adapter's production implementation, replacing the old tenant-wide query | 1 test | — | — | — | — | 🟢 |
 
 ---
 
@@ -60,6 +61,14 @@ None.
 - **Precondition:** Mocked pool with no `people`/`team_memberships` tables.
 - **Action:** Call the migration bootstrap function directly.
 - **Expected result:** The mocked pool receives `CREATE TABLE IF NOT EXISTS people (...)` and `CREATE TABLE IF NOT EXISTS team_memberships (person_id, tenant_id, role, created_at, PRIMARY KEY (person_id, tenant_id))` statements (or equivalent), and calling the bootstrap function a second time does not throw or issue conflicting statements.
+- **Edge case:** No.
+
+### `server.js` wires the new person/team-scoped adapter as the real production implementation
+
+- **Verifies:** AC6 (D37 mandatory wiring)
+- **Precondition:** `server.js` module loaded (not `NODE_ENV=test` stub-only — this test asserts the real wiring call itself, similar in spirit to how `check-arl-s1-user-roles.js` verifies arl-s1's own wiring).
+- **Action:** Inspect the adapter-setter call site in `server.js` for the person/team-scoped role lookup.
+- **Expected result:** The setter is called with a real query function reading from `team_memberships` (not the legacy `user_roles` tenant-wide query, and not left unwired/throwing in production mode).
 - **Edge case:** No.
 
 ---

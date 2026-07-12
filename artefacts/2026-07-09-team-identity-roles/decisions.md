@@ -49,6 +49,19 @@
 **Made by:** Claude (agent), /definition, 2026-07-12.
 **Revisit trigger:** None — re-evaluate only if `context.yml`'s regulated status changes for this feature.
 ---
+**2026-07-13 | ARCH | /definition-of-ready, H-ADAPTER**
+**Decision:** Added AC6 to tir-s1 during DoR, requiring `server.js`'s existing `setGetUserRole` wiring (arl-s1, currently a real tenant-wide `user_roles` query at line ~185) to be rewired to the new person/team-scoped lookup as part of this story, verified by a test.
+**Rationale:** tir-s1 replaces the data model `setGetUserRole` reads from, but the original story draft had no explicit AC scoping this production rewiring — a genuine D37/H-ADAPTER gap caught during the DoR hard-block check, not present in the original /definition pass. Per CLAUDE.md's Injectable Adapter Rule, the DoR must include an explicit AC for production wiring before a story can be signed off.
+**Made by:** Claude (agent), /definition-of-ready, 2026-07-13.
+**Revisit trigger:** None — resolved before DoR sign-off, not deferred.
+---
+**2026-07-13 | RISK-ACCEPT | /test-plan, /definition-of-ready**
+**Decision:** tir-s6's AC1, AC2, and AC4 (query-plan and timing evidence at 100 synthetic `team_memberships` rows) run for real only when `DATABASE_URL` is set in the test environment (matching bri-s2.2's Neon staging branch convention). When absent, these three tests skip with an explicit, visible skip message — never silently marked passing.
+**Alternatives considered:** Mocking a canned "used index" result in `fake-test-db.js` so the tests always pass in CI with no real DB — rejected as providing false confidence (the test would assert nothing real about indexing behaviour).
+**Rationale:** This repo's existing unit/integration test convention always mocks `pool.query` and never hits a real Postgres instance; a real `EXPLAIN` query plan cannot be produced by an in-memory mock. Confirmed directly with the operator during /test-plan (2026-07-13).
+**Made by:** Hamish King (Founder/Operator), via /test-plan, 2026-07-13.
+**Revisit trigger:** If this repo's CI environment gains a standing `DATABASE_URL`-backed test database (beyond ad hoc staging branches), revisit whether these three tests should run unconditionally in CI rather than being environment-gated.
+---
 
 ---
 

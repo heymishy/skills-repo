@@ -8477,14 +8477,14 @@
     {
       "slug": "2026-07-09-team-identity-roles",
       "name": "Unified Per-User Identity and Role-Based Access Model for Multi-Tenant Teams",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-12T19:23:05.236Z",
+      "updatedAt": "2026-07-12T19:42:29.327Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-team-identity-roles/discovery.md",
@@ -8502,29 +8502,33 @@
             {
               "slug": "tir-s1",
               "name": "Person and team-membership schema replaces tenant-wide role lookup",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-12T19:23:05.236Z",
+              "updatedAt": "2026-07-12T19:42:29.327Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s1-review-1.md",
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
+                "totalTests": 7,
                 "passing": 0,
                 "artefact": "artefacts/2026-07-09-team-identity-roles/test-plans/tir-s1-person-team-schema-test-plan.md"
               },
-              "acTotal": 5,
+              "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorSignedOffAt": "2026-07-12T19:42:29.327Z",
+              "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s1-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s1-dor-contract.md"
             },
             {
               "slug": "tir-s2",
               "name": "A logged-in user links a second auth provider to their identity",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-12T19:23:05.236Z",
+              "updatedAt": "2026-07-12T19:42:29.327Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s2-review-2.md",
@@ -8537,14 +8541,18 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorSignedOffAt": "2026-07-12T19:42:29.327Z",
+              "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s2-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s2-dor-contract.md"
             },
             {
               "slug": "tir-s3",
               "name": "An admin adds a teammate by identity and assigns a role",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-12T19:23:05.236Z",
+              "updatedAt": "2026-07-12T19:42:29.327Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s3-review-2.md",
@@ -8557,14 +8565,18 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorSignedOffAt": "2026-07-12T19:42:29.327Z",
+              "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s3-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s3-dor-contract.md"
             },
             {
               "slug": "tir-s4",
               "name": "The admin/credits panel is gated by per-person role, not tenant membership",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-12T19:23:05.236Z",
+              "updatedAt": "2026-07-12T19:42:29.327Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s4-review-1.md",
@@ -8577,14 +8589,18 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorSignedOffAt": "2026-07-12T19:42:29.327Z",
+              "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s4-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s4-dor-contract.md"
             },
             {
               "slug": "tir-s5",
               "name": "An admin bulk-adds teammates from their connected GitHub org",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-12T19:23:05.236Z",
+              "updatedAt": "2026-07-12T19:42:29.327Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s5-review-2.md",
@@ -8597,14 +8613,18 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorSignedOffAt": "2026-07-12T19:42:29.327Z",
+              "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s5-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s5-dor-contract.md"
             },
             {
               "slug": "tir-s6",
               "name": "Team-membership lookups stay indexed at ~100 members per tenant",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-12T19:23:05.236Z",
+              "updatedAt": "2026-07-12T19:42:29.327Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s6-review-1.md",
@@ -8617,7 +8637,11 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorSignedOffAt": "2026-07-12T19:42:29.327Z",
+              "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s6-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s6-dor-contract.md"
             }
           ]
         }
@@ -8747,17 +8771,49 @@
           "label": "Playwright is the E2E testing framework; specs in tests/e2e/; devDependency only; unit test chain (npm test) must not invoke Playwright; auth bypass is test-fixture-layer only (NODE_ENV=test guard)",
           "status": "met",
           "evidence": "Run 2 (tir-s2 review): ADR-018 now cited in tir-s2 Architecture Constraints, naming the NODE_ENV=test auth-bypass fixture pattern for cross-provider link-flow tests. 1-M1 resolved.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-07-12T18:05:30.640Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-12T19:42:29.327Z"
         },
         {
           "id": "ADR-025",
           "category": "adr",
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) - not schema-per-tenant or database-per-tenant",
           "status": "met",
-          "evidence": "Correctly cited and respected in tir-s1, tir-s3, tir-s4, tir-s5, tir-s6 Architecture Constraints - no story replaces or bypasses the tenant-scoping guard",
-          "assessedBy": "/review",
-          "assessedAt": "2026-07-12T17:58:12.458Z"
+          "evidence": "Correctly cited and respected in tir-s1, tir-s3, tir-s4, tir-s5, tir-s6 Architecture Constraints - no story replaces or bypasses the tenant-scoping guard; re-confirmed at DoR (H9) across all 6 stories, 2026-07-13.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-12T19:42:29.327Z"
+        },
+        {
+          "id": "NFR-tir-lookup-perf",
+          "category": "nfr",
+          "label": "Role/team-membership lookup query time at ~100 members/tenant under 50ms",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-12T19:42:29.327Z"
+        },
+        {
+          "id": "NFR-tir-migration-privilege",
+          "category": "nfr",
+          "label": "Zero privilege change during the tir-s1 schema migration",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-12T19:42:29.327Z"
+        },
+        {
+          "id": "NFR-tir-fail-closed",
+          "category": "nfr",
+          "label": "Admin/credits panel access fails closed on any role ambiguity (tir-s4)",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-12T19:42:29.327Z"
+        },
+        {
+          "id": "NFR-tir-linking-ownership",
+          "category": "nfr",
+          "label": "Cross-provider identity linking requires proof of ownership of both identities before merging (tir-s2)",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-12T19:42:29.327Z"
         }
       ]
     },

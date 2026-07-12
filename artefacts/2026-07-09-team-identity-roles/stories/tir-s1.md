@@ -38,6 +38,8 @@ So that **the underlying role model can move from one-role-per-tenant to one-rol
 
 **AC5:** Given a solo tenant that has a legacy `user_roles` row but has not logged in since the migration ran (no `team_memberships` row yet), When that person next logs in, Then a `team_memberships` row is lazily created for them from their existing role — login does not fail or silently default them to a different role.
 
+**AC6:** Given `server.js` currently wires the arl-s1 `setGetUserRole` adapter to a real tenant-wide `user_roles` query (line ~185), When this story ships, Then `server.js` is updated to wire the equivalent person/team-scoped lookup as its real implementation — not left pointing at the old tenant-wide query — and this wiring is verified by a test or smoke check (per D37: the adapter's stub default must throw, never silently return a safe-looking empty result).
+
 ## Out of Scope
 
 - Building UI for a person to switch between multiple teams — the schema supports many-to-many person↔team membership, but no UI surfaces it in this story (or this epic).
