@@ -41,6 +41,8 @@ const { handleEmailSignup, handleEmailLogin, setUserDb }             = require('
 const { setPasswordAdapter }                                         = require('./modules/password');         // lab-s2.2
 const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
 const { setGetUserRole, setGetRoleForTenant, migrateTeamSchema, resolveRoleForTenant } = require('./modules/user-roles'); // arl-s1 / tir-s1
+const { migrateIdentityLinksSchema } = require('./modules/identity-links'); // tir-s2
+const { handleGetLinkSettings, handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
 const { requireAdmin }                                               = require('./middleware/require-admin'); // arl-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
 const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7
@@ -55,6 +57,13 @@ const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.c
 
 // psh-s3: module-level pool reference for product routes (assigned inside DATABASE_URL block)
 let _pshPool = null;
+
+// tir-s2: module-level handler references for /settings/link-account (assigned
+// inside the DATABASE_URL block, same pattern as _pshPool above — this route is
+// real-Postgres-only, matching tir-s1's own migrateTeamSchema/getRoleForTenant
+// wiring, which has no NODE_ENV=test fallback either).
+let _handleGoogleLinkCallback = null;
+let _handleGithubLinkCallback = null;
 
 // Wire up console logger for auth events (login, logout, state_mismatch)
 const _ts = () => new Date().toISOString();
@@ -261,7 +270,21 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // admin-seeded rows too.
     _userRolesMigrationPromise.then(function() {
       return migrateTeamSchema(_userRolesPool);
+    }).then(function() {
+      // tir-s2 — Auto-migrate person_identities schema. Chained after
+      // people/team_memberships exists (FK dependency: person_identities.person_id
+      // references people(id)).
+      return migrateIdentityLinksSchema(_userRolesPool);
     }).catch(function(err) { console.error('[tir-s1] people/team_memberships migration failed:', err.message); });
+
+    // tir-s2 — Wire the /settings/link-account callback handlers to the same
+    // Postgres pool (same reuse pattern as arl-s1/tir-s1 above). No new D37
+    // adapter (H-ADAPTER): createLinkCallbackHandlers is a plain factory, not
+    // a throw-on-unwired setter/getter pair.
+    const _linkCallbackHandlers = createLinkCallbackHandlers(_userRolesPool);
+    _handleGoogleLinkCallback = _linkCallbackHandlers.handleGoogleLinkCallback;
+    _handleGithubLinkCallback = _linkCallbackHandlers.handleGithubLinkCallback;
+    console.log('[tir-s2] account-linking callback handlers wired');
     // psh-s1: products table
     _creditsPool.query(`CREATE TABLE IF NOT EXISTS products (
       product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1482,6 +1505,32 @@ async function router(req, res) {
   } else if (pathname === '/billing/plan-state' && req.method === 'GET') {
     // bri-s3.5 — tenant plan-state read (paid/trial, active/past_due/canceled)
     authGuard(req, res, () => handleGetBillingPlanState(req, res));
+
+  } else if (pathname === '/settings/link-account' && req.method === 'GET') {
+    // tir-s2 — account-linking settings page (AC2: unauthenticated -> redirect via authGuard)
+    authGuard(req, res, () => handleGetLinkSettings(req, res));
+
+  } else if (pathname === '/settings/link-account/google/start' && req.method === 'GET') {
+    authGuard(req, res, () => handleStartGoogleLink(req, res));
+
+  } else if (pathname === '/settings/link-account/google/callback' && req.method === 'GET') {
+    if (_handleGoogleLinkCallback) {
+      authGuard(req, res, () => _handleGoogleLinkCallback(req, res));
+    } else {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Account linking unavailable');
+    }
+
+  } else if (pathname === '/settings/link-account/github/start' && req.method === 'GET') {
+    authGuard(req, res, () => handleStartGithubLink(req, res));
+
+  } else if (pathname === '/settings/link-account/github/callback' && req.method === 'GET') {
+    if (_handleGithubLinkCallback) {
+      authGuard(req, res, () => _handleGithubLinkCallback(req, res));
+    } else {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Account linking unavailable');
+    }
 
   } else if (pathname === '/api/me' && req.method === 'GET') {
     const authenticated = !!(req.session && req.session.accessToken);
