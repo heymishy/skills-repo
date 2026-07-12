@@ -8524,7 +8524,7 @@
               "name": "Build the isEnabled() flag helper shared by API and UI",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-12T08:36:35.817Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8541,7 +8541,7 @@
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.1-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.1-dor-contract.md",
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/444"
             },
             {
@@ -8549,7 +8549,7 @@
               "name": "Separate staging and prod PostHog projects with isolated API keys",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T05:37:59.192Z",
+              "updatedAt": "2026-07-12T08:36:35.929Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8567,7 +8567,7 @@
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.2-dor-contract.md",
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/446"
             },
             {
@@ -8575,7 +8575,7 @@
               "name": "Bootstrap flags server-side on session start to avoid UI flicker",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T21:04:44.016Z",
+              "updatedAt": "2026-07-12T08:36:36.055Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8592,7 +8592,7 @@
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.3-dor-contract.md",
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/452",
               "tasks": [
                 {
@@ -8632,7 +8632,7 @@
               "name": "Wire tenant-level flag targeting via PostHog group analytics",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-11T00:00:00Z",
+              "updatedAt": "2026-07-12T08:36:36.166Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8682,7 +8682,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/454"
             },
             {
@@ -8690,12 +8690,12 @@
               "name": "Create and wire the 3 initial flags across both projects",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-11T19:56:33.814Z",
+              "updatedAt": "2026-07-12T08:37:36.168Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
-                "totalTests": 10,
+                "status": "all-passing",
+                "totalTests": 8,
                 "passing": 8,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s1.5-initial-flags-wired-test-plan.md"
               },
@@ -8708,7 +8708,7 @@
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.5-dor-contract.md",
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/458"
             }
           ]
@@ -8723,7 +8723,7 @@
               "name": "Provision the wuce-staging Fly app",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-09T21:19:43.866Z",
+              "updatedAt": "2026-07-12T08:36:36.405Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8741,7 +8741,7 @@
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.1-dor-contract.md",
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
               "acVerificationNote": "AC2 fully code-verified. AC1 and AC3 are config-verified only (structural parity / scale-to-zero settings) -- real Fly.io build/start and real weekly billing remain manual operator verification steps (external-dependency gaps declared in the test plan).",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/442"
             },
             {
@@ -8749,7 +8749,7 @@
               "name": "Provision a Neon staging branch for Postgres",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T05:43:50.745Z",
+              "updatedAt": "2026-07-12T08:36:36.516Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8767,7 +8767,7 @@
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.2-dor-contract.md",
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
               "acVerificationNote": "T1/T2/NFR2 (static regression guards) and IT1/IT2 (mocked cold-start timing for the new waitForDbReady helper) all pass -- 5/5. All 3 ACs' live-Neon proof (real schema comparison, real write isolation, real cold-start timing) remains the story's declared manual verification (Scenarios 1-3 in the AC verification script) -- no real Neon connection is available in this environment, per the discovery-stage decision. acVerified reflects only fully-closed ACs; 0/3 is honest given every AC requires a live Neon step this session did not perform.",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/447"
             },
             {
@@ -8775,7 +8775,7 @@
               "name": "Provision an Upstash staging instance for Redis",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T05:53:54Z",
+              "updatedAt": "2026-07-12T08:36:36.627Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8807,7 +8807,7 @@
                 }
               ],
               "acVerificationNote": "Automated regression guards (5/5 passing: T1/T2 env-var-only credential derivation with no hardcoded fallback; T3 module-reload no-credential-bleed guard) fully cover the in-repo, static/wiring portion this story's code touches. All 3 ACs as literally worded describe live-infrastructure behaviour (a real wuce-staging instance connecting to a real, distinct Upstash Redis database; a real cross-instance write-isolation check; real monthly usage against the free-tier ceiling) that cannot be confirmed without live Upstash provisioning -- explicitly out of scope for this coding session per the story's own test plan Coverage gaps (AC2/AC3 flagged External-dependency) and the task's scope note. All 3 remain manual verification steps per the AC verification script (Scenarios 1-3), with AC3's dashboard check already scheduled ~1 week after CI starts against wuce-staging per the DoR operator follow-up note.",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/448"
             },
             {
@@ -8815,7 +8815,7 @@
               "name": "Build an idempotent anonymized seed script for staging",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T21:14:05.353Z",
+              "updatedAt": "2026-07-12T08:36:36.759Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8866,7 +8866,7 @@
               ],
               "verifyStatus": "passed",
               "acVerificationNote": "AC1-AC3 fully code-verified (T1-T7, unit-level, mocked adapter per D37/Test Data Strategy -- no real Neon connection required or made). AC4 partially verified: IT1 confirms the single CLI-invokable entrypoint (exit 0, summary stdout); the automatic post-deploy triggering itself is S2.5-scope and remains a manual/cross-referenced gap (Scenario 4), same framing as the story test plan Coverage gaps table.",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/453"
             },
             {
@@ -8874,7 +8874,7 @@
               "name": "Build the CI pipeline: PR checks through staging deploy",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-11T19:48:55.089Z",
+              "updatedAt": "2026-07-12T08:36:36.882Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8891,7 +8891,7 @@
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.5-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.5-dor-contract.md",
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/457"
             },
             {
@@ -8929,7 +8929,7 @@
               "name": "Build the mock LLM gateway and fixture set",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-12T08:36:36.995Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8943,7 +8943,7 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/445"
             },
             {
@@ -8951,7 +8951,7 @@
               "name": "Signup to onboarding to first feature journey spec",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-12T08:36:37.106Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8965,7 +8965,7 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/451"
             },
             {
@@ -8994,7 +8994,7 @@
               "name": "Cross-tenant isolation journey spec",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-11T19:57:06.261Z",
+              "updatedAt": "2026-07-12T08:36:37.234Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9008,7 +9008,7 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/459",
               "verifyStatus": "passed",
               "tasks": [
@@ -9073,7 +9073,7 @@
               "name": "Billing journey spec",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T01:10:00Z",
+              "updatedAt": "2026-07-12T08:36:37.360Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9087,7 +9087,7 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/449"
             },
             {
@@ -9095,7 +9095,7 @@
               "name": "Auth journey spec",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T10:23:12.050Z",
+              "updatedAt": "2026-07-12T08:36:37.472Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9109,7 +9109,7 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/450"
             }
           ]
@@ -9333,7 +9333,7 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 12,
             "passing": 12,
             "artefact": "artefacts/2026-07-11-pipeline-conflict-reduction/test-plans/pcr-s1-reduce-merge-conflict-hotspots-test-plan.md"
@@ -9346,8 +9346,8 @@
           "dorArtefact": "artefacts/2026-07-11-pipeline-conflict-reduction/dor/pcr-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-11-pipeline-conflict-reduction/dor/pcr-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-11T00:00:00Z",
-          "prStatus": "draft",
-          "updatedAt": "2026-07-11T05:31:37.724Z",
+          "prStatus": "merged",
+          "updatedAt": "2026-07-12T08:37:02.671Z",
           "id": "pcr-s1"
         }
       ],
@@ -9384,7 +9384,7 @@
           "dorArtefact": "artefacts/2026-07-12-skill-turn-test-isolation/dor/stis-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-12-skill-turn-test-isolation/dor/stis-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-12T00:00:00Z",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "tasks": [
             {
               "id": "task-1",
@@ -9411,7 +9411,8 @@
               "file": "artefacts/2026-07-12-skill-turn-test-isolation/plans/stis-s1-guard-skill-turn-auto-commit-plan.md"
             }
           ],
-          "branchName": "feature/stis-s1"
+          "branchName": "feature/stis-s1",
+          "updatedAt": "2026-07-12T08:37:02.499Z"
         }
       ],
       "metrics": [],
