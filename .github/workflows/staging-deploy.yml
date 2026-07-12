@@ -7,8 +7,29 @@
 # ASSUMPTION entry re: main vs master) auto-deploys to the wuce-staging Fly
 # app only, then auto-runs the bri-s2.4 seed script in the same job.
 # wuce-prod is never touched by this workflow; production promotion is a
-# separate, manually-gated job bri-s2.6 will introduce (job id convention:
+# separate, manually-gated job (bri-s2.6, below - job id convention:
 # promote-to-prod - see scripts/check-no-prod-deploy-on-push.js).
+#
+# bri-s2.6 - adds two jobs on top of bri-s2.5's deploy-staging:
+#   smoke-test       - runs the currently-available @mocked-tagged
+#                       Playwright suite against the staging URL, after
+#                       deploy-staging (which includes the seed step).
+#                       Reports a real pass/fail (no continue-on-error)
+#                       before promote-to-prod can be offered.
+#   promote-to-prod   - gated behind (a) needs: smoke-test succeeding, and
+#                       (b) a GitHub Actions `environment: production`
+#                       protection rule requiring Hamish's explicit
+#                       reviewer approval (configured in repo Settings ->
+#                       Environments - see
+#                       artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s2.6-smoke-test-promote-gate-test-plan.md
+#                       Coverage gaps table). A red smoke-test suite
+#                       structurally blocks this job via GitHub Actions'
+#                       native needs: behaviour - no `if:` override is
+#                       present that could bypass that. Deploys to the
+#                       real production Fly app, `skills-framework`
+#                       (fly.toml's `app =`), which check-no-prod-deploy-on-push.js
+#                       already recognises alongside the story's `wuce-prod`
+#                       placeholder vocabulary.
 
 name: Staging Deploy
 
@@ -35,3 +56,54 @@ jobs:
         run: node scripts/seed-staging.js
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
+  smoke-test:
+    name: Staging smoke test (@mocked)
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers (Chromium only)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run @mocked suite against staging
+        run: npx playwright test --grep "@mocked"
+        env:
+          CI: 'true'
+          E2E_BASE_URL: https://wuce-staging.fly.dev
+
+      - name: Upload Playwright traces and screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-smoke-test-traces-${{ github.run_id }}
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  promote-to-prod:
+    name: Promote to production (manual approval required)
+    needs: smoke-test
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to production
+        run: flyctl deploy --remote-only --config fly.toml --app skills-framework
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
