@@ -87,6 +87,19 @@ if (process.env.NODE_ENV !== 'test') {
     setPostHogFlagsAdapter: setPostHogFlagsAdapter,
     logger: console
   });
+} else {
+  // bri-s1.5 fix-forward: no real PostHog keys exist in CI/E2E environments, so the real
+  // client above is never wired under NODE_ENV=test. Once bri-s1.5 added an isEnabled()
+  // check to handleGetProductKanban/handleGetOrgKanban, any E2E spec that boots this server
+  // (every Playwright spec does) started hitting the D37 stub-throw default (posthog-flags.js
+  // AC2) the moment it reached a flag-gated route. Wire a fake adapter that defaults flags
+  // open (true) so E2E specs written before the flag existed (psh-s6, psh-s7) and specs that
+  // need to reach the real downstream logic (bri-s3.4 cross-tenant isolation) all still work,
+  // exactly as if the flag were fully rolled out.
+  setPostHogFlagsAdapter({
+    evaluateFlag: async function() { return true; },
+    groupIdentify: async function() {}
+  });
 }
 
 // Wire skill list + session creation — active in production AND when
