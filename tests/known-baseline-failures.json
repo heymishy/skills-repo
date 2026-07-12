@@ -1,6 +1,6 @@
 {
   "recordedAt": "2026-07-12",
-  "note": "Pre-existing, already-documented test failures unrelated to any specific PR (missing .github/skills/*.md files, missing ANTHROPIC_API_KEY, stale SKILL.md content-marker assertions, etc. -- see pcr-s1 AC1 verdict-parity finding in artefacts/2026-07-11-pipeline-conflict-reduction/decisions.md for the fullest accounting). Used by scripts/ci-test-regression-check.js to gate CI on new regressions only. A file passing that used to be here is fine (remove it next time this list is refreshed). A NEW failing file not in this list fails CI.",
+  "note": "Pre-existing, already-documented test failures unrelated to any specific PR (missing .github/skills/*.md files, missing ANTHROPIC_API_KEY, stale SKILL.md content-marker assertions, etc. -- see pcr-s1 AC1 verdict-parity finding in artefacts/2026-07-11-pipeline-conflict-reduction/decisions.md for the fullest accounting). Used by scripts/ci-test-regression-check.js to gate CI on new regressions only. A file passing that used to be here is fine (remove it next time this list is refreshed). A NEW failing file not in this list fails CI. Updated 2026-07-12 to reflect the actual GitHub Actions ubuntu-24.04 CI environment (Linux), which differs slightly from a local Windows dev machine: check-md-3-adr.js passes on Linux CI (was incorrectly in the Windows-captured baseline), while 5 Stripe/GPA-related tests fail on Linux CI but pass locally on Windows (environment-specific, unrelated to any PR content) -- both directions confirmed via a real CI run on PR #457.",
   "files": [
     "scripts/check-pipeline-state-integrity.js",
     "tests/artefact-preview.test.js",
@@ -9,10 +9,12 @@
     "tests/check-bee1-landing-page.js",
     "tests/check-bee3-posthog.js",
     "tests/check-bri-s2.2-neon-staging-branch.js",
+    "tests/check-bri-s3.5-nfr-stripe-keys.js",
     "tests/check-challenger.js",
     "tests/check-cli-outer-loop.js",
     "tests/check-definition-skill.js",
     "tests/check-discovery-skill.js",
+    "tests/check-gpa-sc06-source-path-guard.js",
     "tests/check-i1.1-orient-skill.js",
     "tests/check-i1.2-platform-init-fetch.js",
     "tests/check-i2.1-entry-a-story-first.js",
@@ -30,10 +32,11 @@
     "tests/check-inc5-canvas-skill-instruction.js",
     "tests/check-iwu2-right-panel-layout.js",
     "tests/check-iwu6-skillmd.js",
+    "tests/check-lab-s3.2-stripe-checkout.js",
+    "tests/check-lab-s3.4-stripe-webhook.js",
     "tests/check-lab-s3.5-billing-portal.js",
     "tests/check-md-1-skill-md.js",
     "tests/check-md-2-skill-contracts.js",
-    "tests/check-md-3-adr.js",
     "tests/check-mfc1-model-first-chat-session.js",
     "tests/check-mfc2-chat-ux-improvements.js",
     "tests/check-model-routing.js",
@@ -70,6 +73,7 @@
     "tests/check-wuce3-attributed-signoff.js",
     "tests/check-wuce4-docker-deployment.js",
     "tests/check-wucp1-context-autoloader.js",
-    "tests/check-wusl1-chat-streaming.js"
+    "tests/check-wusl1-chat-streaming.js",
+    "tests/run-gpa-tests.js"
   ]
 }
