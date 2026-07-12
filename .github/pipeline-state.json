@@ -8484,7 +8484,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-12T20:39:45.758Z",
+      "updatedAt": "2026-07-12T22:29:49.645Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-team-identity-roles/discovery.md",
@@ -8527,26 +8527,27 @@
             {
               "slug": "tir-s2",
               "name": "A logged-in user links a second auth provider to their identity",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-12T19:42:29.327Z",
+              "updatedAt": "2026-07-12T22:29:49.645Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s2-review-2.md",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 5,
-                "passing": 0,
+                "passing": 5,
                 "artefact": "artefacts/2026-07-09-team-identity-roles/test-plans/tir-s2-cross-provider-linking-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorSignedOffAt": "2026-07-12T19:42:29.327Z",
               "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s2-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s2-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s2-dor-contract.md",
+              "prStatus": "merged"
             },
             {
               "slug": "tir-s3",
