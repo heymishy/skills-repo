@@ -8477,14 +8477,14 @@
     {
       "slug": "2026-07-09-team-identity-roles",
       "name": "Unified Per-User Identity and Role-Based Access Model for Multi-Tenant Teams",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-12T09:50:11.962Z",
+      "updatedAt": "2026-07-12T10:19:44.853Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-team-identity-roles/discovery.md",
@@ -8493,7 +8493,51 @@
         "approvedDate": "2026-07-12"
       },
       "stories": [],
-      "epics": [],
+      "epics": [
+        {
+          "slug": "tir-e1",
+          "name": "Teams can share a tenant with individually assigned roles",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "tir-s1",
+              "name": "Person and team-membership schema replaces tenant-wide role lookup",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "tir-s2",
+              "name": "A logged-in user links a second auth provider to their identity",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "tir-s3",
+              "name": "An admin adds a teammate by identity and assigns a role",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "tir-s4",
+              "name": "The admin/credits panel is gated by per-person role, not tenant membership",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "tir-s5",
+              "name": "An admin bulk-adds teammates from their connected GitHub org",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "tir-s6",
+              "name": "Team-membership lookups stay indexed at ~100 members per tenant",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        }
+      ],
       "decisionsArtefact": "artefacts/2026-07-09-team-identity-roles/decisions.md",
       "benefitMetric": {
         "status": "active",
@@ -8549,6 +8593,69 @@
           "lastMeasured": null,
           "evidence": null,
           "contributingStories": []
+        }
+      ],
+      "slicingStrategy": "walking-skeleton",
+      "guardrails": [
+        {
+          "id": "MC-SEC-01",
+          "category": "mandatory-constraint",
+          "label": "No user-supplied content in innerHTML without sanitisation",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "No credentials, tokens, or personal data in committed files",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SEC-03",
+          "category": "mandatory-constraint",
+          "label": "Viz reads local JSON only - no external fetch calls",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CORRECT-01",
+          "category": "mandatory-constraint",
+          "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CORRECT-02",
+          "category": "mandatory-constraint",
+          "label": "Fields written to pipeline-state.json must exist in schema",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CORRECT-03",
+          "category": "mandatory-constraint",
+          "label": "Fields read by viz from pipeline-state.json must exist in schema",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SELF-01",
+          "category": "mandatory-constraint",
+          "label": "dashboards/pipeline-viz.html renders without build step, server, or network",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SELF-02",
+          "category": "mandatory-constraint",
+          "label": "No npm devDependencies in dashboards/pipeline-viz.html runtime",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CONSIST-01",
+          "category": "mandatory-constraint",
+          "label": "Stage enum in schema updated when skill adds/removes stage",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CONSIST-02",
+          "category": "mandatory-constraint",
+          "label": "Gate add/remove synced with SKILL.md criteria",
+          "status": "not-assessed"
         }
       ]
     },

@@ -2,7 +2,7 @@
 
 **Feature:** Unified Per-User Identity and Role-Based Access Model for Multi-Tenant Teams
 **Discovery reference:** artefacts/2026-07-09-team-identity-roles/discovery.md
-**Last updated:** 2026-07-09
+**Last updated:** 2026-07-12
 
 ---
 
@@ -35,6 +35,19 @@
 **Rationale:** 4 roles covers the real team composition described (including a non-participating stakeholder need) without over-building the role taxonomy before real usage data exists. The full persona mirror (option B) is more complete but likely more granularity than MVP needs to prove the per-person-role mechanism.
 **Made by:** Hamish King (Founder/Operator), via /clarify, 2026-07-09
 **Revisit trigger:** If real usage shows a need for finer-grained roles (e.g. billing-only, per-CoP-discipline roles) beyond this initial set.
+---
+**2026-07-12 | SLICE | /definition**
+**Decision:** tir-s1 (introducing the `people`/`team_memberships` schema and migrating the login role-lookup path off the legacy `user_roles` table) is written as a standard story, not `migration-story.md`.
+**Alternatives considered:** Using `migration-story.md`, since the story does involve a schema change and a one-time backfill of existing rows.
+**Rationale:** `migration-story.md` is for data migration, cutover, parallel-run, or consumer migration stories — driven by data rules or traffic switching, typically implying live production data that must be carried over without a service interruption. This feature is pre-launch with zero live customers (per discovery's Why Now), so there is no cutover, no parallel-run, and no traffic-switching concern — it's a same-deploy schema bootstrap plus a straightforward 1:1 backfill of today's single-tenant `user_roles` rows into the new schema, closer in shape to the existing `CREATE TABLE IF NOT EXISTS` startup-migration convention (`journey-store-pg.js`) than to a true migration story.
+**Made by:** Claude (agent), /definition, 2026-07-12.
+**Revisit trigger:** If real paying customers exist by the time tir-s1 is implemented, re-evaluate — a backfill against live production data would then warrant `migration-story.md`'s cutover/rollback discipline.
+---
+**2026-07-12 | SCOPE | /definition, Step 4a**
+**Decision:** Step 4a (regulated constraint propagation check) was skipped for this feature's story set.
+**Rationale:** Discovery's Constraints section states `context.yml` confirms `meta.regulated: false` and no compliance framework applies. Step 4a runs only when the discovery Constraints section contains at least one regulated constraint — none exists here, so the step is a no-op by its own entry condition, not an oversight.
+**Made by:** Claude (agent), /definition, 2026-07-12.
+**Revisit trigger:** None — re-evaluate only if `context.yml`'s regulated status changes for this feature.
 ---
 
 ---
