@@ -211,6 +211,17 @@
 **Made by:** Coding agent (bri-s2.5 inner loop), 2026-07-11.
 **Revisit trigger:** None — trivial comment fix, unrelated to this story's own scope, discovered only because the new `ci-lint.js` step is a real (non-vacuous) check.
 ---
+**2026-07-12 | RISK-ACCEPT + ARCH | post-merge fix (real CI run)**
+**Decision:** Two fixes to bri-s2.5's own PR-checks workflow, both found by actually running it on GitHub Actions (not just locally) after the PR was opened:
+
+1. `scripts/ci-typecheck.js` originally `require()`-d every file under `src/web-ui` in-process as a smoke check. `server.js` has a real top-level side effect — it calls `startSessionEviction()` unconditionally at module scope (not gated behind `require.main === module`), which fires a `setInterval()` with no `.unref()`. Simply requiring `server.js` therefore kept the checker's event loop alive forever, hanging the real CI job for 9+ minutes on its first run. Fixed by running each file's require-check in its own short-lived child process (`spawnSync` + explicit `process.exit(0)` immediately after a successful load), with a 10s per-file timeout as a second safety net.
+2. The "Unit test chain" step ran plain `npm test`, which exits non-zero whenever *any* file fails — including this repo's ~69-73 already-documented, pre-existing failures (see pcr-s1's AC1 verdict-parity finding). This meant the new gate would fail on every single future PR regardless of content, making it useless as a signal. Added `scripts/ci-test-regression-check.js` + `tests/known-baseline-failures.json` (a checked-in snapshot of the current 69 known-failing files) — the workflow now runs `npm test` to a log file, then diffs the failing-file list against the baseline, only failing the gate on a file that fails AND is not already in the baseline. A baseline file that now passes is reported (so the baseline can be tightened later) but does not fail the gate.
+
+**Alternatives considered:** For (2) — fix all ~69 pre-existing failures before landing this story (rejected, far out of scope, tracked separately). Mark the Unit test chain step `continue-on-error: true` (rejected — T2 explicitly asserts no step has this, and it would silently swallow *real* new regressions too, not just tolerate known ones — defeats the entire purpose of the gate).
+**Rationale:** Both issues were invisible to local testing (this agent's own local `npm test`/`node scripts/run-all-tests.js` runs never hung, and never needed regression-tolerance since a human reads the full output) and only surfaced once this PR's own new workflow ran for real in GitHub Actions — a good example of why "verify-completion passed locally" is not equivalent to "this CI pipeline works," especially for a story whose entire subject is CI infrastructure.
+**Made by:** Claude (agent), 2026-07-12, at the operator's explicit request after reviewing the real CI failures together.
+**Revisit trigger:** Refresh `tests/known-baseline-failures.json` whenever a triage story fixes some of the pre-existing failures (remove the now-passing files from the list) — the `ci-test-regression-check.js` output already reports which baseline entries currently pass, to make this easy.
+---
 
 ## Architecture Decision Records
 

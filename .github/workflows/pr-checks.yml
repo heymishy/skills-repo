@@ -40,7 +40,9 @@ jobs:
         run: npm run typecheck
 
       - name: Unit test chain
-        run: npm test
+        run: |
+          npm test > test-output.log 2>&1 || true
+          node scripts/ci-test-regression-check.js test-output.log
 
       - name: Build
         run: npm run build
