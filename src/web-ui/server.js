@@ -40,7 +40,7 @@ const { creditsGuard }                                               = require('
 const { handleEmailSignup, handleEmailLogin, setUserDb }             = require('./routes/auth-email');       // lab-s2.2
 const { setPasswordAdapter }                                         = require('./modules/password');         // lab-s2.2
 const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
-const { setGetUserRole }                                             = require('./modules/user-roles');       // arl-s1
+const { setGetUserRole, setGetRoleForTenant, migrateTeamSchema, resolveRoleForTenant } = require('./modules/user-roles'); // arl-s1 / tir-s1
 const { requireAdmin }                                               = require('./middleware/require-admin'); // arl-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
 const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7
@@ -218,9 +218,9 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       if (!result.rows.length) return 'user';
       return result.rows[0].role;
     });
-    console.log('[arl-s1] user_roles adapter wired');
+    console.log('[arl-s1] user_roles adapter wired (legacy — left in place, unused in production after tir-s1)');
     // arl-s1 — Auto-migrate user_roles table on startup
-    _userRolesPool.query(`
+    const _userRolesMigrationPromise = _userRolesPool.query(`
       CREATE TABLE IF NOT EXISTS user_roles (
         tenant_id VARCHAR PRIMARY KEY,
         role VARCHAR NOT NULL DEFAULT 'user'
@@ -244,6 +244,24 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
         });
       }
     }).catch(function(err) { console.error('user_roles table migration failed:', err.message); });
+
+    // tir-s1 — Wire the person/team-scoped role adapter (D37 mandatory separate
+    // wiring task, AC6). Replaces the legacy tenant-wide user_roles query above
+    // as the real production implementation — the legacy setGetUserRole wiring
+    // above stays in place (Out of Scope: do not remove) but is no longer
+    // called by any production code path after this story.
+    setGetRoleForTenant(function(tenantId) {
+      return resolveRoleForTenant(_userRolesPool, tenantId);
+    });
+    console.log('[tir-s1] team_memberships adapter wired (getRoleForTenant)');
+
+    // tir-s1 — Auto-migrate people/team_memberships schema + backfill every
+    // legacy user_roles row (AC1, AC2). Chained after the user_roles table
+    // creation AND the arl-s4 admin seeding settle, so the backfill picks up
+    // admin-seeded rows too.
+    _userRolesMigrationPromise.then(function() {
+      return migrateTeamSchema(_userRolesPool);
+    }).catch(function(err) { console.error('[tir-s1] people/team_memberships migration failed:', err.message); });
     // psh-s1: products table
     _creditsPool.query(`CREATE TABLE IF NOT EXISTS products (
       product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

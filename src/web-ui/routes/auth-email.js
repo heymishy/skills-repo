@@ -155,9 +155,10 @@ async function handleEmailSignup(req, res) {
   // Set BEFORE session rotation so it is carried into the rotated (persisted) session.
   req.session.firstLogin  = true;
 
-  // arl-s1: load role from user_roles table. Falls back to 'user' on error.
+  // tir-s1: load role via the person/team-scoped lookup (AC3). Falls back to
+  // 'user' on error.
   try {
-    req.session.role = await _userRoles.getUserRole(email);
+    req.session.role = await _userRoles.getRoleForTenant(email);
   } catch (_) {
     req.session.role = 'user';
   }
@@ -215,9 +216,10 @@ async function handleEmailLogin(req, res) {
   req.session.tenantId    = email;
   req.session.login       = email;
 
-  // arl-s1: load role from user_roles table. Falls back to 'user' on error.
+  // tir-s1: load role via the person/team-scoped lookup (AC3). Falls back to
+  // 'user' on error.
   try {
-    req.session.role = await _userRoles.getUserRole(email);
+    req.session.role = await _userRoles.getRoleForTenant(email);
   } catch (_) {
     req.session.role = 'user';
   }
