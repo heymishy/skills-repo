@@ -16,6 +16,12 @@
 
 const assert = require('assert');
 
+// bri-s1.5 (merged after this test file was written) gates handleGetProductKanban
+// behind isEnabled(PRODUCT_KANBAN_VIEW), a D37 adapter whose stub throws when
+// unwired. Wire a default-enabled stub so this file's kanban test still
+// exercises the flag-on path, same pattern as check-psh-s6-product-kanban.js.
+require('../src/web-ui/modules/posthog-flags').setPostHogFlagsAdapter({ evaluateFlag: async function () { return true; } });
+
 let passed = 0;
 let failed = 0;
 function pass(name) { console.log('  [PASS] ' + name); passed++; }

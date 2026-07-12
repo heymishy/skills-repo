@@ -30,7 +30,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetStageReview, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2
+const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetStageReview, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
@@ -1284,6 +1284,17 @@ async function router(req, res) {
   } else if (pathname === '/journey/wizard' && req.method === 'POST') {
     // wucp.4 — wizard feature selection POST
     await handlePostWizardSelection(req, res);
+
+  } else if (pathname === '/journey/wizard' && req.method === 'GET') {
+    // bri-s1.5 — live GET route for the session-start wizard, wired to the
+    // bootstrapped entry point (bri-s1.3's handleGetWizardBootstrapped) so the
+    // wizard-ui flag is resolved server-side before the gated wizard-canvas
+    // element is rendered. This route previously had no live GET registration
+    // at all (see decisions.md, "handleGetWizard/handleGetWizardBootstrapped
+    // are not currently reachable via any live HTTP route") — wiring it here is
+    // this story's AC1 completion: the wizard-ui flag now gates a real,
+    // reachable page, not just a directly-testable handler function.
+    authGuard(req, res, async function() { await handleGetWizardBootstrapped(req, res); });
 
   } else if (pathname === '/journeys' && req.method === 'GET') {
     // bee.2 — first-run empty-state experience

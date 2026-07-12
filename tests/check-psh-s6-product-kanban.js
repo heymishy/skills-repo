@@ -31,6 +31,10 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
 
 (async function() {
   const { handleGetProductKanban } = require('../src/web-ui/routes/products');
+  // bri-s1.5 — handleGetProductKanban now gates on isEnabled('product-kanban-view', ...);
+  // this pre-existing suite predates the gate and asserts on-behaviour throughout, so wire
+  // the flag on for the whole file (bri-s1.5's own test file covers the off-path directly).
+  require('../src/web-ui/modules/posthog-flags').setPostHogFlagsAdapter({ evaluateFlag: async function() { return true; } });
 
   // T1 — 8 stage columns, all features in correct column
   try {
