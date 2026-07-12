@@ -8477,14 +8477,14 @@
     {
       "slug": "2026-07-09-team-identity-roles",
       "name": "Unified Per-User Identity and Role-Based Access Model for Multi-Tenant Teams",
-      "stage": "definition",
+      "stage": "review",
       "health": "green",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-12T10:19:44.853Z",
+      "updatedAt": "2026-07-12T17:58:12.458Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-team-identity-roles/discovery.md",
@@ -8502,38 +8502,62 @@
             {
               "slug": "tir-s1",
               "name": "Person and team-membership schema replaces tenant-wide role lookup",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-07-12T17:58:12.458Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s1-review-1.md"
             },
             {
               "slug": "tir-s2",
               "name": "A logged-in user links a second auth provider to their identity",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-07-12T17:58:12.458Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s2-review-1.md"
             },
             {
               "slug": "tir-s3",
               "name": "An admin adds a teammate by identity and assigns a role",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-07-12T17:58:12.458Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s3-review-1.md"
             },
             {
               "slug": "tir-s4",
               "name": "The admin/credits panel is gated by per-person role, not tenant membership",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-07-12T17:58:12.458Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s4-review-1.md"
             },
             {
               "slug": "tir-s5",
               "name": "An admin bulk-adds teammates from their connected GitHub org",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-07-12T17:58:12.458Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s5-review-1.md"
             },
             {
               "slug": "tir-s6",
               "name": "Team-membership lookups stay indexed at ~100 members per tenant",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-07-12T17:58:12.458Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s6-review-1.md"
             }
           ]
         }
@@ -8656,6 +8680,24 @@
           "category": "mandatory-constraint",
           "label": "Gate add/remove synced with SKILL.md criteria",
           "status": "not-assessed"
+        },
+        {
+          "id": "ADR-018",
+          "category": "adr",
+          "label": "Playwright is the E2E testing framework; specs in tests/e2e/; devDependency only; unit test chain (npm test) must not invoke Playwright; auth bypass is test-fixture-layer only (NODE_ENV=test guard)",
+          "status": "not-met",
+          "evidence": "1-M1 (tir-s2 review): ADR-018 applicable to cross-provider link-flow testing but not cited in tir-s2 Architecture Constraints",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-12T17:58:12.458Z"
+        },
+        {
+          "id": "ADR-025",
+          "category": "adr",
+          "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) - not schema-per-tenant or database-per-tenant",
+          "status": "met",
+          "evidence": "Correctly cited and respected in tir-s1, tir-s3, tir-s4, tir-s5, tir-s6 Architecture Constraints - no story replaces or bypasses the tenant-scoping guard",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-12T17:58:12.458Z"
         }
       ]
     },
