@@ -87,6 +87,19 @@ if (process.env.NODE_ENV !== 'test') {
     setPostHogFlagsAdapter: setPostHogFlagsAdapter,
     logger: console
   });
+} else {
+  // bri-s1.5 fix-forward: no real PostHog keys exist in CI/E2E environments, so the real
+  // client above is never wired under NODE_ENV=test. Once bri-s1.5 added an isEnabled()
+  // check to handleGetProductKanban/handleGetOrgKanban, any E2E spec that boots this server
+  // (every Playwright spec does) started hitting the D37 stub-throw default (posthog-flags.js
+  // AC2) the moment it reached a flag-gated route. Wire a fake adapter that defaults flags
+  // open (true) so E2E specs written before the flag existed (psh-s6, psh-s7) and specs that
+  // need to reach the real downstream logic (bri-s3.4 cross-tenant isolation) all still work,
+  // exactly as if the flag were fully rolled out.
+  setPostHogFlagsAdapter({
+    evaluateFlag: async function() { return true; },
+    groupIdentify: async function() {}
+  });
 }
 
 // Wire skill list + session creation — active in production AND when
@@ -651,6 +664,24 @@ if (process.env.NODE_ENV === 'test') {
     login:       'e2e-tester',
     tenantId:    'e2e-tester', // bri-s3.5: tenant-scoped billing/plan-state routes need this
   });
+
+  // bri-s3.4: wire the GET /journeys (bee.2) aggregate-list D37 adapter in
+  // test mode too. It previously only got wired inside the
+  // WIRE_SKILL_ADAPTERS-gated block further up this file, so /journeys threw
+  // "Adapter not wired: _listJourneys" for every NODE_ENV=test run -- a
+  // pre-existing gap this story's cross-tenant-isolation E2E spec surfaced
+  // (AC2 needs to confirm the aggregate journey list never leaks tenant B
+  // rows). No external dependency here (same journey-store module already
+  // used by the production wiring; falls back to its in-memory map when no
+  // disk/pg adapter is set, which is always the case in NODE_ENV=test) --
+  // safe to wire unconditionally.
+  {
+    const _journeyStoreForTest = require('./modules/journey-store');
+    setListJourneys(async function(tenantId) {
+      var all = _journeyStoreForTest.listJourneys();
+      return tenantId ? all.filter(function(j) { return j.tenantId === tenantId; }) : all;
+    });
+  }
 
   // Fixture fetcher: serves <type>-sample.md for the canonical test slug;
   // throws ArtefactNotFoundError for any other slug (exercises the 404 path).

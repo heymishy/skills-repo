@@ -290,12 +290,23 @@ function handleGetProductNew(req, res) {
 async function handleGetProductView(req, res, _next, pool) {
   var _pool = pool;
   var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
   var login = req.session && req.session.login;
+  // bri-s3.4: this lookup previously had no tenant_id filter at all -- any
+  // authenticated user of any tenant could view any other tenant's product
+  // (and its feature list) by guessing/knowing the product ID. 404 (not 403)
+  // for a missing/mismatched tenant, consistent with the existing
+  // FORBIDDEN-vs-NOT_FOUND policy in middleware/journey-access.js.
   var prodRow = (await _pool.query(
-    'SELECT name FROM products WHERE product_id = $1',
+    'SELECT name, tenant_id FROM products WHERE product_id = $1',
     [productId]
   )).rows[0];
-  var productName = prodRow ? prodRow.name : productId;
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+  var productName = prodRow.name;
   var rows = (await _pool.query(
     "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1",
     [productId]
@@ -348,6 +359,20 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
   var _productKanbanOn = await _postHogFlags.isEnabled(_flagKeys.PRODUCT_KANBAN_VIEW, { tenantId: tenantId });
   if (!_productKanbanOn) {
     _respondFlagDisabled(res);
+    return;
+  }
+
+  // bri-s3.4: this handler previously returned any product's kanban board to
+  // any authenticated user with no tenant ownership check at all. 404 (not
+  // 403) on a missing/mismatched product, matching the FORBIDDEN-vs-NOT_FOUND
+  // policy used elsewhere in this codebase (middleware/journey-access.js).
+  var _ownerRow = (await _pool.query(
+    'SELECT tenant_id FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!_ownerRow || _ownerRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
     return;
   }
 

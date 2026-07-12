@@ -8504,7 +8504,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-11T00:00:00Z",
+      "updatedAt": "2026-07-11T19:57:06.261Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8992,22 +8992,81 @@
             {
               "slug": "bri-s3.4",
               "name": "Cross-tenant isolation journey spec",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-11T19:57:06.261Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 10,
-                "passing": 0,
+                "totalTests": 14,
+                "passing": 14,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s3.4-cross-tenant-isolation-journey-test-plan.md"
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/459",
+              "verifyStatus": "passed",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Unit test: isSameTenant boolean correctness (Phase 0 passthrough pinned)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s3.4-cross-tenant-isolation-journey-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Fix cross-tenant read leak: handleGetProductView",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s3.4-cross-tenant-isolation-journey-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Fix cross-tenant read leak: handleGetProductKanban",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s3.4-cross-tenant-isolation-journey-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Fix cross-tenant list/write leaks: standards.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s3.4-cross-tenant-isolation-journey-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Extend fake-test-db.js for standards (E2E enablement)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s3.4-cross-tenant-isolation-journey-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "Integration tests: journeys, credits, user_roles",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s3.4-cross-tenant-isolation-journey-plan.md"
+                },
+                {
+                  "id": "task-7",
+                  "name": "E2E spec: cross-tenant isolation journey",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s3.4-cross-tenant-isolation-journey-plan.md"
+                },
+                {
+                  "id": "task-8",
+                  "name": "CI config: 20-run zero-tolerance repeat gate (AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s3.4-cross-tenant-isolation-journey-plan.md"
+                },
+                {
+                  "id": "task-9",
+                  "name": "Decisions log entries",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s3.4-cross-tenant-isolation-journey-plan.md"
+                }
+              ]
             },
             {
               "slug": "bri-s3.5",

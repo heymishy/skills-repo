@@ -4,6 +4,14 @@ const assert = require('assert');
 function makeMockPool(products, journeys) {
   return {
     query: async function(sql, params) {
+      // bri-s3.4: tenant-ownership lookups added to handleGetProductView /
+      // handleGetProductKanban -- match these before the broader tenant_id
+      // list-query regex below so single-product-by-id lookups resolve.
+      if (/SELECT (name, )?tenant_id FROM products WHERE product_id/i.test(sql)) {
+        const pid = params && params[0];
+        const row = (products || []).find(p => p.product_id === pid);
+        return { rows: row ? [row] : [] };
+      }
       if (/SELECT.*products.*tenant_id/i.test(sql) || /FROM products WHERE tenant_id/i.test(sql)) {
         return { rows: products || [] };
       }
@@ -63,7 +71,11 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
       { journey_id: 'j5', product_id: 'prod-1', stage: 'definition', health: 'amber', tenant_id: 'ty' },
       { journey_id: 'j6', product_id: 'prod-1', stage: 'discovery', health: 'red', tenant_id: 'ty' }
     ];
-    const pool = makeMockPool([], journeys);
+    // bri-s3.4: handleGetProductView now checks product ownership by tenant_id
+    // before returning features -- this product row must match the session's
+    // tenantId ('ty') for this (same-tenant, legitimate) test to still pass.
+    const products = [{ product_id: 'prod-1', name: 'Prod One', tenant_id: 'ty' }];
+    const pool = makeMockPool(products, journeys);
     const req = { session: { tenantId: 'ty' }, params: { id: 'prod-1' } };
     const res = { json: function(b) { this._b=b; }, _b: null, status: function(c) { this._s=c; return this; } };
     await handleGetProductView(req, res, null, pool);

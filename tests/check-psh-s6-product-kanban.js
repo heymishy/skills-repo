@@ -3,9 +3,17 @@ const assert = require('assert');
 
 const STAGE_COLUMNS = ['discovery','benefit-metric','definition','review','test-plan','definition-of-ready','implementation','definition-of-done'];
 
-function makeMockPool(journeys) {
+// bri-s3.4: handleGetProductKanban now checks product tenant ownership before
+// returning kanban data. `tenantId` here is the tenant that "owns" the mock
+// product for this test scenario -- pass the same value as the test's
+// req.session.tenantId so the (same-tenant, legitimate) existing coverage
+// keeps passing.
+function makeMockPool(journeys, tenantId) {
   return {
     query: async function(sql, params) {
+      if (/SELECT tenant_id FROM products WHERE product_id/i.test(sql)) {
+        return { rows: [{ tenant_id: tenantId }] };
+      }
       if (/FROM journeys WHERE.*product_id/i.test(sql) || /FROM journeys WHERE.*product/i.test(sql)) {
         const pid = params && params[0];
         return { rows: pid ? journeys.filter(j => j.product_id === pid) : journeys };
@@ -38,7 +46,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
       { journey_id: 'j5', product_id: 'prod-1', stage: 'benefit-metric', health: 'green', feature_slug: 'f5' },
       { journey_id: 'j6', product_id: 'prod-1', stage: 'implementation', health: 'green', feature_slug: 'f6' }
     ];
-    const pool = makeMockPool(journeys);
+    const pool = makeMockPool(journeys, 'tx');
     const ph = { _caps: [], capture: function(id,ev,props) { this._caps.push({ev,props}); } };
     const req = { session: { tenantId: 'tx', login: 'u' }, params: { id: 'prod-1' } };
     const res = { json: function(b) { this._b=b; }, _b:null, status: function(c) { this._s=c; return this; } };
@@ -56,8 +64,8 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   // T2 — stage update moves feature to new column
   try {
     const ph = { _caps: [], capture: function() {} };
-    const pool1 = makeMockPool([{ journey_id: 'j1', product_id: 'p1', stage: 'review', health: 'green', feature_slug: 'F1' }]);
-    const pool2 = makeMockPool([{ journey_id: 'j1', product_id: 'p1', stage: 'test-plan', health: 'green', feature_slug: 'F1' }]);
+    const pool1 = makeMockPool([{ journey_id: 'j1', product_id: 'p1', stage: 'review', health: 'green', feature_slug: 'F1' }], 'ty');
+    const pool2 = makeMockPool([{ journey_id: 'j1', product_id: 'p1', stage: 'test-plan', health: 'green', feature_slug: 'F1' }], 'ty');
     const req = { session: { tenantId: 'ty', login: 'u' }, params: { id: 'p1' } };
     const res1 = { json: function(b) { this._b=b; }, _b:null, status: function(c) { this._s=c; return this; } };
     await handleGetProductKanban(req, res1, null, pool1, ph);
@@ -75,7 +83,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   // T3 — red-health card includes healthLabel
   try {
     const ph = { _caps: [], capture: function() {} };
-    const pool = makeMockPool([{ journey_id: 'j2', product_id: 'p2', stage: 'review', health: 'red', feature_slug: 'F2' }]);
+    const pool = makeMockPool([{ journey_id: 'j2', product_id: 'p2', stage: 'review', health: 'red', feature_slug: 'F2' }], 'tz');
     const req = { session: { tenantId: 'tz', login: 'u' }, params: { id: 'p2' } };
     const res = { json: function(b) { this._b=b; }, _b:null, status: function(c) { this._s=c; return this; } };
     await handleGetProductKanban(req, res, null, pool, ph);
@@ -90,7 +98,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   // T4 — empty stage column shown with emptyLabel
   try {
     const ph = { _caps: [], capture: function() {} };
-    const pool = makeMockPool([{ journey_id: 'j3', product_id: 'p3', stage: 'discovery', health: 'green', feature_slug: 'F3' }]);
+    const pool = makeMockPool([{ journey_id: 'j3', product_id: 'p3', stage: 'discovery', health: 'green', feature_slug: 'F3' }], 'tw');
     const req = { session: { tenantId: 'tw', login: 'u' }, params: { id: 'p3' } };
     const res = { json: function(b) { this._b=b; }, _b:null, status: function(c) { this._s=c; return this; } };
     await handleGetProductKanban(req, res, null, pool, ph);
@@ -109,7 +117,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
       { journey_id: 'j11', product_id: 'p4', stage: 'review', health: 'green', feature_slug: 'F11' },
       { journey_id: 'j12', product_id: 'p4', stage: 'test-plan', health: 'green', feature_slug: 'F12' },
       { journey_id: 'j13', product_id: 'p4', stage: 'definition', health: 'green', feature_slug: 'F13' }
-    ]);
+    ], 'ta');
     const req = { session: { tenantId: 'ta', login: 'u' }, params: { id: 'p4' } };
     const res = { json: function(b) { this._b=b; }, _b:null, status: function(c) { this._s=c; return this; } };
     await handleGetProductKanban(req, res, null, pool, ph);
@@ -125,7 +133,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   try {
     const ph = { capture: function() {} };
     const j50 = Array.from({length:50}, (_,i) => ({ journey_id:'j'+i, product_id:'pb', stage: STAGE_COLUMNS[i%8], health:'green', feature_slug:'F'+i }));
-    const pool = makeMockPool(j50);
+    const pool = makeMockPool(j50, 'tb');
     const req = { session: { tenantId: 'tb', login: 'u' }, params: { id: 'pb' } };
     const res = { json: function(b) { this._b=b; }, _b:null, status: function(c) { this._s=c; return this; } };
     const t0 = Date.now();
@@ -138,7 +146,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   // T-NFR2 — HTML-escaped feature names
   try {
     const ph = { capture: function() {} };
-    const pool = makeMockPool([{ journey_id:'j-xss', product_id:'px', stage:'discovery', health:'green', feature_slug:'<script>xss</script>' }]);
+    const pool = makeMockPool([{ journey_id:'j-xss', product_id:'px', stage:'discovery', health:'green', feature_slug:'<script>xss</script>' }], 'tc');
     const req = { session: { tenantId: 'tc', login: 'u' }, params: { id: 'px' } };
     const res = { json: function(b) { this._b=b; }, _b:null, status: function(c) { this._s=c; return this; } };
     await handleGetProductKanban(req, res, null, pool, ph);

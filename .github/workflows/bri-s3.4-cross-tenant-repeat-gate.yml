@@ -1,0 +1,63 @@
+name: Cross-Tenant Isolation Repeat Gate (bri-s3.4)
+
+# bri-s3.4 AC4/AC5/NFR-Security: the cross-tenant isolation spec is the
+# single most security-critical spec in the beta-readiness effort. Unlike
+# the general e2e.yml gate (opt-in via audit.e2e_tests, continue-on-error),
+# this workflow is:
+#   - unconditional on every PR (AC5: "runs on every PR, not just nightly")
+#   - blocking, not continue-on-error (NFR-Security: "any failure here blocks
+#     merges of unrelated work until root-caused")
+#   - run --repeat-each=20 with a zero-skip/zero-flake pass gate (AC4)
+# ADR-009: permissions limited to contents: read — no write access.
+# ADR-018: Playwright is the E2E framework for the wuce feature.
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  cross-tenant-repeat-gate:
+    name: Cross-tenant isolation spec — 20x repeat, zero-tolerance
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers (Chromium only)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run cross-tenant isolation spec 20x — zero skip/flake tolerance
+        run: npx playwright test tests/e2e/bri-s3.4-cross-tenant-isolation-journey.spec.js --repeat-each=20
+        env:
+          CI: 'true'
+          NODE_ENV: test
+          # Test-only credentials — not real OAuth credentials
+          GITHUB_CLIENT_ID: ${{ secrets.GITHUB_CLIENT_ID || 'e2e-test-client-id' }}
+          GITHUB_CLIENT_SECRET: ${{ secrets.GITHUB_CLIENT_SECRET || 'e2e-test-client-secret' }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET || 'e2e-test-session-secret-minimum32chars' }}
+
+      - name: Upload Playwright traces and screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bri-s3.4-cross-tenant-repeat-gate-traces-${{ github.run_id }}
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
