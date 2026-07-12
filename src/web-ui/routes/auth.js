@@ -145,9 +145,11 @@ async function handleAuthCallback(req, res) {
       req.session.tenantId = user.login;
     }
 
-    // arl-s1: load role from user_roles table. Falls back to 'user' on error (adapter not wired in test mode).
+    // tir-s1: load role via the person/team-scoped lookup (replaces the arl-s1
+    // legacy getUserRole(tenantId) tenant-wide lookup — AC3). Falls back to
+    // 'user' on error (adapter not wired in test mode).
     try {
-      req.session.role = await _userRoles.getUserRole(req.session.tenantId);
+      req.session.role = await _userRoles.getRoleForTenant(req.session.tenantId);
     } catch (_) {
       req.session.role = 'user';
     }
@@ -245,9 +247,10 @@ async function handleAuthGoogleCallback(req, res) {
     req.session.tenantId    = userInfo.sub;
     req.session.login       = userInfo.email;
 
-    // arl-s1: load role from user_roles table. Falls back to 'user' on error.
+    // tir-s1: load role via the person/team-scoped lookup (AC3). Falls back to
+    // 'user' on error.
     try {
-      req.session.role = await _userRoles.getUserRole(req.session.tenantId);
+      req.session.role = await _userRoles.getRoleForTenant(req.session.tenantId);
     } catch (_) {
       req.session.role = 'user';
     }
