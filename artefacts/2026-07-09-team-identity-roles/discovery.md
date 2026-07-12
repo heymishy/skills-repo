@@ -1,8 +1,8 @@
 # Discovery: Unified Per-User Identity and Role-Based Access Model for Multi-Tenant Teams
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-07-09
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Hamish King — Founder / Operator — 2026-07-12
 **Author:** Copilot
 
 ---
@@ -76,7 +76,7 @@ Note: the zero-new-npm-dependency constraint from `product/tech-stack.md` is rel
 
 ## Approved By
 
-[Name — Role — Date]
+Hamish King — Founder / Operator — 2026-07-12
 
 ---
 
