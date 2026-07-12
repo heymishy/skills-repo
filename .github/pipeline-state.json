@@ -8899,7 +8899,7 @@
               "name": "Add staging smoke test + manual promote gate to prod",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-12T09:18:43.634Z",
+              "updatedAt": "2026-07-12T09:38:11.572Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8909,7 +8909,7 @@
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s2.6-smoke-test-promote-gate-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 1,
+              "acVerified": 2,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -8917,7 +8917,7 @@
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.6-dor-contract.md",
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
               "acVerificationNote": "AC3 (red suite structurally blocks promote) is fully code-verified via T5/T6. AC1, AC2, and AC4 are code-verified for their gate/documentation mechanics (T1/T2, T3/T4, T7/T8) but each carries one external-dependency or untestable-by-nature manual gap per the test plan: AC1's full suite content depends on further Epic 3 stories landing, AC2's GitHub environment reviewer assignment is a repo Settings concern, AC4's rollback path is a documented dry-run, never live-tested.",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/462"
             }
           ]
