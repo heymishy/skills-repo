@@ -4,7 +4,7 @@
  *
  * Experiment signals dimension for the improvement agent.
  *
- * Scans completed experiment result files under workspace/experiments/*/results/
+ * Scans completed experiment result files under workspace/experiments/{name}/results/
  * and identifies EVAL.md dimensions that score below 0.70 across 2+ runs.
  * A single run below threshold is noise; 2+ runs is a pattern worth surfacing.
  *

@@ -10,11 +10,17 @@ const {
   _getHtmlSession,
   setSkillTurnExecutorStreamAdapter,
   setSkillTurnExecutorAdapter,
+  setSkillTurnGitCommitAdapter,
   registerHtmlSession,
   setListSkills,
   setCreateSession,
   buildSystemPrompt
 } = require('../src/web-ui/routes/skills');
+
+// stis-s1: stub the git-commit adapter before any artefact-completing test
+// runs in this file — this module instance is shared across the whole file
+// (no freshRequire cache-busting here), so one call covers every test below.
+setSkillTurnGitCommitAdapter(function stisS1TestStubGitCommit() { /* test stub — no real git op */ });
 
 let passed = 0;
 let failed = 0;

@@ -1,0 +1,37 @@
+# See https://fly.io/docs/app-guides/continuous-deployment-with-github-actions/
+#
+# bri-s2.5 - this repo's first committed Fly deploy workflow (see
+# decisions.md 2026-07-11 ASSUMPTION entry - the operator's local
+# fly-deploy.yml scratch file was never committed to master). Every merge
+# to master (this repo's trunk branch - see the earlier 2026-07-11
+# ASSUMPTION entry re: main vs master) auto-deploys to the wuce-staging Fly
+# app only, then auto-runs the bri-s2.4 seed script in the same job.
+# wuce-prod is never touched by this workflow; production promotion is a
+# separate, manually-gated job bri-s2.6 will introduce (job id convention:
+# promote-to-prod - see scripts/check-no-prod-deploy-on-push.js).
+
+name: Staging Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy-staging:
+    name: Deploy to wuce-staging
+    runs-on: ubuntu-latest
+    concurrency: deploy-group    # optional: ensure only one action runs at a time
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to wuce-staging
+        run: flyctl deploy --remote-only --config fly.staging.toml --app wuce-staging
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Seed staging database (bri-s2.4)
+        run: node scripts/seed-staging.js
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}

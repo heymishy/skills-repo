@@ -11,6 +11,9 @@
     "platform:verify": "node scripts/platform-verify.js",
     "check:sfa1": "node tests/check-sfa1-state-schema.js",
     "test": "node scripts/run-all-tests.js",
+    "lint": "node scripts/ci-lint.js",
+    "typecheck": "node scripts/ci-typecheck.js",
+    "build": "node scripts/ci-build.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
   },

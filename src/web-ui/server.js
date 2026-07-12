@@ -631,6 +631,18 @@ if (process.env.NODE_ENV === 'test') {
   const _fs   = require('fs');
   const _path = require('path');
 
+  // stis-s1: no-op git-commit adapter in test mode. The shared e2e webServer
+  // subprocess drives handlePostTurnStreamHtml through completed mock-gateway
+  // artefact turns (discovery/design/definition/etc. success fixtures all
+  // contain ---ARTEFACT-START---/---ARTEFACT-END--- markers) with no way for
+  // an HTTP-driven Playwright spec to call setSkillTurnGitCommitAdapter()
+  // directly. Without this, every e2e run that completes a stage would fire
+  // a real git commit into this checkout — reproducing the exact defect this
+  // story exists to fix. See decisions.md (stis-s1 finding, beyond original
+  // DoR-contract scope — found by this story's own exhaustive AC3 search).
+  const { setSkillTurnGitCommitAdapter } = require('./routes/skills');
+  setSkillTurnGitCommitAdapter(function stisS1NoOpGitCommitTestMode() { /* no-op in test mode */ });
+
   // Well-known session ID shared between server and auth fixture.
   const E2E_SESSION_ID = 'e2e' + '0'.repeat(60) + '1';
   seedTestSession(E2E_SESSION_ID, {
