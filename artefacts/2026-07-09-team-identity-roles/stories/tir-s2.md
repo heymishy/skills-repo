@@ -20,6 +20,7 @@ So that **I don't appear as a separate, disconnected person just because I somet
 - Builds on the existing multi-provider auth registry (lab-s1.3, lab-s2.1) — the provider adapter pattern (`gitHubProviderAdapter`, `setGoogleUserInfoAdapter`) already handles per-provider authentication; this story adds a linking action on top, it does not reimplement provider auth.
 - **D37:** any new adapter this story introduces (e.g. a link-confirmation step) follows the injectable pattern — default stub throws, no silent no-op.
 - **ADR-025:** the linked person's `team_memberships` rows (from tir-s1) are unaffected by linking — linking merges identity, not tenant/role state; a person's roles across different tenants stay exactly as they were before linking.
+- **ADR-018:** a real cross-provider OAuth round-trip is not usable in CI. Link-flow tests (AC1, AC4) use the existing `NODE_ENV=test` auth-bypass fixture pattern to simulate both providers' completed authentication, not a live OAuth call — consistent with how every other provider-login test in this codebase is written.
 
 ## Dependencies
 

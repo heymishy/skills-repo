@@ -8484,7 +8484,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-12T17:58:12.458Z",
+      "updatedAt": "2026-07-12T18:05:30.640Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-team-identity-roles/discovery.md",
@@ -8514,20 +8514,20 @@
               "name": "A logged-in user links a second auth provider to their identity",
               "stage": "review",
               "health": "green",
-              "updatedAt": "2026-07-12T17:58:12.458Z",
+              "updatedAt": "2026-07-12T18:05:30.640Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s2-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s2-review-2.md"
             },
             {
               "slug": "tir-s3",
               "name": "An admin adds a teammate by identity and assigns a role",
               "stage": "review",
               "health": "green",
-              "updatedAt": "2026-07-12T17:58:12.458Z",
+              "updatedAt": "2026-07-12T18:05:30.640Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s3-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s3-review-2.md"
             },
             {
               "slug": "tir-s4",
@@ -8544,10 +8544,10 @@
               "name": "An admin bulk-adds teammates from their connected GitHub org",
               "stage": "review",
               "health": "green",
-              "updatedAt": "2026-07-12T17:58:12.458Z",
+              "updatedAt": "2026-07-12T18:05:30.640Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s5-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s5-review-2.md"
             },
             {
               "slug": "tir-s6",
@@ -8685,10 +8685,10 @@
           "id": "ADR-018",
           "category": "adr",
           "label": "Playwright is the E2E testing framework; specs in tests/e2e/; devDependency only; unit test chain (npm test) must not invoke Playwright; auth bypass is test-fixture-layer only (NODE_ENV=test guard)",
-          "status": "not-met",
-          "evidence": "1-M1 (tir-s2 review): ADR-018 applicable to cross-provider link-flow testing but not cited in tir-s2 Architecture Constraints",
+          "status": "met",
+          "evidence": "Run 2 (tir-s2 review): ADR-018 now cited in tir-s2 Architecture Constraints, naming the NODE_ENV=test auth-bypass fixture pattern for cross-provider link-flow tests. 1-M1 resolved.",
           "assessedBy": "/review",
-          "assessedAt": "2026-07-12T17:58:12.458Z"
+          "assessedAt": "2026-07-12T18:05:30.640Z"
         },
         {
           "id": "ADR-025",

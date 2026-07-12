@@ -8,7 +8,7 @@
 
 As a **Team admin / tech lead**,
 I want to **bulk-add every member of my connected GitHub org to my tenant in one action**,
-So that **I don't have to manually add each teammate one at a time when most of my team is already in the same GitHub org**.
+So that **the team reaches full per-person role coverage without the tedium of manual entry slowing real adoption down**.
 
 ## Benefit Linkage
 

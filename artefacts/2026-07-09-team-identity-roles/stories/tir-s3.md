@@ -28,7 +28,7 @@ So that **my team can genuinely share a tenant with each person holding their ow
 
 ## Acceptance Criteria
 
-**AC1:** Given an admin is on their team management page, When they add a teammate by identity (an identity that already has a `people` row from a prior login, or one that does not yet exist) and specify a role (admin/engineer/product/viewer), Then a `team_memberships` row is created linking that person to the admin's tenant with the specified role.
+**AC1:** Given an admin is on their team management page and a teammate has already logged in at least once (an existing `people` row exists for their identity), When the admin adds that teammate by identity and specifies a role (admin/engineer/product/viewer), Then a `team_memberships` row is created linking that person to the admin's tenant with the specified role.
 
 **AC2:** Given an admin assigns the "engineer" role to a teammate, When that teammate next logs in, Then `req.session.role` resolves to "engineer" for that tenant — distinct from the admin's own "admin" role in the same tenant.
 
@@ -36,9 +36,12 @@ So that **my team can genuinely share a tenant with each person holding their ow
 
 **AC4:** Given an admin adds a teammate who is already a member of that same tenant, When the add action is repeated, Then the existing membership's role is updated in place (idempotent) — not duplicated as a second row for the same person/tenant pair.
 
+**AC5:** Given an admin attempts to add a teammate by an identity that has never logged in before (no `people` row exists for it), When the add action is attempted, Then it is rejected with a clear error explaining the teammate must log in at least once before they can be added — no placeholder `people` row is created.
+
 ## Out of Scope
 
 - Self-serve invite links or email-based invitations — the admin adds by an identity that can already authenticate (existing or first-time login), not a signup-via-invite flow.
+- Adding someone who has never logged in (no existing `people` row) — per AC5, this story requires the teammate to have authenticated at least once first. A pre-creation/placeholder-record mechanism for never-logged-in identities is deferred; revisit if real usage shows admins frequently need to add people before their first login.
 - Removing a teammate from a team — this story only adds/assigns; removal is a natural near-term follow-up, not built here.
 - A dedicated "pending invite" state — an added teammate's membership is active immediately, there is no pending/accept step.
 
