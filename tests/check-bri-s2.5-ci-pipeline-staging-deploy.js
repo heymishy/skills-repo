@@ -15,6 +15,20 @@
  * Repo-fact note (see decisions.md 2026-07-11 ASSUMPTION entry): this repo's
  * actual trunk branch is `master`, not `main` as the story/ACs/test plan
  * text says -- all "push to main" checks below target `master`.
+ *
+ * Post-bri-s2.6 update note: bri-s2.6 extended this same staging-deploy.yml
+ * file with a `promote-to-prod` job that legitimately does deploy to the
+ * production Fly app (skills-framework/wuce-prod), gated behind an
+ * `environment:` approval and a `needs: smoke-test` dependency. T4 below
+ * was originally a whole-file regex asserting the production app name never
+ * appears anywhere in this file at all -- that assumption predates bri-s2.6
+ * and is no longer correct now that the two stories share one workflow
+ * file. Fixed to be job-scoped: it now only asserts that the
+ * `deploy-staging` job itself never targets the production app, which is
+ * the property this test was actually meant to verify. The whole-file
+ * "no prod deploy outside the allowlisted promote job" property is already
+ * covered separately and correctly by T5 (findProdDeployViolations, which
+ * is job-scoped with an allowlist from the start).
  */
 
 const fs = require('fs');
@@ -22,6 +36,34 @@ const path = require('path');
 const os = require('os');
 
 const { findProdDeployViolations } = require('../scripts/check-no-prod-deploy-on-push');
+
+/**
+ * Splits a workflow file's content into per-job blocks using GitHub
+ * Actions' standard 2-space-per-level indentation. Mirrors
+ * scripts/check-no-prod-deploy-on-push.js's own splitJobs helper (kept
+ * local here since that module does not export it).
+ */
+function splitJobs(content) {
+  const lines = content.split(/\r?\n/);
+  const jobsIdx = lines.findIndex((l) => /^jobs:\s*$/.test(l));
+  if (jobsIdx === -1) return [];
+
+  const jobs = [];
+  let current = null;
+  for (let i = jobsIdx + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^\S/.test(line)) break;
+    const jobHeaderMatch = /^  ([A-Za-z0-9_.-]+):\s*$/.exec(line);
+    if (jobHeaderMatch) {
+      if (current) jobs.push(current);
+      current = { id: jobHeaderMatch[1], lines: [line] };
+    } else if (current) {
+      current.lines.push(line);
+    }
+  }
+  if (current) jobs.push(current);
+  return jobs;
+}
 
 const SUITE = '[check-bri-s2.5-ci-pipeline-staging-deploy]';
 
@@ -113,11 +155,15 @@ const stagingDeployContent = fs.existsSync(stagingDeployPath) ? fs.readFileSync(
     fail('T4', '.github/workflows/staging-deploy.yml not found');
     return;
   }
-  const targetsStaging = /--app[\s=]+["']?wuce-staging\b/.test(stagingDeployContent);
-  const targetsProd = /--app[\s=]+["']?(wuce-prod|skills-framework)\b/.test(stagingDeployContent);
+  const jobs = splitJobs(stagingDeployContent);
+  const deployStagingJob = jobs.find((j) => j.id === 'deploy-staging');
+  const deployStagingText = deployStagingJob ? deployStagingJob.lines.join('\n') : stagingDeployContent;
+
+  const targetsStaging = /--app[\s=]+["']?wuce-staging\b/.test(deployStagingText);
+  const targetsProd = /--app[\s=]+["']?(wuce-prod|skills-framework)\b/.test(deployStagingText);
 
   if (targetsStaging && !targetsProd) {
-    pass('T4', 'staging-deploy.yml deploy step targets --app wuce-staging, not wuce-prod/skills-framework');
+    pass('T4', 'deploy-staging job targets --app wuce-staging, not wuce-prod/skills-framework (scoped to that job - a separate, allowlisted promote-to-prod job may legitimately target prod, verified by T5)');
   } else {
     fail('T4', `targets_staging=${targetsStaging} targets_prod=${targetsProd}`);
   }
