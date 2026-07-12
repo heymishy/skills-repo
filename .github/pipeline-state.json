@@ -8869,25 +8869,27 @@
             {
               "slug": "bri-s2.5",
               "name": "Build the CI pipeline: PR checks through staging deploy",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-10T00:00:00Z",
+              "updatedAt": "2026-07-11T19:48:55.089Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 11,
-                "passing": 0,
+                "passing": 11,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s2.5-ci-pipeline-staging-deploy-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.5-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.5-dor-contract.md",
-              "dorSignedOffAt": "2026-07-10T00:00:00Z"
+              "dorSignedOffAt": "2026-07-10T00:00:00Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/457"
             },
             {
               "slug": "bri-s2.6",
@@ -9348,6 +9350,69 @@
       ],
       "metrics": [],
       "updatedAt": "2026-07-11T00:00:00Z"
+    },
+    {
+      "slug": "2026-07-12-skill-turn-test-isolation",
+      "name": "Stop the skill-turn artefact auto-commit from firing real git commits during tests",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "stis-s1",
+          "slug": "stis-s1",
+          "name": "Guard skill-turn auto-commit behind a D37 adapter so tests never fire real git commits",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 6,
+            "passing": 6,
+            "artefact": "artefacts/2026-07-12-skill-turn-test-isolation/test-plans/stis-s1-guard-skill-turn-auto-commit-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-12-skill-turn-test-isolation/dor/stis-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-12-skill-turn-test-isolation/dor/stis-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-12T00:00:00Z",
+          "prStatus": "draft",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Extract git-commit call into D37 injectable adapter (skills.js)",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-12-skill-turn-test-isolation/plans/stis-s1-guard-skill-turn-auto-commit-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Wire no-op stub in server.js test mode (e2e/webServer gap found by exhaustive search)",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-12-skill-turn-test-isolation/plans/stis-s1-guard-skill-turn-auto-commit-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Stub adapter in the 2 confirmed affected existing test files",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-12-skill-turn-test-isolation/plans/stis-s1-guard-skill-turn-auto-commit-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "New dedicated adapter test file (U1-U4, IT1)",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-12-skill-turn-test-isolation/plans/stis-s1-guard-skill-turn-auto-commit-plan.md"
+            }
+          ],
+          "branchName": "feature/stis-s1"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-11T20:45:11.645Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
