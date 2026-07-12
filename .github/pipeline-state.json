@@ -8477,14 +8477,14 @@
     {
       "slug": "2026-07-09-team-identity-roles",
       "name": "Unified Per-User Identity and Role-Based Access Model for Multi-Tenant Teams",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-12T09:44:58.183Z",
+      "updatedAt": "2026-07-12T09:50:11.962Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-team-identity-roles/discovery.md",
@@ -8494,7 +8494,63 @@
       },
       "stories": [],
       "epics": [],
-      "decisionsArtefact": "artefacts/2026-07-09-team-identity-roles/decisions.md"
+      "decisionsArtefact": "artefacts/2026-07-09-team-identity-roles/decisions.md",
+      "benefitMetric": {
+        "status": "active",
+        "artefact": "artefacts/2026-07-09-team-identity-roles/benefit-metric.md"
+      },
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Per-person role assignment exists",
+          "target": "100% of team members in a shared tenant have a distinct, independently assigned role",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Cross-provider identity collision is resolved, not silently fragmented",
+          "target": "explicit tested link action proven end-to-end for at least one provider pair",
+          "baseline": "Not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "At least one feature is gated by per-person role, not tenant membership",
+          "target": "admin/credits panel denied to a non-admin team member sharing the tenant",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m4",
+          "name": "Schema holds up at ~100 members per tenant",
+          "target": "indexed lookup query time within agreed threshold at 100 synthetic members",
+          "baseline": "Unverified beyond 1 member per tenant",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m5",
+          "name": "Zero regression for existing solo tenants",
+          "target": "same 100% pass rate on existing auth/billing/tenancy tests, unchanged",
+          "baseline": "100%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     },
     {
       "slug": "2026-07-09-beta-readiness-infra",
