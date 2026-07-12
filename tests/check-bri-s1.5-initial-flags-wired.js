@@ -132,7 +132,13 @@ async function main() {
     console.log('\n[bri-s1.5] IT4 -- product-kanban-view flag on returns the normal kanban board (AC2)');
     return test('IT4: handleGetProductKanban returns { columns } when the flag is on', async function() {
       flags.setPostHogFlagsAdapter({ evaluateFlag: async function() { return true; } });
-      var pool = makePool([{ match: /FROM journeys/i, rows: function() { return [{ journey_id: 'j1', feature_slug: 'f1', stage: 'discovery' }]; } }]);
+      var pool = makePool([
+        // bri-s3.4: handleGetProductKanban now also checks the product's tenant_id
+        // ownership after the flag gate — mock a matching row so this flag-focused
+        // test still reaches the real kanban-columns logic instead of 404ing.
+        { match: /FROM products/i, rows: function() { return [{ tenant_id: 'acme' }]; } },
+        { match: /FROM journeys/i, rows: function() { return [{ journey_id: 'j1', feature_slug: 'f1', stage: 'discovery' }]; } }
+      ]);
       var req = { session: { tenantId: 'acme' }, params: { id: 'prod-1' } };
       var res = mockRes();
       await handleGetProductKanban(req, res, null, pool, mockPosthog);
