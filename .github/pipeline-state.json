@@ -8477,14 +8477,14 @@
     {
       "slug": "2026-07-09-team-identity-roles",
       "name": "Unified Per-User Identity and Role-Based Access Model for Multi-Tenant Teams",
-      "stage": "review",
+      "stage": "test-plan",
       "health": "green",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-12T18:05:30.640Z",
+      "updatedAt": "2026-07-12T19:23:05.236Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-team-identity-roles/discovery.md",
@@ -8502,62 +8502,122 @@
             {
               "slug": "tir-s1",
               "name": "Person and team-membership schema replaces tenant-wide role lookup",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-07-12T17:58:12.458Z",
+              "updatedAt": "2026-07-12T19:23:05.236Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s1-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s1-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-team-identity-roles/test-plans/tir-s1-person-team-schema-test-plan.md"
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "tir-s2",
               "name": "A logged-in user links a second auth provider to their identity",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-07-12T18:05:30.640Z",
+              "updatedAt": "2026-07-12T19:23:05.236Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s2-review-2.md"
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s2-review-2.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-team-identity-roles/test-plans/tir-s2-cross-provider-linking-test-plan.md"
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "tir-s3",
               "name": "An admin adds a teammate by identity and assigns a role",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-07-12T18:05:30.640Z",
+              "updatedAt": "2026-07-12T19:23:05.236Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s3-review-2.md"
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s3-review-2.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 7,
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-team-identity-roles/test-plans/tir-s3-admin-adds-teammate-test-plan.md"
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "tir-s4",
               "name": "The admin/credits panel is gated by per-person role, not tenant membership",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-07-12T17:58:12.458Z",
+              "updatedAt": "2026-07-12T19:23:05.236Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s4-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s4-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-team-identity-roles/test-plans/tir-s4-role-gated-credits-panel-test-plan.md"
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "tir-s5",
               "name": "An admin bulk-adds teammates from their connected GitHub org",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-07-12T18:05:30.640Z",
+              "updatedAt": "2026-07-12T19:23:05.236Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s5-review-2.md"
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s5-review-2.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-team-identity-roles/test-plans/tir-s5-github-org-bulk-add-test-plan.md"
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "tir-s6",
               "name": "Team-membership lookups stay indexed at ~100 members per tenant",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-07-12T17:58:12.458Z",
+              "updatedAt": "2026-07-12T19:23:05.236Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s6-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s6-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-team-identity-roles/test-plans/tir-s6-schema-scale-validation-test-plan.md"
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
