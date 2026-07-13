@@ -76,6 +76,13 @@
 **Made by:** Hamish King (Founder/Operator) + Claude (agent), 2026-07-13.
 **Revisit trigger:** None — being fixed immediately as tir-s8, not deferred.
 ---
+**2026-07-13 | RISK-ACCEPT | /definition-of-done**
+**Decision:** tir-s6's `dodStatus` is recorded as `complete` (all artefact-level checks pass) but `releaseReady: false` and `health: amber` — its AC1/AC2/AC4 real-Postgres query-plan/timing tests remain unexecuted in any environment this session had access to. The pre-existing RISK-ACCEPT (2026-07-13, /test-plan) covers *why* these tests are environment-gated; this entry records that the gap is still open at DoD time, not resolved by the gating mechanism itself.
+**Alternatives considered:** Marking tir-s6 fully `releaseReady: true` on the strength of the RISK-ACCEPT alone — rejected, since a RISK-ACCEPT explains why a test can't run here, it doesn't substitute for the test actually running somewhere. Conflating "correctly gated" with "actually verified" would let Metric 4 report false confidence.
+**Rationale:** Honesty in the DoD record matters more than a clean-looking epic-complete status — the schema/index work itself (no code change needed, tir-s1's existing composite primary key already suffices) is very likely correct, but "very likely correct" is not the same as "confirmed under real load," and this epic's own Metric 4 explicitly requires the latter.
+**Made by:** Claude (agent), /definition-of-done, 2026-07-13.
+**Revisit trigger:** Resolved once tir-s6's tests are run against a real `DATABASE_URL`-backed Postgres instance (e.g. a Neon staging branch) and AC1/AC2/AC4 produce real pass/fail evidence. At that point, update `releaseReady`/`health` and Metric 4's signal accordingly.
+---
 
 ---
 
