@@ -8922,14 +8922,14 @@
     {
       "slug": "2026-07-09-beta-readiness-infra",
       "name": "Beta-Readiness Infrastructure - Feature Flags, Staging Environment, and E2E Test Coverage",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "amber",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-11T19:57:06.261Z",
+      "updatedAt": "2026-07-13T18:28:16.862Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-beta-readiness-infra/discovery.md",
@@ -8942,19 +8942,19 @@
         {
           "slug": "epic-1-feature-flags",
           "name": "Incomplete work can ship to main safely, gated off, without a redeploy to toggle it",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "bri-s1.1",
               "name": "Build the isEnabled() flag helper shared by API and UI",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-12T08:36:35.817Z",
+              "updatedAt": "2026-07-13T18:27:17.074Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 8,
+                "totalTests": 7,
                 "passing": 7,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s1.1-isenabled-helper-test-plan.md"
               },
@@ -8967,14 +8967,17 @@
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s1.1-dor-contract.md",
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/444"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/444",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s1.1-dod.md"
             },
             {
               "slug": "bri-s1.2",
               "name": "Separate staging and prod PostHog projects with isolated API keys",
-              "stage": "branch-complete",
-              "health": "green",
-              "updatedAt": "2026-07-12T08:36:35.929Z",
+              "stage": "definition-of-done",
+              "health": "amber",
+              "updatedAt": "2026-07-13T18:27:17.074Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -8993,14 +8996,18 @@
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/446"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/446",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s1.2-dod.md",
+              "blocker": "Live staging-vs-prod PostHog cross-contamination check (PAT-06) is now structurally unblocked (Epic 2 + bri-s3.4 both DoD-complete) but has never been executed against real infrastructure -- see bri-s1.2-dod.md Follow-up actions."
             },
             {
               "slug": "bri-s1.3",
               "name": "Bootstrap flags server-side on session start to avoid UI flicker",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-12T08:36:36.055Z",
+              "updatedAt": "2026-07-13T18:27:17.074Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9050,14 +9057,17 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s1.3-server-side-bootstrap-plan.md"
                 }
-              ]
+              ],
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s1.3-dod.md"
             },
             {
               "slug": "bri-s1.4",
               "name": "Wire tenant-level flag targeting via PostHog group analytics",
-              "stage": "branch-complete",
-              "health": "green",
-              "updatedAt": "2026-07-12T08:36:36.166Z",
+              "stage": "definition-of-done",
+              "health": "amber",
+              "updatedAt": "2026-07-13T18:27:17.074Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9108,14 +9118,18 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/454"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/454",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s1.4-dod.md",
+              "blocker": "identifyTenantGroup() is fully built and unit-tested but never called from any live request path in src/ -- flag targeting itself still works via isEnabled()'s automatic group derivation, but PostHog dashboard group records are never populated. See bri-s1.4-dod.md Follow-up actions."
             },
             {
               "slug": "bri-s1.5",
               "name": "Create and wire the 3 initial flags across both projects",
-              "stage": "branch-complete",
-              "health": "green",
-              "updatedAt": "2026-07-12T08:37:36.168Z",
+              "stage": "definition-of-done",
+              "health": "amber",
+              "updatedAt": "2026-07-13T18:27:17.074Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9134,21 +9148,25 @@
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/458"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/458",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s1.5-dod.md",
+              "blocker": "Real comparison of staging vs prod PostHog projects flag-list mirroring (AC4) has never been executed -- DoR-acknowledged External-dependency gap, no automatable substitute. See bri-s1.5-dod.md Follow-up actions."
             }
           ]
         },
         {
           "slug": "epic-2-staging-environment",
           "name": "A broken build cannot reach production",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "bri-s2.1",
               "name": "Provision the wuce-staging Fly app",
-              "stage": "branch-complete",
-              "health": "green",
-              "updatedAt": "2026-07-12T08:36:36.405Z",
+              "stage": "definition-of-done",
+              "health": "amber",
+              "updatedAt": "2026-07-13T18:27:17.074Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9167,20 +9185,24 @@
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
               "acVerificationNote": "AC2 fully code-verified. AC1 and AC3 are config-verified only (structural parity / scale-to-zero settings) -- real Fly.io build/start and real weekly billing remain manual operator verification steps (external-dependency gaps declared in the test plan).",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/442"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/442",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s2.1-dod.md",
+              "blocker": "Real fly deploy + Fly dashboard build/billing confirmation (AC1, AC3) never executed against live infrastructure -- DoR-acknowledged External-dependency gap. See bri-s2.1-dod.md Follow-up actions."
             },
             {
               "slug": "bri-s2.2",
               "name": "Provision a Neon staging branch for Postgres",
-              "stage": "branch-complete",
-              "health": "green",
-              "updatedAt": "2026-07-12T08:36:36.516Z",
+              "stage": "definition-of-done",
+              "health": "amber",
+              "updatedAt": "2026-07-13T18:27:17.074Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
-                "passing": 5,
+                "totalTests": 5,
+                "passing": 4,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s2.2-neon-staging-branch-test-plan.md"
               },
               "acTotal": 3,
@@ -9193,14 +9215,18 @@
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
               "acVerificationNote": "T1/T2/NFR2 (static regression guards) and IT1/IT2 (mocked cold-start timing for the new waitForDbReady helper) all pass -- 5/5. All 3 ACs' live-Neon proof (real schema comparison, real write isolation, real cold-start timing) remains the story's declared manual verification (Scenarios 1-3 in the AC verification script) -- no real Neon connection is available in this environment, per the discovery-stage decision. acVerified reflects only fully-closed ACs; 0/3 is honest given every AC requires a live Neon step this session did not perform.",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/447"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/447",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s2.2-dod.md",
+              "blocker": "T1 currently fails due to a false-positive regex collision with bri-s1.2 unrelated code (RISK-ACCEPTed in decisions.md 2026-07-11); real Neon schema/write-isolation/cold-start manual scenarios never executed. See bri-s2.2-dod.md Follow-up actions."
             },
             {
               "slug": "bri-s2.3",
               "name": "Provision an Upstash staging instance for Redis",
-              "stage": "branch-complete",
-              "health": "green",
-              "updatedAt": "2026-07-12T08:36:36.627Z",
+              "stage": "definition-of-done",
+              "health": "amber",
+              "updatedAt": "2026-07-13T18:27:17.074Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9233,14 +9259,18 @@
               ],
               "acVerificationNote": "Automated regression guards (5/5 passing: T1/T2 env-var-only credential derivation with no hardcoded fallback; T3 module-reload no-credential-bleed guard) fully cover the in-repo, static/wiring portion this story's code touches. All 3 ACs as literally worded describe live-infrastructure behaviour (a real wuce-staging instance connecting to a real, distinct Upstash Redis database; a real cross-instance write-isolation check; real monthly usage against the free-tier ceiling) that cannot be confirmed without live Upstash provisioning -- explicitly out of scope for this coding session per the story's own test plan Coverage gaps (AC2/AC3 flagged External-dependency) and the task's scope note. All 3 remain manual verification steps per the AC verification script (Scenarios 1-3), with AC3's dashboard check already scheduled ~1 week after CI starts against wuce-staging per the DoR operator follow-up note.",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/448"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/448",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s2.3-dod.md",
+              "blocker": "AC3 (Upstash usage-ceiling review) has no automatable substitute and has never been executed -- DoR-flagged highest-risk item. See bri-s2.3-dod.md Follow-up actions."
             },
             {
               "slug": "bri-s2.4",
               "name": "Build an idempotent anonymized seed script for staging",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-12T08:36:36.759Z",
+              "updatedAt": "2026-07-13T18:27:17.074Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9292,20 +9322,23 @@
               "verifyStatus": "passed",
               "acVerificationNote": "AC1-AC3 fully code-verified (T1-T7, unit-level, mocked adapter per D37/Test Data Strategy -- no real Neon connection required or made). AC4 partially verified: IT1 confirms the single CLI-invokable entrypoint (exit 0, summary stdout); the automatic post-deploy triggering itself is S2.5-scope and remains a manual/cross-referenced gap (Scenario 4), same framing as the story test plan Coverage gaps table.",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/453"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/453",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s2.4-dod.md"
             },
             {
               "slug": "bri-s2.5",
               "name": "Build the CI pipeline: PR checks through staging deploy",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-12T08:36:36.882Z",
+              "updatedAt": "2026-07-13T18:27:17.074Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 11,
-                "passing": 11,
+                "totalTests": 7,
+                "passing": 7,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s2.5-ci-pipeline-staging-deploy-test-plan.md"
               },
               "acTotal": 4,
@@ -9317,14 +9350,17 @@
               "dorContractArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s2.5-dor-contract.md",
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/457"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/457",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s2.5-dod.md"
             },
             {
               "slug": "bri-s2.6",
               "name": "Add staging smoke test + manual promote gate to prod",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-12T09:38:11.572Z",
+              "updatedAt": "2026-07-13T18:27:17.074Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9343,7 +9379,10 @@
               "dorSignedOffAt": "2026-07-10T00:00:00Z",
               "acVerificationNote": "AC3 (red suite structurally blocks promote) is fully code-verified via T5/T6. AC1, AC2, and AC4 are code-verified for their gate/documentation mechanics (T1/T2, T3/T4, T7/T8) but each carries one external-dependency or untestable-by-nature manual gap per the test plan: AC1's full suite content depends on further Epic 3 stories landing, AC2's GitHub environment reviewer assignment is a repo Settings concern, AC4's rollback path is a documented dry-run, never live-tested.",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/462"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/462",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s2.6-dod.md"
             }
           ]
         },
@@ -9355,9 +9394,9 @@
             {
               "slug": "bri-s3.1",
               "name": "Build the mock LLM gateway and fixture set",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-12T08:36:36.995Z",
+              "updatedAt": "2026-07-13T18:27:17.074Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9372,14 +9411,17 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/445"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/445",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s3.1-dod.md"
             },
             {
               "slug": "bri-s3.2",
               "name": "Signup to onboarding to first feature journey spec",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-12T08:36:37.106Z",
+              "updatedAt": "2026-07-13T18:27:17.074Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9394,7 +9436,10 @@
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/451"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/451",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s3.2-dod.md"
             },
             {
               "slug": "bri-s3.3",
@@ -9420,9 +9465,9 @@
             {
               "slug": "bri-s3.4",
               "name": "Cross-tenant isolation journey spec",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-12T08:36:37.234Z",
+              "updatedAt": "2026-07-13T18:27:17.074Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9494,14 +9539,17 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-09-beta-readiness-infra/plans/bri-s3.4-cross-tenant-isolation-journey-plan.md"
                 }
-              ]
+              ],
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s3.4-dod.md"
             },
             {
               "slug": "bri-s3.5",
               "name": "Billing journey spec",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-12T08:36:37.360Z",
+              "updatedAt": "2026-07-13T18:27:17.074Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9516,14 +9564,17 @@
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/449"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/449",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s3.5-dod.md"
             },
             {
               "slug": "bri-s3.6",
               "name": "Auth journey spec",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-12T08:36:37.472Z",
+              "updatedAt": "2026-07-13T18:27:17.074Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9538,7 +9589,10 @@
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/450"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/450",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s3.6-dod.md"
             }
           ]
         }
@@ -9552,8 +9606,15 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "bri-s2.1 through bri-s2.6 all DoD-complete; the staging-then-manual-promote gate mechanism is real and fully tested at the code level (bri-s2.6), but no real PR has yet flowed through the whole staging deploy -> smoke test -> manual promote pipeline against live infrastructure -- the DoR-acknowledged External-dependency gaps on bri-s2.1/s2.2/s2.3 remain unexecuted.",
+          "contributingStories": [
+            "bri-s2.1",
+            "bri-s2.2",
+            "bri-s2.3",
+            "bri-s2.4",
+            "bri-s2.5",
+            "bri-s2.6"
+          ]
         },
         {
           "id": "m2",
@@ -9562,8 +9623,14 @@
           "baseline": "0",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "bri-s1.1 through bri-s1.5 all DoD-complete; all 3 named flags (wizard-ui, product-kanban-view, org-kanban-view) are wired to real, already-shipped behaviour and pass automated tests, but this has never been confirmed against live, real PostHog projects (bri-s1.5 AC4 External-dependency gap), and identifyTenantGroup() is never called from a live path (bri-s1.4 wiring gap, see bri-s1.4-dod.md).",
+          "contributingStories": [
+            "bri-s1.1",
+            "bri-s1.2",
+            "bri-s1.3",
+            "bri-s1.4",
+            "bri-s1.5"
+          ]
         },
         {
           "id": "m3",
@@ -9572,8 +9639,10 @@
           "baseline": "not yet established",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "bri-s1.2 DoD-complete at the unit level; the live staging-vs-prod PostHog cross-contamination check (PAT-06) is now structurally unblocked (Epic 2 + bri-s3.4 both DoD-complete as of this sweep) but has never been executed against real infrastructure.",
+          "contributingStories": [
+            "bri-s1.2"
+          ]
         },
         {
           "id": "m4",
@@ -9582,18 +9651,26 @@
           "baseline": "0 of 5",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "4 of 5 named journeys covered (signup/onboarding via bri-s3.2, cross-tenant isolation via bri-s3.4, billing via bri-s3.5, auth via bri-s3.6), plus the mock-gateway foundation (bri-s3.1). The 5th (multi-user within one tenant, bri-s3.3) remains blocked on 2026-07-09-team-identity-roles and is explicitly out of this DoD sweep -- the epic own 5-of-5 target is genuinely not yet met.",
+          "contributingStories": [
+            "bri-s3.1",
+            "bri-s3.2",
+            "bri-s3.4",
+            "bri-s3.5",
+            "bri-s3.6"
+          ]
         },
         {
           "id": "m5",
           "name": "Cross-tenant isolation suite has zero tolerance for flake or skip",
           "target": "0% skip rate, 0% flake rate over 20 consecutive CI runs",
           "baseline": "not yet established",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "signal": "on-track",
+          "lastMeasured": "2026-07-13T18:28:53.351Z",
+          "evidence": "bri-s3.4 directly and fully evidences this metric: 0% skip, 0% flake confirmed across a 20x --repeat-each CI run, post rate-limit-bypass fix documented in decisions.md (2026-07-12).",
+          "contributingStories": [
+            "bri-s3.4"
+          ]
         },
         {
           "id": "m6",
@@ -9602,8 +9679,14 @@
           "baseline": "not yet established",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "Each of bri-s3.1 through bri-s3.6 own test file was independently re-verified passing in this DoD sweep (166 total assertions across all 16 stories), but a timed run of the full aggregate @mocked suite across all specs together has never been performed, so the under-10-minute target remains unmeasured as a suite-wide fact.",
+          "contributingStories": [
+            "bri-s3.1",
+            "bri-s3.2",
+            "bri-s3.4",
+            "bri-s3.5",
+            "bri-s3.6"
+          ]
         }
       ],
       "slicingStrategy": "risk-first",
@@ -9649,72 +9732,81 @@
           "category": "nfr",
           "label": "Mock LLM gateway response < 50ms per call",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-07-10T00:00:00Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-13T18:29:19.573Z",
+          "evidence": "bri-s3.1 test C1: 100 calls, all under the 50ms budget."
         },
         {
           "id": "NFR-mocked-suite-runtime",
           "category": "nfr",
           "label": "@mocked suite total runtime under 10 minutes (revisable per decisions.md)",
           "status": "not-assessed",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-07-10T00:00:00Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-13T18:29:19.573Z",
+          "evidence": "Each story own test file re-verified individually in this DoD sweep; a timed run of the full aggregate @mocked suite across all specs together has never been performed, so this NFR cannot yet be marked met."
         },
         {
           "id": "NFR-auth-e2e-coverage",
           "category": "nfr",
           "label": "GitHub/Google OAuth and email/password login flows covered by deterministic E2E coverage",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-07-10T00:00:00Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-13T18:29:19.573Z",
+          "evidence": "bri-s3.6: GitHub/Google OAuth and email/password flows all covered by 18/18 passing automated tests plus a tagged @mocked E2E spec."
         },
         {
           "id": "NFR-tenant-isolation",
           "category": "nfr",
           "label": "Tenant isolation (cross-tenant reads/writes rejected, 404 not 403) enforced and regression-tested",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-07-10T00:00:00Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-13T18:29:19.573Z",
+          "evidence": "bri-s3.4: 14/14 passing tests directly cover 404-not-403, list filtering, and write rejection across journeys/products/standards/credits/user_roles; 5 real pre-existing leaks found and fixed as part of this story."
         },
         {
           "id": "NFR-role-differentiation",
           "category": "nfr",
           "label": "Per-person role differentiation within a tenant (admin vs engineer vs viewer) - depends on external feature",
           "status": "not-assessed",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-07-10T00:00:00Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-13T18:29:19.573Z",
+          "evidence": "Depends on the external 2026-07-09-team-identity-roles feature and bri-s3.3, which remains blocked and is explicitly out of scope for this DoD sweep."
         },
         {
           "id": "NFR-billing-secrets",
           "category": "nfr",
           "label": "No real Stripe secret/webhook signing secret used in @mocked/@billing CI runs",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-07-10T00:00:00Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-13T18:29:19.573Z",
+          "evidence": "bri-s3.5 check-bri-s3.5-nfr-stripe-keys.js: 4/4 passing, no sk_live_/rk_live_ pattern anywhere committed."
         },
         {
           "id": "NFR-gateway-activation-guard",
           "category": "nfr",
           "label": "Mock LLM gateway only activatable via explicit test configuration, never by production config error",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-07-10T00:00:00Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-13T18:29:19.573Z",
+          "evidence": "bri-s3.1 test groups G/H: NODE_ENV=production hard-overrides MOCK_LLM_GATEWAY=true, 7/7 passing."
         },
         {
           "id": "NFR-accesstoken-audit",
           "category": "nfr",
           "label": "Session token / accessToken never appears in HTML response or logs",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-07-10T00:00:00Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-13T18:29:19.573Z",
+          "evidence": "bri-s3.6 test group IT3: accessToken absence from HTML response/logs confirmed across all three auth providers."
         },
         {
           "id": "NFR-session-rotation",
           "category": "nfr",
           "label": "rotateSessionId called after every provider login",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-07-10T00:00:00Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-13T18:29:19.573Z",
+          "evidence": "bri-s3.6 test group U1: rotateSessionId called exactly once per provider login."
         }
       ],
       "riskAcceptances": [
