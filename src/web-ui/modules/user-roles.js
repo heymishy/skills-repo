@@ -58,12 +58,23 @@ function setGetRoleForTenant(fn) {
 
 /**
  * Return the role for a tenant via the person/team-membership lookup path.
+ *
+ * tir-s9 (fix-forward): accepts an optional second `identityKey` argument and
+ * forwards it to the wired implementation. Every pre-tir-s9 call site (and
+ * `auth-email.js`'s two call sites, unmodified by this story) calls this with
+ * a single argument -- that remains fully supported; the wired implementation
+ * (`server.js`) falls back to `tenantId` itself when `identityKey` is
+ * omitted, exactly preserving prior behaviour for the solo-tenant and
+ * email/password cases where `tenantId` already equals the person's own
+ * identity. See decisions.md (2026-07-14) for why this argument was missing
+ * in production despite tir-s7 already fixing the underlying query.
  * @param {string} tenantId
+ * @param {string} [identityKey] - the authenticating person's own per-person identity (GitHub login, Google sub, or email) -- distinct from tenantId whenever a tenant is shared by 2+ people (e.g. a TENANT_ORG_ALLOWLIST-matched GitHub org)
  * @returns {Promise<string>}
  */
-async function getRoleForTenant(tenantId) {
+async function getRoleForTenant(tenantId, identityKey) {
   if (_getRoleForTenant) {
-    return _getRoleForTenant(tenantId);
+    return _getRoleForTenant(tenantId, identityKey);
   }
   if (_getUserRole) {
     return _getUserRole(tenantId);

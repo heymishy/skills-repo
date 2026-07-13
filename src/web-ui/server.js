@@ -277,12 +277,26 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // authenticating identity to a personId first (tir-s2's
     // resolvePersonForIdentity, via resolveRoleForPerson in user-roles.js)
     // before scoping the team_memberships lookup by BOTH person_id AND
-    // tenant_id. identityKey and tenantId are the same string here (today's
-    // convention, unchanged by this story — see identity-links.js).
-    setGetRoleForTenant(function(tenantId) {
-      return resolveRoleForPerson(_userRolesPool, tenantId, tenantId);
+    // tenant_id.
+    //
+    // tir-s9 (fix-forward) — tir-s7's query logic above was correct, but this
+    // wiring collapsed BOTH resolveRoleForPerson arguments into the SAME
+    // value (tenantId, tenantId), discarding any distinct identityKey a
+    // caller might supply. That is harmless for a solo tenant or an
+    // email/password login (tenantId already equals that one person's own
+    // identity) but reproduces tir-s7's original bug one layer removed once
+    // TENANT_ORG_ALLOWLIST is configured: every teammate on a shared
+    // GitHub-org tenant login then called resolveRoleForPerson with the SAME
+    // shared org name as identityKey, so every teammate's login could resolve
+    // an arbitrary OTHER teammate's role. Fixed by accepting the identityKey
+    // argument getRoleForTenant now forwards (routes/auth.js passes each
+    // person's own GitHub login / Google sub) and using it in place of
+    // tenantId, falling back to tenantId only when a caller omits it
+    // (auth-email.js's unmodified single-argument call sites).
+    setGetRoleForTenant(function(tenantId, identityKey) {
+      return resolveRoleForPerson(_userRolesPool, identityKey || tenantId, tenantId);
     });
-    console.log('[tir-s1/tir-s7] team_memberships adapter wired (getRoleForTenant, person-scoped)');
+    console.log('[tir-s1/tir-s7/tir-s9] team_memberships adapter wired (getRoleForTenant, person-scoped, per-person identityKey)');
 
     // tir-s1 — Auto-migrate people/team_memberships schema + backfill every
     // legacy user_roles row (AC1, AC2). Chained after the user_roles table
