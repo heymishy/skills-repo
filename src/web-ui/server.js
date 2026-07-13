@@ -51,6 +51,7 @@ const { setProductContextAdapter }                                   = require('
 const { setStandardsAdapter }                                        = require('./standards-adapter');             // psh-s10
 const { setPostHogFlagsAdapter }                                     = require('./modules/posthog-flags');          // bri-s1.1
 const { initPostHogFlagsClient }                                     = require('./modules/posthog-config');         // bri-s1.2
+const { createTeamManagementHandlers }                               = require('./routes/team-management');       // tir-s3
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -64,6 +65,12 @@ let _pshPool = null;
 // wiring, which has no NODE_ENV=test fallback either).
 let _handleGoogleLinkCallback = null;
 let _handleGithubLinkCallback = null;
+
+// tir-s3: module-level handler reference for /team/members + /api/team/members
+// (assigned inside the DATABASE_URL block, same pattern as
+// _handleGoogleLinkCallback above — real-Postgres-only, no NODE_ENV=test
+// fallback either, matching tir-s1/tir-s2's own wiring precedent).
+let _teamManagementHandlers = null;
 
 // Wire up console logger for auth events (login, logout, state_mismatch)
 const _ts = () => new Date().toISOString();
@@ -285,6 +292,13 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     _handleGoogleLinkCallback = _linkCallbackHandlers.handleGoogleLinkCallback;
     _handleGithubLinkCallback = _linkCallbackHandlers.handleGithubLinkCallback;
     console.log('[tir-s2] account-linking callback handlers wired');
+
+    // tir-s3 — Wire the /team/members add-teammate handlers to the same
+    // Postgres pool (same reuse pattern as tir-s1/tir-s2 above). No new D37
+    // adapter (H-ADAPTER): createTeamManagementHandlers is a plain factory,
+    // not a throw-on-unwired setter/getter pair.
+    _teamManagementHandlers = createTeamManagementHandlers(_userRolesPool);
+    console.log('[tir-s3] team-management handlers wired');
     // psh-s1: products table
     _creditsPool.query(`CREATE TABLE IF NOT EXISTS products (
       product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1566,6 +1580,31 @@ async function router(req, res) {
     requireAdmin(req, res, () => { _raOk = true; });
     if (!_raOk) return;
     await adminCreditsPost(req, res);
+
+  } else if (pathname === '/team/members' && req.method === 'GET') {
+    // tir-s3 — team management page (requireAdmin gate)
+    if (!_teamManagementHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Team management unavailable');
+    } else {
+      let _raOk = false;
+      requireAdmin(req, res, () => { _raOk = true; });
+      if (!_raOk) return;
+      await _teamManagementHandlers.handleGetTeamMembers(req, res);
+    }
+
+  } else if (pathname === '/api/team/members' && req.method === 'POST') {
+    // tir-s3 — add/assign teammate role (requireAdmin gate, AC3; ADR-025:
+    // handler always writes to req.session.tenantId, never a request field)
+    if (!_teamManagementHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Team management unavailable');
+    } else {
+      let _raOk = false;
+      requireAdmin(req, res, () => { _raOk = true; });
+      if (!_raOk) return;
+      await _teamManagementHandlers.handleAddTeammate(req, res);
+    }
 
   } else if (pathname === '/products/new' && req.method === 'GET') {
     // psh-s3 — product creation form
