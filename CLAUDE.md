@@ -1,0 +1,391 @@
+# Claude Instructions
+
+<!-- Governs all agent behaviour. Evolve via PR with tech lead review. -->
+
+## Active context
+
+Active pipeline context: `.github/context.yml`
+
+<!-- context.yml holds toolchain settings. Switch profiles: `cp contexts/personal.yml .github/context.yml` or `cp contexts/work.yml .github/context.yml` -->
+
+---
+
+## Skills pipeline maintenance
+
+Upstream skills sync configuration is stored in `.github/context.yml` under
+`skills_upstream:`. When asked to check for or pull upstream skill updates,
+read that block first — it contains the git remote name, repo URL, sync paths,
+and strategy.
+
+To sync skills from upstream:
+```bash
+git fetch <skills_upstream.remote>
+git diff HEAD <skills_upstream.remote>/master -- skills/
+git checkout <skills_upstream.remote>/master -- skills/ templates/ scripts/ docs/skill-pipeline-instructions.md
+git diff --staged
+git commit -m "chore: sync skills from skills-upstream [date]"
+```
+
+If `skills_upstream.remote` is `null` or `strategy` is `none`, no remote has
+been configured. The user can add one with:
+```bash
+git remote add skills-upstream https://github.com/heymishy/skills-repo.git
+```
+Then update `skills_upstream.remote` and `skills_upstream.strategy` in `context.yml`.
+
+---
+
+## Product context
+
+<!-- DOGFOODING: remove this product context block after Phase 4 and replace with the generic `[FILL IN]` placeholder. Track via: artefacts/2026-04-09-skills-platform-phase1/ post-phase-4. -->
+
+The skills platform is an open-framework, governed software delivery pipeline that enables teams to deliver traceable, high-quality software across all contributing disciplines — from a single developer on a personal project to many teams and communities of practice across a regulated enterprise.
+
+The platform works by encoding delivery standards, quality gates, compliance requirements, design standards, security controls, and discipline-specific practices as versioned, hash-verified instruction sets (SKILL.md files and standards files) that AI agents execute against. Teams run a structured outer loop — discovery through definition-of-ready — that builds complete, validated context drawing on standards from all relevant disciplines. An inner loop then executes that context, with the level of human involvement calibrated to the team's maturity and the risk profile of the work. Real production outcomes and delivery actuals feed back into the pipeline, creating an empirical improvement cycle grounded in actual usage rather than assumptions. Over time, the platform's harness — the SKILL.md files and evaluation suite — improves itself from its own delivery signal, with human approval retained at every change gate.
+
+## SESSION START
+
+At the start of every session, before doing anything else:
+
+1. Check whether `workspace/state.json` exists in the repo root
+2. If it exists:
+   - Read it fully
+   - Report to the operator: last completed phase, any in-progress 
+     story execution, any pending improvement proposals or human 
+     input items
+   - Ask: "Resume from last session state, or start fresh?"
+3. If it does not exist:
+   - This is a new session with no prior state
+   - Proceed normally — state.json will be created at the first 
+     phase boundary
+
+Do not proceed with any task until session start is complete and 
+confirmed with the operator.
+
+---
+
+## Pipeline overview
+
+All new features follow this sequence. Do not skip steps. Do not begin a step 
+without its entry condition met. When in doubt, run `/workflow`.
+
+```
+Step  Skill                  Entry condition                     Exit condition
+──────────────────────────────────────────────────────────────────────────────
+1     /discovery             Raw idea or problem exists           Artefact approved
+2     /benefit-metric        Discovery approved                   Metrics defined + active
+3     /definition            Benefit-metric active                Epics + stories written
+4     /review                Stories exist                        No HIGH findings
+5     /test-plan             Review passed (per story)            Tests written (failing)
+6     /definition-of-ready   Tests exist, review passed           Sign-off complete
+6.5   /decisions             DoR complete (if warnings ack'd)     RISK-ACCEPTs logged
+7     Inner coding loop      DoR sign-off                         Draft PR opened
+        7a /branch-setup     DoR Proceed: Yes                     Isolated worktree + clean baseline
+        7b /implementation-plan  Worktree ready                   Task plan saved
+        7c /subagent-execution   Plan exists (or /tdd per task)   All tasks complete
+        7d /verify-completion    Tasks done                       All ACs verified, 0 failures
+        7e /branch-complete      Verified                         Draft PR opened
+8     /definition-of-done    PR merged                            AC coverage confirmed
+9     /trace                 On-demand or CI on PR open           Chain health reported
+```
+
+**Support skills available throughout the inner loop:**
+`/tdd` — RED-GREEN-REFACTOR enforcement per task
+`/systematic-debugging` — 4-phase root cause process when a task is stuck
+`/implementation-review` — spec + quality review between task batches
+
+**Onboarding and orientation support:**
+`/orient` — guided orientation concierge for new or returning consumers; reads current artefact state and tells the operator which skill to run next and why. Use when unsure where you are in the pipeline or which skill applies. Distinct from `/workflow` (diagnostic for experienced operators) and `/start` (greenfield session bootstrap).
+
+**Cross-cutting architecture support:**
+`/ea-registry` — organisation-level application/interface registry query,
+contribution, audit, and dependency context feed to /discovery, /definition,
+and /reverse-engineer
+
+**Pipeline evolution support:**
+`/loop-design` — define outer/inner loop model for evolving the whole skill library
+`/token-optimization` — design library-wide model routing/token policy (consumed by core skills)
+`/org-mapping` — map pipeline language/artefacts to organisation governance (policy consumed by core skills)
+`/scale-pipeline` — design multi-team enterprise operating model for evolving the whole skill system
+
+**Short-track** (bugs, small fixes, bounded refactors): 
+`/test-plan → /definition-of-ready → coding agent`
+
+**Programme track** (multi-team, multi-phase, migrations, rewrites):
+`/programme → [per workstream: standard pipeline] → /metric-review at phase gates`
+
+Migration, cutover, and consumer migration stories within any workstream use
+`migration-story.md` instead of `story.md`. Use `/release` with compliance bundle
+option for regulated or phase-gate releases.
+
+---
+
+## Templates
+
+All artefact templates are in `.github/templates/` — each skill references its own template in its SKILL.md. When reviewing artefacts, check them against the relevant template; missing fields are findings.
+
+---
+
+## Artefact storage
+
+All artefacts are saved to `artefacts/YYYY-MM-DD-[feature-slug]/` (date = discovery start; established by `/discovery`). Sub-directories follow the pattern: `stories/`, `epics/`, `test-plans/`, `verification-scripts/`, `dor/`, `plans/`, `dod/`, `trace/`, `coverage/`, `reference/`, `research/`. The full directory tree and naming convention live in `discovery/SKILL.md`.
+
+---
+
+## Context handoff protocol
+
+Each skill writes its primary output to the feature artefact folder. **Coding agent resuming a feature:** read the full artefact folder in full before writing any code. Do not rely on conversation history for ACs, constraints, or scope decisions — read from the artefact files. If the folder does not exist or is incomplete, invoke `/workflow` before proceeding.
+
+---
+
+## Session conventions
+
+### Starting a session
+
+At the start of every session, run `/workflow` before beginning any work.
+This surfaces the current pipeline state and prevents work starting at the wrong stage.
+
+If you are picking up a feature after a break:
+1. Run `/workflow` — it will tell you where you are and what's next
+2. Read the most recent artefact for the current stage before starting
+3. Do not assume you remember where you were — check the artefacts
+
+### `/capture` command
+
+Use `/capture [signal text]` to record a learning signal to `workspace/capture-log.md` (created if absent; appended if it exists — never truncated or overwritten).
+
+**Entry schema (5 required fields):**
+```
+- date: [ISO 8601, e.g. 2026-04-28]
+  session-phase: [current pipeline phase]
+  signal-type: [decision | learning | assumption-validated | assumption-invalidated | pattern | gap]
+  signal-text: [the signal — one or two sentences]
+  source: operator-manual
+```
+
+**Rules:**
+- If invoked without signal text, prompt the operator: "What signal do you want to capture?" — do not write a blank or empty entry.
+- Always append after existing entries; never truncate, overwrite, or delete prior content.
+- On new-session invocation, append after all existing entries — prior sessions are preserved.
+- `source` is always `operator-manual` for entries written via this command.
+
+### During a session
+
+- Save artefact files as you go — do not leave outputs only in the chat window
+- When a skill produces output, save it to the correct artefacts path immediately
+- If a skill asks a clarifying question, answer it before proceeding — do not skip
+- If you are unsure whether to proceed, run `/workflow` rather than guessing
+- **`/checkpoint` threshold: invoke at 55%** for any file-read-heavy phase (definition, review, test-plan, trace, inner loop implementation). The 75% guideline applies only to conversation-only phases. File reads fill the Tool Results context bucket faster than the Messages bucket — by the time the hover indicator shows 55–60%, the Tool Results bucket may be near threshold. Invoke `/checkpoint` before reaching the compaction threshold — not at it. The write must complete before compaction fires; invoke with enough context headroom to allow that.
+
+**Agent self-recording.** Write to `workspace/capture-log.md` when a non-trivial session event occurs — a decision, validated or invalidated assumption, discovered pattern, or identified gap. Use source: agent-auto with the 5-field schema from `/capture`. Append after existing entries; never truncate. Do not write for routine, well-understood steps.
+
+**Verify coding-agent dispatch completion independently — do not trust the agent's self-report.** After a dispatched coding-agent subagent reports finishing (implementation done, tests passing, PR opened), independently confirm the actual state before treating the report as ground truth: check `git status`/`git log` in the relevant worktree for real commits, and `gh pr list`/`gh pr view` for a real PR. Do not proceed on the strength of a "done" or "waiting for X to finish" narration alone. In the `team-identity-roles` epic, 4 of 8 coding-agent dispatches reported completion (or reported waiting on a background step) without having actually run `git commit`/`push`/`gh pr create` — each time, checking `git status` directly revealed the work was either fully done-but-uncommitted or still genuinely in progress. Both cases required direct verification to distinguish, not the agent's own narrative.
+
+### Ending a session
+
+Before closing a session, execute this sequence in order:
+1. Write any learnings signals from this session to `workspace/learnings.md`
+2. Write the checkpoint block to `workspace/state.json` with `currentPhase`, `lastUpdated`, and `checkpoint.resumeInstruction`
+3. Stage all artefact files produced this session: `git add artefacts/[feature-slug]/...`
+4. Commit with message format: `chore: [phase] checkpoint [feature-slug] — [one-line summary]`
+5. Confirm the commit hash and hook pass/fail results in the closing message
+
+Each step is mandatory. Skipping step 1 leaves no learnings signal. Skipping steps 3–4 leaves no recovery point for the next session. If any step fails, state the failure explicitly — do not silently omit.
+
+### `/checkpoint` convention
+
+`/checkpoint` is the mid-session and end-of-session state write. Same operation, same file (`workspace/state.json`), serving both purposes: phase boundary continuity and session-end handoff.
+
+**What is written:**
+- `currentPhase` — the name of the current pipeline phase
+- `lastUpdated` — ISO 8601 timestamp of the write (e.g. `2026-04-10T14:00:00Z`)
+- The cycle block for the active phase, containing at minimum `status` and `artefact` path
+- `checkpoint.writtenAt` — the date of the write
+- `checkpoint.contextAtWrite` — a brief summary of what was in progress
+- `checkpoint.resumeInstruction` — the instruction for the next session to resume from this point
+- `checkpoint.pendingActions` — any actions that were pending at the time of the write
+
+**Completion expectation:**
+The entire `/checkpoint` write — from invocation to closing confirmation message — must complete within 60 seconds. If it does not, the session likely ran out of context headroom before the write finished. Invoke earlier next time.
+
+**State write safety:** When writing `workspace/state.json`, always write the complete JSON object (never a delta or append). If using a tool that does not guarantee atomic full-file replacement, write to a temp file first (`state.json.tmp`), verify the content is valid JSON, then rename over the target. A partial write, append, or non-truncating replace will produce a concatenated-JSON file that fails `check-workspace-state.js` with "Unexpected non-whitespace character after JSON".
+
+**Capture bridge (before state-write):**
+Check `workspace/capture-log.md`. If absent: skip with "capture-log.md not found — skipping capture review" and continue. Compare each entry's `date` against `lastUpdated` from the prior `workspace/state.json`. Report count of new entries; if zero: report "No new captures to promote." Show each new entry's `signal-type` and `signal-text`; ask which to promote (all / numbers / skip). Append promoted entries to `workspace/learnings.md` with `date` and `session-phase`. Skipping is non-blocking — proceed to state-write without modification.
+
+**After writing:**
+The closing confirmation message must include "Pipeline state updated ✅". A new session reading `workspace/state.json` will resume from the checkpoint without verbal priming.
+
+---
+
+## Artefact writing standards
+
+**Do not hard-wrap prose paragraphs.** When writing markdown artefacts to disk, write each paragraph as a single unbroken line. Do not insert line breaks mid-sentence to fit a column width. Hard line breaks in prose look broken in VS Code and editors that do not soft-wrap.
+
+Rules:
+- Paragraphs: one line per paragraph, no mid-sentence `\n`
+- Lists: one item per line (that is intentional)
+- Tables: one row per line (that is intentional)
+- Headings: one line
+- Code blocks: fenced, content may wrap naturally
+- User story format (`As a … / I want … / So that …`): each clause on its own line is acceptable
+
+**Always expand abbreviations and codes on first use in human-oriented documents.** Pipeline artefacts, skill outputs, DoD/DoR observations, action items in `state.json`, and playbooks regularly use shorthand codes (e.g. `T3M1`, `AC3`, `E2`, `MM1`). A second operator reading cold cannot follow these without explanation.
+
+Rules:
+- **First use in any document:** write the full descriptor in brackets — e.g. `T3M1 (Tier 3, Meta-metric 1 — independent non-engineer audit)`, `E2 (/estimate pass 2 — refined at definition)`, `AC3 (Acceptance Criterion 3: <criterion text>)`, `MM1 (Meta-metric 1 — outer-loop unassisted replication rate)`.
+- **Subsequent uses in the same document:** code alone is acceptable once the descriptor has appeared.
+- **Human action items** (`pendingActions` in `state.json`, DoD observations, DoR Coding Agent Instructions): never use a bare code — the action must be self-describing without opening another file.
+- **Skill-generated artefacts:** the first reference to any metric, AC, or estimation-pass code must include the full name. This applies in SKILL.md instruction files and in the artefacts those skills produce.
+- **Scope:** applies to all new documents and artefacts from Phase 3 onwards. Legacy Phase 1/2 artefacts are not retroactively updated.
+
+---
+
+## Coding standards
+
+[FILL IN BEFORE COMMITTING]
+
+**Injectable adapter rule (D37):** When a story introduces an injectable adapter (`let _x = defaultFn; function setX(fn) { _x = fn; }`), four things are mandatory — not optional:
+1. **Stub defaults MUST throw**, not return empty/null. Use: `throw new Error('Adapter not wired: <name>. Call set<Name>() with a real implementation before use.')`. Silent stubs return safe-looking values that mask misconfiguration and let the flow complete incorrectly with no error.
+2. **The DoR must include an explicit AC** for the production wiring: "The adapter is wired to a real implementation in `server.js` (or the equivalent wiring module), and the wiring is verified by a test or smoke check."
+3. **The implementation plan must name the wiring as a separate task**, distinct from the handler task. One task = "write the handler + injectable setter". A second task = "wire the real implementation in server.js".
+4. **The wiring test must assert behavioural correctness of the wired implementation, not just that a function reference was assigned.** A test that only checks "`server.js` wires `setX` to `someFunction`" passes even if `someFunction` itself is wrong — it proves wiring occurred, not that the wired behaviour is correct. Assert an observable, differentiating outcome instead: e.g. "two different people resolve to two different, individually-correct role values," not "a role-lookup function got wired." Source: `team-identity-roles` epic, tir-s1 — a wiring test of exactly this weaker shape passed while the underlying `resolveRoleForTenant` ignored which person was logging in (fixed in tir-s7).
+
+**Mock-shape verification when reusing an adapter for a new purpose:** When a story wires a new fetch/handler by reusing an *existing* adapter for a *different* purpose than the adapter was originally built for, verify the test's mock payload shape against that adapter's actual, currently-wired production response shape — read the real wiring code in `server.js`, don't assume compatibility because the function signature happens to match. A mock that returns data shaped like what you *need* rather than what the real API *returns* will pass every test while the feature does nothing in production. Source: `team-identity-roles` epic, tir-s5 — bulk-add reused `setFetchOrgs` (which lists orgs a token belongs to) as if it listed org *members*; every test passed because the mock was person-shaped, but the real GitHub endpoint returns organization objects, making the shipped feature a complete no-op (fixed in tir-s8).
+
+**`req.session.accessToken` is the canonical field name.** All routes that read the GitHub token from session MUST use `req.session.accessToken`. Never use `req.session.token`. A grep check at DoR: `grep -rn "req\.session\.token[^A]" src/web-ui/` should return zero results.
+
+**DoR contract must not contradict the test plan (B1/D1):** Before signing off a DoR, verify that no "MUST NOT touch [file]" constraint in the contract excludes a file that the test plan's required touchpoints actually require. The check: for every file listed as out-of-scope in the contract, confirm it has zero test assertions against it. If a test asserts a route in `server.js` or a handler in `routes/X.js`, those files are required touchpoints — they must not appear in the contract's exclusion list. When the two conflict, the contract is the authoring defect: update the contract to match the ACs and test plan, not the other way around. Source: wuce.18 post-merge decision.
+
+**CSS-layout-dependent ACs must be classified at DoR time (B2):** Any AC that can only be verified by a browser rendering CSS layout (visual alignment, responsive breakpoints, scroll behaviour, pixel-level rendering) must be explicitly classified at DoR sign-off with one of:
+1. **Automated visual regression test** — Playwright screenshot comparison in `tests/e2e/`; test spec file named in the DoR contract
+2. **RISK-ACCEPT + manual smoke test script** — explicit RISK-ACCEPT entry in `decisions.md`; a corresponding step in the story's verification script; and a post-deployment smoke test action item in `workspace/state.json` pendingActions
+An AC that requires CSS layout and has neither is an open gap — it must not silently become a post-merge "deferred" item. Source: wuce.14 AC3–AC5.
+
+**`decisions.md` is mandatory for features with architectural choices:** Any feature that makes an architectural decision (choice of protocol, data shape, signal contract, session structure, replacement vs extension strategy) must have a `decisions.md` artefact at `artefacts/[feature-slug]/decisions.md`. Even on solo repos. Without it, rationale lives only in git log messages and is invisible to future operators, `/trace`, and `/improve`. Create the file at discovery approval time; append entries as decisions are made during delivery. Minimum fields per entry: decision title, date, context (one sentence), decision, rationale. Source: mfc.1 /improve — zero decisions logged for a 10-AC architectural story.
+
+**Artefact-first rule:** Any new SKILL.md file under `.github/skills/`, any new module under `src/`, any new governance check script under `tests/` or `scripts/`, any behavioural change to dashboard logic (`dashboards/*.js`, `dashboards/*.html` rendering/logic), any behavioural change to `CLAUDE.md` (new rules, guardrails, workflow changes), and any structural change to `pipeline-state.json` (schema evolution, file splitting, archive mechanisms, new top-level fields) committed to master must have a corresponding story artefact (discovery → benefit-metric → story → test-plan → DoR) committed to `artefacts/` before or alongside the implementation. A PR that adds or modifies any of these without a DoR story artefact is out-of-process. Exception: documentation-only changes (README, CHANGELOG, workspace notes), typo/configuration fixes that make no behavioural difference, data-only updates to dashboard static arrays reflecting pipeline-state.json (story phase/state changes), pipeline bookkeeping updates (stage transitions, metric signals, dispatch records), and changes explicitly listed in the governed exemption register do not require a full chain. For work that has already landed without a chain, use `.github/templates/retrospective-story.md` to create a retroactive story.
+
+**State and artefact updates — no standalone PR required:** Changes to `workspace/state.json`, `.github/pipeline-state.json`, and files under `artefacts/` are pipeline bookkeeping, not code. They do not need a standalone draft PR with a review cycle. Rules:
+- **Bundle first:** whenever practical, include state/artefact updates in the same commit and branch as the implementation they record. Merge once — not twice.
+- **Standalone checkpoint commits:** when no implementation branch is open (e.g. a mid-session `/checkpoint` write or DoD artefact after a PR has already merged), commit the changes on a short-lived branch and merge it immediately — or, once the GitHub branch protection path bypass below is configured, push directly to master.
+- **Never open a standalone draft PR and wait for review** for a state-only or artefact-only change. This creates unnecessary pipeline overhead for non-code changes with no quality-gate value.
+- **Exception:** if the state or artefact update is bundled with a chore that also touches other governed files (SKILL.md, src/, tests/), the PR is required for those other files — include the state/artefact update in the same PR rather than splitting it.
+
+> **Operator one-time action (GitHub branch protection):** Configure a path-based bypass in the repository's GitHub Ruleset (Settings → Rules → your master ruleset) for paths `workspace/**`, `artefacts/**`, and `.github/pipeline-state.json`. This allows direct push without a PR for these bookkeeping paths while keeping the PR gate intact for all code paths. Until that bypass is in place, use a short-lived branch + immediate merge as described above.
+
+**Disk canonicity for gate-confirm and artefact handoff (ougl):** Any handler that writes an artefact to disk and then passes its content to the next stage MUST follow the write-then-read sequence: (1) write `session.artefactContent` to disk, (2) read the file back from disk via `fs.readFileSync`, (3) use the disk content for handoff. Never use `session.artefactContent` directly as handoff input after the disk write. Disk is the durable canonical record — `/trace` validates against disk, so any divergence between what the next stage model receives and what trace sees is a traceability defect. Companion rule: the disk write MUST precede `completeStage()` — if the write fails, the stage must not advance. Source: ougl decisions.md (2026-05-06), ADR-023.
+
+**Path traversal guard for disk writes (ougl):** Any route handler that writes a file to disk at a path derived from request data (URL params, form fields, session-stored slugs, or artefact paths set earlier in the flow) MUST validate the resolved path before writing. Use `path.resolve(inputPath)` and assert `resolvedPath.startsWith(repoRoot + path.sep)`. Return HTTP 400 if the check fails — do not log the raw path value in production. A dedicated test must cover the path traversal case and assert both the 400 response and that no file was written to disk. This guard is required in addition to (not instead of) allowlist validation of slug/skill-name URL parameters. Source: ougl.5 AC11, ougl.6 AC8, NFR-sec-pathtraversal, web-ui-patterns.md.
+
+**`skills advance` harness rule (cdg.6):** When updating `pipeline-state.json` fields for any story — in any script, test, or manual step — use `node bin/skills advance <feature-slug> <story-id> <field>=<value>...` rather than writing the JSON directly. This ensures enum validation, integer coercion, dot-notation writes, and the prototype pollution guard are applied consistently. The only permitted exceptions are: (a) initial story creation (adding a new story object to the pipeline-state), (b) bulk repairs run via an explicitly named one-off script, and (c) CI teardown scripts where the advance module is unavailable. In those cases, validate the result with `node scripts/check-pipeline-state-integrity.js` immediately after. Source: cdg.6.
+
+**`skills gate-advance` mandate (cdg.7):** When advancing a story across a gated stage boundary, use `node bin/skills gate-advance <feature-slug> <story-id> <gate-name> <artefact-path> [field=value...]` rather than calling `advance` directly. The command validates the artefact against the gate first; if validation fails, the state is not modified. The 7 gated stage values (defined in `src/enforcement/gate-map.js`) are: `discovery-approved`, `benefit-metric-active`, `definition-complete`, `test-plan-complete`, `dor-signed-off`, `branch-complete`, `definition-of-done`. Direct calls to `advance` remain valid for non-gate-boundary field updates (e.g. `prStatus`, `dorStatus`, `health`). Source: cdg.7.
+
+**Epic-nested story state bookkeeping (cdg.6 / B2):** NEVER rely on branch-merged `pipeline-state.json` for state bookkeeping on epic-nested stories. Apply all state advances on master after the PR merges. When a feature uses `feature.epics[].stories[]` (rather than flat `feature.stories[]`), advances applied on a feature branch are silently reverted if the merge resolution uses the branch version of `pipeline-state.json` — which happens whenever master advanced between the branch's last rebase and the PR merge. The harness resolves epic-nested stories correctly; the failure is in timing. Correct procedure: merge the PR, pull master, then run `node bin/skills advance` for every story being bookmarked. Flat (`feature.stories[]`) stories do not have this problem — merge conflicts on flat arrays are immediately visible. See also: `standards/governance/delivery-patterns.md` section "Epic-Nested Story State Bookkeeping (B2/D1)".
+
+**Conflict marker verification before `git add` (wsm / D40):** After ANY conflict resolution — merge, rebase, or cherry-pick — run a conflict marker scan on every modified file BEFORE `git add`. Zero results are required before staging.
+- PowerShell: `Select-String -Pattern '<<<<<<|======|>>>>>>' <file>`
+- Bash: `grep -n "<<<\|===\|>>>" <file>`
+
+This is especially critical for cherry-pick resolutions where the HEAD content is kept verbatim: the `<<<<<<< HEAD ... =======` pair is removed by the editor, but the `>>>>>>> <sha>` tail line below the kept content is easily missed — it produces a `SyntaxError` that kills the entire CI test suite rather than a failing assertion. A syntax error masking test results is a recurring pattern; this scan prevents it. Source: wsm.3, `workspace/learnings.md` D40.
+
+---
+
+## Product context files
+
+The `product/` directory (repo root) holds standing context that skills read automatically.
+Bootstrap creates placeholder versions of all four files — fill them in before running the pipeline.
+
+| File | Read by | Purpose |
+|------|---------|---------|
+| `product/mission.md` | `/discovery`, `/benefit-metric`, `/clarify` | What the product does and for whom. Frames problem scoping and metric relevance. |
+| `product/roadmap.md` | `/benefit-metric` | Strategic priorities and horizon. Used to assess whether a proposed metric aligns with the current direction. |
+| `product/tech-stack.md` | `/definition` | Current technology decisions and constraints. Informs story architecture choices and NFR defaults. |
+| `product/constraints.md` | `/discovery`, `/definition` | Hard limits: budget, regulatory, team capability. Surfaced during scope discussions and story ACs. |
+
+**Format:** each file is free-form markdown. A single paragraph plus bullet list is sufficient.
+Skills read the files as-is — no special syntax required.
+Update these files when the product context changes (new regulatory requirement, stack migration, etc.).
+
+---
+
+## Architecture standards
+
+<!-- Read by /definition, /review (Category E), /definition-of-ready (H9), /trace, and the coding agent via DoR. Keep .github/architecture-guardrails.md updated — it is the source of truth. -->
+
+**Architecture guardrails:** `.github/architecture-guardrails.md`
+**EA registry repo (optional):** `https://github.com/heymishy/ea-registry`
+**Pattern library:** [FILL IN — URL or path to your pattern / component library]
+**Style guide:** [FILL IN — URL or path to your style guide]
+**Reference implementation:** [FILL IN — path in repo, e.g. `src/reference/`]
+**Repo-level ADR register:** `.github/architecture-guardrails.md` (Active ADRs section)
+
+When `context.yml` sets `architecture.ea_registry_authoritative: true`, keep
+application/interface/domain entries in the EA registry repo and use `/ea-registry`
+to feed dependency context into delivery repos.
+
+> Per-feature decisions are recorded by /decisions and live in
+> `artefacts/[feature]/decisions.md`.
+> Structural decisions that constrain future features should also be added to
+> `.github/architecture-guardrails.md` as a repo-level ADR.
+
+---
+
+## Estimation model
+
+This pipeline does not use story points or sprint velocity.
+
+Estimates are recorded in three passes by the `/estimate` skill:
+- **E1** (at /discovery): rough outer-loop focus-time forecast, seeded from scope complexity and operator experience
+- **E2** (at /definition): refined once story count and complexity scores are known
+- **E3** (at /improve): actuals comparison, delta analysis, flow findings, and a row appended to `workspace/estimation-norms.md`
+
+The key signals used to inform estimates:
+
+- **Complexity (1/2/3):** confidence and clarity, set at definition
+  - 1 = Well understood, clear path
+  - 2 = Some ambiguity, known unknowns
+  - 3 = High ambiguity — consider a spike before committing
+- **Scope stability (Stable/Unstable):** boundary confidence, set at definition
+- **Human oversight (Low/Medium/High):** set at epic level
+
+Do not introduce points or sizing unless explicitly asked.
+After 3+ features, `/estimate` will suggest calibrated defaults from `workspace/estimation-norms.md`.
+
+---
+
+## Pipeline state file — mandatory writes
+
+Every skill has a `## State update — mandatory final step` section. **Completing that write is the final required action of every skill run — without exception.**
+
+- Write to `.github/pipeline-state.json` in the **project repository** (the repo the user is working in), never the skills repo
+- The skill is not considered complete until the write is done
+- Confirm the write in your closing message: include "Pipeline state updated ✅"
+- If the state file does not exist yet, create it first using the seed structure (see `/bootstrap`)
+- If the write is skipped for any reason, state this explicitly so the user can run `/workflow` to reconcile
+
+`/workflow` is the reconciliation safety net and will catch missed writes — but do not rely on it as a substitute.
+
+---
+
+## Platform change policy (Phase 2+)
+
+**SKILL.md files, templates, standards files, and pipeline infrastructure changes must be merged via PR — not committed directly to the default branch.** This applies to all changes to `.github/skills/`, `.github/templates/`, `standards/`, `.github/governance-gates.yml`, and `scripts/`. The governed path is: local edit on a feature branch → PR opened → platform team reviews → merge.
+
+---
+
+## Tool integrations
+
+<!-- Configuration has moved to `.github/context.yml` (`tools.*` and `change_management.*`). The /release skill reads context.yml directly. This table is a read-only reference — context.yml is canonical. -->
+
+| Tool | Purpose | Configuration |
+|------|---------|---------------|
+| ServiceNow | Change management | Set in `context.yml: change_management.*` |
+| CI/CD platform | Build + deploy | Set in `context.yml: tools.ci_platform` |
+| Monitoring / APM | Observability | Set in `context.yml: tools.monitoring` |
+| Log aggregation | Log querying | Set in `context.yml: tools.log_aggregation` |
+| On-call alerting | Incident response | Set in `context.yml: tools.alerting` |
+| Issue tracking | Project management | Set in `context.yml: tools.project_management` |
+| Artefact repository | Build artefacts | Set in `context.yml: tools.artifact_registry` |
+
