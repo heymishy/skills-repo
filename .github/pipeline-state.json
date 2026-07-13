@@ -8477,14 +8477,14 @@
     {
       "slug": "2026-07-09-team-identity-roles",
       "name": "Unified Per-User Identity and Role-Based Access Model for Multi-Tenant Teams",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-13T06:33:37.871Z",
+      "updatedAt": "2026-07-13T07:08:36.220Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-team-identity-roles/discovery.md",
@@ -8679,27 +8679,27 @@
             {
               "slug": "tir-s8",
               "name": "Bulk-add fetches real GitHub org members, not the admin's own org memberships",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-13T06:29:24.571Z",
+              "updatedAt": "2026-07-13T07:08:36.220Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s8-review-1.md",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 6,
-                "passing": 0,
+                "passing": 6,
                 "artefact": "artefacts/2026-07-09-team-identity-roles/test-plans/tir-s8-real-org-members-fetch-test-plan.md"
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorSignedOffAt": "2026-07-13T06:29:24.571Z",
               "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s8-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s8-dor-contract.md",
-              "prStatus": "none"
+              "prStatus": "merged"
             }
           ]
         }
