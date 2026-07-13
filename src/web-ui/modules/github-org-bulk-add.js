@@ -1,22 +1,27 @@
 'use strict';
 
-// github-org-bulk-add.js — tir-s5
+// github-org-bulk-add.js — tir-s5 (fetch mechanism fixed by tir-s8)
 // Bulk-adds every member of the admin's own connected GitHub org as a
 // teammate in one action. Reuses tir-s3's addOrUpdateTeammate
-// (team-management.js) as the single write path and p1.1's setFetchOrgs
-// adapter (routes/auth.js, accessed via its getFetchOrgs() accessor) as the
-// single GitHub org-membership read path -- no new D37 adapter is
-// introduced (H-ADAPTER: DoR confirms this reuses both existing mechanisms
-// rather than adding a third).
+// (team-management.js) as the single write path.
+//
+// tir-s8 fix: tir-s5 originally reused p1.1's setFetchOrgs adapter
+// (routes/auth.js, via its getFetchOrgs() accessor) as the org-membership
+// read path -- but that adapter calls GET /user/orgs, which lists the ORGS
+// a token belongs to, not the MEMBERS of a specific org. Each returned
+// .login was an org's name, not a person's username, so every "member"
+// silently failed resolvePersonForIdentity and bulk-add was a functional
+// no-op in production (addedCount always 0). This module now reads via the
+// new getOrgMembers adapter (routes/auth.js, D37: setFetchOrgMembers),
+// which is parameterized by org name and calls GET /orgs/{org}/members.
 //
 // Security (NFR): the org whose membership is read is never taken from a
-// request parameter. There is no "org name" argument anywhere in this
-// module's public function -- the fetchOrgs adapter is always called with
-// only the admin's own session accessToken, so there is no parameter an
-// admin could spoof to point bulk-add at a different org. The written rows
-// always use adminTenantId, which the caller (routes/github-org-bulk-add.js)
-// always sources from req.session.tenantId, never from request input
-// (mirrors tir-3's ADR-025 convention exactly).
+// request parameter. getOrgMembers is always called with adminTenantId (the
+// admin's own tenant/org) and the admin's own session accessToken, so there
+// is no parameter an admin could spoof to point bulk-add at a different
+// org. The written rows always use adminTenantId, which the caller
+// (routes/github-org-bulk-add.js) always sources from req.session.tenantId,
+// never from request input (ADR-025, mirrors tir-3's convention exactly).
 
 var teamManagement = require('./team-management');
 var identityLinks = require('./identity-links');
@@ -45,22 +50,26 @@ OrgAccessError.prototype = Object.create(Error.prototype);
 OrgAccessError.prototype.constructor = OrgAccessError;
 
 /**
- * Page through fetchOrgs exactly as routes/auth.js's own resolveTenant does
- * (same adapter, same pagination shape: Array<{login}> | {orgs, nextPage}) --
- * reused verbatim rather than reimplemented, per the DoR contract. Any
- * failure (including a token missing org-read scope) is translated into a
- * clear OrgAccessError (AC4) rather than propagating a raw/opaque error.
- * @param {Function} fetchOrgs - the currently-wired setFetchOrgs adapter (routes/auth.js getFetchOrgs())
+ * Page through getOrgMembers (tir-s8) using the same pagination shape
+ * routes/auth.js's own resolveTenant/getFetchOrgs use: Array<{login}> |
+ * {members, nextPage} -- same pattern, reused rather than reimplemented, per
+ * the DoR contract (field name is `members`, not `orgs`, since this fetches
+ * the members of one specific org rather than the list of orgs a token
+ * belongs to). Any failure (including a token missing org-read scope) is
+ * translated into a clear OrgAccessError (AC4) rather than propagating a
+ * raw/opaque error.
+ * @param {Function} getOrgMembers - routes/auth.js's getOrgMembers(orgName, accessToken, page) (tir-s8, D37: setFetchOrgMembers)
+ * @param {string} orgName - always adminTenantId (ADR-025: never request-supplied)
  * @param {string} accessToken
  * @returns {Promise<Array<{login: string}>>}
  */
-async function _fetchAllOrgMembers(fetchOrgs, accessToken) {
+async function _fetchAllOrgMembers(getOrgMembers, orgName, accessToken) {
   var all = [];
   var page = 1;
   try {
     while (true) {
-      var result = await fetchOrgs(accessToken, page);
-      var members = Array.isArray(result) ? result : result.orgs;
+      var result = await getOrgMembers(orgName, accessToken, page);
+      var members = Array.isArray(result) ? result : result.members;
       var nextPage = Array.isArray(result) ? null : result.nextPage;
       all = all.concat(members || []);
       if (!nextPage) break;
@@ -88,17 +97,17 @@ async function _fetchAllOrgMembers(fetchOrgs, accessToken) {
  * exist, so calling it unconditionally for every org member would fail AC3.
  *
  * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
- * @param {string} adminTenantId - always req.session.tenantId at the route layer (NFR: never request-supplied)
- * @param {Function} fetchOrgs - the currently-wired setFetchOrgs adapter (routes/auth.js getFetchOrgs())
+ * @param {string} adminTenantId - always req.session.tenantId at the route layer (NFR: never request-supplied); also the org name passed to getOrgMembers (ADR-025)
+ * @param {Function} getOrgMembers - routes/auth.js's getOrgMembers(orgName, accessToken, page) (tir-s8, D37: setFetchOrgMembers)
  * @param {string} accessToken - always req.session.accessToken at the route layer
  * @param {string} [adminId] - the calling admin's own session identifier, for the audit log
  * @param {{info: Function}} [logger]
  * @returns {Promise<{addedCount: number, skippedCount: number, totalOrgMembers: number}>}
  */
-async function bulkAddFromGithubOrg(pool, adminTenantId, fetchOrgs, accessToken, adminId, logger) {
+async function bulkAddFromGithubOrg(pool, adminTenantId, getOrgMembers, accessToken, adminId, logger) {
   var log = logger || _defaultLogger;
 
-  var orgMembers = await _fetchAllOrgMembers(fetchOrgs, accessToken);
+  var orgMembers = await _fetchAllOrgMembers(getOrgMembers, adminTenantId, accessToken);
 
   var addedCount = 0;
   var skippedCount = 0;

@@ -1,11 +1,20 @@
 #!/usr/bin/env node
-// check-tir-s5-github-org-bulk-add.js — tir-s5
+// check-tir-s5-github-org-bulk-add.js — tir-s5 (mocks corrected by tir-s8, AC5)
 // Verifies the GitHub-org bulk-add feature: bulkAddFromGithubOrg/OrgAccessError
 // (src/web-ui/modules/github-org-bulk-add.js) and the
 // POST /api/team/bulk-add-github-org route handler
 // (src/web-ui/routes/github-org-bulk-add.js). Follows this repo's hand-rolled
 // test()/assert style (see tests/check-tir-s3-admin-adds-teammate.js) — no
 // Jest/Mocha.
+//
+// tir-s8 (AC5): this file originally mocked `fetchOrgs` with person-shaped
+// objects (`{login: 'alice-gh'}` etc.), which masked tir-s8's bug -- in
+// production, the real setFetchOrgs adapter returns ORG objects (GET
+// /user/orgs), not person/member objects, so bulk-add was a functional
+// no-op. All mocks below now use the new `getOrgMembers` adapter
+// (org-name-parameterized, GET /orgs/{org}/members) with realistic
+// member-object shapes (`{login, id, type: 'User'}`), matching what the
+// fixed production code path actually receives.
 //
 // AC1: admin bulk-adds every org member not already present, default role
 //      "engineer"
@@ -16,9 +25,10 @@
 //      rows, no overwrite of a manually-changed role
 // AC4: a token missing org-membership read scope fails with a clear,
 //      actionable error -- not a silent no-op, not a crash
-// NFR (security): bulk-add cannot be pointed at an arbitrary org via request
-//      parameters -- there is no org-name request field at all, and every
-//      write always lands in req.session.tenantId
+// NFR (security) / ADR-025: bulk-add cannot be pointed at an arbitrary org
+//      via request parameters -- there is no org-name request field at all,
+//      and getOrgMembers is always called with req.session.tenantId as its
+//      orgName argument, never a request-supplied value
 // NFR (audit): bulk-add logs admin id, org name, count added, timestamp
 
 'use strict';
@@ -190,11 +200,15 @@ async function testAC1BulkAddCreatesMembershipsForNewMembers() {
   pool._seedKnownPerson('bob-gh');
   pool._seedKnownPerson('carol-gh');
 
-  var fetchOrgs = async function() {
-    return { orgs: [{ login: 'alice-gh' }, { login: 'bob-gh' }, { login: 'carol-gh' }], nextPage: null };
+  var getOrgMembers = async function() {
+    return { members: [
+      { login: 'alice-gh', id: 101, type: 'User' },
+      { login: 'bob-gh', id: 102, type: 'User' },
+      { login: 'carol-gh', id: 103, type: 'User' }
+    ], nextPage: null };
   };
 
-  var result = await bulkAdd.bulkAddFromGithubOrg(pool, 'acme', fetchOrgs, 'fake-token', 'admin-1');
+  var result = await bulkAdd.bulkAddFromGithubOrg(pool, 'acme', getOrgMembers, 'fake-token', 'admin-1');
 
   assert.strictEqual(result.addedCount, 3, 'AC1: 3 members added');
   assert.strictEqual(result.totalOrgMembers, 3, 'AC1: 3 total org members seen');
@@ -219,11 +233,11 @@ async function testAC2BulkAddedMemberResolvesLikeManualAdd() {
 
   pool._seedKnownPerson('dave-gh');
 
-  var fetchOrgs = async function() {
-    return { orgs: [{ login: 'dave-gh' }], nextPage: null };
+  var getOrgMembers = async function() {
+    return { members: [{ login: 'dave-gh', id: 104, type: 'User' }], nextPage: null };
   };
 
-  await bulkAdd.bulkAddFromGithubOrg(pool, 'acme', fetchOrgs, 'fake-token', 'admin-1');
+  await bulkAdd.bulkAddFromGithubOrg(pool, 'acme', getOrgMembers, 'fake-token', 'admin-1');
 
   var role = await userRoles.resolveRoleForPerson(pool, 'dave-gh', 'acme');
   assert.strictEqual(role, 'engineer', 'AC2: bulk-added member resolves to engineer via the same person-scoped login resolution as a manual add');
@@ -243,16 +257,20 @@ async function testAC3RerunSkipsExistingAndDoesNotOverwrite() {
   pool._seedKnownPerson('frank-gh');
   pool._seedKnownPerson('grace-gh');
 
-  var fetchOrgs = async function() {
-    return { orgs: [{ login: 'erin-gh' }, { login: 'frank-gh' }, { login: 'grace-gh' }], nextPage: null };
+  var getOrgMembers = async function() {
+    return { members: [
+      { login: 'erin-gh', id: 105, type: 'User' },
+      { login: 'frank-gh', id: 106, type: 'User' },
+      { login: 'grace-gh', id: 107, type: 'User' }
+    ], nextPage: null };
   };
 
-  var firstRun = await bulkAdd.bulkAddFromGithubOrg(pool, 'acme', fetchOrgs, 'fake-token', 'admin-1');
+  var firstRun = await bulkAdd.bulkAddFromGithubOrg(pool, 'acme', getOrgMembers, 'fake-token', 'admin-1');
   assert.strictEqual(firstRun.addedCount, 2, 'AC3 setup: first run adds only the 2 not-yet-present members');
   assert.strictEqual(firstRun.skippedCount, 1, 'AC3 setup: first run skips the already-present member');
 
   // Re-run bulk-add a second time with the same org member list.
-  var secondRun = await bulkAdd.bulkAddFromGithubOrg(pool, 'acme', fetchOrgs, 'fake-token', 'admin-1');
+  var secondRun = await bulkAdd.bulkAddFromGithubOrg(pool, 'acme', getOrgMembers, 'fake-token', 'admin-1');
   assert.strictEqual(secondRun.addedCount, 0, 'AC3: re-run adds no new members');
   assert.strictEqual(secondRun.skippedCount, 3, 'AC3: re-run skips all 3, now-present members');
 
@@ -275,14 +293,14 @@ async function testAC4MissingScopeFailsWithClearError() {
   var bulkAdd = freshRequire(BULK_ADD_MODULE_PATH);
   var pool = makeFakePool();
 
-  var fetchOrgs = async function() {
+  var getOrgMembers = async function() {
     var e = new Error('Bad credentials');
     e.status = 401;
     throw e;
   };
 
   await assert.rejects(
-    function() { return bulkAdd.bulkAddFromGithubOrg(pool, 'acme', fetchOrgs, 'scopeless-token', 'admin-1'); },
+    function() { return bulkAdd.bulkAddFromGithubOrg(pool, 'acme', getOrgMembers, 'scopeless-token', 'admin-1'); },
     function(err) {
       assert.ok(err instanceof bulkAdd.OrgAccessError, 'AC4: rejection is the dedicated OrgAccessError type');
       assert.ok(/read:org|permission|scope/i.test(err.message), 'AC4: error message names the missing permission, got: ' + err.message);
@@ -306,13 +324,13 @@ async function testNfrSecurityCannotTargetArbitraryOrg() {
 
   pool._seedKnownPerson('henry-gh');
 
-  var fetchOrgsCallArgs = [];
-  var fetchOrgs = async function(accessToken, page) {
-    fetchOrgsCallArgs.push({ accessToken: accessToken, page: page });
-    return { orgs: [{ login: 'henry-gh' }], nextPage: null };
+  var getOrgMembersCallArgs = [];
+  var getOrgMembers = async function(orgName, accessToken, page) {
+    getOrgMembersCallArgs.push({ orgName: orgName, accessToken: accessToken, page: page });
+    return { members: [{ login: 'henry-gh', id: 108, type: 'User' }], nextPage: null };
   };
 
-  var handlers = route.createGithubOrgBulkAddHandlers(pool, function() { return fetchOrgs; });
+  var handlers = route.createGithubOrgBulkAddHandlers(pool, getOrgMembers);
 
   // Attempt to smuggle a different target org/tenant in the request body --
   // the handler must ignore it entirely; there is no code path that reads an
@@ -327,8 +345,9 @@ async function testNfrSecurityCannotTargetArbitraryOrg() {
 
   assert.strictEqual(res.statusCode, 200, 'NFR security setup: the bulk-add action succeeds for the admin\'s own tenant');
 
-  fetchOrgsCallArgs.forEach(function(call) {
-    assert.strictEqual(call.accessToken, 'real-token', 'NFR security: fetchOrgs is always called with the admin\'s own session accessToken');
+  getOrgMembersCallArgs.forEach(function(call) {
+    assert.strictEqual(call.accessToken, 'real-token', 'NFR security: getOrgMembers is always called with the admin\'s own session accessToken');
+    assert.strictEqual(call.orgName, 'acme', 'NFR security / ADR-025: getOrgMembers is always called with the admin\'s own session tenantId as orgName, never the request-supplied "some-other-org"');
   });
 
   var state = pool._state();
@@ -349,14 +368,14 @@ async function testNfrAuditLogging() {
 
   pool._seedKnownPerson('ida-gh');
 
-  var fetchOrgs = async function() {
-    return { orgs: [{ login: 'ida-gh' }], nextPage: null };
+  var getOrgMembers = async function() {
+    return { members: [{ login: 'ida-gh', id: 109, type: 'User' }], nextPage: null };
   };
 
   var logEvents = [];
   var spyLogger = { info: function(event, data) { logEvents.push({ event: event, data: data }); } };
 
-  await bulkAdd.bulkAddFromGithubOrg(pool, 'acme', fetchOrgs, 'fake-token', 'admin-1', spyLogger);
+  await bulkAdd.bulkAddFromGithubOrg(pool, 'acme', getOrgMembers, 'fake-token', 'admin-1', spyLogger);
 
   var completedEvent = logEvents.filter(function(e) { return e.event === 'bulk_add_completed'; })[0];
   assert.ok(completedEvent, 'NFR audit: a bulk_add_completed event was logged');
@@ -377,7 +396,8 @@ function testServerWiring() {
   var src = fs.readFileSync(SERVER_PATH, 'utf8');
   assert.ok(src.indexOf('createGithubOrgBulkAddHandlers(') !== -1, 'server.js must call createGithubOrgBulkAddHandlers()');
   assert.ok(src.indexOf('/api/team/bulk-add-github-org') !== -1, 'server.js must register the POST /api/team/bulk-add-github-org route');
-  assert.ok(src.indexOf('getFetchOrgs') !== -1, 'server.js must pass the getFetchOrgs accessor to the bulk-add handlers');
+  assert.ok(src.indexOf('createGithubOrgBulkAddHandlers(_userRolesPool, getOrgMembers)') !== -1, 'server.js must pass the getOrgMembers adapter (tir-s8) to the bulk-add handlers, not getFetchOrgs');
+  assert.ok(src.indexOf('setFetchOrgMembers(') !== -1, 'server.js must wire the real production getOrgMembers implementation via setFetchOrgMembers');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

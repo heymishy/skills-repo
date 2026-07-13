@@ -1,17 +1,23 @@
 'use strict';
 
-// github-org-bulk-add.js — tir-s5
+// github-org-bulk-add.js — tir-s5 (fetch mechanism fixed by tir-s8)
 // POST /api/team/bulk-add-github-org — admin-only bulk-add action. Mounted
 // behind requireAdmin in server.js (matches team-management.js's own
 // convention exactly -- requireAdmin applied at mount time, not inside the
 // handler).
 //
-// Security (NFR): this handler reads no fields from the request body at all
-// -- the org is always the one implicit in the admin's own session
-// accessToken (via the fetchOrgs adapter), and the tenant every added row is
-// written to is always req.session.tenantId (ADR-025 convention, same as
-// tir-s3's /api/team/members). There is no request-supplied org name for an
-// admin to spoof.
+// tir-s8: the org-membership read now goes through routes/auth.js's
+// getOrgMembers (D37: setFetchOrgMembers) instead of the old getFetchOrgs
+// accessor -- getOrgMembers is org-name-parameterized (GET
+// /orgs/{org}/members), unlike the old fetchOrgs adapter (GET /user/orgs,
+// which lists orgs a token belongs to, not members of a specific org).
+//
+// Security (NFR) / ADR-025: this handler reads no fields from the request
+// body at all -- the org whose members are fetched is always
+// req.session.tenantId (passed as getOrgMembers' orgName argument), and the
+// tenant every added row is written to is always that same
+// req.session.tenantId (same convention as tir-s3's /api/team/members).
+// There is no request-supplied org name for an admin to spoof.
 
 var githubOrgBulkAdd = require('../modules/github-org-bulk-add');
 
@@ -31,22 +37,25 @@ function setLogger(logger) {
 
 /**
  * Build the bulk-add handler, closed over a single pool instance and the
- * currently-wired org-fetch adapter accessor (mirrors
- * createTeamManagementHandlers(pool)'s factory convention). No new D37
- * adapter (H-ADAPTER: reuses routes/auth.js's existing setFetchOrgs adapter
- * via its getFetchOrgs() accessor, passed in here rather than required
- * directly, so this module has no compile-time dependency on routes/auth.js).
+ * getOrgMembers adapter wrapper (mirrors createTeamManagementHandlers(pool)'s
+ * factory convention). tir-s8: getOrgMembers is routes/auth.js's exported
+ * wrapper function itself (not an accessor-of-an-accessor) -- it always
+ * delegates to whatever's currently wired via setFetchOrgMembers, so a
+ * single reference taken at server startup stays correct across rewiring.
+ * Passed in here rather than required directly, so this module has no
+ * compile-time dependency on routes/auth.js.
  * @param {object} pool
- * @param {Function} getFetchOrgs - routes/auth.js's getFetchOrgs (returns the currently-wired adapter fn)
+ * @param {Function} getOrgMembers - routes/auth.js's getOrgMembers(orgName, accessToken, page) (D37: setFetchOrgMembers)
  * @returns {{handleBulkAddFromGithubOrg: Function}}
  */
-function createGithubOrgBulkAddHandlers(pool, getFetchOrgs) {
+function createGithubOrgBulkAddHandlers(pool, getOrgMembers) {
   /**
    * POST /api/team/bulk-add-github-org — bulk-add every member of the
    * admin's own connected GitHub org as a teammate (AC1, AC3). ADR-025:
-   * tenantId is ALWAYS req.session.tenantId; accessToken is ALWAYS
-   * req.session.accessToken (canonical field name — CLAUDE.md, never
-   * req.session.token). No request body field is read.
+   * tenantId is ALWAYS req.session.tenantId (also passed as getOrgMembers'
+   * orgName argument); accessToken is ALWAYS req.session.accessToken
+   * (canonical field name — CLAUDE.md, never req.session.token). No request
+   * body field is read.
    */
   async function handleBulkAddFromGithubOrg(req, res) {
     var adminTenantId = req.session && req.session.tenantId;
@@ -54,8 +63,7 @@ function createGithubOrgBulkAddHandlers(pool, getFetchOrgs) {
     var accessToken = req.session && req.session.accessToken;
 
     try {
-      var fetchOrgs = getFetchOrgs();
-      var result = await githubOrgBulkAdd.bulkAddFromGithubOrg(pool, adminTenantId, fetchOrgs, accessToken, adminId, _logger);
+      var result = await githubOrgBulkAdd.bulkAddFromGithubOrg(pool, adminTenantId, getOrgMembers, accessToken, adminId, _logger);
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(result));
     } catch (err) {
