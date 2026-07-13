@@ -9864,6 +9864,44 @@
       },
       "stories": [],
       "epics": []
+    },
+    {
+      "slug": "2026-07-13-epic-learnings-capture",
+      "name": "Capture delivery-pattern learnings from the beta-readiness-infra and team-identity-roles epics",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "els-s1",
+          "slug": "els-s1",
+          "name": "Capture epic-delivery learnings into CLAUDE.md and architecture-guardrails.md",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 20,
+            "passing": 20,
+            "artefact": "artefacts/2026-07-13-epic-learnings-capture/test-plans/els-s1-capture-epic-delivery-learnings-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-13-epic-learnings-capture/dor/els-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-13-epic-learnings-capture/dor/els-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-13T08:13:07.960Z",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/471",
+          "updatedAt": "2026-07-13T08:13:07.960Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-13T08:13:07.960Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
