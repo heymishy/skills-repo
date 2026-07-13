@@ -8725,6 +8725,32 @@
               "dodStatus": "complete",
               "releaseReady": true,
               "dodArtefact": "artefacts/2026-07-09-team-identity-roles/dod/tir-s8-dod.md"
+            },
+            {
+              "slug": "tir-s9",
+              "name": "The identityKey passed to login-time role resolution must be each person's own identity, not the shared tenantId",
+              "stage": "verify-completion",
+              "health": "amber",
+              "updatedAt": "2026-07-14T00:00:00.000Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s9-review-1.md",
+              "testPlan": {
+                "status": "all-passing",
+                "totalTests": 7,
+                "passing": 7,
+                "artefact": "artefacts/2026-07-09-team-identity-roles/test-plans/tir-s9-per-person-identitykey-login-fix-test-plan.md"
+              },
+              "acTotal": 5,
+              "acVerified": 5,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorSignedOffAt": "2026-07-14T00:00:00.000Z",
+              "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s9-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s9-dor-contract.md",
+              "prStatus": "none",
+              "blocker": "Implementation complete and committed locally (branch feature/tir-s9, commit 6921f29b) with 7/7 tests passing (confirmed failing 6/7 against pre-fix code, proving regression coverage). Push to origin/heymishy-skills-repo was denied by the Claude Code auto-mode publication-safety classifier (public-repo + detailed unpatched security-vulnerability content) -- awaiting explicit operator decision on how to publish (confirm public push, or an alternative) before a draft PR can be opened."
             }
           ]
         }
@@ -8740,15 +8766,16 @@
           "name": "Per-person role assignment exists",
           "target": "100% of team members in a shared tenant have a distinct, independently assigned role",
           "baseline": "0%",
-          "signal": "on-track",
-          "lastMeasured": "2026-07-13T07:22:46.102Z",
-          "evidence": "tir-s1 (schema), tir-s3 (real add-teammate flow), tir-s7 (login-resolution fix), tir-s8 (bulk-add fetch fix) together prove per-person role assignment works end-to-end in a real 2+-person tenant, not just in migrated solo-tenant data.",
+          "signal": "at-risk",
+          "lastMeasured": "2026-07-14T00:00:00.000Z",
+          "evidence": "tir-s1 (schema), tir-s3 (real add-teammate flow), tir-s7 (login-resolution query-logic fix), tir-s8 (bulk-add fetch fix) together prove the per-person role model works end-to-end -- but tir-s9 found that tir-s7's fix was never actually reachable in production on the shared-tenant (TENANT_ORG_ALLOWLIST) path, because server.js's wiring fed it a shared tenantId as identityKey instead of each person's own identity. tir-s9's fix is implemented, tested (7/7 passing, confirmed to fail against pre-fix code), and committed locally on feature/tir-s9 (commit 6921f29b), but not yet pushed/merged -- signal held at at-risk until that lands, since the metric's real-world claim depended on exactly this gap.",
           "contributingStories": [
             "tir-s1",
             "tir-s3",
             "tir-s5",
             "tir-s7",
-            "tir-s8"
+            "tir-s8",
+            "tir-s9"
           ]
         },
         {
