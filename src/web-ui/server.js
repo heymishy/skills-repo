@@ -40,7 +40,7 @@ const { creditsGuard }                                               = require('
 const { handleEmailSignup, handleEmailLogin, setUserDb }             = require('./routes/auth-email');       // lab-s2.2
 const { setPasswordAdapter }                                         = require('./modules/password');         // lab-s2.2
 const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
-const { setGetUserRole, setGetRoleForTenant, migrateTeamSchema, resolveRoleForTenant } = require('./modules/user-roles'); // arl-s1 / tir-s1
+const { setGetUserRole, setGetRoleForTenant, migrateTeamSchema, resolveRoleForPerson } = require('./modules/user-roles'); // arl-s1 / tir-s1 / tir-s7
 const { migrateIdentityLinksSchema } = require('./modules/identity-links'); // tir-s2
 const { handleGetLinkSettings, handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
 const { requireAdmin }                                               = require('./middleware/require-admin'); // arl-s2
@@ -266,10 +266,21 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // as the real production implementation — the legacy setGetUserRole wiring
     // above stays in place (Out of Scope: do not remove) but is no longer
     // called by any production code path after this story.
+    //
+    // tir-s7 (fix-forward, AC5) — the original tir-s1 wiring above called
+    // resolveRoleForTenant(pool, tenantId) directly, which queries
+    // team_memberships filtered by tenant_id ONLY (LIMIT 1): once a tenant has
+    // 2+ people with different roles, login resolved an arbitrary row's role
+    // for whoever logged in, not their own. Fixed by resolving the
+    // authenticating identity to a personId first (tir-s2's
+    // resolvePersonForIdentity, via resolveRoleForPerson in user-roles.js)
+    // before scoping the team_memberships lookup by BOTH person_id AND
+    // tenant_id. identityKey and tenantId are the same string here (today's
+    // convention, unchanged by this story — see identity-links.js).
     setGetRoleForTenant(function(tenantId) {
-      return resolveRoleForTenant(_userRolesPool, tenantId);
+      return resolveRoleForPerson(_userRolesPool, tenantId, tenantId);
     });
-    console.log('[tir-s1] team_memberships adapter wired (getRoleForTenant)');
+    console.log('[tir-s1/tir-s7] team_memberships adapter wired (getRoleForTenant, person-scoped)');
 
     // tir-s1 — Auto-migrate people/team_memberships schema + backfill every
     // legacy user_roles row (AC1, AC2). Chained after the user_roles table

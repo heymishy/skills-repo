@@ -9,6 +9,19 @@
 // its lookup helper (resolveRoleForTenant). getUserRole/setGetUserRole above are
 // left completely untouched — the legacy user_roles table and adapter stay in
 // place, unused by any production call site after this story (Out of Scope).
+//
+// tir-s7 (fix-forward): resolveRoleForTenant above shipped in tir-s1 (PR #463)
+// with a real bug — it queries team_memberships filtered by tenant_id ONLY
+// (LIMIT 1), so once a tenant has 2+ people with different roles, login
+// resolves an arbitrary row's role for whoever logs in, not their own. Adds
+// resolveRoleForPerson(pool, identityKey, tenantId), which resolves the
+// authenticating identity to a personId first (via tir-s2's
+// resolvePersonForIdentity, identity-links.js) and then scopes the
+// team_memberships lookup by BOTH person_id AND tenant_id. The
+// getRoleForTenant/setGetRoleForTenant adapter pair itself (D37 stub-throw
+// contract) is unchanged — only server.js's production wiring is updated to
+// call the new, corrected function (see AC5).
+const { resolvePersonForIdentity } = require('./identity-links');
 
 let _getUserRole = null;
 
@@ -134,11 +147,56 @@ async function resolveRoleForTenant(pool, tenantId) {
   return role;
 }
 
+/**
+ * Resolve the role for the authenticating PERSON, not just their tenant
+ * (tir-s7 fix-forward for the tir-s1 bug described at the top of this file).
+ * Resolves identityKey -> personId via resolvePersonForIdentity
+ * (identity-links.js, tir-s2) first, then queries team_memberships filtering
+ * by BOTH person_id AND tenant_id — closing the gap where 2+ people sharing a
+ * tenant could resolve to an arbitrary row's role instead of their own
+ * (AC1/AC2).
+ *
+ * Falls through to the pre-tir-s7 resolveRoleForTenant behaviour (tenant-only
+ * lookup, legacy user_roles fallback, default 'user') in two cases:
+ *  - resolvePersonForIdentity returns null — a completely unknown identity
+ *    with no team_memberships/person_identities row anywhere (AC4). This
+ *    story does NOT add auto-creation of a person/team_membership row for a
+ *    brand-new signup — the existing default-to-'user' behaviour is
+ *    preserved exactly as before.
+ *  - a personId IS resolved but no team_memberships row matches both filters
+ *    (defensive — should not happen in normal operation for a resolved
+ *    person, but avoids a hard failure if it ever does).
+ *
+ * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
+ * @param {string} identityKey - the identity string used to resolve personId (GitHub login, Google sub, or email — whatever the login flow already computes as tenantId today)
+ * @param {string} tenantId - the tenant to scope the team_memberships lookup to
+ * @returns {Promise<string>}
+ */
+async function resolveRoleForPerson(pool, identityKey, tenantId) {
+  const personId = await resolvePersonForIdentity(pool, identityKey);
+  if (personId == null) {
+    // AC4: unknown identity — no auto-creation, fall through unchanged.
+    return resolveRoleForTenant(pool, tenantId);
+  }
+
+  const membership = await pool.query(
+    'SELECT role FROM team_memberships WHERE person_id = $1 AND tenant_id = $2 LIMIT 1',
+    [personId, tenantId]
+  );
+  if (membership.rows.length) return membership.rows[0].role;
+
+  // Defensive fallback: personId resolved but no row matches both filters —
+  // defer to the same legacy-table + default-'user' semantics as
+  // resolveRoleForTenant rather than throwing.
+  return resolveRoleForTenant(pool, tenantId);
+}
+
 module.exports = {
   getUserRole,
   setGetUserRole,
   getRoleForTenant,
   setGetRoleForTenant,
   migrateTeamSchema,
-  resolveRoleForTenant
+  resolveRoleForTenant,
+  resolveRoleForPerson
 };
