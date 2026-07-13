@@ -8484,7 +8484,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-13T03:34:42.686Z",
+      "updatedAt": "2026-07-13T03:44:12.628Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-team-identity-roles/discovery.md",
@@ -8652,7 +8652,7 @@
               "name": "Login role resolution is scoped by person, not just tenant",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-13T03:34:42.686Z",
+              "updatedAt": "2026-07-13T03:44:12.628Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s7-review-1.md",
@@ -8670,7 +8670,7 @@
               "dorSignedOffAt": "2026-07-13T03:34:42.686Z",
               "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s7-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s7-dor-contract.md",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/467"
             }
           ]
