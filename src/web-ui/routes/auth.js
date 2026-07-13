@@ -48,6 +48,17 @@ function setFetchOrgs(fn) {
 }
 
 /**
+ * Return the currently-wired org-fetch adapter function itself (tir-s5).
+ * Exposes the SAME single, already-wired `setFetchOrgs` adapter to a second
+ * route module (bulk-add) -- this is not a second D37 adapter/stub-throw
+ * pair, it is a read accessor for the one that already exists here.
+ * @returns {Function}
+ */
+function getFetchOrgs() {
+  return _fetchOrgs;
+}
+
+/**
  * Resolve the tenantId by matching the user's GitHub org memberships against TENANT_ORG_ALLOWLIST.
  * Returns the first allowlist match (allowlist order wins over API response order — AC5).
  * Fetches all pages before matching (AC3).
@@ -317,5 +328,6 @@ module.exports = {
   authGuard,
   setLogger,
   setFetchOrgs,
+  getFetchOrgs,
   resolveTenant
 };

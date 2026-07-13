@@ -22,7 +22,7 @@ const { handleGetStatus, handleGetStatusExport }                     = require('
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
 const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml, handlePostAssumptionConfirm, handlePostCanvasEditHtml } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3 / iwu.4 / dic.5
-const { setLogger, setFetchOrgs }                                    = require('./routes/auth');
+const { setLogger, setFetchOrgs, getFetchOrgs }                      = require('./routes/auth');
 const { setProviderAdapter, gitHubProviderAdapter, setGoogleUserInfoAdapter, _realFetchGoogleUserInfo } = require('./auth/oauth-adapter');  // lab-s1.3 provider registry wiring (D37 separate task)
 const { setFetchPipelineState }                                      = require('./adapters/feature-list');
 const { setFetchArtefactDirectory }                                  = require('./adapters/artefact-list');
@@ -52,6 +52,7 @@ const { setStandardsAdapter }                                        = require('
 const { setPostHogFlagsAdapter }                                     = require('./modules/posthog-flags');          // bri-s1.1
 const { initPostHogFlagsClient }                                     = require('./modules/posthog-config');         // bri-s1.2
 const { createTeamManagementHandlers }                               = require('./routes/team-management');       // tir-s3
+const { createGithubOrgBulkAddHandlers }                             = require('./routes/github-org-bulk-add');   // tir-s5
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -71,6 +72,7 @@ let _handleGithubLinkCallback = null;
 // _handleGoogleLinkCallback above — real-Postgres-only, no NODE_ENV=test
 // fallback either, matching tir-s1/tir-s2's own wiring precedent).
 let _teamManagementHandlers = null;
+let _githubOrgBulkAddHandlers = null;
 
 // Wire up console logger for auth events (login, logout, state_mismatch)
 const _ts = () => new Date().toISOString();
@@ -310,6 +312,13 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // not a throw-on-unwired setter/getter pair.
     _teamManagementHandlers = createTeamManagementHandlers(_userRolesPool);
     console.log('[tir-s3] team-management handlers wired');
+
+    // tir-s5 — Wire the /api/team/bulk-add-github-org handler to the same
+    // Postgres pool. No new D37 adapter (H-ADAPTER): reuses the already-wired
+    // setFetchOrgs adapter (p1.1, routes/auth.js) via its getFetchOrgs()
+    // accessor, and tir-s3's addOrUpdateTeammate as the write path.
+    _githubOrgBulkAddHandlers = createGithubOrgBulkAddHandlers(_userRolesPool, getFetchOrgs);
+    console.log('[tir-s5] github-org-bulk-add handlers wired');
     // psh-s1: products table
     _creditsPool.query(`CREATE TABLE IF NOT EXISTS products (
       product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1615,6 +1624,18 @@ async function router(req, res) {
       requireAdmin(req, res, () => { _raOk = true; });
       if (!_raOk) return;
       await _teamManagementHandlers.handleAddTeammate(req, res);
+    }
+
+  } else if (pathname === '/api/team/bulk-add-github-org' && req.method === 'POST') {
+    // tir-s5 — bulk-add teammates from admin's connected GitHub org (requireAdmin gate)
+    if (!_githubOrgBulkAddHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Team management unavailable');
+    } else {
+      let _raOk = false;
+      requireAdmin(req, res, () => { _raOk = true; });
+      if (!_raOk) return;
+      await _githubOrgBulkAddHandlers.handleBulkAddFromGithubOrg(req, res);
     }
 
   } else if (pathname === '/products/new' && req.method === 'GET') {
