@@ -8484,7 +8484,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-12T22:29:49.645Z",
+      "updatedAt": "2026-07-13T03:34:42.686Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-team-identity-roles/discovery.md",
@@ -8552,50 +8552,52 @@
             {
               "slug": "tir-s3",
               "name": "An admin adds a teammate by identity and assigns a role",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-12T19:42:29.327Z",
+              "updatedAt": "2026-07-13T03:34:42.686Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s3-review-2.md",
               "testPlan": {
-                "status": "written",
-                "totalTests": 7,
-                "passing": 0,
+                "status": "all-passing",
+                "totalTests": 8,
+                "passing": 8,
                 "artefact": "artefacts/2026-07-09-team-identity-roles/test-plans/tir-s3-admin-adds-teammate-test-plan.md"
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorSignedOffAt": "2026-07-12T19:42:29.327Z",
               "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s3-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s3-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s3-dor-contract.md",
+              "prStatus": "merged"
             },
             {
               "slug": "tir-s4",
               "name": "The admin/credits panel is gated by per-person role, not tenant membership",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-12T19:42:29.327Z",
+              "updatedAt": "2026-07-13T03:34:42.686Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s4-review-1.md",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 5,
-                "passing": 0,
+                "passing": 5,
                 "artefact": "artefacts/2026-07-09-team-identity-roles/test-plans/tir-s4-role-gated-credits-panel-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorSignedOffAt": "2026-07-12T19:42:29.327Z",
               "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s4-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s4-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s4-dor-contract.md",
+              "prStatus": "merged"
             },
             {
               "slug": "tir-s5",
@@ -8644,6 +8646,32 @@
               "dorSignedOffAt": "2026-07-12T19:42:29.327Z",
               "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s6-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s6-dor-contract.md"
+            },
+            {
+              "slug": "tir-s7",
+              "name": "Login role resolution is scoped by person, not just tenant",
+              "stage": "branch-complete",
+              "health": "green",
+              "updatedAt": "2026-07-13T03:34:42.686Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s7-review-1.md",
+              "testPlan": {
+                "status": "all-passing",
+                "totalTests": 5,
+                "passing": 5,
+                "artefact": "artefacts/2026-07-09-team-identity-roles/test-plans/tir-s7-person-scoped-login-resolution-test-plan.md"
+              },
+              "acTotal": 5,
+              "acVerified": 5,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorSignedOffAt": "2026-07-13T03:34:42.686Z",
+              "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s7-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s7-dor-contract.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/467"
             }
           ]
         }
@@ -9745,6 +9773,25 @@
       ],
       "metrics": [],
       "updatedAt": "2026-07-11T20:45:11.645Z"
+    },
+    {
+      "slug": "2026-07-13-context-graph-primitive",
+      "name": "Context Graph Primitive — Structural Codebase Context for Outer/Inner Loop",
+      "stage": "discovery",
+      "health": "green",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "updatedAt": "2026-07-13T03:34:42.686Z",
+      "discovery": {
+        "status": "clarified",
+        "artefact": "artefacts/2026-07-13-context-graph-primitive/discovery.md",
+        "clarifiedAt": "2026-07-13"
+      },
+      "stories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
