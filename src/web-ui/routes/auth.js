@@ -58,6 +58,44 @@ function getFetchOrgs() {
   return _fetchOrgs;
 }
 
+// tir-s8: injectable org-MEMBERS-fetch adapter (D37: stub throws; production wiring in
+// server.js via setFetchOrgMembers). Distinct from setFetchOrgs/_fetchOrgs above --
+// that adapter lists the ORGS a token belongs to (GET /user/orgs), used only for tenant
+// resolution against TENANT_ORG_ALLOWLIST. This adapter lists the MEMBERS of one
+// specific org (GET /orgs/{org}/members), given an org name -- this is bulk-add's actual
+// data source. tir-s5's bulkAddFromGithubOrg incorrectly reused setFetchOrgs/_fetchOrgs
+// for this purpose (each returned .login was an ORG's name, not a person's username,
+// making bulk-add a functional no-op) -- this adapter fixes that by fetching the right
+// data. The two adapters must never be conflated.
+let _fetchOrgMembers = function() {
+  throw new Error('Adapter not wired: getOrgMembers. Call setFetchOrgMembers() with a real implementation before use.');
+};
+
+/**
+ * Replace the org-members-fetch adapter (used in tests and production startup).
+ * @param {Function} fn - async (orgName: string, accessToken: string, page: number) =>
+ *   Array<{login}> | {members: Array<{login}>, nextPage: number|null}
+ */
+function setFetchOrgMembers(fn) {
+  _fetchOrgMembers = fn;
+}
+
+/**
+ * Fetch one page of members for a specific GitHub org (tir-s8). Unlike getFetchOrgs
+ * (an accessor that returns the adapter function), this IS the callable wrapper itself --
+ * it always delegates to whichever adapter is currently wired via setFetchOrgMembers, so
+ * callers can hold a single reference to this function without re-fetching it per call.
+ * ADR-025: orgName must always be the caller's own req.session.tenantId -- callers must
+ * never pass through a request-supplied org name.
+ * @param {string} orgName
+ * @param {string} accessToken
+ * @param {number} page
+ * @returns {Promise<Array<{login: string}>|{members: Array<{login: string}>, nextPage: number|null}>}
+ */
+async function getOrgMembers(orgName, accessToken, page) {
+  return _fetchOrgMembers(orgName, accessToken, page);
+}
+
 /**
  * Resolve the tenantId by matching the user's GitHub org memberships against TENANT_ORG_ALLOWLIST.
  * Returns the first allowlist match (allowlist order wins over API response order — AC5).
@@ -329,5 +367,7 @@ module.exports = {
   setLogger,
   setFetchOrgs,
   getFetchOrgs,
+  setFetchOrgMembers,
+  getOrgMembers,
   resolveTenant
 };

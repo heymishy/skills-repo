@@ -22,7 +22,7 @@ const { handleGetStatus, handleGetStatusExport }                     = require('
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
 const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml, handlePostAssumptionConfirm, handlePostCanvasEditHtml } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3 / iwu.4 / dic.5
-const { setLogger, setFetchOrgs, getFetchOrgs }                      = require('./routes/auth');
+const { setLogger, setFetchOrgs, getFetchOrgs, setFetchOrgMembers, getOrgMembers } = require('./routes/auth'); // tir-s8: getOrgMembers/setFetchOrgMembers
 const { setProviderAdapter, gitHubProviderAdapter, setGoogleUserInfoAdapter, _realFetchGoogleUserInfo } = require('./auth/oauth-adapter');  // lab-s1.3 provider registry wiring (D37 separate task)
 const { setFetchPipelineState }                                      = require('./adapters/feature-list');
 const { setFetchArtefactDirectory }                                  = require('./adapters/artefact-list');
@@ -314,11 +314,12 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     console.log('[tir-s3] team-management handlers wired');
 
     // tir-s5 — Wire the /api/team/bulk-add-github-org handler to the same
-    // Postgres pool. No new D37 adapter (H-ADAPTER): reuses the already-wired
-    // setFetchOrgs adapter (p1.1, routes/auth.js) via its getFetchOrgs()
-    // accessor, and tir-s3's addOrUpdateTeammate as the write path.
-    _githubOrgBulkAddHandlers = createGithubOrgBulkAddHandlers(_userRolesPool, getFetchOrgs);
-    console.log('[tir-s5] github-org-bulk-add handlers wired');
+    // Postgres pool, reusing tir-s3's addOrUpdateTeammate as the write path.
+    // tir-s8: the read path is now getOrgMembers (D37: setFetchOrgMembers),
+    // NOT getFetchOrgs -- getFetchOrgs lists the orgs a token belongs to and
+    // was never the right data source for "members of this specific org".
+    _githubOrgBulkAddHandlers = createGithubOrgBulkAddHandlers(_userRolesPool, getOrgMembers);
+    console.log('[tir-s5/tir-s8] github-org-bulk-add handlers wired');
     // psh-s1: products table
     _creditsPool.query(`CREATE TABLE IF NOT EXISTS products (
       product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -670,6 +671,32 @@ if (process.env.NODE_ENV !== 'test') {
     const nextMatch = link.match(/<[^>]+[?&]page=(\d+)[^>]*>;\s*rel="next"/);
     const nextPage = nextMatch ? parseInt(nextMatch[1], 10) : null;
     return { orgs: orgs, nextPage: nextPage };
+  });
+}
+
+// tir-s8: Wire real GitHub org-MEMBERS fetch for bulk-add (D37 rule 3 — separate wiring
+// task). Distinct from setFetchOrgs above (GET /user/orgs -- orgs a token belongs to);
+// this calls GET /orgs/{org}/members -- the actual members of one specific org, given its
+// name. Reuses the exact same link-header rel="next" pagination-parsing pattern as
+// setFetchOrgs's own wiring, per the DoR contract (don't invent a new parser).
+if (process.env.NODE_ENV !== 'test') {
+  setFetchOrgMembers(async function(orgName, accessToken, page) {
+    const url = GITHUB_API_BASE + '/orgs/' + encodeURIComponent(orgName) + '/members?per_page=100&page=' + (page || 1);
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': 'token ' + accessToken,
+        'Accept':        'application/json',
+        'User-Agent':    'skills-pipeline-web-ui'
+      }
+    });
+    if (!response.ok) {
+      throw new Error('GitHub org members fetch failed: ' + response.status);
+    }
+    const members = await response.json();
+    const link = response.headers.get('link') || '';
+    const nextMatch = link.match(/<[^>]+[?&]page=(\d+)[^>]*>;\s*rel="next"/);
+    const nextPage = nextMatch ? parseInt(nextMatch[1], 10) : null;
+    return { members: members, nextPage: nextPage };
   });
 }
 
