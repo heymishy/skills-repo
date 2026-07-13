@@ -34,6 +34,8 @@ A team admin can add teammates to their shared tenant by identity (regardless of
 - [ ] tir-s4: The admin/credits panel is gated by per-person role, not tenant membership
 - [ ] tir-s5: An admin bulk-adds teammates from their connected GitHub org
 - [ ] tir-s6: Team-membership lookups stay indexed at ~100 members per tenant
+- [ ] tir-s7: Login role resolution is scoped by person, not just tenant (fix-forward — found during tir-s4's implementation, a real gap in tir-s1's shipped `resolveRoleForTenant`)
+- [ ] tir-s8: Bulk-add fetches real GitHub org members, not the admin's own org memberships (fix-forward — found during tir-s5's implementation, `setFetchOrgs` lists orgs a token belongs to, not org members; bulk-add was a functional no-op as shipped)
 
 ## Human Oversight Level
 

@@ -8484,7 +8484,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-13T03:44:12.628Z",
+      "updatedAt": "2026-07-13T06:29:24.571Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-team-identity-roles/discovery.md",
@@ -8602,50 +8602,53 @@
             {
               "slug": "tir-s5",
               "name": "An admin bulk-adds teammates from their connected GitHub org",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-12T19:42:29.327Z",
+              "updatedAt": "2026-07-13T06:29:24.571Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s5-review-2.md",
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
-                "passing": 0,
+                "totalTests": 7,
+                "passing": 7,
                 "artefact": "artefacts/2026-07-09-team-identity-roles/test-plans/tir-s5-github-org-bulk-add-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorSignedOffAt": "2026-07-12T19:42:29.327Z",
               "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s5-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s5-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s5-dor-contract.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/469"
             },
             {
               "slug": "tir-s6",
               "name": "Team-membership lookups stay indexed at ~100 members per tenant",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-12T19:42:29.327Z",
+              "updatedAt": "2026-07-13T06:29:24.571Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s6-review-1.md",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 4,
-                "passing": 0,
+                "passing": 4,
                 "artefact": "artefacts/2026-07-09-team-identity-roles/test-plans/tir-s6-schema-scale-validation-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorSignedOffAt": "2026-07-12T19:42:29.327Z",
               "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s6-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s6-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s6-dor-contract.md",
+              "prStatus": "merged"
             },
             {
               "slug": "tir-s7",
@@ -8672,6 +8675,31 @@
               "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s7-dor-contract.md",
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/467"
+            },
+            {
+              "slug": "tir-s8",
+              "name": "Bulk-add fetches real GitHub org members, not the admin's own org memberships",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-13T06:29:24.571Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s8-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0,
+                "artefact": "artefacts/2026-07-09-team-identity-roles/test-plans/tir-s8-real-org-members-fetch-test-plan.md"
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorSignedOffAt": "2026-07-13T06:29:24.571Z",
+              "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s8-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s8-dor-contract.md",
+              "prStatus": "none"
             }
           ]
         }

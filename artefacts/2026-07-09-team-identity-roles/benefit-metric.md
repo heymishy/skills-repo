@@ -92,7 +92,7 @@ Not applicable — `context.yml` confirms `meta.regulated: false`, no named comp
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Metric 1 — Per-person role assignment exists | tir-s1, tir-s3, tir-s5 | Covered |
+| Metric 1 — Per-person role assignment exists | tir-s1, tir-s3, tir-s5, tir-s7 (login-time resolution fix), tir-s8 (bulk-add fetch fix) | Covered |
 | Metric 2 — Cross-provider identity collision resolved | tir-s2 | Covered |
 | Metric 3 — Feature gated by per-person role | tir-s4 | Covered |
 | Metric 4 — Schema holds up at ~100 members/tenant | tir-s6 | Covered |
