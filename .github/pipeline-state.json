@@ -9784,7 +9784,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-13T03:34:42.686Z",
+      "updatedAt": "2026-07-13T03:46:14.752Z",
       "discovery": {
         "status": "clarified",
         "artefact": "artefacts/2026-07-13-context-graph-primitive/discovery.md",
