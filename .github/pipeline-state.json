@@ -8484,7 +8484,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-13T06:29:24.571Z",
+      "updatedAt": "2026-07-13T06:33:37.871Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-team-identity-roles/discovery.md",
@@ -8604,7 +8604,7 @@
               "name": "An admin bulk-adds teammates from their connected GitHub org",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-13T06:29:24.571Z",
+              "updatedAt": "2026-07-13T06:33:37.870Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s5-review-2.md",
@@ -8622,7 +8622,7 @@
               "dorSignedOffAt": "2026-07-12T19:42:29.327Z",
               "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s5-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s5-dor-contract.md",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/469"
             },
             {
