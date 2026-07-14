@@ -226,6 +226,21 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       )
     `).then(function() { console.log('stripe_events table ready'); })
       .catch(function(err) { console.error('stripe_events table migration failed:', err.message); });
+    // arl-s5 — Auto-migrate credit_audit_log table (immutable audit trail for admin credit
+    // adjustments). No new adapter wiring — queried through the same _creditsPool already
+    // wired via setCreditsAdapter above.
+    _creditsPool.query(`
+      CREATE TABLE IF NOT EXISTS credit_audit_log (
+        id              BIGSERIAL PRIMARY KEY,
+        tenant_id       VARCHAR NOT NULL,
+        admin_id        VARCHAR NOT NULL,
+        delta           INTEGER NOT NULL,
+        balance_before  INTEGER,
+        balance_after   INTEGER,
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+      )
+    `).then(function() { console.log('credit_audit_log table ready'); })
+      .catch(function(err) { console.error('credit_audit_log table migration failed:', err.message); });
     // arl-s1 — Wire user_roles DB adapter (D37 mandatory separate wiring task)
     const _userRolesPool = new Pool({ connectionString: process.env.DATABASE_URL });
     setGetUserRole(async function(tenantId) {
