@@ -10154,7 +10154,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-14T09:48:26.678Z",
+      "updatedAt": "2026-07-14T10:07:01.687Z",
       "discovery": {
         "status": "clarified",
         "artefact": "artefacts/2026-07-14-product-repo-config/discovery.md",
@@ -10170,42 +10170,86 @@
             {
               "slug": "prc-s1.1",
               "name": "Add repo association columns to the products table",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "updatedAt": "2026-07-14T10:07:01.687Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.1-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.1-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 3,
+                "passing": 0
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s1.1-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s1.1-verification.md"
             },
             {
               "slug": "prc-s1.2",
               "name": "Connect an existing GitHub repo to a product",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "updatedAt": "2026-07-14T10:07:01.687Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.2-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.2-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 7,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s1.2-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s1.2-verification.md"
             },
             {
               "slug": "prc-s1.3",
               "name": "Resolve sign-off write-back to the product's own repo",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "updatedAt": "2026-07-14T10:07:01.687Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.3-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.3-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s1.3-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s1.3-verification.md"
             },
             {
               "slug": "prc-s1.4",
               "name": "Prove the walking skeleton end-to-end with a real commit",
-              "stage": "review",
-              "health": "amber",
-              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "stage": "test-plan",
+              "health": "green",
+              "updatedAt": "2026-07-14T10:07:01.687Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.4-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.4-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 0,
+                "passing": 0
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s1.4-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s1.4-verification.md"
             }
           ]
         },
@@ -10217,42 +10261,86 @@
             {
               "slug": "prc-s2.1",
               "name": "Create a new GitHub repo directly from product creation",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "updatedAt": "2026-07-14T10:07:01.687Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.1-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.1-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s2.1-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s2.1-verification.md"
             },
             {
               "slug": "prc-s2.2",
               "name": "Bootstrap a newly created repo with the skills framework",
-              "stage": "review",
-              "health": "amber",
-              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "stage": "test-plan",
+              "health": "green",
+              "updatedAt": "2026-07-14T10:07:01.687Z",
               "reviewStatus": "has-findings",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.2-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.2-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s2.2-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s2.2-verification.md"
             },
             {
               "slug": "prc-s2.3",
               "name": "Resolve annotation write-back to the product's own repo",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "updatedAt": "2026-07-14T10:07:01.687Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.3-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.3-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s2.3-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s2.3-verification.md"
             },
             {
               "slug": "prc-s2.4",
               "name": "Resolve journey.js's local artefact writes to the product's own repo",
-              "stage": "review",
-              "health": "amber",
-              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "stage": "test-plan",
+              "health": "green",
+              "updatedAt": "2026-07-14T10:07:01.687Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.4-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.4-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s2.4-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s2.4-verification.md"
             }
           ]
         },
@@ -10264,32 +10352,65 @@
             {
               "slug": "prc-s3.1",
               "name": "Write standards to the product's repo as the source of truth",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "updatedAt": "2026-07-14T10:07:01.687Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s3.1-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s3.1-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s3.1-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s3.1-verification.md"
             },
             {
               "slug": "prc-s3.2",
               "name": "Rebuild the standards DB cache from git content",
-              "stage": "review",
-              "health": "amber",
-              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "stage": "test-plan",
+              "health": "green",
+              "updatedAt": "2026-07-14T10:07:01.687Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s3.2-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s3.2-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s3.2-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s3.2-verification.md"
             },
             {
               "slug": "prc-s3.3",
               "name": "Wire standardsList to read from the git-backed cache, with promote/opt-out proven unaffected",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-07-14T09:48:26.678Z",
+              "updatedAt": "2026-07-14T10:07:01.687Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s3.3-review-2.md"
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s3.3-review-2.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s3.3-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s3.3-verification.md"
             }
           ]
         },
@@ -10301,32 +10422,65 @@
             {
               "slug": "prc-s4.1",
               "name": "Edit a product's name, description, and repo association",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "updatedAt": "2026-07-14T10:07:01.687Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s4.1-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s4.1-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s4.1-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s4.1-verification.md"
             },
             {
               "slug": "prc-s4.2",
               "name": "Delete (detach) a product",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-07-14T09:48:26.678Z",
+              "updatedAt": "2026-07-14T10:07:01.687Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s4.2-review-2.md"
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s4.2-review-2.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s4.2-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s4.2-verification.md"
             },
             {
               "slug": "prc-s4.3",
               "name": "Automated cross-tenant repo isolation E2E spec",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "updatedAt": "2026-07-14T10:07:01.687Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s4.3-review-1.md"
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s4.3-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 2,
+                "passing": 0
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": true,
+              "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s4.3-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s4.3-verification.md"
             }
           ]
         }

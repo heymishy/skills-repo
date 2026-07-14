@@ -43,4 +43,22 @@
 **Revisit trigger:** None.
 
 ---
+
+**2026-07-14 | SCOPE | /test-plan — prc-s2.2 AC2 rewritten for independent testability**
+**Decision:** Rewrote `prc-s2.2` AC2 from "verified by the implementation containing no `git clone`/`simple-git` dependency, unless AC4's fallback was genuinely needed" to "a Contents/Git Data API call sequence (tree/blob/commit) is present and was genuinely invoked for the primary path — independently verifiable regardless of whether a fallback path (AC4) also exists in the codebase."
+**Alternatives considered:** Leave AC2 as written and have the coding agent interpret it at implementation time (rejected — `/review` finding 1-M1 already established this AC's outcome depends on AC4's conditional branch, which is exactly the independent-testability violation the story template warns against; deferring the fix to implementation time risks the same ambiguity resurfacing there instead).
+**Rationale:** Surfaced while writing `prc-s2.2`'s test plan — the original AC2 could not be translated into a single, unconditional test. The corrected wording tests the same underlying intent (the API-only path was genuinely attempted, not skipped) without depending on AC4's outcome.
+**Made by:** Claude (agent), via /test-plan, 2026-07-14.
+**Revisit trigger:** None.
+
+---
+
+**2026-07-14 | ASSUMPTION | /test-plan — prc-s4.3 needs real GitHub test repos, not yet provisioned**
+**Decision:** `prc-s4.3`'s E2E spec requires two real, disposable GitHub repos (one per test tenant) — flagged as a test-data gap rather than resolved, since this depends on external GitHub account/org provisioning outside this session's control.
+**Alternatives considered:** Mock the GitHub API for this spec instead (rejected — this spec's entire purpose is proving real cross-tenant isolation against the real Contents API; mocking it would defeat the story, same reasoning as `prc-s1.4`'s real-commit requirement).
+**Rationale:** This is the same class of external-dependency gap already tracked for this session's broader infra-provisioning work (Fly/Neon/Upstash/PostHog) — adding a note here rather than silently assuming it'll resolve itself, consistent with the DATABASE_URL-gated test precedent elsewhere in this repo (tests must skip visibly, never mock a canned result, when a real dependency is unavailable).
+**Made by:** Claude (agent), via /test-plan, 2026-07-14.
+**Revisit trigger:** Resolve before `/definition-of-ready` for `prc-s4.3` specifically — either provision test repos, or explicitly RISK-ACCEPT deferring this story's implementation until they exist.
+
+---
 <!-- Add further decisions as they arise during delivery. -->

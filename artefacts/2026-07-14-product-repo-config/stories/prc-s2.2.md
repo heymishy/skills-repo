@@ -28,7 +28,7 @@ ADR-014: reuse the `.skills-repo/` sidecar + `skills-lock.json` model as the pri
 
 **AC1:** Given a newly created, empty repo, When bootstrap runs, Then the repo's first commit contains the skills framework content (equivalent to what `scripts/platform-init.js` copies: `.github/skills/`, `.github/templates/`, `scripts/`), committed under the operator's own identity.
 
-**AC2:** Given the Contents/Git Data API approach is attempted first, When bootstrap completes, Then it did so without a local git clone — verified by the implementation containing no `git clone`/`simple-git` dependency, unless AC4's fallback was genuinely needed.
+**AC2:** Given bootstrap runs, When the implementation is inspected, Then a Contents/Git Data API call sequence (tree/blob/commit) is present and was genuinely invoked for the primary path — independently verifiable regardless of whether a fallback path (AC4) also exists in the codebase. *(Corrected 2026-07-14 per /review finding 1-M1 — original wording made AC2's outcome depend on AC4's conditional branch, violating independent testability. See decisions.md.)*
 
 **AC3:** Given bootstrap succeeds, When the repo is inspected, Then it is structurally equivalent to a repo that had `platform-init.js` run against it directly — same directory structure, same files.
 
