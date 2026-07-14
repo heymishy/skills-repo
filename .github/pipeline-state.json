@@ -8484,7 +8484,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-13T07:22:46.102Z",
+      "updatedAt": "2026-07-14T00:26:08.511Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-team-identity-roles/discovery.md",
@@ -8725,6 +8725,33 @@
               "dodStatus": "complete",
               "releaseReady": true,
               "dodArtefact": "artefacts/2026-07-09-team-identity-roles/dod/tir-s8-dod.md"
+            },
+            {
+              "slug": "tir-s9",
+              "id": "tir-s9",
+              "name": "The identityKey passed to login-time role resolution must be each person's own identity, not the shared tenantId",
+              "stage": "branch-complete",
+              "health": "green",
+              "updatedAt": "2026-07-14T00:26:08.511Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s9-review-1.md",
+              "testPlan": {
+                "status": "all-passing",
+                "totalTests": 7,
+                "passing": 7,
+                "artefact": "artefacts/2026-07-09-team-identity-roles/test-plans/tir-s9-per-person-identitykey-login-fix-test-plan.md"
+              },
+              "acTotal": 5,
+              "acVerified": 5,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorSignedOffAt": "2026-07-14T00:26:08.511Z",
+              "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s9-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s9-dor-contract.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/472"
             }
           ]
         }
