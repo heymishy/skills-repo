@@ -393,7 +393,7 @@
       "regulated": false,
       "complianceProfile": "standard",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-07-09T00:00:00Z",
+      "updatedAt": "2026-07-14T04:41:05.765Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/discovery.md",
@@ -841,6 +841,33 @@
               "dodStatus": "complete",
               "releaseReady": true,
               "dodArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dod/p4.1-dod.md"
+            },
+            {
+              "slug": "s6.1",
+              "name": "Thread session into prompt-cache scoping (activate Decision 8)",
+              "stage": "branch-complete",
+              "health": "green",
+              "complexity": 2,
+              "scopeStability": "Stable",
+              "storyArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/stories/s6.1-thread-session-into-cache-scope.md",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s6.1-review-1.md",
+              "testPlan": {
+                "status": "all-passing",
+                "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s6.1-test-plan.md",
+                "totalTests": 4,
+                "passing": 4
+              },
+              "acTotal": 7,
+              "acVerified": 6,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s6.1-dor.md",
+              "verifyStatus": "passed",
+              "prStatus": "merged",
+              "notes": "Fix-forward: activates Decision 8 (RISK-ACCEPT, 2026-06-24) — threads tenantId/sessionId through the real production call chain into _anthropicSystem(). See decisions.md Decision 12.",
+              "prNumber": 475,
+              "updatedAt": "2026-07-14T04:41:05.765Z"
             }
           ]
         },
@@ -7295,7 +7322,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-03T00:00:00Z",
+      "updatedAt": "2026-07-14T04:41:05.765Z",
       "discoveryArtefact": "artefacts/2026-07-03-admin-role-panel/discovery.md",
       "discoveryStatus": "approved",
       "discoveryApprovedAt": "2026-07-03",
@@ -7462,6 +7489,42 @@
               "releaseReady": false,
               "layoutGapsAtMerge": true,
               "layoutGapsRiskAccepted": true
+            },
+            {
+              "id": "arl-s5",
+              "slug": "arl-s5",
+              "title": "Audit trail for admin credit adjustments",
+              "name": "Audit trail for admin credit adjustments",
+              "complexity": 1,
+              "scopeStability": "Stable",
+              "status": "branch-complete",
+              "stage": "branch-complete",
+              "metricsAddressed": [],
+              "tddState": "green",
+              "testsTotal": 12,
+              "testsPassing": 12,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "reviewArtefact": "artefacts/2026-07-03-admin-role-panel/review/arl-s5-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 12,
+                "passing": 12
+              },
+              "acTotal": 7,
+              "acVerified": 7,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-03-admin-role-panel/dor/arl-s5-dor.md",
+              "prStatus": "merged",
+              "prNumber": 473,
+              "dodStatus": "not-started",
+              "releaseReady": false,
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false,
+              "updatedAt": "2026-07-14T04:41:05.765Z"
             }
           ]
         }
@@ -8767,15 +8830,16 @@
           "name": "Per-person role assignment exists",
           "target": "100% of team members in a shared tenant have a distinct, independently assigned role",
           "baseline": "0%",
-          "signal": "on-track",
-          "lastMeasured": "2026-07-13T07:22:46.102Z",
-          "evidence": "tir-s1 (schema), tir-s3 (real add-teammate flow), tir-s7 (login-resolution fix), tir-s8 (bulk-add fetch fix) together prove per-person role assignment works end-to-end in a real 2+-person tenant, not just in migrated solo-tenant data.",
+          "signal": "at-risk",
+          "lastMeasured": "2026-07-14T00:00:00.000Z",
+          "evidence": "tir-s1 (schema), tir-s3 (real add-teammate flow), tir-s7 (login-resolution query-logic fix), tir-s8 (bulk-add fetch fix) together prove the per-person role model works end-to-end -- but tir-s9 found that tir-s7's fix was never actually reachable in production on the shared-tenant (TENANT_ORG_ALLOWLIST) path, because server.js's wiring fed it a shared tenantId as identityKey instead of each person's own identity. tir-s9's fix is implemented, tested (7/7 passing, confirmed to fail against pre-fix code), and committed locally on feature/tir-s9 (commit 6921f29b), but not yet pushed/merged -- signal held at at-risk until that lands, since the metric's real-world claim depended on exactly this gap.",
           "contributingStories": [
             "tir-s1",
             "tir-s3",
             "tir-s5",
             "tir-s7",
-            "tir-s8"
+            "tir-s8",
+            "tir-s9"
           ]
         },
         {
@@ -10032,6 +10096,28 @@
       "epics": [],
       "stories": [
         {
+          "id": "sec-perf-s2",
+          "title": "Re-validate admin role on every gated request so a mid-session demotion takes effect immediately",
+          "artefact": "artefacts/2026-07-01-security-perf-hardening/stories/sec-perf-s2.md",
+          "testPlan": {
+            "status": "all-passing",
+            "artefact": "artefacts/2026-07-01-security-perf-hardening/test-plans/sec-perf-s2-stale-role-revalidation-test-plan.md",
+            "totalTests": 12,
+            "passing": 12
+          },
+          "stage": "branch-complete",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-01-security-perf-hardening/dor/sec-perf-s2-dor.md",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-07-14T04:41:05.765Z",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/474"
+        },
+        {
           "id": "sec-perf-s3",
           "name": "CSRF tokens on server-rendered form POST endpoints",
           "stage": "branch-complete",
@@ -10056,7 +10142,7 @@
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-14T04:22:50.820Z"
+      "updatedAt": "2026-07-14T04:48:47.494Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

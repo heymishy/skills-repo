@@ -40,10 +40,10 @@ const { creditsGuard }                                               = require('
 const { handleEmailSignup, handleEmailLogin, setUserDb }             = require('./routes/auth-email');       // lab-s2.2
 const { setPasswordAdapter }                                         = require('./modules/password');         // lab-s2.2
 const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
-const { setGetUserRole, setGetRoleForTenant, migrateTeamSchema, resolveRoleForPerson } = require('./modules/user-roles'); // arl-s1 / tir-s1 / tir-s7
+const { setGetUserRole, setGetRoleForTenant, getRoleForTenant, migrateTeamSchema, resolveRoleForPerson } = require('./modules/user-roles'); // arl-s1 / tir-s1 / tir-s7 / sec-perf-s2
 const { migrateIdentityLinksSchema } = require('./modules/identity-links'); // tir-s2
 const { handleGetLinkSettings, handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
-const { requireAdmin }                                               = require('./middleware/require-admin'); // arl-s2
+const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
 const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
@@ -226,6 +226,21 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       )
     `).then(function() { console.log('stripe_events table ready'); })
       .catch(function(err) { console.error('stripe_events table migration failed:', err.message); });
+    // arl-s5 — Auto-migrate credit_audit_log table (immutable audit trail for admin credit
+    // adjustments). No new adapter wiring — queried through the same _creditsPool already
+    // wired via setCreditsAdapter above.
+    _creditsPool.query(`
+      CREATE TABLE IF NOT EXISTS credit_audit_log (
+        id              BIGSERIAL PRIMARY KEY,
+        tenant_id       VARCHAR NOT NULL,
+        admin_id        VARCHAR NOT NULL,
+        delta           INTEGER NOT NULL,
+        balance_before  INTEGER,
+        balance_after   INTEGER,
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+      )
+    `).then(function() { console.log('credit_audit_log table ready'); })
+      .catch(function(err) { console.error('credit_audit_log table migration failed:', err.message); });
     // arl-s1 — Wire user_roles DB adapter (D37 mandatory separate wiring task)
     const _userRolesPool = new Pool({ connectionString: process.env.DATABASE_URL });
     setGetUserRole(async function(tenantId) {
@@ -277,12 +292,36 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // authenticating identity to a personId first (tir-s2's
     // resolvePersonForIdentity, via resolveRoleForPerson in user-roles.js)
     // before scoping the team_memberships lookup by BOTH person_id AND
-    // tenant_id. identityKey and tenantId are the same string here (today's
-    // convention, unchanged by this story — see identity-links.js).
-    setGetRoleForTenant(function(tenantId) {
-      return resolveRoleForPerson(_userRolesPool, tenantId, tenantId);
+    // tenant_id.
+    //
+    // tir-s9 (fix-forward) — tir-s7's query logic above was correct, but this
+    // wiring collapsed BOTH resolveRoleForPerson arguments into the SAME
+    // value (tenantId, tenantId), discarding any distinct identityKey a
+    // caller might supply. That is harmless for a solo tenant or an
+    // email/password login (tenantId already equals that one person's own
+    // identity) but reproduces tir-s7's original bug one layer removed once
+    // TENANT_ORG_ALLOWLIST is configured: every teammate on a shared
+    // GitHub-org tenant login then called resolveRoleForPerson with the SAME
+    // shared org name as identityKey, so every teammate's login could resolve
+    // an arbitrary OTHER teammate's role. Fixed by accepting the identityKey
+    // argument getRoleForTenant now forwards (routes/auth.js passes each
+    // person's own GitHub login / Google sub) and using it in place of
+    // tenantId, falling back to tenantId only when a caller omits it
+    // (auth-email.js's unmodified single-argument call sites).
+    setGetRoleForTenant(function(tenantId, identityKey) {
+      return resolveRoleForPerson(_userRolesPool, identityKey || tenantId, tenantId);
     });
-    console.log('[tir-s1/tir-s7] team_memberships adapter wired (getRoleForTenant, person-scoped)');
+    console.log('[tir-s1/tir-s7/tir-s9] team_memberships adapter wired (getRoleForTenant, person-scoped, per-person identityKey)');
+
+    // sec-perf-s2 (AC5) — wire requireAdmin's live per-request role re-check to the SAME
+    // getRoleForTenant adapter just wired above (not a second, parallel resolution path),
+    // so a mid-session role change (e.g. an admin demoted via addOrUpdateTeammate) is
+    // reflected on the very next requireAdmin-gated request instead of staying cached in
+    // req.session.role until the person logs out and back in.
+    setGetCurrentRole(function(tenantId) {
+      return getRoleForTenant(tenantId);
+    });
+    console.log('[sec-perf-s2] requireAdmin live-role adapter wired (getCurrentRole -> getRoleForTenant)');
 
     // tir-s1 — Auto-migrate people/team_memberships schema + backfill every
     // legacy user_roles row (AC1, AC2). Chained after the user_roles table
@@ -1616,15 +1655,17 @@ async function router(req, res) {
 
   } else if (pathname === '/admin/credits' && req.method === 'GET') {
     // arl-s2/arl-s3 — admin credits view (requireAdmin gate)
+    // sec-perf-s2: requireAdmin is now async (live role re-check) — must be awaited or
+    // _raOk would be read before the live DB lookup resolves.
     let _raOk = false;
-    requireAdmin(req, res, () => { _raOk = true; });
+    await requireAdmin(req, res, () => { _raOk = true; });
     if (!_raOk) return;
     await adminCreditsGet(req, res);
 
   } else if (pathname === '/api/admin/credits/adjust' && req.method === 'POST') {
     // arl-s3 — admin credits adjustment (requireAdmin gate)
     let _raOk = false;
-    requireAdmin(req, res, () => { _raOk = true; });
+    await requireAdmin(req, res, () => { _raOk = true; });
     if (!_raOk) return;
     await adminCreditsPost(req, res);
 
@@ -1635,7 +1676,7 @@ async function router(req, res) {
       res.end('Team management unavailable');
     } else {
       let _raOk = false;
-      requireAdmin(req, res, () => { _raOk = true; });
+      await requireAdmin(req, res, () => { _raOk = true; });
       if (!_raOk) return;
       await _teamManagementHandlers.handleGetTeamMembers(req, res);
     }
@@ -1648,7 +1689,7 @@ async function router(req, res) {
       res.end('Team management unavailable');
     } else {
       let _raOk = false;
-      requireAdmin(req, res, () => { _raOk = true; });
+      await requireAdmin(req, res, () => { _raOk = true; });
       if (!_raOk) return;
       await _teamManagementHandlers.handleAddTeammate(req, res);
     }
@@ -1660,7 +1701,7 @@ async function router(req, res) {
       res.end('Team management unavailable');
     } else {
       let _raOk = false;
-      requireAdmin(req, res, () => { _raOk = true; });
+      await requireAdmin(req, res, () => { _raOk = true; });
       if (!_raOk) return;
       await _githubOrgBulkAddHandlers.handleBulkAddFromGithubOrg(req, res);
     }
