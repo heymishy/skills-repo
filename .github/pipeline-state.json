@@ -10136,13 +10136,13 @@
           },
           "acTotal": 6,
           "acVerified": 6,
-          "prStatus": "draft",
-          "updatedAt": "2026-07-14T04:48:47.494Z",
+          "prStatus": "merged",
+          "updatedAt": "2026-07-14T05:04:40.021Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/476"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-14T04:48:47.494Z"
+      "updatedAt": "2026-07-14T05:04:40.021Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
