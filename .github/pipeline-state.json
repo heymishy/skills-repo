@@ -10030,9 +10030,28 @@
       "stage": "branch-complete",
       "health": "green",
       "epics": [],
-      "stories": [],
+      "stories": [
+        {
+          "id": "sec-perf-s2",
+          "title": "Re-validate admin role on every gated request so a mid-session demotion takes effect immediately",
+          "artefact": "artefacts/2026-07-01-security-perf-hardening/stories/sec-perf-s2.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-07-01-security-perf-hardening/test-plans/sec-perf-s2-stale-role-revalidation-test-plan.md"
+          },
+          "stage": "branch-setup",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-01-security-perf-hardening/dor/sec-perf-s2-dor.md",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-07-14"
+        }
+      ],
       "metrics": [],
-      "updatedAt": "2026-07-14T00:55:28.892Z"
+      "updatedAt": "2026-07-14T01:11:02.969Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
