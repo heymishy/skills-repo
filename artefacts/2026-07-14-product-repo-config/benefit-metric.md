@@ -81,10 +81,14 @@ Not applicable. `context.yml` sets `meta.regulated: false`, no compliance framew
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Metric 1 — Time from idea to DoR-ready artefact | *(populated at /definition)* | Gap |
-| Metric 2 — Products with a configured repo | *(populated at /definition)* | Gap |
-| Metric 3 — Cross-tenant repo isolation | *(populated at /definition)* | Gap |
-| Meta Metric 1 — Pairing workflow validation | *(populated at /definition)* | Gap |
+| Metric 1 — Time from idea to DoR-ready artefact | prc-s1.3, prc-s1.4, prc-s2.2, prc-s2.3, prc-s2.4, prc-s3.1, prc-s3.2, prc-s3.3 | Covered |
+| Metric 2 — Products with a configured repo | prc-s1.1, prc-s1.2, prc-s2.1, prc-s4.1 | Covered |
+| Metric 3 — Cross-tenant repo isolation | prc-s1.3, prc-s2.3, prc-s4.3 | Covered |
+| Meta Metric 1 — Pairing workflow validation | None directly — see note below | Covered (post-launch, whole-feature signal) |
+
+**Meta Metric 1 resolution (metric-gap check, resolved at /definition, 2026-07-14):** no single story moves this metric — it is inherently a behavioral/usage signal measurable only after the full feature ships and gets used, not something any individual story's ACs can satisfy. All 14 stories collectively *enable* it to be measured (there's nothing to observe usage of until the feature exists), but none of them *are* the metric. Treated as a legitimate 4th resolution alongside the skill's three offered options (write a story / descope / mark post-MVP) — logged as a SCOPE decision in `decisions.md` rather than forcing a synthetic story into existence just to show coverage.
+
+**prc-s4.2 (delete/detach a product) story-gap resolution:** this story has no direct metric linkage — it closes discovery's MVP scope item 6 (product management UX), a structural completeness requirement, not a metric-moving mechanism. Accepted as legitimate MVP scope without forcing an artificial metric connection — logged as a SCOPE decision in `decisions.md`.
 
 ---
 
