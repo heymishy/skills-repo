@@ -10154,7 +10154,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-14T10:27:25.197Z",
+      "updatedAt": "2026-07-14T18:03:17.522Z",
       "discovery": {
         "status": "clarified",
         "artefact": "artefacts/2026-07-14-product-repo-config/discovery.md",
@@ -10491,16 +10491,16 @@
             {
               "slug": "prc-s4.2",
               "name": "Delete (detach) a product",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-14T10:27:25.197Z",
+              "updatedAt": "2026-07-14T18:03:17.522Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s4.2-review-2.md",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 4,
-                "passing": 0
+                "passing": 4
               },
               "acTotal": 3,
               "acVerified": 0,
@@ -10511,7 +10511,12 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s4.2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s4.2-dor-contract.md",
-              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z",
+              "prStatus": "merged",
+              "prNumber": 477,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/477",
+              "mergeCommit": "89a1b749fbdab9970fead263f07f58d6ecdb2cec",
+              "mergedAt": "2026-07-14T18:03:17.522Z"
             },
             {
               "slug": "prc-s4.3",
