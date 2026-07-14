@@ -8484,7 +8484,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-13T07:22:46.102Z",
+      "updatedAt": "2026-07-14T00:26:08.511Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-07-09-team-identity-roles/discovery.md",
@@ -8728,10 +8728,11 @@
             },
             {
               "slug": "tir-s9",
+              "id": "tir-s9",
               "name": "The identityKey passed to login-time role resolution must be each person's own identity, not the shared tenantId",
-              "stage": "verify-completion",
-              "health": "amber",
-              "updatedAt": "2026-07-14T00:00:00.000Z",
+              "stage": "branch-complete",
+              "health": "green",
+              "updatedAt": "2026-07-14T00:26:08.511Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s9-review-1.md",
@@ -8746,11 +8747,11 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "dorSignedOffAt": "2026-07-14T00:00:00.000Z",
+              "dorSignedOffAt": "2026-07-14T00:26:08.511Z",
               "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s9-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s9-dor-contract.md",
-              "prStatus": "none",
-              "blocker": "Implementation complete and committed locally (branch feature/tir-s9, commit 6921f29b) with 7/7 tests passing (confirmed failing 6/7 against pre-fix code, proving regression coverage). Push to origin/heymishy-skills-repo was denied by the Claude Code auto-mode publication-safety classifier (public-repo + detailed unpatched security-vulnerability content) -- awaiting explicit operator decision on how to publish (confirm public push, or an alternative) before a draft PR can be opened."
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/472"
             }
           ]
         }

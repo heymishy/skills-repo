@@ -147,15 +147,19 @@ This track is parallel to, not part of, the Phase 1–6 platform-maturity number
 - **Billing** — Stripe checkout, webhook, billing portal (`2026-07-01-landing-auth-billing`); several post-merge fixes (form-parsing, plan-limit gating, GitHub OAuth first-login bug) landed 2026-07-06–09
 - **Multi-tenancy foundation (ADR-025)** — application-layer tenant_id scoping across 6 phases: authz guard, identity resolution, storage scoping, Postgres/Redis persistence, rate-limit isolation, security hardening (`2026-06-22-wuce-multi-tenancy`)
 - **Admin role + billing-gate bypass** — role-based access foundation (`2026-07-03-admin-role-panel`, arl-s1–s4)
+- **Per-person roles across auth providers (`2026-07-09-team-identity-roles`)** — DoD-complete (8/8 stories, 2026-07-13), admin/engineer/product/viewer role model, schema validated for real at 100-member scale (tir-s6, re-verified against real Postgres 2026-07-14). **Known open gap, fix in flight:** a real defect (`tir-s9`) meant teammates sharing one tenant via GitHub-org allowlist could resolve to the wrong person's role — root cause was `server.js`'s `getRoleForTenant` wiring discarding the caller's per-person identity and always resolving against the shared tenant ID instead. Fix is implemented and independently verified (7/7 new tests pass, proven to fail against pre-fix code), pending PR.
+- **Beta infra epics 1–2 (`2026-07-09-beta-readiness-infra`)** — feature flags (PostHog, tenant-targeted) and staging-environment code/config (Fly + Neon + Upstash) DoD-complete (2026-07-14). Epic 3 (E2E journey coverage) is 5/6 merged; the 6th (`bri-s3.3`, multi-user-within-tenant journey) is blocked on `tir-s9` above.
 
-### Near-term (both discoveries approved 2026-07-09, sequencing TBD at /definition)
+### Immediate blockers to first beta (as of 2026-07-14)
 
-- **`2026-07-09-team-identity-roles`** — unifies identity across all 3 auth providers, replaces tenant_id-as-role-key with a genuine per-person role (admin/engineer/product/viewer), supports teams up to ~100 members. Prerequisite for onboarding any beta customer that isn't a solo user.
-- **`2026-07-09-beta-readiness-infra`** — feature flags (PostHog, tenant-targeted), a staging environment (Fly + Neon + Upstash) between merge and prod, and deterministic E2E coverage (signup, cross-tenant isolation, billing, auth). Prerequisite for safely shipping anything to a real beta customer without a solo operator's manual care as the only safety net.
+1. **`tir-s9`** — merge the shared-tenant role-resolution fix (built and verified, PR pending).
+2. **`bri-s3.3`** — once `tir-s9` merges, re-run `/definition-of-ready` and build the multi-user journey spec that was blocked on it.
+3. **Live infrastructure provisioning** — none of Fly (`wuce-staging` app), Neon (staging branch), Upstash (staging Redis), or PostHog (staging project) have been created yet; all shipped code assumes they exist. Manual, operator-only step per each story's own DoR contract.
+4. **`bri-s1.4`** — `identifyTenantGroup()` is built and tested but never called from a live request path, so PostHog dashboard group records are never populated (found at DoD sweep, 2026-07-14). Lower severity than 1–3; doesn't block onboarding, does block accurate tenant-group analytics from day one.
 
 ### Path to beta
 
-1. Both near-term discoveries complete their outer loop (benefit-metric → definition → DoR → build).
+1. Clear the 4 blockers above.
 2. First beta customer(s) onboarded as a real team (not solo), exercising the per-person role model for the first time outside of test data.
 3. Beta feedback informs the deferred items below — none of them block first beta, but real usage should decide which to prioritize next, not upfront guesswork.
 
@@ -167,6 +171,21 @@ This track is parallel to, not part of, the Phase 1–6 platform-maturity number
 - Multi-team switching UX (schema supports it; UI doesn't yet) (`team-identity-roles`)
 - Self-serve staging, multi-region/HA staging, canary/blue-green deploys (`beta-readiness-infra`)
 - Full production monitoring/alerting overhaul (`beta-readiness-infra`)
+- LLM evals, A/B flag testing, span-level pipeline events, frontend group analytics (`posthog-llm-analytics`)
+- Self-serve signup/waitlist, profile pages, email/magic-link invites, org onboarding wizard, interactive tutorial (`beta-entry-experience`)
+
+### Flagged for reconsideration (deferred for schedule reasons, not low value — reviewed 2026-07-14)
+
+A cross-feature scope review found several deferred items that read as genuinely low-priority in isolation but become real gaps once paying customers and real usage exist. None block first beta; all are worth revisiting once beta traffic makes them concrete rather than hypothetical:
+
+- **Cross-tenant prompt-cache leak mitigation is incomplete, not just deferred** (`wuce-multi-tenancy` Decision 8) — the cache-scope embedding logic exists but session threading into the call stack was never activated, so cache entries are not reliably scoped per tenant. This is a live, unclosed cross-tenant data-boundary gap, not a nice-to-have — worth its own fix-forward story before beta, not just a "revisit later" note.
+- **CSRF tokens on POST endpoints** (`security-perf-hardening`) — deferred as a separate story; matters more once billing/admin forms are reachable by paying customers.
+- **Distributed rate limiting is in-process-only** (`wuce-multi-tenancy` Decision 7, echoed in `security-perf-hardening`) — fine solo, breaks the moment Fly scales beyond one machine.
+- **Self-serve team invite flow** (`team-identity-roles`) — every beta customer today requires the operator to manually add teammates, direct friction on the exact thing beta is testing.
+- **No audit log of admin credit top-ups** (`admin-role-panel`) — matters once real money moves and a customer disputes a balance.
+- **GitHub OAuth users can't get admin, only email-auth users can** (`admin-role-panel`) — inconsistent with the primary auth path, likely to surface as a support request.
+- **Session-ID rotation on privilege escalation** (`security-perf-hardening`) — more relevant now that per-person roles exist and can change mid-session.
+- **Full production monitoring/alerting overhaul** (`beta-readiness-infra`) — staging rehearsal doesn't cover live incident detection once real customer traffic exists.
 
 ---
 
