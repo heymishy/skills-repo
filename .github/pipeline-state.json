@@ -10034,7 +10034,7 @@
         {
           "id": "sec-perf-s3",
           "name": "CSRF tokens on server-rendered form POST endpoints",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
           "complexity": 2,
           "scopeStability": "stable",
@@ -10049,9 +10049,10 @@
             "passing": 35
           },
           "acTotal": 6,
-          "acVerified": 0,
-          "prStatus": "not-opened",
-          "updatedAt": "2026-07-14T04:44:34.369Z"
+          "acVerified": 6,
+          "prStatus": "draft",
+          "updatedAt": "2026-07-14T04:48:47.494Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/476"
         }
       ],
       "metrics": [],
