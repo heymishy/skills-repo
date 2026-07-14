@@ -120,6 +120,7 @@ function _renderProductView(productName, productId, features, login) {
         '<h1 style="margin:0;font-size:24px">' + _escapeHtml(productName) + '</h1>' +
       '</div>' +
       '<div style="display:flex;gap:10px">' +
+        '<button type="button" onclick="pshConfirmDeleteProduct(\'' + _escapeHtml(productId) + '\')" style="padding:8px 14px;border:1px solid #ef4444;border-radius:6px;background:none;color:#ef4444;font-size:13px;cursor:pointer">Delete product</button>' +
         '<a href="/products/' + _escapeHtml(productId) + '/kanban" style="padding:8px 14px;border:1px solid var(--line);border-radius:6px;text-decoration:none;font-size:13px;color:var(--ink)">Kanban</a>' +
         '<form method="POST" action="/products/' + _escapeHtml(productId) + '/features" style="margin:0">' +
           '<button type="submit" style="padding:8px 16px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">New feature</button>' +
@@ -127,6 +128,16 @@ function _renderProductView(productName, productId, features, login) {
       '</div>' +
     '</div>' +
     featuresHtml +
+    '<script>' +
+    'function pshConfirmDeleteProduct(id){' +
+      'var ok=confirm("Delete this product? This permanently removes it from wuce, including its journeys and standards cache. Your GitHub repository will NOT be deleted — this only removes the product from wuce, the repo and its history are untouched.");' +
+      'if(!ok)return;' +
+      'fetch(\'/products/\'+id,{method:\'DELETE\'}).then(function(r){' +
+        'if(r.ok){window.location.href=\'/dashboard\';}' +
+        'else{alert(\'Failed to delete product\');}' +
+      '}).catch(function(e){alert(\'Failed to delete product: \'+e.message);});' +
+    '}' +
+    '<\/script>' +
   '</div>';
   return _htmlShell.renderShell({ title: productName, bodyContent: body, user: { login: login }, active: 'dashboard' });
 }
@@ -328,6 +339,56 @@ async function handleGetProductView(req, res, _next, pool) {
   }
 }
 
+/**
+ * prc-s4.2: DELETE /products/:id — hard-delete a product and its wuce-side
+ * data (journeys, standards-cache rows). The underlying GitHub repo is NEVER
+ * touched by this handler -- no fetch()/https call of any kind is made here,
+ * by design (MVP scope: detach only, never delete the repo). Tenant-scoped:
+ * a product not owned by the caller's tenant returns 404 (not 403), matching
+ * the existing FORBIDDEN-vs-NOT_FOUND policy used elsewhere in this file
+ * (handleGetProductView, handleGetProductKanban).
+ */
+async function handleDeleteProduct(req, res, _next, pool, posthog) {
+  var _pool = pool;
+  var _ph = posthog || _posthog;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+
+  var prodRow = (await _pool.query(
+    'SELECT product_id, tenant_id FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  // Hard delete, wuce-side data only. Never a GitHub API call -- the repo
+  // (if any is connected) is left completely untouched. Explicit DELETEs
+  // (not relying on ON DELETE CASCADE/SET NULL alone) so the deletion is
+  // directly assertable and journeys are actually removed, not orphaned
+  // with product_id set to NULL (journeys.product_id is ON DELETE SET NULL,
+  // which would leave stale rows behind -- not what AC1 requires).
+  await _pool.query('DELETE FROM journeys WHERE product_id = $1', [productId]);
+  await _pool.query('DELETE FROM standard_product_optouts WHERE product_id = $1', [productId]);
+  await _pool.query('DELETE FROM standards WHERE product_id = $1', [productId]);
+  await _pool.query('DELETE FROM products WHERE product_id = $1', [productId]);
+
+  _ph.capture(tenantId, 'product_deleted', {
+    productId: productId,
+    tenantId: tenantId,
+    deletedBy: req.session && req.session.login
+  });
+
+  if (res.status) {
+    res.status(200).json({ deleted: true, product_id: productId });
+  } else {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ deleted: true, product_id: productId }));
+  }
+}
+
 var STAGE_COLUMNS = ['discovery','benefit-metric','definition','review','test-plan','definition-of-ready','implementation','definition-of-done'];
 
 function _healthLabel(health) {
@@ -506,5 +567,6 @@ module.exports = {
   handleGetProductView,
   handlePostProductFeature,
   handleGetProductKanban,
-  handleGetOrgKanban
+  handleGetOrgKanban,
+  handleDeleteProduct
 };
