@@ -10154,7 +10154,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-14T09:25:32.678Z",
+      "updatedAt": "2026-07-14T09:41:09.629Z",
       "discovery": {
         "status": "clarified",
         "artefact": "artefacts/2026-07-14-product-repo-config/discovery.md",
@@ -10170,26 +10170,42 @@
             {
               "slug": "prc-s1.1",
               "name": "Add repo association columns to the products table",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.1-review-1.md"
             },
             {
               "slug": "prc-s1.2",
               "name": "Connect an existing GitHub repo to a product",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.2-review-1.md"
             },
             {
               "slug": "prc-s1.3",
               "name": "Resolve sign-off write-back to the product's own repo",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.3-review-1.md"
             },
             {
               "slug": "prc-s1.4",
               "name": "Prove the walking skeleton end-to-end with a real commit",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.4-review-1.md"
             }
           ]
         },
@@ -10201,26 +10217,42 @@
             {
               "slug": "prc-s2.1",
               "name": "Create a new GitHub repo directly from product creation",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.1-review-1.md"
             },
             {
               "slug": "prc-s2.2",
               "name": "Bootstrap a newly created repo with the skills framework",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "reviewStatus": "has-findings",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.2-review-1.md"
             },
             {
               "slug": "prc-s2.3",
               "name": "Resolve annotation write-back to the product's own repo",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.3-review-1.md"
             },
             {
               "slug": "prc-s2.4",
               "name": "Resolve journey.js's local artefact writes to the product's own repo",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.4-review-1.md"
             }
           ]
         },
@@ -10232,20 +10264,32 @@
             {
               "slug": "prc-s3.1",
               "name": "Write standards to the product's repo as the source of truth",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s3.1-review-1.md"
             },
             {
               "slug": "prc-s3.2",
               "name": "Rebuild the standards DB cache from git content",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s3.2-review-1.md"
             },
             {
               "slug": "prc-s3.3",
               "name": "Rework standards.js routes to read-through/write-through git",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "red",
+              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "reviewStatus": "has-findings",
+              "highFindings": 1,
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s3.3-review-1.md"
             }
           ]
         },
@@ -10257,20 +10301,32 @@
             {
               "slug": "prc-s4.1",
               "name": "Edit a product's name, description, and repo association",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s4.1-review-1.md"
             },
             {
               "slug": "prc-s4.2",
               "name": "Delete (detach) a product",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "red",
+              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "reviewStatus": "has-findings",
+              "highFindings": 1,
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s4.2-review-1.md"
             },
             {
               "slug": "prc-s4.3",
               "name": "Automated cross-tenant repo isolation E2E spec",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-07-14T09:41:09.629Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s4.3-review-1.md"
             }
           ]
         }
@@ -10581,7 +10637,10 @@
           "id": "ADR-012",
           "category": "adr",
           "label": "Platform-agnostic architecture: prefer portable multi-VCS implementations over vendor-specific optimisations; adapters enable platform adaptation without fragmentation",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "Referenced correctly in prc-s1.2, prc-s2.1 (D37 adapter pattern for repo-connection logic) and prc-s3.2 (adapter-shaped cache-rebuild module). No violations found.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-14T09:41:09.629Z"
         },
         {
           "id": "ADR-013",
@@ -10623,7 +10682,10 @@
           "id": "ADR-025",
           "category": "adr",
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "Referenced correctly in prc-s1.1 (products table repo columns follow existing tenant_id-scoped application-layer pattern, not schema-per-tenant). No violations found.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-14T09:41:09.629Z"
         }
       ]
     }
