@@ -10154,7 +10154,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-14T10:07:01.687Z",
+      "updatedAt": "2026-07-14T10:27:25.197Z",
       "discovery": {
         "status": "clarified",
         "artefact": "artefacts/2026-07-14-product-repo-config/discovery.md",
@@ -10170,9 +10170,9 @@
             {
               "slug": "prc-s1.1",
               "name": "Add repo association columns to the products table",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-14T10:07:01.687Z",
+              "updatedAt": "2026-07-14T10:27:25.197Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.1-review-1.md",
@@ -10186,14 +10186,18 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s1.1-test-plan.md",
-              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s1.1-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s1.1-verification.md",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s1.1-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s1.1-dor-contract.md",
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
             },
             {
               "slug": "prc-s1.2",
               "name": "Connect an existing GitHub repo to a product",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-14T10:07:01.687Z",
+              "updatedAt": "2026-07-14T10:27:25.197Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.2-review-1.md",
@@ -10207,14 +10211,18 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s1.2-test-plan.md",
-              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s1.2-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s1.2-verification.md",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s1.2-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s1.2-dor-contract.md",
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
             },
             {
               "slug": "prc-s1.3",
               "name": "Resolve sign-off write-back to the product's own repo",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-14T10:07:01.687Z",
+              "updatedAt": "2026-07-14T10:27:25.197Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.3-review-1.md",
@@ -10228,14 +10236,18 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s1.3-test-plan.md",
-              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s1.3-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s1.3-verification.md",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s1.3-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s1.3-dor-contract.md",
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
             },
             {
               "slug": "prc-s1.4",
               "name": "Prove the walking skeleton end-to-end with a real commit",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-14T10:07:01.687Z",
+              "updatedAt": "2026-07-14T10:27:25.197Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.4-review-1.md",
@@ -10249,7 +10261,11 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s1.4-test-plan.md",
-              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s1.4-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s1.4-verification.md",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s1.4-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s1.4-dor-contract.md",
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
             }
           ]
         },
@@ -10261,9 +10277,9 @@
             {
               "slug": "prc-s2.1",
               "name": "Create a new GitHub repo directly from product creation",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-14T10:07:01.687Z",
+              "updatedAt": "2026-07-14T10:27:25.197Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.1-review-1.md",
@@ -10277,14 +10293,18 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s2.1-test-plan.md",
-              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s2.1-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s2.1-verification.md",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s2.1-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s2.1-dor-contract.md",
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
             },
             {
               "slug": "prc-s2.2",
               "name": "Bootstrap a newly created repo with the skills framework",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-14T10:07:01.687Z",
+              "updatedAt": "2026-07-14T10:27:25.197Z",
               "reviewStatus": "has-findings",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.2-review-1.md",
@@ -10298,14 +10318,18 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s2.2-test-plan.md",
-              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s2.2-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s2.2-verification.md",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s2.2-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s2.2-dor-contract.md",
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
             },
             {
               "slug": "prc-s2.3",
               "name": "Resolve annotation write-back to the product's own repo",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-14T10:07:01.687Z",
+              "updatedAt": "2026-07-14T10:27:25.197Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.3-review-1.md",
@@ -10319,14 +10343,18 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s2.3-test-plan.md",
-              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s2.3-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s2.3-verification.md",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s2.3-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s2.3-dor-contract.md",
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
             },
             {
               "slug": "prc-s2.4",
               "name": "Resolve journey.js's local artefact writes to the product's own repo",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-14T10:07:01.687Z",
+              "updatedAt": "2026-07-14T10:27:25.197Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.4-review-1.md",
@@ -10340,7 +10368,11 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s2.4-test-plan.md",
-              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s2.4-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s2.4-verification.md",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s2.4-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s2.4-dor-contract.md",
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
             }
           ]
         },
@@ -10352,9 +10384,9 @@
             {
               "slug": "prc-s3.1",
               "name": "Write standards to the product's repo as the source of truth",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-14T10:07:01.687Z",
+              "updatedAt": "2026-07-14T10:27:25.197Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s3.1-review-1.md",
@@ -10368,14 +10400,18 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s3.1-test-plan.md",
-              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s3.1-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s3.1-verification.md",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s3.1-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s3.1-dor-contract.md",
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
             },
             {
               "slug": "prc-s3.2",
               "name": "Rebuild the standards DB cache from git content",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-14T10:07:01.687Z",
+              "updatedAt": "2026-07-14T10:27:25.197Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s3.2-review-1.md",
@@ -10389,14 +10425,18 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s3.2-test-plan.md",
-              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s3.2-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s3.2-verification.md",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s3.2-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s3.2-dor-contract.md",
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
             },
             {
               "slug": "prc-s3.3",
               "name": "Wire standardsList to read from the git-backed cache, with promote/opt-out proven unaffected",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-14T10:07:01.687Z",
+              "updatedAt": "2026-07-14T10:27:25.197Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s3.3-review-2.md",
@@ -10410,7 +10450,11 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s3.3-test-plan.md",
-              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s3.3-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s3.3-verification.md",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s3.3-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s3.3-dor-contract.md",
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
             }
           ]
         },
@@ -10422,9 +10466,9 @@
             {
               "slug": "prc-s4.1",
               "name": "Edit a product's name, description, and repo association",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-14T10:07:01.687Z",
+              "updatedAt": "2026-07-14T10:27:25.197Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s4.1-review-1.md",
@@ -10438,14 +10482,18 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s4.1-test-plan.md",
-              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s4.1-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s4.1-verification.md",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s4.1-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s4.1-dor-contract.md",
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
             },
             {
               "slug": "prc-s4.2",
               "name": "Delete (detach) a product",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-14T10:07:01.687Z",
+              "updatedAt": "2026-07-14T10:27:25.197Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s4.2-review-2.md",
@@ -10459,14 +10507,18 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s4.2-test-plan.md",
-              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s4.2-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s4.2-verification.md",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s4.2-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s4.2-dor-contract.md",
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
             },
             {
               "slug": "prc-s4.3",
               "name": "Automated cross-tenant repo isolation E2E spec",
-              "stage": "test-plan",
-              "health": "green",
-              "updatedAt": "2026-07-14T10:07:01.687Z",
+              "stage": "definition-of-ready",
+              "health": "red",
+              "updatedAt": "2026-07-14T10:27:25.197Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s4.3-review-1.md",
@@ -10480,7 +10532,11 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s4.3-test-plan.md",
-              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s4.3-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-07-14-product-repo-config/verification-scripts/prc-s4.3-verification.md",
+              "dorStatus": "blocked",
+              "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s4.3-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s4.3-dor-contract.md",
+              "blocker": "BLOCKED pending provisioning of 2 disposable GitHub test repos for the 2 test tenants this E2E spec needs -- see decisions.md 2026-07-14 ASSUMPTION entry and dor/prc-s4.3-dor.md. All hard blocks individually pass; this is an external-dependency gate, not an artefact defect."
             }
           ]
         }
@@ -10793,8 +10849,8 @@
           "label": "Platform-agnostic architecture: prefer portable multi-VCS implementations over vendor-specific optimisations; adapters enable platform adaptation without fragmentation",
           "status": "met",
           "evidence": "Referenced correctly in prc-s1.2, prc-s2.1 (D37 adapter pattern for repo-connection logic) and prc-s3.2 (adapter-shaped cache-rebuild module). No violations found.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-07-14T09:41:09.629Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-14T10:27:25.197Z"
         },
         {
           "id": "ADR-013",
@@ -10838,8 +10894,8 @@
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
           "status": "met",
           "evidence": "Referenced correctly in prc-s1.1 (products table repo columns follow existing tenant_id-scoped application-layer pattern, not schema-per-tenant). No violations found.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-07-14T09:41:09.629Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-14T10:27:25.197Z"
         }
       ]
     }

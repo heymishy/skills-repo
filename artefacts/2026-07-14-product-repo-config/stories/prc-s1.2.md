@@ -34,6 +34,8 @@ ADR-020: repo connection must verify the authenticated user's own GitHub OAuth t
 
 **AC4:** Given a product already has a repo connected, When a tenant admin submits a different repo, Then the association is updated to the new repo — re-linking is supported, not blocked.
 
+**AC5 (D37 wiring):** Given the `setRepoAdapter`/`getRepoAdapter` pair is left unwired, When any code path calls the adapter, Then it throws `Adapter not wired: repoAdapter. Call setRepoAdapter() with a real implementation before use.` — never a silent empty/safe-looking return. Given `server.js` wires the adapter to a real implementation at startup, When two different owner/repo submissions are made by two different sessions, Then each resolves to its own correct, independently-verifiable access result (one succeeds, one is rejected) — not merely "a function reference was assigned," per this repo's own D37 wiring-test standard (CLAUDE.md).
+
 ## Out of Scope
 
 - Creating a brand-new repo — that's Epic 2, prc-s2.1.

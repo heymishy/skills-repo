@@ -15,6 +15,7 @@
 | AC2 | Owner/repo without access → rejected, no columns written | — | 1 test | — | — | — | 🟢 |
 | AC3 | No GitHub token in session → "link your GitHub account" prompt | — | 1 test | — | — | — | 🟢 |
 | AC4 | Re-linking to a different repo updates the association | — | 1 test | — | — | — | 🟢 |
+| AC5 | D37 wiring: unwired throws, wired resolves 2 sessions to 2 distinct results | — | 2 tests | — | — | — | 🟢 |
 
 ---
 
@@ -97,6 +98,22 @@ None — the meaningful behaviour is the integration between the route handler, 
 - **Precondition:** Product's `repo_owner`/`repo_name` already set to `acme`/`widgets`
 - **Action:** POST connect-repo with `owner=acme`, `repo=widgets-v2`
 - **Expected result:** Mock pool's `UPDATE` call reflects the new values (`widgets-v2`), not a second row or an error for "already connected"
+
+### Unwired repoAdapter throws, never returns a silent safe-looking value
+
+- **Verifies:** AC5 (D37 wiring, first half)
+- **Components involved:** `repoAdapter` module before `setRepoAdapter` is called
+- **Precondition:** Fresh module load, `setRepoAdapter` never invoked
+- **Action:** Call any function that would use the adapter (e.g. the repo-access check)
+- **Expected result:** Throws `Adapter not wired: repoAdapter. Call setRepoAdapter() with a real implementation before use.` — matching this repo's D37 error-message convention exactly
+
+### Wired repoAdapter resolves two different sessions to two different, individually-correct results
+
+- **Verifies:** AC5 (D37 wiring, second half — behavioural correctness, not just "a function reference was assigned")
+- **Components involved:** `server.js`'s real wiring of `setRepoAdapter`, two mocked GitHub API responses (one 200, one 404)
+- **Precondition:** Adapter wired per `server.js`'s actual production wiring code
+- **Action:** Session A checks access to a repo it has access to; Session B (different mocked token) checks access to a repo it does NOT have access to
+- **Expected result:** Session A's check resolves to "access granted," Session B's resolves to "access denied" — two distinct, independently-correct outcomes from the same wired adapter, not merely proof the setter was called (per CLAUDE.md's D37 wiring-test standard, sourced from the `tir-s1`/`tir-s7` precedent)
 
 ---
 

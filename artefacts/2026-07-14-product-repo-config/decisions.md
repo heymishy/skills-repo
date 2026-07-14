@@ -61,4 +61,31 @@
 **Revisit trigger:** Resolve before `/definition-of-ready` for `prc-s4.3` specifically — either provision test repos, or explicitly RISK-ACCEPT deferring this story's implementation until they exist.
 
 ---
+
+**2026-07-14 | RISK-ACCEPT | /definition-of-ready — W3 (MEDIUM review findings), 3 stories**
+**Decision:** Accept `prc-s1.4`'s 1-M1 (verification environment not yet named), `prc-s2.4`'s 1-M1 (commit-granularity interpretation adopted, not yet operator-confirmed), and `prc-s3.2`'s 1-M1 (benefit linkage reads as performance-indirect) without further story rework before DoR sign-off.
+**Alternatives considered:** Block sign-off on all 3 until each is fully resolved (rejected — none represent a defect in what will be built; each is a documented interpretation or an environment detail that can be finalized during implementation-planning without re-running `/definition` or `/review`).
+**Rationale:** `prc-s1.4`'s environment ambiguity narrows naturally at `/implementation-plan` time once a concrete worktree/branch exists to test against. `prc-s2.4`'s commit-granularity interpretation (one commit per named artefact file) is already the working assumption baked into its test plan — proceeding under it is lower-risk than blocking the whole story for a granularity choice with no strong counter-argument raised. `prc-s3.2`'s linkage, while indirectly worded, protects a real requirement (standards page load time) that the story's own NFR section already covers — the finding is about prose quality, not test coverage.
+**Made by:** Hamish King (Founder/Operator) + Claude (agent), via /definition-of-ready, 2026-07-14.
+**Revisit trigger:** If `prc-s2.4`'s implementation reveals the adopted commit-granularity interpretation doesn't hold up in practice (e.g. autosave-style intermediate writes turn out to be unavoidable), revisit at `/verify-completion`.
+
+---
+
+**2026-07-14 | RISK-ACCEPT | /definition-of-ready — W4 (verification scripts unreviewed), all 14 stories**
+**Decision:** Proceed to DoR sign-off across all 14 `product-repo-config` stories without a domain-expert review of any AC verification script beyond the story author (same agent that wrote the story and test plan).
+**Alternatives considered:** Block all 14 stories until a second reviewer walks through each script (rejected — no second reviewer exists in this solo-operator context; blocking indefinitely on unavailable review capacity would stall the epic entirely, matching the identical W4 gap already accepted for `team-identity-roles`' Epic 3 stories earlier in this session).
+**Rationale:** Matches established precedent (`bri-s3.3`'s own DoR: "Not yet done — outstanding for all 6 Epic 3 stories," accepted as a warning, not a hard block). The verification scripts remain available for the operator to review at any point before or during implementation — this RISK-ACCEPT records that sign-off proceeded without that step formally completed, not that the step is waived permanently.
+**Made by:** Hamish King (Founder/Operator) + Claude (agent), via /definition-of-ready, 2026-07-14.
+**Revisit trigger:** None — standing acceptance for this feature, consistent with solo-operator delivery capacity named in the feature's own Constraints section.
+
+---
+
+**2026-07-14 | SCOPE | /definition-of-ready — prc-s1.2 missing D37 wiring AC (H-ADAPTER)**
+**Decision:** Added AC5 to `prc-s1.2`, explicitly scoping the `setRepoAdapter`/`getRepoAdapter` pair's production wiring — the story's own Architecture Constraints already named this as a D37 adapter, but the original 4 ACs never included a wiring AC. Checked all 14 stories systematically (grepped every story for "D37"/"setX"/"injectable adapter") — `prc-s1.2` is the only one that explicitly calls for a new D37-shaped adapter.
+**Alternatives considered:** Let it pass since `/review` Category E didn't flag it (rejected — H-ADAPTER is a DoR-specific check that `/review`'s Category E doesn't currently cover; the gap existing past `/review` is itself worth noting as a possible `/review` skill gap, not a reason to skip fixing it now). Treat it as covered implicitly by AC1-AC4's behavioural assertions (rejected — none of AC1-AC4 test the unwired-throws case or prove two sessions resolve independently, exactly the weaker shape CLAUDE.md's D37 rule warns against).
+**Rationale:** This is precisely the class of gap CLAUDE.md's D37 rule was written to prevent (source: `tir-s1`, which shipped without a wiring AC and shipped a real bug, fixed in `tir-s7`). Caught here before implementation, not after.
+**Made by:** Claude (agent), via /definition-of-ready, 2026-07-14.
+**Revisit trigger:** Consider proposing a `/review` skill enhancement (Category E) to check for D37-adapter mentions in Architecture Constraints without a matching wiring AC — would have caught this one turn earlier. Not filed as a formal `/improve` proposal yet; noted here for now given this session already has one open proposal pending review.
+
+---
 <!-- Add further decisions as they arise during delivery. -->
