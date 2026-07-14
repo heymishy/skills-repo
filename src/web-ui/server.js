@@ -45,7 +45,7 @@ const { migrateIdentityLinksSchema } = require('./modules/identity-links'); // t
 const { handleGetLinkSettings, handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
 const { setStandardsAdapter }                                        = require('./standards-adapter');             // psh-s10
@@ -1722,6 +1722,12 @@ async function router(req, res) {
     // psh-s4 — product view: list features for one product with stage + health
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleGetProductView(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+$/) && req.method === 'DELETE') {
+    // prc-s4.2 — delete (detach) a product: removes product row, journeys, and
+    // standards-cache rows; never touches the underlying GitHub repo
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handleDeleteProduct(req, res, null, _pshPool, null); });
 
   } else if (pathname.match(/^\/products\/[^/]+\/features$/) && req.method === 'POST') {
     // psh-s4 — create new journey with product_id FK, emits journey_created PostHog event
