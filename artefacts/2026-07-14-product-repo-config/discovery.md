@@ -1,8 +1,8 @@
 # Discovery: Per-Product Git Repo Configuration and Management
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-07-14
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Hamish King — Founder/Operator — 2026-07-14
 **Author:** Claude (agent), with Hamish King (Founder/Operator)
 
 ---
@@ -83,7 +83,7 @@ A product's linked GitHub repo being renamed, deleted, or having access revoked 
 
 ## Approved By
 
-Pending
+Hamish King — Founder/Operator — 2026-07-14
 
 ---
 

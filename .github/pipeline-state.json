@@ -10147,21 +10147,63 @@
     {
       "slug": "2026-07-14-product-repo-config",
       "name": "Per-Product Git Repo Configuration and Management",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-14T06:53:36.397Z",
+      "updatedAt": "2026-07-14T06:59:52.956Z",
       "discovery": {
         "status": "clarified",
         "artefact": "artefacts/2026-07-14-product-repo-config/discovery.md",
         "clarifiedAt": "2026-07-14"
       },
       "stories": [],
-      "epics": []
+      "epics": [],
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Time from idea to DoR-ready, git-committed artefact",
+          "target": "Full discovery-to-DoR run completable in a single working session, zero manual export/import",
+          "baseline": "Not yet established (0 completed end-to-end runs via wuce web UI)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Products with a configured repo",
+          "target": "100% of newly-created products have a repo before first outer-loop run",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Cross-tenant repo isolation",
+          "target": "100% isolation, proven by automated E2E test (matching bri-s3.4 pattern)",
+          "baseline": "Not yet established (untested, only one real tenant exists today)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "mm1",
+          "name": "Meta: Web-UI/IDE pairing is a real workflow improvement",
+          "target": "At least 1 full outer-loop session per week via wuce web UI, sustained for 4 weeks post-launch",
+          "baseline": "0% (100% of outer-loop work happens via Claude Code directly today)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
