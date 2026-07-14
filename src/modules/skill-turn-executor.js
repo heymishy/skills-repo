@@ -63,7 +63,11 @@ function _anthropicExtraHeaders() {
   return { 'anthropic-beta': 'prompt-caching-2024-07-31' };
 }
 
-function _callAnthropic(systemPrompt, history, currentInput, maxTokens, timeoutMs) {
+// s6.1: session is optional — { tenantId, sessionId } — threaded through from
+// skillTurnExecutor()'s meta param so _anthropicSystem() can scope the prompt-cache
+// comment per Decision 8. Omitted by any caller that doesn't pass tenantId/sessionId
+// in meta — behaviour is then identical to pre-s6.1 (no cache-scope line).
+function _callAnthropic(systemPrompt, history, currentInput, maxTokens, timeoutMs, session) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return Promise.reject(new Error('ANTHROPIC_API_KEY is not set. Set it in .env to use the anthropic provider.'));
@@ -80,7 +84,7 @@ function _callAnthropic(systemPrompt, history, currentInput, maxTokens, timeoutM
   const anthropicBody = {
     model:      model,
     max_tokens: maxTokens,
-    system:     _anthropicSystem(systemPrompt),
+    system:     _anthropicSystem(systemPrompt, session),
     messages:   messages
   };
 
@@ -158,8 +162,11 @@ function _callAnthropic(systemPrompt, history, currentInput, maxTokens, timeoutM
  * Streaming variant of _callAnthropic.
  * Parses Anthropic SSE format (content_block_delta events), calls onChunk for text deltas
  * and onThinkingChunk for thinking_delta blocks. onFirstChunk fires once with ttfb_ms.
+ *
+ * s6.1: session ({ tenantId, sessionId }) is an optional trailing param, threaded through
+ * from skillTurnExecutorStream()'s options param — see _callAnthropic() for the same pattern.
  */
-function _callAnthropicStream(systemPrompt, history, currentInput, maxTokens, timeoutMs, onChunk, onThinkingChunk, onFirstChunk, noThinking, modelOverride) {
+function _callAnthropicStream(systemPrompt, history, currentInput, maxTokens, timeoutMs, onChunk, onThinkingChunk, onFirstChunk, noThinking, modelOverride, session) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return Promise.reject(new Error('ANTHROPIC_API_KEY is not set. Set it in .env to use the anthropic provider.'));
@@ -176,7 +183,7 @@ function _callAnthropicStream(systemPrompt, history, currentInput, maxTokens, ti
   const anthropicBody = {
     model:      model,
     max_tokens: maxTokens,
-    system:     _anthropicSystem(systemPrompt),
+    system:     _anthropicSystem(systemPrompt, session),
     messages:   messages,
     stream:     true
   };
@@ -598,7 +605,7 @@ function _streamMockGatewayResponse(stage, model, scenarioName, onChunk, onFirst
  * @param {Array}   history        — array of { role: 'user'|'assistant', content: string }
  * @param {string}  currentInput   — current user input (or 'Begin the session.' for the first turn)
  * @param {string}  token          — GitHub access token (only used for copilot provider)
- * @param {{stage?: string, scenarioName?: string, model?: string}} [meta] — bri-s3.1 mock-gateway routing
+ * @param {{stage?: string, scenarioName?: string, model?: string, tenantId?: string, sessionId?: string}} [meta] — bri-s3.1 mock-gateway routing; s6.1 tenantId/sessionId for prompt-cache scoping (Decision 8)
  * @returns {Promise<string>}      — the model's response text
  */
 function skillTurnExecutor(systemPrompt, history, currentInput, token, meta) {
@@ -609,9 +616,14 @@ function skillTurnExecutor(systemPrompt, history, currentInput, token, meta) {
   const provider  = (process.env.SKILL_EXECUTOR_PROVIDER || 'anthropic').toLowerCase();
   const maxTokens = parseInt(process.env.WUCE_TURN_MODEL_MAX_TOKENS || String(DEFAULT_MAX_TOKENS), 10);
   const timeoutMs = parseInt(process.env.WUCE_TURN_TIMEOUT_MS       || String(DEFAULT_TIMEOUT_MS), 10);
+  // s6.1: activate Decision 8 — thread tenantId/sessionId through to _anthropicSystem()
+  // so the prompt-cache scope comment is genuinely tenant-differentiated in production.
+  const session = (meta && (meta.tenantId != null || meta.sessionId != null))
+    ? { tenantId: meta.tenantId, sessionId: meta.sessionId }
+    : null;
 
   if (provider === 'anthropic') {
-    return _callAnthropic(systemPrompt, history, currentInput, maxTokens, timeoutMs);
+    return _callAnthropic(systemPrompt, history, currentInput, maxTokens, timeoutMs, session);
   }
 
   return _callCopilot(systemPrompt, history, currentInput, token, maxTokens, timeoutMs);
@@ -634,7 +646,7 @@ function skillTurnExecutor(systemPrompt, history, currentInput, token, meta) {
  * @param {function} onChunk — called with each text delta
  * @param {function} [onThinkingChunk] — called with each reasoning/thinking delta
  * @param {function} [onFirstChunk] — called once with time-to-first-byte in ms
- * @param {{maxTokens?: number, noThinking?: boolean, model?: string, stage?: string, scenarioName?: string}} [options]
+ * @param {{maxTokens?: number, noThinking?: boolean, model?: string, stage?: string, scenarioName?: string, tenantId?: string, sessionId?: string}} [options] — s6.1: tenantId/sessionId for prompt-cache scoping (Decision 8)
  * @returns {Promise<string>} full response text
  */
 function skillTurnExecutorStream(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk, options) {
@@ -649,9 +661,13 @@ function skillTurnExecutorStream(systemPrompt, history, currentInput, token, onC
   const maxTokens      = (options && options.maxTokens) ? options.maxTokens : defaultTokens;
   const timeoutMs      = parseInt(process.env.WUCE_TURN_TIMEOUT_MS || String(DEFAULT_TIMEOUT_MS), 10);
   const noThinking     = options && options.noThinking;
+  // s6.1: activate Decision 8 — same tenantId/sessionId threading as skillTurnExecutor() above.
+  const session = (options && (options.tenantId != null || options.sessionId != null))
+    ? { tenantId: options.tenantId, sessionId: options.sessionId }
+    : null;
 
   if (provider === 'anthropic') {
-    return _callAnthropicStream(systemPrompt, history, currentInput, maxTokens, timeoutMs, onChunk, onThinkingChunk, onFirstChunk, noThinking, modelOverride);
+    return _callAnthropicStream(systemPrompt, history, currentInput, maxTokens, timeoutMs, onChunk, onThinkingChunk, onFirstChunk, noThinking, modelOverride, session);
   }
 
   return _callCopilotStream(systemPrompt, history, currentInput, token, onChunk, maxTokens, timeoutMs, onThinkingChunk, onFirstChunk, noThinking, modelOverride);

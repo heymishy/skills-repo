@@ -1927,9 +1927,11 @@ function _listHtmlSessions() {
  * @param {string} sessionId
  * @param {string} rawAnswer
  * @param {string} [token]
+ * @param {string} [tenantId] — s6.1: threaded through to the executor's meta so the
+ *   Anthropic prompt-cache scope comment (Decision 8) is tenant-differentiated
  * @returns {Promise<{done:boolean, response:string, artefactContent?:string}|null>}
  */
-async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token) {
+async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token, tenantId) {
   var session = _sessionStore.get(sessionId);
   if (!session) { return null; }
 
@@ -1948,7 +1950,9 @@ async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token) {
     // run) via session.mockScenarioName, set only by journey.js in test mode.
     // When the gateway is disabled this is a no-op — the executor ignores
     // meta entirely and calls the real provider exactly as before.
-    var _turnMeta = { stage: skillName, scenarioName: session.mockScenarioName || 'success' };
+    // s6.1: tenantId/sessionId activate Decision 8's prompt-cache scoping guard —
+    // omitted (tenantId undefined) leaves pre-s6.1 behaviour unchanged.
+    var _turnMeta = { stage: skillName, scenarioName: session.mockScenarioName || 'success', tenantId: tenantId || null, sessionId: sessionId };
     var _execResult = await _skillTurnExecutor(
       session.systemPrompt,
       historySnapshot,
@@ -3703,7 +3707,7 @@ async function handlePostTurnHtml(req, res) {
   var _nonStreamStart = Date.now();
   var result;
   try {
-    result = await htmlSubmitTurn(skillName, sessionId, answer, req.session.accessToken);
+    result = await htmlSubmitTurn(skillName, sessionId, answer, req.session.accessToken, req.session.tenantId);
   } finally {
     if (_linkedJourney) {
       _linkedJourney.turnInProgress = false;
@@ -3911,6 +3915,11 @@ async function handlePostTurnStreamHtml(req, res) {
         _turnOptions.model = _fastModel;
       }
     }
+    // s6.1: activate Decision 8 — thread tenantId/sessionId so the streaming path's
+    // Anthropic prompt-cache scope comment is tenant-differentiated in production,
+    // matching the non-streaming path (htmlSubmitTurn, above).
+    _turnOptions.tenantId = (req.session && req.session.tenantId) || null;
+    _turnOptions.sessionId = sessionId;
 
     var _llmResult = await _skillTurnExecutorStream(
       session.systemPrompt,
