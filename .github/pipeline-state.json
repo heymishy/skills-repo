@@ -864,8 +864,10 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s6.1-dor.md",
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "notes": "Fix-forward: activates Decision 8 (RISK-ACCEPT, 2026-06-24) — threads tenantId/sessionId through the real production call chain into _anthropicSystem(). See decisions.md Decision 12."
+              "prStatus": "open",
+              "notes": "Fix-forward: activates Decision 8 (RISK-ACCEPT, 2026-06-24) — threads tenantId/sessionId through the real production call chain into _anthropicSystem(). See decisions.md Decision 12.",
+              "prNumber": 475,
+              "updatedAt": "2026-07-14T04:30:07.560Z"
             }
           ]
         },
