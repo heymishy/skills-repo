@@ -393,7 +393,7 @@
       "regulated": false,
       "complianceProfile": "standard",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-07-09T00:00:00Z",
+      "updatedAt": "2026-07-14T04:41:05.765Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/discovery.md",
@@ -864,10 +864,10 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s6.1-dor.md",
               "verifyStatus": "passed",
-              "prStatus": "open",
+              "prStatus": "merged",
               "notes": "Fix-forward: activates Decision 8 (RISK-ACCEPT, 2026-06-24) — threads tenantId/sessionId through the real production call chain into _anthropicSystem(). See decisions.md Decision 12.",
               "prNumber": 475,
-              "updatedAt": "2026-07-14T04:30:07.560Z"
+              "updatedAt": "2026-07-14T04:41:05.765Z"
             }
           ]
         },
@@ -7322,7 +7322,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-14T04:26:03Z",
+      "updatedAt": "2026-07-14T04:41:05.765Z",
       "discoveryArtefact": "artefacts/2026-07-03-admin-role-panel/discovery.md",
       "discoveryStatus": "approved",
       "discoveryApprovedAt": "2026-07-03",
@@ -7518,12 +7518,13 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-03-admin-role-panel/dor/arl-s5-dor.md",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prNumber": 473,
               "dodStatus": "not-started",
               "releaseReady": false,
               "layoutGapsAtMerge": false,
-              "layoutGapsRiskAccepted": false
+              "layoutGapsRiskAccepted": false,
+              "updatedAt": "2026-07-14T04:41:05.765Z"
             }
           ]
         }
@@ -10112,13 +10113,13 @@
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-07-14",
-          "prStatus": "draft",
+          "updatedAt": "2026-07-14T04:41:05.765Z",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/474"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-14T04:29:04.401Z"
+      "updatedAt": "2026-07-14T04:41:05.765Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
