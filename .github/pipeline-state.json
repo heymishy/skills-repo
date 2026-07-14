@@ -10143,6 +10143,24 @@
       ],
       "metrics": [],
       "updatedAt": "2026-07-14T05:04:40.021Z"
+    },
+    {
+      "slug": "2026-07-14-product-repo-config",
+      "name": "Per-Product Git Repo Configuration and Management",
+      "stage": "discovery",
+      "health": "green",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "updatedAt": "2026-07-14T06:18:30.267Z",
+      "discovery": {
+        "status": "draft",
+        "artefact": "artefacts/2026-07-14-product-repo-config/discovery.md"
+      },
+      "stories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
