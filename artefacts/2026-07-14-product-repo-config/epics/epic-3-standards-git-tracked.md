@@ -23,7 +23,7 @@ A product's standards live as real files in its repo, editable from either the w
 
 - [ ] prc-s3.1 — Write standards to the product's repo as the source of truth
 - [ ] prc-s3.2 — Rebuild the standards DB cache from git content
-- [ ] prc-s3.3 — Rework standards.js routes to read-through/write-through git
+- [ ] prc-s3.3 — Wire standardsList to read from the git-backed cache, with promote/opt-out proven unaffected
 
 ## Human Oversight Level
 

@@ -22,6 +22,8 @@
 **Made by:** Claude (agent), via /definition, 2026-07-14.
 **Revisit trigger:** None — this is a stable, low-complexity story; no reason to expect it needs revisiting.
 
+**Operator confirmation (2026-07-14, via /review run 1 finding 1-H1):** `/review` correctly re-surfaced this as a HIGH finding rather than treating the above reasoning as self-certifying (same agent authored both the original decision and the review). Hamish King reviewed the tradeoff independently (option 1: confirm as-is vs. option 2: force a thin Metric 2 linkage via "deleting a mis-configured product removes bad data from the denominator") and confirmed option 1 — the above reasoning stands. Finding 1-H1 is acknowledged and resolved, not overridden.
+
 ---
 
 **2026-07-14 | SCOPE | /definition — scope accumulator ratio**
@@ -29,6 +31,15 @@
 **Alternatives considered:** Treat as intentional growth requiring a discovery.md update (rejected — nothing here goes beyond what discovery's MVP scope already named; no new capability was added mid-decomposition). Treat as scope creep requiring deferral (rejected — every story traces cleanly to either a named MVP item or a structural requirement of the chosen slicing strategy/a metric's own definition).
 **Rationale:** 12 of 14 stories map 1:1 onto the 6 MVP items — several items (repo configuration flow, route existing write paths, standards conversion, product management UX) are broad enough to legitimately span 2-3 stories each once decomposed. The remaining 2 stories (prc-s1.4, prc-s4.3) are verification stories: prc-s1.4 is the walking-skeleton strategy's own required proof point (chosen explicitly at Step 2 to de-risk before building further), and prc-s4.3 is Metric 3's own named measurement mechanism, not an independent scope addition.
 **Made by:** Claude (agent), via /definition, 2026-07-14.
+**Revisit trigger:** None.
+
+---
+
+**2026-07-14 | SCOPE | /review run 1 — prc-s3.3 HIGH finding resolved**
+**Decision:** Narrowed `prc-s3.3`'s scope from "rework standardsList/standardsPost/standardsPut to read-through/write-through git" to "wire `standardsList` to read from the git-backed cache, with `standardsPromote`/`optoutPost`/`optoutDelete` proven unaffected" — dropping the write-through claim entirely.
+**Alternatives considered:** Keep the original scope and just rewrite the Benefit Linkage sentence to sound less like a technical dependency (rejected — the underlying overlap was real, not just a wording problem: `prc-s3.1`'s own AC1 already requires the write path to run through `standardsPost`/`standardsPut`, so `prc-s3.3` claiming to "rework" that same write-through was describing work `prc-s3.1` already does).
+**Rationale:** `/review` run 1 flagged (1-H1) that `prc-s3.3`'s benefit linkage was the exact "we need this to build the next thing" pattern the story template explicitly bans. Investigating why surfaced a real scope-boundary defect from `/definition`, not just weak prose — `prc-s3.1` and `prc-s3.3` overlapped on the write path. The corrected `prc-s3.3` has a genuine, distinct, user-observable job (read-side correctness + regression-boundary proof for promote/opt-out) with an honest benefit linkage. Complexity rating dropped from 2 to 1 to reflect the narrower scope.
+**Made by:** Claude (agent), via /review fix-up, 2026-07-14 — operator confirmed the approach before the edit was made.
 **Revisit trigger:** None.
 
 ---

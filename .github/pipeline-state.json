@@ -10154,7 +10154,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-14T09:41:09.629Z",
+      "updatedAt": "2026-07-14T09:48:26.678Z",
       "discovery": {
         "status": "clarified",
         "artefact": "artefacts/2026-07-14-product-repo-config/discovery.md",
@@ -10283,13 +10283,13 @@
             },
             {
               "slug": "prc-s3.3",
-              "name": "Rework standards.js routes to read-through/write-through git",
+              "name": "Wire standardsList to read from the git-backed cache, with promote/opt-out proven unaffected",
               "stage": "review",
-              "health": "red",
-              "updatedAt": "2026-07-14T09:41:09.629Z",
-              "reviewStatus": "has-findings",
-              "highFindings": 1,
-              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s3.3-review-1.md"
+              "health": "green",
+              "updatedAt": "2026-07-14T09:48:26.678Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s3.3-review-2.md"
             }
           ]
         },
@@ -10312,11 +10312,11 @@
               "slug": "prc-s4.2",
               "name": "Delete (detach) a product",
               "stage": "review",
-              "health": "red",
-              "updatedAt": "2026-07-14T09:41:09.629Z",
-              "reviewStatus": "has-findings",
-              "highFindings": 1,
-              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s4.2-review-1.md"
+              "health": "green",
+              "updatedAt": "2026-07-14T09:48:26.678Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s4.2-review-2.md"
             },
             {
               "slug": "prc-s4.3",
