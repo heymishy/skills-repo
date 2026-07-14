@@ -4,8 +4,10 @@
 // GET /admin/credits — display all tenant balances.
 // POST /api/admin/credits/adjust — adjust a tenant's balance.
 // Protected by requireAdmin middleware (mounted in server.js).
+// arl-s5 — adjust now writes an immutable audit row via adjustBalanceWithAudit
+// (tenant_id, admin_id, delta, balance_before, balance_after, created_at).
 
-const { getAllTenantBalances, getValidTenantIds, adjustBalance } = require('../modules/credits');
+const { getAllTenantBalances, getValidTenantIds, adjustBalanceWithAudit } = require('../modules/credits');
 
 /**
  * Escape HTML special characters to prevent XSS.
@@ -107,7 +109,10 @@ async function adminCreditsPost(req, res) {
     return;
   }
 
-  await adjustBalance(tenantId, amountNum);
+  // arl-s5 — resolve admin identity for the audit trail. Never req.session.accessToken (AC7).
+  const adminId = String((req.session && (req.session.login || req.session.userId)) || 'unknown');
+
+  await adjustBalanceWithAudit(tenantId, amountNum, adminId);
 
   res.writeHead(302, { Location: '/admin/credits' });
   res.end();
