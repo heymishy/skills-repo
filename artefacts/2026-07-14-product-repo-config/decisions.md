@@ -88,4 +88,13 @@
 **Revisit trigger:** Consider proposing a `/review` skill enhancement (Category E) to check for D37-adapter mentions in Architecture Constraints without a matching wiring AC — would have caught this one turn earlier. Not filed as a formal `/improve` proposal yet; noted here for now given this session already has one open proposal pending review.
 
 ---
+
+**2026-07-14 | RISK-ACCEPT | /branch-setup — prc-s1.1, pre-existing baseline failures acknowledged**
+**Decision:** Proceed with `prc-s1.1` implementation despite a non-clean baseline: `node scripts/run-all-tests.js` on the fresh worktree (branched off `origin/master`, before any story code was written) reports 331 test files run, 69 failed. None of the 69 failing files reference `product`/`products` (grepped the failure list against the products/product-repo surface this story touches) — the failures are unrelated to this story's scope.
+**Alternatives considered:** Block and fix all 69 pre-existing failures before starting (rejected — none are in the products/schema-migration surface this story touches; fixing 69 unrelated failures is a separate, much larger effort out of scope for a 3-AC schema-only story, and would leave the story's own DoR-approved scope unbuilt).
+**Rationale:** Matches `branch-setup/SKILL.md`'s Option 2 ("Acknowledge as pre-existing and proceed") and the repo's own `workspace/learnings.md` precedent (`feedback_merge_conflict_hotspots.md`: the pcr-s1 test-chain discovery fix unmasked a similar volume of pre-existing hidden failures unrelated to any single story). This story's own AC-relevant tests (new, added by this story) are what verify-completion will hold to a 0-failures bar — the pre-existing 69 are a separate, already-tracked repo-health item, not this story's regression.
+**Made by:** Claude (agent), via /branch-setup, 2026-07-14.
+**Revisit trigger:** None for this story. Repo-wide: the 69 pre-existing failures should be triaged as their own workstream — out of scope here.
+
+---
 <!-- Add further decisions as they arise during delivery. -->
