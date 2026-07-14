@@ -10093,9 +10093,32 @@
       "stage": "branch-complete",
       "health": "green",
       "epics": [],
-      "stories": [],
+      "stories": [
+        {
+          "id": "sec-perf-s2",
+          "title": "Re-validate admin role on every gated request so a mid-session demotion takes effect immediately",
+          "artefact": "artefacts/2026-07-01-security-perf-hardening/stories/sec-perf-s2.md",
+          "testPlan": {
+            "status": "all-passing",
+            "artefact": "artefacts/2026-07-01-security-perf-hardening/test-plans/sec-perf-s2-stale-role-revalidation-test-plan.md",
+            "totalTests": 12,
+            "passing": 12
+          },
+          "stage": "branch-complete",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-01-security-perf-hardening/dor/sec-perf-s2-dor.md",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-07-14",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/474"
+        }
+      ],
       "metrics": [],
-      "updatedAt": "2026-07-14T00:55:28.892Z"
+      "updatedAt": "2026-07-14T04:29:04.401Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
