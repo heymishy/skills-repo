@@ -197,8 +197,17 @@ async function handleAuthCallback(req, res) {
     // tir-s1: load role via the person/team-scoped lookup (replaces the arl-s1
     // legacy getUserRole(tenantId) tenant-wide lookup — AC3). Falls back to
     // 'user' on error (adapter not wired in test mode).
+    //
+    // tir-s9 (fix-forward): pass user.login explicitly as the second
+    // (identityKey) argument. Without it, req.session.tenantId was reused as
+    // identityKey — harmless for a solo tenant (tenantId already equals
+    // user.login there) but wrong for a TENANT_ORG_ALLOWLIST-matched shared
+    // tenant, where tenantId is the SAME org name for every teammate: every
+    // teammate's login then resolved an arbitrary OTHER teammate's role.
+    // user.login is each person's own, distinct GitHub login regardless of
+    // which tenant they share.
     try {
-      req.session.role = await _userRoles.getRoleForTenant(req.session.tenantId);
+      req.session.role = await _userRoles.getRoleForTenant(req.session.tenantId, user.login);
     } catch (_) {
       req.session.role = 'user';
     }
@@ -298,8 +307,17 @@ async function handleAuthGoogleCallback(req, res) {
 
     // tir-s1: load role via the person/team-scoped lookup (AC3). Falls back to
     // 'user' on error.
+    //
+    // tir-s9 (fix-forward, AC4): pass userInfo.sub explicitly as the second
+    // (identityKey) argument, for consistency with the GitHub callback above
+    // and as a defensive/future-proofing measure. Google has no
+    // TENANT_ORG_ALLOWLIST-equivalent shared-tenant mechanism today —
+    // req.session.tenantId is unconditionally userInfo.sub (see above), so
+    // identityKey and tenantId are already the same value here and this is a
+    // documented non-bug finding, not a behaviour change (verified by a
+    // regression test).
     try {
-      req.session.role = await _userRoles.getRoleForTenant(req.session.tenantId);
+      req.session.role = await _userRoles.getRoleForTenant(req.session.tenantId, userInfo.sub);
     } catch (_) {
       req.session.role = 'user';
     }
