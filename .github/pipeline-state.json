@@ -10154,10 +10154,11 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-14T06:18:30.267Z",
+      "updatedAt": "2026-07-14T06:53:36.397Z",
       "discovery": {
-        "status": "draft",
-        "artefact": "artefacts/2026-07-14-product-repo-config/discovery.md"
+        "status": "clarified",
+        "artefact": "artefacts/2026-07-14-product-repo-config/discovery.md",
+        "clarifiedAt": "2026-07-14"
       },
       "stories": [],
       "epics": []

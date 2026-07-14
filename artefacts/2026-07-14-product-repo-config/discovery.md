@@ -1,6 +1,6 @@
 # Discovery: Per-Product Git Repo Configuration and Management
 
-**Status:** Draft — awaiting approval
+**Status:** Clarified — awaiting approval
 **Created:** 2026-07-14
 **Approved by:** [Name + date — filled in after human review]
 **Author:** Claude (agent), with Hamish King (Founder/Operator)
@@ -42,15 +42,15 @@ This session just pushed `team-identity-roles` and most of `beta-readiness-infra
 
 ## Assumptions and Risks
 
-[ASSUMPTION] The existing GitHub OAuth App's token scope already includes repo creation (`repo` or `contents:write`-equivalent for a new repo, not just reading/writing contents of an existing one) — unconfirmed, requires /clarify before scope is locked.
+[RESOLVED via code inspection, 2026-07-14] The existing GitHub OAuth App's token scope already includes repo creation. Confirmed: `src/web-ui/auth/oauth-adapter.js` requests `scope=repo,read:user` (plus `read:org` when `TENANT_ORG_ALLOWLIST` is set) — the `repo` scope grants full read/write access including repo creation (`POST /user/repos`). No OAuth App reconfiguration needed.
 
-[ASSUMPTION] Team members authenticated via Google or email/password (not GitHub OAuth) have no GitHub token in session, so under the existing ADR-020 pattern (user's own OAuth token, never a service account) they cannot write to a product's repo at all — unconfirmed how MVP should handle this, requires /clarify before scope is locked.
+[RESOLVED via /clarify, 2026-07-14] Team members authenticated via Google or email/password have no GitHub token in session and cannot write to a product's repo under ADR-020's pattern. MVP restricts outer-loop repo writes to GitHub-authenticated users only; a Google/email-authenticated user gets a clear "link your GitHub account to write" prompt, reusing the existing account-linking flow (`routes/account-linking.js`). Forward-looking note: the same account-linking mechanism is the natural extension point for other git providers (GitLab, Bitbucket) later — linking additional identities, not just GitHub.
 
-[ASSUMPTION] New-repo bootstrap (seeding the skills framework into a freshly created repo) can be done entirely via the GitHub Contents API (many small file writes under the user's token) without needing a local `git clone`/`git push` — unconfirmed; if false, this story needs actual git tooling as a new dependency, a materially bigger scope. Requires /clarify before scope is locked.
+[RESOLVED via /clarify, 2026-07-14] New-repo bootstrap should prefer the GitHub Contents/Git Data API only (batch multi-file commits via the tree/blob/commit endpoints, no local clone, zero new dependencies) — the cleanest option and the default target. If that proves too complex during implementation, the fallback is a local `git clone` + `git push` (still under the user's OAuth token) used *only* for the initial bootstrap commit, reusing `scripts/platform-init.js`'s existing flat-copy logic; every write after that first commit (artefacts, standards, sign-offs) goes through the Contents API as normal either way. `/definition` should attempt the API-only approach first and only fall back if the implementation genuinely warrants it.
 
-[ASSUMPTION] Today's single global `GITHUB_REPO_OWNER`/`GITHUB_REPO_NAME` in production actually points at this skills-repo itself (the operator's own dogfood target) — unconfirmed from code alone, requires /clarify before scope is locked.
+[RESOLVED via /clarify, 2026-07-14] Confirmed: production's `GITHUB_REPO_OWNER`/`GITHUB_REPO_NAME` point at this skills-repo itself. `fly secrets list` confirms both are set and deployed; direct evidence in this repo's own git history — commit `2292a930`, message `"sign-off: artefacts/2026-05-02-web-ui-copilot-execution-layer/discovery.md approved by heymishy"`, matching `commitSignOff`'s exact message template — proves wuce's sign-off write-back has already landed real commits here.
 
-[ASSUMPTION] Converting standards from DB rows to git-tracked files means the files become the source of truth and the `standards` table becomes a read cache/index (not a parallel, potentially-diverging copy) — unconfirmed which direction the cutover goes, requires /clarify before scope is locked.
+[RESOLVED via /clarify, 2026-07-14] Files are the source of truth for standards. The `standards` table becomes a read-optimized index/cache rebuilt from git content on each write — not a parallel, independently-editable copy. `standards.js`'s existing list/edit/promote/opt-out routes will need rework to read-through from git (via the cache) and write-through to git on every mutation, rather than being purely DB-driven.
 
 **Risks — what could make this not worth building:**
 
@@ -71,7 +71,7 @@ A product's linked GitHub repo being renamed, deleted, or having access revoked 
 - Must reuse ADR-020's identity model (user's own GitHub OAuth token, never a service account) for every repo write — no new auth pattern.
 - Must reuse existing bootstrap tooling (`platform-init.js` and/or the ADR-014 sidecar model) rather than inventing a third distribution mechanism.
 - Solo-operator delivery capacity — same constraint the rest of this platform is built under.
-- No new persistent infrastructure assumed (Postgres, Fly) unless the local-clone assumption above resolves toward needing one — ties directly to the unresolved bootstrap-mechanism assumption.
+- No new persistent infrastructure assumed (Postgres, Fly) for the default bootstrap path (Contents/Git Data API only); only if implementation falls back to the local-clone path does a local working directory become a transient, non-persistent requirement.
 
 ## Contributors
 
@@ -87,18 +87,15 @@ Pending
 
 ---
 
-## /clarify recommendation
+## Clarification log
 
-This discovery contains 5 unconfirmed assumptions that affect scope and benefit measurement. Before proceeding to `/benefit-metric`, run `/clarify` to resolve:
-
-- The existing GitHub OAuth App's token scope already includes repo creation (`repo` or `contents:write`-equivalent for a new repo, not just reading/writing contents of an existing one) — unconfirmed, requires /clarify before scope is locked.
-- Team members authenticated via Google or email/password (not GitHub OAuth) have no GitHub token in session, so under the existing ADR-020 pattern (user's own OAuth token, never a service account) they cannot write to a product's repo at all — unconfirmed how MVP should handle this, requires /clarify before scope is locked.
-- New-repo bootstrap (seeding the skills framework into a freshly created repo) can be done entirely via the GitHub Contents API (many small file writes under the user's token) without needing a local `git clone`/`git push` — unconfirmed; if false, this story needs actual git tooling as a new dependency, a materially bigger scope. Requires /clarify before scope is locked.
-- Today's single global `GITHUB_REPO_OWNER`/`GITHUB_REPO_NAME` in production actually points at this skills-repo itself (the operator's own dogfood target) — unconfirmed from code alone, requires /clarify before scope is locked.
-- Converting standards from DB rows to git-tracked files means the files become the source of truth and the `standards` table becomes a read cache/index (not a parallel, potentially-diverging copy) — unconfirmed which direction the cutover goes, requires /clarify before scope is locked.
-
-These assumptions must be confirmed or refuted before scope can be locked. Running `/benefit-metric` with unresolved assumptions produces metrics that will require revision after clarification.
+[2026-07-14] Clarified via /clarify:
+- Q: Does the GitHub OAuth App's token scope include repo creation?  A: Resolved via code inspection (no operator question needed) — `scope=repo,read:user` already requested in `oauth-adapter.js`; `repo` scope includes creation.
+- Q: How should non-GitHub-authenticated team members (Google/email) write to a product's repo?  A: MVP restricts repo writes to GitHub-authenticated users; Google/email users get a "link your GitHub account" prompt via the existing account-linking flow. Other git providers can extend the same linking mechanism later.
+- Q: Should new-repo bootstrap use the Contents/Git Data API only, or is a local git clone acceptable?  A: Prefer Contents/Git Data API only (no new dependency); fall back to a local clone (reusing `platform-init.js`) only for the initial bootstrap commit if the API-only approach proves too complex.
+- Q: Should git-tracked standards replace the DB table (files as source of truth), or should the DB stay authoritative with a sync step?  A: Files are the source of truth; the `standards` table becomes a read-optimized cache/index rebuilt from git.
+- Q: Does production's `GITHUB_REPO_OWNER`/`GITHUB_REPO_NAME` actually point at this skills-repo?  A: Confirmed — `fly secrets list` shows both set, and commit `2292a930` in this repo's own history is a real wuce sign-off write-back.
 
 ---
 
-**Next step:** Run /clarify to resolve the 5 assumptions above, then human review and approval → /benefit-metric
+**Next step:** Human review and approval → /benefit-metric
