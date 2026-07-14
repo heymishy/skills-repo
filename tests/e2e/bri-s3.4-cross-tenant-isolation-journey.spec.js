@@ -47,8 +47,17 @@ async function newTenantSession(label) {
   });
   const email = uniqueEmail(label);
 
+  // sec-perf-s3: /auth/email/signup now requires a valid session-scoped CSRF token,
+  // embedded as a hidden field in the real landing-page form. Load the landing page
+  // first (establishes this context's own session + token) before posting signup.
+  const landingRes = await ctx.get('/');
+  const landingHtml = await landingRes.text();
+  const csrfMatch = landingHtml.match(/name="_csrf" value="([^"]*)"/);
+  const csrfToken = csrfMatch ? csrfMatch[1] : null;
+  expect(csrfToken, label + ' landing page must embed a _csrf token in the signup form').toBeTruthy();
+
   const signupRes = await ctx.post('/auth/email/signup', {
-    form: { email: email, password: PASSWORD },
+    form: { email: email, password: PASSWORD, _csrf: csrfToken },
     maxRedirects: 0
   });
   expect(signupRes.status(), label + ' signup should redirect to /welcome').toBe(302);

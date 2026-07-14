@@ -6,6 +6,8 @@
 // Protected by requireAdmin middleware (mounted in server.js).
 
 const { getAllTenantBalances, getValidTenantIds, adjustBalance } = require('../modules/credits');
+// sec-perf-s3: session-scoped CSRF (Cross-Site Request Forgery) protection.
+const { generateCsrfToken, csrfField, csrfGuard } = require('../middleware/csrf');
 
 /**
  * Escape HTML special characters to prevent XSS.
@@ -44,6 +46,8 @@ function _readBody(req) {
  */
 async function adminCreditsGet(req, res) {
   const rows = await getAllTenantBalances();
+  // sec-perf-s3 AC1: session-scoped CSRF token, embedded in every adjust form below.
+  const csrfToken = generateCsrfToken(req);
 
   const tableRows = rows.map(function(r) {
     return (
@@ -52,6 +56,7 @@ async function adminCreditsGet(req, res) {
       '<td>' + escapeHtml(String(r.balance)) + '</td>' +
       '<td>' +
       '<form method="POST" action="/api/admin/credits/adjust">' +
+      csrfField(csrfToken) +
       '<input type="hidden" name="tenantId" value="' + escapeHtml(r.tenant_id) + '">' +
       '<input type="number" name="amount" min="1" required>' +
       '<button type="submit">Adjust</button>' +
@@ -87,6 +92,12 @@ async function adminCreditsGet(req, res) {
  * Redirects 302 to /admin/credits on success.
  */
 async function adminCreditsPost(req, res) {
+  // sec-perf-s3 AC1: reject a POST that does not carry a valid session-scoped CSRF token.
+  // csrfGuard reads and caches the body on req.body -- the _readBody() call below then
+  // picks it up via its existing "if (req.body !== undefined) return req.body" short-circuit.
+  const csrfOk = await csrfGuard(req, res);
+  if (!csrfOk) return;
+
   const body = await _readBody(req);
   const tenantId = body && body.tenantId ? String(body.tenantId) : '';
   const rawAmount = body && body.amount !== undefined ? String(body.amount) : '';

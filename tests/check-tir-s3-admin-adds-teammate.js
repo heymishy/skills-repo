@@ -292,9 +292,10 @@ async function testADR025TenantScopedAuthorization() {
   // Admin's real session tenant is 'acme'. The request body attempts to smuggle
   // a different target tenant -- the handler must ignore it entirely; there is
   // no code path that reads a tenant value from the request body at all.
+  // sec-perf-s3: handleAddTeammate now requires a valid session-scoped CSRF token.
   var req = mockReq({
-    session: { userId: 'admin-1', tenantId: 'acme', role: 'admin' },
-    body: { identity: 'carol-github', role: 'engineer', tenantId: 'other-tenant' }
+    session: { userId: 'admin-1', tenantId: 'acme', role: 'admin', csrfToken: 'test-csrf-token' },
+    body: { identity: 'carol-github', role: 'engineer', tenantId: 'other-tenant', _csrf: 'test-csrf-token' }
   });
   var res = mockRes();
 

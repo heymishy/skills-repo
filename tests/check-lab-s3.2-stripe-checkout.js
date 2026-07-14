@@ -30,9 +30,18 @@ function check(label, ok) {
 /** Build a minimal mock req object for handler tests. */
 function mockReq(opts) {
   opts = opts || {};
+  // sec-perf-s3: handlePostCheckout now requires a valid session-scoped CSRF token.
+  // The default session carries a fixed test token; any caller-supplied body that
+  // doesn't already set _csrf gets it merged in automatically so existing call
+  // sites (which predate the CSRF story) don't each need updating individually.
+  var session = opts.session !== undefined ? opts.session : { accessToken: 'tok', tenantId: 'tenant-abc', csrfToken: 'test-csrf-token' };
+  var body = opts.body !== undefined ? opts.body : undefined;
+  if (body && typeof body === 'object' && body._csrf === undefined && session && session.csrfToken) {
+    body = Object.assign({}, body, { _csrf: session.csrfToken });
+  }
   return {
-    session: opts.session !== undefined ? opts.session : { accessToken: 'tok', tenantId: 'tenant-abc' },
-    body:    opts.body !== undefined    ? opts.body    : undefined,
+    session: session,
+    body:    body,
     headers: opts.headers || { host: 'test.example.com' },
     query:   opts.query  || {},
   };

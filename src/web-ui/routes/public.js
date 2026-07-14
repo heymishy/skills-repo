@@ -8,6 +8,7 @@
 
 var fs   = require('fs');
 var path = require('path');
+var csrf = require('../middleware/csrf'); // sec-perf-s3
 
 // HTML loaded once at module init — path uses __dirname, never request data (path traversal safe).
 var _LANDING_HTML = fs.readFileSync(
@@ -56,10 +57,17 @@ async function handleRoot(req, res) {
     _getPosthog().capture('anonymous', 'landing_page_viewed');
   } catch (_) {}
 
-  // AC1/AC6: serve static landing page HTML (no session data injected).
+  // sec-perf-s3 AC4: embed a session-scoped CSRF token into the sign-in/sign-up forms.
+  // AC6 ("never contains session tokens or user identity data") is unaffected — a CSRF
+  // token is a per-session anti-forgery nonce, not an access token or identity value
+  // (see artefacts/2026-07-01-security-perf-hardening/stories/sec-perf-s3.md, Architecture
+  // Constraints). The rest of the page remains the same static HTML as before this story.
+  var csrfToken = csrf.generateCsrfToken(req);
+  var html = _LANDING_HTML.split('<!--CSRF_TOKEN-->').join(csrf.csrfField(csrfToken));
+
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.writeHead(200);
-  res.end(_LANDING_HTML);
+  res.end(html);
 }
 
 /**
@@ -120,6 +128,9 @@ async function handleWelcome(req, res) {
   // Build available plan options (placeholder-filtered)
   var plans = _buildPlanOptions();
 
+  // sec-perf-s3 AC3: session-scoped CSRF token, embedded in each plan's checkout form below.
+  var csrfToken = csrf.generateCsrfToken(req);
+
   // AC6: fire plan_selected PostHog event — fire-and-forget (do NOT await).
   // Fires once per welcome page view by a first-login user; planName is the first
   // available plan as proxy for "user entered the plan selection funnel".
@@ -139,6 +150,7 @@ async function handleWelcome(req, res) {
       '<div class="plan-card">' +
         '<p class="plan-name">' + plan.name + '</p>' +
         '<form action="/billing/checkout" method="POST">' +
+          csrf.csrfField(csrfToken) +
           '<input type="hidden" name="planId" value="' + plan.id + '">' +
           '<button type="submit">Get started</button>' +
         '</form>' +

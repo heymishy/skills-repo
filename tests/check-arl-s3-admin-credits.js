@@ -110,9 +110,10 @@ async function main() {
       });
       var handler = freshRequireAdminCredits(credits);
 
-      var body = 'tenantId=tenant-a&amount=50';
+      // sec-perf-s3: adminCreditsPost now requires a valid session-scoped CSRF token.
+      var body = '_csrf=test-csrf-token&tenantId=tenant-a&amount=50';
       var req = {
-        session: { userId: 1, role: 'admin' },
+        session: { userId: 1, role: 'admin', csrfToken: 'test-csrf-token' },
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         on: function(event, cb) {
           if (event === 'data') cb(body);
@@ -136,8 +137,9 @@ async function main() {
       credits.setCreditsAdapter(makeMockDb());
       var handler = freshRequireAdminCredits(credits);
 
-      var body = 'tenantId=tenant-a&amount=0';
+      var body = '_csrf=test-csrf-token&tenantId=tenant-a&amount=0';
       var req = {
+        session: { csrfToken: 'test-csrf-token' },
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         on: function(event, cb) {
           if (event === 'data') cb(body);
@@ -158,8 +160,9 @@ async function main() {
       credits.setCreditsAdapter(makeMockDb());
       var handler = freshRequireAdminCredits(credits);
 
-      var body = 'tenantId=tenant-a&amount=-5';
+      var body = '_csrf=test-csrf-token&tenantId=tenant-a&amount=-5';
       var req = {
+        session: { csrfToken: 'test-csrf-token' },
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         on: function(event, cb) {
           if (event === 'data') cb(body);
@@ -180,8 +183,9 @@ async function main() {
       credits.setCreditsAdapter(makeMockDb());
       var handler = freshRequireAdminCredits(credits);
 
-      var body = 'tenantId=tenant-a&amount=abc';
+      var body = '_csrf=test-csrf-token&tenantId=tenant-a&amount=abc';
       var req = {
+        session: { csrfToken: 'test-csrf-token' },
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         on: function(event, cb) {
           if (event === 'data') cb(body);
@@ -202,8 +206,9 @@ async function main() {
       credits.setCreditsAdapter(makeMockDb());
       var handler = freshRequireAdminCredits(credits);
 
-      var body = 'tenantId=tenant-a&amount=1.5';
+      var body = '_csrf=test-csrf-token&tenantId=tenant-a&amount=1.5';
       var req = {
+        session: { csrfToken: 'test-csrf-token' },
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         on: function(event, cb) {
           if (event === 'data') cb(body);
@@ -229,8 +234,9 @@ async function main() {
       });
       var handler = freshRequireAdminCredits(credits);
 
-      var body = 'tenantId=unknown-tenant&amount=10';
+      var body = '_csrf=test-csrf-token&tenantId=unknown-tenant&amount=10';
       var req = {
+        session: { csrfToken: 'test-csrf-token' },
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         on: function(event, cb) {
           if (event === 'data') cb(body);

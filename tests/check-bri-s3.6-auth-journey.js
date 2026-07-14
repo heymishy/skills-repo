@@ -51,8 +51,12 @@ setPasswordAdapter(bcrypt);
 
 // ── Test helpers ─────────────────────────────────────────────────────────────
 
+// sec-perf-s3: handleEmailLogin now requires a valid session-scoped CSRF token.
+// Every mockReq gets one generated on its session, auto-merged into a caller-
+// supplied body's _csrf field, so existing call sites (which predate the CSRF
+// story) don't each need updating individually.
 function mockReq(overrides) {
-  return Object.assign({
+  const req = Object.assign({
     session:    {},
     sessionId:  'test-sid-' + Math.random().toString(36).slice(2),
     query:      {},
@@ -60,6 +64,13 @@ function mockReq(overrides) {
     connection: { remoteAddress: '127.0.0.1' },
     body:       undefined
   }, overrides || {});
+  if (!req.session.csrfToken) {
+    req.session.csrfToken = 'test-csrf-token-' + Math.random().toString(36).slice(2);
+  }
+  if (req.body && typeof req.body === 'object' && req.body._csrf === undefined) {
+    req.body = Object.assign({}, req.body, { _csrf: req.session.csrfToken });
+  }
+  return req;
 }
 
 function mockRes() {

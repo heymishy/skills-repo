@@ -10030,9 +10030,32 @@
       "stage": "branch-complete",
       "health": "green",
       "epics": [],
-      "stories": [],
+      "stories": [
+        {
+          "id": "sec-perf-s3",
+          "name": "CSRF tokens on server-rendered form POST endpoints",
+          "stage": "dor-signed-off",
+          "health": "green",
+          "complexity": 2,
+          "scopeStability": "stable",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-01-security-perf-hardening/dor/sec-perf-s3.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-07-01-security-perf-hardening/test-plans/sec-perf-s3-test-plan.md",
+            "totalTests": 35,
+            "passing": 35
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "prStatus": "not-opened",
+          "updatedAt": "2026-07-14T04:44:34.369Z"
+        }
+      ],
       "metrics": [],
-      "updatedAt": "2026-07-14T00:55:28.892Z"
+      "updatedAt": "2026-07-14T04:22:50.820Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
