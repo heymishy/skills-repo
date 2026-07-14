@@ -7295,7 +7295,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-03T00:00:00Z",
+      "updatedAt": "2026-07-14T04:26:03Z",
       "discoveryArtefact": "artefacts/2026-07-03-admin-role-panel/discovery.md",
       "discoveryStatus": "approved",
       "discoveryApprovedAt": "2026-07-03",
@@ -7462,6 +7462,41 @@
               "releaseReady": false,
               "layoutGapsAtMerge": true,
               "layoutGapsRiskAccepted": true
+            },
+            {
+              "id": "arl-s5",
+              "slug": "arl-s5",
+              "title": "Audit trail for admin credit adjustments",
+              "name": "Audit trail for admin credit adjustments",
+              "complexity": 1,
+              "scopeStability": "Stable",
+              "status": "branch-complete",
+              "stage": "branch-complete",
+              "metricsAddressed": [],
+              "tddState": "green",
+              "testsTotal": 12,
+              "testsPassing": 12,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "health": "green",
+              "reviewArtefact": "artefacts/2026-07-03-admin-role-panel/review/arl-s5-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 12,
+                "passing": 12
+              },
+              "acTotal": 7,
+              "acVerified": 7,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-07-03-admin-role-panel/dor/arl-s5-dor.md",
+              "prStatus": "draft",
+              "prNumber": 473,
+              "dodStatus": "not-started",
+              "releaseReady": false,
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false
             }
           ]
         }
