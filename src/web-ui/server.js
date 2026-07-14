@@ -40,10 +40,10 @@ const { creditsGuard }                                               = require('
 const { handleEmailSignup, handleEmailLogin, setUserDb }             = require('./routes/auth-email');       // lab-s2.2
 const { setPasswordAdapter }                                         = require('./modules/password');         // lab-s2.2
 const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
-const { setGetUserRole, setGetRoleForTenant, migrateTeamSchema, resolveRoleForPerson } = require('./modules/user-roles'); // arl-s1 / tir-s1 / tir-s7
+const { setGetUserRole, setGetRoleForTenant, getRoleForTenant, migrateTeamSchema, resolveRoleForPerson } = require('./modules/user-roles'); // arl-s1 / tir-s1 / tir-s7 / sec-perf-s2
 const { migrateIdentityLinksSchema } = require('./modules/identity-links'); // tir-s2
 const { handleGetLinkSettings, handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
-const { requireAdmin }                                               = require('./middleware/require-admin'); // arl-s2
+const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
 const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
@@ -283,6 +283,16 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       return resolveRoleForPerson(_userRolesPool, tenantId, tenantId);
     });
     console.log('[tir-s1/tir-s7] team_memberships adapter wired (getRoleForTenant, person-scoped)');
+
+    // sec-perf-s2 (AC5) — wire requireAdmin's live per-request role re-check to the SAME
+    // getRoleForTenant adapter just wired above (not a second, parallel resolution path),
+    // so a mid-session role change (e.g. an admin demoted via addOrUpdateTeammate) is
+    // reflected on the very next requireAdmin-gated request instead of staying cached in
+    // req.session.role until the person logs out and back in.
+    setGetCurrentRole(function(tenantId) {
+      return getRoleForTenant(tenantId);
+    });
+    console.log('[sec-perf-s2] requireAdmin live-role adapter wired (getCurrentRole -> getRoleForTenant)');
 
     // tir-s1 — Auto-migrate people/team_memberships schema + backfill every
     // legacy user_roles row (AC1, AC2). Chained after the user_roles table
@@ -1616,15 +1626,17 @@ async function router(req, res) {
 
   } else if (pathname === '/admin/credits' && req.method === 'GET') {
     // arl-s2/arl-s3 — admin credits view (requireAdmin gate)
+    // sec-perf-s2: requireAdmin is now async (live role re-check) — must be awaited or
+    // _raOk would be read before the live DB lookup resolves.
     let _raOk = false;
-    requireAdmin(req, res, () => { _raOk = true; });
+    await requireAdmin(req, res, () => { _raOk = true; });
     if (!_raOk) return;
     await adminCreditsGet(req, res);
 
   } else if (pathname === '/api/admin/credits/adjust' && req.method === 'POST') {
     // arl-s3 — admin credits adjustment (requireAdmin gate)
     let _raOk = false;
-    requireAdmin(req, res, () => { _raOk = true; });
+    await requireAdmin(req, res, () => { _raOk = true; });
     if (!_raOk) return;
     await adminCreditsPost(req, res);
 
@@ -1635,7 +1647,7 @@ async function router(req, res) {
       res.end('Team management unavailable');
     } else {
       let _raOk = false;
-      requireAdmin(req, res, () => { _raOk = true; });
+      await requireAdmin(req, res, () => { _raOk = true; });
       if (!_raOk) return;
       await _teamManagementHandlers.handleGetTeamMembers(req, res);
     }
@@ -1648,7 +1660,7 @@ async function router(req, res) {
       res.end('Team management unavailable');
     } else {
       let _raOk = false;
-      requireAdmin(req, res, () => { _raOk = true; });
+      await requireAdmin(req, res, () => { _raOk = true; });
       if (!_raOk) return;
       await _teamManagementHandlers.handleAddTeammate(req, res);
     }
@@ -1660,7 +1672,7 @@ async function router(req, res) {
       res.end('Team management unavailable');
     } else {
       let _raOk = false;
-      requireAdmin(req, res, () => { _raOk = true; });
+      await requireAdmin(req, res, () => { _raOk = true; });
       if (!_raOk) return;
       await _githubOrgBulkAddHandlers.handleBulkAddFromGithubOrg(req, res);
     }
