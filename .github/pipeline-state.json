@@ -10116,10 +10116,33 @@
           "updatedAt": "2026-07-14T04:41:05.765Z",
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/474"
+        },
+        {
+          "id": "sec-perf-s3",
+          "name": "CSRF tokens on server-rendered form POST endpoints",
+          "stage": "branch-complete",
+          "health": "green",
+          "complexity": 2,
+          "scopeStability": "stable",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-01-security-perf-hardening/dor/sec-perf-s3.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-07-01-security-perf-hardening/test-plans/sec-perf-s3-test-plan.md",
+            "totalTests": 35,
+            "passing": 35
+          },
+          "acTotal": 6,
+          "acVerified": 6,
+          "prStatus": "draft",
+          "updatedAt": "2026-07-14T04:48:47.494Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/476"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-14T04:41:05.765Z"
+      "updatedAt": "2026-07-14T04:48:47.494Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

@@ -8,6 +8,8 @@
 // time, not inside the handler, AC3).
 
 var teamManagement = require('../modules/team-management');
+// sec-perf-s3: session-scoped CSRF (Cross-Site Request Forgery) protection.
+var csrf = require('../middleware/csrf');
 
 // Audit logger — replaced via setLogger() in tests and production bootstrap.
 // Mirrors account-linking.js's own _logger / setLogger convention exactly.
@@ -71,9 +73,13 @@ function createTeamManagementHandlers(pool) {
       return '<option value="' + _escapeHtml(r) + '">' + _escapeHtml(r) + '</option>';
     }).join('');
 
+    // sec-perf-s3 AC2: session-scoped CSRF token, embedded in the add-teammate form below.
+    var csrfToken = csrf.generateCsrfToken(req);
+
     var html = '<!DOCTYPE html><html><head><title>Team members</title></head><body>' +
       '<h1>Team members</h1>' +
       '<form method="POST" action="/api/team/members">' +
+      csrf.csrfField(csrfToken) +
       '<label for="identity">Add teammate by identity (GitHub login, Google email, or email/password email)</label>' +
       '<input id="identity" name="identity" type="text" required>' +
       '<label for="role">Role</label>' +
@@ -94,6 +100,10 @@ function createTeamManagementHandlers(pool) {
    * there is no cross-tenant write surface at all.
    */
   async function handleAddTeammate(req, res) {
+    // sec-perf-s3 AC2: reject a POST that does not carry a valid session-scoped CSRF token.
+    var csrfOk = await csrf.csrfGuard(req, res);
+    if (!csrfOk) return;
+
     var body = await _readBody(req);
     var identity = body && body.identity ? String(body.identity) : '';
     var role = body && body.role ? String(body.role) : '';

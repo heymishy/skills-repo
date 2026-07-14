@@ -7,6 +7,7 @@
 var stripeClient  = require('../modules/stripe-client');
 var creditsModule = require('../modules/credits');
 var tenantPlan    = require('../modules/tenant-plan'); // bri-s3.5
+var csrf          = require('../middleware/csrf'); // sec-perf-s3
 
 // Placeholder sentinel used in .env.example — treat as unconfigured.
 var PLACEHOLDER = 'STRIPE_PLAN_PRICE_ID_PLACEHOLDER';
@@ -78,6 +79,10 @@ async function handlePostCheckout(req, res) {
     res.end('Unauthorized');
     return;
   }
+
+  // sec-perf-s3 AC3: reject a POST that does not carry a valid session-scoped CSRF token.
+  var csrfOk = await csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
 
   var body = await _readBody(req);
   var planId = (body && body.planId ? String(body.planId) : '').toUpperCase();

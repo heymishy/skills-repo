@@ -11,6 +11,8 @@ const { hashPassword, verifyPassword } = require('../modules/password');
 const _session = require('../middleware/session');
 // arl-s1: user-roles module (injectable adapter — D37). Loads role after tenantId is set.
 const _userRoles = require('../modules/user-roles');
+// sec-perf-s3: session-scoped CSRF (Cross-Site Request Forgery) protection.
+const csrf = require('../middleware/csrf');
 
 // ── D37: injectable user DB adapter ──────────────────────────────────────────
 // Default stub throws — call setUserDb(pgPool) before use.
@@ -114,6 +116,10 @@ function _readBody(req) {
 async function handleEmailSignup(req, res) {
   if (!_checkRateLimit(req, res)) return;
 
+  // sec-perf-s3 AC4: reject a POST that does not carry a valid session-scoped CSRF token.
+  const csrfOk = await csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
   const body     = await _readBody(req);
   const email    = (body && body.email ? String(body.email).toLowerCase().trim() : '');
   const password = (body && body.password ? String(body.password) : '');
@@ -185,6 +191,10 @@ async function handleEmailSignup(req, res) {
  */
 async function handleEmailLogin(req, res) {
   if (!_checkRateLimit(req, res)) return;
+
+  // sec-perf-s3 AC4: reject a POST that does not carry a valid session-scoped CSRF token.
+  const csrfOk = await csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
 
   const body     = await _readBody(req);
   const email    = (body && body.email ? String(body.email).toLowerCase().trim() : '');

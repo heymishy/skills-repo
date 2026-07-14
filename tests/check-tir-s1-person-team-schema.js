@@ -299,9 +299,10 @@ async function main() {
         }
       });
       authEmail.setRotateSessionId(function(oldId) { return { newId: oldId }; });
+      // sec-perf-s3: handleEmailLogin now requires a valid session-scoped CSRF token.
       var reqEmail = {
-        body: { email: 'known@example.com', password: 'Test123!Password' },
-        session: {},
+        body: { email: 'known@example.com', password: 'Test123!Password', _csrf: 'test-csrf-token' },
+        session: { csrfToken: 'test-csrf-token' },
         sessionId: 'sess-email',
         ip: '127.0.0.1',
         headers: { 'content-type': 'application/json' }

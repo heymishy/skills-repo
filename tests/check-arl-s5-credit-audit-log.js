@@ -54,12 +54,22 @@ function makeRes() {
   return r;
 }
 
+// sec-perf-s3 (merged after this file was originally written): adminCreditsPost now
+// runs csrfGuard() first, which requires a `_csrf` body field matching
+// req.session.csrfToken. Every caller of this helper is testing amount/tenantId/audit
+// behaviour, not CSRF itself (that's covered by tests/check-sec-perf-s3-*.js) -- so
+// inject a matching token transparently here rather than repeating it at all 6 call
+// sites below.
+var TEST_CSRF_TOKEN = 'arl-s5-test-csrf-token';
+
 function makeReqFromBody(bodyStr, session) {
+  session.csrfToken = TEST_CSRF_TOKEN;
+  var bodyWithCsrf = bodyStr + '&_csrf=' + TEST_CSRF_TOKEN;
   return {
     session: session,
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
     on: function(event, cb) {
-      if (event === 'data') cb(bodyStr);
+      if (event === 'data') cb(bodyWithCsrf);
       if (event === 'end') cb();
     }
   };

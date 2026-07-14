@@ -321,12 +321,16 @@ async function runEmailLogin(opts) {
     return { newId: 'new-sess-tir-s9-email' };
   });
 
+  // sec-perf-s3 (merged after this file was originally written): handleEmailLogin now
+  // runs csrfGuard() first. This test is exercising role resolution, not CSRF (that's
+  // covered by tests/check-sec-perf-s3-auth-email-csrf.js) -- supply a matching token
+  // pair so the request reaches the login logic under test.
   var req = {
-    session: {},
+    session: { csrfToken: 'tir-s9-test-csrf-token' },
     sessionId: 'sess-test-tir-s9-email',
     headers: {},
     connection: { remoteAddress: '127.0.0.1' },
-    body: { email: opts.email, password: 'irrelevant-mocked' }
+    body: { email: opts.email, password: 'irrelevant-mocked', _csrf: 'tir-s9-test-csrf-token' }
   };
   var res = makeRes();
 

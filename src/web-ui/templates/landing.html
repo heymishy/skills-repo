@@ -65,12 +65,14 @@
       </div>
 
       <form id="form-signin" method="POST" action="/auth/email/login">
+        <!--CSRF_TOKEN-->
         <input class="email-input" type="email" name="email" placeholder="Email address" autocomplete="email" required>
         <input class="email-input" type="password" name="password" placeholder="Password" autocomplete="current-password" required>
         <button type="submit" class="auth-btn auth-btn--email">Sign in with email</button>
       </form>
 
       <form id="form-signup" method="POST" action="/auth/email/signup" style="display:none">
+        <!--CSRF_TOKEN-->
         <input class="email-input" type="email" name="email" placeholder="Email address" autocomplete="email" required>
         <input class="email-input" type="password" name="password" placeholder="Password (min 8 characters)" autocomplete="new-password" required minlength="8">
         <button type="submit" class="auth-btn auth-btn--email">Get started</button>

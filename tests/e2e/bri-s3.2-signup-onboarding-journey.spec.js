@@ -63,8 +63,18 @@ function journeyIdFromChatHtml(html) {
 async function signUpAndCompleteOnboarding(request) {
   const email = uniqueEmail();
 
+  // sec-perf-s3: /auth/email/signup now requires a valid session-scoped CSRF token,
+  // embedded as a hidden field in the real landing-page form. Load the landing page
+  // first (establishes the session + token) before posting the signup form, mirroring
+  // what a real browser submission does.
+  const landingRes = await request.get('/');
+  const landingHtml = await landingRes.text();
+  const csrfMatch = landingHtml.match(/name="_csrf" value="([^"]*)"/);
+  const csrfToken = csrfMatch ? csrfMatch[1] : null;
+  expect(csrfToken, 'landing page must embed a _csrf token in the signup form').toBeTruthy();
+
   const signupRes = await request.post('/auth/email/signup', {
-    form: { email: email, password: PASSWORD },
+    form: { email: email, password: PASSWORD, _csrf: csrfToken },
     maxRedirects: 0
   });
   expect(signupRes.status(), 'signup should redirect to /welcome').toBe(302);
