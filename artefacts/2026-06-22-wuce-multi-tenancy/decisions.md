@@ -127,3 +127,14 @@ Upstash Redis stands — serverless per-request pricing remains the right fit fo
 **Decision:** All five gaps resolved before DoR sign-off by updating the story artefacts to add the missing sections. The fixes are additive (no AC or scope changes): Discovery/Benefit-metric references added to headers; Metric Linkage updated to name M1/M2; Architecture Constraints and NFRs sections added referencing nfr-profile.md. RESOLVED — all sections now present in s3.1–s5.1.
 **Rationale:** Adding missing template sections does not change story scope or ACs. Blocking all 5 stories at DoR pending a separate review re-run would add overhead with no quality benefit; the gaps are structural (template compliance) not substantive.
 **Applies to:** s3.1-review-1.md, s3.2-review-1.md, s4.1-review-1.md, s4.2-review-1.md, s5.1-review-1.md — findings M1–M5 in each.
+
+---
+
+## Decision 12 — Decision 8 activated: session threaded into prompt-cache scoping (s6.1)
+
+**Date:** 2026-07-14
+**Context:** Decision 8 (2026-06-24) RISK-ACCEPTed shipping p4.1's cache-scope guard (`_anthropicSystem()` in `src/modules/skill-turn-executor.js`, embedding `<!-- cache-scope: ${tenantId}-${sessionId} -->`) inert — no caller passed a `session` argument, so the guard never fired in production and every tenant's identical system prompt was byte-identical at the Anthropic request boundary.
+**Decision:** s6.1 threaded `tenantId` + `sessionId` through the real production call chain: `handlePostTurnHtml`/`handlePostTurnStreamHtml` (`src/web-ui/routes/skills.js`) → `htmlSubmitTurn()` / inline SSE handler → `skillTurnExecutor()` / `skillTurnExecutorStream()` (`src/modules/skill-turn-executor.js`) → `_callAnthropic()` / `_callAnthropicStream()` → `_anthropicSystem(systemPrompt, session)`. `buildCacheKey()` and `_anthropicSystem()`'s own bodies are unchanged — only the wiring between functions was added, and additively (new parameters are optional, so all pre-existing call sites keep working unmodified).
+**Rationale:** This closes Decision 8's accepted gap with no new design decision — the scoping algorithm Decision 8 already approved is now genuinely live. The legacy per-question wizard flow (`htmlRecordAnswer`/`handlePostAnswerHtml`) was deliberately left unthreaded — `docs/web-ui-skill-session-as-built.md` states that architecture is superseded by the model-first chat flow, so threading session into it would add risk with no production benefit.
+**Verification:** `tests/check-s6.1-cache-scope-session-threading.js` proves two tenants sending an identical system prompt through the real (non-mocked-executor) call chain produce two different captured `system[0].text` values at the Anthropic request boundary (both non-streaming and streaming paths), and that single-tenant/no-tenantId behaviour is unchanged (regression guard).
+**Applies to:** s6.1, closing p4.1 W2 / Decision 8.

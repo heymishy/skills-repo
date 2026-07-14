@@ -841,6 +841,33 @@
               "dodStatus": "complete",
               "releaseReady": true,
               "dodArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dod/p4.1-dod.md"
+            },
+            {
+              "slug": "s6.1",
+              "name": "Thread session into prompt-cache scoping (activate Decision 8)",
+              "stage": "branch-complete",
+              "health": "green",
+              "complexity": 2,
+              "scopeStability": "Stable",
+              "storyArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/stories/s6.1-thread-session-into-cache-scope.md",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s6.1-review-1.md",
+              "testPlan": {
+                "status": "all-passing",
+                "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s6.1-test-plan.md",
+                "totalTests": 4,
+                "passing": 4
+              },
+              "acTotal": 7,
+              "acVerified": 6,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s6.1-dor.md",
+              "verifyStatus": "passed",
+              "prStatus": "open",
+              "notes": "Fix-forward: activates Decision 8 (RISK-ACCEPT, 2026-06-24) — threads tenantId/sessionId through the real production call chain into _anthropicSystem(). See decisions.md Decision 12.",
+              "prNumber": 475,
+              "updatedAt": "2026-07-14T04:30:07.560Z"
             }
           ]
         },
