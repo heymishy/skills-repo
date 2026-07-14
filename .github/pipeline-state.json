@@ -10022,6 +10022,17 @@
       ],
       "metrics": [],
       "updatedAt": "2026-07-13T08:21:21.106Z"
+    },
+    {
+      "slug": "2026-07-01-security-perf-hardening",
+      "name": "Security and performance hardening",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "epics": [],
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-07-14T00:55:28.892Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
