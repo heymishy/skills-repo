@@ -2194,4 +2194,28 @@ audit:
 
 **What was wrong:** The flag's own inline comment says "NEVER set to true in production," but nothing enforces this — a stale `true` value doesn't error, it silently changes `/discovery`'s behaviour (skips real clarifying questions, marks the artefact `<!-- eval-mode: true -->` and not-for-production) without any visible warning that this is happening for the wrong reason.
 
+---
+
+## Scope-ratio heuristic produces false positives for a second, distinct reason — 2nd occurrence
+
+### Observed — 2026-07-14
+
+**Circumstance:** While decomposing `2026-07-14-product-repo-config` (walking-skeleton strategy), 14 stories against 6 MVP scope items produced a 2.33x ratio, tripping the same 1.5x drift-flag threshold already documented as a false-positive source on 2026-07-09 ("Scope-ratio heuristic assumes 1:1 granularity between discovery bullets and stories") — but for a different root cause this time.
+
+**Root cause (distinct from the 2026-07-09 entry):** The 2026-07-09 occurrence was about discovery-prose granularity mismatch. This occurrence is about slicing-strategy blindness: choosing "walking skeleton" at Step 2 structurally produces verification/proof stories (e.g. prc-s1.4, prc-s4.3) that exist *because of the chosen strategy itself*, not because of scope growth — and a metric's own definition can directly require its own measurement-mechanism story (prc-s4.3 IS Metric 3's measurement method). Neither story type maps to a discrete discovery MVP-scope bullet, so they inflate the ratio without representing drift. Two independent root causes now produce the same false-positive symptom, both requiring manual reasoning to resolve at Step 6 rather than the skill distinguishing them itself.
+
+**Proposed check:** Extend Step 6 to exclude two story categories from the ratio's numerator before flagging drift: (a) stories whose sole purpose is verifying a preceding story in the same epic (a walking-skeleton/risk-first pattern), and (b) stories that are a metric's own named measurement mechanism (traceable directly to a benefit-metric.md entry's "Measurement method" field). Both are structurally required by choices already locked in earlier in the same skill run (Step 2's strategy, benefit-metric's own metric definitions) — the ratio check shouldn't re-litigate decisions the skill itself already made upstream.
+
+---
+
+## Metric-gap and story-gap resolution only offer 3 options each — a legitimate 4th case isn't handled
+
+### Observed — 2026-07-14
+
+**Circumstance:** While running Step 5 (benefit coverage matrix) for `2026-07-14-product-repo-config`, two gaps came up that didn't fit any of the skill's offered resolutions: Meta Metric 1 (a post-launch usage-validation metric) had no story that could move it, and prc-s4.2 (product deletion) had no metric it could honestly claim to move.
+
+**What was missing:** Step 5's "METRIC GAP" resolution offers exactly 3 options (write a story / descope / mark post-MVP) and "STORY GAP" offers "connect it to a metric or consider whether it belongs in MVP scope" — neither anticipates a metric that is inherently unmeasurable by any single story (a whole-feature, post-launch behavioural signal) or a story that is legitimately necessary scope without a metric to attach to (closing a structural completeness gap named directly in discovery, like "add delete capability"). Forcing either into the existing options would have meant writing a synthetic story with no real AC just to close the gap, or fabricating a metric linkage — both dishonest, and both exactly the kind of shortcut this repo's own architecture-guardrails anti-patterns list already warns against elsewhere.
+
+**Proposed check:** Add a 4th resolution option to both METRIC GAP and STORY GAP prompts: "Accept as a structural exception — log the reasoning in `decisions.md` rather than forcing a synthetic connection," with the coverage matrix marking it explicitly as "Covered (exception, see decisions.md)" so it's visibly resolved rather than looking like an outstanding gap or a silently-fudged one.
+
 **Proposed check:** A session-start guard (or a check in the skill's own entry condition) that warns loudly — not just proceeds silently in eval-mode — whenever `evaluation.mode: true` is detected outside of an actual eval-harness invocation context (e.g. no `caseId`/corpus context set). A misconfigured flag that silently degrades output quality is worse than one that errors.
