@@ -10154,7 +10154,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-15T06:00:17.803Z",
+      "updatedAt": "2026-07-15T06:52:37.910Z",
       "discovery": {
         "status": "clarified",
         "artefact": "artefacts/2026-07-14-product-repo-config/discovery.md",
@@ -10200,16 +10200,16 @@
             {
               "slug": "prc-s1.2",
               "name": "Connect an existing GitHub repo to a product",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-14T10:27:25.197Z",
+              "updatedAt": "2026-07-15T06:52:37.910Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.2-review-1.md",
               "testPlan": {
-                "status": "written",
-                "totalTests": 7,
-                "passing": 0
+                "status": "all-passing",
+                "totalTests": 9,
+                "passing": 9
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -10220,7 +10220,12 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s1.2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s1.2-dor-contract.md",
-              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z",
+              "prStatus": "merged",
+              "prNumber": 479,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/479",
+              "mergeCommit": "99bd7ff4e3c95f6931bde7de4ad9ac613dc6d649",
+              "mergedAt": "2026-07-15T06:52:37.910Z"
             },
             {
               "slug": "prc-s1.3",
