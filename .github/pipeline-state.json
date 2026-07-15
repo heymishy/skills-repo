@@ -10154,7 +10154,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-15T06:52:37.910Z",
+      "updatedAt": "2026-07-15T08:15:46.422Z",
       "discovery": {
         "status": "clarified",
         "artefact": "artefacts/2026-07-14-product-repo-config/discovery.md",
@@ -10287,9 +10287,9 @@
             {
               "slug": "prc-s2.1",
               "name": "Create a new GitHub repo directly from product creation",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-15T07:09:38.807Z",
+              "updatedAt": "2026-07-15T08:15:46.422Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.1-review-1.md",
@@ -10307,7 +10307,12 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s2.1-dor.md",
               "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s2.1-dor-contract.md",
-              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z",
+              "prStatus": "merged",
+              "prNumber": 480,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/480",
+              "mergeCommit": "c2eaac93ff8d5a571f3477bbf620bd14e1f4c50d",
+              "mergedAt": "2026-07-15T08:15:46.422Z"
             },
             {
               "slug": "prc-s2.2",
