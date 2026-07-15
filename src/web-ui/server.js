@@ -48,7 +48,7 @@ const { migrateIdentityLinksSchema } = require('./modules/identity-links'); // t
 const { handleGetLinkSettings, handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct, handlePostProductRepoCreate } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
@@ -1763,6 +1763,13 @@ async function router(req, res) {
     // standards-cache rows; never touches the underlying GitHub repo
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleDeleteProduct(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+$/) && req.method === 'PUT') {
+    // prc-s4.1 — edit a product's name, description, and/or repo association
+    // Reuses the repo-access-verification logic from prc-s1.2 via _applyRepoChange
+    // to ensure the edit flow and first-time-configuration flow never drift (AC3)
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handlePutProductEdit(req, res, null, _pshPool, null); });
 
   } else if (pathname.match(/^\/products\/[^/]+\/features$/) && req.method === 'POST') {
     // psh-s4 — create new journey with product_id FK, emits journey_created PostHog event
