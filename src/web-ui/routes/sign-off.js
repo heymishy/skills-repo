@@ -35,6 +35,30 @@ function setLogger(logger) {
   _logger = logger;
 }
 
+// prc-s1.3: Product repo resolver (D37 injectable adapter)
+// Resolves the product's connected repo (repo_owner, repo_name) from product context.
+// Default stub throws per D37 rule — a silent stub would mask misconfiguration.
+let _productRepoResolver = function() {
+  throw new Error('ProductRepoResolver not wired. Call setProductRepoResolver() in server.js.');
+};
+
+/**
+ * Replace the product repo resolver (used in tests and production startup).
+ * Resolves product repo config from the request context (e.g. session, URL params).
+ * @param {Function} impl - (req) => Promise<{repo_owner: string, repo_name: string} | null>
+ */
+function setProductRepoResolver(impl) {
+  _productRepoResolver = impl;
+}
+
+/**
+ * Resolve the product's connected repo from the request context.
+ * Returns { repo_owner, repo_name } or null if no repo is configured.
+ */
+async function resolveProductRepo(req) {
+  return _productRepoResolver(req);
+}
+
 /**
  * Read the full request body as a JSON-parsed object.
  * Returns req.body if already parsed (test/middleware scenario).
@@ -147,8 +171,34 @@ async function handleSignOff(req, res) {
     return;
   }
 
-  const owner   = process.env.GITHUB_REPO_OWNER;
-  const repo    = process.env.GITHUB_REPO_NAME;
+  // prc-s1.3: Resolve product repo — fail closed if no repo configured
+  let productRepo;
+  try {
+    productRepo = await resolveProductRepo(req);
+  } catch (err) {
+    _logger.warn('signoff_product_repo_error', {
+      userId: req.session.userId,
+      error: err.message,
+      timestamp: new Date().toISOString()
+    });
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Failed to resolve product configuration' }));
+    return;
+  }
+
+  if (!productRepo || !productRepo.repo_owner || !productRepo.repo_name) {
+    _logger.warn('signoff_no_repo_configured', {
+      userId: req.session.userId,
+      artefactPath,
+      timestamp: new Date().toISOString()
+    });
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'This product has no GitHub repo configured. Please connect a repo first.' }));
+    return;
+  }
+
+  const owner   = productRepo.repo_owner;
+  const repo    = productRepo.repo_name;
   const apiBase = (process.env.GITHUB_API_BASE_URL || 'https://api.github.com').replace(/\/$/, '');
 
   // Fetch current artefact content and SHA from GitHub
@@ -207,7 +257,8 @@ async function handleSignOff(req, res) {
   };
 
   try {
-    await commitSignOff(artefactPath, signOffPayload, token);
+    // prc-s1.3: Pass owner/repo to commitSignOff (resolved from product config above)
+    await commitSignOff(artefactPath, signOffPayload, token, owner, repo);
   } catch (err) {
     if (err instanceof SignOffConflictError) {
       _logger.warn('signoff_conflict', {
@@ -235,4 +286,9 @@ async function handleSignOff(req, res) {
   res.end(JSON.stringify({ success: true, message: 'Sign-off committed successfully' }));
 }
 
-module.exports = { handleSignOff, handleArtefactRead, setLogger };
+module.exports = {
+  handleSignOff,
+  handleArtefactRead,
+  setLogger,
+  setProductRepoResolver  // prc-s1.3
+};
