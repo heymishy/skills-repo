@@ -34,6 +34,7 @@ const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetSt
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
+const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
 const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal, handleGetBillingPlanState } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5 / bri-s3.5
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
 const { creditsGuard }                                               = require('./middleware/credits-guard'); // lab-s3.3
@@ -382,6 +383,11 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.log('[psh-s3] products context columns ready');
     }).catch(function(err) {
       console.error('[psh-s1] products migration failed:', err.message);
+    });
+
+    // prc-s1.1: repo association columns on products (repo_provider/repo_owner/repo_name)
+    migrateProductRepoColumns(_creditsPool).catch(function(err) {
+      console.error('[prc-s1.1] products repo-column migration failed:', err.message);
     });
 
     // psh-s1: standards table
