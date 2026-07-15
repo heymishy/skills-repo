@@ -2,7 +2,7 @@
 
 **Feature:** Beta-Readiness Infrastructure — Feature Flags, Staging Environment, and E2E Test Coverage
 **Discovery reference:** artefacts/2026-07-09-beta-readiness-infra/discovery.md
-**Last updated:** 2026-07-13
+**Last updated:** 2026-07-16
 
 ---
 
@@ -298,6 +298,13 @@ All five fixed to 404 (not 403), consistent with the existing FORBIDDEN-vs-NOT_F
 **Rationale:** The role model itself (admin/engineer/product/viewer, `people`/`team_memberships` schema) is confirmed correct — TIR delivered that part faithfully. The gap is narrower and more specific: the login-time role-resolution wiring was never extended to carry the authenticating person's own distinct identity through to `resolveRoleForPerson` once a tenant can have 2+ members sharing one `tenantId`; it only ever receives `tenantId` itself, which happens to equal `identityKey` in every case except the one case (GitHub-org-allowlist) where a tenant can genuinely have multiple people. This is a real production defect in TIR's shipped code, not a defect in bri-s3.3's own story authoring.
 **Made by:** Claude (agent), via /definition-of-ready re-run, 2026-07-13
 **Revisit trigger:** When a fix-forward story lands in `2026-07-09-team-identity-roles` (recommended: `tir-s9`, mirroring the `tir-s7`/`tir-s8` fix-forward pattern already used twice in that epic) that (a) routes an added teammate's login into the shared tenant for the intended provider set, and (b) updates `getRoleForTenant`/`resolveRoleForPerson`'s wiring to pass the authenticating person's own identity — not the tenant identifier — as `identityKey`. Re-run `/definition-of-ready` on bri-s3.3 once that lands.
+---
+**2026-07-16 | ASSUMPTION | definition-of-ready (bri-s3.3 re-run, blocker resolved)**
+**Decision:** bri-s3.3 is READY. The 2026-07-13 revisit trigger's part (b) — `getRoleForTenant`/`resolveRoleForPerson`'s wiring passing the authenticating person's own identity, not the tenant identifier, as `identityKey` — is confirmed shipped by `tir-s9` (merged), verified by direct code read of `src/web-ui/server.js` (lines 336-338) and `src/web-ui/routes/auth.js` (lines 210, 320) on 2026-07-16, not by trusting `tir-s9`'s story text or its own tests' pass/fail status. Part (a) of the trigger ("routes an added teammate's login into the shared tenant for the intended provider set") is only partially satisfied — `tir-s9` explicitly deferred the Google/email-added-teammate case as a distinct, separately-tracked gap (silent role loss, not role collision). bri-s3.3's own AC1-AC3 do not require that broader provider set: they require two real people, in one tenant, with differentiated roles, provable via an actual browser-driven login — GitHub-org-allowlist mode, now correctly wired by `tir-s9`, satisfies that requirement on its own. The test plan (updated 2026-07-16) makes this scope boundary (GitHub-org-allowlist mode only) explicit rather than silently narrowing AC1-AC3's coverage.
+**Alternatives considered:** (1) Continue blocking bri-s3.3 until TIR also fixes the Google/email-added-teammate gap — rejected, since that gap is a different bug shape (silent role loss) unrelated to what AC1-AC3 actually assert (role differentiation and viewer-role write-denial), and blocking further would leave Metric 4's journey-coverage gap open for no verification benefit. (2) Treat `tir-s9`'s own DoD-complete status as sufficient without re-reading the actual shipped `server.js`/`auth.js` code — rejected, consistent with this repo's CLAUDE.md dispatch-verification standard and the 2026-07-13 re-run's own precedent of catching two real bugs (tir-s7, tir-s8) that would have been missed by trusting upstream self-reports alone.
+**Rationale:** The specific defect named in the 2026-07-13 blocker (identityKey/tenantId argument collision) is independently confirmed fixed in the real merged code. Re-scoping AC1-AC3 to the one production mechanism that actually creates a shared tenant today (GitHub-org-allowlist) is not a weakening of the story — it is the only mechanism that exists, and the wiring fix applies uniformly to any role value, so viewer-role (AC3) is equally covered by the same fix as admin/engineer (AC1).
+**Made by:** Claude (agent), via /definition-of-ready re-run, 2026-07-16
+**Revisit trigger:** If a future story fixes the Google/email-added-teammate gap in `2026-07-09-team-identity-roles`, consider whether bri-s3.3's spec should be broadened to also cover that provider path — not required for this story's current AC1-AC4 scope.
 ---
 
 ## Architecture Decision Records
