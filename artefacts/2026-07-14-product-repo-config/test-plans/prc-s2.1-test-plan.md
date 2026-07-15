@@ -94,16 +94,16 @@ None.
 ### Unwired repoAdapter throws, never returns a silent safe-looking value
 
 - **Verifies:** AC5 (D37 wiring, first half)
-- **Components involved:** `repoAdapter` module before `setRepoAdapter` is called
-- **Precondition:** Fresh module load, `setRepoAdapter` never invoked
+- **Components involved:** `repo-adapter.js` module before `setCreateRepoAdapter` is called
+- **Precondition:** Fresh module load, `setCreateRepoAdapter` never invoked
 - **Action:** Call `createRepo` directly
-- **Expected result:** Throws `Adapter not wired: repoAdapter. Call setRepoAdapter() with a real implementation before use.` — matching this repo's D37 error-message convention exactly
+- **Expected result:** Throws `Adapter not wired: createRepoAdapter. Call setCreateRepoAdapter() with a real implementation before use.` — matching this repo's D37 error-message convention exactly
 
 ### Wired repoAdapter resolves two different create-repo calls to two different, individually-correct results
 
 - **Verifies:** AC5 (D37 wiring, second half — behavioural correctness, not just "a function reference was assigned")
-- **Components involved:** `server.js`'s real wiring of `setRepoAdapter`, two mocked GitHub API responses (one 201 success, one 422 name collision)
-- **Precondition:** Adapter wired per `server.js`'s actual production wiring code (`setRepoAdapter({ createRepo: realCreateRepo })`)
+- **Components involved:** `server.js`'s real wiring of `setCreateRepoAdapter`, two mocked GitHub API responses (one 201 success, one 422 name collision)
+- **Precondition:** Adapter wired per `server.js`'s actual production wiring code (`setCreateRepoAdapter(realCreateRepo)`)
 - **Action:** One call creates a repo with an available name; a second call attempts a taken name
 - **Expected result:** The first call resolves to the created repo's owner/name, the second throws `RepoNameTakenError` — two distinct, independently-correct outcomes from the same wired adapter, not merely proof the setter was called (per CLAUDE.md's D37 wiring-test standard)
 
