@@ -34,6 +34,8 @@ ADR-020: repo creation uses the operator's own OAuth token (`POST /user/repos`) 
 
 **AC4:** Given repo creation succeeds, When the product record is checked immediately after, Then `repo_provider`/`repo_owner`/`repo_name` are populated before the operator is shown the bootstrap step (prc-s2.2) — no window where the product looks configured but isn't.
 
+**AC5 (D37 wiring, added during implementation — see decisions.md 2026-07-15):** Given the `setCreateRepoAdapter`/`getCreateRepoAdapter` pair is left unwired, When any code path calls `createRepo`, Then it throws `Adapter not wired: createRepoAdapter. Call setCreateRepoAdapter() with a real implementation before use.` — never a silent empty/safe-looking return. Given `server.js` wires the adapter to a real implementation at startup, When two different create-repo submissions are made (one succeeds, one hits a name collision), Then each resolves to its own correct, independently-verifiable result — not merely "a function reference was assigned," per this repo's own D37 wiring-test standard (CLAUDE.md). Added because this story's branch was built before `prc-s1.2` (the sibling story the DoR contract assumed would already have wired this adapter) had merged — see `decisions.md`. `setCreateRepoAdapter`/`getCreateRepoAdapter` is a distinct pair from `prc-s1.2`'s own `setRepoAdapter`/`getRepoAdapter` (repo-access verification) — both live in `src/web-ui/adapters/repo-adapter.js`, reconciled after `prc-s1.2` merged (decisions.md, 2026-07-15 "reconciled with prc-s1.2's real (merged) adapter").
+
 ## Out of Scope
 
 - Repo visibility/privacy settings beyond GitHub's own default — can be a follow-up if it matters.

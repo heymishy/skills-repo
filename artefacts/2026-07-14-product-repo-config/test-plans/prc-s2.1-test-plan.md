@@ -15,6 +15,7 @@
 | AC2 | Name collision → clear error, no overwrite | — | 1 test | — | — | — | 🟢 |
 | AC3 | No GitHub token → same account-linking prompt as prc-s1.2 AC3 | — | 1 test | — | — | — | 🟢 |
 | AC4 | repo_* columns set before bootstrap step is shown | — | 1 test | — | — | — | 🟢 |
+| AC5 | D37 wiring: unwired throws, wired resolves 2 calls to 2 distinct results | — | 2 tests | — | — | — | 🟢 |
 
 ---
 
@@ -89,6 +90,22 @@ None.
 - **Precondition:** Create-repo succeeds
 - **Action:** Inspect the product row's state at the exact point the handler would hand off to the bootstrap step (`prc-s2.2`)
 - **Expected result:** `repo_provider`/`repo_owner`/`repo_name` are already non-null before any bootstrap-related response is sent — no window where the product looks configured but isn't
+
+### Unwired repoAdapter throws, never returns a silent safe-looking value
+
+- **Verifies:** AC5 (D37 wiring, first half)
+- **Components involved:** `repo-adapter.js` module before `setCreateRepoAdapter` is called
+- **Precondition:** Fresh module load, `setCreateRepoAdapter` never invoked
+- **Action:** Call `createRepo` directly
+- **Expected result:** Throws `Adapter not wired: createRepoAdapter. Call setCreateRepoAdapter() with a real implementation before use.` — matching this repo's D37 error-message convention exactly
+
+### Wired repoAdapter resolves two different create-repo calls to two different, individually-correct results
+
+- **Verifies:** AC5 (D37 wiring, second half — behavioural correctness, not just "a function reference was assigned")
+- **Components involved:** `server.js`'s real wiring of `setCreateRepoAdapter`, two mocked GitHub API responses (one 201 success, one 422 name collision)
+- **Precondition:** Adapter wired per `server.js`'s actual production wiring code (`setCreateRepoAdapter(realCreateRepo)`)
+- **Action:** One call creates a repo with an available name; a second call attempts a taken name
+- **Expected result:** The first call resolves to the created repo's owner/name, the second throws `RepoNameTakenError` — two distinct, independently-correct outcomes from the same wired adapter, not merely proof the setter was called (per CLAUDE.md's D37 wiring-test standard)
 
 ---
 

@@ -48,8 +48,9 @@ const { migrateIdentityLinksSchema } = require('./modules/identity-links'); // t
 const { handleGetLinkSettings, handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct, handlePostProductRepoCreate } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
+const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
 const { setStandardsAdapter }                                        = require('./standards-adapter');             // psh-s10
 const { setPostHogFlagsAdapter }                                     = require('./modules/posthog-flags');          // bri-s1.1
@@ -105,6 +106,17 @@ if (process.env.GOOGLE_CLIENT_ID) {
 if (process.env.NODE_ENV !== 'test') {
   setRepoAdapter(realCheckRepoAccess);
   console.log('[products] repo adapter wired');
+}
+
+// prc-s2.1 / D37 mandatory separate wiring task -- wire the real GitHub
+// repo-creation adapter (a distinct adapter from prc-s1.2's repo-access-check
+// adapter above -- setCreateRepoAdapter/getCreateRepoAdapter, not
+// setRepoAdapter/getRepoAdapter, so the two stories' wiring calls never
+// collide). Never wired in NODE_ENV=test (tests call setCreateRepoAdapter()
+// themselves with a mock); the throwing stub stays active there.
+if (process.env.NODE_ENV !== 'test') {
+  setCreateRepoAdapter(realCreateRepo);
+  console.log('[repo-adapter] createRepo wired');
 }
 
 // bri-s1.2 — wire the real PostHog flags client into the bri-s1.1 adapter contract,
@@ -1756,6 +1768,11 @@ async function router(req, res) {
     // psh-s4 — create new journey with product_id FK, emits journey_created PostHog event
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handlePostProductFeature(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/repo\/create$/) && req.method === 'POST') {
+    // prc-s2.1 — create a brand-new GitHub repo for a product
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handlePostProductRepoCreate(req, res, null, _pshPool, null); });
 
   } else if (pathname.match(/^\/products\/[^/]+\/kanban$/) && req.method === 'GET') {
     // psh-s6 — per-product kanban board with 8 stage columns and health indicators
