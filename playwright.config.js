@@ -50,6 +50,8 @@ module.exports = {
       // limit is still fully exercised by tests/check-lab-s2.2-email-password.js,
       // which does not go through this config.
       E2E_RATE_LIMIT_BYPASS: 'true',
+      // bri-s3.3: Enable GitHub-org-allowlist mode for multi-user tenant testing
+      TENANT_ORG_ALLOWLIST: 'shared-org',
     },
   },
 };
