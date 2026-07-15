@@ -35,6 +35,8 @@ const pipelineStateWriterFactory                                     = require('
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
 const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
+const { setRepoAdapter, realCheckRepoAccess }                        = require('./adapters/repo-adapter'); // prc-s1.2 (D37 separate task)
+const { handlePostConnectRepo }                                      = require('./routes/product-repo');   // prc-s1.2
 const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal, handleGetBillingPlanState } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5 / bri-s3.5
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
 const { creditsGuard }                                               = require('./middleware/credits-guard'); // lab-s3.3
@@ -93,6 +95,16 @@ console.log('[auth] provider registry initialised');
 if (process.env.GOOGLE_CLIENT_ID) {
   setGoogleUserInfoAdapter(_realFetchGoogleUserInfo);
   console.log('[auth] google oauth registered');
+}
+
+// prc-s1.2 / D37 mandatory separate wiring task — wire the real GitHub
+// repo-access-check adapter. Never wired in NODE_ENV=test (tests call
+// setRepoAdapter() themselves with a mock); the throwing stub stays active
+// there, matching the pattern already used by the lab-s1.3 provider
+// registry and lab-s2.1 Google adapter wiring blocks above.
+if (process.env.NODE_ENV !== 'test') {
+  setRepoAdapter(realCheckRepoAccess);
+  console.log('[products] repo adapter wired');
 }
 
 // bri-s1.2 — wire the real PostHog flags client into the bri-s1.1 adapter contract,
@@ -1728,6 +1740,11 @@ async function router(req, res) {
     // psh-s4 — product view: list features for one product with stage + health
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleGetProductView(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/repo$/) && req.method === 'POST') {
+    // prc-s1.2 — connect (or re-connect) an existing GitHub repo to a product
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handlePostConnectRepo(req, res, null, _pshPool, null); });
 
   } else if (pathname.match(/^\/products\/[^/]+$/) && req.method === 'DELETE') {
     // prc-s4.2 — delete (detach) a product: removes product row, journeys, and
