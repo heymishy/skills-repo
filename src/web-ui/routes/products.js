@@ -6,6 +6,7 @@ var _htmlShell = require('../utils/html-shell');
 var _postHogFlags = require('../modules/posthog-flags'); // bri-s1.5 — shared isEnabled() (D37)
 var _flagKeys = require('../modules/flag-keys'); // bri-s1.5
 var _repoAdapter = require('../adapters/repo-adapter'); // prc-s2.1
+var _repoBootstrap = require('../modules/repo-bootstrap'); // prc-s2.2
 
 function _escapeHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -442,7 +443,28 @@ async function handlePostProductRepoCreate(req, res, _next, pool, posthog) {
     repoName: repoName
   });
 
+  // prc-s2.2: bootstrap the newly created empty repo with the skills
+  // framework (.github/skills/, .github/templates/, scripts/) via the
+  // GitHub Git Data API, committed under the operator's own identity
+  // (req.session.login, ADR-020). Bootstrap failure does not roll back the
+  // already-created repo/product-row update (AC1-4 concern bootstrap's own
+  // commit correctness, not repo-creation transactionality) -- it is
+  // reported in the response so the caller can retry or surface a warning.
+  var bootstrapResult = null;
+  var bootstrapError = null;
+  try {
+    var bootstrapUser = { login: req.session && req.session.login };
+    bootstrapResult = await _repoBootstrap.bootstrapRepo(token, owner, repoName, bootstrapUser);
+  } catch (err) {
+    bootstrapError = (err && err.message) || 'Bootstrap failed';
+  }
+
   var okBody = { repo_provider: 'github', repo_owner: owner, repo_name: repoName };
+  if (bootstrapResult) {
+    okBody.bootstrap = { commitSha: bootstrapResult.commitSha, fileCount: bootstrapResult.files.length };
+  } else if (bootstrapError) {
+    okBody.bootstrapError = bootstrapError;
+  }
   if (res.status) { res.status(201).json(okBody); }
   else { res.writeHead(201, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(okBody)); }
 }

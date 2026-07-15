@@ -51,6 +51,7 @@ const { adminCreditsGet, adminCreditsPost }                          = require('
 const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct, handlePostProductRepoCreate } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
+const { setBootstrapAdapter, realBootstrapRepo }                     = require('./modules/repo-bootstrap');       // prc-s2.2
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
 const { setStandardsAdapter }                                        = require('./standards-adapter');             // psh-s10
 const { setPostHogFlagsAdapter }                                     = require('./modules/posthog-flags');          // bri-s1.1
@@ -117,6 +118,19 @@ if (process.env.NODE_ENV !== 'test') {
 if (process.env.NODE_ENV !== 'test') {
   setCreateRepoAdapter(realCreateRepo);
   console.log('[repo-adapter] createRepo wired');
+}
+
+// prc-s2.2 / D37 mandatory separate wiring task -- wire the real GitHub
+// bootstrap adapter (Git Data API tree/blob/commit orchestration), a
+// distinct adapter from prc-s2.1's repo-creation adapter above --
+// setBootstrapAdapter/getBootstrapAdapter, not
+// setCreateRepoAdapter/getCreateRepoAdapter, so the two stories' wiring
+// calls never collide. Never wired in NODE_ENV=test (tests call
+// setBootstrapAdapter() themselves with a mock); the throwing stub stays
+// active there.
+if (process.env.NODE_ENV !== 'test') {
+  setBootstrapAdapter(realBootstrapRepo);
+  console.log('[repo-bootstrap] bootstrapRepo wired');
 }
 
 // bri-s1.2 — wire the real PostHog flags client into the bri-s1.1 adapter contract,
