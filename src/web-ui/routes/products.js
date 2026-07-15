@@ -617,6 +617,120 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
   }
 }
 
+/**
+ * prc-s4.1 — PUT /products/:id — edit a product's name, description, and/or
+ * repo association. Name/description are simple UPDATEs (AC1). Repo changes
+ * reuse the repo-access-verification logic from prc-s1.2 via the shared
+ * _applyRepoChange helper in product-repo.js, ensuring the edit and
+ * first-time-configuration flows never drift (AC3).
+ */
+async function handlePutProductEdit(req, res, _next, pool, posthog) {
+  req.body = await _readBody(req);
+  var _pool = pool;
+  var _ph = posthog || _posthog;
+  var tenantId = req.session && req.session.tenantId;
+  var productId = req.params && req.params.id;
+  var accessToken = req.session && req.session.accessToken;
+  var name = (req.body && req.body.name) || undefined;
+  var description = (req.body && req.body.description) || undefined;
+  var owner = (req.body && req.body.owner) || undefined;
+  var repo = (req.body && req.body.repo) || undefined;
+
+  // Tenant-ownership check first
+  var prodRow = (await _pool.query(
+    'SELECT product_id, tenant_id FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) {
+      res.status(404).json({ error: 'not found' });
+    } else {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'not found' }));
+    }
+    return;
+  }
+
+  // AC1: Update name/description if provided
+  if (name !== undefined || description !== undefined) {
+    var setClause = [];
+    var params = [];
+    var paramIndex = 1;
+
+    if (name !== undefined) {
+      setClause.push('name = $' + paramIndex);
+      params.push(name);
+      paramIndex++;
+    }
+    if (description !== undefined) {
+      setClause.push('description = $' + paramIndex);
+      params.push(description);
+      paramIndex++;
+    }
+
+    params.push(productId);
+    await _pool.query(
+      'UPDATE products SET ' + setClause.join(', ') + ' WHERE product_id = $' + paramIndex,
+      params
+    );
+
+    _ph.capture(tenantId, 'product_edited', {
+      productId: productId,
+      tenantId: tenantId,
+      name: name,
+      description: description,
+      changedBy: req.session && req.session.login
+    });
+  }
+
+  // AC2/AC3: Update repo if provided (reuse shared logic from product-repo.js)
+  if (owner !== undefined && repo !== undefined) {
+    if (!accessToken) {
+      if (res.status) {
+        res.status(200).json({
+          error: 'Link your GitHub account first to connect a repo.',
+          linkUrl: '/settings/link-account/github/start'
+        });
+      } else {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          error: 'Link your GitHub account first to connect a repo.',
+          linkUrl: '/settings/link-account/github/start'
+        }));
+      }
+      return;
+    }
+
+    var productRepoModule = require('./product-repo');
+    var repoResult = await productRepoModule._applyRepoChange(_pool, productId, tenantId, owner, repo, accessToken);
+
+    if (!repoResult.success) {
+      if (res.status) {
+        res.status(repoResult.statusCode).json({ error: repoResult.error });
+      } else {
+        res.writeHead(repoResult.statusCode, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: repoResult.error }));
+      }
+      return;
+    }
+
+    _ph.capture(tenantId, 'product_repo_connected', {
+      productId: productId,
+      tenantId: tenantId,
+      owner: owner,
+      repo: repo,
+      changedBy: req.session && req.session.login
+    });
+  }
+
+  if (res.status) {
+    res.status(200).json({ edited: true });
+  } else {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ edited: true }));
+  }
+}
+
 module.exports = {
   handlePostProductNew,
   handlePostProductConfirm,
@@ -627,5 +741,6 @@ module.exports = {
   handleGetProductKanban,
   handleGetOrgKanban,
   handleDeleteProduct,
-  handlePostProductRepoCreate
+  handlePostProductRepoCreate,
+  handlePutProductEdit
 };
