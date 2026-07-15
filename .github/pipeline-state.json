@@ -9537,22 +9537,23 @@
               "name": "Multi-user within one tenant journey spec",
               "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-07-15T20:01:28.178Z",
+              "updatedAt": "2026-07-15T20:12:41.594Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0,
+                "passing": 6,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s3.3-multi-user-tenant-journey-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": "true",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "blocker": "",
-              "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s3.3-multi-user-tenant-journey-dor.md"
+              "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s3.3-multi-user-tenant-journey-dor.md",
+              "prStatus": "draft"
             },
             {
               "slug": "bri-s3.4",
