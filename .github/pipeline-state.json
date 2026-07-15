@@ -10928,6 +10928,41 @@
           "assessedAt": "2026-07-14T10:27:25.197Z"
         }
       ]
+    },
+    {
+      "slug": "2026-07-16-baseline-test-triage",
+      "name": "Triage the pre-existing baseline test failures unmasked by pcr-s1",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "tst-s1",
+          "name": "Triage the pre-existing baseline test failures",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0,
+            "artefact": "artefacts/2026-07-16-baseline-test-triage/test-plans/tst-s1-triage-pre-existing-baseline-failures-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-16-baseline-test-triage/dor/tst-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-16-baseline-test-triage/dor/tst-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-15T20:07:04.001Z",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-15T20:07:04.001Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
