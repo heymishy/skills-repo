@@ -10154,7 +10154,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-07-15T08:15:46.422Z",
+      "updatedAt": "2026-07-15T11:19:11.433Z",
       "discovery": {
         "status": "clarified",
         "artefact": "artefacts/2026-07-14-product-repo-config/discovery.md",
@@ -10230,19 +10230,19 @@
             {
               "slug": "prc-s1.3",
               "name": "Resolve sign-off write-back to the product's own repo",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-14T10:27:25.197Z",
+              "updatedAt": "2026-07-15T11:19:11.433Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.3-review-1.md",
               "testPlan": {
-                "status": "written",
-                "totalTests": 5,
-                "passing": 0
+                "status": "all-passing",
+                "totalTests": 4,
+                "passing": 4
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s1.3-test-plan.md",
@@ -10250,7 +10250,12 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s1.3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s1.3-dor-contract.md",
-              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z",
+              "prStatus": "merged",
+              "prNumber": 481,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/481",
+              "mergeCommit": "93641f8c288bdf5e6b336d104c0ef28c2827f0bb",
+              "mergedAt": "2026-07-15T11:19:11.433Z"
             },
             {
               "slug": "prc-s1.4",
