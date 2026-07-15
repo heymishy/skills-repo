@@ -35,8 +35,20 @@ const {
   SignOffConflictError
 } = require('../src/web-ui/adapters/sign-off-writer');
 
-const { handleSignOff, setLogger } = require('../src/web-ui/routes/sign-off');
+const { handleSignOff, setLogger, setProductRepoResolver } = require('../src/web-ui/routes/sign-off');
 const { createRateLimiter }        = require('../src/web-ui/middleware/rate-limiter');
+
+// prc-s1.3: Wire the product repo resolver for backward compatibility in existing tests
+// These tests use env vars for the repo config, so the resolver returns that
+setProductRepoResolver(async (req) => {
+  // Return product repo config from environment (for backward compatibility)
+  const owner = process.env.GITHUB_REPO_OWNER;
+  const repo = process.env.GITHUB_REPO_NAME;
+  if (!owner || !repo) {
+    throw new Error('ProductRepoResolver: GITHUB_REPO_OWNER and GITHUB_REPO_NAME must be set');
+  }
+  return { repo_owner: owner, repo_name: repo };
+});
 
 // ── Test infrastructure ───────────────────────────────────────────────────────
 let passed = 0;
@@ -132,7 +144,9 @@ test('T1.3 commitSignOff calls Contents API PUT with correct method, URL and aut
   await commitSignOff(
     'artefacts/2026-01-01-example-feature/discovery.md',
     signOffPayload,
-    'gho_test_fixture_token_wuce1'
+    'gho_test_fixture_token_wuce1',
+    process.env.GITHUB_REPO_OWNER,
+    process.env.GITHUB_REPO_NAME
   );
 
   global.fetch = origFetch;
@@ -175,7 +189,9 @@ test('T3.1 commitSignOff sets author and committer to authenticated user not ser
   await commitSignOff(
     'artefacts/2026-01-01-example-feature/discovery.md',
     signOffPayload,
-    'gho_test_fixture_token_wuce1'
+    'gho_test_fixture_token_wuce1',
+    process.env.GITHUB_REPO_OWNER,
+    process.env.GITHUB_REPO_NAME
   );
 
   global.fetch = origFetch;
@@ -232,7 +248,7 @@ test('T5.1 commitSignOff throws SignOffConflictError when Contents API returns 4
   const signOffPayload = { content: 'updated content', sha: 'abc123', approverName: 'Test Stakeholder' };
 
   try {
-    await commitSignOff('artefacts/2026-01-01-example/discovery.md', signOffPayload, 'gho_test_fixture_token_wuce1');
+    await commitSignOff('artefacts/2026-01-01-example/discovery.md', signOffPayload, 'gho_test_fixture_token_wuce1', process.env.GITHUB_REPO_OWNER, process.env.GITHUB_REPO_NAME);
   } catch (err) {
     thrownError = err;
   }

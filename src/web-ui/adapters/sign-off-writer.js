@@ -79,12 +79,18 @@ function buildSignOffPayload(markdown, user, timestamp) {
  *   sha: current file SHA (from prior GET — required by GitHub for update)
  *   approverName: display name for commit message (optional, falls back to user.name)
  * @param {string} token - user's OAuth access token from session
+ * @param {string} owner - GitHub repository owner (product's repo_owner)
+ * @param {string} repo - GitHub repository name (product's repo_name)
  * @returns {Promise<object>} GitHub Contents API PUT response
  * @throws {SignOffConflictError} if Contents API returns 409
+ * @throws {Error} if owner or repo is not provided (fail-closed on missing config)
  */
-async function commitSignOff(artefactPath, signOffPayload, token) {
-  const owner   = process.env.GITHUB_REPO_OWNER;
-  const repo    = process.env.GITHUB_REPO_NAME;
+async function commitSignOff(artefactPath, signOffPayload, token, owner, repo) {
+  // AC3: Fail-closed — no repo configured means reject before any API call
+  if (!owner || !repo) {
+    throw new Error('commitSignOff: owner and repo parameters are required (product has no repo configured)');
+  }
+
   const apiBase = (process.env.GITHUB_API_BASE_URL || 'https://api.github.com').replace(/\/$/, '');
 
   const authHeaders = {
