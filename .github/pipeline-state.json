@@ -10287,19 +10287,19 @@
             {
               "slug": "prc-s2.1",
               "name": "Create a new GitHub repo directly from product creation",
-              "stage": "definition-of-ready",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-07-14T10:27:25.197Z",
+              "updatedAt": "2026-07-15T07:09:38.807Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.1-review-1.md",
               "testPlan": {
-                "status": "written",
-                "totalTests": 5,
-                "passing": 0
+                "status": "all-passing",
+                "totalTests": 6,
+                "passing": 6
               },
-              "acTotal": 4,
-              "acVerified": 0,
+              "acTotal": 5,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s2.1-test-plan.md",
