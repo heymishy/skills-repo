@@ -5,6 +5,7 @@ var _productDraft = require('../adapters/product-draft');
 var _htmlShell = require('../utils/html-shell');
 var _postHogFlags = require('../modules/posthog-flags'); // bri-s1.5 — shared isEnabled() (D37)
 var _flagKeys = require('../modules/flag-keys'); // bri-s1.5
+var _repoAdapter = require('../adapters/repo-adapter'); // prc-s2.1
 
 function _escapeHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -389,6 +390,63 @@ async function handleDeleteProduct(req, res, _next, pool, posthog) {
   }
 }
 
+/**
+ * prc-s2.1: POST /products/:id/repo/create -- create a brand-new GitHub repo
+ * under the operator's own account (ADR-020: their own OAuth token, never a
+ * service account) and populate the product's repo_provider/repo_owner/
+ * repo_name columns. AC3: sessions with no GitHub accessToken (Google/email
+ * auth) are directed to the existing GET /settings/link-account/github/start
+ * flow -- no GitHub API call is attempted and no columns are written. AC4:
+ * the UPDATE completes before any response is sent, so there is never a
+ * window where the product looks configured but isn't.
+ */
+async function handlePostProductRepoCreate(req, res, _next, pool, posthog) {
+  req.body = await _readBody(req);
+  var _pool = pool;
+  var _ph = posthog || _posthog;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var token = req.session && req.session.accessToken;
+  var name = (req.body && req.body.name) || '';
+
+  if (!token) {
+    var linkBody = { error: 'A GitHub account must be linked before creating a repo.', linkUrl: '/settings/link-account/github/start' };
+    if (res.status) { res.status(403).json(linkBody); }
+    else { res.writeHead(403, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(linkBody)); }
+    return;
+  }
+
+  var created;
+  try {
+    created = await _repoAdapter.createRepo(token, name);
+  } catch (err) {
+    var status = (err && err.name === 'RepoNameTakenError') ? 409 : 502;
+    var errBody = { error: (err && err.message) || 'Failed to create repo' };
+    if (res.status) { res.status(status).json(errBody); }
+    else { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(errBody)); }
+    return;
+  }
+
+  var owner = created && created.owner && created.owner.login;
+  var repoName = created && created.name;
+
+  await _pool.query(
+    'UPDATE products SET repo_provider = $1, repo_owner = $2, repo_name = $3 WHERE product_id = $4',
+    ['github', owner, repoName, productId]
+  );
+
+  _ph.capture(tenantId, 'product_repo_created', {
+    productId: productId,
+    tenantId: tenantId,
+    repoOwner: owner,
+    repoName: repoName
+  });
+
+  var okBody = { repo_provider: 'github', repo_owner: owner, repo_name: repoName };
+  if (res.status) { res.status(201).json(okBody); }
+  else { res.writeHead(201, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(okBody)); }
+}
+
 var STAGE_COLUMNS = ['discovery','benefit-metric','definition','review','test-plan','definition-of-ready','implementation','definition-of-done'];
 
 function _healthLabel(health) {
@@ -568,5 +626,6 @@ module.exports = {
   handlePostProductFeature,
   handleGetProductKanban,
   handleGetOrgKanban,
-  handleDeleteProduct
+  handleDeleteProduct,
+  handlePostProductRepoCreate
 };
