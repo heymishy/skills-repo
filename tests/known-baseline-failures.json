@@ -8,10 +8,12 @@
     "tests/check-artefact-coverage.js",
     "tests/check-bee3-posthog.js",
     "tests/check-bri-s2.2-neon-staging-branch.js",
+    "tests/check-bri-s3.5-nfr-stripe-keys.js",
     "tests/check-challenger.js",
     "tests/check-cli-outer-loop.js",
     "tests/check-definition-skill.js",
     "tests/check-discovery-skill.js",
+    "tests/check-gpa-sc06-source-path-guard.js",
     "tests/check-i1.1-orient-skill.js",
     "tests/check-i1.2-platform-init-fetch.js",
     "tests/check-i2.1-entry-a-story-first.js",
@@ -28,6 +30,8 @@
     "tests/check-inc5-canvas-skill-instruction.js",
     "tests/check-iwu2-right-panel-layout.js",
     "tests/check-iwu6-skillmd.js",
+    "tests/check-lab-s3.2-stripe-checkout.js",
+    "tests/check-lab-s3.4-stripe-webhook.js",
     "tests/check-lab-s3.5-billing-portal.js",
     "tests/check-md-1-skill-md.js",
     "tests/check-md-2-skill-contracts.js",
@@ -68,6 +72,7 @@
     "tests/check-wuce3-attributed-signoff.js",
     "tests/check-wuce4-docker-deployment.js",
     "tests/check-wucp1-context-autoloader.js",
-    "tests/check-wusl1-chat-streaming.js"
+    "tests/check-wusl1-chat-streaming.js",
+    "tests/run-gpa-tests.js"
   ]
 }
