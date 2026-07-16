@@ -70,9 +70,11 @@ Not applicable. `context.yml` sets `meta.regulated: false`, and this feature doe
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Metric 1 — Product shape visible in web UI | To be populated at /definition | Pending |
-| Metric 2 — Staleness visible, never silent | To be populated at /definition | Pending |
-| Meta Metric 1 — Dogfooding validates the mechanism | To be populated at /definition | Pending |
+| Metric 1 — Product shape visible in web UI | pr-s1, pr-s2, pr-s4, pr-s5, pr-s6, pr-s7 | Covered |
+| Metric 2 — Freshness visible and refreshable, never silently stale | pr-s2, pr-s3 | Covered |
+| Meta Metric 1 — Dogfooding validates the mechanism | None directly — see resolution note below | Covered (post-ship, whole-feature signal) |
+
+**Meta Metric 1 resolution (metric-gap check, resolved at /definition, 2026-07-17):** no single story moves this metric — it is a behavioural/validation signal measurable only after all 7 stories ship and the mechanism is tested against a smaller, non-skills-framework product fixture. All 7 stories collectively enable it (there is nothing to validate the mechanism against until the rollup exists), but none of them *are* the metric. Resolved the same way as the `2026-07-14-product-repo-config` feature's own precedent (see that feature's `benefit-metric.md`) — treated as a legitimate 4th resolution alongside the skill's three offered options, logged as a SCOPE decision in `decisions.md` rather than forcing a synthetic story into existence.
 
 ---
 

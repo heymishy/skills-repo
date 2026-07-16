@@ -11058,15 +11058,14 @@
       "slug": "2026-07-16-product-rollup",
       "name": "Product Rollup & Aggregation Layer -- Product-Level Health from Feature-Level Artefacts",
       "track": "standard",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
-      "updatedAt": "2026-07-16T19:16:50.946Z",
+      "updatedAt": "2026-07-16T19:46:08.784Z",
       "discoveryArtefact": "artefacts/2026-07-16-product-rollup/discovery.md",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "stories": [],
       "benefitMetricArtefact": "artefacts/2026-07-16-product-rollup/benefit-metric.md",
       "metrics": [
         {
@@ -11077,7 +11076,14 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "pr-s1",
+            "pr-s2",
+            "pr-s4",
+            "pr-s5",
+            "pr-s6",
+            "pr-s7"
+          ]
         },
         {
           "id": "m2",
@@ -11087,7 +11093,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "pr-s2",
+            "pr-s3"
+          ]
         },
         {
           "id": "m3",
@@ -11098,6 +11107,375 @@
           "lastMeasured": null,
           "evidence": null,
           "contributingStories": []
+        }
+      ],
+      "slicingStrategy": "vertical-slice",
+      "decisionsArtefact": "artefacts/2026-07-16-product-rollup/decisions.md",
+      "nfrProfileArtefact": "artefacts/2026-07-16-product-rollup/nfr-profile.md",
+      "guardrails": [
+        {
+          "id": "MC-SEC-01",
+          "category": "mandatory-constraint",
+          "label": "No user-supplied content in innerHTML without sanitisation",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "No credentials, tokens, or personal data in committed files",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SEC-03",
+          "category": "mandatory-constraint",
+          "label": "Viz reads local JSON only — no external fetch calls",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CORRECT-01",
+          "category": "mandatory-constraint",
+          "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CORRECT-02",
+          "category": "mandatory-constraint",
+          "label": "Fields written to pipeline-state.json must exist in schema",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CORRECT-03",
+          "category": "mandatory-constraint",
+          "label": "Fields read by viz from pipeline-state.json must exist in schema",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SELF-01",
+          "category": "mandatory-constraint",
+          "label": "dashboards/pipeline-viz.html renders without build step, server, or network",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SELF-02",
+          "category": "mandatory-constraint",
+          "label": "No npm devDependencies in dashboards/pipeline-viz.html runtime",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CONSIST-01",
+          "category": "mandatory-constraint",
+          "label": "Stage enum in schema updated when skill adds/removes stage",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CONSIST-02",
+          "category": "mandatory-constraint",
+          "label": "Gate add/remove synced with SKILL.md criteria",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-A11Y-01",
+          "category": "mandatory-constraint",
+          "label": "Interactive elements keyboard-accessible",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-A11Y-02",
+          "category": "mandatory-constraint",
+          "label": "Colour not sole indicator of gate status (icons/labels present)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-001",
+          "category": "adr",
+          "label": "Single-file viz, no build step",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-002",
+          "category": "adr",
+          "label": "Gates must use evidence fields, not stage-proxy",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-003",
+          "category": "adr",
+          "label": "Schema-first: fields defined before use",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-004",
+          "category": "adr",
+          "label": "context.yml is the single config source of truth",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-005",
+          "category": "adr",
+          "label": "Agent instructions format driven by vcs.type (surface adapter concern)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-006",
+          "category": "adr",
+          "label": "Approval-channel adapter pattern for DoR sign-off",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-007",
+          "category": "adr",
+          "label": "EA registry surface-type mapping table (technology.hosting → platform surface type)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-008",
+          "category": "adr",
+          "label": "DoR touch-point contract is binding at pre-merge",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-01",
+          "category": "pattern",
+          "label": "Single-file HTML viz architecture",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-02",
+          "category": "pattern",
+          "label": "State access via parsed pipelineState global",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-03",
+          "category": "pattern",
+          "label": "Gate pass/fail by evidence fields",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-04",
+          "category": "pattern",
+          "label": "Schema evolution: add fields simultaneously",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-05",
+          "category": "pattern",
+          "label": "Config reading via context.yml",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-06",
+          "category": "pattern",
+          "label": "Execution pre-condition gate on runtime artefact existence (DoR PROCEED-BLOCKED)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-07",
+          "category": "pattern",
+          "label": "Group instruction-text-only changes at the same SKILL.md exit point into one story",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-01",
+          "category": "anti-pattern",
+          "label": "Gate logic checking feature.stage only",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-02",
+          "category": "anti-pattern",
+          "label": "Hardcoded org/tool names in skill files",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-03",
+          "category": "anti-pattern",
+          "label": "External CDN dependencies in viz at runtime",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-04",
+          "category": "anti-pattern",
+          "label": "Fields used by viz/skills but not in schema",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-05",
+          "category": "anti-pattern",
+          "label": "Committing viz changes without passing check-viz-syntax.js",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-06",
+          "category": "anti-pattern",
+          "label": "Directly mutating pipeline-state.json outside skills",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-07",
+          "category": "anti-pattern",
+          "label": "Bundling changes from story B into story A's PR (multi-story contamination)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-08",
+          "category": "anti-pattern",
+          "label": "Committing runtime artefact churn (traces, validation reports) in story branches",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-009",
+          "category": "adr",
+          "label": "Evaluation and write-back workflows must be separate triggers with separate permission scopes",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-010",
+          "category": "adr",
+          "label": "CI audit records must be persisted to main post-merge, not to feature branches",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-08",
+          "category": "pattern",
+          "label": "Two-workflow CI audit pattern: evaluate on pull_request (contents:read) + persist post-merge to main (contents:write)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-09",
+          "category": "pattern",
+          "label": "git commit --allow-empty to force synchronize event when required check has not re-run",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-09",
+          "category": "anti-pattern",
+          "label": "Required-check workflow committing back to the branch it evaluates (synchronize loop)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-10",
+          "category": "anti-pattern",
+          "label": "[ci skip] on a branch with required checks (suppresses status reporting)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-11",
+          "category": "anti-pattern",
+          "label": "Committing a new SKILL.md, src/ module, governance check script, dashboard behavioural change, copilot-instructions behavioural change, or structural pipeline-state change without a story artefact (artefact-first violation)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-012",
+          "category": "adr",
+          "label": "Platform-agnostic architecture: prefer portable multi-VCS implementations over vendor-specific optimisations; adapters enable platform adaptation without fragmentation",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-013",
+          "category": "adr",
+          "label": "Phase 4 enforcement architecture: shared 3-operation governance package is the contract all surface adapters call — no surface adapter reimplements governance logic independently",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-phase4-enforcement",
+          "category": "adr",
+          "label": "Mechanism selection: which enforcement mechanism (MCP, CLI, or deferred) applies to each Phase 4 surface class",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-015",
+          "category": "adr",
+          "label": "Two-tier artefact scope model: system corpus vs feature delivery — /modernisation-decompose is the canonical bridge; ad-hoc cross-scope sharing not permitted",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-016",
+          "category": "adr",
+          "label": "Two-file state authority model: pipeline-state.json is delivery evidence (viz source of truth); workspace/state.json is operator session state — skills must not conflate the two",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-017",
+          "category": "adr",
+          "label": "Story nesting dual-structure: all new features use flat features[].stories[]; Phase 1/2 epics-nested shape is legacy and not migrated",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-018",
+          "category": "adr",
+          "label": "Playwright is the E2E testing framework; specs in tests/e2e/; devDependency only; unit test chain (npm test) must not invoke Playwright; auth bypass is test-fixture-layer only (NODE_ENV=test guard)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-025",
+          "category": "adr",
+          "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
+          "status": "not-assessed"
+        }
+      ],
+      "epics": [
+        {
+          "slug": "pr-e1-foundation",
+          "name": "A product's connected repo becomes a synced, visible entity in the web UI",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "pr-s1",
+              "name": "Designate Product as a named primitive and register skills-framework as a product",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "pr-s2",
+              "name": "Sync a product's connected repo and show aggregate DoD status",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "pr-s3",
+              "name": "Show last-synced freshness and a manual refresh action",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        },
+        {
+          "slug": "pr-e2-dimensions",
+          "name": "A product's rollup shows its full shape, not just one dimension",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "pr-s4",
+              "name": "Render aggregate health on the product rollup view",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "pr-s5",
+              "name": "Render aggregate test coverage on the product rollup view",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "pr-s6",
+              "name": "Render aggregate AC coverage on the product rollup view",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "pr-s7",
+              "name": "Render discovery scope and feature/epic taxonomy grouping",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
         }
       ]
     },
