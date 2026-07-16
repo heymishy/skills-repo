@@ -11002,6 +11002,42 @@
       ],
       "metrics": [],
       "updatedAt": "2026-07-16T06:43:54.692Z"
+    },
+    {
+      "slug": "2026-07-16-ci-flake-grep-fix",
+      "name": "Fix the over-broad Stripe-key grep scope causing 3 NFR checks to false-positive in real CI",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "cfg-s1",
+          "slug": "cfg-s1",
+          "name": "Fix the over-broad Stripe-key grep scope causing 3 NFR checks to false-positive in real CI",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 5,
+            "artefact": "artefacts/2026-07-16-ci-flake-grep-fix/test-plans/cfg-s1-scope-stripe-key-grep-checks-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-16-ci-flake-grep-fix/dor/cfg-s1-dor.md",
+          "dorSignedOffAt": "2026-07-16T09:24:20.937Z",
+          "prStatus": "none",
+          "updatedAt": "2026-07-16T09:38:58.419Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-16T09:24:20.937Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
