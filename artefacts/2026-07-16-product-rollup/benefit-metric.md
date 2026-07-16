@@ -27,21 +27,21 @@ Discovery's Why Now names two drivers: the beta launch (a product-value need) an
 |-------|-------|
 | **What we measure** | Whether `/products/:id` renders a rollup view — discovery scope, feature/epic taxonomy grouping, aggregate test coverage, aggregate DoD status — for a product, in place of today's bare feature list and count. |
 | **Baseline** | 0% — `/products/:id` (`_renderProductView` in `src/web-ui/routes/products.js`) shows a feature list and `featureCount` only; no aggregate rollup exists today. |
-| **Target** | 100% of a product's rollup fields (discovery scope, taxonomy, test coverage, DoD status) render correctly for skills-framework's own dogfooded product row, verified against a real `/product-sync` run. |
+| **Target** | 100% of a product's rollup fields (discovery scope, taxonomy, test coverage, DoD status) render correctly for skills-framework's own dogfooded product row, verified against a real sync via the Contents API. |
 | **Minimum validation signal** | The rollup view renders for skills-framework's own product with at least the aggregate test-coverage and DoD-status fields correct — taxonomy grouping may follow in a fast-follow if it proves harder to get right first. |
-| **Measurement method** | Manual verification: run `/product-sync`, load `/products/:id`, compare rendered values against a hand-computed aggregate from `pipeline-state.json`. Measured by Hamish King at DoD time. |
+| **Measurement method** | Manual verification: trigger a sync (Refresh action), load `/products/:id`, compare rendered values against a hand-computed aggregate from `pipeline-state.json`. Measured by Hamish King at DoD time. |
 | **Feedback loop** | If rendered values don't match a hand-computed aggregate, treat as signal-not-met — do not ship with a rollup that's visibly present but numerically wrong; that's worse than no rollup. |
 
-### Metric 2: Staleness is visible, never silent
+### Metric 2: Freshness is visible and refreshable, never silently stale
 
 | Field | Value |
 |-------|-------|
-| **What we measure** | Whether a referenced feature's state change after the last `/product-sync` run is detected and surfaced as a visible flag in the `/products/:id` rollup view. |
-| **Baseline** | 0% — no rollup and no staleness mechanism exist today. |
-| **Target** | 100% of post-sync feature-state changes are detected and flagged on the next render of the rollup view. |
-| **Minimum validation signal** | A single scripted test: advance a feature's `pipeline-state.json` entry after a `/product-sync` run, confirm the rollup view flags itself stale on next render. |
-| **Measurement method** | Automated test in CI, asserting the staleness flag's presence/absence against a controlled before/after state change. Measured continuously by CI; reviewed by Hamish King at DoD. |
-| **Feedback loop** | Any CI failure of this test blocks merge — a rollup that can silently go stale defeats its own purpose as a trustworthy artefact. |
+| **What we measure** | Whether the rollup view shows a last-synced timestamp, and whether a working "Refresh" action re-fetches the connected repo's current `pipeline-state.json` and updates both the timestamp and the rendered values. |
+| **Baseline** | 0% — no rollup, no timestamp, and no refresh action exist today. |
+| **Target** | 100% of rollup views show an accurate last-synced timestamp; triggering Refresh always re-fetches and updates the view to match the connected repo's current state. |
+| **Minimum validation signal** | A single manual test: change a feature's state in the connected repo, trigger Refresh, confirm the rollup view updates and the timestamp advances. |
+| **Measurement method** | Manual verification at DoD time: modify a tracked feature's stage/health in the connected repo, trigger Refresh, confirm both the timestamp and rendered rollup change accordingly. Measured by Hamish King. |
+| **Feedback loop** | If Refresh doesn't visibly update the view or the timestamp, treat as signal-not-met — a rollup that looks fresh but isn't defeats its own purpose. |
 
 ---
 
@@ -51,10 +51,10 @@ Discovery's Why Now names two drivers: the beta launch (a product-value need) an
 
 | Field | Value |
 |-------|-------|
-| **Hypothesis** | Building and proving `/product-sync` against skills-framework's own product row (a single, large, well-instrumented product) is sufficient validation before extending the mechanism to real beta tenants, most of whom will have much smaller and differently-shaped products. |
+| **Hypothesis** | Building and proving the rollup sync mechanism against skills-framework's own product row (a single, large, well-instrumented product) is sufficient validation before extending it to real beta tenants, most of whom will have much smaller and differently-shaped products. |
 | **What we measure** | Whether the rollup view's core computations (aggregate test coverage, DoD status counts) hold up unmodified when run against a materially smaller synthetic or early-tenant product, not just skills-framework's own 49+-feature dataset. |
 | **Baseline** | Untested — no non-skills-framework product exists to compare against yet. |
-| **Target** | The same `/product-sync` logic, unmodified, produces correct rollup output for at least one product with under 10 features, proving the mechanism doesn't implicitly assume skills-framework's own scale or feature-schema quirks. |
+| **Target** | The same sync/computation logic, unmodified, produces correct rollup output for at least one product with under 10 features, proving the mechanism doesn't implicitly assume skills-framework's own scale or feature-schema quirks. |
 | **Minimum signal** | Manual verification against one small synthetic product fixture, even before a real second tenant exists. |
 | **Measurement method** | Manual test run against a fixture product with a handful of features, compared before beta launch. Measured by Hamish King. |
 
