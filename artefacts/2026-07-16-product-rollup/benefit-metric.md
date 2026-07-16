@@ -25,10 +25,10 @@ Discovery's Why Now names two drivers: the beta launch (a product-value need) an
 
 | Field | Value |
 |-------|-------|
-| **What we measure** | Whether `/products/:id` renders a rollup view — discovery scope, feature/epic taxonomy grouping, aggregate test coverage, aggregate DoD status — for a product, in place of today's bare feature list and count. |
+| **What we measure** | Whether `/products/:id` renders a rollup view — discovery scope, feature/epic taxonomy grouping, aggregate health (count by status plus a derived overall product-health signal), aggregate test coverage, aggregate AC coverage, aggregate DoD status — for a product, in place of today's bare feature list and count. |
 | **Baseline** | 0% — `/products/:id` (`_renderProductView` in `src/web-ui/routes/products.js`) shows a feature list and `featureCount` only; no aggregate rollup exists today. |
-| **Target** | 100% of a product's rollup fields (discovery scope, taxonomy, test coverage, DoD status) render correctly for skills-framework's own dogfooded product row, verified against a real sync via the Contents API. |
-| **Minimum validation signal** | The rollup view renders for skills-framework's own product with at least the aggregate test-coverage and DoD-status fields correct — taxonomy grouping may follow in a fast-follow if it proves harder to get right first. |
+| **Target** | 100% of a product's rollup fields (discovery scope, taxonomy, health, test coverage, AC coverage, DoD status) render correctly for skills-framework's own dogfooded product row, verified against a real sync via the Contents API. |
+| **Minimum validation signal** | The rollup view renders for skills-framework's own product with at least the aggregate health, test-coverage, and DoD-status fields correct — taxonomy grouping and AC coverage may follow in a fast-follow if they prove harder to get right first. |
 | **Measurement method** | Manual verification: trigger a sync (Refresh action), load `/products/:id`, compare rendered values against a hand-computed aggregate from `pipeline-state.json`. Measured by Hamish King at DoD time. |
 | **Feedback loop** | If rendered values don't match a hand-computed aggregate, treat as signal-not-met — do not ship with a rollup that's visibly present but numerically wrong; that's worse than no rollup. |
 
@@ -52,7 +52,7 @@ Discovery's Why Now names two drivers: the beta launch (a product-value need) an
 | Field | Value |
 |-------|-------|
 | **Hypothesis** | Building and proving the rollup sync mechanism against skills-framework's own product row (a single, large, well-instrumented product) is sufficient validation before extending it to real beta tenants, most of whom will have much smaller and differently-shaped products. |
-| **What we measure** | Whether the rollup view's core computations (aggregate test coverage, DoD status counts) hold up unmodified when run against a materially smaller synthetic or early-tenant product, not just skills-framework's own 49+-feature dataset. |
+| **What we measure** | Whether the rollup view's core computations (aggregate health, test coverage, AC coverage, DoD status counts) hold up unmodified when run against a materially smaller synthetic or early-tenant product, not just skills-framework's own 49+-feature dataset. |
 | **Baseline** | Untested — no non-skills-framework product exists to compare against yet. |
 | **Target** | The same sync/computation logic, unmodified, produces correct rollup output for at least one product with under 10 features, proving the mechanism doesn't implicitly assume skills-framework's own scale or feature-schema quirks. |
 | **Minimum signal** | Manual verification against one small synthetic product fixture, even before a real second tenant exists. |
