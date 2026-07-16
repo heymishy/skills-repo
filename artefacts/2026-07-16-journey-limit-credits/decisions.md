@@ -33,6 +33,14 @@
 **Made by:** Claude (agent) + Hamish King (Founder/Operator), 2026-07-16, following the coding agent's own investigation.
 **Revisit trigger:** None — this is the corrected, final scope.
 ---
+**2026-07-16 | ARCH | coding agent (fail-open scope for the new planStateDb adapter)**
+**Decision:** `getPlanState` catches *any* error from the wired adapter (both "Adapter not wired" and a genuine DB read failure) and falls back to the safe default (`{plan:'trial', status:'active'}`) — it does not distinguish the two cases. `setPlanState` also catches and logs (never throws) on any write failure, so a Stripe webhook handler's `await setPlanState(...)` can never cause the handler to fail to respond 200 to Stripe. `checkJourneyCap` inherits this: it can never throw, and a persistence-layer failure of any kind degrades to the pre-existing count-cap behavior, never to unconditional unlimited access.
+**Alternatives considered:** (1) Catch only the specific "Adapter not wired" error and let genuine DB errors propagate — rejected, because `getPlanState` is read on every journey-creation attempt; letting a transient DB outage 500 unrelated journey-creation requests (or block Stripe webhook processing) is a worse outcome than temporarily over-restricting a paid tenant to the trial cap until the DB recovers. (2) Retry-then-fail-closed (block all journeys) on adapter error — rejected, since blocking legitimate trial-tier usage on a DB hiccup is a bigger blast radius than one paid tenant briefly seeing the trial cap, which is the exact defect this story exists to minimize the frequency of, not reintroduce under a different trigger.
+**Rationale:** The safe direction for this specific gate is always "apply the pre-existing, already-shipped count cap" — never "grant unlimited access" and never "500 the request." Both of the rejected alternatives risk the wrong failure direction (a full outage escalating to a worse symptom for either free or paid tenants) for a low-probability, self-healing condition (the DB read recovers on its own once whatever caused the transient error clears).
+**Verified by:** `check-jlc-s1-credit-based-journey-cap.js` U2/U3 (unwired adapter) prove no throw and correct fallback; U4/U5 prove the plan-state gate's paid/downgraded decisions are unaffected when the adapter *is* healthy — the two paths are tested independently.
+**Made by:** Claude (agent), coding agent execution, 2026-07-16.
+**Revisit trigger:** If a future story needs to distinguish "adapter genuinely down" (e.g. to page on-call) from "adapter never wired" (a config gap), add distinct error typing at that time — today both degrade identically because the safe fallback is the same either way.
+---
 
 ## Architecture Decision Records
 
