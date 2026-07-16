@@ -11058,9 +11058,9 @@
       "slug": "2026-07-16-product-rollup",
       "name": "Product Rollup & Aggregation Layer -- Product-Level Health from Feature-Level Artefacts",
       "track": "standard",
-      "stage": "definition",
+      "stage": "test-plan",
       "health": "green",
-      "updatedAt": "2026-07-16T19:46:08.784Z",
+      "updatedAt": "2026-07-16T20:30:19.271Z",
       "discoveryArtefact": "artefacts/2026-07-16-product-rollup/discovery.md",
       "regulated": false,
       "complianceProfile": "standard",
@@ -11444,29 +11444,56 @@
             {
               "slug": "pr-s1",
               "name": "Designate Product as a named primitive and register skills-framework as a product",
-              "stage": "review",
-              "health": "amber",
-              "updatedAt": "2026-07-16T19:58:52.609Z",
+              "stage": "test-plan",
+              "health": "green",
+              "updatedAt": "2026-07-16T20:24:20.523Z",
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "pr-s2",
               "name": "Sync a product's connected repo and show aggregate DoD status",
-              "stage": "review",
-              "health": "amber",
-              "updatedAt": "2026-07-16T19:59:27.475Z",
+              "stage": "test-plan",
+              "health": "green",
+              "updatedAt": "2026-07-16T20:25:30.803Z",
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "pr-s3",
               "name": "Show last-synced freshness and a manual refresh action",
-              "stage": "review",
-              "health": "amber",
-              "updatedAt": "2026-07-16T19:59:49.785Z",
+              "stage": "test-plan",
+              "health": "green",
+              "updatedAt": "2026-07-16T20:26:29.443Z",
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 7,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         },
@@ -11478,38 +11505,74 @@
             {
               "slug": "pr-s4",
               "name": "Render aggregate health on the product rollup view",
-              "stage": "review",
-              "health": "amber",
-              "updatedAt": "2026-07-16T20:00:16.515Z",
+              "stage": "test-plan",
+              "health": "green",
+              "updatedAt": "2026-07-16T20:27:20.519Z",
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "pr-s5",
               "name": "Render aggregate test coverage on the product rollup view",
-              "stage": "review",
-              "health": "amber",
-              "updatedAt": "2026-07-16T20:00:39.773Z",
+              "stage": "test-plan",
+              "health": "green",
+              "updatedAt": "2026-07-16T20:28:12.688Z",
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 7,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "pr-s6",
               "name": "Render aggregate AC coverage on the product rollup view",
-              "stage": "review",
-              "health": "amber",
-              "updatedAt": "2026-07-16T20:00:59.836Z",
+              "stage": "test-plan",
+              "health": "green",
+              "updatedAt": "2026-07-16T20:29:10.403Z",
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "pr-s7",
               "name": "Render discovery scope and feature/epic taxonomy grouping",
-              "stage": "review",
-              "health": "amber",
-              "updatedAt": "2026-07-16T20:01:28.018Z",
+              "stage": "test-plan",
+              "health": "green",
+              "updatedAt": "2026-07-16T20:30:10.617Z",
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
