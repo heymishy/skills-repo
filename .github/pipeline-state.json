@@ -10940,25 +10940,26 @@
         {
           "slug": "tst-s1",
           "name": "Triage the pre-existing baseline test failures",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0,
+            "passing": 9,
             "artefact": "artefacts/2026-07-16-baseline-test-triage/test-plans/tst-s1-triage-pre-existing-baseline-failures-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-16-baseline-test-triage/dor/tst-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-16-baseline-test-triage/dor/tst-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-15T20:07:04.001Z",
-          "prStatus": "none"
+          "prStatus": "draft",
+          "updatedAt": "2026-07-16T06:46:09.068Z"
         }
       ],
       "metrics": [],
