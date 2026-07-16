@@ -11058,15 +11058,48 @@
       "slug": "2026-07-16-product-rollup",
       "name": "Product Rollup & Aggregation Layer -- Product-Level Health from Feature-Level Artefacts",
       "track": "standard",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
-      "updatedAt": "2026-07-16T10:24:02.023Z",
+      "updatedAt": "2026-07-16T18:04:55.698Z",
       "discoveryArtefact": "artefacts/2026-07-16-product-rollup/discovery.md",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "stories": []
+      "stories": [],
+      "benefitMetricArtefact": "artefacts/2026-07-16-product-rollup/benefit-metric.md",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Product shape visible in the web UI",
+          "target": "100% of rollup fields render correctly for skills-framework's own dogfooded product row",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Staleness is visible, never silent",
+          "target": "100% of post-sync feature-state changes detected and flagged",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Dogfooding validates the rollup mechanism before any tenant depends on it (meta-metric)",
+          "target": "Unmodified logic produces correct rollup output for a product under 10 features",
+          "baseline": "untested",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     },
     {
       "slug": "2026-07-16-legacy-ingestion",
