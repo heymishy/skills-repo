@@ -115,6 +115,8 @@ Files: `tests/check-wuce4-docker-deployment.js`.
 
 ---
 
-## Files removed from the baseline separately (AC4, not part of the 69)
+## (b) Deferred — GROUP 10: locally-passing, CI-failing (correction, 5 files)
 
-These 5 files were confirmed now-passing (not part of the 69-file failing set) and are removed from `tests/known-baseline-failures.json` per AC4, independent of this triage report's 69-file categorization: `tests/check-bri-s3.5-nfr-stripe-keys.js`, `tests/check-gpa-sc06-source-path-guard.js`, `tests/check-lab-s3.2-stripe-checkout.js`, `tests/check-lab-s3.4-stripe-webhook.js`, `tests/run-gpa-tests.js`.
+**Correction (post-merge, real GitHub Actions CI run on PR #484):** these 5 files were initially found "confirmed now-passing" and removed from `tests/known-baseline-failures.json`, based on local test runs (both this agent's and an earlier independent operator sweep) on a Windows dev machine. The actual CI run on this PR showed all 5 still genuinely failing on the real Linux GitHub Actions runner, correctly triggering `scripts/ci-test-regression-check.js`'s regression gate. CI is the authoritative environment for this repo's gate, not a local machine — restored to the baseline. Root cause of the local-vs-CI discrepancy (likely an environment-dependent assumption in these files' Stripe-key/source-path checks) is not yet investigated; logged as a follow-up in `decisions.md`.
+
+Files: `tests/check-bri-s3.5-nfr-stripe-keys.js`, `tests/check-gpa-sc06-source-path-guard.js`, `tests/check-lab-s3.2-stripe-checkout.js`, `tests/check-lab-s3.4-stripe-webhook.js`, `tests/run-gpa-tests.js`.

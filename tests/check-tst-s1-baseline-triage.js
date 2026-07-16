@@ -233,12 +233,24 @@ console.log('\n[tst-s1-baseline-triage] U5 — check-md-3-adr.js AC3 classificat
   );
 }
 
-// ── U6: the 5 now-passing files are not in the refreshed baseline ──────────
+// ── U6: the 5 locally-now-passing files remain in the baseline (CI-verified) ──
+// CORRECTION (post-merge, real CI run on PR #484): these 5 files pass on a
+// local dev machine but genuinely fail on the real GitHub Actions CI runner
+// -- CI is the authoritative environment for this repo's regression gate,
+// not a local machine, so they were restored to the baseline rather than
+// removed. See decisions.md's "5 files restored to baseline" entry.
 
-console.log('\n[tst-s1-baseline-triage] U6 — 5 now-passing files removed from baseline');
+console.log('\n[tst-s1-baseline-triage] U6 — 5 locally-passing-but-CI-failing files remain in baseline');
 NOW_PASSING_5.forEach(function (f) {
-  assert('U6: ' + f + ' not in known-baseline-failures.json', !baselineFiles.includes(f));
+  assert('U6: ' + f + ' is present in known-baseline-failures.json (CI-verified still failing)', baselineFiles.includes(f));
 });
+{
+  const decisionsText = fs.readFileSync(path.join(__dirname, '..', 'artefacts', '2026-07-16-baseline-test-triage', 'decisions.md'), 'utf8');
+  assert(
+    'U6: decisions.md documents the local-vs-CI discrepancy for the restored files',
+    /restored.*(to the baseline|5 files)|local-vs-CI/i.test(decisionsText),
+  );
+}
 
 // ── U7: no category-(a) Fixed file remains in the baseline ─────────────────
 
