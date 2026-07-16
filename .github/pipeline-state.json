@@ -11053,6 +11053,20 @@
       ],
       "metrics": [],
       "updatedAt": "2026-07-16T09:54:08.829Z"
+    },
+    {
+      "slug": "2026-07-16-product-rollup",
+      "name": "Product Rollup & Aggregation Layer -- Product-Level Health from Feature-Level Artefacts",
+      "track": "standard",
+      "stage": "discovery",
+      "health": "green",
+      "updatedAt": "2026-07-16T10:24:02.023Z",
+      "discoveryArtefact": "artefacts/2026-07-16-product-rollup/discovery.md",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
