@@ -117,8 +117,13 @@ const NOW_PASSING_5 = [
   'tests/run-gpa-tests.js',
 ];
 
+// tests/check-md-3-adr.js is NOT in FIXED_FILES: its T4 logic was genuinely
+// corrected (verified 9/9 passing standalone with no imposed time limit),
+// but scripts/run-all-tests.js's own 120s per-file spawnSync timeout always
+// kills its nested npm test check before it can complete inside the
+// aggregate suite -- so it can never be removed from the baseline. See
+// triage-report.md's dedicated AC3 section for the full explanation.
 const FIXED_FILES = [
-  'tests/check-md-3-adr.js',
   'tests/check-bee1-landing-page.js',
   'tests/check-ilc1-capture-schema.js',
 ];
@@ -204,11 +209,6 @@ console.log('\n[tst-s1-baseline-triage] U4 — every Fixed file passes standalon
 FIXED_FILES.forEach(function (f) {
   assert('U4: ' + f + ' is documented as Fixed in the report', fixedSection.includes(f.split('/').pop()));
 });
-// Note: actually spawning check-md-3-adr.js here would trigger its own nested
-// `npm test` run (by design, see its T4) which takes several minutes -- too
-// slow for a meta-test that should run quickly as part of the full suite.
-// It has already been verified standalone during this story's implementation
-// (9/9 passing, see decisions.md). Spawn the two fast ones directly here.
 ['tests/check-bee1-landing-page.js', 'tests/check-ilc1-capture-schema.js'].forEach(function (f) {
   const result = spawnSync(process.execPath, [path.join(ROOT, f)], { cwd: ROOT, timeout: 30000 });
   const code = result.status === null ? 1 : result.status;

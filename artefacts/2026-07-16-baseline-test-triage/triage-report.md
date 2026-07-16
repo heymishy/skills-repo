@@ -4,36 +4,38 @@
 **Date:** 2026-07-16
 **Baseline verified against:** `node scripts/run-all-tests.js` fresh run on this worktree — 69 failing files out of 337 run, exactly matching the story's documented "Current, freshly-verified state" list (confirmed byte-for-byte against the story's own diff).
 
-Every failing file was run standalone (`node <file>`) and its actual output read before categorization — none of the 69 entries below are filename-only guesses. Categories: **(a) Fixed** — small bounded fix made, now passes standalone. **(b) Deferred** — RISK-ACCEPT logged in `decisions.md`, root cause understood but the fix is out of proportion for this story (a real product/architecture decision, or a multi-file feature gap). **(c) Investigated-and-classified** — `tests/check-md-3-adr.js` only, per the story's AC3.
+Every failing file was run standalone (`node <file>`) and its actual output read before categorization — none of the 69 entries below are filename-only guesses. Categories: **(a) Fixed** — small bounded fix made, now passes standalone AND does not reappear as a failure in a fresh full-suite run. **(b) Deferred** — RISK-ACCEPT logged in `decisions.md`, root cause understood but the fix is out of proportion for this story (a real product/architecture decision, or a multi-file feature gap). **(c) Investigated-and-classified** — `tests/check-md-3-adr.js` only, per the story's AC3 (folds into Deferred here — see below for why).
 
 ## Summary
 
 | Category | Count |
 |---|---|
-| (a) Fixed | 3 |
-| (b) Deferred | 65 |
-| (c) Investigated-and-classified (folds into Fixed once resolved) | 1 (check-md-3-adr.js — resolved as Fixed, see below) |
+| (a) Fixed | 2 |
+| (b) Deferred (including `check-md-3-adr.js`, category c) | 67 |
 | **Total** | **69** |
 
-Net: 3 files fixed and removed from the baseline; 66 files remain deferred and documented (65 (b) + the 5 already-confirmed-now-passing files removed separately per AC4 — see `tests/known-baseline-failures.json`).
+Net: 2 files fixed and removed from the baseline; 67 files remain deferred and documented (66 (b) + `check-md-3-adr.js` (c), which is genuinely improved but cannot be removed from the baseline — see its dedicated section below) — plus the 5 already-confirmed-now-passing files removed separately per AC4 (see `tests/known-baseline-failures.json`).
+
+**Correction note (post-verification):** an earlier draft of this report classified `check-md-3-adr.js` as Fixed after it passed 9/9 standalone with no time limit. A subsequent full `node scripts/run-all-tests.js` run showed it *still* appears in the failed-files list — not because the logic fix is wrong, but because `run-all-tests.js`'s own `spawnSync` call applies a 120-second timeout per child process, and this file's T4 check (which runs a full nested `npm test`) takes several minutes to complete. It is killed by that timeout every time it runs inside the aggregate suite, regardless of the correctness of its internal comparison logic. Recorded here rather than silently corrected, per this story's own standard: never present a categorization that hasn't been verified against the real, full-suite signal that `scripts/ci-test-regression-check.js` actually gates on.
 
 ---
 
-## (a) Fixed — 3 files
+## (a) Fixed — 2 files
 
 | File | Reason |
 |---|---|
-| `tests/check-md-3-adr.js` | (c)+(a): T4's internal "no regressions" self-check compared a nested `npm test` run against a hardcoded 4-pattern allowlist (`KNOWN_FAILURE_PATTERNS`) written before pcr-s1's runner (PR #455) unmasked this repo's real ~69-file baseline. When invoked directly via `node scripts/run-all-tests.js` (this story's own canonical method), the `npm_lifecycle_event` recursion guard doesn't fire, so T4 actually runs and flags all 69 known baseline failures as "new". T1–T3 (the real ADR-015 content checks) always passed. Repointed T4 at `scripts/ci-test-regression-check.js`'s real baseline instead of the stale list. Verified: 9/9 passing standalone. See AC3 classification below. |
-| `tests/check-bee1-landing-page.js` | T11's "zero posthog packages" NFR assertion was invalidated by bri-s1.2's later, separately-decided `posthog-node` dependency (added for feature-flag evaluation, a different purpose than bee.1's own hand-rolled analytics — see `artefacts/2026-07-09-beta-readiness-infra/decisions.md`, 2026-07-10 ARCH entry). Updated the check to allow only the specific, documented `posthog-node` package rather than asserting zero PostHog packages forever. Verified: 25/25 passing standalone. |
-| `tests/check-ilc1-capture-schema.js` | The "no new dependencies" NFR asserted a point-in-time snapshot (`ALLOWED_PROD_DEPS = ['pino']`) that later, unrelated, already-decided stories legitimately grew past (`@upstash/redis`, `bcrypt`, `pg`, `posthog-node`, `stripe` — each from its own documented story). Refreshed the allowlist to the current, documented dependency set. Verified: 12/12 passing standalone. |
+| `tests/check-bee1-landing-page.js` | T11's "zero posthog packages" NFR assertion was invalidated by bri-s1.2's later, separately-decided `posthog-node` dependency (added for feature-flag evaluation, a different purpose than bee.1's own hand-rolled analytics — see `artefacts/2026-07-09-beta-readiness-infra/decisions.md`, 2026-07-10 ARCH entry). Updated the check to allow only the specific, documented `posthog-node` package rather than asserting zero PostHog packages forever. Verified: 25/25 passing standalone, and does not reappear in a fresh full-suite run. |
+| `tests/check-ilc1-capture-schema.js` | The "no new dependencies" NFR asserted a point-in-time snapshot (`ALLOWED_PROD_DEPS = ['pino']`) that later, unrelated, already-decided stories legitimately grew past (`@upstash/redis`, `bcrypt`, `pg`, `posthog-node`, `stripe` — each from its own documented story). Refreshed the allowlist to the current, documented dependency set. Verified: 12/12 passing standalone, and does not reappear in a fresh full-suite run. |
 
-### AC3 classification: `tests/check-md-3-adr.js`
+### AC3 classification: `tests/check-md-3-adr.js` (category c, folds into Deferred)
 
-Determined to be a **pre-existing gap, not a genuinely new regression**. Evidence: (1) `package.json`'s `scripts.test` is `node scripts/run-all-tests.js` (pcr-s1) — when invoked via `npm test`, npm sets `npm_lifecycle_event=test`, which propagates to every spawned child test file (including this one when it's discovered inside a run), causing T4's guard to skip the check entirely and the file to pass. (2) When invoked directly via `node scripts/run-all-tests.js` (bypassing npm) — the exact method both this story's canonical baseline and my fresh 2026-07-16 run use — that env var is never set, so T4 actually fires. (3) The recursion guard and its narrow `KNOWN_FAILURE_PATTERNS` allowlist were added in commit `1c440375`, well before pcr-s1 (PR #455, 2026-07-11) unmasked the real ~69-file baseline — so the failure mode has existed, latent, since before pcr-s1 and was never a function of any change introduced after that. The 2026-07-12 baseline snapshot's own note ("passes on Linux CI") reflects CI's real invocation path (`npm test`), not an OS difference as originally assumed — the true cause is the invocation-method-dependent guard, and it was simply never tested against the direct-invocation path this triage story uses. Fixed per above (category a).
+Determined to be a **pre-existing gap, not a genuinely new regression**. Evidence: (1) `package.json`'s `scripts.test` is `node scripts/run-all-tests.js` (pcr-s1) — when invoked via `npm test`, npm sets `npm_lifecycle_event=test`, which propagates to every spawned child test file (including this one when it's discovered inside a run), causing T4's guard to skip the check entirely and the file to pass. (2) When invoked directly via `node scripts/run-all-tests.js` (bypassing npm) — the exact method both this story's canonical baseline and my fresh 2026-07-16 run use — that env var is never set, so T4 actually fires. (3) The recursion guard and its narrow `KNOWN_FAILURE_PATTERNS` allowlist were added in commit `1c440375`, well before pcr-s1 (PR #455, 2026-07-11) unmasked the real ~69-file baseline — so the failure mode has existed, latent, since before pcr-s1 and was never a function of any change introduced after that. The 2026-07-12 baseline snapshot's own note ("passes on Linux CI") reflects CI's real invocation path (`npm test`), not an OS difference as originally assumed — the true cause is the invocation-method-dependent guard, and it was simply never tested against the direct-invocation path this triage story uses.
+
+**Why this stays in the baseline despite a genuine logic fix:** T4's comparison logic was corrected (it now checks failures against `scripts/ci-test-regression-check.js`'s real baseline instead of a stale 4-pattern allowlist — kept in the code, a real improvement, see the source comment in `tests/check-md-3-adr.js`) and verified 9/9 passing when run standalone with no imposed time limit. However, T4's design requires a full nested `npm test` run to complete (several minutes) whenever the `npm_lifecycle_event` guard doesn't fire — and `scripts/run-all-tests.js`'s own `spawnSync` call applies a hard 120-second timeout per child process. That means this file is *always* killed by the runner's own timeout when run as part of the aggregate suite (`node scripts/run-all-tests.js`), independent of whether T4's internal logic is now correct. Confirmed directly: a full suite run after the logic fix still lists `tests/check-md-3-adr.js` as failed, with no completed T4 output — the process was killed mid-check, not failed on a real assertion. Resolving this fully would require either (i) increasing `run-all-tests.js`'s per-file timeout (explicitly out of scope — owned by pcr-s1), or (ii) redesigning T4 to not require a multi-minute recursive `npm test` call at all (a larger architectural change than this bounded triage story should make unilaterally). Deferred as category (b)/(c), logged in `decisions.md`.
 
 ---
 
-## (b) Deferred — grouped RISK-ACCEPT buckets (62 files)
+## (b) Deferred — grouped RISK-ACCEPT buckets (66 files, including `check-md-3-adr.js`)
 
 ### GROUP 1 — Missing `.github/skills/<name>/SKILL.md` (or `.github/templates/<name>.md`) mirror — 34 files
 
@@ -91,10 +93,11 @@ Files: `tests/check-wuce4-docker-deployment.js`.
 
 ---
 
-## (b) Deferred — individually investigated, no shared group (14 files)
+## (b) Deferred — individually investigated, no shared group (15 files)
 
 | File | Root cause (one sentence) |
 |---|---|
+| `tests/check-md-3-adr.js` | (c) AC3: determined to be a pre-existing gap, not a genuinely new regression (see the dedicated AC3 classification section above). T4's stale comparison logic was fixed and verified 9/9 passing standalone with no imposed time limit, but the file cannot be removed from the baseline: `scripts/run-all-tests.js`'s own 120-second per-file `spawnSync` timeout always kills T4's nested `npm test` check (which takes several minutes) before it can complete, so this file is killed (not failed on a real assertion) every time it runs inside the aggregate suite. |
 | `tests/check-artefact-coverage.js` | 5 `src/` module slugs are uncovered by any story artefact and not yet exempted in `artefact-coverage-exemptions.json`; needs a per-slug decision (retrospective story vs. exemption), not invented here. |
 | `tests/check-bee3-posthog.js` | 2 of 27 assertions fail on `posthog.capture('journey_created')` presence/ordering in the chat page's rendered HTML; needs a dedicated PostHog-instrumentation review to confirm whether the event was renamed, moved, or genuinely dropped. |
 | `tests/check-bri-s2.2-neon-staging-branch.js` | Already documented: `artefacts/2026-07-09-beta-readiness-infra/decisions.md` (bri-s2.4, 2026-07-11 RISK-ACCEPT) — T1's expected-diff string collides with later, legitimate Google OAuth provider-registry additions to `auth.js`/`server.js`. |

@@ -1,6 +1,6 @@
 {
   "recordedAt": "2026-07-16",
-  "note": "Pre-existing, already-documented test failures unrelated to any specific PR. Refreshed by tst-s1 (2026-07-16 baseline triage) -- see artefacts/2026-07-16-baseline-test-triage/triage-report.md for the per-file categorization and artefacts/2026-07-16-baseline-test-triage/decisions.md for the RISK-ACCEPT groupings. Removed since the prior 2026-07-12 snapshot: 5 files confirmed now-passing (check-bri-s3.5-nfr-stripe-keys.js, check-gpa-sc06-source-path-guard.js, check-lab-s3.2-stripe-checkout.js, check-lab-s3.4-stripe-webhook.js, run-gpa-tests.js), plus 3 files this story fixed outright (check-md-3-adr.js, check-bee1-landing-page.js, check-ilc1-capture-schema.js). Used by scripts/ci-test-regression-check.js to gate CI on new regressions only. A file passing that used to be here is fine (remove it next time this list is refreshed). A NEW failing file not in this list fails CI.",
+  "note": "Pre-existing, already-documented test failures unrelated to any specific PR. Refreshed by tst-s1 (2026-07-16 baseline triage) -- see artefacts/2026-07-16-baseline-test-triage/triage-report.md for the per-file categorization and artefacts/2026-07-16-baseline-test-triage/decisions.md for the RISK-ACCEPT groupings. Removed since the prior 2026-07-12 snapshot: 5 files confirmed now-passing (check-bri-s3.5-nfr-stripe-keys.js, check-gpa-sc06-source-path-guard.js, check-lab-s3.2-stripe-checkout.js, check-lab-s3.4-stripe-webhook.js, run-gpa-tests.js), plus 2 files this story fixed outright (check-bee1-landing-page.js, check-ilc1-capture-schema.js). check-md-3-adr.js's internal T4 logic was also fixed (verified 9/9 passing standalone with no time limit) but it remains in this baseline: run-all-tests.js's own 120s per-file spawnSync timeout always kills its T4 check (a nested npm test taking several minutes) before it can complete when run as part of the aggregate suite -- see triage-report.md's dedicated AC3 section for the full explanation. Used by scripts/ci-test-regression-check.js to gate CI on new regressions only. A file passing that used to be here is fine (remove it next time this list is refreshed). A NEW failing file not in this list fails CI.",
   "files": [
     "scripts/check-pipeline-state-integrity.js",
     "tests/artefact-preview.test.js",
@@ -31,6 +31,7 @@
     "tests/check-lab-s3.5-billing-portal.js",
     "tests/check-md-1-skill-md.js",
     "tests/check-md-2-skill-contracts.js",
+    "tests/check-md-3-adr.js",
     "tests/check-mfc1-model-first-chat-session.js",
     "tests/check-mfc2-chat-ux-improvements.js",
     "tests/check-model-routing.js",
