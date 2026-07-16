@@ -80,7 +80,7 @@ If not found:
 
 > ⚠️ No `architecture-guardrails.md` found - proceeding without guardrail check.
 > Consider running `/bootstrap` or creating `.github/architecture-guardrails.md`
-> from the template at `.github/templates/architecture-guardrails.md` to enable
+> from the template at `templates/architecture-guardrails.md` to enable
 > this check in future.
 
 Record whether guardrails were available or absent in the epic artefact.
@@ -131,13 +131,13 @@ Present the proposed epic grouping before writing:
 > Reply: looks good — or describe how to reorganise
 
 Save each epic to `artefacts/[feature]/epics/[epic-slug].md`
-conforming to `.github/templates/epic.md`.
+conforming to `templates/epic.md`.
 
 ---
 
 ## Step 4 — Story decomposition
 
-For each epic, write stories conforming to `.github/templates/story.md`.
+For each epic, write stories conforming to `templates/story.md`.
 
 **Discipline:**
 - Every story names a persona from the benefit-metric artefact — not "a user"
@@ -196,7 +196,7 @@ migration story (not user-facing, driven by data rules or traffic switching):
 > Reply: 1 or 2
 
 If migration story template confirmed: write the story using
-`.github/templates/migration-story.md`.
+`templates/migration-story.md`.
 > 2. Defer to post-MVP
 > 3. Replace an existing MVP scope item — which one?
 >
@@ -397,7 +397,7 @@ Consolidate into a feature-level NFR profile:
 > Reply: confirm — or update [field] to [value]
 
 Save to `artefacts/[feature]/nfr-profile.md` conforming to
-`.github/templates/nfr-profile.md`.
+`templates/nfr-profile.md`.
 
 If no NFRs are identified, state this explicitly in the profile:
 `Status: Active — No NFRs identified at definition. Reviewed at [date].`

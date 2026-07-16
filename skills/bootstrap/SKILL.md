@@ -181,7 +181,7 @@ For each file, check if it exists before creating:
 - Missing: create with canonical content
 
 Report progress as files are created:
-> "Created: `.github/templates/epic.md`"
+> "Created: `templates/epic.md`"
 > "Skipped (exists): `.github/skills/discovery/SKILL.md`"
 
 ### Step 3: Configure context
@@ -272,7 +272,7 @@ connected to `heymishy/skills-repo` for future skill updates.
 > Add `heymishy/skills-repo` as a named `skills-upstream` remote. When
 > updates ship, you fetch and cherry-pick only the paths you want:
 > ```bash
-> git checkout skills-upstream/master -- .github/skills/ .github/templates/ scripts/
+> git checkout skills-upstream/master -- .github/skills/ templates/ scripts/
 > ```
 > You review the diff before committing. Your `artefacts/`, `context.yml`,
 > and product files are never touched. Best for teams who customise skills locally.
@@ -320,7 +320,7 @@ skills_upstream:
   repo: https://github.com/heymishy/skills-repo.git
   sync_paths:
     - .github/skills/
-    - .github/templates/
+    - templates/
     - scripts/
   strategy: manual   # manual | pr-on-push
 ```
@@ -330,14 +330,14 @@ Add the following update command to the completion summary for the user to copy:
 ```bash
 # To pull future skills updates (review diff before committing):
 git fetch skills-upstream
-git checkout skills-upstream/master -- .github/skills/ .github/templates/ scripts/
+git checkout skills-upstream/master -- .github/skills/ templates/ scripts/
 git diff --staged   # review what changed
 git commit -m "chore: sync skills from skills-upstream [YYYY-MM-DD]"
 ```
 
 Confirm:
 > ✅ `skills-upstream` remote added and fetched.
-> Run `git fetch skills-upstream && git checkout skills-upstream/master -- .github/skills/ .github/templates/ scripts/` to pull future updates.
+> Run `git fetch skills-upstream && git checkout skills-upstream/master -- .github/skills/ templates/ scripts/` to pull future updates.
 
 **If C — Enterprise fork:**
 
@@ -357,7 +357,7 @@ skills_upstream:
   repo: [fork-url]
   sync_paths:
     - .github/skills/
-    - .github/templates/
+    - templates/
     - scripts/
   strategy: manual
   fork_of: https://github.com/heymishy/skills-repo.git
@@ -470,7 +470,7 @@ Skills update strategy: [chosen option summary — see Step 3d output above]
 
 Reference:
   Pipeline overview:  .github/copilot-instructions.md
-  Template formats:   .github/templates/
+  Template formats:   templates/
   Example artefacts:  artefacts/ (empty until first /discovery run)
 ```
 

@@ -215,13 +215,13 @@ If programme type is a service or library rewrite:
 > Reply: list consumers — or type "unknown, will identify during discovery"
 
 Create `artefacts/[programme-slug]/consumer-registry.md` from
-`.github/templates/consumer-registry.md`.
+`templates/consumer-registry.md`.
 
 ---
 
 ### Step 6 — Programme artefact
 
-Conforms to `.github/templates/programme.md`.
+Conforms to `templates/programme.md`.
 Save to `artefacts/[programme-slug]/programme.md`.
 
 Output completion:

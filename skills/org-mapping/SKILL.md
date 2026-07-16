@@ -69,7 +69,7 @@ Recommend updates to:
 
 ## Output artefact
 
-Use template: `.github/templates/org-mapping.md`
+Use template: `templates/org-mapping.md`
 
 Save to:
 - `artefacts/[programme-slug]/org-mapping.md`

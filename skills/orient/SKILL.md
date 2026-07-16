@@ -125,7 +125,7 @@ Use confirmatory language. Present the classification as something to confirm, n
 
 **Detection signal:** Repository has git history, configuration files, or ops/infrastructure files (`.github/`, `Dockerfile`, CI configs, `scripts/`, `docs/`) but no application logic files triggering Entry B (no `src/`, `app/`, or `lib/` with code files) and no pipeline artefacts (no `artefacts/` directory or empty). Entry B is not applicable because no application logic files were found under `src/`, `app/`, or `lib/`. Greenfield (new empty repo with no commits or history) is handled earlier in the routing chain before Entry C is reached.
 
-> **This looks like Entry C** ÔÇö a no-history brownfield repo: the project exists and has been operated, but no delivery pipeline artefacts or application logic exist to route through Entry A or Entry B. Use `.github/templates/retrospective-story.md` to document any work already delivered before the pipeline was adopted.
+> **This looks like Entry C** ÔÇö a no-history brownfield repo: the project exists and has been operated, but no delivery pipeline artefacts or application logic exist to route through Entry A or Entry B. Use `templates/retrospective-story.md` to document any work already delivered before the pipeline was adopted.
 
 **Why Entry C (not Entry B):** No application logic files found under `src/`, `app/`, or `lib/`. Entry B requires code to reverse-engineer. Entry C covers the case where only ops/config/history signals are present.
 
@@ -134,7 +134,7 @@ Use confirmatory language. Present the classification as something to confirm, n
 **Adoption path ÔÇö retrospective discovery:**
 The right first step is a retrospective `/discovery` run to document what was built, why, and for whom. This is not a greenfield discovery ÔÇö it is retrospective discovery of existing work.
 
-1. Use the `.github/templates/retrospective-story.md` template to create retroactive story artefacts for any work already delivered.
+1. Use the `templates/retrospective-story.md` template to create retroactive story artefacts for any work already delivered.
 2. Run `/discovery` with a retrospective framing ÔÇö describe the system as it exists today, not as a future vision.
 3. Follow the standard pipeline from `/discovery` forward: `/benefit-metric` ÔåÆ `/definition` ÔåÆ test plan ÔåÆ DoR.
 

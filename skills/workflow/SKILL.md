@@ -217,7 +217,7 @@ Before confirming short-track, verify it actually qualifies:
 > Optional: `--output <path>` to write to a file instead of stdout.
 >
 > The report reads `.github/pipeline-state.json` (plus archive) and produces a Markdown report.
-> Section headers are defined in `.github/templates/status-report.md` — edit that file to customise headings without touching the script.
+> Section headers are defined in `templates/status-report.md` — edit that file to customise headings without touching the script.
 >
 > Ready to generate? Reply: daily — or weekly
 

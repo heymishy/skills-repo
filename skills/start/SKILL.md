@@ -145,7 +145,7 @@ Before presenting orientation, silently check the repository for brownfield sign
 
 **Condition:** Files exist under `artefacts/` in any `dod/` subdirectory (e.g. `artefacts/*/dod/`).
 
-**Route to:** `.github/templates/retrospective-story.md` for retroactive chain writing.
+**Route to:** `templates/retrospective-story.md` for retroactive chain writing.
 
 **Explain in one sentence why this routing applies:** State that DoD artefacts exist for delivered work that has no full pipeline chain, so the retrospective-story.md template is used to reconstruct the missing artefacts.
 
