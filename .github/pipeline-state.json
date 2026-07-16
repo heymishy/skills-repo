@@ -11058,9 +11058,9 @@
       "slug": "2026-07-16-product-rollup",
       "name": "Product Rollup & Aggregation Layer -- Product-Level Health from Feature-Level Artefacts",
       "track": "standard",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-07-16T20:30:19.271Z",
+      "updatedAt": "2026-07-16T22:34:01.792Z",
       "discoveryArtefact": "artefacts/2026-07-16-product-rollup/discovery.md",
       "regulated": false,
       "complianceProfile": "standard",
@@ -11119,8 +11119,8 @@
           "label": "No user-supplied content in innerHTML without sanitisation",
           "status": "met",
           "evidence": "No unsanitised innerHTML use — referenced in pr-s3, pr-s4 Architecture Constraints. No violations found.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-07-16T20:05:57.530Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-16T22:33:50.839Z"
         },
         {
           "id": "MC-SEC-02",
@@ -11128,8 +11128,8 @@
           "label": "No credentials, tokens, or personal data in committed files",
           "status": "met",
           "evidence": "OAuth token never persisted to cache table or logged — referenced in pr-s2 Architecture Constraints. No violations found.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-07-16T20:05:57.530Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-16T22:33:50.839Z"
         },
         {
           "id": "MC-SEC-03",
@@ -11377,8 +11377,8 @@
           "label": "Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit",
           "status": "met",
           "evidence": "Satisfied by this discovery -> benefit-metric -> definition -> review chain existing before/alongside the src/ module and pipeline-state.json changes this feature introduces.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-07-16T20:05:57.530Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-16T22:33:50.839Z"
         },
         {
           "id": "ADR-012",
@@ -11422,8 +11422,8 @@
           "label": "Playwright is the E2E testing framework; specs in tests/e2e/; devDependency only; unit test chain (npm test) must not invoke Playwright; auth bypass is test-fixture-layer only (NODE_ENV=test guard)",
           "status": "met",
           "evidence": "Review findings 1-M1/2-M1/3-M1/4-M1/5-M1/6-M1/7-M2 (run 1) found this ADR unreferenced across all 7 stories; fixed same-session by adding an explicit ADR-018 reference to each story's Architecture Constraints.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-07-16T20:05:57.530Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-16T22:33:50.839Z"
         },
         {
           "id": "ADR-025",
@@ -11431,8 +11431,72 @@
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
           "status": "met",
           "evidence": "Cached rollup record and product row both scoped by product_id (itself tenant_id-scoped) — referenced in pr-s1/pr-s2 Architecture Constraints. No violations found.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-07-16T20:05:57.530Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-16T22:33:50.839Z"
+        },
+        {
+          "id": "NFR-perf-sync-latency",
+          "category": "nfr",
+          "label": "Sync is a single bounded Contents API call + one Postgres write, not per-feature calls",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-16T22:33:50.839Z"
+        },
+        {
+          "id": "NFR-perf-refresh-feedback",
+          "category": "nfr",
+          "label": "Refresh UI feedback appears within 200ms of click",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-16T22:33:50.839Z"
+        },
+        {
+          "id": "NFR-perf-no-extra-calls",
+          "category": "nfr",
+          "label": "Rollup dimension rendering makes no additional API/DB calls beyond the sync",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-16T22:33:50.839Z"
+        },
+        {
+          "id": "NFR-sec-oauth-token-scoped",
+          "category": "nfr",
+          "label": "GitHub Contents API access uses the requesting user's own OAuth token (ADR-020), never a service account",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-16T22:33:50.839Z"
+        },
+        {
+          "id": "NFR-sec-tenant-scoping",
+          "category": "nfr",
+          "label": "Cached rollup record and product row scoped by product_id (tenant_id-scoped), following ADR-025",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-16T22:33:50.839Z"
+        },
+        {
+          "id": "NFR-sec-no-input-validation-gap",
+          "category": "nfr",
+          "label": "Fetched pipeline-state.json content parsed defensively; malformed shape fails sync visibly, not silently",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-16T22:33:50.839Z"
+        },
+        {
+          "id": "NFR-sec-no-token-persistence",
+          "category": "nfr",
+          "label": "OAuth token never persisted to cache table or logged (MC-SEC-02)",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-16T22:33:50.839Z"
+        },
+        {
+          "id": "NFR-audit-sync-logging",
+          "category": "nfr",
+          "label": "Sync attempts (success/failure) logged with product_id and timestamp",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-16T22:33:50.839Z"
         }
       ],
       "epics": [
@@ -11444,9 +11508,9 @@
             {
               "slug": "pr-s1",
               "name": "Designate Product as a named primitive and register skills-framework as a product",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-16T20:24:20.523Z",
+              "updatedAt": "2026-07-16T22:28:40.820Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11457,32 +11521,34 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "pr-s2",
               "name": "Sync a product's connected repo and show aggregate DoD status",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-16T20:25:30.803Z",
+              "updatedAt": "2026-07-16T22:29:34.148Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 9,
+                "totalTests": 11,
                 "passing": 0
               },
-              "acTotal": 4,
+              "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "pr-s3",
               "name": "Show last-synced freshness and a manual refresh action",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-16T20:26:29.443Z",
+              "updatedAt": "2026-07-16T22:30:15.826Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11493,7 +11559,8 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             }
           ]
         },
@@ -11505,9 +11572,9 @@
             {
               "slug": "pr-s4",
               "name": "Render aggregate health on the product rollup view",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-16T20:27:20.519Z",
+              "updatedAt": "2026-07-16T22:30:55.743Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11518,14 +11585,15 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "pr-s5",
               "name": "Render aggregate test coverage on the product rollup view",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-16T20:28:12.688Z",
+              "updatedAt": "2026-07-16T22:31:38.410Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11536,14 +11604,15 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "pr-s6",
               "name": "Render aggregate AC coverage on the product rollup view",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-16T20:29:10.403Z",
+              "updatedAt": "2026-07-16T22:32:24.132Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11554,14 +11623,15 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "pr-s7",
               "name": "Render discovery scope and feature/epic taxonomy grouping",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-16T20:30:10.617Z",
+              "updatedAt": "2026-07-16T22:33:15.743Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11572,7 +11642,8 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             }
           ]
         }

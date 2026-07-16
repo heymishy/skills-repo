@@ -57,6 +57,13 @@
 **Made by:** Hamish King (agent-proposed resolution, consistent with prior precedent, accepted)
 **Revisit trigger:** If beta launch approaches and this validation still hasn't happened informally, convert it into an explicit story rather than letting it remain an assumed side-effect.
 ---
+**2026-07-17 | RISK-ACCEPT | definition-of-ready**
+**Decision:** W4 (verification script reviewed by a domain expert) is acknowledged, not resolved, for all 7 stories (pr-s1 through pr-s7) at DoR sign-off time.
+**Alternatives considered:** Pause DoR sign-off until each of the 7 verification scripts has been walked through and confirmed correct before assigning any story to the coding agent.
+**Rationale:** The verification scripts were written in this same session, immediately after their corresponding test plans, closely mirroring the story ACs they derive from. The operator (who is also the sole domain expert in this solo-operator context) chose to proceed now and walk through each script before or during implementation rather than front-loading the review before any coding starts — consistent with continuous-flow delivery in a solo-operator posture (`.github/architecture-guardrails.md`'s W4 posture).
+**Made by:** Hamish King — Founder/Operator — 2026-07-17
+**Revisit trigger:** If a verification script's described behaviour turns out to be wrong once actually walked through (pre-code or post-merge smoke test), treat it as a normal AC/test-plan revision — this RISK-ACCEPT does not exempt any story from eventually being checked against its script.
+---
 
 ## Architecture Decision Records
 

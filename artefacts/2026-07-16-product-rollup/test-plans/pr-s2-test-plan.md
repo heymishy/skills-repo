@@ -15,12 +15,13 @@
 | AC2 | `/products/:id` renders cached DoD status | — | 1 test | — | — | — | 🟢 |
 | AC3 | Fetch failure surfaces visibly, no silent stale/empty data | 2 tests | — | — | — | — | 🟢 |
 | AC4 | Epic-nested stories counted correctly alongside flat stories | 2 tests | — | — | — | — | 🟢 |
+| AC5 | Injectable adapter wired to real implementation, verified by behavioural test | 1 test | — | — | — | — | 🟢 |
 
 ---
 
 ## Coverage gaps
 
-None.
+None. (AC5 added at /definition-of-ready time — H-ADAPTER found the original 4 ACs didn't scope the new injectable adapter's production wiring, per CLAUDE.md's D37 rule.)
 
 ---
 
@@ -99,6 +100,22 @@ None — all data is synthesizable in test setup; no real GitHub credentials nee
 - **Action:** Run the aggregation against this fixture.
 - **Expected result:** Only the `epics[].stories[]` entries are counted for this feature — the empty top-level array contributes zero, not a silent double-count or a silent skip of the epic-nested ones.
 - **Edge case:** Yes — specifically targets the exact ambiguous shape this repo's own data has, which is why AC4 exists at all.
+
+### the Contents API adapter is wired to a real implementation that produces correct, differentiated output for different repos
+
+- **Verifies:** AC5
+- **Precondition:** The adapter's setter (e.g. `setPipelineStateFetchAdapter`) has been called in `server.js` with the real implementation; two distinct mocked repos (Repo A, Repo B) are configured with different `pipeline-state.json` fixture content.
+- **Action:** Call the wired adapter twice — once resolving Repo A, once resolving Repo B.
+- **Expected result:** Repo A's call returns Repo A's own fixture content correctly, and Repo B's call returns Repo B's own distinct fixture content correctly — proving the wired implementation actually performs the real fetch and returns the right data per repo, not just that a function reference was assigned (per CLAUDE.md's D37 rule 4: a wiring test must assert an observable, differentiating outcome, not merely that a setter was called).
+- **Edge case:** No.
+
+### the unwired adapter default throws rather than returning a silent empty/null value
+
+- **Verifies:** AC5
+- **Precondition:** The adapter has not been wired (its default stub is in effect).
+- **Action:** Call the adapter without having called its setter first.
+- **Expected result:** The call throws an explicit error naming the adapter and instructing the caller to wire it — it does not return `null`, `undefined`, or an empty object that could mask misconfiguration.
+- **Edge case:** Yes — confirms the stub-throws requirement from CLAUDE.md's D37 rule 1.
 
 ---
 

@@ -69,6 +69,24 @@
 
 ---
 
+### Scenario 4: Syncing two different products fetches each one's own real data, not a shared fixture
+
+**Covers:** AC5
+
+**Steps:**
+1. Sync Product A (whose connected repo has its own real `pipeline-state.json`).
+2. Note the DoD status counts shown.
+3. Sync Product B (a different product, connected to a different repo).
+4. Note Product B's DoD status counts.
+
+**Expected outcome:**
+> Product A and Product B show different counts, each correctly reflecting their own connected repo's actual data — not the same numbers for both, and not one product accidentally showing the other's data.
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**
+
+---
+
 ### Edge case: A product with epic-grouped features counts correctly
 
 **Covers:** AC4
@@ -92,6 +110,7 @@
 | Scenario 1 | | |
 | Scenario 2 | | |
 | Scenario 3 | | |
+| Scenario 4 | | |
 | Edge case | | |
 
 **Overall verdict:** [ ] All pass — ready to proceed

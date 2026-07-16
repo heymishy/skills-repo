@@ -39,6 +39,10 @@ So that **I can see, for the first time, real delivery-health data about the pro
 
 **AC4:** Given the connected repo's `pipeline-state.json` uses the epic-nested `epics[].stories[]` structure for some features (as this platform's own repo does), When the DoD status is aggregated, Then stories nested inside epics are counted correctly alongside flat `feature.stories[]` entries — not silently skipped.
 
+**AC5:** Given this story introduces a new injectable adapter for the Contents API fetch, When the implementation is complete, Then the adapter is wired to its real GitHub-calling implementation in `server.js` (not left on its throw-on-unwired stub default), and the wiring is verified by a test asserting an observable, differentiating outcome (e.g. two different mocked repos produce two different, individually-correct fetched rollups) — not merely that a setter function was called.
+
+<!-- DoR finding (H-ADAPTER, added at /definition-of-ready time): this story's Architecture Constraints describe a new injectable adapter but the original 4 ACs did not scope its production wiring, per CLAUDE.md's D37 rule. Added AC5 to close the gap before sign-off. -->
+
 ## Out of Scope
 
 - Every rollup dimension other than DoD status (health, test coverage, AC coverage, discovery scope, taxonomy) — Epic 2.
