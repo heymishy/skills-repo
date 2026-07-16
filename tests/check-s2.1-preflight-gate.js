@@ -103,12 +103,16 @@ return (async function() {
   ok('status is not 402 (unlimited with no cap)',  res._status !== 402);
 })();
 
-}).then(function() {
+}).then(async function() {
 
 // ── AC4: per-tenant override beats global env var ─────────────────────────────
+// jlc-s1: checkJourneyCap is now async (it awaits getPlanState, which reads a
+// D37-injectable adapter) — no adapter is wired in this file, so getPlanState
+// fails open internally to the default trial/active state, preserving the
+// pure count-cap logic this test exercises. Await each call accordingly.
 
 console.log('\nAC4 — per-tenant tenant-caps.json override (cap=2) beats global (cap=10)');
-(function() {
+await (async function() {
   tenantPlan.setCapReader(null);
   delete process.env.MAX_JOURNEYS_PER_TENANT;
 
@@ -122,13 +126,13 @@ console.log('\nAC4 — per-tenant tenant-caps.json override (cap=2) beats global
   process.env.MAX_JOURNEYS_PER_TENANT = '10'; // global = 10, override = 2
 
   ok('alice at 2 journeys is blocked by per-tenant cap of 2',
-    !tenantPlan.checkJourneyCap('alice', 2, tmpDir).allowed);
+    !(await tenantPlan.checkJourneyCap('alice', 2, tmpDir)).allowed);
   ok('alice at 1 journey is allowed by per-tenant cap of 2',
-    tenantPlan.checkJourneyCap('alice', 1, tmpDir).allowed);
+    (await tenantPlan.checkJourneyCap('alice', 1, tmpDir)).allowed);
   ok('bob (no override) at 10 journeys is blocked by global cap of 10',
-    !tenantPlan.checkJourneyCap('bob', 10, tmpDir).allowed);
+    !(await tenantPlan.checkJourneyCap('bob', 10, tmpDir)).allowed);
   ok('bob at 9 journeys is allowed by global cap of 10',
-    tenantPlan.checkJourneyCap('bob', 9, tmpDir).allowed);
+    (await tenantPlan.checkJourneyCap('bob', 9, tmpDir)).allowed);
 
   delete process.env.MAX_JOURNEYS_PER_TENANT;
   try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch (_) {}

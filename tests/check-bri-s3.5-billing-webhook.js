@@ -5,6 +5,12 @@
 // cancellation event types (AC1, AC3, AC4). No real Stripe API or DB calls
 // — all adapters are injectable and monkeypatched, mirroring
 // check-lab-s3.4-stripe-webhook.js's conventions.
+//
+// jlc-s1: tenant-plan.js's setPlanState/getPlanState/checkJourneyCap are now
+// async (plan state is persisted via a D37 adapter, tenant_plan table,
+// instead of an in-memory Map) — this file wires a small in-memory
+// Postgres-shaped fake adapter per fresh module instance so these existing
+// assertions keep exercising the same behavior through the new async API.
 
 process.env.SESSION_SECRET        = process.env.SESSION_SECRET || 'test-session-secret-minimum32chars!!';
 process.env.NODE_ENV               = 'test';
@@ -55,6 +61,28 @@ function mockCreditsAdapter() {
   return { query: async function() { return { rows: [] }; } };
 }
 
+// jlc-s1: in-memory Postgres-shaped fake for tenant_plan — one fresh Map per
+// freshModules() call, matching the isolation freshModules() already gives
+// credits/tenantPlan via require.cache deletion.
+function mockPlanStateAdapter() {
+  var rows = new Map();
+  return { query: async function(sql, params) {
+    if (sql.indexOf('INSERT INTO tenant_plan') !== -1) {
+      rows.set(params[0], { plan: params[1], status: params[2] });
+      return { rows: [], rowCount: 1 };
+    }
+    if (sql.indexOf('SELECT plan, status FROM tenant_plan') !== -1) {
+      var row = rows.get(params[0]);
+      return { rows: row ? [{ plan: row.plan, status: row.status }] : [] };
+    }
+    if (sql.indexOf('DELETE FROM tenant_plan') !== -1) {
+      rows.clear();
+      return { rows: [], rowCount: 0 };
+    }
+    return { rows: [] };
+  } };
+}
+
 function freshModules() {
   delete require.cache[creditsPath];
   var credits = require(creditsPath);
@@ -62,6 +90,7 @@ function freshModules() {
 
   delete require.cache[tenantPlanPath];
   var tenantPlan = require(tenantPlanPath);
+  tenantPlan.setPlanStateAdapter(mockPlanStateAdapter());
 
   return { credits: credits, tenantPlan: tenantPlan };
 }
@@ -83,7 +112,7 @@ function freshBilling(stripeAdapterOpts) {
   console.log('\n── AC1: checkout.session.completed upgrades tenant plan to paid/active ──');
   {
     var mods1 = freshModules();
-    mods1.tenantPlan.resetPlanState();
+    await mods1.tenantPlan.resetPlanState();
     var checkoutEvt = {
       id: 'evt_ac1',
       type: 'checkout.session.completed',
@@ -91,12 +120,12 @@ function freshBilling(stripeAdapterOpts) {
     };
     var billing1 = freshBilling({ webhooks: { constructEvent: function() { return checkoutEvt; } } });
 
-    var before = mods1.tenantPlan.getPlanState('tenant-upgrade');
+    var before = await mods1.tenantPlan.getPlanState('tenant-upgrade');
     check('AC1: before webhook, tenant defaults to trial/active', before.plan === 'trial' && before.status === 'active');
 
     await billing1.handlePostStripeWebhook(mockReq({ headers: { 'stripe-signature': 'valid-sig' } }), mockRes());
 
-    var after = mods1.tenantPlan.getPlanState('tenant-upgrade');
+    var after = await mods1.tenantPlan.getPlanState('tenant-upgrade');
     check('AC1: after webhook, tenant reflects paid/active immediately', after.plan === 'paid' && after.status === 'active');
   }
 
@@ -104,8 +133,8 @@ function freshBilling(stripeAdapterOpts) {
   console.log('\n── AC3: invoice.payment_failed reflects failure state (not silently ignored) ──');
   {
     var mods3 = freshModules();
-    mods3.tenantPlan.resetPlanState();
-    mods3.tenantPlan.setPlanState('tenant-fail', 'paid', 'active'); // was paid before the failure
+    await mods3.tenantPlan.resetPlanState();
+    await mods3.tenantPlan.setPlanState('tenant-fail', 'paid', 'active'); // was paid before the failure
     var failureEvt = {
       id: 'evt_ac3',
       type: 'invoice.payment_failed',
@@ -113,10 +142,10 @@ function freshBilling(stripeAdapterOpts) {
     };
     var billing3 = freshBilling({ webhooks: { constructEvent: function() { return failureEvt; } } });
 
-    var before3 = mods3.tenantPlan.getPlanState('tenant-fail');
+    var before3 = await mods3.tenantPlan.getPlanState('tenant-fail');
     var res3 = mockRes();
     await billing3.handlePostStripeWebhook(mockReq({ headers: { 'stripe-signature': 'valid-sig' } }), res3);
-    var after3 = mods3.tenantPlan.getPlanState('tenant-fail');
+    var after3 = await mods3.tenantPlan.getPlanState('tenant-fail');
 
     check('AC3: webhook returns 200 (never 4xx/5xx to Stripe)', res3._statusCode === 200);
     check('AC3: plan state changed from pre-event state (not silently dropped)',
@@ -128,11 +157,11 @@ function freshBilling(stripeAdapterOpts) {
   console.log('\n── AC4: customer.subscription.deleted downgrades plan and restricts usage gates ──');
   {
     var mods4 = freshModules();
-    mods4.tenantPlan.resetPlanState();
+    await mods4.tenantPlan.resetPlanState();
     process.env.MAX_JOURNEYS_PER_TENANT = '2';
-    mods4.tenantPlan.setPlanState('tenant-cancel', 'paid', 'active');
+    await mods4.tenantPlan.setPlanState('tenant-cancel', 'paid', 'active');
 
-    var whilePaid = mods4.tenantPlan.checkJourneyCap('tenant-cancel', 10);
+    var whilePaid = await mods4.tenantPlan.checkJourneyCap('tenant-cancel', 10);
     check('AC4: while paid+active, usage gate is unrestricted', whilePaid.allowed === true);
 
     var cancelEvt = {
@@ -143,7 +172,7 @@ function freshBilling(stripeAdapterOpts) {
     var billing4 = freshBilling({ webhooks: { constructEvent: function() { return cancelEvt; } } });
     await billing4.handlePostStripeWebhook(mockReq({ headers: { 'stripe-signature': 'valid-sig' } }), mockRes());
 
-    var afterCancel = mods4.tenantPlan.checkJourneyCap('tenant-cancel', 10);
+    var afterCancel = await mods4.tenantPlan.checkJourneyCap('tenant-cancel', 10);
     check('AC4: after cancellation, usage gate blocks an action the old (paid) plan allowed',
       afterCancel.allowed === false && afterCancel.cap === 2);
 

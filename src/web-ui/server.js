@@ -34,6 +34,7 @@ const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetSt
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
+const { setPlanStateAdapter }                                        = require('./modules/tenant-plan');   // jlc-s1
 const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
 const { setRepoAdapter, realCheckRepoAccess }                        = require('./adapters/repo-adapter'); // prc-s1.2 (D37 separate task)
 const { handlePostConnectRepo }                                      = require('./routes/product-repo');   // prc-s1.2
@@ -251,6 +252,20 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       )
     `).then(function() { console.log('stripe_events table ready'); })
       .catch(function(err) { console.error('stripe_events table migration failed:', err.message); });
+    // jlc-s1 — Wire tenant plan-state DB adapter (D37 mandatory separate wiring task).
+    // Same pool as credits/stripe_events — persists bri-s3.5's paid-plan bypass so it
+    // survives a server restart instead of living only in an in-memory Map.
+    setPlanStateAdapter(_creditsPool);
+    console.log('Tenant plan-state DB adapter wired');
+    _creditsPool.query(`
+      CREATE TABLE IF NOT EXISTS tenant_plan (
+        tenant_id  VARCHAR PRIMARY KEY,
+        plan       VARCHAR NOT NULL DEFAULT 'trial',
+        status     VARCHAR NOT NULL DEFAULT 'active',
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )
+    `).then(function() { console.log('tenant_plan table ready'); })
+      .catch(function(err) { console.error('tenant_plan table migration failed:', err.message); });
     // arl-s5 — Auto-migrate credit_audit_log table (immutable audit trail for admin credit
     // adjustments). No new adapter wiring — queried through the same _creditsPool already
     // wired via setCreditsAdapter above.
@@ -923,6 +938,34 @@ if (process.env.NODE_ENV === 'test') {
   // lab-s3.4: no-op webhook DB in test mode — rowCount=1 so each event appears as new (not a duplicate)
   // The check-lab-s3.4-stripe-webhook.js unit tests inject their own mock directly via setWebhookDbAdapter().
   setWebhookDbAdapter({ query: async function() { return { rows: [], rowCount: 1 }; } });
+
+  // jlc-s1: fake, in-process Postgres-shaped adapter for tenant_plan in test mode. Unlike the
+  // credits stub above (stateless — always returns a fixed balance), this one must be stateful:
+  // the @mocked/@billing E2E spec (bri-s3.5-billing-journey.spec.js) drives real upgrade →
+  // payment-failure → cancellation transitions across multiple HTTP requests within the same
+  // server process and asserts the plan state actually changed between them. A Map-backed fake
+  // that understands the same INSERT/SELECT/DELETE shapes tenant-plan.js issues against a real
+  // Postgres pool preserves that behavior without needing a real DB in this test variant.
+  (function() {
+    var _testPlanRows = new Map();
+    setPlanStateAdapter({
+      query: async function(sql, params) {
+        if (sql.indexOf('INSERT INTO tenant_plan') !== -1) {
+          _testPlanRows.set(params[0], { plan: params[1], status: params[2] });
+          return { rows: [], rowCount: 1 };
+        }
+        if (sql.indexOf('SELECT plan, status FROM tenant_plan') !== -1) {
+          var row = _testPlanRows.get(params[0]);
+          return { rows: row ? [{ plan: row.plan, status: row.status }] : [] };
+        }
+        if (sql.indexOf('DELETE FROM tenant_plan') !== -1) {
+          _testPlanRows.clear();
+          return { rows: [], rowCount: 0 };
+        }
+        return { rows: [] };
+      }
+    });
+  })();
 
   // bri-s3.5: fake Stripe adapter in test mode so the @mocked/@billing E2E spec can
   // drive POST /webhook/stripe with synthetic event payloads. No real Stripe secret
