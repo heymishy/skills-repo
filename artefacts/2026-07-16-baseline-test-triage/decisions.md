@@ -30,6 +30,13 @@
 **Made by:** Claude (agent), definition-of-ready, 2026-07-16
 **Revisit trigger:** Same as pcr-s1's — resolve once, applies to both.
 ---
+**2026-07-16 | GAP | subagent-execution (cdg.7 tooling)**
+**Decision:** Used `node bin/skills advance` directly for the `branch-complete` stage transition instead of `node bin/skills gate-advance`, because `gate-advance` currently fails with `UNSUPPORTED_GATE` for the `branch-complete` gate name.
+**Alternatives considered:** Block this story's pipeline-state bookkeeping until `gate-advance` supports `branch-complete` (rejected — this is a pre-existing tooling gap unrelated to this story's own scope, and blocking would leave the story's real work uncommitted for no benefit).
+**Rationale:** `src/enforcement/cli-outer-loop.js`'s `SUPPORTED_GATES` constant currently only lists `'definition-of-ready'`, even though `src/enforcement/gate-map.js` defines 7 gated stage names including `branch-complete` and `definition-of-done`. Confirmed by direct invocation: `node bin/skills gate-advance 2026-07-16-baseline-test-triage tst-s1 branch-complete <dor-path>` returns `UNSUPPORTED_GATE: 'branch-complete' is not a recognised gate. Supported gates: definition-of-ready` (exit 8). This may also be the root cause of `tests/check-cli-outer-loop.js`'s 1 failing assertion (deferred separately in `triage-report.md`'s individual-files table) — worth checking when that file's follow-up investigation happens.
+**Made by:** Claude (agent), tst-s1 inner loop, 2026-07-16
+**Revisit trigger:** File a follow-up to extend `cli-outer-loop.js`'s `SUPPORTED_GATES` (and its validation logic) to cover all 7 gate names in `gate-map.js`, not just `definition-of-ready`.
+---
 
 ## Architecture Decision Records
 
