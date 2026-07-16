@@ -13,12 +13,13 @@ So that **I can answer "what's our test coverage across the whole product" from 
 ## Benefit Linkage
 
 **Metric moved:** Product shape visible in the web UI
-**How:** Adds the aggregate test-coverage dimension named in discovery MVP scope item 4, computed as sum of `testPlan.passing` / sum of `testPlan.totalTests` across the product's features (a blended percentage).
+**How:** An operator can answer "what's our test coverage across the whole product" from one screen instead of manually summing `testPlan` fields across every feature — computed as sum of `testPlan.passing` / sum of `testPlan.totalTests` across the product's features (a blended percentage).
 
 ## Architecture Constraints
 
 - Computation method (blended sum-of-passing/sum-of-total vs. average-of-per-feature-percentages) follows discovery's [ASSUMPTION] — pending operator confirmation via `/clarify` before DoR locks it in.
 - No new architecture pattern beyond pr-s2's cached rollup record — this story reads `testPlan.{totalTests,passing}` fields already present in that cache.
+- ADR-018 (Playwright E2E): test-coverage rollup rendering is browser-facing; an E2E spec should exist in `tests/e2e/` before DoR.
 
 ## Dependencies
 

@@ -13,12 +13,13 @@ So that **I can see how much of the product's specified scope has actually been 
 ## Benefit Linkage
 
 **Metric moved:** Product shape visible in the web UI
-**How:** Adds the aggregate AC-coverage dimension — a real gap identified during discovery review where `acTotal`/`acVerified` were already fetched per feature but never rolled up into a view. Computed as sum of `acVerified` / sum of `acTotal` across the product's features, using the same blended-percentage method as test coverage (pr-s5) for consistency.
+**How:** An operator can see how much of the product's specified scope has actually been verified, not just how many tests pass — closing a real gap where `acTotal`/`acVerified` were already fetched per feature but never rolled up into a view. Computed as sum of `acVerified` / sum of `acTotal` across the product's features, using the same blended-percentage method as test coverage (pr-s5) for consistency.
 
 ## Architecture Constraints
 
 - Computation method follows discovery's [ASSUMPTION] — the same blended-percentage method as test coverage, pending operator confirmation via `/clarify` before DoR.
 - No new architecture pattern beyond pr-s2's cached rollup record — reads `acTotal`/`acVerified` fields already present in that cache.
+- ADR-018 (Playwright E2E): AC-coverage rollup rendering is browser-facing; an E2E spec should exist in `tests/e2e/` before DoR.
 
 ## Dependencies
 

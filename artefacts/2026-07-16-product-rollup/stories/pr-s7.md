@@ -19,6 +19,7 @@ So that **I can understand what the product actually does — its functional sur
 
 - Reads each feature's `discoveryArtefact` path and epic-nesting structure (`epics[].stories[]` vs. flat `feature.stories[]`) from the cached rollup record (pr-s2) — no new fetch beyond the single Contents API call pr-s2 already performs.
 - None beyond pr-s2's own constraints — this story is additive rendering only.
+- ADR-018 (Playwright E2E): taxonomy/discovery-scope rollup rendering is browser-facing; an E2E spec should exist in `tests/e2e/` before DoR.
 
 ## Dependencies
 
@@ -33,7 +34,9 @@ So that **I can understand what the product actually does — its functional sur
 
 **AC3:** Given a product has zero epics (all features are flat), When the taxonomy view renders, Then it shows a flat list of features with no misleading empty "epics" section.
 
-**AC4:** Given the same product data is used for both this story's taxonomy view and pr-s4's health rollup, When both are rendered, Then the total feature count is identical between the two views — no feature is silently dropped or double-counted by one view but not the other.
+**AC4:** Given the cached rollup record from pr-s2, When this story's taxonomy view is rendered, Then the total feature count shown (sum of grouped-under-epic features plus ungrouped features) exactly matches the feature count in the cached rollup record — no feature is silently dropped or double-counted by the taxonomy view itself.
+
+<!-- Review finding 7-M1 (run 1): the original AC4 compared totals against pr-s4's rendered health view, which made it untestable independently of a different story. Split into this self-contained AC (testable using only pr-s2 + pr-s7) plus a separate cross-story consistency check, deferred to the epic level rather than embedded in either story. -->
 
 ## Out of Scope
 

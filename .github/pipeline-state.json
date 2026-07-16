@@ -11117,13 +11117,19 @@
           "id": "MC-SEC-01",
           "category": "mandatory-constraint",
           "label": "No user-supplied content in innerHTML without sanitisation",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "No unsanitised innerHTML use — referenced in pr-s3, pr-s4 Architecture Constraints. No violations found.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-16T20:05:57.530Z"
         },
         {
           "id": "MC-SEC-02",
           "category": "mandatory-constraint",
           "label": "No credentials, tokens, or personal data in committed files",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "OAuth token never persisted to cache table or logged — referenced in pr-s2 Architecture Constraints. No violations found.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-16T20:05:57.530Z"
         },
         {
           "id": "MC-SEC-03",
@@ -11369,7 +11375,10 @@
           "id": "ADR-011",
           "category": "adr",
           "label": "Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "Satisfied by this discovery -> benefit-metric -> definition -> review chain existing before/alongside the src/ module and pipeline-state.json changes this feature introduces.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-16T20:05:57.530Z"
         },
         {
           "id": "ADR-012",
@@ -11411,13 +11420,19 @@
           "id": "ADR-018",
           "category": "adr",
           "label": "Playwright is the E2E testing framework; specs in tests/e2e/; devDependency only; unit test chain (npm test) must not invoke Playwright; auth bypass is test-fixture-layer only (NODE_ENV=test guard)",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "Review findings 1-M1/2-M1/3-M1/4-M1/5-M1/6-M1/7-M2 (run 1) found this ADR unreferenced across all 7 stories; fixed same-session by adding an explicit ADR-018 reference to each story's Architecture Constraints.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-16T20:05:57.530Z"
         },
         {
           "id": "ADR-025",
           "category": "adr",
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "Cached rollup record and product row both scoped by product_id (itself tenant_id-scoped) — referenced in pr-s1/pr-s2 Architecture Constraints. No violations found.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-16T20:05:57.530Z"
         }
       ],
       "epics": [
@@ -11429,20 +11444,29 @@
             {
               "slug": "pr-s1",
               "name": "Designate Product as a named primitive and register skills-framework as a product",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "updatedAt": "2026-07-16T19:58:52.609Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             },
             {
               "slug": "pr-s2",
               "name": "Sync a product's connected repo and show aggregate DoD status",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "updatedAt": "2026-07-16T19:59:27.475Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             },
             {
               "slug": "pr-s3",
               "name": "Show last-synced freshness and a manual refresh action",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "updatedAt": "2026-07-16T19:59:49.785Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             }
           ]
         },
@@ -11454,26 +11478,38 @@
             {
               "slug": "pr-s4",
               "name": "Render aggregate health on the product rollup view",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "updatedAt": "2026-07-16T20:00:16.515Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             },
             {
               "slug": "pr-s5",
               "name": "Render aggregate test coverage on the product rollup view",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "updatedAt": "2026-07-16T20:00:39.773Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             },
             {
               "slug": "pr-s6",
               "name": "Render aggregate AC coverage on the product rollup view",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "updatedAt": "2026-07-16T20:00:59.836Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             },
             {
               "slug": "pr-s7",
               "name": "Render discovery scope and feature/epic taxonomy grouping",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "updatedAt": "2026-07-16T20:01:28.018Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             }
           ]
         }

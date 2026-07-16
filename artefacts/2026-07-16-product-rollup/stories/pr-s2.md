@@ -22,6 +22,7 @@ So that **I can see, for the first time, real delivery-health data about the pro
 - CLAUDE.md's mock-shape verification rule: since this reuses the Contents API pattern for a new file type (`pipeline-state.json`, not an artefact `.md`), tests must mock the real GitHub response shape for a JSON file (base64-encoded `content` field), not an assumed shape.
 - ADR-025 (Tenant scoping): the cached rollup record is stored against `product_id` (which is itself `tenant_id`-scoped via the `products` table), following the same row-scoping convention as the `standards` table — no new isolation mechanism.
 - MC-SEC-02 (`.github/architecture-guardrails.md`): the OAuth token itself is never persisted to the cache table or logged — only the computed rollup data.
+- ADR-018 (Playwright E2E): AC2 is browser-facing; an E2E spec covering a real sync + DoD status render should exist in `tests/e2e/` before DoR.
 
 ## Dependencies
 

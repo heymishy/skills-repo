@@ -13,13 +13,14 @@ So that **I can tell at a glance whether the product overall is healthy, and whi
 ## Benefit Linkage
 
 **Metric moved:** Product shape visible in the web UI
-**How:** Adds the aggregate-health dimension named explicitly in discovery MVP scope item 4 — a real gap identified during discovery review where health was fetched but never rolled up into a view.
+**How:** An operator can tell at a glance whether the product overall is healthy without opening `pipeline-state.json` — closing a real gap where health was already fetched per feature but never rolled up into a view.
 
 ## Architecture Constraints
 
 - Reuses the existing status vocabulary and label convention already established in this codebase (`.github/scripts/viz-functions.js`'s `fleetHealthLabel`: green=✓ Healthy, amber=⚠ Warning, red=✕ Blocked, unknown=? Unknown) for visual consistency, even though the underlying counting logic is new application code (not imported from that file, since it lives in the legacy/unused dashboard's support module).
 - Derives the single overall product-health signal using the same red-takes-precedence rule already applied per-feature elsewhere in this codebase (`viz-functions.js`'s `featureActionMeta`: any feature red → blocked/red takes priority) — per discovery's [ASSUMPTION], this rule is not yet operator-confirmed and should be verified at DoR.
 - MC-SEC-01/Accessibility mandatory constraint: colour alone must not be the only indicator of health status — labels/icons required alongside colour, matching the existing `fleetHealthLabel` convention.
+- ADR-018 (Playwright E2E): health rollup rendering is browser-facing; an E2E spec covering the health count display and overall signal should exist in `tests/e2e/` before DoR.
 
 ## Dependencies
 

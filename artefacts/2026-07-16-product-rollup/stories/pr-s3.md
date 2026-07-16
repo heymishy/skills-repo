@@ -20,6 +20,7 @@ So that **I always know whether I'm looking at current data, and can update it m
 - Uses the `/frontend-design` skill for the Refresh control and timestamp display, consistent with how UI work elsewhere in this platform is built.
 - MC-SEC-01 (`.github/architecture-guardrails.md`): the timestamp and any rendered text from the synced data must be inserted via safe DOM/templating, never raw `innerHTML` of unsanitised content.
 - GitHub API rate limits (5,000 requests/hour per authenticated user token, shared across every GitHub-backed feature) — the Refresh action must not auto-trigger on every page load; it is user-initiated only, per discovery MVP scope item 6.
+- ADR-018 (Playwright E2E): this entire story is browser-facing UI; an E2E spec covering the Refresh flow (click → loading state → updated timestamp) should exist in `tests/e2e/` before DoR.
 
 ## Dependencies
 

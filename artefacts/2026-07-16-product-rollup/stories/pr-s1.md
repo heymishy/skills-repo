@@ -20,6 +20,7 @@ So that **the rollup mechanism has a consistent single code path for both this p
 - ADR-011 (Artefact-first): this discovery→benefit-metric→story chain satisfies the requirement for the structural `pipeline-state.json`/DB changes this story introduces.
 - ADR-025 (Tenant scoping): the new product row must carry the same `tenant_id` scoping convention already used by every other row in the `products` table — no new isolation mechanism.
 - "Product" is added to the canonical primitives list (`docs/concepts/README.md`) as a documentation change only — no new schema, per discovery MVP scope item 1.
+- ADR-018 (Playwright E2E): AC2 is browser-facing; an E2E spec confirming the product page renders for skills-framework's own product row should exist in `tests/e2e/` before DoR (H-E2E gate).
 
 ## Dependencies
 
@@ -30,7 +31,7 @@ So that **the rollup mechanism has a consistent single code path for both this p
 
 **AC1:** Given the operator's tenant has no product row for skills-framework yet, When the migration/seed step for this story runs, Then a `products` row is created with `repo_owner`/`repo_name` pointing at this repository, scoped to the operator's own `tenant_id`.
 
-**AC2:** Given the product row exists, When the operator navigates to `/products/:id` for skills-framework's product, Then the page renders using the existing `_renderProductView` path with no errors.
+**AC2:** Given the product row exists, When the operator navigates to `/products/:id` for skills-framework's product, Then the page returns HTTP 200 and renders the product name and feature list exactly as it does for any other existing product.
 
 **AC3:** Given `docs/concepts/README.md`'s primitives list, When this story is complete, Then the list contains an eighth entry for "Product," documented as an existing entity (the `products` table + its web UI), not a new schema.
 
