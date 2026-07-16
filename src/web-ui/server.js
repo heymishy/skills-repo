@@ -976,6 +976,15 @@ if (process.env.NODE_ENV === 'test') {
     }
   });
 
+  // bri-s3.3: wire org fetch for TENANT_ORG_ALLOWLIST mode in test
+  // (returns the allowlist orgs as if the user is a member of all of them).
+  // In production, this is wired above (NODE_ENV !== 'test').
+  setFetchOrgs(async function() {
+    const allowlist = process.env.TENANT_ORG_ALLOWLIST || '';
+    const orgs = allowlist.split(',').map(function(s) { return s.trim(); }).filter(Boolean).map(function(name) { return { login: name }; });
+    return { orgs: orgs, nextPage: null };
+  });
+
   // bri-s3.2: wire the real bcrypt password adapter and the real (non-streaming)
   // skill-turn executor even in NODE_ENV=test. Both blocks below normally live
   // behind the `WIRE_SKILL_ADAPTERS=true` gate (see the big conditional near
@@ -1250,6 +1259,49 @@ async function router(req, res) {
       : 0;
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ count: count }));
+    return;
+  }
+
+  // bri-s3.3: Seed person_identities and team_memberships for multi-user testing
+  // Allows E2E tests to set up alice/bob with different roles before they log in
+  if (pathname === '/test/seed-multi-user-roles' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    try {
+      var body = '';
+      req.on('data', chunk => { body += chunk; });
+      req.on('end', async function() {
+        try {
+          var seedData = JSON.parse(body || '{}');
+          var sharedOrg = seedData.sharedOrg || 'shared-org';
+
+          // Use _pshPool if available (both real and fake-test-db implement the same query interface)
+          // _pshPool is set by both the real Pool and by fake-test-db wiring
+          if (_pshPool) {
+            // alice: admin role in shared org
+            await _pshPool.query('INSERT INTO person_identities (identity_key, person_id, provider) VALUES ($1, $2, $3)', ['alice', 101, 'github']).catch(function() {});
+            await _pshPool.query('INSERT INTO team_memberships (person_id, tenant_id, role) VALUES ($1, $2, $3)', [101, sharedOrg, 'admin']).catch(function() {});
+
+            // bob: engineer role in shared org
+            await _pshPool.query('INSERT INTO person_identities (identity_key, person_id, provider) VALUES ($1, $2, $3)', ['bob', 102, 'github']).catch(function() {});
+            await _pshPool.query('INSERT INTO team_memberships (person_id, tenant_id, role) VALUES ($1, $2, $3)', [102, sharedOrg, 'engineer']).catch(function() {});
+
+            // viewer: viewer role in shared org
+            await _pshPool.query('INSERT INTO person_identities (identity_key, person_id, provider) VALUES ($1, $2, $3)', ['viewer', 103, 'github']).catch(function() {});
+            await _pshPool.query('INSERT INTO team_memberships (person_id, tenant_id, role) VALUES ($1, $2, $3)', [103, sharedOrg, 'viewer']).catch(function() {});
+          }
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ seeded: true, sharedOrg: sharedOrg }));
+        } catch (e) {
+          console.error('[bri-s3.3] seed-multi-user-roles error:', e);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: e.message }));
+        }
+      });
+    } catch (e) {
+      console.error('[bri-s3.3] seed-multi-user-roles setup error:', e);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: e.message }));
+    }
     return;
   }
 

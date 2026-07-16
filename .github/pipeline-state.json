@@ -9536,23 +9536,24 @@
               "slug": "bri-s3.3",
               "name": "Multi-user within one tenant journey spec",
               "stage": "test-plan",
-              "health": "red",
-              "updatedAt": "2026-07-13T18:09:50.432Z",
+              "health": "green",
+              "updatedAt": "2026-07-16T03:51:41.944Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0,
+                "passing": 6,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s3.3-multi-user-tenant-journey-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
-              "dorStatus": "blocked",
-              "blocker": "NEW BLOCKER (2026-07-13, DoR re-run): team-identity-roles is DoD-complete and its 4-role model (admin/engineer/product/viewer) is confirmed correct, but no production-reachable path exists for two distinct people to log in and share one tenantId with correctly differentiated per-person roles across any of the 3 auth providers -- see dor/bri-s3.3-multi-user-tenant-journey-dor.md for full analysis. Prior blocker (waiting on team-identity-roles DoR) is resolved; this is a new, independent finding.",
-              "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s3.3-multi-user-tenant-journey-dor.md"
+              "dorStatus": "signed-off",
+              "blocker": "",
+              "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s3.3-multi-user-tenant-journey-dor.md",
+              "prStatus": "draft"
             },
             {
               "slug": "bri-s3.4",

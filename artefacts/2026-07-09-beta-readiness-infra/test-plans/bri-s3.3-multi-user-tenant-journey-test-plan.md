@@ -7,9 +7,11 @@
 
 ---
 
-## Declared gap notice (read first)
+## Declared gap notice (read first, updated 2026-07-16)
 
-This story has a confirmed, currently-unresolved cross-feature dependency on `2026-07-09-team-identity-roles` (per this feature's `decisions.md`, RISK-ACCEPT/PROCEED-BLOCKED entry, 2026-07-09). That feature has not yet delivered the per-person role model (admin/engineer/product/viewer) or the many-to-many person↔team schema this spec needs to exercise real role behaviour. This test plan is written now, describing the E2E assertions that will exist, but the underlying Playwright spec **cannot be implemented and run to a passing state** until `2026-07-09-team-identity-roles` reaches at least definition-of-ready. This is a legitimate declared gap (type: External-dependency), not a defect in this test plan.
+The original blocker (waiting on `2026-07-09-team-identity-roles`, "TIR" — Unified Per-User Identity and Role-Based Access Model for Multi-Tenant Teams — to deliver its role model/schema) is resolved: TIR is `/definition-of-done` complete (all 9 stories, tir-s1 through tir-s9, merged). A subsequent DoR re-run (2026-07-13) found a second, independent blocker — the login-time role-resolution wiring could not distinguish between two people sharing one `tenantId` — which is now also resolved by `tir-s9` (merged), confirmed by direct code reading of `src/web-ui/server.js` and `src/web-ui/routes/auth.js` on 2026-07-16 (see `dor/bri-s3.3-multi-user-tenant-journey-dor.md`'s second re-run for full analysis).
+
+**Scope note carried into AC1-AC3 (read before implementing):** the only production mechanism through which two distinct people can share one `tenantId` today is GitHub-org-allowlist mode (`TENANT_ORG_ALLOWLIST`, both people authenticating via GitHub OAuth as members of the same allowlisted org). This spec's AC1-AC3 test blocks MUST use that mechanism — two real GitHub OAuth logins against the same allowlisted org, each with their own `team_memberships` row and a distinct role. A person added to a shared tenant via a *different* provider (Google or email/password) remains a known, separate, deferred gap (see tir-s9's decisions.md Out of Scope entry) and is explicitly NOT part of this spec's AC1-AC3 coverage.
 
 ---
 
@@ -25,10 +27,10 @@ This story has a confirmed, currently-unresolved cross-feature dependency on `20
 
 | AC | Description | Unit | Integration | E2E | Manual | Gap type | Risk |
 |----|-------------|------|-------------|-----|--------|----------|------|
-| AC1 | Admin succeeds / engineer denied on role-gated feature | — | — | 1 (blocked) | — | External-dependency | 🔴 |
-| AC2 | Concurrent access by two people in same tenant does not corrupt state | — | — | 1 (blocked) | — | External-dependency | 🔴 |
-| AC3 | Viewer-role write attempt is denied | — | — | 1 (blocked) | — | External-dependency | 🔴 |
-| AC4 | Spec tagged `@mocked`/`@multi-tenant`, uses S3.1 gateway, zero real LLM calls | — | — | 1 | — | — | 🟡 (file cannot fully pass until AC1–3 clear, see note) |
+| AC1 | Admin succeeds / engineer denied on role-gated feature | — | — | 1 | — | — | 🟡 (via GitHub-org-allowlist mode, see scope note) |
+| AC2 | Concurrent access by two people in same tenant does not corrupt state | — | — | 1 | — | — | 🟡 (via GitHub-org-allowlist mode, see scope note) |
+| AC3 | Viewer-role write attempt is denied | — | — | 1 | — | — | 🟡 (via GitHub-org-allowlist mode, see scope note) |
+| AC4 | Spec tagged `@mocked`/`@multi-tenant`, uses S3.1 gateway, zero real LLM calls | — | — | 1 | — | — | 🟢 |
 
 ---
 
@@ -36,27 +38,28 @@ This story has a confirmed, currently-unresolved cross-feature dependency on `20
 
 | Gap | AC | Gap type | Reason untestable in Jest | Handling |
 |-----|----|----------|--------------------------|---------|
-| Per-person role model (admin/engineer/product/viewer) does not yet exist | AC1 | External-dependency | Role differentiation cannot be exercised against a schema that has not been built by `2026-07-09-team-identity-roles` | Spec written and committed now (test blocks describe intended assertions); marked skipped/pending until the upstream feature reaches definition-of-ready, per the formal RISK-ACCEPT/PROCEED-BLOCKED gate in this feature's `decisions.md` (2026-07-09) |
-| Many-to-many person↔team schema does not yet exist | AC2 | External-dependency | "Two people in the same tenant" as distinct identities depends on the person↔team schema `2026-07-09-team-identity-roles` is building | Same handling as above — tracked against the same RISK-ACCEPT gate |
-| Viewer role does not yet exist | AC3 | External-dependency | Same root cause — no role model to assert a read-only boundary against | Same handling as above |
+| Resolved (was: role model did not exist) | AC1 | — | N/A — TIR (`2026-07-09-team-identity-roles`) shipped the role model, DoD-complete | No longer a gap. AC1 exercises GitHub-org-allowlist mode per the scope note above. |
+| Resolved (was: person↔team schema did not exist) | AC2 | — | N/A — TIR shipped the schema, DoD-complete | No longer a gap. |
+| Resolved (was: viewer role did not exist) | AC3 | — | N/A — TIR shipped the 4-role model including viewer, DoD-complete | No longer a gap. |
+| Google/email-added teammate cannot reach a shared tenant | Out of scope for this story | External-dependency | tir-s9 explicitly deferred this as a distinct bug shape (silent role loss, not role collision) — tracked as a candidate follow-up story in TIR's own `decisions.md`, not this story's concern | Not tested here — AC1-AC3 use GitHub-org-allowlist mode only, per the scope note. |
 
 ---
 
 ## Test Data Strategy
 
-**Source:** Seeded staging database (bri-s2.4's synthetic tenants) + S3.1's mock LLM gateway fixtures — **plus** a role/person schema not yet delivered by `2026-07-09-team-identity-roles`
+**Source:** Two real GitHub OAuth accounts, both members of the same `TENANT_ORG_ALLOWLIST`-matched org, each seeded with its own `team_memberships` row (person_id, tenant_id, role) via TIR's schema — plus S3.1's mock LLM gateway fixtures
 **PCI/sensitivity in scope:** No
-**Availability:** Dependency — see gap note below
-**Owner:** TBD — depends on `2026-07-09-team-identity-roles` reaching definition-of-ready
+**Availability:** Available now — TIR is DoD-complete and the login wiring fix (tir-s9) is merged
+**Owner:** bri-s3.3 coding agent
 
 ### Data requirements per AC
 
 | AC | Data needed | Source | Sensitive fields | Notes |
 |----|-------------|--------|-----------------|-------|
-| AC1 | Two person records in one tenant with `admin` and `engineer` roles | `2026-07-09-team-identity-roles` schema (not yet available) | None | Blocked — see gap note |
-| AC2 | Two person records with concurrent sessions against the same tenant resource | `2026-07-09-team-identity-roles` schema (not yet available) | None | Blocked — see gap note |
-| AC3 | A person record with `viewer` role | `2026-07-09-team-identity-roles` schema (not yet available) | None | Blocked — see gap note |
-| AC4 | S3.1 mock gateway fixtures | S3.1 fixtures | None | Not blocked on its own, but exercised inside the same spec file as AC1–3 |
+| AC1 | Two person records in one GitHub-org tenant with `admin` and `engineer` roles | TIR schema, seeded via test fixtures | None | Available |
+| AC2 | Two person records with concurrent sessions against the same tenant resource | TIR schema, seeded via test fixtures | None | Available |
+| AC3 | A person record with `viewer` role in the same tenant | TIR schema, seeded via test fixtures | None | Available |
+| AC4 | S3.1 mock gateway fixtures | S3.1 fixtures | None | Exercised inside the same spec file as AC1–3 |
 
 ### PCI / sensitivity constraints
 
@@ -64,28 +67,28 @@ None.
 
 ### Gaps
 
-Role/person schema not yet available — owner is `2026-07-09-team-identity-roles`, resolution action is that feature reaching definition-of-ready (tracked in this feature's `decisions.md`).
+None remaining for AC1-AC4. The Google/email-added-teammate gap (see Coverage gaps table) is out of scope for this story, not a gap in this test plan.
 
 ---
 
 ## Unit Tests
 
-None — cannot be written until `2026-07-09-team-identity-roles` delivers its role model/schema (see Coverage gaps). There is no non-browser-level logic in this story that exists independently of that schema.
+None — this story's logic is entirely exercised through real login sessions and role-gated routes; there is no unit-level logic independent of the E2E path.
 
 ---
 
 ## Integration Tests
 
-None — for the same reason as Unit Tests above. Once the role schema exists, this test plan should be revisited to add a direct (non-browser) role-check integration test analogous to S3.4's `isSameTenant` guard tests, before the E2E spec is finalised.
+None required beyond the E2E specs below. TIR's own test suite (`tests/check-tir-s9-per-person-identitykey-login-fix.js`) already covers the non-browser-level role-resolution logic this story's E2E specs exercise end-to-end.
 
 ---
 
 ## E2E (Playwright — `tests/e2e/bri-s3.3-multi-user-tenant-journey.spec.js`, tagged `@mocked` `@multi-tenant`)
 
-- **AC1 (blocked):** Given two people in the same tenant with `admin` and `engineer` roles, When each accesses a role-gated feature (e.g. the admin/credits panel), Then the admin succeeds and the engineer is denied. *Written now; cannot execute to a passing state until the role model exists.*
-- **AC2 (blocked):** Given two people in the same tenant access the same shared resource concurrently, When their sessions overlap, Then neither session's actions corrupt or overwrite the other's unrelated action. *Written now; cannot execute to a passing state until the person↔team schema exists.*
-- **AC3 (blocked):** Given a viewer-role team member, When they attempt any write action, Then it is denied. *Written now; cannot execute to a passing state until the viewer role exists.*
-- **AC4:** Given the spec is tagged `@mocked` and `@multi-tenant`, When it runs in CI, Then it uses S3.1's mock gateway and completes without real LLM calls. *Not blocked in isolation, but this test block lives in the same spec file as AC1–3 and the file as a whole cannot reach a fully-passing CI run until those clear.*
+- **AC1:** Given two people in the same GitHub-org-allowlisted tenant with `admin` and `engineer` roles (real OAuth logins, per the scope note), When each accesses a role-gated feature (e.g. the admin/credits panel), Then the admin succeeds and the engineer is denied.
+- **AC2:** Given two people in the same tenant access the same shared resource concurrently, When their sessions overlap, Then neither session's actions corrupt or overwrite the other's unrelated action.
+- **AC3:** Given a viewer-role team member (same tenant, same mechanism), When they attempt any write action, Then it is denied.
+- **AC4:** Given the spec is tagged `@mocked` and `@multi-tenant`, When it runs in CI, Then it uses S3.1's mock gateway and completes without real LLM calls.
 
 ---
 
@@ -119,7 +122,7 @@ None beyond standard CI logging — confirmed with story owner.
 
 - Cross-tenant isolation (a different person in a different tenant) — S3.4's responsibility.
 - Real-time collaborative editing conflict resolution — AC2 is about safety (no corruption), not live collaboration.
-- Resolving the `2026-07-09-team-identity-roles` dependency itself — that is tracked in that feature's own pipeline, not this test plan.
+- A Google/email-authenticated person added as a teammate to a GitHub-org-shared tenant — a distinct, deferred TIR gap (see Coverage gaps table), not this story's concern.
 
 ---
 
@@ -127,5 +130,5 @@ None beyond standard CI logging — confirmed with story owner.
 
 | Gap | Reason | Mitigation |
 |-----|--------|------------|
-| Entire AC1–AC3 coverage blocked on `2026-07-09-team-identity-roles`'s role model and person↔team schema | External-dependency — that feature has not yet reached definition-of-ready | Formal RISK-ACCEPT/PROCEED-BLOCKED gate recorded in this feature's `decisions.md` (2026-07-09). Spec is written and committed now so the dependency is visible early rather than silently missing from Epic 3's story count. Revisit trigger: when `2026-07-09-team-identity-roles` reaches definition-of-ready, re-verify these ACs against that feature's final role list/schema before this story proceeds past implementation |
-| Complexity rated 3 (raised from 2 at /review) and Scope stability rated Unstable, per the story itself | The role schema `2026-07-09-team-identity-roles` delivers could still change before that feature reaches DoR | This test plan will need a second pass once the schema is confirmed — do not treat this version as final |
+| AC1-AC3 exercise only the GitHub-org-allowlist shared-tenant path | It is the only production mechanism today through which two distinct people share one `tenantId` | Documented explicitly in the scope note above; the Google/email-added-teammate path is a known, separately-tracked TIR gap, not silently ignored |
+| Complexity was rated 3 (raised from 2 at /review) and Scope stability Unstable, per the original story | Written before TIR's final schema was confirmed | Both re-verified against TIR's actual shipped code on 2026-07-16 (post tir-s9) — schema and wiring are now stable and confirmed correct for this story's scope |

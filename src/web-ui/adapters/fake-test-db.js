@@ -32,6 +32,10 @@ function createFakeTestDb() {
   var nextProductSeq = 1;
   var standards = [];    // { standard_id, product_id, org_id, name, content, visibility, created_at }
   var nextStandardSeq = 1;
+  var people = [];       // { id, created_at } — tir-s1/bri-s3.3
+  var nextPersonId = 1;
+  var teamMemberships = [];    // { person_id, tenant_id, role, created_at } — tir-s1/bri-s3.3
+  var personIdentities = [];   // { identity_key, person_id, provider, created_at } — tir-s2/bri-s3.3
 
   function query(sql, params) {
     var s = _normalise(sql);
@@ -161,6 +165,85 @@ function createFakeTestDb() {
       return Promise.resolve({ rows: [] });
     }
 
+    // ── people, team_memberships, person_identities (tir-s1/tir-s2/bri-s3.3) ─
+    // tir-s1: people table bootstrap (idempotent)
+    if (s.indexOf('CREATE TABLE IF NOT EXISTS PEOPLE') === 0) {
+      return Promise.resolve({ rows: [] });
+    }
+
+    // tir-s1: team_memberships table bootstrap (idempotent)
+    if (s.indexOf('CREATE TABLE IF NOT EXISTS TEAM_MEMBERSHIPS') === 0) {
+      return Promise.resolve({ rows: [] });
+    }
+
+    // tir-s2: person_identities table bootstrap (idempotent)
+    if (s.indexOf('CREATE TABLE IF NOT EXISTS PERSON_IDENTITIES') === 0) {
+      return Promise.resolve({ rows: [] });
+    }
+
+    // tir-s1: INSERT INTO people (used by migrateTeamSchema backfill)
+    if (s.indexOf('INSERT INTO PEOPLE DEFAULT VALUES') === 0) {
+      var person = { id: nextPersonId++, created_at: new Date().toISOString() };
+      people.push(person);
+      return Promise.resolve({ rows: [{ id: person.id }] });
+    }
+
+    // tir-s1: INSERT INTO team_memberships (used by migrateTeamSchema backfill)
+    if (s.indexOf('INSERT INTO TEAM_MEMBERSHIPS') === 0) {
+      var personId = p[0];
+      var tenantId = p[1];
+      var role = p[2];
+      var tm = { person_id: personId, tenant_id: tenantId, role: role, created_at: new Date().toISOString() };
+      teamMemberships.push(tm);
+      return Promise.resolve({ rows: [] });
+    }
+
+    // tir-s2: INSERT INTO person_identities (used by account-linking routes)
+    if (s.indexOf('INSERT INTO PERSON_IDENTITIES') === 0) {
+      var identityKey = p[0];
+      var personIdForLink = p[1];
+      var provider = p[2];
+      var pi = { identity_key: identityKey, person_id: personIdForLink, provider: provider, created_at: new Date().toISOString() };
+      personIdentities.push(pi);
+      return Promise.resolve({ rows: [] });
+    }
+
+    // tir-s2: SELECT PERSON_ID FROM person_identities (resolvePersonForIdentity lookup)
+    if (s.indexOf('SELECT PERSON_ID FROM PERSON_IDENTITIES WHERE IDENTITY_KEY') === 0) {
+      var lookupIdentityKey = p[0];
+      var piMatch = personIdentities.filter(function(r) { return r.identity_key === lookupIdentityKey; });
+      return Promise.resolve({ rows: piMatch.length ? [{ person_id: piMatch[0].person_id }] : [] });
+    }
+
+    // tir-s1 / tir-s2: SELECT PERSON_ID FROM team_memberships (resolvePersonForIdentity fallback)
+    if (s.indexOf('SELECT PERSON_ID FROM TEAM_MEMBERSHIPS WHERE TENANT_ID') === 0 && s.indexOf('AND PERSON_ID') === -1 && s.indexOf('AND TENANT_ID') === -1) {
+      var fallbackTenantId = p[0];
+      var tmFallback = teamMemberships.filter(function(r) { return r.tenant_id === fallbackTenantId; });
+      return Promise.resolve({ rows: tmFallback.length ? [{ person_id: tmFallback[0].person_id }] : [] });
+    }
+
+    // tir-s7: SELECT ROLE FROM team_memberships (resolveRoleForPerson, person-scoped)
+    if (s.indexOf('SELECT ROLE FROM TEAM_MEMBERSHIPS WHERE PERSON_ID') === 0 && s.indexOf('AND TENANT_ID') !== -1) {
+      var scopedPersonId = p[0];
+      var scopedTenantId = p[1];
+      var tmScoped = teamMemberships.filter(function(r) { return r.person_id === scopedPersonId && r.tenant_id === scopedTenantId; });
+      return Promise.resolve({ rows: tmScoped.length ? [{ role: tmScoped[0].role }] : [] });
+    }
+
+    // tir-s1: SELECT ROLE FROM team_memberships (resolveRoleForTenant, legacy tenant-only lookup)
+    if (s.indexOf('SELECT ROLE FROM TEAM_MEMBERSHIPS WHERE TENANT_ID') === 0 && s.indexOf('AND PERSON_ID') === -1) {
+      var legacyTenantId = p[0];
+      var tmLegacy = teamMemberships.filter(function(r) { return r.tenant_id === legacyTenantId; });
+      return Promise.resolve({ rows: tmLegacy.length ? [{ role: tmLegacy[0].role }] : [] });
+    }
+
+    // tir-s1: SELECT 1 FROM team_memberships (migration check in migrateTeamSchema)
+    if (s.indexOf('SELECT 1 FROM TEAM_MEMBERSHIPS WHERE TENANT_ID') === 0) {
+      var checkTenantId = p[0];
+      var tmExists = teamMemberships.some(function(r) { return r.tenant_id === checkTenantId; });
+      return Promise.resolve({ rows: tmExists ? [{ '?column?': 1 }] : [] });
+    }
+
     // Unknown statement — resolve empty rather than throw, so an unanticipated
     // startup-time query never crashes the test server. Logged for visibility.
     console.warn('[fake-test-db] unhandled query (returning empty rows): ' + s.slice(0, 120));
@@ -169,7 +252,14 @@ function createFakeTestDb() {
 
   return {
     query: query,
-    _reset: function() { users = []; nextUserId = 1; products = []; nextProductSeq = 1; standards = []; nextStandardSeq = 1; }
+    _reset: function() {
+      users = []; nextUserId = 1;
+      products = []; nextProductSeq = 1;
+      standards = []; nextStandardSeq = 1;
+      people = []; nextPersonId = 1;
+      teamMemberships = [];
+      personIdentities = [];
+    }
   };
 }
 
