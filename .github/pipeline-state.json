@@ -10969,7 +10969,7 @@
     },
     {
       "slug": "2026-07-16-journey-limit-credits",
-      "name": "Journey cap bypass for tenants with a positive credit balance",
+      "name": "Persist tenant plan state so the paid-plan journey-cap bypass survives a restart",
       "track": "short",
       "stage": "definition-of-ready",
       "health": "green",
@@ -10977,14 +10977,14 @@
       "stories": [
         {
           "slug": "jlc-s1",
-          "name": "Journey cap bypass for tenants with a positive credit balance",
+          "name": "Persist tenant plan state so the paid-plan journey-cap bypass survives a restart",
           "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 9,
+            "totalTests": 8,
             "passing": 0,
             "artefact": "artefacts/2026-07-16-journey-limit-credits/test-plans/jlc-s1-credit-based-journey-cap-test-plan.md"
           },
@@ -10999,7 +10999,7 @@
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-16T04:31:49.055Z"
+      "updatedAt": "2026-07-16T06:43:54.692Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

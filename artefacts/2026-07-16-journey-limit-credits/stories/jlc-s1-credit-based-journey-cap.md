@@ -1,63 +1,63 @@
-## Story: Journey cap bypass for tenants with a positive credit balance
+## Story: Persist tenant plan state so the paid-plan journey-cap bypass survives a restart
 
 **Track:** Short-track (`/test-plan -> /definition-of-ready -> coding agent`)
 
+## Correction notice (2026-07-16)
+
+This story was originally scoped as "add a credit-balance-based journey-cap bypass, since none exists." That premise was wrong — it was based on reading a stale copy of `tenant-plan.js` from a local checkout that was ~14 commits behind `origin/master`. The real, current file (shipped by an earlier story, `bri-s3.5`) already has a paid-plan bypass: Stripe webhooks (`checkout.session.completed`, `invoice.payment_failed`, `customer.subscription.deleted`, wired in `src/web-ui/routes/billing.js`) call `tenantPlan.setPlanState(tenantId, plan, status)`, and `checkJourneyCap` already bypasses the count cap entirely when `plan === 'paid' && status === 'active'`. This story is re-scoped to fix the real defect found: that plan state is stored in a plain in-memory `Map()` (`src/web-ui/modules/tenant-plan.js`'s `_planState`), with zero persistence. Any server restart (Fly.io deploy, crash, scaling event) wipes it, silently reverting every tenant to the default `{plan: 'trial', status: 'active'}` — re-applying the free/trial count cap to a legitimately paying tenant until their next Stripe webhook event fires. This is almost certainly what the operator hit directly: a real account with 6 in-flight features got blocked at the 5-journey trial cap.
+
 ## User Story
 
-As a **paying tenant with a positive credit balance**,
-I want **the flat journey-count cap to not block me as long as I have credits**,
-So that **my ability to create features is governed by what I've actually paid for (credits), not an arbitrary count set for free/trial accounts**.
+As a **paying tenant whose plan state was set to paid/active by a Stripe webhook**,
+I want **that plan state to survive a server restart**,
+So that **a deploy, crash, or scaling event doesn't silently revert me to the trial journey cap until I happen to trigger another billing event**.
 
 ## Benefit Linkage
 
-**Metric moved:** Beta-readiness correctness — the current gate (`checkJourneyCap` in `src/web-ui/modules/tenant-plan.js`) applies `MAX_JOURNEYS_PER_TENANT` (currently 5) identically to every tenant regardless of billing status, with zero connection to the existing `credits.js` balance system. A real paying account was blocked with "Journey limit reached... contact the operator" despite having no relationship to their actual usage/payment. This is a real, in-production defect discovered live by the operator (6 in-flight features on one account), not a hypothetical.
-**How:** Short-track, no formal benefit-metric artefact — confirmed directly with the operator (2026-07-16): free/trial tenants keep the existing count-based cap; any tenant with a positive credit balance bypasses the count cap entirely, gated only by running out of credits (matching credits.js's existing `getBalance`/`adjustBalance` mechanism, already used elsewhere for per-turn deduction).
-
-## Current, verified state (2026-07-16)
-
-Confirmed by direct code read, not assumption:
-- `src/web-ui/modules/tenant-plan.js`'s `checkJourneyCap(tenantId, currentCount, repoRoot)` resolves a cap from (in order) an injected test reader, `{repoRoot}/tenant-caps.json`, or `MAX_JOURNEYS_PER_TENANT` env var (`.env.example` sets this to `5`). No code path reads `credits.js`'s balance at all.
-- `src/web-ui/modules/credits.js` is a real, Postgres-backed per-tenant balance (`getBalance`/`adjustBalance`, table `credits`), already used elsewhere (per-turn deduction), completely disconnected from this gate.
-- No `plan`/`tier`/`subscription_status` field exists anywhere in the codebase — "paid" has no explicit representation today. Per the operator's decision, a positive credit balance IS the paid signal; no new plan-tier field is being introduced by this story.
+**Metric moved:** Beta-readiness correctness — a real production defect the operator hit live.
+**How:** Confirmed directly with the operator (2026-07-16): persist plan state to Postgres (not an in-memory Map), keeping the existing Stripe-webhook-driven plan/status model exactly as designed, just making it durable.
 
 ## Architecture Constraints
 
-- Reuse `credits.js`'s existing `getBalance(tenantId)` — do not introduce a new adapter or a new "plan tier" concept. This story's entire mechanism is: "if `getBalance(tenantId) > 0`, `checkJourneyCap` always returns `allowed: true`."
-- `credits.js`'s adapter is D37-injectable and its stub throws when unwired (`setCreditsAdapter` must be called first). `checkJourneyCap` becoming async (it must now await a DB call) is a real, necessary signature change — update the one call site in `journey.js` (`routes/journey.js` line ~357) to `await` it.
-- If `credits.js`'s adapter is unwired when `checkJourneyCap` is called (e.g. a test or environment that never wired it), do NOT let that throw block journey creation for every tenant — catch the specific "Adapter not wired" error and fall back to the existing count-only behavior (fail open to the pre-existing behavior, not fail closed to a 500 error). This preserves every existing test/environment that doesn't wire credits.
-- Do not touch `credits.js`'s own logic, schema, or `billing.js`'s Stripe webhook handling — this story only adds a new *caller* of the existing `getBalance` function.
+- Follow the exact same D37 injectable-adapter pattern as `src/web-ui/modules/credits.js` (this module now touches an external system — a DB — so it needs the adapter treatment `tenant-plan.js` didn't need before): `setPlanStateAdapter(pgPool)`, stub throws `"Adapter not wired: planStateDb"` when unwired.
+- New table: `tenant_plan (tenant_id TEXT PRIMARY KEY, plan TEXT NOT NULL DEFAULT 'trial', status TEXT NOT NULL DEFAULT 'active', updated_at TIMESTAMPTZ NOT NULL DEFAULT now())`, created via the same `CREATE TABLE IF NOT EXISTS` startup-migration convention already used by `journey-store-pg.js` (per this repo's established convention, not a new migration mechanism).
+- `setPlanState(tenantId, plan, status)` becomes async (writes to Postgres via `INSERT ... ON CONFLICT (tenant_id) DO UPDATE`). `getPlanState(tenantId)` becomes async (reads from Postgres; returns the same default `{plan:'trial', status:'active'}` for an untracked tenant). `checkJourneyCap` becomes async as a result (it already calls `getPlanState`).
+- Update every call site: `billing.js`'s 3 webhook handlers (already async, per Stripe webhook handler convention) must `await setPlanState(...)`; the `GET` plan-state route (`billing.js` ~line 337) must `await getPlanState(...)`; `journey.js`'s call site of `checkJourneyCap` (~line 357) must `await` it.
+- **Fail-open requirement:** if the DB adapter is unwired, or a DB read genuinely errors, `getPlanState` must fall back to the safe default (`{plan:'trial', status:'active'}`) rather than throwing and 500-ing every journey-creation and billing-status request. This is the same fail-open discipline as the original (now-superseded) jlc-s1 scope — apply it here instead, since it's the actually-correct place for it.
+- Do NOT touch `credits.js`'s own logic/schema, or the Stripe webhook signature-verification/event-routing logic in `billing.js` — only the `setPlanState`/`getPlanState` calls within the already-identified event branches.
+- This closes an in-memory-state gap analogous to the one bri-s3.5's own decisions.md already flagged for a *different* module ("a minimal in-memory tenant plan-state store") — worth checking `artefacts/2026-07-09-beta-readiness-infra/decisions.md`'s bri-s3.5 entry for the original design rationale before changing it.
 
 ## Dependencies
 
-- **Upstream:** None — `credits.js` (existing) and `tenant-plan.js` (existing) are both already merged.
+- **Upstream:** `bri-s3.5` (already merged) — this story replaces its in-memory store with a persisted one, doesn't redesign the plan/status model itself.
 - **Downstream:** None.
 
 ## Acceptance Criteria
 
-**AC1:** Given a tenant with a positive credit balance (`credits.getBalance(tenantId) > 0`), When they attempt to create a new journey beyond the existing `MAX_JOURNEYS_PER_TENANT` count cap, Then journey creation succeeds (the count cap does not apply) — proving the credit-based bypass works for a tenant genuinely over the old limit.
+**AC1:** Given a tenant whose plan state was set to `paid`/`active` via `setPlanState`, When the Node process is restarted (simulated in a test by re-requiring/resetting the in-memory module state but reading the same underlying Postgres table), Then `getPlanState(tenantId)` still returns `{plan:'paid', status:'active'}` — proving persistence survives what an in-memory Map would have lost.
 
-**AC2:** Given a tenant with a zero or negative credit balance, When they attempt to create a journey beyond `MAX_JOURNEYS_PER_TENANT`, Then journey creation is still blocked with the existing HTTP 402 "Journey limit reached" response — proving free/trial tenants are unaffected (zero regression).
+**AC2:** Given a tenant with no plan-state row in the table, When `getPlanState(tenantId)` is called, Then it returns the default `{plan:'trial', status:'active'}` — unchanged default behavior.
 
-**AC3:** Given a tenant with a positive credit balance who is also under the count cap, When they create a journey, Then it succeeds exactly as it did before this story (credits being positive never blocks a request that the old cap would have allowed anyway) — proving no new restriction is introduced.
+**AC3:** Given the plan-state DB adapter is unwired, When `getPlanState` or `checkJourneyCap` is called, Then it falls back to the safe default / count-only behavior without throwing — proving fail-open, matching this repo's D37 standard.
 
-**AC4:** Given the `credits.js` adapter is unwired (not called via `setCreditsAdapter`) in the current process, When `checkJourneyCap` is invoked, Then it falls back to the pre-existing count-only behavior (does not throw, does not 500, does not silently allow unlimited journeys) — proving this story fails open to old behavior, not closed to an error, when credits isn't wired.
+**AC4:** Given `billing.js`'s 3 Stripe webhook branches (`checkout.session.completed`, `invoice.payment_failed`, `customer.subscription.deleted`), When each fires, Then it correctly `await`s the now-async `setPlanState` call — proving the async signature change is fully wired at every call site, not left as an unresolved/ignored Promise.
 
-**AC5:** Given `checkJourneyCap` is now async, When the one existing call site in `routes/journey.js` invokes it, Then the call site correctly `await`s the result — proving the signature change is fully wired, not left as a silent `Promise` object being treated as truthy/falsy (which would incorrectly always evaluate `allowed` as `true` since a Promise object is truthy).
+**AC5:** Given `checkJourneyCap`'s existing plan-state-bypass logic (`paid`+`active` → cap lifted, anything else → existing count-cap logic), When re-verified against the persisted store, Then behavior is unchanged from the current in-memory version for every existing passing test — this story changes *where* the state lives, not the cap-decision logic itself.
 
 ## Out of Scope
 
-- Any new plan-tier/subscription-status field or admin UI for managing it — the credit balance itself is the only signal this story introduces.
-- Changing how credits are earned, purchased, or deducted — `credits.js`'s own mechanics are unchanged.
-- Retroactively raising `MAX_JOURNEYS_PER_TENANT`'s default value — the free/trial cap number itself (currently 5) is unchanged; this story only adds a bypass path for tenants with credits.
+- Any change to the plan/status values themselves (`trial`/`paid`, `active`/`past_due`/`canceled`) or to which Stripe events map to which state — that's `bri-s3.5`'s already-decided design.
+- `credits.js`'s own balance mechanics — untouched.
+- A UI for viewing/editing plan state beyond the existing `GET` route.
 
 ## NFRs
 
-- **Performance:** `checkJourneyCap` now makes a DB read when credits is wired — negligible (`credits` table, indexed by `tenant_id`, same query pattern as existing `getBalance` callers).
-- **Security:** None — this loosens a gate for paying tenants, does not weaken any tenant-isolation boundary. AC4's fail-open behavior must fail open to the *old, already-shipped* behavior (count cap), never to "unlimited for everyone."
-- **Accessibility:** Not applicable — no UI change (the existing HTTP 402 page is unchanged for AC2's case).
-- **Audit:** None beyond existing logging (`console.error` on cap-reached, unchanged for AC2's path).
+- **Performance:** One additional indexed DB read per journey-creation attempt and per plan-status check — same order of magnitude as `credits.js`'s existing pattern.
+- **Security:** None — this fixes a durability bug, doesn't change any tenant-isolation boundary. Fail-open must fail open to the *safe default* (trial/active, count cap applies), never to unconditional unlimited access.
+- **Accessibility:** Not applicable.
+- **Audit:** None beyond existing logging.
 
 ## Complexity Rating
 
-**Rating:** 2 — some ambiguity (the async signature change touches one call site; the fail-open behavior needs to be right), but the mechanism itself (reuse an existing, already-merged balance read) is well understood.
+**Rating:** 2 — mechanically similar to `credits.js`'s existing pattern (well understood), but touches 4 call sites across 2 files that all need correct async wiring.
 **Scope stability:** Stable.
