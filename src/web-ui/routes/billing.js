@@ -234,7 +234,8 @@ async function handlePostStripeWebhook(req, res) {
       await creditsModule.adjustBalance(tenantId1, amount1);
       console.log(JSON.stringify({ event: 'credits_provisioned', tenantId: tenantId1, amount: amount1, stripeEventId: stripeEventId }));
       // bri-s3.5 AC1: tenant/session reflects the paid plan immediately after this webhook
-      if (tenantId1) tenantPlan.setPlanState(tenantId1, 'paid', 'active');
+      // jlc-s1: setPlanState is now async (persists to Postgres) — must be awaited.
+      if (tenantId1) await tenantPlan.setPlanState(tenantId1, 'paid', 'active');
       break;
     }
 
@@ -246,7 +247,7 @@ async function handlePostStripeWebhook(req, res) {
       var tenantIdFail = (objFail.metadata && objFail.metadata.tenant_id) ||
                          (objFail.subscription_details && objFail.subscription_details.metadata && objFail.subscription_details.metadata.tenant_id) ||
                          objFail.client_reference_id;
-      if (tenantIdFail) tenantPlan.setPlanState(tenantIdFail, 'trial', 'past_due');
+      if (tenantIdFail) await tenantPlan.setPlanState(tenantIdFail, 'trial', 'past_due');
       console.log(JSON.stringify({ event: 'payment_failed', tenantId: tenantIdFail, stripeEventId: stripeEventId }));
       break;
     }
@@ -256,7 +257,7 @@ async function handlePostStripeWebhook(req, res) {
       // usage gates (checkJourneyCap) restrict access per the new plan immediately.
       var objCancel = event.data.object;
       var tenantIdCancel = (objCancel.metadata && objCancel.metadata.tenant_id) || objCancel.client_reference_id;
-      if (tenantIdCancel) tenantPlan.setPlanState(tenantIdCancel, 'trial', 'canceled');
+      if (tenantIdCancel) await tenantPlan.setPlanState(tenantIdCancel, 'trial', 'canceled');
       console.log(JSON.stringify({ event: 'subscription_canceled', tenantId: tenantIdCancel, stripeEventId: stripeEventId }));
       break;
     }
@@ -328,13 +329,13 @@ async function handleGetBillingPortal(req, res) {
  * that lets a UI (or the E2E spec) confirm "the tenant/session reflects the
  * paid plan" after a mocked checkout/failure/cancellation webhook has run.
  */
-function handleGetBillingPlanState(req, res) {
+async function handleGetBillingPlanState(req, res) {
   if (!req.session || !req.session.accessToken) {
     res.writeHead(401, { 'Content-Type': 'text/plain' });
     res.end('Unauthorized');
     return;
   }
-  var planState = tenantPlan.getPlanState(req.session.tenantId);
+  var planState = await tenantPlan.getPlanState(req.session.tenantId);
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(planState));
 }

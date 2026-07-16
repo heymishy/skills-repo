@@ -357,7 +357,7 @@ async function handlePostJourney(req, res) {
       var _allForCap  = [];
       try { _allForCap = _journeyStore.listJourneys ? _journeyStore.listJourneys(repoRoot) : []; } catch (_) {}
       var _tenantCount = _allForCap.filter(function(j) { return j.tenantId === _gateTenantId; }).length;
-      var _capResult   = _tenantPlan.checkJourneyCap(_gateTenantId, _tenantCount, repoRoot);
+      var _capResult   = await _tenantPlan.checkJourneyCap(_gateTenantId, _tenantCount, repoRoot);
       if (!_capResult.allowed) {
         console.error('[journey-store] Journey limit reached for tenant ' + _gateTenantId + ' (cap=' + _capResult.cap + ')');
         res.writeHead(402, { 'Content-Type': 'text/html; charset=utf-8' });
