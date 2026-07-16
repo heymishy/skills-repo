@@ -11067,6 +11067,20 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "stories": []
+    },
+    {
+      "slug": "2026-07-16-legacy-ingestion",
+      "name": "Legacy Ingestion Pipeline -- /reverse-engineer to /modernisation-decompose to Feature Candidates to /discovery",
+      "track": "standard",
+      "stage": "discovery",
+      "health": "green",
+      "updatedAt": "2026-07-16T10:29:04.027Z",
+      "discoveryArtefact": "artefacts/2026-07-16-legacy-ingestion/discovery.md",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
