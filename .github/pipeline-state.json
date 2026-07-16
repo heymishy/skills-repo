@@ -10966,6 +10966,40 @@
       ],
       "metrics": [],
       "updatedAt": "2026-07-15T20:07:04.001Z"
+    },
+    {
+      "slug": "2026-07-16-journey-limit-credits",
+      "name": "Journey cap bypass for tenants with a positive credit balance",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "jlc-s1",
+          "name": "Journey cap bypass for tenants with a positive credit balance",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0,
+            "artefact": "artefacts/2026-07-16-journey-limit-credits/test-plans/jlc-s1-credit-based-journey-cap-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-16-journey-limit-credits/dor/jlc-s1-dor.md",
+          "dorSignedOffAt": "2026-07-16T04:31:49.055Z",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-16T04:31:49.055Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
