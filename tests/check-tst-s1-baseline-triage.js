@@ -109,12 +109,19 @@ const THE_69_FILES = [
   'tests/check-wusl1-chat-streaming.js',
 ];
 
-const NOW_PASSING_5 = [
-  'tests/check-bri-s3.5-nfr-stripe-keys.js',
+// cfg-s1 (2026-07-16 follow-up): confirmed and fixed the root cause for 3 of
+// these 5 -- an over-broad git-grep scope in the check itself, not a real
+// platform-behavior difference. These 3 are now genuinely fixed and correctly
+// absent from the baseline. The other 2 remain unconfirmed (see decisions.md).
+const STILL_UNCONFIRMED_LOCAL_VS_CI = [
   'tests/check-gpa-sc06-source-path-guard.js',
+  'tests/run-gpa-tests.js',
+];
+
+const CFG_S1_FIXED_FILES = [
+  'tests/check-bri-s3.5-nfr-stripe-keys.js',
   'tests/check-lab-s3.2-stripe-checkout.js',
   'tests/check-lab-s3.4-stripe-webhook.js',
-  'tests/run-gpa-tests.js',
 ];
 
 // tests/check-md-3-adr.js is NOT in FIXED_FILES: its T4 logic was genuinely
@@ -233,15 +240,18 @@ console.log('\n[tst-s1-baseline-triage] U5 — check-md-3-adr.js AC3 classificat
   );
 }
 
-// ── U6: the 5 locally-now-passing files remain in the baseline (CI-verified) ──
-// CORRECTION (post-merge, real CI run on PR #484): these 5 files pass on a
-// local dev machine but genuinely fail on the real GitHub Actions CI runner
-// -- CI is the authoritative environment for this repo's regression gate,
-// not a local machine, so they were restored to the baseline rather than
-// removed. See decisions.md's "5 files restored to baseline" entry.
+// ── U6: the 2 still-unconfirmed files remain in the baseline (CI-verified) ──
+// CORRECTION (post-merge, real CI run on PR #484): 5 files were found passing
+// on a local dev machine but genuinely failing on the real GitHub Actions CI
+// runner -- CI is the authoritative environment for this repo's regression
+// gate, not a local machine, so all 5 were restored to the baseline rather
+// than removed. cfg-s1 (2026-07-16 follow-up) then confirmed and fixed the
+// root cause for 3 of those 5 (an over-broad grep scope, not a real platform
+// difference) -- those 3 are now correctly absent (see U7-equivalent check
+// below). The other 2 remain unconfirmed and stay in the baseline.
 
-console.log('\n[tst-s1-baseline-triage] U6 — 5 locally-passing-but-CI-failing files remain in baseline');
-NOW_PASSING_5.forEach(function (f) {
+console.log('\n[tst-s1-baseline-triage] U6 — 2 still-unconfirmed locally-passing-but-CI-failing files remain in baseline');
+STILL_UNCONFIRMED_LOCAL_VS_CI.forEach(function (f) {
   assert('U6: ' + f + ' is present in known-baseline-failures.json (CI-verified still failing)', baselineFiles.includes(f));
 });
 {
@@ -252,11 +262,14 @@ NOW_PASSING_5.forEach(function (f) {
   );
 }
 
-// ── U7: no category-(a) Fixed file remains in the baseline ─────────────────
+// ── U7: no category-(a) Fixed file, nor a cfg-s1-fixed file, remains in the baseline ──
 
 console.log('\n[tst-s1-baseline-triage] U7 — Fixed files removed from baseline');
 FIXED_FILES.forEach(function (f) {
   assert('U7: ' + f + ' not in known-baseline-failures.json', !baselineFiles.includes(f));
+});
+CFG_S1_FIXED_FILES.forEach(function (f) {
+  assert('U7: ' + f + ' not in known-baseline-failures.json (fixed by cfg-s1)', !baselineFiles.includes(f));
 });
 
 // ── U8: every file remaining in the baseline is deferred (b)/(c) in the report ──

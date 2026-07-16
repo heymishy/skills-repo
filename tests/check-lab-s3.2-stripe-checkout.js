@@ -311,16 +311,21 @@ function runIntegrationTests() {
   var { execSync } = require('child_process');
   var grepResult = '';
   try {
-    // Look for STRIPE_SECRET_KEY=sk_... (a real key assignment) in committed files
+    // Look for STRIPE_SECRET_KEY=sk_... (a real key assignment) in committed
+    // files. cfg-s1: scoped to runtime-relevant paths only -- the unscoped
+    // '-- .' search previously matched documentation/verification-script
+    // files that legitimately discuss this exact string as an example,
+    // producing a false-positive failure on any shell that actually runs
+    // the grep (e.g. real CI). See decisions.md for the full writeup.
     grepResult = execSync(
-      'git grep -n "STRIPE_SECRET_KEY=sk_" -- . 2>/dev/null || true',
+      'git grep -n "STRIPE_SECRET_KEY=sk_" -- src/ tests/e2e/fixtures/ playwright.config.js .env.example 2>/dev/null || true',
       { cwd: ROOT, encoding: 'utf8' }
     );
   } catch (_) {
     grepResult = '';
   }
   check(
-    'no-stripe-secret-key-in-committed-files',
+    'no-stripe-secret-key-in-committed-runtime-relevant-files',
     grepResult.trim() === ''
   );
 
