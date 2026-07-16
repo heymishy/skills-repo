@@ -10985,18 +10985,19 @@
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 8,
-            "passing": 0,
+            "totalTests": 21,
+            "passing": 21,
             "artefact": "artefacts/2026-07-16-journey-limit-credits/test-plans/jlc-s1-credit-based-journey-cap-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-16-journey-limit-credits/dor/jlc-s1-dor.md",
           "dorSignedOffAt": "2026-07-16T04:31:49.055Z",
-          "prStatus": "none"
+          "prStatus": "none",
+          "updatedAt": "2026-07-16T08:26:19.047Z"
         }
       ],
       "metrics": [],
