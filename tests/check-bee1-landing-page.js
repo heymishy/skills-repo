@@ -260,15 +260,27 @@ if (handleLanding) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// T11 — NFR: no package.json posthog dependency (AC9 — belt-and-suspenders)
+// T11 — NFR: no *redundant* PostHog SDK dependency beyond posthog-node (AC9 — belt-and-suspenders)
 // ─────────────────────────────────────────────────────────────────────────────
-console.log('\nT11 — no PostHog npm package in package.json');
+// tst-s1 (2026-07-16 baseline triage): this originally asserted zero posthog
+// packages at all, on the assumption bee.1's own analytics stayed hand-rolled
+// (posthog-server.js, HTTPS calls). bri-s1.2 later added `posthog-node` as a
+// new, deliberate, documented runtime dependency for feature-flag evaluation
+// (artefacts/2026-07-09-beta-readiness-infra/decisions.md ARCH entry,
+// 2026-07-10) -- a different purpose than bee.1's own analytics capture, and
+// unrelated scope creep from bee.1's point of view. The belt-and-suspenders
+// intent (bee.1 itself must not silently pull in a redundant PostHog SDK
+// package) still holds; only the specific, now-legitimate `posthog-node`
+// package is allowed.
+console.log('\nT11 — no redundant PostHog npm package in package.json');
 {
   const pkgPath = path.join(ROOT, 'package.json');
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
   const allDeps = Object.assign({}, pkg.dependencies || {}, pkg.devDependencies || {});
+  const ALLOWED_POSTHOG_DEPS = ['posthog-node'];
   const posthogDeps = Object.keys(allDeps).filter(function(k) { return k.includes('posthog'); });
-  eq(posthogDeps.length, 0, 'T11.1: no posthog package in dependencies or devDependencies');
+  const unexpectedPosthogDeps = posthogDeps.filter(function(k) { return !ALLOWED_POSTHOG_DEPS.includes(k); });
+  eq(unexpectedPosthogDeps.length, 0, 'T11.1: no unexpected posthog package in dependencies or devDependencies (found: ' + posthogDeps.join(', ') + ')');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
