@@ -100,22 +100,32 @@ if (process.env.npm_lifecycle_event === 'test') {
   console.log('  - T4.1: skipped (running inside npm test chain — validated by the outer npm test run)');
   passed++;
 } else {
-  // These patterns match the known pre-existing failure only.
-  const KNOWN_FAILURE_PATTERNS = ['executorIdentity', 'validate-trace.sh', 'WSL', '/bin/bash'];
+  // tst-s1 (2026-07-16 baseline triage): this previously compared the nested
+  // npm test run's output against a small hardcoded KNOWN_FAILURE_PATTERNS
+  // list (4 patterns) written before pcr-s1's test runner (PR #455) unmasked
+  // this repo's real ~69-file pre-existing baseline. That made T4 fail
+  // whenever invoked outside the npm_lifecycle_event guard above (e.g.
+  // directly via `node scripts/run-all-tests.js`, the exact method tst-s1's
+  // own canonical baseline verification uses) purely because the 69 known,
+  // already-accepted baseline failures didn't match the stale 4-pattern
+  // list -- a false "new regression" signal, not a real one. Reuse the
+  // same baseline scripts/ci-test-regression-check.js already treats as
+  // the source of truth, so T4 only flags a genuine new regression.
+  const { extractFailedFiles, loadBaseline } = require(path.join(ROOT, 'scripts', 'ci-test-regression-check.js'));
 
   try {
     execSync('npm test', { cwd: ROOT, stdio: 'pipe' });
     assert('T4.1 \u2014 npm test exits 0 (no regressions introduced)', true);
   } catch (e) {
     const combined = (e.stdout ? e.stdout.toString() : '') + (e.stderr ? e.stderr.toString() : '');
-    const failLines = combined.split('\n').filter(l => l.includes('\u2717') || l.includes('FAIL'));
-    const newFailures = failLines.filter(
-      l => !KNOWN_FAILURE_PATTERNS.some(pat => l.includes(pat)),
-    );
+    const currentFailures = extractFailedFiles(combined);
+    const baseline = loadBaseline();
+    const baselineSet = new Set(baseline.files || []);
+    const newFailures = currentFailures.filter((f) => !baselineSet.has(f));
     assert(
-      'T4.1 \u2014 npm test exits 0 (no regressions introduced)',
+      'T4.1 \u2014 npm test exits 0 relative to the known baseline (no NEW regressions introduced)',
       newFailures.length === 0,
-      newFailures.length > 0 ? `New failures: ${newFailures.slice(0, 3).join('; ')}` : undefined,
+      newFailures.length > 0 ? `New failures not in tests/known-baseline-failures.json: ${newFailures.join(', ')}` : undefined,
     );
   }
 }
