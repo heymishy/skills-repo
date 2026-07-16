@@ -9535,9 +9535,9 @@
             {
               "slug": "bri-s3.3",
               "name": "Multi-user within one tenant journey spec",
-              "stage": "test-plan",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-16T03:51:41.944Z",
+              "updatedAt": "2026-07-16T03:59:22.237Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9553,7 +9553,7 @@
               "dorStatus": "signed-off",
               "blocker": "",
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s3.3-multi-user-tenant-journey-dor.md",
-              "prStatus": "draft"
+              "prStatus": "merged"
             },
             {
               "slug": "bri-s3.4",
