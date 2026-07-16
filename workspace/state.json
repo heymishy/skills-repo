@@ -1,98 +1,67 @@
 {
   "currentPhase": "definition-of-done",
-  "lastUpdated": "2026-07-05T12:00:00Z",
-  "activeFeature": "2026-07-05-product-stds-hierarchy",
-  "previousFeature": "2026-07-03-admin-role-panel",
+  "lastUpdated": "2026-07-16T10:00:00Z",
+  "activeFeature": "2026-07-16-ci-flake-grep-fix",
+  "previousFeature": "2026-07-16-journey-limit-credits",
   "cycle": {
     "discovery": {
-      "status": "complete",
-      "artefact": "artefacts/2026-07-05-product-stds-hierarchy/discovery.md",
-      "completedAt": "2026-07-05"
-    },
-    "benefit-metric": {
-      "status": "complete",
-      "artefact": "artefacts/2026-07-05-product-stds-hierarchy/benefit-metric.md",
-      "completedAt": "2026-07-05"
-    },
-    "definition": {
-      "status": "complete",
-      "completedAt": "2026-07-05"
-    },
-    "review": {
-      "status": "complete",
-      "completedAt": "2026-07-05"
+      "status": "not-applicable (short-track — discovery skipped by design per CLAUDE.md's short-track routing)",
+      "artefact": "N/A — short-track story, no discovery artefact produced",
+      "completedAt": null
     },
     "test-plan": {
       "status": "complete",
-      "completedAt": "2026-07-05",
-      "totalTests": 76
+      "completedAt": "2026-07-16",
+      "totalTests": 5
     },
     "definition-of-ready": {
       "status": "complete",
-      "completedAt": "2026-07-05",
-      "storiesSigned": 10,
-      "hardBlocksPassed": "19/19 per story",
-      "warningsAcknowledged": 0,
-      "mediumFindingsResolved": 3,
-      "oversightLevel": "medium-all",
-      "adr018Resolved": "playwright-e2e",
-      "dorArtefactsPath": "artefacts/2026-07-05-product-stds-hierarchy/dor/"
+      "completedAt": "2026-07-16",
+      "storiesSigned": 1,
+      "hardBlocksPassed": "13/13"
     },
     "branch-setup": {
       "status": "complete",
-      "completedAt": "2026-07-05",
-      "worktree": ".worktrees/psh",
-      "branch": "fix/rate-limiter-scope"
-    },
-    "implementation-plan": {
-      "status": "complete",
-      "completedAt": "2026-07-05",
-      "plansPath": "artefacts/2026-07-05-product-stds-hierarchy/plans/"
+      "completedAt": "2026-07-16",
+      "worktree": ".worktrees/cfg-s1",
+      "branch": "feature/cfg-s1"
     },
     "subagent-execution": {
       "status": "complete",
-      "completedAt": "2026-07-05",
-      "storiesCompleted": 10
+      "completedAt": "2026-07-16",
+      "storiesCompleted": 1
     },
     "verify-completion": {
       "status": "complete",
-      "completedAt": "2026-07-05",
-      "acsVerified": 58,
-      "acsTotal": 58,
-      "testsPassing": 76,
-      "testsTotal": 76
+      "completedAt": "2026-07-16",
+      "acsVerified": 5,
+      "acsTotal": 5,
+      "testsPassing": 5,
+      "testsTotal": 5
     },
     "branch-complete": {
       "status": "complete",
-      "completedAt": "2026-07-05",
-      "prUrl": "https://github.com/heymishy/skills-repo/pull/441",
+      "completedAt": "2026-07-16",
+      "prUrl": "https://github.com/heymishy/skills-repo/pull/486",
       "prStatus": "merged",
-      "mergedAt": "2026-07-05"
+      "mergedAt": "2026-07-16"
     },
     "definition-of-done": {
       "status": "complete",
-      "completedAt": "2026-07-05",
-      "storiesComplete": 7,
-      "storiesCompleteWithDeviations": 3,
-      "deviationStories": [
-        "psh-s4",
-        "psh-s6",
-        "psh-s7"
-      ],
-      "deviationReason": "Playwright E2E specs written and committed but pending live server execution for CSS-layout ACs (psh-s4: dashboard layout, psh-s6: product kanban columns, psh-s7: org kanban columns/filter)",
-      "dodArtefactsPath": "artefacts/2026-07-05-product-stds-hierarchy/dod/"
+      "completedAt": "2026-07-16",
+      "storiesComplete": 1,
+      "storiesCompleteWithDeviations": 0,
+      "dodArtefactsPath": "artefacts/2026-07-16-ci-flake-grep-fix/dod/"
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-07-05",
-    "contextAtWrite": "Definition-of-done complete for all 10 psh stories. PR #441 merged. 58 ACs verified, 76 tests passing CI. Outcome: 7 COMPLETE, 3 COMPLETE WITH DEVIATIONS (psh-s4/s6/s7 Playwright E2E pending live server). decisions.md created retroactively (6 architectural decisions). All pipeline-state.json story fields: stage=definition-of-done, dodStatus=complete, prStatus=merged. Commit cddbb101 on master, pushed to origin. Inner loop fully complete.",
-    "resumeInstruction": "Feature 2026-07-05-product-stds-hierarchy is at definition-of-done (COMPLETE WITH DEVIATIONS). The feature is fully delivered and merged. Three remaining post-deploy actions exist for Playwright E2E tests. Start the next feature discovery or run /improve to analyse the psh delivery signal.",
+    "writtenAt": "2026-07-16",
+    "contextAtWrite": "This checkpoint closes out a multi-day, multi-feature session (2026-07-15 through 2026-07-16) spanning 5 merged PRs across the 2026-07-09-beta-readiness-infra epic and 4 standalone short-track stories. Session summary: (1) bri-s3.3 (PR #483, merged) -- second DoR re-run found tir-s9 had shipped the fix for the login-identityKey defect found on 2026-07-13; re-scoped to GitHub-org-allowlist mode and unblocked; implementation dispatched, a real acVerified type bug and a suite-order test flake were found and fixed post-merge. (2) tst-s1 (PR #484, merged) -- triaged all 69 pre-existing baseline test failures unmasked by pcr-s1's test runner; 2 fixed, 67 documented by root cause; a local-vs-CI baseline discrepancy found and corrected mid-PR. (3) jlc-s1 (PR #485, merged) -- investigated the operator's live 'Journey limit reached' report; initial diagnosis (based on a stale main-checkout file) was wrong and corrected mid-implementation by the dispatched agent itself; real fix persists bri-s3.5's paid-plan bypass to Postgres so it survives a server restart; verified end-to-end against a real running server. (4) cfg-s1 (PR #486, merged) -- follow-up from tst-s1; confirmed and fixed the root cause of 3 of 5 local-vs-CI test divergences (an unscoped git-grep silently no-oping on Windows, executing-and-false-positiving on real CI); 2 files remain unresolved (Node version mismatch suspected). An outer-loop completeness review then found: workspace/state.json stale since 2026-07-05 (this write closes that gap); no short-track story had ever reached /definition-of-done (resolved: DoD artefacts retroactively written for pcr-s1, stis-s1, tst-s1, jlc-s1, cfg-s1; CLAUDE.md's short-track routing line updated to state Step 8 still applies); 18 capture-log entries (12 pre-session, 6 from this session) promoted to workspace/learnings.md.",
+    "resumeInstruction": "No feature is currently mid-pipeline. All 5 stories from this session (pcr-s1, stis-s1, tst-s1, jlc-s1, cfg-s1) are merged and at definition-of-done. Two known open items, neither blocking: (1) tests/run-gpa-tests.js and tests/check-gpa-sc06-source-path-guard.js remain unresolved local-vs-CI test divergences -- leading hypothesis is a Node 20 (CI) vs Node 22 (local) mismatch, not yet confirmed. (2) definition-of-ready/SKILL.md's H-GOV check still lacks an explicit short-track exception clause (recurred as a workaround across 5 stories this session) -- a good candidate for its own short-track fix. Start the next feature's /discovery or address either open item.",
     "pendingActions": [
-      "Post-deploy smoke test: run 'npx playwright test tests/e2e/psh-s4-dashboard-layout.spec.js' against live server — Owner: Hamish King",
-      "Post-deploy smoke test: run 'npx playwright test tests/e2e/psh-s6-product-kanban.spec.js' against live server — Owner: Hamish King",
-      "Post-deploy smoke test: run 'npx playwright test tests/e2e/psh-s7-org-kanban.spec.js' against live server — Owner: Hamish King",
-      "M4a review: check PostHog standard_created events at 60 days post-launch and set forward target — Owner: Hamish King",
-      "Previous feature (2026-07-03-admin-role-panel): deploy to Fly.io pending; AC7 manual smoke test pending; M1/M2 measurement pending deploy"
+      "Investigate the Node 20 vs Node 22 hypothesis for tests/run-gpa-tests.js and tests/check-gpa-sc06-source-path-guard.js once a Node-20-pinned environment is available — Owner: Hamish King",
+      "Consider a short-track fix for definition-of-ready/SKILL.md's H-GOV short-track exception clause (recurred 5 times as a manual workaround: pcr-s1, stis-s1, tst-s1, jlc-s1, cfg-s1) — Owner: Hamish King",
+      "Previous session's pending items (2026-07-05-product-stds-hierarchy Playwright smoke tests, M4a review) — status not re-verified this session, carry forward if still outstanding — Owner: Hamish King"
     ]
   },
   "estimate": {

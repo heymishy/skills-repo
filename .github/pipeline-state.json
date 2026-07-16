@@ -9934,14 +9934,14 @@
       "slug": "2026-07-11-pipeline-conflict-reduction",
       "name": "Remove the three recurring merge-conflict hotspots in parallel-wave inner-loop delivery",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "epics": [],
       "stories": [
         {
           "slug": "pcr-s1",
           "name": "Reduce merge-conflict hotspots (test chain, pipeline-state updatedAt, decisions.md union merge)",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -9960,18 +9960,21 @@
           "dorContractArtefact": "artefacts/2026-07-11-pipeline-conflict-reduction/dor/pcr-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-11T00:00:00Z",
           "prStatus": "merged",
-          "updatedAt": "2026-07-12T08:37:02.671Z",
-          "id": "pcr-s1"
+          "updatedAt": "2026-07-16T09:53:56.458Z",
+          "id": "pcr-s1",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-11-pipeline-conflict-reduction/dod/pcr-s1-dod.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-11T00:00:00Z"
+      "updatedAt": "2026-07-16T09:54:08.321Z"
     },
     {
       "slug": "2026-07-12-skill-turn-test-isolation",
       "name": "Stop the skill-turn artefact auto-commit from firing real git commits during tests",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "epics": [],
       "stories": [
@@ -9979,7 +9982,7 @@
           "id": "stis-s1",
           "slug": "stis-s1",
           "name": "Guard skill-turn auto-commit behind a D37 adapter so tests never fire real git commits",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -10025,11 +10028,14 @@
             }
           ],
           "branchName": "feature/stis-s1",
-          "updatedAt": "2026-07-12T08:37:02.499Z"
+          "updatedAt": "2026-07-16T09:53:56.587Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-12-skill-turn-test-isolation/dod/stis-s1-dod.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-11T20:45:11.645Z"
+      "updatedAt": "2026-07-16T09:54:08.448Z"
     },
     {
       "slug": "2026-07-13-context-graph-primitive",
@@ -10934,7 +10940,7 @@
       "slug": "2026-07-16-baseline-test-triage",
       "name": "Triage the pre-existing baseline test failures unmasked by pcr-s1",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "epics": [],
       "stories": [
@@ -10942,7 +10948,7 @@
           "id": "tst-s1",
           "slug": "tst-s1",
           "name": "Triage the pre-existing baseline test failures",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -10961,17 +10967,20 @@
           "dorContractArtefact": "artefacts/2026-07-16-baseline-test-triage/dor/tst-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-15T20:07:04.001Z",
           "prStatus": "draft",
-          "updatedAt": "2026-07-16T06:46:09.068Z"
+          "updatedAt": "2026-07-16T09:53:56.696Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-16-baseline-test-triage/dod/tst-s1-dod.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-15T20:07:04.001Z"
+      "updatedAt": "2026-07-16T09:54:08.575Z"
     },
     {
       "slug": "2026-07-16-journey-limit-credits",
       "name": "Persist tenant plan state so the paid-plan journey-cap bypass survives a restart",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "epics": [],
       "stories": [
@@ -10997,17 +11006,20 @@
           "dorArtefact": "artefacts/2026-07-16-journey-limit-credits/dor/jlc-s1-dor.md",
           "dorSignedOffAt": "2026-07-16T04:31:49.055Z",
           "prStatus": "merged",
-          "updatedAt": "2026-07-16T09:05:13.163Z"
+          "updatedAt": "2026-07-16T09:53:56.829Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-16-journey-limit-credits/dod/jlc-s1-dod.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-16T06:43:54.692Z"
+      "updatedAt": "2026-07-16T09:54:08.701Z"
     },
     {
       "slug": "2026-07-16-ci-flake-grep-fix",
       "name": "Fix the over-broad Stripe-key grep scope causing 3 NFR checks to false-positive in real CI",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "epics": [],
       "stories": [
@@ -11015,7 +11027,7 @@
           "id": "cfg-s1",
           "slug": "cfg-s1",
           "name": "Fix the over-broad Stripe-key grep scope causing 3 NFR checks to false-positive in real CI",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -11032,12 +11044,15 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-16-ci-flake-grep-fix/dor/cfg-s1-dor.md",
           "dorSignedOffAt": "2026-07-16T09:24:20.937Z",
-          "prStatus": "none",
-          "updatedAt": "2026-07-16T09:38:58.419Z"
+          "prStatus": "merged",
+          "updatedAt": "2026-07-16T09:53:56.953Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-16-ci-flake-grep-fix/dod/cfg-s1-dod.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-16T09:24:20.937Z"
+      "updatedAt": "2026-07-16T09:54:08.829Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

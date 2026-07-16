@@ -111,6 +111,14 @@ and /reverse-engineer
 **Short-track** (bugs, small fixes, bounded refactors): 
 `/test-plan → /definition-of-ready → coding agent`
 
+Short-track skips discovery through review (steps 1-4), starting directly at test-plan — but
+Step 8 (`/definition-of-done`) still applies after merge, exactly as it does for standard-track
+features. A short-track story is not complete just because its PR merged; write its DoD before
+considering the story finished. This was clarified 2026-07-16 after finding that no short-track
+story in this repo's history had ever reached DoD — all sat permanently at `branch-complete`
+once merged, an undocumented gap rather than an intentional exemption. See `workspace/learnings.md`
+for the retroactive DoD writeup covering `pcr-s1`, `stis-s1`, `tst-s1`, `jlc-s1`, and `cfg-s1`.
+
 **Programme track** (multi-team, multi-phase, migrations, rewrites):
 `/programme → [per workstream: standard pipeline] → /metric-review at phase gates`
 
