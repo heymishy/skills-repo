@@ -140,6 +140,75 @@ test('products.js exports handlePostProductSync', function() {
     }
   })();
 
+  console.log('\n[pr-s3] AC1/AC3/AC4 -- freshness section and Refresh control render correctly in all three states');
+
+  await (async function() {
+    try {
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/routes/products.js'))];
+      var productsRouteFresh = require(path.resolve(__dirname, '../src/web-ui/routes/products.js'));
+      var rollupModPath = path.resolve(__dirname, '../src/web-ui/modules/product-rollup.js');
+      delete require.cache[require.resolve(rollupModPath)];
+      var rollupMod = require(rollupModPath);
+
+      // State 1: never synced (AC3)
+      var mockPoolNeverSynced = {
+        query: async function(sql) {
+          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT dod_status_counts, synced_at FROM product_rollups/i.test(sql)) return { rows: [] };
+          return { rows: [] };
+        }
+      };
+      var htmlNeverSynced = null;
+      var reqNeverSynced = { params: { id: 'p1' }, session: { tenantId: 't1', login: 'x' } };
+      var resNeverSynced = { writeHead: function() {}, end: function(body) { htmlNeverSynced = body; } };
+      await productsRouteFresh.handleGetProductView(reqNeverSynced, resNeverSynced, null, mockPoolNeverSynced);
+      if (!/Not yet synced/i.test(htmlNeverSynced)) throw new Error('Expected "Not yet synced" text in the rendered page when no rollup row exists');
+      passed++; console.log('  [PASS] _renderProductView: shows "Not yet synced" when no cache row exists (AC3)');
+
+      // State 2: previously synced (AC1)
+      var syncedAt = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+      var mockPoolSynced = {
+        query: async function(sql) {
+          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT dod_status_counts, synced_at FROM product_rollups/i.test(sql)) return { rows: [{ dod_status_counts: '{"complete":1}', synced_at: syncedAt }] };
+          return { rows: [] };
+        }
+      };
+      var htmlSynced = null;
+      var reqSynced = { params: { id: 'p1' }, session: { tenantId: 't1', login: 'x' } };
+      var resSynced = { writeHead: function() {}, end: function(body) { htmlSynced = body; } };
+      await productsRouteFresh.handleGetProductView(reqSynced, resSynced, null, mockPoolSynced);
+      if (!/2 hours? ago/i.test(htmlSynced)) throw new Error('Expected a relative-time string mentioning "2 hours ago" in the rendered page');
+      passed++; console.log('  [PASS] _renderProductView: shows human-readable last-synced time (AC1)');
+      if (!/Refresh/i.test(htmlSynced)) throw new Error('Expected a Refresh action in the rendered page');
+      passed++; console.log('  [PASS] _renderProductView: renders a Refresh action');
+
+      // State 3: sync currently in progress (AC4) -- render must disable Refresh
+      // and show a non-colour-only loading signal (text label)
+      rollupMod._syncsInProgressForTest = rollupMod._syncsInProgressForTest; // no-op guard, real check below
+      var wasInProgress = rollupMod.isSyncInProgress('p1');
+      // Force the in-flight flag on via triggerProductSync's own tracked Set,
+      // using a fetch adapter that never resolves during this synchronous check.
+      var adapterModPath = path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js');
+      delete require.cache[require.resolve(adapterModPath)];
+      var adapterMod = require(adapterModPath);
+      adapterMod.setPipelineStateFetchAdapter(function() { return new Promise(function() {}); }); // never resolves
+      var mockPoolForTrigger = { query: async function() { return { rows: [] }; } };
+      rollupMod.triggerProductSync(mockPoolForTrigger, adapterMod, { productId: 'p1', repoOwner: 'acme', repoName: 'widgets', accessToken: 'x' }); // fire and forget, intentionally not awaited
+
+      var htmlInProgress = null;
+      var reqInProgress = { params: { id: 'p1' }, session: { tenantId: 't1', login: 'x' } };
+      var resInProgress = { writeHead: function() {}, end: function(body) { htmlInProgress = body; } };
+      await productsRouteFresh.handleGetProductView(reqInProgress, resInProgress, null, mockPoolSynced);
+      if (!/disabled/i.test(htmlInProgress)) throw new Error('Expected the Refresh control to render as disabled while a sync is in progress (AC4)');
+      passed++; console.log('  [PASS] _renderProductView: Refresh control is disabled while a sync is in progress (AC4)');
+      if (!/(Syncing|Refreshing|in progress)/i.test(htmlInProgress)) throw new Error('Expected a text loading label (not colour-only) during sync (NFR-A11y)');
+      passed++; console.log('  [PASS] _renderProductView: loading state has a text label, not colour alone (NFR-A11y)');
+    } catch (err) {
+      failed++; console.log('  [FAIL] freshness/Refresh rendering --', err.message);
+    }
+  })();
+
   console.log('\n[pr-s2-pr-s3-products-route] Results: ' + passed + ' passed, ' + failed + ' failed');
   process.exit(failed > 0 ? 1 : 0);
 })();
