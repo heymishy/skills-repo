@@ -327,6 +327,55 @@ async function main() {
     });
   });
 
+  // T20: blended AC coverage is sum-of-verified/sum-of-total, not an average of percentages (AC1)
+  queue.push(function() {
+    console.log('\n[pr-s6] T20 -- blended AC coverage is sum-of-verified/sum-of-total, not an average of percentages (AC1)');
+    return test('computeAcCoverageRollup: 12/10 + 4/4 stories -> 87.5% blended (not 91.7% naive average)', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'f1', stories: [{ slug: 's1', acTotal: 12, acVerified: 10 }] },
+          { slug: 'f2', stories: [{ slug: 's2', acTotal: 4, acVerified: 4 }] }
+        ]
+      };
+      var result = mod.computeAcCoverageRollup(pipelineState);
+      assert.strictEqual(result.blendedPercentage, 87.5, 'Expected 87.5 (14/16 blended), got ' + result.blendedPercentage);
+    });
+  });
+
+  // T21: stories with no acTotal/acVerified are excluded from numerator and denominator (AC2)
+  queue.push(function() {
+    console.log('\n[pr-s6] T21 -- stories with no acTotal/acVerified are excluded from the aggregate, not counted as 0% (AC2)');
+    return test('computeAcCoverageRollup: a story with no acTotal/acVerified contributes nothing to numerator or denominator', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'f1', stories: [{ slug: 's1', acTotal: 12, acVerified: 9 }] },
+          { slug: 'f2', stories: [{ slug: 's2' }] } // no acTotal/acVerified -- pre-DoR story
+        ]
+      };
+      var result = mod.computeAcCoverageRollup(pipelineState);
+      assert.strictEqual(result.blendedPercentage, 75, 'Expected 75% (9/12), story with no AC data must contribute nothing, got ' + result.blendedPercentage);
+    });
+  });
+
+  // T22: zero stories with AC data returns an explicit no-data marker, not 0% or NaN (AC4)
+  queue.push(function() {
+    console.log('\n[pr-s6] T22 -- zero stories with AC data returns an explicit no-data marker, not 0% or NaN (AC4)');
+    return test('computeAcCoverageRollup: no acTotal/acVerified data anywhere returns blendedPercentage null and noData true', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'f1', stories: [{ slug: 's1' }] },
+          { slug: 'f2', stories: [{ slug: 's2' }] }
+        ]
+      };
+      var result = mod.computeAcCoverageRollup(pipelineState);
+      assert.strictEqual(result.blendedPercentage, null, 'Expected null (not 0 or NaN) when no story has AC data');
+      assert.strictEqual(result.noData, true, 'Expected an explicit noData: true marker');
+    });
+  });
+
   for (var i = 0; i < queue.length; i++) {
     await queue[i]();
   }

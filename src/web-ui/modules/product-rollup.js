@@ -87,6 +87,65 @@ function computeOverallHealthSignal(counts) {
 }
 
 /**
+ * Aggregates AC (acceptance-criteria) coverage across every story in every
+ * feature, using the identical blended (sum-of-verified/sum-of-total, not
+ * average-of-percentages) method as computeTestCoverageRollup, applied to
+ * story.acTotal/story.acVerified instead of story.testPlan (AC1). A story
+ * with no acTotal/acVerified fields at all (e.g. not yet past
+ * /definition-of-ready) is excluded from both the numerator and
+ * denominator (AC2). If no story anywhere has any AC data,
+ * blendedPercentage is null and noData is true (AC4).
+ *
+ * @param {object} pipelineState - parsed pipeline-state.json content
+ * @returns {{blendedPercentage: number|null, noData: boolean, totalVerified: number, totalAc: number, perFeature: Array<{slug: string, verified: number, total: number, percentage: number}>}}
+ */
+function computeAcCoverageRollup(pipelineState) {
+  var features = (pipelineState && pipelineState.features) || [];
+  var totalVerified = 0;
+  var totalAc = 0;
+  var perFeature = [];
+
+  features.forEach(function(feature) {
+    var stories = [];
+    if (Array.isArray(feature.epics) && feature.epics.length > 0) {
+      feature.epics.forEach(function(epic) {
+        (epic.stories || []).forEach(function(story) { stories.push(story); });
+      });
+    } else {
+      stories = feature.stories || [];
+    }
+
+    stories.forEach(function(story) {
+      if (typeof story.acTotal !== 'number' || story.acTotal <= 0) {
+        return;
+      }
+      var verified = story.acVerified || 0;
+      var total = story.acTotal;
+      totalVerified += verified;
+      totalAc += total;
+      perFeature.push({
+        slug: story.slug,
+        verified: verified,
+        total: total,
+        percentage: Math.round((verified / total) * 1000) / 10
+      });
+    });
+  });
+
+  if (totalAc === 0) {
+    return { blendedPercentage: null, noData: true, totalVerified: 0, totalAc: 0, perFeature: [] };
+  }
+
+  return {
+    blendedPercentage: Math.round((totalVerified / totalAc) * 1000) / 10,
+    noData: false,
+    totalVerified: totalVerified,
+    totalAc: totalAc,
+    perFeature: perFeature
+  };
+}
+
+/**
  * Fetches a product's connected repo's pipeline-state.json via the wired
  * adapter, computes the DoD-status rollup, and writes it to the
  * product_rollups cache table scoped by product_id. Throws (does not write)
@@ -157,6 +216,7 @@ module.exports = {
   computeDodStatusRollup,
   computeHealthCounts,
   computeOverallHealthSignal,
+  computeAcCoverageRollup,
   syncProductRollup,
   triggerProductSync,
   isSyncInProgress
