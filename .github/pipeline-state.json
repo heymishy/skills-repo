@@ -11508,9 +11508,9 @@
             {
               "slug": "pr-s1",
               "name": "Designate Product as a named primitive and register skills-framework as a product",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-07-17T00:51:46.659Z",
+              "updatedAt": "2026-07-17T01:05:46.557Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11554,7 +11554,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "pr-s2",
