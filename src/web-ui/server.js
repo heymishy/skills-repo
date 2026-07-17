@@ -496,6 +496,15 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.error('[pr-s2] product_rollups migration failed:', err.message);
     });
 
+    // pr-s4: add the health-count rollup column. Idempotent — safe to run on
+    // every server start, matching the products-table context-column migration
+    // pattern already used elsewhere in this file.
+    _creditsPool.query(`ALTER TABLE product_rollups ADD COLUMN IF NOT EXISTS health_counts JSONB NOT NULL DEFAULT '{}'`).then(function() {
+      console.log('[pr-s4] product_rollups.health_counts column ready');
+    }).catch(function(err) {
+      console.error('[pr-s4] health_counts migration failed:', err.message);
+    });
+
     // psh-s1: journeys.product_id FK column
     _creditsPool.query(`ALTER TABLE journeys ADD COLUMN IF NOT EXISTS product_id UUID REFERENCES products(product_id) ON DELETE SET NULL`).then(function() {
       console.log('[psh-s1] journeys.product_id column ready');

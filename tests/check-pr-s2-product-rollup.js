@@ -214,6 +214,119 @@ async function main() {
     });
   });
 
+  // T7: computeHealthCounts counts features across all four health statuses (AC1)
+  queue.push(function() {
+    console.log('\n[pr-s4] T7 -- computeHealthCounts counts features across all four health statuses (AC1)');
+    return test('computeHealthCounts: counts 3 green, 2 amber, 1 red, 1 unknown correctly', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'f1', health: 'green' }, { slug: 'f2', health: 'green' }, { slug: 'f3', health: 'green' },
+          { slug: 'f4', health: 'amber' }, { slug: 'f5', health: 'amber' },
+          { slug: 'f6', health: 'red' },
+          { slug: 'f7', health: 'unknown' }
+        ]
+      };
+      var counts = mod.computeHealthCounts(pipelineState);
+      assert.deepStrictEqual(counts, { green: 3, amber: 2, red: 1, unknown: 1 });
+    });
+  });
+
+  // T8: a feature with no health field at all counts as unknown, not a thrown error
+  queue.push(function() {
+    console.log('\n[pr-s4] T8 -- a feature with a missing health field counts as unknown (AC1 robustness)');
+    return test('computeHealthCounts: a feature object with no health property is counted as unknown', function() {
+      var mod = freshRequire();
+      var counts = mod.computeHealthCounts({ features: [{ slug: 'f1' }] });
+      assert.strictEqual(counts.unknown, 1);
+    });
+  });
+
+  // T9: one red among many green/amber yields overall red (AC2)
+  queue.push(function() {
+    console.log('\n[pr-s4] T9 -- one red feature among many green/amber yields an overall red signal (AC2)');
+    return test('computeOverallHealthSignal: 10 green, 5 amber, 1 red -> red', function() {
+      var mod = freshRequire();
+      var signal = mod.computeOverallHealthSignal({ green: 10, amber: 5, red: 1, unknown: 0 });
+      assert.strictEqual(signal, 'red');
+    });
+  });
+
+  // T10: a single red feature with zero others still yields red (AC2 boundary)
+  queue.push(function() {
+    console.log('\n[pr-s4] T10 -- a single red feature with zero other features still yields red (AC2 boundary)');
+    return test('computeOverallHealthSignal: 0 green, 0 amber, 1 red -> red', function() {
+      var mod = freshRequire();
+      var signal = mod.computeOverallHealthSignal({ green: 0, amber: 0, red: 1, unknown: 0 });
+      assert.strictEqual(signal, 'red');
+    });
+  });
+
+  // T11: no red, at least one amber yields overall amber (AC3)
+  queue.push(function() {
+    console.log('\n[pr-s4] T11 -- no red features, at least one amber, yields an overall amber signal (AC3)');
+    return test('computeOverallHealthSignal: 5 green, 2 amber, 0 red -> amber', function() {
+      var mod = freshRequire();
+      var signal = mod.computeOverallHealthSignal({ green: 5, amber: 2, red: 0, unknown: 0 });
+      assert.strictEqual(signal, 'amber');
+    });
+  });
+
+  // T12: all-green yields overall green (AC4)
+  queue.push(function() {
+    console.log('\n[pr-s4] T12 -- all-green features yield an overall green signal (AC4)');
+    return test('computeOverallHealthSignal: 8 green, 0 amber/red/unknown -> green', function() {
+      var mod = freshRequire();
+      var signal = mod.computeOverallHealthSignal({ green: 8, amber: 0, red: 0, unknown: 0 });
+      assert.strictEqual(signal, 'green');
+    });
+  });
+
+  // T13: zero features yields overall green, not an error or undefined (AC4 boundary)
+  queue.push(function() {
+    console.log('\n[pr-s4] T13 -- zero features yields an overall green signal, not an error or undefined (AC4 boundary)');
+    return Promise.all([
+      test('computeOverallHealthSignal: all-zero counts -> green (does not throw or return undefined)', function() {
+        var mod = freshRequire();
+        var signal = mod.computeOverallHealthSignal({ green: 0, amber: 0, red: 0, unknown: 0 });
+        assert.strictEqual(signal, 'green');
+      }),
+      test('computeOverallHealthSignal: empty object input -> green (does not throw)', function() {
+        var mod = freshRequire();
+        var signal = mod.computeOverallHealthSignal({});
+        assert.strictEqual(signal, 'green');
+      })
+    ]);
+  });
+
+  // T14: syncProductRollup also computes and writes health_counts alongside dod_status_counts (AC1 storage)
+  queue.push(function() {
+    console.log('\n[pr-s4] T14 -- syncProductRollup writes health_counts alongside dod_status_counts (AC1 storage)');
+    return test('syncProductRollup: the cache write includes both dod_status_counts and health_counts', async function() {
+      var mod = freshRequire();
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'))];
+      var freshAdapterMod = require(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'));
+      var fixture = { features: [{ slug: 'f1', health: 'red', stories: [{ dodStatus: 'complete' }] }] };
+      freshAdapterMod.setPipelineStateFetchAdapter(async function() {
+        return { content: Buffer.from(JSON.stringify(fixture)).toString('base64'), encoding: 'base64' };
+      });
+
+      var capturedSql = null; var capturedParams = null;
+      var mockPool = {
+        query: async function(sql, params) {
+          if (/INSERT INTO product_rollups/i.test(sql)) { capturedSql = sql; capturedParams = params; }
+          return { rows: [] };
+        }
+      };
+
+      await mod.syncProductRollup(mockPool, freshAdapterMod, { productId: 'p1', repoOwner: 'acme', repoName: 'widgets', accessToken: 'x' });
+
+      assert.ok(/health_counts/i.test(capturedSql), 'Expected the INSERT statement to include the health_counts column');
+      var healthJson = capturedParams.find(function(p) { return typeof p === 'string' && p.indexOf('"red"') !== -1; });
+      assert.ok(healthJson, 'Expected one of the written params to be the health_counts JSON containing the red count');
+    });
+  });
+
   for (var i = 0; i < queue.length; i++) {
     await queue[i]();
   }
