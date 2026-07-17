@@ -67,4 +67,19 @@
 
 ## Architecture Decision Records
 
-None promoted to repo-level ADR status yet. The two ARCH entries above (Product/`products`-table unification; rollup-as-app-code-not-skill) are feature-scoped decisions for now — if a future feature needs to make the same call again (e.g. a second cross-cutting rollup mechanism), consider promoting the second entry to `.github/architecture-guardrails.md` as a repo-level ADR.
+Both ARCH entries above were promoted to repo-level ADRs via `/improve` on 2026-07-17, after DoD completed for all 7 stories: **ADR-026** (Product/`products`-table unification, generalised to "reuse an existing entity when its shape already covers a new concept") and **ADR-027** (rollup-as-app-code-not-skill, generalised to "live SaaS-user-facing mechanisms are ordinary application code, not governed skills"). See `.github/architecture-guardrails.md`.
+
+---
+**2026-07-17 | GAP | definition-of-done / improve**
+**Decision (not yet resolved — logged as a gap requiring a follow-up story):** `src/enforcement/cli-outer-loop.js`'s `validate()` function only implements `SUPPORTED_GATES = ['definition-of-ready']`, despite `src/enforcement/gate-map.js` listing all 7 gated stage values (including `definition-of-done`, which this feature needed). Calling `skills gate-advance <feature> <story> definition-of-done <artefact>` fails with `UNSUPPORTED_GATE` rather than validating the DoD artefact.
+**Impact on this feature:** Worked around by using direct `skills advance` calls for all 7 stories' DoD field writes instead of the gate-enforced path, per CLAUDE.md's cdg.6 exception for cases where the intended tool is unavailable.
+**Alternatives considered:** None — this is a platform infra gap discovered mid-DoD, not a design choice for this feature to make.
+**Made by:** Claude (agent), surfaced during `/definition-of-done` execution.
+**Revisit trigger:** A follow-up story should extend `validate()` to cover the remaining 6 gate names (or `gate-map.js`'s list should be trimmed to only the gates `validate()` actually supports) before `/definition-of-done` and other non-DoR gates can be considered fully gate-enforced. `/improve` does not create stories itself — this needs a `/discovery` or `/definition` pass to become an actioned story.
+---
+**2026-07-17 | GAP | improve**
+**Decision (not yet resolved — logged as a gap requiring a follow-up decision):** The `domain` field on story artefacts — the mechanism `.github/standards/index.yml` and `/definition-of-ready` use to inject matching standards into coding-agent instructions — has never been set on any story artefact across this repo's entire history (checked: 0 of 184 story files across every feature use `domain:`). All 7 of this feature's DoR runs silently skipped standards injection for this reason ("Story has no `domain` field — skipped silently").
+**Impact on this feature:** None directly — DoR still passed via its other hard blocks — but the standards-injection mechanism has effectively never activated since it was built.
+**Alternatives considered:** None — this is a repo-wide observation, not a design choice specific to product-rollup.
+**Made by:** Claude (agent), surfaced during `/improve` while checking DoR standards-injection sections across this feature's 7 stories.
+**Revisit trigger:** Either wire `domain` tagging into story authoring going forward (so the mechanism actually activates), or remove it as unused scaffolding — a real decision the operator should make deliberately rather than leave the mechanism silently inert. Needs a `/discovery` or `/definition` pass to become an actioned story, since `/improve` does not create stories itself.

@@ -11715,7 +11715,8 @@
           ]
         }
       ],
-      "stories": []
+      "stories": [],
+      "lastImprove": "2026-07-17"
     },
     {
       "slug": "2026-07-16-legacy-ingestion",
@@ -11759,9 +11760,27 @@
         "type": "coding-standard",
         "file": ".github/copilot-instructions.md",
         "summary": "mfc.1 /improve: decisions.md mandatory for architectural features"
+      },
+      {
+        "date": "2026-07-17",
+        "type": "standards",
+        "file": "standards/governance/delivery-patterns.md",
+        "summary": "/improve (product-rollup): diff-before-resolve merge verification, stacked-PR base-deletion gotcha, confirm-CI-flake-root-cause anti-pattern, deferred-review-finding-ownership rule"
+      },
+      {
+        "date": "2026-07-17",
+        "type": "standards",
+        "file": ".github/standards/web-ui/web-ui-patterns.md",
+        "summary": "/improve (product-rollup): blended sum/sum aggregation convention for rollup percentages (blend, exclude, explicit-empty)"
+      },
+      {
+        "date": "2026-07-17",
+        "type": "guardrails",
+        "file": ".github/architecture-guardrails.md",
+        "summary": "/improve (product-rollup): ADR-026 (reuse existing entity over new primitive), ADR-027 (live SaaS mechanisms are app code, not skills)"
       }
     ],
-    "lastUpdated": "2026-05-06"
+    "lastUpdated": "2026-07-17"
   },
   "updatedAt": "2026-06-29T00:00:00Z"
 }

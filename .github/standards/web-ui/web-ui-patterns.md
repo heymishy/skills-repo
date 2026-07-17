@@ -355,3 +355,19 @@ Where:
 Before opening a PR for any change to `handleGetJourneyState` or any story that adds a consumer of the journey GET endpoint, run the full check script (`tests/check-wsm*.js`) locally. A shape failure (`turns not an array`, `stages missing`) means the handler is incomplete — do not merge.
 
 Source: wsm.2 AC1/3/6, wsm.3 AC1/6, workspace/learnings.md D41, ADR-024.
+
+---
+
+## Blended aggregation for rollup percentages
+
+**Rule:** When computing an aggregate percentage across multiple sub-records (e.g. test coverage or acceptance-criteria coverage across a product's features), use a blended sum-of-numerator / sum-of-denominator calculation, not an average of each sub-record's own percentage.
+
+**Why:** Averaging per-record percentages weights every sub-record equally regardless of its actual size — a feature with 2/2 tests passing (100%) and a feature with 2/200 tests passing (1%) would average to 50.5%, which misrepresents the product's real aggregate coverage (204 total, 4 passing = ~2%). Sum-of-passing / sum-of-total reflects the real aggregate.
+
+**Companion rule — exclusion, not zero:** A sub-record with no data for the metric being aggregated (e.g. a feature with no `testPlan` at all) must be excluded from both the numerator and denominator, not counted as 0%. Counting it as 0% skews the aggregate down for a feature that simply hasn't reached that phase yet, which is a different condition from a feature that reached it and failed.
+
+**Companion rule — explicit empty state:** If zero sub-records have any data for the metric, render an explicit "No data yet" state — never a bare `0%` or `NaN`, both of which are indistinguishable from "everything failed."
+
+**Apply this to any future aggregate-percentage rollup, not just test/AC coverage** — the same three rules (blend, exclude, explicit-empty) generalise to any sum-based product-level metric computed from per-feature or per-story data.
+
+**Source:** product-rollup epic (2026-07-16-product-rollup), pr-s5 (test coverage) and pr-s6 (AC coverage) — same convention applied to both for consistency, per that feature's own discovery-time decision.

@@ -1287,3 +1287,69 @@ Application-layer tenant_id scoping was chosen and implemented across six sequen
 #### Revisit trigger
 
 If a customer's compliance/security requirements demand infrastructure-level tenant isolation (not just application-code enforcement) — e.g. a regulated customer requiring physically separate data stores — revisit toward schema-per-tenant or database-per-tenant for that customer's data, layered on top of (not replacing) the existing application-layer guard.
+
+---
+
+### ADR-026: Reuse an existing entity/primitive when its shape already covers a new concept, rather than introducing a new one
+
+**Status:** Active
+**Date:** 2026-07-17
+**Story:** 2026-07-16-product-rollup, discovery/decisions phase
+**Decided by:** Hamish King, via /improve promotion of a feature-scoped ARCH decision — original decision made 2026-07-17 during product-rollup discovery
+
+#### Context
+
+The product-rollup discovery initially framed "Product" as a candidate new named primitive alongside Skill, Surface adapter, Pipeline state, Eval suite, Learnings log, and Context graph — a manifest entity referencing feature slugs and owning no independent content of its own. But the SaaS web UI already has a `products` table carrying repo-association columns (`prc-s1.1`) and standards-hierarchy columns (`psh-s3`) that already covers the exact shape a "Product" primitive would need — a tenant's "product" already is a repo-associated entity, and this platform's own dogfooding case (skills-framework registering itself as a product) is the degenerate case of that same entity, not a distinct concept requiring a new table or manifest.
+
+#### Options considered
+
+| Option | Pros | Cons |
+|--------|------|------|
+| **Unify with the existing entity (chosen)** — designate "Product" as the eighth primitive, documented as an existing entity (the `products` table + its web UI), not new schema | No new table, no new sync/consistency mechanism between two representations of the same thing, immediately compatible with every tenant's existing product row | Requires recognising, at discovery time, that an apparently-new concept is actually already modelled — easy to miss if discovery doesn't ground itself in current repo state first |
+| Net-new manifest entity referencing feature slugs, separate from `products` | Conceptually clean if "Product" were genuinely distinct from a SaaS tenant's product | Reopens the exact traceability/consistency gap the unification avoids — two representations of "product" that must be kept in sync, for zero actual benefit since the shapes coincide |
+
+#### Decision
+
+Designate the existing `products` table + its web UI as the "Product" primitive outright, rather than building a parallel manifest entity. Applies beyond this feature: before introducing a new named primitive, manifest entity, or top-level concept anywhere in this platform, first check whether an existing entity's shape already covers it — grounding discovery in actual current repo state (schema, tables, existing UI) rather than the proposing document's own framing.
+
+#### Consequences
+
+- **Easier:** any future "is X a new primitive?" question has a concrete first check — does an existing table/entity already have this shape? — before any new schema or manifest is designed.
+- **Harder / more constrained:** discovery must actually inspect current repo state (not just reason from the feature request's own framing) before proposing a new entity — a discovery that skips this grounding step risks proposing genuine duplication.
+
+#### Revisit trigger
+
+If a future concept is proposed that is superficially similar to an existing entity but has a materially different consistency/ownership model (e.g. cross-repo aggregation, a different tenancy boundary), revisit whether unification still applies or whether a genuinely new entity is warranted.
+
+---
+
+### ADR-027: Live SaaS-user-facing mechanisms are ordinary application code, not governed SKILL.md skills
+
+**Status:** Active
+**Date:** 2026-07-17
+**Story:** 2026-07-16-product-rollup, discovery/decisions phase
+**Decided by:** Hamish King, via /improve promotion of a feature-scoped ARCH decision — original decision made 2026-07-17 during product-rollup discovery
+
+#### Context
+
+The product-rollup discovery initially considered a new `/product-sync` SKILL.md skill, reading a locally-checked-out `pipeline-state.json` to regenerate rollup views. But a tenant viewing their own product's rollup is a live feature for any authenticated browser user — it happens on every page load of `/products/:id`, not inside an agent-driven pipeline session. `sign-off.js`'s `handleArtefactRead` already proves the exact mechanism needed (GitHub Contents API + the requesting user's own OAuth token), and the `standards` table already establishes the per-product-row Postgres-caching convention to follow.
+
+#### Options considered
+
+| Option | Pros | Cons |
+|--------|------|------|
+| **Ordinary application code in `src/web-ui/` (chosen)** — a route handler using the existing Contents API + OAuth pattern, cached in Postgres per `product_id` | Matches how every other live, user-triggered SaaS feature in this platform is built; no artificial split between "agent workflow" and "web feature" for something that is unambiguously the latter | None identified — this is the same shape as every other `src/web-ui/routes/*.js` handler already in the codebase |
+| A new `/product-sync` SKILL.md skill | Would fit the pattern used by other governed pipeline mechanisms (DoD, trace, improve) | Wrong mental model — a skill is invoked in an agent-driven pipeline session by an operator running the delivery pipeline, not by an arbitrary authenticated tenant loading a page in a browser; would require an agent session to exist for something that must work for any logged-in user at any time |
+
+#### Decision
+
+Any mechanism that a live, authenticated SaaS user triggers directly through the web UI (not through an agent-driven pipeline session) is ordinary application code under `src/web-ui/`, using the platform's existing adapter/session/caching conventions — never a governed SKILL.md skill. SKILL.md skills remain reserved for agent-invoked pipeline workflows (discovery, definition, DoD, trace, improve, etc.), where a human operator or CI process runs a session against a specific feature slug.
+
+#### Consequences
+
+- **Easier:** a clear test for any future "should this be a skill or app code?" question — does this run inside an operator's pipeline session against a specific feature slug (skill), or does any authenticated tenant trigger it directly through the live product (app code)?
+- **Harder / more constrained:** app-code mechanisms don't get the hash-verification/governance machinery that skills get — they're governed by ordinary code review, tests, and NFRs instead. This is intentional (ADR-003's hash-verification bar applies to governed, agent-produced artefacts, not live SaaS features computed from already-governed input), not an oversight.
+
+#### Revisit trigger
+
+If a future mechanism is ambiguous between the two (e.g. triggered by both an operator's pipeline session AND a live tenant action), revisit whether a shared underlying module invoked from both a skill and a route handler is the right shape, rather than forcing the whole mechanism into one category.
