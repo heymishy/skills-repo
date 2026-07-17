@@ -11503,14 +11503,14 @@
         {
           "slug": "pr-e1-foundation",
           "name": "A product's connected repo becomes a synced, visible entity in the web UI",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "pr-s1",
               "name": "Designate Product as a named primitive and register skills-framework as a product",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-17T01:05:46.557Z",
+              "updatedAt": "2026-07-17T01:07:03.406Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11555,7 +11555,9 @@
                   "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/489"
             },
             {
               "slug": "pr-s2",
