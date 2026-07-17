@@ -327,6 +327,103 @@ async function main() {
     });
   });
 
+  // T15: blended test coverage is sum-of-passing/sum-of-total, not an average of percentages (AC1)
+  queue.push(function() {
+    console.log('\n[pr-s5] T15 -- blended test coverage is sum-of-passing/sum-of-total, not an average of percentages (AC1)');
+    return test('computeTestCoverageRollup: 10/9 + 2/2 stories -> 91.7% blended (not 95% naive average)', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'f1', stories: [{ slug: 's1', testPlan: { totalTests: 10, passing: 9 } }] },
+          { slug: 'f2', stories: [{ slug: 's2', testPlan: { totalTests: 2, passing: 2 } }] }
+        ]
+      };
+      var result = mod.computeTestCoverageRollup(pipelineState);
+      assert.strictEqual(result.blendedPercentage, 91.7, 'Expected 91.7 (11/12 blended), got ' + result.blendedPercentage);
+    });
+  });
+
+  // T16: stories with no testPlan field are excluded from numerator and denominator (AC2)
+  queue.push(function() {
+    console.log('\n[pr-s5] T16 -- stories with no testPlan field are excluded from the aggregate, not counted as 0% (AC2)');
+    return test('computeTestCoverageRollup: a story with no testPlan contributes nothing to numerator or denominator', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'f1', stories: [{ slug: 's1', testPlan: { totalTests: 10, passing: 8 } }] },
+          { slug: 'f2', stories: [{ slug: 's2' }] } // no testPlan at all
+        ]
+      };
+      var result = mod.computeTestCoverageRollup(pipelineState);
+      assert.strictEqual(result.blendedPercentage, 80, 'Expected 80% (8/10), story with no testPlan must contribute nothing, got ' + result.blendedPercentage);
+    });
+  });
+
+  // T17: per-story test-coverage detail is retrievable alongside the blended aggregate (AC3)
+  queue.push(function() {
+    console.log('\n[pr-s5] T17 -- per-story test-coverage detail is retrievable alongside the blended aggregate (AC3)');
+    return test('computeTestCoverageRollup: result includes a perFeature breakdown array with each story\'s own percentage', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'f1', stories: [{ slug: 's1', testPlan: { totalTests: 10, passing: 9 } }] },
+          { slug: 'f2', stories: [{ slug: 's2', testPlan: { totalTests: 2, passing: 2 } }] }
+        ]
+      };
+      var result = mod.computeTestCoverageRollup(pipelineState);
+      assert.ok(Array.isArray(result.perFeature), 'Expected a perFeature array in the result');
+      assert.strictEqual(result.perFeature.length, 2, 'Expected one breakdown entry per testPlan-bearing story');
+      var s1 = result.perFeature.find(function(x) { return x.slug === 's1'; });
+      assert.strictEqual(s1.percentage, 90, 'Expected s1\'s own percentage to be 90 (9/10), got ' + (s1 && s1.percentage));
+    });
+  });
+
+  // T18: zero stories with testPlan data returns an explicit no-data marker, not 0% or NaN (AC4)
+  queue.push(function() {
+    console.log('\n[pr-s5] T18 -- zero stories with testPlan data returns an explicit no-data marker, not 0% or NaN (AC4)');
+    return test('computeTestCoverageRollup: no testPlan data anywhere returns blendedPercentage null and noData true', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'f1', stories: [{ slug: 's1' }] },
+          { slug: 'f2', stories: [{ slug: 's2' }] }
+        ]
+      };
+      var result = mod.computeTestCoverageRollup(pipelineState);
+      assert.strictEqual(result.blendedPercentage, null, 'Expected null (not 0 or NaN) when no story has testPlan data');
+      assert.strictEqual(result.noData, true, 'Expected an explicit noData: true marker');
+      assert.deepStrictEqual(result.perFeature, [], 'Expected an empty perFeature array, not undefined or an array of zeros');
+    });
+  });
+
+  // T19: syncProductRollup also computes and writes test_coverage alongside the other rollup columns (AC1 storage)
+  queue.push(function() {
+    console.log('\n[pr-s5] T19 -- syncProductRollup writes test_coverage alongside dod_status_counts and health_counts (AC1 storage)');
+    return test('syncProductRollup: the cache write includes test_coverage', async function() {
+      var mod = freshRequire();
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'))];
+      var freshAdapterMod = require(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'));
+      var fixture = { features: [{ slug: 'f1', stories: [{ slug: 's1', testPlan: { totalTests: 10, passing: 9 } }] }] };
+      freshAdapterMod.setPipelineStateFetchAdapter(async function() {
+        return { content: Buffer.from(JSON.stringify(fixture)).toString('base64'), encoding: 'base64' };
+      });
+
+      var capturedSql = null; var capturedParams = null;
+      var mockPool = {
+        query: async function(sql, params) {
+          if (/INSERT INTO product_rollups/i.test(sql)) { capturedSql = sql; capturedParams = params; }
+          return { rows: [] };
+        }
+      };
+
+      await mod.syncProductRollup(mockPool, freshAdapterMod, { productId: 'p1', repoOwner: 'acme', repoName: 'widgets', accessToken: 'x' });
+
+      assert.ok(/test_coverage/i.test(capturedSql), 'Expected the INSERT statement to include the test_coverage column');
+      var coverageJson = capturedParams.find(function(p) { return typeof p === 'string' && p.indexOf('blendedPercentage') !== -1; });
+      assert.ok(coverageJson, 'Expected one of the written params to be the test_coverage JSON containing blendedPercentage');
+    });
+  });
+
   for (var i = 0; i < queue.length; i++) {
     await queue[i]();
   }
