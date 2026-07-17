@@ -11731,6 +11731,80 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "stories": []
+    },
+    {
+      "slug": "2026-07-18-gate-advance-validation",
+      "name": "Extend gate-advance structural validation to all 7 canonical gate names",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "gav-s1",
+          "slug": "gav-s1",
+          "name": "Extend gate-advance structural validation to all 7 canonical gate names",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 29,
+            "passing": 0,
+            "artefact": "artefacts/2026-07-18-gate-advance-validation/test-plans/gav-s1-test-plan.md"
+          },
+          "acTotal": 7,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-18-gate-advance-validation/dor/gav-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-18-gate-advance-validation/dor/gav-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-18T00:00:00Z",
+          "prStatus": "none",
+          "updatedAt": "2026-07-17T19:57:36.767Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-17T19:57:36.768Z"
+    },
+    {
+      "slug": "2026-07-18-domain-tag-activation",
+      "name": "Activate domain-tag standards injection at story authoring time",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "dta-s1",
+          "slug": "dta-s1",
+          "name": "Activate domain-tag standards injection at story authoring time",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 12,
+            "passing": 0,
+            "artefact": "artefacts/2026-07-18-domain-tag-activation/test-plans/dta-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-18-domain-tag-activation/dor/dta-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-18-domain-tag-activation/dor/dta-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-18T00:00:00Z",
+          "prStatus": "none",
+          "updatedAt": "2026-07-17T19:57:36.768Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-17T19:57:36.768Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

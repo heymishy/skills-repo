@@ -432,3 +432,15 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: pattern
   signal-text: "Review finding 7-M1 on pr-s7 split an originally cross-story AC4 into a self-contained story-level AC (kept on pr-s7, tested) plus a cross-story consistency check explicitly 'deferred to the epic level' -- but no artefact (epic file, a specific story, or a named test) was ever assigned ownership of actually performing that deferred check, so it silently never happened across all of pr-e2-dimensions' stories. Pattern for future reviews: whenever a review finding splits an AC and defers part of it to 'the epic level', the review or DoR artefact should name the specific mechanism (a dedicated test, a manual verification step, or an explicit epic-level story) that will perform the deferred check -- an implicit expectation with no assigned owner is equivalent to the check never happening."
   source: agent-auto
+
+- date: 2026-07-18
+  session-phase: definition (short-track, gate-advance-validation / domain-tag-activation)
+  signal-type: decision
+  signal-text: "Two GAP entries logged by /improve on 2026-07-17 (gate-advance validate() only supports the definition-of-ready gate name; domain field never used across 184 stories) were actioned into two new short-track features today: 2026-07-18-gate-advance-validation (gav-s1, Complexity 3/Unstable -- operator explicitly chose the larger 'all 6 missing gates' scope over the recommended definition-of-done-only scope) and 2026-07-18-domain-tag-activation (dta-s1, Complexity 2/Stable -- operator chose 'wire it up' over 'remove it' or 'let the story explore both'). Both went through story/test-plan/DoR (skipping discovery/benefit-metric per short-track precedent, same H-GOV handling as pcr-s1/stis-s1), signed off, not yet implemented."
+  source: agent-auto
+
+- date: 2026-07-18
+  session-phase: definition (gate-advance-validation, gav-s1)
+  signal-type: gap
+  signal-text: "Investigating the gate-advance gap further (beyond what /improve originally logged) found it's worse than a single missing gate: src/enforcement/gate-map.js's 7 canonical gate names (discovery-approved, benefit-metric-active, definition-complete, test-plan-complete, dor-signed-off, branch-complete, definition-of-done) don't match cli-outer-loop.js's only-supported gate string ('definition-of-ready' -- not even in gate-map.js's own list). Also confirmed via repo-wide grep that no SKILL.md anywhere actually instructs an agent to call 'skills gate-advance' with any gate name -- the CLI capability exists (built for cdg.7) but has never been threaded into any skill's actual step-by-step instructions. gav-s1's AC1 fixes the naming mismatch (dor-signed-off as an alias); wiring gate-advance into skill instructions is explicitly out of scope for gav-s1, flagged as a further follow-up."
+  source: agent-auto
