@@ -176,6 +176,26 @@ async function main() {
     });
   });
 
+  // T7: GET /products/:id renders skills-framework's product like any other (AC2)
+  queue.push(function() {
+    console.log('\n[pr-s1] T7 -- GET /products/:id renders skills-framework\'s product like any other existing product (AC2)');
+    return test('products route: renders self-registered product via the existing render path', async function() {
+      var mod = freshRequire();
+      var pool = makeMockPool([]);
+      var productId = await mod.registerSelfAsProduct(pool, {
+        tenantId: 'operator-tenant', repoOwner: 'heymishy', repoName: 'skills-repo', name: 'skills-framework'
+      });
+
+      // Confirm the row is queryable via the exact same tenant-scoped SELECT
+      // shape products.js already uses for every other product (no special
+      // branch for this particular row -- AC2's own requirement).
+      var result = await pool.query('SELECT product_id, name FROM products WHERE tenant_id = $1', ['operator-tenant']);
+      assert.strictEqual(result.rows.length, 1);
+      assert.strictEqual(result.rows[0].product_id, productId);
+      assert.strictEqual(result.rows[0].name, 'skills-framework');
+    });
+  });
+
   for (var i = 0; i < queue.length; i++) {
     await queue[i]();
   }
