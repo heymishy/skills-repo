@@ -67,7 +67,48 @@ async function syncProductRollup(pool, adapterModule, opts) {
   return rollup;
 }
 
+// pr-s3 AC4: in-flight sync tracking, keyed by product_id. A simple
+// in-memory Set is sufficient here -- this platform runs as a single Node
+// process per environment (no multi-instance horizontal scaling in the
+// current architecture), so a per-process guard is the correct scope for
+// preventing duplicate concurrent syncs of the same product.
+var _syncsInProgress = new Set();
+
+/**
+ * @param {string} productId
+ * @returns {boolean} true if a sync for this product is currently in flight
+ */
+function isSyncInProgress(productId) {
+  return _syncsInProgress.has(productId);
+}
+
+/**
+ * Wraps syncProductRollup with a per-product_id concurrency guard (AC4).
+ * Rejects immediately (does not queue or wait) if a sync for the same
+ * product_id is already in flight, so a second concurrent Refresh click
+ * never starts a second underlying fetch. Always clears the in-flight flag
+ * on completion, success or failure, so a failed sync can be retried
+ * immediately rather than deadlocking the product's Refresh action.
+ *
+ * @param {object} pool
+ * @param {{getPipelineStateFetchAdapter: Function}} adapterModule
+ * @param {{productId: string, repoOwner: string, repoName: string, accessToken: string}} opts
+ */
+async function triggerProductSync(pool, adapterModule, opts) {
+  if (_syncsInProgress.has(opts.productId)) {
+    throw new Error('A sync for this product is already in progress');
+  }
+  _syncsInProgress.add(opts.productId);
+  try {
+    return await syncProductRollup(pool, adapterModule, opts);
+  } finally {
+    _syncsInProgress.delete(opts.productId);
+  }
+}
+
 module.exports = {
   computeDodStatusRollup,
-  syncProductRollup
+  syncProductRollup,
+  triggerProductSync,
+  isSyncInProgress
 };
