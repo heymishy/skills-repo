@@ -117,6 +117,51 @@ async function main() {
     });
   });
 
+  // T5: server.js creates the product_rollups table and wires the real adapter (AC1, AC5)
+  queue.push(function() {
+    console.log('\n[pr-s2] T5 -- server.js creates the product_rollups table and wires the real Contents API adapter (AC1, AC5)');
+    return test('server.js: requires pipeline-state-fetch-adapter, creates product_rollups table, wires real implementation', function() {
+      var fs = require('fs');
+      var SERVER_PATH = path.resolve(__dirname, '../src/web-ui/server.js');
+      var src = fs.readFileSync(SERVER_PATH, 'utf8');
+      assert.ok(/require\(['"]\.\/adapters\/pipeline-state-fetch-adapter['"]\)/.test(src),
+        "server.js must require('./adapters/pipeline-state-fetch-adapter')");
+      assert.ok(/CREATE TABLE IF NOT EXISTS product_rollups/i.test(src),
+        'server.js must create the product_rollups table');
+      assert.ok(/setPipelineStateFetchAdapter\(\s*realFetchPipelineState/.test(src),
+        "server.js must wire setPipelineStateFetchAdapter(realFetchPipelineState), matching the existing NODE_ENV !== 'test' wiring convention");
+    });
+  });
+
+  // T6: the wired adapter produces correct, differentiated output for two different repos (AC5 -- D37 rule 4)
+  queue.push(function() {
+    console.log('\n[pr-s2] T6 -- wired adapter produces correct, differentiated output for two different repos, not just proof a setter was called (AC5)');
+    return test('realFetchPipelineState: two different mocked repos return their own distinct, correct content', async function() {
+      var originalFetch = global.fetch;
+      var repoAContent = Buffer.from('{"features":[{"slug":"repo-a-feature"}]}').toString('base64');
+      var repoBContent = Buffer.from('{"features":[{"slug":"repo-b-feature"}]}').toString('base64');
+      global.fetch = async function(url) {
+        var isRepoA = url.indexOf('/repos/org-a/repo-a/') !== -1;
+        return {
+          ok: true, status: 200,
+          json: async function() { return { content: isRepoA ? repoAContent : repoBContent, encoding: 'base64' }; }
+        };
+      };
+      try {
+        var mod = freshRequire();
+        var resultA = await mod.realFetchPipelineState('org-a', 'repo-a', 'token');
+        var resultB = await mod.realFetchPipelineState('org-b', 'repo-b', 'token');
+        var decodedA = Buffer.from(resultA.content, 'base64').toString('utf8');
+        var decodedB = Buffer.from(resultB.content, 'base64').toString('utf8');
+        assert.ok(decodedA.indexOf('repo-a-feature') !== -1, 'Expected repo A result to contain repo A\'s own fixture content');
+        assert.ok(decodedB.indexOf('repo-b-feature') !== -1, 'Expected repo B result to contain repo B\'s own fixture content');
+        assert.notStrictEqual(decodedA, decodedB, 'Expected the two repos to produce different, individually-correct results -- not the same output regardless of input');
+      } finally {
+        global.fetch = originalFetch;
+      }
+    });
+  });
+
   for (var i = 0; i < queue.length; i++) {
     await queue[i]();
   }

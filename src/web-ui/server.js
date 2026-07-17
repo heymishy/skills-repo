@@ -38,6 +38,7 @@ const { setPlanStateAdapter }                                        = require('
 const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
 const { registerSelfAsProduct }                                       = require('./modules/platform-self-registration'); // pr-s1
 const { setRepoAdapter, realCheckRepoAccess }                        = require('./adapters/repo-adapter'); // prc-s1.2 (D37 separate task)
+const { setPipelineStateFetchAdapter, realFetchPipelineState }        = require('./adapters/pipeline-state-fetch-adapter'); // pr-s2
 const { handlePostConnectRepo }                                      = require('./routes/product-repo');   // prc-s1.2
 const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal, handleGetBillingPlanState } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5 / bri-s3.5
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
@@ -108,6 +109,16 @@ if (process.env.GOOGLE_CLIENT_ID) {
 if (process.env.NODE_ENV !== 'test') {
   setRepoAdapter(realCheckRepoAccess);
   console.log('[products] repo adapter wired');
+}
+
+// pr-s2 / D37 mandatory separate wiring task -- wire the real GitHub
+// Contents API adapter for fetching a connected repo's pipeline-state.json.
+// Never wired in NODE_ENV=test (tests call setPipelineStateFetchAdapter()
+// themselves with a mock); the throwing stub stays active there, matching
+// the pattern already used by the prc-s1.2/prc-s2.1 adapters above.
+if (process.env.NODE_ENV !== 'test') {
+  setPipelineStateFetchAdapter(realFetchPipelineState);
+  console.log('[pr-s2] pipeline-state fetch adapter wired');
 }
 
 // prc-s2.1 / D37 mandatory separate wiring task -- wire the real GitHub
@@ -469,6 +480,20 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.log('[psh-s9] standard_product_optouts table ready');
     }).catch(function(err) {
       console.error('[psh-s9] standard_product_optouts migration failed:', err.message);
+    });
+
+    // pr-s2: cache table for the computed product rollup (DoD-status counts
+    // today; Epic 2 stories add more columns for health/test-coverage/AC-
+    // coverage/taxonomy). One row per product_id -- ON CONFLICT (product_id)
+    // DO UPDATE keeps a sync idempotent and always reflects the latest fetch.
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS product_rollups (
+      product_id UUID PRIMARY KEY REFERENCES products(product_id) ON DELETE CASCADE,
+      dod_status_counts JSONB NOT NULL DEFAULT '{}',
+      synced_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`).then(function() {
+      console.log('[pr-s2] product_rollups table ready');
+    }).catch(function(err) {
+      console.error('[pr-s2] product_rollups migration failed:', err.message);
     });
 
     // psh-s1: journeys.product_id FK column
