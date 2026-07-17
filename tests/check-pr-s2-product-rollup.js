@@ -148,6 +148,72 @@ async function main() {
     });
   });
 
+  // T5: triggerProductSync rejects a second concurrent call for the same product_id (AC4)
+  queue.push(function() {
+    console.log('\n[pr-s3] T5 -- triggerProductSync rejects a concurrent second call for the same product_id while the first is still in flight (AC4)');
+    return test('triggerProductSync: a second call for the same productId while one is pending is rejected, not started', async function() {
+      var mod = freshRequire();
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'))];
+      var freshAdapterMod = require(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'));
+
+      var fetchCallCount = 0;
+      var resolveFetch;
+      var fetchPromise = new Promise(function(resolve) { resolveFetch = resolve; });
+      freshAdapterMod.setPipelineStateFetchAdapter(async function() {
+        fetchCallCount++;
+        await fetchPromise; // held open until the test explicitly resolves it
+        return { content: Buffer.from(JSON.stringify({ features: [] })).toString('base64'), encoding: 'base64' };
+      });
+
+      var mockPool = { query: async function() { return { rows: [] }; } };
+      var opts = { productId: 'p-concurrent', repoOwner: 'acme', repoName: 'widgets', accessToken: 'fake-token' };
+
+      var firstCallPromise = mod.triggerProductSync(mockPool, freshAdapterMod, opts);
+      assert.strictEqual(mod.isSyncInProgress('p-concurrent'), true, 'Expected isSyncInProgress to be true while the first sync is pending');
+
+      try {
+        await mod.triggerProductSync(mockPool, freshAdapterMod, opts);
+        assert.fail('Expected the second concurrent triggerProductSync call to be rejected');
+      } catch (err) {
+        assert.ok(/already in progress|in flight/i.test(err.message), 'Expected a clear "already in progress" error, got: ' + err.message);
+      }
+
+      resolveFetch();
+      await firstCallPromise;
+      assert.strictEqual(fetchCallCount, 1, 'Expected exactly one underlying fetch call despite two trigger attempts');
+      assert.strictEqual(mod.isSyncInProgress('p-concurrent'), false, 'Expected isSyncInProgress to be false after the sync completes');
+    });
+  });
+
+  // T6: triggerProductSync clears the in-flight flag even when the sync fails (AC4 does not deadlock on error)
+  queue.push(function() {
+    console.log('\n[pr-s3] T6 -- triggerProductSync clears the in-flight flag after a failed sync, allowing a subsequent retry (AC4)');
+    return test('triggerProductSync: in-flight flag clears after failure, a later retry is allowed', async function() {
+      var mod = freshRequire();
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'))];
+      var freshAdapterMod = require(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'));
+      freshAdapterMod.setPipelineStateFetchAdapter(async function() {
+        throw new Error('Failed to fetch pipeline-state.json: HTTP 404');
+      });
+      var mockPool = { query: async function() { return { rows: [] }; } };
+      var opts = { productId: 'p-retry', repoOwner: 'acme', repoName: 'missing', accessToken: 'fake-token' };
+
+      try {
+        await mod.triggerProductSync(mockPool, freshAdapterMod, opts);
+        assert.fail('Expected the first sync attempt to throw (404)');
+      } catch (err) {
+        assert.ok(/404/.test(err.message));
+      }
+      assert.strictEqual(mod.isSyncInProgress('p-retry'), false, 'Expected the in-flight flag to clear after a failed sync, not deadlock');
+
+      // A subsequent retry is allowed to proceed (not rejected as "already in progress")
+      freshAdapterMod.setPipelineStateFetchAdapter(async function() {
+        return { content: Buffer.from(JSON.stringify({ features: [] })).toString('base64'), encoding: 'base64' };
+      });
+      await mod.triggerProductSync(mockPool, freshAdapterMod, opts); // should not throw
+    });
+  });
+
   for (var i = 0; i < queue.length; i++) {
     await queue[i]();
   }

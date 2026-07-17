@@ -6,6 +6,9 @@ var _htmlShell = require('../utils/html-shell');
 var _postHogFlags = require('../modules/posthog-flags'); // bri-s1.5 — shared isEnabled() (D37)
 var _flagKeys = require('../modules/flag-keys'); // bri-s1.5
 var _repoAdapter = require('../adapters/repo-adapter'); // prc-s2.1
+var _productRollup = require('../modules/product-rollup'); // pr-s3
+var _pipelineStateFetchAdapter = require('../adapters/pipeline-state-fetch-adapter'); // pr-s3
+var _syncFreshness = require('../modules/sync-freshness'); // pr-s3
 
 function _escapeHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -98,7 +101,7 @@ function _renderProductNew(login, error) {
   return _htmlShell.renderShell({ title: 'New product', bodyContent: body, user: { login: login }, active: 'dashboard', crumbs: ['Products', 'New'] });
 }
 
-function _renderProductView(productName, productId, features, login, rollupRow) {
+function _renderProductView(productName, productId, features, login, rollupRow, isSyncing) {
   var featuresHtml = features.length === 0
     ? '<p style="color:var(--muted);font-size:14px">No features yet.</p>'
     : '<ul style="list-style:none;padding:0;margin:0">' +
@@ -114,13 +117,19 @@ function _renderProductView(productName, productId, features, login, rollupRow) 
           '</li>';
         }).join('') +
       '</ul>';
-  var dodStatusHtml = rollupRow
-    ? '<div style="margin-top:12px;font-size:13px;color:var(--muted)">' +
-        Object.entries(JSON.parse(rollupRow.dod_status_counts || '{}')).map(function(entry) {
-          return _escapeHtml(entry[0]) + ': ' + _escapeHtml(String(entry[1]));
-        }).join(' &middot; ') +
-      '</div>'
+  var syncedAtLabel = rollupRow ? _syncFreshness.formatSyncedAt(rollupRow.synced_at) : _syncFreshness.formatSyncedAt(null);
+  var dodCountsHtml = rollupRow
+    ? Object.entries(JSON.parse(rollupRow.dod_status_counts || '{}')).map(function(entry) {
+        return _escapeHtml(entry[0]) + ': ' + _escapeHtml(String(entry[1]));
+      }).join(' &middot; ')
     : '';
+  var refreshLabel = isSyncing ? 'Syncing…' : 'Refresh';
+  var refreshDisabledAttr = isSyncing ? ' disabled' : '';
+  var freshnessHtml =
+    '<div style="margin-top:12px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)">' +
+      '<span id="psh-sync-label">' + _escapeHtml(syncedAtLabel) + (dodCountsHtml ? ' &middot; ' + dodCountsHtml : '') + '</span>' +
+      '<button type="button" id="psh-refresh-btn" onclick="pshTriggerSync(\'' + _escapeHtml(productId) + '\')"' + refreshDisabledAttr + ' style="padding:4px 10px;border:1px solid var(--line);border-radius:5px;background:none;font-size:12px;cursor:pointer;color:var(--ink)">' + _escapeHtml(refreshLabel) + '</button>' +
+    '</div>';
   var body = '<div style="max-width:720px">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">' +
       '<div>' +
@@ -135,7 +144,7 @@ function _renderProductView(productName, productId, features, login, rollupRow) 
         '</form>' +
       '</div>' +
     '</div>' +
-    dodStatusHtml +
+    freshnessHtml +
     featuresHtml +
     '<script>' +
     'function pshConfirmDeleteProduct(id){' +
@@ -145,6 +154,17 @@ function _renderProductView(productName, productId, features, login, rollupRow) 
         'if(r.ok){window.location.href=\'/dashboard\';}' +
         'else{alert(\'Failed to delete product\');}' +
       '}).catch(function(e){alert(\'Failed to delete product: \'+e.message);});' +
+    '}' +
+    'async function pshTriggerSync(id){' +
+      'var btn=document.getElementById(\'psh-refresh-btn\');' +
+      'var label=document.getElementById(\'psh-sync-label\');' +
+      'btn.disabled=true;btn.textContent=\'Syncing…\';' +
+      'try{' +
+        'var r=await fetch(\'/products/\'+id+\'/sync\',{method:\'POST\'});' +
+        'if(r.ok){window.location.reload();}' +
+        'else{var j=await r.json();alert(j.error||\'Sync failed\');}' +
+      '}catch(e){alert(\'Sync failed: \'+e.message);}' +
+      'finally{btn.disabled=false;btn.textContent=\'Refresh\';}' +
     '}' +
     '<\/script>' +
   '</div>';
@@ -331,6 +351,7 @@ async function handleGetProductView(req, res, _next, pool) {
     'SELECT dod_status_counts, synced_at FROM product_rollups WHERE product_id = $1',
     [productId]
   )).rows[0] || null;
+  var isSyncing = _productRollup.isSyncInProgress(productId);
   var rows = (await _pool.query(
     "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1",
     [productId]
@@ -346,9 +367,62 @@ async function handleGetProductView(req, res, _next, pool) {
   if (res.json) {
     res.json({ features: features });
   } else {
-    var html = _renderProductView(productName, productId, features, login, rollupRow);
+    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
+  }
+}
+
+/**
+ * pr-s3 AC2/AC4 -- POST /products/:id/sync: triggers a new sync of the
+ * product's connected repo's pipeline-state.json, writing a fresh rollup to
+ * the cache table. Rejects with 409 if a sync for this product is already
+ * in flight (AC4) rather than starting a second concurrent fetch.
+ */
+async function handlePostProductSync(req, res, _next, pool, posthog) {
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var accessToken = req.session && req.session.accessToken;
+
+  var prodRow = (await _pool.query(
+    'SELECT product_id, tenant_id FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  if (_productRollup.isSyncInProgress(productId)) {
+    if (res.status) { res.status(409).json({ error: 'A sync for this product is already in progress' }); }
+    else { res.writeHead(409, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'A sync for this product is already in progress' })); }
+    return;
+  }
+
+  var repoRow = (await _pool.query(
+    'SELECT repo_owner, repo_name FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!repoRow || !repoRow.repo_owner || !repoRow.repo_name) {
+    if (res.status) { res.status(400).json({ error: 'This product has no GitHub repo configured.' }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'This product has no GitHub repo configured.' })); }
+    return;
+  }
+
+  try {
+    var rollup = await _productRollup.triggerProductSync(_pool, _pipelineStateFetchAdapter, {
+      productId: productId,
+      repoOwner: repoRow.repo_owner,
+      repoName: repoRow.repo_name,
+      accessToken: accessToken
+    });
+    if (res.status) { res.status(200).json({ synced: true, rollup: rollup }); }
+    else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ synced: true, rollup: rollup })); }
+  } catch (err) {
+    if (res.status) { res.status(502).json({ error: err.message }); }
+    else { res.writeHead(502, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: err.message })); }
   }
 }
 
@@ -749,6 +823,7 @@ module.exports = {
   handleGetDashboard,
   handleGetProductNew,
   handleGetProductView,
+  handlePostProductSync,
   handlePostProductFeature,
   handleGetProductKanban,
   handleGetOrgKanban,
