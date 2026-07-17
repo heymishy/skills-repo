@@ -41,6 +41,52 @@ function computeDodStatusRollup(pipelineState) {
 }
 
 /**
+ * Counts features by their top-level health status (green/amber/red), using
+ * "unknown" for any feature with no health field or an unrecognised value.
+ * Reuses the same status vocabulary and precedence convention already
+ * established in .github/scripts/viz-functions.js's fleetHealthLabel/
+ * featureActionMeta, even though this counting logic is new application
+ * code (that file lives in the legacy/unused dashboard's support module,
+ * not something this application code imports from) (AC1).
+ *
+ * @param {object} pipelineState - parsed pipeline-state.json content
+ * @returns {{green: number, amber: number, red: number, unknown: number}}
+ */
+function computeHealthCounts(pipelineState) {
+  var counts = { green: 0, amber: 0, red: 0, unknown: 0 };
+  var features = (pipelineState && pipelineState.features) || [];
+
+  features.forEach(function(feature) {
+    var health = feature.health;
+    if (health !== 'green' && health !== 'amber' && health !== 'red') {
+      health = 'unknown';
+    }
+    counts[health]++;
+  });
+
+  return counts;
+}
+
+/**
+ * Derives a single overall product-health signal from per-status counts,
+ * using the same red-takes-precedence rule already applied per-feature
+ * elsewhere in this codebase (viz-functions.js's featureActionMeta): any
+ * red feature makes the overall signal red regardless of how many
+ * green/amber features also exist (AC2). With no red, any amber makes it
+ * amber (AC3). All-green, or zero features entirely, yields green (AC4) --
+ * this function never throws and never returns undefined/null.
+ *
+ * @param {{green?: number, amber?: number, red?: number, unknown?: number}} counts
+ * @returns {'green'|'amber'|'red'}
+ */
+function computeOverallHealthSignal(counts) {
+  var safe = counts || {};
+  if ((safe.red || 0) > 0) return 'red';
+  if ((safe.amber || 0) > 0) return 'amber';
+  return 'green';
+}
+
+/**
  * Fetches a product's connected repo's pipeline-state.json via the wired
  * adapter, computes the DoD-status rollup, and writes it to the
  * product_rollups cache table scoped by product_id. Throws (does not write)
@@ -108,6 +154,8 @@ async function triggerProductSync(pool, adapterModule, opts) {
 
 module.exports = {
   computeDodStatusRollup,
+  computeHealthCounts,
+  computeOverallHealthSignal,
   syncProductRollup,
   triggerProductSync,
   isSyncInProgress
