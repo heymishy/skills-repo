@@ -129,6 +129,20 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
         }).join('') +
       '</div>'
     : '';
+  var testCoverage = (rollupRow && rollupRow.test_coverage) ? JSON.parse(rollupRow.test_coverage) : null;
+  var coverageHtml;
+  if (!testCoverage || testCoverage.noData || !Array.isArray(testCoverage.perFeature)) {
+    coverageHtml = '<div style="margin-top:12px;font-size:13px;color:var(--muted)">No test data yet</div>';
+  } else {
+    var perFeatureHtml = testCoverage.perFeature.map(function(f) {
+      return '<li style="font-size:12px;color:var(--muted)">' + _escapeHtml(f.slug) + ': ' + _escapeHtml(String(f.percentage)) + '%</li>';
+    }).join('');
+    coverageHtml =
+      '<div style="margin-top:12px;font-size:13px">' +
+        '<div>Test coverage: <strong>' + _escapeHtml(String(testCoverage.blendedPercentage)) + '%</strong></div>' +
+        '<ul style="margin:6px 0 0;padding-left:18px">' + perFeatureHtml + '</ul>' +
+      '</div>';
+  }
   var syncedAtLabel = rollupRow ? _syncFreshness.formatSyncedAt(rollupRow.synced_at) : _syncFreshness.formatSyncedAt(null);
   var dodCountsHtml = rollupRow
     ? Object.entries(JSON.parse(rollupRow.dod_status_counts || '{}')).map(function(entry) {
@@ -158,6 +172,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     '</div>' +
     freshnessHtml +
     healthHtml +
+    coverageHtml +
     featuresHtml +
     '<script>' +
     'function pshConfirmDeleteProduct(id){' +
@@ -361,7 +376,7 @@ async function handleGetProductView(req, res, _next, pool) {
   }
   var productName = prodRow.name;
   var rollupRow = (await _pool.query(
-    'SELECT dod_status_counts, health_counts, synced_at FROM product_rollups WHERE product_id = $1',
+    'SELECT dod_status_counts, health_counts, test_coverage, synced_at FROM product_rollups WHERE product_id = $1',
     [productId]
   )).rows[0] || null;
   var isSyncing = _productRollup.isSyncInProgress(productId);
