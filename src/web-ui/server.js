@@ -36,6 +36,7 @@ const { setToolExecutor }                                            = require('
 const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
 const { setPlanStateAdapter }                                        = require('./modules/tenant-plan');   // jlc-s1
 const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
+const { registerSelfAsProduct }                                       = require('./modules/platform-self-registration'); // pr-s1
 const { setRepoAdapter, realCheckRepoAccess }                        = require('./adapters/repo-adapter'); // prc-s1.2 (D37 separate task)
 const { handlePostConnectRepo }                                      = require('./routes/product-repo');   // prc-s1.2
 const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal, handleGetBillingPlanState } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5 / bri-s3.5
@@ -427,6 +428,19 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // prc-s1.1: repo association columns on products (repo_provider/repo_owner/repo_name)
     migrateProductRepoColumns(_creditsPool).catch(function(err) {
       console.error('[prc-s1.1] products repo-column migration failed:', err.message);
+    });
+
+    // pr-s1: register skills-framework itself as a product row for the
+    // dogfooding rollup case. Skips gracefully if PLATFORM_TENANT_ID or
+    // GITHUB_REPO_OWNER/GITHUB_REPO_NAME are not configured -- optional
+    // seed, not a hard startup requirement.
+    registerSelfAsProduct(_creditsPool, {
+      tenantId: process.env.PLATFORM_TENANT_ID,
+      repoOwner: process.env.GITHUB_REPO_OWNER,
+      repoName: process.env.GITHUB_REPO_NAME,
+      name: 'skills-framework'
+    }).catch(function(err) {
+      console.error('[pr-s1] platform self-registration failed:', err.message);
     });
 
     // psh-s1: standards table

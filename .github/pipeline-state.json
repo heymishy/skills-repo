@@ -11503,26 +11503,61 @@
         {
           "slug": "pr-e1-foundation",
           "name": "A product's connected repo becomes a synced, visible entity in the web UI",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "pr-s1",
               "name": "Designate Product as a named primitive and register skills-framework as a product",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-16T22:28:40.820Z",
+              "updatedAt": "2026-07-17T01:07:03.406Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
-                "passing": 0
+                "totalTests": 13,
+                "passing": 13
               },
-              "acTotal": 4,
-              "acVerified": 0,
+              "acTotal": 5,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Write registerSelfAsProduct and its creation/idempotency tests (AC1)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Wire registerSelfAsProduct into server.js startup",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "AC2 integration test -- /products/:id renders skills-framework's product like any other",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Add \"Product\" to the primitives list (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "AC5 -- confirm adapter wiring not applicable to this story",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/489"
             },
             {
               "slug": "pr-s2",
