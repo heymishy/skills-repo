@@ -11656,7 +11656,7 @@
               "name": "Render aggregate AC coverage on the product rollup view",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-17T08:50:58.738Z",
+              "updatedAt": "2026-07-17T08:52:09.364Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11670,7 +11670,8 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "tddState": "complete",
-              "prStatus": "draft"
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/496"
             },
             {
               "slug": "pr-s7",
