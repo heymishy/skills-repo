@@ -396,6 +396,34 @@ async function main() {
     });
   });
 
+  // T19: syncProductRollup also computes and writes test_coverage alongside the other rollup columns (AC1 storage)
+  queue.push(function() {
+    console.log('\n[pr-s5] T19 -- syncProductRollup writes test_coverage alongside dod_status_counts and health_counts (AC1 storage)');
+    return test('syncProductRollup: the cache write includes test_coverage', async function() {
+      var mod = freshRequire();
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'))];
+      var freshAdapterMod = require(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'));
+      var fixture = { features: [{ slug: 'f1', stories: [{ slug: 's1', testPlan: { totalTests: 10, passing: 9 } }] }] };
+      freshAdapterMod.setPipelineStateFetchAdapter(async function() {
+        return { content: Buffer.from(JSON.stringify(fixture)).toString('base64'), encoding: 'base64' };
+      });
+
+      var capturedSql = null; var capturedParams = null;
+      var mockPool = {
+        query: async function(sql, params) {
+          if (/INSERT INTO product_rollups/i.test(sql)) { capturedSql = sql; capturedParams = params; }
+          return { rows: [] };
+        }
+      };
+
+      await mod.syncProductRollup(mockPool, freshAdapterMod, { productId: 'p1', repoOwner: 'acme', repoName: 'widgets', accessToken: 'x' });
+
+      assert.ok(/test_coverage/i.test(capturedSql), 'Expected the INSERT statement to include the test_coverage column');
+      var coverageJson = capturedParams.find(function(p) { return typeof p === 'string' && p.indexOf('blendedPercentage') !== -1; });
+      assert.ok(coverageJson, 'Expected one of the written params to be the test_coverage JSON containing blendedPercentage');
+    });
+  });
+
   for (var i = 0; i < queue.length; i++) {
     await queue[i]();
   }
