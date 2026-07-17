@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // check-artefact-coverage.js — governance gate for artefact-first rule (ADR-011)
-// Verifies every skill in .github/skills/ and every module in src/ has a
+// Verifies every skill in skills/ and every module in src/ has a
 // corresponding DoR artefact file committed to artefacts/.
 // Reads exemptions from artefact-coverage-exemptions.json (repo root).
 // Node.js built-ins only — no external dependencies.
@@ -116,15 +116,15 @@ console.log('[artefact-coverage] Running self-tests...');
 
 // T5 — skill enumeration (reads actual .github/skills dir from root)
 {
-  const skillsDir = path.join(ROOT, '.github', 'skills');
+  const skillsDir = path.join(ROOT, 'skills');
   const exists = fs.existsSync(skillsDir);
   if (exists) {
     const dirs = fs.readdirSync(skillsDir, { withFileTypes: true })
                    .filter(e => e.isDirectory())
                    .map(e => e.name);
-    selfAssert(dirs.length > 0, `T5 skill-enumeration: .github/skills/ has ${dirs.length} skill dirs`);
+    selfAssert(dirs.length > 0, `T5 skill-enumeration: skills/ has ${dirs.length} skill dirs`);
   } else {
-    selfAssert(false, 'T5 skill-enumeration: .github/skills/ directory not found');
+    selfAssert(false, 'T5 skill-enumeration: skills/ directory not found');
   }
 }
 
@@ -167,7 +167,7 @@ if (selfFailed > 0) {
 
 // ── Main coverage check ──────────────────────────────────────────────────────
 
-const skillsDir    = path.join(ROOT, '.github', 'skills');
+const skillsDir    = path.join(ROOT, 'skills');
 const srcDir       = path.join(ROOT, 'src');
 const artefactsDir = path.join(ROOT, 'artefacts');
 const exemptPath   = path.join(ROOT, 'artefact-coverage-exemptions.json');

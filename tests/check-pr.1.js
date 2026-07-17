@@ -4,7 +4,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 const ROOT       = path.resolve(__dirname, '..');
-const SKILL_PATH = path.join(ROOT, '.github', 'skills', 'prioritise', 'SKILL.md');
+const SKILL_PATH = path.join(ROOT, 'skills', 'prioritise', 'SKILL.md');
 
 let passed = 0;
 let failed = 0;
@@ -24,7 +24,7 @@ process.stdout.write('\npr.1 \u2014 Candidate intake and framework selection\n\n
 
 // Pre-condition check
 const skillExists = fs.existsSync(SKILL_PATH);
-assert('SKILL.md exists at .github/skills/prioritise/SKILL.md', skillExists);
+assert('SKILL.md exists at skills/prioritise/SKILL.md', skillExists);
 
 const content = skillExists ? fs.readFileSync(SKILL_PATH, 'utf8') : '';
 

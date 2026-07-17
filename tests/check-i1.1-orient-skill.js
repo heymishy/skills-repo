@@ -2,7 +2,7 @@
 // check-i1.1-orient-skill.js — governance tests for i1.1 (orient concierge SKILL.md)
 // Covers AC1, AC2a, AC2b, AC3, AC4, AC5, AC6a, AC6b and NFR routing, distinct, consistency
 // 16 unit + 2 integration + 1 NFR = 19 tests
-// All tests FAIL until .github/skills/orient/SKILL.md is created — TDD baseline.
+// All tests FAIL until skills/orient/SKILL.md is created — TDD baseline.
 // No external dependencies — Node.js built-ins only.
 
 'use strict';
@@ -11,7 +11,7 @@ const fs   = require('fs');
 const path = require('path');
 
 const ROOT         = path.join(__dirname, '..');
-const ORIENT_SKILL = path.join(ROOT, '.github', 'skills', 'orient', 'SKILL.md');
+const ORIENT_SKILL = path.join(ROOT, 'skills', 'orient', 'SKILL.md');
 const COPILOT_INS  = path.join(ROOT, '.github', 'copilot-instructions.md');
 
 let passed = 0;
@@ -30,7 +30,7 @@ function readFile(filePath) {
 // ── Prerequisites ────────────────────────────────────────────────────────────
 console.log('\n[i1.1] orient-skill-file-exists — file exists at expected path');
 {
-  assert(fs.existsSync(ORIENT_SKILL), 'orient SKILL.md exists at .github/skills/orient/SKILL.md');
+  assert(fs.existsSync(ORIENT_SKILL), 'orient SKILL.md exists at skills/orient/SKILL.md');
 }
 
 console.log('\n[i1.1] orient-skill-has-name-field — YAML frontmatter contains name: orient');

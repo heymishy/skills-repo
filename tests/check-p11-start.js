@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // check-p11-start.js — p11.6 /start skill tests
-// Tests that .github/skills/start/SKILL.md exists and meets all ACs.
+// Tests that skills/start/SKILL.md exists and meets all ACs.
 // No external dependencies — Node.js built-ins only.
 
 'use strict';
@@ -9,7 +9,7 @@ const fs   = require('fs');
 const path = require('path');
 
 const ROOT       = path.join(__dirname, '..');
-const SKILL_PATH = path.join(ROOT, '.github', 'skills', 'start', 'SKILL.md');
+const SKILL_PATH = path.join(ROOT, 'skills', 'start', 'SKILL.md');
 const CONTRACTS  = path.join(ROOT, '.github', 'scripts', 'check-skill-contracts.js');
 
 let passed = 0;
@@ -24,7 +24,7 @@ console.log('\n[p11-start] p11.6 — /start SKILL.md greenfield orientation skil
 
 // T0 — file must exist (all remaining assertions depend on this)
 const exists = fs.existsSync(SKILL_PATH);
-assert(exists, 'T0 — .github/skills/start/SKILL.md exists');
+assert(exists, 'T0 — skills/start/SKILL.md exists');
 
 const content = exists ? fs.readFileSync(SKILL_PATH, 'utf8') : '';
 

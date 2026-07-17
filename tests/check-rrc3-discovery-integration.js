@@ -56,7 +56,7 @@ function fail(name, reason) {
   failures.push(name + ': ' + reason);
 }
 
-const discoverySkill = path.join(root, '.github', 'skills', 'discovery', 'SKILL.md');
+const discoverySkill = path.join(root, 'skills', 'discovery', 'SKILL.md');
 
 function getContent() {
   if (!fs.existsSync(discoverySkill)) return null;
@@ -69,7 +69,7 @@ console.log('\n[rrc.3] /discovery reference corpus integration\n');
 (function test_discovery_seed_reference() {
   const name = 'rrc3-discovery-seed-reference-in-skill';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/discovery/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/discovery/SKILL.md not found'); return; }
   if (/discovery-seed/i.test(content)) {
     pass(name);
   } else {
@@ -81,7 +81,7 @@ console.log('\n[rrc.3] /discovery reference corpus integration\n');
 (function test_reference_path() {
   const name = 'rrc3-reference-corpus-path-in-skill';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/discovery/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/discovery/SKILL.md not found'); return; }
   // Accept: "reference/" path or "reference corpus" near seed/constraint-index references
   if (/reference\//i.test(content) || /reference corpus/i.test(content)) {
     pass(name);
@@ -94,7 +94,7 @@ console.log('\n[rrc.3] /discovery reference corpus integration\n');
 (function test_constraints_section_targeted() {
   const name = 'rrc3-constraint-index-targets-constraints-section';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/discovery/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/discovery/SKILL.md not found'); return; }
   // constraint-index.md should be referenced near the Constraints section context
   const ciIdx = content.indexOf('constraint-index');
   if (ciIdx === -1) {
@@ -119,7 +119,7 @@ console.log('\n[rrc.3] /discovery reference corpus integration\n');
 (function test_no_known_legacy_constraints_heading() {
   const name = 'rrc3-known-legacy-constraints-heading-absent';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/discovery/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/discovery/SKILL.md not found'); return; }
   if (/known legacy constraints/i.test(content)) {
     fail(name, 'discovery/SKILL.md contains "Known legacy constraints" heading — forbidden by 3-L1; use the existing Constraints section instead');
   } else {
@@ -131,7 +131,7 @@ console.log('\n[rrc.3] /discovery reference corpus integration\n');
 (function test_conditional_check() {
   const name = 'rrc3-corpus-check-is-conditional';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/discovery/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/discovery/SKILL.md not found'); return; }
   // Find where discovery-seed is referenced; look for conditional guard near it
   const seedIdx = content.indexOf('discovery-seed');
   if (seedIdx === -1) {
@@ -150,7 +150,7 @@ console.log('\n[rrc.3] /discovery reference corpus integration\n');
 (function test_contract_markers() {
   const name = 'rrc3-discovery-contract-markers-present';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/discovery/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/discovery/SKILL.md not found'); return; }
   const missing = [];
   if (!/^name:/m.test(content)) missing.push('name:');
   if (!/^description:/m.test(content)) missing.push('description:');
@@ -167,7 +167,7 @@ console.log('\n[rrc.3] /discovery reference corpus integration\n');
 (function test_operator_override() {
   const name = 'rrc3-operator-override-instruction';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/discovery/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/discovery/SKILL.md not found'); return; }
   const seedIdx = content.indexOf('discovery-seed');
   if (seedIdx === -1) {
     fail(name, 'discovery/SKILL.md has no discovery-seed reference — cannot check override instruction');
@@ -186,7 +186,7 @@ console.log('\n[rrc.3] /discovery reference corpus integration\n');
 (function test_system_slug_disambiguation() {
   const name = 'rrc3-system-slug-disambiguation';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/discovery/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/discovery/SKILL.md not found'); return; }
   // Look for instruction to ask operator for system name/slug if not specified
   if (/system.*slug|slug.*system|which system|ask.*system|system.*name.*if|name.*system.*not/i.test(content)) {
     pass(name);
@@ -199,7 +199,7 @@ console.log('\n[rrc.3] /discovery reference corpus integration\n');
 (function test_line_count_reasonable() {
   const name = 'rrc3-discovery-line-count-reasonable';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/discovery/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/discovery/SKILL.md not found'); return; }
   const lineCount = content.split('\n').length;
   if (lineCount <= 700) {
     pass(name);

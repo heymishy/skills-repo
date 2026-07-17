@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // check-md-1-skill-md.js — content-inspection tests for md-1 (Write /modernisation-decompose SKILL.md)
 // Covers T1.1 (file exists), T1.2 (structural), AC2–AC7 (content), T-NFR1–T-NFR3
-// Tests FAIL until .github/skills/modernisation-decompose/SKILL.md is written — TDD baseline.
+// Tests FAIL until skills/modernisation-decompose/SKILL.md is written — TDD baseline.
 // No external dependencies — Node.js built-ins only.
 
 'use strict';
@@ -10,7 +10,7 @@ const fs   = require('fs');
 const path = require('path');
 
 const ROOT     = path.join(__dirname, '..');
-const SKILL_MD = path.join(ROOT, '.github', 'skills', 'modernisation-decompose', 'SKILL.md');
+const SKILL_MD = path.join(ROOT, 'skills', 'modernisation-decompose', 'SKILL.md');
 
 let passed = 0;
 let failed = 0;
@@ -29,7 +29,7 @@ function readSkill() {
 console.log('\n[md-1-skill-md] T1.1 — SKILL.md exists at governance path');
 {
   assert(fs.existsSync(SKILL_MD),
-    'T1.1: .github/skills/modernisation-decompose/SKILL.md exists');
+    'T1.1: skills/modernisation-decompose/SKILL.md exists');
 }
 
 // ── T1.2 — structural sections ───────────────────────────────────────────────

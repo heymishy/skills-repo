@@ -75,7 +75,7 @@ function fail(name, reason) {
 
 const fixtureMissing     = path.join(root, 'tests', 'fixtures', 'story-missing-upstream.md');
 const fixtureExternalDep = path.join(root, 'tests', 'fixtures', 'story-external-dep.md');
-const skillMdPath        = path.join(root, '.github', 'skills', 'definition', 'SKILL.md');
+const skillMdPath        = path.join(root, 'skills', 'definition', 'SKILL.md');
 
 if (!fs.existsSync(fixtureMissing)) {
   process.stderr.write('[definition-skill-check] FATAL: tests/fixtures/story-missing-upstream.md not found\n');
@@ -86,7 +86,7 @@ if (!fs.existsSync(fixtureExternalDep)) {
   process.exit(1);
 }
 if (!fs.existsSync(skillMdPath)) {
-  process.stderr.write('[definition-skill-check] FATAL: .github/skills/definition/SKILL.md not found\n');
+  process.stderr.write('[definition-skill-check] FATAL: skills/definition/SKILL.md not found\n');
   process.exit(1);
 }
 
