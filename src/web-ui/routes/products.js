@@ -129,6 +129,13 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
         }).join('') +
       '</div>'
     : '';
+  var acCoverage = (rollupRow && rollupRow.ac_coverage) ? JSON.parse(rollupRow.ac_coverage) : null;
+  var acCoverageHtml;
+  if (!acCoverage || acCoverage.noData) {
+    acCoverageHtml = '<div style="margin-top:8px;font-size:13px;color:var(--muted)">AC coverage: No AC data yet</div>';
+  } else {
+    acCoverageHtml = '<div style="margin-top:8px;font-size:13px">AC coverage: <strong>' + _escapeHtml(String(acCoverage.blendedPercentage)) + '%</strong></div>';
+  }
   var syncedAtLabel = rollupRow ? _syncFreshness.formatSyncedAt(rollupRow.synced_at) : _syncFreshness.formatSyncedAt(null);
   var dodCountsHtml = rollupRow
     ? Object.entries(JSON.parse(rollupRow.dod_status_counts || '{}')).map(function(entry) {
@@ -158,6 +165,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     '</div>' +
     freshnessHtml +
     healthHtml +
+    acCoverageHtml +
     featuresHtml +
     '<script>' +
     'function pshConfirmDeleteProduct(id){' +
@@ -361,7 +369,7 @@ async function handleGetProductView(req, res, _next, pool) {
   }
   var productName = prodRow.name;
   var rollupRow = (await _pool.query(
-    'SELECT dod_status_counts, health_counts, synced_at FROM product_rollups WHERE product_id = $1',
+    'SELECT dod_status_counts, health_counts, ac_coverage, synced_at FROM product_rollups WHERE product_id = $1',
     [productId]
   )).rows[0] || null;
   var isSyncing = _productRollup.isSyncInProgress(productId);

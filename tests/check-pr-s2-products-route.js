@@ -154,7 +154,7 @@ test('products.js exports handlePostProductSync', function() {
       var mockPoolNeverSynced = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, synced_at FROM product_rollups/i.test(sql)) return { rows: [] };
+          if (/SELECT dod_status_counts, health_counts, ac_coverage, synced_at FROM product_rollups/i.test(sql)) return { rows: [] };
           return { rows: [] };
         }
       };
@@ -170,7 +170,7 @@ test('products.js exports handlePostProductSync', function() {
       var mockPoolSynced = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, synced_at FROM product_rollups/i.test(sql)) return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: '{"green":0,"amber":0,"red":0,"unknown":0}', synced_at: syncedAt }] };
+          if (/SELECT dod_status_counts, health_counts, ac_coverage, synced_at FROM product_rollups/i.test(sql)) return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: '{"green":0,"amber":0,"red":0,"unknown":0}', ac_coverage: '{}', synced_at: syncedAt }] };
           return { rows: [] };
         }
       };
@@ -221,8 +221,8 @@ test('products.js exports handlePostProductSync', function() {
       var mockPool = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, synced_at FROM product_rollups/i.test(sql)) {
-            return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: healthCountsJson, synced_at: syncedAt }] };
+          if (/SELECT dod_status_counts, health_counts, ac_coverage, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: healthCountsJson, ac_coverage: '{}', synced_at: syncedAt }] };
           }
           return { rows: [] };
         }
@@ -253,6 +253,54 @@ test('products.js exports handlePostProductSync', function() {
     }
   })();
 
-  console.log('\n[pr-s2-pr-s3-products-route] Results: ' + passed + ' passed, ' + failed + ' failed');
+  console.log('\n[pr-s6] AC1/AC3/AC4 -- blended AC coverage renders on the product view, clearly labelled apart from test coverage');
+
+  await (async function() {
+    try {
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/routes/products.js'))];
+      var productsRouteFresh = require(path.resolve(__dirname, '../src/web-ui/routes/products.js'));
+
+      var syncedAt = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      var acCoverageJson = JSON.stringify({ blendedPercentage: 75, noData: false, perFeature: [] });
+      var mockPool = {
+        query: async function(sql) {
+          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT dod_status_counts, health_counts, ac_coverage, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{}', health_counts: '{}', ac_coverage: acCoverageJson, synced_at: syncedAt }] };
+          }
+          return { rows: [] };
+        }
+      };
+      var html = null;
+      var req = { params: { id: 'p1' }, session: { tenantId: 't1', login: 'x' } };
+      var res = { writeHead: function() {}, end: function(body) { html = body; } };
+      await productsRouteFresh.handleGetProductView(req, res, null, mockPool);
+
+      if (!/AC coverage[^0-9]*75%/.test(html)) throw new Error('Expected a clearly-labelled "AC coverage: 75%" in the rendered page');
+      passed++; console.log('  [PASS] _renderProductView: renders AC-coverage percentage under clear label (AC1, AC3)');
+
+      // No-AC-data state (AC4)
+      var noAcDataJson = JSON.stringify({ blendedPercentage: null, noData: true, perFeature: [] });
+      var mockPoolNoAcData = {
+        query: async function(sql) {
+          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT dod_status_counts, health_counts, ac_coverage, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{}', health_counts: '{}', ac_coverage: noAcDataJson, synced_at: syncedAt }] };
+          }
+          return { rows: [] };
+        }
+      };
+      var htmlNoAcData = null;
+      var reqNoAcData = { params: { id: 'p1' }, session: { tenantId: 't1', login: 'x' } };
+      var resNoAcData = { writeHead: function() {}, end: function(body) { htmlNoAcData = body; } };
+      await productsRouteFresh.handleGetProductView(reqNoAcData, resNoAcData, null, mockPoolNoAcData);
+      if (!/No AC data yet/i.test(htmlNoAcData)) throw new Error('Expected the explicit "No AC data yet" state, not 0% or NaN');
+      passed++; console.log('  [PASS] _renderProductView: shows explicit "No AC data yet" state, not 0%/NaN (AC4)');
+    } catch (err) {
+      failed++; console.log('  [FAIL] AC-coverage rendering --', err.message);
+    }
+  })();
+
+  console.log('\n[pr-s2-pr-s3-pr-s4-pr-s5-pr-s6-products-route] Results: ' + passed + ' passed, ' + failed + ' failed');
   process.exit(failed > 0 ? 1 : 0);
 })();
