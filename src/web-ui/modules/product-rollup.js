@@ -40,6 +40,34 @@ function computeDodStatusRollup(pipelineState) {
   return counts;
 }
 
+/**
+ * Fetches a product's connected repo's pipeline-state.json via the wired
+ * adapter, computes the DoD-status rollup, and writes it to the
+ * product_rollups cache table scoped by product_id. Throws (does not write)
+ * if the fetch fails, so a failed sync never silently shows stale or empty
+ * data as if it were current (AC3).
+ *
+ * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
+ * @param {{getPipelineStateFetchAdapter: Function}} adapterModule
+ * @param {{productId: string, repoOwner: string, repoName: string, accessToken: string}} opts
+ */
+async function syncProductRollup(pool, adapterModule, opts) {
+  var raw = await adapterModule.getPipelineStateFetchAdapter()(opts.repoOwner, opts.repoName, opts.accessToken);
+  var decoded = Buffer.from(raw.content, 'base64').toString('utf8');
+  var pipelineState = JSON.parse(decoded);
+  var rollup = computeDodStatusRollup(pipelineState);
+
+  await pool.query(
+    `INSERT INTO product_rollups (product_id, dod_status_counts, synced_at)
+     VALUES ($1, $2, NOW())
+     ON CONFLICT (product_id) DO UPDATE SET dod_status_counts = $2, synced_at = NOW()`,
+    [opts.productId, JSON.stringify(rollup)]
+  );
+
+  return rollup;
+}
+
 module.exports = {
-  computeDodStatusRollup
+  computeDodStatusRollup,
+  syncProductRollup
 };

@@ -85,6 +85,69 @@ async function main() {
     });
   });
 
+  // T3: syncProductRollup fetches, computes, and writes the rollup to the cache table (AC1)
+  queue.push(function() {
+    console.log('\n[pr-s2] T3 -- syncProductRollup fetches via the adapter, computes the rollup, and writes it to the cache table (AC1)');
+    return test('syncProductRollup: writes computed DoD counts to a cache row scoped by product_id', async function() {
+      var mod = freshRequire();
+      var adapterMod = require(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'));
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'))];
+      var freshAdapterMod = require(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'));
+
+      var fixturePipelineState = { features: [ { slug: 'f1', stories: [ { dodStatus: 'complete' }, { dodStatus: 'complete' } ] } ] };
+      freshAdapterMod.setPipelineStateFetchAdapter(async function() {
+        return { content: Buffer.from(JSON.stringify(fixturePipelineState)).toString('base64'), encoding: 'base64' };
+      });
+
+      var writes = [];
+      var mockPool = {
+        query: async function(sql, params) {
+          if (/INSERT INTO product_rollups/i.test(sql)) {
+            writes.push({ sql: sql, params: params });
+            return { rows: [] };
+          }
+          return { rows: [] };
+        }
+      };
+
+      await mod.syncProductRollup(mockPool, freshAdapterMod, { productId: 'p1', repoOwner: 'acme', repoName: 'widgets', accessToken: 'fake-token' });
+
+      assert.strictEqual(writes.length, 1, 'Expected exactly one write to product_rollups');
+      assert.ok(writes[0].params.indexOf('p1') !== -1, 'Expected the write to be scoped by product_id p1');
+      var writtenJson = writes[0].params.find(function(p) { return typeof p === 'string' && p.indexOf('complete') !== -1; });
+      assert.ok(writtenJson, 'Expected the written rollup data to include the computed DoD counts');
+    });
+  });
+
+  // T4: syncProductRollup surfaces a visible error and writes nothing on fetch failure (AC3)
+  queue.push(function() {
+    console.log('\n[pr-s2] T4 -- syncProductRollup surfaces a visible error and does not write on fetch failure (AC3)');
+    return test('syncProductRollup: throws distinguishably and writes nothing when the adapter fetch fails', async function() {
+      var mod = freshRequire();
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'))];
+      var freshAdapterMod = require(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'));
+      freshAdapterMod.setPipelineStateFetchAdapter(async function() {
+        throw new Error('Failed to fetch pipeline-state.json: HTTP 404');
+      });
+
+      var writeAttempted = false;
+      var mockPool = {
+        query: async function(sql) {
+          if (/INSERT INTO product_rollups/i.test(sql)) { writeAttempted = true; }
+          return { rows: [] };
+        }
+      };
+
+      try {
+        await mod.syncProductRollup(mockPool, freshAdapterMod, { productId: 'p1', repoOwner: 'acme', repoName: 'missing', accessToken: 'fake-token' });
+        assert.fail('Expected syncProductRollup to throw on fetch failure');
+      } catch (err) {
+        assert.ok(/404/.test(err.message), 'Expected the error to surface the underlying HTTP status: ' + err.message);
+      }
+      assert.strictEqual(writeAttempted, false, 'Expected no cache write attempt when the fetch fails');
+    });
+  });
+
   for (var i = 0; i < queue.length; i++) {
     await queue[i]();
   }
