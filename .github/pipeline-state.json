@@ -11510,13 +11510,13 @@
               "name": "Designate Product as a named primitive and register skills-framework as a product",
               "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-07-17T00:26:15.100Z",
+              "updatedAt": "2026-07-17T00:45:11.831Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 5
+                "passing": 6
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -11533,7 +11533,7 @@
                 {
                   "id": "task-2",
                   "name": "Wire registerSelfAsProduct into server.js startup",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
                 },
                 {
