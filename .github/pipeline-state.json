@@ -11637,7 +11637,7 @@
               "name": "Render aggregate test coverage on the product rollup view",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-17T08:12:10.107Z",
+              "updatedAt": "2026-07-17T09:58:16.507Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11652,7 +11652,7 @@
               "dorStatus": "signed-off",
               "tddState": "complete",
               "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/495"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/498"
             },
             {
               "slug": "pr-s6",
