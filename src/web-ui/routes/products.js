@@ -132,7 +132,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
   var testCoverage = (rollupRow && rollupRow.test_coverage) ? JSON.parse(rollupRow.test_coverage) : null;
   var coverageHtml;
   if (!testCoverage || testCoverage.noData || !Array.isArray(testCoverage.perFeature)) {
-    coverageHtml = '<div style="margin-top:12px;font-size:13px;color:var(--muted)">No test data yet</div>';
+    coverageHtml = '<div style="margin-top:12px;font-size:13px;color:var(--muted)">Test coverage: No test data yet</div>';
   } else {
     var perFeatureHtml = testCoverage.perFeature.map(function(f) {
       return '<li style="font-size:12px;color:var(--muted)">' + _escapeHtml(f.slug) + ': ' + _escapeHtml(String(f.percentage)) + '%</li>';
@@ -142,6 +142,13 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
         '<div>Test coverage: <strong>' + _escapeHtml(String(testCoverage.blendedPercentage)) + '%</strong></div>' +
         '<ul style="margin:6px 0 0;padding-left:18px">' + perFeatureHtml + '</ul>' +
       '</div>';
+  }
+  var acCoverage = (rollupRow && rollupRow.ac_coverage) ? JSON.parse(rollupRow.ac_coverage) : null;
+  var acCoverageHtml;
+  if (!acCoverage || acCoverage.noData) {
+    acCoverageHtml = '<div style="margin-top:8px;font-size:13px;color:var(--muted)">AC coverage: No AC data yet</div>';
+  } else {
+    acCoverageHtml = '<div style="margin-top:8px;font-size:13px">AC coverage: <strong>' + _escapeHtml(String(acCoverage.blendedPercentage)) + '%</strong></div>';
   }
   var taxonomy = (rollupRow && rollupRow.taxonomy) ? JSON.parse(rollupRow.taxonomy) : null;
   var taxonomyHtml = '';
@@ -204,6 +211,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     freshnessHtml +
     healthHtml +
     coverageHtml +
+    acCoverageHtml +
     taxonomyHtml +
     featuresHtml +
     '<script>' +
@@ -408,7 +416,7 @@ async function handleGetProductView(req, res, _next, pool) {
   }
   var productName = prodRow.name;
   var rollupRow = (await _pool.query(
-    'SELECT dod_status_counts, health_counts, test_coverage, taxonomy, synced_at FROM product_rollups WHERE product_id = $1',
+    'SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups WHERE product_id = $1',
     [productId]
   )).rows[0] || null;
   var isSyncing = _productRollup.isSyncInProgress(productId);

@@ -424,6 +424,83 @@ async function main() {
     });
   });
 
+  // T20: blended AC coverage is sum-of-verified/sum-of-total, not an average of percentages (AC1)
+  queue.push(function() {
+    console.log('\n[pr-s6] T20 -- blended AC coverage is sum-of-verified/sum-of-total, not an average of percentages (AC1)');
+    return test('computeAcCoverageRollup: 12/10 + 4/4 stories -> 87.5% blended (not 91.7% naive average)', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'f1', stories: [{ slug: 's1', acTotal: 12, acVerified: 10 }] },
+          { slug: 'f2', stories: [{ slug: 's2', acTotal: 4, acVerified: 4 }] }
+        ]
+      };
+      var result = mod.computeAcCoverageRollup(pipelineState);
+      assert.strictEqual(result.blendedPercentage, 87.5, 'Expected 87.5 (14/16 blended), got ' + result.blendedPercentage);
+    });
+  });
+
+  // T21: stories with no acTotal/acVerified are excluded from numerator and denominator (AC2)
+  queue.push(function() {
+    console.log('\n[pr-s6] T21 -- stories with no acTotal/acVerified are excluded from the aggregate, not counted as 0% (AC2)');
+    return test('computeAcCoverageRollup: a story with no acTotal/acVerified contributes nothing to numerator or denominator', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'f1', stories: [{ slug: 's1', acTotal: 12, acVerified: 9 }] },
+          { slug: 'f2', stories: [{ slug: 's2' }] } // no acTotal/acVerified -- pre-DoR story
+        ]
+      };
+      var result = mod.computeAcCoverageRollup(pipelineState);
+      assert.strictEqual(result.blendedPercentage, 75, 'Expected 75% (9/12), story with no AC data must contribute nothing, got ' + result.blendedPercentage);
+    });
+  });
+
+  // T22: zero stories with AC data returns an explicit no-data marker, not 0% or NaN (AC4)
+  queue.push(function() {
+    console.log('\n[pr-s6] T22 -- zero stories with AC data returns an explicit no-data marker, not 0% or NaN (AC4)');
+    return test('computeAcCoverageRollup: no acTotal/acVerified data anywhere returns blendedPercentage null and noData true', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'f1', stories: [{ slug: 's1' }] },
+          { slug: 'f2', stories: [{ slug: 's2' }] }
+        ]
+      };
+      var result = mod.computeAcCoverageRollup(pipelineState);
+      assert.strictEqual(result.blendedPercentage, null, 'Expected null (not 0 or NaN) when no story has AC data');
+      assert.strictEqual(result.noData, true, 'Expected an explicit noData: true marker');
+    });
+  });
+
+  // T23: syncProductRollup also computes and writes ac_coverage alongside the other rollup columns (AC1 storage)
+  queue.push(function() {
+    console.log('\n[pr-s6] T23 -- syncProductRollup writes ac_coverage alongside dod_status_counts, health_counts, and test_coverage (AC1 storage)');
+    return test('syncProductRollup: the cache write includes ac_coverage', async function() {
+      var mod = freshRequire();
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'))];
+      var freshAdapterMod = require(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'));
+      var fixture = { features: [{ slug: 'f1', stories: [{ slug: 's1', acTotal: 12, acVerified: 10 }] }] };
+      freshAdapterMod.setPipelineStateFetchAdapter(async function() {
+        return { content: Buffer.from(JSON.stringify(fixture)).toString('base64'), encoding: 'base64' };
+      });
+
+      var capturedSql = null; var capturedParams = null;
+      var mockPool = {
+        query: async function(sql, params) {
+          if (/INSERT INTO product_rollups/i.test(sql)) { capturedSql = sql; capturedParams = params; }
+          return { rows: [] };
+        }
+      };
+
+      await mod.syncProductRollup(mockPool, freshAdapterMod, { productId: 'p1', repoOwner: 'acme', repoName: 'widgets', accessToken: 'x' });
+
+      assert.ok(/ac_coverage/i.test(capturedSql), 'Expected the INSERT statement to include the ac_coverage column');
+      var acJson = capturedParams.find(function(p) { return typeof p === 'string' && p.indexOf('blendedPercentage') !== -1 && p.indexOf('83.3') !== -1; });
+      assert.ok(acJson, 'Expected one of the written params to be the ac_coverage JSON containing the correct blendedPercentage (10/12 = 83.3)');
+    });
+  });
+
   // T24: groups stories under their parent epic and lists ungrouped (flat) features separately (AC1)
   queue.push(function() {
     console.log('\n[pr-s7] T24 -- groups stories under their parent epic and lists ungrouped features separately (AC1)');

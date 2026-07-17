@@ -513,6 +513,14 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.error('[pr-s5] test_coverage migration failed:', err.message);
     });
 
+    // pr-s6: add the blended AC-coverage rollup column. Idempotent, same
+    // pattern as the health_counts/test_coverage migrations above.
+    _creditsPool.query(`ALTER TABLE product_rollups ADD COLUMN IF NOT EXISTS ac_coverage JSONB NOT NULL DEFAULT '{}'`).then(function() {
+      console.log('[pr-s6] product_rollups.ac_coverage column ready');
+    }).catch(function(err) {
+      console.error('[pr-s6] ac_coverage migration failed:', err.message);
+    });
+
     // pr-s7: add the epic/feature taxonomy rollup column. Idempotent, same
     // pattern as the other product_rollups column migrations.
     _creditsPool.query(`ALTER TABLE product_rollups ADD COLUMN IF NOT EXISTS taxonomy JSONB NOT NULL DEFAULT '{}'`).then(function() {
