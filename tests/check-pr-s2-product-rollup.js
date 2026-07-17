@@ -403,6 +403,34 @@ async function main() {
     });
   });
 
+  // T28: syncProductRollup also computes and writes taxonomy alongside the other rollup columns (AC1/AC4 storage)
+  queue.push(function() {
+    console.log('\n[pr-s7] T28 -- syncProductRollup writes taxonomy alongside the other rollup columns (AC1/AC4 storage)');
+    return test('syncProductRollup: the cache write includes taxonomy', async function() {
+      var mod = freshRequire();
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'))];
+      var freshAdapterMod = require(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'));
+      var fixture = { features: [{ slug: 'f1', epics: [{ slug: 'e1', name: 'Epic 1', stories: [{ slug: 's1' }] }] }] };
+      freshAdapterMod.setPipelineStateFetchAdapter(async function() {
+        return { content: Buffer.from(JSON.stringify(fixture)).toString('base64'), encoding: 'base64' };
+      });
+
+      var capturedSql = null; var capturedParams = null;
+      var mockPool = {
+        query: async function(sql, params) {
+          if (/INSERT INTO product_rollups/i.test(sql)) { capturedSql = sql; capturedParams = params; }
+          return { rows: [] };
+        }
+      };
+
+      await mod.syncProductRollup(mockPool, freshAdapterMod, { productId: 'p1', repoOwner: 'acme', repoName: 'widgets', accessToken: 'x' });
+
+      assert.ok(/taxonomy/i.test(capturedSql), 'Expected the INSERT statement to include the taxonomy column');
+      var taxonomyJson = capturedParams.find(function(p) { return typeof p === 'string' && p.indexOf('epicSlug') !== -1; });
+      assert.ok(taxonomyJson, 'Expected one of the written params to be the taxonomy JSON containing the grouped epic data');
+    });
+  });
+
   for (var i = 0; i < queue.length; i++) {
     await queue[i]();
   }

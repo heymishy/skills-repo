@@ -505,6 +505,14 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.error('[pr-s4] health_counts migration failed:', err.message);
     });
 
+    // pr-s7: add the epic/feature taxonomy rollup column. Idempotent, same
+    // pattern as the other product_rollups column migrations.
+    _creditsPool.query(`ALTER TABLE product_rollups ADD COLUMN IF NOT EXISTS taxonomy JSONB NOT NULL DEFAULT '{}'`).then(function() {
+      console.log('[pr-s7] product_rollups.taxonomy column ready');
+    }).catch(function(err) {
+      console.error('[pr-s7] taxonomy migration failed:', err.message);
+    });
+
     // psh-s1: journeys.product_id FK column
     _creditsPool.query(`ALTER TABLE journeys ADD COLUMN IF NOT EXISTS product_id UUID REFERENCES products(product_id) ON DELETE SET NULL`).then(function() {
       console.log('[psh-s1] journeys.product_id column ready');
