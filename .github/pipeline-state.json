@@ -11675,7 +11675,7 @@
               "name": "Render discovery scope and feature/epic taxonomy grouping",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-17T09:30:09.965Z",
+              "updatedAt": "2026-07-17T09:31:26.796Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11689,7 +11689,8 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "tddState": "complete",
-              "prStatus": "draft"
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/497"
             }
           ]
         }
