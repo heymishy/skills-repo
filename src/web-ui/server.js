@@ -38,6 +38,7 @@ const { setPlanStateAdapter }                                        = require('
 const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
 const { registerSelfAsProduct }                                       = require('./modules/platform-self-registration'); // pr-s1
 const { setRepoAdapter, realCheckRepoAccess }                        = require('./adapters/repo-adapter'); // prc-s1.2 (D37 separate task)
+const { setPipelineStateFetchAdapter, realFetchPipelineState }        = require('./adapters/pipeline-state-fetch-adapter'); // pr-s2
 const { handlePostConnectRepo }                                      = require('./routes/product-repo');   // prc-s1.2
 const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal, handleGetBillingPlanState } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5 / bri-s3.5
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
@@ -50,7 +51,7 @@ const { migrateIdentityLinksSchema } = require('./modules/identity-links'); // t
 const { handleGetLinkSettings, handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
@@ -108,6 +109,16 @@ if (process.env.GOOGLE_CLIENT_ID) {
 if (process.env.NODE_ENV !== 'test') {
   setRepoAdapter(realCheckRepoAccess);
   console.log('[products] repo adapter wired');
+}
+
+// pr-s2 / D37 mandatory separate wiring task -- wire the real GitHub
+// Contents API adapter for fetching a connected repo's pipeline-state.json.
+// Never wired in NODE_ENV=test (tests call setPipelineStateFetchAdapter()
+// themselves with a mock); the throwing stub stays active there, matching
+// the pattern already used by the prc-s1.2/prc-s2.1 adapters above.
+if (process.env.NODE_ENV !== 'test') {
+  setPipelineStateFetchAdapter(realFetchPipelineState);
+  console.log('[pr-s2] pipeline-state fetch adapter wired');
 }
 
 // prc-s2.1 / D37 mandatory separate wiring task -- wire the real GitHub
@@ -469,6 +480,29 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.log('[psh-s9] standard_product_optouts table ready');
     }).catch(function(err) {
       console.error('[psh-s9] standard_product_optouts migration failed:', err.message);
+    });
+
+    // pr-s2: cache table for the computed product rollup (DoD-status counts
+    // today; Epic 2 stories add more columns for health/test-coverage/AC-
+    // coverage/taxonomy). One row per product_id -- ON CONFLICT (product_id)
+    // DO UPDATE keeps a sync idempotent and always reflects the latest fetch.
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS product_rollups (
+      product_id UUID PRIMARY KEY REFERENCES products(product_id) ON DELETE CASCADE,
+      dod_status_counts JSONB NOT NULL DEFAULT '{}',
+      synced_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`).then(function() {
+      console.log('[pr-s2] product_rollups table ready');
+    }).catch(function(err) {
+      console.error('[pr-s2] product_rollups migration failed:', err.message);
+    });
+
+    // pr-s4: add the health-count rollup column. Idempotent — safe to run on
+    // every server start, matching the products-table context-column migration
+    // pattern already used elsewhere in this file.
+    _creditsPool.query(`ALTER TABLE product_rollups ADD COLUMN IF NOT EXISTS health_counts JSONB NOT NULL DEFAULT '{}'`).then(function() {
+      console.log('[pr-s4] product_rollups.health_counts column ready');
+    }).catch(function(err) {
+      console.error('[pr-s4] health_counts migration failed:', err.message);
     });
 
     // psh-s1: journeys.product_id FK column
@@ -1861,6 +1895,11 @@ async function router(req, res) {
     // psh-s4 — product view: list features for one product with stage + health
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleGetProductView(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/sync$/) && req.method === 'POST') {
+    // pr-s3 -- trigger a new sync of the product's connected repo
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handlePostProductSync(req, res, null, _pshPool, null); });
 
   } else if (pathname.match(/^\/products\/[^/]+\/repo$/) && req.method === 'POST') {
     // prc-s1.2 — connect (or re-connect) an existing GitHub repo to a product

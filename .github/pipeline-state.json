@@ -11564,38 +11564,44 @@
               "name": "Sync a product's connected repo and show aggregate DoD status",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-16T22:29:34.148Z",
+              "updatedAt": "2026-07-17T04:47:24.686Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 11,
-                "passing": 0
+                "totalTests": 12,
+                "passing": 12
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tddState": "complete",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/490"
             },
             {
               "slug": "pr-s3",
               "name": "Show last-synced freshness and a manual refresh action",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-16T22:30:15.826Z",
+              "updatedAt": "2026-07-17T05:42:33.316Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
-                "passing": 0
+                "totalTests": 15,
+                "passing": 15
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tddState": "complete",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/491"
             }
           ]
         },
@@ -11609,19 +11615,22 @@
               "name": "Render aggregate health on the product rollup view",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-16T22:30:55.743Z",
+              "updatedAt": "2026-07-17T07:10:24.630Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 9,
-                "passing": 0
+                "totalTests": 12,
+                "passing": 12
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tddState": "complete",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/494"
             },
             {
               "slug": "pr-s5",
@@ -11682,7 +11691,8 @@
             }
           ]
         }
-      ]
+      ],
+      "stories": []
     },
     {
       "slug": "2026-07-16-legacy-ingestion",
