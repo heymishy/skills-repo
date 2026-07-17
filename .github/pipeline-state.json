@@ -11510,7 +11510,7 @@
               "name": "Designate Product as a named primitive and register skills-framework as a product",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-17T01:07:03.406Z",
+              "updatedAt": "2026-07-17T02:28:09.253Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11556,7 +11556,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/489"
             },
             {
