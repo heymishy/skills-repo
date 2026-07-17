@@ -154,7 +154,7 @@ test('products.js exports handlePostProductSync', function() {
       var mockPoolNeverSynced = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, ac_coverage, synced_at FROM product_rollups/i.test(sql)) return { rows: [] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, synced_at FROM product_rollups/i.test(sql)) return { rows: [] };
           return { rows: [] };
         }
       };
@@ -170,7 +170,7 @@ test('products.js exports handlePostProductSync', function() {
       var mockPoolSynced = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, ac_coverage, synced_at FROM product_rollups/i.test(sql)) return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: '{"green":0,"amber":0,"red":0,"unknown":0}', ac_coverage: '{}', synced_at: syncedAt }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, synced_at FROM product_rollups/i.test(sql)) return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: '{"green":0,"amber":0,"red":0,"unknown":0}', test_coverage: '{}', ac_coverage: '{}', synced_at: syncedAt }] };
           return { rows: [] };
         }
       };
@@ -221,8 +221,8 @@ test('products.js exports handlePostProductSync', function() {
       var mockPool = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, ac_coverage, synced_at FROM product_rollups/i.test(sql)) {
-            return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: healthCountsJson, ac_coverage: '{}', synced_at: syncedAt }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: healthCountsJson, test_coverage: '{}', ac_coverage: '{}', synced_at: syncedAt }] };
           }
           return { rows: [] };
         }
@@ -253,6 +253,60 @@ test('products.js exports handlePostProductSync', function() {
     }
   })();
 
+  console.log('\n[pr-s5] AC1/AC3/AC4 -- blended test coverage and per-story breakdown render on the product view');
+
+  await (async function() {
+    try {
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/routes/products.js'))];
+      var productsRouteFresh = require(path.resolve(__dirname, '../src/web-ui/routes/products.js'));
+
+      var syncedAt = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      var testCoverageJson = JSON.stringify({
+        blendedPercentage: 91.7, noData: false, totalPassing: 11, totalTests: 12,
+        perFeature: [{ slug: 's1', passing: 9, totalTests: 10, percentage: 90 }, { slug: 's2', passing: 2, totalTests: 2, percentage: 100 }]
+      });
+      var mockPool = {
+        query: async function(sql) {
+          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: '{"green":1,"amber":0,"red":0,"unknown":0}', test_coverage: testCoverageJson, ac_coverage: '{}', synced_at: syncedAt }] };
+          }
+          return { rows: [] };
+        }
+      };
+      var html = null;
+      var req = { params: { id: 'p1' }, session: { tenantId: 't1', login: 'x' } };
+      var res = { writeHead: function() {}, end: function(body) { html = body; } };
+      await productsRouteFresh.handleGetProductView(req, res, null, mockPool);
+
+      if (!/91\.7%/.test(html)) throw new Error('Expected the blended percentage 91.7% to appear in the rendered page');
+      passed++; console.log('  [PASS] _renderProductView: renders the blended test-coverage percentage (AC1)');
+
+      if (!/\bs1\b/.test(html) || !/\bs2\b/.test(html)) throw new Error('Expected per-story breakdown entries (s1, s2) to appear in the rendered page');
+      passed++; console.log('  [PASS] _renderProductView: renders per-story test-coverage detail alongside the blended number (AC3)');
+
+      // No-data state (AC4)
+      var noDataJson = JSON.stringify({ blendedPercentage: null, noData: true, totalPassing: 0, totalTests: 0, perFeature: [] });
+      var mockPoolNoData = {
+        query: async function(sql) {
+          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{}', health_counts: '{}', test_coverage: noDataJson, ac_coverage: '{}', synced_at: syncedAt }] };
+          }
+          return { rows: [] };
+        }
+      };
+      var htmlNoData = null;
+      var reqNoData = { params: { id: 'p1' }, session: { tenantId: 't1', login: 'x' } };
+      var resNoData = { writeHead: function() {}, end: function(body) { htmlNoData = body; } };
+      await productsRouteFresh.handleGetProductView(reqNoData, resNoData, null, mockPoolNoData);
+      if (!/No test data yet/i.test(htmlNoData)) throw new Error('Expected the explicit "No test data yet" state, not 0% or NaN');
+      passed++; console.log('  [PASS] _renderProductView: shows explicit "No test data yet" state, not 0%/NaN (AC4)');
+    } catch (err) {
+      failed++; console.log('  [FAIL] test-coverage rendering --', err.message);
+    }
+  })();
+
   console.log('\n[pr-s6] AC1/AC3/AC4 -- blended AC coverage renders on the product view, clearly labelled apart from test coverage');
 
   await (async function() {
@@ -265,8 +319,8 @@ test('products.js exports handlePostProductSync', function() {
       var mockPool = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, ac_coverage, synced_at FROM product_rollups/i.test(sql)) {
-            return { rows: [{ dod_status_counts: '{}', health_counts: '{}', ac_coverage: acCoverageJson, synced_at: syncedAt }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{}', health_counts: '{}', test_coverage: '{}', ac_coverage: acCoverageJson, synced_at: syncedAt }] };
           }
           return { rows: [] };
         }
@@ -284,8 +338,8 @@ test('products.js exports handlePostProductSync', function() {
       var mockPoolNoAcData = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, ac_coverage, synced_at FROM product_rollups/i.test(sql)) {
-            return { rows: [{ dod_status_counts: '{}', health_counts: '{}', ac_coverage: noAcDataJson, synced_at: syncedAt }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{}', health_counts: '{}', test_coverage: '{}', ac_coverage: noAcDataJson, synced_at: syncedAt }] };
           }
           return { rows: [] };
         }

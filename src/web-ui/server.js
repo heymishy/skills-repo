@@ -505,6 +505,14 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.error('[pr-s4] health_counts migration failed:', err.message);
     });
 
+    // pr-s5: add the blended test-coverage rollup column. Idempotent, same
+    // pattern as the health_counts migration above.
+    _creditsPool.query(`ALTER TABLE product_rollups ADD COLUMN IF NOT EXISTS test_coverage JSONB NOT NULL DEFAULT '{}'`).then(function() {
+      console.log('[pr-s5] product_rollups.test_coverage column ready');
+    }).catch(function(err) {
+      console.error('[pr-s5] test_coverage migration failed:', err.message);
+    });
+
     // pr-s6: add the blended AC-coverage rollup column. Idempotent, same
     // pattern as the health_counts/test_coverage migrations above.
     _creditsPool.query(`ALTER TABLE product_rollups ADD COLUMN IF NOT EXISTS ac_coverage JSONB NOT NULL DEFAULT '{}'`).then(function() {

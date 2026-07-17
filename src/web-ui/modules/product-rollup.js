@@ -87,6 +87,67 @@ function computeOverallHealthSignal(counts) {
 }
 
 /**
+ * Aggregates test coverage across every story in every feature (handling
+ * both epics[].stories[] and flat feature.stories[] structures, same walk
+ * as computeDodStatusRollup) as a single blended percentage -- sum of
+ * testPlan.passing over sum of testPlan.totalTests -- NOT an average of
+ * each story's own percentage (AC1). A story with no testPlan field at all
+ * is excluded from both the numerator and denominator entirely; it is
+ * never treated as a 0% contributor (AC2). Per-story detail is always
+ * returned alongside the blended number (AC3). If no story anywhere has
+ * any testPlan data, blendedPercentage is null and noData is true --
+ * never 0 or NaN (AC4).
+ *
+ * @param {object} pipelineState - parsed pipeline-state.json content
+ * @returns {{blendedPercentage: number|null, noData: boolean, totalPassing: number, totalTests: number, perFeature: Array<{slug: string, passing: number, totalTests: number, percentage: number}>}}
+ */
+function computeTestCoverageRollup(pipelineState) {
+  var features = (pipelineState && pipelineState.features) || [];
+  var totalPassing = 0;
+  var totalTests = 0;
+  var perFeature = [];
+
+  features.forEach(function(feature) {
+    var stories = [];
+    if (Array.isArray(feature.epics) && feature.epics.length > 0) {
+      feature.epics.forEach(function(epic) {
+        (epic.stories || []).forEach(function(story) { stories.push(story); });
+      });
+    } else {
+      stories = feature.stories || [];
+    }
+
+    stories.forEach(function(story) {
+      if (!story.testPlan || typeof story.testPlan.totalTests !== 'number' || story.testPlan.totalTests <= 0) {
+        return;
+      }
+      var passing = story.testPlan.passing || 0;
+      var total = story.testPlan.totalTests;
+      totalPassing += passing;
+      totalTests += total;
+      perFeature.push({
+        slug: story.slug,
+        passing: passing,
+        totalTests: total,
+        percentage: Math.round((passing / total) * 1000) / 10
+      });
+    });
+  });
+
+  if (totalTests === 0) {
+    return { blendedPercentage: null, noData: true, totalPassing: 0, totalTests: 0, perFeature: [] };
+  }
+
+  return {
+    blendedPercentage: Math.round((totalPassing / totalTests) * 1000) / 10,
+    noData: false,
+    totalPassing: totalPassing,
+    totalTests: totalTests,
+    perFeature: perFeature
+  };
+}
+
+/**
  * Aggregates AC (acceptance-criteria) coverage across every story in every
  * feature, using the identical blended (sum-of-verified/sum-of-total, not
  * average-of-percentages) method as computeTestCoverageRollup, applied to
@@ -162,13 +223,14 @@ async function syncProductRollup(pool, adapterModule, opts) {
   var pipelineState = JSON.parse(decoded);
   var rollup = computeDodStatusRollup(pipelineState);
   var healthCounts = computeHealthCounts(pipelineState);
+  var testCoverage = computeTestCoverageRollup(pipelineState);
   var acCoverage = computeAcCoverageRollup(pipelineState);
 
   await pool.query(
-    `INSERT INTO product_rollups (product_id, dod_status_counts, health_counts, ac_coverage, synced_at)
-     VALUES ($1, $2, $3, $4, NOW())
-     ON CONFLICT (product_id) DO UPDATE SET dod_status_counts = $2, health_counts = $3, ac_coverage = $4, synced_at = NOW()`,
-    [opts.productId, JSON.stringify(rollup), JSON.stringify(healthCounts), JSON.stringify(acCoverage)]
+    `INSERT INTO product_rollups (product_id, dod_status_counts, health_counts, test_coverage, ac_coverage, synced_at)
+     VALUES ($1, $2, $3, $4, $5, NOW())
+     ON CONFLICT (product_id) DO UPDATE SET dod_status_counts = $2, health_counts = $3, test_coverage = $4, ac_coverage = $5, synced_at = NOW()`,
+    [opts.productId, JSON.stringify(rollup), JSON.stringify(healthCounts), JSON.stringify(testCoverage), JSON.stringify(acCoverage)]
   );
 
   return rollup;
@@ -217,6 +279,7 @@ module.exports = {
   computeDodStatusRollup,
   computeHealthCounts,
   computeOverallHealthSignal,
+  computeTestCoverageRollup,
   computeAcCoverageRollup,
   syncProductRollup,
   triggerProductSync,
