@@ -51,7 +51,7 @@ const { migrateIdentityLinksSchema } = require('./modules/identity-links'); // t
 const { handleGetLinkSettings, handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
@@ -1886,6 +1886,11 @@ async function router(req, res) {
     // psh-s4 — product view: list features for one product with stage + health
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleGetProductView(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/sync$/) && req.method === 'POST') {
+    // pr-s3 -- trigger a new sync of the product's connected repo
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handlePostProductSync(req, res, null, _pshPool, null); });
 
   } else if (pathname.match(/^\/products\/[^/]+\/repo$/) && req.method === 'POST') {
     // prc-s1.2 — connect (or re-connect) an existing GitHub repo to a product

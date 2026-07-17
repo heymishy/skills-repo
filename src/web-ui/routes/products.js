@@ -6,6 +6,8 @@ var _htmlShell = require('../utils/html-shell');
 var _postHogFlags = require('../modules/posthog-flags'); // bri-s1.5 — shared isEnabled() (D37)
 var _flagKeys = require('../modules/flag-keys'); // bri-s1.5
 var _repoAdapter = require('../adapters/repo-adapter'); // prc-s2.1
+var _productRollup = require('../modules/product-rollup'); // pr-s3
+var _pipelineStateFetchAdapter = require('../adapters/pipeline-state-fetch-adapter'); // pr-s3
 
 function _escapeHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -349,6 +351,59 @@ async function handleGetProductView(req, res, _next, pool) {
     var html = _renderProductView(productName, productId, features, login, rollupRow);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
+  }
+}
+
+/**
+ * pr-s3 AC2/AC4 -- POST /products/:id/sync: triggers a new sync of the
+ * product's connected repo's pipeline-state.json, writing a fresh rollup to
+ * the cache table. Rejects with 409 if a sync for this product is already
+ * in flight (AC4) rather than starting a second concurrent fetch.
+ */
+async function handlePostProductSync(req, res, _next, pool, posthog) {
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var accessToken = req.session && req.session.accessToken;
+
+  var prodRow = (await _pool.query(
+    'SELECT product_id, tenant_id FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  if (_productRollup.isSyncInProgress(productId)) {
+    if (res.status) { res.status(409).json({ error: 'A sync for this product is already in progress' }); }
+    else { res.writeHead(409, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'A sync for this product is already in progress' })); }
+    return;
+  }
+
+  var repoRow = (await _pool.query(
+    'SELECT repo_owner, repo_name FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!repoRow || !repoRow.repo_owner || !repoRow.repo_name) {
+    if (res.status) { res.status(400).json({ error: 'This product has no GitHub repo configured.' }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'This product has no GitHub repo configured.' })); }
+    return;
+  }
+
+  try {
+    var rollup = await _productRollup.triggerProductSync(_pool, _pipelineStateFetchAdapter, {
+      productId: productId,
+      repoOwner: repoRow.repo_owner,
+      repoName: repoRow.repo_name,
+      accessToken: accessToken
+    });
+    if (res.status) { res.status(200).json({ synced: true, rollup: rollup }); }
+    else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ synced: true, rollup: rollup })); }
+  } catch (err) {
+    if (res.status) { res.status(502).json({ error: err.message }); }
+    else { res.writeHead(502, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: err.message })); }
   }
 }
 
@@ -749,6 +804,7 @@ module.exports = {
   handleGetDashboard,
   handleGetProductNew,
   handleGetProductView,
+  handlePostProductSync,
   handlePostProductFeature,
   handleGetProductKanban,
   handleGetOrgKanban,
