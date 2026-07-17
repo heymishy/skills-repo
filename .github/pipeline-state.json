@@ -11058,9 +11058,9 @@
       "slug": "2026-07-16-product-rollup",
       "name": "Product Rollup & Aggregation Layer -- Product-Level Health from Feature-Level Artefacts",
       "track": "standard",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-07-16T22:34:01.792Z",
+      "updatedAt": "2026-07-17T11:23:02.337Z",
       "discoveryArtefact": "artefacts/2026-07-16-product-rollup/discovery.md",
       "regulated": false,
       "complianceProfile": "standard",
@@ -11075,7 +11075,7 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "All contributing stories merged and reached dodStatus=complete as of 2026-07-17 -- ready for operator manual verification (see artefacts/2026-07-16-product-rollup/dod/pr-s*-dod.md).",
           "contributingStories": [
             "pr-s1",
             "pr-s2",
@@ -11092,7 +11092,7 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "All contributing stories merged and reached dodStatus=complete as of 2026-07-17 -- ready for operator manual verification (see artefacts/2026-07-16-product-rollup/dod/pr-s*-dod.md).",
           "contributingStories": [
             "pr-s2",
             "pr-s3"
@@ -11508,9 +11508,9 @@
             {
               "slug": "pr-s1",
               "name": "Designate Product as a named primitive and register skills-framework as a product",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-17T02:28:09.253Z",
+              "updatedAt": "2026-07-17T11:22:55.921Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11518,8 +11518,8 @@
                 "totalTests": 13,
                 "passing": 13
               },
-              "acTotal": 5,
-              "acVerified": 5,
+              "acTotal": 4,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -11557,14 +11557,16 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/489"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/489",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "pr-s2",
               "name": "Sync a product's connected repo and show aggregate DoD status",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-17T10:49:29.655Z",
+              "updatedAt": "2026-07-17T11:22:56.047Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11579,14 +11581,16 @@
               "dorStatus": "signed-off",
               "tddState": "complete",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/490"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/490",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "pr-s3",
               "name": "Show last-synced freshness and a manual refresh action",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-17T10:49:29.808Z",
+              "updatedAt": "2026-07-17T11:22:56.158Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11601,7 +11605,9 @@
               "dorStatus": "signed-off",
               "tddState": "complete",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/491"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/491",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         },
@@ -11613,9 +11619,9 @@
             {
               "slug": "pr-s4",
               "name": "Render aggregate health on the product rollup view",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-17T10:49:29.956Z",
+              "updatedAt": "2026-07-17T11:22:56.283Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11630,14 +11636,16 @@
               "dorStatus": "signed-off",
               "tddState": "complete",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/494"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/494",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "pr-s5",
               "name": "Render aggregate test coverage on the product rollup view",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-17T10:49:30.099Z",
+              "updatedAt": "2026-07-17T11:22:56.409Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11652,14 +11660,16 @@
               "dorStatus": "signed-off",
               "tddState": "complete",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/498"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/498",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "pr-s6",
               "name": "Render aggregate AC coverage on the product rollup view",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-17T10:49:30.240Z",
+              "updatedAt": "2026-07-17T11:22:56.536Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11674,14 +11684,16 @@
               "dorStatus": "signed-off",
               "tddState": "complete",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/499"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/499",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "pr-s7",
               "name": "Render discovery scope and feature/epic taxonomy grouping",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-17T10:49:30.383Z",
+              "updatedAt": "2026-07-17T11:22:56.679Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11696,7 +11708,9 @@
               "dorStatus": "signed-off",
               "tddState": "complete",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/500"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/500",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         }
