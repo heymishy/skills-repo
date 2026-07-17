@@ -94,6 +94,7 @@ const EXPECTED_PRIMITIVES = [
   'learnings-log.md',
   'model-evaluation.md',
   'pipeline-state.md',
+  'product.md',
   'skill.md',
   'surface-adapter.md',
 ].sort();
