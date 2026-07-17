@@ -11510,13 +11510,13 @@
               "name": "Designate Product as a named primitive and register skills-framework as a product",
               "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-07-17T00:45:11.831Z",
+              "updatedAt": "2026-07-17T00:47:05.084Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 6
+                "passing": 7
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -11539,7 +11539,7 @@
                 {
                   "id": "task-3",
                   "name": "AC2 integration test -- /products/:id renders skills-framework's product like any other",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
                 },
                 {
