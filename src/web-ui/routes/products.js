@@ -117,6 +117,18 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
           '</li>';
         }).join('') +
       '</ul>';
+  var HEALTH_LABELS = { green: '✓ Healthy', amber: '⚠ Warning', red: '✕ Blocked', unknown: '? Unknown' };
+  var HEALTH_COLORS = { green: '#22c55e', amber: '#f59e0b', red: '#ef4444', unknown: 'var(--muted)' };
+  var healthCounts = (rollupRow && rollupRow.health_counts) ? JSON.parse(rollupRow.health_counts) : null;
+  var overallSignal = healthCounts ? _productRollup.computeOverallHealthSignal(healthCounts) : null;
+  var healthHtml = healthCounts
+    ? '<div style="margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;font-size:13px">' +
+        '<span style="font-weight:600;color:' + HEALTH_COLORS[overallSignal] + '">Overall: ' + _escapeHtml(HEALTH_LABELS[overallSignal]) + '</span>' +
+        ['green', 'amber', 'red', 'unknown'].map(function(status) {
+          return '<span style="color:' + HEALTH_COLORS[status] + '">' + _escapeHtml(HEALTH_LABELS[status]) + ': ' + _escapeHtml(String(healthCounts[status] || 0)) + '</span>';
+        }).join('') +
+      '</div>'
+    : '';
   var syncedAtLabel = rollupRow ? _syncFreshness.formatSyncedAt(rollupRow.synced_at) : _syncFreshness.formatSyncedAt(null);
   var dodCountsHtml = rollupRow
     ? Object.entries(JSON.parse(rollupRow.dod_status_counts || '{}')).map(function(entry) {
@@ -145,6 +157,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
       '</div>' +
     '</div>' +
     freshnessHtml +
+    healthHtml +
     featuresHtml +
     '<script>' +
     'function pshConfirmDeleteProduct(id){' +
@@ -348,7 +361,7 @@ async function handleGetProductView(req, res, _next, pool) {
   }
   var productName = prodRow.name;
   var rollupRow = (await _pool.query(
-    'SELECT dod_status_counts, synced_at FROM product_rollups WHERE product_id = $1',
+    'SELECT dod_status_counts, health_counts, synced_at FROM product_rollups WHERE product_id = $1',
     [productId]
   )).rows[0] || null;
   var isSyncing = _productRollup.isSyncInProgress(productId);

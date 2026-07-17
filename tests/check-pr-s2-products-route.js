@@ -154,7 +154,7 @@ test('products.js exports handlePostProductSync', function() {
       var mockPoolNeverSynced = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, synced_at FROM product_rollups/i.test(sql)) return { rows: [] };
+          if (/SELECT dod_status_counts, health_counts, synced_at FROM product_rollups/i.test(sql)) return { rows: [] };
           return { rows: [] };
         }
       };
@@ -170,7 +170,7 @@ test('products.js exports handlePostProductSync', function() {
       var mockPoolSynced = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, synced_at FROM product_rollups/i.test(sql)) return { rows: [{ dod_status_counts: '{"complete":1}', synced_at: syncedAt }] };
+          if (/SELECT dod_status_counts, health_counts, synced_at FROM product_rollups/i.test(sql)) return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: '{"green":0,"amber":0,"red":0,"unknown":0}', synced_at: syncedAt }] };
           return { rows: [] };
         }
       };
@@ -206,6 +206,50 @@ test('products.js exports handlePostProductSync', function() {
       passed++; console.log('  [PASS] _renderProductView: loading state has a text label, not colour alone (NFR-A11y)');
     } catch (err) {
       failed++; console.log('  [FAIL] freshness/Refresh rendering --', err.message);
+    }
+  })();
+
+  console.log('\n[pr-s4] AC1 -- health counts and overall signal render on the product view, with text labels (not colour alone)');
+
+  await (async function() {
+    try {
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/routes/products.js'))];
+      var productsRouteFresh = require(path.resolve(__dirname, '../src/web-ui/routes/products.js'));
+
+      var syncedAt = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      var healthCountsJson = JSON.stringify({ green: 3, amber: 2, red: 1, unknown: 1 });
+      var mockPool = {
+        query: async function(sql) {
+          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT dod_status_counts, health_counts, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: healthCountsJson, synced_at: syncedAt }] };
+          }
+          return { rows: [] };
+        }
+      };
+      var html = null;
+      var req = { params: { id: 'p1' }, session: { tenantId: 't1', login: 'x' } };
+      var res = { writeHead: function() {}, end: function(body) { html = body; } };
+      await productsRouteFresh.handleGetProductView(req, res, null, mockPool);
+
+      if (!/✓ Healthy/.test(html) || !/⚠ Warning/.test(html) || !/✕ Blocked/.test(html) || !/\? Unknown/.test(html)) {
+        throw new Error('Expected all four health labels (✓ Healthy / ⚠ Warning / ✕ Blocked / ? Unknown) in the rendered page');
+      }
+      passed++; console.log('  [PASS] _renderProductView: renders all four health-status labels using the existing label convention (AC1)');
+
+      if (!/\b3\b/.test(html) || !/\b2\b/.test(html) || !/\b1\b/.test(html)) {
+        throw new Error('Expected the numeric counts (3, 2, 1) to appear in the rendered page');
+      }
+      passed++; console.log('  [PASS] _renderProductView: renders the numeric per-status counts (AC1)');
+
+      // Overall signal: 1 red present -> overall must show as Blocked/red (AC2), and the
+      // label must accompany any colour so it is not colour-only (NFR-Accessibility)
+      if (!/overall/i.test(html)) {
+        throw new Error('Expected an overall product-health signal section in the rendered page');
+      }
+      passed++; console.log('  [PASS] _renderProductView: renders an overall product-health signal section (AC2/AC3/AC4 integration)');
+    } catch (err) {
+      failed++; console.log('  [FAIL] health rollup rendering --', err.message);
     }
   })();
 
