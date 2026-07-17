@@ -11058,7 +11058,7 @@
       "slug": "2026-07-16-product-rollup",
       "name": "Product Rollup & Aggregation Layer -- Product-Level Health from Feature-Level Artefacts",
       "track": "standard",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "updatedAt": "2026-07-16T22:34:01.792Z",
       "discoveryArtefact": "artefacts/2026-07-16-product-rollup/discovery.md",
@@ -11503,7 +11503,7 @@
         {
           "slug": "pr-e1-foundation",
           "name": "A product's connected repo becomes a synced, visible entity in the web UI",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "pr-s1",
@@ -11562,9 +11562,9 @@
             {
               "slug": "pr-s2",
               "name": "Sync a product's connected repo and show aggregate DoD status",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-17T04:47:24.686Z",
+              "updatedAt": "2026-07-17T10:49:29.655Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11578,15 +11578,15 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "tddState": "complete",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/490"
             },
             {
               "slug": "pr-s3",
               "name": "Show last-synced freshness and a manual refresh action",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-17T05:42:33.316Z",
+              "updatedAt": "2026-07-17T10:49:29.808Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11600,7 +11600,7 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "tddState": "complete",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/491"
             }
           ]
@@ -11608,14 +11608,14 @@
         {
           "slug": "pr-e2-dimensions",
           "name": "A product's rollup shows its full shape, not just one dimension",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "pr-s4",
               "name": "Render aggregate health on the product rollup view",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-17T07:10:24.630Z",
+              "updatedAt": "2026-07-17T10:49:29.956Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11629,15 +11629,15 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "tddState": "complete",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/494"
             },
             {
               "slug": "pr-s5",
               "name": "Render aggregate test coverage on the product rollup view",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-17T09:58:16.507Z",
+              "updatedAt": "2026-07-17T10:49:30.099Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11651,15 +11651,15 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "tddState": "complete",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/498"
             },
             {
               "slug": "pr-s6",
               "name": "Render aggregate AC coverage on the product rollup view",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-17T09:58:44.704Z",
+              "updatedAt": "2026-07-17T10:49:30.240Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11673,15 +11673,15 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "tddState": "complete",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/499"
             },
             {
               "slug": "pr-s7",
               "name": "Render discovery scope and feature/epic taxonomy grouping",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-17T09:59:06.532Z",
+              "updatedAt": "2026-07-17T10:49:30.383Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11695,7 +11695,7 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "tddState": "complete",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/500"
             }
           ]
