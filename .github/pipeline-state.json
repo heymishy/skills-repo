@@ -11586,19 +11586,21 @@
               "name": "Show last-synced freshness and a manual refresh action",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-16T22:30:15.826Z",
+              "updatedAt": "2026-07-17T05:41:33.962Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
-                "passing": 0
+                "totalTests": 15,
+                "passing": 15
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tddState": "complete",
+              "prStatus": "draft"
             }
           ]
         },
