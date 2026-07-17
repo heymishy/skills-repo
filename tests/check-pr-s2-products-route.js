@@ -154,7 +154,7 @@ test('products.js exports handlePostProductSync', function() {
       var mockPoolNeverSynced = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, synced_at FROM product_rollups/i.test(sql)) return { rows: [] };
+          if (/SELECT dod_status_counts, health_counts, taxonomy, synced_at FROM product_rollups/i.test(sql)) return { rows: [] };
           return { rows: [] };
         }
       };
@@ -170,7 +170,7 @@ test('products.js exports handlePostProductSync', function() {
       var mockPoolSynced = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, synced_at FROM product_rollups/i.test(sql)) return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: '{"green":0,"amber":0,"red":0,"unknown":0}', synced_at: syncedAt }] };
+          if (/SELECT dod_status_counts, health_counts, taxonomy, synced_at FROM product_rollups/i.test(sql)) return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: '{"green":0,"amber":0,"red":0,"unknown":0}', taxonomy: '{}', synced_at: syncedAt }] };
           return { rows: [] };
         }
       };
@@ -221,8 +221,8 @@ test('products.js exports handlePostProductSync', function() {
       var mockPool = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, synced_at FROM product_rollups/i.test(sql)) {
-            return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: healthCountsJson, synced_at: syncedAt }] };
+          if (/SELECT dod_status_counts, health_counts, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: healthCountsJson, taxonomy: '{}', synced_at: syncedAt }] };
           }
           return { rows: [] };
         }
@@ -250,6 +250,70 @@ test('products.js exports handlePostProductSync', function() {
       passed++; console.log('  [PASS] _renderProductView: renders an overall product-health signal section (AC2/AC3/AC4 integration)');
     } catch (err) {
       failed++; console.log('  [FAIL] health rollup rendering --', err.message);
+    }
+  })();
+
+  console.log('\n[pr-s7] AC2/AC3/AC4 -- epic/feature taxonomy renders with discovery-artefact links and a self-consistent total');
+
+  await (async function() {
+    try {
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/routes/products.js'))];
+      var productsRouteFresh = require(path.resolve(__dirname, '../src/web-ui/routes/products.js'));
+
+      var syncedAt = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      var taxonomyJson = JSON.stringify({
+        groups: [{ epicSlug: 'epic-a', epicName: 'Epic A', items: [{ slug: 's1' }, { slug: 's2' }] }],
+        ungrouped: [{ slug: 'fc', name: 'Flat Feature C', discoveryArtefact: 'artefacts/fc/discovery.md' }],
+        totalCount: 3
+      });
+      var mockPool = {
+        query: async function(sql) {
+          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{}', health_counts: '{}', taxonomy: taxonomyJson, synced_at: syncedAt }] };
+          }
+          return { rows: [] };
+        }
+      };
+      var html = null;
+      var req = { params: { id: 'p1' }, session: { tenantId: 't1', login: 'x' } };
+      var res = { writeHead: function() {}, end: function(body) { html = body; } };
+      await productsRouteFresh.handleGetProductView(req, res, null, mockPool);
+
+      if (!/Epic A/.test(html)) throw new Error('Expected the epic group name "Epic A" to appear in the rendered page');
+      passed++; console.log('  [PASS] _renderProductView: renders epic groups (AC1)');
+
+      if (!/Flat Feature C/.test(html) || !/artefacts\/fc\/discovery\.md/.test(html)) throw new Error('Expected the ungrouped feature and a discovery-artefact link/reference to appear');
+      passed++; console.log('  [PASS] _renderProductView: renders ungrouped features with a discovery-artefact link (AC2)');
+    } catch (err) {
+      failed++; console.log('  [FAIL] taxonomy rendering --', err.message);
+    }
+  })();
+
+  await (async function() {
+    try {
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/routes/products.js'))];
+      var productsRouteFresh = require(path.resolve(__dirname, '../src/web-ui/routes/products.js'));
+      var syncedAt = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      var flatTaxonomyJson = JSON.stringify({ groups: [], ungrouped: [{ slug: 'f1' }, { slug: 'f2' }], totalCount: 2 });
+      var mockPoolFlat = {
+        query: async function(sql) {
+          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{}', health_counts: '{}', taxonomy: flatTaxonomyJson, synced_at: syncedAt }] };
+          }
+          return { rows: [] };
+        }
+      };
+      var htmlFlat = null;
+      var reqFlat = { params: { id: 'p1' }, session: { tenantId: 't1', login: 'x' } };
+      var resFlat = { writeHead: function() {}, end: function(body) { htmlFlat = body; } };
+      await productsRouteFresh.handleGetProductView(reqFlat, resFlat, null, mockPoolFlat);
+
+      if (/Epics<\/h[1-6]>/i.test(htmlFlat)) throw new Error('Expected no empty "Epics" heading when there are zero epic groups (AC3)');
+      passed++; console.log('  [PASS] _renderProductView: shows no misleading empty epics section when there are zero epics (AC3)');
+    } catch (err) {
+      failed++; console.log('  [FAIL] flat-taxonomy rendering (AC3) --', err.message);
     }
   })();
 
