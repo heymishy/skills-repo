@@ -11564,19 +11564,21 @@
               "name": "Sync a product's connected repo and show aggregate DoD status",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-16T22:29:34.148Z",
+              "updatedAt": "2026-07-17T04:46:04.807Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 11,
-                "passing": 0
+                "totalTests": 12,
+                "passing": 12
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tddState": "complete",
+              "prStatus": "draft"
             },
             {
               "slug": "pr-s3",
@@ -11682,7 +11684,8 @@
             }
           ]
         }
-      ]
+      ],
+      "stories": []
     },
     {
       "slug": "2026-07-16-legacy-ingestion",
