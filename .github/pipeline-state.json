@@ -11615,7 +11615,7 @@
               "name": "Render aggregate health on the product rollup view",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-17T07:09:21.282Z",
+              "updatedAt": "2026-07-17T07:10:24.630Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11629,7 +11629,8 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "tddState": "complete",
-              "prStatus": "draft"
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/494"
             },
             {
               "slug": "pr-s5",
