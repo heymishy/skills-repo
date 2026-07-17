@@ -11510,7 +11510,7 @@
               "name": "Designate Product as a named primitive and register skills-framework as a product",
               "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-07-17T00:51:18.893Z",
+              "updatedAt": "2026-07-17T00:51:46.659Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11551,7 +11551,7 @@
                 {
                   "id": "task-5",
                   "name": "AC5 -- confirm adapter wiring not applicable to this story",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
                 }
               ]
