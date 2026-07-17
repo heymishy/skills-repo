@@ -150,6 +150,37 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
   } else {
     acCoverageHtml = '<div style="margin-top:8px;font-size:13px">AC coverage: <strong>' + _escapeHtml(String(acCoverage.blendedPercentage)) + '%</strong></div>';
   }
+  var taxonomy = (rollupRow && rollupRow.taxonomy) ? JSON.parse(rollupRow.taxonomy) : null;
+  var taxonomyHtml = '';
+  if (taxonomy) {
+    var epicsSectionHtml = '';
+    if (taxonomy.groups && taxonomy.groups.length > 0) {
+      epicsSectionHtml =
+        '<h3 style="font-size:14px;margin:16px 0 8px">Epics</h3>' +
+        taxonomy.groups.map(function(g) {
+          return '<div style="margin-bottom:10px">' +
+            '<h4 style="font-size:13px;margin:0 0 4px">' + _escapeHtml(g.epicName || g.epicSlug) + '</h4>' +
+            '<ul style="margin:0;padding-left:18px;font-size:12px;color:var(--muted)">' +
+              g.items.map(function(item) {
+                return '<li tabindex="0">' + _escapeHtml(item.slug) + '</li>';
+              }).join('') +
+            '</ul>' +
+          '</div>';
+        }).join('');
+    }
+    var ungroupedSectionHtml = (taxonomy.ungrouped && taxonomy.ungrouped.length > 0)
+      ? '<h3 style="font-size:14px;margin:16px 0 8px">Other features</h3>' +
+        '<ul style="margin:0;padding-left:18px;font-size:12px">' +
+          taxonomy.ungrouped.map(function(f) {
+            var link = f.discoveryArtefact
+              ? ' — <a href="/artefact/' + _escapeHtml(f.slug) + '/discovery" tabindex="0">' + _escapeHtml(f.discoveryArtefact) + '</a>'
+              : '';
+            return '<li tabindex="0">' + _escapeHtml(f.name || f.slug) + link + '</li>';
+          }).join('') +
+        '</ul>'
+      : '';
+    taxonomyHtml = '<div style="margin-top:16px">' + epicsSectionHtml + ungroupedSectionHtml + '</div>';
+  }
   var syncedAtLabel = rollupRow ? _syncFreshness.formatSyncedAt(rollupRow.synced_at) : _syncFreshness.formatSyncedAt(null);
   var dodCountsHtml = rollupRow
     ? Object.entries(JSON.parse(rollupRow.dod_status_counts || '{}')).map(function(entry) {
@@ -181,6 +212,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     healthHtml +
     coverageHtml +
     acCoverageHtml +
+    taxonomyHtml +
     featuresHtml +
     '<script>' +
     'function pshConfirmDeleteProduct(id){' +
@@ -384,7 +416,7 @@ async function handleGetProductView(req, res, _next, pool) {
   }
   var productName = prodRow.name;
   var rollupRow = (await _pool.query(
-    'SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, synced_at FROM product_rollups WHERE product_id = $1',
+    'SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups WHERE product_id = $1',
     [productId]
   )).rows[0] || null;
   var isSyncing = _productRollup.isSyncInProgress(productId);

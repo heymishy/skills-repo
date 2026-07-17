@@ -501,6 +501,110 @@ async function main() {
     });
   });
 
+  // T24: groups stories under their parent epic and lists ungrouped (flat) features separately (AC1)
+  queue.push(function() {
+    console.log('\n[pr-s7] T24 -- groups stories under their parent epic and lists ungrouped features separately (AC1)');
+    return test('computeTaxonomyRollup: 2 epics with 2 stories each, plus 1 flat ungrouped feature', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'fa', epics: [{ slug: 'epic-a', name: 'Epic A', stories: [{ slug: 'a1' }, { slug: 'a2' }] }] },
+          { slug: 'fb', epics: [{ slug: 'epic-b', name: 'Epic B', stories: [{ slug: 'b1' }, { slug: 'b2' }] }] },
+          { slug: 'fc', name: 'Flat Feature C', discoveryArtefact: 'artefacts/fc/discovery.md' }
+        ]
+      };
+      var result = mod.computeTaxonomyRollup(pipelineState);
+      assert.strictEqual(result.groups.length, 2, 'Expected 2 epic groups');
+      var epicA = result.groups.find(function(g) { return g.epicSlug === 'epic-a'; });
+      var epicB = result.groups.find(function(g) { return g.epicSlug === 'epic-b'; });
+      assert.strictEqual(epicA.items.length, 2, 'Expected Epic A to have 2 items');
+      assert.strictEqual(epicB.items.length, 2, 'Expected Epic B to have 2 items');
+      assert.strictEqual(result.ungrouped.length, 1, 'Expected exactly 1 ungrouped feature');
+      assert.strictEqual(result.ungrouped[0].slug, 'fc');
+    });
+  });
+
+  // T25: a feature with epics[].stories[] AND a stale empty top-level stories[] is not double-counted (AC1)
+  queue.push(function() {
+    console.log('\n[pr-s7] T25 -- a feature with both epics[].stories[] and a stale empty top-level stories[] is not double-counted (AC1)');
+    return test('computeTaxonomyRollup: epic-nested feature with a leftover empty stories[] field appears once, under its epic only', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'fa', stories: [], epics: [{ slug: 'epic-a', name: 'Epic A', stories: [{ slug: 'a1' }] }] }
+        ]
+      };
+      var result = mod.computeTaxonomyRollup(pipelineState);
+      assert.strictEqual(result.groups.length, 1);
+      assert.strictEqual(result.groups[0].items.length, 1, 'Expected exactly 1 item under Epic A, not double-counted via the stale stories[] field');
+      assert.strictEqual(result.ungrouped.length, 0, 'Expected the epic-nested feature to NOT also appear in ungrouped');
+    });
+  });
+
+  // T26: a product with zero epics renders a flat list with no empty epics section (AC3)
+  queue.push(function() {
+    console.log('\n[pr-s7] T26 -- a product with zero epics returns an empty groups array, not a misleading empty-epics placeholder (AC3)');
+    return test('computeTaxonomyRollup: all-flat features -> groups is empty array, ungrouped has all 4', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'f1' }, { slug: 'f2' }, { slug: 'f3' }, { slug: 'f4' }
+        ]
+      };
+      var result = mod.computeTaxonomyRollup(pipelineState);
+      assert.deepStrictEqual(result.groups, [], 'Expected an empty groups array (not a group with zero items)');
+      assert.strictEqual(result.ungrouped.length, 4);
+    });
+  });
+
+  // T27: the taxonomy view's own total matches groups+ungrouped, by construction (AC4)
+  queue.push(function() {
+    console.log('\n[pr-s7] T27 -- the taxonomy view\'s own total feature count matches the sum of grouped + ungrouped items (AC4)');
+    return test('computeTaxonomyRollup: totalCount equals sum(groups[].items.length) + ungrouped.length', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'fa', epics: [{ slug: 'epic-a', name: 'Epic A', stories: [{ slug: 'a1' }, { slug: 'a2' }] }] },
+          { slug: 'fb', epics: [{ slug: 'epic-b', name: 'Epic B', stories: [{ slug: 'b1' }, { slug: 'b2' }] }] },
+          { slug: 'fc', discoveryArtefact: 'artefacts/fc/discovery.md' }
+        ]
+      };
+      var result = mod.computeTaxonomyRollup(pipelineState);
+      var sumFromView = result.groups.reduce(function(acc, g) { return acc + g.items.length; }, 0) + result.ungrouped.length;
+      assert.strictEqual(sumFromView, 5, 'Expected 5 total leaf items (4 epic-nested + 1 ungrouped)');
+      assert.strictEqual(result.totalCount, 5, 'Expected totalCount to equal 5');
+      assert.strictEqual(sumFromView, result.totalCount, 'Expected the view\'s own summed total to match totalCount exactly');
+    });
+  });
+
+  // T28: syncProductRollup also computes and writes taxonomy alongside the other rollup columns (AC1/AC4 storage)
+  queue.push(function() {
+    console.log('\n[pr-s7] T28 -- syncProductRollup writes taxonomy alongside the other rollup columns (AC1/AC4 storage)');
+    return test('syncProductRollup: the cache write includes taxonomy', async function() {
+      var mod = freshRequire();
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'))];
+      var freshAdapterMod = require(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'));
+      var fixture = { features: [{ slug: 'f1', epics: [{ slug: 'e1', name: 'Epic 1', stories: [{ slug: 's1' }] }] }] };
+      freshAdapterMod.setPipelineStateFetchAdapter(async function() {
+        return { content: Buffer.from(JSON.stringify(fixture)).toString('base64'), encoding: 'base64' };
+      });
+
+      var capturedSql = null; var capturedParams = null;
+      var mockPool = {
+        query: async function(sql, params) {
+          if (/INSERT INTO product_rollups/i.test(sql)) { capturedSql = sql; capturedParams = params; }
+          return { rows: [] };
+        }
+      };
+
+      await mod.syncProductRollup(mockPool, freshAdapterMod, { productId: 'p1', repoOwner: 'acme', repoName: 'widgets', accessToken: 'x' });
+
+      assert.ok(/taxonomy/i.test(capturedSql), 'Expected the INSERT statement to include the taxonomy column');
+      var taxonomyJson = capturedParams.find(function(p) { return typeof p === 'string' && p.indexOf('epicSlug') !== -1; });
+      assert.ok(taxonomyJson, 'Expected one of the written params to be the taxonomy JSON containing the grouped epic data');
+    });
+  });
+
   for (var i = 0; i < queue.length; i++) {
     await queue[i]();
   }

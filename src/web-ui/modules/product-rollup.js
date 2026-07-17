@@ -207,6 +207,50 @@ function computeAcCoverageRollup(pipelineState) {
 }
 
 /**
+ * Groups a product's stories by their parent epic, and lists top-level
+ * features with no epics (flat stories[]) separately as "ungrouped" (AC1).
+ * A feature with a populated epics[].stories[] and a stale/empty top-level
+ * stories[] field (this repo's own real shape) is grouped under its epic
+ * only, never also counted as ungrouped (AC1, mirrors pr-s2's AC4). A
+ * product with zero epics anywhere returns an empty groups array -- never
+ * a group entry with zero items -- so the render layer can correctly omit
+ * an "Epics" section entirely rather than showing a misleading empty one
+ * (AC3). discoveryArtefact is a genuine top-level-feature field in this
+ * repo's schema, so it is only carried on ungrouped entries (AC2) -- an
+ * epic-nested story has no discoveryArtefact of its own. totalCount is
+ * incremented once per emitted leaf item (by construction, in the same
+ * walk that builds groups/ungrouped), so it is guaranteed to equal
+ * sum(groups[].items.length) + ungrouped.length unless the walk itself has
+ * a bug -- this is the correctness property AC4 exists to catch (AC4).
+ *
+ * @param {object} pipelineState - parsed pipeline-state.json content
+ * @returns {{groups: Array<{epicSlug: string, epicName: string, items: Array<{slug: string}>}>, ungrouped: Array<{slug: string, name: string|undefined, discoveryArtefact: string|undefined}>, totalCount: number}}
+ */
+function computeTaxonomyRollup(pipelineState) {
+  var features = (pipelineState && pipelineState.features) || [];
+  var groups = [];
+  var ungrouped = [];
+  var totalCount = 0;
+
+  features.forEach(function(feature) {
+    if (Array.isArray(feature.epics) && feature.epics.length > 0) {
+      feature.epics.forEach(function(epic) {
+        var items = (epic.stories || []).map(function(story) {
+          totalCount++;
+          return { slug: story.slug };
+        });
+        groups.push({ epicSlug: epic.slug, epicName: epic.name, items: items });
+      });
+    } else {
+      totalCount++;
+      ungrouped.push({ slug: feature.slug, name: feature.name, discoveryArtefact: feature.discoveryArtefact });
+    }
+  });
+
+  return { groups: groups, ungrouped: ungrouped, totalCount: totalCount };
+}
+
+/**
  * Fetches a product's connected repo's pipeline-state.json via the wired
  * adapter, computes the DoD-status rollup, and writes it to the
  * product_rollups cache table scoped by product_id. Throws (does not write)
@@ -225,12 +269,13 @@ async function syncProductRollup(pool, adapterModule, opts) {
   var healthCounts = computeHealthCounts(pipelineState);
   var testCoverage = computeTestCoverageRollup(pipelineState);
   var acCoverage = computeAcCoverageRollup(pipelineState);
+  var taxonomy = computeTaxonomyRollup(pipelineState);
 
   await pool.query(
-    `INSERT INTO product_rollups (product_id, dod_status_counts, health_counts, test_coverage, ac_coverage, synced_at)
-     VALUES ($1, $2, $3, $4, $5, NOW())
-     ON CONFLICT (product_id) DO UPDATE SET dod_status_counts = $2, health_counts = $3, test_coverage = $4, ac_coverage = $5, synced_at = NOW()`,
-    [opts.productId, JSON.stringify(rollup), JSON.stringify(healthCounts), JSON.stringify(testCoverage), JSON.stringify(acCoverage)]
+    `INSERT INTO product_rollups (product_id, dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at)
+     VALUES ($1, $2, $3, $4, $5, $6, NOW())
+     ON CONFLICT (product_id) DO UPDATE SET dod_status_counts = $2, health_counts = $3, test_coverage = $4, ac_coverage = $5, taxonomy = $6, synced_at = NOW()`,
+    [opts.productId, JSON.stringify(rollup), JSON.stringify(healthCounts), JSON.stringify(testCoverage), JSON.stringify(acCoverage), JSON.stringify(taxonomy)]
   );
 
   return rollup;
@@ -281,6 +326,7 @@ module.exports = {
   computeOverallHealthSignal,
   computeTestCoverageRollup,
   computeAcCoverageRollup,
+  computeTaxonomyRollup,
   syncProductRollup,
   triggerProductSync,
   isSyncInProgress

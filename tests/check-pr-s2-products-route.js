@@ -154,7 +154,7 @@ test('products.js exports handlePostProductSync', function() {
       var mockPoolNeverSynced = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, synced_at FROM product_rollups/i.test(sql)) return { rows: [] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) return { rows: [] };
           return { rows: [] };
         }
       };
@@ -170,7 +170,7 @@ test('products.js exports handlePostProductSync', function() {
       var mockPoolSynced = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, synced_at FROM product_rollups/i.test(sql)) return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: '{"green":0,"amber":0,"red":0,"unknown":0}', test_coverage: '{}', ac_coverage: '{}', synced_at: syncedAt }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: '{"green":0,"amber":0,"red":0,"unknown":0}', test_coverage: '{}', ac_coverage: '{}', taxonomy: '{}', synced_at: syncedAt }] };
           return { rows: [] };
         }
       };
@@ -221,8 +221,8 @@ test('products.js exports handlePostProductSync', function() {
       var mockPool = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, synced_at FROM product_rollups/i.test(sql)) {
-            return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: healthCountsJson, test_coverage: '{}', ac_coverage: '{}', synced_at: syncedAt }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: healthCountsJson, test_coverage: '{}', ac_coverage: '{}', taxonomy: '{}', synced_at: syncedAt }] };
           }
           return { rows: [] };
         }
@@ -268,8 +268,8 @@ test('products.js exports handlePostProductSync', function() {
       var mockPool = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, synced_at FROM product_rollups/i.test(sql)) {
-            return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: '{"green":1,"amber":0,"red":0,"unknown":0}', test_coverage: testCoverageJson, ac_coverage: '{}', synced_at: syncedAt }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: '{"green":1,"amber":0,"red":0,"unknown":0}', test_coverage: testCoverageJson, ac_coverage: '{}', taxonomy: '{}', synced_at: syncedAt }] };
           }
           return { rows: [] };
         }
@@ -290,8 +290,8 @@ test('products.js exports handlePostProductSync', function() {
       var mockPoolNoData = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, synced_at FROM product_rollups/i.test(sql)) {
-            return { rows: [{ dod_status_counts: '{}', health_counts: '{}', test_coverage: noDataJson, ac_coverage: '{}', synced_at: syncedAt }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{}', health_counts: '{}', test_coverage: noDataJson, ac_coverage: '{}', taxonomy: '{}', synced_at: syncedAt }] };
           }
           return { rows: [] };
         }
@@ -319,8 +319,8 @@ test('products.js exports handlePostProductSync', function() {
       var mockPool = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, synced_at FROM product_rollups/i.test(sql)) {
-            return { rows: [{ dod_status_counts: '{}', health_counts: '{}', test_coverage: '{}', ac_coverage: acCoverageJson, synced_at: syncedAt }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{}', health_counts: '{}', test_coverage: '{}', ac_coverage: acCoverageJson, taxonomy: '{}', synced_at: syncedAt }] };
           }
           return { rows: [] };
         }
@@ -338,8 +338,8 @@ test('products.js exports handlePostProductSync', function() {
       var mockPoolNoAcData = {
         query: async function(sql) {
           if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
-          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, synced_at FROM product_rollups/i.test(sql)) {
-            return { rows: [{ dod_status_counts: '{}', health_counts: '{}', test_coverage: '{}', ac_coverage: noAcDataJson, synced_at: syncedAt }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{}', health_counts: '{}', test_coverage: '{}', ac_coverage: noAcDataJson, taxonomy: '{}', synced_at: syncedAt }] };
           }
           return { rows: [] };
         }
@@ -355,6 +355,70 @@ test('products.js exports handlePostProductSync', function() {
     }
   })();
 
-  console.log('\n[pr-s2-pr-s3-pr-s4-pr-s5-pr-s6-products-route] Results: ' + passed + ' passed, ' + failed + ' failed');
+  console.log('\n[pr-s7] AC2/AC3/AC4 -- epic/feature taxonomy renders with discovery-artefact links and a self-consistent total');
+
+  await (async function() {
+    try {
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/routes/products.js'))];
+      var productsRouteFresh = require(path.resolve(__dirname, '../src/web-ui/routes/products.js'));
+
+      var syncedAt = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      var taxonomyJson = JSON.stringify({
+        groups: [{ epicSlug: 'epic-a', epicName: 'Epic A', items: [{ slug: 's1' }, { slug: 's2' }] }],
+        ungrouped: [{ slug: 'fc', name: 'Flat Feature C', discoveryArtefact: 'artefacts/fc/discovery.md' }],
+        totalCount: 3
+      });
+      var mockPool = {
+        query: async function(sql) {
+          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{}', health_counts: '{}', test_coverage: '{}', ac_coverage: '{}', taxonomy: taxonomyJson, synced_at: syncedAt }] };
+          }
+          return { rows: [] };
+        }
+      };
+      var html = null;
+      var req = { params: { id: 'p1' }, session: { tenantId: 't1', login: 'x' } };
+      var res = { writeHead: function() {}, end: function(body) { html = body; } };
+      await productsRouteFresh.handleGetProductView(req, res, null, mockPool);
+
+      if (!/Epic A/.test(html)) throw new Error('Expected the epic group name "Epic A" to appear in the rendered page');
+      passed++; console.log('  [PASS] _renderProductView: renders epic groups (AC1)');
+
+      if (!/Flat Feature C/.test(html) || !/artefacts\/fc\/discovery\.md/.test(html)) throw new Error('Expected the ungrouped feature and a discovery-artefact link/reference to appear');
+      passed++; console.log('  [PASS] _renderProductView: renders ungrouped features with a discovery-artefact link (AC2)');
+    } catch (err) {
+      failed++; console.log('  [FAIL] taxonomy rendering --', err.message);
+    }
+  })();
+
+  await (async function() {
+    try {
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/routes/products.js'))];
+      var productsRouteFresh = require(path.resolve(__dirname, '../src/web-ui/routes/products.js'));
+      var syncedAt = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      var flatTaxonomyJson = JSON.stringify({ groups: [], ungrouped: [{ slug: 'f1' }, { slug: 'f2' }], totalCount: 2 });
+      var mockPoolFlat = {
+        query: async function(sql) {
+          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{}', health_counts: '{}', test_coverage: '{}', ac_coverage: '{}', taxonomy: flatTaxonomyJson, synced_at: syncedAt }] };
+          }
+          return { rows: [] };
+        }
+      };
+      var htmlFlat = null;
+      var reqFlat = { params: { id: 'p1' }, session: { tenantId: 't1', login: 'x' } };
+      var resFlat = { writeHead: function() {}, end: function(body) { htmlFlat = body; } };
+      await productsRouteFresh.handleGetProductView(reqFlat, resFlat, null, mockPoolFlat);
+
+      if (/Epics<\/h[1-6]>/i.test(htmlFlat)) throw new Error('Expected no empty "Epics" heading when there are zero epic groups (AC3)');
+      passed++; console.log('  [PASS] _renderProductView: shows no misleading empty epics section when there are zero epics (AC3)');
+    } catch (err) {
+      failed++; console.log('  [FAIL] flat-taxonomy rendering (AC3) --', err.message);
+    }
+  })();
+
+  console.log('\n[pr-s2-pr-s3-pr-s4-pr-s5-pr-s6-pr-s7-products-route] Results: ' + passed + ' passed, ' + failed + ' failed');
   process.exit(failed > 0 ? 1 : 0);
 })();
