@@ -299,6 +299,34 @@ async function main() {
     ]);
   });
 
+  // T14: syncProductRollup also computes and writes health_counts alongside dod_status_counts (AC1 storage)
+  queue.push(function() {
+    console.log('\n[pr-s4] T14 -- syncProductRollup writes health_counts alongside dod_status_counts (AC1 storage)');
+    return test('syncProductRollup: the cache write includes both dod_status_counts and health_counts', async function() {
+      var mod = freshRequire();
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'))];
+      var freshAdapterMod = require(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'));
+      var fixture = { features: [{ slug: 'f1', health: 'red', stories: [{ dodStatus: 'complete' }] }] };
+      freshAdapterMod.setPipelineStateFetchAdapter(async function() {
+        return { content: Buffer.from(JSON.stringify(fixture)).toString('base64'), encoding: 'base64' };
+      });
+
+      var capturedSql = null; var capturedParams = null;
+      var mockPool = {
+        query: async function(sql, params) {
+          if (/INSERT INTO product_rollups/i.test(sql)) { capturedSql = sql; capturedParams = params; }
+          return { rows: [] };
+        }
+      };
+
+      await mod.syncProductRollup(mockPool, freshAdapterMod, { productId: 'p1', repoOwner: 'acme', repoName: 'widgets', accessToken: 'x' });
+
+      assert.ok(/health_counts/i.test(capturedSql), 'Expected the INSERT statement to include the health_counts column');
+      var healthJson = capturedParams.find(function(p) { return typeof p === 'string' && p.indexOf('"red"') !== -1; });
+      assert.ok(healthJson, 'Expected one of the written params to be the health_counts JSON containing the red count');
+    });
+  });
+
   for (var i = 0; i < queue.length; i++) {
     await queue[i]();
   }

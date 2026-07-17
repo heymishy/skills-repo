@@ -102,12 +102,13 @@ async function syncProductRollup(pool, adapterModule, opts) {
   var decoded = Buffer.from(raw.content, 'base64').toString('utf8');
   var pipelineState = JSON.parse(decoded);
   var rollup = computeDodStatusRollup(pipelineState);
+  var healthCounts = computeHealthCounts(pipelineState);
 
   await pool.query(
-    `INSERT INTO product_rollups (product_id, dod_status_counts, synced_at)
-     VALUES ($1, $2, NOW())
-     ON CONFLICT (product_id) DO UPDATE SET dod_status_counts = $2, synced_at = NOW()`,
-    [opts.productId, JSON.stringify(rollup)]
+    `INSERT INTO product_rollups (product_id, dod_status_counts, health_counts, synced_at)
+     VALUES ($1, $2, $3, NOW())
+     ON CONFLICT (product_id) DO UPDATE SET dod_status_counts = $2, health_counts = $3, synced_at = NOW()`,
+    [opts.productId, JSON.stringify(rollup), JSON.stringify(healthCounts)]
   );
 
   return rollup;
