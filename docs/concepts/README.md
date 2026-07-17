@@ -46,12 +46,13 @@ The six principles explain why the platform is designed the way it is:
 
 ## Primitives
 
-The seven primitives are the low-level constructs that building blocks are composed from:
+The eight primitives are the low-level constructs that building blocks are composed from:
 
 - [Assurance gate](primitives/assurance-gate.md)
 - [Eval suite](primitives/eval-suite.md)
 - [Learnings log](primitives/learnings-log.md)
 - [Model evaluation](primitives/model-evaluation.md)
 - [Pipeline state](primitives/pipeline-state.md)
+- [Product](primitives/product.md)
 - [Skill](primitives/skill.md)
 - [Surface adapter](primitives/surface-adapter.md)

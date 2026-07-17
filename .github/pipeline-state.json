@@ -11058,9 +11058,9 @@
       "slug": "2026-07-16-product-rollup",
       "name": "Product Rollup & Aggregation Layer -- Product-Level Health from Feature-Level Artefacts",
       "track": "standard",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-07-16T22:34:01.792Z",
+      "updatedAt": "2026-07-17T11:23:02.337Z",
       "discoveryArtefact": "artefacts/2026-07-16-product-rollup/discovery.md",
       "regulated": false,
       "complianceProfile": "standard",
@@ -11075,7 +11075,7 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "All contributing stories merged and reached dodStatus=complete as of 2026-07-17 -- ready for operator manual verification (see artefacts/2026-07-16-product-rollup/dod/pr-s*-dod.md).",
           "contributingStories": [
             "pr-s1",
             "pr-s2",
@@ -11092,7 +11092,7 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "All contributing stories merged and reached dodStatus=complete as of 2026-07-17 -- ready for operator manual verification (see artefacts/2026-07-16-product-rollup/dod/pr-s*-dod.md).",
           "contributingStories": [
             "pr-s2",
             "pr-s3"
@@ -11503,151 +11503,219 @@
         {
           "slug": "pr-e1-foundation",
           "name": "A product's connected repo becomes a synced, visible entity in the web UI",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "pr-s1",
               "name": "Designate Product as a named primitive and register skills-framework as a product",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-16T22:28:40.820Z",
+              "updatedAt": "2026-07-17T11:22:55.921Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
-                "passing": 0
+                "totalTests": 13,
+                "passing": 13
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Write registerSelfAsProduct and its creation/idempotency tests (AC1)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Wire registerSelfAsProduct into server.js startup",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "AC2 integration test -- /products/:id renders skills-framework's product like any other",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Add \"Product\" to the primitives list (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "AC5 -- confirm adapter wiring not applicable to this story",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/489",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "pr-s2",
               "name": "Sync a product's connected repo and show aggregate DoD status",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-16T22:29:34.148Z",
+              "updatedAt": "2026-07-17T11:22:56.047Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 11,
-                "passing": 0
+                "totalTests": 12,
+                "passing": 12
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tddState": "complete",
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/490",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "pr-s3",
               "name": "Show last-synced freshness and a manual refresh action",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-16T22:30:15.826Z",
+              "updatedAt": "2026-07-17T11:22:56.158Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
-                "passing": 0
+                "totalTests": 15,
+                "passing": 15
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tddState": "complete",
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/491",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         },
         {
           "slug": "pr-e2-dimensions",
           "name": "A product's rollup shows its full shape, not just one dimension",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "pr-s4",
               "name": "Render aggregate health on the product rollup view",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-16T22:30:55.743Z",
+              "updatedAt": "2026-07-17T11:22:56.283Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 9,
-                "passing": 0
+                "totalTests": 12,
+                "passing": 12
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tddState": "complete",
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/494",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "pr-s5",
               "name": "Render aggregate test coverage on the product rollup view",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-16T22:31:38.410Z",
-              "reviewStatus": "passed",
-              "highFindings": 0,
-              "testPlan": {
-                "status": "written",
-                "totalTests": 7,
-                "passing": 0
-              },
-              "acTotal": 4,
-              "acVerified": 0,
-              "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
-            },
-            {
-              "slug": "pr-s6",
-              "name": "Render aggregate AC coverage on the product rollup view",
-              "stage": "definition-of-ready",
-              "health": "green",
-              "updatedAt": "2026-07-16T22:32:24.132Z",
-              "reviewStatus": "passed",
-              "highFindings": 0,
-              "testPlan": {
-                "status": "written",
-                "totalTests": 6,
-                "passing": 0
-              },
-              "acTotal": 4,
-              "acVerified": 0,
-              "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
-            },
-            {
-              "slug": "pr-s7",
-              "name": "Render discovery scope and feature/epic taxonomy grouping",
-              "stage": "definition-of-ready",
-              "health": "green",
-              "updatedAt": "2026-07-16T22:33:15.743Z",
+              "updatedAt": "2026-07-17T11:22:56.409Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
-                "passing": 0
+                "passing": 8
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tddState": "complete",
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/498",
+              "dodStatus": "complete",
+              "releaseReady": true
+            },
+            {
+              "slug": "pr-s6",
+              "name": "Render aggregate AC coverage on the product rollup view",
+              "stage": "definition-of-done",
+              "health": "green",
+              "updatedAt": "2026-07-17T11:22:56.536Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 6
+              },
+              "acTotal": 4,
+              "acVerified": 4,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "tddState": "complete",
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/499",
+              "dodStatus": "complete",
+              "releaseReady": true
+            },
+            {
+              "slug": "pr-s7",
+              "name": "Render discovery scope and feature/epic taxonomy grouping",
+              "stage": "definition-of-done",
+              "health": "green",
+              "updatedAt": "2026-07-17T11:22:56.679Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 8
+              },
+              "acTotal": 4,
+              "acVerified": 4,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "tddState": "complete",
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/500",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         }
-      ]
+      ],
+      "stories": []
     },
     {
       "slug": "2026-07-16-legacy-ingestion",
