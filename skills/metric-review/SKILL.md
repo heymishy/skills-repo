@@ -130,7 +130,7 @@ writing it to the artefact.
 
 ## Output
 
-Conforms to `.github/templates/metric-review.md`.
+Conforms to `templates/metric-review.md`.
 Save to `artefacts/[feature]/benefit-metric-review-[YYYY-MM].md`.
 
 ---

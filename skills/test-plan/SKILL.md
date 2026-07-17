@@ -222,7 +222,7 @@ Produce the technical plan first, then derive the verification script from it.
 
 ## Output 1: Technical test plan
 
-Conforms to `.github/templates/test-plan.md`.
+Conforms to `templates/test-plan.md`.
 Save to `artefacts/[feature]/test-plans/[story-slug]-test-plan.md`.
 
 ### TDD discipline
@@ -233,7 +233,7 @@ note it explicitly if found.
 
 ### Test data section (include in every plan)
 
-The Test Data Strategy section is defined in `.github/templates/test-plan.md`.
+The Test Data Strategy section is defined in `templates/test-plan.md`.
 Populate it with the answers from Step 3 before writing the individual test entries.
 
 ### AC coverage table and gap table
@@ -274,7 +274,7 @@ Follow the gap table format from `templates/test-plan.md`.
 
 ## Output 2: AC verification script
 
-Conforms to `.github/templates/ac-verification-script.md`.
+Conforms to `templates/ac-verification-script.md`.
 Save to `artefacts/[feature]/verification-scripts/[story-slug]-verification.md`.
 
 ### Translation rules

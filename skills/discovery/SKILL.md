@@ -122,7 +122,7 @@ If no reference folder exists, proceed directly to the conversational process.
 > **Tip for large or multi-team initiatives:** Drop scoping documents, business
 > cases, or other source materials into
 > `artefacts/[feature-slug]/reference/` and create a
-> `reference-index.md` there (template at `.github/templates/reference-index.md`).
+> `reference-index.md` there (template at `templates/reference-index.md`).
 > Discovery, /benefit-metric, and /definition will read them automatically.
 
 If no input has been provided, ask this first:
@@ -398,7 +398,7 @@ Every discovery artefact must contain all of the following sections, regardless 
 
 ## Output artefact
 
-Conforms to `.github/templates/discovery.md`.
+Conforms to `templates/discovery.md`.
 
 **Before saving, establish the timestamped feature slug:**
 

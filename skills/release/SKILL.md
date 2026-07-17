@@ -184,7 +184,7 @@ If 3:
 
 ## Output 1: Release notes — technical
 
-Conforms to `.github/templates/release-notes-technical.md`.
+Conforms to `templates/release-notes-technical.md`.
 Save to `artefacts/[feature]/release/[version]-release-notes-technical.md`.
 
 If `context.tools.monitoring` is configured: add a rollback trigger condition
@@ -198,7 +198,7 @@ in the header with the CI build URL.
 
 ## Output 2: Release notes — plain language
 
-Conforms to `.github/templates/release-notes-plain.md`.
+Conforms to `templates/release-notes-plain.md`.
 Save to `artefacts/[feature]/release/[version]-release-notes-plain.md`.
 
 Plain language rules:
@@ -212,7 +212,7 @@ Plain language rules:
 
 ## Output 3: Change request body
 
-Conforms to `.github/templates/change-request.md`.
+Conforms to `templates/change-request.md`.
 Save to `artefacts/[feature]/release/[version]-change-request.md`.
 
 Produce a complete change request ready to paste into the change management tool.
@@ -234,7 +234,7 @@ If `context.tools.ci_platform` is configured: link the CI build URL in the test 
 
 ## Output 4: Deployment checklist
 
-Conforms to `.github/templates/deployment-checklist.md`.
+Conforms to `templates/deployment-checklist.md`.
 Save to `artefacts/[feature]/release/[version]-deployment-checklist.md`.
 
 If `context.tools.monitoring` is configured: add the monitoring dashboard URL,

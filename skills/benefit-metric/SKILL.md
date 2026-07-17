@@ -244,7 +244,7 @@ If a metric fails any check, raise it before finalising:
 ## Output
 
 Save to `artefacts/[feature]/benefit-metric.md` using
-`.github/templates/benefit-metric.md`. Every field must be populated or explicitly
+`templates/benefit-metric.md`. Every field must be populated or explicitly
 explained as unknown.
 
 ---

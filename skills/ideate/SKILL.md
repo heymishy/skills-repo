@@ -649,7 +649,7 @@ The job story feeds directly into:
 
 ## Output
 
-Conforms to `.github/templates/ideation.md`.
+Conforms to `templates/ideation.md`.
 Save to `artefacts/[feature-slug]/research/ideation.md`.
 
 One file per session. If this is the second ideation session for the same

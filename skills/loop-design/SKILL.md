@@ -85,7 +85,7 @@ Include cadence and ownership for each feedback path.
 
 ## Output artefact
 
-Use template: `.github/templates/loop-design.md`
+Use template: `templates/loop-design.md`
 
 Save to:
 - Feature scope: `artefacts/[feature-slug]/loop-design.md`

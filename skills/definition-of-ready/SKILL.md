@@ -164,7 +164,7 @@ Read the discovery artefact directly from the file system (`artefacts/[feature]/
 
 > ❌ **H-GOV FAIL — Approved By section is missing**
 > The discovery artefact does not contain an `## Approved By` section.
-> Resolution: update the discovery artefact using the `.github/templates/discovery.md` template, which includes the required `## Approved By` section.
+> Resolution: update the discovery artefact using the `templates/discovery.md` template, which includes the required `## Approved By` section.
 
 **AC4 (FAIL — engineer-only entries):** All entries in `## Approved By` are engineering-role names (e.g. "Lead Engineer", "Tech Lead", "Developer"):
 
@@ -331,7 +331,7 @@ Produced when all hard blocks pass. Written into the DoR artefact.
 Conforms to the `## Coding Agent Instructions` section of `templates/definition-of-ready-checklist.md`.
 
 Save DoR artefact to `artefacts/[feature]/dor/[story-slug]-dor.md`
-conforming to `.github/templates/definition-of-ready-checklist.md`.
+conforming to `templates/definition-of-ready-checklist.md`.
 
 Save the approved Contract Proposal to `artefacts/[feature]/dor/[story-slug]-dor-contract.md`.
 
