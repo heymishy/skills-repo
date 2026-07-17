@@ -98,7 +98,7 @@ function _renderProductNew(login, error) {
   return _htmlShell.renderShell({ title: 'New product', bodyContent: body, user: { login: login }, active: 'dashboard', crumbs: ['Products', 'New'] });
 }
 
-function _renderProductView(productName, productId, features, login) {
+function _renderProductView(productName, productId, features, login, rollupRow) {
   var featuresHtml = features.length === 0
     ? '<p style="color:var(--muted);font-size:14px">No features yet.</p>'
     : '<ul style="list-style:none;padding:0;margin:0">' +
@@ -114,6 +114,13 @@ function _renderProductView(productName, productId, features, login) {
           '</li>';
         }).join('') +
       '</ul>';
+  var dodStatusHtml = rollupRow
+    ? '<div style="margin-top:12px;font-size:13px;color:var(--muted)">' +
+        Object.entries(JSON.parse(rollupRow.dod_status_counts || '{}')).map(function(entry) {
+          return _escapeHtml(entry[0]) + ': ' + _escapeHtml(String(entry[1]));
+        }).join(' &middot; ') +
+      '</div>'
+    : '';
   var body = '<div style="max-width:720px">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">' +
       '<div>' +
@@ -128,6 +135,7 @@ function _renderProductView(productName, productId, features, login) {
         '</form>' +
       '</div>' +
     '</div>' +
+    dodStatusHtml +
     featuresHtml +
     '<script>' +
     'function pshConfirmDeleteProduct(id){' +
@@ -319,6 +327,10 @@ async function handleGetProductView(req, res, _next, pool) {
     return;
   }
   var productName = prodRow.name;
+  var rollupRow = (await _pool.query(
+    'SELECT dod_status_counts, synced_at FROM product_rollups WHERE product_id = $1',
+    [productId]
+  )).rows[0] || null;
   var rows = (await _pool.query(
     "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1",
     [productId]
@@ -334,7 +346,7 @@ async function handleGetProductView(req, res, _next, pool) {
   if (res.json) {
     res.json({ features: features });
   } else {
-    var html = _renderProductView(productName, productId, features, login);
+    var html = _renderProductView(productName, productId, features, login, rollupRow);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
