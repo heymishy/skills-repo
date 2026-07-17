@@ -6,14 +6,14 @@ const path = require('path');
 const REPO_ROOT = path.join(__dirname, '..');
 const COPILOT_INSTRUCTIONS = path.join(REPO_ROOT, '.github', 'copilot-instructions.md');
 const SKILL_FILES = {
-  checkpoint: path.join(REPO_ROOT, '.github', 'skills', 'checkpoint', 'SKILL.md'),
-  definition: path.join(REPO_ROOT, '.github', 'skills', 'definition', 'SKILL.md'),
-  review: path.join(REPO_ROOT, '.github', 'skills', 'review', 'SKILL.md'),
-  'test-plan': path.join(REPO_ROOT, '.github', 'skills', 'test-plan', 'SKILL.md'),
-  'definition-of-ready': path.join(REPO_ROOT, '.github', 'skills', 'definition-of-ready', 'SKILL.md'),
-  tdd: path.join(REPO_ROOT, '.github', 'skills', 'tdd', 'SKILL.md'),
-  'systematic-debugging': path.join(REPO_ROOT, '.github', 'skills', 'systematic-debugging', 'SKILL.md'),
-  'implementation-review': path.join(REPO_ROOT, '.github', 'skills', 'implementation-review', 'SKILL.md'),
+  checkpoint: path.join(REPO_ROOT, 'skills', 'checkpoint', 'SKILL.md'),
+  definition: path.join(REPO_ROOT, 'skills', 'definition', 'SKILL.md'),
+  review: path.join(REPO_ROOT, 'skills', 'review', 'SKILL.md'),
+  'test-plan': path.join(REPO_ROOT, 'skills', 'test-plan', 'SKILL.md'),
+  'definition-of-ready': path.join(REPO_ROOT, 'skills', 'definition-of-ready', 'SKILL.md'),
+  tdd: path.join(REPO_ROOT, 'skills', 'tdd', 'SKILL.md'),
+  'systematic-debugging': path.join(REPO_ROOT, 'skills', 'systematic-debugging', 'SKILL.md'),
+  'implementation-review': path.join(REPO_ROOT, 'skills', 'implementation-review', 'SKILL.md'),
 };
 
 let passed = 0;

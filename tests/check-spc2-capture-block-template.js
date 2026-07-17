@@ -1,14 +1,14 @@
 'use strict';
 
 // check-spc2-capture-block-template.js
-// Governs spc.2: .github/templates/capture-block.md structure
+// Governs spc.2: templates/capture-block.md structure
 // Tests T1–T12 from artefacts/2026-04-18-skill-performance-capture/test-plans/spc.2-test-plan.md
 // Plain Node.js — no external dependencies.
 
 const fs = require('fs');
 const path = require('path');
 
-const TEMPLATE_PATH = path.join(__dirname, '..', '.github', 'templates', 'capture-block.md');
+const TEMPLATE_PATH = path.join(__dirname, '..', 'templates', 'capture-block.md');
 
 let passed = 0;
 let failed = 0;

@@ -55,7 +55,7 @@ function fail(name, reason) {
   failures.push(name + ': ' + reason);
 }
 
-const revEngSkill = path.join(root, '.github', 'skills', 'reverse-engineer', 'SKILL.md');
+const revEngSkill = path.join(root, 'skills', 'reverse-engineer', 'SKILL.md');
 
 function getContent() {
   if (!fs.existsSync(revEngSkill)) {
@@ -71,7 +71,7 @@ console.log('\n[rrc.1] /reverse-engineer Output 9 — discovery-seed.md\n');
   const name = 'rrc1-output-9-instruction-present';
   const content = getContent();
   if (!content) {
-    fail(name, '.github/skills/reverse-engineer/SKILL.md not found');
+    fail(name, 'skills/reverse-engineer/SKILL.md not found');
     return;
   }
   if (/Output 9/i.test(content)) {
@@ -86,7 +86,7 @@ console.log('\n[rrc.1] /reverse-engineer Output 9 — discovery-seed.md\n');
   const name = 'rrc1-discovery-seed-filename-specified';
   const content = getContent();
   if (!content) {
-    fail(name, '.github/skills/reverse-engineer/SKILL.md not found');
+    fail(name, 'skills/reverse-engineer/SKILL.md not found');
     return;
   }
   if (/discovery-seed\.md/i.test(content)) {
@@ -101,7 +101,7 @@ console.log('\n[rrc.1] /reverse-engineer Output 9 — discovery-seed.md\n');
   const name = 'rrc1-discovery-seed-problem-framing-section';
   const content = getContent();
   if (!content) {
-    fail(name, '.github/skills/reverse-engineer/SKILL.md not found');
+    fail(name, 'skills/reverse-engineer/SKILL.md not found');
     return;
   }
   if (/problem.?framing/i.test(content)) {
@@ -116,7 +116,7 @@ console.log('\n[rrc.1] /reverse-engineer Output 9 — discovery-seed.md\n');
   const name = 'rrc1-discovery-seed-parity-required-constraints';
   const content = getContent();
   if (!content) {
-    fail(name, '.github/skills/reverse-engineer/SKILL.md not found');
+    fail(name, 'skills/reverse-engineer/SKILL.md not found');
     return;
   }
   // Must reference PARITY REQUIRED within the Output 9 / discovery-seed format context
@@ -140,7 +140,7 @@ console.log('\n[rrc.1] /reverse-engineer Output 9 — discovery-seed.md\n');
   const name = 'rrc1-discovery-seed-personas-section';
   const content = getContent();
   if (!content) {
-    fail(name, '.github/skills/reverse-engineer/SKILL.md not found');
+    fail(name, 'skills/reverse-engineer/SKILL.md not found');
     return;
   }
   // Check personas appears in the context of discovery-seed / Output 9
@@ -162,7 +162,7 @@ console.log('\n[rrc.1] /reverse-engineer Output 9 — discovery-seed.md\n');
   const name = 'rrc1-output-9-gated-not-for-defer';
   const content = getContent();
   if (!content) {
-    fail(name, '.github/skills/reverse-engineer/SKILL.md not found');
+    fail(name, 'skills/reverse-engineer/SKILL.md not found');
     return;
   }
   // Find the DEFER section and check it does not reference Output 9
@@ -185,14 +185,14 @@ console.log('\n[rrc.1] /reverse-engineer Output 9 — discovery-seed.md\n');
   const name = 'rrc1-discovery-seed-maps-to-discovery-template';
   const content = getContent();
   if (!content) {
-    fail(name, '.github/skills/reverse-engineer/SKILL.md not found');
+    fail(name, 'skills/reverse-engineer/SKILL.md not found');
     return;
   }
   // At minimum the problem framing section should correspond to the discovery template
   // The discovery template has "Problem framing" and "Constraints" sections
   // We already tested problem framing; here we check the SKILL.md explicitly
   // states the seed is structured to match the discovery template (or uses template section names)
-  const discoveryTemplate = path.join(root, '.github', 'templates', 'discovery.md');
+  const discoveryTemplate = path.join(root, 'templates', 'discovery.md');
   let templateSections = [];
   if (fs.existsSync(discoveryTemplate)) {
     const tmpl = fs.readFileSync(discoveryTemplate, 'utf8');
@@ -226,7 +226,7 @@ console.log('\n[rrc.1] /reverse-engineer Output 9 — discovery-seed.md\n');
   const name = 'rrc1-verify-pass-updates-output-9';
   const content = getContent();
   if (!content) {
-    fail(name, '.github/skills/reverse-engineer/SKILL.md not found');
+    fail(name, 'skills/reverse-engineer/SKILL.md not found');
     return;
   }
   // Find the VERIFY pass section
@@ -248,7 +248,7 @@ console.log('\n[rrc.1] /reverse-engineer Output 9 — discovery-seed.md\n');
   const name = 'rrc1-skill-contract-markers-present';
   const content = getContent();
   if (!content) {
-    fail(name, '.github/skills/reverse-engineer/SKILL.md not found');
+    fail(name, 'skills/reverse-engineer/SKILL.md not found');
     return;
   }
   const missingMarkers = [];
@@ -269,7 +269,7 @@ console.log('\n[rrc.1] /reverse-engineer Output 9 — discovery-seed.md\n');
   const name = 'rrc1-skill-line-count-within-nfr';
   const content = getContent();
   if (!content) {
-    fail(name, '.github/skills/reverse-engineer/SKILL.md not found');
+    fail(name, 'skills/reverse-engineer/SKILL.md not found');
     return;
   }
   const lineCount = content.split('\n').length;

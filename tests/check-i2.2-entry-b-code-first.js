@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const SKILL_PATH = path.join(__dirname, '..', '.github', 'skills', 'orient', 'SKILL.md');
+const SKILL_PATH = path.join(__dirname, '..', 'skills', 'orient', 'SKILL.md');
 
 let passed = 0;
 let failed = 0;

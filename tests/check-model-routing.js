@@ -24,7 +24,7 @@ const path = require('path');
 
 const ROOT        = path.join(__dirname, '..');
 const SWEEP_PATH  = path.join(ROOT, 'scripts', 'run-model-sweep.js');
-const SKILLS_DIR  = path.join(ROOT, '.github', 'skills');
+const SKILLS_DIR  = path.join(ROOT, 'skills');
 
 let passed = 0;
 let failed = 0;
@@ -108,7 +108,7 @@ console.log('\n[model-routing] T4 — Every skill in MODEL_ROUTING has an EVAL.m
       const evalPath = path.join(SKILLS_DIR, skill, 'EVAL.md');
       assert(
         fs.existsSync(evalPath),
-        `T4: '${skill}' has EVAL.md at .github/skills/${skill}/EVAL.md`,
+        `T4: '${skill}' has EVAL.md at skills/${skill}/EVAL.md`,
         `Missing EVAL.md — routing only applies to skills with evaluation specs`
       );
     }

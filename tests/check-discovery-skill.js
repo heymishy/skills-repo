@@ -47,7 +47,7 @@ function fail(name, reason) {
   failures.push(name + ': ' + reason);
 }
 
-const discoverySkill = path.join(root, '.github', 'skills', 'discovery', 'SKILL.md');
+const discoverySkill = path.join(root, 'skills', 'discovery', 'SKILL.md');
 
 function getContent() {
   if (!fs.existsSync(discoverySkill)) {
@@ -61,7 +61,7 @@ function getContent() {
   const name = 'discovery-skill-has-path-a-ea-registry-block';
   const content = getContent();
   if (!content) {
-    fail(name, '.github/skills/discovery/SKILL.md not found');
+    fail(name, 'skills/discovery/SKILL.md not found');
     return;
   }
   // Path A should reference ea_registry_authoritative: true
@@ -77,7 +77,7 @@ function getContent() {
   const name = 'discovery-skill-path-a-references-blast-radius';
   const content = getContent();
   if (!content) {
-    fail(name, '.github/skills/discovery/SKILL.md not found');
+    fail(name, 'skills/discovery/SKILL.md not found');
     return;
   }
   if (/blast.?radius|getBlastRadius/i.test(content)) {
@@ -92,7 +92,7 @@ function getContent() {
   const name = 'discovery-skill-has-path-b-no-registry-block';
   const content = getContent();
   if (!content) {
-    fail(name, '.github/skills/discovery/SKILL.md not found');
+    fail(name, 'skills/discovery/SKILL.md not found');
     return;
   }
   if (/Path B/i.test(content) || /false.*existing behaviour|false.*no change/i.test(content)) {
@@ -107,7 +107,7 @@ function getContent() {
   const name = 'discovery-skill-has-graceful-missing-entry-message';
   const content = getContent();
   if (!content) {
-    fail(name, '.github/skills/discovery/SKILL.md not found');
+    fail(name, 'skills/discovery/SKILL.md not found');
     return;
   }
   if (/no EA registry entry found/i.test(content) || /no.*entry found.*system/i.test(content)) {
@@ -122,7 +122,7 @@ function getContent() {
   const name = 'discovery-skill-path-a-read-only-constraint';
   const content = getContent();
   if (!content) {
-    fail(name, '.github/skills/discovery/SKILL.md not found');
+    fail(name, 'skills/discovery/SKILL.md not found');
     return;
   }
   if (/read.?only|ADR.007|no write/i.test(content)) {

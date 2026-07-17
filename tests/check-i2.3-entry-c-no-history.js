@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
-const skillPath = path.join(root, '.github/skills/orient/SKILL.md');
+const skillPath = path.join(root, 'skills/orient/SKILL.md');
 const results = { passed: 0, failed: 0 };
 
 function test(name, fn) {

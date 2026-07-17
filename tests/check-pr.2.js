@@ -1,13 +1,13 @@
 'use strict';
 // check-pr.2.js — AC assertions for pr.2: conversational scoring across WSJF, RICE, MoSCoW
-// Tests read .github/skills/prioritise/SKILL.md and assert required text patterns.
+// Tests read skills/prioritise/SKILL.md and assert required text patterns.
 // Exit 0 on pass, 1 on any failure.
 
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const SKILL_PATH = path.join(__dirname, '..', '.github', 'skills', 'prioritise', 'SKILL.md');
+const SKILL_PATH = path.join(__dirname, '..', 'skills', 'prioritise', 'SKILL.md');
 
 let passed = 0;
 let failed = 0;

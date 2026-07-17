@@ -1060,7 +1060,7 @@ console.log('\n  AC5 — Proposal deferral');
 console.log('\n  AC6 — improvement-agent SKILL.md');
 
 (function testSkillMdDiscoverableTriggerPhrases() {
-  var skillMdPath = path.join(root, '.github', 'skills', 'improvement-agent', 'SKILL.md');
+  var skillMdPath = path.join(root, 'skills', 'improvement-agent', 'SKILL.md');
 
   if (!fs.existsSync(skillMdPath)) {
     fail('skill-md-discoverable-trigger-phrases',
@@ -1094,7 +1094,7 @@ console.log('\n  AC6 — improvement-agent SKILL.md');
 }());
 
 (function testSkillMdContainsAll8Sections() {
-  var skillMdPath = path.join(root, '.github', 'skills', 'improvement-agent', 'SKILL.md');
+  var skillMdPath = path.join(root, 'skills', 'improvement-agent', 'SKILL.md');
 
   if (!fs.existsSync(skillMdPath)) {
     fail('skill-md-contains-all-8-sections',
@@ -1183,7 +1183,7 @@ console.log('\n  NFR — Human oversight, traceability, immutability');
   }
 
   // Also verify the SKILL.md states reviewer must be human
-  var skillMdPath = path.join(root, '.github', 'skills', 'improvement-agent', 'SKILL.md');
+  var skillMdPath = path.join(root, 'skills', 'improvement-agent', 'SKILL.md');
   if (fs.existsSync(skillMdPath)) {
     var skillContent = fs.readFileSync(skillMdPath, 'utf8');
     var mentionsHuman = skillContent.toLowerCase().includes('human identity') ||
