@@ -158,6 +158,24 @@ async function main() {
     });
   });
 
+  // T6: server.js wires registerSelfAsProduct into startup, using the
+  // GITHUB_REPO_OWNER/GITHUB_REPO_NAME env vars already established by
+  // sign-off.js for "this platform's own repo", plus a new PLATFORM_TENANT_ID
+  queue.push(function() {
+    console.log('\n[pr-s1] T6 -- server.js wires registerSelfAsProduct into startup');
+    return test('server.js: requires platform-self-registration and calls registerSelfAsProduct', function() {
+      var fs = require('fs');
+      var SERVER_PATH = path.resolve(__dirname, '../src/web-ui/server.js');
+      var src = fs.readFileSync(SERVER_PATH, 'utf8');
+      assert.ok(/require\(['"]\.\/modules\/platform-self-registration['"]\)/.test(src),
+        "server.js must require('./modules/platform-self-registration')");
+      assert.ok(/registerSelfAsProduct\(\s*_creditsPool/.test(src),
+        'server.js must call registerSelfAsProduct(_creditsPool, ...) using the shared products pool');
+      assert.ok(/PLATFORM_TENANT_ID/.test(src),
+        'server.js must read the PLATFORM_TENANT_ID env var for the self-registration tenantId');
+    });
+  });
+
   for (var i = 0; i < queue.length; i++) {
     await queue[i]();
   }
