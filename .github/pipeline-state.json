@@ -11508,9 +11508,9 @@
             {
               "slug": "pr-s1",
               "name": "Designate Product as a named primitive and register skills-framework as a product",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-07-16T22:28:40.820Z",
+              "updatedAt": "2026-07-17T00:11:37.596Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -11522,7 +11522,39 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Write registerSelfAsProduct and its creation/idempotency tests (AC1)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Wire registerSelfAsProduct into server.js startup",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "AC2 integration test -- /products/:id renders skills-framework's product like any other",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Add \"Product\" to the primitives list (AC3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "AC5 -- confirm adapter wiring not applicable to this story",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-16-product-rollup/plans/pr-s1-plan.md"
+                }
+              ]
             },
             {
               "slug": "pr-s2",
