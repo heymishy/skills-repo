@@ -1,323 +1,285 @@
+// check-kanban-consolidation.js — AC verification tests for kbc-s1
+// Tests U1-U9 (unit), IT1-IT3 (integration), 2 NFR tests
+// Story: artefacts/2026-07-19-kanban-consolidation/stories/kbc-s1.md
+// No external dependencies — Node.js built-ins only.
+
 'use strict';
 
-/**
- * Test suite for kbc-s1: Consolidate kanban rendering into one shared pattern
- * All 14 tests from test-plan: U1-U9 (unit), IT1-IT3 (integration), 2 NFR
- */
+const fs = require('fs');
+const path = require('path');
+const ROOT = path.join(__dirname, '..');
 
-const assert = require('assert');
+let passed = 0;
+let failed = 0;
+
+function assert(condition, label) {
+  if (condition) { console.log('  ✓ ' + label); passed++; }
+  else           { console.log('  ✗ ' + label); failed++; }
+}
+
 const { renderKanban } = require('../src/web-ui/views/kanban-view');
+const {
+  buildProductKanbanColumns,
+  buildOrgKanbanColumns,
+  buildTenantKanbanColumns,
+  handleGetDashboard,
+  STAGE_COLUMNS
+} = require('../src/web-ui/routes/products');
 
-describe('kbc-s1: Kanban consolidation', () => {
+function makeMockRes() {
+  return {
+    _statusCode: null, _headers: {}, _body: '',
+    writeHead(code, headers) { this._statusCode = code; this._headers = headers || {}; },
+    end(body) { this._body = body || ''; }
+  };
+}
 
-  // =========== UNIT TESTS ===========
+function makeMockPool(rowsByQuery) {
+  return {
+    query: async function(sql, params) {
+      return { rows: rowsByQuery(sql, params) };
+    }
+  };
+}
 
-  describe('U1 — shared renderer accepts generic columns/cards shape', () => {
-    it('renders HTML board from generic {columns, stage, cards} structure', () => {
-      const genericFixture = {
-        columns: [
-          {
-            stage: 'backlog',
-            cards: [
-              { id: 'journey-1', title: 'Build feature X', health: 'on-track' },
-              { id: 'journey-2', title: 'Fix bug Y', health: 'at-risk' }
-            ]
-          },
-          {
-            stage: 'in-progress',
-            cards: [
-              { id: 'journey-3', title: 'Refactor module Z', health: 'on-track' }
-            ]
-          }
-        ]
-      };
+async function runTests() {
 
-      const result = renderKanban(genericFixture);
+  console.log('\nU1 -- shared renderer accepts a generic columns/cards shape');
+  {
+    const fixture = {
+      columns: [
+        { stage: STAGE_COLUMNS[0], cards: [
+          { id: 'journey-1', title: 'Build feature X', health: 'green' },
+          { id: 'journey-2', title: 'Fix bug Y', health: 'amber' }
+        ] },
+        { stage: STAGE_COLUMNS[1], cards: [
+          { id: 'journey-3', title: 'Refactor module Z', health: 'green' }
+        ] }
+      ]
+    };
+    const html = renderKanban(fixture);
+    assert(typeof html === 'string', 'returns HTML string');
+    assert(html.includes('<div'), 'contains div element');
+    assert(html.includes(STAGE_COLUMNS[0]), 'includes stage name');
+    assert(html.includes('Build feature X'), 'includes card title');
+    assert(!html.includes('undefined'), 'no undefined values leak into markup');
+  }
 
-      assert(typeof result === 'string', 'should return HTML string');
-      assert(result.includes('<div'), 'should contain div element');
-      assert(result.includes('kanban') || result.includes('board'), 'should indicate kanban/board');
-      assert(result.includes('backlog'), 'should include stage name');
-      assert(result.includes('Build feature X'), 'should include card title');
-      assert(!result.includes('undefined'), 'should not have undefined values');
-      assert(!result.includes('null'), 'should not have null values');
-    });
-  });
+  console.log('\nU2 -- product-scope data-fetch feeds the shared renderer correctly');
+  {
+    const rows = [
+      { journey_id: 'j1', feature_slug: 'checkout-flow', stage: 'discovery', health: 'green' },
+      { journey_id: 'j2', feature_slug: 'billing-portal', stage: 'review', health: 'amber' }
+    ];
+    const columns = buildProductKanbanColumns(rows);
+    assert(Array.isArray(columns), 'returns an array of columns');
+    assert(columns.length === STAGE_COLUMNS.length, 'has one column per STAGE_COLUMNS entry');
+    const discoveryCol = columns.find(c => c.stage === 'discovery');
+    assert(discoveryCol.cards.length === 1, 'journey placed under its correct stage column');
+    assert(discoveryCol.cards[0].title === 'checkout-flow', 'card title matches feature_slug');
+    assert(discoveryCol.cards[0].healthLabel === 'Healthy', 'card carries health label');
+    const html = renderKanban({ columns });
+    assert(html.includes('checkout-flow'), 'renders product journey title');
+    assert(html.includes('billing-portal'), 'renders second product journey title');
+  }
 
-  describe('U2 — product-scope data-fetch feeds shared renderer', () => {
-    it('should return columns with stage and cards from product journeys', () => {
-      // Test that buildProductKanbanColumns correctly structures data
-      const productFixture = {
-        id: 'prod-1',
-        journeys: [
-          { id: 'j1', title: 'Journey 1', stage: 'backlog', health: 'on-track' },
-          { id: 'j2', title: 'Journey 2', stage: 'in-progress', health: 'at-risk' }
-        ]
-      };
+  console.log('\nU3 -- org-scope data-fetch feeds the shared renderer correctly');
+  {
+    const groups = [
+      { productId: 'p1', productName: 'Acme', journeys: [
+        { journey_id: 'j1', feature_slug: 'checkout', stage: 'discovery' }
+      ] },
+      { productId: 'p2', productName: 'Widgets', journeys: [
+        { journey_id: 'j2', feature_slug: 'inventory', stage: 'discovery' }
+      ] }
+    ];
+    const columns = buildOrgKanbanColumns(groups);
+    const discoveryCol = columns.find(c => c.stage === 'discovery');
+    assert(discoveryCol.cards.length === 2, 'features from both products grouped correctly');
+    assert(discoveryCol.cards.some(c => c.title.includes('Acme')), 'card title includes first product name');
+    assert(discoveryCol.cards.some(c => c.title.includes('Widgets')), 'card title includes second product name');
+    const html = renderKanban({ columns });
+    assert(html.includes('Acme'), 'renders first product feature via same renderer as U2');
+    assert(html.includes('Widgets'), 'renders second product feature via same renderer as U2');
+  }
 
-      // This will be implemented via buildProductKanbanColumns
-      // For now, just verify the data shape works with renderKanban
-      const columns = [
-        { stage: 'backlog', cards: [{ id: 'j1', title: 'Journey 1', health: 'on-track' }] },
-        { stage: 'in-progress', cards: [{ id: 'j2', title: 'Journey 2', health: 'at-risk' }] }
-      ];
-
-      const result = renderKanban({ columns });
-      assert(result.includes('Journey 1'), 'should render product journey');
-    });
-  });
-
-  describe('U3 — org-scope data-fetch feeds shared renderer', () => {
-    it('should render org kanban with features grouped by stage', () => {
-      const columns = [
-        { stage: 'backlog', cards: [{ id: 'f1', title: 'Org Feature 1', health: 'on-track' }] },
-        { stage: 'done', cards: [{ id: 'f2', title: 'Org Feature 2', health: 'on-track' }] }
-      ];
-
-      const result = renderKanban({ columns });
-      assert(result.includes('Org Feature'), 'should render org feature');
-    });
-  });
-
-  describe('U4 — tenant-scope aggregates across all products', () => {
-    it('should merge journeys from multiple tenant products', () => {
-      const tenantFixture = {
-        id: 'tenant-1',
-        products: [
-          {
-            id: 'prod-1',
-            journeys: [
-              { id: 'j1', title: 'J1-prod1', stage: 'backlog', health: 'on-track' },
-              { id: 'j2', title: 'J2-prod1', stage: 'backlog', health: 'on-track' }
-            ]
-          },
-          {
-            id: 'prod-2',
-            journeys: [
-              { id: 'j3', title: 'J3-prod2', stage: 'in-progress', health: 'at-risk' }
-            ]
-          }
-        ]
-      };
-
-      // This test verifies aggregation works across 2+ products
-      // Implementation detail: buildTenantKanbanColumns will be tested here
-      const allCards = [];
-      for (const product of tenantFixture.products) {
-        for (const journey of product.journeys) {
-          allCards.push({
-            id: journey.id,
-            title: journey.title,
-            stage: journey.stage,
-            health: journey.health
-          });
+  console.log('\nU4 -- tenant-scope data-fetch aggregates across all of a tenant\'s products');
+  {
+    const pool = makeMockPool(function(sql, params) {
+      if (sql.includes('FROM products')) {
+        return [
+          { product_id: 'p1', name: 'Product One', created_at: '2026-01-01' },
+          { product_id: 'p2', name: 'Product Two', created_at: '2026-01-02' }
+        ];
+      }
+      if (sql.includes('FROM journeys')) {
+        if (params[0] === 'p1') {
+          return [
+            { journey_id: 'j1', feature_slug: 'p1-feature-a', stage: 'discovery' },
+            { journey_id: 'j2', feature_slug: 'p1-feature-b', stage: 'discovery' }
+          ];
+        }
+        if (params[0] === 'p2') {
+          return [
+            { journey_id: 'j3', feature_slug: 'p2-feature-a', stage: 'review' }
+          ];
         }
       }
-
-      // Should have 3 total cards from both products
-      assert.strictEqual(allCards.length, 3, 'should aggregate journeys from 2 products');
-
-      const backlogCards = allCards.filter(c => c.stage === 'backlog');
-      assert.strictEqual(backlogCards.length, 2, 'should have 2 cards in backlog from prod1');
+      return [];
     });
-  });
+    const columns = await buildTenantKanbanColumns(pool, 'tenant-1');
+    const allCards = columns.reduce((acc, c) => acc.concat(c.cards), []);
+    assert(allCards.length === 3, 'aggregates journeys from BOTH products (not scoped to only the first)');
+    const discoveryCol = columns.find(c => c.stage === 'discovery');
+    assert(discoveryCol.cards.length === 2, 'both product-1 journeys appear in discovery column');
+    const reviewCol = columns.find(c => c.stage === 'review');
+    assert(reviewCol.cards.length === 1, 'product-2 journey appears in review column');
+    assert(reviewCol.cards[0].title.includes('Product Two'), 'product-2 card is correctly attributed');
+  }
 
-  describe('U5 — tenant aggregate feeds shared renderer', () => {
-    it('should render tenant columns via shared renderer', () => {
-      const columns = [
-        {
-          stage: 'backlog',
-          cards: [
-            { id: 'j1', title: 'J1', health: 'on-track' },
-            { id: 'j2', title: 'J2', health: 'on-track' }
-          ]
-        },
-        {
-          stage: 'in-progress',
-          cards: [
-            { id: 'j3', title: 'J3', health: 'at-risk' }
-          ]
-        }
-      ];
-
-      const result = renderKanban({ columns });
-      assert(result.includes('J1'), 'should render first journey');
-      assert(result.includes('J3'), 'should render journey from second product');
-    });
-  });
-
-  describe('U6 — renderKanban existing rendering behaviour preserved', () => {
-    it('should preserve rendering of card elements', () => {
-      const fixture = {
-        columns: [
-          {
-            stage: 'test',
-            cards: [
-              { id: 'c1', title: 'Card Title', health: 'on-track' }
-            ]
-          }
-        ]
-      };
-
-      const result = renderKanban(fixture);
-      assert(result.includes('Card Title'), 'should preserve title rendering');
-      assert(result.includes('test'), 'should preserve stage rendering');
-    });
-  });
-
-  describe('U7 — ideas concept is optional in generalized renderer', () => {
-    it('should render correctly without ideas array', () => {
-      const fixture = {
-        columns: [
-          { stage: 'ready', cards: [{ id: 'c1', title: 'Card 1', health: 'on-track' }] }
-        ]
-        // note: no ideas field
-      };
-
-      const result = renderKanban(fixture);
-      assert(result.includes('Card 1'), 'should render card without ideas');
-      assert(!result.includes('undefined'), 'should not have undefined from missing ideas');
-    });
-  });
-
-  describe('U8 — no route references removed handlers', () => {
-    it('server.js should not reference removed route handlers', () => {
-      const fs = require('fs');
-      const serverJs = fs.readFileSync('src/web-ui/server.js', 'utf8');
-
-      assert(!serverJs.includes('handleGetFeatures'), 'should not reference handleGetFeatures');
-      assert(!serverJs.includes("'/features'"), 'should not reference /features route');
-      assert(!serverJs.includes("'/actions'"), 'should not reference /actions route');
-      assert(!serverJs.includes("'/status'"), 'should not reference /status route');
-    });
-  });
-
-  describe('U9 — no test references removed routes', () => {
-    it('tests should not exercise removed /features, /actions, /status routes', () => {
-      const fs = require('fs');
-      const { execSync } = require('child_process');
-
-      try {
-        const grep = execSync('grep -r "/features\\|/actions\\|/status" tests/ --include="*.js" 2>/dev/null | grep -v "check-kanban" || echo ""', { encoding: 'utf8' });
-        const lines = grep.split('\n').filter(line => line.trim() && !line.includes('removed'));
-
-        // Should have no active references to removed routes in other tests
-        // (Some old test files for /features may still exist but should be deleted or migrated)
-      } catch (_) {
-        // grep returns exit code 1 if no matches found, which is expected
+  console.log('\nU5 -- tenant-scope aggregate feeds the shared renderer correctly');
+  {
+    const pool = makeMockPool(function(sql, params) {
+      if (sql.includes('FROM products')) {
+        return [{ product_id: 'p1', name: 'Solo Product', created_at: '2026-01-01' }];
       }
+      return [{ journey_id: 'j1', feature_slug: 'solo-feature', stage: 'discovery' }];
     });
-  });
+    const columns = await buildTenantKanbanColumns(pool, 'tenant-2');
+    const html = renderKanban({ columns });
+    assert(html.includes('solo-feature'), 'tenant aggregate renders via same renderer as U2/U3');
+  }
 
-  // =========== INTEGRATION TESTS ===========
+  console.log('\nU6 -- renderKanban\'s existing rendering behaviour, generalised, still passes its own prior test cases');
+  {
+    const legacyFixture = {
+      features: [
+        { slug: '2026-01-01-my-feature', title: 'My Feature', stage: 'discovery', health: 'green' }
+      ],
+      ideas: []
+    };
+    const html = renderKanban(legacyFixture);
+    assert(html.includes('My Feature'), 'legacy {features, ideas} signature still renders correctly');
+    assert(html.includes('kb-lane'), 'legacy lane-based structure preserved');
+  }
 
-  describe('IT1 — GET product kanban returns real HTML', () => {
-    it('should return HTML not JSON from product kanban handler', () => {
-      // This will be tested by updating handleGetProductKanban to return HTML
-      // Mock would verify: res.contentType('text/html') and HTML response
-      const mockReq = {
-        params: { id: 'prod-1' },
-        session: { tenantId: 'tenant-1' }
-      };
+  console.log('\nU7 -- "ideas" concept is optional in the generalised renderer');
+  {
+    const fixture = { columns: [{ stage: 'discovery', cards: [{ id: 'c1', title: 'Card 1', health: 'green' }] }] };
+    let threw = false;
+    let html = '';
+    try { html = renderKanban(fixture); } catch (e) { threw = true; }
+    assert(!threw, 'does not throw when ideas is absent');
+    assert(html.includes('Card 1'), 'renders correctly with no ideas section');
+    assert(!html.includes('undefined'), 'no broken ideas block leaks into markup');
+  }
 
-      // Verification: handler should set Content-Type: text/html
-      // and return HTML from renderKanban, not JSON
-      const expectedHtmlIndicators = ['<div', 'kanban', 'board'];
-      const expectedNotJson = ['{ "columns"'];
+  console.log('\nU8 -- no route in server.js references the removed handlers');
+  {
+    const serverJs = fs.readFileSync(path.join(ROOT, 'src/web-ui/server.js'), 'utf8');
+    assert(!serverJs.includes('handleGetFeatures'), 'no reference to handleGetFeatures');
+    assert(!/pathname === '\/features'/.test(serverJs), 'no /features route registration');
+    assert(!/pathname === '\/actions'/.test(serverJs), 'no /actions route registration');
+    assert(!/pathname === '\/status'/.test(serverJs), 'no bare /status route registration');
+    assert(!serverJs.includes('handleGetStatus'), 'no reference to handleGetStatus');
+    assert(!serverJs.includes('handleGetStatusExport'), 'no reference to handleGetStatusExport');
+    assert(!serverJs.includes('handleGetActionsHtml'), 'no reference to handleGetActionsHtml');
+    assert(!serverJs.includes('routes/status'), 'no require of routes/status');
+  }
 
-      // Test will verify these in actual response
-      assert.ok(expectedHtmlIndicators, 'should return HTML');
+  console.log('\nU9 -- no remaining test file exercises the removed routes');
+  {
+    const testsDir = path.join(ROOT, 'tests');
+    const testFiles = fs.readdirSync(testsDir).filter(f => /^check-.*\.js$/.test(f) && f !== 'check-kanban-consolidation.js');
+    let dangling = [];
+    testFiles.forEach(function(f) {
+      const content = fs.readFileSync(path.join(testsDir, f), 'utf8');
+      if (/require\(['"].*routes\/status['"]\)/.test(content)) dangling.push(f + ' (requires routes/status)');
+      if (/handleGetFeatures\(/.test(content)) dangling.push(f + ' (calls handleGetFeatures)');
     });
-  });
+    assert(dangling.length === 0, 'no test file requires routes/status or calls handleGetFeatures (found: ' + dangling.join(', ') + ')');
+  }
 
-  describe('IT2 — GET org kanban returns real HTML', () => {
-    it('should return HTML not JSON from org kanban handler', () => {
-      const mockReq = {
-        params: { id: 'org-1' },
-        session: { tenantId: 'tenant-1' }
-      };
+  console.log('\nIT1 -- GET a product\'s kanban view returns real HTML');
+  {
+    const columns = buildProductKanbanColumns([{ journey_id: 'j1', feature_slug: 'my-feature', stage: 'discovery', health: 'green' }]);
+    const html = renderKanban({ columns });
+    assert(html.includes('<div'), 'product board renders real HTML markup');
+    assert(html.includes('my-feature'), 'product board includes the journey title');
+    assert(!/^\s*\{/.test(html.trim()), 'response body is not raw JSON');
+  }
 
-      // Verification: handler should set Content-Type: text/html
-      assert.ok(true, 'org kanban should return HTML');
-    });
-  });
+  console.log('\nIT2 -- GET an org\'s kanban view returns real HTML');
+  {
+    const groups = [{ productId: 'p1', productName: 'Acme', journeys: [{ journey_id: 'j1', feature_slug: 'checkout', stage: 'discovery' }] }];
+    const columns = buildOrgKanbanColumns(groups);
+    const html = renderKanban({ columns });
+    assert(html.includes('<div'), 'org board renders real HTML markup');
+    assert(html.includes('Acme'), 'org board includes product-attributed feature');
+    assert(!/^\s*\{/.test(html.trim()), 'response body is not raw JSON');
+  }
 
-  describe('IT3 — GET /dashboard?view=board returns aggregated tenant board', () => {
-    it('should return HTML board aggregating all tenant products', () => {
-      const mockReq = {
-        query: { view: 'board' },
-        session: { tenantId: 'tenant-1' }
-      };
-
-      // Verification: when view=board, aggregate journeys across all products
-      // Return HTML not JSON
-      assert.ok(true, 'tenant board should aggregate and return HTML');
-    });
-  });
-
-  // =========== NFR TESTS ===========
-
-  describe('NFR Security — Board escapes all text content', () => {
-    it('should escape HTML special chars in card titles', () => {
-      const fixture = {
-        columns: [
-          {
-            stage: 'test',
-            cards: [
-              { id: 'c1', title: '<script>alert("xss")</script>', health: 'on-track' },
-              { id: 'c2', title: '& " < > \'', health: 'on-track' }
-            ]
-          }
-        ]
-      };
-
-      const result = renderKanban(fixture);
-
-      // Should escape dangerous HTML
-      assert(!result.includes('<script>'), 'should not have unescaped script tags');
-      assert(result.includes('&lt;') || result.includes('&amp;'), 'should have escaped entities');
-    });
-  });
-
-  describe('NFR Performance — Tenant aggregate responsive', () => {
-    it('should aggregate 10-product tenant in under 500ms', () => {
-      const tenantFixture = {
-        id: 'tenant-perf',
-        products: Array.from({ length: 10 }, (_, i) => ({
-          id: `prod-${i}`,
-          journeys: Array.from({ length: 5 }, (_, j) => ({
-            id: `j-${i}-${j}`,
-            title: `Journey ${i}-${j}`,
-            stage: j % 2 === 0 ? 'backlog' : 'in-progress',
-            health: 'on-track'
-          }))
-        }))
-      };
-
-      const start = Date.now();
-
-      // Build columns from 10 products * 5 journeys = 50 total journeys
-      const allCards = [];
-      for (const product of tenantFixture.products) {
-        for (const journey of product.journeys) {
-          allCards.push({
-            id: journey.id,
-            title: journey.title,
-            stage: journey.stage,
-            health: journey.health
-          });
-        }
+  console.log('\nIT3 -- GET /dashboard?view=board returns a real, aggregated tenant board');
+  {
+    const pool = makeMockPool(function(sql, params) {
+      if (sql.includes('FROM products')) {
+        return [
+          { product_id: 'p1', name: 'Product One', created_at: '2026-01-01' },
+          { product_id: 'p2', name: 'Product Two', created_at: '2026-01-02' }
+        ];
       }
-
-      const end = Date.now();
-      const elapsed = end - start;
-
-      // Pure JS computation should be well under 500ms
-      assert(elapsed < 500, `aggregation took ${elapsed}ms, should be < 500ms`);
-      assert.strictEqual(allCards.length, 50, 'should aggregate 50 journeys from 10 products');
+      if (params && params[0] === 'p1') return [{ journey_id: 'j1', feature_slug: 'feat-a', stage: 'discovery' }];
+      if (params && params[0] === 'p2') return [{ journey_id: 'j2', feature_slug: 'feat-b', stage: 'review' }];
+      return [];
     });
-  });
+    const req = { session: { tenantId: 'tenant-1' }, query: { view: 'board' } };
+    const res = makeMockRes();
+    await handleGetDashboard(req, res, null, pool);
+    assert(res._statusCode === 200, 'GET /dashboard?view=board -> 200');
+    assert((res._headers['Content-Type'] || '').includes('text/html'), 'Content-Type is text/html');
+    assert(res._body.includes('feat-a'), 'tenant board includes product-1 journey');
+    assert(res._body.includes('feat-b'), 'tenant board includes product-2 journey (aggregated, not just first product)');
+  }
 
+  console.log('\nNFR Security -- Board rendering escapes all user/repo-supplied text');
+  {
+    const fixture = {
+      columns: [
+        { stage: 'discovery', cards: [
+          { id: 'c1', title: '<script>alert(1)</script>', health: 'green' },
+          { id: 'c2', title: '& " < > \'', health: 'amber' }
+        ] }
+      ]
+    };
+    const html = renderKanban(fixture);
+    assert(!html.includes('<script>alert(1)</script>'), 'raw script tag is not present in output');
+    assert(html.includes('&lt;script&gt;'), 'script tag is HTML-escaped');
+    assert(html.includes('&amp;'), 'ampersand is escaped');
+  }
+
+  console.log('\nNFR Performance -- Tenant aggregate stays performant for a realistic product count');
+  {
+    const NUM_PRODUCTS = 10;
+    const pool = makeMockPool(function(sql, params) {
+      if (sql.includes('FROM products')) {
+        return Array.from({ length: NUM_PRODUCTS }, (_, i) => ({ product_id: 'p' + i, name: 'Product ' + i, created_at: '2026-01-01' }));
+      }
+      return Array.from({ length: 5 }, (_, j) => ({ journey_id: params[0] + '-j' + j, feature_slug: 'feature-' + j, stage: STAGE_COLUMNS[j % STAGE_COLUMNS.length] }));
+    });
+    const start = Date.now();
+    const columns = await buildTenantKanbanColumns(pool, 'tenant-perf');
+    const elapsed = Date.now() - start;
+    const totalCards = columns.reduce((acc, c) => acc + c.cards.length, 0);
+    assert(elapsed < 2000, 'aggregation of ' + NUM_PRODUCTS + ' products completes quickly (' + elapsed + 'ms)');
+    assert(totalCards === NUM_PRODUCTS * 5, 'all ' + (NUM_PRODUCTS * 5) + ' journeys aggregated across ' + NUM_PRODUCTS + ' products');
+  }
+}
+
+runTests().then(function() {
+  console.log('\n[kanban-consolidation] ' + passed + ' passed, ' + failed + ' failed');
+  if (failed > 0) process.exit(1);
+}).catch(function(err) {
+  console.error('\n[kanban-consolidation] fatal: ' + err.message);
+  console.error(err.stack);
+  process.exit(1);
 });
-
-module.exports = { describe, it, assert };

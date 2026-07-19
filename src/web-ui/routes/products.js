@@ -9,6 +9,7 @@ var _repoAdapter = require('../adapters/repo-adapter'); // prc-s2.1
 var _productRollup = require('../modules/product-rollup'); // pr-s3
 var _pipelineStateFetchAdapter = require('../adapters/pipeline-state-fetch-adapter'); // pr-s3
 var _syncFreshness = require('../modules/sync-freshness'); // pr-s3
+var _kanbanView = require('../views/kanban-view'); // kbc-s1 -- shared renderer for product/org/tenant boards
 
 function _escapeHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -358,6 +359,19 @@ async function handleGetDashboard(req, res, _next, pool) {
   var _pool = pool;
   var tenantId = req.session && req.session.tenantId;
   var login = req.session && req.session.login;
+
+  // kbc-s1 (AC4): GET /dashboard?view=board -- tenant-scope kanban board,
+  // aggregating every journey across every product this tenant owns onto
+  // one set of stage columns, via the same shared renderer used by product
+  // and org scope. Mirrors the exact ?view=board convention the removed
+  // /features route used, per the story's Architecture Constraints.
+  if (req.query && req.query.view === 'board') {
+    var tenantColumns = await buildTenantKanbanColumns(_pool, tenantId);
+    var tenantHtml = _kanbanView.renderKanban({ columns: tenantColumns });
+    _sendKanbanHtml(res, tenantHtml);
+    return;
+  }
+
   var products = (await _pool.query(
     'SELECT product_id, name, created_at FROM products WHERE tenant_id = $1 ORDER BY created_at DESC',
     [tenantId]
@@ -621,6 +635,110 @@ function _respondFlagDisabled(res) {
   }
 }
 
+function _sendKanbanHtml(res, html) {
+  if (res.contentType) {
+    res.contentType('text/html');
+    res.send(html);
+  } else {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+  }
+}
+
+/**
+ * kbc-s1 (AC1) -- single shared column-building function used by product,
+ * org, AND tenant scope. Takes a list of "product journey groups" —
+ * [{ productId, productName, journeys: [{ journey_id, feature_slug, stage, health }] }]
+ * — flattens every journey across every group, and buckets them onto
+ * STAGE_COLUMNS. Product scope calls this with exactly one group and no
+ * productName prefix; org and tenant scope call it with N groups (one per
+ * product) and prefix each card's title with its product name so cards from
+ * different products remain distinguishable on one shared board.
+ * @param {Array} productJourneyGroups
+ * @returns {Array} STAGE_COLUMNS-shaped columns: [{ stage, cards: [{id, title, health, healthLabel}] }]
+ */
+function _aggregateJourneysByStage(productJourneyGroups) {
+  var allCards = [];
+  (productJourneyGroups || []).forEach(function(group) {
+    (group.journeys || []).forEach(function(j) {
+      var health = j.health || 'green';
+      var title = group.productName
+        ? (group.productName + ': ' + (j.feature_slug || j.journey_id))
+        : (j.feature_slug || j.journey_id);
+      allCards.push({
+        id: j.journey_id,
+        title: title,
+        stage: j.stage || 'discovery',
+        health: health,
+        healthLabel: _healthLabel(health)
+      });
+    });
+  });
+
+  return STAGE_COLUMNS.map(function(stage) {
+    return {
+      stage: stage,
+      cards: allCards
+        .filter(function(c) { return c.stage === stage; })
+        .map(function(c) { return { id: c.id, title: c.title, health: c.health, healthLabel: c.healthLabel }; })
+    };
+  });
+}
+
+/**
+ * kbc-s1 (AC2) -- product-scope column builder: wraps a single product's
+ * journey rows as one group (no product-name prefix, since every card on a
+ * product board is already scoped to that one product) and delegates to the
+ * shared _aggregateJourneysByStage function (AC1: no duplicated column-
+ * building logic across scopes).
+ * @param {Array} rows -- journeys rows: [{ journey_id, feature_slug, stage, health }]
+ * @returns {Array} STAGE_COLUMNS-shaped columns
+ */
+function buildProductKanbanColumns(rows) {
+  return _aggregateJourneysByStage([{ productId: null, productName: null, journeys: rows || [] }]);
+}
+
+/**
+ * kbc-s1 (AC3) -- org-scope column builder: takes the per-product journey
+ * groups already fetched for an org (each with its productName) and
+ * delegates to the shared _aggregateJourneysByStage function.
+ * @param {Array} productJourneyGroups -- [{ productId, productName, journeys }]
+ * @returns {Array} STAGE_COLUMNS-shaped columns
+ */
+function buildOrgKanbanColumns(productJourneyGroups) {
+  return _aggregateJourneysByStage(productJourneyGroups);
+}
+
+/**
+ * kbc-s1 (AC4) -- tenant-scope column builder: fetches every product this
+ * tenant owns, then fetches each product's journeys IN PARALLEL via
+ * Promise.all (reusing the exact parallelisation pattern handleGetDashboard
+ * already uses below, per the DoR assumption and the Performance NFR), then
+ * delegates to the same shared _aggregateJourneysByStage function used by
+ * product/org scope. This is what makes AC4 a genuine cross-product
+ * aggregate rather than accidentally scoped to only the first product found
+ * (U4's specific concern).
+ * @param {object} pool -- pg Pool (or equivalent .query()-capable client)
+ * @param {string} tenantId
+ * @returns {Promise<Array>} STAGE_COLUMNS-shaped columns
+ */
+async function buildTenantKanbanColumns(pool, tenantId) {
+  var products = (await pool.query(
+    'SELECT product_id, name, created_at FROM products WHERE tenant_id = $1 ORDER BY created_at DESC',
+    [tenantId]
+  )).rows;
+
+  var productJourneyGroups = await Promise.all(products.map(async function(p) {
+    var jRows = (await pool.query(
+      "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1",
+      [p.product_id]
+    )).rows;
+    return { productId: p.product_id, productName: p.name, journeys: jRows };
+  }));
+
+  return _aggregateJourneysByStage(productJourneyGroups);
+}
+
 async function handleGetProductKanban(req, res, _next, pool, posthog) {
   var _pool = pool;
   var _ph = posthog || _posthog;
@@ -654,25 +772,11 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
     [productId]
   )).rows;
 
-  var columns = STAGE_COLUMNS.map(function(stage) {
-    var features = rows
-      .filter(function(j) { return (j.stage || 'discovery') === stage; })
-      .map(function(j) {
-        var health = j.health || 'green';
-        return {
-          journey_id: j.journey_id,
-          name: _escapeHtml(j.feature_slug || j.journey_id),
-          health: health,
-          healthLabel: _healthLabel(health),
-          healthIcon: health === 'red' ? '⚠' : (health === 'amber' ? '⚠' : '✓')
-        };
-      });
-    return {
-      stage: stage,
-      features: features,
-      emptyLabel: features.length === 0 ? 'No features at this stage' : null
-    };
-  });
+  // kbc-s1 (AC1, AC2): shared column-builder + shared renderer, real HTML
+  // response instead of raw JSON. Data-shaping logic (STAGE_COLUMNS,
+  // health labels) is unchanged from before this story -- only the "return
+  // raw JSON, no rendering" behaviour is replaced, per the DoR contract.
+  var columns = buildProductKanbanColumns(rows);
 
   _ph.capture(tenantId || (req.session && req.session.login), 'kanban_viewed', {
     view: 'product',
@@ -681,8 +785,8 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
     featureCount: rows.length
   });
 
-  if (res.json) { res.json({ columns: columns }); }
-  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ columns: columns })); }
+  var html = _kanbanView.renderKanban({ columns: columns });
+  _sendKanbanHtml(res, html);
 }
 
 async function handleGetOrgKanban(req, res, _next, pool, posthog) {
@@ -711,7 +815,7 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
     : prodRows;
 
   var allJourneyCount = 0;
-  var groups = [];
+  var productJourneyGroups = [];
   for (var i = 0; i < filteredProds.length; i++) {
     var p = filteredProds[i];
     var jRows = (await _pool.query(
@@ -719,33 +823,22 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
       [p.product_id, tenantId]
     )).rows;
     allJourneyCount += jRows.length;
-    var features = jRows.map(function(j) {
-      var stage = j.stage || 'discovery';
-      return {
-        journey_id: j.journey_id,
-        name: _escapeHtml(j.feature_slug || j.journey_id),
-        stage: stage,
-        health: 'green',
-        healthLabel: 'Healthy',
-        stageLink: '/journeys/' + j.journey_id + '/' + stage
-      };
-    });
-    groups.push({
-      product_id: p.product_id,
-      productName: _escapeHtml(p.name),
-      features: features
-    });
+    productJourneyGroups.push({ productId: p.product_id, productName: p.name, journeys: jRows });
   }
+
+  // kbc-s1 (AC1, AC3): same shared column-builder + shared renderer used by
+  // product scope -- not a second, independently-styled implementation.
+  var columns = buildOrgKanbanColumns(productJourneyGroups);
 
   _ph.capture(tenantId || (req.session && req.session.login), 'kanban_viewed', {
     view: 'org',
     tenantId: tenantId,
-    productCount: groups.length,
+    productCount: productJourneyGroups.length,
     featureCount: allJourneyCount
   });
 
-  if (res.json) { res.json({ groups: groups }); }
-  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ groups: groups })); }
+  var html = _kanbanView.renderKanban({ columns: columns });
+  _sendKanbanHtml(res, html);
 }
 
 async function handlePostProductFeature(req, res, _next, pool, posthog) {
@@ -897,5 +990,10 @@ module.exports = {
   handleGetOrgKanban,
   handleDeleteProduct,
   handlePostProductRepoCreate,
-  handlePutProductEdit
+  handlePutProductEdit,
+  // kbc-s1: shared column-building functions, exported for direct unit testing (U1-U5)
+  buildProductKanbanColumns,
+  buildOrgKanbanColumns,
+  buildTenantKanbanColumns,
+  STAGE_COLUMNS
 };
