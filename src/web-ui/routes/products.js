@@ -769,7 +769,7 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
   var crypto = require('crypto');
   var path = require('path');
   var _skillsRoute = require('./skills');
-  var _journeyDisk = require('../modules/journey-disk');
+  var _journeyDisk = require('../../modules/journey-disk');
   var _journeyStore = require('../modules/journey-store');
   var _repoRootAdapter = require('../adapters/repo-root');
 
@@ -803,13 +803,23 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
     }
 
     // Redirect to the skill chat (FIXED: /skills/ not /journeys/)
-    res.writeHead(303, { 'Location': '/skills/discovery/sessions/' + encodeURIComponent(sid) + '/chat' });
-    res.end();
+    var _target = '/skills/discovery/sessions/' + encodeURIComponent(sid) + '/chat';
+    if (res.redirect) {
+      res.redirect(_target); // test mock path
+    } else {
+      res.writeHead(303, { 'Location': _target });
+      res.end();
+    }
   } catch (err) {
     // Fallback: if session creation fails, still redirect but log the error
     console.error('[handlePostProductFeature] Failed to create skill session:', err);
-    res.writeHead(303, { 'Location': '/skills/discovery/sessions/fallback/chat' });
-    res.end();
+    var _fallbackTarget = '/skills/discovery/sessions/fallback/chat';
+    if (res.redirect) {
+      res.redirect(_fallbackTarget); // test mock path
+    } else {
+      res.writeHead(303, { 'Location': _fallbackTarget });
+      res.end();
+    }
   }
 }
 
