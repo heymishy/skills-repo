@@ -11805,6 +11805,117 @@
       ],
       "metrics": [],
       "updatedAt": "2026-07-17T19:57:36.768Z"
+    },
+    {
+      "slug": "2026-07-19-new-feature-redirect-fix",
+      "name": "Fix \"New feature\" redirecting to the sign-in page for logged-in users",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "jrf-s1",
+          "slug": "jrf-s1",
+          "name": "Fix \"New feature\" redirecting to the sign-in page for logged-in users",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0,
+            "artefact": "artefacts/2026-07-19-new-feature-redirect-fix/test-plans/jrf-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-19-new-feature-redirect-fix/dor/jrf-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-19-new-feature-redirect-fix/dor/jrf-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-19T06:36:01.138Z",
+          "prStatus": "none",
+          "updatedAt": "2026-07-19T06:36:01.138Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-19T06:36:01.138Z"
+    },
+    {
+      "slug": "2026-07-19-product-repo-connect-ux",
+      "name": "Give every product a UI path to connect or create a GitHub repo",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "rpc-s1",
+          "slug": "rpc-s1",
+          "name": "Give every product a UI path to connect or create a GitHub repo",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0,
+            "artefact": "artefacts/2026-07-19-product-repo-connect-ux/test-plans/rpc-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-19-product-repo-connect-ux/dor/rpc-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-19-product-repo-connect-ux/dor/rpc-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-19T06:36:01.138Z",
+          "prStatus": "none",
+          "updatedAt": "2026-07-19T06:36:01.138Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-19T06:36:01.138Z"
+    },
+    {
+      "slug": "2026-07-19-kanban-consolidation",
+      "name": "Consolidate kanban rendering into one shared pattern; retire /features, /actions, /status",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "kbc-s1",
+          "slug": "kbc-s1",
+          "name": "Consolidate kanban rendering into one shared pattern; retire /features, /actions, /status",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 14,
+            "passing": 0,
+            "artefact": "artefacts/2026-07-19-kanban-consolidation/test-plans/kbc-s1-test-plan.md"
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-19-kanban-consolidation/dor/kbc-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-19-kanban-consolidation/dor/kbc-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-19T06:36:01.138Z",
+          "prStatus": "none",
+          "updatedAt": "2026-07-19T06:36:01.138Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-19T06:36:01.138Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
