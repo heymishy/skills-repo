@@ -207,4 +207,62 @@ function renderKanban(data) {
   ].join('');
 }
 
-module.exports = { renderKanban, LANES };
+/**
+ * Simplified kanban renderer for generic columns/cards (product/org/tenant scope)
+ * @param {object} data
+ * @param {Array}  data.columns - array of {stage, cards: []}
+ * @param {Array}  [data.ideas] - optional ideas array
+ */
+function _renderKanbanColumns(data) {
+  var columns = data.columns || [];
+
+  if (!columns || columns.length === 0) {
+    return '<div class="kb-empty">No stages available</div>';
+  }
+
+  var columnHtml = columns.map(function(col) {
+    var cardHtml = (col.cards || []).map(function(card) {
+      var healthClass = 'kb-health-' + escHtml(card.health || 'neutral');
+      return [
+        '<div class="kb-card ' + healthClass + '">',
+          '<div class="kb-card-title">' + escHtml(card.title || card.name || '(untitled)') + '</div>',
+          '<div class="kb-card-meta">',
+            '<span class="kb-card-id">' + escHtml(card.id) + '</span>',
+          '</div>',
+        '</div>'
+      ].join('');
+    }).join('');
+
+    return [
+      '<div class="kb-column">',
+        '<div class="kb-column-head">' + escHtml(col.stage) + '</div>',
+        '<div class="kb-cards">',
+          cardHtml || '<div class="kb-empty">—</div>',
+        '</div>',
+      '</div>'
+    ].join('');
+  }).join('');
+
+  return [
+    '<style>',
+      '.kb-board { display: flex; gap: 12px; overflow-x: auto; padding: 16px; min-height: 400px; }',
+      '.kb-column { flex: 0 0 240px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; }',
+      '.kb-column-head { font-weight: 600; font-size: 14px; padding-bottom: 12px; border-bottom: 2px solid var(--line); margin-bottom: 12px; color: var(--ink); }',
+      '.kb-cards { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; }',
+      '.kb-card { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px; }',
+      '.kb-health-on-track { border-left: 4px solid #22c55e; }',
+      '.kb-health-at-risk { border-left: 4px solid #f59e0b; }',
+      '.kb-health-blocked { border-left: 4px solid #ef4444; }',
+      '.kb-health-neutral { border-left: 4px solid var(--muted-2); }',
+      '.kb-card-title { font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--ink); }',
+      '.kb-card-meta { font-size: 11px; color: var(--muted); }',
+      '.kb-card-id { font-family: var(--mono); }',
+      '.kb-empty { text-align: center; color: var(--muted); font-size: 12px; padding: 16px 0; }',
+    '</style>',
+    '<div class="kb-board">',
+      columnHtml,
+    '</div>'
+  ].join('');
+}
+
+module.exports = { renderKanban, LANES, _renderKanbanColumns };
