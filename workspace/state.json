@@ -1,67 +1,85 @@
 {
-  "currentPhase": "definition-of-done",
-  "lastUpdated": "2026-07-16T10:00:00Z",
-  "activeFeature": "2026-07-16-ci-flake-grep-fix",
-  "previousFeature": "2026-07-16-journey-limit-credits",
+  "currentPhase": "live-staging-verification",
+  "lastUpdated": "2026-07-20T09:00:00Z",
+  "activeFeature": "live-staging-verification-of-2026-07-16-product-rollup-and-3-follow-on-short-tracks",
+  "previousFeature": "2026-07-16-ci-flake-grep-fix",
   "cycle": {
-    "discovery": {
-      "status": "not-applicable (short-track — discovery skipped by design per CLAUDE.md's short-track routing)",
-      "artefact": "N/A — short-track story, no discovery artefact produced",
-      "completedAt": null
+    "note": "This checkpoint does not map to a single story's pipeline stage. It covers a live, post-merge staging verification pass across one epic (product-rollup, 7 stories, all merged/DoD-eligible) plus 3 follow-on short-track stories (jrf-s1, rpc-s1, kbc-s1, all merged) plus 2 hotfixes shipped directly without full short-track story artefacts (see 'processGap' below). See 'liveVerification' block for the actual state.",
+    "product-rollup-epic": {
+      "slug": "2026-07-16-product-rollup",
+      "stories": ["pr-s1", "pr-s2", "pr-s3", "pr-s4", "pr-s5", "pr-s6", "pr-s7"],
+      "status": "all 7 merged; stage=branch-complete in pipeline-state.json as of last check",
+      "note": "DoD status for this epic was not re-verified in this session — check .github/pipeline-state.json on master directly rather than trusting this field."
     },
-    "test-plan": {
-      "status": "complete",
-      "completedAt": "2026-07-16",
-      "totalTests": 5
+    "follow-on-short-tracks": {
+      "jrf-s1": { "slug": "2026-07-19-new-feature-redirect-fix", "pr": 507, "status": "merged", "fix": "handlePostProductFeature now creates a skill session and redirects to /skills/discovery/sessions/<id>/chat instead of the nonexistent /journeys/<id>/discovery" },
+      "rpc-s1": { "slug": "2026-07-19-product-repo-connect-ux", "pr": 508, "status": "merged", "fix": "added Connect-repo UI affordance (create-new / connect-existing) to _renderProductView" },
+      "kbc-s1": { "slug": "2026-07-19-kanban-consolidation", "pr": 506, "status": "merged", "fix": "consolidated product/org/tenant kanban into one shared renderer (kanban-view.js); removed /features, /actions, /status routes outright" },
+      "bookkeeping-pr-509": { "status": "merged", "note": "post-merge pipeline-state.json bookkeeping for jrf-s1/rpc-s1/kbc-s1's real final stage/prStatus/testPlan/acVerified values" }
     },
-    "definition-of-ready": {
-      "status": "complete",
-      "completedAt": "2026-07-16",
-      "storiesSigned": 1,
-      "hardBlocksPassed": "13/13"
-    },
-    "branch-setup": {
-      "status": "complete",
-      "completedAt": "2026-07-16",
-      "worktree": ".worktrees/cfg-s1",
-      "branch": "feature/cfg-s1"
-    },
-    "subagent-execution": {
-      "status": "complete",
-      "completedAt": "2026-07-16",
-      "storiesCompleted": 1
-    },
-    "verify-completion": {
-      "status": "complete",
-      "completedAt": "2026-07-16",
-      "acsVerified": 5,
-      "acsTotal": 5,
-      "testsPassing": 5,
-      "testsTotal": 5
-    },
-    "branch-complete": {
-      "status": "complete",
-      "completedAt": "2026-07-16",
-      "prUrl": "https://github.com/heymishy/skills-repo/pull/486",
-      "prStatus": "merged",
-      "mergedAt": "2026-07-16"
-    },
-    "definition-of-done": {
-      "status": "complete",
-      "completedAt": "2026-07-16",
-      "storiesComplete": 1,
-      "storiesCompleteWithDeviations": 0,
-      "dodArtefactsPath": "artefacts/2026-07-16-ci-flake-grep-fix/dod/"
+    "hotfixes-shipped-without-full-story-artefacts": {
+      "pr-510": { "title": "hotfix(rpc-s1): fix syntax error breaking every repo-connect button", "status": "merged", "rootCause": "missing closing brace in rpcSubmitCreate/rpcSubmitConnect's try block broke the ENTIRE inline <script> tag, silently making every button handler undefined", "regressionTest": "IT4 in tests/check-rpc-s1-connect-repo.js — vm.Script-compiles the extracted inline script body" },
+      "pr-511": { "title": "hotfix: fix JSONB rollup fields crashing product view on real sync", "status": "merged", "rootCause": "_renderProductView called JSON.parse() unconditionally on 5 JSONB columns (health_counts, test_coverage, ac_coverage, taxonomy, dod_status_counts); pg auto-parses JSONB to objects, so this crashed with SyntaxError: \"[object Object]\" is not valid JSON the first time any product completed a real sync round-trip on staging", "fix": "added _parseJsonbField() helper in products.js, only parses if value is actually a string", "regressionTest": "new test in tests/check-pr-s2-products-route.js using object-shaped (real pg) mock values end-to-end through handleGetProductView" },
+      "processGap": "Both hotfixes were shipped directly (user chose 'Fast direct hotfix (Recommended)' both times) without discovery/story/test-plan/DoR artefacts, per CLAUDE.md's own 'Artefact-first rule' this technically needs a retrospective-story.md (per the same rule's own stated remedy: 'For work that has already landed without a chain, use .github/templates/retrospective-story.md to create a retroactive story.'). NOT YET DONE for either PR #510 or #511 — flagged as a pending action below."
     }
   },
+  "liveVerification": {
+    "context": "User is manually clicking through wuce-staging (live Fly.io deployment) testing the product-rollup epic + 3 follow-on stories, reporting issues as found. This is an active, in-progress investigation — not complete.",
+    "confirmedWorkingSinceLastFix": [
+      "Repo-connect buttons now trigger real network activity (PR #510 fix confirmed live)",
+      "Refresh on skills-framework self-registered product no longer crashes (PR #511 fix confirmed live, deployed, and merged)",
+      "Connecting an existing GitHub repo (heymishy/skills-framework-test-staging-sync) succeeded with no 'access' error this time — earlier session's 'you do not have access' report appears resolved by re-login + the button-syntax hotfix; not independently re-tested since"
+    ],
+    "openFindings": [
+      {
+        "id": "F1-blank-slug-labels",
+        "summary": "Test-coverage and AC-coverage per-feature lists show blank ': 100%' entries with no story name",
+        "rootCause": "CONFIRMED — computeTestCoverageRollup() and computeAcCoverageRollup() in src/web-ui/modules/product-rollup.js (around lines 128-133 and 187-192) push `slug: story.slug` with no fallback. 17 real stories in this repo's own .github/pipeline-state.json (e.g. ougl.1 through ougl.9) have an `id` field but no `slug` field, confirmed via a direct node script scan.",
+        "fix": "NOT YET APPLIED — change `slug: story.slug` to `slug: story.slug || story.id` at both call sites in product-rollup.js. Low risk, matches existing fallback pattern used elsewhere in this codebase (e.g. `f.featureSlug || f.journey_id` in products.js's _renderProductDashboard).",
+        "status": "root-caused, fix identified, not applied — user had not yet confirmed proceeding before session-limit handoff"
+      },
+      {
+        "id": "F2-admin-credits-forbidden",
+        "summary": "/admin/credits returns {\"error\":\"Forbidden\"} for the account owner (heymishy) on wuce-staging",
+        "rootCause": "CONFIRMED — admin role is seeded via ADMIN_GITHUB_LOGINS env var (comma-separated GitHub logins) at server.js line ~317; this var was never set on wuce-staging (same class of gap as the earlier missing PLATFORM_TENANT_ID).",
+        "fix": "NOT YET APPLIED — `flyctl secrets set ADMIN_GITHUB_LOGINS=heymishy --app wuce-staging`. This also unblocks manual credit top-up, which may be entangled with F5 (model error) below.",
+        "status": "root-caused, fix identified, not applied — user had not yet confirmed proceeding (flagged as slightly more consequential than PLATFORM_TENANT_ID since it grants admin credit-control access, even though staging-only)"
+      },
+      {
+        "id": "F3-mojibake-epic-names",
+        "summary": "Some epic names render garbled, e.g. 'Governance extractability ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â enforcement selection'",
+        "rootCause": "CONFIRMED NOT a rendering/code bug — grepped .github/pipeline-state.json directly and the mangled string is baked into the SOURCE DATA itself (double-encoded UTF-8, most likely an em-dash that went through the wrong encoding twice at some earlier point when this file was written/edited).",
+        "fix": "Not a code fix — would require a data cleanup pass on the stored feature.name strings in pipeline-state.json. Cosmetic, low priority.",
+        "status": "root-caused, out of scope for a code hotfix, needs a data-cleanup decision from the user (do it / leave it)"
+      },
+      {
+        "id": "F4-unreadable-flat-coverage-list",
+        "summary": "The per-feature test-coverage/AC-coverage list is a single unsorted flat list of 115+ story codes with no grouping — very hard to read, unlike the properly-grouped 'Epics' section rendered further down the same page",
+        "rootCause": "Not a bug — a design/UX gap. The Epics section already groups by epic via computeTaxonomyRollup(); the per-feature coverage breakdown does not reuse that grouping.",
+        "fix": "Needs a design decision, not a hotfix — e.g. group the per-feature breakdown by epic the same way, or collapse to just the blended % with an expandable details view for the full per-story list.",
+        "status": "flagged as design debt, not actioned, no fix proposed yet"
+      },
+      {
+        "id": "F5-new-feature-model-error",
+        "summary": "Clicking 'New feature' now correctly routes to a skill-session chat (jrf-s1's fix confirmed working for routing), but the actual skill invocation fails with a generic 'Error — please try again' in the chat UI",
+        "rootCause": "PARTIALLY TRACED, NOT CONFIRMED — the exact client-facing string traces to src/web-ui/routes/skills.js's SSE error handler (~line 4149, inside a try/catch around the real LLM streaming call at ~line 4146). That catch block also logs a structured pino line: `_turnLog.error({ event: 'sse_error', error_message: ... })`. The user's pasted fly-log excerpt did NOT include this specific 'sse_error' log line — only a tangential PostHog isFeatureEnabled deprecation warning, an [auth] login line, and an autosuspend/suspend event (at 21:27:23, AFTER the 21:24:56 error attempt, so probably not the direct cause). Leading hypotheses, none confirmed: (a) zero credit balance (balance=0 confirmed earlier in the session via a credits_balance_check log line) causing a downstream throw rather than a clean guard block; (b) a missing/bad ANTHROPIC_API_KEY or model config on wuce-staging specifically; (c) an unrelated real API error.",
+        "fix": "NEEDS MORE INFO — ask the user to pull the exact fly log around the failing attempt's timestamp and grep specifically for 'sse_error' to get the real error_message field. Also worth retrying after F2's ADMIN_GITHUB_LOGINS fix + a manual credit top-up via /admin/credits, in case F2 and F5 are entangled (zero balance somehow reaching the LLM call instead of being cleanly blocked upstream).",
+        "status": "root cause NOT confirmed — this is the most important open item to resume with, since it's the one item where the actual root cause is still unknown"
+      }
+    ]
+  },
   "checkpoint": {
-    "writtenAt": "2026-07-16",
-    "contextAtWrite": "This checkpoint closes out a multi-day, multi-feature session (2026-07-15 through 2026-07-16) spanning 5 merged PRs across the 2026-07-09-beta-readiness-infra epic and 4 standalone short-track stories. Session summary: (1) bri-s3.3 (PR #483, merged) -- second DoR re-run found tir-s9 had shipped the fix for the login-identityKey defect found on 2026-07-13; re-scoped to GitHub-org-allowlist mode and unblocked; implementation dispatched, a real acVerified type bug and a suite-order test flake were found and fixed post-merge. (2) tst-s1 (PR #484, merged) -- triaged all 69 pre-existing baseline test failures unmasked by pcr-s1's test runner; 2 fixed, 67 documented by root cause; a local-vs-CI baseline discrepancy found and corrected mid-PR. (3) jlc-s1 (PR #485, merged) -- investigated the operator's live 'Journey limit reached' report; initial diagnosis (based on a stale main-checkout file) was wrong and corrected mid-implementation by the dispatched agent itself; real fix persists bri-s3.5's paid-plan bypass to Postgres so it survives a server restart; verified end-to-end against a real running server. (4) cfg-s1 (PR #486, merged) -- follow-up from tst-s1; confirmed and fixed the root cause of 3 of 5 local-vs-CI test divergences (an unscoped git-grep silently no-oping on Windows, executing-and-false-positiving on real CI); 2 files remain unresolved (Node version mismatch suspected). An outer-loop completeness review then found: workspace/state.json stale since 2026-07-05 (this write closes that gap); no short-track story had ever reached /definition-of-done (resolved: DoD artefacts retroactively written for pcr-s1, stis-s1, tst-s1, jlc-s1, cfg-s1; CLAUDE.md's short-track routing line updated to state Step 8 still applies); 18 capture-log entries (12 pre-session, 6 from this session) promoted to workspace/learnings.md.",
-    "resumeInstruction": "No feature is currently mid-pipeline. All 5 stories from this session (pcr-s1, stis-s1, tst-s1, jlc-s1, cfg-s1) are merged and at definition-of-done. Two known open items, neither blocking: (1) tests/run-gpa-tests.js and tests/check-gpa-sc06-source-path-guard.js remain unresolved local-vs-CI test divergences -- leading hypothesis is a Node 20 (CI) vs Node 22 (local) mismatch, not yet confirmed. (2) definition-of-ready/SKILL.md's H-GOV check still lacks an explicit short-track exception clause (recurred as a workaround across 5 stories this session) -- a good candidate for its own short-track fix. Start the next feature's /discovery or address either open item.",
+    "writtenAt": "2026-07-20",
+    "contextAtWrite": "Session nearing context/account limit; user asked to write full resumable state so a fresh session (possibly a different Claude account) can continue cold. This session covered: (1) delivery and merge of the entire 2026-07-16-product-rollup epic (pr-s1 through pr-s7) plus 3 follow-on short-track stories found via live staging walkthrough (jrf-s1 PR #507, rpc-s1 PR #508, kbc-s1 PR #506) plus post-merge pipeline-state.json bookkeeping (PR #509) — all merged, confirmed via gh/git directly, not just agent self-report. (2) Two fast direct hotfixes for bugs found live on wuce-staging during user verification: PR #510 (repo-connect buttons had a JS syntax error breaking the whole inline <script> tag) and PR #511 (JSONB columns crashing product view on first real sync — pg auto-parses JSONB to objects but _renderProductView assumed JSON strings). Both merged, both CI-green, both have real regression tests that were confirmed to actually catch the bug pre-fix. (3) A live staging click-through of the skills-framework self-registered product (which reads this repo's own real ~115-story pipeline-state.json) surfaced 5 more findings — see liveVerification.openFindings above — 2 root-caused with a fix ready to apply pending user confirmation (F1 slug fallback, F2 ADMIN_GITHUB_LOGINS), 1 confirmed as a data issue not a code bug (F3 mojibake), 1 flagged as design debt (F4 flat coverage list), 1 still needs more diagnostic info from the user (F5 model error — the actual root cause is unknown, need the sse_error log line).",
+    "resumeInstruction": "Read this entire state.json first, then workspace/learnings.md's last 3 entries (JSONB mock-shape gap, silently-optional-env-vars pattern, the 5-finding live-verification entry) for full narrative context — do not rely on any prior conversation history, assume none carries over. Next concrete steps, in likely priority order: (1) Ask the user whether to proceed with F1 (product-rollup.js slug||id fallback, low-risk one-line fix) and F2 (flyctl secrets set ADMIN_GITHUB_LOGINS=heymishy on wuce-staging) — both are root-caused and ready to apply, just need a go-ahead. (2) Ask the user to pull the wuce-staging fly log around the 'New feature' failure timestamp and grep for 'sse_error' to get F5's real error_message — this is the one open item with no confirmed root cause yet. (3) Once F2 is applied and credits are topped up, ask the user to retry the 'New feature' flow in case F5 was actually credit-balance-related. (4) F3 (mojibake data) and F4 (flat coverage list design) both need a user decision on priority/scope before any action — do not unilaterally start a data-cleanup script or a UI redesign without asking. (5) Separately, note the processGap in the cycle block above: PR #510 and #511 were shipped as fast hotfixes without full short-track story artefacts, which is technically an exception to CLAUDE.md's Artefact-first rule — the rule's own stated remedy is a retrospective-story.md for each; this has not been done and should be raised with the user at a natural pause, not blocking.",
     "pendingActions": [
-      "Investigate the Node 20 vs Node 22 hypothesis for tests/run-gpa-tests.js and tests/check-gpa-sc06-source-path-guard.js once a Node-20-pinned environment is available — Owner: Hamish King",
-      "Consider a short-track fix for definition-of-ready/SKILL.md's H-GOV short-track exception clause (recurred 5 times as a manual workaround: pcr-s1, stis-s1, tst-s1, jlc-s1, cfg-s1) — Owner: Hamish King",
-      "Previous session's pending items (2026-07-05-product-stds-hierarchy Playwright smoke tests, M4a review) — status not re-verified this session, carry forward if still outstanding — Owner: Hamish King"
+      "Confirm with user and apply F1 fix: product-rollup.js slug||id fallback for the 17 stories with id but no slug — Owner: Hamish King / resuming session",
+      "Confirm with user and apply F2 fix: flyctl secrets set ADMIN_GITHUB_LOGINS=heymishy --app wuce-staging — Owner: Hamish King / resuming session",
+      "Get the exact sse_error fly log line for F5 (New feature model error) from the user — root cause still unconfirmed — Owner: Hamish King",
+      "Retry 'New feature' flow after F2 fix + credit top-up, to test whether F5 was credit-balance-related — Owner: resuming session",
+      "Decide priority/scope for F3 (mojibake data cleanup in pipeline-state.json) and F4 (flat test-coverage list design debt) — Owner: Hamish King",
+      "Write retrospective-story.md artefacts for PR #510 and #511 per CLAUDE.md's Artefact-first rule exception-handling remedy — Owner: resuming session, non-blocking",
+      "Previous session's carried-forward items (Node 20 vs 22 test divergence hypothesis; definition-of-ready H-GOV short-track exception clause) — status not re-verified this session, still likely outstanding — Owner: Hamish King"
     ]
   },
   "estimate": {
@@ -70,11 +88,7 @@
       "storyCount": 17,
       "byStory": {
         "count": 17,
-        "complexity": {
-          "1": 2,
-          "2": 12,
-          "3": 3
-        },
+        "complexity": { "1": 2, "2": 12, "3": 3 },
         "p75FocusHPerStory": 0.037
       },
       "expectedCalendarDays": 1,
