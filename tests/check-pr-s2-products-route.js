@@ -461,6 +461,88 @@ test('products.js exports handlePostProductSync', function() {
     }
   })();
 
+  // Regression -- F4: the test-coverage breakdown must render grouped by parent epic
+  // (mirroring the Epics/Other-features layout already used for taxonomy), not one
+  // flat list of every story code -- found unreadable at scale (100+ stories) during
+  // live staging verification of this repo's own self-registered product.
+  await (async function() {
+    try {
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/routes/products.js'))];
+      var productsRouteFresh = require(path.resolve(__dirname, '../src/web-ui/routes/products.js'));
+      var syncedAt = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      var mockPoolGrouped = {
+        query: async function(sql) {
+          if (/SELECT name, tenant_id.*FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{
+              dod_status_counts: {},
+              health_counts: {},
+              test_coverage: {
+                noData: false, blendedPercentage: 75,
+                perFeature: [{ slug: 'a1', percentage: 50 }, { slug: 'b1', percentage: 100 }],
+                groups: [{ epicSlug: 'epic-a', epicName: 'Epic A', items: [{ slug: 'a1', percentage: 50 }] }],
+                ungrouped: [{ slug: 'b1', percentage: 100 }]
+              },
+              ac_coverage: {},
+              taxonomy: { groups: [], ungrouped: [] },
+              synced_at: syncedAt
+            }] };
+          }
+          return { rows: [] };
+        }
+      };
+      var htmlGrouped = null;
+      var reqGrouped = { params: { id: 'p1' }, session: { tenantId: 't1', login: 'x' } };
+      var resGrouped = { writeHead: function() {}, end: function(body) { htmlGrouped = body; } };
+      await productsRouteFresh.handleGetProductView(reqGrouped, resGrouped, null, mockPoolGrouped);
+
+      assert.ok(/Epic A/.test(htmlGrouped), 'expected the epic name to appear in the test-coverage breakdown');
+      assert.ok(/a1: 50%/.test(htmlGrouped), 'expected the epic-nested story under its epic');
+      assert.ok(/Other features/.test(htmlGrouped), 'expected an "Other features" heading for the ungrouped story');
+      assert.ok(/b1: 100%/.test(htmlGrouped), 'expected the flat-feature story under Other features');
+      passed++; console.log('  [PASS] _renderProductView: test-coverage breakdown groups by parent epic (F4)');
+    } catch (err) {
+      failed++; console.log('  [FAIL] grouped test-coverage rendering (F4) --', err.message);
+    }
+  })();
+
+  // Regression -- old cached rollup rows synced before F4 shipped only have the flat
+  // perFeature array (no groups/ungrouped fields at all); rendering must fall back to
+  // the flat list rather than crashing or silently showing nothing.
+  await (async function() {
+    try {
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/routes/products.js'))];
+      var productsRouteFresh = require(path.resolve(__dirname, '../src/web-ui/routes/products.js'));
+      var syncedAt = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      var mockPoolOldShape = {
+        query: async function(sql) {
+          if (/SELECT name, tenant_id.*FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{
+              dod_status_counts: {},
+              health_counts: {},
+              test_coverage: { noData: false, blendedPercentage: 80, perFeature: [{ slug: 'old1', percentage: 80 }] },
+              ac_coverage: {},
+              taxonomy: { groups: [], ungrouped: [] },
+              synced_at: syncedAt
+            }] };
+          }
+          return { rows: [] };
+        }
+      };
+      var htmlOld = null;
+      var reqOld = { params: { id: 'p1' }, session: { tenantId: 't1', login: 'x' } };
+      var resOld = { writeHead: function() {}, end: function(body) { htmlOld = body; } };
+      await productsRouteFresh.handleGetProductView(reqOld, resOld, null, mockPoolOldShape);
+
+      assert.ok(htmlOld, 'expected a rendered HTML response for an old-shape cached rollup row, got none (handler likely threw)');
+      assert.ok(/old1: 80%/.test(htmlOld), 'expected the flat perFeature list to still render for pre-F4 cached rows');
+      passed++; console.log('  [PASS] _renderProductView: falls back to the flat perFeature list for pre-F4 cached rollup rows with no groups/ungrouped');
+    } catch (err) {
+      failed++; console.log('  [FAIL] old-shape test-coverage fallback rendering --', err.message);
+    }
+  })();
+
   console.log('\n[pr-s2-pr-s3-pr-s4-pr-s5-pr-s6-pr-s7-products-route] Results: ' + passed + ' passed, ' + failed + ' failed');
   process.exit(failed > 0 ? 1 : 0);
 })();

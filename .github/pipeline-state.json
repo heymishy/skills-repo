@@ -1680,14 +1680,14 @@
       "epics": [
         {
           "id": "e1",
-          "name": "Governance extractability ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â enforcement selection",
+          "name": "Governance extractability — enforcement selection",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e1-governance-extractability-enforcement-selection.md",
           "storyCount": 5,
           "slug": "e1"
         },
         {
           "id": "e2",
-          "name": "Distribution ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â zero-commit install",
+          "name": "Distribution — zero-commit install",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e2-distribution-zero-commit-install.md",
           "storyCount": 7,
           "slug": "e2"
@@ -1701,7 +1701,7 @@
         },
         {
           "id": "e4",
-          "name": "Readable governance ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â second-line audit",
+          "name": "Readable governance — second-line audit",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e4-readable-governance-second-line-audit.md",
           "storyCount": 5,
           "slug": "e4"
@@ -1715,7 +1715,7 @@
         {
           "id": "ADR-004",
           "category": "adr",
-          "label": "context.yml is the single configuration source ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no hardcoded values",
+          "label": "context.yml is the single configuration source — no hardcoded values",
           "status": "not-assessed",
           "assessedBy": "/definition"
         },
@@ -1729,14 +1729,14 @@
         {
           "id": "C1",
           "category": "mandatory-constraint",
-          "label": "Non-fork update channel ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â consumers must not fork",
+          "label": "Non-fork update channel — consumers must not fork",
           "status": "not-assessed",
           "assessedBy": "/definition"
         },
         {
           "id": "C4",
           "category": "mandatory-constraint",
-          "label": "Human approval gate ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no automated merge",
+          "label": "Human approval gate — no automated merge",
           "status": "not-assessed",
           "assessedBy": "/definition"
         },
@@ -1802,9 +1802,9 @@
       "metrics": [
         {
           "id": "m1",
-          "name": "Distribution sync ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â zero-commit install + sync success rate",
-          "target": "100% zero-commit install + ÃƒÂ¢Ã¢â‚¬Â°Ã‚Â¥90% sync success",
-          "baseline": "0% ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no mechanism exists",
+          "name": "Distribution sync — zero-commit install + sync success rate",
+          "target": "100% zero-commit install + ≥90% sync success",
+          "baseline": "0% — no mechanism exists",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -1821,9 +1821,9 @@
         },
         {
           "id": "m2",
-          "name": "Consumer confidence ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â unassisted team member onboarding",
-          "target": "ÃƒÂ¢Ã¢â‚¬Â°Ã‚Â¥1 team member completes full outer loop unassisted",
-          "baseline": "0 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no unassisted onboarding achieved",
+          "name": "Consumer confidence — unassisted team member onboarding",
+          "target": "≥1 team member completes full outer loop unassisted",
+          "baseline": "0 — no unassisted onboarding achieved",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -1843,9 +1843,9 @@
         },
         {
           "id": "m3",
-          "name": "Teams bot C7 fidelity ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â zero violations in test session",
+          "name": "Teams bot C7 fidelity — zero violations in test session",
           "target": "0 C7 violations across complete test session",
-          "baseline": "not-applicable ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no Teams bot exists",
+          "baseline": "not-applicable — no Teams bot exists",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -1885,7 +1885,7 @@
         {
           "id": "mm-c",
           "name": "Meta: AC completeness",
-          "target": "ÃƒÂ¢Ã¢â‚¬Â°Ã‚Â¥80% ACs testable and specific",
+          "target": "≥80% ACs testable and specific",
           "baseline": "Sonnet run score",
           "signal": "not-yet-measured",
           "lastMeasured": null,
@@ -1932,7 +1932,7 @@
           "baseline": "3/8 at Phase 2 close",
           "signal": "at-risk",
           "lastMeasured": "2026-04-16",
-          "evidence": "Named independent reviewer on record: craigfo (PR #98, 2026-04-15). Full pipeline run completed autonomously. Formal MODEL-RISK.md 8/8 audit answers not yet documented ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â dependency for full on-track exists. Signal: partial ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â independent operator identified and pipeline-capable, formal audit artefact pending.",
+          "evidence": "Named independent reviewer on record: craigfo (PR #98, 2026-04-15). Full pipeline run completed autonomously. Formal MODEL-RISK.md 8/8 audit answers not yet documented — dependency for full on-track exists. Signal: partial — independent operator identified and pipeline-capable, formal audit artefact pending.",
           "contributingStories": [
             "p3.2a",
             "p3.2b"
@@ -1942,7 +1942,7 @@
           "id": "M2",
           "name": "Assurance gate substantive signal (completedAt duration)",
           "target": "All post-Phase-3 production traces show completedAt >50ms after startedAt",
-          "baseline": "1ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“2ms (Phase 2 actuals, adversarial audit 2026-04-12)",
+          "baseline": "1–2ms (Phase 2 actuals, adversarial audit 2026-04-12)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -1967,7 +1967,7 @@
           "id": "M4",
           "name": "Enterprise approval channel end-to-end",
           "target": "At least one complete DoR sign-off via Teams or Jira adapter",
-          "baseline": "GitHub Issue adapter only ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no enterprise channel exists",
+          "baseline": "GitHub Issue adapter only — no enterprise channel exists",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -1989,8 +1989,8 @@
         },
         {
           "id": "MM1",
-          "name": "Estimation calibration continuity (Phase 3 E1ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢E3)",
-          "target": "Phase 3 E2 estimates within 25% of E3 actuals for ÃƒÂ¢Ã¢â‚¬Â°Ã‚Â¥70% of stories",
+          "name": "Estimation calibration continuity (Phase 3 E1→E3)",
+          "target": "Phase 3 E2 estimates within 25% of E3 actuals for ≥70% of stories",
           "baseline": "Phase 2 E3 actuals in workspace/estimation-norms.md",
           "signal": "not-yet-measured",
           "lastMeasured": null,
@@ -2041,7 +2041,7 @@
           "baseline": "Phase 2: non-zero post-merge governance failures (establishing Phase 3 baseline from first PR)",
           "signal": "on-track",
           "lastMeasured": "2026-04-18",
-          "evidence": "PR #141 (8754323) merged p3.5, p3.6, p3.7, p3.8, p3.10, p3.11 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â all tests green, zero npm test failures post-merge.",
+          "evidence": "PR #141 (8754323) merged p3.5, p3.6, p3.7, p3.8, p3.10, p3.11 — all tests green, zero npm test failures post-merge.",
           "contributingStories": [
             "p3.1a",
             "p3.1b",
@@ -2056,10 +2056,10 @@
           "id": "CR1",
           "name": "T3M1 independent validation on record",
           "target": "8/8 MODEL-RISK.md audit questions answered by named independent reviewer with date and role on record",
-          "baseline": "Not on record ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â prerequisite: Priority 2 trace-field stories must be DoD-complete first",
+          "baseline": "Not on record — prerequisite: Priority 2 trace-field stories must be DoD-complete first",
           "signal": "at-risk",
           "lastMeasured": "2026-04-16",
-          "evidence": "Named independent reviewer on record: craigfo (PR #98, 2026-04-15). Full pipeline run completed autonomously. Formal MODEL-RISK.md 8/8 audit answers not yet documented ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â dependency for full on-track exists. Signal: partial ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â independent operator identified and pipeline-capable, formal audit artefact pending.",
+          "evidence": "Named independent reviewer on record: craigfo (PR #98, 2026-04-15). Full pipeline run completed autonomously. Formal MODEL-RISK.md 8/8 audit answers not yet documented — dependency for full on-track exists. Signal: partial — independent operator identified and pipeline-capable, formal audit artefact pending.",
           "contributingStories": [
             "p3.2a",
             "p3.2b",
@@ -2069,8 +2069,8 @@
         },
         {
           "id": "EC1",
-          "name": "Phase 3 exit criterion: artefact coverage score ÃƒÂ¢Ã¢â‚¬Â°Ã‚Â¥80%",
-          "target": "Post-pipeline CHANGELOG coverage score ÃƒÂ¢Ã¢â‚¬Â°Ã‚Â¥80% by Phase 3 close",
+          "name": "Phase 3 exit criterion: artefact coverage score ≥80%",
+          "target": "Post-pipeline CHANGELOG coverage score ≥80% by Phase 3 close",
           "baseline": "45% coverage at 2026-04-16 audit (9/20 post-pipeline item groups covered by a formal story)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
@@ -2085,7 +2085,7 @@
           "id": "CR2",
           "name": "Gate structural independence: agent cannot weaken its own gate",
           "target": "Gate scripts in separate repo, CI validates SHA-256 checksum before execution",
-          "baseline": "Gate scripts in delivery repo ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â agent has write access (structural gap confirmed Phase 2)",
+          "baseline": "Gate scripts in delivery repo — agent has write access (structural gap confirmed Phase 2)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
@@ -2189,7 +2189,7 @@
         {
           "id": "MC-SEC-03",
           "category": "mandatory-constraint",
-          "label": "Viz reads local JSON only ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no external fetch calls",
+          "label": "Viz reads local JSON only — no external fetch calls",
           "status": "na",
           "evidence": "No viz changes in any E1 story deliverables reviewed",
           "assessedBy": "/review",
@@ -2200,7 +2200,7 @@
           "category": "mandatory-constraint",
           "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)",
           "status": "met",
-          "evidence": "p3.1b Architecture Constraints cite ADR-002 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â new gate checks must evaluate at least one evidence field per file, not merely assert file existence.",
+          "evidence": "p3.1b Architecture Constraints cite ADR-002 — new gate checks must evaluate at least one evidence field per file, not merely assert file existence.",
           "assessedBy": "/review",
           "assessedAt": "2026-04-14"
         },
@@ -2209,7 +2209,7 @@
           "category": "mandatory-constraint",
           "label": "Fields written to pipeline-state.json must exist in schema",
           "status": "met",
-          "evidence": "p3.1b Architecture Constraints cite ADR-003 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â any new gate output fields (e.g. checksRun, failedChecks) must be added to pipeline-state.schema.json in the same commit.",
+          "evidence": "p3.1b Architecture Constraints cite ADR-003 — any new gate output fields (e.g. checksRun, failedChecks) must be added to pipeline-state.schema.json in the same commit.",
           "assessedBy": "/review",
           "assessedAt": "2026-04-14"
         },
@@ -2281,7 +2281,7 @@
           "category": "adr",
           "label": "Gates must use evidence fields, not stage-proxy",
           "status": "met",
-          "evidence": "p3.1b Architecture Constraints cite ADR-002 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â assurance gate extension must evaluate at least one evidence field per file. Assessed in p3.1b-assurance-gate-substantive-checks-review-1.",
+          "evidence": "p3.1b Architecture Constraints cite ADR-002 — assurance gate extension must evaluate at least one evidence field per file. Assessed in p3.1b-assurance-gate-substantive-checks-review-1.",
           "assessedBy": "/review",
           "assessedAt": "2026-04-14"
         },
@@ -2290,16 +2290,16 @@
           "category": "adr",
           "label": "Schema-first: fields defined before use",
           "status": "met",
-          "evidence": "p3.1b Architecture Constraints cite ADR-003 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â new gate output fields added to pipeline-state.schema.json in same commit. Assessed in p3.1b-assurance-gate-substantive-checks-review-1.",
+          "evidence": "p3.1b Architecture Constraints cite ADR-003 — new gate output fields added to pipeline-state.schema.json in same commit. Assessed in p3.1b-assurance-gate-substantive-checks-review-1.",
           "assessedBy": "/review",
           "assessedAt": "2026-04-14"
         },
         {
           "id": "ADR-008",
           "category": "adr",
-          "label": "DoR touch-point contract binding at pre-merge ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no silent scope bundling",
+          "label": "DoR touch-point contract binding at pre-merge — no silent scope bundling",
           "status": "met",
-          "evidence": "p3.1c Architecture Constraints cite ADR-008 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â anti-overfitting gate change applies only to proposals evaluated after merge; retroactive re-evaluation explicitly excluded. Assessed in p3.1c-test-suite-integrity-review-1.",
+          "evidence": "p3.1c Architecture Constraints cite ADR-008 — anti-overfitting gate change applies only to proposals evaluated after merge; retroactive re-evaluation explicitly excluded. Assessed in p3.1c-test-suite-integrity-review-1.",
           "assessedBy": "/review",
           "assessedAt": "2026-04-14"
         },
@@ -2334,7 +2334,7 @@
           "testPlanArtefact": "artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.3-gate-structural-independence-test-plan.md",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.3-gate-structural-independence-dor.md",
-          "signedOffBy": "Hamish ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â platform maintainer / operator",
+          "signedOffBy": "Hamish — platform maintainer / operator",
           "signedOffAt": "2026-04-18",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/163",
           "dispatchedAt": "2026-04-19T08:00:00Z",
@@ -2361,7 +2361,7 @@
           "testPlanArtefact": "artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.4-eval-anti-gaming-controls-test-plan.md",
           "dorStatus": "blocked",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.4-eval-anti-gaming-controls-dor.md",
-          "blocker": "p3.3 DoD-complete required ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â platform/suite.json host location established by p3.3",
+          "blocker": "p3.3 DoD-complete required — platform/suite.json host location established by p3.3",
           "health": "red",
           "updatedAt": "2026-04-18",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.4-eval-anti-gaming-controls-review-1.md",
@@ -2495,7 +2495,7 @@
           "testPlanArtefact": "artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.12-squad-contribution-flow-test-plan.md",
           "dorStatus": "blocked",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.12-squad-contribution-flow-dor.md",
-          "blocker": "p3.4 DoD-complete required ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â contribution guide references p3.4 anti-gaming requirements",
+          "blocker": "p3.4 DoD-complete required — contribution guide references p3.4 anti-gaming requirements",
           "health": "red",
           "updatedAt": "2026-04-18",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.12-squad-contribution-flow-review-1.md",
@@ -2515,7 +2515,7 @@
           "testPlanArtefact": "artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.13-compliance-monitoring-report-test-plan.md",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.13-compliance-monitoring-report-dor.md",
-          "signedOffBy": "Hamish ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â platform maintainer / operator",
+          "signedOffBy": "Hamish — platform maintainer / operator",
           "signedOffAt": "2026-04-18",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/164",
           "dispatchedAt": "2026-04-19T08:00:00Z",
