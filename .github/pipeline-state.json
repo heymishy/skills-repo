@@ -11892,30 +11892,45 @@
           "id": "kbc-s1",
           "slug": "kbc-s1",
           "name": "Consolidate kanban rendering into one shared pattern; retire /features, /actions, /status",
-          "stage": "definition-of-ready",
+          "stage": "verify-completion",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 14,
-            "passing": 0,
+            "totalTests": 51,
+            "passing": 51,
             "artefact": "artefacts/2026-07-19-kanban-consolidation/test-plans/kbc-s1-test-plan.md"
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
+          "acNotes": "All 6 ACs verified passing (U1-U9, IT1-IT3, both NFR tests -- 51/51). AC1 (shared renderer), AC2 (product HTML), AC3 (org HTML), AC4 (tenant board aggregation), AC5 (removed /features, /actions, /status, /status/export outright; deleted dead handler code; zero dangling references confirmed via U8/U9 across BOTH tests/ and tests/e2e/), AC6 (rendering behaviour preserved via backward-compatible renderKanban signature). Full local run-all-tests.js suite: 343 files, 40 failed -- matches tests/known-baseline-failures.json, no unexplained regressions. Fixed 3 pre-existing unit test files (check-psh-s6-product-kanban.js, check-psh-s7-org-kanban.js, check-bri-s1.5-initial-flags-wired.js) broken by the JSON->HTML contract change -- migrated, not deleted. Separately investigated a second CI workflow (.github/workflows/e2e.yml, Playwright specs under tests/e2e/, not covered by run-all-tests.js): its real failure was a pre-existing YAML syntax bug (unquoted colon, not on origin/master, unrelated to any route removal) causing 0 jobs to schedule -- fixed with a 1-line quote. Verified each of 6 flagged e2e spec files individually before acting: 3 were genuinely 100% about removed routes (deleted), 1 was mixed and migrated (kept its still-alive /features/:slug tests), 2 were 100% about still-alive routes and were NOT touched (action-queue.spec.js tests /api/actions, never removed; wuce20-artefact-index-html.spec.js tests /features/:slug, explicitly kept). Also fixed a genuine AC2 gap found during verification: _renderKanbanColumns was missing a data-stage attribute a pre-existing e2e spec depends on. Local Playwright run (NODE_ENV=test, matching CI env): 13/15 real passes; 2 pre-existing failures confirmed unrelated to this story (hardcoded port 3000 assumption affecting an untouched file too; a separate pre-existing bri-s3.4 auth/fixture gap in psh-s6's own spec). Live GitHub Actions confirmation of the e2e.yml fix was still queued/pending at last check -- local reproduction of the CI environment is the strongest available evidence pending that run.",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-19-kanban-consolidation/dor/kbc-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-19-kanban-consolidation/dor/kbc-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-19T06:36:01.138Z",
-          "prStatus": "none",
-          "updatedAt": "2026-07-19T06:36:01.138Z"
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/506",
+          "tasks": [
+            { "id": "task-1", "name": "Analyze current code and plan refactor", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
+            { "id": "task-2", "name": "Generalize renderKanban function signature", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
+            { "id": "task-3", "name": "Update product kanban route to render HTML", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
+            { "id": "task-4", "name": "Update org kanban route to render HTML", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
+            { "id": "task-5", "name": "Create tenant board aggregation function", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
+            { "id": "task-6", "name": "Add /dashboard?view=board route", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
+            { "id": "task-7", "name": "Remove /features, /actions, /status routes from server.js", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
+            { "id": "task-8", "name": "Delete status/actions handler modules", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
+            { "id": "task-9", "name": "Handle features.js removal or extraction", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
+            { "id": "task-10", "name": "Add security escaping tests", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
+            { "id": "task-11", "name": "Add performance test for tenant aggregate", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" }
+          ],
+          "updatedAt": "2026-07-20T00:00:00.000Z"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-19T06:36:01.138Z"
+      "updatedAt": "2026-07-20T00:00:00.000Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

@@ -16,9 +16,8 @@ const { handleArtefactRoute }                                        = require('
 const { handleSignOff, handleArtefactRead }                             = require('./routes/sign-off');
 const { healthCheckHandler }                                         = require('./routes/health');
 const { validateRequiredEnvVars }                                    = require('./config/validate-env');
-const { handleGetActions, handleDashboard, handleGetActionsHtml }                          = require('./routes/dashboard');
-const { handleGetFeatures, handleGetFeatureArtefacts, handleGetIdeas, handlePostIdea, handleDeleteIdea } = require('./routes/features');
-const { handleGetStatus, handleGetStatusExport }                     = require('./routes/status');
+const { handleGetActions, handleDashboard }                          = require('./routes/dashboard');
+const { handleGetFeatureArtefacts, handleGetIdeas, handlePostIdea, handleDeleteIdea } = require('./routes/features');
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
 const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml, handlePostAssumptionConfirm, handlePostCanvasEditHtml } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3 / iwu.4 / dic.5
@@ -1443,17 +1442,6 @@ async function router(req, res) {
   } else if (pathname === '/api/actions' && req.method === 'GET') {
     await handleGetActions(req, res);
 
-  } else if (pathname === '/status/export' && req.method === 'GET') {
-    await handleGetStatusExport(req, res);
-
-  } else if (pathname === '/status' && req.method === 'GET') {
-    await handleGetStatus(req, res);
-
-  } else if (pathname === '/actions' && req.method === 'GET') {
-    authGuard(req, res, async () => {
-      await handleGetActionsHtml(req, res);
-    });
-
   } else if (pathname === '/dashboard') {
     if (_pshPool) {
       authGuard(req, res, async () => { await _handleGetDashboard(req, res, null, _pshPool); });
@@ -1479,11 +1467,6 @@ async function router(req, res) {
   } else if (pathname.match(/^\/api\/ideas\/[^/]+$/) && req.method === 'DELETE') {
     const ideaId = decodeURIComponent(pathname.slice('/api/ideas/'.length));
     authGuard(req, res, () => handleDeleteIdea(req, res, ideaId));
-
-  } else if (pathname === '/features' && req.method === 'GET') {
-    authGuard(req, res, async () => {
-      await handleGetFeatures(req, res);
-    });
 
   } else if (pathname.startsWith('/features/') && req.method === 'GET') {
     const featureSlug = pathname.slice('/features/'.length);

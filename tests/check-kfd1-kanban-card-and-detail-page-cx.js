@@ -103,36 +103,13 @@ console.log('\n[kfd1] AC2 — artefact-count indicator');
   assert(/no artefacts yet/i.test(htmlNoArtefacts), 'AC2c: explicit "no artefacts yet" indicator for zero-artefact feature');
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// AC2 (integration) — handleGetFeatures board view wires real artefact counts
-// ════════════════════════════════════════════════════════════════════════════
-console.log('\n[kfd1] AC2 (integration) — board view attaches artefactCount per feature');
-{
-  const {
-    handleGetFeatures,
-    setListArtefacts,
-    setAuditLogger
-  } = require('../src/web-ui/routes/features');
-  const { setConfiguredRepositories, setValidateRepositoryAccess, setFetchPipelineState } = require('../src/web-ui/adapters/feature-list');
-
-  setAuditLogger({ info: () => {}, warn: () => {} });
-  setConfiguredRepositories(() => ['test-owner/test-repo']);
-  setValidateRepositoryAccess(async () => true);
-  setFetchPipelineState(async () => ({
-    features: [{ slug: 'feat-board-1', name: 'Board Feature One', stage: 'discovery', updatedAt: '2026-06-01' }]
-  }));
-  setListArtefacts(async (slug) => {
-    assert(slug === 'feat-board-1', 'AC2d: listArtefacts called with the feature slug');
-    return { artefacts: [{ type: 'Discovery' }, { type: 'Stories' }], grouped: {}, noArtefacts: false };
-  });
-
-  const req = mockReq({ query: { view: 'board' } });
-  const res = mockRes();
-  await handleGetFeatures(req, res);
-
-  assert(res.statusCode === 200, 'AC2e: board view returns 200');
-  assert(/2\s*artefacts/.test(res.body), 'AC2f: rendered board shows 2-artefact count for feat-board-1');
-}
+// kbc-s1 (AC5, U9): AC2's integration test (handleGetFeatures board view
+// wiring real artefact counts via the /features?view=board route) removed --
+// handleGetFeatures and the /features route were deleted outright by kbc-s1.
+// renderKanban's own legacy-shape rendering behaviour (which this route used
+// to call) is still preserved and tested directly below (AC5), per kbc-s1's
+// AC6 requirement that the underlying rendering behaviour survive the
+// route's removal.
 
 // ════════════════════════════════════════════════════════════════════════════
 // AC5 — 'ideation' stage features are not silently dropped from every lane

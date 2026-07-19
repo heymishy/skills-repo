@@ -27,20 +27,14 @@ const { deriveBlockerIndicator, deriveFeatureStatusLabel, isFeatureDone, renderS
   require('../src/web-ui/utils/status-board');
 const { exportStatusAsMarkdown } =
   require('../src/web-ui/utils/status-export');
-const { handleGetStatus, handleGetStatusExport, setLogger } =
-  require('../src/web-ui/routes/status');
-
-function makeMockRes() {
-  return {
-    _statusCode: null, _headers: {}, _body: '',
-    writeHead(code, headers) { this._statusCode = code; this._headers = headers ; {}; },
-    end(body) { this._body = body ; ''; }
-  };
-}
-function makeMockReq(opts) {
-  return { method: opts.method||'GET', url: opts.url||'/status',
-           session: opts.session !== undefined ? opts.session : null, query: opts.query||{} };
-}
+// kbc-s1 (AC5): GET /status and GET /status/export were removed outright along
+// with routes/status.js (retired in favour of product/org/tenant kanban boards).
+// The route-level IT1-IT3/NFR1 tests that exercised handleGetStatus/
+// handleGetStatusExport directly were removed with them (U9) -- the surviving
+// utility-level logic they wrapped (deriveBlockerIndicator,
+// deriveFeatureStatusLabel, isFeatureDone, exportStatusAsMarkdown,
+// renderStatusBoard) is still tested directly below (T2-T6, NFR2), unaffected
+// by the route's removal.
 
 async function runTests() {
 
@@ -119,39 +113,13 @@ async function runTests() {
     assert(threw, 'T1.2c throws when access denied');
     setAccessValidator(null); setFetcher(()=>featureFixture); }
 
-  console.log('\nIT1-IT3 -- Integration tests');
-  { setFetcher(()=>[featureFixture]); setAccessValidator(null);
-    const req=makeMockReq({session:{userId:'u1',accessToken:'valid-token'}}); const res=makeMockRes();
-    await handleGetStatus(req,res);
-    assert(res._statusCode===200,'IT1a GET /status -> 200');
-    const body=JSON.parse(res._body);
-    assert(Array.isArray(body),'IT1b body is array');
-    assert(body.length>0,'IT1c has features');
-    assert(body[0].slug!==undefined,'IT1d has slug');
-    assert(body[0].stage!==undefined,'IT1e has stage');
-    assert(body[0].lastActivityDate!==undefined,'IT1f has lastActivityDate');
-    assert('blockerLabel' in body[0],'IT1g has blockerLabel'); }
-  { setFetcher(()=>[featureFixture]); setAccessValidator(null);
-    const req=makeMockReq({session:{userId:'u1',accessToken:'valid-token'}}); const res=makeMockRes();
-    await handleGetStatusExport(req,res);
-    assert(res._statusCode===200,'IT2a GET /status/export -> 200');
-    assert((res._headers['Content-Type']||'').includes('text/markdown')||(res._headers['Content-Type']||'').includes('text/plain'),'IT2b Content-Type markdown/plain');
-    assert(typeof res._body==='string'&&res._body.includes('|'),'IT2c body has markdown table'); }
-  { const req=makeMockReq({session:null}); const res=makeMockRes();
-    await handleGetStatus(req,res);
-    assert(res._statusCode===401,'IT3 no session -> 401'); }
-
-  console.log('\nNFR1-NFR2 -- NFR tests');
-  { setFetcher(()=>[featureFixture]); setAccessValidator(null);
-    let auditCalled=false, auditPayload=null;
-    setLogger({info:(e,d)=>{ if(e==='status_board_access'){auditCalled=true;auditPayload=d;} },warn:()=>{}});
-    const req=makeMockReq({session:{userId:'u42',accessToken:'valid-token'}}); const res=makeMockRes();
-    await handleGetStatus(req,res);
-    assert(auditCalled,'NFR1a audit log called');
-    assert(auditPayload&&auditPayload.userId==='u42','NFR1b userId in audit log');
-    assert(auditPayload&&typeof auditPayload.featureCount==='number','NFR1c featureCount in audit log');
-    assert(auditPayload&&typeof auditPayload.timestamp==='string','NFR1d timestamp in audit log');
-    setLogger({info:()=>{},warn:()=>{}}); }
+  // kbc-s1 (AC5, U9): IT1-IT3 (GET /status, GET /status/export route-level
+  // tests) and NFR1 (audit log via handleGetStatus) were removed here --
+  // those routes and routes/status.js were deleted outright by kbc-s1. The
+  // underlying utility-level logic those routes wrapped is still exercised
+  // directly above (T2-T6) and below (NFR2), which the route removal does
+  // not affect.
+  console.log('\nNFR2 -- NFR test');
   { const html=renderStatusBoard([traceFindingsFixture]);
     const m=html.match(/<span[^>]*amber-indicator[^>]*>([^<]*)<\/span>/);
     assert(m!==null&&m[1].trim().length>0,'NFR2 amber-indicator has non-empty text (colour not sole indicator)'); }

@@ -110,11 +110,22 @@ function lane(laneConfig, cards, wipLimit) {
 
 /**
  * @param {object} data
- * @param {Array}  data.features  — from pipeline-state.json (slug, title, stage, health, updated)
- * @param {Array}  data.ideas     — from workspace/ideas.json  (id, title, notes, createdAt)
- * @param {object} [data.wipLimits] — { delivery: 3 } etc. optional
+ * Supports two signatures:
+ * 1. Old: { features: [], ideas?: [] } — pipeline-state features/ideas (rendered with complex lanes)
+ * 2. New: { columns: [], ideas?: [] } — generic columns/cards (rendered as simple board; product/org/tenant scope)
+ * @param {Array}  data.features  — (old) from pipeline-state.json (slug, title, stage, health, updated)
+ * @param {Array}  data.columns   — (new) generic stage columns with cards
+ * @param {Array}  data.ideas     — (optional) ideas backlog
+ * @param {object} [data.wipLimits] — { delivery: 3 } etc. optional (old only)
  */
 function renderKanban(data) {
+  // kbc-s1 (AC1, AC6): dispatch on shape -- new generic {columns} signature
+  // renders via the simplified board renderer; legacy {features} signature
+  // (still used by /features?view=board) keeps its original lane-based output.
+  if (data && data.columns) {
+    return _renderKanbanColumns(data);
+  }
+
   const features = data.features || [];
   const ideas    = data.ideas    || [];
   const wipLimits = data.wipLimits || { delivery: 5, review: 4 };
@@ -207,4 +218,76 @@ function renderKanban(data) {
   ].join('');
 }
 
-module.exports = { renderKanban, LANES };
+/**
+ * Simplified kanban renderer for generic columns/cards (product/org/tenant scope)
+ * @param {object} data
+ * @param {Array}  data.columns - array of {stage, cards: []}
+ * @param {Array}  [data.ideas] - optional ideas array
+ */
+function _cardHealthLabel(health) {
+  if (health === 'red' || health === 'blocked')   return 'Blocked';
+  if (health === 'amber' || health === 'at-risk') return 'Warning';
+  if (health === 'green' || health === 'on-track') return 'Healthy';
+  return 'Unknown';
+}
+
+function _renderKanbanColumns(data) {
+  var columns = data.columns || [];
+
+  if (!columns || columns.length === 0) {
+    return '<div class="kb-empty">No stages available</div>';
+  }
+
+  var columnHtml = columns.map(function(col) {
+    var cardHtml = (col.cards || []).map(function(card) {
+      var health = card.health || 'neutral';
+      var healthClass = 'kb-health-' + escHtml(health);
+      // NFR-Accessibility: health is never colour-only -- a text label always
+      // accompanies the coloured border (deriveBlockerIndicator/_healthLabel
+      // pattern already used by products.js/status-board.js).
+      var healthLabel = card.healthLabel || _cardHealthLabel(health);
+      return [
+        '<div class="kb-card ' + healthClass + '">',
+          '<div class="kb-card-title">' + escHtml(card.title || card.name || '(untitled)') + '</div>',
+          '<div class="kb-card-meta">',
+            '<span class="kb-card-id">' + escHtml(card.id) + '</span>',
+            ' · <span class="kb-health-label">' + escHtml(healthLabel) + '</span>',
+          '</div>',
+        '</div>'
+      ].join('');
+    }).join('');
+
+    return [
+      '<div class="kb-column" data-stage="' + escHtml(col.stage) + '">',
+        '<div class="kb-column-head">' + escHtml(col.stage) + '</div>',
+        '<div class="kb-cards">',
+          cardHtml || '<div class="kb-empty">—</div>',
+        '</div>',
+      '</div>'
+    ].join('');
+  }).join('');
+
+  return [
+    '<style>',
+      '.kb-board { display: flex; gap: 12px; overflow-x: auto; padding: 16px; min-height: 400px; }',
+      '.kb-column { flex: 0 0 240px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; }',
+      '.kb-column-head { font-weight: 600; font-size: 14px; padding-bottom: 12px; border-bottom: 2px solid var(--line); margin-bottom: 12px; color: var(--ink); }',
+      '.kb-cards { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; }',
+      '.kb-card { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px; }',
+      '.kb-health-on-track, .kb-health-green { border-left: 4px solid #22c55e; }',
+      '.kb-health-at-risk, .kb-health-amber { border-left: 4px solid #f59e0b; }',
+      '.kb-health-blocked, .kb-health-red { border-left: 4px solid #ef4444; }',
+      '.kb-health-neutral { border-left: 4px solid var(--muted-2); }',
+      '.kb-card-title { font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--ink); }',
+      '.kb-card-meta { font-size: 11px; color: var(--muted); }',
+      '.kb-card-id { font-family: var(--mono); }',
+      '.kb-health-label { color: var(--muted); }',
+      '.kb-empty { text-align: center; color: var(--muted); font-size: 12px; padding: 16px 0; }',
+    '</style>',
+    '<div class="kb-board">',
+      columnHtml,
+    '</div>'
+  ].join('');
+}
+
+module.exports = { renderKanban, LANES, _renderKanbanColumns };
