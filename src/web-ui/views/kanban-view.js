@@ -258,7 +258,7 @@ function _renderKanbanColumns(data) {
     }).join('');
 
     return [
-      '<div class="kb-column">',
+      '<div class="kb-column" data-stage="' + escHtml(col.stage) + '">',
         '<div class="kb-column-head">' + escHtml(col.stage) + '</div>',
         '<div class="kb-cards">',
           cardHtml || '<div class="kb-empty">—</div>',

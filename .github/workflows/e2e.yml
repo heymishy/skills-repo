@@ -82,4 +82,4 @@ jobs:
 
       - name: E2E skipped (opt-in flag not set)
         if: steps.e2e-config.outputs.e2e_enabled != 'true'
-        run: echo "E2E tests skipped — set audit.e2e_tests: true in .github/context.yml to enable"
+        run: 'echo "E2E tests skipped — set audit.e2e_tests: true in .github/context.yml to enable"'
