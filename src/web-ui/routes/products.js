@@ -763,10 +763,52 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
     productId: productId,
     tenantId: tenantId
   });
-  if (res.redirect) {
-    res.redirect('/journeys/' + journeyId + '/discovery'); // test mock path
-  } else {
-    res.writeHead(302, { 'Location': '/journeys/' + journeyId + '/discovery' });
+
+  // jrf-s1: FIX — Create a skill session and redirect to discovery chat (not broken /journeys/ route)
+  // Following the same pattern as handlePostJourney in journey.js (which works correctly)
+  var crypto = require('crypto');
+  var path = require('path');
+  var _skillsRoute = require('./skills');
+  var _journeyDisk = require('../modules/journey-disk');
+  var _journeyStore = require('../modules/journey-store');
+  var _repoRootAdapter = require('../adapters/repo-root');
+
+  try {
+    var repoRoot = _repoRootAdapter.getRepoRoot(req);
+
+    // Create skill session (following handlePostJourney pattern at line 408-420)
+    var sid = crypto.randomUUID();
+    var featureSlug = 'new-feature-' + journeyId.slice(0, 8);
+    var sessionPath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', sid);
+
+    // Register the session
+    _skillsRoute.registerHtmlSession(sid, sessionPath, 'discovery', {
+      productProfile: 'default',
+      featureSlug: featureSlug
+    });
+
+    // Link session to journey
+    _skillsRoute.linkSessionToJourney(sid, journeyId);
+
+    // Mark active session on journey (if store supports it)
+    if (_journeyStore.setActiveSession) {
+      _journeyStore.setActiveSession(journeyId, sid, 'discovery');
+    }
+
+    // Mark stage as active on disk
+    try {
+      _journeyDisk.updateStage(featureSlug, 'discovery', { status: 'active', sessionId: sid }, repoRoot);
+    } catch (_) {
+      // Disk update is best-effort; don't fail if it doesn't work
+    }
+
+    // Redirect to the skill chat (FIXED: /skills/ not /journeys/)
+    res.writeHead(303, { 'Location': '/skills/discovery/sessions/' + encodeURIComponent(sid) + '/chat' });
+    res.end();
+  } catch (err) {
+    // Fallback: if session creation fails, still redirect but log the error
+    console.error('[handlePostProductFeature] Failed to create skill session:', err);
+    res.writeHead(303, { 'Location': '/skills/discovery/sessions/fallback/chat' });
     res.end();
   }
 }
