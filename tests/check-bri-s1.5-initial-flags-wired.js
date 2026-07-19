@@ -142,8 +142,14 @@ async function main() {
       var req = { session: { tenantId: 'acme' }, params: { id: 'prod-1' } };
       var res = mockRes();
       await handleGetProductKanban(req, res, null, pool, mockPosthog);
-      assert.ok(res._b && Array.isArray(res._b.columns), 'expected the normal { columns } payload when the flag is on');
-      assert.strictEqual(res._b.columns.length, 8, 'expected 8 stage columns, unchanged from pre-flag behaviour');
+      // kbc-s1: handleGetProductKanban now renders real HTML via the shared
+      // renderer (AC2) instead of res.json({ columns }) -- assert on the
+      // rendered board content instead of the old JSON payload shape. The "8
+      // stage columns, unchanged from pre-flag behaviour" guarantee still
+      // holds; it is now verified via STAGE_COLUMNS directly (kbc-s1's own
+      // test suite, check-kanban-consolidation.js, covers the column count).
+      assert.ok(res._raw && typeof res._raw === 'string' && res._raw.includes('<div'), 'expected the normal rendered HTML board when the flag is on');
+      assert.ok(res._raw.includes('f1'), 'expected the fixture feature to appear in the rendered board');
     });
   });
 
@@ -162,8 +168,11 @@ async function main() {
       var req = { session: { tenantId: 'tenant-x' }, query: {} };
       var res = mockRes();
       await handleGetOrgKanban(req, res, null, pool, mockPosthog);
-      assert.ok(res._b && Array.isArray(res._b.groups), 'expected the normal { groups } payload for the targeted tenant');
-      assert.strictEqual(res._b.groups.length, 1, 'expected 1 product group');
+      // kbc-s1: handleGetOrgKanban now renders real HTML via the shared
+      // renderer (AC3) instead of res.json({ groups }) -- assert on the
+      // rendered board content instead of the old JSON payload shape.
+      assert.ok(res._raw && typeof res._raw === 'string' && res._raw.includes('<div'), 'expected the normal rendered HTML board for the targeted tenant');
+      assert.ok(res._raw.includes('Product A') || res._raw.includes('f1'), 'expected the fixture product/feature to appear in the rendered board');
     });
   });
 
