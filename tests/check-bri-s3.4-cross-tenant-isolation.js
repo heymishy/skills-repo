@@ -110,10 +110,10 @@ function fail(name, err) { console.error('  [FAIL] ' + name + ': ' + (err && err
     return {
       query: async function (sql, params) {
         const s = String(sql).replace(/\s+/g, ' ').trim();
-        if (/SELECT name, tenant_id FROM products WHERE product_id/i.test(s)) {
+        if (/SELECT name, tenant_id.*FROM products WHERE product_id/i.test(s)) {
           const pid = params[0];
           const row = (products || []).find(function (p) { return p.product_id === pid; });
-          return { rows: row ? [{ name: row.name, tenant_id: row.tenant_id }] : [] };
+          return { rows: row ? [{ name: row.name, tenant_id: row.tenant_id, repo_owner: row.repo_owner || null, repo_name: row.repo_name || null }] : [] };
         }
         if (/SELECT tenant_id FROM products WHERE product_id/i.test(s)) {
           const pid = params[0];
