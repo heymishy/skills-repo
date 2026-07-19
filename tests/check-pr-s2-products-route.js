@@ -153,7 +153,7 @@ test('products.js exports handlePostProductSync', function() {
       // State 1: never synced (AC3)
       var mockPoolNeverSynced = {
         query: async function(sql) {
-          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT name, tenant_id.*FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
           if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) return { rows: [] };
           return { rows: [] };
         }
@@ -169,7 +169,7 @@ test('products.js exports handlePostProductSync', function() {
       var syncedAt = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
       var mockPoolSynced = {
         query: async function(sql) {
-          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT name, tenant_id.*FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
           if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: '{"green":0,"amber":0,"red":0,"unknown":0}', test_coverage: '{}', ac_coverage: '{}', taxonomy: '{}', synced_at: syncedAt }] };
           return { rows: [] };
         }
@@ -220,7 +220,7 @@ test('products.js exports handlePostProductSync', function() {
       var healthCountsJson = JSON.stringify({ green: 3, amber: 2, red: 1, unknown: 1 });
       var mockPool = {
         query: async function(sql) {
-          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT name, tenant_id.*FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
           if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
             return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: healthCountsJson, test_coverage: '{}', ac_coverage: '{}', taxonomy: '{}', synced_at: syncedAt }] };
           }
@@ -267,7 +267,7 @@ test('products.js exports handlePostProductSync', function() {
       });
       var mockPool = {
         query: async function(sql) {
-          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT name, tenant_id.*FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
           if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
             return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: '{"green":1,"amber":0,"red":0,"unknown":0}', test_coverage: testCoverageJson, ac_coverage: '{}', taxonomy: '{}', synced_at: syncedAt }] };
           }
@@ -289,7 +289,7 @@ test('products.js exports handlePostProductSync', function() {
       var noDataJson = JSON.stringify({ blendedPercentage: null, noData: true, totalPassing: 0, totalTests: 0, perFeature: [] });
       var mockPoolNoData = {
         query: async function(sql) {
-          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT name, tenant_id.*FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
           if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
             return { rows: [{ dod_status_counts: '{}', health_counts: '{}', test_coverage: noDataJson, ac_coverage: '{}', taxonomy: '{}', synced_at: syncedAt }] };
           }
@@ -318,7 +318,7 @@ test('products.js exports handlePostProductSync', function() {
       var acCoverageJson = JSON.stringify({ blendedPercentage: 75, noData: false, perFeature: [] });
       var mockPool = {
         query: async function(sql) {
-          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT name, tenant_id.*FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
           if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
             return { rows: [{ dod_status_counts: '{}', health_counts: '{}', test_coverage: '{}', ac_coverage: acCoverageJson, taxonomy: '{}', synced_at: syncedAt }] };
           }
@@ -337,7 +337,7 @@ test('products.js exports handlePostProductSync', function() {
       var noAcDataJson = JSON.stringify({ blendedPercentage: null, noData: true, perFeature: [] });
       var mockPoolNoAcData = {
         query: async function(sql) {
-          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT name, tenant_id.*FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
           if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
             return { rows: [{ dod_status_counts: '{}', health_counts: '{}', test_coverage: '{}', ac_coverage: noAcDataJson, taxonomy: '{}', synced_at: syncedAt }] };
           }
@@ -370,7 +370,7 @@ test('products.js exports handlePostProductSync', function() {
       });
       var mockPool = {
         query: async function(sql) {
-          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT name, tenant_id.*FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
           if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
             return { rows: [{ dod_status_counts: '{}', health_counts: '{}', test_coverage: '{}', ac_coverage: '{}', taxonomy: taxonomyJson, synced_at: syncedAt }] };
           }
@@ -400,7 +400,7 @@ test('products.js exports handlePostProductSync', function() {
       var flatTaxonomyJson = JSON.stringify({ groups: [], ungrouped: [{ slug: 'f1' }, { slug: 'f2' }], totalCount: 2 });
       var mockPoolFlat = {
         query: async function(sql) {
-          if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT name, tenant_id.*FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
           if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
             return { rows: [{ dod_status_counts: '{}', health_counts: '{}', test_coverage: '{}', ac_coverage: '{}', taxonomy: flatTaxonomyJson, synced_at: syncedAt }] };
           }

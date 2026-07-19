@@ -101,7 +101,7 @@ function _renderProductNew(login, error) {
   return _htmlShell.renderShell({ title: 'New product', bodyContent: body, user: { login: login }, active: 'dashboard', crumbs: ['Products', 'New'] });
 }
 
-function _renderProductView(productName, productId, features, login, rollupRow, isSyncing) {
+function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName) {
   var featuresHtml = features.length === 0
     ? '<p style="color:var(--muted);font-size:14px">No features yet.</p>'
     : '<ul style="list-style:none;padding:0;margin:0">' +
@@ -194,6 +194,34 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
       '<span id="psh-sync-label">' + _escapeHtml(syncedAtLabel) + (dodCountsHtml ? ' &middot; ' + dodCountsHtml : '') + '</span>' +
       '<button type="button" id="psh-refresh-btn" onclick="pshTriggerSync(\'' + _escapeHtml(productId) + '\')"' + refreshDisabledAttr + ' style="padding:4px 10px;border:1px solid var(--line);border-radius:5px;background:none;font-size:12px;cursor:pointer;color:var(--ink)">' + _escapeHtml(refreshLabel) + '</button>' +
     '</div>';
+  var repoHtml = '';
+  if (!repoOwner || !repoName) {
+    repoHtml =
+      '<div style="margin-top:16px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:6px">' +
+        '<h3 style="margin:0 0 12px;font-size:14px">Connect GitHub repo</h3>' +
+        '<form id="rpc-repo-form" style="display:flex;flex-direction:column;gap:12px">' +
+          '<div style="display:flex;gap:10px">' +
+            '<button type="button" id="rpc-btn-create" onclick="rpcShowCreateForm()" style="flex:1;padding:10px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Create new repo</button>' +
+            '<button type="button" id="rpc-btn-connect" onclick="rpcShowConnectForm()" style="flex:1;padding:10px;background:none;border:1px solid var(--line);border-radius:6px;font-size:13px;cursor:pointer">Connect existing</button>' +
+          '</div>' +
+          '<div id="rpc-create-panel" style="display:none">' +
+            '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px">New repo name<input id="rpc-create-name" type="text" placeholder="my-repo" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--surface);color:var(--ink)"></label>' +
+            '<button type="button" onclick="rpcSubmitCreate(\'' + _escapeHtml(productId) + '\')" style="padding:8px 12px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:4px;font-size:13px;cursor:pointer">Create</button>' +
+          '</div>' +
+          '<div id="rpc-connect-panel" style="display:none">' +
+            '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px">Repository owner<input id="rpc-connect-owner" type="text" placeholder="github-username" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--surface);color:var(--ink)"></label>' +
+            '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px">Repository name<input id="rpc-connect-repo" type="text" placeholder="repo-name" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--surface);color:var(--ink)"></label>' +
+            '<button type="button" onclick="rpcSubmitConnect(\'' + _escapeHtml(productId) + '\')" style="padding:8px 12px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:4px;font-size:13px;cursor:pointer">Connect</button>' +
+          '</div>' +
+        '</form>' +
+      '</div>';
+  } else {
+    repoHtml =
+      '<div style="margin-top:16px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:6px">' +
+        '<div style="font-size:13px;color:var(--muted)">GitHub repository</div>' +
+        '<div style="margin-top:4px;font-size:14px;font-weight:500">' + _escapeHtml(repoOwner) + ' / ' + _escapeHtml(repoName) + '</div>' +
+      '</div>';
+  }
   var body = '<div style="max-width:720px">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">' +
       '<div>' +
@@ -209,6 +237,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
       '</div>' +
     '</div>' +
     freshnessHtml +
+    repoHtml +
     healthHtml +
     coverageHtml +
     acCoverageHtml +
@@ -234,6 +263,10 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
       '}catch(e){alert(\'Sync failed: \'+e.message);}' +
       'finally{btn.disabled=false;btn.textContent=\'Refresh\';}' +
     '}' +
+    'function rpcShowCreateForm(){document.getElementById("rpc-create-panel").style.display="block";document.getElementById("rpc-connect-panel").style.display="none";}' +
+    'function rpcShowConnectForm(){document.getElementById("rpc-connect-panel").style.display="block";document.getElementById("rpc-create-panel").style.display="none";}' +
+    'async function rpcSubmitCreate(productId){var name=document.getElementById("rpc-create-name").value.trim();if(!name){alert("Repo name required");return;}try{var r=await fetch("/products/"+productId+"/repo/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:name})});if(r.ok){window.location.reload();}else{var j=await r.json();alert("Error: "+(j.error||"Failed"));}catch(e){alert("Error: "+e.message);}}' +
+    'async function rpcSubmitConnect(productId){var owner=document.getElementById("rpc-connect-owner").value.trim();var repo=document.getElementById("rpc-connect-repo").value.trim();if(!owner||!repo){alert("Owner and repo required");return;}try{var r=await fetch("/products/"+productId,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({owner:owner,repo:repo})});if(r.ok){window.location.reload();}else{var j=await r.json();alert("Error: "+(j.error||"Failed"));}catch(e){alert("Error: "+e.message);}}' +
     '<\/script>' +
   '</div>';
   return _htmlShell.renderShell({ title: productName, bodyContent: body, user: { login: login }, active: 'dashboard' });
@@ -406,7 +439,7 @@ async function handleGetProductView(req, res, _next, pool) {
   // for a missing/mismatched tenant, consistent with the existing
   // FORBIDDEN-vs-NOT_FOUND policy in middleware/journey-access.js.
   var prodRow = (await _pool.query(
-    'SELECT name, tenant_id FROM products WHERE product_id = $1',
+    'SELECT name, tenant_id, repo_owner, repo_name FROM products WHERE product_id = $1',
     [productId]
   )).rows[0];
   if (!prodRow || prodRow.tenant_id !== tenantId) {
@@ -435,7 +468,7 @@ async function handleGetProductView(req, res, _next, pool) {
   if (res.json) {
     res.json({ features: features });
   } else {
-    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing);
+    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
@@ -938,6 +971,7 @@ async function handlePutProductEdit(req, res, _next, pool, posthog) {
 }
 
 module.exports = {
+  _renderProductView,
   handlePostProductNew,
   handlePostProductConfirm,
   handleGetDashboard,

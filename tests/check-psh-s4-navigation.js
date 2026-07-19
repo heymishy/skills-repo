@@ -7,7 +7,7 @@ function makeMockPool(products, journeys) {
       // bri-s3.4: tenant-ownership lookups added to handleGetProductView /
       // handleGetProductKanban -- match these before the broader tenant_id
       // list-query regex below so single-product-by-id lookups resolve.
-      if (/SELECT (name, )?tenant_id FROM products WHERE product_id/i.test(sql)) {
+      if (/SELECT (name, )?tenant_id.*FROM products WHERE product_id/i.test(sql)) {
         const pid = params && params[0];
         const row = (products || []).find(p => p.product_id === pid);
         return { rows: row ? [row] : [] };
