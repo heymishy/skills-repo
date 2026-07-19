@@ -15,6 +15,13 @@ function _escapeHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// JSONB columns (health_counts, test_coverage, ac_coverage, taxonomy, dod_status_counts)
+// come back from `pg` already parsed into objects -- only parse if we actually got a string.
+function _parseJsonbField(value, fallback) {
+  if (value == null) { return fallback; }
+  return (typeof value === 'string') ? JSON.parse(value) : value;
+}
+
 function _renderProductDashboard(products, login) {
   var cardsHtml = products.length === 0
     ? '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
@@ -120,7 +127,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
       '</ul>';
   var HEALTH_LABELS = { green: '✓ Healthy', amber: '⚠ Warning', red: '✕ Blocked', unknown: '? Unknown' };
   var HEALTH_COLORS = { green: '#22c55e', amber: '#f59e0b', red: '#ef4444', unknown: 'var(--muted)' };
-  var healthCounts = (rollupRow && rollupRow.health_counts) ? JSON.parse(rollupRow.health_counts) : null;
+  var healthCounts = (rollupRow && rollupRow.health_counts) ? _parseJsonbField(rollupRow.health_counts, null) : null;
   var overallSignal = healthCounts ? _productRollup.computeOverallHealthSignal(healthCounts) : null;
   var healthHtml = healthCounts
     ? '<div style="margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;font-size:13px">' +
@@ -130,7 +137,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
         }).join('') +
       '</div>'
     : '';
-  var testCoverage = (rollupRow && rollupRow.test_coverage) ? JSON.parse(rollupRow.test_coverage) : null;
+  var testCoverage = (rollupRow && rollupRow.test_coverage) ? _parseJsonbField(rollupRow.test_coverage, null) : null;
   var coverageHtml;
   if (!testCoverage || testCoverage.noData || !Array.isArray(testCoverage.perFeature)) {
     coverageHtml = '<div style="margin-top:12px;font-size:13px;color:var(--muted)">Test coverage: No test data yet</div>';
@@ -144,14 +151,14 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
         '<ul style="margin:6px 0 0;padding-left:18px">' + perFeatureHtml + '</ul>' +
       '</div>';
   }
-  var acCoverage = (rollupRow && rollupRow.ac_coverage) ? JSON.parse(rollupRow.ac_coverage) : null;
+  var acCoverage = (rollupRow && rollupRow.ac_coverage) ? _parseJsonbField(rollupRow.ac_coverage, null) : null;
   var acCoverageHtml;
   if (!acCoverage || acCoverage.noData) {
     acCoverageHtml = '<div style="margin-top:8px;font-size:13px;color:var(--muted)">AC coverage: No AC data yet</div>';
   } else {
     acCoverageHtml = '<div style="margin-top:8px;font-size:13px">AC coverage: <strong>' + _escapeHtml(String(acCoverage.blendedPercentage)) + '%</strong></div>';
   }
-  var taxonomy = (rollupRow && rollupRow.taxonomy) ? JSON.parse(rollupRow.taxonomy) : null;
+  var taxonomy = (rollupRow && rollupRow.taxonomy) ? _parseJsonbField(rollupRow.taxonomy, null) : null;
   var taxonomyHtml = '';
   if (taxonomy) {
     var epicsSectionHtml = '';
@@ -184,7 +191,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
   }
   var syncedAtLabel = rollupRow ? _syncFreshness.formatSyncedAt(rollupRow.synced_at) : _syncFreshness.formatSyncedAt(null);
   var dodCountsHtml = rollupRow
-    ? Object.entries(JSON.parse(rollupRow.dod_status_counts || '{}')).map(function(entry) {
+    ? Object.entries(_parseJsonbField(rollupRow.dod_status_counts, {})).map(function(entry) {
         return _escapeHtml(entry[0]) + ': ' + _escapeHtml(String(entry[1]));
       }).join(' &middot; ')
     : '';
