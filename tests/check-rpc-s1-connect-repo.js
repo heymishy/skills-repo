@@ -1,5 +1,6 @@
 'use strict';
 const assert = require('assert');
+const vm = require('vm');
 
 let passed = 0; let failed = 0;
 function pass(name) { console.log(`  [PASS] ${name}`); passed++; }
@@ -178,12 +179,39 @@ function testIT3() {
   } catch (err) { fail('IT3: repo owner/name containing HTML special characters are escaped via _escapeHtml (MC-SEC-01)', err); }
 }
 
+// IT4 (regression) — the inline <script> block emitted by _renderProductView must be
+// syntactically valid JavaScript. A missing brace inside rpcSubmitCreate/rpcSubmitConnect's
+// try/catch previously made the WHOLE script block fail to parse in a real browser, silently
+// leaving every button handler (rpcShowCreateForm, rpcShowConnectForm, rpcSubmitCreate,
+// rpcSubmitConnect) undefined -- clicks produced zero network activity and zero server logs,
+// since the fetch() call was never reached. Node's own parser (via vm.Script) catches this
+// class of bug directly, without needing a real browser.
+function testIT4() {
+  console.log('IT4 — Regression: inline <script> block is syntactically valid JS');
+  try {
+    var html = products._renderProductView(
+      'Test Product', 'prod-123', [], 'testuser', null, false,
+      null, null
+    );
+    var match = /<script>([\s\S]*?)<\/script>/.exec(html);
+    assert.ok(match, 'expected an inline <script> block in the rendered product view');
+    var scriptBody = match[1];
+    // Compiling (not executing) is enough to surface a SyntaxError -- vm.Script never
+    // runs the code, so there's no need for DOM globals (document, fetch, etc.) to exist.
+    assert.doesNotThrow(function() {
+      new vm.Script(scriptBody);
+    }, /SyntaxError/, 'inline <script> block failed to parse as valid JavaScript');
+    pass('IT4: inline <script> block compiles without a SyntaxError (would have caught the missing-brace regression)');
+  } catch (err) { fail('IT4: inline <script> block compiles without a SyntaxError (would have caught the missing-brace regression)', err); }
+}
+
 (async function main() {
   testU1();
   testU2();
   await testIT1();
   await testIT2();
   testIT3();
+  testIT4();
   console.log(`\n[rpc-s1] Results: ${passed} passed, ${failed} failed`);
   process.exit(failed > 0 ? 1 : 0);
 })();
