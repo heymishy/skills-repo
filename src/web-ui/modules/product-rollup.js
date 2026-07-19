@@ -126,7 +126,7 @@ function computeTestCoverageRollup(pipelineState) {
       totalPassing += passing;
       totalTests += total;
       perFeature.push({
-        slug: story.slug,
+        slug: story.slug || story.id,
         passing: passing,
         totalTests: total,
         percentage: Math.round((passing / total) * 1000) / 10
@@ -185,7 +185,7 @@ function computeAcCoverageRollup(pipelineState) {
       totalVerified += verified;
       totalAc += total;
       perFeature.push({
-        slug: story.slug,
+        slug: story.slug || story.id,
         verified: verified,
         total: total,
         percentage: Math.round((verified / total) * 1000) / 10
@@ -237,7 +237,7 @@ function computeTaxonomyRollup(pipelineState) {
       feature.epics.forEach(function(epic) {
         var items = (epic.stories || []).map(function(story) {
           totalCount++;
-          return { slug: story.slug };
+          return { slug: story.slug || story.id };
         });
         groups.push({ epicSlug: epic.slug, epicName: epic.name, items: items });
       });

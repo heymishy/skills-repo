@@ -396,6 +396,23 @@ async function main() {
     });
   });
 
+  // Regression -- a story with an id but no slug (a real shape found in this repo's own
+  // pipeline-state.json, e.g. ougl.1..ougl.9) must not render as a blank label in the
+  // perFeature breakdown; it should fall back to story.id.
+  queue.push(function() {
+    console.log('\n[pr-s2] Regression -- perFeature falls back to story.id when story.slug is absent');
+    return test('computeTestCoverageRollup: a story with id but no slug uses id as the perFeature label, not blank', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'f1', stories: [{ id: 'ougl.1', testPlan: { totalTests: 4, passing: 4 } }] }
+        ]
+      };
+      var result = mod.computeTestCoverageRollup(pipelineState);
+      assert.strictEqual(result.perFeature[0].slug, 'ougl.1', 'Expected perFeature label to fall back to story.id when story.slug is absent, got ' + JSON.stringify(result.perFeature[0]));
+    });
+  });
+
   // T19: syncProductRollup also computes and writes test_coverage alongside the other rollup columns (AC1 storage)
   queue.push(function() {
     console.log('\n[pr-s5] T19 -- syncProductRollup writes test_coverage alongside dod_status_counts and health_counts (AC1 storage)');
@@ -470,6 +487,22 @@ async function main() {
       var result = mod.computeAcCoverageRollup(pipelineState);
       assert.strictEqual(result.blendedPercentage, null, 'Expected null (not 0 or NaN) when no story has AC data');
       assert.strictEqual(result.noData, true, 'Expected an explicit noData: true marker');
+    });
+  });
+
+  // Regression -- same story.slug||story.id fallback as computeTestCoverageRollup, applied
+  // to computeAcCoverageRollup's perFeature breakdown.
+  queue.push(function() {
+    console.log('\n[pr-s2] Regression -- AC-coverage perFeature falls back to story.id when story.slug is absent');
+    return test('computeAcCoverageRollup: a story with id but no slug uses id as the perFeature label, not blank', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'f1', stories: [{ id: 'ougl.2', acTotal: 4, acVerified: 4 }] }
+        ]
+      };
+      var result = mod.computeAcCoverageRollup(pipelineState);
+      assert.strictEqual(result.perFeature[0].slug, 'ougl.2', 'Expected perFeature label to fall back to story.id when story.slug is absent, got ' + JSON.stringify(result.perFeature[0]));
     });
   });
 
@@ -574,6 +607,22 @@ async function main() {
       assert.strictEqual(sumFromView, 5, 'Expected 5 total leaf items (4 epic-nested + 1 ungrouped)');
       assert.strictEqual(result.totalCount, 5, 'Expected totalCount to equal 5');
       assert.strictEqual(sumFromView, result.totalCount, 'Expected the view\'s own summed total to match totalCount exactly');
+    });
+  });
+
+  // Regression -- an epic-nested story with an id but no slug must not render as a blank
+  // label in the epic's items list; it should fall back to story.id.
+  queue.push(function() {
+    console.log('\n[pr-s2] Regression -- taxonomy epic items fall back to story.id when story.slug is absent');
+    return test('computeTaxonomyRollup: an epic-nested story with id but no slug uses id as the item label, not blank', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'fa', epics: [{ slug: 'epic-a', name: 'Epic A', stories: [{ id: 'ougl.3' }] }] }
+        ]
+      };
+      var result = mod.computeTaxonomyRollup(pipelineState);
+      assert.strictEqual(result.groups[0].items[0].slug, 'ougl.3', 'Expected epic item label to fall back to story.id when story.slug is absent, got ' + JSON.stringify(result.groups[0].items[0]));
     });
   });
 
