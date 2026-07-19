@@ -11810,7 +11810,7 @@
       "slug": "2026-07-19-new-feature-redirect-fix",
       "name": "Fix \"New feature\" redirecting to the sign-in page for logged-in users",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "epics": [],
       "stories": [
@@ -11818,36 +11818,36 @@
           "id": "jrf-s1",
           "slug": "jrf-s1",
           "name": "Fix \"New feature\" redirecting to the sign-in page for logged-in users",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 0,
+            "passing": 5,
             "artefact": "artefacts/2026-07-19-new-feature-redirect-fix/test-plans/jrf-s1-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-19-new-feature-redirect-fix/dor/jrf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-19-new-feature-redirect-fix/dor/jrf-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-19T06:36:01.138Z",
-          "prStatus": "none",
-          "updatedAt": "2026-07-19T06:36:01.138Z"
+          "prStatus": "merged",
+          "updatedAt": "2026-07-19T20:12:41.651Z"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-19T06:36:01.138Z"
+      "updatedAt": "2026-07-19T20:12:51.578Z"
     },
     {
       "slug": "2026-07-19-product-repo-connect-ux",
       "name": "Give every product a UI path to connect or create a GitHub repo",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "epics": [],
       "stories": [
@@ -11855,36 +11855,36 @@
           "id": "rpc-s1",
           "slug": "rpc-s1",
           "name": "Give every product a UI path to connect or create a GitHub repo",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 0,
+            "passing": 5,
             "artefact": "artefacts/2026-07-19-product-repo-connect-ux/test-plans/rpc-s1-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-19-product-repo-connect-ux/dor/rpc-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-19-product-repo-connect-ux/dor/rpc-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-19T06:36:01.138Z",
-          "prStatus": "none",
-          "updatedAt": "2026-07-19T06:36:01.138Z"
+          "prStatus": "merged",
+          "updatedAt": "2026-07-19T20:12:41.795Z"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-19T06:36:01.138Z"
+      "updatedAt": "2026-07-19T20:12:51.709Z"
     },
     {
       "slug": "2026-07-19-kanban-consolidation",
       "name": "Consolidate kanban rendering into one shared pattern; retire /features, /actions, /status",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "epics": [],
       "stories": [
@@ -11892,7 +11892,7 @@
           "id": "kbc-s1",
           "slug": "kbc-s1",
           "name": "Consolidate kanban rendering into one shared pattern; retire /features, /actions, /status",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -11911,26 +11911,81 @@
           "dorArtefact": "artefacts/2026-07-19-kanban-consolidation/dor/kbc-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-19-kanban-consolidation/dor/kbc-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-19T06:36:01.138Z",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/506",
           "tasks": [
-            { "id": "task-1", "name": "Analyze current code and plan refactor", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
-            { "id": "task-2", "name": "Generalize renderKanban function signature", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
-            { "id": "task-3", "name": "Update product kanban route to render HTML", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
-            { "id": "task-4", "name": "Update org kanban route to render HTML", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
-            { "id": "task-5", "name": "Create tenant board aggregation function", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
-            { "id": "task-6", "name": "Add /dashboard?view=board route", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
-            { "id": "task-7", "name": "Remove /features, /actions, /status routes from server.js", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
-            { "id": "task-8", "name": "Delete status/actions handler modules", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
-            { "id": "task-9", "name": "Handle features.js removal or extraction", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
-            { "id": "task-10", "name": "Add security escaping tests", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" },
-            { "id": "task-11", "name": "Add performance test for tenant aggregate", "tddState": "committed", "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md" }
+            {
+              "id": "task-1",
+              "name": "Analyze current code and plan refactor",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Generalize renderKanban function signature",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Update product kanban route to render HTML",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Update org kanban route to render HTML",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Create tenant board aggregation function",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Add /dashboard?view=board route",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "Remove /features, /actions, /status routes from server.js",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md"
+            },
+            {
+              "id": "task-8",
+              "name": "Delete status/actions handler modules",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md"
+            },
+            {
+              "id": "task-9",
+              "name": "Handle features.js removal or extraction",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md"
+            },
+            {
+              "id": "task-10",
+              "name": "Add security escaping tests",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md"
+            },
+            {
+              "id": "task-11",
+              "name": "Add performance test for tenant aggregate",
+              "tddState": "committed",
+              "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md"
+            }
           ],
-          "updatedAt": "2026-07-20T00:00:00.000Z"
+          "updatedAt": "2026-07-19T20:12:41.924Z"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-20T00:00:00.000Z"
+      "updatedAt": "2026-07-19T20:12:51.831Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
